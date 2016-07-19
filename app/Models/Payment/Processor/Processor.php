@@ -40,6 +40,7 @@ class Processor
     protected $orderRepo;
     protected $paymentRepo;
     protected $app;
+    protected $request;
     protected $methods;
 
     protected $verifyRefundStatus;
@@ -60,6 +61,8 @@ class Processor
         $this->paymentRepo = $this->repo->payment;
 
         $this->orderRepo = $this->repo->order;
+
+        $this->request = $this->app['request'];
 
         // Only used in hdfc verify refund flow
         $this->verifyRefundStatus = null;
@@ -255,6 +258,13 @@ class Processor
         });
     }
 
+    public function callGatewayFunctionCaptureViaQueue($data, $payment)
+    {
+        $this->payment = $payment;
+
+        $this->callGatewayFunction(Payment\Action::CAPTURE, $data);
+    }
+
     protected function cancelPayment($payment)
     {
         $errorCode = null;
@@ -318,9 +328,9 @@ class Processor
     /**
      * Responsible for calling the gateway function
      *
-     * @param  string $action refund/capture etc.
-     * @param  array  $input  Relevant input for the corresponding
-     *                        action
+     * @param  string $action      refund/capture etc.
+     * @param  array  $gatewayData Relevant input for the corresponding
+     *                             action
      *
      * @return array or null
      * @throws Exception\LogicException
@@ -354,6 +364,8 @@ class Processor
         $this->tracePaymentNewRequest($input);
 
         $payment = new Payment\Entity;
+
+        $payment->generateId();
 
         $payment->merchant()->associate($this->merchant);
 

@@ -39,6 +39,7 @@ final class Route
         'payment_add_metadata'                    => ['post',     'payments/{id}/metadata',                   'PaymentController@postPaymentMetadata'                             ],
         'payment_fetch_by_id'                     => ['get',      'payments/{id}',                            'PaymentController@getPayment'                                      ],
         'payment_fetch_multiple'                  => ['get',      'payments',                                 'PaymentController@getPayments'                                     ],
+        'payment_fetch_card_details'              => ['get',      'payments/{id}/card',                       'PaymentController@getCardForPayment'                               ],
         'payment_fetch_refunds'                   => ['get',      'payments/{id}/refunds',                    'PaymentController@getRefundsForPayment'                            ],
         'payment_fetch_refund_by_id'              => ['get',      'payments/{paymentId}/refunds/{rfndId}',    'PaymentController@getRefundByRefundAndPaymentId'                   ],
         'payment_auth_notify'                     => ['get',      'payments/auth/notify',                     'PaymentController@getAuthNotify',                                  ],
@@ -154,6 +155,7 @@ final class Route
         'mockhdfc_payment'                        => ['post',     'gateway/mockhdfc/payment',                 'MockGatewayController@payment'                                     ],
         'mockhdfc_auth_enrolled'                  => ['post',     'gateway/mockhdfc/auth_enrolled',           'MockGatewayController@authEnrolled'                                ],
         'mockhdfc_3dsecure'                       => ['post',     'gateway/3dsecure',                         'MockGatewayController@post3dSecure'                                ],
+        'mockcybersource_acs'                     => ['post',     'gateway/acs/{gateway}',                    'MockGatewayController@postAcs'                                     ],
         'mockatom_init_payment'                   => ['post',     'gateway/mockanb',                          'MockGatewayController@postAtomInitPayment'                         ],
         'mockatom_choose_org'                     => ['get',      'gateway/mockanb',                          'MockGatewayController@getAtomChooseOrg'                            ],
         'mockatom_rzp_payment'                    => ['post',     'gateway/mockanb/payment',                  'MockGatewayController@postAtomRzpPayment'                          ],
@@ -410,6 +412,7 @@ final class Route
     );
 
     public static $proxy = array(
+        'payment_fetch_card_details',
         'transaction_monthly_report',
         'transaction_fetch_by_id',
         'transaction_fetch_multiple',
@@ -442,6 +445,7 @@ final class Route
         'dummy_route',
         'checkout_public',
         'mockhdfc_3dsecure',
+        'mockcybersource_acs',
         'transparent_redirect_get',
         'transparent_redirect_post',
         'gateway_payment_callback_kotak',
@@ -623,7 +627,7 @@ final class Route
         return in_array($route, $jsonpRoutes);
     }
 
-    protected static function addRoutes($type)
+    public static function addRoutes($type)
     {
         foreach (self::$$type as $routeName)
         {

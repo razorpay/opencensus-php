@@ -2,6 +2,7 @@
 
 namespace RZP\Reconciliator\Axis;
 
+use RZP\Exception\ReconciliationException;
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 use RZP\Reconciliator\Messenger;
@@ -15,11 +16,12 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_PAYMENT_ID  = 'merchant_trans_ref';
+    const COLUMN_PAYMENT_ID  = ['merchant_trans_ref', 'merchant_tran_ref'];
     const COLUMN_CARD_TYPE   = 'card_type';
-    const COLUMN_SERVICE_TAX = 'service_tax145';
+    const COLUMN_SERVICE_TAX = ['service_taxat145', 'service_taxat1450', 'service_taxat135', 'service_taxat1350'];
     const COLUMN_FEE         = 'commission';
-    const COLUMN_CARD_TRIVIA = 'card';
+    const COLUMN_CARD_TRIVIA = ['card', 'card_category'];
+    const COLUMN_ORDER_ID    = 'order_id';
     const RRN                = 'rrn_no';
 
     protected $messenger;
@@ -36,14 +38,54 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getPaymentId($row)
     {
-        $paymentId = $row[self::COLUMN_PAYMENT_ID];
+        $columnPaymentId = null;
+
+        foreach(self::COLUMN_PAYMENT_ID as $cpi)
+        {
+            if (isset($row[$cpi]) === true)
+            {
+                $columnPaymentId = $cpi;
+                break;
+            }
+        }
+
+        if ($columnPaymentId === null)
+        {
+            return null;
+        }
+
+        $paymentId = $row[$columnPaymentId];
         return $paymentId;
     }
 
     protected function getGatewayServiceTax($row)
     {
+        $columnServiceTax = null;
+
+        foreach(self::COLUMN_SERVICE_TAX as $cst)
+        {
+            if (isset($row[$cst]) === true)
+            {
+                $columnServiceTax = $cst;
+                break;
+            }
+        }
+
+        if ($columnServiceTax === null)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'      => TraceCode::RECON_FAILURE,
+                    'message'         => 'Unable to get the service tax!',
+                    'row'             => $row,
+                    'gateway'         => get_class()
+                ]);
+
+            throw new ReconciliationException('Unable to get the service tax for Axis from the recon file.');
+        }
+
         // Convert service tax into basic unit of currency. (ex: paise)
-        $serviceTax = floatval($row[self::COLUMN_SERVICE_TAX]) * 100;
+        $serviceTax = floatval($row[$columnServiceTax]) * 100;
 
         return round($serviceTax);
     }
@@ -72,7 +114,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         }
 
         $columnCardType = strtolower($row[self::COLUMN_CARD_TYPE]);
-        $columnCardTrivia = strtolower($row[self::COLUMN_CARD_TRIVIA]);
+        $columnCardTrivia = $this->getColumnCardTrivia($row);
 
         $cardType = $this->getCardType($columnCardType, $row);
         $cardTrivia = $this->getCardTrivia($columnCardTrivia, $row);
@@ -81,6 +123,27 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             BaseReconciliate::CARD_TYPE => $cardType,
             BaseReconciliate::CARD_TRIVIA => $cardTrivia,
         ];
+    }
+
+    protected function getColumnCardTrivia($row)
+    {
+        $columnCardTrivia = null;
+
+        foreach (self::COLUMN_CARD_TRIVIA as $cct)
+        {
+            if (isset($row[$cct]) === true)
+            {
+                $columnCardTrivia = $cct;
+                break;
+            }
+        }
+
+        if ($columnCardTrivia === null)
+        {
+            return null;
+        }
+
+        return $row[$columnCardTrivia];
     }
 
     protected function getCardTrivia($cardTrivia, $row)
@@ -106,11 +169,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getCardType($cardType, $row)
     {
-        if ($cardType === 'c')
+        if (($cardType === 'c') or ($cardType === 'credit'))
         {
             $cardType = BaseReconciliate::CREDIT;
         }
-        else if ($cardType === 'd')
+        else if (($cardType === 'd') or ($cardType === 'debit'))
         {
             $cardType = BaseReconciliate::DEBIT;
         }
@@ -138,11 +201,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
         $paymentId = $this->payment->getPublicId();
 
-        $vpcTransactionNo = $this->axisMigsRepo
-                                 ->findByRrn($row[self::RRN])
-                                 ->getTransactionId();
+        // $vpcTransactionNo = $this->axisMigsRepo
+        //                          ->findByRrn($row[self::RRN])
+        //                          ->getTransactionId();
 
-        $input['vpc_TransactionNo'] = $vpcTransactionNo;
+        $input['vpc_TransactionNo'] = $row[self::COLUMN_ORDER_ID];
 
         $this->messenger->raiseReconAlert(
             [

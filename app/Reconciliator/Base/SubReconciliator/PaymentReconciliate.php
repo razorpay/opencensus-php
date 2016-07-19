@@ -55,6 +55,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      * Sets card details (debit/credit, international).
      *
      * @param array $fileContents
+     * @return array
      */
     public function startReconciliation($fileContents)
     {
@@ -65,6 +66,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         {
             $this->runReconciliate($row, $extraDetails);
         }
+
+        return $this->getSummary();
     }
 
     public function runReconciliate($row, $extraDetails)
@@ -76,6 +79,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             return;
         }
 
+        $paymentId = $rowDetails[BaseReconciliate::PAYMENT_ID];
+
         try
         {
             $reconciled = $this->checkIfAlreadyReconciled($this->payment);
@@ -85,18 +90,35 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                 return;
             }
 
+            // Increment the total count for the summary
+            $this->setSummaryCount(self::TOTAL_SUMMARY, $paymentId);
+
             // Validates that the payment status is not failed.
             $validate = $this->validatePaymentStatus($row);
 
             if ($validate === true)
             {
-                $this->persistReconciliationData($rowDetails);
+                $persistSuccess = $this->persistReconciliationData($rowDetails);
+
+                if ($persistSuccess === false)
+                {
+                    // Increment the failure count for the summary.
+                    $this->setSummaryCount(self::FAILURES_SUMMARY, $paymentId);
+                }
+            }
+            else
+            {
+                // Increment the failure count for the summary.
+                $this->setSummaryCount(self::FAILURES_SUMMARY, $paymentId);
             }
         }
         catch (\Exception $ex)
         {
             // Ideally, there shouldn't be any exceptions thrown. They should be handled
             // in the respective reconciliation steps.
+
+            // Increment the failure count for the summary.
+            $this->setSummaryCount(self::FAILURES_SUMMARY, $paymentId);
 
             $this->messenger->raiseReconAlert(
                 [
@@ -266,6 +288,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         }
 
         $this->persistCardDetailsIfAbsent($rowDetails);
+
+        return $recordSuccess;
     }
 
     protected function getRowDetailsStructured($row)
@@ -570,16 +594,23 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         if ($this->paymentTransaction === null)
         {
-            $this->messenger->raiseReconAlert(
-                [
-                    'trace_code'    => TraceCode::RECON_FAILURE,
-                    'failure_code'  => 'PAYMENT_TRANSACTION_ABSENT',
-                    'message'       => 'Transaction not present for the given payment ID.',
-                    'row_details'   => $rowDetails,
-                    'gateway'       => get_called_class()
-                ]);
+            $createTransactionSuccess = $this->attemptToCreateMissingPaymentTransaction();
 
-            return false;
+            if ($createTransactionSuccess === false)
+            {
+                $this->messenger->raiseReconAlert(
+                    [
+                        'trace_code'    => TraceCode::RECON_FAILURE,
+                        'failure_code'  => 'PAYMENT_TRANSACTION_ABSENT',
+                        'message'       => 'Transaction not present for the given payment ID.',
+                        'row_details'   => $rowDetails,
+                        'gateway'       => get_called_class()
+                    ]);
+
+                return false;
+            }
+
+            $this->paymentTransaction = $this->payment->reload()->transaction;
         }
 
         $currentGatewayFee = $this->paymentTransaction->getGatewayFee();
@@ -600,6 +631,71 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         }
 
         return false;
+    }
+
+    protected function attemptToCreateMissingPaymentTransaction()
+    {
+        $cardNetwork = null;
+
+        $card = $this->payment->card;
+
+        if ($card !== null)
+        {
+            $cardNetwork = $card->getNetworkCode();
+        }
+
+        $isHDFCDICL = ($cardNetwork === Card\Network::DICL) and
+                      ($this->payment->isGateway(Payment\Gateway::HDFC) === true);
+
+        $isNotCapturedButAuthorized = ($this->payment->isCaptured() === false) and
+                                      ($this->payment->hasBeenAuthorized() === true);
+
+        if (($isHDFCDICL === true) or ($isNotCapturedButAuthorized === true))
+        {
+            try
+            {
+                $this->createMissingPaymentTransaction();
+
+                return true;
+            }
+            catch (\Exception $ex)
+            {
+                $this->messenger->raiseReconAlert(
+                    [
+                        'trace_code'                        => TraceCode::RECON_FAILURE,
+                        'failure_code'                      => 'PAYMENT_TRANSACTION_CREATE_FAIL',
+                        'message'                           => 'Payment transaction create failed with -> '. $ex->getMessage(),
+                        'is_hdfc_dicl'                      => $isHDFCDICL,
+                        'is_not_captured_but_authorized'    => $isNotCapturedButAuthorized,
+                        'payment_id'                        => $this->payment->getId(),
+                        'gateway'                           => get_called_class()
+                    ]);
+
+                $this->app['trace']->traceException($ex);
+
+                return false;
+            }
+        }
+
+        return false;
+    }
+
+    protected function createMissingPaymentTransaction()
+    {
+        assert($this->payment->transaction === null);
+
+        $this->app['trace']->info(
+            TraceCode::RECON_INFO_ALERT,
+            [
+                'info_code'                         => 'PAYMENT_TRANSACTION_CREATE',
+                'message'                           => 'Attempting to create payment transaction in recon',
+                'payment_id'                        => $this->payment->getId(),
+                'gateway'                           => get_called_class()
+            ]);
+
+        $txn = (new Transaction\Core)->createFromPaymentAuthorized($this->payment);
+
+        $this->repo->saveOrFail($txn);
     }
 
     protected function recordGatewayFee($reconGatewayFee, $currentGatewayFee)

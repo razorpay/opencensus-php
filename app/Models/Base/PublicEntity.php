@@ -70,16 +70,7 @@ class PublicEntity extends UniqueIdEntity
             }
         }
 
-        $dates = $this->getDates();
-
-        foreach ($dates as $key)
-        {
-            if ((isset($array[$key])) and
-                ($array[$key] !== null))
-            {
-                $array[$key] = $this->getDateInFormatDMYHMS($key);
-            }
-        }
+        $array[self::CREATED_AT] = $this->getDateInFormatDMYHMS(self::CREATED_AT);
 
         return $array;
     }
@@ -295,12 +286,22 @@ class PublicEntity extends UniqueIdEntity
     {
         $value = $this->getAttribute($attribute);
 
+        if (empty($value))
+        {
+            return null;
+        }
+
         return date('d/m/y', $value);
     }
 
     public function getDateInFormatDMYHMS($attribute)
     {
         $value = $this->getAttribute($attribute);
+
+        if (empty($value))
+        {
+            return null;
+        }
 
         return date('d/m/y h:i:s', $value);
     }

@@ -9,7 +9,7 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Models\Payment;
 use Queue;
 use Requests;
-use RZP\Trace;
+use Trace;
 use RZP\Trace\TraceCode;
 
 class Dashboard
@@ -26,6 +26,8 @@ class Dashboard
      */
     protected $config = array();
 
+    protected $trace;
+
     /**
      * Fields to be sent as part of the request
      */
@@ -34,6 +36,8 @@ class Dashboard
     public function __construct()
     {
         $this->config = Config::get('applications.dashboard');
+
+        $this->trace = Trace::getFacadeRoot();
 
         if ($this->config === null)
         {
@@ -98,7 +102,7 @@ class Dashboard
                     'transaction'   => $data['message'],
                     'mode'          => $data['mode']);
 
-                Trace::error(TraceCode::DASHBOARD_INTEGRATION_ERROR, $array);
+                $this->trace->error(TraceCode::DASHBOARD_INTEGRATION_ERROR, $array);
 
                 throw new Exception\IntegrationException(
                     'Dashboard returned a non-json response',
@@ -119,7 +123,7 @@ class Dashboard
                     'mode'          => $data['mode'],
                     'errors'        => $errors);
 
-                Trace::error(TraceCode::DASHBOARD_INTEGRATION_ERROR, $array);
+                $this->trace->error(TraceCode::DASHBOARD_INTEGRATION_ERROR, $array);
 
                 throw new Exception\IntegrationException(
                     'Dashboard returned false status in response',

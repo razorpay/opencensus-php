@@ -5,6 +5,7 @@ namespace RZP\Models\Terminal;
 use Crypt;
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Entity extends Base\PublicEntity
@@ -23,6 +24,7 @@ class Entity extends Base\PublicEntity
     const GATEWAY_ACCESS_CODE           = 'gateway_access_code';
     const GATEWAY_SECURE_SECRET         = 'gateway_secure_secret';
     const GATEWAY_RECON_PASSWORD        = 'gateway_recon_password';
+    const GATEWAY_ACQUIRER              = 'gateway_acquirer';
 
     const CARD                          = 'card';
     const NETBANKING                    = 'netbanking';
@@ -50,6 +52,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_SECURE_SECRET,
         self::GATEWAY_TERMINAL_PASSWORD,
         self::GATEWAY_RECON_PASSWORD,
+        self::GATEWAY_ACQUIRER,
     );
 
     protected $public = array(
@@ -65,10 +68,11 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_MERCHANT_ID2,
         self::GATEWAY_TERMINAL_ID,
+        self::GATEWAY_ACQUIRER,
         self::USED_COUNT,
         self::CREATED_AT,
         self::UPDATED_AT,
-        self::DELETED_AT
+        self::DELETED_AT,
     );
 
     protected $table = 'terminals';
@@ -102,6 +106,7 @@ class Entity extends Base\PublicEntity
         self::SHARED                    => false,
         self::EMI                       => false,
         self::EMI_DURATION              => null,
+        self::GATEWAY_ACQUIRER          => null,
     );
 
     public function generateMethod($input)
@@ -240,6 +245,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::GATEWAY);
     }
 
+    public function getGatewayAcquirer()
+    {
+        return $this->getAttribute(self::GATEWAY_ACQUIRER);
+    }
+
     public function getUsedCount()
     {
         return $this->getAttribute(self::USED_COUNT);
@@ -337,6 +347,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::GATEWAY) === $gateway);
     }
 
+    public function isGatewayAcquirer($acquirer)
+    {
+        return ($this->getAttribute(self::GATEWAY_ACQUIRER) === $acquirer);
+    }
+
     public function isShared()
     {
         return (bool) $this->getAttribute(self::SHARED);
@@ -352,5 +367,17 @@ class Entity extends Base\PublicEntity
         $actualValue = $this->getAttribute($attribute);
 
         return ($value === $actualValue);
+    }
+
+    public function isTPVTerminal()
+    {
+        if (is_null($this->getCategory()) === false)
+        {
+            $tpvCategories = (new Merchant\Entity)->getTPVCategories();
+
+            return in_array($this->getCategory(), $tpvCategories);
+        }
+
+        return false;
     }
 }

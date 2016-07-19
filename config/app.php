@@ -26,7 +26,7 @@ return array(
     |
     */
 
-    'debug' => true,
+    'debug' => env('APP_DEBUG', false),
 
     /*
     |--------------------------------------------------------------------------
@@ -39,7 +39,7 @@ return array(
     |
     */
 
-    'url' => 'http://api.razorpay.com',
+    'url' => env('APP_URL', 'https://api.razorpay.com'),
 
     /*
     |--------------------------------------------------------------------------

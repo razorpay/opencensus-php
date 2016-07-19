@@ -47,7 +47,7 @@ class Repository extends Base\Repository
         assert ($this->isTransactionActive());
 
         $balance = $this->findOrFail($merchant->getId());
-        $nodalBalance = $this->getEscrowBalanceLockForUpdate('kotak');
+        $nodalBalance = $this->getNodalBalanceLockForUpdate('kotak');
 
         $nodalCredits = $nodalBalance->getCredits();
         $nodalCredits = $nodalCredits - $balance->getCredits() + $freeCredits;
@@ -75,7 +75,7 @@ class Repository extends Base\Repository
         $balance->saveOrFail();
     }
 
-    public function getEscrowBalanceLockForUpdate($channel)
+    public function getNodalBalanceLockForUpdate($channel)
     {
         $func = 'get'.ucfirst($channel).'BalanceLockForUpdate';
 

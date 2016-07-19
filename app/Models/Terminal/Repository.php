@@ -23,6 +23,7 @@ class Repository extends Base\Repository
         Entity::CATEGORY            => 'sometimes|integer|digits:4',
         'deleted'                   => 'sometimes|boolean',
         Entity::GATEWAY_MERCHANT_ID => 'sometimes|string|max:50',
+        Entity::GATEWAY_ACQUIRER    => 'sometimes|string',
         Entity::GATEWAY_TERMINAL_ID => 'sometimes|alpha_num',
     );
 
@@ -48,6 +49,15 @@ class Repository extends Base\Repository
 
         return $repo::withTrashed()
                     ->where(Terminal\Entity::MERCHANT_ID, '=', $mid)
+                    ->get();
+    }
+
+    public function getTerminalsForMerchantAndSharedMerchant($mid)
+    {
+        $merchantIds = [$mid, Merchant\Account::SHARED_ACCOUNT];
+
+        return $this->newQuery()
+                    ->whereIn(Terminal\Entity::MERCHANT_ID, $merchantIds)
                     ->get();
     }
 
@@ -115,6 +125,18 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where(Terminal\Entity::MERCHANT_ID, '=', Merchant\Account::SHARED_ACCOUNT)
+                    ->get();
+    }
+
+    public function getAllSharedTerminals()
+    {
+        $repo = $this->repo;
+
+        $map = Terminal\Shared::getSharedTerminalMapping();
+
+        $sharedTerminalIds = array_keys($map);
+
+        return $repo::whereIn(Terminal\Entity::ID, $sharedTerminalIds)
                     ->get();
     }
 

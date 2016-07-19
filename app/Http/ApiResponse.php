@@ -126,39 +126,6 @@ class ApiResponse
         return array($publicError, $httpStatusCode);
     }
 
-    public static function serverError($debug, $exception = null)
-    {
-        list($publicError, $httpStatusCode) =
-                self::getErrorResponseFields(ErrorCode::SERVER_ERROR);
-
-        if (($debug) and
-            ($exception !== null))
-        {
-            $publicError['exception'] = self::getExceptionData($exception);
-
-            if (method_exists($exception, 'getData'))
-            {
-                $publicError['data'] = $exception->getData();
-            }
-        }
-
-        return self::generateResponse($publicError, $httpStatusCode);
-    }
-
-    public static function toStringExceptionError($exception, $debug)
-    {
-        list($publicError, $httpStatusCode) =
-            self::getErrorResponseFields(ErrorCode::SERVER_ERROR_TO_STRING_EXCEPTION);
-
-        if ($debug)
-        {
-            $publicError['error']['internal_error_code'] =
-                ErrorCode::SERVER_ERROR_TO_STRING_EXCEPTION;
-        }
-
-        return self::generateResponse($publicError, $httpStatusCode);
-    }
-
     public static function recoverableError($debug, $exception = null)
     {
         $error = $exception->getError();
@@ -170,30 +137,6 @@ class ApiResponse
         return self::generateResponse($data, $httpStatusCode);
     }
 
-    protected static function getExceptionData($exception)
-    {
-        $previous = $exception->getPrevious();
-        $previousData = null;
-
-        if ($previous !== null)
-            $previousData = self::getExceptionData($previous);
-
-        $data = array(
-            'type' => get_class($exception),
-            'message' => $exception->getMessage(),
-            'code' => $exception->getCode(),
-            'file' => $exception->getFile(),
-            'line' => $exception->getLine(),
-            'trace' => $exception->getTraceAsString(),
-            'previous' => $previousData,
-        );
-
-        $data['trace'] = str_replace('/', "\\", $data['trace']);
-        $data['file'] = str_replace('/', "\\", $data['file']);
-
-        return $data;
-    }
-
     protected static function debugException($e)
     {
         return self::generateErrorResponse(ErrorCode::SERVER_ERROR);
@@ -201,7 +144,7 @@ class ApiResponse
 
     public static function generateResponse($data = array(), $status = 200)
     {
-        $app = \App::getFacadeRoot();
+        $app = App::getFacadeRoot();
 
         $key = 'rzp.merchant_callback_url';
 

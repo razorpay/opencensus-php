@@ -7,6 +7,30 @@ use AWS;
 
 trait SettlementTrait
 {
+    /**
+     * Days used for testing creating a payment on settlement holiday
+     * @TODO Randomise these dates.
+     **/
+    protected function getDaysForSettlementHolidayTests()
+    {
+        return [
+            'payment_created_at'    => '5 july 2016',
+            'payment_settlement_on' => '9 july 2016',
+        ];
+    }
+
+    /**
+     * Days used for testing creating a payment on settlement non holiday
+     * @TODO Randomise these dates.
+     **/
+    protected function getDaysForSettlementNonHolidayTests()
+    {
+        return [
+           'payment_created_at'    => '12 july 2016',
+           'payment_settlement_on' => '15 july 2016',
+        ];
+    }
+
     protected function deleteSetlFiles()
     {
         $deleteUrls = [
@@ -87,7 +111,7 @@ trait SettlementTrait
             'content' => $content,
         ];
 
-        $this->ba->appAuth();
+        $this->ba->appAuthMode();
 
         $content = $this->makeRequestAndGetContent($request);
 

@@ -169,11 +169,24 @@ class Service extends Base\Service
         return $refund->toArrayPublic();
     }
 
-    public function retrieveRefundsForPayment($paymentId)
+    public function getCardForPayment($id)
     {
-        Payment\Entity::verifyIdAndStripSign($paymentId);
+        Payment\Entity::verifyIdAndStripSign($id);
 
-        $refunds = (new Refund\Repository)->findForPayment($paymentId);
+        $payment = $this->repo->payment->findByIdAndMerchantId($id, $this->merchant->getId());
+
+        $card = $payment->card;
+
+        return $card->toArrayPublic();
+    }
+
+    public function retrieveRefundsForPayment($id)
+    {
+        Payment\Entity::verifyIdAndStripSign($id);
+
+        $payment = $this->repo->payment->findByIdAndMerchantId($id, $this->merchant->getId());
+
+        $refunds = (new Refund\Repository)->findForPayment($payment, $this->merchant);
 
         return $refunds->toArrayPublic();
     }
@@ -181,7 +194,8 @@ class Service extends Base\Service
     /**
      * Captures a payment
      *
-     * @param  string   $id
+     * @param string $id
+     * @param array  $input
      *
      * @return Payment\Entity
      */
@@ -338,7 +352,8 @@ class Service extends Base\Service
                 // exception but in this context it really shouldn't have
                 // occurred.
 
-                $this->app['exception.handler']->traceException($e);
+                // @todo: Remove this in future.
+                // $this->app['exception.handler']->traceException($e);
 
                 // Just continue
                 $error++;

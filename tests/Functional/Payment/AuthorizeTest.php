@@ -22,6 +22,14 @@ class AuthorizeTest extends TestCase
         $this->payment = $this->getDefaultPaymentArray();
     }
 
+    public function testSession()
+    {
+        $this->withSession(['foo' => 'bar'])
+             ->visit('/');
+
+        $this->seeInSession('foo', 'bar');
+    }
+
     public function testInvalidEmailInPayment()
     {
         $this->startTest();

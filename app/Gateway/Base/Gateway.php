@@ -7,8 +7,8 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use Requests;
 use Symfony\Component\DomCrawler\Crawler;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use App;
 
 class Gateway
 {
@@ -116,7 +116,7 @@ class Gateway
 
     public function __construct()
     {
-        $this->app = \App::getFacadeRoot();
+        $this->app = App::getFacadeRoot();
 
         $this->trace = $this->app['trace'];
 
@@ -196,15 +196,6 @@ class Gateway
         $this->input = $input;
     }
 
-    /**
-     * @param  array  $input
-     * @return boolean
-     */
-    public function canRunOtpFlow(array $input = [])
-    {
-        return $this->canRunOtpFlow;
-    }
-
     public function canTopup()
     {
         return $this->topup;
@@ -229,8 +220,6 @@ class Gateway
 
     public function generateRefunds($input)
     {
-        $paymentIds = array();
-
         $paymentIds = array_map(function($row)
         {
             return $row['payment']['id'];
@@ -279,10 +268,6 @@ class Gateway
             $method = $request['method'];
         }
 
-        // echo 'Url: ' . $request['url'] . PHP_EOL;
-        // echo $request['content'] . PHP_EOL . PHP_EOL;
-        // \Log::info( 'Url: ' . $request['url'] . PHP_EOL);
-        // \Log::info( json_encode($request['content'], JSON_PRETTY_PRINT) . PHP_EOL . PHP_EOL);
         if (isset($request['options']['timeout']) === false)
         {
             $request['options']['timeout'] = self::TIMEOUT;
@@ -326,6 +311,8 @@ class Gateway
 
     protected function runPaymentVerifyFlow($verify)
     {
+        // This payment is the gateway entity payment.
+        // Also sets this gateway payment in the verify object's payment.
         $payment = $this->getPaymentToVerify($verify->input, $verify);
 
         if (($payment === null) and
@@ -337,7 +324,7 @@ class Gateway
                  'message' => 'payment id not found in the gateway database',
                  'gateway' => $this->gateway]);
 
-            return;
+            return null;
         }
 
         $content = $this->sendPaymentVerifyRequest($verify);

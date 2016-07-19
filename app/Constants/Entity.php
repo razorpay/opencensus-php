@@ -43,6 +43,7 @@ class Entity
 
     const ATOM              = 'atom';
     const HDFC              = 'hdfc';
+    const CYBERSOURCE       = 'cybersource';
     const AMEX              = 'amex';
     const PAYTM             = 'paytm';
     const SHARP             = 'sharp';
@@ -63,6 +64,7 @@ class Entity
         self::ATOM              => \RZP\Gateway\Atom::class,
         self::AMEX              => \RZP\Gateway\Amex::class,
         self::HDFC              => \RZP\Gateway\Hdfc::class,
+        self::CYBERSOURCE       => \RZP\Gateway\Cybersource::class,
         self::ORDER             => \RZP\Models\Order::class,
         self::PAYTM             => \RZP\Gateway\Paytm::class,
         self::SHARP             => \RZP\Gateway\Sharp::class,

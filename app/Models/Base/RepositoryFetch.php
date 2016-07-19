@@ -241,15 +241,18 @@ trait RepositoryFetch
         return $this->merchantIdRequiredForMultipleFetch;
     }
 
+    public function findByIdAndMerchant($id, $merchant)
+    {
+        return $this->newQuery()
+                    ->merchantId($merchant->getId())
+                    ->findOrFailPublic($id);
+    }
+
     public function findByIdAndMerchantId($id, $merchantId)
     {
-        $repo = $this->repo;
-
-        $mechantIdWithTable = $repo::getAttributeWithTableName(Common::MERCHANT_ID);
-
-        $query = $repo::where($mechantIdWithTable, '=', $merchantId);
-
-        return $query->findOrFailPublic($id);
+        return $this->newQuery()
+                    ->merchantId($merchantId)
+                    ->findOrFailPublic($id);
     }
 
     protected function addQueryParamDefault($query, $params, $key)
@@ -345,6 +348,11 @@ trait RepositoryFetch
                 $params[$key] = $value;
             }
         }
+    }
+
+    protected function addQueryParamMerchantId($query, $params)
+    {
+        $query->merchantId($params[Common::MERCHANT_ID]);
     }
 
     protected function addDefaultParamCount(array & $params)

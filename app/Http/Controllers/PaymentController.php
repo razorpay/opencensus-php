@@ -77,9 +77,7 @@ class PaymentController extends Controller
 
     public function postRefundOldAUthorizedPayments()
     {
-        $input = Request::all();
-
-        $data = $this->payment->refundOldAuthorizedPayments($input);
+        $data = $this->payment->refundOldAuthorizedPayments();
 
         return ApiResponse::json($data);
     }
@@ -127,6 +125,13 @@ class PaymentController extends Controller
         $data = $this->payment->autoCaptureOldAuthorizedPayments();
 
         return ApiResponse::json($data);
+    }
+
+    public function getCardForPayment($id)
+    {
+        $card = $this->payment->getCardForPayment($id);
+
+        return ApiResponse::json($card);
     }
 
     public function getRefundsForPayment($paymentId)

@@ -33,7 +33,7 @@ class AddDbData extends Command
      */
     public function fire()
     {
-        Database\DefaultConnection::set('test');
+        \Database\DefaultConnection::set('test');
 
             DB::table(Table::TERMINAL)->where('id', '1n25f6uN5S1Z5a')->update(
                 array(

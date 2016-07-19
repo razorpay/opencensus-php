@@ -225,7 +225,8 @@ class Core extends Base\Core
     {
         // setup session params
         // as device token is public, only app_token is sufficient
-        $this->app['session']->put('app_token', $appToken->getPublicId());
+        $this->app['request']->session()->put('app_token', $appToken->getPublicId());
+        // sd($appToken->getPublicId(), $this->app['session']->get('app_token'));
     }
 
     protected function verifyUniqueCustomer($customer, $failOnDuplicate = true)

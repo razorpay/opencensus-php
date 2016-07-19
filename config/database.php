@@ -61,8 +61,8 @@ return array(
 
             'test' => [
                 'driver'    => env('DB_TEST_DRIVER'),
-                'host'      => env('DB_TEST_HOST',env('MYSQL_PORT_3306_TCP_ADDR')),
-                'port'      => env('DB_TEST_PORT',env('MYSQL_PORT_3306_TCP_PORT')),
+                'host'      => env('DB_TEST_HOST'),
+                'port'      => env('DB_TEST_PORT'),
                 'database'  => env('DB_TEST_DATABASE'),
                 'username'  => env('DB_TEST_USERNAME'),
                 'password'  => env('DB_TEST_PASSWORD'),
@@ -129,12 +129,12 @@ return array(
 
     'redis' => array(
 
-        'cluster' => false,
+        'cluster' => true,
 
         'default' => array(
-            'host'     => '127.0.0.1',
-            'port'     => 6379,
-            'database' => 0,
+            'host'     => env('REDIS_HOST'),
+            'port'     => env('REDIS_PORT'),
+            'database' => env('REDIS_DB'),
         ),
 
     ),

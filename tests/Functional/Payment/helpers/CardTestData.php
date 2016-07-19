@@ -6,6 +6,23 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
+    'testFetchCardDetails' => [
+       'request' => [
+            'method' => 'get',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'name'          => 'Harshil',
+                'network'       => 'Visa',
+                'last4'         => '3335',
+                'international' => false,
+                'emi'           => true,
+            ],
+        ],
+    ],
+
     'testUnsupportedCardNetworks' => [
         'request' => [
             'content' => [

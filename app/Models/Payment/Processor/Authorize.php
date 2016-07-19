@@ -2,27 +2,31 @@
 
 namespace RZP\Models\Payment\Processor;
 
-use RZP\Constants\Mode;
-use RZP\Http\Route;
-use RZP\Models\Merchant;
-use RZP\Models\Merchant\Methods;
-use RZP\Models\Card;
-use RZP\Models\Card\IIN;
-use RZP\Models\Customer;
-use RZP\Models\Customer\Token;
-use RZP\Models\Emi;
-use RZP\Models\Payment;
-use RZP\Models\Payment\Method;
-use RZP\Models\Payment\Status;
-use RZP\Models\Transaction;
-use RZP\Models\Order;
-use RZP\Exception;
-use RZP\Error;
-use RZP\Error\ErrorCode;
-use RZP\Trace\Trace;
-use RZP\Trace\TraceCode;
 use Mail;
 use Lib\PhoneBook;
+use RZP\Models\Emi;
+use RZP\Http\Route;
+use RZP\Models\Card;
+use RZP\Models\Order;
+use RZP\Models\Payment;
+use RZP\Constants\Mode;
+use RZP\Models\Card\IIN;
+use RZP\Models\Merchant;
+use RZP\Models\Customer;
+use RZP\Models\Terminal;
+use RZP\Models\Transaction;
+use RZP\Models\Customer\Token;
+use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Status;
+use RZP\Models\Merchant\Methods;
+
+use RZP\Error;
+use RZP\Exception;
+use RZP\Trace\Trace;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
+
+use Crypt;
 
 trait Authorize
 {
@@ -169,8 +173,32 @@ trait Authorize
         // also sets the card details in $gatewayInput (passed by reference), if applicable.
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
 
-        // Sets gateway and terminal for the payment.
-        (new TerminalPicker)->selectTerminal($payment, $this->mode);
+        $terminalSelected = null;
+
+        // Terminal picked is the terminal used for payment processing.
+        $terminalPicked = (new TerminalPicker)->selectTerminal($payment, $this->mode);
+
+        try
+        {
+            $verbose = false;
+
+            // Add extra logs conditionally
+            // if ($this->isMoreLoggingRequired($terminalPicked))
+            // {
+            //     $verbose = true;
+            // }
+
+            // Terminal selected is now only used to validate any mistakes across each.
+            $terminalSelected = (new Terminal\Selector)->select($payment, $this->mode, $verbose);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e, Trace::INFO, TraceCode::TERMINAL_SELECTION_MISMATCH);
+        }
+
+        $this->logTerminalPickedAndSelected($terminalSelected, $terminalPicked, $payment);
+
+        $this->runPaymentGatewayRelatedPreProcessing($payment, $gatewayInput);
 
         $this->repo->saveOrFail($payment);
 
@@ -188,6 +216,54 @@ trait Authorize
         if ($payment->order)
         {
             $gatewayInput['order'] = $payment->order->toArray();
+        }
+    }
+
+    protected function isMoreLoggingRequired($terminal)
+    {
+        $verboseLoggingTerminalIds = ['1000HdfcShared'];
+
+        return in_array($terminal->getId(), $verboseLoggingTerminalIds);
+    }
+
+    protected function logTerminalPickedAndSelected($terminalSelected, $terminalPicked, $payment)
+    {
+        $terminalSelectionStatus = 'TERMINAL_SELECTION_MISMATCH';
+
+        $terminalPickedId = $terminalPicked->getId();
+
+        if ($terminalSelected)
+        {
+            $terminalSelectedId = $terminalSelected->getId();
+
+            if ($terminalSelectedId === $terminalPickedId)
+            {
+                $terminalSelectionStatus = 'TERMINAL_SELECTION_MATCH';
+            }
+        }
+        else
+        {
+            $terminalSelectedId = '';
+        }
+
+        $traceData = [
+            'picked'     => $terminalPickedId,
+            'selected'   => $terminalSelectedId,
+            'status'     => $terminalSelectionStatus,
+            'payment_id' => $payment->getId(),
+        ];
+
+        if ($terminalSelectionStatus === 'TERMINAL_SELECTION_MISMATCH')
+        {
+            $traceData['payment_id_link'] = $payment->getDashboardEntityLinkForSlack();
+
+            // $this->slackPost($terminalSelectionStatus, $traceData, ['channel' => '#dev-test']);
+
+            $this->trace->warn(TraceCode::TERMINAL_SELECTION_MISMATCH, $traceData);
+        }
+        else
+        {
+            $this->trace->info(TraceCode::TERMINAL_SELECTION, $traceData);
         }
     }
 
@@ -276,6 +352,8 @@ trait Authorize
 
     protected function runPaymentMethodRelatedPreProcessing($payment, & $input, array & $gatewayInput)
     {
+        $this->checkAndFillSavedAppToken($input);
+// sd($input);
         // First fetch the relevant customer
         list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp($input, $this->merchant);
 
@@ -386,7 +464,7 @@ trait Authorize
     protected function savePaymentMethod($customer, $payment, $input, array & $gatewayInput)
     {
         $saveMethodInput = array(
-            'method'      => $payment->getMethod(),
+            'method' => $payment->getMethod(),
         );
 
         if ($payment->isMethodCardOrEmi())
@@ -484,7 +562,21 @@ trait Authorize
         $emiPlan = (new Emi\Repository)->fetchByBankAndDuration(
                         $iinEntity->getIssuer(), $emiDuration);
 
-        $payment->setEmiPlanId($emiPlan->getId());
+        $payment->emiPlan()->associate($emiPlan);
+    }
+
+    protected function runPaymentGatewayRelatedPreProcessing($payment, $gatewayInput)
+    {
+        if (($payment->isMethodCardOrEmi() === true) and
+            ($payment->isGateway(Payment\Gateway::CYBERSOURCE) === true) and
+            ($payment->card->getVaultToken() === null))
+        {
+            $payment->card->setVaultToken(Card\Tokenex::getVaultToken($gatewayInput['card']['number']));
+
+            $payment->card->setVault(Card\Vault::TOKENEX);
+
+            (new Card\Repository)->saveOrFail($payment->card);
+        }
     }
 
     protected function getReturnRequestDataForMerchant($payment)
@@ -504,6 +596,26 @@ trait Authorize
         );
 
         return $data;
+    }
+
+    protected function checkAndFillSavedAppToken(array & $input)
+    {
+        if (isset($input['customer_id']) === true)
+        {
+            return;
+        }
+
+        if ($this->request->hasSession() === false)
+        {
+            return;
+        }
+
+        $appToken = $this->request->session()->get('app_token');
+
+        if ($appToken !== null)
+        {
+            $input['app_token'] = $appToken;
+        }
     }
 
     protected function getMerchantCallbackUrl($payment)
@@ -582,10 +694,10 @@ trait Authorize
     protected function getReturnDataForSignedPayment($payment)
     {
         $data = array(
-            'razorpay_payment_id'   => $payment->getPublicId(),
-            'amount'                => $payment->getAmount(),
-            'currency'              => $payment->getCurrency(),
-            'merchant_order_id'     => $payment->getNotes()['merchant_order_id'],
+            'razorpay_payment_id' => $payment->getPublicId(),
+            'amount'              => $payment->getAmount(),
+            'currency'            => $payment->getCurrency(),
+            'merchant_order_id'   => $payment->getNotes()['merchant_order_id'],
         );
 
         $sortedData = $data;
@@ -667,11 +779,13 @@ trait Authorize
 
         $this->trace->error(
             TraceCode::PAYMENT_CALLBACK_FAILURE,
-            ['payment_id' => $payment->getPublicId(),
-             'public_error_code' => $publicErrorCode,
-             'internal_error_code' => $internalErrorCode,
-             'error_description' => $errorDesc,
-             'message' => 'Failed to convert error code to the appropriate exception']);
+            [
+                'payment_id' => $payment->getPublicId(),
+                'public_error_code' => $publicErrorCode,
+                'internal_error_code' => $internalErrorCode,
+                'error_description' => $errorDesc,
+                'message' => 'Failed to convert error code to the appropriate exception'
+            ]);
 
         // If no appropriate exception mapping was found then show
         // the usual message that payment already processed.
@@ -976,6 +1090,9 @@ trait Authorize
             $this->repo->saveOrFail($payment);
             $this->repo->saveOrFail($payment->terminal);
 
+            //
+            // If gateway is authorizing the payment (basically, no authAndCapture support), create transaction.
+            //
             if ($this->isGatewayActuallyAuthorizingPayment($payment) === false)
             {
                 // Also sets the transaction association with the payment.
@@ -1017,7 +1134,7 @@ trait Authorize
 
     protected function getEncryptedGatewayText($gateway)
     {
-        return \Crypt::encrypt($gateway . '__' . time());
+        return Crypt::encrypt($gateway . '__' . time());
     }
 
 

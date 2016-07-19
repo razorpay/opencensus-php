@@ -129,7 +129,8 @@ class Settler
 
         // And on second saturdays due to bank leaves.
         // Marks as holiday in test mode as well
-        if (($today->dayOfWeek === Carbon::SATURDAY) and
+        if (($this->mode === Mode::LIVE) and
+            ($today->dayOfWeek === Carbon::SATURDAY) and
             (Holidays::isWorkingSaturday($today) === false))
         {
             return true;
@@ -424,18 +425,6 @@ class Settler
 
         $txns = $this->txnRepo->fetchUnsettledTransactions($ts);
 
-        foreach ($txns as $txn)
-        {
-            if ($txn->isTypePayment())
-            {
-                $payment = $txn->source;
-            }
-            else if ($txn->getType() === Transaction\Type::REFUND)
-            {
-                $payment = $txn->source->payment;
-            }
-        }
-
         return $txns;
     }
 
@@ -450,18 +439,6 @@ class Settler
         }
 
         $txns = $this->txnRepo->fetchUnsettledTransactionsForMerchant($ts, $merchant);
-
-        foreach ($txns as $txn)
-        {
-            if ($txn->isTypePayment())
-            {
-                $payment = $txn->source;
-            }
-            else if ($txn->getType() === Transaction\Type::REFUND)
-            {
-                $payment = $txn->source->payment;
-            }
-        }
 
         return $txns;
     }
