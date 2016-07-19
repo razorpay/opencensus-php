@@ -96,6 +96,8 @@ class Entity extends Base\PublicEntity
     );
 
     protected $public = array(
+        self::ID,
+        self::ENTITY,
         self::NAME,
         self::LAST4,
         self::NETWORK,
@@ -388,6 +390,8 @@ class Entity extends Base\PublicEntity
         $attributes = $this->toArrayPublic();
 
         $attributes = array_merge($attributes, $this->getTokenRelevantAttributes());
+
+        unset($attributes[self::ID]);
 
         return $attributes;
     }
