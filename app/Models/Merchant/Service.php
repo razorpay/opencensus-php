@@ -627,7 +627,8 @@ class Service extends Base\Service
         // sent will hold array of merchant data
         $response = ['sent' => [], 'skipped' => 0];
 
-        $counts = ['sent' => 0, 'skipped' => 0];
+        // Summary of merchants mailed
+        $mailedMerchantsSummary = ['sent' => [], 'sentCount' => 0, 'skippedCount' => 0];
 
         foreach ($merchants as $merchant)
         {
@@ -638,17 +639,20 @@ class Service extends Base\Service
             if (empty($sent))
             {
                 $response['skipped']++;
+                $mailedMerchantsSummary['skippedCount']++;
             }
             else
             {
                 $response['sent'][] = $sent;
+                $mailedMerchantsSummary['sentCount']++;
+                $mailedMerchantsSummary['sent'][] = $sent['merchant']['id'];
             }
         }
 
         // Log just the result of the settlement reports
         $this->trace->info(
             TraceCode::SETTLEMENT_DAILY_REPORT_RESULT,
-            $response
+            $mailedMerchantsSummary
         );
 
         return $response;
