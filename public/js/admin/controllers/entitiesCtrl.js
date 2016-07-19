@@ -323,7 +323,7 @@ app.controller('EntitiesCtrl', [
         merchant_id: ['Merchant Id'],
         card_id: ['Card Id'],
         method: methodList,
-        terminal: ['Terminal Id'],
+        terminal_id: ['Terminal Id'],
         bank: ['Bank Code'],
         wallet: walletList
       },
