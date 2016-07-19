@@ -105,6 +105,8 @@ trait Capture
      */
     protected function captureOnGateway($data)
     {
+        $this->verifyOrderUnpaid($this->payment);
+
         try
         {
             try
@@ -119,8 +121,6 @@ trait Capture
 
                 $this->app['queue']->push('RZP\Jobs\Capture', ['data' => $data]);
             }
-
-            $this->verifyOrderUnpaid($this->payment);
 
             $this->recordCapture();
         }
@@ -200,16 +200,13 @@ trait Capture
 
     protected function verifyOrderUnpaid($payment)
     {
-        // TODO: verify if this is okay to do.
-        // Doing this because we do eager loading and
-        // this payment may not actually have the updated order
-        // associated with it.
-        $order = $payment->reload()->order;
+        $order = $this->repo->order->getOrderForPayment($payment);
 
-        if (isset($order) and ($order->getStatus() === Order\Status::PAID))
+        if ((empty($order) === false) and
+            ($order->getStatus() === Order\Status::PAID))
         {
             throw new Exception\BadRequestValidationFailureException(
-            'Corresponding order already has a captured payment.');
+                'Corresponding order already has a captured payment.');
         }
     }
 

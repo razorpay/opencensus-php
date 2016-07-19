@@ -904,6 +904,11 @@ class Entity extends Base\PublicEntity
         return false;
     }
 
+    public function getApiOrderId()
+    {
+        return $this->getAttribute(self::ORDER_ID);
+    }
+
     public function setPublicOrderIdAttribute(Array & $array)
     {
         if (isset($array[self::ORDER_ID]))
