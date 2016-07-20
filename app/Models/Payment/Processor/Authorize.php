@@ -190,13 +190,13 @@ trait Authorize
 
             // Terminal selected is now only used to validate any mistakes across each.
             $terminalSelected = (new Terminal\Selector)->select($payment, $this->mode, $verbose);
+
+            $this->logTerminalPickedAndSelected($terminalSelected, $terminalPicked, $payment);
         }
         catch (\Exception $e)
         {
             $this->trace->traceException($e, Trace::INFO, TraceCode::TERMINAL_SELECTION_MISMATCH);
         }
-
-        $this->logTerminalPickedAndSelected($terminalSelected, $terminalPicked, $payment);
 
         $this->runPaymentGatewayRelatedPreProcessing($payment, $gatewayInput);
 
