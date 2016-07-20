@@ -17,14 +17,10 @@ use RZP\Constants\HashAlgo;
 use Carbon\Carbon;
 use RZP\Gateway\Wallet\Olamoney\RequestFields as RequestFields;
 use RZP\Gateway\Wallet\Olamoney\ResponseFields as ResponseFields;
-use RZP\Gateway\Wallet\Olamoney\Enquiry;
-use RZP\Gateway\Wallet\Olamoney\Refund;
 
 class Gateway extends Base\Gateway
 {
     use AuthorizeFailed;
-    use Enquiry;
-    use Refund;
 
     protected $gateway = 'wallet_olamoney';
 
@@ -295,6 +291,192 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
+    protected function verifyPayment($verify)
+    {
+        // api wallet gateway entity
+        $walletPayment = $verify->payment;
+
+        $input = $verify->input;
+
+        // Response received from wallet gateway
+        // Possible $verifyResponse status values - completed, failed, initialized, error
+        $verifyResponse = $verify->verifyResponseContent;
+
+        $verify->status = VerifyResult::STATUS_MATCH;
+
+        if ($verifyResponse[ResponseFields::STATUS] === Status::COMPLETED)
+        {
+            $this->checkVerifyStatusOnGatewaySuccess($walletPayment, $input, $verify);
+        }
+        else
+        {
+            $this->checkVerifyStatusOnGatewayFail($walletPayment, $input, $verify);
+        }
+
+        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
+
+        if ($verify->match === false)
+        {
+            $verify->payment = $this->saveVerifyContent($walletPayment,
+                                                        $verifyResponse);
+        }
+
+        return $verify->status;
+    }
+
+    protected function checkVerifyStatusOnGatewayFail($walletPayment, $input, $verify)
+    {
+        $verify->gatewaySuccess = false;
+
+        $verifyResponse = $verify->verifyResponseContent;
+
+        if (in_array($verifyResponse[ResponseFields::STATUS],
+                array(Status::INITIATED, Status::FAILED)))
+        {
+            if (($walletPayment === null) and
+                (($input['payment']['status'] === PaymentStatus::FAILED) or
+                 ($input['payment']['status'] === PaymentStatus::CREATED)))
+            {
+                $verify->apiSuccess = false;
+            }
+            else if ($walletPayment !== null)
+            {
+                if (($walletPayment['received'] === false) and
+                ($walletPayment['status_code'] === null or
+                    $walletPayment['status_code'] !== Status::SUCCESS))
+                {
+                    $verify->apiSuccess = false;
+                }
+                else if ($walletPayment['status'] === Status::SUCCESS)
+                {
+                    $verify->status = VerifyResult::STATUS_MISMATCH;
+                    $verify->apiSuccess = true;
+                }
+            }
+        }
+    }
+
+    protected function checkVerifyStatusOnGatewaySuccess($walletPayment, $input, $verify)
+    {
+        $verify->gatewaySuccess = true;
+
+        // $input['payment'] is api payment entity
+        if (($input['payment']['status'] !== PaymentStatus::CREATED) and
+            ($input['payment']['status'] !== PaymentStatus::FAILED) and
+            ($walletPayment !== null) and
+            $walletPayment['status_code'] === Status::SUCCESS)
+        {
+            $verify->apiSuccess = true;
+        }
+        else
+        {
+            $verify->status = VerifyResult::STATUS_MISMATCH;
+            $verify->apiSuccess = false;
+        }
+    }
+
+    protected function saveVerifyContent($walletPayment, $verifyResponse)
+    {
+        $this->action = Action::AUTHORIZE;
+
+        if (isset($verifyResponse[ResponseFields::STATUS]) and
+            ($verifyResponse[ResponseFields::STATUS] === Status::COMPLETED))
+        {
+            $walletAttributes = $this->getVerifyWalletCreateAttributes($verifyResponse);
+
+            if ($walletPayment === null)
+            {
+                $walletPayment = $this->createGatewayPaymentEntity($walletAttributes);
+            }
+            else if (($walletPayment['received'] === false) or
+                ($walletPayment['status'] !== Status::SUCCESS))
+            {
+                $walletPayment->fill($walletAttributes);
+                $walletPayment->saveOrFail();
+            }
+        }
+
+        $this->action = Action::VERIFY;
+
+        return $walletPayment;
+    }
+
+    protected function getVerifyWalletCreateAttributes($verifyResponse)
+    {
+        $payment = $this->input['payment'];
+
+        $contentToSave = array(
+            'amount'                => $payment['amount'],
+            'received'              => true,
+            'email'                 => $payment['email'],
+            'contact'               => $this->getFormattedContact($payment['contact']),
+            'gateway_merchant_id'   => $this->getMerchantId($this->input['terminal']),
+            'status'                => Status::SUCCESS,
+            'transactionId'         => $verifyResponse['uniqueBillId'],
+        );
+
+        return $contentToSave;
+    }
+
+    protected function sendPaymentVerifyRequest($verify)
+    {
+        $input = $verify->input;
+
+        $request = $this->getVerifyRequestArray($input);
+
+        $response = $this->sendGatewayRequest($request);
+
+        // $this->response = $response;
+
+        $content = $this->jsonToArray($response->body);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            [
+                'content' => $content,
+                'gateway' => 'wallet_olamoney',
+                'payment_id' => $input['payment']['id'],
+            ]);
+
+        $verify->verifyResponse = $response;
+
+        $verify->verifyResponseBody = $response->body;
+
+        $verify->verifyResponseContent = $content;
+
+        return $content;
+    }
+
+    protected function getVerifyRequestArray($input)
+    {
+        $content = array(
+            RequestFields::UNIQUE_BILL_ID   => $input['payment']['id'],
+            RequestFields::ACCESS_TOKEN     => $this->getAccessToken($input['terminal']),
+            RequestFields::TIMESTAMP        => Carbon::now('Asia/Kolkata')->format('Y-m-d H:i:s'),
+            );
+
+        $content[RequestFields::HASH] = $this->getHashForVerifyRequest($content);
+
+        $request = $this->getStandardRequestArray($content, 'GET');
+
+        return $request;
+    }
+
+    protected function getHashForVerifyRequest($content)
+    {
+        $str = $content[RequestFields::ACCESS_TOKEN] . '|';
+        $str .= $content[RequestFields::UNIQUE_BILL_ID] . '||';
+        $str .= $content[RequestFields::TIMESTAMP] . '|||';
+        $str .= $this->getSecret();
+
+        return $this->getHashOfString($str);
+    }
+
+    protected function shouldReturnIfPaymentNullInVerifyFlow($verify)
+    {
+        return false;
+    }
+
     public function refund(array $input)
     {
         parent::refund($input);
@@ -318,6 +500,87 @@ class Gateway extends Base\Gateway
                 $content[ResponseFields::STATUS],
                 $content[ResponseFields::MESSAGE]);
         }
+    }
+
+    protected function createWalletRefundEntity($content, $input)
+    {
+        $refundAttributes = $this->getRefundEntityAttributesFromRefundResponse($content, $input);
+
+        return $this->createGatewayRefundEntity($refundAttributes);
+    }
+
+    protected function getRefundEntityAttributesFromRefundResponse($content, $input)
+    {
+        $gateway_refund_id = isset($content[ResponseFields::TRANSACTION_ID]) ? $content[ResponseFields::TRANSACTION_ID] : null;
+
+        $response_code = isset($content[ResponseFields::ERROR_CODE]) ? $content[ResponseFields::ERROR_CODE] : null;
+
+        $error_message = isset($content[ResponseFields::MESSAGE]) ? $content[ResponseFields::MESSAGE] : null;
+
+        $refundAttributes = array(
+            'payment_id'            => $input['payment']['id'],
+            'action'                => $this->action,
+            'amount'                => $input['payment']['amount'],
+            'received'              => 1,
+            'wallet'                => $input['payment']['wallet'],
+            'email'                 => $input['payment']['email'],
+            'contact'               => $input['payment']['contact'],
+            'gateway_merchant_id'   => $this->getMerchantId($input['terminal']),
+            'gateway_refund_id'     => $gateway_refund_id,
+            'refund_id'             => $input['refund']['id'],
+            'response_code'         => $response_code,
+            'status_code'           => $content[ResponseFields::STATUS],
+            'error_message'         => $error_message,
+        );
+
+        return $refundAttributes;
+    }
+
+    protected function getRefundRequest($input)
+    {
+        $content = array(
+            RequestFields::COMMAND          => Command::REFUND,
+            RequestFields::ACCESS_TOKEN     => $this->getAccessToken($input['terminal']),
+            RequestFields::UNIQUE_ID        => $input['refund']['id'],
+            RequestFields::COMMENTS         => 'Razorpay_refund',
+            RequestFields::UDF              => $input['payment']['public_id'],
+            RequestFields::RETURN_URL       => '',
+            RequestFields::NOTIFICATION_URL => '',
+            RequestFields::AMOUNT           => (string) ($input['refund']['amount'] / 100),
+            RequestFields::BALANCE_TYPE     => 'cash',
+            RequestFields::BALANCE_NAME     => 'cash',
+            RequestFields::SALE_ID          => $input['payment']['id'],
+            RequestFields::CURRENCY         => $input['payment']['currency'],
+        );
+
+        $content[RequestFields::HASH] = $this->getHashForRefundRequest($content);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $request['headers'] = $this->getRequestHeaders();
+
+        return $request;
+    }
+
+    protected function getHashForRefundRequest(array $content)
+    {
+        $fieldsInOrder = array(
+            RequestFields::ACCESS_TOKEN,
+            RequestFields::UNIQUE_ID,
+            RequestFields::COMMENTS,
+            RequestFields::UDF,
+            RequestFields::RETURN_URL,
+            RequestFields::NOTIFICATION_URL,
+            RequestFields::CURRENCY,
+            RequestFields::AMOUNT,
+            RequestFields::BALANCE_TYPE,
+            RequestFields::BALANCE_NAME,
+            RequestFields::SALE_ID,
+        );
+
+        $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
+
+        return $this->getHashOfArray($orderedData);
     }
 
     protected function getAccessToken($terminal)
