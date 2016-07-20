@@ -107,6 +107,8 @@ trait Capture
     {
         $this->verifyOrderUnpaid($this->payment);
 
+        $paymentCopy = $this->payment->replicate();
+
         try
         {
             try
@@ -126,6 +128,15 @@ trait Capture
         }
         catch (Exception\BaseException $ex)
         {
+            //
+            // We need to use the old payment
+            // because the recordCapture would have made some changes
+            // to payment entity but not committed due to which payment
+            // entity will have corrupted data
+            //
+
+            $this->payment = $paymentCopy;
+
             $this->updatePaymentFailed(
                     $ex->getError(),
                     TraceCode::PAYMENT_CAPTURE_FAILURE);
