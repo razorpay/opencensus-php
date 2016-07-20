@@ -236,7 +236,6 @@ app.controller('EntityDetailCtrl', [
           'emi_plan',
           'hdfc',
           'iin',
-          'kotak',
           'merchant',
           'methods',
           'mobikwik',

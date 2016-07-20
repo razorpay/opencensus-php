@@ -59,6 +59,22 @@ class Service extends Base\Service
         return array($error, $collection);
     }
 
+    public function fetchCardDetails($paymentId, $mode)
+    {
+        $data = $error = [];
+        try
+        {
+            $this->setApiCredentials($this->merchantId, $mode);
+            $data = $this->api->payment->fetch($paymentId)->card()->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error = $e->getMessage();
+        }
+
+        return [$error, $data];
+    }
+
     public function fetchCollection(array $input, $mode, $entity)
     {
         $method = 'fetchCollection' . $entity;
