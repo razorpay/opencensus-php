@@ -333,6 +333,18 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         return $rowDetails;
     }
 
+    /**
+     * For wallets and netbanking, there will be no card, hence we
+     * send an empty array for these payment methods.
+     *
+     * @param $row
+     * @return array
+     */
+    protected function getCardDetails($row)
+    {
+        return [];
+    }
+
     protected function setPaymentAndTransaction($row, $paymentId)
     {
         try
@@ -412,7 +424,36 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             $this->persistCardTrivia($cardDetails[BaseReconciliate::CARD_TRIVIA]);
         }
 
+        if (empty($cardDetails[BaseReconciliate::ISSUER]) === false)
+        {
+            $this->persistIssuer($cardDetails[BaseReconciliate::ISSUER]);
+        }
+
         $this->repo->saveOrFail($this->paymentIin);
+    }
+
+    protected function persistIssuer($reconIssuer)
+    {
+        $iinIssuer = $this->paymentIin->getIssuer();
+
+        if (empty($iinIssuer) === true)
+        {
+            $this->paymentIin->setIssuer($reconIssuer);
+        }
+        else
+        {
+            $this->app['trace']->info(
+                TraceCode::RECON_INFO,
+                [
+                    'info_code'    => 'IIN_ISSUER_ALREADY_PRESENT',
+                    'message'      => 'IIN already contains issuer. Not updating it.',
+                    'payment_id'   => $this->payment->getId(),
+                    'iin_id'       => $this->paymentIin->getKey(),
+                    'recon_issuer' => $reconIssuer,
+                    'iin_issuer'   => $iinIssuer,
+                    'gateway'      => get_called_class()
+                ]);
+        }
     }
 
     protected function persistCardTrivia($reconCardTrivia)
@@ -530,6 +571,16 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             IIN\Entity::TYPE    => $reconCardType,
             IIN\Entity::COUNTRY => $countryCode,
         ];
+
+        if (empty($reconCardDetails[BaseReconciliate::ISSUER]) === false)
+        {
+            $entityAttributes[IIN\Entity::ISSUER] = $reconCardDetails[BaseReconciliate::ISSUER];
+        }
+
+        if (empty($reconCardDetails[BaseReconciliate::CARD_TRIVIA]) === false)
+        {
+            $entityAttributes[IIN\Entity::TRIVIA] = $reconCardDetails[BaseReconciliate::CARD_TRIVIA];
+        }
 
         $iin = (new IIN\Entity())->build($entityAttributes);
 
