@@ -449,7 +449,7 @@ trait Authorize
         // Flow if card details are entered with save set to true/false
         $saveMethod = ((isset($input['save'])) and (boolval($input['save']) === true));
 
-        if ($saveMethod === false)
+        if (($customer === null) or ($saveMethod === false))
         {
             // No card saving, normal simple flow
             if ($payment->isMethodCardOrEmi())
