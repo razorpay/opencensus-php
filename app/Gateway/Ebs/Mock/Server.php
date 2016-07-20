@@ -50,6 +50,36 @@ class Server extends Base\Mock\Server
         return $this->makePostResponse($request);
     }
 
+    public function refund($input)
+    {
+        parent::refund($input);
+        $this->validateActionInput($input, 'refund');
+        $payment = $this->getRepo()->findByEbsPaymentIdAndActionOrFail(
+            $input['PaymentID'], Action::AUTHORIZE);
+        $fields = $this->getGatewayInstance()->getFieldsForAction('refund');
+        $date = Carbon::today('Asia/Kolkata')->format('d-m-Y H:i:s');
+
+        $arr = array(
+            '<output response="SUCCESS" transactionId="',
+            $payment["TransactionID"],
+            '" paymentId="',
+            $payment["ebs_payment_id"],
+            '" amount="',
+            $input['Amount'],
+            '" dateTime="',
+            $date,
+            '" mode="',
+            $payment["mode"],
+            '" referenceNo="',
+            $payment["payment_id"],
+            '" transactionType="refunded" status="Processing"/>',
+        );
+
+        $content = implode($arr);
+
+            return $this->makeResponse($content);
+    }
+
 
     protected function makeRequest($request)
     {

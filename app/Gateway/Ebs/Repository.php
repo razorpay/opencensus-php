@@ -26,4 +26,13 @@ class Repository extends Base\Repository
         return $repo::where('refundId', '=', $gatewayRefundId)
                     ->firstOrFail();
     }
+
+    public function findByEbsPaymentIdAndActionOrFail($paymentId, $action)
+    {
+
+        return $this->newQuery()
+            ->where('ebs_payment_id', '=', $paymentId)
+            ->where('action', '=', $action)
+            ->firstOrFail();
+    }
 }

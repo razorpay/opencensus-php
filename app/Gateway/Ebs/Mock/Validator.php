@@ -46,6 +46,11 @@ class Validator extends Base\Validator
     );
 
     protected static $refundRules = array(
-        'secure_hash'                  => 'required|alpha_num',
+        'Action'        =>  'required|alpha_num',
+        'AccountID' =>'required|alpha_num',
+        'SecretKey' =>'required|alpha_num',
+        'Amount'    =>'required|',
+        'PaymentID' =>'required|alpha_num',
+
     );
 }

@@ -121,12 +121,11 @@ class Gateway extends Base\Gateway
             'url' => $this->getUrl($this->action),
             'method' => 'post',
             'content' => $content);
-
         $response = $this->sendGatewayRequest($request);
+
         $resp = Utility::parseResponseXml($response->body);
         //TODO fix split with space
-
-        if (array_key_exists('error', $resp))
+        if ($resp['error'] !== false)
         {
             $this->trace->error(
                 TraceCode::PAYMENT_REFUND_FAILURE,
@@ -252,9 +251,11 @@ class Gateway extends Base\Gateway
         {
             $ret_val = '3';
         }
-
-        $mode = $input['card']['type'];
-        //TODO FIX me for all cases
+        else
+        {
+            $mode = $input['card']['type'];
+            //TODO FIX me for all cases
+        }
 
         return $ret_val;
 

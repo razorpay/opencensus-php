@@ -50,4 +50,22 @@ class EbsGatewayTest extends TestCase
         $this->assertArraySelectiveEquals(
             $this->testData['testPaymentEbsEntity'], $payment);
     }
+
+    public function testPaymentRefund()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment = $this->doAuthPayment($payment);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertArraySelectiveEquals(
+            $this->testData['testTransactionAfterAuthorize'], $txn);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('txn_'.$payment['transaction_id'], $txn['id']);
+
+        $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
+        $this->refundPayment($payment['id']);
+        $refund = $this->getLastEntity('ebs', true);
+        $this->assertTestResponse($refund);
+    }
 }
