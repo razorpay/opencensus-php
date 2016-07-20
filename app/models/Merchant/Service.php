@@ -184,12 +184,35 @@ class Service extends Base\Service
             return [[static::EMAIL_CHANGE_FORBIDDEN], null];
         }
 
-        $originalEmail = $merchant->email;
         $error = $merchant->changeEmail($input);
 
         if (empty($error))
         {
-            if ($merchant->hasUsers())
+            $this->handleUserEmailChange($merchant, $input); //This handles different cases of 'user' email change.
+
+            $merchant->saveOrFail();
+            $merchantDetails = $merchant->merchantDetails;
+            $merchantDetails->contact_email = $merchant->email;
+            $merchantDetails->save();
+        }
+
+        return [$error, null];
+    }
+
+    /**
+    This handles 3 possible cases when changing user email. 
+    1. There exists a team member with the new email
+        Here, we swap the roles of the team member(manager) with new email and the original owner
+    2. There exists a user(not team member) with the new email
+        Here, we change the original owner to manager and then add the user with new email as owner
+    3. The new email is unique so far
+        Here, we just change the email of the original user(owner).
+    */
+    protected function handleUserEmailChange($merchant, $input)
+    {
+        $originalEmail = $merchant->email;
+
+        if ($merchant->hasUsers())
             {
                 $teamUser = $merchant->users()->where('email', $input['email'])->first();
 
@@ -222,14 +245,6 @@ class Service extends Base\Service
                     $selfUser->saveOrFail();
                 }
             }
-
-            $merchant->saveOrFail();
-            $merchantDetails = $merchant->merchantDetails;
-            $merchantDetails->contact_email = $merchant->email;
-            $merchantDetails->save();
-        }
-
-        return [$error, null];
     }
 
     /**

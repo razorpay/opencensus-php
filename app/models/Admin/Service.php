@@ -495,12 +495,12 @@ class Service extends Base\Service
 
         try
         {
-            $existingMerchant = Merchant\Entity::getMerchantWithEmail($input[Merchant\Entity::EMAIL]);
+            $existingMerchant = Merchant\Entity::getMerchantFromEmail($input[Merchant\Entity::EMAIL]);
 
             if ($existingMerchant !== null)
             {
                 $error[] = "Merchant already exists with this email id.";
-                return array($error, $data);
+                return [$error, $data];
             }
 
             $data = $this->api->merchant->fetch($id)->editEmail($input)->toArray();
