@@ -167,7 +167,8 @@ class TerminalPicker
         {
             $terminal = $this->selectSharedTPVTerminal($category);
 
-            if ($terminal === null)
+            if (($terminal === null) and
+                ($this->mode === Mode::LIVE))
             {
                 throw new Exception\ServerErrorException(
                     'A terminal with support for third party validation was not found.',
@@ -636,12 +637,19 @@ class TerminalPicker
 
     protected function selectSharedTPVTerminal($category)
     {
+        $terminal = null;
+
         $gateway = Gateway::BILLDESK;
 
         $sharedTerminal = $this->repo->getSharedTerminalForGatewayWithCategory(
                                     $gateway, $category);
 
-        return $this->terminalExists($sharedTerminal->getId());
+        if (empty($sharedTerminal) === false)
+        {
+            $terminal = $this->terminalExists($sharedTerminal->getId());
+        }
+
+        return $terminal;
     }
 
     protected function terminalExists($terminal)
