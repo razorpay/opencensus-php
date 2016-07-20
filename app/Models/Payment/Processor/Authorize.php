@@ -190,13 +190,13 @@ trait Authorize
 
             // Terminal selected is now only used to validate any mistakes across each.
             $terminalSelected = (new Terminal\Selector)->select($payment, $this->mode, $verbose);
+
+            $this->logTerminalPickedAndSelected($terminalSelected, $terminalPicked, $payment);
         }
         catch (\Exception $e)
         {
             $this->trace->traceException($e, Trace::INFO, TraceCode::TERMINAL_SELECTION_MISMATCH);
         }
-
-        $this->logTerminalPickedAndSelected($terminalSelected, $terminalPicked, $payment);
 
         $this->runPaymentGatewayRelatedPreProcessing($payment, $gatewayInput);
 
@@ -449,7 +449,7 @@ trait Authorize
         // Flow if card details are entered with save set to true/false
         $saveMethod = ((isset($input['save'])) and (boolval($input['save']) === true));
 
-        if ($saveMethod === false)
+        if (($customer === null) or ($saveMethod === false))
         {
             // No card saving, normal simple flow
             if ($payment->isMethodCardOrEmi())
