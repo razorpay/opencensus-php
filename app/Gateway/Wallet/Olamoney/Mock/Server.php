@@ -6,6 +6,7 @@ use RZP\Gateway\Base;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Gateway\Wallet\Olamoney;
+use RZP\Gateway\Wallet\Olamoney\Command;
 
 class Server extends Base\Mock\Server
 {
@@ -27,6 +28,7 @@ class Server extends Base\Mock\Server
             'udf'               => $bill['udf'],
             'timestamp'         => time(),
         );
+
         $content['hash'] = $this->generateHash($content);
 
         $request = array(
@@ -34,14 +36,15 @@ class Server extends Base\Mock\Server
             'content' => $content,
             'method' => 'post',
         );
-        return $this->makePostResponse($request, 'application/x-www-form-urlencoded');
+
+        return $this->makePostResponse($request);
     }
 
     public function refund($input)
     {
         parent::refund($input);
 
-        $this->validateActionInput($input, 'refund');
+        $this->validateActionInput($input, Command::REFUND);
 
         $responseContent = array(
             'type'              => 'refund',

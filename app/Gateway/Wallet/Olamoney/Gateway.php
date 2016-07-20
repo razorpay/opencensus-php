@@ -13,6 +13,8 @@ use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Wallet\Olamoney\Action;
 use RZP\Models\Payment\Status as PaymentStatus;
+use RZP\Constants\HashAlgo;
+use Carbon\Carbon;
 
 class Gateway extends Base\Gateway
 {
@@ -48,7 +50,7 @@ class Gateway extends Base\Gateway
         return $this->callbackRedirectFlow($input);
     }
 
-    public function callbackRedirectFlow($input)
+    protected function callbackRedirectFlow($input)
     {
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $input['gateway']);
 
@@ -148,7 +150,7 @@ class Gateway extends Base\Gateway
 
             if (isset($content['errorCode']))
             {
-                $errorCode = ResponseCodeMap::getApiErrorCode($content['errorCode']);
+                $errorCode = ResponseCode::getApiErrorCode($content['errorCode']);
             }
 
             // Payment fails, throw exception
@@ -175,7 +177,7 @@ class Gateway extends Base\Gateway
 
         if ($content['status'] !== Status::SUCCESS)
         {
-            $errorCode = ResponseCodeMap::getApiErrorCode($content['errorCode']);
+            $errorCode = ResponseCode::getApiErrorCode($content['errorCode']);
 
             // Payment fails, throw exception
             throw new Exception\GatewayErrorException(
@@ -183,8 +185,6 @@ class Gateway extends Base\Gateway
                 $content['status'],
                 $content['message']);
         }
-
-        return $data;
     }
 
     protected function getBillGeneratorRequest($input)
@@ -192,9 +192,9 @@ class Gateway extends Base\Gateway
         $content = $this->getOtpGenerateAttributes($input);
 
         $queryArray = array(
-                        'bill'   => base64_encode(json_encode($content)),
-                        'phone'  => $input['payment']['contact'],
-                    );
+            'bill'   => base64_encode(json_encode($content)),
+            'phone'  => $input['payment']['contact'],
+        );
 
         $query = http_build_query($queryArray);
 
@@ -238,7 +238,7 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
-        $request['headers'] = ['Content-Type' => 'application/json'];
+        $request['headers'] = $this->getRequestHeaders();
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
 
@@ -296,7 +296,7 @@ class Gateway extends Base\Gateway
 
         if ($verifyResponse['status'] === Status::COMPLETED)
         {
-            $this->checkVerifyStatusOnGatewaySuccess($input, $verify);
+            $this->checkVerifyStatusOnGatewaySuccess($walletPayment, $input, $verify);
         }
         else
         {
@@ -305,7 +305,7 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
 
-        if (!$verify->match)
+        if ($verify->match === false)
         {
             $verify->payment = $this->saveVerifyContent($walletPayment,
                                                         $verifyResponse);
@@ -317,6 +317,8 @@ class Gateway extends Base\Gateway
     protected function checkVerifyStatusOnGatewayFail($walletPayment, $input, $verify)
     {
         $verify->gatewaySuccess = false;
+
+        $verifyResponse = $verify->verifyResponseContent;
 
         if (in_array($verifyResponse['status'], array(Status::INITIATED, Status::FAILED)))
         {
@@ -343,13 +345,15 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function checkVerifyStatusOnGatewaySuccess($input, $verify)
+    protected function checkVerifyStatusOnGatewaySuccess($walletPayment, $input, $verify)
     {
         $verify->gatewaySuccess = true;
 
         // $input['payment'] is api payment entity
         if (($input['payment']['status'] !== PaymentStatus::CREATED) and
-            ($input['payment']['status'] !== PaymentStatus::FAILED))
+            ($input['payment']['status'] !== PaymentStatus::FAILED) and
+            ($walletPayment !== null) and
+            $walletPayment['status_code'] === Status::SUCCESS)
         {
             $verify->apiSuccess = true;
         }
@@ -364,16 +368,17 @@ class Gateway extends Base\Gateway
     {
         $this->action = Action::AUTHORIZE;
 
-        if (isset($verifyResponse['status']) and $verifyResponse['status'] === Status::COMPLETED)
+        if (isset($verifyResponse['status']) and
+            ($verifyResponse['status'] === Status::COMPLETED))
         {
-            $walletAttributes = $this->getVerifyWalletCreateAttributes($walletPayment,
-                $verifyResponse);
+            $walletAttributes = $this->getVerifyWalletCreateAttributes($verifyResponse);
 
             if ($walletPayment === null)
             {
                 $walletPayment = $this->createGatewayPaymentEntity($walletAttributes);
             }
-            else if ($walletPayment['received'] === false or $walletPayment['status'] !== Status::SUCCESS)
+            else if (($walletPayment['received'] === false) or
+                ($walletPayment['status'] !== Status::SUCCESS))
             {
                 $walletPayment->fill($walletAttributes);
                 $walletPayment->saveOrFail();
@@ -385,12 +390,12 @@ class Gateway extends Base\Gateway
         return $walletPayment;
     }
 
-    protected function getVerifyWalletCreateAttributes($walletPayment, $verifyResponse)
+    protected function getVerifyWalletCreateAttributes($verifyResponse)
     {
         $payment = $this->input['payment'];
 
         $contentToSave = array(
-            'amount'                => (string) ($payment['amount']),
+            'amount'                => $payment['amount'],
             'received'              => true,
             'email'                 => $payment['email'],
             'contact'               => $this->getFormattedContact($payment['contact']),
@@ -436,7 +441,7 @@ class Gateway extends Base\Gateway
         $content = array(
             'uniqueBillId' => $input['payment']['id'],
             'accessToken' => $this->getAccessToken($input['terminal']),
-            'timestamp' => date('Y/m/d h:m:s'),
+            'timestamp' => Carbon::now('Asia/Kolkata')->format('Y-m-d H:i:s'),
             );
 
         $content['hash'] = $this->getHashForVerifyRequest($content);
@@ -530,7 +535,7 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
-        $request['headers'] = ['Content-Type' => 'application/json'];
+        $request['headers'] = $this->getRequestHeaders();
 
         return $request;
     }
@@ -563,7 +568,7 @@ class Gateway extends Base\Gateway
             return $this->config['test_access_code'];
         }
 
-        return $terminal['gateway_merchant_id'];
+        return $terminal['gateway_access_code'];
     }
 
     protected function getMerchantId($terminal)
@@ -624,7 +629,7 @@ class Gateway extends Base\Gateway
 
     protected function getHashOfString($str)
     {
-        return strtolower(hash('sha512', $str, false));
+        return strtolower(hash(HashAlgo::SHA512, $str));
     }
 
     protected function getRelativeUrl($type)
@@ -636,6 +641,11 @@ class Gateway extends Base\Gateway
         $contact = $this->input['payment']['contact'];
 
         return strtr($url, [':contact' => $this->getFormattedContact($contact)]);
+    }
+
+    protected function getRequestHeaders()
+    {
+        return ['Content-Type' => 'application/json'];
     }
 
     protected function shouldReturnIfPaymentNullInVerifyFlow($verify)

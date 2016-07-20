@@ -20,6 +20,7 @@ use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Wallet\Payumoney\Action;
 use RZP\Gateway\Wallet\Payumoney\ResponseCodeMap;
+use RZP\Constants\HashAlgo;
 
 class Gateway extends Base\Gateway
 {
@@ -278,12 +279,6 @@ class Gateway extends Base\Gateway
         }
     }
 
-    /**
-     * This function must throw an exception in
-     * case the payment didn't succeed
-     * @param  array  $input [description]
-     * @return [type]        [description]
-     */
     public function callbackOtpSubmit(array $input)
     {
         $this->action($input, Action::OTP_SUBMIT);
@@ -751,7 +746,7 @@ class Gateway extends Base\Gateway
 
     protected function getHashOfString($str)
     {
-        return strtolower(hash('sha512', $str, false));
+        return strtolower(hash(HashAlgo::SHA512, $str, false));
     }
 
     protected function getWalletContentFromVerify($payment, array $content)

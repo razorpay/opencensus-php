@@ -10,6 +10,7 @@ use RZP\Gateway\Kotak;
 use Requests;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use RZP\Constants\HashAlgo;
 
 class Gateway extends Base\Gateway
 {
@@ -188,6 +189,6 @@ class Gateway extends Base\Gateway
     {
         $str = $this->getSecret() . $str;
 
-        return hash('sha256', $str, false);
+        return hash(HashAlgo::SHA256, $str, false);
     }
 }

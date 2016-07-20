@@ -242,6 +242,7 @@ class Terminal extends Base
             'gateway_access_code'       => '111111',
             'gateway_secure_secret'     => 'secret',
         );
+
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
@@ -261,6 +262,7 @@ class Terminal extends Base
             'gateway_access_code'       => '111111',
             'gateway_secure_secret'     => 'secret',
         );
+
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 

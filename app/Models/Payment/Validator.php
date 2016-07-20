@@ -57,21 +57,21 @@ class Validator extends Base\Validator
 
     protected function validateWallet($input)
     {
-        if ($input['method'] === Payment\Method::WALLET)
+        if ($input['method'] !== Payment\Method::WALLET)
         {
-            if (!isset($input['wallet']))
-            {
-                throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_PROVIDED);
-            }
-
-            if (Wallet::exists($input['wallet']) === false)
-            {
-                throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_VALID);
-            }
-
             return true;
+        }
+
+        if (isset($input['wallet']) === false)
+        {
+            throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_PROVIDED);
+        }
+
+        if (Wallet::exists($input['wallet']) === false)
+        {
+            throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_SUPPORTED);
         }
 
         return true;

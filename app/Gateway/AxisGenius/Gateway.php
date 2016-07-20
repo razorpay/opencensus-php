@@ -11,6 +11,7 @@ use RZP\Gateway\AxisGenius;
 use Requests;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use RZP\Constants\HashAlgo;
 
 class Gateway extends AxisMigs\Gateway
 {
@@ -93,7 +94,7 @@ class Gateway extends AxisMigs\Gateway
     {
         $str = $this->getSecret() . $str;
 
-        return strtoupper(hash('sha256', $str, false));
+        return strtoupper(hash(HashAlgo::SHA256, $str, false));
     }
 
     protected function getAmaTxnResponseContent($response)

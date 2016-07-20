@@ -31,7 +31,7 @@ class Validator extends Base\Validator
     protected static $verifyRules = array(
         'uniqueBillId'  => 'required|string',
         'accessToken'   => 'required|string',
-        'timestamp'     => 'required|date_format:Y/m/d h:m:s',
+        'timestamp'     => 'required|date_format:Y-m-d H:i:s',
         'hash'          => 'required|string',
     );
 }
