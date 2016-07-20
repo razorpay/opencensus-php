@@ -19,6 +19,12 @@ class Repository extends Base\Repository
         App\Entity::DEVICE_TOKEN  => 'sometimes|string|size:14',
     );
 
+    protected $appFetchParamRules = array(
+        Entity::CUSTOMER_ID     => 'sometimes|alpha_num',
+        Entity::MERCHANT_ID     => 'sometimes|alpha_num',
+        Entity::DEVICE_TOKEN    => 'sometimes|alpha_num',
+    );
+
     public function isMerchantIdRequiredForFetch()
     {
         return false;

@@ -96,11 +96,12 @@ class Entity extends Base\PublicEntity
     );
 
     protected $public = array(
+        self::ID,
+        self::ENTITY,
         self::NAME,
         self::LAST4,
         self::NETWORK,
         self::INTERNATIONAL,
-        self::EMI,
     );
 
     protected $appends = array(
@@ -373,6 +374,7 @@ class Entity extends Base\PublicEntity
         $attributes = array(
             self::EXPIRY_MONTH      => $this->getAttribute(self::EXPIRY_MONTH),
             self::EXPIRY_YEAR       => $this->getAttribute(self::EXPIRY_YEAR),
+            self::EMI               => $emi
         );
 
         if ($emi === true)
@@ -388,6 +390,8 @@ class Entity extends Base\PublicEntity
         $attributes = $this->toArrayPublic();
 
         $attributes = array_merge($attributes, $this->getTokenRelevantAttributes());
+
+        unset($attributes[self::ID]);
 
         return $attributes;
     }

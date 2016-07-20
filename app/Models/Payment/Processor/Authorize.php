@@ -190,13 +190,13 @@ trait Authorize
 
             // Terminal selected is now only used to validate any mistakes across each.
             $terminalSelected = (new Terminal\Selector)->select($payment, $this->mode, $verbose);
+
+            $this->logTerminalPickedAndSelected($terminalSelected, $terminalPicked, $payment);
         }
         catch (\Exception $e)
         {
             $this->trace->traceException($e, Trace::INFO, TraceCode::TERMINAL_SELECTION_MISMATCH);
         }
-
-        $this->logTerminalPickedAndSelected($terminalSelected, $terminalPicked, $payment);
 
         $this->runPaymentGatewayRelatedPreProcessing($payment, $gatewayInput);
 
@@ -353,7 +353,7 @@ trait Authorize
     protected function runPaymentMethodRelatedPreProcessing($payment, & $input, array & $gatewayInput)
     {
         $this->checkAndFillSavedAppToken($input);
-// sd($input);
+
         // First fetch the relevant customer
         list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp($input, $this->merchant);
 
@@ -393,6 +393,13 @@ trait Authorize
     protected function preProcessPaymentFromSavedCard($customer, $payment, & $input, & $gatewayInput)
     {
         $tokenInput = $input[Payment\Entity::TOKEN];
+
+        $this->trace->info(
+            TraceCode::PAYMENT_PROCESS_FROM_SAVED,
+            [
+                'token' => $tokenInput
+            ]);
+
 
         // Customer should definitely exist in this case.
         if ($customer === null)
@@ -442,7 +449,7 @@ trait Authorize
         // Flow if card details are entered with save set to true/false
         $saveMethod = ((isset($input['save'])) and (boolval($input['save']) === true));
 
-        if ($saveMethod === false)
+        if (($customer === null) or ($saveMethod === false))
         {
             // No card saving, normal simple flow
             if ($payment->isMethodCardOrEmi())
@@ -610,7 +617,15 @@ trait Authorize
             return;
         }
 
-        $appToken = $this->request->session()->get('app_token');
+        $this->trace->info(
+            TraceCode::PAYMENT_FILL_SAVED_APP_TOKEN,
+            [
+                'session' => $this->request->session()->all()
+            ]);
+
+        $key = $this->mode . '_app_token';
+
+        $appToken = $this->request->session()->get($key);
 
         if ($appToken !== null)
         {

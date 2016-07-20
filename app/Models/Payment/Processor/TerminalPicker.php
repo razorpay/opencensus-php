@@ -167,7 +167,8 @@ class TerminalPicker
         {
             $terminal = $this->selectSharedTPVTerminal($category);
 
-            if ($terminal === null)
+            if (($terminal === null) and
+                ($this->mode === Mode::LIVE))
             {
                 throw new Exception\ServerErrorException(
                     'A terminal with support for third party validation was not found.',
@@ -218,10 +219,7 @@ class TerminalPicker
     {
         $bank = $this->payment->getBank();
 
-        $cardTerminalBanks = array(
-            IFSC::KKBK,
-            IFSC::UTIB,
-        );
+        $cardTerminalBanks = Gateway::$emiBanksUsingCardTerminals;
 
         if (in_array($bank, $cardTerminalBanks))
         {
@@ -234,13 +232,6 @@ class TerminalPicker
 
     protected function getSharedTerminalForCard($payment)
     {
-        //hard code for cube, return axis_migs
-        if ($payment->merchant->getId() === '5VBSKsXpprFAxM')
-        {
-            return $this->terminalExists(Shared::AXIS_MIGS_RAZORPAY_TERMINAL);
-        }
-
-
         $terminal = $this->getSharedCategoryTerminalForCard($payment);
 
         if ($terminal !== null)
@@ -646,12 +637,19 @@ class TerminalPicker
 
     protected function selectSharedTPVTerminal($category)
     {
+        $terminal = null;
+
         $gateway = Gateway::BILLDESK;
 
         $sharedTerminal = $this->repo->getSharedTerminalForGatewayWithCategory(
                                     $gateway, $category);
 
-        return $this->terminalExists($sharedTerminal->getId());
+        if (empty($sharedTerminal) === false)
+        {
+            $terminal = $this->terminalExists($sharedTerminal->getId());
+        }
+
+        return $terminal;
     }
 
     protected function terminalExists($terminal)
