@@ -88,6 +88,11 @@ class CreateTerminals extends Migration
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
 
+            $table->enum(Terminal::STATUS, ['ACTIVE','INACTIVE', 'SUSPENDED']);
+
+            $table->integer(Terminal::PRIORITY)
+                  ->default(5);
+
             $table->index(Terminal::CATEGORY);
             $table->index(Terminal::GATEWAY);
             $table->index(Terminal::DELETED_AT);
