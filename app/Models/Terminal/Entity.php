@@ -5,6 +5,7 @@ namespace RZP\Models\Terminal;
 use Crypt;
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Entity extends Base\PublicEntity
@@ -366,5 +367,49 @@ class Entity extends Base\PublicEntity
         $actualValue = $this->getAttribute($attribute);
 
         return ($value === $actualValue);
+    }
+
+    public function isTPVTerminal()
+    {
+        if (is_null($this->getCategory()) === false)
+        {
+            $tpvCategories = (new Merchant\Entity)->getTPVCategories();
+
+            return in_array($this->getCategory(), $tpvCategories);
+        }
+
+        return false;
+    }
+
+    public function isValidForEmiDurationAndBank($bank, $emiDuration)
+    {
+        $cardTerminalBanks = Payment\Gateway::$emiBanksUsingCardTerminals;
+
+        // For banks of the first type
+        // just use a plain old card terminal
+        if (in_array($bank, $cardTerminalBanks))
+        {
+            // for Kotak, process as normal card transaction and mail for emi
+            return (($this->isCardEnabled()) and ($this->isEmiEnabled() === false)) ;
+        }
+        // For the other emi banks, this has to be an emi terminal
+        // of the right gateway and the right duration
+        else if ($this->isEmiEnabled())
+        {
+            $emiBankGateway = Payment\Gateway::$emiBankToGatewayMap[$bank];
+
+            $terminalGateway = $this->getGateway();
+
+            // The HDFC case currently where the payment has
+            // to be routed through the corresponding duration
+            // terminal and the corresponding
+            return (($terminalGateway === $emiBankGateway) and
+                    ($emiDuration === $this->getEmiDuration()));
+        }
+        // if emi is not enabled at all, then definitely not an emi terminal
+        else
+        {
+            return false;
+        }
     }
 }

@@ -189,6 +189,7 @@ class Core extends Base\Core
         $merchantId = null;
         $customer = null;
         $customerApp = null;
+        $appToken = null;
 
         if (empty($input[Payment\Entity::APP_TOKEN]) === false)
         {
@@ -218,6 +219,13 @@ class Core extends Base\Core
             $customer = $this->repo->customer->findByIdAndMerchantId($customerId, $merchantId);
         }
 
+        $this->trace->info(
+            TraceCode::PAYMENT_GET_CUSTOMER,
+            [
+                'customer_id' => $customerId,
+                'app_token'   => $appToken,
+            ]);
+
         return array($customer, $customerApp);
     }
 
@@ -225,7 +233,23 @@ class Core extends Base\Core
     {
         // setup session params
         // as device token is public, only app_token is sufficient
-        $this->app['request']->session()->put('app_token', $appToken->getPublicId());
+        $key = $this->mode . '_app_token';
+
+        $this->trace->info(
+            TraceCode::CUSTOMER_CREATE_APP_TOKEN,
+            [
+                'app_token' => $appToken->getPublicId()
+            ]);
+
+        $this->app['request']->session()->put($key, $appToken->getPublicId());
+
+        $this->trace->info(
+            TraceCode::CUSTOMER_SESSION,
+            [
+                'session' => $this->app['request']->session()->all()
+            ]);
+
+
         // sd($appToken->getPublicId(), $this->app['session']->get('app_token'));
     }
 

@@ -24,10 +24,10 @@ trait Capture
     {
         $payment = $this->retrieve($id);
 
-        /*
-            If the fee bearer is customer then please to adjust input amount
-            with the available fee for the payment.
-         */
+        //
+        // If the fee bearer is customer then please to adjust input amount
+        // with the available fee for the payment.
+        //
         if ($this->merchant->isFeeBearerCustomer())
         {
             $input['amount'] = $input['amount'] + $payment->getFee();
@@ -105,6 +105,10 @@ trait Capture
      */
     protected function captureOnGateway($data)
     {
+        $this->verifyOrderUnpaid($this->payment);
+
+        $paymentCopy = $this->payment->replicate();
+
         try
         {
             try
@@ -120,12 +124,19 @@ trait Capture
                 $this->app['queue']->push('RZP\Jobs\Capture', ['data' => $data]);
             }
 
-            $this->verifyOrderUnpaid($this->payment);
-
             $this->recordCapture();
         }
         catch (Exception\BaseException $ex)
         {
+            //
+            // We need to use the old payment
+            // because the recordCapture would have made some changes
+            // to payment entity but not committed due to which payment
+            // entity will have corrupted data
+            //
+
+            $this->payment = $paymentCopy;
+
             $this->updatePaymentFailed(
                     $ex->getError(),
                     TraceCode::PAYMENT_CAPTURE_FAILURE);
@@ -136,15 +147,23 @@ trait Capture
 
     protected function recordCapture()
     {
-        $this->repo->transaction(function()
+        $payment = $this->payment;
+
+        $this->repo->transaction(function() use ($payment)
         {
-            $this->paymentRepo->lockForUpdate($this->payment->getKey());
+            $this->lockForUpdateAndReload($payment);
 
-            $this->updatePaymentCaptured();
+            if ($payment->hasBeenCaptured() === true)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_CAPTURED);
+            }
 
-            $this->createTransactionFromCapturedPayment($this->payment);
+            $this->updatePaymentCaptured($payment);
 
-            $this->updatePaidOrderStatus($this->payment);
+            $this->createTransactionFromCapturedPayment($payment);
+
+            $this->updatePaidOrderStatus($payment);
 
             $this->trace(TraceCode::PAYMENT_CAPTURE_SUCCESS);
         });
@@ -158,11 +177,11 @@ trait Capture
         $notifier->trigger(Notify::CAPTURED);
     }
 
-    protected function updatePaymentCaptured()
+    protected function updatePaymentCaptured($payment)
     {
-        $this->payment->setStatus(Payment\Status::CAPTURED);
+        $payment->setStatus(Payment\Status::CAPTURED);
 
-        $this->payment->setCaptureTimestamp();
+        $payment->setCaptureTimestamp();
     }
 
     protected function createTransactionFromCapturedPayment($payment)
@@ -194,12 +213,13 @@ trait Capture
 
     protected function verifyOrderUnpaid($payment)
     {
-        $order = $payment->order;
+        $order = $this->repo->order->getOrderForPayment($payment);
 
-        if (isset($order) and ($order->getStatus() === Order\Status::PAID))
+        if ((empty($order) === false) and
+            ($order->getStatus() === Order\Status::PAID))
         {
             throw new Exception\BadRequestValidationFailureException(
-            'Corresponding order already has a captured payment.');
+                'Corresponding order already has a captured payment.');
         }
     }
 

@@ -39,6 +39,7 @@ final class Route
         'payment_add_metadata'                    => ['post',     'payments/{id}/metadata',                   'PaymentController@postPaymentMetadata'                             ],
         'payment_fetch_by_id'                     => ['get',      'payments/{id}',                            'PaymentController@getPayment'                                      ],
         'payment_fetch_multiple'                  => ['get',      'payments',                                 'PaymentController@getPayments'                                     ],
+        'payment_fetch_card_details'              => ['get',      'payments/{id}/card',                       'PaymentController@getCardForPayment'                               ],
         'payment_fetch_refunds'                   => ['get',      'payments/{id}/refunds',                    'PaymentController@getRefundsForPayment'                            ],
         'payment_fetch_refund_by_id'              => ['get',      'payments/{paymentId}/refunds/{rfndId}',    'PaymentController@getRefundByRefundAndPaymentId'                   ],
         'payment_auth_notify'                     => ['get',      'payments/auth/notify',                     'PaymentController@getAuthNotify',                                  ],
@@ -285,6 +286,7 @@ final class Route
         'payment_create_private',
         'refund_fetch_by_id',
         'refund_fetch_multiple',
+        'card_fetch_by_id',
         'order_create',
         'order_fetch',
         'order_fetch_by_id',
@@ -409,6 +411,7 @@ final class Route
     );
 
     public static $proxy = array(
+        'payment_fetch_card_details',
         'transaction_monthly_report',
         'transaction_fetch_by_id',
         'transaction_fetch_multiple',
@@ -418,7 +421,6 @@ final class Route
         'adj_fetch_by_id',
         'adj_fetch_multiple',
         'adj_add',
-        'card_fetch_by_id',
         'card_fetch_multiple',
         'payment_authorize_refund',
         'webhook_create',

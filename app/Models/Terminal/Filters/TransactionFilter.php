@@ -10,6 +10,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Payment\Method;
+use RZP\Models\Emi\Repository;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Processor\Netbanking;
 
@@ -29,31 +30,19 @@ class TransactionFilter extends Terminal\Filter
         switch ($method)
         {
             case Method::CARD:
-                return (($terminal->card) and ($terminal->emi === 0)) ;
+                return (($terminal->isCardEnabled()) and ($terminal->isEmiEnabled() === false)) ;
                 break;
 
             case Method::NETBANKING:
-                return $terminal->netbanking;
+                return $terminal->isNetbankingEnabled();
                 break;
 
-            // Check - Needs more work with respect to emi terminals of other banks
             case Method::EMI:
                 $bank = $input['payment']->getBank();
 
-                $cardTerminalBanks = array(
-                    IFSC::KKBK,
-                    IFSC::UTIB,
-                );
+                $emiDuration = $input['payment']->emiPlan->getDuration();
 
-                if (in_array($bank, $cardTerminalBanks))
-                {
-                    // for Kotak, process as normal card transaction and mail for emi
-                    return $terminal->card;
-                }
-                else
-                {
-                    return ($terminal->emi === 1);
-                }
+                return $terminal->isValidForEmiDurationAndBank($bank, $emiDuration);
                 break;
 
             // Pick the right terminal only
@@ -84,16 +73,6 @@ class TransactionFilter extends Terminal\Filter
                 }
                 else
                 {
-                    // Check for partially supported networks on live
-                    $networks = Gateway::$partiallySupportedCardNetworks;
-
-                    if ((in_array($network, $networks)) and
-                        ($input['mode'] === Mode::LIVE))
-                    {
-                        throw new Exception\BadRequestException(
-                            ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
-                    }
-
                     return false;
                 }
 

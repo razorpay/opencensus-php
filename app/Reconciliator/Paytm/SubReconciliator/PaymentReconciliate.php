@@ -11,8 +11,8 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      * Row Header Names
      *******************/
     const COLUMN_PAYMENT_ID          = 'ORDER ID';
-    const COLUMN_SETTLED_AMOUNT      = 'TXN_AMOUNT';
-    const COLUMN_TRANSACTION_AMOUNT  = 'SETTLED AMOUNT';
+    const COLUMN_TRANSACTION_AMOUNT  = 'TXN_AMOUNT';
+    const COLUMN_SETTLED_AMOUNT      = 'SETTLED AMOUNT';
 
     protected $messenger;
 
@@ -44,10 +44,5 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         $fee = floatval($fee) * 100;
 
         return round($fee);
-    }
-
-    protected function getCardDetails($row)
-    {
-        return [];
     }
 }

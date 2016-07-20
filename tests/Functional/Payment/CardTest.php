@@ -18,6 +18,21 @@ class CardTest extends TestCase
         $this->ba->publicAuth();
     }
 
+    public function testFetchCardDetails()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment = $this->doAuthAndGetPayment($payment);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payments/'. $payment['id']. '/card';
+
+        $this->ba->proxyAuth();
+
+        $card = $this->startTest();
+
+        $this->assertEquals($card['id'], $payment['card_id']);
+    }
+
     public function testUnsupportedCardNetworks()
     {
         $numbers = array(
@@ -96,6 +111,6 @@ class CardTest extends TestCase
 
         $this->replaceDefualtValues($testData['request']['content']);
 
-        $this->runRequestResponseFlow($testData);
+        return $this->runRequestResponseFlow($testData);
     }
 }

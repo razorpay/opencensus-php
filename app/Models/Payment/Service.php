@@ -169,11 +169,24 @@ class Service extends Base\Service
         return $refund->toArrayPublic();
     }
 
-    public function retrieveRefundsForPayment($paymentId)
+    public function getCardForPayment($id)
     {
-        Payment\Entity::verifyIdAndStripSign($paymentId);
+        Payment\Entity::verifyIdAndStripSign($id);
 
-        $refunds = (new Refund\Repository)->findForPayment($paymentId);
+        $payment = $this->repo->payment->findByIdAndMerchantId($id, $this->merchant->getId());
+
+        $card = $payment->card;
+
+        return $card->toArrayPublic();
+    }
+
+    public function retrieveRefundsForPayment($id)
+    {
+        Payment\Entity::verifyIdAndStripSign($id);
+
+        $payment = $this->repo->payment->findByIdAndMerchantId($id, $this->merchant->getId());
+
+        $refunds = (new Refund\Repository)->findForPayment($payment, $this->merchant);
 
         return $refunds->toArrayPublic();
     }
@@ -528,8 +541,7 @@ class Service extends Base\Service
         $result['from'] = (string) $start;
         $result['to']   = (string) $end;
 
-        $authorizedPayments = (new Payment\Repository)
-            ->getAuthorizedPaymentsBetweenTimestamps($from, $to);
+        $authorizedPayments = (new Payment\Repository)->getAuthorizedPaymentsBetweenTimestamps($from, $to);
 
         $grouped = $authorizedPayments->keyBy(Payment\Entity::MERCHANT_ID);
 
@@ -560,7 +572,7 @@ class Service extends Base\Service
      * @param  boolean $final Whether this is the final payment reminder
      * @return null
      */
-    protected function sendAuthorizedPaymentsReminderMail($merchantId, array $payments, $final)
+    protected function sendAuthorizedPaymentsReminderMail($merchantId, $payments, $final)
     {
         // date format = 6th July 2015
         $date = Carbon::today('Asia/Kolkata')->format('jS F Y');

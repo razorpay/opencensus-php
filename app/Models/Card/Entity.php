@@ -96,13 +96,12 @@ class Entity extends Base\PublicEntity
     );
 
     protected $public = array(
-        self::EXPIRY_MONTH,
-        self::EXPIRY_YEAR,
+        self::ID,
+        self::ENTITY,
+        self::NAME,
         self::LAST4,
         self::NETWORK,
         self::INTERNATIONAL,
-        self::EMI,
-        self::ISSUER,
     );
 
     protected $appends = array(
@@ -366,5 +365,34 @@ class Entity extends Base\PublicEntity
         $network = $this->getNetwork();
 
         return ($network === Card\Network::$fullName[Card\Network::AMEX]);
-   }
+    }
+
+    public function getTokenRelevantAttributes()
+    {
+        $emi = $this->getAttribute(self::EMI);
+
+        $attributes = array(
+            self::EXPIRY_MONTH      => $this->getAttribute(self::EXPIRY_MONTH),
+            self::EXPIRY_YEAR       => $this->getAttribute(self::EXPIRY_YEAR),
+            self::EMI               => $emi
+        );
+
+        if ($emi === true)
+        {
+            $attributes[self::ISSUER] = $this->getIssuer();
+        }
+
+        return $attributes;
+    }
+
+    public function toArrayToken()
+    {
+        $attributes = $this->toArrayPublic();
+
+        $attributes = array_merge($attributes, $this->getTokenRelevantAttributes());
+
+        unset($attributes[self::ID]);
+
+        return $attributes;
+    }
 }

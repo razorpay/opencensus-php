@@ -24,7 +24,7 @@ class DailyReportTest extends TestCase
 
     public function testDailyReport()
     {
-        $this->markTestSkipped();
+        $this->ba->publicTestAuth();
 
         $this->startTime = time();
 
@@ -47,7 +47,7 @@ class DailyReportTest extends TestCase
                                 'captured' => ['payments' => ['count' => 4], 'sum' => 4000000],
                                 'authorized' => ['payments' => ['count' => 4], 'sum' => 4000000],
                                 'refunds' => ['refunds' => ['count' => 2], 'sum' => 200000],
-                                'settlement' => ['merchant_id' => '10000000000000', 'amount' => 3508400],
+                                'settlement' => ['merchant_id' => '10000000000000', 'amount' => 3508000],
                                 'merchant' => ['id' => '10000000000000', 'activated' => true],
                             );
                             $this->assertArraySelectiveEquals($testData, $data);

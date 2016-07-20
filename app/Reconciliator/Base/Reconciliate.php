@@ -36,6 +36,7 @@ class Reconciliate
     const CARD_DETAILS        = 'card_details';
     const GATEWAY_SERVICE_TAX = 'gateway_service_tax';
     const GATEWAY_FEE         = 'gateway_fee';
+    const ISSUER              = 'issuer';
 
     /*************************
      * Card types

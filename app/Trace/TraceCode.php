@@ -64,6 +64,15 @@ class TraceCode
 
     const NETBANKING_PAYMENT_CALLBACK               = 'NETBANKING_PAYMENT_CALLBACK';
 
+    // Card Saving related
+    const PAYMENT_FILL_SAVED_APP_TOKEN              = 'PAYMENT_FILL_SAVED_APP_TOKEN';
+    const PAYMENT_GET_CUSTOMER                      = 'PAYMENT_GET_CUSTOMER';
+    const CUSTOMER_SESSION                          = 'CUSTOMER_SESSION';
+    const CUSTOMER_CREATE_APP_TOKEN                 = 'CUSTOMER_CREATE_APP_TOKEN';
+    const PAYMENT_PROCESS_FROM_SAVED_LOCAL          = 'PAYMENT_PROCESS_FROM_SAVED_LOCAL';
+    const PAYMENT_PROCESS_FROM_SAVED_GLOBAL         = 'PAYMENT_PROCESS_FROM_SAVED_GLOBAL';
+    const PAYMENT_SAVE_METHOD                       = 'PAYMENT_SAVE_METHOD';
+
     /*
      * Gateway component error messages
      */
@@ -111,6 +120,7 @@ class TraceCode
     const GATEWAY_RUPAY_CALLBACK                    = 'GATEWAY_RUPAY_CALLBACK';
     const GATEWAY_HDFC_CALLBACK_EMPTY               = 'GATEWAY_HDFC_CALLBACK_EMPTY';
     const GATEWAY_UNSUPPORTED_CARD_NETWORK          = 'GATEWAY_UNSUPPORTED_CARD_NETWORK';
+    const GATEWAY_PAYMENT_VERIFY_UNEXPECTED         = 'GATEWAY_PAYMENT_VERIFY_UNEXPECTED';
 
     const MPR_HDFC_GEN_INITIATED                    = 'MPR_HDFC_GEN_INITIATED';
     const MPR_HDFC_FILE_GENERATED                   = 'MPR_HDFC_FILE_GENERATED';
@@ -238,6 +248,7 @@ class TraceCode
         self::GATEWAY_SUPPORT_RESPONSE              => 'Support response received',
         self::GATEWAY_SUPPORT_ERROR                 => 'Error in support',
         self::GATEWAY_UNKNOWN_ERROR                 => 'Unknown gateway error',
+        self::GATEWAY_PAYMENT_VERIFY_UNEXPECTED     => 'Unexpected state of events in verify flow',
         self::GATEWAY_UNSUPPORTED_CARD_NETWORK      => 'Card network not supported',
 
         self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured',

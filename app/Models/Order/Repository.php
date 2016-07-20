@@ -19,4 +19,18 @@ class Repository extends Base\Repository
     protected $entityFetchParamRules = array(
         Entity::AUTHORIZED      => 'sometimes|in:0,1',
     );
+
+    public function getOrderForPayment($payment)
+    {
+        $orderId = $payment->getApiOrderId();
+
+        $order = $this->find($orderId);
+
+        if ($order !== null)
+        {
+            $payment->order()->associate($order);
+        }
+
+        return $order;
+    }
 }
