@@ -31,7 +31,6 @@ class Gateway extends Base\Gateway
         $hash = $input['SecureHash'];
         unset($input['SecureHash']);
         $expectedHash = $this->getSecureHash($input);
-
         if ($hash !== $expectedHash)
         {
             throw new Exception\BadRequestValidationFailureException(
@@ -164,6 +163,7 @@ class Gateway extends Base\Gateway
             'description' => 'EBS paymnet',
             'currency' => 'INR',
             'mode' => strtoupper($this->mode),
+            'payment_mode' => $this->getpaymentMode($input),
         );
 
         if ($input['payment']['method'] == "card")
@@ -172,7 +172,6 @@ class Gateway extends Base\Gateway
             $content['name_on_card'] = $input['card']['name'];
             $content['card_number'] = $input['card']['number'];
             $content['card_expiry'] = $this->getExpiry($input);
-            $content['payment_mode'] = $this->getpaymentMode($input);
             $content['card_brand'] = $this->getcardBrand($input);
             $content['card_cvv'] = $input['card']['cvv'];
         }
@@ -181,8 +180,8 @@ class Gateway extends Base\Gateway
         {
             $content['channel'] = '0';
             $bankId = BankCodes::$bankCodeMap[$input['payment']['bank']];
+            $content['bank_code'] = $bankId;
         }
-
         $content['secure_hash'] = $this->getSecureHash($content);
         return $content;
     }
@@ -195,8 +194,12 @@ class Gateway extends Base\Gateway
     }
     protected function getpaymentMode($input)
     {
+        if ($input['payment']['method'] == "netbanking")
+        {
+            return '3';
+        }
         $mode = $input['card']['type'];
-        //TODO FIX me
+        //TODO FIX me for all cases
         return '1';
 
     }
@@ -206,7 +209,7 @@ class Gateway extends Base\Gateway
         //TODO FIX me
         return '1';
     }
-    protected function getSecureHash($content)
+    public function getSecureHash($content)
     {
         $secretKey = 'bd9c562902844435bcba33ee9528a4b3';
         // READ FROM config
