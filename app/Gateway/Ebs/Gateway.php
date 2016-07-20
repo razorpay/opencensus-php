@@ -22,7 +22,8 @@ class Gateway extends Base\Gateway
     use ResponseFieldsTrait;
     protected $gateway = 'ebs';
     protected $map = array(
-        'TransactionID' => 'TxnReferenceNo',
+        'amount' => 'TxnAmount',
+        'PaymentID' =>'ebs_payment_id',
     );
 
     protected function validateCallbackgetSecureHash(array $input)
@@ -43,13 +44,12 @@ class Gateway extends Base\Gateway
     public function authorize(array $input)
     {
         parent::authorize($input);
-
         $content = $this->getAuthRequestContentArray($input);
         $payment = $this->createGatewayPaymentEntity($content);
-        
+
         //$this->traceGatewayPaymentRequest($request, $input);
         $request = array(
-            'url' => 'https://secure.ebs.in/pg/ma/payment/request',
+            'url' => $this->getUrl($this->action),
             'method' => 'post',
             'content' => $content
         );
@@ -58,6 +58,11 @@ class Gateway extends Base\Gateway
 
     public function capture(array $input)
     {
+        $payment = $this->getRepo()->findByPaymentIdAndAction(
+            $input['payment']['id'], Action::AUTHORIZE
+        );
+
+        assert($payment['received'], 1);
     }
 
 
@@ -76,89 +81,30 @@ class Gateway extends Base\Gateway
         $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE
         );
-        $content = array();
-        $content['BankPaymentID'] = 'hi';//$input['gateway']['TransactionID'];
-//        $content['BankPaymentID'] = $input['gateway']['PaymentID'];
-        $content['received'] = 1;
-        $payment->fill($content);
-        //dd($payment->saveOrFail());
 
-        //dd($content);
-        return;
-        dd($input['gateway']);
-        dd($payment);
-
-        //TODO update DB and enjoy life
-        $attrs = $this->getMappedAttributes($input['gateway']);
-
-
-        $bankRefNo = $input['gateway']['BankRefNo'];
-        $message = $input['gateway']['Message'];
-
-        $attrs = $this->getMappedAttributes($input['gateway']);
-        $attrs['received'] = true;
-
-        $payment->fill($attrs);
-        $payment->saveOrFail();
-
-        if (($bankRefNo === '') or
-            ($message !== ''))
+        if ($input['gateway']['ResponseCode'] != '0')
         {
             // Payment fails, throw exception
             throw new Exception\GatewayErrorException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_NETBANKING_CANCELLED_BY_USER,
-                    '',
-                    $message);
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                $content['AuthStatus'],
+                ''
+            );
         }
+
+        $content = $this->getMappedAttributes($input['gateway']);
+
+        $content['received'] = 1;
+        $content['TransactionID'] = $input['gateway']['TransactionID'];
+        $content['RequestID'] = $input['gateway']['RequestID'];
+
+        $payment->fill($content);
+
+        $payment->saveOrFail();
     }
 
     public function refund(array $input)
     {
-        parent::refund($input);
-        dd("here");
-        $payment = $this->getRepo()->findByPaymentIdAndAction(
-                                $input['payment']['id'], Action::AUTHORIZE);
-        dd($payment);
-        $content = $this->getPaymentRefundRequestContent($payment, $input);
-
-        $content = $this->postRequest($content);
-
-        $content['refund_id'] = $input['refund']['id'];
-        $content['CurrencyType'] = 'INR';
-        $content['received'] = 1;
-        $refund = $this->createGatewayPaymentEntity($content);
-
-        if ($content['ProcessStatus'] !== 'Y')
-        {
-            //
-            // For very very few transactions, the payment status on billdesk changes
-            // after 1 whole day. These are automatically refunded by billdesk.
-            // So, the AuthStatus changes to 0300 but RefundStatus also changes to 0699.
-            // In that case, we need to let the refund go ahead.
-
-            $refundAmount = (int) ($payment['RefAmount'] * 100);
-
-            if (($content['ErrorCode'] === 'ERR_REF009') and
-                ($payment['RefStatus'] === RefundStatus::CANCELLED) and
-                ($refundAmount === $input['payment']['amount']))
-            {
-                $this->trace->info(
-                    TraceCode::GATEWAY_PAYMENT_REFUND,
-                    [
-                        'message' => 'Payment was already cancelled at this point by billdesk',
-                        'payment_id' => $input['payment']['id']
-                    ]);
-
-                return;
-            }
-
-            $this->trace->error(
-                TraceCode::PAYMENT_REFUND_FAILURE,
-                [$content]);
-
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_REFUND_FAILED);
-        }
     }
 
     public function verify(array $input)
@@ -168,33 +114,38 @@ class Gateway extends Base\Gateway
     protected function createGatewayPaymentEntity($attributes)
     {
         $payment = $this->getNewGatewayPaymentEntity();
-        $attributes['TxnAmount'] = $attributes['amount'];
+        $attributes['TxnAmount'] = $attributes['amount']*100;
         $payment->setPaymentId($attributes['reference_no']);
-
         $payment->fill($attributes);
         $payment->setAction($this->action);
         $payment->saveOrFail();
 
         return $payment;
     }
+    protected function getMappedAttributes($attributes)
+    {
+        $attr = [];
+
+        $map = $this->map;
+
+        foreach ($attributes as $key => $value)
+        {
+            if (isset($map[$key]))
+            {
+                $newKey = $map[$key];
+                $attr[$newKey] = $value;
+            }
+        }
+        return $attr;
+    }
 
     protected function getAuthRequestContentArray($input)
     {
-        if (!empty($input['payment']['bank'])) 
-        {
-            $bankId = BankCodes::$bankCodeMap[$input['payment']['bank']];
-        }
-
         $content = array(
-            'channel' => '0',
-            'account_id' => '20640',
+            'account_id' => '20640', // read from config
             'reference_no' => $input['payment']['id'],
             'amount' => $input['payment']['amount']/100,
-
-
             'return_url' => $input['callbackUrl'],
-            //'return_url' => 'http://DUMMY_RETURN_URL',
-            
             'name' => 'gaurav',
             'address' => 'razorpay office',
             'city' => 'Bangalore',
@@ -210,40 +161,59 @@ class Gateway extends Base\Gateway
             'ship_postal_code' => '560038',
             'ship_country' => 'IND',
             'ship_phone' => '9876543210',
-            'description' => 'live paymnet',
-
+            'description' => 'EBS paymnet',
             'currency' => 'INR',
-            'mode' => 'TEST', //$this->mode,
-            //'payment_option' => '1007',
-            //'bank_code' => '1007',
-            //'payment_mode' => '3',
+            'mode' => strtoupper($this->mode),
         );
-        
-        if ($this->mode ==='test')//$this->mode === ModeEbs::TEST)
+
+        if ($input['payment']['method'] == "card")
         {
             $content['channel'] = '2';
-            $content['name_on_card'] = 'TEST';
-            $content['card_number'] = '4111111111111111';
-            $content['card_expiry'] = '0717';
-            $content['payment_mode'] = '1';
-            $content['card_brand'] = '1';
-            $content['card_cvv'] ='123';
-         
+            $content['name_on_card'] = $input['card']['name'];
+            $content['card_number'] = $input['card']['number'];
+            $content['card_expiry'] = $this->getExpiry($input);
+            $content['payment_mode'] = $this->getpaymentMode($input);
+            $content['card_brand'] = $this->getcardBrand($input);
+            $content['card_cvv'] = $input['card']['cvv'];
         }
-         
+
+        if ($input['payment']['method'] == "netbanking")
+        {
+            $content['channel'] = '0';
+            $bankId = BankCodes::$bankCodeMap[$input['payment']['bank']];
+        }
 
         $content['secure_hash'] = $this->getSecureHash($content);
-  //      dd($content);
         return $content;
     }
+    protected function getExpiry($input)
+    {
+        $month = $input['card']['expiry_month'];
+        $year = $input['card']['expiry_year'];
+        $ex = mktime(0, 0, 0, $month, 1, $year);
+        return date('my', $ex);
+    }
+    protected function getpaymentMode($input)
+    {
+        $mode = $input['card']['type'];
+        //TODO FIX me
+        return '1';
 
+    }
+    protected function getcardBrand($input)
+    {
+        $brand = $input['card']['network_code'];
+        //TODO FIX me
+        return '1';
+    }
     protected function getSecureHash($content)
     {
         $secretKey = 'bd9c562902844435bcba33ee9528a4b3';
+        // READ FROM config
         $hashData = $secretKey;
         ksort($content);
 
-        foreach($content as $key => $value) 
+        foreach($content as $key => $value)
         {
             if (strlen($value) > 0)
             {

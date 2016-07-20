@@ -9,11 +9,9 @@ class Entity extends Base\Entity
     protected $fields = array(
         'payment_id', //reference_no
         'channel',
-        'received', 
-        'BankPaymentID',
+        'received',
         'accountId', //account_id
         'TxnAmount', //amount
-        'returnUrl', //return_url
         'name',
         'address',
         'city',
@@ -32,45 +30,40 @@ class Entity extends Base\Entity
         'description',
         'currency',
         'mode',
-        'nameOncard', //name_on_card
-        'cardNumber', //card_number
-        'cardExpiry', //card_expiry
         'paymentMode', //payment_mode
-        'cardBrand', //card_brand
-        'cardCvv', //card_cvv
+        'RequestID',
+        'TransactionID',
+        'ebs_payment_id',
     );
 
     protected $fillable = array(
-        'payment_id', //reference_no
-        'channel', 
-        'accountId', //account_id
-        'TxnAmount', //amount
-        'returnUrl', //return_url
-        'BankPaymentID',
+        'payment_id',
+        'channel',
+        'received',
+        'accountId',
+        'TxnAmount',
         'name',
         'address',
         'city',
         'state',
         'country',
-        'postalCode', //postal_code
+        'postalCode',
         'phone',
         'email',
-        'shipName', //ship_name
-        'shipAddress', //ship_address
-        'shipState', //ship_state
-        'shipCity', //ship_city
-        'shipPostalCode', //ship_postal_code
-        'shipCountry', //ship_country
-        'shipPhone', //ship_phone
+        'shipName',
+        'shipAddress',
+        'shipState',
+        'shipCity',
+        'shipPostalCode',
+        'shipCountry',
+        'shipPhone',
         'description',
         'currency',
         'mode',
-        'nameOncard', //name_on_card
-        'cardNumber', //card_number
-        'cardExpiry', //card_expiry
-        'paymentMode', //payment_mode
-        'cardBrand', //card_brand
-        'cardCvv', //card_cvv
+        'paymentMode',
+        'RequestID',
+        'TransactionID',
+        'ebs_payment_id',
     );
 
     protected $table = 'ebs';
@@ -80,4 +73,27 @@ class Entity extends Base\Entity
     protected $entity = 'ebs';
 
     protected $appends = array('status', 'refund_status');
+
+    protected function getStatusAttribute()
+    {
+        $code = $this->attributes['AuthStatus'];
+
+        if ($code === null)
+        {
+            return null;
+        }
+
+        return AuthStatus::$statusMap[$code];
+    }
+    protected function getRefundStatusAttribute()
+    {
+        $code = $this->attributes['RefStatus'];
+
+        if ($code === null)
+        {
+            return null;
+        }
+
+        return RefundStatus::$statusMap[$code];
+    }
 }
