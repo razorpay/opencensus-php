@@ -17,6 +17,19 @@ class Gateway extends Base\Gateway
         'PaymentID' =>'ebs_payment_id',
     );
 
+    protected function getUrlDomain()
+    {
+        $apiDomainActionList = array(
+            Action::CAPTURE,
+            Action::REFUND);
+
+        if (in_array($this->action, $apiDomainActionList))
+        {
+            $this->domainType = 'api';
+        }
+
+        return parent::getUrlDomain();
+    }
     protected function validateCallbackgetSecureHash(array $input)
     {
         $hash = $input['SecureHash'];
@@ -95,10 +108,42 @@ class Gateway extends Base\Gateway
 
     public function refund(array $input)
     {
+        parent::refund($input);
+
+        $payment = $this->getRepo()->findByPaymentIdAndAction(
+                                $input['payment']['id'], Action::AUTHORIZE);
+
+        $content = $this->getPaymentRefundRequestContent($payment, $input);
+
+
+        $request = array(
+            'url' => $this->getUrl($this->action),
+            'method' => 'post',
+            'content' => $content);
+
+        $response = $this->sendGatewayRequest($request);
+        // NOW PARSE RESPONSE
     }
 
     public function verify(array $input)
     {
+    }
+
+    protected function getPaymentRefundRequestContent($payment, $input)
+    {
+        $refundAmount = (float) ($input['refund']['amount']);
+
+        $refundAmount = (string) number_format($refundAmount/100, 2, '.', '');
+
+        $content = array(
+            'Action' => 'refund',
+            'AccountID' => '20640',
+            'SecretKey' => 'bd9c562902844435bcba33ee9528a4b3',
+            'Amount' => $refundAmount,
+            'PaymentID' => $payment['ebs_payment_id'],
+        );
+
+        return $content;
     }
 
     protected function createGatewayPaymentEntity($attributes)
