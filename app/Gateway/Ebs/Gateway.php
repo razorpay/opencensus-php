@@ -7,16 +7,7 @@ use RZP\Constants\ModeEbs;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Action;
-/*
-    use carbon\carbon;
-use RZP\Error\ErrorCode;
-use RZP\Gateway\Base\Action;
-use RZP\Gateway\Base\VerifyResult;
-use RZP\Gateway\Billdesk;
-use Requests;
-use RZP\Trace\Trace;
-use Symfony\Component\DomCrawler\Crawler;
- */
+
 class Gateway extends Base\Gateway
 {
     use ResponseFieldsTrait;
@@ -135,6 +126,7 @@ class Gateway extends Base\Gateway
                 $attr[$newKey] = $value;
             }
         }
+
         return $attr;
     }
 
@@ -182,7 +174,9 @@ class Gateway extends Base\Gateway
             $bankId = BankCodes::$bankCodeMap[$input['payment']['bank']];
             $content['bank_code'] = $bankId;
         }
+
         $content['secure_hash'] = $this->getSecureHash($content);
+
         return $content;
     }
     protected function getExpiry($input)
@@ -190,23 +184,29 @@ class Gateway extends Base\Gateway
         $month = $input['card']['expiry_month'];
         $year = $input['card']['expiry_year'];
         $ex = mktime(0, 0, 0, $month, 1, $year);
+
         return date('my', $ex);
     }
     protected function getpaymentMode($input)
     {
+        $ret_val = '1';
+
         if ($input['payment']['method'] == "netbanking")
         {
-            return '3';
+            $ret_val = '3';
         }
+
         $mode = $input['card']['type'];
         //TODO FIX me for all cases
-        return '1';
+
+        return $ret_val;
 
     }
     protected function getcardBrand($input)
     {
         $brand = $input['card']['network_code'];
         //TODO FIX me
+
         return '1';
     }
     public function getSecureHash($content)
@@ -226,6 +226,7 @@ class Gateway extends Base\Gateway
         if (strlen($hashData) > 0) {
             $hashValue = strtoupper(hash('SHA512',$hashData));
         }
+
         return $hashValue;
     }
 }
