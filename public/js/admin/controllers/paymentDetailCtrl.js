@@ -297,9 +297,11 @@ app.controller('PaymentDetailCtrl', [
   function ($scope, $modalInstance, amount) {
 
     $scope.amount = (amount/100).toFixed(2);
-    $scope.notes = {
-      comment: null
-    };
+    $scope.comment = '';
+
+    $scope.valid = function(amount, comment) {
+      return amount > 0 && comment.length > 5;
+    }
 
     $scope.ok = function (amount, comment) {
       // We get amount in INR

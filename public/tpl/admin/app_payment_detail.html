@@ -261,7 +261,7 @@
         <label class="col-lg-3 control-label" for="partial">Comment</label>
         <div class="col-lg-9">
           <div class="input-group" style="width: 100%">
-            <input type="text" class="form-control" name="comment" ng-model="comment" placeholder="Add an optional comment">
+            <input required type="text" class="form-control" name="comment" ng-model="comment" placeholder="Add a comment (visible to merchant)">
           </div>
         </div>
       </div>
@@ -279,13 +279,13 @@
     </form>
   </div>
   <div class="modal-footer">
-      <div class="col-lg-12 col-sm-12" ng-model="adminEmail">
-        The payment will be
-          <span ng-show="partial">partially</span>
-          <span ng-show="!partial">completely</span>
-        refunded with the refund amount set to {{amount}} INR.
-      </div>
-      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-      <button class="btn btn-primary" ng-click="ok(amount, comment)" ng-confirm-click="Are you sure you want to refund this payment?">OK</button>
+    <div class="col-lg-12 col-sm-12" ng-model="adminEmail">
+      The payment will be
+        <span ng-show="partial">partially</span>
+        <span ng-show="!partial">completely</span>
+      refunded with the refund amount set to {{amount}} INR.
+    </div>
+    <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+    <button ng-disabled="!valid(amount, comment)" class="btn btn-primary" ng-click="ok(amount, comment)" ng-confirm-click="Are you sure you want to refund this payment?">OK</button>
   </div>
 </script>
