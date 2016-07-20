@@ -321,6 +321,10 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             BaseReconciliate::GATEWAY_FEE         => $fee,
         ];
 
+        // For wallets and netbanking, $cardDetails would be empty.
+        // We do an array_filter because sometimes, due to parsing errors,
+        // we may not be able to get some card details which we would have
+        // expected to get, due to which their corresponding values would be null.
         if (empty(array_filter($cardDetails)) === false)
         {
             $rowDetails[BaseReconciliate::CARD_DETAILS] = array_filter($cardDetails);
@@ -509,6 +513,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         $iinId = $card->getIin();
         $cardNetwork = $card->getNetwork();
 
+        // If the reconCardLocale is not set (null), then we set
+        // the country code to India.
         if ($reconCardLocale === BaseReconciliate::INTERNATIONAL)
         {
             $countryCode = null;
