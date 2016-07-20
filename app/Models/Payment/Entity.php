@@ -39,6 +39,7 @@ class Entity extends Base\PublicEntity
     const APP_ID                = 'app_id';
     const APP_TOKEN             = 'app_token';
     const TOKEN                 = 'token';
+    const GLOBAL_TOKEN          = 'global_token';
     const EMAIL                 = 'email';
     const CONTACT               = 'contact';
     const NOTES                 = 'notes';
@@ -116,6 +117,7 @@ class Entity extends Base\PublicEntity
         self::APP_TOKEN,
         self::APP_ID,
         self::TOKEN,
+        self::GLOBAL_TOKEN,
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
@@ -420,6 +422,16 @@ class Entity extends Base\PublicEntity
     public function setMetadata($metadata)
     {
         $this->metadata = $metadata;
+    }
+
+    public function setToken($token)
+    {
+        $this->setAttribute(self::TOKEN, $token);
+    }
+
+    public function setGlobalToken($globalToken)
+    {
+        $this->setAttribute(self::GLOBAL_TOKEN, $globalToken);
     }
 
     public function incrementOtpAttempts()
