@@ -57,10 +57,13 @@ class CreateEbs extends Migration {
             $table->string('RefDateTime')->nullable();
             $table->string('RefStatus')->nullable();
             $table->string('RefundId')->nullable();
+            $table->string('RequestID')->nullable();
+            $table->string('TransactionID')->nullable();
+            $table->string('ebs_payment_id')->nullable();
             $table->string('ErrorCode')->nullable();
             $table->string('ErrorReason')->nullable();
             $table->string('ProcessStatus')->nullable();
-    
+
             $table->string('refund_id', UniqueIdEntity::ID_LENGTH)->nullable();
 
             // Adds created_at and updated_at columns to the table
