@@ -54,7 +54,7 @@ class Server extends Base\Mock\Server
             'amount'            => '20.0',
             'timestamp'         => '1439473847354',
             'comments'          => 'test',
-            'udf'               =>'test',
+            'udf'               => 'test',
         );
 
         return $this->makeResponse($responseContent);
