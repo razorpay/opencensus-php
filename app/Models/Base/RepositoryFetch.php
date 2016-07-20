@@ -70,6 +70,29 @@ trait RepositoryFetch
         return $query->get();
     }
 
+    /**
+     * Retrieves rows without default limits
+     * @param  array  $params
+     * @return Collection
+     */
+    public function fetchWithoutLimit(array $params)
+    {
+        // In case there are keys, but no values in the query params.
+        $params = $this->unsetEmptyParams($params);
+
+        $query = $this->newQuery();
+
+        // Validate the rules against each query param.
+        $this->validateFetchParams($params);
+
+        /*
+         * Create the query.
+         */
+        $query = $this->buildFetchQuery($query, $params);
+
+        return $query->get();
+    }
+
 
     /*
      * Returns `false` if esWhitelistedParams are not set for the entity.

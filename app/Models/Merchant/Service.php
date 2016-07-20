@@ -622,7 +622,7 @@ class Service extends Base\Service
             $filter = [Entity::ACTIVATED => 1];
         }
 
-        $merchants = $this->repo->merchant->fetch($filter);
+        $merchants = $this->repo->merchant->fetchWithoutLimit($filter);
 
         // sent will hold array of merchant data
         $response = ['sent' => [], 'skipped' => 0];
