@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Ebs;
 
 use RZP\Gateway\Base;
+use RZP\Error\ErrorCode;
 use RZP\Constants\ModeEbs;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
@@ -122,7 +123,18 @@ class Gateway extends Base\Gateway
             'content' => $content);
 
         $response = $this->sendGatewayRequest($request);
-        // NOW PARSE RESPONSE
+        $resp = Utility::parseResponseXml($response->body);
+        //TODO fix split with space
+
+        if (array_key_exists('error', $resp))
+        {
+            $this->trace->error(
+                TraceCode::PAYMENT_REFUND_FAILURE,
+                [$response->body]);
+
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_REFUND_FAILED);
+        }
     }
 
     public function verify(array $input)
