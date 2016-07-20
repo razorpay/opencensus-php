@@ -13,6 +13,8 @@ class Server
     protected $request;
 
     protected $validator;
+    
+    protected $mockRequest;
 
     /**
      * Namespace of the current gateway server

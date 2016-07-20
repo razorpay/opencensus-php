@@ -2,13 +2,9 @@
 
 namespace RZP\Gateway\Wallet\Olamoney\Mock;
 
-use RZP\Http\Route;
 use RZP\Gateway\Base;
 use RZP\Exception;
-use Carbon\Carbon;
 use RZP\Models\Payment;
-use RZP\Error\ErrorCode;
-use RZP\Gateway\Base\Action;
 use RZP\Gateway\Wallet\Olamoney;
 
 class Server extends Base\Mock\Server

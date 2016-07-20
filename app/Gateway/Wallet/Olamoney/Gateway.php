@@ -289,8 +289,8 @@ class Gateway extends Base\Gateway
         $input = $verify->input;
 
         // Response received from wallet gateway
+        // Possible $verifyResponse status values - completed, failed, initialized, error
         $verifyResponse = $verify->verifyResponseContent;
-        // Possbile $verifyResponse status values - completed, failed, initialized, error
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
@@ -566,6 +566,16 @@ class Gateway extends Base\Gateway
         return $terminal['gateway_merchant_id'];
     }
 
+    protected function getMerchantId($terminal)
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->config['test_merchant_id'];
+        }
+
+        return $terminal['gateway_merchant_id'];
+    }
+
     protected function getHashForOtpGenerate($content)
     {
         $fieldsInOrder = array(
@@ -603,16 +613,6 @@ class Gateway extends Base\Gateway
         return $this->getHashOfArray($orderedData);
     }
 
-    protected function getMerchantId($terminal)
-    {
-        if ($this->mode === Mode::TEST)
-        {
-            return $this->config['test_merchant_id'];
-        }
-
-        return $terminal['gateway_merchant_id'];
-    }
-
     public function getHashOfArray($content)
     {
         $str = $this->getStringToHash($content, "|");
@@ -634,6 +634,7 @@ class Gateway extends Base\Gateway
         $url = constant($ns.'\Url::'.$type);
 
         $contact = $this->input['payment']['contact'];
+
         return strtr($url, [':contact' => $this->getFormattedContact($contact)]);
     }
 
