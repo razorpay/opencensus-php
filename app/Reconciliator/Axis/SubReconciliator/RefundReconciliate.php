@@ -10,7 +10,7 @@ class RefundReconciliate extends Base\RefundReconciliate
      * Row Header Names
      *******************/
     const COLUMN_PAYMENT_ID = 'merchant_trans_ref';
-    const RRN = 'rrn_no';
+    const COLUMN_RRN = 'rrn_no';
 
     /**
      * Axis reconciliation files only send us the rrn which is mapped
@@ -21,7 +21,7 @@ class RefundReconciliate extends Base\RefundReconciliate
      */
     protected function getRefundId(array $row)
     {
-        $rrn = $row[self::RRN];
+        $rrn = $row[self::COLUMN_RRN];
 
         $axisMigsRepo = $this->app['repo']->axis_migs;
 

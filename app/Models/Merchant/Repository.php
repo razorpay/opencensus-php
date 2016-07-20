@@ -142,6 +142,7 @@ class Repository extends Base\Repository
                     ->has('bankAccount', '<', 1)
                     ->get();
     }
+
     public function fetchAllLiveMerchants()
     {
         $repo = $this->repo;

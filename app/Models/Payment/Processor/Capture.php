@@ -136,21 +136,23 @@ trait Capture
 
     protected function recordCapture()
     {
-        $this->repo->transaction(function()
-        {
-            $this->lockForUpdateAndReload($this->payment);
+        $payment = $this->payment;
 
-            if ($this->payment->hasBeenCaptured() === true)
+        $this->repo->transaction(function() use ($payment)
+        {
+            $this->lockForUpdateAndReload($payment);
+
+            if ($payment->hasBeenCaptured() === true)
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_CAPTURED);
             }
 
-            $this->updatePaymentCaptured();
+            $this->updatePaymentCaptured($payment);
 
-            $this->createTransactionFromCapturedPayment($this->payment);
+            $this->createTransactionFromCapturedPayment($payment);
 
-            $this->updatePaidOrderStatus($this->payment);
+            $this->updatePaidOrderStatus($payment);
 
             $this->trace(TraceCode::PAYMENT_CAPTURE_SUCCESS);
         });
@@ -164,11 +166,11 @@ trait Capture
         $notifier->trigger(Notify::CAPTURED);
     }
 
-    protected function updatePaymentCaptured()
+    protected function updatePaymentCaptured($payment)
     {
-        $this->payment->setStatus(Payment\Status::CAPTURED);
+        $payment->setStatus(Payment\Status::CAPTURED);
 
-        $this->payment->setCaptureTimestamp();
+        $payment->setCaptureTimestamp();
     }
 
     protected function createTransactionFromCapturedPayment($payment)

@@ -16,13 +16,16 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_PAYMENT_ID  = ['merchant_trans_ref', 'merchant_tran_ref'];
-    const COLUMN_CARD_TYPE   = 'card_type';
-    const COLUMN_SERVICE_TAX = ['service_taxat145', 'service_taxat1450', 'service_taxat135', 'service_taxat1350'];
-    const COLUMN_FEE         = 'commission';
-    const COLUMN_CARD_TRIVIA = ['card', 'card_category'];
-    const COLUMN_ORDER_ID    = 'order_id';
-    const RRN                = 'rrn_no';
+    const COLUMN_PAYMENT_ID           = ['merchant_trans_ref', 'merchant_tran_ref'];
+    const COLUMN_CARD_TYPE            = 'card_type';
+    const COLUMN_SERVICE_TAX          = ['service_taxat145', 'service_taxat1450', 'service_taxat135',
+                                         'service_taxat1350', 'service_taxat1500'];
+    const COLUMN_FEE                  = 'commission';
+    const COLUMN_CARD_TRIVIA          = ['card', 'network', 'card_category'];
+    const COLUMN_ORDER_ID             = 'order_id';
+    const COLUMN_RRN                  = 'rrn_no';
+    const COLUMN_CARD_LOCALE          = 'lofo';
+    const COLUMN_TRANSACTION_CATEGORY = 'transaction_category';
 
     protected $messenger;
     protected $axisMigsRepo;
@@ -115,13 +118,16 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
         $columnCardType = strtolower($row[self::COLUMN_CARD_TYPE]);
         $columnCardTrivia = $this->getColumnCardTrivia($row);
+        $columnCardLocale = strtolower($row[self::COLUMN_CARD_LOCALE]);
 
         $cardType = $this->getCardType($columnCardType, $row);
+        $cardLocale = $this->getCardLocale($columnCardLocale, $row);
         $cardTrivia = $this->getCardTrivia($columnCardTrivia, $row);
 
         return [
-            BaseReconciliate::CARD_TYPE => $cardType,
+            BaseReconciliate::CARD_TYPE   => $cardType,
             BaseReconciliate::CARD_TRIVIA => $cardTrivia,
+            BaseReconciliate::CARD_LOCALE => $cardLocale,
         ];
     }
 
@@ -202,7 +208,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         $paymentId = $this->payment->getPublicId();
 
         // $vpcTransactionNo = $this->axisMigsRepo
-        //                          ->findByRrn($row[self::RRN])
+        //                          ->findByRrn($row[self::COLUMN_RRN])
         //                          ->getTransactionId();
 
         $input['vpc_TransactionNo'] = $row[self::COLUMN_ORDER_ID];
@@ -233,5 +239,33 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         }
 
         return false;
+    }
+
+    protected function getCardLocale($cardLocale, $row)
+    {
+        if (($cardLocale === 'l') or ($cardLocale === 'local'))
+        {
+            $cardType = BaseReconciliate::DOMESTIC;
+        }
+        else if (($cardLocale === 'f') or ($cardLocale === 'foreign'))
+        {
+            $cardType = BaseReconciliate::INTERNATIONAL;
+        }
+        else
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'      => TraceCode::RECON_PARSE_ERROR,
+                    'message'         => 'Unable to figure out the card locale (domestic/international).',
+                    'recon_card_type' => $cardLocale,
+                    'row'             => $row,
+                    'gateway'         => get_class()
+                ]);
+
+            // It's as good as no card locale present in the row.
+            return null;
+        }
+
+        return $cardType;
     }
 }
