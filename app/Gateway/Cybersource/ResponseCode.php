@@ -4,7 +4,7 @@ namespace RZP\Gateway\Cybersource;
 
 use RZP\Error\ErrorCode;
 
-class ReasonCode
+class ResponseCode
 {
     public static $reasonCodes = array(
         100 => 'Successful transaction',
@@ -162,6 +162,20 @@ class ReasonCode
         if ((isset(self::$errorCodeMap[$code]) === true) and
             ((self::$errorCodeMap[$code] === ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT) or
              (self::$errorCodeMap[$code] === ErrorCode::GATEWAY_ERROR_TIMED_OUT)))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public static function isValidationError($code)
+    {
+        if ((isset(self::$errorCodeMap[$code]) === true) and
+            ((self::$errorCodeMap[$code] === ErrorCode::BAD_REQUEST_PAYMENT_MISSING_DATA) or
+             (self::$errorCodeMap[$code] === ErrorCode::BAD_REQUEST_INVALID_PARAMETERS) or
+             (self::$errorCodeMap[$code] === ErrorCode::GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST) or
+             (self::$errorCodeMap[$code] === ErrorCode::BAD_REQUEST_UNSUPPORTED_CHARACTER_SET)))
         {
             return true;
         }

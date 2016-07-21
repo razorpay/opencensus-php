@@ -242,9 +242,9 @@ class Gateway extends Base\Gateway
         switch ($networkCode)
         {
             case Card\Network::VISA:
-                if (array_key_exists(Entity::ECI, $payAuthRep) === false)
+                if (isset($payAuthRep[Entity::ECI]) === false)
                 {
-                    throw new Exception\BadRequestException(
+                    throw new Exception\GatewayErrorException(
                         ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
                 }
 
@@ -367,8 +367,7 @@ class Gateway extends Base\Gateway
 
             $gateway->saveOrFail();
 
-            throw new Exception\BadRequestException(
-                ReasonCode::getMappedCode($response['reasonCode']));
+            $this->throwException($response);
         }
 
         $attributes = array(
@@ -399,9 +398,7 @@ class Gateway extends Base\Gateway
 
             $gateway->saveOrFail();
 
-            throw new Exception\BadRequestException(
-                ReasonCode::getMappedCode($response['reasonCode']));
-
+            $this->throwException($response);
         }
 
         $attributes = array(
@@ -493,7 +490,7 @@ class Gateway extends Base\Gateway
 
                 if (($eci === 7) or ($eci === 0))
                 {
-                    throw new Exception\BadRequestException(
+                    throw new Exception\GatewayErrorException(
                         ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
                 }
 
@@ -506,7 +503,7 @@ class Gateway extends Base\Gateway
 
                 if(($colInd === 0) or ($colInd === 7))
                 {
-                    throw new Exception\BadRequestException(
+                    throw new Exception\GatewayErrorException(
                         ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
                 }
 
@@ -684,7 +681,7 @@ class Gateway extends Base\Gateway
             case Card\Network::VISA:
                 if (isset($payerAuth[Entity::ECI]) === false)
                 {
-                    throw new Exception\BadRequestException(
+                    throw new Exception\GatewayErrorException(
                         ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
                 }
 
@@ -694,7 +691,7 @@ class Gateway extends Base\Gateway
 
                 if (in_array($eci, [0, 7], true) === true)
                 {
-                    throw new Exception\BadRequestException(
+                    throw new Exception\GatewayErrorException(
                         ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
                 }
 
@@ -705,7 +702,7 @@ class Gateway extends Base\Gateway
 
                 if (($ucaf === 0) or ($ucaf === 7))
                 {
-                    throw new Exception\BadRequestException(
+                    throw new Exception\GatewayErrorException(
                         ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
                 }
 
@@ -809,24 +806,25 @@ class Gateway extends Base\Gateway
     {
         if (isset($response['reasonCode']) === false)
         {
-            throw new Exception\BadRequestException(
+            throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
         }
 
         $reasonCode = $response['reasonCode'];
 
-        if (ReasonCode::isGatewayError($reasonCode))
-        {
-            $desc = ReasonCode::$reasonCodes[$reasonCode];
+        $desc = ResponseCode::$reasonCodes[$reasonCode];
 
-            throw new Exception\GatewayErrorException(
-                ReasonCode::getMappedCode($reasonCode),
-                $reasonCode,
-                $desc);
+        if (ResponseCode::isValidationError($reasonCode))
+        {
+            throw new Exception\BadRequestException(
+                ResponseCode::getMappedCode($reasonCode),
+                $reasonCode);
         }
 
-        throw new Exception\BadRequestException(
-            ReasonCode::getMappedCode($response['reasonCode']));
+        throw new Exception\GatewayErrorException(
+                ResponseCode::getMappedCode($reasonCode),
+                $reasonCode,
+                $desc);
     }
 
 }
