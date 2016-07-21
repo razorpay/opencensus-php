@@ -53,10 +53,14 @@ class Server extends Base\Mock\Server
     public function refund($input)
     {
         parent::refund($input);
+
         $this->validateActionInput($input, 'refund');
+
         $payment = $this->getRepo()->findByEbsPaymentIdAndActionOrFail(
             $input['PaymentID'], Action::AUTHORIZE);
+
         $fields = $this->getGatewayInstance()->getFieldsForAction('refund');
+
         $date = Carbon::today('Asia/Kolkata')->format('d-m-Y H:i:s');
 
         $arr = array(
@@ -77,7 +81,7 @@ class Server extends Base\Mock\Server
 
         $content = implode($arr);
 
-            return $this->makeResponse($content);
+        return $this->makeResponse($content);
     }
 
 

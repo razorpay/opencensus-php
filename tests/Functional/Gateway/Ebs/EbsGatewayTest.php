@@ -78,4 +78,37 @@ class EbsGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
         $this->refundPayment($payment['id']);
     }
+
+    public function testAuthorizedPaymentRefund()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment = $this->doAuthPayment($payment);
+
+        $input['force'] = '1';
+        $this->refundAuthorizedPayment($payment['razorpay_payment_id'], $input);
+
+        $refund = $this->getLastEntity('ebs', true);
+        $this->assertArraySelectiveEquals(
+            $this->testData['testPaymentRefund'], $refund);
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testTransactionAfterRefundingAuthorizedPayment'], $txn);
+    }
+
+
+    /*
+     * throw Run-time exception if payment method is Card
+     * Ebs is enabled for netbanking only
+     */
+    public function testErrorOnCard()
+    {
+
+        $this->setExpectedException('RZP\Exception\RuntimeException');
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment['method'] = 'card';
+        $payment = $this->doAuthPayment($payment);
+    }
+
 }
