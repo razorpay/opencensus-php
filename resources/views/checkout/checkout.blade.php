@@ -38,15 +38,15 @@
     </script>
   @else
     <script>
-      function appendScript(){
+      function appendScript(element){
         var script = document.createElement('script');
-        script.src = "{{ $framejs }}";
+        script.src = element.src;
         document.body.appendChild(script);
       }
       @if (isset($preferences))
         var preferences = {!! json_encode($preferences) !!};
       @endif
     </script>
-    <script src="{{ $framejs }}" crossorigin onerror="appendScript()"></script>
+    <script src="{{ $framejs }}" crossorigin onerror="appendScript(this)"></script>
   @endif
 </html>
