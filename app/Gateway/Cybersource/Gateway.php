@@ -138,8 +138,6 @@ class Gateway extends Base\Gateway
         {
             $response = $this->postRequest($request);
 
-            $this->throwException($response);
-
             $this->persistAfterEnroll($input, $response, $request);
 
             return $response;
@@ -163,8 +161,6 @@ class Gateway extends Base\Gateway
         {
             $response = $this->postRequest($request);
 
-            $this->throwException($response);
-
             $this->persistAfterValidate($input, $response, $request);
 
             return $response;
@@ -186,8 +182,6 @@ class Gateway extends Base\Gateway
         {
             $response = $this->postRequest($request);
 
-            $this->throwException($response);
-
             $this->persistAfterAuthorize($input, $response, $request);
         }
         catch (SoapFault $exception)
@@ -206,8 +200,6 @@ class Gateway extends Base\Gateway
         try
         {
             $response = $this->postRequest($request);
-
-            $this->throwException($response);
 
             $this->persistAfterNotEnrolledAuthorize($input, $response, $request);
         }
@@ -234,8 +226,7 @@ class Gateway extends Base\Gateway
 
             $gateway->saveOrFail();
 
-            throw new Exception\BadRequestException(
-                            ResponseCode::$map[$response['reasonCode']]);
+            $this->throwException($response);
         }
 
         $payAuthRep = $response[self::PAYER_AUTH_VALIDATE_REPLY];
@@ -292,8 +283,7 @@ class Gateway extends Base\Gateway
 
             $gatewayPayment->saveOrFail();
 
-            throw new Exception\BadRequestException(
-                            ResponseCode::$map[$response['reasonCode']]);
+            $this->throwException($response);
         }
 
         $attributes = array(
@@ -323,8 +313,7 @@ class Gateway extends Base\Gateway
 
             $gateway->saveOrFail();
 
-            throw new Exception\BadRequestException(
-                            ResponseCode::$map[$response['reasonCode']]);
+            $this->throwException($response);
         }
 
         $attributes = array(
@@ -356,8 +345,7 @@ class Gateway extends Base\Gateway
         if (($response['reasonCode'] !== Result::ENROLLED) and
             ($response['reasonCode'] !== Result::SUCCESS))
         {
-            throw new Exception\BadRequestException(
-                ResponseCode::getMappedCode($response['reasonCode']));
+            $this->throwException($response);
         }
     }
 
@@ -836,6 +824,9 @@ class Gateway extends Base\Gateway
                 $reasonCode,
                 $desc);
         }
+
+        throw new Exception\BadRequestException(
+            ResponseCode::$map[$response['reasonCode']]);
     }
 
 }
