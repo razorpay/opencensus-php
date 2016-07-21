@@ -40,4 +40,9 @@ class Table
 
     // Sessions table
     const SESSION           = 'sessions';
+
+    // Terminal Performance
+    const TERMNINAL_AUDIT_LOGS    = 'terminal_audit_logs';
+    const TERMINAL_ACTION_LOGS    = 'terminal_action_logs';
+    const TERMINAL_ABSENCE_SCHEDULE  = 'terminal_absence_schedule';
 }

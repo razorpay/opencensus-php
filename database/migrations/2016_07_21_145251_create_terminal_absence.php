@@ -5,9 +5,9 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
 use RZP\Models\Terminal;
-use RZP\Models\Terminal\DowntimeTrace\Entity as DowntimeTrace;
+use RZP\Models\Terminal\Absence\Entity as DowntimeTrace;
 
-class CreateTerminalDowntimeTraces extends Migration
+class CreateTerminalAbsence extends Migration
 {
     /**
      * Run the migrations.
@@ -16,13 +16,11 @@ class CreateTerminalDowntimeTraces extends Migration
      */
     public function up()
     {
-        Schema::create(Table::TERMINAL_DOWNTIME_SCHEDULE, function(Blueprint $table) {
+        Schema::create(Table::TERMINAL_ABSENCE_SCHEDULE, function(Blueprint $table) {
             $table->engine = 'InnoDB';
 
             $table->char(DowntimeTrace::ID, DowntimeTrace::ID_LENGTH)
                 ->primary();
-
-            $table->char(DowntimeTrace::TERMINAL_ID, DowntimeTrace::ID_LENGTH);
 
             $table->string(DowntimeTrace::GATEWAY);
 
@@ -34,15 +32,8 @@ class CreateTerminalDowntimeTraces extends Migration
 
             $table->integer(DowntimeTrace::UPDATED_AT);
 
-            $table->foreign(DowntimeTrace::TERMINAL_ID)
-                ->references(Terminal\Entity::ID)
-                ->on(Table::TERMINAL)
-                ->on_delete('restrict');
-
-            $table->index(DowntimeTrace::TERMINAL_ID);
-
             $table->index(DowntimeTrace::GATEWAY);
-
+            
         });
     }
 
@@ -53,13 +44,6 @@ class CreateTerminalDowntimeTraces extends Migration
      */
     public function down()
     {
-        Schema::table(Table::TERMINAL_DOWNTIME_SCHEDULE, function($table)
-        {
-            $table->dropForeign(
-                TABLE::TERMINAL_DOWNTIME_SCHEDULE.'_'.DowntimeTrace::TERMINAL_ID.'_foreign');
-
-        });
-
-        Schema::drop(Table::TERMINAL_DOWNTIME_SCHEDULE);
+        Schema::drop(Table::TERMINAL_ABSENCE_SCHEDULE);
     }
 }

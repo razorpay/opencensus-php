@@ -32,16 +32,26 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT
     );
 
-    protected $table = 'terminal_action_log';
+    protected $table = \RZP\Constants\Table::TERMINAL_ACTION;
 
     protected $generateIdOnCreate = true;
 
-    protected $entity = 'TerminalActionLog';
+    protected $entity = 'terminal_action';
 
     protected static $sign = '';
 
     protected static $delimiter = '';
 
     protected static $generators = array(self::ID, self::TERMINAL_ID, self::ACTION);
+
+    public function getTerminalId()
+    {
+        return $this->attributes[self::TERMINAL_ID];
+    }
+
+    public function getAction()
+    {
+        return $this->attributes[self::ACTION];
+    }
 
 }

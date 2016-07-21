@@ -1,21 +1,21 @@
 <?php
 
-namespace RZP\Models\Terminal\DowntimeTrace;
+namespace RZP\Models\Terminal\Absence;
 
 use RZP\Models\Base;
-use RZP\Models\Terminal\DowntimeTrace\Entity;
+use RZP\Models\Terminal\Absence\Entity;
 use RZP\Exception;
 
 class Repository extends Base\Repository
 {
     use Base\RepositoryFetch;
 
-    protected $entity = 'TerminalDowntimeTrace';
+    protected $entity = 'terminal_absence';
 
 
     public function findForTerminal($terminal)
     {
-        $repo = $this->repo;
+        $repo = $this->repo->terminal_absence;
 
         return $repo::withTrashed()
             ->where(Entity::TERMINAL_ID, '=', $terminal->getId())
@@ -24,7 +24,7 @@ class Repository extends Base\Repository
 
     public function findForGateway($gateway)
     {
-        $repo = $this->repo;
+        $repo = $this->repo->terminal_absence;
 
         $results =  $repo::withTrashed()
                          ->where(Entity::GATEWAY, '=', $gateway->getId());
@@ -34,7 +34,7 @@ class Repository extends Base\Repository
 
     public function findBetweenTimestampsForGateway($from, $to, $gateway=null)
     {
-        $repo = $this->repo;
+        $repo = $this->repo->terminal_absence;
 
         $results = $repo::withTrashed()
                         ->where(Entity::DOWNTIME_FROM, '>=', $from)

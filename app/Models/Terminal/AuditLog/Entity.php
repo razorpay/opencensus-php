@@ -44,11 +44,11 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT
     );
 
-    protected $table = 'terminal_audit_log';
+    protected $table = \RZP\Constants\Table::TERMNINAL_AUDIT_LOGS;
 
     protected $generateIdOnCreate = true;
 
-    protected $entity = 'TerminalAuditLog';
+    protected $entity = 'terminal_auditlog';
 
     protected static $sign = '';
 
@@ -58,5 +58,40 @@ class Entity extends Base\PublicEntity
                                          self::STATUS, self::RESPONSE_TIME, self::STATUS_CODE,
                                          self::STATUS_MSG, self::PAYMENT_TYPE, self::CREATED_AT
                                         );
+
+    public function getPaymentId()
+    {
+        return $this->attributes[self::PAYMENT_ID];
+    }
+
+    public function getTerminalId()
+    {
+        return $this->attributes[self::TERMINAL_ID];
+    }
+
+    public function getStatus()
+    {
+        return $this->attributes[self::STATUS];
+    }
+
+    public function getResponseTime()
+    {
+        return $this->attributes[self::RESPONSE_TIME];
+    }
+
+    public function getStatusCode()
+    {
+        return $this->attributes[self::STATUS_CODE];
+    }
+
+    public function getStatusMsg()
+    {
+        return $this->attributes[self::STATUS_MSG];
+    }
+
+    public function getPaymentType()
+    {
+        return $this->attributes[self::PAYMENT_TYPE];
+    }
 
 }

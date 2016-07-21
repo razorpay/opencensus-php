@@ -10,26 +10,26 @@ class Repository extends Base\Repository
 {
     use Base\RepositoryFetch;
 
-    protected $entity = 'TerminalActionLog';
+    protected $entity = 'terminal_action';
 
 
-    public function findForTerminal($terminal)
+    public function findForTerminal($id)
     {
-        $repo = $this->repo;
+        $repo = $this->repo->terminal_action;
 
         return $repo::withTrashed()
-            ->where(Entity::TERMINAL_ID, '=', $terminal->getId())
+            ->where(Entity::TERMINAL_ID, '=', $id)
             ->get();
     }
 
-    public function findBetweenTimesampsForTerminal($from, $to, $terminal)
+    public function findBetweenTimesampsForTerminal($from, $to, $id)
     {
-        $repo = $this->repo;
+        $repo = $this->repo->terminal_action;
 
         return $repo::withTrashed()
-                ->where(Entity::TERMINAL_ID, '=', $terminal->getId())
-                ->where(Entity::TIMESTAMP, '>=', $from)
-                ->where(Entity::TIMESTAMP, '<=', $to)
+                ->where(Entity::TERMINAL_ID, '=', $id)
+                ->where(Entity::CREATED_AT, '>=', $from)
+                ->where(Entity::CREATED_AT, '<=', $to)
                 ->get();
     }
 }

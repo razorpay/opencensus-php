@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Terminal\DowntimeTrace;
+namespace RZP\Models\Terminal\Absence;
 
 use RZP\Models\Base;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -10,7 +10,6 @@ class Entity extends Base\PublicEntity
     use SoftDeletes;
 
     const ID                            = 'id';
-    const TERMINAL_ID                   = 'terminal_id';
     const GATEWAY                       = 'gateway';
     const DOWNTIME_FROM                 = 'downtime_from';
     const DOWNTIME_TO                   = 'downtime_to';
@@ -19,13 +18,11 @@ class Entity extends Base\PublicEntity
 
 
     protected $fillable = array(
-        self::TERMINAL_ID,
         self::GATEWAY
     );
 
     protected $public = array(
         self::ID,
-        self::TERMINAL_ID,
         self::GATEWAY,
         self::DOWNTIME_FROM,
         self::DOWNTIME_TO,
@@ -33,19 +30,34 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT
     );
 
-    protected $table = 'terminal_downtime_trace';
+    protected $table = \RZP\Constants\Table::TERMINAL_DOWNTIME_SCHEDULE;
 
     protected $generateIdOnCreate = true;
 
-    protected $entity = 'TerminalDowntimeTrace';
+    protected $entity = 'terminal_absence';
 
     protected static $sign = '';
 
     protected static $delimiter = '';
 
-    protected static $generators = array(self::ID, self::TERMINAL_ID, self::GATEWAY,
+    protected static $generators = array(self::ID, self::GATEWAY,
                                          self::DOWNTIME_FROM, self::DOWNTIME_TO,
                                          self::CREATED_AT, self::UPDATED_AT
                                         );
+
+    public function getGateway()
+    {
+        return $this->attributes[self::GATEWAY];
+    }
+
+    public function getDowntimeFrom()
+    {
+        return $this->attributes[self::DOWNTIME_FROM];
+    }
+
+    public function getDowntimeTo()
+    {
+        return $this->attributes[self::DOWNTIME_TO];
+    }
 
 }
