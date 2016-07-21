@@ -186,8 +186,8 @@ class Gateway extends Base\Gateway
         $refundAmount = (string) number_format($refundAmount/100, 2, '.', '');
         $content = array(
             'Action' => 'refund',
-            'AccountID' => $this->config['merchant_id'];,
-            'SecretKey' => $this->config['hash_secret'];,
+            'AccountID' => $this->config['merchant_id'],
+            'SecretKey' => $this->config['hash_secret'],
             'Amount' => $refundAmount,
             'PaymentID' => $payment['ebs_payment_id'],
         );
