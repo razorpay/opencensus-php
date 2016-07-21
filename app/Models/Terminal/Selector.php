@@ -109,7 +109,7 @@ class Selector
 
         // When the terminal selector has to activated.
         // uncomment the following code
-        // $this->setTerminalForPayment($payment, $terminal);
+        $this->setTerminalForPayment($payment, $terminal);
 
         return $terminal;
     }

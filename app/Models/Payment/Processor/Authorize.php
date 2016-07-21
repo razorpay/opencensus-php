@@ -175,28 +175,14 @@ trait Authorize
 
         $terminalSelected = null;
 
+        $verbose = false;
+
         // Terminal picked is the terminal used for payment processing.
         $terminalPicked = (new TerminalPicker)->selectTerminal($payment, $this->mode);
 
-        try
-        {
-            $verbose = false;
+        $terminalSelected = (new Terminal\Selector)->select($payment, $this->mode, $verbose);
 
-            // Add extra logs conditionally
-            // if ($this->isMoreLoggingRequired($terminalPicked))
-            // {
-            //     $verbose = true;
-            // }
-
-            // Terminal selected is now only used to validate any mistakes across each.
-            $terminalSelected = (new Terminal\Selector)->select($payment, $this->mode, $verbose);
-
-            $this->logTerminalPickedAndSelected($terminalSelected, $terminalPicked, $payment);
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->traceException($e, Trace::INFO, TraceCode::TERMINAL_SELECTION_MISMATCH);
-        }
+        $this->logTerminalPickedAndSelected($terminalSelected, $terminalPicked, $payment);
 
         $this->runPaymentGatewayRelatedPreProcessing($payment, $gatewayInput);
 

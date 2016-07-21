@@ -73,9 +73,9 @@ class TerminalPicker
                 ['payment' => $payment->toArrayAdmin()]);
         }
 
-        $payment->terminal()->associate($terminal);
+        // $payment->terminal()->associate($terminal);
 
-        $payment->setGateway($terminal->getGateway());
+        // $payment->setGateway($terminal->getGateway());
 
         return $terminal;
     }
