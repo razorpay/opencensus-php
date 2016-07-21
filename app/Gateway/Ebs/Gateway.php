@@ -21,6 +21,7 @@ class Gateway extends Base\Gateway
         'mode' => 'mode',
         'referenceNo' => 'paymnet_id',
         'errorCode' =>'ErrorCode',
+        'error' => 'ErrorDescription',
 
     );
 
@@ -128,23 +129,38 @@ class Gateway extends Base\Gateway
             'url' => $this->getUrl($this->action),
             'method' => 'post',
             'content' => $content);
+
         $response = $this->sendGatewayRequest($request);
 
         $resp = Utility::parseResponseXml($response->body);
         //TODO fix split with space
 
-        $attr = $this->getMappedAttributes($resp);
-
         $refundAmount = (float) ($input['refund']['amount']);
 
         $refundAmount = (string) number_format($refundAmount/100, 2, '.', '');
 
+        $attr = $this->getMappedAttributes($resp);
+
         $attr['RefAmount'] = $refundAmount;
+
         $attr['refund_id'] = $input['refund']['id'];
-        $attr['currency'] = 'INR';
-        $attr['received'] = 1;
+
         $attr['amount'] = $content['Amount'];
+
         $attr['reference_no'] = $input['payment']['id'];
+
+        $attr['currency'] = 'INR';
+
+        $attr['received'] = 1;
+
+        if ($attr['ErrorCode'] !== 0 )
+        {
+            $attr['TxnAmount'] = $refundAmount;
+
+            $attr['mode'] = $payment['mode'];
+
+            $attr['paymnet_id'] = $payment['id'];
+        }
 
         $refund = $this->createGatewayPaymentEntity($attr);
 
@@ -170,8 +186,8 @@ class Gateway extends Base\Gateway
         $refundAmount = (string) number_format($refundAmount/100, 2, '.', '');
         $content = array(
             'Action' => 'refund',
-            'AccountID' => '20640',
-            'SecretKey' => 'bd9c562902844435bcba33ee9528a4b3',
+            'AccountID' => $this->config['merchant_id'];,
+            'SecretKey' => $this->config['hash_secret'];,
             'Amount' => $refundAmount,
             'PaymentID' => $payment['ebs_payment_id'],
         );
@@ -211,7 +227,7 @@ class Gateway extends Base\Gateway
     protected function getAuthRequestContentArray($input)
     {
         $content = array(
-            'account_id' => '20640', // read from config
+            'account_id' => $this->config['merchant_id'], // read from config
             'reference_no' => $input['payment']['id'],
             'amount' => $input['payment']['amount']/100,
             'return_url' => $input['callbackUrl'],
@@ -291,7 +307,7 @@ class Gateway extends Base\Gateway
     }
     public function getSecureHash($content)
     {
-        $secretKey = 'bd9c562902844435bcba33ee9528a4b3';
+        $secretKey = $this->config['hash_secret'];;
         // READ FROM config
         $hashData = $secretKey;
         ksort($content);

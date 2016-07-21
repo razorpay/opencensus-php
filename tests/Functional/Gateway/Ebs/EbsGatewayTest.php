@@ -68,4 +68,14 @@ class EbsGatewayTest extends TestCase
         $refund = $this->getLastEntity('ebs', true);
         $this->assertTestResponse($refund);
     }
+
+    public function testPaymentRefundWithoutCapture()
+    {
+        $this->setExpectedException('RZP\Exception\BadRequestException');
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->refundPayment($payment['id']);
+    }
 }
