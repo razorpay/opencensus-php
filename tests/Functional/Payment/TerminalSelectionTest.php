@@ -89,7 +89,10 @@ class TerminalSelectionTest extends TestCase
     {
         // Disable particular hdfc terminal, enable shared hdfc and shared hdfc emi terminal
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-        $this->fixtures->create('terminal:shared_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_amex_terminal');
+        $this->fixtures->create('terminal:all_shared_terminals');
+
+        // $this->fixtures->create('terminal:shared_hdfc_terminal');
         $this->fixtures->create('terminal:shared_hdfc_emi_terminal');
 
         // Enable default emi plans and mocktokenex
