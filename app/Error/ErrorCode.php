@@ -62,7 +62,6 @@ class ErrorCode
     const GATEWAY_ERROR_PAYMENT_SUPPORT_FAILED                                      = 'GATEWAY_ERROR_PAYMENT_SUPPORT_FAILED';
     const GATEWAY_ERROR_PAYMENT_SUPPORT_AUTH_NOT_FOUND                              = 'GATEWAY_ERROR_PAYMENT_SUPPORT_AUTH_NOT_FOUND';
     const GATEWAY_ERROR_PAYMENT_PARES_NOT_SUCCESFUL                                 = 'GATEWAY_ERROR_PAYMENT_PARES_NOT_SUCCESFUL';
-    const GATEWAY_ERROR_PAYMENT_AMOUNT_MISMATCH                                     = 'GATEWAY_ERROR_PAYMENT_AMOUNT_MISMATCH';
 
     const GATEWAY_ERROR_CARD_INVALID_NAME                                           = 'GATEWAY_ERROR_CARD_INVALID_NAME';
     const GATEWAY_ERROR_CARD_INVALID_NUMBER                                         = 'GATEWAY_ERROR_CARD_INVALID_NUMBER';
@@ -73,14 +72,6 @@ class ErrorCode
     const GATEWAY_ERROR_CARD_INVALID_ZIP                                            = 'GATEWAY_ERROR_CARD_INVALID_ZIP';
     const GATEWAY_ERROR_CARD_INVALID_CVV                                            = 'GATEWAY_ERROR_CARD_INVALID_CVV';
     const GATEWAY_ERROR_CARD_MISSING_CVV                                            = 'GATEWAY_ERROR_CARD_MISSING_CVV';
-    const GATEWAY_ERROR_CARD_AVS_FAILED                                             = 'GATEWAY_ERROR_CARD_AVS_FAILED';
-    const GATEWAY_ERROR_CARD_STOLEN_LOST                                            = 'GATEWAY_ERROR_CARD_STOLEN_LOST';
-    const GATEWAY_ERROR_CARD_ISSUING_BANK_UNAVAILABLE                               = 'GATEWAY_ERROR_CARD_ISSUING_BANK_UNAVAILABLE';
-    const GATEWAY_ERROR_CARD_INACTIVE                                               = 'GATEWAY_ERROR_CARD_INACTIVE';
-    const GATEWAY_ERROR_CARD_CREDIT_LIMIT_REACHED                                   = 'GATEWAY_ERROR_CARD_CREDIT_LIMIT_REACHED';
-    const GATEWAY_ERROR_CARD_FROZEN                                                 = 'GATEWAY_ERROR_CARD_FROZEN';
-    const GATEWAY_ERROR_CARD_DAILY_LIMIT_REACHED                                    = 'GATEWAY_ERROR_CARD_DAILY_LIMIT_REACHED';
-    const GATEWAY_ERROR_CARD_BILL_SHIP_MISMATCH                                     = 'GATEWAY_ERROR_CARD_BILL_SHIP_MISMATCH';
 
     const GATEWAY_ERROR_PAYMENT_MISSING_DATA                                        = 'GATEWAY_ERROR_PAYMENT_MISSING_DATA';
     const GATEWAY_ERROR_INVALID_PARAMETERS                                          = 'GATEWAY_ERROR_INVALID_PARAMETERS';
@@ -194,7 +185,18 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_FEES_OR_SERVICE_TAX_TAMPERED                          = 'BAD_REQUEST_PAYMENT_FEES_OR_SERVICE_TAX_TAMPERED';
     const BAD_REQUEST_PAYMENT_MISSING_DATA                                          = 'BAD_REQUEST_PAYMENT_MISSING_DATA';
     const BAD_REQUEST_PAYMENT_PARTIAL_AMOUNT_APPROVED                               = 'BAD_REQUEST_PAYMENT_PARTIAL_AMOUNT_APPROVED';
+    const BAD_REQUEST_PAYMENT_AMOUNT_MISMATCH                                       = 'BAD_REQUEST_PAYMENT_AMOUNT_MISMATCH';
+
+    const BAD_REQUEST_CARD_AVS_FAILED                                               = 'BAD_REQUEST_CARD_AVS_FAILED';
+    const BAD_REQUEST_CARD_STOLEN_OR_LOST                                           = 'BAD_REQUEST_CARD_STOLEN_OR_LOST';
+    const BAD_REQUEST_CARD_ISSUING_BANK_UNAVAILABLE                                 = 'BAD_REQUEST_CARD_ISSUING_BANK_UNAVAILABLE';
+    const BAD_REQUEST_CARD_INACTIVE                                                 = 'BAD_REQUEST_CARD_INACTIVE';
+    const BAD_REQUEST_CARD_CREDIT_LIMIT_REACHED                                     = 'BAD_REQUEST_CARD_CREDIT_LIMIT_REACHED';
+    const BAD_REQUEST_CARD_FROZEN                                                   = 'BAD_REQUEST_CARD_FROZEN';
+    const BAD_REQUEST_CARD_DAILY_LIMIT_REACHED                                      = 'BAD_REQUEST_CARD_DAILY_LIMIT_REACHED';
+    const BAD_REQUEST_CARD_BILL_SHIP_MISMATCH                                       = 'BAD_REQUEST_CARD_BILL_SHIP_MISMATCH';
     const BAD_REQUEST_INVALID_PARAMETERS                                            = 'BAD_REQUEST_INVALID_PARAMETERS';
+
     const BAD_REQUEST_UNSUPPORTED_CHARACTER_SET                                     = 'BAD_REQUEST_UNSUPPORTED_CHARACTER_SET';
 
     const BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED                                     = 'BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED';

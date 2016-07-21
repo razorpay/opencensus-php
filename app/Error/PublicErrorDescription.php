@@ -23,7 +23,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED                            = 'Invalid currency. Currently only INR is supported.';
     const BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED                               = 'The payment status should be captured for refund action to be taken';
     const BAD_REQUEST_PAYMENT_FULLY_REFUNDED                                    = 'The payment has been fully refunded already';
-    const BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_CAPTURED               = 'The refund amount proivded is greater than amount captured';
+    const BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_CAPTURED               = 'The refund amount provided is greater than amount captured';
     const BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_UNREFUNDED             = 'The refund amount provided is greater than the unrefunded amount';
     const BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT                       = 'Minimum transaction amount allowed is Rs 1';
     const BAD_REQUEST_PAYMENT_AMOUNT_TOO_HIGH                                   = 'The amount may not be greater than 50000000.';
@@ -36,7 +36,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_WALLET_NOT_ENALBED_FOR_MERCHANT                   = 'Wallet is not enabled for the merchant';
     const BAD_REQUEST_PAYMENT_CARD_NOT_ENALBED_FOR_MERCHANT                     = 'Card transactions are not enabled for the merchant';
     const BAD_REQUEST_PAYMENT_EMI_NOT_ENALBED_FOR_MERCHANT                      = 'Emi transactions are not enabled for the merchant';
-    const BAD_REQUEST_PAYMENT_EMI_NOT_AVAILABLE_ON_CARD                         = 'Emi is not avaiable for the card used in the transaction';
+    const BAD_REQUEST_PAYMENT_EMI_NOT_AVAILABLE_ON_CARD                         = 'Emi is not available for the card used in the transaction';
     const BAD_REQUEST_PAYMENT_BANK_NOT_PROVIDED                                 = 'Bank not provided for net banking payment';
     const BAD_REQUEST_PAYMENT_INVALID_BANK_CODE                                 = 'Bank code provided for net banking payment is invalid';
     const BAD_REQUEST_PAYMENT_CONTACT_INCORRECT_FORMAT                          = 'Contact number contains invalid characters, only digits and + symbol are allowed';
@@ -138,7 +138,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CANCELLED                                         = 'Payment processing cancelled';
     const BAD_REQUEST_PAYMENT_DECLINED_CONTACT_ISSUING_BANK                     = 'Payment processing declined by card issuing bank. Please contact issuing bank to determine reason.';
     const BAD_REQUEST_PAYMENT_NETBANKING_CANCELLED_BY_USER                      = 'Payment processing via netbanking cancelled by user by clicking cancel on bank transfer page';
-    const BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED                     = 'Payment processing failed due to 3dsecure or OTP authentication faliure';
+    const BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED                     = 'Payment processing failed due to 3dsecure or OTP authentication failure';
     const BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK                      = 'Payment processing failed by bank due to risk';
     const BAD_REQUEST_PAYMENT_CARD_NOT_ENROLLED_FOR_3DSECURE                    = 'Payment processing failed because card is not enrolled for the required 3dsecure authentication';
     const BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED             = 'Payment processing failed because OTP validation attempts limit exceeded';
@@ -149,6 +149,15 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_PARAMETERS                                        = 'One or more fields have invalid data';
     const BAD_REQUEST_PAYMENT_PARTIAL_AMOUNT_APPROVED                           = 'Payment declined because partial amount was approved';
     const BAD_REQUEST_UNSUPPORTED_CHARACTER_SET                                 = 'Error occurred because of invalid data';
+
+    const BAD_REQUEST_CARD_AVS_FAILED                                           = 'Payment processing failed because address validation failed';
+    const BAD_REQUEST_CARD_STOLEN_OR_LOST                                       = 'Payment failed because stolen or lost card is used';
+    const BAD_REQUEST_CARD_ISSUING_BANK_UNAVAILABLE                             = 'Payment failed because issuing bank is unavailable';
+    const BAD_REQUEST_CARD_INACTIVE                                             = 'Payment failed because given card is inactive';
+    const BAD_REQUEST_CARD_CREDIT_LIMIT_REACHED                                 = 'Payment failed because card has reached it\'s limit';
+    const BAD_REQUEST_CARD_FROZEN                                               = 'Payment failed because given card is inactive';
+    const BAD_REQUEST_CARD_DAILY_LIMIT_REACHED                                  = 'Payment failed because card has reached it\'s limit';
+    const BAD_REQUEST_CARD_BILL_SHIP_MISMATCH                                   = 'Payment failed';
 
     const BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED                                 = 'Order id is mandatory for payment';
     const BAD_REQUEST_ORDER_METHOD_REQUIRED_FOR_MERCHANT                        = 'Order payment method is mandatory for this merchant';
