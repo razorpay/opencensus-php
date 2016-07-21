@@ -7,6 +7,8 @@ use RZP\Error\ErrorCode;
 
 class GatewayErrorException extends RecoverableException
 {
+    const TWO_FA_ERROR = '2fa_error';
+
     public function __construct(
         $code,
         $gatewayErrorCode = null,
@@ -29,5 +31,16 @@ class GatewayErrorException extends RecoverableException
                  PHP_EOL . 'Gateway Error Desc: ' . $gatewayErrorDesc;
 
         $this->message = $desc;
+    }
+
+    public function mark2faError()
+    {
+        $this->data[self::TWO_FA_ERROR] = true;
+    }
+
+    public function has2faError()
+    {
+        $data = $this->getData();
+        return (($data !== null) and ($data[self::TWO_FA_ERROR] === true));
     }
 }

@@ -101,6 +101,13 @@ trait RequestResponseFlowTrait
 
         $this->assertExceptionClass($actual, $class);
 
+        if (isset($expected['data']) === true)
+        {
+            $data = $actual->getData();
+
+            $this->assertExceptionData($data, $expected['data']);
+        }
+
         $internalError = $actual->getError()->getAttributes();
 
         $this->assertErrorDataEquals($expected, $internalError);

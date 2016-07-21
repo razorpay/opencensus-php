@@ -137,6 +137,8 @@ trait Callback
             $this->processPaymentCallbackException($e);
         }
 
+        $this->updatePayment2faStatus($data);
+
         $this->updateAndNotifyPaymentAuthorized();
     }
 
@@ -161,6 +163,11 @@ trait Callback
         $this->callGatewayFunction(Payment\Action::DEBIT, $input);
 
         return $data;
+    }
+
+    protected function update2faStatus($data)
+    {
+
     }
 
     protected function postPaymentOtpCallbackProcessing($input, $data)
@@ -212,6 +219,7 @@ trait Callback
 
         if ($status !== Status::CREATED)
         {
+            s('if status not created');
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
         }
@@ -221,12 +229,11 @@ trait Callback
         if (Error\Error::hasAction($code) === false)
         {
             $this->updatePaymentFailed(
-                $e->getError(),
-                TraceCode::PAYMENT_AUTH_FAILURE);
+                $e, TraceCode::PAYMENT_AUTH_FAILURE);
         }
         else
         {
-            $this->setPaymentError($e->getError());
+            $this->setPaymentError($e);
         }
 
         switch ($code)

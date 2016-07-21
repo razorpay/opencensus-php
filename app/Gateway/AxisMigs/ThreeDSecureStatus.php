@@ -3,6 +3,7 @@
 namespace RZP\Gateway\AxisMigs;
 
 use RZP\Gateway\AxisMigs;
+use RZP\Models\Payment\TwoFaStatus;
 
 class ThreeDSecureStatus
 {
@@ -20,13 +21,20 @@ class ThreeDSecureStatus
     const U = 'U';
     const A = 'A';
 
-	protected static $vpc3DSstatusMap = array(
-        self::SUCCESS => array('Y'),
-        self::FAILURE => array('N'),
-        self::SKIPPED => array('U', 'A'));
-
     public static function is3DSecureSuccess($status)
     {
         return ($status === self::Y);
+    }
+
+    public static function get2faStatus($status)
+    {
+        switch ($status) {
+            case self::Y:
+                return TwoFaStatus::PASSED;
+            case self::N:
+                return TwoFaStatus::FAILED;
+            default:
+                return TwoFaStatus::UNKNOWN;
+        }
     }
 }

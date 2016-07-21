@@ -598,8 +598,11 @@ class Gateway extends Base\Gateway
     protected function verifyPaymentCallbackResponse($input)
     {
         $txnResponseCode = $input['gateway']['vpc_TxnResponseCode'];
+
         $threeDSstatus = isset($input['gateway']['vpc_3DSstatus']) ? $input['gateway']['vpc_3DSstatus'] : '';
+
         $message = '';
+
         $apiErrorCode = null;
 
         if (isset($input['gateway']['vpc_Message']))
@@ -617,13 +620,14 @@ class Gateway extends Base\Gateway
             //
 
             if (($input['merchant']['international'] === false) and
-                (ThreeDSecureStatus::is3DSecureSuccess($threeDSstatus)) === false)
+                $this->has2faFailed($threeDSstatus))
             {
                 $apiErrorCode = Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED;
             }
             else
             {
-                return; // payment succeeds
+                // payment succeeds
+                return $this->makeApiCallbackResponse(array('threeDSstatus' => $threeDSstatus));
             }
         }
         else
@@ -632,11 +636,40 @@ class Gateway extends Base\Gateway
             $apiErrorCode = $this->getApiErrorCode($input);
         }
 
-        // Payment fails, throw exception
-        throw new Exception\GatewayErrorException(
-                    $apiErrorCode,
-                    $txnResponseCode,
-                    $message);
+        $this->throwException($apiErrorCode, $txnResponseCode, $message);
+    }
+
+    protected function makeApiCallbackResponse(array $input)
+    {
+        $two_fa_status = $this->get2faStatus($input['threeDSstatus']);
+
+        $data = array('2fa_status' => $two_fa_status);
+
+        return $data;
+    }
+
+    protected function throwException($code, $gatewayErrorCode, $gatewayErrorDesc,
+        $threeDSstatus = null)
+    {
+        $e = new Exception\GatewayErrorException($code, $gatewayErrorCode,
+                    $gatewayErrorDesc);
+
+        if ($this->has2faFailed($threeDSstatus))
+        {
+            $e->mark2faError();
+        }
+
+        throw $e;
+    }
+
+    protected function has2faFailed($threeDSstatus)
+    {
+        return ThreeDSecureStatus::is3DSecureSuccess($threeDSstatus) === false;
+    }
+
+    protected function get2faStatus($threeDSstatus)
+    {
+        return ThreeDSecureStatus::get2faStatus($threeDSstatus);
     }
 
     protected function getApiErrorCode($input)

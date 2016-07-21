@@ -19,6 +19,7 @@ use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Status;
 use RZP\Models\Merchant\Methods;
+use RZP\Models\Payment\TwoFaStatus;
 
 use RZP\Error;
 use RZP\Exception;
@@ -60,6 +61,12 @@ trait Authorize
         {
             return $this->getPaymentGatewayRequestData($request, $payment);
         }
+
+        // If request is null, then payment is a one-step process,
+        // i.e. without 2-factor authentication
+        $data = array('2fa_status' => TwoFaStatus::SKIPPED);
+
+        $this->updatePayment2faStatus($data);
 
         $this->updateAndNotifyPaymentAuthorized();
 

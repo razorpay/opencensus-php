@@ -10,6 +10,7 @@ use Lib\PhoneBook;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Refund;
+use RZP\Models\Payment\TwoFaStatus;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Bank\Name as BankNames;
@@ -24,6 +25,7 @@ class Entity extends Base\PublicEntity
     const AMOUNT_AUTHORIZED     = 'amount_authorized';
     const AMOUNT_REFUNDED       = 'amount_refunded';
     const STATUS                = 'status';
+    const TWO_FA_STATUS         = '2fa_status';
     const ORDER_ID              = 'order_id';
     const METHOD                = 'method';
     const REFUND_STATUS         = 'refund_status';
@@ -104,6 +106,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_REFUNDED,
         self::CURRENCY,
         self::STATUS,
+        self::TWO_FA_STATUS,
         self::REFUND_STATUS,
         self::CAPTURED,
         self::DESCRIPTION,
@@ -146,6 +149,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::STATUS,
+        self::TWO_FA_STATUS,
         self::ORDER_ID,
         self::METHOD,
         self::AMOUNT_REFUNDED,
@@ -180,6 +184,7 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = array(
         self::STATUS            => Status::CREATED,
+        self::TWO_FA_STATUS     => null,
         self::REFUND_STATUS     => Refund\Status::NULL,
         self::NOTES             => [],
         self::AMOUNT_REFUNDED   => 0,
@@ -312,6 +317,16 @@ class Entity extends Base\PublicEntity
     public function setStatus($status)
     {
         $this->setAttribute(self::STATUS, $status);
+    }
+
+    public function set2faStatus($status)
+    {
+        $this->setAttribute(self::TWO_FA_STATUS, $status);
+    }
+
+    public function set2faStatusFailed()
+    {
+        $this->setAttribute(self::TWO_FA_STATUS, TwoFaStatus::FAILED);
     }
 
     public function setRefundStatus($status)

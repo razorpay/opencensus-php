@@ -295,8 +295,10 @@ class Processor
         $this->trace->addRecord($level, $traceCode, $data);
     }
 
-    protected function updatePaymentFailed($error, $traceCode)
+    protected function updatePaymentFailed($e, $traceCode)
     {
+        $error = $e->getError();
+
         $code = $error->getPublicErrorCode();
 
         $desc = $error->getDescription();
@@ -309,13 +311,20 @@ class Processor
 
         $payment->setError($code, $desc, $internalCode);
 
+        if ($e->has2faError() === true)
+        {
+            $payment->set2faStatusFailed();
+        }
+
         $payment->saveOrFail();
 
         $this->tracePaymentFailed($error, $traceCode);
     }
 
-    protected function setPaymentError($error)
+    protected function setPaymentError($e)
     {
+        $error = $e->getError();
+
         $internalCode = $error->getInternalErrorCode();
 
         $payment = $this->payment;
@@ -644,5 +653,16 @@ class Processor
     protected function getFormattedContact($contact)
     {
         return substr($contact, -10);
+    }
+
+    protected function updatePayment2faStatus($data)
+    {
+        $status = $data['2fa_status'];
+
+        $payment = $this->payment;
+
+        $payment->set2faStatus($status);
+
+        $payment->saveOrFail();
     }
 }

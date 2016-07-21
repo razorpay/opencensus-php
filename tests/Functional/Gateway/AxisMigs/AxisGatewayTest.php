@@ -163,11 +163,19 @@ class AxisGatewayTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($testData, function()
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '55553555655655';
+
+        $this->runRequestResponseFlow($testData, function() use ($payment)
         {
-	        $payment = $this->getDefaultPaymentArray();
-	        $payment['card']['number'] = '55553555655655';
 	        $payment = $this->doAuthPayment($payment);
 	    });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['2fa_status'], 'failed');
+
+        $this->assertEquals($payment['status'], 'failed');
     }
 }
