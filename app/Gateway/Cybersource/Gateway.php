@@ -368,7 +368,7 @@ class Gateway extends Base\Gateway
             $gateway->saveOrFail();
 
             throw new Exception\BadRequestException(
-                ResponseCode::getMappedCode($response['reasonCode']));
+                ReasonCode::getMappedCode($response['reasonCode']));
         }
 
         $attributes = array(
@@ -400,7 +400,7 @@ class Gateway extends Base\Gateway
             $gateway->saveOrFail();
 
             throw new Exception\BadRequestException(
-                ResponseCode::getMappedCode($response['reasonCode']));
+                ReasonCode::getMappedCode($response['reasonCode']));
 
         }
 
@@ -815,20 +815,18 @@ class Gateway extends Base\Gateway
 
         $reasonCode = $response['reasonCode'];
 
-        if (($reasonCode === ResponseCode::TIMED_OUT) or
-            ($reasonCode === ResponseCode::GATEWAY_ERROR) or
-            ($reasonCode === ResponseCode::PROCESSING_DECLINED))
+        if (ReasonCode::isGatewayError($reasonCode))
         {
-            $desc = ResponseCode::$description[$reasonCode];
+            $desc = ReasonCode::$reasonCodes[$reasonCode];
 
             throw new Exception\GatewayErrorException(
-                ResponseCode::getMappedCode($reasonCode),
+                ReasonCode::getMappedCode($reasonCode),
                 $reasonCode,
                 $desc);
         }
 
         throw new Exception\BadRequestException(
-            ResponseCode::$map[$response['reasonCode']]);
+            ReasonCode::getMappedCode($response['reasonCode']));
     }
 
 }
