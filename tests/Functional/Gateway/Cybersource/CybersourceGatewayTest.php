@@ -51,12 +51,55 @@ class CybersourceGatewayTest extends TestCase
             $this->testData['testPaymentCybersourceEntity'], $payment);
     }
 
-    public function testMasterCardPayment()
+    public function testFailedAuthPayment()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4280951000002433';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testGatewayError()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4000400000000004';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testGatewayWithSavedCard()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['token'] = '1000gcardtoken';
+        $payment['app_token'] = 'capp_1000000custapp';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $response = $this->doAuthPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+
+    }
+
+    public function testNotEnrolledPayment()
     {
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '555555555555558';
 
-        $this->doAuthPayment($payment);
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('cybersource', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testNotEnrolledCSEntity'], $payment);
     }
 
     public function testPaymentRefund()
@@ -67,6 +110,24 @@ class CybersourceGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('cybersource', true);
 
-        $this->assertTestResponse($refund);
+        $this->assertArraySelectiveEquals(
+            $this->testData['testPaymentRefund'], $refund);
+    }
+
+    public function testAuthPaymentRefund()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $response = $this->doAuthPayment();
+
+        $input = ['amount' => $payment['amount']];
+
+        $this->refundAuthorizedPayment($response['razorpay_payment_id'], $input);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertSame($response['razorpay_payment_id'], $refund['payment_id']);
+        $this->assertArraySelectiveEquals(
+            $this->testData['testAuthPaymentRefund'], $refund);
     }
 }

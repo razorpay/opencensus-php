@@ -7,6 +7,8 @@ use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 use RZP\Reconciliator\Messenger;
+use RZP\Models\Bank\IFSC;
+use RZP\Models\Bank\Name;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
@@ -20,6 +22,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_KK_CESS     = 'kk_cess';
     const COLUMN_FEE         = 'msf';
     const COLUMN_CARD_TRIVIA = 'card_type';
+    const COLUMN_ISSUER      = 'arn_no';
 
     protected $messenger;
 
@@ -49,7 +52,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                 break;
             }
         }
-        
+
         if ($columnServiceTax === null)
         {
             $this->messenger->raiseReconAlert(
@@ -118,11 +121,13 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         $cardType = $this->getCardType($columnCardType, $row);
         $cardLocale = $this->getCardLocale($columnCardType, $row);
         $cardTrivia = $this->getCardTrivia($columnCardTrivia, $row);
+        $issuer = $this->getIssuer($row);
 
         return [
             BaseReconciliate::CARD_TYPE   => $cardType,
             BaseReconciliate::CARD_LOCALE => $cardLocale,
             BaseReconciliate::CARD_TRIVIA => $cardTrivia,
+            BaseReconciliate::ISSUER      => $issuer,
         ];
     }
 
@@ -200,5 +205,23 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         }
 
         return $cardType;
+    }
+
+    protected function getIssuer($row)
+    {
+        if (empty($row[self::COLUMN_ISSUER]) === true)
+        {
+            return null;
+        }
+
+        $columnIssuer = strtolower($row[self::COLUMN_PAYMENT_ID]);
+        $columnIssuer = trim(str_replace("'", '', $columnIssuer));
+
+        if (strpos($columnIssuer, 'onus') !== false)
+        {
+            return IFSC::HDFC;
+        }
+
+        return null;
     }
 }

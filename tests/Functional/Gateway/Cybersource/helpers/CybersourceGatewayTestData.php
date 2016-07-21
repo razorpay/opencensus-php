@@ -5,6 +5,46 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
+    'testFailedAuthPayment' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_MISSING_DATA,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_MISSING_DATA,
+        ],
+    ],
+
+    'testGatewayError' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => 'There is a problem with the gateway causing the payment to fail',
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_TIMED_OUT,
+        ],
+    ],
+
+    'testGatewayWithSavedCard' => [
+        'response' => [
+            'content' => [
+                'razorpay_payment_id'
+            ],
+        ]
+    ],
+
     'testPayment' => [
         'merchant_id' => '10000000000000',
         'amount' => 50000,
@@ -51,18 +91,44 @@ return [
         'admin' => true,
     ],
 
-
     'testPaymentCybersourceEntity' => [
         'amount' => 500,
         'pares_status' => 'Y',
+        'reason_code' => 475,
+        'action' => 'capture',
+        'received' => true,
+        'refund_id' => null,
+        'auth_data' => null,
+        'commerce_indicator' => 'Internet',
+        'eci' => '05',
+        'cavv' => '1',
+        'status' => 'captured',
+        'entity' => 'cybersource',
+    ],
+
+    'testNotEnrolledCSEntity' => [
+        'amount' => 500,
+        'pares_status' => null,
         'status' => 'captured',
         'entity' => 'cybersource',
     ],
 
     'testPaymentRefund' => [
+        'reason_code' => 475,
+        'received' => true,
+        'amount' => 500,
         'commerce_indicator' => "Internet",
         'pares_status' => 'Y',
+        'action' => 'refund',
+        'status' => 'refunded',
         'entity' => 'cybersource',
+        'admin' => true,
+    ],
+
+    'testAuthPaymentRefund' => [
+        'amount' => 50000,
+        'currency' => 'INR',
+        'entity' => 'refund',
         'admin' => true,
     ],
 ];

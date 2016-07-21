@@ -126,6 +126,11 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::ISSUER);
     }
+    
+    public function setIssuer($issuer)
+    {
+        $this->setAttribute(self::ISSUER, $issuer);
+    }
 
     public function getOtpRead()
     {
