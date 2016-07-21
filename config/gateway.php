@@ -51,9 +51,9 @@ return array(
     ),
 
     'cybersource' => array(
-        'test_username'         => env('CYBERSOURCE_GATEWAY_TEST_USERNAME'),
-        'test_password'         => env('CYBERSOURCE_GATEWAY_TEST_PASSWORD'),
-        'test_merchant_id'      => env('CYBERSOURCE_GATEWAY_TEST_MERCHANT_ID'),
+        'test_username'         => env('CYBERSOURCE_GATEWAY_TEST_MERCHANT_ID'),
+        'test_password'         => env('CYBERSOURCE_GATEWAY_TEST_ACCESS_CODE'),
+        'test_merchant_id'      => env('CYBERSOURCE_GATEWAY_TEST_USERNAME'),
         'test_merchant_secret'  => env('CYBERSOURCE_GATEWAY_TEST_SECRET'),
     ),
 
