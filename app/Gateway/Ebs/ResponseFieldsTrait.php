@@ -79,9 +79,22 @@ trait ResponseFieldsTrait
     );
 
     protected static $refundRequestFields = array(
+        'Action',
+        'AccountID',
+        'SecretKey',
+        'Amount',
+        'PaymentID',
     );
 
     protected static $refundResponseFields = array(
+        'TransactionID',
+        'PaymentID',
+        'Amount',
+        'ReferenceNo',
+        'Mode',
+        'TransactionType',
+        'RefAmount',
+        'TxnAmount',
     );
 
     protected static $verifyRequestFields = array(

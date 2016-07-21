@@ -89,12 +89,12 @@ return [
     ],
     'testPaymentRefund' => [
         'received' => true,
-        'received' => true,
         'TxnAmount'=> '50000',
         'currency'=> 'INR',
- //       'RefAmount'=> '500.00',
- //       'action'=> 'refund',
+        'RefAmount'=> '500.00',
+        'action'=> 'refund',
         'mode' => "TEST",
         'entity'=> 'ebs',
+        'TxnAmount'=> "50000",
     ],
 ];

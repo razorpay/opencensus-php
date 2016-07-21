@@ -16,6 +16,12 @@ class Gateway extends Base\Gateway
     protected $map = array(
         'amount' => 'TxnAmount',
         'PaymentID' =>'ebs_payment_id',
+        'transactionId' => 'TransactionID',
+        'paymentId' => 'ebs_payment_id',
+        'mode' => 'mode',
+        'referenceNo' => 'paymnet_id',
+        'errorCode' =>'ErrorCode',
+
     );
 
     protected function getUrlDomain()
@@ -49,6 +55,7 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
         $content = $this->getAuthRequestContentArray($input);
+
         $payment = $this->createGatewayPaymentEntity($content);
 
         //$this->traceGatewayPaymentRequest($request, $input);
@@ -125,6 +132,22 @@ class Gateway extends Base\Gateway
 
         $resp = Utility::parseResponseXml($response->body);
         //TODO fix split with space
+
+        $attr = $this->getMappedAttributes($resp);
+
+        $refundAmount = (float) ($input['refund']['amount']);
+
+        $refundAmount = (string) number_format($refundAmount/100, 2, '.', '');
+
+        $attr['RefAmount'] = $refundAmount;
+        $attr['refund_id'] = $input['refund']['id'];
+        $attr['currency'] = 'INR';
+        $attr['received'] = 1;
+        $attr['amount'] = $content['Amount'];
+        $attr['reference_no'] = $input['payment']['id'];
+
+        $refund = $this->createGatewayPaymentEntity($attr);
+
         if ($resp['error'] !== false)
         {
             $this->trace->error(
@@ -145,7 +168,6 @@ class Gateway extends Base\Gateway
         $refundAmount = (float) ($input['refund']['amount']);
 
         $refundAmount = (string) number_format($refundAmount/100, 2, '.', '');
-
         $content = array(
             'Action' => 'refund',
             'AccountID' => '20640',
@@ -153,12 +175,12 @@ class Gateway extends Base\Gateway
             'Amount' => $refundAmount,
             'PaymentID' => $payment['ebs_payment_id'],
         );
-
         return $content;
     }
 
     protected function createGatewayPaymentEntity($attributes)
     {
+
         $payment = $this->getNewGatewayPaymentEntity();
         $attributes['TxnAmount'] = $attributes['amount']*100;
         $payment->setPaymentId($attributes['reference_no']);
@@ -208,7 +230,7 @@ class Gateway extends Base\Gateway
             'ship_postal_code' => '560038',
             'ship_country' => 'IND',
             'ship_phone' => '9876543210',
-            'description' => 'EBS paymnet',
+            'description' => 'EBS payment',
             'currency' => 'INR',
             'mode' => strtoupper($this->mode),
             'payment_mode' => $this->getpaymentMode($input),

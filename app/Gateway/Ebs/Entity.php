@@ -33,7 +33,11 @@ class Entity extends Base\Entity
         'paymentMode', //payment_mode
         'RequestID',
         'TransactionID',
+        'TxnAmount',
+        'RefAmount',
         'ebs_payment_id',
+        'ErrorDescription',
+        'ErrorCode',
     );
 
     protected $fillable = array(
@@ -63,7 +67,11 @@ class Entity extends Base\Entity
         'paymentMode',
         'RequestID',
         'TransactionID',
+        'TxnAmount',
+        'RefAmount',
         'ebs_payment_id',
+        'ErrorDescription',
+        'ErrorCode',
     );
 
     protected $table = 'ebs';

@@ -16,7 +16,7 @@ class Utility extends \RZP\Gateway\Utility
             if (strpos($val, '=') !== false)
             {
                 $keyVal = explode("=", $val);
-                $arr[$keyVal[0]]= $keyVal[1];
+                $arr[$keyVal[0]]= substr($keyVal[1], 1, -1);
             }
         }
 
