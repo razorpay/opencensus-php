@@ -15,8 +15,6 @@ use RZP\Gateway\Wallet\Olamoney\Action;
 use RZP\Models\Payment\Status as PaymentStatus;
 use RZP\Constants\HashAlgo;
 use Carbon\Carbon;
-use RZP\Gateway\Wallet\Olamoney\RequestFields as RequestFields;
-use RZP\Gateway\Wallet\Olamoney\ResponseFields as ResponseFields;
 
 class Gateway extends Base\Gateway
 {
