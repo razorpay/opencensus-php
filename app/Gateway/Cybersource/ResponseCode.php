@@ -4,9 +4,17 @@ namespace RZP\Gateway\Cybersource;
 
 use RZP\Error\ErrorCode;
 
-class ResponseCodeMap
+class ResponseCode
 {
-    public static $codes = array(
+    const MISSING_DATA          = 101;
+    const INVALID_PARAMETERS    = 102;
+    const UNKNOWN_ERROR         = 150;
+    const TIMED_OUT             = 151;
+    const GATEWAY_ERROR         = 152;
+    const BAD_REQUEST           = 234;
+    const PROCESSING_DECLINED   = 476;
+
+    public static $description = array(
         101 => 'The request is missing one or more required fields.'.
                  ' See the reply fields missingField_0...N for the missing fields',
 
@@ -38,4 +46,14 @@ class ResponseCodeMap
         234 => ErrorCode::BAD_REQUEST_ERROR,
         476 => ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED,
     );
+
+    public static function getMappedCode($code)
+    {
+        if (isset(self::$map[$code]))
+        {
+            return self::$map[$code];
+        }
+
+        return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
+    }
 }

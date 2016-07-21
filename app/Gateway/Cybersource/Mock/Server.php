@@ -14,40 +14,31 @@ class Server extends Base\Mock\Server
 {
     protected $repo;
 
-    public function getGatewayResponse($request)
+    public function authorize($input)
     {
-        if (isset($request['payerAuthEnrollService']))
-        {
-            $this->validateEnrollInput(json_decode(json_encode($request), true));
+        $this->validateAuthorizeInput($input);
 
-            return $this->getEnrollResponse($request);
-        }
-
-        if (isset($request['payerAuthValidateService']))
-        {
-            return $this->postAuthEnrolledRequest($request);
-        }
-
-        if (isset($request['ccAuthService']))
-        {
-            $this->validateAuthorizeInput(json_decode(json_encode($request), true));
-
-            return $this->postEnrollAuthorize($request);
-        }
-
-        if (isset($request['ccCaptureService']))
-        {
-            return $this->getCaptureResponsse($request);
-        }
-
-        if (isset($request['ccCreditService']))
-        {
-            return $this->getRefundResponse($request);
-        }
+        return $this->getEnrollAuthorizeResponse($input);
     }
 
-    public function getRefundResponse($request)
-     {
+    public function capture($input)
+    {
+        $this->validateActionInput($input, 'capture');
+
+        return $this->getCaptureResponse($input);
+    }
+
+    public function enroll($input)
+    {
+        $this->validateActionInput($input, 'enroll');
+
+        return $this->getEnrollResponse($input);
+    }
+
+    public function refund($input)
+    {
+        $this->validateActionInput($input, 'refund');
+
         $response = array();
 
         $response['decision'] = 'ACCEPT';
@@ -62,10 +53,17 @@ class Server extends Base\Mock\Server
         $response['ccCreditReply'] = $ccCreditReply;
 
         return $response;
-     }
+    }
 
-    public function getCaptureResponsse($request)
-     {
+    public function authValidate($input)
+    {
+        $this->validateActionInput($input, 'auth_validate');
+
+        return $this->getAuthEnrolledRequest($input);
+    }
+
+    public function getCaptureResponse($request)
+    {
         $response = array();
 
         $response['decision'] = 'ACCEPT';
@@ -80,7 +78,7 @@ class Server extends Base\Mock\Server
         return $response;
      }
 
-     public function postAuthEnrolledRequest($request)
+     protected function getAuthEnrolledRequest($input)
      {
         $response = array();
 
@@ -99,7 +97,7 @@ class Server extends Base\Mock\Server
         return $response;
      }
 
-    public function postEnrollAuthorize($request)
+    protected function getEnrollAuthorizeResponse($input)
     {
         $response = array();
 
@@ -138,6 +136,29 @@ class Server extends Base\Mock\Server
                 $response['payerAuthEnrollReply']['veresEnrolled'] = 'Y';
                 break;
 
+            case '4280951000002433':
+                $response['decision'] = 'REJECT';
+                $response['reasonCode'] = 101;
+                $response['payerAuthEnrollReply'] = [
+                    'reasonCode' => 101
+                ];
+                $response['missingField'] = 'c:authRequestID';
+                $response['requestToken'] = 'AhjjLwSR/H2rNiTcqkX45p6D4dUQCsgfIwdIy6SZbpAeLRGAdmIW';
+                break;
+
+            case '4000400000000004':
+                $response['decision'] = 'REJECT';
+                $response['reasonCode'] = 151;
+                $response['payerAuthEnrollReply'] = [
+                    'reasonCode' => 151
+                ];
+
+                $response['merchantReferenceCode'] = '5vrAvHg6CqQlkS';
+                $response['missingField'] = 'c:authRequestID';
+                $response['requestID'] = '4690000690226079802108';
+                $response['requestToken'] = 'AhjjLwSR/H2rNiTcqkX45p6D4dUQCsgfIwdIy6SZbpAeLRGAdmIW';
+                break;
+
             case '555555555555558':
                 $response['decision'] = 'ACCEPT';
                 $response['reasonCode'] = Cybersource\Result::SUCCESS;
@@ -152,7 +173,7 @@ class Server extends Base\Mock\Server
                 $response['reasonCode'] = Cybersource\Result::SUCCESS;
 
                 $response['payerAuthEnrollReply']['commerceIndicator'] = 'internet';
-                $response['payerAuthEnrollReply']['veresEnrolled ']= 'U';
+                $response['payerAuthEnrollReply']['veresEnrolled']= 'U';
                 $response['payerAuthEnrollReply']['eci'] = '05';
                 break;
         }

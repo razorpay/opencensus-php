@@ -141,7 +141,7 @@ class Entity extends Base\Entity
 
     public function getReasonCode()
     {
-        return $this->getAttribute(self::REASON_CODE);
+        return (int) $this->getAttribute(self::REASON_CODE);
     }
 
     public function setStatus($status)
