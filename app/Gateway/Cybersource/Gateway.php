@@ -726,7 +726,9 @@ class Gateway extends Base\Gateway
 
     protected function traceGatewayRequest($traceCode, $request)
     {
+        unset($request['content']['card']);
         unset($request['card']);
+        unset($request['options']['auth']);
 
         $this->trace->info($traceCode, $request);
     }
