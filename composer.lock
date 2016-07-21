@@ -568,6 +568,7 @@
                 "rest",
                 "web service"
             ],
+            "abandoned": "guzzlehttp/guzzle",
             "time": "2015-03-18 18:23:50"
         },
         {
@@ -1606,6 +1607,7 @@
                 "laravel",
                 "multi"
             ],
+            "abandoned": "illuminate/auth",
             "time": "2015-06-25 19:28:57"
         },
         {
@@ -1912,16 +1914,16 @@
         },
         {
             "name": "razorpay/ifsc",
-            "version": "0.1.1",
+            "version": "0.1.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/ifsc.git",
-                "reference": "66a1e26b7507b0806ccd7b90d6e94cc5d59decca"
+                "reference": "2faa51cbbcb360402a8020f2fe374ffcba11bc00"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/66a1e26b7507b0806ccd7b90d6e94cc5d59decca",
-                "reference": "66a1e26b7507b0806ccd7b90d6e94cc5d59decca",
+                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/2faa51cbbcb360402a8020f2fe374ffcba11bc00",
+                "reference": "2faa51cbbcb360402a8020f2fe374ffcba11bc00",
                 "shasum": ""
             },
             "type": "library",
@@ -1941,7 +1943,7 @@
                 }
             ],
             "description": "Razorpay IFSC Codes Library",
-            "time": "2016-05-25 15:48:09"
+            "time": "2016-07-21 11:22:49"
         },
         {
             "name": "razorpay/razorpay",
@@ -3433,6 +3435,7 @@
             "keywords": [
                 "selenium"
             ],
+            "abandoned": "facebook/webdriver",
             "time": "2012-07-10 11:39:20"
         },
         {
