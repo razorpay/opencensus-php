@@ -58,24 +58,19 @@ class TransactionFilter extends Terminal\Filter
         }
     }
 
+    // Applicable only for card and emi
     public function networkFilter($terminal, $input)
     {
         $method = $input['payment']->getMethod();
 
         switch ($method)
         {
+            // Network Filtration has to work similarly for card and emi
             case Method::CARD:
+            case Method::EMI:
                 $network = $input['payment']->card->getNetworkCode();
 
-                if(Gateway::isCardNetworkSupported($network, $terminal->getGateway()))
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-
+                return Gateway::isCardNetworkSupported($network, $terminal->getGateway());
                 break;
 
             default:
