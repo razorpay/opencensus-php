@@ -8,13 +8,18 @@
     <meta http-equiv="cache-control" content="no-cache">
     <meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">
     <style>@font-face{font-family:'lato';src:url("<?= $font ?>.eot?#iefix") format('embedded-opentype'),url("<?= $font ?>.woff2") format('woff2'),url("<?= $font ?>.woff") format('woff'),url("<?= $font ?>.ttf") format('truetype'),url("<?= $font ?>.svg#lato") format('svg');font-weight:normal;font-style:normal}</style>
- </head>
-  <body>
-<?php
-if (isset($error))
-{
-?>
-    <script>
+    <link rel="stylesheet" href="<?= $css ?>">
+  </head>
+  <body></body>
+  <script>
+    function appendScript(){
+      var script = document.createElement('script');
+      script.src = "<?= $framejs ?>";
+      document.body.appendChild(script);
+    }
+  </script>
+  <script>
+    @if (isset($error))
       var error = <?= json_encode($error);?>;
 
       function sendMessage(message){
@@ -33,27 +38,14 @@ if (isset($error))
           sendMessage({event: 'hidden'});
         })
       }
-    </script>
-  </body>
-<?php
-}
-else
-{
-?>
-    <link rel="stylesheet" href="<?= $css ?>">
-  </body>
-  <script>
-    var fee_bearer  = <?= json_encode($preferences['fee_bearer']) ?>;
-    var preferences = <?= json_encode($preferences) ?>;
-    function appendScript(){
-      var script = document.createElement('script');
-      script.src = "<?= $framejs ?>";
-      document.body.appendChild(script);
-    }
+    @else
+      var preferences = <?= json_encode($preferences) ?>;
+      function appendScript(){
+        var script = document.createElement('script');
+        script.src = "<?= $framejs ?>";
+        document.body.appendChild(script);
+      }
+    @endif
   </script>
   <script src="<?= $framejs ?>" crossorigin onerror="appendScript()"></script>
-
-<?php
-}
-?>
 </html>
