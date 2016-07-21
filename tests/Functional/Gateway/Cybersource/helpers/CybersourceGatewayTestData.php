@@ -130,5 +130,5 @@ return [
         'currency' => 'INR',
         'entity' => 'refund',
         'admin' => true,
-    ],
+    ]
 ];

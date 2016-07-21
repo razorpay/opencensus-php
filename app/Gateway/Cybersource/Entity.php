@@ -149,6 +149,11 @@ class Entity extends Base\Entity
         $this->setAttribute(self::STATUS, $status);
     }
 
+    public function setAction($action)
+    {
+        $this->setAttribute(self::ACTION, $action);
+    }
+
     /**
      * Accessors
      */

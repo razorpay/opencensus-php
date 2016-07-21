@@ -130,4 +130,51 @@ class CybersourceGatewayTest extends TestCase
         $this->assertArraySelectiveEquals(
             $this->testData['testAuthPaymentRefund'], $refund);
     }
+
+    public function testVerifyPayment()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $authPayment = $this->doAuthPayment($payment);
+
+        $this->payment = $this->verifyPayment($authPayment['razorpay_payment_id']);
+
+        $this->assertSame($this->payment['payment']['verified'], 1);
+    }
+
+    public function testAuthorizeFailedPayment()
+    {
+        $this->failAuthorizePayment();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->resetMockServer();
+
+        $this->authorizeFailedPayment($payment['id']);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals($payment['status'], 'authorized');
+    }
+
+    protected function failAuthorizePayment(array $replace = array())
+    {
+        $server = $this->mockServer()
+                        ->shouldReceive('content')
+                        ->andReturnUsing(function (& $content) use ($replace)
+                        {
+                            foreach ($replace as $key => $value)
+                            {
+                                $content[$key] = $value;
+                            }
+
+                            $content['reasonCode'] = '151';
+                        })->mock();
+
+        $this->setMockServer($server);
+
+        $this->makeRequestAndCatchException(function ()
+        {
+            $content = $this->doAuthPayment();
+        });
+    }
 }

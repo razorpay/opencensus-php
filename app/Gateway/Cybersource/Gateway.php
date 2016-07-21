@@ -12,9 +12,14 @@ use RZP\Gateway\Base;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Base\VerifyResult;
+
 
 class Gateway extends Base\Gateway
 {
+    use Base\AuthorizeFailed;
+
     const ACCOUNT_NUMBER              = 'accountNumber';
     const AUTHENTICATION_DATA         = 'authenticationData';
     const AUTH_REQUEST_ID             = 'authRequestID';
@@ -43,8 +48,10 @@ class Gateway extends Base\Gateway
     const RUN                         = 'run';
     const SIGNED_PARES                = 'signedPARes';
     const TERMINAL                    = 'terminal';
-    const TEST_ACCESS_CODE            = 'test_access_code';
     const TEST_MERCHANT_ID            = 'test_merchant_id';
+    const TEST_MERCHANT_SECRET        = 'test_merchant_secret';
+    const TEST_USERNAME               = 'test_username';
+    const TEST_PASSWORD               = 'test_password';
     const UCAF                        = 'ucaf';
     const UCAF_AUTHENTICATION_DATA    = 'ucafAuthenticationData';
     const UCAF_COLLECTION_INDICATOR   = 'ucafCollectionIndicator';
@@ -126,6 +133,103 @@ class Gateway extends Base\Gateway
             throw new Exception\RuntimeException(
                 'Refund request failed.', null, $exception);
         }
+    }
+
+    public function sendPaymentVerifyRequest($verify)
+    {
+        $input = $verify->input;
+        $payment = $verify->payment;
+
+        $request = $this->getPaymentVerifyRequestContent($input, $payment);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            $request);
+
+        $this->setCybersourceCredentials($request);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->response = $response;
+
+        $content = $this->xmlToArray($response->body);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            [
+                'content' => $content,
+                'gateway' => 'cybersource',
+                'payment_id' => $input['payment']['id'],
+            ]);
+
+        $verify->verifyResponse = $this->response;
+
+        $verify->verifyResponseBody = $this->response->body;
+
+        $verify->verifyResponseContent = $content;
+
+        return $content;
+    }
+
+    public function verify(array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
+    }
+
+    protected function verifyPayment($verify)
+    {
+        $payment = $verify->payment;
+        $input = $verify->input;
+        $content = $verify->verifyResponseContent;
+
+        $verify->status = VerifyResult::STATUS_MATCH;
+
+        if (($content[39]['tag'] === 'RFlag') and
+            ($content[39]['value'] !== ReplyFlag::SOK))
+        {
+            $verify->gatewaySuccess = false;
+
+            if (($payment === null) and
+                (($input['payment']['status'] === 'failed') or
+                 ($input['payment']['status'] === 'created')))
+            {
+                $verify->apiSuccess = false;
+            }
+            else if (($payment['received'] === false) and
+                     (($payment['status'] === null) or
+                      ($payment['status'] !== (string) Status::AUTHORIZED)))
+            {
+                $verify->apiSuccess = false;
+            }
+            else if ($payment['status'] === (string) Status::AUTHORIZED)
+            {
+                $verify->status = VerifyResult::STATUS_MISMATCH;
+                $verify->apiSuccess = true;
+            }
+        }
+        else if ($content[39]['value'] === ReplyFlag::SOK)
+        {
+            $verify->gatewaySuccess = true;
+
+            if (($input['payment']['status'] !== 'created') and
+                ($input['payment']['status'] !== 'failed'))
+            {
+                $verify->apiSuccess = true;
+            }
+            else
+            {
+                $verify->status = VerifyResult::STATUS_MISMATCH;
+                $verify->apiSuccess = false;
+            }
+        }
+
+        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
+
+        return $verify->status;
     }
 
     protected function enroll($input)
@@ -212,7 +316,7 @@ class Gateway extends Base\Gateway
 
     protected function persistAfterValidate($input, $response, $request)
     {
-        $gateway = $this->getRepo()->retrieveByPaymentIdOrFail($input['payment']['id']);
+        $gateway = $this->retrieveByPaymentId($input['payment']['id']);
 
         $this->trace->info(TraceCode::GATEWAY_VALIDATE_RESPONSE, $response);
 
@@ -268,7 +372,7 @@ class Gateway extends Base\Gateway
 
     protected function persistAfterNotEnrolledAuthorize($input, $response, $request)
     {
-        $gatewayPayment = $this->getRepo()->retrieveByPaymentIdOrFail($input['payment']['id']);
+        $gatewayPayment = $this->retrieveByPaymentId($input['payment']['id']);
 
         $this->trace->info(TraceCode::GATEWAY_AUTHORIZE_RESPONSE, $response);
 
@@ -340,7 +444,7 @@ class Gateway extends Base\Gateway
             Entity::REF           => $response[self::REQUEST_ID]
         );
 
-        $this->getRepo()->createOrFail($attributes);
+        $this->createGatewayPaymentEntity($attributes, $input);
 
         if (($response['reasonCode'] !== Result::ENROLLED) and
             ($response['reasonCode'] !== Result::SUCCESS))
@@ -432,7 +536,7 @@ class Gateway extends Base\Gateway
     {
         $content = $this->getCommonRequestData($input);
 
-        $gateway = $this->getRepo()->retrieveByPaymentIdOrFail($input['payment']['id']);
+        $gateway = $this->retrieveByPaymentId($input['payment']['id']);
 
         $content['ccAuthService'][self::RUN] = 'true';
         $content['ccAuthService'][self::PARES_STATUS] = $gateway->getParesStatus();
@@ -576,6 +680,20 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
+    protected function getPaymentVerifyRequestContent($input, $payment)
+    {
+        $content = [
+            'type'                    => 'transaction',
+            'subtype'                 => 'transactionDetail',
+            'merchantID'              => $this->getMerchantID($input['terminal']),
+            'merchantReferenceNumber' => $payment->getRef(),
+            'versionNumber'           => '1.90'
+        ];
+
+        $request = $this->getStandardRequestArray($content);
+
+        return $request;
+    }
 
     protected function getSoapClientObject($request)
     {
@@ -602,7 +720,7 @@ class Gateway extends Base\Gateway
 
         if ($this->mode === Mode::TEST)
         {
-            $mid = $this->config[self::TEST_MERCHANT_ID];
+            $mid = $this->config[self::TEST_USERNAME];
         }
 
         return $mid;
@@ -783,12 +901,32 @@ class Gateway extends Base\Gateway
         if ($this->mode === Mode::TEST)
         {
             $auth = array(
-                'username' => $this->config[self::TEST_MERCHANT_ID],
-                'password' => $this->config[self::TEST_ACCESS_CODE]
+                'username' => $this->config[self::TEST_USERNAME],
+                'password' => $this->config[self::TEST_PASSWORD]
             );
         }
 
         return $auth;
+    }
+
+    protected function setCybersourceCredentials(&$request)
+    {
+        $terminal = $this->terminal;
+
+        $auth = array(
+            'username' => $terminal['gateway_merchant_id'],
+            'password' => $terminal['gateway_secure_secret']
+        );
+
+        if ($this->mode === Mode::TEST)
+        {
+            $auth = array(
+                'username' => $this->config[self::TEST_MERCHANT_ID],
+                'password' => $this->config[self::TEST_MERCHANT_SECRET]
+            );
+        }
+
+        $request['options']['auth'] = $auth;
     }
 
     protected function retrieveByPaymentId($paymentId)
@@ -799,6 +937,24 @@ class Gateway extends Base\Gateway
         }
 
         return $this->model;
+    }
+
+    protected function createGatewayPaymentEntity($attributes, $input)
+    {
+        $payment = $this->getNewGatewayPaymentEntity();
+
+        $paymentId = $input['payment']['id'];
+
+        $payment->setPaymentId($paymentId);
+        $payment->setAction($this->action);
+
+        $payment->fill($attributes);
+
+        $payment->saveOrFail();
+
+        $this->model = $payment;
+
+        return $payment;
     }
 
     /** Exceptions **/
@@ -825,6 +981,18 @@ class Gateway extends Base\Gateway
                 ResponseCode::getMappedCode($reasonCode),
                 $reasonCode,
                 $desc);
+    }
+
+    protected function xmlToArray($data)
+    {
+        $parser = xml_parser_create('');
+        xml_parser_set_option($parser, XML_OPTION_TARGET_ENCODING, 'UTF-8');
+        xml_parser_set_option($parser, XML_OPTION_CASE_FOLDING, 0);
+        xml_parser_set_option($parser, XML_OPTION_SKIP_WHITE, 1);
+        xml_parse_into_struct($parser, trim($data), $xml_values);
+        xml_parser_free($parser);
+
+        return $xml_values;
     }
 
 }
