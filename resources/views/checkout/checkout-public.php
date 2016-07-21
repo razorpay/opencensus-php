@@ -10,6 +10,13 @@
     <link rel="stylesheet" href="<?= $css ?>">
   </head>
   <body></body>
-  <script src="<?= $framejs ?>"></script>
+  <script>
+    function appendScript(){
+      var script = document.createElement('script');
+      script.src = "<?= $framejs ?>";
+      document.body.appendChild(script);
+    }
+  </script>
+  <script src="<?= $framejs ?>" crossorigin onerror="appendScript()"></script>
   <style>@font-face{font-family:'lato';src:url("<?= $font ?>.eot?#iefix") format('embedded-opentype'),url("<?= $font ?>.woff2") format('woff2'),url("<?= $font ?>.woff") format('woff'),url("<?= $font ?>.ttf") format('truetype'),url("<?= $font ?>.svg#lato") format('svg');font-weight:normal;font-style:normal}</style>
 </html>

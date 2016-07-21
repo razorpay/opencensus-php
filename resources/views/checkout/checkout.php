@@ -45,8 +45,13 @@ else
   <script>
     var fee_bearer  = <?= json_encode($preferences['fee_bearer']) ?>;
     var preferences = <?= json_encode($preferences) ?>;
+    function appendScript(){
+      var script = document.createElement('script');
+      script.src = "<?= $framejs ?>";
+      document.body.appendChild(script);
+    }
   </script>
-  <script src="<?= $framejs ?>"></script>
+  <script src="<?= $framejs ?>" crossorigin onerror="appendScript()"></script>
 
 <?php
 }
