@@ -220,6 +220,10 @@ class Netbanking
         IFSC::YESB,
     );
 
+    protected static $ebs = array(
+    );
+
+
     public static function isSupportedBank($bank)
     {
         return (in_array($bank, self::getAllBanks()));
