@@ -175,7 +175,7 @@ class Checkout
 
                 if ($response['valid'] === true)
                 {
-                    $data['email'] = $response['email'],
+                    $data['email'] = $response['email'];
                 }
             }
             else if (isset($input['contact']))
