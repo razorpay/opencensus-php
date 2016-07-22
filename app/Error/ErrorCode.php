@@ -185,7 +185,6 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_FEES_OR_SERVICE_TAX_TAMPERED                          = 'BAD_REQUEST_PAYMENT_FEES_OR_SERVICE_TAX_TAMPERED';
     const BAD_REQUEST_PAYMENT_MISSING_DATA                                          = 'BAD_REQUEST_PAYMENT_MISSING_DATA';
     const BAD_REQUEST_PAYMENT_PARTIAL_AMOUNT_APPROVED                               = 'BAD_REQUEST_PAYMENT_PARTIAL_AMOUNT_APPROVED';
-    const BAD_REQUEST_PAYMENT_AMOUNT_MISMATCH                                       = 'BAD_REQUEST_PAYMENT_AMOUNT_MISMATCH';
 
     const BAD_REQUEST_CARD_AVS_FAILED                                               = 'BAD_REQUEST_CARD_AVS_FAILED';
     const BAD_REQUEST_CARD_STOLEN_OR_LOST                                           = 'BAD_REQUEST_CARD_STOLEN_OR_LOST';
