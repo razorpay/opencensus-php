@@ -192,6 +192,11 @@ class Gateway extends Base\Gateway
 
         $authReply = [];
 
+        if ($this->isSequentialArray($applicationReplies) === false)
+        {
+            $applicationReplies = [$applicationReplies];
+        }
+
         foreach($applicationReplies as $applicationReply)
         {
             if ($applicationReply['@attributes']['Name'] === 'ics_auth')
@@ -203,12 +208,12 @@ class Gateway extends Base\Gateway
 
         if (isset($authReply['RFlag']) === false)
         {
-            $verify->gatewaySuccess = false;
+            throw new Exception\GatewayErrorException(
+                Error\ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
         }
         else
         {
-            if (($authReply['@attributes']['Name'] === 'ics_auth') and
-                ($authReply['RFlag'] !== ReplyFlag::SOK))
+            if ($authReply['RFlag'] !== ReplyFlag::SOK)
             {
                 $verify->gatewaySuccess = false;
 
@@ -1007,4 +1012,8 @@ class Gateway extends Base\Gateway
         return json_decode(json_encode($xml_values), true);
     }
 
+    protected function isSequentialArray($array)
+    {
+        return array_keys($array) === range(0, count($array) - 1);
+    }
 }
