@@ -444,7 +444,7 @@ class Gateway extends Base\Gateway
             Entity::REF           => $response[self::REQUEST_ID]
         );
 
-        $this->createGatewayPaymentEntity($attributes, $input);
+        $this->createGatewayPaymentEntity($attributes);
 
         if (($response['reasonCode'] !== Result::ENROLLED) and
             ($response['reasonCode'] !== Result::SUCCESS))
@@ -939,13 +939,10 @@ class Gateway extends Base\Gateway
         return $this->model;
     }
 
-    protected function createGatewayPaymentEntity($attributes, $input)
+    protected function createGatewayPaymentEntity($attributes)
     {
         $payment = $this->getNewGatewayPaymentEntity();
 
-        $paymentId = $input['payment']['id'];
-
-        $payment->setPaymentId($paymentId);
         $payment->setAction($this->action);
 
         $payment->fill($attributes);
