@@ -42,7 +42,7 @@ class Gateway extends Base\Gateway
         return parent::getUrlDomain();
     }
 
-    protected function validateCallbackgetSecureHash(array $input)
+    protected function validateCallbackGetSecureHash(array $input)
     {
         $hash = $input['SecureHash'];
 
@@ -55,12 +55,12 @@ class Gateway extends Base\Gateway
             throw new Exception\BadRequestValidationFailureException(
                 'Failed Hash Verification');
         }
-
     }
 
     public function authorize(array $input)
     {
         parent::authorize($input);
+
         $content = $this->getAuthRequestContentArray($input);
 
         $payment = $this->createGatewayPaymentEntity($content);
@@ -87,7 +87,7 @@ class Gateway extends Base\Gateway
     public function callback(array $input)
     {
         parent::callback($input);
-        $this->validateCallbackgetSecureHash($input['gateway']);
+        $this->validateCallbackGetSecureHash($input['gateway']);
 
         // Unset date because format of date returned is different than what we sent
         unset($input['gateway']['DateCreated']);
@@ -252,7 +252,7 @@ class Gateway extends Base\Gateway
             'payment_mode'  => $this->getpaymentMode($input),
         );
 
-        if ($input['payment']['method'] == 'card')
+        if ($input['payment']['method'] === 'card')
         {
             $content['channel'] = '2';
             $content['name_on_card'] = $input['card']['name'];
@@ -262,7 +262,7 @@ class Gateway extends Base\Gateway
             $content['card_cvv'] = $input['card']['cvv'];
         }
 
-        if ($input['payment']['method'] == 'netbanking')
+        if ($input['payment']['method'] === 'netbanking')
         {
             $content['channel'] = '0';
             $bankId = BankCodes::$bankCodeMap[$input['payment']['bank']];
@@ -311,21 +311,19 @@ class Gateway extends Base\Gateway
 
     public function getSecureHash($content)
     {
-        $secretKey = $this->config['hash_secret'];;
-        // READ FROM config
-        $hashData = $secretKey;
+        $hashData = $this->config['hash_secret'];
+
         ksort($content);
 
         foreach ($content as $key => $value)
         {
             if (strlen($value) > 0)
             {
-                $hashData .='|'.$value;
+                $hashData .= '|' . $value;
             }
         }
-        if (strlen($hashData) > 0) {
-            $hashValue = strtoupper(hash('SHA512',$hashData));
-        }
+
+        $hashValue = strtoupper(hash('SHA512', $hashData));
 
         return $hashValue;
     }
