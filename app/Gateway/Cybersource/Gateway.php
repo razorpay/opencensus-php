@@ -946,7 +946,7 @@ class Gateway extends Base\Gateway
             );
         }
 
-        $request['options']['auth'] = $auth;
+        $request['options']['auth'] = [$auth['username'], $auth['password']];
     }
 
     protected function retrieveByPaymentId($paymentId)
