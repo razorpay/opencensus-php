@@ -1081,7 +1081,7 @@ class Entity extends Base\PublicEntity
         else
         {
             throw new Exception\LogicException(
-                'Refund amount should be less than or equal to amount unrefunded');
+                'Refund amount should be less than or equal to amount not refunded yet');
         }
 
         $amountRefunded = $this->getAmountRefunded() + $amount;

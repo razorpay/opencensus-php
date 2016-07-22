@@ -27,7 +27,7 @@ class Validator extends Base\Validator
         $this->payment = $payment;
     }
 
-    protected function validatePaymentStatus($input)
+    protected function validatePaymentStatus()
     {
         if (($this->payment->isCaptured() === false) and
             ($this->payment->isAuthorized() === false))
@@ -37,7 +37,7 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validatePaymentRefundStatus($input)
+    protected function validatePaymentRefundStatus()
     {
         if ($this->payment->isFullyRefunded())
         {

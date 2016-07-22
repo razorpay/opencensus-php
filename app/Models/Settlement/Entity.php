@@ -134,6 +134,7 @@ class Entity extends Base\PublicEntity
             throw new Exception\LogicException(
                 'Something very wrong is happening! ' .
                 'Settlement amount should not be 0 or -ve',
+                null,
                 ['amount' => $amount]);
         }
 
