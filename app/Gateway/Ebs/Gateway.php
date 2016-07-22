@@ -65,12 +65,13 @@ class Gateway extends Base\Gateway
 
         $payment = $this->createGatewayPaymentEntity($content);
 
-        //$this->traceGatewayPaymentRequest($request, $input);
         $request = array(
             'url' => $this->getUrl($this->action),
             'method' => 'post',
             'content' => $content
         );
+
+        $this->traceGatewayPaymentRequest($request, $input);
 
         return $request;
     }
@@ -87,6 +88,7 @@ class Gateway extends Base\Gateway
     public function callback(array $input)
     {
         parent::callback($input);
+
         $this->validateCallbackGetSecureHash($input['gateway']);
 
         // Unset date because format of date returned is different than what we sent
