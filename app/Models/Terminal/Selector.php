@@ -4,6 +4,7 @@ namespace RZP\Models\Terminal;
 
 use App;
 use RZP\Constants\Mode;
+use RZP\Models\Card\Network;
 use RZP\Models\Payment;
 
 use RZP\Trace;
@@ -76,7 +77,7 @@ class Selector
         foreach (self::$filters as $filter)
         {
             $filteredTerminals = (new $filter)->filter($filteredTerminals, $this->input, $verbose);
-            $this->traceTerminals($filteredTerminals, 'Terminals after '.$filter, $verbose);
+            $this->traceTerminals($filteredTerminals, 'Terminals after ' . $filter, $verbose);
         }
 
         // Trace available terminals after filtration
@@ -88,7 +89,7 @@ class Selector
         foreach (self::$sorters as $sorter)
         {
             $sortedTerminals = (new $sorter)->sort($sortedTerminals, $this->input, $verbose);
-            $this->traceTerminals($sortedTerminals, 'Terminals after '.$sorter, $verbose);
+            $this->traceTerminals($sortedTerminals, 'Terminals after ' . $sorter, $verbose);
         }
 
         // Trace available terminals after filtration
@@ -105,6 +106,14 @@ class Selector
             $terminal = $sortedTerminals[0];
         }
 
+        // This is a hack and should be implemented in the correct manner later.
+        $hdfcMaestroSharedTerminal = $this->getHdfcSharedTerminalIfMaestro($terminals);
+
+        if ($hdfcMaestroSharedTerminal !== null)
+        {
+            $terminal = $hdfcMaestroSharedTerminal;
+        }
+
         $this->checkForCustomExceptions($terminal);
 
         // When the terminal selector has to activated.
@@ -112,6 +121,27 @@ class Selector
         $this->setTerminalForPayment($payment, $terminal);
 
         return $terminal;
+    }
+
+    protected function getHdfcSharedTerminalIfMaestro($terminals)
+    {
+        $method = $this->payment->getMethod();
+
+        if ($method !== Payment\Method::CARD)
+        {
+            return null;
+        }
+
+        $cardNetwork = $this->payment->card->getNetworkCode();
+
+        if ($cardNetwork !== Network::MAES)
+        {
+            return null;
+        }
+
+        $sharedHdfcTerminal = $terminals->find(Shared::HDFC_RAZORPAY_TERMINAL);
+
+        return $sharedHdfcTerminal;
     }
 
     protected function setTerminalForPayment($payment, $terminal = null)
