@@ -150,17 +150,17 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
-        $this->response = $response;
-
-        $content = $this->xmlToArray($response->body);
-
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY,
             [
-                'content' => $content,
+                'content' => $response->body,
                 'gateway' => 'cybersource',
                 'payment_id' => $input['payment']['id'],
             ]);
+
+        $this->response = $response;
+
+        $content = $this->xmlToArray($response->body);
 
         $verify->verifyResponse = $this->response;
 
