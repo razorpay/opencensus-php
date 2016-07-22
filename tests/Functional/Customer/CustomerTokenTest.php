@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\CustomerToken;
 
+use Mockery;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
@@ -57,6 +58,8 @@ class CustomerTokenTest extends TestCase
 
     public function testDeleteCustomerToken()
     {
+        $this->mockSession();
+
         $this->ba->privateAuth();
 
         $this->startTest();
@@ -64,6 +67,8 @@ class CustomerTokenTest extends TestCase
 
     public function testGetCustomerTokensByAppToken()
     {
+        $this->mockSession();
+
         $this->ba->publicAuth();
 
         $this->startTest();
@@ -92,6 +97,8 @@ class CustomerTokenTest extends TestCase
 
     public function testDeleteAppToken()
     {
+        $this->mockSession();
+
         $this->ba->publicAuth();
 
         $this->startTest();
@@ -99,6 +106,8 @@ class CustomerTokenTest extends TestCase
 
     public function testLogoutFromApp()
     {
+        $this->mockSession();
+
         $this->ba->publicAuth();
 
         $this->startTest();
@@ -106,6 +115,8 @@ class CustomerTokenTest extends TestCase
 
     public function testLogoutFromDevice()
     {
+        $this->mockSession();
+
         $this->ba->publicAuth();
 
         $this->startTest();
@@ -113,8 +124,31 @@ class CustomerTokenTest extends TestCase
 
     public function testLogoutFromAllDevices()
     {
+        $this->mockSession();
+
         $this->ba->publicAuth();
 
         $this->startTest();
+    }
+
+    protected function mockSession()
+    {
+        $this->getMock('Illuminate\Session\Store')
+             ->method('get')
+             ->with('something')
+             ->will('capp_1000000custapp');
+
+        // $session = Mockery::mock('Illuminate\Session\Store')->makePartial();
+
+        // $this->app->instance('session.store', $session);
+
+        // $session->shouldReceive('get')
+        //       ->with(Mockery::type('string'))
+        //       ->andReturnUsing(function ($key)
+        //             {
+        //                 return 'capp_1000000custapp';
+        //             });
+
+        // $this->app->instance($session, 'session.store');
     }
 }
