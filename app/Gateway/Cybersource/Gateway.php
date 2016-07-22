@@ -188,8 +188,10 @@ class Gateway extends Base\Gateway
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
-        if (($content[39]['tag'] === 'RFlag') and
-            ($content[39]['value'] !== ReplyFlag::SOK))
+        $applicationReply = $content['Requests']['Request']['ApplicationReplies']['ApplicationReply'];
+
+        if (($applicationReply[1]['@attributes']['Name'] === 'ics_auth') and
+            ($applicationReply[1]['RFlag'] !== ReplyFlag::SOK))
         {
             $verify->gatewaySuccess = false;
 
@@ -211,7 +213,7 @@ class Gateway extends Base\Gateway
                 $verify->apiSuccess = true;
             }
         }
-        else if ($content[39]['value'] === ReplyFlag::SOK)
+        else if ($applicationReply[1]['RFlag'] === ReplyFlag::SOK)
         {
             $verify->gatewaySuccess = true;
 
@@ -982,14 +984,9 @@ class Gateway extends Base\Gateway
 
     protected function xmlToArray($data)
     {
-        $parser = xml_parser_create('');
-        xml_parser_set_option($parser, XML_OPTION_TARGET_ENCODING, 'UTF-8');
-        xml_parser_set_option($parser, XML_OPTION_CASE_FOLDING, 0);
-        xml_parser_set_option($parser, XML_OPTION_SKIP_WHITE, 1);
-        xml_parse_into_struct($parser, trim($data), $xml_values);
-        xml_parser_free($parser);
+        $xml_values = simplexml_load_string($data);
 
-        return $xml_values;
+        return json_decode(json_encode($xml_values), true);
     }
 
 }
