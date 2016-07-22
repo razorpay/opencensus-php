@@ -31,6 +31,8 @@ class Server extends Base\Mock\Server
 
         $content['hash'] = $this->generateHash($content);
 
+        $this->content($content);
+
         $request = array(
             'url' => $bill['returnUrl'],
             'content' => $content,

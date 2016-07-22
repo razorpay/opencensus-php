@@ -100,6 +100,33 @@ class OlamoneyGatewayTest extends TestCase
         $this->assertTestResponse($wallet, 'testPaymentWalletEntity');
     }
 
+    public function testFailedPayment()
+    {
+        $this->failOlamoneyAuthorizePayment();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['status'], 'failed');
+    }
+
+    protected function failOlamoneyAuthorizePayment()
+    {
+        $server = $this->mockServerContentFunction(function (& $content)
+                        {
+                            $content['status'] = 'failed';
+
+                            return $content;
+                        });
+
+        $this->makeRequestAndCatchException(
+            function ()
+            {
+                $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+
+                $content = $this->doAuthPayment($payment);
+            });
+    }
+
     protected function runPaymentCallbackFlowWalletOlamoney($response, &$callback = null)
     {
         $mock = $this->isGatewayMocked();
