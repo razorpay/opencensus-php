@@ -309,6 +309,13 @@ class Gateway extends Base\Gateway
             $authResponse['data'] = $input['gateway'];
             $authResponse['error'] = [];
 
+            if (empty($authResponse['data']) === true)
+            {
+                throw new Exception\LogicException(
+                    'The gateway input is empty. This is unexpected.',
+                    ['network' => $network]);
+            }
+
             $trackId = $authResponse['data']['paymentid'];
 
             $this->model = $this->repo->findByGatewayTransactionIdOrFail($trackId);
