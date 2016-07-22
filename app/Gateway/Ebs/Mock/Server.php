@@ -22,19 +22,20 @@ class Server extends Base\Mock\Server
 
         // Format - YYYYMMDD
         $date = Carbon::today('Asia/Kolkata')->format('d-m-Y H:i:s');
+
         $content = array(
-            "ResponseCode" => "0",
-            "ResponseMessage" => "Transaction Successful",
-            "DateCreated" => $date,
-            "PaymentID" => random_alpha_string(8),
-            "MerchantRefNo" => $input['reference_no'],
-            "Amount" => $input['amount'],
-            "Mode" => $input['mode'],
-            "Description" => $input['description'],
-            "IsFlagged" => "NO",
-            "TransactionID" => random_alpha_string(8),
-            "PaymentMethod" => "1001",
-            "RequestID" => random_alpha_string(8),
+            'ResponseCode'      => '0',
+            'ResponseMessage'   => 'Transaction Successful',
+            'DateCreated'       => $date,
+            'PaymentID'         => random_alpha_string(8),
+            'MerchantRefNo'     => $input['reference_no'],
+            'Amount'            => $input['amount'],
+            'Mode'              => $input['mode'],
+            'Description'       => $input['description'],
+            'IsFlagged'         => 'NO',
+            'TransactionID'     => random_alpha_string(8),
+            'PaymentMethod'     => '1001',
+            'RequestID'         => random_alpha_string(8),
 
         );
 
@@ -47,6 +48,7 @@ class Server extends Base\Mock\Server
             'content' => $content,
             'method' => 'post',
         );
+
         return $this->makePostResponse($request);
     }
 
@@ -80,6 +82,8 @@ class Server extends Base\Mock\Server
         );
 
         $content = implode($arr);
+
+        $this->content($content);
 
         return $this->makeResponse($content);
     }

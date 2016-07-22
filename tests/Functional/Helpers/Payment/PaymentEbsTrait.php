@@ -26,4 +26,18 @@ trait PaymentEbsTrait
 
         return $this->submitPaymentCallbackRequest($request);
     }
+
+    public function getErrorInRefund()
+    {
+
+        $server = $this->mockServer()
+            ->shouldReceive('content')
+            ->andReturnUsing(function (& $content)
+            {
+                $content = '<output  errorCode="29"  error="Insufficient balance"  />';
+                return $content;
+            })->mock();
+
+        $this->setMockServer($server);
+    }
 }

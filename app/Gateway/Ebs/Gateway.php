@@ -11,17 +11,20 @@ use RZP\Gateway\Base\Action;
 
 class Gateway extends Base\Gateway
 {
+
     use ResponseFieldsTrait;
+
     protected $gateway = 'ebs';
+
     protected $map = array(
-        'amount' => 'TxnAmount',
-        'PaymentID' =>'ebs_payment_id',
+        'amount'        => 'TxnAmount',
+        'PaymentID'     => 'ebs_payment_id',
         'transactionId' => 'TransactionID',
-        'paymentId' => 'ebs_payment_id',
-        'mode' => 'mode',
-        'referenceNo' => 'paymnet_id',
-        'errorCode' =>'ErrorCode',
-        'error' => 'ErrorDescription',
+        'paymentId'     => 'ebs_payment_id',
+        'mode'          => 'mode',
+        'referenceNo'   => 'paymnet_id',
+        'errorCode'     => 'ErrorCode',
+        'error'         => 'ErrorDescription',
 
     );
 
@@ -38,16 +41,19 @@ class Gateway extends Base\Gateway
 
         return parent::getUrlDomain();
     }
+
     protected function validateCallbackgetSecureHash(array $input)
     {
         $hash = $input['SecureHash'];
+
         unset($input['SecureHash']);
+
         $expectedHash = $this->getSecureHash($input);
+
         if ($hash !== $expectedHash)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Failed Hash Verification'
-            );
+                'Failed Hash Verification');
         }
 
     }
@@ -65,14 +71,14 @@ class Gateway extends Base\Gateway
             'method' => 'post',
             'content' => $content
         );
+
         return $request;
     }
 
     public function capture(array $input)
     {
         $payment = $this->getRepo()->findByPaymentIdAndAction(
-            $input['payment']['id'], Action::AUTHORIZE
-        );
+            $input['payment']['id'], Action::AUTHORIZE);
 
         assert($payment['received'], 1);
     }
@@ -88,11 +94,10 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
-            $input['gateway']
-        );
+            $input['gateway']);
+
         $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
-            $input['payment']['id'], Action::AUTHORIZE
-        );
+            $input['payment']['id'], Action::AUTHORIZE);
 
         if ($input['gateway']['ResponseCode'] != '0')
         {
@@ -100,8 +105,7 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
                 $content['AuthStatus'],
-                ''
-            );
+                '');
         }
 
         $content = $this->getMappedAttributes($input['gateway']);
@@ -173,6 +177,7 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_REFUND_FAILED);
         }
+
     }
 
     public function verify(array $input)
@@ -184,13 +189,15 @@ class Gateway extends Base\Gateway
         $refundAmount = (float) ($input['refund']['amount']);
 
         $refundAmount = (string) number_format($refundAmount/100, 2, '.', '');
+
         $content = array(
-            'Action' => 'refund',
+            'Action'    => 'refund',
             'AccountID' => $this->config['merchant_id'],
             'SecretKey' => $this->config['hash_secret'],
-            'Amount' => $refundAmount,
+            'Amount'    => $refundAmount,
             'PaymentID' => $payment['ebs_payment_id'],
         );
+
         return $content;
     }
 
@@ -206,6 +213,7 @@ class Gateway extends Base\Gateway
 
         return $payment;
     }
+
     protected function getMappedAttributes($attributes)
     {
         $attr = [];
@@ -227,32 +235,24 @@ class Gateway extends Base\Gateway
     protected function getAuthRequestContentArray($input)
     {
         $content = array(
-            'account_id' => $this->config['merchant_id'], // read from config
-            'reference_no' => $input['payment']['id'],
-            'amount' => $input['payment']['amount']/100,
-            'return_url' => $input['callbackUrl'],
-            'name' => 'gaurav',
-            'address' => 'razorpay office',
-            'city' => 'Bangalore',
-            'state' => 'KAR',
-            'country' => 'IND',
-            'postal_code' => '560038',
-            'phone' => '9876543210',
-            'email' => 'gaurav.d@razorpay.com',
-            'ship_name' => 'gaurav',
-            'ship_address' => 'razorpay office',
-            'ship_state' => 'KAR',
-            'ship_city' => 'Bangalore',
-            'ship_postal_code' => '560038',
-            'ship_country' => 'IND',
-            'ship_phone' => '9876543210',
-            'description' => 'EBS payment',
-            'currency' => 'INR',
-            'mode' => strtoupper($this->mode),
-            'payment_mode' => $this->getpaymentMode($input),
+            'account_id'    => $this->config['merchant_id'], // read from config
+            'reference_no'  => $input['payment']['id'],
+            'amount'        => $input['payment']['amount']/100,
+            'return_url'    => $input['callbackUrl'],
+            'name'          => 'gaurav',
+            'address'       => 'razorpay office',
+            'city'          => 'Bangalore',
+            'country'       => 'IND',
+            'postal_code'   => '560038',
+            'phone'         => '9876543210',
+            'email'         => 'gaurav.d@razorpay.com',
+            'description'   => 'EBS payment',
+            'currency'      => 'INR',
+            'mode'          => strtoupper($this->mode),
+            'payment_mode'  => $this->getpaymentMode($input),
         );
 
-        if ($input['payment']['method'] == "card")
+        if ($input['payment']['method'] == 'card')
         {
             $content['channel'] = '2';
             $content['name_on_card'] = $input['card']['name'];
@@ -262,7 +262,7 @@ class Gateway extends Base\Gateway
             $content['card_cvv'] = $input['card']['cvv'];
         }
 
-        if ($input['payment']['method'] == "netbanking")
+        if ($input['payment']['method'] == 'netbanking')
         {
             $content['channel'] = '0';
             $bankId = BankCodes::$bankCodeMap[$input['payment']['bank']];
@@ -273,6 +273,7 @@ class Gateway extends Base\Gateway
 
         return $content;
     }
+
     protected function getExpiry($input)
     {
         $month = $input['card']['expiry_month'];
@@ -281,11 +282,12 @@ class Gateway extends Base\Gateway
 
         return date('my', $ex);
     }
+
     protected function getpaymentMode($input)
     {
         $ret_val = '1';
 
-        if ($input['payment']['method'] == "netbanking")
+        if ($input['payment']['method'] == 'netbanking')
         {
             $ret_val = '3';
         }
@@ -298,6 +300,7 @@ class Gateway extends Base\Gateway
         return $ret_val;
 
     }
+
     protected function getcardBrand($input)
     {
         $brand = $input['card']['network_code'];
@@ -305,6 +308,7 @@ class Gateway extends Base\Gateway
 
         return '1';
     }
+
     public function getSecureHash($content)
     {
         $secretKey = $this->config['hash_secret'];;
@@ -312,7 +316,7 @@ class Gateway extends Base\Gateway
         $hashData = $secretKey;
         ksort($content);
 
-        foreach($content as $key => $value)
+        foreach ($content as $key => $value)
         {
             if (strlen($value) > 0)
             {

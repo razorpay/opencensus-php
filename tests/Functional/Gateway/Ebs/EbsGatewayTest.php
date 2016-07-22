@@ -73,10 +73,11 @@ class EbsGatewayTest extends TestCase
     {
         $this->setExpectedException('RZP\Exception\BadRequestException');
         $payment = $this->getDefaultNetbankingPaymentArray();
-        $payment = $this->doAuthPayment($payment);
 
-        $payment = $this->getLastEntity('payment', true);
-        $this->refundPayment($payment['id']);
+        $payment = $this->doauthpayment($payment);
+
+        $payment = $this->getlastentity('payment', true);
+        $this->refundpayment($payment['id']);
     }
 
     public function testAuthorizedPaymentRefund()
@@ -97,18 +98,45 @@ class EbsGatewayTest extends TestCase
             $this->testData['testTransactionAfterRefundingAuthorizedPayment'], $txn);
     }
 
-
     /*
      * throw Run-time exception if payment method is Card
      * Ebs is enabled for netbanking only
      */
     public function testErrorOnCard()
     {
-
         $this->setExpectedException('RZP\Exception\RuntimeException');
+
         $payment = $this->getDefaultNetbankingPaymentArray();
+
         $payment['method'] = 'card';
+
         $payment = $this->doAuthPayment($payment);
     }
 
+    public function testPaymentInvalidRefund()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $payment = $this->capturePayment($payment['public_id'],
+            $payment['amount']);
+
+        $this->getErrorInRefund();
+
+        try
+        {
+            $this->refundPayment($payment['id']);
+        }
+        catch (Exception\GatewayErrorException $e)
+        {
+        }
+
+        $refund = $this->getLastEntity('ebs', true);
+
+        $this->assertEquals($refund['ErrorCode'], "29");
+        $this->assertEquals($refund['ErrorDescription'], "Insufficien");
+
+    }
 }

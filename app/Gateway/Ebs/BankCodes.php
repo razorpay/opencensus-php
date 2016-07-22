@@ -7,6 +7,7 @@ use RZP\Models\Payment\Processor\Netbanking;
 
 class BankCodes
 {
+
     public static $bankCodeMap = array(
         IFSC::ANDB => '1378',
         IFSC::UTIB => '1004',

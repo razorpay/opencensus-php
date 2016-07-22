@@ -10,18 +10,19 @@ class Utility extends \RZP\Gateway\Utility
     {
         $arr = array();
 
-        $values = explode(" ", $response);
+        $values = explode(' ', $response);
         foreach ($values as $val)
         {
             if (strpos($val, '=') !== false)
             {
-                $keyVal = explode("=", $val);
+                $keyVal = explode('=', $val);
                 $arr[$keyVal[0]]= substr($keyVal[1], 1, -1);
             }
         }
 
         return $arr;
     }
+
     public static function parseResponseXml($response)
     {
 
@@ -33,12 +34,14 @@ class Utility extends \RZP\Gateway\Utility
                 'errorCode' => $fields['errorCode'],
                 'error' => $fields['error'],
             );
+
             return $err;
         }
         else
         {
             $fields['error'] = false;
             $fields['errorCode'] = 0;
+
             return $fields;
         }
     }

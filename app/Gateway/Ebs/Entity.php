@@ -6,31 +6,32 @@ use RZP\Gateway\Base;
 
 class Entity extends Base\Entity
 {
+
     protected $fields = array(
-        'payment_id', //reference_no
+        'payment_id',
         'channel',
         'received',
-        'accountId', //account_id
-        'TxnAmount', //amount
+        'accountId',
+        'TxnAmount',
         'name',
         'address',
         'city',
         'state',
         'country',
-        'postalCode', //postal_code
+        'postalCode',
         'phone',
         'email',
-        'shipName', //ship_name
-        'shipAddress', //ship_address
-        'shipState', //ship_state
-        'shipCity', //ship_city
-        'shipPostalCode', //ship_postal_code
-        'shipCountry', //ship_country
-        'shipPhone', //ship_phone
+        'shipName',
+        'shipAddress',
+        'shipState',
+        'shipCity',
+        'shipPostalCode',
+        'shipCountry',
+        'shipPhone',
         'description',
         'currency',
         'mode',
-        'paymentMode', //payment_mode
+        'paymentMode',
         'RequestID',
         'TransactionID',
         'TxnAmount',
@@ -93,6 +94,7 @@ class Entity extends Base\Entity
 
         return AuthStatus::$statusMap[$code];
     }
+
     protected function getRefundStatusAttribute()
     {
         $code = $this->attributes['RefStatus'];
