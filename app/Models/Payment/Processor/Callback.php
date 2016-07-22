@@ -26,6 +26,14 @@ use Mail;
 trait Callback
 {
     /**
+     * Callback urls can be hit multiple times by customers.
+     * WIthin certain duration x minutes, we will return payment successfully
+     * processed when the url is hit mulitple times.
+     * After that duration
+     */
+    const CALLBACK_SUCCESS_DURATION = 20;
+
+    /**
      * After payment initiation, bank redirects to us
      * and we send it to gateway for further
      * processing (auth).
@@ -60,7 +68,7 @@ trait Callback
 
             // If it was authorized recently then send back authorized again.
             if (($payment->isAuthorized()) and
-                ($diff < 5 * 60))
+                ($diff < self::CALLBACK_SUCCESS_DURATION * 60))
             {
                 return $this->postPaymentAuthorizeProcessing($payment);
             }
