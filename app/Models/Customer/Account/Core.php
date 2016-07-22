@@ -120,7 +120,10 @@ class Core extends Base\Core
         // Currently all app_tokens will be generated for common rzp merchant
         $appMerchant = $customer->merchant->getId();
 
-        // @todo: switch to merchant for newer sdk based on query params
+        if ($this->isUpdatedAndroidSdk($input))
+        {
+            $appMerchant = $this->merchant->getId();
+        }
 
         $custAppInput = array(
             App\Entity::CUSTOMER_ID => $customer->getId(),
@@ -134,6 +137,21 @@ class Core extends Base\Core
         $app = (new App\Core)->create($custAppInput);
 
         return $app;
+    }
+
+    protected function isUpdatedAndroidSdk($input)
+    {
+        if ((isset($input['platform'])) and
+            ($input['platform'] === 'android') and
+            (isset($input['library'])) and
+            ($input['library'] === 'checkoutjs') and
+            (isset($input['version'])) and
+            (version_compare($input['version'], '1.0.0') >= 0))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function verifyRavenOtp($input, $merchant)
