@@ -94,15 +94,15 @@ class ResponseCode
         205 => ErrorCode::BAD_REQUEST_CARD_STOLEN_OR_LOST,
         207 => ErrorCode::BAD_REQUEST_CARD_ISSUING_BANK_UNAVAILABLE,
         208 => ErrorCode::BAD_REQUEST_CARD_INACTIVE,
-        209 => ErrorCode::GATEWAY_ERROR_CARD_INVALID_NUMBER,
+        209 => ErrorCode::BAD_REQUEST_PAYMENT_CARD_NUMBER_NOT_LEGITIMATE,
         210 => ErrorCode::BAD_REQUEST_CARD_CREDIT_LIMIT_REACHED,
-        211 => ErrorCode::GATEWAY_ERROR_CARD_INVALID_CVV,
+        211 => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_CVV,
         220 => ErrorCode::BAD_REQUEST_PAYMENT_CARD_DECLINED,
         221 => ErrorCode::BAD_REQUEST_PAYMENT_BLOCKED_BY_BANK_DUE_TO_RISK_CHECKS_FAILURE,
         222 => ErrorCode::BAD_REQUEST_CARD_FROZEN,
-        230 => ErrorCode::GATEWAY_ERROR_CARD_INVALID_CVV,
-        231 => ErrorCode::GATEWAY_ERROR_CARD_INVALID_NUMBER,
-        232 => ErrorCode::GATEWAY_ERROR_UNSUPPORTED_CARD_NETWORK,
+        230 => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_CVV,
+        231 => ErrorCode::BAD_REQUEST_PAYMENT_CARD_NUMBER_NOT_LEGITIMATE,
+        232 => ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED,
         233 => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_GATEWAY,
         234 => ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL,
         235 => ErrorCode::GATEWAY_ERROR_CAPTURE_GREATER_THAN_AUTH,
@@ -151,7 +151,7 @@ class ResponseCode
     {
         if (isset(self::$errorCodeMap[$code]))
         {
-        return self::$errorCodeMap[$code];
+            return self::$errorCodeMap[$code];
         }
 
         return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
