@@ -104,7 +104,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    public function verifySecureHash($content)
+    protected function verifySecureHash($content)
     {
         $fieldsInOrder = array(
             ResponseFields::TYPE,
@@ -675,7 +675,7 @@ class Gateway extends Base\Gateway
         return $this->getHashOfArray($orderedData);
     }
 
-    public function getHashOfArray($content)
+    protected function getHashOfArray($content)
     {
         $str = $this->getStringToHash($content, "|");
 
