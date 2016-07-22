@@ -419,14 +419,14 @@ class Gateway extends Base\Gateway
      * Validate that public payment id matches the expected
      * @param  string $paymentId
      * @param  array  $payment
+     * @throws Exception\LogicException
      */
     protected function validatePaymentIdReceived($paymentId, $payment)
     {
         if ($paymentId !== $payment['public_id'])
         {
             throw new Exception\LogicException(
-                'Payment public id and atom merchant txn id do not match. Payment public_id: ' .
-                $payment['public_id'], ' atom merchant txn id: ' . $input['mer_txn']);
+                'Payment public id and atom merchant txn id do not match. Payment public_id: ' . $payment['public_id']);
         }
     }
 

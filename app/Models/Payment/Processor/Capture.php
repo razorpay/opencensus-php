@@ -145,6 +145,12 @@ trait Capture
             // entity will have corrupted data
             //
 
+            if ($ex->getCode() === ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT)
+            {
+                // If pricing rule is not found, we should not mark capture as failed ever.
+                throw $ex;
+            }
+
             $this->payment = $paymentCopy;
 
             $this->updatePaymentFailed(

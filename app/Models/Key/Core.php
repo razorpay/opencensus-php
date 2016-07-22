@@ -76,8 +76,7 @@ class Core extends Base\Core
 
         if ($old === null)
         {
-            throw new Exception\BadRequestException(
-                            ErrorCode::BAD_REQUEST_INVALID_ID);
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
         }
 
         $delay = false;

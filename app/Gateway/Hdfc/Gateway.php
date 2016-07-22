@@ -313,6 +313,7 @@ class Gateway extends Base\Gateway
             {
                 throw new Exception\LogicException(
                     'The gateway input is empty. This is unexpected.',
+                    null,
                     ['network' => $network]);
             }
 

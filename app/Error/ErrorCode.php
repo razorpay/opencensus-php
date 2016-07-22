@@ -264,6 +264,7 @@ class ErrorCode
     const SERVER_ERROR_TO_STRING_EXCEPTION                                          = 'SERVER_ERROR_TO_STRING_EXCEPTION';
     const SERVER_ERROR_MYSQL_ENTRY_NOT_FOUND                                        = 'SERVER_ERROR_MYSQL_ENTRY_NOT_FOUND';
     const SERVER_ERROR_AWS_FAILURE                                                  = 'SERVER_ERROR_AWS_FAILURE';
+    const SERVER_ERROR_PRICING_RULE_ABSENT                                          = 'SERVER_ERROR_PRICING_RULE_ABSENT';
 
     const BAD_REQUEST_CUSTOMER_ALREADY_EXISTS                                       = 'BAD_REQUEST_CUSTOMER_ALREADY_EXISTS';
     const BAD_REQUEST_CUSTOMER_CARD_ALREADY_EXISTS                                  = 'BAD_REQUEST_CUSTOMER_CARD_ALREADY_EXISTS';

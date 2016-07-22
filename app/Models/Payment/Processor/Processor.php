@@ -351,6 +351,7 @@ class Processor
         {
             throw new Exception\LogicException(
                 'Terminal should not be null here',
+                null,
                 ['payment_id' => $this->payment->getId()]);
         }
 
