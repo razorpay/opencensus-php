@@ -10,14 +10,6 @@ class AuthStatus
     const NA            = 'NA';
     const ERROR         = '0001';
 
-    public static $codes = array(
-        '0300',
-        '0399',
-        'NA',
-        '0002',
-        '0001',
-    );
-
     public static $statusMap = array(
         self::SUCCESS       => 'authorized',
         self::PENDING       => 'pending',

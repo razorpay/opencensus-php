@@ -36,7 +36,7 @@ class ErrorCode
     const GATEWAY_ERROR_SUPPORT_AUTH_NOT_FOUND                                      = 'GATEWAY_ERROR_SUPPORT_AUTH_NOT_FOUND';
     const GATEWAY_ERROR_CAPTURE_GREATER_THAN_AUTH                                   = 'GATEWAY_ERROR_CAPTURE_GREATER_THAN_AUTH';
     const GATEWAY_ERROR_PAYMENT_CAPTURE_FAILED                                      = 'GATEWAY_ERROR_PAYMENT_CAPTURE_FAILED';
-    const GATEWAY_ERROR_PARES_NOT_SUCCESFUL                                         = 'GATEWAY_ERROR_PARES_NOT_SUCCESFUL';
+    const GATEWAY_ERROR_PARES_NOT_SUCCESSFUL                                        = 'GATEWAY_ERROR_PARES_NOT_SUCCESSFUL';
     const GATEWAY_ERROR_NOT_UNDERSTOOD_ERROR                                        = 'GATEWAY_ERROR_NOT_UNDERSTOOD_ERROR';
     const GATEWAY_ERROR_CHECKSUM_MATCH_FAILED                                       = 'GATEWAY_ERROR_CHECKSUM_MATCH_FAILED';
     const GATEWAY_ERROR_TRANSACTION_TYPE_NOT_SUPPORTED                              = 'GATEWAY_ERROR_TRANSACTION_TYPE_NOT_SUPPORTED';
@@ -61,7 +61,6 @@ class ErrorCode
     const GATEWAY_ERROR_PAYMENT_CREDIT_LESS_THAN_DEBIT                              = 'GATEWAY_ERROR_PAYMENT_CREDIT_LESS_THAN_DEBIT';
     const GATEWAY_ERROR_PAYMENT_SUPPORT_FAILED                                      = 'GATEWAY_ERROR_PAYMENT_SUPPORT_FAILED';
     const GATEWAY_ERROR_PAYMENT_SUPPORT_AUTH_NOT_FOUND                              = 'GATEWAY_ERROR_PAYMENT_SUPPORT_AUTH_NOT_FOUND';
-    const GATEWAY_ERROR_PAYMENT_PARES_NOT_SUCCESFUL                                 = 'GATEWAY_ERROR_PAYMENT_PARES_NOT_SUCCESFUL';
 
     const GATEWAY_ERROR_CARD_INVALID_NAME                                           = 'GATEWAY_ERROR_CARD_INVALID_NAME';
     const GATEWAY_ERROR_CARD_INVALID_NUMBER                                         = 'GATEWAY_ERROR_CARD_INVALID_NUMBER';
