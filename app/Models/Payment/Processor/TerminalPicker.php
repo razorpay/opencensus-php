@@ -393,6 +393,8 @@ class TerminalPicker
         {
             return $this->terminal;
         }
+
+        return null;
     }
 
     protected function getTerminalsKeyedByGateway($merchantTerminals)
