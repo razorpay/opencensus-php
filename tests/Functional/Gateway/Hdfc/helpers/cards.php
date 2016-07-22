@@ -96,6 +96,56 @@ return [
         ],
     ],
 
+    'testCreditCardAuthNotApproved' => [
+        'request' => [
+            'content' => [
+                'card' => [
+                    // This IIN is of a credit card, to ensure that the enroll
+                    // response is auth_not_enrolled.
+                    'number' => '4628481036290001',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payment declined',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_GATEWAY,
+            'gateway_error_code' => Hdfc\ErrorCode::RP00006,
+        ],
+    ],
+
+    'testDebitCardAuthNotApproved' => [
+        'request' => [
+            'content' => [
+                'card' => [
+                    'number' => '4012001037141112'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payment declined',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_GATEWAY,
+            'gateway_error_code' => Hdfc\ErrorCode::RP00006,
+        ],
+    ],
+
     'testSignatureFailure1' => [
         'request' => [
             'content' => [

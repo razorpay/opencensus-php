@@ -422,7 +422,7 @@ class Gateway extends Base\Gateway
                     'payment_id' => $input['payment']['id']
                 ]);
 
-            throw new Exception\BadRequestException(
+            throw new Exception\GatewayErrorException(
                 Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
         }
     }

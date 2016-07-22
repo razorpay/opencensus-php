@@ -155,7 +155,7 @@ trait Authorize
             return false;
         }
 
-        $result = &$authResponse['data']['result'];
+        $result = $authResponse['data']['result'];
 
         $errorCode = null;
 

@@ -126,6 +126,16 @@ trait Capture
 
             $this->recordCapture();
         }
+        catch (Exception\BadRequestException $ex)
+        {
+            // For validation failures, we shouldn't mark capture as failed ever.
+            throw $ex;
+        }
+        catch (Exception\BadRequestValidationFailureException $ex)
+        {
+            // For validation failures, we shouldn't mark capture as failed ever.
+            throw $ex;
+        }
         catch (Exception\BaseException $ex)
         {
             //
