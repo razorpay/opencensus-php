@@ -7,7 +7,6 @@ use RZP\Models\Payment\Processor\Netbanking;
 
 class BankCodes
 {
-
     public static $bankCodeMap = array(
         IFSC::ANDB => '1378',
         IFSC::UTIB => '1004',
@@ -22,6 +21,7 @@ class BankCodes
         IFSC::FDRL => '1029',
         IFSC::HDFC => '1007',
         IFSC::ICIC => '1016',
+        IFSC::IDIB => '1143',
         IFSC::IOBA => '1213',
         IFSC::VYSA => '1210',
         IFSC::JAKA => '1015',
@@ -36,7 +36,7 @@ class BankCodes
         IFSC::STBP => '1035',
         IFSC::SBTR => '1039',
         IFSC::UBIN => '1216',
-        IFSC::VIJB => '1379',
+        IFSC::UTBI => '1212',
         IFSC::VIJB => '1379',
         IFSC::YESB => '1146',
         IFSC::PUNB => '1381',

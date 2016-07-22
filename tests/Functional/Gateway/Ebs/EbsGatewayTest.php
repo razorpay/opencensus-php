@@ -137,6 +137,5 @@ class EbsGatewayTest extends TestCase
 
         $this->assertEquals($refund['ErrorCode'], "29");
         $this->assertEquals($refund['ErrorDescription'], "Insufficien");
-
     }
 }

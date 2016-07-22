@@ -29,7 +29,6 @@ class Repository extends Base\Repository
 
     public function findByEbsPaymentIdAndActionOrFail($paymentId, $action)
     {
-
         return $this->newQuery()
             ->where('ebs_payment_id', '=', $paymentId)
             ->where('action', '=', $action)

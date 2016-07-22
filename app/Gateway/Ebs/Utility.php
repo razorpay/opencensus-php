@@ -19,13 +19,11 @@ class Utility extends \RZP\Gateway\Utility
                 $arr[$keyVal[0]]= substr($keyVal[1], 1, -1);
             }
         }
-
         return $arr;
     }
 
     public static function parseResponseXml($response)
     {
-
         $fields = self::returnFields($response);
 
         if (array_key_exists('error', $fields))

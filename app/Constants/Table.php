@@ -35,6 +35,7 @@ class Table
     const CYBERSOURCE       = 'cybersource';
     const PAYTM             = 'paytm';
     const BILLDESK          = 'billdesk';
+    const EBS               = 'ebs';
     const MOBIKWIK          = 'mobikwik';
     const NETBANKING        = 'netbanking';
 

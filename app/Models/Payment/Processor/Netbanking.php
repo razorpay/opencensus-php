@@ -221,8 +221,39 @@ class Netbanking
     );
 
     protected static $ebs = array(
+        IFSC::ANDB,
+        IFSC::UTIB,
+        IFSC::BKID,
+        IFSC::MAHB,
+        IFSC::CNRB,
+        IFSC::CSBK,
+        IFSC::CBIN,
+        IFSC::CIUB,
+        IFSC::CORP,
+        IFSC::DLXB,
+        IFSC::FDRL,
+        IFSC::HDFC,
+        IFSC::ICIC,
+        IFSC::IDIB,
+        IFSC::IOBA,
+        IFSC::VYSA,
+        IFSC::JAKA,
+        IFSC::KARB,
+        IFSC::KKBK,
+        IFSC::ORBC,
+        IFSC::SRCB,
+        IFSC::SBBJ,
+        IFSC::SBHY,
+        IFSC::SBIN,
+        IFSC::SBMY,
+        IFSC::STBP,
+        IFSC::SBTR,
+        IFSC::UBIN,
+        IFSC::UTBI,
+        IFSC::VIJB,
+        IFSC::YESB,
+        IFSC::PUNB,
     );
-
 
     public static function isSupportedBank($bank)
     {

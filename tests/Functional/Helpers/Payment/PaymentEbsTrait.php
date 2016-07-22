@@ -29,7 +29,6 @@ trait PaymentEbsTrait
 
     public function getErrorInRefund()
     {
-
         $server = $this->mockServer()
             ->shouldReceive('content')
             ->andReturnUsing(function (& $content)

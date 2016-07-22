@@ -29,18 +29,4 @@ class Gateway extends Ebs\Gateway
 
         return $response;
     }
-
-    protected function getHtmlText($request)
-    {
-        $txt = '<form action="'.$request['url'].'" method="'.$request['method'].'">' .PHP_EOL;
-
-        foreach ($request['content'] as $key => $value)
-        {
-            $txt .= "<input type='text' name='$key' value='$value'>".PHP_EOL;
-        }
-
-        $txt .= '</form>';
-
-        return $txt;
-    }
 }
