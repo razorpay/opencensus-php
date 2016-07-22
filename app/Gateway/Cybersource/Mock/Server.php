@@ -217,7 +217,7 @@ class Server extends Base\Mock\Server
 
             <Report xmlns="https://ebctest.cybersource.com/ebctest/reports/dtd/tdr_1_1.dtd" Name="Transaction Detail" Version="1.1" MerchantID="'.$input['merchantID'].'" ReportStartDate="2016-07-21 13:03:06.814+05:30" ReportEndDate="2016-07-21 13:03:06.814+05:30">
               <Requests>
-                <Request MerchantReferenceNumber="5wX38AI8BKFtXs" RequestDate="2016-07-20T13:02:54+05:30" RequestID="'.$input['merchantReferenceNumber'].'" SubscriptionID="" Source="SOAP Toolkit API">
+                <Request MerchantReferenceNumber="5wX38AI8BKFtXs" RequestDate="2016-07-20T13:02:54+05:30" RequestID="'.$input['requestID'].'" SubscriptionID="" Source="SOAP Toolkit API">
                   <BillTo>
                     <FirstName>SHASHANK</FirstName>
                     <LastName>A</LastName>
@@ -259,7 +259,7 @@ class Server extends Base\Mock\Server
                     </ApplicationReply>
                   </ApplicationReplies>
                   <PaymentData>
-                    <PaymentRequestID>'.$input['merchantReferenceNumber'].'</PaymentRequestID>
+                    <PaymentRequestID>'.$input['requestID'].'</PaymentRequestID>
                     <PaymentProcessor>vdchdfc</PaymentProcessor>
                     <Amount>500.00</Amount>
                     <CurrencyCode>INR</CurrencyCode>

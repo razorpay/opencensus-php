@@ -703,11 +703,11 @@ class Gateway extends Base\Gateway
     protected function getPaymentVerifyRequestContent($input, $payment)
     {
         $content = [
-            'type'                    => 'transaction',
-            'subtype'                 => 'transactionDetail',
-            'merchantID'              => $this->getMerchantID($input['terminal']),
-            'merchantReferenceNumber' => $payment->getRef(),
-            'versionNumber'           => '1.90'
+            'type'          => 'transaction',
+            'subtype'       => 'transactionDetail',
+            'merchantID'    => $this->getMerchantID($input['terminal']),
+            'requestID'     => $payment->getRef(),
+            'versionNumber' => '1.90'
         ];
 
         $request = $this->getStandardRequestArray($content);

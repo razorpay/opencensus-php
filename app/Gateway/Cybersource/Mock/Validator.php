@@ -135,7 +135,7 @@ class Validator extends Base\Validator
         'type'                    => 'required|in:transaction',
         'subtype'                 => 'required|in:transactionDetail',
         'merchantID'              => 'required|string',
-        'merchantReferenceNumber' => 'required|string',
+        'requestID'               => 'required|string',
         'versionNumber'           => 'required|in:1.90'
     );
 
