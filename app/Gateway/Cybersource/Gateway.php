@@ -188,44 +188,62 @@ class Gateway extends Base\Gateway
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
-        $applicationReply = $content['Requests']['Request']['ApplicationReplies']['ApplicationReply'];
+        $applicationReplies = $content['Requests']['Request']['ApplicationReplies']['ApplicationReply'];
 
-        if (($applicationReply[1]['@attributes']['Name'] === 'ics_auth') and
-            ($applicationReply[1]['RFlag'] !== ReplyFlag::SOK))
+        $authReply = [];
+
+        foreach($applicationReplies as $applicationReply)
         {
-            $verify->gatewaySuccess = false;
-
-            if (($payment === null) and
-                (($input['payment']['status'] === 'failed') or
-                 ($input['payment']['status'] === 'created')))
+            if ($applicationReply['@attributes']['Name'] === 'ics_auth')
             {
-                $verify->apiSuccess = false;
-            }
-            else if (($payment['received'] === false) and
-                     (($payment['status'] === null) or
-                      ($payment['status'] !== (string) Status::AUTHORIZED)))
-            {
-                $verify->apiSuccess = false;
-            }
-            else if ($payment['status'] === (string) Status::AUTHORIZED)
-            {
-                $verify->status = VerifyResult::STATUS_MISMATCH;
-                $verify->apiSuccess = true;
+                $authReply = $applicationReply;
+                break;
             }
         }
-        else if ($applicationReply[1]['RFlag'] === ReplyFlag::SOK)
-        {
-            $verify->gatewaySuccess = true;
 
-            if (($input['payment']['status'] !== 'created') and
-                ($input['payment']['status'] !== 'failed'))
+        if (isset($authReply['RFlag']) === false)
+        {
+            $verify->gatewaySuccess = false;
+        }
+        else
+        {
+            if (($authReply['@attributes']['Name'] === 'ics_auth') and
+                ($authReply['RFlag'] !== ReplyFlag::SOK))
             {
-                $verify->apiSuccess = true;
+                $verify->gatewaySuccess = false;
+
+                if (($payment === null) and
+                    (($input['payment']['status'] === 'failed') or
+                     ($input['payment']['status'] === 'created')))
+                {
+                    $verify->apiSuccess = false;
+                }
+                else if (($payment['received'] === false) and
+                         (($payment['status'] === null) or
+                          ($payment['status'] !== (string) Status::AUTHORIZED)))
+                {
+                    $verify->apiSuccess = false;
+                }
+                else if ($payment['status'] === (string) Status::AUTHORIZED)
+                {
+                    $verify->status = VerifyResult::STATUS_MISMATCH;
+                    $verify->apiSuccess = true;
+                }
             }
-            else
+            else if ($authReply['RFlag'] === ReplyFlag::SOK)
             {
-                $verify->status = VerifyResult::STATUS_MISMATCH;
-                $verify->apiSuccess = false;
+                $verify->gatewaySuccess = true;
+
+                if (($input['payment']['status'] !== 'created') and
+                    ($input['payment']['status'] !== 'failed'))
+                {
+                    $verify->apiSuccess = true;
+                }
+                else
+                {
+                    $verify->status = VerifyResult::STATUS_MISMATCH;
+                    $verify->apiSuccess = false;
+                }
             }
         }
 
