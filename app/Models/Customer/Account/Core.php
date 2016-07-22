@@ -247,7 +247,7 @@ class Core extends Base\Core
         return array($customer, $customerApp);
     }
 
-    protected function putAppTokenInSession($appToken)
+    public function putAppTokenInSession($appToken)
     {
         // setup session params
         // as device token is public, only app_token is sufficient

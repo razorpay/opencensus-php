@@ -170,13 +170,12 @@ class Checkout
                     $input);
 
                 $data['customer'] = array(
-                    'email'     => $response['email'],
                     'contact'   => $input['contact'],
                     'valid'     => $response['valid']);
 
                 if ($response['valid'] === true)
                 {
-                    $data['customer'][Payment\Entity::APP_TOKEN] = $response[Payment\Entity::APP_TOKEN];
+                    $data['email'] = $response['email'],
                 }
             }
             else if (isset($input['contact']))
