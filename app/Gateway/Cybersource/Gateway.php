@@ -206,23 +206,7 @@ class Gateway extends Base\Gateway
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
-        $applicationReplies = $content['Requests']['Request']['ApplicationReplies']['ApplicationReply'];
-
-        $authReply = [];
-
-        if ($this->isSequentialArray($applicationReplies) === false)
-        {
-            $applicationReplies = [$applicationReplies];
-        }
-
-        foreach($applicationReplies as $applicationReply)
-        {
-            if ($applicationReply['@attributes']['Name'] === 'ics_auth')
-            {
-                $authReply = $applicationReply;
-                break;
-            }
-        }
+        $authReply = $this->fetchAuthorizeReplyFromContent($content);
 
         if (isset($authReply['RFlag']) === false)
         {
@@ -988,6 +972,26 @@ class Gateway extends Base\Gateway
         $this->model = $payment;
 
         return $payment;
+    }
+
+    protected function fetchAuthorizeReplyFromContent($content)
+    {
+        $applicationReplies = $content['Requests']['Request']['ApplicationReplies']['ApplicationReply'];
+
+        if ($this->isSequentialArray($applicationReplies) === false)
+        {
+            $applicationReplies = [$applicationReplies];
+        }
+
+        foreach($applicationReplies as $applicationReply)
+        {
+            if ($applicationReply['@attributes']['Name'] === 'ics_auth')
+            {
+                return $applicationReply;
+            }
+        }
+
+        return [];
     }
 
     /** Exceptions **/
