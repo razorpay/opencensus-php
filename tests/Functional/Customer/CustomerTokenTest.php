@@ -5,9 +5,11 @@ namespace RZP\Tests\Functional\CustomerToken;
 use Mockery;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
 class CustomerTokenTest extends TestCase
 {
+    use InteractsWithSession;
     use RequestResponseFlowTrait;
 
     public function setUp()
@@ -133,22 +135,10 @@ class CustomerTokenTest extends TestCase
 
     protected function mockSession()
     {
-        $this->getMock('Illuminate\Session\Store')
-             ->method('get')
-             ->with('something')
-             ->will('capp_1000000custapp');
+        $data = array(
+            'test_app_token' => 'capp_1000000custapp'
+        );
 
-        // $session = Mockery::mock('Illuminate\Session\Store')->makePartial();
-
-        // $this->app->instance('session.store', $session);
-
-        // $session->shouldReceive('get')
-        //       ->with(Mockery::type('string'))
-        //       ->andReturnUsing(function ($key)
-        //             {
-        //                 return 'capp_1000000custapp';
-        //             });
-
-        // $this->app->instance($session, 'session.store');
+        $this->session($data);
     }
 }
