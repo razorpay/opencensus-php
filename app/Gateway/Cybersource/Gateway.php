@@ -97,6 +97,24 @@ class Gateway extends Base\Gateway
     {
         parent::capture($input);
 
+        $payment = $this->getRepo()->retrieveCapturedByPaymentId(
+            $input['payment']['id']);
+
+        if (($payment !== null) and
+            (intval($capturedAmount) === $input['payment']['amount']))
+        {
+            //
+            // Looks like the payment has already been captured on gateway,
+            // but due to some previous error, this has not been recorded
+            // on api.
+            //
+            // In this case we will silently return implying payment has
+            // been captured on gateway
+            //
+
+            return;
+        }
+
         $request = $this->createCaptureRequestFields($input);
 
         $this->traceGatewayRequest(TraceCode::GATEWAY_CAPTURE_REQUEST, $request);
@@ -459,20 +477,19 @@ class Gateway extends Base\Gateway
     {
         $this->trace->info(TraceCode::GATEWAY_ENROLL_RESPONSE, $response);
 
-        $reasonCode = null;
+        $reasonCode = (int) $response['reasonCode'];
 
         $attributes = array(
-            Entity::PAYMENT_ID    => $input['payment']['id'],
-            Entity::AMOUNT        => $request['content']['item'][0][self::UNIT_PRICE],
+            Entity::AMOUNT        => ($input['payment']['amount']/100),
             Entity::REASON_CODE   => $response['reasonCode'],
             Entity::STATUS        => Status::CREATED,
             Entity::REF           => $response[self::REQUEST_ID]
         );
 
-        $this->createGatewayPaymentEntity($attributes);
+        $this->createGatewayPaymentEntity($attributes, $input);
 
-        if (($response['reasonCode'] !== Result::ENROLLED) and
-            ($response['reasonCode'] !== Result::SUCCESS))
+        if (($reasonCode !== Result::ENROLLED) and
+            ($reasonCode !== Result::SUCCESS))
         {
             $this->throwException($response);
         }
@@ -480,65 +497,55 @@ class Gateway extends Base\Gateway
 
     protected function persistAfterCapture($input, $response, $request)
     {
-        $gateway = $this->getRepo()->retrieveByPaymentIdOrFail($input['payment']['id']);
-
         $this->trace->info(TraceCode::GATEWAY_CAPTURE_RESPONSE, $response);
 
-        if ($response['reasonCode'] !== Result::SUCCESS)
+        $status = Status::CAPTURED;
+        $reasonCode = (int) $response['reasonCode'];
+
+        if ($reasonCode !== Result::SUCCESS)
         {
-            $attributes = array(
-                Entity::STATUS      => Status::CAPTURE_FAILED,
-                Entity::REASON_CODE => $response['reasonCode'],
-                Entity::ACTION      => Base\Action::CAPTURE
-            );
-
-            $gateway->fill($attributes);
-
-            $gateway->saveOrFail();
-
-            $this->throwException($response);
+            $status = Status::CAPTURE_FAILED;
+            $error  = ResponseCode::$reasonCodes[$response['reasonCode']];
         }
 
         $attributes = array(
+            Entity::AMOUNT      => ($input['payment']['amount']/100),
+            Entity::RECEIVED    => true,
             Entity::CAPTURE_REF => $response[self::REQUEST_ID],
-            Entity::STATUS      => Status::CAPTURED,
-            Entity::ACTION      => Base\Action::CAPTURE
+            Entity::STATUS      => $status,
+            Entity::REASON_CODE => $response['reasonCode'],
         );
 
-        $gateway->fill($attributes);
+        $this->createGatewayPaymentEntity($attributes, $input);
 
-        $gateway->saveOrFail();
+        if ($response['reasonCode'] !== Result::SUCCESS)
+        {
+            $this->throwException($response);
+        }
     }
 
     protected function persistAfterRefund($input, $response, $request)
     {
-        $gateway = $this->getRepo()->retrieveByPaymentIdOrFail($input['payment']['id']);
-
         $this->trace->info(TraceCode::GATEWAY_REFUND_RESPONSE, $response);
 
-        if ($response['reasonCode'] !== Result::SUCCESS)
-        {
-            $attributes = array(
-                Entity::REASON_CODE => $response['reasonCode'],
-                Entity::ACTION     => Base\Action::REFUND
-            );
-
-            $gateway->fill($attributes);
-
-            $gateway->saveOrFail();
-
-            $this->throwException($response);
-        }
+        $reasonCode = (int) $response['reasonCode'];
 
         $attributes = array(
-            Entity::REFUND_ID => $input['refund']['id'],
-            Entity::STATUS    => Status::REFUNDED,
-            Entity::ACTION    => Base\Action::REFUND
+            Entity::AMOUNT      => ($input['refund']['amount'] / 100),
+            Entity::REFUND_ID   => $input['refund']['id'],
+            Entity::REF         => $response['requestID'],
+            Entity::STATUS      => ($reasonCode !== Result::SUCCESS) ? Status::REFUND_FAILED : Status::REFUNDED,
+            Entity::REASON_CODE => $reasonCode,
+            Entity::ACTION      => Base\Action::REFUND,
+            Entity::RECEIVED    => true
         );
 
-        $gateway->fill($attributes);
+        $this->createGatewayPaymentEntity($attributes, $input);
 
-        $gateway->saveOrFail();
+        if ($reasonCode !== Result::SUCCESS)
+        {
+            $this->throwException($response);
+        }
     }
 
     protected function createAuthEnrolledRequestFields($input)
@@ -680,7 +687,7 @@ class Gateway extends Base\Gateway
     {
         $content = $this->getCommonRequestData($input);
 
-        $gateway = $this->getRepo()->retrieveByPaymentIdOrFail($input['payment']['id']);
+        $gateway = $this->getRepo()->retrieveByPaymentIdAndStatus($input['payment']['id'], Status::CAPTURED);
 
         $content['ccCreditService'][self::RUN] = 'true';
         $content['ccCreditService'][self::CAPTURE_REQUEST_ID] = $gateway->getCaptureRef();
@@ -964,9 +971,13 @@ class Gateway extends Base\Gateway
         return $this->model;
     }
 
-    protected function createGatewayPaymentEntity($attributes)
+    protected function createGatewayPaymentEntity($attributes, $input)
     {
         $payment = $this->getNewGatewayPaymentEntity();
+
+        $paymentId = $input['payment']['id'];
+
+        $payment->setPaymentId($paymentId);
 
         $payment->setAction($this->action);
 

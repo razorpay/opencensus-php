@@ -35,6 +35,11 @@ class CybersourceGatewayTest extends TestCase
 
         $payment = $this->doAuthPayment($payment);
 
+        $cybersourceAuth = $this->getLastEntity('cybersource', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testCybersourceAuthEntity'], $cybersourceAuth);
+
         $payment = $this->capturePayment($payment['razorpay_payment_id'], $amount);
 
         $txn = $this->getLastEntity('transaction', true);
@@ -45,10 +50,10 @@ class CybersourceGatewayTest extends TestCase
 
         $this->assertTestResponse($payment);
 
-        $payment = $this->getLastEntity('cybersource', true);
+        $cybersourceCapture = $this->getLastEntity('cybersource', true);
 
         $this->assertArraySelectiveEquals(
-            $this->testData['testPaymentCybersourceEntity'], $payment);
+            $this->testData['testCybersourceCaptureEntity'], $cybersourceCapture);
     }
 
     public function testFailedAuthPayment()
@@ -132,6 +137,16 @@ class CybersourceGatewayTest extends TestCase
     }
 
     public function testVerifyPayment()
+    {
+        $payment = $this->doAuthAndCapturePayment();
+
+        $verifyResponse = $this->verifyPayment($payment['id']);
+
+        $this->assertSame($verifyResponse['payment']['verified'], 1);
+        $this->assertSame($verifyResponse['gateway']['gatewayPayment']['status'], 'authorized');
+    }
+
+    public function testVerifyCapturedPayment()
     {
         $payment = $this->getDefaultPaymentArray();
 
