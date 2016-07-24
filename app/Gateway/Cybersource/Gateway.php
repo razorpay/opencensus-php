@@ -101,7 +101,7 @@ class Gateway extends Base\Gateway
             $input['payment']['id']);
 
         if (($gatewayPayment !== null) and
-            (intval($gatewayPayment['amount']) === $input['payment']['amount']))
+            ($gatewayPayment['amount'] === $input['payment']['amount']))
         {
             //
             // Looks like the payment has already been captured on gateway,
@@ -479,7 +479,7 @@ class Gateway extends Base\Gateway
         $reasonCode = (int) $response['reasonCode'];
 
         $attributes = array(
-            Entity::AMOUNT        => ($input['payment']['amount']/100),
+            Entity::AMOUNT        => $input['payment']['amount'],
             Entity::REASON_CODE   => $response['reasonCode'],
             Entity::STATUS        => Status::CREATED,
             Entity::REF           => $response[self::REQUEST_ID]
@@ -508,7 +508,7 @@ class Gateway extends Base\Gateway
         }
 
         $attributes = array(
-            Entity::AMOUNT      => ($input['payment']['amount']/100),
+            Entity::AMOUNT      => $input['payment']['amount'],
             Entity::RECEIVED    => true,
             Entity::CAPTURE_REF => $response[self::REQUEST_ID],
             Entity::STATUS      => $status,
@@ -530,7 +530,7 @@ class Gateway extends Base\Gateway
         $reasonCode = (int) $response['reasonCode'];
 
         $attributes = array(
-            Entity::AMOUNT      => ($input['refund']['amount'] / 100),
+            Entity::AMOUNT      => $input['refund']['amount'],
             Entity::REFUND_ID   => $input['refund']['id'],
             Entity::REF         => $response['requestID'],
             Entity::STATUS      => ($reasonCode !== Result::SUCCESS) ? Status::REFUND_FAILED : Status::REFUNDED,

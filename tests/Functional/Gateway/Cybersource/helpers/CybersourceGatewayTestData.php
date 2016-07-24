@@ -92,7 +92,7 @@ return [
     ],
 
     'testCybersourceAuthEntity' => [
-        'amount' => 500,
+        'amount' => 50000,
         'pares_status' => 'Y',
         'reason_code' => 475,
         'action' => 'authorize',
@@ -107,7 +107,7 @@ return [
     ],
 
      'testCybersourceCaptureEntity' => [
-        'amount' => 500,
+        'amount' => 50000,
         'pares_status' => null,
         'reason_code' => 100,
         'action' => 'capture',
@@ -122,7 +122,7 @@ return [
     ],
 
     'testNotEnrolledCSEntity' => [
-        'amount' => 500,
+        'amount' => 50000,
         'pares_status' => null,
         'status' => 'captured',
         'entity' => 'cybersource',
@@ -131,7 +131,7 @@ return [
     'testPaymentRefund' => [
         'reason_code' => 100,
         'received' => true,
-        'amount' => 500,
+        'amount' => 50000,
         'commerce_indicator' => null,
         'pares_status' => null,
         'action' => 'refund',
