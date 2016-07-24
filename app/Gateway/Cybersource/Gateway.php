@@ -97,11 +97,11 @@ class Gateway extends Base\Gateway
     {
         parent::capture($input);
 
-        $payment = $this->getRepo()->retrieveCapturedByPaymentId(
+        $gatewayPayment = $this->getRepo()->retrieveCapturedByPaymentId(
             $input['payment']['id']);
 
-        if (($payment !== null) and
-            (intval($capturedAmount) === $input['payment']['amount']))
+        if (($gatewayPayment !== null) and
+            (intval($gatewayPayment['amount']) === $input['payment']['amount']))
         {
             //
             // Looks like the payment has already been captured on gateway,
@@ -200,7 +200,6 @@ class Gateway extends Base\Gateway
 
     protected function verifyPayment($verify)
     {
-        $payment = $verify->payment;
         $input = $verify->input;
         $content = $verify->verifyResponseContent;
 
@@ -217,46 +216,62 @@ class Gateway extends Base\Gateway
         {
             if ($authReply['RFlag'] !== ReplyFlag::SOK)
             {
-                $verify->gatewaySuccess = false;
-
-                if (($payment === null) and
-                    (($input['payment']['status'] === 'failed') or
-                     ($input['payment']['status'] === 'created')))
-                {
-                    $verify->apiSuccess = false;
-                }
-                else if (($payment['received'] === false) and
-                         (($payment['status'] === null) or
-                          ($payment['status'] !== (string) Status::AUTHORIZED)))
-                {
-                    $verify->apiSuccess = false;
-                }
-                else if ($payment['status'] === (string) Status::AUTHORIZED)
-                {
-                    $verify->status = VerifyResult::STATUS_MISMATCH;
-                    $verify->apiSuccess = true;
-                }
+                $this->verifyNonExistentCase($verify);
             }
             else if ($authReply['RFlag'] === ReplyFlag::SOK)
             {
-                $verify->gatewaySuccess = true;
-
-                if (($input['payment']['status'] !== 'created') and
-                    ($input['payment']['status'] !== 'failed'))
-                {
-                    $verify->apiSuccess = true;
-                }
-                else
-                {
-                    $verify->status = VerifyResult::STATUS_MISMATCH;
-                    $verify->apiSuccess = false;
-                }
+                $this->verifyPaymentReconcileWithGatewayResponse($verify);
             }
         }
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
 
         return $verify->status;
+    }
+
+    protected function verifyNonExistentCase($verify, $input)
+    {
+        $payment = $verify->payment;
+        $input = $verify->input;
+
+        $verify->gatewaySuccess = false;
+
+        if (($payment === null) and
+            (($input['payment']['status'] === 'failed') or
+             ($input['payment']['status'] === 'created')))
+        {
+            $verify->apiSuccess = false;
+        }
+        else if (($payment['received'] === false) and
+                 (($payment['status'] === null) or
+                  ($payment['status'] !== (string) Status::AUTHORIZED)))
+        {
+            $verify->apiSuccess = false;
+        }
+        else if ($payment['status'] === (string) Status::AUTHORIZED)
+        {
+            $verify->status = VerifyResult::STATUS_MISMATCH;
+            $verify->apiSuccess = true;
+        }
+    }
+
+    protected function verifyPaymentReconcileWithGatewayResponse($verify)
+    {
+        $payment = $verify->payment;
+        $input = $verify->input;
+
+        $verify->gatewaySuccess = true;
+
+        if (($input['payment']['status'] !== 'created') and
+            ($input['payment']['status'] !== 'failed'))
+        {
+            $verify->apiSuccess = true;
+        }
+        else
+        {
+            $verify->status = VerifyResult::STATUS_MISMATCH;
+            $verify->apiSuccess = false;
+        }
     }
 
     protected function enroll($input)
