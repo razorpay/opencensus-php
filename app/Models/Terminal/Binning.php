@@ -26,38 +26,6 @@ class Binning
     }
 
     /**
-     * Based on current terminal, rule, chance and input determines
-     * if the current rule is applicable or not.
-     */
-    public function isRuleApplicable($terminal, $rule, $chancePercent, $input = [])
-    {
-        if ((isset($rule['method'])) and
-            ($rule['method'] === $input['payment']->getMethod()))
-        {
-
-            $check = (($chancePercent <= $rule['loadPercent']) and
-                    ($rule['binFor'] === $terminal->getId()));
-
-            switch ($rule['method']) {
-                case Method::NETBANKING:
-                    if ($rule['bank'] === $input['payment']->getBank())
-                    {
-                        return $check;
-                    }
-                    break;
-
-                case Method::CARD:
-                case Method::EMI:
-                case Method::WALLET:
-                    return $check;
-                    break;
-            }
-
-            return false;
-        }
-    }
-
-    /**
      * Used in the Terminal/Selector to select a terminal
      * if a binning rule is defined for the current case.
      *
@@ -65,11 +33,11 @@ class Binning
      * @param  int      Chance Variable
      * @return terminal
      */
-    public function select($terminals, $chancePercent, $input)
+    public function select($terminal, $chancePercent, $input, $terminals)
     {
         // Since only the first terminal would be selected
         // Check condition on binFor only on first terminal
-        $checkTerminal = $terminals[0];
+        $checkTerminal = $terminal;
 
         list($returnTlId, $rule) = $this->chooseTerminalWithRules($checkTerminal, $chancePercent, $input);
 
@@ -126,6 +94,38 @@ class Binning
         }
 
         return [$terminal->getId(), null];
+    }
+
+    /**
+     * Based on current terminal, rule, chance and input determines
+     * if the current rule is applicable or not.
+     */
+    public function isRuleApplicable($terminal, $rule, $chancePercent, $input = [])
+    {
+        if ((isset($rule['method'])) and
+            ($rule['method'] === $input['payment']->getMethod()))
+        {
+
+            $check = (($chancePercent <= $rule['loadPercent']) and
+                    ($rule['binFor'] === $terminal->getId()));
+
+            switch ($rule['method']) {
+                case Method::NETBANKING:
+                    if ($rule['bank'] === $input['payment']->getBank())
+                    {
+                        return $check;
+                    }
+                    break;
+
+                case Method::CARD:
+                case Method::EMI:
+                case Method::WALLET:
+                    return $check;
+                    break;
+            }
+
+            return false;
+        }
     }
 
     /**

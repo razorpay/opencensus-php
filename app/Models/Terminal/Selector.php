@@ -108,7 +108,7 @@ class Selector
 
         if (isset($options['chance']))
         {
-            $terminal = (new Binning)->select($terminal, $options['chance'], $input);
+            $terminal = (new Binning)->select($terminal, $options['chance'], $this->input, $terminals);
         }
 
         // This is a hack and should be implemented in the correct manner later.

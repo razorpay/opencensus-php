@@ -212,7 +212,8 @@ trait Authorize
     {
         $options = [];
 
-        if (App::environment('testing') === false)
+        if (($this->mode === Mode::LIVE) and
+            (App::environment('testing') === false))
         {
             $chance = rand(1,100);
 
@@ -220,13 +221,6 @@ trait Authorize
         }
 
         return $options;
-    }
-
-    protected function isMoreLoggingRequired($terminal)
-    {
-        $verboseLoggingTerminalIds = ['1000HdfcShared'];
-
-        return in_array($terminal->getId(), $verboseLoggingTerminalIds);
     }
 
     protected function logTerminalPickedAndSelected($terminalSelected, $terminalPicked, $payment)
