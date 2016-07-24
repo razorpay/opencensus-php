@@ -25,6 +25,8 @@ class Validator extends Base\Validator
         Entity::PAYUMONEY   => 'sometimes|boolean',
         Entity::MOBIKWIK    => 'sometimes|boolean',
         Entity::EMI         => 'sometimes|boolean',
+        Entity::CREDIT_CARD => 'sometimes|boolean',
+        Entity::DEBIT_CARD  => 'sometimes|boolean',
     );
 
     protected static $setMethodsValidators = array(
