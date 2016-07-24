@@ -131,6 +131,14 @@ class Validator extends Base\Validator
         'PaReq'            => 'required|string',
     );
 
+    protected static $verifyRules = array(
+        'type'                    => 'required|in:transaction',
+        'subtype'                 => 'required|in:transactionDetail',
+        'merchantID'              => 'required|string',
+        'requestID'               => 'required|string',
+        'versionNumber'           => 'required|in:1.90'
+    );
+
     protected static $authValidators = array(
         'cc_auth_service',
         'ucaf'

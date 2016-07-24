@@ -213,7 +213,7 @@ return [
         ],
         'exception' => [
             'class' => 'RZP\Exception\GatewayErrorException',
-            'internal_error_code' => ErrorCode::GATEWAY_ERROR_PARES_NOT_SUCCESFUL,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_PARES_NOT_SUCCESSFUL,
             'gateway_error_code'  => Hdfc\ErrorCode::GV00004,
         ],
     ],

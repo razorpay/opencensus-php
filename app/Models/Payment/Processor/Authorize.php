@@ -612,6 +612,7 @@ trait Authorize
             default:
                 throw new Exception\LogicException(
                     'Should not reach here.',
+                    null,
                     ['payment_method' => $paymentMethod]);
         }
     }
