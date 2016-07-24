@@ -26,6 +26,7 @@ use RZP\Trace\Trace;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 
+use App;
 use Crypt;
 
 trait Authorize
@@ -177,10 +178,12 @@ trait Authorize
 
         $verbose = false;
 
-        // Terminal picked is the terminal used for payment processing.
-        $terminalPicked = (new TerminalPicker)->selectTerminal($payment, $this->mode);
+        $options = $this->getOptionsForTerminals();
 
-        $terminalSelected = (new Terminal\Selector)->select($payment, $this->mode, $verbose);
+        // Terminal picked is the terminal used for payment processing.
+        $terminalPicked = (new TerminalPicker)->selectTerminal($payment, $this->mode, $options);
+
+        $terminalSelected = (new Terminal\Selector)->select($payment, $this->mode, $verbose, $options);
 
         $this->logTerminalPickedAndSelected($terminalSelected, $terminalPicked, $payment);
 
@@ -205,11 +208,19 @@ trait Authorize
         }
     }
 
-    protected function isMoreLoggingRequired($terminal)
+    protected function getOptionsForTerminals()
     {
-        $verboseLoggingTerminalIds = ['1000HdfcShared'];
+        $options = [];
 
-        return in_array($terminal->getId(), $verboseLoggingTerminalIds);
+        if (($this->mode === Mode::LIVE) and
+            (App::environment('testing') === false))
+        {
+            $chance = rand(1,100);
+
+            $options['chance'] = $chance;
+        }
+
+        return $options;
     }
 
     protected function logTerminalPickedAndSelected($terminalSelected, $terminalPicked, $payment)
