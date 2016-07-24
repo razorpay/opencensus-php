@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Terminal;
 
+use App;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
 
@@ -12,17 +13,11 @@ class Binning
      */
     protected static $rules = [
         [
-        'binFor'      => Shared::HDFC_RAZORPAY_TERMINAL,
-        'binWith'     => Shared::CYBERSOURCE_HDFC_TERMINAL,
-        'loadPercent' => 1,
+            'method'      => Method::CARD,
+            'binFor'      => Shared::HDFC_RAZORPAY_TERMINAL,
+            'binWith'     => '5yKTyCuDne8eiz',
+            'loadPercent' => 1,
         ],
-        [
-        'binFor'      => Shared::BILLDESK_RAZORPAY_TERMINAL,
-        'binWith'     => '59U9GqsARtkw2r',
-        'loadPercent' => 10,
-        'method'      => Method::NETBANKING,
-        'bank'        => Gateway::NETBANKING_KOTAK,
-        ]
     ];
 
     public function getRules()
@@ -30,10 +25,36 @@ class Binning
         return self::$rules;
     }
 
-    public function isRuleApplicable($terminal, $rule, $chancePercent)
+    /**
+     * Based on current terminal, rule, chance and input determines
+     * if the current rule is applicable or not.
+     */
+    public function isRuleApplicable($terminal, $rule, $chancePercent, $input = [])
     {
-        return (($chancePercent <= $rule['loadPercent']) and
-                ($rule['binFor'] === $terminal->getId()));
+        if ((isset($rule['method'])) and
+            ($rule['method'] === $input['payment']->getMethod()))
+        {
+
+            $check = (($chancePercent <= $rule['loadPercent']) and
+                    ($rule['binFor'] === $terminal->getId()));
+
+            switch ($rule['method']) {
+                case Method::NETBANKING:
+                    if ($rule['bank'] === $input['payment']->getBank())
+                    {
+                        return $check;
+                    }
+                    break;
+
+                case Method::CARD:
+                case Method::EMI:
+                case Method::WALLET:
+                    return $check;
+                    break;
+            }
+
+            return false;
+        }
     }
 
     /**
@@ -54,6 +75,8 @@ class Binning
 
         if (empty($rule) === false)
         {
+            // If from the possible terminals the binWith is not found,
+            // The originally selected terminal will be returned.
             foreach ($terminals as $terminal)
             {
                 if ($terminal->getId() === $rule['binWith'])
@@ -81,7 +104,10 @@ class Binning
         // Fetch new terminal if some rule is to be applied.
         if (empty($rule) === false)
         {
-            return $this->fetchTerminalById($returnTlId);
+            if ($this->terminalExists($returnTlId))
+            {
+                $terminal = $this->terminal;
+            }
         }
 
         return $terminal;
@@ -102,10 +128,14 @@ class Binning
         return [$terminal->getId(), null];
     }
 
-    // Call to repo for picker
+    /**
+     * A repo function that return the terminal by identity
+     */
     protected function terminalExists($terminal)
     {
-        $this->terminal = $this->repo->find($terminal);
+        $app = App::getFacadeRoot();
+
+        $this->terminal = $app['repo']->terminal->find($terminal);
 
         return $this->terminal;
     }

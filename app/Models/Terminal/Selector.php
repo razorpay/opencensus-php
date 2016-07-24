@@ -60,7 +60,7 @@ class Selector
         return $merchantTerminals;
     }
 
-    public function select($payment, $mode, $verbose = false)
+    public function select($payment, $mode, $verbose = false, $options = [])
     {
         $this->setup($payment, $mode);
 
@@ -104,6 +104,11 @@ class Selector
         else if (isset($sortedTerminals[0]))
         {
             $terminal = $sortedTerminals[0];
+        }
+
+        if (isset($options['chance']))
+        {
+            $terminal = (new Binning)->select($terminal, $options['chance'], $input);
         }
 
         // This is a hack and should be implemented in the correct manner later.
