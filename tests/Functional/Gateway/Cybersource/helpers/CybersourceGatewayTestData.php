@@ -91,34 +91,49 @@ return [
         'admin' => true,
     ],
 
-    'testPaymentCybersourceEntity' => [
-        'amount' => 500,
+    'testCybersourceAuthEntity' => [
+        'amount' => 50000,
         'pares_status' => 'Y',
         'reason_code' => 475,
-        'action' => 'capture',
+        'action' => 'authorize',
         'received' => true,
         'refund_id' => null,
         'auth_data' => null,
         'commerce_indicator' => 'Internet',
         'eci' => '05',
         'cavv' => '1',
+        'status' => 'authorized',
+        'entity' => 'cybersource',
+    ],
+
+     'testCybersourceCaptureEntity' => [
+        'amount' => 50000,
+        'pares_status' => null,
+        'reason_code' => 100,
+        'action' => 'capture',
+        'received' => true,
+        'refund_id' => null,
+        'auth_data' => null,
+        'commerce_indicator' => null,
+        'eci' => null,
+        'cavv' => null,
         'status' => 'captured',
         'entity' => 'cybersource',
     ],
 
     'testNotEnrolledCSEntity' => [
-        'amount' => 500,
+        'amount' => 50000,
         'pares_status' => null,
         'status' => 'captured',
         'entity' => 'cybersource',
     ],
 
     'testPaymentRefund' => [
-        'reason_code' => 475,
+        'reason_code' => 100,
         'received' => true,
-        'amount' => 500,
-        'commerce_indicator' => "Internet",
-        'pares_status' => 'Y',
+        'amount' => 50000,
+        'commerce_indicator' => null,
+        'pares_status' => null,
         'action' => 'refund',
         'status' => 'refunded',
         'entity' => 'cybersource',
@@ -130,5 +145,5 @@ return [
         'currency' => 'INR',
         'entity' => 'refund',
         'admin' => true,
-    ],
+    ]
 ];
