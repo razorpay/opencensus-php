@@ -31,6 +31,7 @@ class Entity extends Base\PublicEntity
     const RISK_RATING               = 'risk_rating';
     const LOGO_URL                  = 'logo_url';
     const AWS_LOGO_URL              = 'aws_logo_url';
+    const MAX_PAYMENT_AMOUNT        = 'max_payment_amount';
 
     /**
      * Refers to methods relation and not a property;
@@ -115,6 +116,7 @@ class Entity extends Base\PublicEntity
         self::BRAND_COLOR           => null,
         self::RISK_RATING           => 3,
         self::LOGO_URL              => null,
+        self::MAX_PAYMENT_AMOUNT    => null,
     );
 
     protected $publicSetters = array(
@@ -122,6 +124,8 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::LOGO_URL
     );
+
+    const MAX_PAYMENT_AMOUNT_DEFAULT = 50000000;
 
     protected function generateTransactionReportEmail($input)
     {
@@ -276,22 +280,34 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PRICING_PLAN_ID);
     }
 
-    public function getActivatedAttribute()
+    protected function getActivatedAttribute()
     {
         return (bool) $this->attributes[self::ACTIVATED];
     }
 
-    public function getLiveAttribute()
+    protected function getLiveAttribute()
     {
         return (bool) $this->attributes[self::LIVE];
     }
 
-    public function getFeeBearerAttribute()
+    protected function getMaxPaymentAmountAttribute()
+    {
+        $amount = $this->attributes[self::MAX_PAYMENT_AMOUNT];
+
+        if ($amount === null)
+        {
+            $amount = self::MAX_PAYMENT_AMOUNT_DEFAULT;
+        }
+
+        return (int) $amount;
+    }
+
+    protected function getFeeBearerAttribute()
     {
         return  FeeBearer::getBearerStringForValue($this->attributes[self::FEE_BEARER]);
     }
 
-    public function getInternationalAttribute()
+    protected function getInternationalAttribute()
     {
         return (bool) $this->attributes[self::INTERNATIONAL];
     }
@@ -339,6 +355,11 @@ class Entity extends Base\PublicEntity
     public function getCategory()
     {
         return $this->getAttribute(self::CATEGORY);
+    }
+
+    public function getMaxPaymentAmount()
+    {
+        return $this->getAttribute(self::MAX_PAYMENT_AMOUNT);
     }
 
     /**

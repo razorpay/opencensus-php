@@ -185,7 +185,7 @@ class Service extends Base\Service
         // we need to create the exception here.
         //
         if (($this->mode === Mode::LIVE) and
-            ($merchant->getActivatedAttribute() === false) and
+            ($merchant->isActivated() === false) and
             (Account::isNodalAccount($merchantId) === false))
         {
             $balance[Balance\Entity::ID] = $merchantId;
