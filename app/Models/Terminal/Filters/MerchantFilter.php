@@ -15,6 +15,10 @@ use RZP\Models\Payment\Processor\Netbanking;
 
 class MerchantFilter extends Terminal\Filter
 {
+    // TODO: Why not add all properties in the same filter class. These functions are pretty modular and independent
+    // by themselves. I don't think a separation of classes is needed here.
+    // We could just define all the properties in the base filter class and define the filter functions there itself.
+    
     protected $properties = [
         'tpv',
     ];
@@ -25,10 +29,12 @@ class MerchantFilter extends Terminal\Filter
      * Allow Only Third Party Validation (TPV) terminals for
      * TPV required merchants, and non TPV terminals for non
      * TPV merchants.
-     *
+     * 
+     * @param Terminal\Entity $terminal
+     * @param array $input
      * @return bool
      */
-    public function tpvFilter($terminal, $input)
+    public function tpvFilter(Terminal\Entity $terminal, array $input)
     {
         $method = $input['payment']->getMethod();
 

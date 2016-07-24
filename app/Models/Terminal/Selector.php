@@ -14,6 +14,13 @@ use RZP\Trace\TraceCode;
 
 class Selector
 {
+    protected $mode;
+    protected $payment;
+    protected $terminalRepo;
+    protected $trace;
+    protected $merchant;
+    protected $input;
+
     protected static $filters = [
         Filters\TransactionFilter::class,
         Filters\MerchantFilter::class,
@@ -27,13 +34,13 @@ class Selector
 
     public function setup($payment, $mode)
     {
-        $app = \App::getFacadeRoot();
+        $app = App::getFacadeRoot();
 
         $this->mode = $mode;
 
         $this->payment = $payment;
 
-        $this->repo = $app['repo']->terminal;
+        $this->terminalRepo = $app['repo']->terminal;
 
         $this->trace = $app['trace'];
 
@@ -49,11 +56,11 @@ class Selector
     public function getTerminals()
     {
         // Fetch terminals for both the current merchant and the shared Merchant
-        $merchantTerminals = $this->repo->getTerminalsForMerchantAndSharedMerchant(
+        $merchantTerminals = $this->terminalRepo->getTerminalsForMerchantAndSharedMerchant(
                                             $this->merchant->getId());
 
         // Fetch Shared Terminals
-        $sharedTerminals = $this->repo->getAllSharedTerminals();
+        $sharedTerminals = $this->terminalRepo->getAllSharedTerminals();
 
         $merchantTerminals = $merchantTerminals->merge($sharedTerminals);
 
@@ -62,6 +69,7 @@ class Selector
 
     public function select($payment, $mode, $verbose = false)
     {
+        // TODO: Is there a way to use a constructor instead?
         $this->setup($payment, $mode);
 
         $terminals = $this->getTerminals();
@@ -92,16 +100,24 @@ class Selector
             $this->traceTerminals($sortedTerminals, 'Terminals after ' . $sorter, $verbose);
         }
 
-        // Trace available terminals after filtration
+        // Trace available terminals after sorting
         $this->traceTerminals($sortedTerminals, 'Terminals after sorting', $verbose);
 
         $terminal = null;
 
-        if ((empty($sortedTerminals)) and ($this->mode === Mode::TEST))
+        if (empty($sortedTerminals) === true)
         {
-            $terminal = $this->repo->find(Shared::SHARP_RAZORPAY_TERMINAL);
+            if ($this->mode === Mode::TEST)
+            {
+                // TODO: SHARP_RAZORPAY_TERMINAL won't be present in the initial list of terminals?
+                $terminal = $this->terminalRepo->find(Shared::SHARP_RAZORPAY_TERMINAL);
+            }
+            else
+            {
+                // TODO: Throw an exception for not being able to find any terminal for the payment.
+            }
         }
-        else if (isset($sortedTerminals[0]))
+        else
         {
             $terminal = $sortedTerminals[0];
         }
@@ -180,25 +196,26 @@ class Selector
      * Custom exceptions that are to be only thrown if no terminal is available,
      * in live mode on cards.
      *
-     * @param terminal $terminal Chosen terminal
-     * @return void throw custom exception
+     * @param Entity $terminal Chosen terminal
+     * @throws Exception\BadRequestException
      */
-    protected function checkForCustomExceptions($terminal)
+    protected function checkForCustomExceptions(Entity $terminal)
     {
         if (($terminal === null) and
-            ($this->input['mode'] === Mode::LIVE) and
-            ($this->input['payment']->getMethod() === Payment\Method::CARD))
+            ($this->mode === Mode::LIVE) and
+            ($this->payment->getMethod() === Payment\Method::CARD))
         {
-            $network = $this->input['payment']->card->getNetworkCode();
+            $network = $this->payment->card->getNetworkCode();
             // Check for partially supported networks on live
-            $networks = Payment\Gateway::$partiallySupportedCardNetworks;
+            $partiallySupportedCardNetworks = Payment\Gateway::$partiallySupportedCardNetworks;
 
-            if (in_array($network, $networks))
+            if (in_array($network, $partiallySupportedCardNetworks))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
             }
+            // TODO: What if it's not in that list and terminal is null? Shouldn't we throw an exception?
+            // What if terminal is null and method is something else?
         }
-
     }
 }
