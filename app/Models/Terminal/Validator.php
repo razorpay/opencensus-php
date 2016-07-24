@@ -81,7 +81,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY                     => 'required|in:cybersource',
         Entity::GATEWAY_TERMINAL_ID         => 'required|string|size:13',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string|min:50',
-        Entity::GATEWAY_MERCHANT_ID         => 'required|string|max:10',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string|max:20',
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
         Entity::GATEWAY_ACQUIRER            => 'required|string',
     );
