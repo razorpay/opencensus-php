@@ -133,12 +133,12 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CREDITS, $credits);
     }
 
-    public function getBalanceAttribute()
+    protected function getBalanceAttribute()
     {
         return (int) $this->attributes[self::BALANCE];
     }
 
-    public function getCreditsAttribute()
+    protected function getCreditsAttribute()
     {
         return (int) $this->attributes[self::CREDITS];
     }

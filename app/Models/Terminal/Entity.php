@@ -265,12 +265,12 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SHARED);
     }
 
-    public function getUsedCountAttribute()
+    protected function getUsedCountAttribute()
     {
         return (int) $this->attributes[self::USED_COUNT];
     }
 
-    public function getCategoryAttribute()
+    protected function getCategoryAttribute()
     {
         $category = $this->attributes[self::CATEGORY];
 
@@ -287,7 +287,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::EMI_DURATION);
     }
 
-    public function getEmiDurationAttribute()
+    protected function getEmiDurationAttribute()
     {
         $emiDuration = $this->attributes[self::EMI_DURATION];
 
@@ -296,9 +296,10 @@ class Entity extends Base\PublicEntity
             $emiDuration = (int) $emiDuration;
         }
 
-        return $emiDuration;    }
+        return $emiDuration;
+    }
 
-    public function getCardAttribute()
+    protected function getCardAttribute()
     {
         return (bool) $this->attributes[self::CARD];
     }
@@ -308,7 +309,7 @@ class Entity extends Base\PublicEntity
         return (bool) $this->attributes[self::NETBANKING];
     }
 
-    public function getSharedAttribute()
+    protected function getSharedAttribute()
     {
         return (bool) $this->attributes[self::SHARED];
     }

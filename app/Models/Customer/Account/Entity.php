@@ -92,12 +92,12 @@ class Entity extends Base\PublicEntity
         return (bool)$this->getAttribute(self::ACTIVE);
     }
 
-    public function getActiveAttribute()
+    protected function getActiveAttribute()
     {
         return (bool)$this->attributes[self::ACTIVE];
     }
 
-    public function setEmailAttribute($email)
+    protected function setEmailAttribute($email)
     {
         // Multi-byte function to handle unicode
         $this->attributes[self::EMAIL] = mb_strtolower($email);
