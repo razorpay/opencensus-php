@@ -19,14 +19,14 @@ class Binning
             'binFor'         => Shared::HDFC_RAZORPAY_TERMINAL,
             'binWith'        => '5yKTyCuDne8eiz',
             'binWithGateway' => Gateway::CYBERSOURCE,
-            'loadPercent'    => 5,
+            'load'           => 5,
         ],
         [
             'method'         => Method::NETBANKING,
             'binFor'         => Shared::BILLDESK_RAZORPAY_TERMINAL,
             'binWith'        => '59U9GqsARtkw2r',
             'bank'           => IFSC::KKBK,
-            'loadPercent'    => 10,
+            'load'           => 5,
         ]
     ];
 
@@ -116,7 +116,7 @@ class Binning
             ($rule['method'] === $input['payment']->getMethod()))
         {
 
-            $check = (($chancePercent <= $rule['loadPercent']) and
+            $check = (($chancePercent <= $rule['load']) and
                       ($rule['binFor'] === $terminal->getId()));
 
             switch ($rule['method'])
