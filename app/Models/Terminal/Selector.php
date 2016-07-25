@@ -105,7 +105,7 @@ class Selector
 
         $terminal = null;
 
-        if (count($sortedTerminals) === 0)
+        if (empty($sortedTerminals) === true)
         {
             if ($this->mode === Mode::TEST)
             {

@@ -30,7 +30,7 @@ class Filter
      * @return array                           List of terminals after removing the not-applicable terminals
      *                                         from the received collection of terminals
      */
-    public function filter($applicableTerminals, array $input, $verbose = false)
+    public function filter(array $applicableTerminals, array $input, $verbose = false)
     {
         foreach ($this->properties as $filterProperty)
         {
