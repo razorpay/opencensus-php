@@ -3,6 +3,7 @@
 namespace RZP\Models\Terminal;
 
 use App;
+use RZP\Models\Card\Network;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
 
@@ -14,9 +15,10 @@ class Binning
     protected static $rules = [
         [
             'method'      => Method::CARD,
+            'cardNetwork' => [Network::MC, Network::VISA],
             'binFor'      => Shared::HDFC_RAZORPAY_TERMINAL,
             'binWith'     => '5yKTyCuDne8eiz',
-            'loadPercent' => 1,
+            'loadPercent' => 5,
         ],
     ];
 
@@ -118,6 +120,13 @@ class Binning
                     break;
 
                 case Method::CARD:
+                    $network = $input['payment']->card->getNetworkCode();
+                    if (in_array($network, $rule['cardNetwork']))
+                    {
+                        return $check;
+                    }
+                    break;
+
                 case Method::EMI:
                 case Method::WALLET:
                     return $check;
