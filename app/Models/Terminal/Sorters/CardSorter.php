@@ -30,7 +30,7 @@ class CardSorter extends Terminal\Sorter
 
         $gatewaysPriority = Gateway::getGatewaysPriority($method, $input['mode']);
 
-        $testTerminals = [];
+        $sortedTerminals = [];
 
         foreach ($gatewaysPriority as $gateway)
         {
@@ -40,11 +40,11 @@ class CardSorter extends Terminal\Sorter
             {
                 if ($terminal->getGateway() === $gateway)
                 {
-                    $testTerminals[] = $terminal;
+                    $sortedTerminals[] = $terminal;
                 }
             }
         }
 
-        return collect($testTerminals);
+        return $sortedTerminals;
     }
 }

@@ -29,10 +29,8 @@ class MerchantSorter extends Terminal\Sorter
     {
         $merchantCategory = $input['merchant']->getCategory();
 
-        $testTerminals = [
-            'specific' => null,
-            'generic'  => null,
-        ];
+        $specificCategoryTerminals = [];
+        $genericCategoryTerminals = [];
 
         // As the terminals are from the priority list
         // append to the terminal
@@ -40,32 +38,16 @@ class MerchantSorter extends Terminal\Sorter
         {
             if ($terminal->getCategory() === $merchantCategory)
             {
-                $testTerminals['specific'][] = $terminal;
+                $specificCategoryTerminals[] = $terminal;
             }
             else
             {
-                $testTerminals['generic'][] = $terminal;
+                $genericCategoryTerminals[] = $terminal;
             }
         }
 
-        $returnTerminals = [];
+        $sortedTerminals = array_merge($specificCategoryTerminals, $genericCategoryTerminals);
 
-        if (isset($testTerminals['specific']))
-        {
-            foreach ($testTerminals['specific'] as $terminal)
-            {
-                $returnTerminals[] = $terminal;
-            }
-        }
-
-        if (isset($testTerminals['generic']))
-        {
-            foreach ($testTerminals['generic'] as $terminal)
-            {
-                $returnTerminals[] = $terminal;
-            }
-        }
-
-        return collect($returnTerminals);
+        return $sortedTerminals;
     }
 }

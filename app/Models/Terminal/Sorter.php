@@ -19,7 +19,7 @@ class Sorter
     public function sort($terminals, $input, $verbose = false)
     {
         // No need to sort if there's only one terminal
-        if ($terminals->count() === 1)
+        if (count($terminals) === 1)
         {
             return $terminals;
         }

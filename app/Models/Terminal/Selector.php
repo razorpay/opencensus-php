@@ -79,7 +79,7 @@ class Selector
         // filtered list of terminals is used to further filter upon using the other
         // filter classes.
         //
-        $filteredTerminals = $terminals;
+        $filteredTerminals = $terminals->all();
 
         foreach (self::$filters as $filter)
         {
@@ -105,7 +105,7 @@ class Selector
 
         $terminal = null;
 
-        if ($sortedTerminals->count() === 0)
+        if (count($sortedTerminals) === 0)
         {
             if ($this->mode === Mode::TEST)
             {
@@ -122,7 +122,7 @@ class Selector
         }
         else
         {
-            $terminal = $sortedTerminals->first();
+            $terminal = $sortedTerminals[0];
         }
 
         if (isset($options['chance']))
