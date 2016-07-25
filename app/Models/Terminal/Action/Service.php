@@ -11,7 +11,7 @@ class Service extends Base\Service
 {
     public function createAction($id, $input)
     {
-        $action = (new Action\Core)->create($input, $id);
+        $action = $this->repo->terminal_action->createAction($id, $input);
 
         return $action->toArrayPublic();
     }

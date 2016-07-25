@@ -54,10 +54,10 @@ class Entity extends Base\PublicEntity
 
     protected static $delimiter = '';
 
-    protected static $generators = array(self::ID, self::TERMINAL_ID, self::PAYMENT_ID,
-                                         self::STATUS, self::RESPONSE_TIME, self::STATUS_CODE,
-                                         self::STATUS_MSG, self::PAYMENT_TYPE, self::CREATED_AT
-                                        );
+    //protected static $generators = array(self::ID, self::TERMINAL_ID, self::PAYMENT_ID,
+    //                                     self::STATUS, self::RESPONSE_TIME, self::STATUS_CODE,
+    //                                     self::STATUS_MSG, self::PAYMENT_TYPE, self::CREATED_AT
+    //                                    );
 
     public function getPaymentId()
     {

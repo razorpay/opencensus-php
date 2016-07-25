@@ -18,7 +18,9 @@ class Entity extends Base\PublicEntity
 
 
     protected $fillable = array(
-        self::GATEWAY
+        self::GATEWAY,
+        self::DOWNTIME_FROM,
+        self::DOWNTIME_TO
     );
 
     protected $public = array(
@@ -30,7 +32,7 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT
     );
 
-    protected $table = \RZP\Constants\Table::TERMINAL_DOWNTIME_SCHEDULE;
+    protected $table = \RZP\Constants\Table::TERMINAL_ABSENCE;
 
     protected $generateIdOnCreate = true;
 
@@ -40,10 +42,10 @@ class Entity extends Base\PublicEntity
 
     protected static $delimiter = '';
 
-    protected static $generators = array(self::ID, self::GATEWAY,
-                                         self::DOWNTIME_FROM, self::DOWNTIME_TO,
-                                         self::CREATED_AT, self::UPDATED_AT
-                                        );
+    //protected static $generators = array(self::ID, self::GATEWAY,
+    //                                     self::DOWNTIME_FROM, self::DOWNTIME_TO,
+    //                                     self::CREATED_AT, self::UPDATED_AT
+    //                                    );
 
     public function getGateway()
     {

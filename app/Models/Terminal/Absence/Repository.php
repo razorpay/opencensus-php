@@ -13,6 +13,7 @@ class Repository extends Base\Repository
     protected $entity = 'terminal_absence';
 
 
+
     public function findForTerminal($terminal)
     {
         $repo = $this->repo->terminal_absence;

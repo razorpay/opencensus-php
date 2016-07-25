@@ -16,7 +16,7 @@ class CreateTerminalAbsence extends Migration
      */
     public function up()
     {
-        Schema::create(Table::TERMINAL_ABSENCE_SCHEDULE, function(Blueprint $table) {
+        Schema::create(Table::TERMINAL_ABSENCE, function(Blueprint $table) {
             $table->engine = 'InnoDB';
 
             $table->char(DowntimeTrace::ID, DowntimeTrace::ID_LENGTH)
@@ -26,7 +26,7 @@ class CreateTerminalAbsence extends Migration
 
             $table->dateTime(DowntimeTrace::DOWNTIME_FROM);
 
-            $table->date(DowntimeTrace::DOWNTIME_TO);
+            $table->dateTime(DowntimeTrace::DOWNTIME_TO);
 
             $table->integer(DowntimeTrace::CREATED_AT);
 
@@ -44,6 +44,6 @@ class CreateTerminalAbsence extends Migration
      */
     public function down()
     {
-        Schema::drop(Table::TERMINAL_ABSENCE_SCHEDULE);
+        Schema::drop(Table::TERMINAL_ABSENCE);
     }
 }

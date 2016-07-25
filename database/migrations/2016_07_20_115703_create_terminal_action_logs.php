@@ -17,7 +17,7 @@ class CreateTerminalActionLogs extends Migration
      */
     public function up()
     {
-        Schema::create(Table::TERMINAL_ACTION_LOGS, function(Blueprint $table) {
+        Schema::create(Table::TERMINAL_ACTION, function(Blueprint $table) {
             $table->engine = 'InnoDB';
 
             $table->char(Action::ID, Action::ID_LENGTH)
@@ -29,12 +29,12 @@ class CreateTerminalActionLogs extends Migration
 
             $table->integer(Action::CREATED_AT);
 
+            $table->integer(Action::UPDATED_AT);
+
             $table->foreign(Action::TERMINAL_ID)
                 ->references(Terminal\Entity::ID)
                 ->on(Table::TERMINAL)
                 ->on_delete('restrict');
-
-            $table->index(Action::TERMINAL_ID);
 
             $table->index(Action::CREATED_AT);
 
@@ -49,13 +49,13 @@ class CreateTerminalActionLogs extends Migration
      */
     public function down()
     {
-        Schema::table(Table::TERMINAL_ACTION_LOGS, function($table)
+        Schema::table(Table::TERMINAL_ACTION, function($table)
         {
             $table->dropForeign(
-                TABLE::TERMINAL_ACTION_LOGS.'_'.Action::TERMINAL_ID.'_foreign');
+                TABLE::TERMINAL_ACTION.'_'.Action::TERMINAL_ID.'_foreign');
 
         });
 
-        Schema::drop(Table::TERMINAL_ACTION_LOGS);
+        Schema::drop(Table::TERMINAL_ACTION);
     }
 }

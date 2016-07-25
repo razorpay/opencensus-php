@@ -17,7 +17,7 @@ class CreateTerminalAuditLogs extends Migration
      */
     public function up()
     {
-        Schema::create(Table::TERMNINAL_AUDIT_LOGS, function(Blueprint $table) {
+        Schema::create(Table::TERMINAL_AUDITLOG, function(Blueprint $table) {
             $table->engine = 'InnoDB';
 
             $table->char(AuditLog::ID, AuditLog::ID_LENGTH)
@@ -68,15 +68,15 @@ class CreateTerminalAuditLogs extends Migration
      */
     public function down()
     {
-        Schema::table(Table::TERMNINAL_AUDIT_LOGS, function($table)
+        Schema::table(Table::TERMINAL_AUDITLOG, function($table)
         {
             $table->dropForeign(
-                TABLE::TERMNINAL_AUDIT_LOGS.'_'.AuditLog::TERMINAL_ID.'_foreign');
+                TABLE::TERMINAL_AUDITLOG.'_'.AuditLog::TERMINAL_ID.'_foreign');
 
             $table->dropForeign(
-                TABLE::TERMNINAL_AUDIT_LOGS.'_'.AuditLog::PAYMENT_ID.'_foreign');
+                TABLE::TERMINAL_AUDITLOG.'_'.AuditLog::PAYMENT_ID.'_foreign');
         });
 
-        Schema::drop(Table::TERMNINAL_AUDIT_LOGS);
+        Schema::drop(Table::TERMINAL_AUDITLOG);
     }
 }
