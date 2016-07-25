@@ -51,7 +51,7 @@ class MerchantFilter extends Terminal\Filter
      */
     public function riskFilter($terminal, $input)
     {
-        if ($input['payment']->isMethoCardOrEmi())
+        if ($input['payment']->isMethodCardOrEmi())
         {
             if ($input['merchant']->getRiskRating() >= 4)
             {
