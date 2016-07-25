@@ -83,7 +83,7 @@ return [
         'entity'=> 'ebs',
         'refund_status' => null,
         'refund_id' => null,
-        'ErrorCode' => null,
+        'error_code' => null,
         'mode' => 'TEST',
 
     ],
@@ -91,7 +91,7 @@ return [
         'received' => true,
         'TxnAmount'=> '50000',
         'currency'=> 'INR',
-        'RefAmount'=> '500.00',
+        'ref_amount'=> '500.00',
         'action'=> 'refund',
         'mode' => "TEST",
         'entity'=> 'ebs',
