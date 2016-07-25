@@ -29,17 +29,11 @@ class ResponseCode
         return $codes[$code];
     }
 
-    public static function getStatus($code)
-    {
-        ; // @todo
-    }
-
     public static function getApiErrorCode($code)
     {
         $class = 'RZP\Error\ErrorCode::';
 
-        if (empty($code) or
-            (isset(self::$codes[$code]) === false))
+        if (empty($code) or (isset(self::$codes[$code]) === false))
         {
             return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
         }

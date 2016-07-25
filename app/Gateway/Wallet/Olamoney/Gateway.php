@@ -474,7 +474,7 @@ class Gateway extends Base\Gateway
             'contact'               => $this->getFormattedContact($payment['contact']),
             'gateway_merchant_id'   => $this->getMerchantId($this->input['terminal']),
             'status'                => Status::SUCCESS,
-            'transactionId'         => $verifyResponse['uniqueBillId'],
+            'transactionId'         => $verifyResponse[ResponseFields::UNIQUE_BILL_ID],
         );
 
         return $contentToSave;
