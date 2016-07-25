@@ -1050,8 +1050,8 @@ class Gateway extends Base\Gateway
             'cavv' => $paInfo['AAV_CAVV'],
             'xid' => $paInfo['XID'],
             'reason_code' => 100,
-            'action' => 'authorize',
-            'status' => 'authorized'
+            'action' => Base\Action::AUTHORIZE,
+            'status' => Status::AUTHORIZED
         ];
 
         $verify->verifyResponseContent = $data;
