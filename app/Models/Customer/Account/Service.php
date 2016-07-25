@@ -104,13 +104,7 @@ class Service extends Base\Service
      */
     public function sendOtp($input)
     {
-        $input['context'] = $this->merchant->getId();
-
-        $input['source'] = 'api';
-
-        $input['params']['merchant_name'] = $this->merchant->getBillingLabelElseName();
-
-        $data = (new Customer\Core)->sendOtp($input);
+        $data = (new Customer\Core)->sendOtp($input, $this->merchant);
 
         return $data;
     }
