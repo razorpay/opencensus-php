@@ -141,12 +141,13 @@ class Core extends Base\Core
 
     protected function isUpdatedAndroidSdk($input)
     {
-        if ((isset($input['platform'])) and
-            ($input['platform'] === 'android') and
-            (isset($input['library'])) and
-            ($input['library'] === 'checkoutjs') and
-            (isset($input['version'])) and
-            (version_compare($input['version'], '1.0.0') >= 0))
+        if ((isset($input['_'])) and
+            (isset($input['_']['platform'])) and
+            ($input['_']['platform'] === 'android') and
+            (isset($input['_']['library'])) and
+            ($input['_']['library'] === 'checkoutjs') and
+            (isset($input['_']['version'])) and
+            (version_compare($input['_']['version'], '1.0.0') >= 0))
         {
             return true;
         }
@@ -192,6 +193,8 @@ class Core extends Base\Core
                 Customer\Entity::CONTACT => $contact,
                 Customer\Entity::EMAIL => $email
             ];
+
+
 
             $customer = $this->createGlobalCustomer($custCreateInput);
         }

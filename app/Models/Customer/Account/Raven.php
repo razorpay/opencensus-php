@@ -58,10 +58,10 @@ class Raven
             ]
         );
 
-        return $request
+        return $request;
     }
 
-    protected function getRavenVerifyOtpRequestInput($input)
+    protected function getRavenVerifyOtpRequestInput($input, $merchant)
     {
         $request = array(
             'context' => $merchant->getId(),
@@ -70,7 +70,7 @@ class Raven
             'otp' => $input['otp']
         );
 
-        return $request
+        return $request;
     }
 }
 

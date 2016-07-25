@@ -104,7 +104,7 @@ class Service extends Base\Service
      */
     public function sendOtp($input)
     {
-        $data = (new Customer\Core)->sendOtp($input, $this->$merchant);
+        $data = (new Customer\Core)->sendOtp($input, $this->merchant);
 
         return $data;
     }

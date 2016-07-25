@@ -27,6 +27,7 @@ class Validator extends Base\Validator
         Entity::EMAIL           => 'sometimes|email',
         'otp'                   => 'sometimes|string|regex:"^\d{4,8}$"',
         'device_token'          => 'sometimes|',
+        '_'                     => 'sometimes'
     );
 
     protected static $contactRules = array(
