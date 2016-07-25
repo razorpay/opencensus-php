@@ -154,7 +154,7 @@ class Entity extends Base\PublicEntity
         return ($expiredAt <= time());
     }
 
-    public function setPublicCardAttribute(array & $array)
+    protected function setPublicCardAttribute(array & $array)
     {
         if ($this->card !== null)
         {

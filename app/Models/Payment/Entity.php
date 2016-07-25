@@ -452,12 +452,12 @@ class Entity extends Base\PublicEntity
 
 // ----------------------- Mutator ---------------------------------------------
 
-    public function setAmountAttribute($amount)
+    protected function setAmountAttribute($amount)
     {
         $this->attributes[self::AMOUNT] = (int) $amount;
     }
 
-    public function setContactAttribute($contact)
+    protected function setContactAttribute($contact)
     {
         $number = new PhoneBook($contact, true);
 
@@ -485,13 +485,13 @@ class Entity extends Base\PublicEntity
 
 // ----------------------- Accessor --------------------------------------------
 
-    public function getAmountAttribute()
+    protected function getAmountAttribute()
     {
         return (int) $this->attributes[self::AMOUNT];
     }
 
     // TODO: Return a phonebook instance (like carbon) instead of string
-    public function getContactAttribute()
+    protected function getContactAttribute()
     {
         $contact = $this->attributes[self::CONTACT];
 
@@ -500,27 +500,27 @@ class Entity extends Base\PublicEntity
         return (string) $phoneBook;
     }
 
-    public function getAmountAuthorizedAttribute()
+    protected function getAmountAuthorizedAttribute()
     {
         return (int) $this->attributes[self::AMOUNT_AUTHORIZED];
     }
 
-    public function getAmountRefundedAttribute()
+    protected function getAmountRefundedAttribute()
     {
         return (int) $this->attributes[self::AMOUNT_REFUNDED];
     }
 
-    public function getAutoCapturedAttribute()
+    protected function getAutoCapturedAttribute()
     {
         return (bool) $this->attributes[self::AUTO_CAPTURED];
     }
 
-    public function getSignedAttribute()
+    protected function getSignedAttribute()
     {
         return (bool) $this->attributes[self::SIGNED];
     }
 
-    public function getVerifiedAttribute()
+    protected function getVerifiedAttribute()
     {
         $verified = $this->attributes[self::VERIFIED];
 
@@ -532,32 +532,32 @@ class Entity extends Base\PublicEntity
         return $verified;
     }
 
-    public function getCapturedAttribute()
+    protected function getCapturedAttribute()
     {
         return ($this->attributes[self::CAPTURED_AT] !== null);
     }
 
-    public function getFeeAttribute()
+    protected function getFeeAttribute()
     {
         return (int) $this->attributes[self::FEE];
     }
 
-    public function getServiceTaxAttribute()
+    protected function getServiceTaxAttribute()
     {
         return (int) $this->attributes[self::SERVICE_TAX];
     }
 
-    public function getEmiPlanIdAttribute()
+    protected function getEmiPlanIdAttribute()
     {
         return $this->attributes[self::EMI_PLAN_ID];
     }
 
-    public function getSaveAttribute()
+    protected function getSaveAttribute()
     {
         return (bool) $this->attributes[self::SAVE];
     }
 
-    public function getOtpAttemptsAttribute()
+    protected function getOtpAttemptsAttribute()
     {
         $attempts = $this->attributes[self::OTP_ATTEMPTS];
 
@@ -569,7 +569,7 @@ class Entity extends Base\PublicEntity
         return $attempts;
     }
 
-    public function getOtpCountAttribute()
+    protected function getOtpCountAttribute()
     {
         $count = $this->attributes[self::OTP_COUNT];
 
