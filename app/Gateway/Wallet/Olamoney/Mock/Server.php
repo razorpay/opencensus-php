@@ -16,7 +16,7 @@ class Server extends Base\Mock\Server
 
         $bill = json_decode(base64_decode(urldecode($input['bill'])), true);
 
-        $this->validateActionInput($input);
+        $this->validateActionInput($input, Command::DEBIT);
 
         $content = array(
             'type'              => 'debit',

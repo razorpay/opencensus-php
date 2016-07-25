@@ -18,7 +18,7 @@ use Carbon\Carbon;
 use RZP\Models\Customer\Token;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
-use RZP\Gateway\Wallet\Payumoney\Action;
+use RZP\Gateway\Wallet\Base\Action;
 use RZP\Gateway\Wallet\Payumoney\ResponseCodeMap;
 use RZP\Constants\HashAlgo;
 

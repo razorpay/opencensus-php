@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Gateway\Wallet\Olamoney;
+namespace RZP\Gateway\Wallet\Base;
 
 use RZP\Gateway\Base;
 

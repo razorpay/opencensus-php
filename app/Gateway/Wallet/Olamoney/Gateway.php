@@ -11,7 +11,7 @@ use RZP\Gateway\Wallet\Base;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
-use RZP\Gateway\Wallet\Olamoney\Action;
+use RZP\Gateway\Wallet\Base\Action;
 use RZP\Models\Payment\Status as PaymentStatus;
 use RZP\Constants\HashAlgo;
 use Carbon\Carbon;
@@ -48,6 +48,107 @@ class Gateway extends Base\Gateway
         parent::callback($input);
 
         return $this->callbackRedirectFlow($input);
+    }
+
+    public function refund(array $input)
+    {
+        parent::refund($input);
+
+        $request = $this->getRefundRequest($input);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $content = $this->jsonToArray($response->body);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+
+        $this->createWalletRefundEntity($content, $input);
+
+        if ($content[ResponseFields::STATUS] !== Status::SUCCESS)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_REFUND_FAILED,
+                $content[ResponseFields::STATUS],
+                $content[ResponseFields::MESSAGE]);
+        }
+    }
+
+    public function verify(array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
+    }
+
+    /**
+     * This fuction is not being used right now.
+     * This method will be used when power-wallet is enabled for Olamoney.
+     * It is currently implemented using redirect-flow and not as a power-wallet.
+     */
+    public function otpGenerate($input)
+    {
+        $this->action($input, Action::OTP_GENERATE);
+
+        $request = $this->getOtpGenerateRequestArray($input);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $content = $this->jsonToArray($response->body);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+
+        $code = $content['status'];
+
+        if ($code !== Status::SUCCESS)
+        {
+            $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
+
+            if (isset($content['errorCode']))
+            {
+                $errorCode = ResponseCode::getApiErrorCode($content['errorCode']);
+            }
+
+            // Payment fails, throw exception
+            throw new Exception\GatewayErrorException(
+                $errorCode,
+                $content['status'],
+                $content['message']);
+        }
+    }
+
+    /**
+     * This fuction is not being used right now.
+     * This method will be used when power-wallet is enabled for Olamoney.
+     * It is currently implemented using redirect-flow and not as a power-wallet.
+     */
+    public function callbackOtpSubmit(array $input)
+    {
+        $this->action($input, Action::OTP_SUBMIT);
+
+        $this->verifyOtpAttempts($input['payment']);
+
+        $request = $this->getOtpSubmitRequestArray($input);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $content = $this->jsonToArray($response->body);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+
+        if ($content[ResponseFields::STATUS] !== Status::SUCCESS)
+        {
+            $errorCode = ResponseCode::getApiErrorCode($content[ResponseFields::ERROR_CODE]);
+
+            // Payment fails, throw exception
+            throw new Exception\GatewayErrorException(
+                $errorCode,
+                $content[ResponseFields::STATUS],
+                $content[ResponseFields::MESSAGE]);
+        }
     }
 
     protected function callbackRedirectFlow($input)
@@ -130,73 +231,6 @@ class Gateway extends Base\Gateway
         }
     }
 
-    /**
-     * This fuction is not being used right now.
-     * This method will be used when power-wallet is enabled for Olamoney.
-     * It is currently implemented using redirect-flow and not as a power-wallet.
-     */
-    public function otpGenerate($input)
-    {
-        $this->action($input, Action::OTP_GENERATE);
-
-        $request = $this->getOtpGenerateRequestArray($input);
-
-        $response = $this->sendGatewayRequest($request);
-
-        $content = $this->jsonToArray($response->body);
-
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
-
-        $code = $content['status'];
-
-        if ($code !== Status::SUCCESS)
-        {
-            $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
-
-            if (isset($content['errorCode']))
-            {
-                $errorCode = ResponseCode::getApiErrorCode($content['errorCode']);
-            }
-
-            // Payment fails, throw exception
-            throw new Exception\GatewayErrorException(
-                $errorCode,
-                $content['status'],
-                $content['message']);
-        }
-    }
-
-    /**
-     * This fuction is not being used right now.
-     * This method will be used when power-wallet is enabled for Olamoney.
-     * It is currently implemented using redirect-flow and not as a power-wallet.
-     */
-    public function callbackOtpSubmit(array $input)
-    {
-        $this->action($input, Action::OTP_SUBMIT);
-
-        $this->verifyOtpAttempts($input['payment']);
-
-        $request = $this->getOtpSubmitRequestArray($input);
-
-        $response = $this->sendGatewayRequest($request);
-
-        $content = $this->jsonToArray($response->body);
-
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
-
-        if ($content[ResponseFields::STATUS] !== Status::SUCCESS)
-        {
-            $errorCode = ResponseCode::getApiErrorCode($content[ResponseFields::ERROR_CODE]);
-
-            // Payment fails, throw exception
-            throw new Exception\GatewayErrorException(
-                $errorCode,
-                $content[ResponseFields::STATUS],
-                $content[ResponseFields::MESSAGE]);
-        }
-    }
-
     protected function getBillGeneratorRequest($input)
     {
         $content = $this->getOtpGenerateAttributes($input);
@@ -261,15 +295,15 @@ class Gateway extends Base\Gateway
 
         $content = array(
             RequestFields::COMMAND           => Command::CAPTURE,
-            RequestFields::ACCESS_TOKEN       => $this->getAccessToken($input['terminal']),
-            RequestFields::UNIQUE_ID          => $payment['id'],
+            RequestFields::ACCESS_TOKEN      => $this->getAccessToken($input['terminal']),
+            RequestFields::UNIQUE_ID         => $payment['id'],
             RequestFields::COMMENTS          => 'Razorpay payment',
             RequestFields::UDF               => $payment['public_id'],
-            RequestFields::RETURN_URL         => $input['callbackUrl'],
-            RequestFields::NOTIFICATION_URL   => '',
+            RequestFields::RETURN_URL        => $input['callbackUrl'],
+            RequestFields::NOTIFICATION_URL  => '',
             RequestFields::AMOUNT            => (string) ($payment['amount'] / 100),
             RequestFields::CURRENCY          => $payment['currency'],
-            RequestFields::COUPON_CODE        => 'NA',
+            RequestFields::COUPON_CODE       => 'NA',
             RequestFields::OTP               => $input['gateway']['otp'],
         );
 
@@ -280,15 +314,6 @@ class Gateway extends Base\Gateway
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
 
         return $request;
-    }
-
-    public function verify(array $input)
-    {
-        parent::verify($input);
-
-        $verify = new Verify($this->gateway, $input);
-
-        return $this->runPaymentVerifyFlow($verify);
     }
 
     protected function verifyPayment($verify)
@@ -512,31 +537,6 @@ class Gateway extends Base\Gateway
         return false;
     }
 
-    public function refund(array $input)
-    {
-        parent::refund($input);
-
-        $request = $this->getRefundRequest($input);
-
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
-
-        $response = $this->sendGatewayRequest($request);
-
-        $content = $this->jsonToArray($response->body);
-
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
-
-        $this->createWalletRefundEntity($content, $input);
-
-        if ($content[ResponseFields::STATUS] !== Status::SUCCESS)
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_REFUND_FAILED,
-                $content[ResponseFields::STATUS],
-                $content[ResponseFields::MESSAGE]);
-        }
-    }
-
     protected function createWalletRefundEntity($content, $input)
     {
         $refundAttributes = $this->getRefundEntityAttributesFromRefundResponse($content, $input);
@@ -546,7 +546,12 @@ class Gateway extends Base\Gateway
 
     protected function getRefundEntityAttributesFromRefundResponse($content, $input)
     {
-        $gateway_refund_id = isset($content[ResponseFields::TRANSACTION_ID]) ? $content[ResponseFields::TRANSACTION_ID] : null;
+        $gateway_refund_id = null;
+
+        if (isset($content[ResponseFields::TRANSACTION_ID]) === true)
+        {
+            $gateway_refund_id = $content[ResponseFields::TRANSACTION_ID];
+        }
 
         $response_code = isset($content[ResponseFields::ERROR_CODE]) ? $content[ResponseFields::ERROR_CODE] : null;
 
