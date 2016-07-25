@@ -26,7 +26,7 @@ class ThreeDSecureStatus
         return ($status === self::Y);
     }
 
-    public static function get2faStatus($status)
+    public static function getThreeDsStatus($status)
     {
         switch ($status) {
             case self::Y:

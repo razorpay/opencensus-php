@@ -101,11 +101,9 @@ trait RequestResponseFlowTrait
 
         $this->assertExceptionClass($actual, $class);
 
-        if (isset($expected['data']) === true)
+        if (isset($expected['two_fa_error']) === true)
         {
-            $data = $actual->getData();
-
-            $this->assertExceptionData($data, $expected['data']);
+            $this->assertEquals($actual->hasTwoFaError(), $expected['two_fa_error']);
         }
 
         $internalError = $actual->getError()->getAttributes();

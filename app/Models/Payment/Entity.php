@@ -25,7 +25,7 @@ class Entity extends Base\PublicEntity
     const AMOUNT_AUTHORIZED     = 'amount_authorized';
     const AMOUNT_REFUNDED       = 'amount_refunded';
     const STATUS                = 'status';
-    const TWO_FA_STATUS         = '2fa_status';
+    const TWO_FA_STATUS         = 'two_fa_status';
     const ORDER_ID              = 'order_id';
     const METHOD                = 'method';
     const REFUND_STATUS         = 'refund_status';
@@ -319,12 +319,12 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
     }
 
-    public function set2faStatus($status)
+    public function setTwoFaStatus($status)
     {
         $this->setAttribute(self::TWO_FA_STATUS, $status);
     }
 
-    public function set2faStatusFailed()
+    public function setTwoFaStatusFailed()
     {
         $this->setAttribute(self::TWO_FA_STATUS, TwoFaStatus::FAILED);
     }

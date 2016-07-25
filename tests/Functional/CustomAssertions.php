@@ -59,16 +59,6 @@ trait CustomAssertions
         $validator->validateInput('entity', $attributes);
     }
 
-    public function assertExceptionData(array $actual, array $expected)
-    {
-        foreach ($expected as $key => $value)
-        {
-            $this->assertArrayHasKey($key, $actual);
-
-            $this->assertSame($value, $actual[$key], 'The key is: '.$key);
-        }
-    }
-
     public function assertErrorDataEquals(array $expected, array $actual)
     {
         $this->assertArrayHasKey('internal_error_code', $actual);

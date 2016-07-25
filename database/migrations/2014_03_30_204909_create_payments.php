@@ -152,6 +152,7 @@ class CreatePayments  extends Migration
             $table->integer(Payment::UPDATED_AT);
 
             $table->index(Payment::STATUS);
+            $table->index(Payment::TWO_FA_STATUS, 20);
             $table->index(Payment::CREATED_AT);
             $table->index(Payment::AUTO_CAPTURED);
             $table->index(Payment::VERIFIED);

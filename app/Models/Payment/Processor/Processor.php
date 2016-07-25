@@ -14,6 +14,7 @@ use RZP\Models\Terminal;
 use RZP\Models\Payment;
 use RZP\Models\Order;
 use RZP\Models\Pricing;
+use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use Request;
@@ -311,9 +312,9 @@ class Processor
 
         $payment->setError($code, $desc, $internalCode);
 
-        if ($e->has2faError() === true)
+        if ($e->hasTwoFaError() === true)
         {
-            $payment->set2faStatusFailed();
+            $payment->setTwoFaStatusFailed();
         }
 
         $payment->saveOrFail();
@@ -655,13 +656,13 @@ class Processor
         return substr($contact, -10);
     }
 
-    protected function updatePayment2faStatus($data)
+    protected function updatePaymentTwoFaStatus($data)
     {
-        $status = $data['2fa_status'];
+        $status = $data[PaymentEntity::TWO_FA_STATUS];
 
         $payment = $this->payment;
 
-        $payment->set2faStatus($status);
+        $payment->setTwoFaStatus($status);
 
         $payment->saveOrFail();
     }
