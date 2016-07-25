@@ -55,7 +55,7 @@ class MerchantFilter extends Terminal\Filter
     {
         $method = $input['payment']->getMethod();
 
-        if (in_array($method, [Method::CARD, Method::EMI] === false)
+        if (in_array($method, [Method::CARD, Method::EMI]) === false)
         {
             return true;
         }
