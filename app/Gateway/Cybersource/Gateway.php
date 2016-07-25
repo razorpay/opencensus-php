@@ -207,12 +207,8 @@ class Gateway extends Base\Gateway
 
         $authReply = $this->fetchAuthorizeReplyFromContent($content);
 
-        if (isset($authReply['RFlag']) === false)
-        {
-            // Payment is failed when ics_auth is not present
-            ;
-        }
-        else
+        // Payment is failed when ics_auth is not present
+        if (isset($authReply['RFlag']) === true)
         {
             if ($authReply['RFlag'] !== ReplyFlag::SOK)
             {
