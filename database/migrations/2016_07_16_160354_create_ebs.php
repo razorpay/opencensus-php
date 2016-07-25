@@ -50,18 +50,18 @@ class CreateEbs extends Migration {
             $table->string('TxnReferenceNo')->nullable();
             $table->string('AuthStatus')->nullable();
             $table->string('SettlementType')->nullable();
-            $table->string('ErrorStatus')->nullable();
-            $table->string('ErrorDescription')->nullable();
+            $table->string('error_status')->nullable();
+            $table->string('error_description')->nullable();
             $table->string('RequestType')->nullable();
-            $table->string('RefAmount')->nullable();
+            $table->string('ref_amount')->nullable();
             $table->string('RefDateTime')->nullable();
             $table->string('RefStatus')->nullable();
             $table->string('RefundId')->nullable();
-            $table->string('RequestID')->nullable();
-            $table->string('TransactionID')->nullable();
+            $table->string('request_id')->nullable();
+            $table->string('transaction_id')->nullable();
             $table->string('ebs_payment_id')->nullable();
-            $table->string('ErrorCode')->nullable();
-            $table->string('ErrorReason')->nullable();
+            $table->string('error_code')->nullable();
+            $table->string('error_reason')->nullable();
             $table->string('ProcessStatus')->nullable();
 
             $table->string('refund_id', UniqueIdEntity::ID_LENGTH)->nullable();

@@ -25,4 +25,5 @@ class ResponseConstants
     const ERROR_CODE        = 'ErrorCode';
     const REFUND_PAYMENT_ID = 'payment_id';
     const TXN_AMOUNT        = 'TXnAmount';
+    const SECURE_HASH       = 'SecureHash';
 }

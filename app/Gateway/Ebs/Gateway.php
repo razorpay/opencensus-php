@@ -3,37 +3,23 @@
 namespace RZP\Gateway\Ebs;
 
 use Carbon\Carbon;
-use RZP\Gateway\Base;
-use RZP\Error\ErrorCode;
-use RZP\Models\Card;
-use RZP\Models\Card\Network;
-use RZP\Constants\ModeEbs;
-use RZP\Models\Payment;
 use RZP\Exception;
+use RZP\Models\Card;
+use RZP\Gateway\Base;
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Constants\ModeEbs;
+use RZP\Gateway\Ebs\Entity;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Ebs\ResponseConstants as RESP;
 use RZP\Gateway\Ebs\RequestConstants as REQ;
-use RZP\Gateway\Ebs\Entity;
 
 class Gateway extends Base\Gateway
 {
-    const CREDIT                    = '1';
-    const DEBIT                     = '2';
-    const NETBANKING                = '3';
-    const CREDIT_EMI                = '4';
-    const DEBIT_EMI                 = '5';
-
-    const VISA                      = '1';
-    const MC                        = '2';
-    const MAES                      = '3';
-    const DICL                      = '4';
-    const AMEX                      = '5';
-    const JCB                       = '6';
 
     const SUCCESS                   = '0';
 
-    const SECURE_HASH_FIELD_RESP    = 'SecureHash';
     const HASH_SECRET               = 'hash_secret';
     const HASH_ALGO                 = 'SHA512';
     const MERCHANT_ID               = 'merchant_id';
@@ -295,21 +281,21 @@ class Gateway extends Base\Gateway
     {
         if ($this->mode === 'test')
         {
-            $retVal = self::CREDIT;
+            $retVal = REQ::CREDIT;
         }
         else if ($input['payment']['method'] == Payment\Method::NETBANKING)
         {
-            $retVal = self::NETBANKING;
+            $retVal = REQ::NETBANKING;
         }
         else if ($input['payment']['method'] == Payment\Method::CARD)
         {
             if ($input['card']['type'] === Card\Type::DEBIT)
             {
-                $retVal = self::DEBIT;
+                $retVal = REQ::DEBIT;
             }
             else if ($input['card']['type'] === Card\Type::CREDIT)
             {
-                $retVal = SELF::CREDIT;
+                $retVal = REQ::CREDIT;
             }
         }
 
@@ -326,31 +312,31 @@ class Gateway extends Base\Gateway
     {
         if ($this->mode === 'test')
         {
-            $retVal = self::VISA;
+            $retVal = REQ::VISA;
         }
-        else if ($input['card']['network'] === Network::VISA)
+        else if ($input['card']['network'] === Card\Network::VISA)
         {
-            $retVal = self::VISA;
+            $retVal = REQ::VISA;
         }
-        else if ($input['card']['network'] === Network::MC)
+        else if ($input['card']['network'] === Card\Network::MC)
         {
-            $retVal = self::MC;
+            $retVal = REQ::MC;
         }
-        else if ($input['card']['network'] === Network::MAES)
+        else if ($input['card']['network'] === Card\Network::MAES)
         {
-            $retVal = self::MAES;
+            $retVal = REQ::MAES;
         }
-        else if ($input['card']['network'] === Network::DICL)
+        else if ($input['card']['network'] === Card\Network::DICL)
         {
-            $retVal = self::DICL;
+            $retVal = REQ::DICL;
         }
-        else if ($input['card']['network'] === Network::AMEX)
+        else if ($input['card']['network'] === Card\Network::AMEX)
         {
-            $retVal = self::AMEX;
+            $retVal = REQ::AMEX;
         }
-        else if ($input['card']['network'] === Network::JCB)
+        else if ($input['card']['network'] === Card\Network::JCB)
         {
-            $retVal = self::JCB;
+            $retVal = REQ::JCB;
         }
 
         if (empty($retVal))
@@ -378,7 +364,7 @@ class Gateway extends Base\Gateway
 
     protected function validateCallbackGetSecureHash(array $input)
     {
-        $hash = $input[self::SECURE_HASH_FIELD_RESP];
+        $hash = $input[RESP::SECURE_HASH];
         if (empty($hash))
         {
             throw new Exception\BadRequestValidationFailureException(
@@ -386,7 +372,7 @@ class Gateway extends Base\Gateway
         }
 
         // Remove secureHash Value to calculate Expected Hash Value
-        unset($input[self::SECURE_HASH_FIELD_RESP]);
+        unset($input[RESP::SECURE_HASH]);
 
         $expectedHash = $this->getSecureHash($input);
         if ($hash !== $expectedHash)
