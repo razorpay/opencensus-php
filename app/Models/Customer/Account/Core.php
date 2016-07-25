@@ -65,12 +65,12 @@ class Core extends Base\Core
         return $customer;
     }
 
-    public function sendOtp($input)
+    public function sendOtp($input, $merchant)
     {
         $input[Entity::CONTACT] = Customer\Validator::validateAndParseContact(
             $input[Entity::CONTACT]);
 
-        $data = (new Customer\Raven)->sendOtp($input);
+        $data = (new Customer\Raven)->sendOtp($input, $merchant);
 
         return $data;
     }
@@ -156,13 +156,11 @@ class Core extends Base\Core
 
     protected function verifyRavenOtp($input, $merchant)
     {
-        $input['context'] = $merchant->getId();
-
-        $input['source'] = 'api';
-
         try
         {
-            (new Customer\Raven)->verifyOtp($input);
+            $input['merchant_id'] = $merchant->getId();
+
+            (new Customer\Raven)->verifyOtp($input, $merchant);
         }
         catch (\Exception $e)
         {
