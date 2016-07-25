@@ -234,9 +234,13 @@ trait Inquiry
         // TO NOTE: This is just initializing RESPONSE from the inquiry.
         $this->inquiryResponse['data'] = [];
 
+        $traceVerifyData = $this->inquiryRequest;
+
+        unset($traceVerifyData['content']);
+
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
-            $this->inquiryRequest);
+            $traceVerifyData);
 
         // This sets the response received from the inquiry
         $this->runRequestResponseFlow(

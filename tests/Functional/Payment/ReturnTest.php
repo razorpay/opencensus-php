@@ -22,7 +22,7 @@ class ReturnTest extends TestCase
             'request' => [
                 'content' => [
                     'callback_url' => $this->getLocalMerchantCallbackUrl(),
-                    'card' => ['number' => '4012001037141112'],
+                    'card' => ['number' => '4012001037167778'],
                 ],
             ],
             'response' => [

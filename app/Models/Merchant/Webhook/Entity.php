@@ -98,7 +98,7 @@ class Entity extends Base\PublicEntity
         return null;
     }
 
-    public function setSecretAttribute($secret)
+    protected function setSecretAttribute($secret)
     {
         if (empty($secret))
         {
@@ -126,7 +126,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::LAST_SUCCESSFUL_AT);
     }
 
-    public function setEventsAttribute($events)
+    protected function setEventsAttribute($events)
     {
         $hex = 0;
 
@@ -138,7 +138,7 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::EVENTS] = Event::getHexValue($events, $hex);
     }
 
-    public function getEventsAttribute()
+    protected function getEventsAttribute()
     {
         $events = $this->attributes[self::EVENTS];
 

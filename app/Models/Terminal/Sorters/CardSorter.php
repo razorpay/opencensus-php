@@ -17,11 +17,16 @@ class CardSorter extends Terminal\Sorter
     {
         $method = $input['payment']->getMethod();
 
-        // No need unless doing for card
-        if ($method !== Method::CARD)
+        // No need unless doing for card or emi
+        $methodsAllowed = [Method::CARD, Method::EMI];
+
+        if (in_array($method, $methodsAllowed) === false)
         {
             return $terminals;
         }
+
+        // Fetch priority for card in case of card or emi
+        $method = Method::CARD;
 
         $gatewaysPriority = Gateway::getGatewaysPriority($method, $input['mode']);
 

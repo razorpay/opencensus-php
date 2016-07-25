@@ -29,6 +29,8 @@ class CardTest extends TestCase
         $this->ba->proxyAuth();
 
         $card = $this->startTest();
+
+        $this->assertEquals($card['id'], $payment['card_id']);
     }
 
     public function testUnsupportedCardNetworks()
@@ -109,6 +111,6 @@ class CardTest extends TestCase
 
         $this->replaceDefualtValues($testData['request']['content']);
 
-        $this->runRequestResponseFlow($testData);
+        return $this->runRequestResponseFlow($testData);
     }
 }

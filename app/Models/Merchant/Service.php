@@ -185,7 +185,7 @@ class Service extends Base\Service
         // we need to create the exception here.
         //
         if (($this->mode === Mode::LIVE) and
-            ($merchant->getActivatedAttribute() === false) and
+            ($merchant->isActivated() === false) and
             (Account::isNodalAccount($merchantId) === false))
         {
             $balance[Balance\Entity::ID] = $merchantId;
@@ -614,15 +614,9 @@ class Service extends Base\Service
         ini_set('memory_limit', '1024M');
         set_time_limit(300);
 
-        $filter = [];
-
-        // In test, none of the merchants are activated
-        if ($this->mode === Mode::LIVE)
-        {
-            $filter = [Entity::ACTIVATED => 1];
-        }
-
-        $merchants = $this->repo->merchant->fetch($filter);
+        $merchants = $this->repo->merchant->fetchAllLiveMerchants()
+                                            ->select(Entity::ID)
+                                            ->get();
 
         // sent will hold array of merchant data
         $response = ['sent' => [], 'skipped' => 0];

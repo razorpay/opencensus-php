@@ -49,7 +49,7 @@ class TerminalPicker
         $this->app = \App::getFacadeRoot();
     }
 
-    public function selectTerminal($payment, $mode)
+    public function selectTerminal($payment, $mode, $options = [])
     {
         $this->payment = $payment;
         $this->merchant = $payment->merchant;
@@ -73,9 +73,14 @@ class TerminalPicker
                 ['payment' => $payment->toArrayAdmin()]);
         }
 
-        $payment->terminal()->associate($terminal);
+        if (isset($options['chance']))
+        {
+            $terminal = (new Terminal\Binning)->pick($terminal, $options['chance'], ['payment' => $payment]);
+        }
 
-        $payment->setGateway($terminal->getGateway());
+        // $payment->terminal()->associate($terminal);
+
+        // $payment->setGateway($terminal->getGateway());
 
         return $terminal;
     }
@@ -167,7 +172,8 @@ class TerminalPicker
         {
             $terminal = $this->selectSharedTPVTerminal($category);
 
-            if ($terminal === null)
+            if (($terminal === null) and
+                ($this->mode === Mode::LIVE))
             {
                 throw new Exception\ServerErrorException(
                     'A terminal with support for third party validation was not found.',
@@ -218,10 +224,7 @@ class TerminalPicker
     {
         $bank = $this->payment->getBank();
 
-        $cardTerminalBanks = array(
-            IFSC::KKBK,
-            IFSC::UTIB,
-        );
+        $cardTerminalBanks = Gateway::$emiBanksUsingCardTerminals;
 
         if (in_array($bank, $cardTerminalBanks))
         {
@@ -395,6 +398,8 @@ class TerminalPicker
         {
             return $this->terminal;
         }
+
+        return null;
     }
 
     protected function getTerminalsKeyedByGateway($merchantTerminals)
@@ -639,12 +644,19 @@ class TerminalPicker
 
     protected function selectSharedTPVTerminal($category)
     {
+        $terminal = null;
+
         $gateway = Gateway::BILLDESK;
 
         $sharedTerminal = $this->repo->getSharedTerminalForGatewayWithCategory(
                                     $gateway, $category);
 
-        return $this->terminalExists($sharedTerminal->getId());
+        if (empty($sharedTerminal) === false)
+        {
+            $terminal = $this->terminalExists($sharedTerminal->getId());
+        }
+
+        return $terminal;
     }
 
     protected function terminalExists($terminal)

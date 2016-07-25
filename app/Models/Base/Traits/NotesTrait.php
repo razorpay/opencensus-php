@@ -11,7 +11,7 @@ trait NotesTrait
 	 * Setter
 	 **************************************************************
 	 */
-	public function setNotesAttribute($notes)
+	protected function setNotesAttribute($notes)
     {
         if ($notes === '')
         {
@@ -36,7 +36,7 @@ trait NotesTrait
     /**
      * Makes sure that getNotes always returns an array
      */
-    public function getNotesAttribute($notes)
+    protected function getNotesAttribute($notes)
     {
         $notesArray = json_decode($notes, true);
 
@@ -46,6 +46,11 @@ trait NotesTrait
         }
 
         return $notesArray;
+    }
+
+    public function setNotes($notes)
+    {
+        $this->setAttribute(self::NOTES, $notes);
     }
 
     public function getNotes()

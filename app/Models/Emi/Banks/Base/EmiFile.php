@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Emi\Banks\Base;
 
+use Str;
 use Carbon\Carbon;
 use RZP\Models\Card;
 use RZP\Models\Settlement\Kotak\FileHandlerTrait;
@@ -9,6 +10,11 @@ use RZP\Models\Settlement\Kotak\FileHandlerTrait;
 class EmiFile
 {
     use FileHandlerTrait;
+
+    // Regenerated every time the EMI file is created
+    protected $emiFilePassword;
+
+    const EMI_FILE_PASSWORD_LENGTH = 7;
 
     public function __construct()
     {
@@ -34,14 +40,24 @@ class EmiFile
         return $cardNumber;
     }
 
+    protected function fetchAndSendPassword()
+    {
+        $this->emiFilePassword = $this->generateEmiFilePassword();
+
+        $this->sendEmiPassword();
+    }
+
+    protected function generateEmiFilePassword()
+    {
+        return Str::random(self::EMI_FILE_PASSWORD_LENGTH);
+    }
+
     protected function getZippedFile()
     {
         $fullPath = $this->getExcelFullFilePath();
         $fileArray = array($fullPath);
 
-        $password = \Config::get('applications.emi')['password'];
-
-        $zipPath = $this->makeZipFile($fileArray, $password);
+        $zipPath = $this->makeZipFile($fileArray, $this->emiFilePassword);
 
         return $zipPath;
     }

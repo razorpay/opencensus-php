@@ -64,10 +64,16 @@ class TraceCode
 
     const NETBANKING_PAYMENT_CALLBACK               = 'NETBANKING_PAYMENT_CALLBACK';
 
+    const CHECKOUT_PREFERENCES_REQUEST              = 'CHECKOUT_PREFERENCES_REQUEST';
+
     // Card Saving related
     const PAYMENT_FILL_SAVED_APP_TOKEN              = 'PAYMENT_FILL_SAVED_APP_TOKEN';
-    const PAYMENT_PROCESS_FROM_SAVED                = 'PAYMENT_PROCESS_FROM_SAVED';
     const PAYMENT_GET_CUSTOMER                      = 'PAYMENT_GET_CUSTOMER';
+    const CUSTOMER_SESSION                          = 'CUSTOMER_SESSION';
+    const CUSTOMER_CREATE_APP_TOKEN                 = 'CUSTOMER_CREATE_APP_TOKEN';
+    const PAYMENT_PROCESS_FROM_SAVED_LOCAL          = 'PAYMENT_PROCESS_FROM_SAVED_LOCAL';
+    const PAYMENT_PROCESS_FROM_SAVED_GLOBAL         = 'PAYMENT_PROCESS_FROM_SAVED_GLOBAL';
+    const PAYMENT_SAVE_METHOD                       = 'PAYMENT_SAVE_METHOD';
 
     /*
      * Gateway component error messages
