@@ -14,7 +14,18 @@ class MerchantSorter extends Terminal\Sorter
     // above the generic category terminals
     // Place the terminals of the same category as the merchant above
     // generic terminals
-    public function categorySorter($terminals, $input)
+
+    /**
+     * Specific category terminals should be placed
+     * above the generic category terminals.
+     * Place the terminals of the same category as the merchant
+     * above generic terminals.
+     *
+     * @param $terminals
+     * @param array $input
+     * @return array
+     */
+    public function categorySorter($terminals, array $input)
     {
         $merchantCategory = $input['merchant']->getCategory();
 
@@ -55,6 +66,6 @@ class MerchantSorter extends Terminal\Sorter
             }
         }
 
-        return $returnTerminals;
+        return collect($returnTerminals);
     }
 }

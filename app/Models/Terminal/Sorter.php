@@ -52,6 +52,7 @@ class Sorter
 
             foreach ($terminals as $terminal)
             {
+                s($terminal->getId());
                 $terminalIds[] = $terminal->getId();
             }
 

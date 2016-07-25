@@ -71,12 +71,14 @@ class Selector
     {
         $terminals = $this->getTerminals();
 
-        // Trace available terminals before selection
         $this->traceTerminals($terminals, 'Terminals fetched from db', $verbose);
 
-        // Terminals first filtered
-        // Terminals that result in failure due to gateway are recorded and
-        // removed in the next attempt
+        //
+        // Initially, the terminals are run through a filter class, which removes
+        // the terminals which do not match the filters. For further iterations, the
+        // filtered list of terminals is used to further filter upon using the other
+        // filter classes.
+        //
         $filteredTerminals = $terminals;
 
         foreach (self::$filters as $filter)
@@ -85,19 +87,20 @@ class Selector
             $this->traceTerminals($filteredTerminals, 'Terminals after ' . $filter, $verbose);
         }
 
-        // Trace available terminals after filtration
         $this->traceTerminals($filteredTerminals, 'Terminals after filtration', $verbose);
 
-        // Terminals next sorted
+        //
+        // Sorting is done on the final list of filtered terminals.
+        // The sorting is run for each of the sorting classes.
+        //
         $sortedTerminals = $filteredTerminals;
 
         foreach (self::$sorters as $sorter)
         {
-            $sortedTerminals = (new $sorter)->sort($sortedTerminals, $this->input);
+            $sortedTerminals = (new $sorter)->sort($sortedTerminals, $this->input, $verbose);
             $this->traceTerminals($sortedTerminals, 'Terminals after ' . $sorter, $verbose);
         }
 
-        // Trace available terminals after sorting
         $this->traceTerminals($sortedTerminals, 'Terminals after sorting', $verbose);
 
         $terminal = null;
@@ -107,6 +110,7 @@ class Selector
             if ($this->mode === Mode::TEST)
             {
                 $terminal = $terminals->find(Shared::SHARP_RAZORPAY_TERMINAL);
+                //$terminal = $this->repo->find(Shared::SHARP_RAZORPAY_TERMINAL);
             }
             else
             {
@@ -117,7 +121,7 @@ class Selector
         }
         else
         {
-            $terminal = $sortedTerminals->get(0);
+            $terminal = $sortedTerminals->first();
         }
 
         if (isset($options['chance']))
@@ -125,10 +129,6 @@ class Selector
             $terminal = (new Binning)->select($terminal, $options['chance'], $this->input, $terminals);
         }
 
-        $this->checkForCustomExceptions($terminal);
-
-        // When the terminal selector has to activated.
-        // uncomment the following code
         $this->setTerminalForPayment($this->payment, $terminal);
 
         return $terminal;
@@ -191,7 +191,7 @@ class Selector
      * Custom exceptions that are to be only thrown if no terminal is available,
      * in live mode on cards.
      *
-     * @param Entity $terminal Chosen terminal
+     * @param $terminal
      * @throws Exception\BadRequestException
      */
     protected function checkForCustomExceptions($terminal)

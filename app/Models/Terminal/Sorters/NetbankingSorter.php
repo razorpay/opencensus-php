@@ -52,7 +52,7 @@ class NetbankingSorter extends Terminal\Sorter
             }
         }
 
-        return $testTerminals;
+        return collect($testTerminals);
     }
 
     /**
