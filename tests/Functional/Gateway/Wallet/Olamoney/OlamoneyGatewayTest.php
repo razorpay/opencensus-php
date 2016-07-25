@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Wallet\Olamoney;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Http\Route;
+use RZP\Models\Payment\Entity as PaymentEntity;
 
 class OlamoneyGatewayTest extends TestCase
 {
@@ -47,14 +48,14 @@ class OlamoneyGatewayTest extends TestCase
         $data = $this->testData[__FUNCTION__];
 
         $payment = $this->fixtures->create('payment:failed', [
-                            'email'         => 'a@b.com',
-                            'amount'        => 50000,
-                            'contact'       => '+919918899029',
-                            'method'        => 'wallet',
-                            'wallet'        => 'olamoney',
-                            'gateway'       => 'wallet_olamoney',
-                            'card_id'       => null,
-                            'terminal_id'   => $this->sharedTerminal->id
+                            PaymentEntity::EMAIL        => 'a@b.com',
+                            PaymentEntity::AMOUNT       => 50000,
+                            PaymentEntity::CONTACT      => '+919918899029',
+                            PaymentEntity::METHOD       => 'wallet',
+                            PaymentEntity::WALLET       => 'olamoney',
+                            PaymentEntity::GATEWAY      => 'wallet_olamoney',
+                            PaymentEntity::CARD_ID      => null,
+                            PaymentEntity::TERMINAL_ID  => $this->sharedTerminal->id
                         ]);
 
         $id = $payment->getPublicId();
@@ -74,7 +75,8 @@ class OlamoneyGatewayTest extends TestCase
 
         $authPayment = $this->doAuthPayment($payment);
 
-        $capturePayment = $this->capturePayment($authPayment['razorpay_payment_id'], $payment['amount']);
+        $capturePayment = $this->capturePayment($authPayment['razorpay_payment_id'],
+            $payment['amount']);
 
         $this->refundPayment($capturePayment['id']);
 
@@ -89,7 +91,8 @@ class OlamoneyGatewayTest extends TestCase
 
         $authPayment = $this->doAuthPayment($payment);
 
-        $capturePayment = $this->capturePayment($authPayment['razorpay_payment_id'], $payment['amount']);
+        $capturePayment = $this->capturePayment($authPayment['razorpay_payment_id'],
+            $payment['amount']);
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -145,7 +148,8 @@ class OlamoneyGatewayTest extends TestCase
 
             $request = $this->makeFirstGatewayPaymentMockRequest($url, $method, $content);
 
-            return $this->submitPaymentCallbackData($request['url'], $request['method'], $request['content']);
+            return $this->submitPaymentCallbackData($request['url'],
+                $request['method'], $request['content']);
         }
 
         return null;

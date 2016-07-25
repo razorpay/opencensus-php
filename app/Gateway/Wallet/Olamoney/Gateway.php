@@ -12,6 +12,7 @@ use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Wallet\Base\Action;
+use RZP\Gateway\Wallet\Base\Entity;
 use RZP\Models\Payment\Status as PaymentStatus;
 use RZP\Constants\HashAlgo;
 use Carbon\Carbon;
@@ -25,13 +26,13 @@ class Gateway extends Base\Gateway
     protected $canRunOtpFlow = false;
 
     protected $map = array(
-        'email'                 => 'email',
-        'contact'               => 'contact',
-        'status'                => 'status_code',
-        'amount'                => 'amount',
-        'received'              => 'received',
-        'gateway_merchant_id'   => 'gateway_merchant_id',
-        'transactionId'         => 'gateway_payment_id',
+        Entity::EMAIL                   => Entity::EMAIL,
+        Entity::CONTACT                 => Entity::CONTACT,
+        ResponseFields::STATUS          => Entity::STATUS_CODE,
+        ResponseFields::AMOUNT          => Entity::AMOUNT,
+        Entity::RECEIVED                => Entity::RECEIVED,
+        Entity::GATEWAY_MERCHANT_ID     => Entity::GATEWAY_MERCHANT_ID,
+        ResponseFields::TRANSACTION_ID  => Entity::GATEWAY_PAYMENT_ID,
     );
 
     public function authorize(array $input)
@@ -180,13 +181,13 @@ class Gateway extends Base\Gateway
     protected function getCreateWalletAttributes($input)
     {
         $contentToSave = array(
-            'amount'                => (string) ($input['payment']['amount']),
-            'received'              => true,
-            'email'                 => $input['payment']['email'],
-            'contact'               => $this->getFormattedContact($input['payment']['contact']),
-            'gateway_merchant_id'   => $this->getMerchantId($input['terminal']),
-            'status'                => $input['gateway']['status'],
-            'transactionId'         => $input['gateway']['transactionId'],
+            ResponseFields::AMOUNT          => $input['payment']['amount'],
+            Entity::RECEIVED                => true,
+            Entity::EMAIL                   => $input['payment']['email'],
+            Entity::CONTACT                 => $this->getFormattedContact($input['payment']['contact']),
+            Entity::GATEWAY_MERCHANT_ID     => $this->getMerchantId($input['terminal']),
+            ResponseFields::STATUS          => $input['gateway']['status'],
+            ResponseFields::TRANSACTION_ID  => $input['gateway']['transactionId'],
         );
 
         return $contentToSave;
@@ -319,7 +320,7 @@ class Gateway extends Base\Gateway
     protected function verifyPayment($verify)
     {
         // api wallet gateway entity
-        $walletPayment = $verify->payment;
+        $gatewayPayment = $verify->payment;
 
         $input = $verify->input;
 
@@ -331,46 +332,45 @@ class Gateway extends Base\Gateway
 
         if ($verifyResponse[ResponseFields::STATUS] === Status::COMPLETED)
         {
-            $this->checkVerifyStatusOnGatewaySuccess($walletPayment, $input, $verify);
+            $this->checkVerifyStatusOnGatewaySuccess($gatewayPayment, $input, $verify);
         }
         else
         {
-            $this->checkVerifyStatusOnGatewayFail($walletPayment, $input, $verify);
+            $this->checkVerifyStatusOnGatewayFail($gatewayPayment, $input, $verify);
         }
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
 
         if ($verify->match === false)
         {
-            $verify->payment = $this->saveVerifyContent($walletPayment,
+            $verify->payment = $this->saveVerifyContent($gatewayPayment,
                                                         $verify);
         }
 
         return $verify->status;
     }
 
-    protected function checkVerifyStatusOnGatewayFail($walletPayment, $input, $verify)
+    protected function checkVerifyStatusOnGatewayFail($gatewayPayment, $input, $verify)
     {
         $verify->gatewaySuccess = false;
 
         $verifyResponse = $verify->verifyResponseContent;
 
-        if (in_array($verifyResponse[ResponseFields::STATUS],
-                array(Status::INITIATED, Status::FAILED)))
+        if (in_array($verifyResponse[ResponseFields::STATUS], ResponseFields::VERIFY_FAILED_STATUS))
         {
             // If payment is marked as success in api or in gateway entity,
             // but gateway's verify response returned false. This is an issue
             // and should ideally never happen.
             if ((($input['payment']['status'] !== PaymentStatus::FAILED) and
                  ($input['payment']['status'] !== PaymentStatus::CREATED)) or
-                (($walletPayment !== null) and ($walletPayment['status_code'] === Status::SUCCESS)))
+                (($gatewayPayment !== null) and ($gatewayPayment['status_code'] === Status::SUCCESS)))
             {
                 // Ideally both api payment entity status and gateway payment
                 // entity status should be true, to reach this block. In case
                 // even if one of them is not true, we log it.
                 if (($input['payment']['status'] === PaymentStatus::FAILED) or
                     ($input['payment']['status'] === PaymentStatus::CREATED) or
-                    (($walletPayment === null) or ($walletPayment['status_code'] !== Status::SUCCESS)))
+                    (($gatewayPayment === null) or ($gatewayPayment['status_code'] !== Status::SUCCESS)))
                 {
                     $this->trace->info(
                         TraceCode::GATEWAY_PAYMENT_VERIFY_UNEXPECTED,
@@ -378,7 +378,7 @@ class Gateway extends Base\Gateway
                             'api_payment_status'      => $input['payment']['status'],
                             'gateway_verify_response' => $verifyResponse,
                             'payment_id'              => $input['payment']['id'],
-                            'gateway_payment_status'  => $walletPayment['status_code'],
+                            'gateway_payment_status'  => $gatewayPayment['status_code'],
                         ]);
                 }
 
@@ -393,7 +393,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function checkVerifyStatusOnGatewaySuccess($walletPayment, $input, $verify)
+    protected function checkVerifyStatusOnGatewaySuccess($gatewayPayment, $input, $verify)
     {
         $verify->gatewaySuccess = true;
 
@@ -402,8 +402,8 @@ class Gateway extends Base\Gateway
         // $input['payment'] is api payment entity
         if (($input['payment']['status'] !== PaymentStatus::CREATED) and
             ($input['payment']['status'] !== PaymentStatus::FAILED) and
-            ($walletPayment !== null) and
-            $walletPayment['status_code'] === Status::SUCCESS)
+            ($gatewayPayment !== null) and
+            $gatewayPayment['status_code'] === Status::SUCCESS)
         {
             $verify->apiSuccess = true;
         }
@@ -412,10 +412,10 @@ class Gateway extends Base\Gateway
         // This is an issue, and should ideally never happen.
         else if (($input['payment']['status'] !== PaymentStatus::CREATED) and
             ($input['payment']['status'] !== PaymentStatus::FAILED) and
-            (($walletPayment === null) or
-                ($walletPayment['status_code'] !== Status::SUCCESS)))
+            (($gatewayPayment === null) or
+                ($gatewayPayment['status_code'] !== Status::SUCCESS)))
         {
-            $gateway_payment_status = isset($walletPayment) ? $walletPayment['status_code'] : '';
+            $gateway_payment_status = isset($gatewayPayment) ? $gatewayPayment['status_code'] : '';
 
             $this->trace->info(
                     TraceCode::GATEWAY_PAYMENT_VERIFY_UNEXPECTED,
@@ -436,7 +436,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function saveVerifyContent($walletPayment, $verify)
+    protected function saveVerifyContent($gatewayPayment, $verify)
     {
         $this->action = Action::AUTHORIZE;
 
@@ -446,21 +446,21 @@ class Gateway extends Base\Gateway
         {
             $walletAttributes = $this->getVerifyWalletCreateAttributes($verifyResponse);
 
-            if ($walletPayment === null)
+            if ($gatewayPayment === null)
             {
-                $walletPayment = $this->createGatewayPaymentEntity($walletAttributes);
+                $gatewayPayment = $this->createGatewayPaymentEntity($walletAttributes);
             }
-            else if (($walletPayment['received'] === false) or
-                ($walletPayment['status'] !== Status::SUCCESS))
+            else if (($gatewayPayment['received'] === false) or
+                ($gatewayPayment['status'] !== Status::SUCCESS))
             {
-                $walletPayment->fill($walletAttributes);
-                $walletPayment->saveOrFail();
+                $gatewayPayment->fill($walletAttributes);
+                $gatewayPayment->saveOrFail();
             }
         }
 
         $this->action = Action::VERIFY;
 
-        return $walletPayment;
+        return $gatewayPayment;
     }
 
     protected function getVerifyWalletCreateAttributes($verifyResponse)
@@ -468,13 +468,13 @@ class Gateway extends Base\Gateway
         $payment = $this->input['payment'];
 
         $contentToSave = array(
-            'amount'                => $payment['amount'],
-            'received'              => true,
-            'email'                 => $payment['email'],
-            'contact'               => $this->getFormattedContact($payment['contact']),
-            'gateway_merchant_id'   => $this->getMerchantId($this->input['terminal']),
-            'status'                => Status::SUCCESS,
-            'transactionId'         => $verifyResponse[ResponseFields::UNIQUE_BILL_ID],
+            ResponseFields::AMOUNT          => $payment['amount'],
+            Entity::RECEIVED                => true,
+            Entity::EMAIL                   => $payment['email'],
+            Entity::CONTACT                 => $this->getFormattedContact($payment['contact']),
+            Entity::GATEWAY_MERCHANT_ID     => $this->getMerchantId($this->input['terminal']),
+            ResponseFields::STATUS          => Status::SUCCESS,
+            ResponseFields::TRANSACTION_ID  => $verifyResponse[ResponseFields::UNIQUE_BILL_ID],
         );
 
         return $contentToSave;
@@ -558,19 +558,19 @@ class Gateway extends Base\Gateway
         $error_message = isset($content[ResponseFields::MESSAGE]) ? $content[ResponseFields::MESSAGE] : null;
 
         $refundAttributes = array(
-            'payment_id'            => $input['payment']['id'],
-            'action'                => $this->action,
-            'amount'                => $input['payment']['amount'],
-            'received'              => 1,
-            'wallet'                => $input['payment']['wallet'],
-            'email'                 => $input['payment']['email'],
-            'contact'               => $input['payment']['contact'],
-            'gateway_merchant_id'   => $this->getMerchantId($input['terminal']),
-            'gateway_refund_id'     => $gateway_refund_id,
-            'refund_id'             => $input['refund']['id'],
-            'response_code'         => $response_code,
-            'status_code'           => $content[ResponseFields::STATUS],
-            'error_message'         => $error_message,
+            Entity::PAYMENT_ID              => $input['payment']['id'],
+            Entity::ACTION                  => $this->action,
+            Entity::AMOUNT                  => $input['payment']['amount'],
+            Entity::RECEIVED                => 1,
+            Entity::WALLET                  => $input['payment']['wallet'],
+            Entity::EMAIL                   => $input['payment']['email'],
+            Entity::CONTACT                 => $input['payment']['contact'],
+            Entity::GATEWAY_MERCHANT_ID     => $this->getMerchantId($input['terminal']),
+            Entity::GATEWAY_REFUND_ID       => $gateway_refund_id,
+            Entity::REFUND_ID               => $input['refund']['id'],
+            Entity::RESPONSE_CODE           => $response_code,
+            Entity::STATUS_CODE             => $content[ResponseFields::STATUS],
+            Entity::ERROR_MESSAGE           => $error_message,
         );
 
         return $refundAttributes;
