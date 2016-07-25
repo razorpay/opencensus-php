@@ -16,7 +16,7 @@ class Selector
 {
     protected $mode;
     protected $payment;
-    protected $terminalRepo;
+    protected $repo;
     protected $trace;
     protected $merchant;
     protected $input;
@@ -32,7 +32,7 @@ class Selector
         Sorters\MerchantSorter::class,
     ];
 
-    public function setup($payment, $mode)
+    public function __construct($payment, $mode)
     {
         $app = App::getFacadeRoot();
 
@@ -40,7 +40,7 @@ class Selector
 
         $this->payment = $payment;
 
-        $this->terminalRepo = $app['repo']->terminal;
+        $this->repo = $app['repo']->terminal;
 
         $this->trace = $app['trace'];
 
@@ -56,22 +56,19 @@ class Selector
     public function getTerminals()
     {
         // Fetch terminals for both the current merchant and the shared Merchant
-        $merchantTerminals = $this->terminalRepo->getTerminalsForMerchantAndSharedMerchant(
+        $merchantTerminals = $this->repo->getTerminalsForMerchantAndSharedMerchant(
                                             $this->merchant->getId());
 
         // Fetch Shared Terminals
-        $sharedTerminals = $this->terminalRepo->getAllSharedTerminals();
+        $sharedTerminals = $this->repo->getAllSharedTerminals();
 
         $merchantTerminals = $merchantTerminals->merge($sharedTerminals);
 
         return $merchantTerminals;
     }
 
-    public function select($payment, $mode, $verbose = false)
+    public function select($verbose = false)
     {
-        // TODO: Is there a way to use a constructor instead?
-        $this->setup($payment, $mode);
-
         $terminals = $this->getTerminals();
 
         // Trace available terminals before selection
@@ -96,7 +93,7 @@ class Selector
 
         foreach (self::$sorters as $sorter)
         {
-            $sortedTerminals = (new $sorter)->sort($sortedTerminals, $this->input, $verbose);
+            $sortedTerminals = (new $sorter)->sort($sortedTerminals, $this->input);
             $this->traceTerminals($sortedTerminals, 'Terminals after ' . $sorter, $verbose);
         }
 
@@ -105,21 +102,22 @@ class Selector
 
         $terminal = null;
 
-        if (empty($sortedTerminals) === true)
+        if ((empty($sortedTerminals) === true) or ($sortedTerminals->count() === 0))
         {
             if ($this->mode === Mode::TEST)
             {
-                // TODO: SHARP_RAZORPAY_TERMINAL won't be present in the initial list of terminals?
-                $terminal = $this->terminalRepo->find(Shared::SHARP_RAZORPAY_TERMINAL);
+                $terminal = $terminals->find(Shared::SHARP_RAZORPAY_TERMINAL);
             }
             else
             {
-                // TODO: Throw an exception for not being able to find any terminal for the payment.
+                throw new Exception\RuntimeException(
+                    'No terminal found.',
+                    ['payment' => $this->payment->toArrayAdmin()]);
             }
         }
         else
         {
-            $terminal = $sortedTerminals[0];
+            $terminal = $sortedTerminals->get(0);
         }
 
         // This is a hack and should be implemented in the correct manner later.
@@ -134,7 +132,7 @@ class Selector
 
         // When the terminal selector has to activated.
         // uncomment the following code
-        $this->setTerminalForPayment($payment, $terminal);
+        $this->setTerminalForPayment($this->payment, $terminal);
 
         return $terminal;
     }
@@ -199,7 +197,7 @@ class Selector
      * @param Entity $terminal Chosen terminal
      * @throws Exception\BadRequestException
      */
-    protected function checkForCustomExceptions(Entity $terminal)
+    protected function checkForCustomExceptions($terminal)
     {
         if (($terminal === null) and
             ($this->mode === Mode::LIVE) and

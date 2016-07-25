@@ -51,8 +51,7 @@ class TransactionFilter extends Terminal\Filter
                 return ($gateway === $terminal->getGateway());
 
             default:
-                // TODO: Throw an exception for unknown method
-                return false;
+                throw new Exception\LogicException('Unknown payment method passed.', null, ['method' => $method]);
         }
     }
 

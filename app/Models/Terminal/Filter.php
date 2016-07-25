@@ -7,30 +7,17 @@ use App;
 use Illuminate\Database\Eloquent\Collection;
 use RZP\Trace;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+
 class Filter
 {
     /**
      * This should be overridden in the child class with the respective filter properties
      * @var array
      */
-    protected $properties = [];
+    protected $properties;
 
-    /**
-     * Takes input as collection of terminals. Gets the list of all properties applicable to the
-     * respective filter class (child class). For each filter property and each terminal, it checks
-     * whether the terminal can be used with the filter property given. If it cannot, for the next
-     * iteration, the terminal is removed from the applicable list of terminals and the process is repeated.
-     *
-     * @param Collection $currentTerminals The list of terminals after removing the not-applicable
-     *                                      terminals from the full list of terminals.
-     * @param array $input
-     * @param bool $verbose                For tracing
-     * @return array                       List of terminals after removing the not-applicable terminals
-     *                                     from the received collection of terminals
-     */
-    public function filter($currentTerminals, array $input, $verbose = false)
+    public function filter2($currentTerminals, array $input, $verbose = false)
     {
         foreach ($this->properties as $filterProperty)
         {
@@ -56,29 +43,39 @@ class Filter
         return $currentTerminals;
     }
 
-    public function filter2($applicableTerminals, array $input, $verbose = false)
+    /**
+     * Takes input as collection of terminals. Gets the list of all properties applicable to the
+     * respective filter class (child class). For each filter property and each terminal, it checks
+     * whether the terminal can be used with the filter property given. If it cannot, for the next
+     * iteration, the terminal is removed from the applicable list of terminals and the process is repeated.
+     *
+     * @param Collection $applicableTerminals The list of terminals after removing the not-applicable
+     *                                        terminals from the full list of terminals.
+     * @param array $input
+     * @param bool $verbose                   For tracing
+     * @return array                          List of terminals after removing the not-applicable terminals
+     *                                        from the received collection of terminals
+     */
+    public function filter($applicableTerminals, array $input, $verbose = false)
     {
         foreach ($this->properties as $filterProperty)
         {
             $filterFunction = $this->getFilterFunctionForProperty($filterProperty);
-            
+
             // From all possible current terminals
-            foreach ($applicableTerminals as $terminal)
+            foreach ($applicableTerminals as $key => $terminal)
             {
                 // If the terminal does not match for the given filter property,
                 // remove it from the applicable list of terminals.
                 if ($this->$filterFunction($terminal, $input) !== true)
                 {
-                    // TODO: May have to use forget instead of unset
-                    unset($applicableTerminals[$terminal]);
+                    $applicableTerminals->forget($key);
                 }
             }
 
             $this->traceTerminals($applicableTerminals, 'Terminals after applying ' . $filterFunction . ' property', $verbose);
         }
-        
-        // TODO: We could pass $applicableTerminals by reference? Though, I'd like to use pass by
-        // reference as less as possible.
+
         return $applicableTerminals;
     }
 
@@ -89,8 +86,7 @@ class Filter
 
     protected function traceTerminals($terminals, $msg, $verbose = false)
     {
-        if (($verbose) and
-            ($terminals))
+        if (($verbose) and ($terminals))
         {
             $terminalIds = [];
 
@@ -101,7 +97,8 @@ class Filter
 
             $traceData = ['count' => count($terminals), 'terminals' => $terminalIds, 'msg' => $msg];
 
-            $trace = \App::getFacadeRoot()['trace'];
+            $trace = App::getFacadeRoot()['trace'];
+
             $trace->info(TraceCode::TERMINAL_SELECTION, $traceData);
         }
     }

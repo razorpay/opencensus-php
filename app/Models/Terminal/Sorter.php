@@ -6,14 +6,20 @@ use App;
 
 use RZP\Trace;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+
 class Sorter
 {
+    /**
+     * This should be overridden in the child class with the respective sorter properties
+     * @var array
+     */
+    protected $properties;
+
     public function sort($terminals, $input, $verbose = false)
     {
         // If only terminal left no need for sorter.
-        if (count($terminals) === 1)
+        if ($terminals->count() === 1)
         {
             return $terminals;
         }
@@ -23,11 +29,11 @@ class Sorter
         // For every property as part of a sorter
         foreach ($this->properties as $sorterProperty)
         {
-            $sorterName = $this->getSorterNameForProperty($sorterProperty);
+            $sorterFunction = $this->getSorterNameForProperty($sorterProperty);
 
-            $currentTerminals = $this->$sorterName($currentTerminals, $input);
+            $currentTerminals = $this->$sorterFunction($currentTerminals, $input);
 
-            $this->traceTerminals($currentTerminals, 'Terminals after applying '.$sorterName.' property', $verbose);
+            $this->traceTerminals($currentTerminals, 'Terminals after applying ' . $sorterFunction . ' property', $verbose);
         }
 
         return $currentTerminals;
@@ -35,13 +41,12 @@ class Sorter
 
     protected function getSorterNameForProperty($sorterProperty)
     {
-        return camel_case($sorterProperty).'Sorter';
+        return camel_case($sorterProperty) . 'Sorter';
     }
 
     protected function traceTerminals($terminals, $msg, $verbose = false)
     {
-        if (($verbose) and
-            ($terminals))
+        if (($verbose) and ($terminals))
         {
             $terminalIds = [];
 
@@ -52,7 +57,8 @@ class Sorter
 
             $traceData = ['count' => count($terminals), 'terminals' => $terminalIds, 'msg' => $msg];
 
-            $trace = \App::getFacadeRoot()['trace'];
+            $trace = App::getFacadeRoot()['trace'];
+
             $trace->info(TraceCode::TERMINAL_SELECTION, $traceData);
         }
     }
