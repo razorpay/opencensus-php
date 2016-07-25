@@ -17,6 +17,7 @@ class MerchantFilter extends Terminal\Filter
 {
     protected $properties = [
         'tpv',
+        'risk',
     ];
 
     /**
@@ -44,4 +45,33 @@ class MerchantFilter extends Terminal\Filter
 
         return ($terminal->isTPVTerminal() === false);
     }
+
+
+    /**
+     * For merchants with a risk rating above 4 and card use only axis_migs
+     * terminals if the card used is supported
+     */
+    public function riskFilter($terminal, $input)
+    {
+        $method = $input['payment']->getMethod();
+
+        if (in_array($method, [Method::CARD, Method::EMI]) === false)
+        {
+            return true;
+        }
+
+        if ($input['merchant']->getRiskRating() >= 4)
+        {
+            $network = $input['payment']->card->getNetworkCode();
+
+            if (Gateway::isCardNetworkSupported($network, Gateway::AXIS_MIGS))
+            {
+                return ($terminal->getGateway() === Gateway::AXIS_MIGS);
+            }
+        }
+
+        // Else allow - By default allow all transactions
+        return true;
+    }
+
 }
