@@ -111,14 +111,6 @@ class Selector
             $terminal = (new Binning)->select($terminal, $options['chance'], $this->input, $terminals);
         }
 
-        // This is a hack and should be implemented in the correct manner later.
-        $hdfcMaestroSharedTerminal = $this->getHdfcSharedTerminalIfMaestro($terminals);
-
-        if ($hdfcMaestroSharedTerminal !== null)
-        {
-            $terminal = $hdfcMaestroSharedTerminal;
-        }
-
         $this->checkForCustomExceptions($terminal);
 
         // When the terminal selector has to activated.

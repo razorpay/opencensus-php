@@ -769,13 +769,13 @@ class Gateway extends Base\Gateway
     protected function setBillingInfo(&$content, $input)
     {
         $content['billTo'] = [
-            'firstName'     => $input['card']['name'],
-            'lastName'      => 'a',
-            'street1'       => 'a',
-            'city'          => 'a',
-            'state'         => 'a',
-            'postalCode'    => '5',
-            'country'       => 'India',
+            'firstName'     => 'noreal',
+            'lastName'      => 'name',
+            'street1'       => '1295 Charleston Rd',
+            'city'          => 'Mountain View',
+            'state'         => 'CA',
+            'postalCode'    => '94043',
+            'country'       => 'US',
             'email'         => $input['payment']['email']
         ];
     }
