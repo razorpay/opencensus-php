@@ -90,7 +90,7 @@ class Core extends Base\Core
         $customer = $this->getOrCreateGlobalCustomer($input);
 
         // Create app token for customer
-        $appToken = $this->createCustomerAppToken($customer, $input);
+        $appToken = $this->createCustomerAppToken($customer, $input, $merchant);
 
         // Fetch existing tokens for global customer
         $tokens = (new Customer\Token\Core)->fetchTokensByCustomer($customer);
@@ -115,14 +115,14 @@ class Core extends Base\Core
         return $response;
     }
 
-    protected function createCustomerAppToken($customer, $input)
+    protected function createCustomerAppToken($customer, $input, $merchant)
     {
         // Currently all app_tokens will be generated for common rzp merchant
         $appMerchant = $customer->merchant->getId();
 
         if ($this->isUpdatedAndroidSdk($input))
         {
-            $appMerchant = $this->merchant->getId();
+            $appMerchant = $merchant->getId();
         }
 
         $custAppInput = array(
