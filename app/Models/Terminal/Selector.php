@@ -9,7 +9,6 @@ use RZP\Models\Payment;
 
 use RZP\Trace;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 
 class Selector
@@ -26,6 +25,10 @@ class Selector
         Filters\MerchantFilter::class,
     ];
 
+    /**
+     * Very important that the sorting order is maintained
+     * @var array
+     */
     protected static $sorters = [
         Sorters\CardSorter::class,
         Sorters\NetbankingSorter::class,
@@ -133,27 +136,6 @@ class Selector
         $this->setTerminalForPayment($this->payment, $terminal);
 
         return $terminal;
-    }
-
-    protected function getHdfcSharedTerminalIfMaestro($terminals)
-    {
-        $method = $this->payment->getMethod();
-
-        if ($method !== Payment\Method::CARD)
-        {
-            return null;
-        }
-
-        $cardNetwork = $this->payment->card->getNetworkCode();
-
-        if ($cardNetwork !== Network::MAES)
-        {
-            return null;
-        }
-
-        $sharedHdfcTerminal = $terminals->find(Shared::HDFC_RAZORPAY_TERMINAL);
-
-        return $sharedHdfcTerminal;
     }
 
     protected function setTerminalForPayment($payment, $terminal = null)

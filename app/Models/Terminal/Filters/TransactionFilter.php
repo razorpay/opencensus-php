@@ -129,8 +129,7 @@ class TransactionFilter extends Terminal\Filter
         {
             $network = $input['payment']->card->getNetworkCode();
 
-            // For Maes card, support only enabled for shared terminal
-            // on live mode
+            // Only shared terminals support Maestro on Live mode.
             if (($network === Network::MAES) and
                 ($input['mode'] === Mode::LIVE))
             {

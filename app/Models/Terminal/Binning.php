@@ -39,17 +39,19 @@ class Binning
      * Used in the Terminal/Selector to select a terminal
      * if a binning rule is defined for the current case.
      *
-     * @param  array    Array of possible terminals
-     * @param  int      Chance Variable
-     * @return terminal
+     * @param  Entity $terminal
+     * @param  array  $input
+     * @param  int    $chancePercent Chance variable
+     * @param  array  $terminals     Array of possible terminals
+     * @return Entity
      */
     public function select($terminal, $chancePercent, $input, $terminals)
     {
         // Since only the first terminal would be selected
         // Check condition on binFor only on first terminal
-        $checkTerminal = $terminal;
+        $originalTerminal = $terminal;
 
-        list($returnTlId, $rule) = $this->chooseTerminalWithRules($checkTerminal, $chancePercent, $input);
+        list($returnTlId, $rule) = $this->chooseTerminalWithRules($terminal, $chancePercent, $input);
 
         if (empty($rule) === false)
         {
@@ -64,7 +66,7 @@ class Binning
             }
         }
 
-        return $checkTerminal;
+        return $originalTerminal;
     }
 
     /**
@@ -115,7 +117,6 @@ class Binning
         if ((isset($rule['method'])) and
             ($rule['method'] === $input['payment']->getMethod()))
         {
-
             $check = (($chancePercent <= $rule['load']) and
                       ($rule['binFor'] === $terminal->getId()));
 
@@ -126,6 +127,7 @@ class Binning
                     {
                         return $check;
                     }
+
                     break;
 
                 case Method::CARD:
@@ -136,15 +138,15 @@ class Binning
                     {
                         return $check;
                     }
+
                     break;
 
                 case Method::WALLET:
                     return $check;
-                    break;
             }
-
-            return false;
         }
+
+        return false;
     }
 
     /**
