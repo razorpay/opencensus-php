@@ -181,11 +181,11 @@ class Gateway extends Base\Gateway
         $refundAmount = (string) number_format($refundAmount/100, 2, '.', '');
 
         $content = array(
-            REQ::REFUND_ACTION    => 'refund',
-            REQ::REFUND_ACCOUNT_ID => $this->config[self::MERCHANT_ID],
-            REQ::REFUND_SECRET_KEY => $this->config[self::HASH_SECRET],
-            REQ::REFUND_AMOUNT    => $refundAmount,
-            REQ::REFUND_PAYMENT_ID => $payment['ebs_payment_id'],
+            REQ::REFUND_ACTION      => 'refund',
+            REQ::REFUND_ACCOUNT_ID  => $this->config[self::MERCHANT_ID],
+            REQ::REFUND_SECRET_KEY  => $this->config[self::HASH_SECRET],
+            REQ::REFUND_AMOUNT      => $refundAmount,
+            REQ::REFUND_PAYMENT_ID  => $payment['ebs_payment_id'],
         );
         return $content;
     }

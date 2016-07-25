@@ -8,33 +8,33 @@ use RZP\Constants;
 
 class Entity extends Base\Entity
 {
-    const PAYMENT_ID = 'payment_id';
-    const CHANNEL = 'channel';
-    const RECEIVED = 'received';
-    const ACCOUNT_ID = 'accountId';
-    const TXN_AMOUNT = 'TxnAmount';
-    const AMOUNT = 'amount';
-    const NAME = 'name';
-    const ADDRESS = 'address';
-    const CITY = 'city';
-    const STATE = 'state';
-    const COUNTRY = 'country';
-    const POSTAL_CODE = 'postal_code';
-    const PHONE = 'phone';
-    const EMAIL = 'email';
-    const DESCRIPTION = 'description';
-    const CURRENCY = 'currency';
-    const MODE = 'mode';
-    const PAYMENT_MODE = 'paymentMode';
-    const REQUEST_ID = 'RequestID';
-    const TRANSACTION_ID = 'TransactionID';
-    const REF_AMOUNT = 'RefAmount';
-    const EBS_PAYMENT_ID ='ebs_payment_id';
-    const ERROR_DESCRIPTION = 'ErrorDescription';
-    const ERROR_CODE = 'ErrorCode';
-    const REFUND_ID = 'refund_id';
-    const REFUND_REF_NO = 'reference_no';
-    const REFUND_PAYMENT_ID = 'payment_id';
+    const PAYMENT_ID            = 'payment_id';
+    const CHANNEL               = 'channel';
+    const RECEIVED              = 'received';
+    const ACCOUNT_ID            = 'accountId';
+    const TXN_AMOUNT            = 'TxnAmount';
+    const AMOUNT                = 'amount';
+    const NAME                  = 'name';
+    const ADDRESS               = 'address';
+    const CITY                  = 'city';
+    const STATE                 = 'state';
+    const COUNTRY               = 'country';
+    const POSTAL_CODE           = 'postal_code';
+    const PHONE                 = 'phone';
+    const EMAIL                 = 'email';
+    const DESCRIPTION           = 'description';
+    const CURRENCY              = 'currency';
+    const MODE                  = 'mode';
+    const PAYMENT_MODE          = 'paymentMode';
+    const REQUEST_ID            = 'RequestID';
+    const TRANSACTION_ID        = 'TransactionID';
+    const REF_AMOUNT            = 'RefAmount';
+    const EBS_PAYMENT_ID        = 'ebs_payment_id';
+    const ERROR_DESCRIPTION     = 'ErrorDescription';
+    const ERROR_CODE            = 'ErrorCode';
+    const REFUND_ID             = 'refund_id';
+    const REFUND_REF_NO         = 'reference_no';
+    const REFUND_PAYMENT_ID     = 'payment_id';
 
     protected $fields = array(
         self::PAYMENT_ID,
