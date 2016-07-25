@@ -31,19 +31,17 @@ class MerchantFilter extends Terminal\Filter
      */
     public function tpvFilter($terminal, $input)
     {
-        $method = $input['payment']->getMethod();
-
-        if ($method !== Method::NETBANKING)
+        if ($input['payment']->isNetbanking())
         {
-            return true;
+            if ($input['merchant']->isTPVRequired())
+            {
+                return ($terminal->isTPVTerminal() === true);
+            }
+
+            return ($terminal->isTPVTerminal() === false);
         }
 
-        if ($input['merchant']->isTPVRequired())
-        {
-            return ($terminal->isTPVTerminal() === true);
-        }
-
-        return ($terminal->isTPVTerminal() === false);
+        return true;
     }
 
 
@@ -53,25 +51,20 @@ class MerchantFilter extends Terminal\Filter
      */
     public function riskFilter($terminal, $input)
     {
-        $method = $input['payment']->getMethod();
-
-        if (in_array($method, [Method::CARD, Method::EMI]) === false)
+        if ($input['payment']->isMethodCardOrEmi())
         {
-            return true;
-        }
-
-        if ($input['merchant']->getRiskRating() >= 4)
-        {
-            $network = $input['payment']->card->getNetworkCode();
-
-            if (Gateway::isCardNetworkSupported($network, Gateway::AXIS_MIGS))
+            if ($input['merchant']->getRiskRating() >= 4)
             {
-                return ($terminal->getGateway() === Gateway::AXIS_MIGS);
+                $network = $input['payment']->card->getNetworkCode();
+
+                if (Gateway::isCardNetworkSupported($network, Gateway::AXIS_MIGS))
+                {
+                    return ($terminal->getGateway() === Gateway::AXIS_MIGS);
+                }
             }
         }
 
         // Else allow - By default allow all transactions
         return true;
     }
-
 }
