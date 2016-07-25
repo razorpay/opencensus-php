@@ -118,6 +118,20 @@ class TerminalSelectionTest extends TestCase
         $this->fixtures->merchant->disableEmi();
     }
 
+    public function testTerminalChoiceOnRiskyMerchant()
+    {
+        $this->fixtures->merchant->enableRisky();
+        $this->fixtures->create('terminal:all_shared_terminals');
+
+        $payment = $this->getDefaultPaymentArray();
+        $content = $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('1000AxisMigsTl', $payment['terminal_id']);
+
+        $this->fixtures->merchant->disableRisky();
+    }
+
     public function testMaestroCardToSharedTerminal()
     {
         $payment = $this->getDefaultPaymentArray();

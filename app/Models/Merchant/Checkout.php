@@ -189,6 +189,11 @@ class Checkout
                 if ($response['valid'] === true)
                 {
                     $data['email'] = $response['email'];
+
+                    if (isset($response['tokens']))
+                    {
+                        $data['tokens'] = $response['tokens'];
+                    }
                 }
             }
             else if (isset($input['contact']))
