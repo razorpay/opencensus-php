@@ -209,8 +209,8 @@ class Gateway extends Base\Gateway
 
         if (isset($authReply['RFlag']) === false)
         {
-            throw new Exception\GatewayErrorException(
-                Error\ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
+            // Payment is failed when ics_auth is not present
+            ;
         }
         else
         {
@@ -221,6 +221,8 @@ class Gateway extends Base\Gateway
             else if ($authReply['RFlag'] === ReplyFlag::SOK)
             {
                 $this->verifyPaymentReconcileWithGatewayResponse($verify);
+
+                $this->getVerifyContentFromResponse($verify);
             }
         }
 
@@ -1033,6 +1035,26 @@ class Gateway extends Base\Gateway
                 ResponseCode::getMappedCode($reasonCode),
                 $reasonCode,
                 $desc);
+    }
+
+    protected function getVerifyContentFromResponse($verify)
+    {
+        $content = $verify->verifyResponseContent;
+
+        $paymentData = $content['Requests']['Request']['PaymentData'];
+
+        $paInfo = $paymentData['PayerAuthenticationInfo'];
+
+        $data = [
+            'eci' => str_pad($paInfo['ECI'], 2, '0', STR_PAD_LEFT),
+            'cavv' => $paInfo['AAV_CAVV'],
+            'xid' => $paInfo['XID'],
+            'reason_code' => 100,
+            'action' => 'authorize',
+            'status' => 'authorized'
+        ];
+
+        $verify->verifyResponseContent = $data;
     }
 
     protected function xmlToArray($data)
