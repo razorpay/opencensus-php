@@ -67,7 +67,7 @@ class Selector
         return $merchantTerminals;
     }
 
-    public function select($payment, $mode, $verbose = false)
+    public function select($payment, $mode, $verbose = false, $options = [])
     {
         // TODO: Is there a way to use a constructor instead?
         $this->setup($payment, $mode);
@@ -122,12 +122,9 @@ class Selector
             $terminal = $sortedTerminals[0];
         }
 
-        // This is a hack and should be implemented in the correct manner later.
-        $hdfcMaestroSharedTerminal = $this->getHdfcSharedTerminalIfMaestro($terminals);
-
-        if ($hdfcMaestroSharedTerminal !== null)
+        if (isset($options['chance']))
         {
-            $terminal = $hdfcMaestroSharedTerminal;
+            $terminal = (new Binning)->select($terminal, $options['chance'], $this->input, $terminals);
         }
 
         $this->checkForCustomExceptions($terminal);

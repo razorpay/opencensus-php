@@ -280,52 +280,52 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::EMI, $emi);
     }
 
-    public function getAmexAttribute()
+    protected function getAmexAttribute()
     {
         return (bool) $this->attributes[self::AMEX];
     }
 
-    public function getPaytmAttribute()
+    protected function getPaytmAttribute()
     {
         return (bool) $this->attributes[self::PAYTM];
     }
 
-    public function getCardAttribute()
+    protected function getCardAttribute()
     {
         return (bool) $this->attributes[self::CARD];
     }
 
-    public function getNetbankingAttribute()
+    protected function getNetbankingAttribute()
     {
         return (bool) $this->attributes[self::NETBANKING];
     }
 
-    public function getMobikwikAttribute()
+    protected function getMobikwikAttribute()
     {
         return (bool) $this->attributes[self::MOBIKWIK];
     }
 
-    public function getPayzappAttribute()
+    protected function getPayzappAttribute()
     {
         return (bool) $this->attributes[self::PAYZAPP];
     }
 
-    public function getPayumoneyAttribute()
+    protected function getPayumoneyAttribute()
     {
         return (bool) $this->attributes[self::PAYUMONEY];
     }
 
-    public function getBanksAttribute()
+    protected function getBanksAttribute()
     {
         return json_decode($this->attributes[self::BANKS], true);
     }
 
-    public function getEmiAttribute()
+    protected function getEmiAttribute()
     {
         return (bool) $this->attributes[self::EMI];
     }
 
-    public function setBanksAttribute(array $banks)
+    protected function setBanksAttribute(array $banks)
     {
         $this->attributes[self::BANKS] = json_encode($banks);
     }

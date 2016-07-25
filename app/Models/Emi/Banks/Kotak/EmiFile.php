@@ -53,7 +53,7 @@ class EmiFile extends Base\EmiFile
 
         $data['file'] = $zipFile;
 
-        $data['body'] = 'Please forward the Kotak Emi file to kotak';
+        $data['body'] = 'Please forward the Kotak Emi file to Kotak: cc.loans@kotak.com and libu.john@kotak.com';
 
         $this->mail->queue('emails.message', $data, function ($message) use ($data)
         {

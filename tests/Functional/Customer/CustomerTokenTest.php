@@ -2,11 +2,14 @@
 
 namespace RZP\Tests\Functional\CustomerToken;
 
+use Mockery;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
 class CustomerTokenTest extends TestCase
 {
+    use InteractsWithSession;
     use RequestResponseFlowTrait;
 
     public function setUp()
@@ -57,6 +60,8 @@ class CustomerTokenTest extends TestCase
 
     public function testDeleteCustomerToken()
     {
+        $this->mockSession();
+
         $this->ba->privateAuth();
 
         $this->startTest();
@@ -64,6 +69,8 @@ class CustomerTokenTest extends TestCase
 
     public function testGetCustomerTokensByAppToken()
     {
+        $this->mockSession();
+
         $this->ba->publicAuth();
 
         $this->startTest();
@@ -92,6 +99,8 @@ class CustomerTokenTest extends TestCase
 
     public function testDeleteAppToken()
     {
+        $this->mockSession();
+
         $this->ba->publicAuth();
 
         $this->startTest();
@@ -99,6 +108,8 @@ class CustomerTokenTest extends TestCase
 
     public function testLogoutFromApp()
     {
+        $this->mockSession();
+
         $this->ba->publicAuth();
 
         $this->startTest();
@@ -106,6 +117,8 @@ class CustomerTokenTest extends TestCase
 
     public function testLogoutFromDevice()
     {
+        $this->mockSession();
+
         $this->ba->publicAuth();
 
         $this->startTest();
@@ -113,8 +126,19 @@ class CustomerTokenTest extends TestCase
 
     public function testLogoutFromAllDevices()
     {
+        $this->mockSession();
+
         $this->ba->publicAuth();
 
         $this->startTest();
+    }
+
+    protected function mockSession()
+    {
+        $data = array(
+            'test_app_token' => 'capp_1000000custapp'
+        );
+
+        $this->session($data);
     }
 }
