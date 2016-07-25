@@ -403,7 +403,7 @@ class Gateway extends Base\Gateway
         if (($input['payment']['status'] !== PaymentStatus::CREATED) and
             ($input['payment']['status'] !== PaymentStatus::FAILED) and
             ($gatewayPayment !== null) and
-            $gatewayPayment['status_code'] === Status::SUCCESS)
+            ($gatewayPayment['status_code'] === Status::SUCCESS))
         {
             $verify->apiSuccess = true;
         }
@@ -411,11 +411,11 @@ class Gateway extends Base\Gateway
         // and gateway's payment entity is either null or its status is failed.
         // This is an issue, and should ideally never happen.
         else if (($input['payment']['status'] !== PaymentStatus::CREATED) and
-            ($input['payment']['status'] !== PaymentStatus::FAILED) and
-            (($gatewayPayment === null) or
-                ($gatewayPayment['status_code'] !== Status::SUCCESS)))
+                 ($input['payment']['status'] !== PaymentStatus::FAILED) and
+                 (($gatewayPayment === null) or
+                  ($gatewayPayment['status_code'] !== Status::SUCCESS)))
         {
-            $gateway_payment_status = isset($gatewayPayment) ? $gatewayPayment['status_code'] : '';
+            $gatewayPaymentStatus = isset($walletPayment) ? $gatewayPayment['status_code'] : '';
 
             $this->trace->info(
                     TraceCode::GATEWAY_PAYMENT_VERIFY_UNEXPECTED,
@@ -423,7 +423,7 @@ class Gateway extends Base\Gateway
                         'api_payment_status'      => $input['payment']['status'],
                         'gateway_verify_response' => $verifyResponse[ResponseFields::STATUS],
                         'payment_id'              => $input['payment']['id'],
-                        'gateway_payment_status'  => $gateway_payment_status,
+                        'gateway_payment_status'  => $gatewayPaymentStatus,
                     ]);
 
             $verify->apiSuccess = true;
@@ -451,7 +451,7 @@ class Gateway extends Base\Gateway
                 $gatewayPayment = $this->createGatewayPaymentEntity($walletAttributes);
             }
             else if (($gatewayPayment['received'] === false) or
-                ($gatewayPayment['status'] !== Status::SUCCESS))
+                     ($gatewayPayment['status'] !== Status::SUCCESS))
             {
                 $gatewayPayment->fill($walletAttributes);
                 $gatewayPayment->saveOrFail();

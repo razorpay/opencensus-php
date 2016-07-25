@@ -195,6 +195,14 @@ class Service extends Base\Service
             (new Customer\Core)->putAppTokenInSession($app);
 
             $result['email'] = $customer->getEmail();
+
+            // Fetch existing tokens if exists
+            $tokens = (new Customer\Token\Core)->fetchTokensByCustomer($customer);
+
+            if (($tokens !== null) and ($tokens->count() > 0))
+            {
+                $result['tokens'] = $tokens->toArrayPublic();
+            }
         }
 
         return $result;

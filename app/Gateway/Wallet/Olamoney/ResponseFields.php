@@ -17,5 +17,5 @@ class ResponseFields
     const ERROR_CODE            = 'errorCode';
     const UNIQUE_BILL_ID        = 'uniqueBillId';
 
-    const VERIFY_FAILED_STATUS  = array(Status::INITIATED, Status::FAILED);
+    const VERIFY_FAILED_STATUS  = [Status::INITIATED, Status::FAILED];
 }
