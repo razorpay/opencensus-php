@@ -133,7 +133,9 @@ class TransactionFilter extends Terminal\Filter
             $network = $input['payment']->card->getNetworkCode();
 
             // For Maes card, support only enabled for shared terminal
-            if ($network === Network::MAES)
+            // on live mode
+            if (($network === Network::MAES) and
+                ($input['mode'] === Mode::LIVE))
             {
                 return Shared::isSharedTerminal($terminal);
             }
