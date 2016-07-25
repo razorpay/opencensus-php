@@ -3,35 +3,42 @@
 namespace RZP\Gateway\Wallet\Olamoney\Mock;
 
 use RZP\Models\Base;
+use RZP\Gateway\Wallet\Olamoney;
+use RZP\Gateway\Wallet\Olamoney\RequestFields;
+use RZP\Gateway\Wallet\Olamoney\ResponseFields;
 
 class Validator extends Base\Validator
 {
     protected static $debitRules   = array(
-        'paymentId' => 'required|string',
-        'bill'      => 'required|regex:"^[a-zA-Z0-9+/=]"',
-        'phone'     => 'required|integer'
+        'paymentId'                                            => 'required|alpha_num',
+        RequestFields::BILL                                    => 'required|array',
+        RequestFields::BILL . '.' . RequestFields::UNIQUE_ID   => 'required|alpha_num',
+        RequestFields::BILL . '.' . RequestFields::AMOUNT      => 'required|numeric',
+        RequestFields::BILL . '.' . RequestFields::COMMENTS    => 'sometimes|string',
+        RequestFields::BILL . '.' . RequestFields::UDF         => 'required|string',
+        RequestFields::PHONE                                   => 'required|integer'
     );
 
     protected static $refundRules = array(
-        'accessToken'       => 'required|string',
-        'command'           => 'required|in:refund',
-        'uniqueId'          => 'required|string',
-        'comments'          => 'required|string',
-        'udf'               => 'required|string',
-        'hash'              => 'required|string',
-        'returnUrl'         => 'sometimes|url',
-        'notificationUrl'   => 'sometimes|url',
-        'amount'            => 'required|numeric',
-        'balanceType'       => 'required|string',
-        'balanceName'       => 'required|string',
-        'saleId'            => 'required|string',
-        'currency'          => 'required|in:INR'
+        RequestFields::ACCESS_TOKEN     => 'required|string',
+        RequestFields::COMMAND          => 'required|in:refund',
+        RequestFields::UNIQUE_ID        => 'required|string',
+        RequestFields::COMMENTS         => 'required|string',
+        RequestFields::UDF              => 'required|string',
+        RequestFields::HASH             => 'required|string',
+        RequestFields::RETURN_URL       => 'sometimes',
+        RequestFields::NOTIFICATION_URL => 'sometimes',
+        RequestFields::AMOUNT           => 'required|numeric',
+        RequestFields::BALANCE_TYPE     => 'required|string',
+        RequestFields::BALANCE_NAME     => 'required|string',
+        RequestFields::SALE_ID          => 'required|string',
+        RequestFields::CURRENCY         => 'required|in:INR'
     );
 
     protected static $verifyRules = array(
-        'uniqueBillId'  => 'required|string',
-        'accessToken'   => 'required|string',
-        'timestamp'     => 'required|date_format:Y-m-d H:i:s',
-        'hash'          => 'required|string',
+        RequestFields::UNIQUE_BILL_ID   => 'required|string',
+        RequestFields::ACCESS_TOKEN     => 'required|string',
+        RequestFields::TIMESTAMP        => 'required|date_format:Y-m-d H:i:s',
+        RequestFields::HASH             => 'required|string',
     );
 }

@@ -7,6 +7,9 @@ use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Gateway\Wallet\Olamoney;
 use RZP\Gateway\Wallet\Olamoney\Command;
+use RZP\Gateway\Wallet\Olamoney\RequestFields;
+use RZP\Gateway\Wallet\Olamoney\ResponseFields;
+
 
 class Server extends Base\Mock\Server
 {
@@ -14,27 +17,29 @@ class Server extends Base\Mock\Server
     {
         parent::authorize($input);
 
-        $bill = json_decode(base64_decode(urldecode($input['bill'])), true);
+        $input['bill'] = json_decode(base64_decode(urldecode($input['bill'])), true);
 
         $this->validateActionInput($input, Command::DEBIT);
 
+        $bill = $input['bill'];
+
         $content = array(
-            'type'              => 'debit',
-            'status'            => 'success',
-            'merchantBillId'    => $bill['uniqueId'],
-            'transactionId'     => 'ola_txn_id',
-            'amount'            => $bill['amount'],
-            'comments'          => $bill['comments'],
-            'udf'               => $bill['udf'],
-            'timestamp'         => time(),
+            ResponseFields::TYPE              => 'debit',
+            ResponseFields::STATUS            => 'success',
+            ResponseFields::MERCHANT_BILL_ID  => $bill[RequestFields::UNIQUE_ID],
+            ResponseFields::TRANSACTION_ID    => 'ola_txn_id',
+            ResponseFields::AMOUNT            => $bill[RequestFields::AMOUNT],
+            ResponseFields::COMMENTS          => $bill[RequestFields::COMMENTS],
+            ResponseFields::UDF               => $bill[RequestFields::UDF],
+            ResponseFields::TIMESTAMP         => time(),
         );
 
-        $content['hash'] = $this->generateHash($content);
+        $content[ResponseFields::HASH] = $this->generateHash($content);
 
         $this->content($content);
 
         $request = array(
-            'url' => $bill['returnUrl'],
+            'url' => $bill[RequestFields::RETURN_URL],
             'content' => $content,
             'method' => 'post',
         );
@@ -49,14 +54,14 @@ class Server extends Base\Mock\Server
         $this->validateActionInput($input, Command::REFUND);
 
         $responseContent = array(
-            'type'              => 'refund',
-            'status'            => 'success',
-            'transactionId'     => 'bgho5botne16',
-            'merchantBillId'    => 'cd1501cea88e4654898d8b2a266bc467',
-            'amount'            => '20.0',
-            'timestamp'         => '1439473847354',
-            'comments'          => 'test',
-            'udf'               => 'test',
+            ResponseFields::TYPE              => 'refund',
+            ResponseFields::STATUS            => 'success',
+            ResponseFields::TRANSACTION_ID    => 'bgho5botne16',
+            ResponseFields::MERCHANT_BILL_ID  => 'cd1501cea88e4654898d8b2a266bc467',
+            ResponseFields::AMOUNT            => '20.0',
+            ResponseFields::TIMESTAMP         => '1439473847354',
+            ResponseFields::COMMENTS          => 'test',
+            ResponseFields::UDF               => 'test',
         );
 
         return $this->makeResponse($responseContent);
@@ -69,10 +74,10 @@ class Server extends Base\Mock\Server
         $this->validateActionInput($this->mockRequest['content']);
 
         $response = array(
-            'status'        => 'completed',
-            'amount'        => '500.00',
-            'type'          => 'debit',
-            'uniqueBillId'  => 'bgho5botne16',
+            ResponseFields::STATUS          => 'completed',
+            ResponseFields::AMOUNT          => '500.00',
+            ResponseFields::TYPE            => 'debit',
+            ResponseFields::UNIQUE_BILL_ID  => 'bgho5botne16',
         );
 
         return $this->makeResponse($response);

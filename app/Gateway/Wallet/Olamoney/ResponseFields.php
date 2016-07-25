@@ -15,4 +15,5 @@ class ResponseFields
     const HASH              = 'hash';
     const MESSAGE           = 'message';
     const ERROR_CODE        = 'errorCode';
+    const UNIQUE_BILL_ID    = 'uniqueBillId';
 }
