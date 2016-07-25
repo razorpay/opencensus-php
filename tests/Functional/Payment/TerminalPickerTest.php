@@ -76,7 +76,7 @@ class TerminalTest extends TestCase
         {
             ;
         }
-
+        
         $this->assertNotNull($e, 'null or ' . get_class($e) . ' thrown when RuntimeException expected');
 
         $this->fixtures->create('terminal:shared_sharp_terminal');

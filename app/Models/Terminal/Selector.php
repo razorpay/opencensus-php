@@ -109,8 +109,9 @@ class Selector
         {
             if ($this->mode === Mode::TEST)
             {
-                $terminal = $terminals->find(Shared::SHARP_RAZORPAY_TERMINAL);
-                //$terminal = $this->repo->find(Shared::SHARP_RAZORPAY_TERMINAL);
+                // The current list of terminals which were retrieved earlier does
+                // not contain the sharp terminal and hence, making a call to DB.
+                $terminal = $this->repo->find(Shared::SHARP_RAZORPAY_TERMINAL);
             }
             else
             {
