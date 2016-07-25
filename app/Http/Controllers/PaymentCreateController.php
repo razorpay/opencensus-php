@@ -266,7 +266,7 @@ class PaymentCreateController extends Controller
     public function postCallback($id, $hash)
     {
         $input = Request::all();
-        
+
         $data = $this->payment->callback($id, $hash, $input);
 
         return $this->returnCallbackResponse($data);

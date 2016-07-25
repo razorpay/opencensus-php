@@ -78,10 +78,8 @@ class Gateway extends Base\Gateway
     public function callback(array $input)
     {
         parent::callback($input);
-        $this->validateCallbackGetSecureHash($input['gateway']);
 
-        // Unset date because format of date returned is different than what we sent
-        unset($input['gateway']['DateCreated']);
+        $this->validateCallbackGetSecureHash($input['gateway']);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
@@ -90,7 +88,7 @@ class Gateway extends Base\Gateway
         $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
 
-        if ($input['gateway'][RESP::RESPONSE_CODE] != self::SUCCESS)
+        if ($input['gateway'][RESP::RESPONSE_CODE] !== self::SUCCESS)
         {
             // Payment fails, throw exception
             throw new Exception\GatewayErrorException(
@@ -283,11 +281,11 @@ class Gateway extends Base\Gateway
         {
             $retVal = REQ::CREDIT;
         }
-        else if ($input['payment']['method'] == Payment\Method::NETBANKING)
+        else if ($input['payment']['method'] === Payment\Method::NETBANKING)
         {
             $retVal = REQ::NETBANKING;
         }
-        else if ($input['payment']['method'] == Payment\Method::CARD)
+        else if ($input['payment']['method'] === Payment\Method::CARD)
         {
             if ($input['card']['type'] === Card\Type::DEBIT)
             {
