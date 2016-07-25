@@ -46,32 +46,5 @@ class CardSorter extends Terminal\Sorter
         }
 
         return collect($testTerminals);
-
-        // $terminals->sort(function($firstTerminal, $secondTerminal) use ($gatewaysPriority) {
-        //     $firstGateway = $firstTerminal->getGateway;
-        //     $secondGateway = $secondTerminal->getGateway;
-        //
-        //     if ($firstGateway == $secondGateway)
-        //     {
-        //         return 0;
-        //     }
-        //
-        //     $firstGatewayLoc = array_search($firstGateway, $gatewaysPriority);
-        //     $secondGatewayLoc = array_search($secondGateway, $gatewaysPriority);
-        //
-        //     if ($firstGatewayLoc === false)
-        //     {
-        //         return -1;
-        //     }
-        //
-        //     if ($secondGatewayLoc === false)
-        //     {
-        //         return 1;
-        //     }
-        //
-        //     return ($firstGatewayLoc < $secondGatewayLoc) ? 1 : -1;
-        // });
-        //
-        // return $terminals;
     }
 }

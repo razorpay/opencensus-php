@@ -105,7 +105,7 @@ class Selector
 
         $terminal = null;
 
-        if ((empty($sortedTerminals) === true) or ($sortedTerminals->count() === 0))
+        if ($sortedTerminals->count() === 0)
         {
             if ($this->mode === Mode::TEST)
             {
@@ -185,33 +185,6 @@ class Selector
             $traceData = ['count' => count($terminals), 'terminals' => $terminalIds, 'msg' => $msg];
 
             $this->trace->info(TraceCode::TERMINAL_SELECTION, $traceData);
-        }
-    }
-
-    /**
-     * Custom exceptions that are to be only thrown if no terminal is available,
-     * in live mode on cards.
-     *
-     * @param $terminal
-     * @throws Exception\BadRequestException
-     */
-    protected function checkForCustomExceptions($terminal)
-    {
-        if (($terminal === null) and
-            ($this->mode === Mode::LIVE) and
-            ($this->payment->getMethod() === Payment\Method::CARD))
-        {
-            $network = $this->payment->card->getNetworkCode();
-            // Check for partially supported networks on live
-            $partiallySupportedCardNetworks = Payment\Gateway::$partiallySupportedCardNetworks;
-
-            if (in_array($network, $partiallySupportedCardNetworks))
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
-            }
-            // TODO: What if it's not in that list and terminal is null? Shouldn't we throw an exception?
-            // What if terminal is null and method is something else?
         }
     }
 }

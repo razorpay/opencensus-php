@@ -18,7 +18,7 @@ class Sorter
 
     public function sort($terminals, $input, $verbose = false)
     {
-        // If only terminal left no need for sorter.
+        // No need to sort if there's only one terminal
         if ($terminals->count() === 1)
         {
             return $terminals;
@@ -52,7 +52,6 @@ class Sorter
 
             foreach ($terminals as $terminal)
             {
-                s($terminal->getId());
                 $terminalIds[] = $terminal->getId();
             }
 
