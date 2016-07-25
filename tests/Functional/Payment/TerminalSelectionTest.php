@@ -118,4 +118,16 @@ class TerminalSelectionTest extends TestCase
         $this->fixtures->merchant->disableEmi();
     }
 
+    public function testMaestroCardToSharedTerminal()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5081597022059105';
+        $this->fixtures->create('terminal:shared_hdfc_terminal');
+
+        $content = $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('1000HdfcShared', $payment['terminal_id']);
+    }
+
 }

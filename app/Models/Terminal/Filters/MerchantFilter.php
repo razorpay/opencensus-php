@@ -30,18 +30,16 @@ class MerchantFilter extends Terminal\Filter
      */
     public function tpvFilter($terminal, $input)
     {
-        $method = $input['payment']->getMethod();
-
-        if ($method !== Method::NETBANKING)
+        if ($input['payment']->isNetbanking())
         {
-            return true;
+            if ($input['merchant']->isTPVRequired())
+            {
+                return ($terminal->isTPVTerminal() === true);
+            }
+
+            return ($terminal->isTPVTerminal() === false);
         }
 
-        if ($input['merchant']->isTPVRequired())
-        {
-            return ($terminal->isTPVTerminal() === true);
-        }
-
-        return ($terminal->isTPVTerminal() === false);
+        return true;
     }
 }
