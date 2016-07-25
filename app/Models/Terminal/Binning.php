@@ -18,7 +18,7 @@ class Binning
             'cardNetwork' => [Network::MC, Network::VISA],
             'binFor'      => Shared::HDFC_RAZORPAY_TERMINAL,
             'binWith'     => '5yKTyCuDne8eiz',
-            'loadPercent' => 5,
+            'loadPercent' => 2,
         ],
     ];
 
