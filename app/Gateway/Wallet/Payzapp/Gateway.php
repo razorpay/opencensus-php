@@ -586,7 +586,7 @@ class Gateway extends Base\Gateway
                 ['request' => $input['gateway']]);
 
             // Error description given by Wibmo
-            throw new Exception\BadRequestException(
+            throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED
             );
         }

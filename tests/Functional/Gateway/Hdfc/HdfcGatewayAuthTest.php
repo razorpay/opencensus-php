@@ -17,11 +17,10 @@ class HdfcGatewayAuthTest extends TestCase
     use PaymentTrait;
 
     protected $successDebitNumbers = array(
-        '4012001037141112',
         '4005559876540',
         '4012001037167778',
         '4012001037490014',
-        '4012001037141112');
+    );
 
     public function setUp()
     {
@@ -80,7 +79,7 @@ class HdfcGatewayAuthTest extends TestCase
 
         foreach ($this->successDebitNumbers as $number)
         {
-            $payment['card']['number'] = '4012001037141112';
+            $payment['card']['number'] = $number;
             $this->doAuthAndGetPayment($payment);
         }
     }
@@ -99,17 +98,18 @@ class HdfcGatewayAuthTest extends TestCase
         $this->assertEquals($payment['gateway'], 'hdfc');
     }
 
+    public function testCreditCardAuthNotApproved()
+    {
+        $this->startTest();
+    }
+
+    public function testDebitCardAuthNotApproved()
+    {
+        $this->startTest();
+    }
+
     public function testCaptureTimeout()
     {
-        // Make a payment.
-        // Mock capture response to return gateway error.
-        // Check that the payment is in captured state. Check that the transaction has
-        // all the fee details. Check that captured_at is set.
-        // Check that the hdfc entity payment is not captured.
-        // Make sure that the second time the capture is called (via queue), it returns a successful response
-        // and not a gateway timeout.
-        // Check for all the things that were checked before and also check that hdfc entity payment is captured.
-
         $this->defaultAuthPayment();
 
         $payment = $this->getLastEntity('payment', true);

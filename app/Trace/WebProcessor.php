@@ -5,6 +5,7 @@ namespace RZP\Trace;
 use App;
 use RZP\Http\Route;
 use Request;
+use RZP\Exception;
 
 /**
  * Injects url/method and remote IP of the current web request in all records

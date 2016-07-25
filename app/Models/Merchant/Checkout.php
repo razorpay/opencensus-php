@@ -25,7 +25,9 @@ class Checkout
 
     public function getPreferences($merchant, $mode, $input)
     {
-        $this->checkAndFillAppTokenInputFromSession($merchant, $input);
+        $this->tracePreferencesRequest($merchant, $mode);
+
+        $this->checkAndFillAppTokenInputFromSession($merchant, $mode, $input);
 
         $data = $this->getMerchantPreferencesData($merchant, $input);
 
@@ -36,6 +38,17 @@ class Checkout
         $this->checkAndAddOrderForTpv($merchant, $input, $data);
 
         return $data;
+    }
+
+    protected function tracePreferencesRequest($merchant, $mode)
+    {
+        $this->app['trace']->info(
+            TraceCode::CHECKOUT_PREFERENCES_REQUEST,
+            [
+                'merchant_id' => $merchant->getId(),
+                'mode'        => $mode,
+                'cookie'      => Session::getId()
+            ]);
     }
 
     protected function fetchTPVOrderInfo($input, $merchant)
@@ -86,7 +99,7 @@ class Checkout
         return $custData;
     }
 
-    protected function checkAndFillAppTokenInputFromSession($merchant, array & $input)
+    protected function checkAndFillAppTokenInputFromSession($merchant, $mode, array & $input)
     {
         if ($merchant->isFeatureEnabled('cardsaving') === false)
         {
@@ -94,7 +107,9 @@ class Checkout
         }
 
         // Check if app token is present in session
-        $appToken = Session::get(Payment\Entity::APP_TOKEN);
+        $key = $mode . '_' . Payment\Entity::APP_TOKEN;
+
+        $appToken = Session::get($key);
 
         if (empty($appToken) === false)
         {
@@ -168,13 +183,12 @@ class Checkout
                     $input);
 
                 $data['customer'] = array(
-                    'email'     => $response['email'],
                     'contact'   => $input['contact'],
                     'valid'     => $response['valid']);
 
                 if ($response['valid'] === true)
                 {
-                    $data['customer'][Payment\Entity::APP_TOKEN] = $response[Payment\Entity::APP_TOKEN];
+                    $data['email'] = $response['email'];
                 }
             }
             else if (isset($input['contact']))

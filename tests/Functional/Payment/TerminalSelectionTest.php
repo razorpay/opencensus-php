@@ -60,10 +60,6 @@ class TerminalSelectionTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertEquals($payment['emi_plan_id'], $emiPlan[0]['id']);
-        $this->assertEquals($payment['method'], 'emi');
-        $this->assertEquals($payment['status'], 'captured');
-
         // Payment should have been made through shared emi terminl
         $this->assertEquals('ShrdHdfcEmiTrm', $payment['terminal_id']);
     }
@@ -87,6 +83,39 @@ class TerminalSelectionTest extends TestCase
         // Payment should have been made through shared terminl of correct category
         // $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('1000HdfcShared', $payment['terminal_id']);
+    }
+
+    public function testKotakEmisFlowThroughCardTerminal()
+    {
+        // Disable particular hdfc terminal, enable shared hdfc and shared hdfc emi terminal
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_amex_terminal');
+        $this->fixtures->create('terminal:all_shared_terminals');
+
+        // $this->fixtures->create('terminal:shared_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_hdfc_emi_terminal');
+
+        // Enable default emi plans and mocktokenex
+        $this->emiPlan = $this->fixtures->create('emi_plan:default_emi_plans');
+        $this->fixtures->merchant->enableEmi();
+
+        $this->mockTokenex();
+
+        $emiPlan = $this->emiPlan;
+
+
+        $this->payment = $this->getDefaultPaymentArray();
+        $this->ba->publicAuth();
+        $this->payment['amount'] = 500000;
+        $this->payment['method'] = 'emi';
+        $this->payment['emi_duration'] = 9;
+        $this->payment['card']['number'] = '42809500000009';
+
+        $content = $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('1000HdfcShared', $payment['terminal_id']);
+        $this->fixtures->merchant->disableEmi();
     }
 
 }

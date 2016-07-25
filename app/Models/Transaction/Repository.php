@@ -7,6 +7,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Base;
 use RZP\Models\Transaction;
 use RZP\Models\Settlement;
+use RZP\Exception;
 
 class Repository extends Base\Repository
 {

@@ -102,6 +102,7 @@ class ErrorCode
     const PY20001   = 'PY20001';
     const PY20002   = 'PY20002';
     const PY20006   = 'PY20006';
+    const PY20085   = 'PY20085';
 
     //
     // The error codes starting with 'RP' are our custom ones
@@ -241,6 +242,7 @@ class ErrorCode
         Hdfc\ErrorCode::PY20006   => 'Invalid Brand',
         Hdfc\ErrorCode::PY20001   => 'Invalid Action Type',
         Hdfc\ErrorCode::PY20002   => 'Invalid amount',
+        Hdfc\ErrorCode::PY20085   => 'Payment failed',
 
         Hdfc\ErrorCode::CM90000   => 'Database error',
         Hdfc\ErrorCode::CM90001   => 'Database configuration error',
@@ -317,6 +319,7 @@ class ErrorCode
         Hdfc\ErrorCode::PY20006   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_BRAND,
         Hdfc\ErrorCode::PY20001   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_ACTION,
         Hdfc\ErrorCode::PY20002   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_AMOUNT,
+        Hdfc\ErrorCode::PY20085   => Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
 
         Hdfc\ErrorCode::CM90000   => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
         Hdfc\ErrorCode::CM90001   => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,

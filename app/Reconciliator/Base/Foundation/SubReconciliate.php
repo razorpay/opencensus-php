@@ -78,6 +78,7 @@ class SubReconciliate
             default:
                 throw new LogicException(
                     'Should not have reached here. Unknown type given for summary.',
+                    null,
                     ['entity_id' => $entityId]
                 );
         }

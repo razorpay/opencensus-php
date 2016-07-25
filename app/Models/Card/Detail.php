@@ -25,7 +25,7 @@ class Detail extends Base\Entity
 
     public function __construct()
     {
-        sddb(10);
+
     }
 
     public function getType()

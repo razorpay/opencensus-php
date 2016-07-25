@@ -16,6 +16,12 @@ class Repository extends Base\Repository
     protected $appFetchParamRules = array(
         Entity::METHOD          => 'sometimes|alpha',
         Entity::CUSTOMER_ID     => 'sometimes|alpha_num',
+        Entity::MERCHANT_ID     => 'sometimes|alpha_num',
+        Entity::TERMINAL_ID     => 'sometimes|alpha_num',
+        Entity::TOKEN           => 'sometimes|alpha_num',
+        Entity::CARD_ID         => 'sometimes|alpha_num',
+        Entity::BANK            => 'sometimes|alpha',
+        Entity::WALLET          => 'sometimes|alpha',
     );
 
     public function getByCustomerId($id)

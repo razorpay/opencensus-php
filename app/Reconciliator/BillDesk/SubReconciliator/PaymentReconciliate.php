@@ -51,9 +51,4 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
         return round($fee);
     }
-
-    protected function getCardDetails($row)
-    {
-        return [];
-    }
 }

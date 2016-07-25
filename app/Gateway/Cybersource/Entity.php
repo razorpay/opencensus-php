@@ -37,12 +37,12 @@ class Entity extends Base\Entity
         self::REF,
         self::CAPTURE_REF,
         self::COMMERCE_INDICATOR,
+        self::COLLECTION_INDICATOR,
         self::XID,
         self::PARES_STATUS,
         self::REASON_CODE,
         self::CREATED_AT,
         self::UPDATED_AT,
-        self::COLLECTION_INDICATOR,
     );
 
     protected $fillable = array(
@@ -141,12 +141,17 @@ class Entity extends Base\Entity
 
     public function getReasonCode()
     {
-        return $this->getAttribute(self::REASON_CODE);
+        return (int) $this->getAttribute(self::REASON_CODE);
     }
 
     public function setStatus($status)
     {
         $this->setAttribute(self::STATUS, $status);
+    }
+
+    public function setAction($action)
+    {
+        $this->setAttribute(self::ACTION, $action);
     }
 
     /**
