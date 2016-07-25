@@ -16,7 +16,7 @@ class Binning
             'method'      => Method::CARD,
             'binFor'      => Shared::HDFC_RAZORPAY_TERMINAL,
             'binWith'     => '5yKTyCuDne8eiz',
-            'loadPercent' => 1,
+            'loadPercent' => 5,
         ],
     ];
 
