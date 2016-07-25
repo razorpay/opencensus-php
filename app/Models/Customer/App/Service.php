@@ -7,16 +7,21 @@ use RZP\Models\Customer\App;
 
 class Service extends Base\Service
 {
-    public function deleteAppTokensForGlobalCustomer($appToken, $input)
+    public function deleteAppTokensForGlobalCustomer($input)
     {
-        App\Entity::verifyIdAndStripSign($appToken);
+        $appToken = App\SessionHelper::getAppTokenFromSession($this->mode);
 
-        $appCore = new App\Core;
+        if ($appToken !== null)
+        {
+            App\Entity::verifyIdAndStripSign($appToken);
 
-        $app = $appCore->getAppByAppToken($appToken, $this->merchant);
+            $appCore = new App\Core;
 
-        $data = $appCore->deleteAppTokensForGlobalCustomer($app->customer, $input);
+            $app = $appCore->getAppByAppToken($appToken, $this->merchant);
 
-        return $data;
+            $data = $appCore->deleteAppTokensForGlobalCustomer($app->customer, $input);
+
+            return $data;
+        }
     }
 }

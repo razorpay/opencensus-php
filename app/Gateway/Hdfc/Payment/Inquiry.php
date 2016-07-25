@@ -124,7 +124,7 @@ trait Inquiry
                         TraceCode::GATEWAY_PAYMENT_VERIFY_UNEXPECTED,
                         [
                             'api_payment_status'      => $input['payment']['status'],
-                            'gateway_verify_response' => $content['result'],
+                            'gateway_verify_response' => $content,
                             'payment_id'              => $input['payment']['id'],
                             'gateway_payment_status'  => $gatewayPayment['status'],
                         ]);
@@ -234,9 +234,13 @@ trait Inquiry
         // TO NOTE: This is just initializing RESPONSE from the inquiry.
         $this->inquiryResponse['data'] = [];
 
+        $traceVerifyData = $this->inquiryRequest;
+
+        unset($traceVerifyData['content']);
+
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
-            $this->inquiryRequest);
+            $traceVerifyData);
 
         // This sets the response received from the inquiry
         $this->runRequestResponseFlow(

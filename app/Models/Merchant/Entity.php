@@ -248,12 +248,12 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::PRICING_PLAN_ID, $planId);
     }
 
-    public function setBrandColorAttribute($brandColor)
+    protected function setBrandColorAttribute($brandColor)
     {
         $this->attributes[self::BRAND_COLOR] = $brandColor ? strtoupper($brandColor) : null;
     }
 
-    public function setLogoUrlAttribute($logoUrl)
+    protected function setLogoUrlAttribute($logoUrl)
     {
         $this->attributes[self::LOGO_URL] = $logoUrl ? $logoUrl : null;
     }
@@ -312,22 +312,22 @@ class Entity extends Base\PublicEntity
         return (bool) $this->attributes[self::INTERNATIONAL];
     }
 
-    public function getReceiptEmailEnabledAttribute()
+    protected function getReceiptEmailEnabledAttribute()
     {
         return (bool) $this->attributes[self::RECEIPT_EMAIL_ENABLED];
     }
 
-    public function getHoldFundsAttribute()
+    protected function getHoldFundsAttribute()
     {
         return (bool) $this->attributes[self::HOLD_FUNDS];
     }
 
-    public function getCategoryAttribute()
+    protected function getCategoryAttribute()
     {
         return (int) $this->attributes[self::CATEGORY];
     }
 
-    public function getSettlementScheduleAttribute()
+    protected function getSettlementScheduleAttribute()
     {
         return (int) $this->attributes[self::SETTLEMENT_SCHEDULE];
     }
@@ -381,7 +381,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BRAND_COLOR);
     }
 
-    public function getBrandColorAttribute()
+    protected function getBrandColorAttribute()
     {
         $storedBrandColor = $this->attributes[self::BRAND_COLOR];
 
@@ -462,7 +462,7 @@ class Entity extends Base\PublicEntity
         return array_map('trim', $emails);
     }
 
-    public function getFeaturesAttribute()
+    protected function getFeaturesAttribute()
     {
         $features = $this->attributes[self::FEATURES];
 
@@ -477,7 +477,7 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function setFeaturesAttribute($features)
+    protected function setFeaturesAttribute($features)
     {
         if (is_array($features))
         {
@@ -490,12 +490,12 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function setEmailAttribute($email)
+    protected function setEmailAttribute($email)
     {
         $this->attributes[self::EMAIL] = mb_strtolower($email);
     }
 
-    public function setTransactionReportEmailAttribute($emails)
+    protected function setTransactionReportEmailAttribute($emails)
     {
         if (is_array($emails) === false)
         {
@@ -512,12 +512,12 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::TRANSACTION_REPORT_EMAIL] = implode(',', $emails);
     }
 
-    public function setFeeBearerAttribute($bearer)
+    protected function setFeeBearerAttribute($bearer)
     {
         $this->attributes[self::FEE_BEARER] = FeeBearer::getValueForBearerString($bearer);
     }
 
-    public function setPublicLogoUrlAttribute(array & $array)
+    protected function setPublicLogoUrlAttribute(array & $array)
     {
         if (empty($array[self::LOGO_URL]) === false)
         {

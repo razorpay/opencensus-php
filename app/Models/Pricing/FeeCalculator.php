@@ -3,6 +3,7 @@
 namespace RZP\Models\Pricing;
 
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
@@ -103,7 +104,7 @@ class FeeCalculator
         if ($rule === null)
         {
             throw new Exception\LogicException(
-                'No appropriate pricing rule found', ['payment' => $payment->toArray()]);
+                'No appropriate pricing rule found', null, ['payment' => $payment->toArray()]);
         }
 
         return $rule;
@@ -229,6 +230,7 @@ class FeeCalculator
         {
             throw new Exception\LogicException(
                 'Invalid rule count: 0, Payment Id: ' . $payment->getId(),
+                ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT,
                 ['intl' => $international, 'cardType' => $cardType, 'network' => $network]);
         }
 

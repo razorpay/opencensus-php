@@ -334,6 +334,11 @@ class Gateway
         self::AXIS_MIGS => IFSC::UTIB,
     );
 
+    public static $emiBanksUsingCardTerminals = array(
+        IFSC::KKBK,
+        IFSC::UTIB,
+    );
+
     public static $emiFileBanks = array(
         self::KOTAK     => IFSC::KKBK,
         self::AXIS_MIGS => IFSC::UTIB,

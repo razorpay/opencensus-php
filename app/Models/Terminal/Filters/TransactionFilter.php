@@ -10,6 +10,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Payment\Method;
+use RZP\Models\Emi\Repository;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Processor\Netbanking;
 
@@ -36,24 +37,12 @@ class TransactionFilter extends Terminal\Filter
                 return $terminal->isNetbankingEnabled();
                 break;
 
-            // Check - Needs more work with respect to emi terminals of other banks
             case Method::EMI:
                 $bank = $input['payment']->getBank();
 
-                $cardTerminalBanks = array(
-                    IFSC::KKBK,
-                    IFSC::UTIB,
-                );
+                $emiDuration = $input['payment']->emiPlan->getDuration();
 
-                if (in_array($bank, $cardTerminalBanks))
-                {
-                    // for Kotak, process as normal card transaction and mail for emi
-                    return $terminal->isCardEnabled();
-                }
-                else
-                {
-                    return $terminal->isEmiEnabled();
-                }
+                return $terminal->isValidForEmiDurationAndBank($bank, $emiDuration);
                 break;
 
             // Pick the right terminal only
@@ -69,34 +58,19 @@ class TransactionFilter extends Terminal\Filter
         }
     }
 
+    // Applicable only for card and emi
     public function networkFilter($terminal, $input)
     {
         $method = $input['payment']->getMethod();
 
         switch ($method)
         {
+            // Network Filtration has to work similarly for card and emi
             case Method::CARD:
+            case Method::EMI:
                 $network = $input['payment']->card->getNetworkCode();
 
-                if(Gateway::isCardNetworkSupported($network, $terminal->getGateway()))
-                {
-                    return true;
-                }
-                else
-                {
-                    // Check for partially supported networks on live
-                    $networks = Gateway::$partiallySupportedCardNetworks;
-
-                    if ((in_array($network, $networks)) and
-                        ($input['mode'] === Mode::LIVE))
-                    {
-                        throw new Exception\BadRequestException(
-                            ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
-                    }
-
-                    return false;
-                }
-
+                return Gateway::isCardNetworkSupported($network, $terminal->getGateway());
                 break;
 
             default:

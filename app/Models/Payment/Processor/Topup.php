@@ -76,7 +76,7 @@ trait Topup
             ($payment->globalCustomer === null))
         {
             throw new Exception\LogicException(
-                'Customer does not exist', $input);
+                'Customer does not exist', null, $input);
         }
 
         //

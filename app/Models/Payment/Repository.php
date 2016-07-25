@@ -46,6 +46,8 @@ class Repository extends Base\Repository
         Card\Entity::IIN        => 'sometimes|integer|digits:6',
         Card\Entity::LAST4      => 'sometimes|string|digits:4',
         Card\Entity::INTERNATIONAL => 'sometimes|in:0,1',
+        Entity::CUSTOMER_ID     => 'sometimes|alpha_num',
+        Entity::SAVE            => 'sometimes|in:0,1',
     );
 
     protected $esWhitelistedParams = [

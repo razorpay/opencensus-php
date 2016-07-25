@@ -19,8 +19,8 @@ class Validator
     // Add here too when being added in Validator::ACCEPTED_EXTENSIONS_MAP
     const SUPPORTED_ZIP_EXTENSIONS = ['zip'];
 
-    // Max allowed file size - 2M (2*1024*1024).
-    const MAX_FILE_SIZE = 2097152;
+    // Max allowed file size - 20M (20*1024*1024).
+    const MAX_FILE_SIZE = 20971520;
 
     public function filterEmails($emailDetails)
     {
