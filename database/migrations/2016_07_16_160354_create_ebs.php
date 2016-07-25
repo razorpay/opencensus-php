@@ -62,6 +62,7 @@ class CreateEbs extends Migration {
             $table->string('ebs_payment_id')->nullable();
             $table->string('error_code')->nullable();
             $table->string('error_reason')->nullable();
+            $table->string('account_id')->nullable();
             $table->string('ProcessStatus')->nullable();
 
             $table->string('refund_id', UniqueIdEntity::ID_LENGTH)->nullable();
