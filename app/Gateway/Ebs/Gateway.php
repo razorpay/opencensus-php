@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Gateway\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Card;
+use RZP\Models\Card\Network;
 use RZP\Constants\ModeEbs;
 use RZP\Models\Payment;
 use RZP\Exception;
@@ -22,6 +23,13 @@ class Gateway extends Base\Gateway
     const NETBANKING                = '3';
     const CREDIT_EMI                = '4';
     const DEBIT_EMI                 = '5';
+
+    const VISA                      = '1';
+    const MC                        = '2';
+    const MAES                      = '3';
+    const DICL                      = '4';
+    const AMEX                      = '5';
+    const JCB                       = '6';
 
     const SUCCESS                   = '0';
 
@@ -84,7 +92,6 @@ class Gateway extends Base\Gateway
     public function callback(array $input)
     {
         parent::callback($input);
-
         $this->validateCallbackGetSecureHash($input['gateway']);
 
         // Unset date because format of date returned is different than what we sent
@@ -288,9 +295,9 @@ class Gateway extends Base\Gateway
     {
         if ($this->mode === 'test')
         {
-            return self::CREDIT;
+            $retVal = self::CREDIT;
         }
-        if ($input['payment']['method'] == Payment\Method::NETBANKING)
+        else if ($input['payment']['method'] == Payment\Method::NETBANKING)
         {
             $retVal = self::NETBANKING;
         }
@@ -319,10 +326,40 @@ class Gateway extends Base\Gateway
     {
         if ($this->mode === 'test')
         {
-            return '1';
+            $retVal = self::VISA;
         }
-        throw new Exception\BadRequestValidationFailureException(
-            'Card Brand not implemented');
+        else if ($input['card']['network'] === Network::VISA)
+        {
+            $retVal = self::VISA;
+        }
+        else if ($input['card']['network'] === Network::MC)
+        {
+            $retVal = self::MC;
+        }
+        else if ($input['card']['network'] === Network::MAES)
+        {
+            $retVal = self::MAES;
+        }
+        else if ($input['card']['network'] === Network::DICL)
+        {
+            $retVal = self::DICL;
+        }
+        else if ($input['card']['network'] === Network::AMEX)
+        {
+            $retVal = self::AMEX;
+        }
+        else if ($input['card']['network'] === Network::JCB)
+        {
+            $retVal = self::JCB;
+        }
+
+        if (empty($retVal))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Card Network not implemented');
+        }
+
+        return $retVal;
     }
 
     protected function getUrlDomain()
