@@ -67,7 +67,7 @@ class Selector
         return $merchantTerminals;
     }
 
-    public function select($verbose = false)
+    public function select($options = [], $verbose = false)
     {
         $terminals = $this->getTerminals();
 
@@ -120,12 +120,9 @@ class Selector
             $terminal = $sortedTerminals->get(0);
         }
 
-        // This is a hack and should be implemented in the correct manner later.
-        $hdfcMaestroSharedTerminal = $this->getHdfcSharedTerminalIfMaestro($terminals);
-
-        if ($hdfcMaestroSharedTerminal !== null)
+        if (isset($options['chance']))
         {
-            $terminal = $hdfcMaestroSharedTerminal;
+            $terminal = (new Binning)->select($terminal, $options['chance'], $this->input, $terminals);
         }
 
         $this->checkForCustomExceptions($terminal);

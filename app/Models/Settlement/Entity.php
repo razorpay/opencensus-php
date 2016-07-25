@@ -181,17 +181,17 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TRANSACTION_ID);
     }
 
-    public function getServiceTaxAttribute()
+    protected function getServiceTaxAttribute()
     {
         return (int) $this->attributes[self::SERVICE_TAX];
     }
 
-    public function getAmountAttribute()
+    protected function getAmountAttribute()
     {
         return (int) $this->attributes[self::AMOUNT];
     }
 
-    public function getFeesAttribute()
+    protected function getFeesAttribute()
     {
         $fee = $this->attributes[self::FEES];
 
