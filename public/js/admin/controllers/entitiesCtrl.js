@@ -184,6 +184,12 @@ app.controller('EntitiesCtrl', [
         active: booleanList,
         contact: ['Contact']
       },
+      cybersource: {
+        payment_id: ['Payment ID'],
+        received: booleanList,
+        ref: ['Reference'],
+        capture_ref: ['Capture Reference']
+      },
       daily_settlement: {},
       emi_plan: {},
       hdfc: {
