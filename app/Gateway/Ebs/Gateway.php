@@ -2,8 +2,10 @@
 
 namespace RZP\Gateway\Ebs;
 
+use Carbon\Carbon;
 use RZP\Gateway\Base;
 use RZP\Error\ErrorCode;
+use RZP\Models\Card;
 use RZP\Constants\ModeEbs;
 use RZP\Models\Payment;
 use RZP\Exception;
@@ -55,7 +57,6 @@ class Gateway extends Base\Gateway
     public function authorize(array $input)
     {
         parent::authorize($input);
-
         $content = $this->getAuthRequestContentArray($input);
 
         $payment = $this->createGatewayPaymentEntity($content);
@@ -285,19 +286,23 @@ class Gateway extends Base\Gateway
 
     protected function getpaymentMode($input)
     {
+        if ($this->mode === 'test')
+        {
+            return self::CREDIT;
+        }
         if ($input['payment']['method'] == Payment\Method::NETBANKING)
         {
-            $retVal = self::CREDIT;
+            $retVal = self::NETBANKING;
         }
         else if ($input['payment']['method'] == Payment\Method::CARD)
         {
-            if ($card['type'] === Card\Type::DEBIT)
+            if ($input['card']['type'] === Card\Type::DEBIT)
             {
                 $retVal = self::DEBIT;
             }
-            else if ($card['type'] === Card\Type::CREDIT)
+            else if ($input['card']['type'] === Card\Type::CREDIT)
             {
-                $retVal = SELF::NETBANKING;
+                $retVal = SELF::CREDIT;
             }
         }
 
@@ -312,6 +317,10 @@ class Gateway extends Base\Gateway
 
     protected function getcardBrand($input)
     {
+        if ($this->mode === 'test')
+        {
+            return '1';
+        }
         throw new Exception\BadRequestValidationFailureException(
             'Card Brand not implemented');
     }
