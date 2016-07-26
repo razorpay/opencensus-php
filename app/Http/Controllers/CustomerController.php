@@ -105,7 +105,7 @@ class CustomerController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Customer\App\Service)->deleteAppTokensForGlobalCustomer($input);
+        $data = (new Customer\AppToken\Service)->deleteAppTokensForGlobalCustomer($input);
 
         return ApiResponse::json($data);
     }

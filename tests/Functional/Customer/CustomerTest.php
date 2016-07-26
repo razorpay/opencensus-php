@@ -115,7 +115,7 @@ class CustomerTest extends TestCase
         $request = &$this->testData['testDeleteCustomer']['request'];
         $request['url'] = '/customers/'.$customer['id'];
 
-        $this->ba->appAuth();
+        $this->ba->proxyAuth();
 
         $this->startTest();
     }

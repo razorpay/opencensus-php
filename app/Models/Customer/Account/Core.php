@@ -126,15 +126,15 @@ class Core extends Base\Core
         }
 
         $custAppInput = array(
-            App\Entity::CUSTOMER_ID => $customer->getId(),
-            App\Entity::MERCHANT_ID => $appMerchant);
+            AppToken\Entity::CUSTOMER_ID => $customer->getId(),
+            AppToken\Entity::MERCHANT_ID => $appMerchant);
 
-        if (isset($input[App\Entity::DEVICE_TOKEN]))
+        if (isset($input[AppToken\Entity::DEVICE_TOKEN]))
         {
-            $custAppInput[App\Entity::DEVICE_TOKEN] = $input[App\Entity::DEVICE_TOKEN];
+            $custAppInput[AppToken\Entity::DEVICE_TOKEN] = $input[AppToken\Entity::DEVICE_TOKEN];
         }
 
-        $app = (new App\Core)->create($custAppInput);
+        $app = (new AppToken\Core)->create($custAppInput);
 
         return $app;
     }
@@ -214,9 +214,9 @@ class Core extends Base\Core
         {
             $appToken = $input[Payment\Entity::APP_TOKEN];
 
-            Customer\App\Entity::verifyIdAndStripSign($appToken);
+            Customer\AppToken\Entity::verifyIdAndStripSign($appToken);
 
-            $customerApp = (new Customer\App\Core)->getAppByAppToken(
+            $customerApp = (new Customer\AppToken\Core)->getAppByAppToken(
                 $appToken,
                 $merchant);
 

@@ -1,21 +1,21 @@
 <?php
 
-namespace RZP\Models\Customer\App;
+namespace RZP\Models\Customer\AppToken;
 
 use RZP\Models\Base;
-use RZP\Models\Customer\App;
+use RZP\Models\Customer\AppToken;
 
 class Service extends Base\Service
 {
     public function deleteAppTokensForGlobalCustomer($input)
     {
-        $appToken = App\SessionHelper::getAppTokenFromSession($this->mode);
+        $appToken = AppToken\SessionHelper::getAppTokenFromSession($this->mode);
 
         if ($appToken !== null)
         {
-            App\Entity::verifyIdAndStripSign($appToken);
+            AppToken\Entity::verifyIdAndStripSign($appToken);
 
-            $appCore = new App\Core;
+            $appCore = new AppToken\Core;
 
             $app = $appCore->getAppByAppToken($appToken, $this->merchant);
 
