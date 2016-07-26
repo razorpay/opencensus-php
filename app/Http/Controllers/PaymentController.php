@@ -91,6 +91,8 @@ class PaymentController extends Controller
 
     /**
      * Captures an authorized payment
+     * 
+     * @param string $id Payment ID to capture
      */
     public function postCapture($id)
     {
