@@ -57,17 +57,17 @@ class Gateway extends Base\Gateway
 
         $request = $this->getRefundRequest($input);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+        $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST, $request);
 
         $response = $this->sendGatewayRequest($request);
 
         $content = $this->jsonToArray($response->body);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+        $this->trace->info(TraceCode::GATEWAY_REFUND_RESPONSE, $content);
 
         $this->createWalletRefundEntity($content, $input);
 
-        if ($content[ResponseFields::STATUS] !== Status::SUCCESS)
+        if ($content[ResponseFields::STATUS] !== ResponseFields::REFUND_SUCCESS_STATUS)
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_REFUND_FAILED,
@@ -164,8 +164,6 @@ class Gateway extends Base\Gateway
         $gatewayPaymentAttrs = $this->getCreateWalletAttributes($input);
 
         $this->createGatewayPaymentEntity($gatewayPaymentAttrs);
-
-        $this->action = Action::CALLBACK;
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
@@ -486,12 +484,14 @@ class Gateway extends Base\Gateway
 
         $request = $this->getVerifyRequestArray($input);
 
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST, $request);
+
         $response = $this->sendGatewayRequest($request);
 
         $content = $this->jsonToArray($response->body);
 
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             [
                 'content' => $content,
                 'gateway' => 'wallet_olamoney',

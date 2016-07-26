@@ -73,16 +73,15 @@ class OlamoneyGatewayTest extends TestCase
     {
         $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
 
+        $input = ['amount' => $payment['amount']];
+
         $authPayment = $this->doAuthPayment($payment);
 
-        $capturePayment = $this->capturePayment($authPayment['razorpay_payment_id'],
-            $payment['amount']);
-
-        $this->refundPayment($capturePayment['id']);
+        $this->refundAuthorizedPayment($authPayment['razorpay_payment_id'], $input);
 
         $refund = $this->getLastEntity('wallet', true);
 
-        $this->assertTestResponse($refund);
+        $this->assertTestResponse($refund, 'testAuthPaymentRefund');
     }
 
     public function testPayment()

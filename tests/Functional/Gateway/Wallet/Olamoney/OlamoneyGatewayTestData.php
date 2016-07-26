@@ -45,16 +45,15 @@ return [
         'entity'                => 'wallet',
     ],
 
-     'testRefundPayment'       => [
+    'testAuthPaymentRefund' => [
+        'amount'                => 50000,
         'action'                => 'refund',
         'wallet'                => 'olamoney',
         'email'                 => 'a@b.com',
-        'amount'                => 50000,
         'contact'               => '+919918899029',
         'gateway_merchant_id'   => 'random_id',
-        'response_code'         => null,
         'status_code'           => 'success',
-        'entity'                => 'wallet',
+        'received'              => true,
     ],
 
     'testVerifyFailedPayment'   => [

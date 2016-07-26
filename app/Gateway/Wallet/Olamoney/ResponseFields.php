@@ -18,4 +18,6 @@ class ResponseFields
     const UNIQUE_BILL_ID        = 'uniqueBillId';
 
     const VERIFY_FAILED_STATUS  = [Status::INITIATED, Status::FAILED];
+
+    const REFUND_SUCCESS_STATUS = Status::SUCCESS;
 }

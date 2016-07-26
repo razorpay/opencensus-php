@@ -20,11 +20,4 @@ class Status
 
     // Transaction has been successfully completed
     const COMPLETED             = 'completed';
-
-    // Not being used right now
-    const NLOGGEDIN             = 101;
-    const NOBALANCE             = 102;
-    const INSUFFICIENTBALANCE   = 103;
-    const HASHFAILED            = 105;
-    const DUPLICATE             = 106;
 }
