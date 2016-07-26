@@ -96,11 +96,12 @@ class Entity extends Base\PublicEntity
     );
 
     protected $public = array(
+        self::ID,
+        self::ENTITY,
         self::NAME,
         self::LAST4,
         self::NETWORK,
         self::INTERNATIONAL,
-        self::EMI,
     );
 
     protected $appends = array(
@@ -200,7 +201,7 @@ class Entity extends Base\PublicEntity
         return $this->getNetworkCodeAttribute();
     }
 
-    public function getNetworkCodeAttribute()
+    protected function getNetworkCodeAttribute()
     {
         return Card\Network::getCode($this->getNetwork());
     }
@@ -280,7 +281,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::TRIVIA, $trivia);
     }
 
-    public function setPublicEmiAttribute(array & $array)
+    protected function setPublicEmiAttribute(array & $array)
     {
         $array[self::ISSUER] = null;
         $array[self::EMI] = $this->getEmi();
@@ -310,17 +311,17 @@ class Entity extends Base\PublicEntity
         return (bool) $this->getAttribute(self::EMI);
     }
 
-    public function getExpiryMonthAttribute()
+    protected function getExpiryMonthAttribute()
     {
         return (int) $this->getAttributeFromArray(self::EXPIRY_MONTH);
     }
 
-    public function getExpiryYearAttribute()
+    protected function getExpiryYearAttribute()
     {
         return (int) $this->getAttributeFromArray(self::EXPIRY_YEAR);
     }
 
-    public function getInternationalAttribute()
+    protected function getInternationalAttribute()
     {
         $intl = $this->attributes[self::INTERNATIONAL];
 
@@ -332,7 +333,7 @@ class Entity extends Base\PublicEntity
         return (bool) $this->attributes[self::INTERNATIONAL];
     }
 
-    public function getEmiAttribute()
+    protected function getEmiAttribute()
     {
         return (bool) $this->attributes[self::EMI];;
     }
@@ -366,13 +367,14 @@ class Entity extends Base\PublicEntity
         return ($network === Card\Network::$fullName[Card\Network::AMEX]);
     }
 
-    public function getTokenRelevantAttributes()
+    protected function getTokenRelevantAttributes()
     {
         $emi = $this->getAttribute(self::EMI);
 
         $attributes = array(
             self::EXPIRY_MONTH      => $this->getAttribute(self::EXPIRY_MONTH),
             self::EXPIRY_YEAR       => $this->getAttribute(self::EXPIRY_YEAR),
+            self::EMI               => $emi
         );
 
         if ($emi === true)
@@ -388,6 +390,8 @@ class Entity extends Base\PublicEntity
         $attributes = $this->toArrayPublic();
 
         $attributes = array_merge($attributes, $this->getTokenRelevantAttributes());
+
+        unset($attributes[self::ID]);
 
         return $attributes;
     }

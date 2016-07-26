@@ -117,6 +117,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::WALLET);
     }
 
+    public function getToken()
+    {
+        return $this->getAttribute(self::TOKEN);
+    }
+
     public function getMethod()
     {
         return $this->getAttribute(self::METHOD);
@@ -149,7 +154,7 @@ class Entity extends Base\PublicEntity
         return ($expiredAt <= time());
     }
 
-    public function setPublicCardAttribute(array & $array)
+    protected function setPublicCardAttribute(array & $array)
     {
         if ($this->card !== null)
         {

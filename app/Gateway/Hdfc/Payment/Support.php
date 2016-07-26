@@ -51,6 +51,7 @@ trait Support
             {
                 throw new Exception\LogicException(
                     'Illogical place reached',
+                    null,
                     ['input' => $input, 'model' => $this->model, 'type' => $type]);
             }
         }
@@ -434,6 +435,7 @@ trait Support
                 throw new Exception\LogicException(
                     'Only available entity for hdfc gateway payment is in an'.
                     'unacceptable state.',
+                    null,
                     $input);
             }
         }

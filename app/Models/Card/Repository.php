@@ -21,9 +21,9 @@ class Repository extends Base\Repository
         Payment\Entity::STATUS  => 'sometimes|string',
         Entity::EXPIRY_MONTH    => 'sometimes|integer|digits_between:1,2|max:12|min:1',
         Entity::EXPIRY_YEAR     => 'sometimes|integer|digits:4|non_past_year',
-        Entity::VAULT_TOKEN     => 'sometimes|alphanum',
-        Entity::VAULT           => 'required_with:token|in:tokenex'
-
+        Entity::VAULT_TOKEN     => 'sometimes|alpha_num',
+        Entity::VAULT           => 'required_with:token|in:tokenex',
+        Entity::GLOBAL_CARD_ID  => 'sometimes|alpha_num',
     );
 
     public function retrieveIinDetails($iin)

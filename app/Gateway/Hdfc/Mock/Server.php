@@ -38,9 +38,12 @@ class Server extends Base\Mock\Server
         '4005559876540',
         '4012001037167778',
         '4012001037490014',
-        '4012001037141112',
         '6073849700004947',
         '4111111111111111',
+    );
+
+    protected $notEnrolledDebitCardNumbers = array(
+        '4012001037141112',
     );
 
     protected $onlyPurchaseCardNetworks = array(
@@ -185,6 +188,7 @@ class Server extends Base\Mock\Server
             'amt'       => $gatewayTransaction['amount']);
 
         $networkCode = Network::getCode($card['network']);
+
         if (in_array($networkCode, $this->onlyPurchaseCardNetworks))
         {
             $res['result'] = 'CAPTURED';
@@ -211,6 +215,14 @@ class Server extends Base\Mock\Server
         {
             $res = $this->getDefaultPaymentSuccessArray();
             $res['result'] = 'APPROVED';
+
+            // 4628481036290001 - credit card
+            // 4012001037141112 - debit card
+            if (($cardNumber === '4628481036290001') or
+                ($cardNumber === '4012001037141112'))
+            {
+                $res['result'] = 'NOT APPROVED';
+            }
 
             if ($network === 'MAES')
                 $res['result'] = 'CAPTURED';
@@ -259,8 +271,10 @@ class Server extends Base\Mock\Server
         {
             $res = $this->getResponseParamsForEnrollDebit();
         }
-        else if (($type === 'credit') or
-                 ($type === ''))
+
+        if (($type === 'credit') or
+            ($type === '') or
+            (in_array($cardNumber, $this->notEnrolledDebitCardNumbers) === true))
         {
             $res['result'] = 'NOT ENROLLED';
             $res['eci'] = $this->getEci($network);
@@ -297,6 +311,7 @@ class Server extends Base\Mock\Server
         }
 
         $cardDetails = (new Card\Repository)->retrieveIinDetails($iin);
+
         if ($cardDetails === null)
             return '';
 
@@ -496,22 +511,6 @@ class Server extends Base\Mock\Server
         return $res;
     }
 
-    protected function getHostTimeoutErrorAuthResponse()
-    {
-        $res = array(
-            'auth' => '999999',
-            'avr' => 'N',
-            'paymentid' => '2515498181561350',
-            'postdate' => '0514',
-            'ref' => '613515344880',
-            'result' => 'HOST TIMEOUT',
-            'trackid' => $gatewayTransaction['payment_id'],
-            'tranid' => $txnId,
-        );
-
-        return $rest;
-    }
-
     protected function isSpecialCardNumber($cardNumber)
     {
         return (in_array($cardNumber, $this->specialCardNumbers));
@@ -530,7 +529,7 @@ class Server extends Base\Mock\Server
         switch ($cardNumber)
         {
             case '4012001036275556':
-                sleep(Hdfc\Config::TIMEOUT);
+                sleep(Hdfc\Gateway::TIMEOUT);
                 exit(1);
                 break;
 
@@ -552,14 +551,15 @@ class Server extends Base\Mock\Server
                 break;
 
             default:
-                throw new \LogicException('Card number given here is notn special. Number: ' . $cardNumber);
+                throw new \LogicException('Card number given here is not special. Number: ' . $cardNumber);
         }
 
         $error['error_code_tag'] = $code;
-        $error['error_text'] = '!ERROR!-'.$code.'-'.Hdfc\ErrorCode::$errorMessages[$code];
+        $error['error_text'] = '!ERROR!-'.$code . '-' . Hdfc\ErrorCode::$errorMessages[$code];
         $error['error_service_tag'] = '';
-        $error['result'] = $code.'-'.Hdfc\ErrorCode::$errorMessages[$code];
+
         // @todo: figure out exactly how and when to send 'result' field
+        $error['result'] = $code . '-' . Hdfc\ErrorCode::$errorMessages[$code];
 
         return $error;
     }

@@ -4,7 +4,6 @@ namespace RZP\Models\Settlement\Kotak;
 
 use AWS;
 use Excel;
-use ZipArchive;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
@@ -15,6 +14,8 @@ trait FileHandlerTrait
     protected $saveToAws = true;
 
     protected $excel = null;
+
+    private $_zipCommand = "zip --junk-paths --move";
 
     public function writeToTextFile($txt)
     {
@@ -357,21 +358,24 @@ trait FileHandlerTrait
     {
         $zipPath = $this->getZipFullFilePath();
 
-        $zip = new ZipArchive();
-        $zip->open($zipPath, ZipArchive::CREATE);
-
         foreach ($fileArray as $file)
         {
-            $zip->addFile($file);
+            $this->addFileToZip($file, $zipPath, $password);
         }
+
+        return $zipPath;
+    }
+
+    private function addFileToZip($filePath, $zipPath, $password)
+    {
+        $zipCommand = $this->_zipCommand;
 
         if (isset($password))
         {
-            $zip->setPassword($password);
+            $zipCommand .= " --password " . $password;
         }
 
-        $zip->close();
-        return $zipPath;
+        exec($zipCommand . " " . escapeshellarg($zipPath) . " " . escapeshellarg($filePath));
     }
 
     protected function getFileToWriteNameWithoutExt()

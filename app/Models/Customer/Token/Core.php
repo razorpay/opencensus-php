@@ -38,29 +38,18 @@ class Core extends Base\Core
         $token->merchant()->associate($customer->merchant);
 
         $token->build($input);
-        $this->validateExistingToken($token);
+        $existingToken = $this->validateExistingToken($token);
 
-        $this->repo->token->saveOrFail($token);
+        if ($existingToken !== null)
+        {
+            return $existingToken;
+        }
+        else
+        {
+            $this->repo->saveOrFail($token);
 
-        return $token;
-    }
-
-    public function edit($token, $input)
-    {
-        $this->trace->info(
-            TraceCode::CUSTOMER_TOKEN_EDIT,
-            [
-                'token_id' => $token->getId(),
-                'fields' => array_keys($input),
-            ]);
-
-        $token->edit($input);
-
-        $this->validateExistingToken($token);
-
-        $this->repo->saveOrFail($token);
-
-        return $token;
+            return $token;
+        }
     }
 
     public function fetchTokensByCustomer($customer)
@@ -81,7 +70,7 @@ class Core extends Base\Core
 
         $func = 'validateExistingToken'.$token->getMethod();
 
-        $this->$func($existingTokens, $token);
+        return $this->$func($existingTokens, $token);
     }
 
     protected function validateExistingTokenCard($existingTokens, $newToken)
@@ -90,8 +79,7 @@ class Core extends Base\Core
         {
             if ($token->card->getId() === $newToken->card->getId())
             {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_CUSTOMER_CARD_ALREADY_EXISTS);
+                return $token;
             }
         }
     }
@@ -103,8 +91,7 @@ class Core extends Base\Core
             if (($token->getBank()  === $newToken->getBank()) and
                 ($token->getGatewayToken() === $newToken->getGatewayToken()))
             {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_CUSTOMER_BANK_ALREADY_EXISTS);
+                return $token;
             }
         }
     }
@@ -116,8 +103,7 @@ class Core extends Base\Core
             if (($token->getWallet()  === $newToken->getWallet()) and
                 ($token->terminal() === $newToken->terminal()))
             {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_CUSTOMER_WALLET_ALREADY_EXISTS);
+                return $token;
             }
         }
     }

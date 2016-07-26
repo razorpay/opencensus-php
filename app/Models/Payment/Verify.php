@@ -198,6 +198,7 @@ class Verify
             {
                 throw new Exception\LogicException(
                     "Should not have reached here. apiSuccess cannot be true when gatewaySuccess is false.",
+                    null,
                     $verify->getDataToTrace());
             }
             else

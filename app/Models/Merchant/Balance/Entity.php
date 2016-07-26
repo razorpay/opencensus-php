@@ -102,6 +102,7 @@ class Entity extends Base\PublicEntity
 
             throw new Exception\LogicException(
                 'Something very wrong is happening! Balance is going negative',
+                null,
                 $data);
         }
     }
@@ -132,12 +133,12 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CREDITS, $credits);
     }
 
-    public function getBalanceAttribute()
+    protected function getBalanceAttribute()
     {
         return (int) $this->attributes[self::BALANCE];
     }
 
-    public function getCreditsAttribute()
+    protected function getCreditsAttribute()
     {
         return (int) $this->attributes[self::CREDITS];
     }
@@ -155,6 +156,7 @@ class Entity extends Base\PublicEntity
         {
             throw new Exception\LogicException(
                 'Something very wrong is happening! Balance is going negative',
+                null,
                 $this->toArray());
         }
     }

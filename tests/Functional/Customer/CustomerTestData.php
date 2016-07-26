@@ -306,7 +306,7 @@ return [
 
     'testGetCustomerTokensByAppToken' => [
         'request' => [
-            'url' => '/apps/capp_1000000custapp/tokens',
+            'url' => '/apps/tokens',
             'method' => 'get',
             'content' => [
             ],
@@ -372,7 +372,7 @@ return [
 
     'testDeleteAppToken' => [
         'request' => [
-            'url' => '/apps/capp_1000000custapp/tokens/1000gcardtoken',
+            'url' => '/apps/tokens/1000gcardtoken',
             'method' => 'delete',
             'content' => [
             ],
@@ -385,7 +385,7 @@ return [
 
     'testLogoutFromApp' => [
         'request' => [
-            'url' => '/apps/capp_1000000custapp/logout',
+            'url' => '/apps/logout',
             'method' => 'delete',
             'content' => [
                 'logout' => 'app',
@@ -401,7 +401,7 @@ return [
 
     'testLogoutFromDevice' => [
         'request' => [
-            'url' => '/apps/capp_1000000custapp/logout',
+            'url' => '/apps/logout',
             'method' => 'delete',
             'content' => [
                 'logout' => 'device',
@@ -416,7 +416,7 @@ return [
 
     'testLogoutFromAllDevices' => [
         'request' => [
-            'url' => '/apps/capp_1000000custapp/logout',
+            'url' => '/apps/logout',
             'method' => 'delete',
             'content' => [
                 'logout' => 'all'
