@@ -249,6 +249,10 @@ class Orchestrator
         return $this->gatewayReconciliator->startReconciliation($this->allFilesContents);
     }
 
+    // TODO: While getting the content from excel, make sure you get them in chunks.
+    // You can still set them all together in the array. That's not an issue.
+    // just reading should be done in chunks.
+
     protected function checkFileSkip($fileDetails)
     {
         // Checks if this particular file needs to be excluded for the gateway
@@ -560,20 +564,40 @@ class Orchestrator
         // Returns empty if there is no restriction on which sheets to collect.
         $sheetNames = $this->gatewayReconciliator->getSheetNames();
 
-        $sheets = $this->converter->getAllExcelSheets($fileDetails, $sheetNames);
+        // TODO: REMOVE THIS
+        $fileDetails[FileProcessor::SIZE] = 999999999;
 
-        // Every sheet is equivalent to a different file.
-        foreach ($sheets as $sheet)
+        if ($fileDetails[FileProcessor::SIZE] < FileProcessor::FIVE_HUNDRED_KB)
         {
-            $sheetArray = $this->converter->convertExcelSheetToArray($sheet);
+            $sheets = $this->converter->getAllExcelSheets($fileDetails, $sheetNames);
 
-            $this->handleOneRowSheet($sheetArray);
+            // Every sheet is equivalent to a different file.
+            foreach ($sheets as $sheet)
+            {
+                $sheetArray = $this->converter->convertExcelSheetToArray($sheet);
 
-            $fileDetails[FileProcessor::SHEET_NAME] = $sheet->getTitle();
+                $this->handleOneRowSheet($sheetArray);
 
-            $this->setExtraDetails($sheetArray, $fileDetails);
-            $this->allFilesContents[] = $sheetArray;
+                $fileDetails[FileProcessor::SHEET_NAME] = $sheet->getTitle();
+
+                $this->setExtraDetails($sheetArray, $fileDetails);
+                $this->allFilesContents[] = $sheetArray;
+            }
         }
+        else
+        {
+            $this->handleSettingExcelContentForLargeFiles($fileDetails, $sheetNames);
+        }
+    }
+
+    protected function handleSettingExcelContentForLargeFiles($fileDetails, $sheetNames)
+    {
+        // TODO: Get the rows of each sheet in chunks. This should be done in the converter itself.
+        // return back the chunks of rows to this function. Store them in the array. get the next
+        // chunk and so on. Once all the chunks are received set the sheet name, extra details and stuff
+        // in this class.
+
+        $rows = $this->converter->getChunksFromExcelSheet($fileDetails, $sheetNames);
     }
 
     /**
@@ -586,6 +610,10 @@ class Orchestrator
      */
     protected function handleOneRowSheet(array & $sheetArray)
     {
+        //
+        // Checks whether the first element is an array in itself
+        // If it's not, it means that it's an associative array
+        //
         if (is_array(reset($sheetArray)) === false)
         {
             $sheetArray = array($sheetArray);

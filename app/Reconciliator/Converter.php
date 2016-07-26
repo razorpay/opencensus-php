@@ -4,8 +4,10 @@ namespace RZP\Reconciliator;
 
 use Excel;
 use Config;
+use Trace;
 
 use RZP\Exception;
+use RZP\Trace\TraceCode;
 
 class Converter
 {
@@ -33,13 +35,13 @@ class Converter
      * @param array $fileDetails The excel file details
      * @param array $sheetNames The sheets that need to be collected from the file.
      *                          If empty, collects all the sheets present in the excel file.
-     * @return mixed Sheet objects retrieved from the excel file
+     * @return mixed            Sheet objects retrieved from the excel file
      */
     public function getAllExcelSheets($fileDetails, $sheetNames = [])
     {
         $filePath = $fileDetails[FileProcessor::FILE_PATH];
 
-        Config::set('excel.import.force_sheets_collection', true);
+
 
         if (empty($sheetNames) === true)
         {
@@ -51,6 +53,56 @@ class Converter
         }
 
         return $sheets;
+    }
+
+    public function getChunksFromExcelSheet($fileDetails, $sheetNames = [])
+    {
+        // TODO: Move this to constructor
+        Config::set('excel.import.force_sheets_collection', false);
+
+        $filePath = $fileDetails[FileProcessor::FILE_PATH];
+
+        if (empty($sheetNames) === false)
+        {
+            Excel::selectSheets(['Sale'])->filter('chunk')->load($filePath)->chunk(1, function($results)
+            {
+                Trace::getFacadeRoot()->info(
+                    'RECON_INFO',
+                    [
+                        'message' => 'pppppp',
+                        'count' => $results->count()
+                    ]
+                );
+
+                var_dump($results);
+
+                foreach ($results as $row)
+                {
+                    Trace::getFacadeRoot()->info(
+                        'RECON_INFO',
+                        [
+                            'message' => 'bbbbb',
+                            'type'    => get_class($row),
+                            'content' => ($row),
+                        ]
+                    );
+                }
+            });
+        }
+        else
+        {
+            Excel::filter('chunk')->load($filePath)->chunk(2, function($results)
+            {
+                foreach($results as $sheet)
+                {
+                    Trace::getFacadeRoot()->info(
+                        'RECON_INFO',
+                        ['message'=> 'aaaaa']
+                    );
+                }
+            });
+        }
+        die;
     }
 
     public function convertExcelSheetToArray($sheet)
