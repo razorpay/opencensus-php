@@ -1034,12 +1034,12 @@ trait Authorize
             return;
         }
 
-        $func = 'is'.$type.'CardEnabled';
+        $func = 'is' . $type . 'CardEnabled';
 
         if ($merchantMethods->$func() === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                $type . ' cards transactions are now allowed',
+                $type . ' card transactions are not allowed',
                 'number');
         }
     }
