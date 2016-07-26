@@ -44,7 +44,7 @@ class Converter
     {
         $filePath = $fileDetails[FileProcessor::FILE_PATH];
 
-
+        Config::set('excel.import.force_sheets_collection', false);
 
         if (empty($sheetNames) === true)
         {
@@ -74,10 +74,10 @@ class Converter
             return $this->getRowsFromExcelSheetsOptimizedWithSheetNames($fileDetails, $sheetNames);
         }
 
-        return $this->getRowsFromExcelSheetsOptimizedWithIndices($fileDetails, $sheetNames);
+        return $this->getRowsFromExcelSheetsOptimizedWithSheetIndices($fileDetails);
     }
 
-    protected function getRowsFromExcelSheetsOptimizedWithIndices(array $fileDetails, $sheetName)
+    protected function getRowsFromExcelSheetsOptimizedWithSheetIndices(array $fileDetails)
     {
         $filePath = $fileDetails[FileProcessor::FILE_PATH];
 
@@ -92,6 +92,10 @@ class Converter
                     foreach ($results as $row)
                     {
                         // TODO: Figure out a way to get the current sheet name.
+                        // Currently, since it returns an array of rows, there's no
+                        // way to get the sheet names. And we cannot let it return
+                        // an array of sheets because chunk works only on a
+                        // cell collection (rows) and not on a row collection (sheets)
                         $allSheetsContent[$index][] = $row;
                     }
                 },

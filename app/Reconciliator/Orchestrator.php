@@ -249,10 +249,6 @@ class Orchestrator
         return $this->gatewayReconciliator->startReconciliation($this->allFilesContents);
     }
 
-    // TODO: While getting the content from excel, make sure you get them in chunks.
-    // You can still set them all together in the array. That's not an issue.
-    // just reading should be done in chunks.
-
     protected function checkFileSkip($fileDetails)
     {
         // Checks if this particular file needs to be excluded for the gateway
@@ -586,15 +582,44 @@ class Orchestrator
         }
         else
         {
+            // TODO: Throw an error here itself if sheetNames is empty.
+            // If a recon file is an excel, it must have a defined set of sheets
+            // that should be read.
+            // If we don't have this check, it may cause an issue later in the flow
+            // where sheet name is being used to perform some actions.
+            // Currently, we cannot get the sheet names through maatwebsite. That's
+            // why we need the sheet names to be defined.
             $this->handleSettingExcelContentForLargeFiles($fileDetails, $sheetNames);
         }
     }
 
     protected function handleSettingExcelContentForLargeFiles($fileDetails, $sheetNames)
     {
-        $rows = $this->converter->getRowsFromExcelSheetsOptimized($fileDetails, $sheetNames);
+        $sheetsContents = $this->converter->getRowsFromExcelSheetsOptimized($fileDetails, $sheetNames);
 
-        var_dump($rows); die;
+        foreach ($sheetsContents as $sheetName => $rows)
+        {
+            if (empty($rows) === true)
+            {
+                continue;
+            }
+
+            $sheetArray = [];
+
+            foreach ($rows as $cellCollection)
+            {
+                $sheetArray[] = $cellCollection->all();
+            }
+
+            $fileDetails[FileProcessor::SHEET_NAME] = $sheetName;
+
+            $this->setExtraDetails($sheetArray, $fileDetails);
+
+            $this->allFilesContents[] = $sheetArray;
+        }
+
+        // TODO: REMOVE THIS
+        var_dump(json_encode($this->allFilesContents));die;
     }
 
     /**
