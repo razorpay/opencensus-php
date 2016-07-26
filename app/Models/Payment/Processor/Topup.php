@@ -26,8 +26,7 @@ trait Topup
         catch (Exception\BaseException $e)
         {
             $this->updatePaymentFailed(
-                    $e->getError(),
-                    TraceCode::PAYMENT_TOPUP_FAILURE);
+                    $e, TraceCode::PAYMENT_TOPUP_FAILURE);
 
             throw $e;
         }

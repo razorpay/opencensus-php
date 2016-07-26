@@ -284,7 +284,7 @@ class Processor
 
         $e = new Exception\BadRequestException($errorCode);
 
-        $this->updatePaymentFailed($e->getError(), TraceCode::PAYMENT_CANCELLED);
+        $this->updatePaymentFailed($e, TraceCode::PAYMENT_CANCELLED);
 
         return Payment\Status::FAILED;
     }

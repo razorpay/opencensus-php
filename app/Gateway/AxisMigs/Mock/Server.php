@@ -197,7 +197,7 @@ class Server extends Base\Mock\Server
         switch ($input['vpc_CardNum'])
         {
             case '55553555655655':
-                $content['vpc_3DSstatus'] = 'A';
+                $content['vpc_3DSstatus'] = 'N';
                 break;
             default:
                 $content['vpc_3DSstatus'] = 'Y';

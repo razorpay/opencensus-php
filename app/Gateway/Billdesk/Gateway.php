@@ -86,13 +86,37 @@ class Gateway extends Base\Gateway
         if ($content['AuthStatus'] !== AuthStatus::SUCCESS)
         {
             // Payment fails, throw exception
-            throw new Exception\GatewayErrorException(
+            $e = new Exception\GatewayErrorException(
                     ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
                     $content['AuthStatus'],
                     '');
+
+            // Set 2fa error if 2fa failed
+            if (AuthStatus::isTwoFaFailed($content['AuthStatus']) === true)
+            {
+                $e->markTwoFaError();
+            }
+
+            throw $e;
         }
 
         assert($content['CustomerID'] === $input['payment']['id']);
+
+        return $this->getCallbackResponseData($content);
+    }
+
+    protected function getCallbackResponseData(array $content)
+    {
+        $two_fa_status = AuthStatus::getTwoFaStatus($content['AuthStatus']);
+
+        $data = array(\RZP\Models\Payment\Entity::TWO_FA_STATUS => $two_fa_status);
+
+        return $data;
+    }
+
+    protected function getTwoFaStatus($code)
+    {
+        return AuthStatus::getTwoFaStatus($code);
     }
 
     public function refund(array $input)

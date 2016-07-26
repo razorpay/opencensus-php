@@ -55,7 +55,6 @@ trait ResponseFieldsTrait
         'SecurityID',
         'SecurityPassword',
         'TxnDate',
-        'AuthStatus',
         'SettlementType',
         'AdditionalInfo1',
         'AdditionalInfo2',
@@ -66,6 +65,7 @@ trait ResponseFieldsTrait
         'AdditionalInfo7',
         'ErrorStatus',
         'ErrorDescription',
+        'AuthStatus',
         'Checksum',
     );
 

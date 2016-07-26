@@ -627,7 +627,7 @@ class Gateway extends Base\Gateway
             else
             {
                 // payment succeeds
-                return $this->makeApiCallbackResponse(array('threeDSstatus' => $threeDSstatus));
+                return $this->getCallbackResponseData(array('threeDSstatus' => $threeDSstatus));
             }
         }
         else
@@ -636,12 +636,12 @@ class Gateway extends Base\Gateway
             $apiErrorCode = $this->getApiErrorCode($input);
         }
 
-        $this->throwException($apiErrorCode, $txnResponseCode, $message);
+        $this->throwException($apiErrorCode, $txnResponseCode, $message, $threeDSstatus);
     }
 
-    protected function makeApiCallbackResponse(array $input)
+    protected function getCallbackResponseData(array $input)
     {
-        $two_fa_status = $this->getTwoFaStatus($input['threeDSstatus']);
+        $two_fa_status = ThreeDSecureStatus::getThreeDsStatus($input['threeDSstatus']);
 
         $data = array(\RZP\Models\Payment\Entity::TWO_FA_STATUS => $two_fa_status);
 
@@ -654,22 +654,12 @@ class Gateway extends Base\Gateway
         $e = new Exception\GatewayErrorException($code, $gatewayErrorCode,
                     $gatewayErrorDesc);
 
-        if (ThreeDSecureStatus::is3DSecureSuccess($threeDSstatus) === false)
+        if (ThreeDSecureStatus::is3DSecureFailed($threeDSstatus) === true)
         {
             $e->markTwoFaError();
         }
 
         throw $e;
-    }
-
-    protected function hasThreeDsFailed($threeDSstatus)
-    {
-        return ThreeDSecureStatus::is3DSecureSuccess($threeDSstatus) === false;
-    }
-
-    protected function getTwoFaStatus($threeDSstatus)
-    {
-        return ThreeDSecureStatus::getThreeDsStatus($threeDSstatus);
     }
 
     protected function getApiErrorCode($input)

@@ -10,6 +10,7 @@ return [
         'amount' => 50000,
         'method' => 'netbanking',
         'status' => 'captured',
+        'two_fa_status' => 'passed',
         'amount_authorized' => 50000,
         'amount_refunded' => 0,
         'refund_status' => null,
@@ -174,4 +175,21 @@ return [
             ],
         ],
     ],
+
+    'testAuthFailedPayment' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payment failed',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+            'two_fa_error' => true,
+        ],
+    ]
 ];

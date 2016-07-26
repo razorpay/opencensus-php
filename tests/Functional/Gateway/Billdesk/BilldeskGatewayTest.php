@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Billdesk;
 use RZP\Exception;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Payment\TwoFaStatus;
 
 class BilldeskGatewayTest extends TestCase
 {
@@ -36,6 +37,7 @@ class BilldeskGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('txn_'.$payment['transaction_id'], $txn['id']);
+        $this->assertEquals($payment['two_fa_status'], TwoFaStatus::PASSED);
 
         $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
 
@@ -51,6 +53,23 @@ class BilldeskGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             $this->testData['testPaymentBilldeskEntity'], $payment);
+    }
+
+    public function testAuthFailedPayment()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment['bank'] = 'ALLA';
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment)
+        {
+            $payment = $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['two_fa_status'], TwoFaStatus::FAILED);
     }
 
     public function testPaymentOnDirectBilldeskTerminal()
@@ -76,11 +95,13 @@ class BilldeskGatewayTest extends TestCase
     public function testPaymentRefund()
     {
         $payment = $this->getDefaultNetbankingPaymentArray();
+
         $payment = $this->doAuthAndCapturePayment($payment);
 
         $this->refundPayment($payment['id']);
 
         $refund = $this->getLastEntity('billdesk', true);
+
         $this->assertTestResponse($refund);
     }
 

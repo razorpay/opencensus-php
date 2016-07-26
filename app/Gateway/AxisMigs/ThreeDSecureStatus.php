@@ -23,7 +23,16 @@ class ThreeDSecureStatus
 
     public static function is3DSecureSuccess($status)
     {
-        return ($status === self::Y);
+        $twoFaStatus = self::getThreeDsStatus($status);
+
+        return ($twoFaStatus === TwoFaStatus::PASSED);
+    }
+
+    public static function is3DSecureFailed($status)
+    {
+        $twoFaStatus = self::getThreeDsStatus($status);
+
+        return ($twoFaStatus === TwoFaStatus::FAILED);
     }
 
     public static function getThreeDsStatus($status)

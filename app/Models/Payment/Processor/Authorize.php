@@ -308,8 +308,7 @@ trait Authorize
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED);
 
             $this->updatePaymentFailed(
-                    $e->getError(),
-                    TraceCode::PAYMENT_AUTH_FAILURE);
+                    $e, TraceCode::PAYMENT_AUTH_FAILURE);
 
             throw $e;
         }
@@ -815,8 +814,7 @@ trait Authorize
         catch (Exception\BaseException $e)
         {
             $this->updatePaymentFailed(
-                    $e->getError(),
-                    TraceCode::PAYMENT_AUTH_FAILURE);
+                    $e, TraceCode::PAYMENT_AUTH_FAILURE);
 
             throw $e;
         }
@@ -891,8 +889,7 @@ trait Authorize
         catch (Exception\BaseException $e)
         {
             $this->updatePaymentFailed(
-                    $e->getError(),
-                    TraceCode::PAYMENT_AUTH_FAILURE);
+                    $e, TraceCode::PAYMENT_AUTH_FAILURE);
 
             throw $e;
         }
