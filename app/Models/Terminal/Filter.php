@@ -2,8 +2,7 @@
 
 namespace RZP\Models\Terminal;
 
-use App;
-use RZP\Trace;
+use Trace;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
 

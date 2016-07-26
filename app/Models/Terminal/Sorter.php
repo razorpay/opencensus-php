@@ -2,9 +2,8 @@
 
 namespace RZP\Models\Terminal;
 
-use App;
+use Trace;
 
-use RZP\Trace;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
 
@@ -57,7 +56,7 @@ class Sorter
 
             $traceData = ['count' => count($terminals), 'terminals' => $terminalIds, 'msg' => $msg];
 
-            $trace = App::getFacadeRoot()['trace'];
+            $trace = Trace::getFacadeRoot();
 
             $trace->info(TraceCode::TERMINAL_SELECTION, $traceData);
         }
