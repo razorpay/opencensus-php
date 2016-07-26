@@ -168,7 +168,13 @@ class CybersourceGatewayTest extends TestCase
         $this->authorizeFailedPayment($payment['id']);
 
         $payment = $this->getLastEntity('payment', true);
+
         $this->assertEquals($payment['status'], 'authorized');
+
+        $cybersource = $this->getLastEntity('cybersource', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testAuthorizeFailedPayment'], $cybersource);
     }
 
     protected function failAuthorizePayment(array $replace = array())

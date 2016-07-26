@@ -145,5 +145,21 @@ return [
         'currency' => 'INR',
         'entity' => 'refund',
         'admin' => true,
+    ],
+
+    'testAuthorizeFailedPayment' => [
+        'action' => 'authorize',
+        'received' => true,
+        'refund_id' => null,
+        'auth_data' => null,
+        'amount' => 50000,
+        'pares_status' => 'Y',
+        'status' => 'authorized',
+        'xid' => 'eW5DZTVGTkVaRWF3VnowSXYzNzA=',
+        'eci' => '05',
+        'cavv' => 'AAABAWFlmQAAAABjRWWZEEFgFz+=',
+        'ref' => '4661468455476856801012',
+        'capture_ref' => null,
+        'reason_code' => 100
     ]
 ];

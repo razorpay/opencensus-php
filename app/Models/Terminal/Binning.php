@@ -3,6 +3,8 @@
 namespace RZP\Models\Terminal;
 
 use App;
+use RZP\Models\Bank\IFSC;
+use RZP\Models\Card\Network;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
 
@@ -13,11 +15,19 @@ class Binning
      */
     protected static $rules = [
         [
-            'method'      => Method::CARD,
-            'binFor'      => Shared::HDFC_RAZORPAY_TERMINAL,
-            'binWith'     => '5yKTyCuDne8eiz',
-            'loadPercent' => 1,
+            'method'         => Method::CARD,
+            'binFor'         => Shared::HDFC_RAZORPAY_TERMINAL,
+            'binWith'        => '5yKTyCuDne8eiz',
+            'binWithGateway' => Gateway::CYBERSOURCE,
+            'load'           => 2,
         ],
+        [
+            'method'         => Method::NETBANKING,
+            'binFor'         => Shared::BILLDESK_RAZORPAY_TERMINAL,
+            'binWith'        => '59U9GqsARtkw2r',
+            'bank'           => IFSC::KKBK,
+            'load'           => 5,
+        ]
     ];
 
     public function getRules()
@@ -106,10 +116,11 @@ class Binning
             ($rule['method'] === $input['payment']->getMethod()))
         {
 
-            $check = (($chancePercent <= $rule['loadPercent']) and
-                    ($rule['binFor'] === $terminal->getId()));
+            $check = (($chancePercent <= $rule['load']) and
+                      ($rule['binFor'] === $terminal->getId()));
 
-            switch ($rule['method']) {
+            switch ($rule['method'])
+            {
                 case Method::NETBANKING:
                     if ($rule['bank'] === $input['payment']->getBank())
                     {
@@ -119,6 +130,14 @@ class Binning
 
                 case Method::CARD:
                 case Method::EMI:
+                    $network = $input['payment']->card->getNetworkCode();
+
+                    if (Gateway::isCardNetworkSupported($network, $rule['binWithGateway']))
+                    {
+                        return $check;
+                    }
+                    break;
+
                 case Method::WALLET:
                     return $check;
                     break;
