@@ -20,7 +20,7 @@ class Service extends Base\Service
     {
         Customer\Entity::verifyIdAndStripSign($id);
 
-        $customer = $this->repo->customer->findOrFailPublic($id);
+        $customer = $this->repo->customer->findByIdAndMerchantId($id, $this->merchant->getId());
 
         $token = (new Token\Core)->create($customer, $input);
 
