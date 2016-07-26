@@ -563,6 +563,8 @@ class Orchestrator
         // TODO: REMOVE THIS
         $fileDetails[FileProcessor::SIZE] = 999999999;
 
+
+        // TODO: Move everything to optimized fetch (chunks)g
         if ($fileDetails[FileProcessor::SIZE] < FileProcessor::FIVE_HUNDRED_KB)
         {
             $sheets = $this->converter->getAllExcelSheets($fileDetails, $sheetNames);
