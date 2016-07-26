@@ -65,12 +65,12 @@ class Core extends Base\Core
         return $customer;
     }
 
-    public function sendOtp($input)
+    public function sendOtp($input, $merchant)
     {
         $input[Entity::CONTACT] = Customer\Validator::validateAndParseContact(
             $input[Entity::CONTACT]);
 
-        $data = (new Customer\Raven)->sendOtp($input);
+        $data = (new Customer\Raven)->sendOtp($input, $merchant);
 
         return $data;
     }
@@ -90,7 +90,7 @@ class Core extends Base\Core
         $customer = $this->getOrCreateGlobalCustomer($input);
 
         // Create app token for customer
-        $appToken = $this->createCustomerAppToken($customer, $input);
+        $appToken = $this->createCustomerAppToken($customer, $input, $merchant);
 
         // Fetch existing tokens for global customer
         $tokens = (new Customer\Token\Core)->fetchTokensByCustomer($customer);
@@ -115,14 +115,14 @@ class Core extends Base\Core
         return $response;
     }
 
-    protected function createCustomerAppToken($customer, $input)
+    protected function createCustomerAppToken($customer, $input, $merchant)
     {
         // Currently all app_tokens will be generated for common rzp merchant
         $appMerchant = $customer->merchant->getId();
 
         if ($this->isUpdatedAndroidSdk($input))
         {
-            $appMerchant = $this->merchant->getId();
+            $appMerchant = $merchant->getId();
         }
 
         $custAppInput = array(
@@ -141,12 +141,13 @@ class Core extends Base\Core
 
     protected function isUpdatedAndroidSdk($input)
     {
-        if ((isset($input['platform'])) and
-            ($input['platform'] === 'android') and
-            (isset($input['library'])) and
-            ($input['library'] === 'checkoutjs') and
-            (isset($input['version'])) and
-            (version_compare($input['version'], '1.0.0') >= 0))
+        if ((isset($input['_'])) and
+            (isset($input['_']['platform'])) and
+            ($input['_']['platform'] === 'android') and
+            (isset($input['_']['library'])) and
+            ($input['_']['library'] === 'checkoutjs') and
+            (isset($input['_']['version'])) and
+            (version_compare($input['_']['version'], '1.0.0') >= 0))
         {
             return true;
         }
@@ -156,13 +157,11 @@ class Core extends Base\Core
 
     protected function verifyRavenOtp($input, $merchant)
     {
-        $input['context'] = $merchant->getId();
-
-        $input['source'] = 'api';
-
         try
         {
-            (new Customer\Raven)->verifyOtp($input);
+            $input['merchant_id'] = $merchant->getId();
+
+            (new Customer\Raven)->verifyOtp($input, $merchant);
         }
         catch (\Exception $e)
         {
@@ -194,6 +193,8 @@ class Core extends Base\Core
                 Customer\Entity::CONTACT => $contact,
                 Customer\Entity::EMAIL => $email
             ];
+
+
 
             $customer = $this->createGlobalCustomer($custCreateInput);
         }
