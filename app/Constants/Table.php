@@ -40,4 +40,7 @@ class Table
 
     // Sessions table
     const SESSION           = 'sessions';
+
+    // Internal Purposes
+    const FreeCreditsLog    = 'free_credits_log';
 }

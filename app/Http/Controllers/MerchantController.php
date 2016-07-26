@@ -5,6 +5,7 @@ namespace RZP\Http\Controllers;
 use RZP\Constants\Mode;
 use RZP\Http\ApiResponse;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\FreeCredits;
 use RZP\Models\Terminal;
 use RZP\Models\Key;
 use Request;
@@ -551,6 +552,33 @@ class MerchantController extends Controller
 
         $data = (new Merchant\Service)->notifyMerchantsHoliday($input);
 
+        return ApiResponse::json($data);
+    }
+
+    // ****Free Credits Request Handlers****
+    public function postAddFreeCredits()
+    {
+        $input = Request::all();
+        $data = (new FreeCredits\Service)->addFreeCreditsForMerchant($input);
+        return ApiResponse::json($data);
+    }
+
+    public function getFetchFreeCreditsLog($id)
+    {
+        $data = (new FreeCredits\Service)->fetchFreeCreditsLog($id);
+        return ApiResponse::json($data);
+    }
+
+    public function putUpdateFreeCredits($id, $op)
+    {
+        $input = Request::all();
+        $data = (new FreeCredits\Service)->updateFreeCreditsLog($id, $op, $input);
+        return ApiResponse::json($data);
+    }
+
+    public function getShowFreeCreditsGrantedInCampaign($campaignName)
+    {
+        $data = (new FreeCredits\Service)->showFreeCreditsGrantedInCampaign($campaignName);
         return ApiResponse::json($data);
     }
 }
