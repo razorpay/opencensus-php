@@ -3,8 +3,6 @@
 namespace RZP\Models\Terminal;
 
 use App;
-
-use Illuminate\Database\Eloquent\Collection;
 use RZP\Trace;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
@@ -61,7 +59,7 @@ class Filter
 
     protected function traceTerminals($terminals, $msg, $verbose = false)
     {
-        if (($verbose) and ($terminals))
+        if (($verbose === true) and empty($terminals) === false)
         {
             $terminalIds = [];
 
@@ -72,7 +70,7 @@ class Filter
 
             $traceData = ['count' => count($terminals), 'terminals' => $terminalIds, 'msg' => $msg];
 
-            $trace = App::getFacadeRoot()['trace'];
+            $trace = Trace::getFacadeRoot();
 
             $trace->info(TraceCode::TERMINAL_SELECTION, $traceData);
         }

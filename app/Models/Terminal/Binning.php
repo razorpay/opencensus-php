@@ -49,7 +49,6 @@ class Binning
     {
         // Since only the first terminal would be selected
         // Check condition on binFor only on first terminal
-        $originalTerminal = $terminal;
 
         list($returnTlId, $rule) = $this->chooseTerminalWithRules($terminal, $chancePercent, $input);
 
@@ -57,16 +56,16 @@ class Binning
         {
             // If from the possible terminals the binWith is not found,
             // The originally selected terminal will be returned.
-            foreach ($terminals as $terminal)
+            foreach ($terminals as $terminalX)
             {
-                if ($terminal->getId() === $rule['binWith'])
+                if ($terminalX->getId() === $rule['binWith'])
                 {
-                    return $terminal;
+                    return $terminalX;
                 }
             }
         }
 
-        return $originalTerminal;
+        return $terminal;
     }
 
     /**
@@ -114,7 +113,7 @@ class Binning
      */
     public function isRuleApplicable($terminal, $rule, $chancePercent, $input = [])
     {
-        if ((isset($rule['method'])) and
+        if ((isset($rule['method']) === true) and
             ($rule['method'] === $input['payment']->getMethod()))
         {
             $check = (($chancePercent <= $rule['load']) and

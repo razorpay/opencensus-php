@@ -35,7 +35,7 @@ class Selector
         Sorters\MerchantSorter::class,
     ];
 
-    public function __construct($payment, $mode)
+    public function __construct(Payment\Entity $payment, $mode)
     {
         $app = App::getFacadeRoot();
 
@@ -154,8 +154,7 @@ class Selector
 
     protected function traceTerminals($terminals, $msg, $verbose = false)
     {
-        if (($verbose) and
-            ($terminals))
+        if (($verbose === true) and (empty($terminals) === false))
         {
             $terminalIds = [];
 

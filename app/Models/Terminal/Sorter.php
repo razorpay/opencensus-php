@@ -46,7 +46,7 @@ class Sorter
 
     protected function traceTerminals($terminals, $msg, $verbose = false)
     {
-        if (($verbose) and ($terminals))
+        if (($verbose === true) and (empty($terminals) === false))
         {
             $terminalIds = [];
 
