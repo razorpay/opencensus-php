@@ -51,7 +51,7 @@ class EmiFile extends Base\EmiFile
 
         $this->mail->queue('emails.message', $data, function ($message) use ($data)
         {
-            $emails = ['settlements@razorpay.com'];
+            $emails = ['axiscards.emi@razorpay.com', 'settlements@razorpay.com'];
 
             $message->from('emifiles@razorpay.com', 'Axis Emi File');
 
