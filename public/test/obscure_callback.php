@@ -24,7 +24,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
     </tr>
 </table>
 <br><br>
-<form method="post" id="paymentform" action="//<?=$public_url?>/payments">
+<form method="post" id="paymentform" action="//<?=$public_url?>/payments/create/checkout">
 <table border="1" align="center"  width="300">
     <tr>
     <th colspan="50" bgcolor="brown" >Enter Parameters</th>
@@ -85,7 +85,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
     <tr>
         <td colspan='40'>CardHolder/Member Name:</td>
         <td><input type="text" name="card[name]" size="25" value="shashank"></td>
-        <!-- <td><input type="text" name="callback_url" value="<?= $callback_url ?>"></td> -->
+        <td><input type="text" name="callback_url" value="<?= $callback_url ?>"></td>
         <input type="hidden" value="INR" name="currency">
         <input type="hidden" value="<?=$key_id?>" name="key_id">
     </tr>
