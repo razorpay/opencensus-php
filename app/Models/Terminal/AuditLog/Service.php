@@ -4,13 +4,13 @@ namespace RZP\Models\Terminal\AuditLog;
 
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Terminal\Action;
+use RZP\Models\Terminal\AuditLog;
 
 class Service extends Base\Service
 {
-    public function createAuditLog($id, $input)
+    public function createAuditLog($input)
     {
-        $action = (new Action\Core)->create($input, $id);
+        $action = (new AuditLog\Core)->create($input);
 
         return $action->toArrayPublic();
     }

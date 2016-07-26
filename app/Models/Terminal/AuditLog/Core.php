@@ -11,10 +11,8 @@ use RZP\Models\Terminal\AuditLog;
 
 class Core extends Base\Core
 {
-    public function create($input, $id)
+    public function create($input)
     {
-        $input['terminal_id'] = $id;
-
         $auditLog = (new AuditLog\Entity)->build($input);
 
         //$this->validateExistingAction($action);

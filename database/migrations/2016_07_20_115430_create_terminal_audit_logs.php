@@ -30,7 +30,7 @@ class CreateTerminalAuditLogs extends Migration
             $table->boolean(AuditLog::STATUS)
                 ->default(1);
 
-            $table->integer(AuditLog::RESPONSE_TIME)
+            $table->float(AuditLog::RESPONSE_TIME)
                 ->default(0);
 
             $table->integer(AuditLog::STATUS_CODE)
@@ -53,6 +53,8 @@ class CreateTerminalAuditLogs extends Migration
 
 
             $table->integer(AuditLog::CREATED_AT);
+
+            $table->integer(AuditLog::UPDATED_AT);
 
             $table->index(AuditLog::TERMINAL_ID);
 

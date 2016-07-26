@@ -11,12 +11,12 @@ class Validator extends Base\Validator
 {
 
     protected static $createRules = array(
-        Entity::PAYMENT_ID => 'required|alpha_num|size:14',
-        Entity::TERMINAL_ID => 'required|alpha_num|size:14',
-        Entity::TERMINAL_ID => 'required|boolean',
-        Entity::RESOPONSE_TIME => 'required|integer',
-        Entity::STATUS_CODE => 'required|integer',
-        Entity::STATUS_MSG  => 'sometimes|string',
-        Entity::PAYMENT_TYPE => 'required|integer|in:0,1'
+        Entity::PAYMENT_ID      => 'required|alpha_num|size:14',
+        Entity::TERMINAL_ID     => 'required|alpha_num|size:14',
+        Entity::STATUS          => 'required|boolean',
+        Entity::RESPONSE_TIME   => 'required|numeric',
+        Entity::STATUS_CODE     => 'required|integer',
+        Entity::STATUS_MSG      => 'sometimes|string',
+        Entity::PAYMENT_TYPE    => 'required|integer|in:0,1'
     );
 }

@@ -21,6 +21,7 @@ class Entity extends Base\PublicEntity
     const STATUS_MSG                    = 'status_msg';
     const PAYMENT_TYPE                  = 'payment_type';
     const CREATED_AT                    = 'created_at';
+    const UPDATED_AT                    = 'updated_at';
 
     protected $fillable = array(
         self::PAYMENT_ID,
@@ -41,10 +42,11 @@ class Entity extends Base\PublicEntity
         self::STATUS_CODE,
         self::STATUS_MSG,
         self::PAYMENT_TYPE,
-        self::CREATED_AT
+        self::CREATED_AT,
+        self::UPDATED_AT
     );
 
-    protected $table = \RZP\Constants\Table::TERMNINAL_AUDIT_LOGS;
+    protected $table = \RZP\Constants\Table::TERMINAL_AUDITLOG;
 
     protected $generateIdOnCreate = true;
 
