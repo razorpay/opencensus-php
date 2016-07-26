@@ -6,6 +6,7 @@ use Gateway;
 use RZP\Models\Emi;
 use RZP\Services\TokenEx;
 use RZP\Models\Emi\Banks\Base;
+use RZP\Gateway\Base\Action;
 
 use Carbon\Carbon;
 
@@ -59,7 +60,7 @@ class EmiFile extends Base\EmiFile
 
         $this->mail->queue('emails.message', $data, function ($message) use ($data)
         {
-            $emails = ['settlements@razorpay.com'];
+            $emails = ['kotakcards.emi@razorpay.com', 'settlements@razorpay.com'];
 
             $message->from('emifiles@razorpay.com', 'Kotak Emi File');
 
@@ -87,9 +88,7 @@ class EmiFile extends Base\EmiFile
 
             $emiPercent = $emiPlan['rate']/100;
 
-            $gatewayEntity = $this->getGatewayEntity($emiPayment);
-
-            $authCode = $gatewayEntity->getAuthCode();
+            $authCode = $this->getAuthCode($emiPayment);
 
             $data[] = array(
             'EMI ID'                     => $emiPayment->getId(),
@@ -99,7 +98,7 @@ class EmiFile extends Base\EmiFile
             'Tx Amount'                  => $emiPayment->getAmount()/ 100,
             'Tenure'                     => $emiPlan['duration'],
             'Manufacturer'               => '', // Non Mandatory
-            'Merchant Name'              => $emiPayment->merchant->getName(),
+            'Merchant Name'              => 'Razorpay Payments',
             'Address1'                   => '', // Non Mandatory
             'Acquirer'                   => '', // Non Mandatory
             'MID'                        => '', // Non Mandatory
@@ -115,22 +114,23 @@ class EmiFile extends Base\EmiFile
         return $data;
     }
 
-    protected function getGatewayEntity($payment)
+    protected function getAuthCode($payment)
     {
         $gateway = ucfirst($payment->gateway);
 
-        $entity = 'RZP\Gateway\\'.$gateway.'\\Entity';
-
         $repo = 'RZP\Gateway\\'.$gateway.'\\Repository';
 
-        if (defined($repo))
+        if (class_exists($repo))
         {
-            $attributes = $repo->findByPaymentId($payment->id);
+            $gateway = (new $repo)->findByPaymentIdAndAction($payment->id, Action::CAPTURE);
 
-            return (new $entity)->build($attributes);
+            if ($gateway !== null)
+            {
+                return $gateway->getAuthCode();
+            }
         }
 
-        return new $entity;
+        return '000000';
     }
 
     protected function sendEmiPassword()
