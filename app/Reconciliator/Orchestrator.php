@@ -592,12 +592,9 @@ class Orchestrator
 
     protected function handleSettingExcelContentForLargeFiles($fileDetails, $sheetNames)
     {
-        // TODO: Get the rows of each sheet in chunks. This should be done in the converter itself.
-        // return back the chunks of rows to this function. Store them in the array. get the next
-        // chunk and so on. Once all the chunks are received set the sheet name, extra details and stuff
-        // in this class.
+        $rows = $this->converter->getRowsFromExcelSheetsOptimized($fileDetails, $sheetNames);
 
-        $rows = $this->converter->getChunksFromExcelSheet($fileDetails, $sheetNames);
+        var_dump($rows); die;
     }
 
     /**

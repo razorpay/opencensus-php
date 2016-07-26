@@ -29,6 +29,9 @@ class Converter
         'ref'  => 'reference',
     ];
 
+    const MAX_SHEETS_ALLOWED = 10;
+    const ROW_CHUNK_SIZE = 2;
+
     protected $dataArray;
 
     /**
@@ -55,54 +58,93 @@ class Converter
         return $sheets;
     }
 
-    public function getChunksFromExcelSheet($fileDetails, $sheetNames = [])
+    public function getRowsFromExcelSheetsOptimized($fileDetails, $sheetNames = [])
     {
-        // TODO: Move this to constructor
-        Config::set('excel.import.force_sheets_collection', false);
+        // TODO: REMOVE THIS
+        $sheetNames = [];
 
-        $filePath = $fileDetails[FileProcessor::FILE_PATH];
+        // For the current implementation to work the way it is expected to,
+        // force_sheets_collection MUST be set to false. We are loading sheet
+        // by sheet in this particular implementation and hence would want
+        // an array of rows to be returned rather than an array of sheets.
+        Config::set('excel.import.force_sheets_collection', false);
 
         if (empty($sheetNames) === false)
         {
-            Excel::selectSheets(['Sale'])->filter('chunk')->load($filePath)->chunk(1, function($results)
-            {
-                Trace::getFacadeRoot()->info(
-                    'RECON_INFO',
-                    [
-                        'message' => 'pppppp',
-                        'count' => $results->count()
-                    ]
-                );
-
-                var_dump($results);
-
-                foreach ($results as $row)
-                {
-                    Trace::getFacadeRoot()->info(
-                        'RECON_INFO',
-                        [
-                            'message' => 'bbbbb',
-                            'type'    => get_class($row),
-                            'content' => ($row),
-                        ]
-                    );
-                }
-            });
+            return $this->getRowsFromExcelSheetsOptimizedWithSheetNames($fileDetails, $sheetNames);
         }
-        else
+
+        return $this->getRowsFromExcelSheetsOptimizedWithIndices($fileDetails, $sheetNames);
+    }
+
+    protected function getRowsFromExcelSheetsOptimizedWithIndices(array $fileDetails, $sheetName)
+    {
+        $filePath = $fileDetails[FileProcessor::FILE_PATH];
+
+        $allSheetsContent = [];
+
+        foreach (range(0, self::MAX_SHEETS_ALLOWED) as $index)
         {
-            Excel::filter('chunk')->load($filePath)->chunk(2, function($results)
-            {
-                foreach($results as $sheet)
+            Excel::filter('chunk')->selectSheetsByIndex($index)->load($filePath)->chunk(
+                self::ROW_CHUNK_SIZE,
+                function ($results) use ($index, & $allSheetsContent)
                 {
-                    Trace::getFacadeRoot()->info(
-                        'RECON_INFO',
-                        ['message'=> 'aaaaa']
-                    );
-                }
-            });
+                    foreach ($results as $row)
+                    {
+                        // TODO: Figure out a way to get the current sheet name.
+                        $allSheetsContent[$index][] = $row;
+                    }
+                },
+                false
+            );
         }
-        die;
+
+        return $allSheetsContent;
+    }
+
+    protected function getRowsFromExcelSheetsOptimizedWithSheetNames(array $fileDetails, array $sheetNames)
+    {
+        $filePath = $fileDetails[FileProcessor::FILE_PATH];
+
+        $allSheetsContent = [];
+
+        foreach ($sheetNames as $sheetName)
+        {
+            $allSheetsContent[$sheetName] = [];
+
+            try
+            {
+                Excel::filter('chunk')->selectSheets($sheetName)->load($filePath)->chunk(
+                    self::ROW_CHUNK_SIZE,
+                    function ($results) use ($sheetName, & $allSheetsContent)
+                    {
+                        foreach ($results as $row)
+                        {
+                            $allSheetsContent[$sheetName][] = $row;
+                        }
+                    },
+                    false
+                );
+            }
+            catch (\Exception $ex)
+            {
+                // This exception with the below message is thrown when the particular sheet
+                // is not found in the excel file. The reason we let this be is because maatwebsite
+                // does not fail silently if the given sheet does not exist. We have
+                // a possible list of sheets that can be present in the given file, hardcoded
+                // on which we run this code block.
+
+                if (strpos(strtolower($ex->getMessage()), 'undefined variable: index') !== false)
+                {
+                    continue;
+                }
+
+                // TODO: Add a trace exception here
+                throw $ex;
+            }
+        }
+
+        return $allSheetsContent;
     }
 
     public function convertExcelSheetToArray($sheet)
