@@ -49,7 +49,9 @@ class EmiFile extends Base\EmiFile
     {
         $this->fetchAndSendPassword();
 
-        $zipFile = $this->getZippedFile();
+        $fullPath = $this->getExcelFullFilePath();
+
+        $zipFile = $this->getZippedFile($fullPath);
 
         $data['file'] = $zipFile;
 

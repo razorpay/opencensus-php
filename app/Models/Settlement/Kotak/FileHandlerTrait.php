@@ -29,6 +29,16 @@ trait FileHandlerTrait
         return $url;
     }
 
+    public function writeToCsvFile($data, $name)
+    {
+        $fullpath = $this->saveCsv($name, $data);
+
+        $url = $this->saveToAws($name, $fullpath, 'text/csv');
+
+        // This will be local file path if aws is mocked
+        return $url;
+    }
+
     public function writeToExcelFile($data, $name)
     {
         \Config::set('excel::export.calculate', true);
@@ -225,6 +235,28 @@ trait FileHandlerTrait
         return $fullpath;
     }
 
+    protected function saveCsv($name, $data)
+    {
+        $fullpath = $this->getFullFilePath($name);
+
+        $file = fopen($fullpath, 'w');
+
+        if (count($data)>0)
+        {
+            fputcsv($file, array_keys($data[0]));
+            foreach ($data as $line)
+            {
+                fputcsv($file, $line);
+            }
+        }
+
+        fclose($file);
+
+        chmod($fullpath, 0777);  // keep it 0777. This step is important.
+
+        return $fullpath;
+    }
+
     protected function generateText($data, $glue = '~', $ignoreLastNewline = false)
     {
         $txt = '';
@@ -338,6 +370,13 @@ trait FileHandlerTrait
     protected function getExcelFullFilePath()
     {
         $name = $this->getExcelFileToWriteName();
+
+        return $this->getFullFilePath($name);
+    }
+
+    protected function getTextFullFilePath()
+    {
+        $name = $this->getFileToWriteName();
 
         return $this->getFullFilePath($name);
     }

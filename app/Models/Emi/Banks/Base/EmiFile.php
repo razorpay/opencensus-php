@@ -52,9 +52,8 @@ class EmiFile
         return Str::random(self::EMI_FILE_PASSWORD_LENGTH);
     }
 
-    protected function getZippedFile()
+    protected function getZippedFile($fullPath)
     {
-        $fullPath = $this->getExcelFullFilePath();
         $fileArray = array($fullPath);
 
         $zipPath = $this->makeZipFile($fileArray, $this->emiFilePassword);
