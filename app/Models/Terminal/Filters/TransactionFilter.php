@@ -9,8 +9,10 @@ use RZP\Error\ErrorCode;
 
 use RZP\Models\Terminal;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Card\Network;
 use RZP\Models\Payment\Method;
 use RZP\Models\Emi\Repository;
+use RZP\Models\Terminal\Shared;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Processor\Netbanking;
 
@@ -21,6 +23,7 @@ class TransactionFilter extends Terminal\Filter
         'network',
         'international',
         'bank',
+        'maestro',
     ];
 
     public function methodFilter($terminal, $input)
@@ -61,20 +64,11 @@ class TransactionFilter extends Terminal\Filter
     // Applicable only for card and emi
     public function networkFilter($terminal, $input)
     {
-        $method = $input['payment']->getMethod();
-
-        switch ($method)
+        if ($input['payment']->isMethodCardOrEmi())
         {
-            // Network Filtration has to work similarly for card and emi
-            case Method::CARD:
-            case Method::EMI:
-                $network = $input['payment']->card->getNetworkCode();
+            $network = $input['payment']->card->getNetworkCode();
 
-                return Gateway::isCardNetworkSupported($network, $terminal->getGateway());
-                break;
-
-            default:
-                break;
+            return Gateway::isCardNetworkSupported($network, $terminal->getGateway());
         }
 
         return true;
@@ -82,9 +76,7 @@ class TransactionFilter extends Terminal\Filter
 
     public function internationalFilter($terminal, $input)
     {
-        $method = $input['payment']->getMethod();
-
-        if ($method !== Method::CARD)
+        if ($input['payment']->isMethodCardOrEmi() === false)
         {
             return true;
         }
@@ -120,22 +112,33 @@ class TransactionFilter extends Terminal\Filter
 
     public function bankFilter($terminal, $input)
     {
-        $method = $input['payment']->getMethod();
-
-        switch ($method)
+        if ($input['payment']->isNetbanking())
         {
-            case Method::NETBANKING:
-                $bank = $input['payment']->getBank();
+            $bank = $input['payment']->getBank();
 
-                $terminalGateway = $terminal->getGateway();
+            $terminalGateway = $terminal->getGateway();
 
-                $gateways = Gateway::getGatewaysForNetbankingBank($bank);
+            $gateways = Gateway::getGatewaysForNetbankingBank($bank);
 
-                return in_array($terminalGateway, $gateways);
-                break;
+            return in_array($terminalGateway, $gateways);
+        }
 
-            default:
-                break;
+        return true;
+    }
+
+    public function maestroFilter($terminal, $input)
+    {
+        if ($input['payment']->isMethodCardOrEmi())
+        {
+            $network = $input['payment']->card->getNetworkCode();
+
+            // For Maes card, support only enabled for shared terminal
+            // on live mode
+            if (($network === Network::MAES) and
+                ($input['mode'] === Mode::LIVE))
+            {
+                return Shared::isSharedTerminal($terminal);
+            }
         }
 
         return true;

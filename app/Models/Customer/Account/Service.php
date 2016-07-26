@@ -104,13 +104,7 @@ class Service extends Base\Service
      */
     public function sendOtp($input)
     {
-        $input['context'] = $this->merchant->getId();
-
-        $input['source'] = 'api';
-
-        $input['params']['merchant_name'] = $this->merchant->getBillingLabelElseName();
-
-        $data = (new Customer\Core)->sendOtp($input);
+        $data = (new Customer\Core)->sendOtp($input, $this->merchant);
 
         return $data;
     }
@@ -195,6 +189,14 @@ class Service extends Base\Service
             (new Customer\Core)->putAppTokenInSession($app);
 
             $result['email'] = $customer->getEmail();
+
+            // Fetch existing tokens if exists
+            $tokens = (new Customer\Token\Core)->fetchTokensByCustomer($customer);
+
+            if (($tokens !== null) and ($tokens->count() > 0))
+            {
+                $result['tokens'] = $tokens->toArrayPublic();
+            }
         }
 
         return $result;

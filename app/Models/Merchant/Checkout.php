@@ -25,6 +25,8 @@ class Checkout
 
     public function getPreferences($merchant, $mode, $input)
     {
+        $this->tracePreferencesRequest($merchant, $mode);
+
         $this->checkAndFillAppTokenInputFromSession($merchant, $mode, $input);
 
         $data = $this->getMerchantPreferencesData($merchant, $input);
@@ -36,6 +38,17 @@ class Checkout
         $this->checkAndAddOrderForTpv($merchant, $input, $data);
 
         return $data;
+    }
+
+    protected function tracePreferencesRequest($merchant, $mode)
+    {
+        $this->app['trace']->info(
+            TraceCode::CHECKOUT_PREFERENCES_REQUEST,
+            [
+                'merchant_id' => $merchant->getId(),
+                'mode'        => $mode,
+                'cookie'      => Session::getId()
+            ]);
     }
 
     protected function fetchTPVOrderInfo($input, $merchant)
@@ -176,6 +189,11 @@ class Checkout
                 if ($response['valid'] === true)
                 {
                     $data['email'] = $response['email'];
+
+                    if (isset($response['tokens']))
+                    {
+                        $data['tokens'] = $response['tokens'];
+                    }
                 }
             }
             else if (isset($input['contact']))
