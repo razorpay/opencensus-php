@@ -262,7 +262,6 @@ final class Route
         'dummy_return_callback',
         'get_emi_plans',
         'customer_get_saved_status',
-        'device_verify_token',
         'app_delete_token',
         'customer_logout_global',
         'otp_post',
@@ -436,6 +435,7 @@ final class Route
         'customer_delete',
         'customer_create_token',
         'customer_update_token',
+        'device_verify_token',
         'app_fetch_tokens',
     );
 
@@ -518,7 +518,6 @@ final class Route
         'customer_get_saved_status' => 'cardsaving',
         'customer_logout_global'    => 'cardsaving',
         'app_delete_token'          => 'cardsaving',
-        'device_verify_token'       => 'cardsaving',
         'otp_post'                  => 'cardsaving',
         'otp_verify'                => 'cardsaving',
     );

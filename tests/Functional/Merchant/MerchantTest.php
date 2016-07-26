@@ -9,11 +9,13 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Models\Merchant;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
 class MerchantTest extends TestCase
 {
     use PaymentTrait;
     use SettlementTrait;
+    use InteractsWithSession;
 
     public function setUp()
     {
@@ -458,8 +460,28 @@ class MerchantTest extends TestCase
         $this->fixtures->merchant->activate('10000000000000');
 
         $response = $this->startTest();
+    }
 
-        $this->assertEquals($response['customer']['valid'], true);
+    public function testGetCheckoutRouteWithAndroidMetadata()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->editFeatures('cardsaving');
+
+        $this->session(['test_app_token' => '1000001custapp']);
+
+        $response = $this->startTest();
+
+        $this->assertEquals(isset($response['options']['customer']), false);
+    }
+
+    public function testGetCheckoutRouteWithAndroidMetadataNoSession()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->editFeatures('cardsaving');
+
+        $response = $this->startTest();
     }
 
     public function testGetCheckoutRouteWithSavedGlobal()
