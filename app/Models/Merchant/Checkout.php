@@ -175,11 +175,11 @@ class Checkout
                     $data['customer'] = $custData;
                 }
             }
-            else if ((isset($input[Customer\App\Entity::DEVICE_TOKEN])) and
+            else if ((isset($input[Customer\AppToken\Entity::DEVICE_TOKEN])) and
                     (isset($input['contact'])))
             {
                 $response = (new Customer\Service)->validateDeviceToken(
-                    $input[Customer\App\Entity::DEVICE_TOKEN],
+                    $input[Customer\AppToken\Entity::DEVICE_TOKEN],
                     $input);
 
                 $data['customer'] = array(

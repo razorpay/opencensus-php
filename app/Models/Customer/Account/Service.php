@@ -180,11 +180,11 @@ class Service extends Base\Service
         if ($result['valid'] === true)
         {
             $custAppInput = array(
-                App\Entity::CUSTOMER_ID     => $customer->getId(),
-                App\Entity::MERCHANT_ID     => $this->merchant->getId(),
-                App\Entity::DEVICE_TOKEN    => $deviceToken);
+                AppToken\Entity::CUSTOMER_ID     => $customer->getId(),
+                AppToken\Entity::MERCHANT_ID     => $this->merchant->getId(),
+                AppToken\Entity::DEVICE_TOKEN    => $deviceToken);
 
-            $app = (new App\Core)->create($custAppInput);
+            $app = (new AppToken\Core)->create($custAppInput);
 
             (new Customer\Core)->putAppTokenInSession($app);
 
