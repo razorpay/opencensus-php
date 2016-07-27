@@ -262,8 +262,6 @@ final class Route
         'dummy_return_callback',
         'get_emi_plans',
         'customer_get_saved_status',
-        'device_verify_token',
-        'app_fetch_tokens',
         'app_delete_token',
         'customer_logout_global',
         'otp_post',
@@ -401,9 +399,6 @@ final class Route
         'get_emi_plan_by_id',
         'emi_generate_excel',
         'order_update',
-        'customer_delete',
-        'customer_create_token',
-        'customer_update_token',
         'refund_verify',
         'es_migrate_entity',
         'dummy_critical_error',
@@ -437,6 +432,11 @@ final class Route
         'account_fetch_balance',
         'account_fetch_config',
         'submerchant_create',
+        'customer_delete',
+        'customer_create_token',
+        'customer_update_token',
+        'device_verify_token',
+        'app_fetch_tokens',
     );
 
     public static $direct = array(
@@ -518,8 +518,6 @@ final class Route
         'customer_get_saved_status' => 'cardsaving',
         'customer_logout_global'    => 'cardsaving',
         'app_delete_token'          => 'cardsaving',
-        'app_fetch_tokens'          => 'cardsaving',
-        'device_verify_token'       => 'cardsaving',
         'otp_post'                  => 'cardsaving',
         'otp_verify'                => 'cardsaving',
     );

@@ -336,7 +336,28 @@ return [
             ],
             'response' => [
                 'content' => [
-                    'saved' => true
+                    'saved' => true,
+                ],
+            ],
+    ],
+
+    'testFetchSavedCustomerStatusWithDeviceToken'   => [
+        'request' => [
+                'url' => '/customers/status/1234567890',
+                'method' => 'get',
+                'content' => [
+                    'device_token' => '1000custdevice'
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    'saved' => true,
+                    'email' => 'test@razorpay.com',
+                    'tokens' => [
+                        'entity' => 'collection',
+                        'count'  => 1,
+                        'items'  => [],
+                    ]
                 ],
             ],
     ],

@@ -191,13 +191,16 @@ trait Callback
             $input['customer'] = $customer;
 
             $payment->globalCustomer()->associate($customer);
-            $this->repo->saveOrFail($payment);
         }
 
         if (isset($data['token']) === true)
         {
-            $this->createOrUpdateToken($input, $data);
+            $token = $this->createOrUpdateToken($input, $data);
+
+            $payment->setGlobalToken($token->getToken());
         }
+
+        $this->repo->saveOrFail($payment);
     }
 
     protected function processPaymentCallbackException($e)

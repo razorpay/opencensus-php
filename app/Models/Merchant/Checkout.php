@@ -6,6 +6,7 @@ use App;
 use RZP\Constants\Mode;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
@@ -74,9 +75,20 @@ class Checkout
 
         try
         {
-            list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp($input, $merchant);
+            list($customer, $appToken) = (new Customer\Core)->getCustomerAndApp($input, $merchant);
 
             assert($customer !== null);
+
+            if ($customer->isLocal() === true)
+            {
+                $custData[Payment\Entity::CUSTOMER_ID] = $customer->getPublicId();
+            }
+            else if((Base\Utility::isUpdatedAndroidSdk($input)) and
+                    ($appToken !== null) and
+                    ($appToken->getMerchantId() === $this->repo->merchant->getSharedAccount()->getId()))
+            {
+                return;
+            }
 
             $savedTokens = (new Customer\Token\Core)->fetchTokensByCustomer($customer);
 
@@ -85,11 +97,6 @@ class Checkout
                 'contact'   => $customer->getContact(),
                 'tokens'    => $savedTokens->toArrayPublic()
             );
-
-            if ($customer->isLocal() === true)
-            {
-                $custData[Payment\Entity::CUSTOMER_ID] = $customer->getPublicId();
-            }
         }
         catch (\Exception $ex)
         {
@@ -175,34 +182,25 @@ class Checkout
                     $data['customer'] = $custData;
                 }
             }
-            else if ((isset($input[Customer\App\Entity::DEVICE_TOKEN])) and
-                    (isset($input['contact'])))
+            else if(isset($input['contact']))
             {
-                $response = (new Customer\Service)->validateDeviceToken(
-                    $input[Customer\App\Entity::DEVICE_TOKEN],
+                $response = (new Customer\Service)->fetchGlobalCustomerStatus(
+                    $input['contact'],
                     $input);
 
                 $data['customer'] = array(
-                    'contact'   => $input['contact'],
-                    'valid'     => $response['valid']);
+                    'saved'     => $response['saved'],
+                    'contact'   => $input['contact']);
 
-                if ($response['valid'] === true)
+                if ($response['saved'] === true)
                 {
-                    $data['email'] = $response['email'];
+                    $data['customer']['email'] = $response['email'];
 
                     if (isset($response['tokens']))
                     {
-                        $data['tokens'] = $response['tokens'];
+                        $data['customer']['tokens'] = $response['tokens'];
                     }
                 }
-            }
-            else if (isset($input['contact']))
-            {
-                $response = (new Customer\Service)->fetchGlobalCustomerStatus($input['contact']);
-
-                $data['customer'] = array(
-                    'contact'   => $input['contact'],
-                    'saved'     => $response['saved']);
             }
         }
         catch (\Exception $ex)
