@@ -27,6 +27,7 @@ class RequestConstants
     const CARD_BRAND            = 'card_branch';
     const CARD_CVV              = 'card_cvv';
     const BANK_CODE             = 'bank_code';
+    const PAYMENT_OPTION        = 'payment_option';
     const SECURE_HASH           = 'secure_hash';
     const ACTION                = 'Action';
     const SECRET_KEY            = 'secret_key';

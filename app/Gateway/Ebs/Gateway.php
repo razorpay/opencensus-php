@@ -265,7 +265,7 @@ class Gateway extends Base\Gateway
     {
         $content[REQ::CHANNEL] = '0';
         $bankId = BankCodes::$bankCodeMap[$input['payment']['bank']];
-        $content[REQ::BANK_CODE] = $bankId;
+        $content[REQ::PAYMENT_OPTION] = $bankId;
     }
 
     protected function getExpiry($input)

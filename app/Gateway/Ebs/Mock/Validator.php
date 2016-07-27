@@ -28,7 +28,7 @@ class Validator extends Base\Validator
         'payment_mode'      => 'required|alpha_num',
         'card_brand'        => 'sometimes|alpha_num',
         'card_cvv'          => 'sometimes|alpha_num',
-        'bank_code'         => 'sometimes|alpha_num',
+        'payment_option'    => 'sometimes|alpha_num',
         'secure_hash'       => 'required|alpha_num',
     );
 
