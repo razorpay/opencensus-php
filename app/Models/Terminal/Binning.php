@@ -45,27 +45,27 @@ class Binning
      * @param  array  $terminals     Array of possible terminals
      * @return Entity
      */
-    public function select($terminal, $chancePercent, $input, $terminals)
+    public function select($selectedTerminal, $chancePercent, $input, $terminals)
     {
         // Since only the first terminal would be selected
         // Check condition on binFor only on first terminal
 
-        list($returnTlId, $rule) = $this->chooseTerminalWithRules($terminal, $chancePercent, $input);
+        list($returnTlId, $rule) = $this->chooseTerminalWithRules($selectedTerminal, $chancePercent, $input);
 
         if (empty($rule) === false)
         {
             // If from the possible terminals the binWith is not found,
             // The originally selected terminal will be returned.
-            foreach ($terminals as $terminalX)
+            foreach ($terminals as $terminal)
             {
-                if ($terminalX->getId() === $rule['binWith'])
+                if ($terminal->getId() === $rule['binWith'])
                 {
-                    return $terminalX;
+                    return $terminal;
                 }
             }
         }
 
-        return $terminal;
+        return $selectedTerminal;
     }
 
     /**
