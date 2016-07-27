@@ -9,7 +9,7 @@ use RZP\Exception;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        Entity::URL     => 'required|string|url|max:255',
+        Entity::URL     => 'required|string|url|max:255|min:3',
         Entity::EVENTS  => 'required|array',
         Entity::SECRET  => 'sometimes|string|max:255',
     );
@@ -17,7 +17,7 @@ class Validator extends Base\Validator
     protected static $createValidators = array('events', 'url');
 
     protected static $editRules = array(
-        Entity::URL     => 'sometimes|string|url|max:255',
+        Entity::URL     => 'sometimes|string|url|max:255|min:3',
         Entity::EVENTS  => 'sometimes|array',
         Entity::ACTIVE  => 'sometimes|in:0,1',
         Entity::SECRET  => 'sometimes|string|max:255',
@@ -32,26 +32,30 @@ class Validator extends Base\Validator
             return;
         }
 
-        if (empty($input[Entity::URL]) === true)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Empty webhook URL is not allowed.');
-        }
-
         $components = parse_url($input[Entity::URL]);
 
-        if (isset($components['port']) === false)
+        if (isset($components['scheme']) === true)
         {
-            return;
+            $scheme = strtolower($components['scheme']);
+
+            if (($scheme !== 'http') or
+                ($scheme !== 'https'))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Only http or https schemes allowed in webhook url.');
+            }
         }
 
-        $port = $components['port'];
-
-        if (($port !== '80') or
-            ($port !== '443'))
+        if (isset($components['port']) === true)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Only 80 or 443 port is currently allowed in webhook url.');
+            $port = $components['port'];
+
+            if (($port !== '80') or
+                ($port !== '443'))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Only 80 or 443 port is currently allowed in webhook url.');
+            }
         }
     }
 
