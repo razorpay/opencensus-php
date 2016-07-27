@@ -2,6 +2,8 @@
 
 namespace RZP\Gateway\Kotak;
 
+use RZP\Models\Payment\TwoFaStatus;
+
 class ResponseCode
 {
     const SUC   = '00';
@@ -11,6 +13,8 @@ class ResponseCode
     const IER   = 'IER';
     const TO    = 'TO';
     const CAN   = 'CAN';
+
+    const PAYMENT_SUCCESS_STATUS = ['00', '0'];
 
     protected static $code = array(
         self::VER   => 'Validation Error Occurs if field data is incorrect',
@@ -74,4 +78,26 @@ class ResponseCode
         'ACCU800'   => 'Generic PaySecure error, None',
         'ACCU999'   => 'PIN Pad was successfully opened',
     );
+
+    public static function getTwoFaStatus($code)
+    {
+        switch ($code) {
+            case '00':
+            case '0':
+                return TwoFaStatus::PASSED;
+            case '55':
+            case '75':
+            case '406':
+                return TwoFaStatus::FAILED;
+            default:
+                return TwoFaStatus::UNKNOWN;
+        }
+    }
+
+    public statis function isTwoFaFailed?($code)
+    {
+        $twoFaStatus = self::getTwoFaStatus($code);
+
+        return $twoFaStatus === TwoFaStatus::FAILED;
+    }
 }

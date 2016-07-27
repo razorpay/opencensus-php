@@ -113,6 +113,8 @@ class Gateway extends Base\Gateway
                     '',
                     $message);
         }
+
+        return $this->getCallbackResponseData();
     }
 
     public function verify(array $input)
@@ -140,6 +142,11 @@ class Gateway extends Base\Gateway
             throw new Exception\BadRequestValidationFailureException(
                 'Failed checksum verification');
         }
+    }
+
+    protected function getTwoFaStatus($code)
+    {
+        return ErrorCode::getTwoFaStatus($code);
     }
 
     protected function getPaymentRequestData($input)

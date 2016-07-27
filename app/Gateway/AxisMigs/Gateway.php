@@ -599,7 +599,7 @@ class Gateway extends Base\Gateway
     {
         $txnResponseCode = $input['gateway']['vpc_TxnResponseCode'];
 
-        $threeDSstatus = isset($input['gateway']['vpc_3DSstatus']) ? $input['gateway']['vpc_3DSstatus'] : '';
+        $threeDSstatus = isset($input['gateway']['vpc_3DSstatus']) ? $input['gateway']['vpc_3DSstatus'] : null;
 
         $message = '';
 

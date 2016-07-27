@@ -53,4 +53,10 @@ class Gateway extends \RZP\Gateway\Base\Gateway
     {
         return new Repository();
     }
+
+    protected function getCallbackResponseData()
+    {
+        return [\RZP\Models\Payment\Entity::TWO_FA_STATUS =>
+                \RZP\Models\Payment\TwoFaStatus::UNKNOWN];
+    }
 }

@@ -312,7 +312,7 @@ class Processor
 
         $payment->setError($code, $desc, $internalCode);
 
-        if ($e->hasTwoFaError() === true)
+        if ((method_exists($e, 'hasTwoFaError') === true) and ($e->hasTwoFaError() === true))
         {
             $payment->setTwoFaStatusFailed();
         }
@@ -658,11 +658,9 @@ class Processor
 
     protected function updatePaymentTwoFaStatus($data)
     {
-        $status = $data[PaymentEntity::TWO_FA_STATUS];
-
         $payment = $this->payment;
 
-        $payment->setTwoFaStatus($status);
+        $payment->setTwoFaStatus($data[PaymentEntity::TWO_FA_STATUS]);
 
         $payment->saveOrFail();
     }

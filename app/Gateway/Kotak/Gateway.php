@@ -68,7 +68,7 @@ class Gateway extends Base\Gateway
         $payment->fill($input['gateway']);
         $payment->saveOrFail();
 
-        $this->verifyPaymentCallbackResponse($input);
+        return $this->verifyPaymentCallbackResponse($input);
     }
 
     public function capture(array $input)
@@ -162,14 +162,27 @@ class Gateway extends Base\Gateway
     {
         $content = $input['gateway'];
 
-        if (($content['ResponseCode'] !== '00') and
-            ($content['ResponseCode'] !== '0'))
+        $code = $content['ResponseCode'];
+
+        // Payment successful
+        if (in_array($code, ResponseCode::PAYMENT_SUCCESS_STATUS))
         {
-            // Payment fails, throw exception
-            throw new Exception\GatewayErrorException(
+            return  [PaymentEntity::TWO_FA_STATUS => ResponseCode::getTwoFaStatus($code)]
+        }
+        // Payment fails, throw exception
+        else
+        {
+            $e = new Exception\GatewayErrorException(
                     ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
                     null,
                     $input['gateway']['Message']);
+
+            if (ResponseCode::isTwoFaFailed($code) === true)
+            {
+                $e->markTwoFaError();
+            }
+
+            throw $e;
         }
     }
 

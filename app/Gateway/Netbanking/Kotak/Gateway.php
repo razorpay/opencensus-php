@@ -111,6 +111,8 @@ class Gateway extends Base\Gateway
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
                 $attrs,'');
         }
+
+        return $this->getCallbackResponseData();
     }
 
     public function verify(array $input)
@@ -135,6 +137,12 @@ class Gateway extends Base\Gateway
             throw new Exception\BadRequestValidationFailureException(
                 'Failed checksum verification');
         }
+    }
+
+    protected function getCallbackResponseData()
+    {
+        return [\RZP\Models\Payment\Entity::TWO_FA_STATUS =>
+                \RZP\Models\Payment\TwoFaStatus::UNKNOWN];
     }
 
     protected function getDataFromResponse($data)
