@@ -58,7 +58,7 @@ class Filter
 
     protected function traceTerminals($terminals, $msg, $verbose = false)
     {
-        if (($verbose === true) and empty($terminals) === false)
+        if (($verbose === true) and (empty($terminals) === false))
         {
             $terminalIds = [];
 
