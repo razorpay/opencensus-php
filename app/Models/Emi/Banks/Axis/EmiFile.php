@@ -31,6 +31,7 @@ class EmiFile extends Base\EmiFile
     {
         $txt = $this->getEmiData($input);
 
+        // Axis wants the file to be in CSV format, but named with a .txt extension
         $urlExcel = $this->writeToCsvFile($txt, $this->getFileToWriteNameWithoutExt(), $this->getTextFullFilePath());
 
         $this->sendAxisEmiFile();
