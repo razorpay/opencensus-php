@@ -15,9 +15,9 @@ class Entity extends Base\Entity
     const CREDITS                   = 'credits';
     const NOTES                     = 'notes';
 
-    protected $entity               = 'payment';
+    protected $entity               = 'free_credits';
 
-    protected $table                = \RZP\Constants\Table::FreeCreditsLog;
+    protected $table                = \RZP\Constants\Table::FREE_CREDITS;
 
     protected $fillable = array(
         self::ID,
@@ -53,11 +53,6 @@ class Entity extends Base\Entity
 
 // --------------------- Mutators -------------------------------------------
 
-    public function setCampaignAttribute(string $campaign)
-    {
-        $this->attributes[self::CAMPAIGN] = utf8_encode($campaign);
-    }
-
 // --------------------- End Mutators ----------------------------------------
 
 // --------------------- Setters ---------------------------------------------
@@ -82,5 +77,4 @@ class Entity extends Base\Entity
     }
 
 // --------------------- End Foreign Key Relations ---------------------------
-
 }

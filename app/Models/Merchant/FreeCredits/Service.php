@@ -17,10 +17,10 @@ use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
-    public function addFreeCreditsForMerchant(array $input)
+    public function grantFreeCreditsForMerchantInCampaign(array $input)
     {
-        $freeCreditLogExists = (new FreeCredits\Core)->checkFreeCreditLogExists($id);
-        if (!$freeCreditLogExists)
+        $freeCreditLogExists = (new FreeCredits\Core)->checkIfFreeCreditsLogExists($id);
+        if ($freeCreditLogExists)
         {
             return array(
                 'success' => false,
@@ -39,9 +39,9 @@ class Service extends Base\Service
 
     public function fetchFreeCreditsLog($id)
     {
-        $freeCreditsLog = (new FreeCredits\Core)->retrieveOrFailById($id);
-        $response = $freeCreditsLog->toArrayPublic();
-        return $response;
+        // Raises Exception if record does not exist.
+        $freeCreditsLog = (new FreeCredits\Core)->retrieveById($id);
+        return $freeCreditsLog->toArrayPublic();
     }
 
     public function UpdateFreeCreditsLog($id, $op, $input)
@@ -53,17 +53,7 @@ class Service extends Base\Service
         );
         if ($op === 'add')
         {
-            $res = $this->addMoreFreeCredits($id, $credits);
-            if ($res['added'])
-            {
-                //TODO: Send Mail or Notify Merchant
-                return $response;
-            }
-            else
-            {
-                $response['success'] = false;
-                $response['error'] = $res['error'];
-            }
+            $this->addMoreFreeCredits($id, $credits);
             return $response;
         }
         else if ($op === 'deduct')
@@ -88,4 +78,14 @@ class Service extends Base\Service
         }
         return $response;
     }
+
+    public function getFreeCreditsGrantedInCampaign($campaign)
+    {
+        $freeCredits = (new FreeCredits\Repository)->getFreeCreditsGrantedInCampaign($credits);
+        $response = array(
+            'credits' => $freeCredits,
+        );
+        return $response;
+    }
+
 }

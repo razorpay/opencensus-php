@@ -559,7 +559,7 @@ class MerchantController extends Controller
     public function postAddFreeCredits()
     {
         $input = Request::all();
-        $data = (new FreeCredits\Service)->addFreeCreditsForMerchant($input);
+        $data = (new FreeCredits\Service)->grantFreeCreditsForMerchantInCampaign($input);
         return ApiResponse::json($data);
     }
 
@@ -578,7 +578,7 @@ class MerchantController extends Controller
 
     public function getShowFreeCreditsGrantedInCampaign($campaignName)
     {
-        $data = (new FreeCredits\Service)->showFreeCreditsGrantedInCampaign($campaignName);
+        $data = (new FreeCredits\Service)->getFreeCreditsGrantedInCampaign($campaignName);
         return ApiResponse::json($data);
     }
 }

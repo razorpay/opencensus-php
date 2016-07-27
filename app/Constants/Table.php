@@ -42,5 +42,5 @@ class Table
     const SESSION           = 'sessions';
 
     // Internal Purposes
-    const FreeCreditsLog    = 'free_credits_log';
+    const FREE_CREDITS      = 'free_credits';
 }
