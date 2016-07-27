@@ -1120,12 +1120,14 @@ trait Authorize
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_NOT_ENALBED_FOR_MERCHANT);
         }
 
-        $type = ucfirst($card->getType());
+        $type = $card->getType();
 
         if ($type === Card\Type::UNKNOWN)
         {
             return;
         }
+
+        $type = ucfirst($type);
 
         $func = 'is' . $type . 'CardEnabled';
 

@@ -120,39 +120,23 @@ class Core extends Base\Core
         // Currently all app_tokens will be generated for common rzp merchant
         $appMerchant = $customer->merchant->getId();
 
-        if ($this->isUpdatedAndroidSdk($input))
+        if (Base\Utility::isUpdatedAndroidSdk($input))
         {
             $appMerchant = $merchant->getId();
         }
 
         $custAppInput = array(
-            App\Entity::CUSTOMER_ID => $customer->getId(),
-            App\Entity::MERCHANT_ID => $appMerchant);
+            AppToken\Entity::CUSTOMER_ID => $customer->getId(),
+            AppToken\Entity::MERCHANT_ID => $appMerchant);
 
-        if (isset($input[App\Entity::DEVICE_TOKEN]))
+        if (isset($input[AppToken\Entity::DEVICE_TOKEN]))
         {
-            $custAppInput[App\Entity::DEVICE_TOKEN] = $input[App\Entity::DEVICE_TOKEN];
+            $custAppInput[AppToken\Entity::DEVICE_TOKEN] = $input[AppToken\Entity::DEVICE_TOKEN];
         }
 
-        $app = (new App\Core)->create($custAppInput);
+        $app = (new AppToken\Core)->create($custAppInput);
 
         return $app;
-    }
-
-    protected function isUpdatedAndroidSdk($input)
-    {
-        if ((isset($input['_'])) and
-            (isset($input['_']['platform'])) and
-            ($input['_']['platform'] === 'android') and
-            (isset($input['_']['library'])) and
-            ($input['_']['library'] === 'checkoutjs') and
-            (isset($input['_']['version'])) and
-            (version_compare($input['_']['version'], '1.0.0') >= 0))
-        {
-            return true;
-        }
-
-        return false;
     }
 
     protected function verifyRavenOtp($input, $merchant)
@@ -207,20 +191,20 @@ class Core extends Base\Core
         $customerId = null;
         $merchantId = null;
         $customer = null;
-        $customerApp = null;
+        $appToken = null;
         $appToken = null;
 
         if (empty($input[Payment\Entity::APP_TOKEN]) === false)
         {
             $appToken = $input[Payment\Entity::APP_TOKEN];
 
-            Customer\App\Entity::verifyIdAndStripSign($appToken);
+            Customer\AppToken\Entity::verifyIdAndStripSign($appToken);
 
-            $customerApp = (new Customer\App\Core)->getAppByAppToken(
+            $appToken = (new Customer\AppToken\Core)->getAppByAppToken(
                 $appToken,
                 $merchant);
 
-            $customerId = $customerApp->getCustomerId();
+            $customerId = $appToken->getCustomerId();
 
             $merchantId = Account::SHARED_ACCOUNT;
         }
@@ -245,7 +229,7 @@ class Core extends Base\Core
                 'app_token'   => $appToken,
             ]);
 
-        return array($customer, $customerApp);
+        return array($customer, $appToken);
     }
 
     public function putAppTokenInSession($appToken)

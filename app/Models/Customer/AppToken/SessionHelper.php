@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Customer\App;
+namespace RZP\Models\Customer\AppToken;
 
 use Session;
 

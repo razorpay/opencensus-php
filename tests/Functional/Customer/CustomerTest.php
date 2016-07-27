@@ -115,7 +115,7 @@ class CustomerTest extends TestCase
         $request = &$this->testData['testDeleteCustomer']['request'];
         $request['url'] = '/customers/'.$customer['id'];
 
-        $this->ba->appAuth();
+        $this->ba->proxyAuth();
 
         $this->startTest();
     }
@@ -150,6 +150,23 @@ class CustomerTest extends TestCase
         $this->assertEquals($content['success'], 1);
     }
 
+    public function testOtpFlowForAndroidSdk()
+    {
+        $this->ba->publicAuth();
+
+        $this->mockRaven();
+
+        // send OTP
+        $response = $this->sendOtp('1234567890');
+
+        // verify OTP
+        $content = $this->verifyOtp('1234567890', 'abc@razorpay.com', '233443', '123', true);
+
+        $this->assertEquals($content['success'], 1);
+
+        $this->assertNotEquals($content['tokens'], null);
+    }
+
     public function testOtpFlowWithInvalidNumber()
     {
         $this->ba->publicAuth();
@@ -181,7 +198,7 @@ class CustomerTest extends TestCase
     }
 
 
-    protected function verifyOtp($contact, $email, $otp, $deviceToken = null)
+    protected function verifyOtp($contact, $email, $otp, $deviceToken = null, $metadata=false)
     {
         $content = [
             'contact' => $contact,
@@ -192,6 +209,13 @@ class CustomerTest extends TestCase
         if ($deviceToken !== null)
         {
             $content['device_token'] = $deviceToken;
+        }
+
+        if ($metadata)
+        {
+            $content['_']['platform'] = 'android';
+            $content['_']['library'] = 'checkoutjs';
+            $content['_']['version'] = '1.0.0';
         }
 
         $request = array(
