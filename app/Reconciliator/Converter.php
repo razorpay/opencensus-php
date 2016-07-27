@@ -60,13 +60,12 @@ class Converter
 
     public function getRowsFromExcelSheetsOptimized($fileDetails, $sheetNames = [])
     {
-        // TODO: REMOVE THIS
-        $sheetNames = [];
-
+        //
         // For the current implementation to work the way it is expected to,
         // force_sheets_collection MUST be set to false. We are loading sheet
         // by sheet in this particular implementation and hence would want
         // an array of rows to be returned rather than an array of sheets.
+        //
         Config::set('excel.import.force_sheets_collection', false);
 
         if (empty($sheetNames) === false)
@@ -77,6 +76,14 @@ class Converter
         return $this->getRowsFromExcelSheetsOptimizedWithSheetIndices($fileDetails);
     }
 
+    /**
+     * This is an unused function currently, because of the sheet name issue.
+     * May come in handy or use in a later time when we don't care about the
+     * sheet names at all.
+     * 
+     * @param array $fileDetails
+     * @return array
+     */
     protected function getRowsFromExcelSheetsOptimizedWithSheetIndices(array $fileDetails)
     {
         $filePath = $fileDetails[FileProcessor::FILE_PATH];

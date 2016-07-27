@@ -560,49 +560,25 @@ class Orchestrator
         // Returns empty if there is no restriction on which sheets to collect.
         $sheetNames = $this->gatewayReconciliator->getSheetNames();
 
-        // TODO: REMOVE THIS
-        $fileDetails[FileProcessor::SIZE] = 999999999;
-
-
-        // TODO: Move everything to optimized fetch (chunks)g
-        if ($fileDetails[FileProcessor::SIZE] < FileProcessor::FIVE_HUNDRED_KB)
+        if (empty($sheetNames) === true)
         {
-            $sheets = $this->converter->getAllExcelSheets($fileDetails, $sheetNames);
-
-            // Every sheet is equivalent to a different file.
-            foreach ($sheets as $sheet)
-            {
-                $sheetArray = $this->converter->convertExcelSheetToArray($sheet);
-
-                $this->handleOneRowSheet($sheetArray);
-
-                $fileDetails[FileProcessor::SHEET_NAME] = $sheet->getTitle();
-
-                $this->setExtraDetails($sheetArray, $fileDetails);
-                $this->allFilesContents[] = $sheetArray;
-            }
-        }
-        else
-        {
-            // TODO: Throw an error here itself if sheetNames is empty.
             // If a recon file is an excel, it must have a defined set of sheets
             // that should be read.
             // If we don't have this check, it may cause an issue later in the flow
             // where sheet name is being used to perform some actions.
-            // Currently, we cannot get the sheet names through maatwebsite. That's
-            // why we need the sheet names to be defined.
-            $this->handleSettingExcelContentForLargeFiles($fileDetails, $sheetNames);
-        }
-    }
+            // With the current implementation, we cannot get the sheet names through maatwebsite.
+            // That's why we need the sheet names to be defined before hand itself.
 
-    protected function handleSettingExcelContentForLargeFiles($fileDetails, $sheetNames)
-    {
+            // TODO: Throw an exception stating that sheet names array cannot be empty
+        }
+
         $sheetsContents = $this->converter->getRowsFromExcelSheetsOptimized($fileDetails, $sheetNames);
 
         foreach ($sheetsContents as $sheetName => $rows)
         {
             if (empty($rows) === true)
             {
+                // This would happen when the sheet name sent, does not exist
                 continue;
             }
 
@@ -620,8 +596,6 @@ class Orchestrator
             $this->allFilesContents[] = $sheetArray;
         }
 
-        // TODO: REMOVE THIS
-        var_dump(json_encode($this->allFilesContents));die;
     }
 
     /**
