@@ -19,6 +19,10 @@ class EmiFile
     public function __construct()
     {
         $this->mail = \Mail::getFacadeRoot();
+
+        $this->app = \App::getFacadeRoot();
+
+        $this->repo = $this->app['repo'];
     }
 
     public function generate($input)

@@ -29,9 +29,18 @@ trait FileHandlerTrait
         return $url;
     }
 
-    public function writeToCsvFile($data, $name)
+    public function writeToCsvFile($data, $name, $fullName = null)
     {
-        $fullpath = $this->saveCsv($name, $data);
+        $excelObject = $this->createExcelObject($data, $name);
+
+        $fileMetadata = $excelObject->store('csv', storage_path('files/settlement'), true);
+        $fullpath = $fileMetadata['full'];
+
+        if ($fullName != null)
+        {
+            rename($fullpath, $fullName);
+            $fullpath = $fullName;
+        }
 
         $url = $this->saveToAws($name, $fullpath, 'text/csv');
 
@@ -228,28 +237,6 @@ trait FileHandlerTrait
 
         $file = fopen($fullpath, 'w');
         fwrite($file, $txt);
-        fclose($file);
-
-        chmod($fullpath, 0777);  // keep it 0777. This step is important.
-
-        return $fullpath;
-    }
-
-    protected function saveCsv($name, $data)
-    {
-        $fullpath = $this->getFullFilePath($name);
-
-        $file = fopen($fullpath, 'w');
-
-        if (count($data)>0)
-        {
-            fputcsv($file, array_keys($data[0]));
-            foreach ($data as $line)
-            {
-                fputcsv($file, $line);
-            }
-        }
-
         fclose($file);
 
         chmod($fullpath, 0777);  // keep it 0777. This step is important.

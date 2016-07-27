@@ -31,7 +31,7 @@ class EmiFile extends Base\EmiFile
     {
         $txt = $this->getEmiData($input);
 
-        $urlExcel = $this->writeToCsvFile($txt, $this->getFileToWriteName());
+        $urlExcel = $this->writeToCsvFile($txt, $this->getFileToWriteNameWithoutExt(), $this->getTextFullFilePath());
 
         $this->sendAxisEmiFile();
 
@@ -97,21 +97,11 @@ class EmiFile extends Base\EmiFile
 
     protected function getAuthCode($payment)
     {
-        $gateway = ucfirst($payment->gateway);
+        $gateway = $payment->gateway;
 
-        $repo = 'RZP\Gateway\\'.$gateway.'\\Repository';
+        $gateway = $this->repo->$gateway->findByPaymentIdAndAction($payment->id, Action::CAPTURE);
 
-        if (class_exists($repo))
-        {
-            $gateway = (new $repo)->findByPaymentIdAndAction($payment->id, Action::CAPTURE);
-
-            if ($gateway !== null)
-            {
-                return $gateway->getAuthCode();
-            }
-        }
-
-        return '000000';
+        return $gateway->getAuthCode();
     }
 
     protected function sendEmiPassword()
