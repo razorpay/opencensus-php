@@ -49,7 +49,7 @@ class AdminController extends Controller
 
     public function getLogout()
     {
-        Auth::admin()->logout();
+        Auth::guard('admin')->logout();
 
         return AppResponse::jsonResponse([]);
     }

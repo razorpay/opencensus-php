@@ -71,7 +71,7 @@ class UserController extends Controller
      */
     public function getLogout()
     {
-        Auth::user()->logout();
+        Auth::guard('user')->logout();
 
         return AppResponse::jsonResponse([]);
     }
