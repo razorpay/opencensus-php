@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Wallet\Payzapp;
 
 use RZP\ErrorCode;
+use RZP\Models\Payment\TwoFaStatus;
 
 class ResponseCode
 {
@@ -65,4 +66,9 @@ class ResponseCode
         13004   =>  'Issuer Declined',
         14003   =>  'MPI Error',
     );
+
+    public static function getTwoFaStatus($code)
+    {
+        return TwoFaStatus::UNKNOWN;
+    }
 }

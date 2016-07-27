@@ -110,7 +110,7 @@ class Gateway extends Base\Gateway
 
         $serverData = $this->pickupData($input);
 
-        $this->verifyPaymentCallbackResponse($serverData);
+        $data = $this->verifyPaymentCallbackResponse($serverData);
 
         $attrs['gateway_payment_id_2'] = $serverData['data']['pgTxnId'];
 
@@ -125,6 +125,8 @@ class Gateway extends Base\Gateway
                 'payment_id' => $input['payment']['id'],
                 'pickedup_data' => $serverData,
             ]);
+
+        return $data;
     }
 
     protected function getAuthContent($input)
@@ -263,7 +265,7 @@ class Gateway extends Base\Gateway
 
             if ($resCode === 0)
             {
-                return;
+                return [\RZP\Models\Payment\Entity::TWO_FA_STATUS => \RZP\Models\Payment\TwoFaStatus::PASSED];
             }
 
         }

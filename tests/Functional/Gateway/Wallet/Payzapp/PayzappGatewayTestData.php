@@ -11,6 +11,7 @@ return [
         'method' => 'wallet',
         'wallet' => 'payzapp',
         'status' => 'captured',
+        'two_fa_status' => 'passed',
         'amount_authorized' => 50000,
         'amount_refunded' => 0,
         'refund_status' => null,
