@@ -394,7 +394,7 @@ class Service extends Base\Service
             $message = 'Payment authorizations till ' .
                         $date->format('d-m-y') . ': ' . $count;
 
-            $this-slack->queue($message, [], ['channel' => '#tech_logs']);
+            $this->slack->queue($message, [], ['channel' => '#tech_logs']);
         }
 
         return ['count' => $count];
