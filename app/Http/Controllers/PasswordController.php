@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Input;
 use Password;
+use Illuminate\Support\Facades\Response;
 
 class PasswordController extends Controller
 {
@@ -23,7 +24,7 @@ class PasswordController extends Controller
             case Password::INVALID_USER:
                 return Response::json(array('success' => false, 'errors' => array(Lang::get($response))));
 
-            case Password::REMINDER_SENT:
+            case Password::RESET_LINK_SENT:
                 return Response::json(array('success' => true));
         }
     }
