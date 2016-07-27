@@ -28,6 +28,7 @@ use RZP\Trace\Trace;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 
+use App;
 use Crypt;
 
 trait Authorize
@@ -176,33 +177,21 @@ trait Authorize
      */
     protected function prePaymentAuthorizeProcessing($payment, $input, array & $gatewayInput)
     {
-        $this->verifyPaymentMethodEnabled($payment, $input);
-
         // also sets the card details in $gatewayInput (passed by reference), if applicable.
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
 
+        $this->verifyPaymentMethodEnabled($payment, $input);
+
         $terminalSelected = null;
 
+        $verbose = false;
+
+        $options = $this->getOptionsForTerminals();
+
         // Terminal picked is the terminal used for payment processing.
-        $terminalPicked = (new TerminalPicker)->selectTerminal($payment, $this->mode);
+        $terminalPicked = (new TerminalPicker)->selectTerminal($payment, $this->mode, $options);
 
-        try
-        {
-            $verbose = false;
-
-            // Add extra logs conditionally
-            // if ($this->isMoreLoggingRequired($terminalPicked))
-            // {
-            //     $verbose = true;
-            // }
-
-            // Terminal selected is now only used to validate any mistakes across each.
-            $terminalSelected = (new Terminal\Selector)->select($payment, $this->mode, $verbose);
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->traceException($e, Trace::INFO, TraceCode::TERMINAL_SELECTION_MISMATCH);
-        }
+        $terminalSelected = (new Terminal\Selector)->select($payment, $this->mode, $verbose, $options);
 
         $this->logTerminalPickedAndSelected($terminalSelected, $terminalPicked, $payment);
 
@@ -227,11 +216,19 @@ trait Authorize
         }
     }
 
-    protected function isMoreLoggingRequired($terminal)
+    protected function getOptionsForTerminals()
     {
-        $verboseLoggingTerminalIds = ['1000HdfcShared'];
+        $options = [];
 
-        return in_array($terminal->getId(), $verboseLoggingTerminalIds);
+        if (($this->mode === Mode::LIVE) and
+            (App::environment('testing') === false))
+        {
+            $chance = rand(1,100);
+
+            $options['chance'] = $chance;
+        }
+
+        return $options;
     }
 
     protected function logTerminalPickedAndSelected($terminalSelected, $terminalPicked, $payment)
@@ -360,31 +357,21 @@ trait Authorize
     protected function runPaymentMethodRelatedPreProcessing($payment, & $input, array & $gatewayInput)
     {
         $this->checkAndFillSavedAppToken($input);
-// sd($input);
+
         // First fetch the relevant customer
         list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp($input, $this->merchant);
 
-        // if local card saving, associate customer with payment
-        if (($customer !== null) and ($customer->isLocal() === true))
+        if ($customer === null)
         {
-            $this->payment->customer()->associate($customer);
+            $this->preProcessPaymentWithoutSaving($payment, $input, $gatewayInput);
         }
-
-        // for global card saving, associate app with payment
-        if (($customerApp !== null) and ($customer->isLocal() === false))
+        else if ($customer->isLocal() === true)
         {
-            $this->payment->app()->associate($customerApp);
-        }
-
-        // If token is set, then that means we have a saved card
-        if (empty($input[Payment\Entity::TOKEN]) === false)
-        {
-            $this->preProcessPaymentFromSavedCard($customer, $payment, $input, $gatewayInput);
+            $this->preProcessPaymentForLocalCustomer($customer, $payment, $input, $gatewayInput);
         }
         else
         {
-            // Does processing like creating card entity, saving card if passed in the input, etc..
-            $this->preProcessPaymentFromUserData($customer, $payment, $input, $gatewayInput);
+            $this->preProcessPaymentForGlobalCustomer($customer, $customerApp, $payment, $input, $gatewayInput);
         }
 
         if ($payment->isMethod(Payment\Method::EMI))
@@ -397,106 +384,201 @@ trait Authorize
         }
     }
 
-    protected function preProcessPaymentFromSavedCard($customer, $payment, & $input, & $gatewayInput)
+    protected function preProcessPaymentWithoutSaving($payment, & $input, array & $gatewayInput)
     {
-        $tokenInput = $input[Payment\Entity::TOKEN];
-
-        // Customer should definitely exist in this case.
-        if ($customer === null)
+        // No card saving, normal simple flow
+        if ($payment->isMethodCardOrEmi())
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Customer does not exist');
-        }
+            $vault = $payment->isMethod(Payment\Method::EMI);
 
-        // Token should definitely exist in database.
-        $token = (new Token\Repository)->getByTokenAndCustomerId(
-                                            $tokenInput, $customer->getId());
-
-        assert ($token !== null);
-
-        if ($customer->isLocal())
-        {
-            // Local customer, get token, get card, job done.
-            if ($payment->isMethodCardOrEmi())
-            {
-                $gatewayInput['card'] = $this->getCardArrayForSavedToken($token, $input);
-            }
-        }
-        else
-        {
-            // Global customer
-            if ($payment->isMethodCardOrEmi())
-            {
-                $gatewayInput['card'] = $this->createCardEntityFromSavedToken($token, $input);
-
-                $payment->card->globalCard()->associate($token->card);
-
-                $this->repo->saveOrFail($payment->card);
-            }
-            else if ($payment->isMethod(Payment\Method::WALLET))
-            {
-                $payment->setWallet($token->getWallet());
-            }
-            else if ($payment->isMethod(Payment\Method::NETBANKING))
-            {
-                $payment->setBank($token->getBank());
-            }
+            $gatewayInput['card'] = $this->createCardEntity($input['card'], $vault, $this->merchant);
         }
     }
 
-    protected function preProcessPaymentFromUserData($customer, $payment, $input, & $gatewayInput)
+    protected function preProcessPaymentForLocalCustomer($customer, $payment, & $input, & $gatewayInput)
+    {
+        $this->payment->customer()->associate($customer);
+
+        // if token is set, payment is from a saved card
+        if (empty($input[Payment\Entity::TOKEN]) === false)
+        {
+            $this->preProcessPaymentFromSavedCardLocal($customer, $payment, $input, $gatewayInput);
+        }
+        else
+        {
+            // Does processing like creating card entity, saving card if passed in the input, etc..
+            $this->preProcessPaymentFromUserDataLocal($customer, $payment, $input, $gatewayInput);
+        }
+    }
+
+    protected function preProcessPaymentForGlobalCustomer($customer, $customerApp, $payment, & $input, & $gatewayInput)
+    {
+        $this->payment->app()->associate($customerApp);
+
+        $this->payment->globalCustomer()->associate($customer);
+
+        // If token is set, then pay using global saved card
+        if (empty($input[Payment\Entity::TOKEN]) === false)
+        {
+            $this->payment->setToken(null);
+
+            $this->payment->setGlobalToken($input[Payment\Entity::TOKEN]);
+
+            $this->preProcessPaymentFromSavedCardGlobal($customer, $payment, $input, $gatewayInput);
+        }
+        else
+        {
+            // Does processing like creating card entity, saving card if passed in the input, etc..
+            $this->preProcessPaymentFromUserDataGlobal($customer, $payment, $input, $gatewayInput);
+        }
+    }
+
+    protected function preProcessPaymentFromSavedCardLocal($customer, $payment, & $input, & $gatewayInput)
+    {
+        $this->trace->info(
+            TraceCode::PAYMENT_PROCESS_FROM_SAVED_LOCAL,
+            [
+                'token' => $input[Payment\Entity::TOKEN]
+            ]);
+
+        // Token should definitely exist in database.
+        $token = (new Token\Repository)->getByTokenAndCustomerId(
+            $input[Payment\Entity::TOKEN],
+            $customer->getId());
+
+        if ($payment->isMethodCardOrEmi())
+        {
+            $gatewayInput['card'] = $this->getCardArrayForSavedToken($token, $input);
+        }
+        else
+        {
+            //TODO for netbanking/wallets
+        }
+    }
+
+    protected function preProcessPaymentFromSavedCardGlobal($customer, $payment, & $input, & $gatewayInput)
+    {
+        $this->trace->info(
+            TraceCode::PAYMENT_PROCESS_FROM_SAVED_GLOBAL,
+            [
+                'token' => $input[Payment\Entity::TOKEN]
+            ]);
+
+        // Token should definitely exist in database.
+        $token = (new Token\Repository)->getByTokenAndCustomerId(
+            $input[Payment\Entity::TOKEN],
+            $customer->getId());
+
+        if ($payment->isMethodCardOrEmi())
+        {
+            $gatewayInput['card'] = $this->createCardEntityFromSavedToken($token, $input);
+
+            $payment->card->globalCard()->associate($token->card);
+
+            $this->repo->saveOrFail($payment->card);
+        }
+        else if ($payment->isMethod(Payment\Method::WALLET))
+        {
+            $payment->setWallet($token->getWallet());
+        }
+        else if ($payment->isMethod(Payment\Method::NETBANKING))
+        {
+            $payment->setBank($token->getBank());
+        }
+    }
+
+    protected function preProcessPaymentFromUserDataLocal($customer, $payment, $input, & $gatewayInput)
     {
         // Flow if card details are entered with save set to true/false
         $saveMethod = ((isset($input['save'])) and (boolval($input['save']) === true));
 
         if ($saveMethod === false)
         {
-            // No card saving, normal simple flow
-            if ($payment->isMethodCardOrEmi())
-            {
-                $vault = $payment->isMethod(Payment\Method::EMI);
-
-                $gatewayInput['card'] = $this->createCardEntity($input['card'], $vault, $this->merchant);
-            }
+            $this->preProcessPaymentWithoutSaving($payment, $input, $gatewayInput);
         }
         else
         {
-            // Card needs to be saved
-            $this->savePaymentMethod($customer, $payment, $input, $gatewayInput);
-
-            unset($input['save']);
+            $this->savePaymentMethodLocal($customer, $payment, $input, $gatewayInput);
         }
     }
 
-    protected function savePaymentMethod($customer, $payment, $input, array & $gatewayInput)
+    protected function preProcessPaymentFromUserDataGlobal($customer, $payment, $input, & $gatewayInput)
     {
+        // Flow if card details are entered with save set to true/false
+        $saveMethod = ((isset($input['save'])) and (boolval($input['save']) === true));
+
+        if ($saveMethod === false)
+        {
+            $this->preProcessPaymentWithoutSaving($payment, $input, $gatewayInput);
+        }
+        else
+        {
+            $this->savePaymentMethodGlobal($customer, $payment, $input, $gatewayInput);
+        }
+    }
+
+    protected function savePaymentMethodLocal($customer, $payment, $input, array & $gatewayInput)
+    {
+        // create local saved card and link to payment
+        $gatewayInput['card'] = $this->createCardEntity($input['card'], true, $customer->merchant);
+
+        $savedLocalCard = $payment->card;
+
+        // save local saved card for local customer
+        $token = $this->savePaymentMethod($customer, $payment, $savedLocalCard->getId());
+
+        if ($token !== null)
+        {
+            $this->payment->setToken($token->getToken());
+        }
+    }
+
+    protected function savePaymentMethodGlobal($customer, $payment, $input, array & $gatewayInput)
+    {
+        // create global saved card and link to payment
+        $gatewayInput['card'] = $this->createCardEntity($input['card'], true, $customer->merchant);
+
+        $savedGlobalCard = $payment->card;
+
+        // create merchant local card entity and link to payment
+        $gatewayInput['card'] = $this->createCardEntity($input['card'], false, $this->merchant);
+
+        // link local card to global card entity
+        $payment->card->globalCard()->associate($savedGlobalCard);
+
+        $this->repo->saveOrFail($payment->card);
+
+        // save global saved card for global customer
+        $token = $this->savePaymentMethod($customer, $payment, $savedGlobalCard->getId());
+
+        if ($token !== null)
+        {
+            $this->payment->setGlobalToken($token->getToken());
+        }
+    }
+
+    protected function savePaymentMethod($customer, $payment, $savedCardId)
+    {
+        $this->trace->info(
+            TraceCode::PAYMENT_SAVE_METHOD,
+            [
+                'method'      => $payment->getMethod(),
+                'payment_id'  => $payment->getId(),
+                'merchant_id' => $payment->merchant->getId(),
+                'customer_id' => $customer->getId(),
+                'local'       => $customer->isLocal(),
+                'card_id'     => $savedCardId
+            ]);
+
         $saveMethodInput = array(
             'method' => $payment->getMethod(),
         );
 
         if ($payment->isMethodCardOrEmi())
         {
-            // Create a global or local saved card entity
-            $gatewayInput['card'] = $this->createCardEntity($input['card'], true, $customer->merchant);
-
-            $savedCard = $payment->card;
-
             $saveMethodInput['method'] = Payment\Method::CARD;
 
-            $saveMethodInput['card_id'] = $savedCard->getId();
-
-            if ($customer->isLocal() === false)
-            {
-                // Create a local card entity specific to merchant.
-                // Link to parent global card entity and to payment entity.
-
-                $gatewayInput['card'] = $this->createCardEntity($input['card'], false, $this->merchant);
-
-                $payment->card->globalCard()->associate($savedCard);
-
-                $this->repo->saveOrFail($payment->card);
-            }
-
+            $saveMethodInput['card_id'] = $savedCardId;
         }
         else if ($payment->isMethod(Payment\Method::NETBANKING))
         {
@@ -509,7 +591,9 @@ trait Authorize
 
         try
         {
-            (new Token\Core)->create($customer, $saveMethodInput);
+            $token = (new Token\Core)->create($customer, $saveMethodInput);
+
+            return $token;
         }
         catch (Exception\RecoverableException $e)
         {
@@ -528,7 +612,7 @@ trait Authorize
         switch ($paymentMethod)
         {
             case Payment\Method::CARD:
-                $this->verifyCardEnabledInLive($input);
+                $this->verifyCardEnabledInLive($payment, $input);
                 break;
 
             case Payment\Method::NETBANKING:
@@ -546,6 +630,7 @@ trait Authorize
             default:
                 throw new Exception\LogicException(
                     'Should not reach here.',
+                    null,
                     ['payment_method' => $paymentMethod]);
         }
     }
@@ -617,7 +702,15 @@ trait Authorize
             return;
         }
 
-        $appToken = $this->request->session()->get('app_token');
+        $this->trace->info(
+            TraceCode::PAYMENT_FILL_SAVED_APP_TOKEN,
+            [
+                'session' => $this->request->session()->all()
+            ]);
+
+        $key = $this->mode . '_app_token';
+
+        $appToken = $this->request->session()->get($key);
 
         if ($appToken !== null)
         {
@@ -1012,8 +1105,10 @@ trait Authorize
         }
     }
 
-    protected function verifyCardEnabledInLive($input)
+    protected function verifyCardEnabledInLive($payment, $input)
     {
+        $card = $payment->card;
+
         $merchantMethods = $this->methods;
 
         $this->checkAndValidateAmexIfNotEnabled($merchantMethods, $input['card']);
@@ -1024,11 +1119,28 @@ trait Authorize
             return;
         }
 
-        if (($merchantMethods === null) or
-            ($merchantMethods->isCardEnabled() === false))
+        if ($merchantMethods->isCardEnabled() === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_NOT_ENALBED_FOR_MERCHANT);
+        }
+
+        $type = $card->getType();
+
+        if ($type === Card\Type::UNKNOWN)
+        {
+            return;
+        }
+
+        $type = ucfirst($type);
+
+        $func = 'is' . $type . 'CardEnabled';
+
+        if ($merchantMethods->$func() === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                $type . ' card transactions are not allowed',
+                'number');
         }
     }
 

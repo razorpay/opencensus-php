@@ -30,7 +30,7 @@ class CreateMobikwik extends Migration
             $table->char('orderid', UniqueIdEntity::ID_LENGTH)->nullable();
             $table->char('txid', UniqueIdEntity::ID_LENGTH)->nullable();
             $table->string('mid', 25)->nullable();
-            $table->string('merchantname', 50)->nullable();
+            $table->string('merchantname', 255)->nullable();
             $table->string('showmobile', 4)->nullable();
 // response params
             $table->string('statuscode', 3)->nullable();

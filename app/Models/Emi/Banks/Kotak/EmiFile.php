@@ -6,6 +6,7 @@ use Gateway;
 use RZP\Models\Emi;
 use RZP\Services\TokenEx;
 use RZP\Models\Emi\Banks\Base;
+use RZP\Gateway\Base\Action;
 
 use Carbon\Carbon;
 
@@ -47,15 +48,19 @@ class EmiFile extends Base\EmiFile
 
     protected function sendKotakEmiFile()
     {
-        $zipFile = $this->getZippedFile();
+        $this->fetchAndSendPassword();
+
+        $fullPath = $this->getExcelFullFilePath();
+
+        $zipFile = $this->getZippedFile($fullPath);
 
         $data['file'] = $zipFile;
 
-        $data['body'] = 'Please forward the Kotak Emi file to kotak';
+        $data['body'] = 'Please forward the Kotak Emi file to Kotak: cc.loans@kotak.com and libu.john@kotak.com';
 
         $this->mail->queue('emails.message', $data, function ($message) use ($data)
         {
-            $emails = ['settlements@razorpay.com'];
+            $emails = ['kotakcards.emi@razorpay.com', 'settlements@razorpay.com'];
 
             $message->from('emifiles@razorpay.com', 'Kotak Emi File');
 
@@ -83,9 +88,7 @@ class EmiFile extends Base\EmiFile
 
             $emiPercent = $emiPlan['rate']/100;
 
-            $gatewayEntity = $this->getGatewayEntity($emiPayment);
-
-            $authCode = $gatewayEntity->getAuthCode();
+            $authCode = $this->getAuthCode($emiPayment);
 
             $data[] = array(
             'EMI ID'                     => $emiPayment->getId(),
@@ -95,7 +98,7 @@ class EmiFile extends Base\EmiFile
             'Tx Amount'                  => $emiPayment->getAmount()/ 100,
             'Tenure'                     => $emiPlan['duration'],
             'Manufacturer'               => '', // Non Mandatory
-            'Merchant Name'              => $emiPayment->merchant->getName(),
+            'Merchant Name'              => 'Razorpay Payments',
             'Address1'                   => '', // Non Mandatory
             'Acquirer'                   => '', // Non Mandatory
             'MID'                        => '', // Non Mandatory
@@ -111,21 +114,29 @@ class EmiFile extends Base\EmiFile
         return $data;
     }
 
-    protected function getGatewayEntity($payment)
+    protected function getAuthCode($payment)
     {
-        $gateway = ucfirst($payment->gateway);
+        $gateway = $payment->gateway;
 
-        $entity = 'RZP\Gateway\\'.$gateway.'\\Entity';
+        $gateway = $this->repo->$gateway->findByPaymentIdAndAction($payment->id, Action::CAPTURE);
 
-        $repo = 'RZP\Gateway\\'.$gateway.'\\Repository';
+        return $gateway->getAuthCode();
+    }
 
-        if (defined($repo))
+    protected function sendEmiPassword()
+    {
+        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+        $data['body'] = 'Kotak Emi File Password for ' . $today . " is " . $this->emiFilePassword;
+
+        $this->mail->queue('emails.message', $data, function ($message) use ($data, $today)
         {
-            $attributes = $repo->findByPaymentId($payment->id);
+            $emails = ['kotakcards.emi@razorpay.com'];
 
-            return (new $entity)->build($attributes);
-        }
+            $message->from('emifiles@razorpay.com', 'Kotak Emi File Password');
 
-        return new $entity;
+            $message->subject('Kotak Emi File Password for ' . $today);
+
+            $message->to($emails);
+        });
     }
 }

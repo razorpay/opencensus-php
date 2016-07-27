@@ -37,12 +37,12 @@ class Entity extends Base\Entity
         self::REF,
         self::CAPTURE_REF,
         self::COMMERCE_INDICATOR,
+        self::COLLECTION_INDICATOR,
         self::XID,
         self::PARES_STATUS,
         self::REASON_CODE,
         self::CREATED_AT,
         self::UPDATED_AT,
-        self::COLLECTION_INDICATOR,
     );
 
     protected $fillable = array(
@@ -64,6 +64,11 @@ class Entity extends Base\Entity
         self::COLLECTION_INDICATOR,
     );
 
+    protected $casts = [
+        self::REASON_CODE => 'int',
+        self::AMOUNT      => 'int'
+    ];
+
     protected $table = Constants\Table::CYBERSOURCE;
 
     protected $primaryKey = self::ID;
@@ -71,8 +76,6 @@ class Entity extends Base\Entity
     protected $entity = Constants\Table::CYBERSOURCE;
 
     public $incrementing = true;
-
-    protected $guarded = array();
 
     public function payment()
     {
@@ -149,11 +152,8 @@ class Entity extends Base\Entity
         $this->setAttribute(self::STATUS, $status);
     }
 
-    /**
-     * Accessors
-     */
-    protected function getAmountAttribute()
+    public function setAction($action)
     {
-        return (int) $this->attributes[self::AMOUNT];
+        $this->setAttribute(self::ACTION, $action);
     }
 }

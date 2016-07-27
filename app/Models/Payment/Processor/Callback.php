@@ -25,6 +25,7 @@ use Mail;
 
 trait Callback
 {
+
     /**
      * After payment initiation, bank redirects to us
      * and we send it to gateway for further
@@ -60,7 +61,7 @@ trait Callback
 
             // If it was authorized recently then send back authorized again.
             if (($payment->isAuthorized()) and
-                ($diff < 5 * 60))
+                ($diff < self::CALLBACK_SUCCESS_DURATION * 60))
             {
                 return $this->postPaymentAuthorizeProcessing($payment);
             }
@@ -192,13 +193,16 @@ trait Callback
             $input['customer'] = $customer;
 
             $payment->globalCustomer()->associate($customer);
-            $this->repo->saveOrFail($payment);
         }
 
         if (isset($data['token']) === true)
         {
-            $this->createOrUpdateToken($input, $data);
+            $token = $this->createOrUpdateToken($input, $data);
+
+            $payment->setGlobalToken($token->getToken());
         }
+
+        $this->repo->saveOrFail($payment);
     }
 
     protected function processPaymentCallbackException($e)

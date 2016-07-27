@@ -4,7 +4,6 @@ namespace RZP\Models\Settlement\Kotak;
 
 use AWS;
 use Excel;
-use ZipArchive;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
@@ -16,6 +15,8 @@ trait FileHandlerTrait
 
     protected $excel = null;
 
+    private $_zipCommand = "zip --junk-paths --move";
+
     public function writeToTextFile($txt)
     {
         $name = $this->getFileToWriteName();
@@ -23,6 +24,25 @@ trait FileHandlerTrait
         $fullpath = $this->saveLocally($name, $txt);
 
         $url = $this->saveToAws($name, $fullpath, 'text/plain');
+
+        // This will be local file path if aws is mocked
+        return $url;
+    }
+
+    public function writeToCsvFile($data, $name, $fullName = null)
+    {
+        $excelObject = $this->createExcelObject($data, $name);
+
+        $fileMetadata = $excelObject->store('csv', storage_path('files/settlement'), true);
+        $fullpath = $fileMetadata['full'];
+
+        if ($fullName != null)
+        {
+            rename($fullpath, $fullName);
+            $fullpath = $fullName;
+        }
+
+        $url = $this->saveToAws($name, $fullpath, 'text/csv');
 
         // This will be local file path if aws is mocked
         return $url;
@@ -341,6 +361,13 @@ trait FileHandlerTrait
         return $this->getFullFilePath($name);
     }
 
+    protected function getTextFullFilePath()
+    {
+        $name = $this->getFileToWriteName();
+
+        return $this->getFullFilePath($name);
+    }
+
     protected function getZipFileToWriteName()
     {
         return $this->getFileToWriteNameWithoutExt() . '.zip';
@@ -357,21 +384,24 @@ trait FileHandlerTrait
     {
         $zipPath = $this->getZipFullFilePath();
 
-        $zip = new ZipArchive();
-        $zip->open($zipPath, ZipArchive::CREATE);
-
         foreach ($fileArray as $file)
         {
-            $zip->addFile($file);
+            $this->addFileToZip($file, $zipPath, $password);
         }
+
+        return $zipPath;
+    }
+
+    private function addFileToZip($filePath, $zipPath, $password)
+    {
+        $zipCommand = $this->_zipCommand;
 
         if (isset($password))
         {
-            $zip->setPassword($password);
+            $zipCommand .= " --password " . $password;
         }
 
-        $zip->close();
-        return $zipPath;
+        exec($zipCommand . " " . escapeshellarg($zipPath) . " " . escapeshellarg($filePath));
     }
 
     protected function getFileToWriteNameWithoutExt()

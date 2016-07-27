@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Payment;
 
 use File;
 use Carbon\Carbon;
+use ZipArchive;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -102,10 +103,50 @@ class EmiPaymentTest extends TestCase
         $content = $this->makeRequestAndGetContent($request);
 
         $this->assertEquals(count($content), 2);
-        $this->assertEquals(File::exists($content['KKBK']), true);
-        $this->assertEquals(File::exists($content['UTIB']), true);
+        $this->assertEquals(File::exists($this->zipFileName($content['KKBK'])), true);
+        $this->assertEquals(File::exists($this->zipFileName($content['UTIB'])), true);
+
+        $this->checkPasswordProtectedZip($this->zipFileName($content['KKBK']));
+        $this->checkPasswordProtectedZip($this->zipFileName($content['UTIB']));
 
         $this->fixtures->merchant->disableEmi();
+    }
+
+    private function zipFileName($filePath)
+    {
+        $pathinfo = pathinfo($filePath);
+        return $pathinfo['dirname'] . '/' . $pathinfo['filename'] . '.zip';
+    }
+
+    private function checkPasswordProtectedZip($filePath)
+    {
+        $zip = new ZipArchive();
+        $zip->open($filePath);
+
+        $pathinfo = pathinfo($filePath);
+
+        // Extraction fails, unset password
+        $this->assertEquals($zip->extractTo($pathinfo['dirname']), false);
+        $this->deleteExtractedFile($pathinfo);
+
+        $zip->setPassword('incorrect_password');
+        // Extraction fails, incorrect password
+        $this->assertEquals($zip->extractTo($pathinfo['dirname']), false);
+        $this->deleteExtractedFile($pathinfo);
+    }
+
+    protected function deleteExtractedFile($pathinfo)
+    {
+        $excelFileName = $pathinfo['dirname'].'/'.$pathinfo['filename'].'.xlsx';
+        $txtFileName = $pathinfo['dirname'].'/'.$pathinfo['filename'].'.txt';
+        if (file_exists($excelFileName) === true)
+        {
+            unlink($excelFileName);
+        }
+        else if (file_exists($txtFileName) === true)
+        {
+            unlink($txtFileName);
+        }
     }
 
     protected function makeEmiPaymentOnCard($card, $emiDuration, $save = 0, $appToken = null, $customerId =  null)

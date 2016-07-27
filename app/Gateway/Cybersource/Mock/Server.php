@@ -14,40 +14,35 @@ class Server extends Base\Mock\Server
 {
     protected $repo;
 
-    public function getGatewayResponse($request)
+    public function authorize($input)
     {
-        if (isset($request['payerAuthEnrollService']))
-        {
-            $this->validateEnrollInput(json_decode(json_encode($request), true));
+        $this->validateAuthorizeInput($input);
 
-            return $this->getEnrollResponse($request);
-        }
+        $response = $this->getEnrollAuthorizeResponse($input);
 
-        if (isset($request['payerAuthValidateService']))
-        {
-            return $this->postAuthEnrolledRequest($request);
-        }
+        $this->content($response);
 
-        if (isset($request['ccAuthService']))
-        {
-            $this->validateAuthorizeInput(json_decode(json_encode($request), true));
-
-            return $this->postEnrollAuthorize($request);
-        }
-
-        if (isset($request['ccCaptureService']))
-        {
-            return $this->getCaptureResponsse($request);
-        }
-
-        if (isset($request['ccCreditService']))
-        {
-            return $this->getRefundResponse($request);
-        }
+        return $response;
     }
 
-    public function getRefundResponse($request)
-     {
+    public function capture($input)
+    {
+        $this->validateActionInput($input, 'capture');
+
+        return $this->getCaptureResponse($input);
+    }
+
+    public function enroll($input)
+    {
+        $this->validateActionInput($input, 'enroll');
+
+        return $this->getEnrollResponse($input);
+    }
+
+    public function refund($input)
+    {
+        $this->validateActionInput($input, 'refund');
+
         $response = array();
 
         $response['decision'] = 'ACCEPT';
@@ -62,10 +57,32 @@ class Server extends Base\Mock\Server
         $response['ccCreditReply'] = $ccCreditReply;
 
         return $response;
-     }
+    }
 
-    public function getCaptureResponsse($request)
-     {
+    public function verify($input)
+    {
+        $this->validateActionInput($input, 'verify');
+
+        assert(isset($this->mockRequest['options']['auth'][0]) and
+                is_string($this->mockRequest['options']['auth'][0]));
+
+        assert(isset($this->mockRequest['options']['auth'][1]) and
+                is_string($this->mockRequest['options']['auth'][1]));
+
+        $verifyResponseBody = $this->createVerifyResponse($input);
+
+        return $this->makeResponse($verifyResponseBody);
+    }
+
+    public function authValidate($input)
+    {
+        $this->validateActionInput($input, 'auth_validate');
+
+        return $this->getAuthEnrolledRequest($input);
+    }
+
+    public function getCaptureResponse($request)
+    {
         $response = array();
 
         $response['decision'] = 'ACCEPT';
@@ -80,7 +97,7 @@ class Server extends Base\Mock\Server
         return $response;
      }
 
-     public function postAuthEnrolledRequest($request)
+     protected function getAuthEnrolledRequest($input)
      {
         $response = array();
 
@@ -99,7 +116,7 @@ class Server extends Base\Mock\Server
         return $response;
      }
 
-    public function postEnrollAuthorize($request)
+    protected function getEnrollAuthorizeResponse($input)
     {
         $response = array();
 
@@ -123,7 +140,7 @@ class Server extends Base\Mock\Server
         $response['payerAuthEnrollReply'] = $payerAuthEnrollReply;
 
         $response['merchantReferenceCode'] = 'razorpay';
-        $response['requestID'] = 'f32n23ke';
+        $response['requestID'] = '4661468455476856801012';
 
         switch ($request['card']['accountNumber'])
         {
@@ -136,6 +153,29 @@ class Server extends Base\Mock\Server
                 $response['payerAuthEnrollReply']['paReq'] = 'eNpVUttygjAQfc9XMP0AkiAw';
                 $response['payerAuthEnrollReply']['xid'] = 'cGdKQXF5STA1TFl3OUtueHJnWDA';
                 $response['payerAuthEnrollReply']['veresEnrolled'] = 'Y';
+                break;
+
+            case '4280951000002433':
+                $response['decision'] = 'REJECT';
+                $response['reasonCode'] = 101;
+                $response['payerAuthEnrollReply'] = [
+                    'reasonCode' => 101
+                ];
+                $response['missingField'] = 'c:authRequestID';
+                $response['requestToken'] = 'AhjjLwSR/H2rNiTcqkX45p6D4dUQCsgfIwdIy6SZbpAeLRGAdmIW';
+                break;
+
+            case '4000400000000004':
+                $response['decision'] = 'REJECT';
+                $response['reasonCode'] = 151;
+                $response['payerAuthEnrollReply'] = [
+                    'reasonCode' => 151
+                ];
+
+                $response['merchantReferenceCode'] = '5vrAvHg6CqQlkS';
+                $response['missingField'] = 'c:authRequestID';
+                $response['requestID'] = '4690000690226079802108';
+                $response['requestToken'] = 'AhjjLwSR/H2rNiTcqkX45p6D4dUQCsgfIwdIy6SZbpAeLRGAdmIW';
                 break;
 
             case '555555555555558':
@@ -152,7 +192,7 @@ class Server extends Base\Mock\Server
                 $response['reasonCode'] = Cybersource\Result::SUCCESS;
 
                 $response['payerAuthEnrollReply']['commerceIndicator'] = 'internet';
-                $response['payerAuthEnrollReply']['veresEnrolled ']= 'U';
+                $response['payerAuthEnrollReply']['veresEnrolled']= 'U';
                 $response['payerAuthEnrollReply']['eci'] = '05';
                 break;
         }
@@ -167,5 +207,86 @@ class Server extends Base\Mock\Server
         return array('PaRes' => 'eNpVUttygjAQfc9XMP0AkiAw',
                      'MD' => $input['MD'],
                      'TermUrl' => $input['TermUrl']);
+    }
+
+    protected function createVerifyResponse($input)
+    {
+        $xml = ''.
+            '<?xml version="1.0" encoding="UTF-8"?>
+            <!DOCTYPE Report SYSTEM "https://ebctest.cybersource.com/ebctest/reports/dtd/tdr_1_1.dtd">
+
+            <Report xmlns="https://ebctest.cybersource.com/ebctest/reports/dtd/tdr_1_1.dtd" Name="Transaction Detail" Version="1.1" MerchantID="'.$input['merchantID'].'" ReportStartDate="2016-07-21 13:03:06.814+05:30" ReportEndDate="2016-07-21 13:03:06.814+05:30">
+              <Requests>
+                <Request MerchantReferenceNumber="5wX38AI8BKFtXs" RequestDate="2016-07-20T13:02:54+05:30" RequestID="'.$input['requestID'].'" SubscriptionID="" Source="SOAP Toolkit API">
+                  <BillTo>
+                    <FirstName>SHASHANK</FirstName>
+                    <LastName>A</LastName>
+                    <Address1>a</Address1>
+                    <City>a</City>
+                    <State>a</State>
+                    <Zip>5</Zip>
+                    <Email>test@razorpay.com</Email>
+                    <Country>IN</Country>
+                    <Phone />
+                  </BillTo>
+                  <PaymentMethod>
+                    <Card>
+                      <AccountSuffix>3335</AccountSuffix>
+                      <ExpirationMonth>11</ExpirationMonth>
+                      <ExpirationYear>2020</ExpirationYear>
+                      <CardType>Visa</CardType>
+                    </Card>
+                  </PaymentMethod>
+                  <LineItems>
+                    <LineItem Number="0">
+                      <FulfillmentType />
+                      <Quantity>1</Quantity>
+                      <UnitPrice>500.00</UnitPrice>
+                      <TaxAmount>0.00</TaxAmount>
+                      <ProductCode>default</ProductCode>
+                    </LineItem>
+                  </LineItems>
+                  <ApplicationReplies>
+                    <ApplicationReply Name="ics_arc">
+                      <RCode>1</RCode>
+                      <RFlag>SOK</RFlag>
+                      <RMsg>Service was successful</RMsg>
+                    </ApplicationReply>
+                    <ApplicationReply Name="ics_auth">
+                      <RCode>1</RCode>
+                      <RFlag>SOK</RFlag>
+                      <RMsg>Request was processed successfully.</RMsg>
+                    </ApplicationReply>
+                  </ApplicationReplies>
+                  <PaymentData>
+                    <PaymentRequestID>'.$input['requestID'].'</PaymentRequestID>
+                    <PaymentProcessor>vdchdfc</PaymentProcessor>
+                    <Amount>500.00</Amount>
+                    <CurrencyCode>INR</CurrencyCode>
+                    <TotalTaxAmount>0.00</TotalTaxAmount>
+                    <AuthorizationCode>831000</AuthorizationCode>
+                    <AVSResult>Y</AVSResult>
+                    <AVSResultMapped>Y</AVSResultMapped>
+                    <PayerAuthenticationInfo>
+                      <ECI>5</ECI>
+                      <AAV_CAVV>AAABAWFlmQAAAABjRWWZEEFgFz+=</AAV_CAVV>
+                      <XID>eW5DZTVGTkVaRWF3VnowSXYzNzA=</XID>
+                    </PayerAuthenticationInfo>
+                  </PaymentData>
+                </Request>
+              </Requests>
+            </Report>';
+
+        return $xml;
+    }
+
+    protected function makeResponse($body)
+    {
+        $response = \Response::make($body);
+
+        $response->headers->set('Content-Type', 'application/xml; charset=UTF-8');
+        $response->headers->set('Cache-Control', 'no-cache');
+
+        return $response;
     }
 }

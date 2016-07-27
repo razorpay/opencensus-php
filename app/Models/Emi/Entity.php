@@ -81,27 +81,27 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MIN_AMOUNT);
     }
 
-    public function getRateAttribute()
+    protected function getRateAttribute()
     {
         return (integer)$this->attributes[self::RATE];
     }
 
-    public function getDurationAttribute()
+    protected function getDurationAttribute()
     {
         return (integer)$this->attributes[self::DURATION];
     }
 
-    public function getBankAttribute()
+    protected function getBankAttribute()
     {
        return $this->attributes[self::BANK];
     }
 
-    public function getMethodsAttribute()
+    protected function getMethodsAttribute()
     {
        return $this->attributes[self::METHODS];
     }
 
-    public function getMinAmountAttribute()
+    protected function getMinAmountAttribute()
     {
         return (integer)$this->attributes[self::MIN_AMOUNT];
     }

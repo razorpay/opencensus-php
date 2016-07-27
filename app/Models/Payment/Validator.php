@@ -77,7 +77,9 @@ class Validator extends Base\Validator
 
     protected function validateAmount($input)
     {
-        if ($input['amount'] < 100)
+        $amount = $input['amount'];
+
+        if ($amount < 100)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT,
@@ -85,11 +87,19 @@ class Validator extends Base\Validator
         }
 
         if (($input['method'] === Payment\Method::EMI) and
-            ($input['amount'] < 300000))
+            ($amount < 300000))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT_FOR_EMI,
                 'amount');
+        }
+
+        $maxAmountAllowed = $this->entity->merchant->getMaxPaymentAmount();
+
+        if ($amount > $maxAmountAllowed)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Amount exceeds maximum amount allowed.');
         }
     }
 

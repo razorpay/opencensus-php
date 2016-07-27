@@ -9,8 +9,10 @@ use RZP\Error\ErrorCode;
 
 use RZP\Models\Terminal;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Card\Network;
 use RZP\Models\Payment\Method;
 use RZP\Models\Emi\Repository;
+use RZP\Models\Terminal\Shared;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Processor\Netbanking;
 
@@ -21,7 +23,7 @@ class TransactionFilter extends Terminal\Filter
         'network',
         'international',
         'bank',
-        'emi',
+        'maestro',
     ];
 
     public function methodFilter($terminal, $input)
@@ -38,24 +40,12 @@ class TransactionFilter extends Terminal\Filter
                 return $terminal->isNetbankingEnabled();
                 break;
 
-            // Check - Needs more work with respect to emi terminals of other banks
             case Method::EMI:
                 $bank = $input['payment']->getBank();
 
-                $cardTerminalBanks = array(
-                    IFSC::KKBK,
-                    IFSC::UTIB,
-                );
+                $emiDuration = $input['payment']->emiPlan->getDuration();
 
-                if (in_array($bank, $cardTerminalBanks))
-                {
-                    // for Kotak, process as normal card transaction and mail for emi
-                    return $terminal->isCardEnabled();
-                }
-                else
-                {
-                    return $terminal->isEmiEnabled();
-                }
+                return $terminal->isValidForEmiDurationAndBank($bank, $emiDuration);
                 break;
 
             // Pick the right terminal only
@@ -71,28 +61,14 @@ class TransactionFilter extends Terminal\Filter
         }
     }
 
+    // Applicable only for card and emi
     public function networkFilter($terminal, $input)
     {
-        $method = $input['payment']->getMethod();
-
-        switch ($method)
+        if ($input['payment']->isMethodCardOrEmi())
         {
-            case Method::CARD:
-                $network = $input['payment']->card->getNetworkCode();
+            $network = $input['payment']->card->getNetworkCode();
 
-                if(Gateway::isCardNetworkSupported($network, $terminal->getGateway()))
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-
-                break;
-
-            default:
-                break;
+            return Gateway::isCardNetworkSupported($network, $terminal->getGateway());
         }
 
         return true;
@@ -100,9 +76,7 @@ class TransactionFilter extends Terminal\Filter
 
     public function internationalFilter($terminal, $input)
     {
-        $method = $input['payment']->getMethod();
-
-        if ($method !== Method::CARD)
+        if ($input['payment']->isMethodCardOrEmi() === false)
         {
             return true;
         }
@@ -138,65 +112,33 @@ class TransactionFilter extends Terminal\Filter
 
     public function bankFilter($terminal, $input)
     {
-        $method = $input['payment']->getMethod();
-
-        switch ($method)
+        if ($input['payment']->isNetbanking())
         {
-            case Method::NETBANKING:
-                $bank = $input['payment']->getBank();
+            $bank = $input['payment']->getBank();
 
-                $terminalGateway = $terminal->getGateway();
+            $terminalGateway = $terminal->getGateway();
 
-                $gateways = Gateway::getGatewaysForNetbankingBank($bank);
+            $gateways = Gateway::getGatewaysForNetbankingBank($bank);
 
-                return in_array($terminalGateway, $gateways);
-                break;
-
-            default:
-                break;
+            return in_array($terminalGateway, $gateways);
         }
 
         return true;
     }
 
-    public function emiFilter($terminal, $input)
+    public function maestroFilter($terminal, $input)
     {
-        $method = $input['payment']->getMethod();
-
-        switch ($method)
+        if ($input['payment']->isMethodCardOrEmi())
         {
-            case Method::EMI:
-                // For EMI PAYMENTS In a particular case we need to use
-                // the payment duration and the payment bank corresponding gateway
-                $bank = $input['payment']->getBank();
+            $network = $input['payment']->card->getNetworkCode();
 
-                $cardTerminalBanks = array(
-                    IFSC::KKBK,
-                    IFSC::UTIB,
-                );
-
-                if (in_array($bank, $cardTerminalBanks))
-                {
-                    ; // No other filtration required
-                }
-                else
-                {
-                    $emiBankGateway = Gateway::$emiBankToGatewayMap[$bank];
-
-                    $emiDuration = $input['payment']->emiPlan->getDuration();
-
-                    $terminalGateway = $terminal->getGateway();
-
-                    // The HDFC case currently where the payment has
-                    // to be routed through the corresponding duration
-                    // terminal and the corresponding
-                    return (($terminalGateway === $emiBankGateway) and
-                            ($emiDuration === $terminal->getEmiDuration()));
-                }
-                break;
-
-            default:
-                break;
+            // For Maes card, support only enabled for shared terminal
+            // on live mode
+            if (($network === Network::MAES) and
+                ($input['mode'] === Mode::LIVE))
+            {
+                return Shared::isSharedTerminal($terminal);
+            }
         }
 
         return true;
