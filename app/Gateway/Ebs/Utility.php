@@ -8,18 +8,10 @@ class Utility extends \RZP\Gateway\Utility
 {
     public static function returnFields($response)
     {
-        $arr = array();
-
-        $values = explode(' ', $response);
-        foreach ($values as $val)
-        {
-            if (strpos($val, '=') !== false)
-            {
-                $keyVal = explode('=', $val);
-                $arr[$keyVal[0]]= substr($keyVal[1], 1, -1);
-            }
-        }
-        return $arr;
+        $parser = xml_parser_create();
+        xml_parser_set_option($parser,XML_OPTION_CASE_FOLDING,0);
+        xml_parse_into_struct($parser, $response, $vals, $index);
+        return $vals[0]['attributes'];
     }
 
     public static function parseResponseXml($response)
