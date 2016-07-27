@@ -259,7 +259,7 @@ $factory(\RZP\Models\Customer\Token\Entity::class, [
     'card_id' => null
 ]);
 
-$factory(\RZP\Models\Customer\App\Entity::class, [
+$factory(\RZP\Models\Customer\AppToken\Entity::class, [
     'id' => $faker->uniqueid,
     'customer_id'  => '10000gcustomer',
     'device_token' => 'test',

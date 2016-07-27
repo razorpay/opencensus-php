@@ -215,7 +215,7 @@ class Terminal extends Base
             'card'                      => 1,
             'netbanking'                => 0,
             'shared'                    => 1,
-            'gateway_merchant_id'       => '',
+            'gateway_merchant_id'       => 'merchant_id',
             'gateway_terminal_id'       => 'cybersource',
             'gateway_terminal_password' => 'cybersource',
             'gateway_access_code'       => '111111',

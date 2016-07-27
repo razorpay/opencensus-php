@@ -19,7 +19,7 @@ class Inferno
     protected $mode;
 
     protected $errorMessage;
-    
+
     protected $event;
 
     const HASH_ALGO = 'sha256';
@@ -62,7 +62,7 @@ class Inferno
         $this->mode = $data['mode'];
 
         $this->event = $data['event'];
-        
+
         $webhook = $this->getWebhook($data);
 
         if ($webhook->isActive() === false)
@@ -260,7 +260,7 @@ class Inferno
     {
         $secret = $webhook->getSecret();
 
-        $hmac = $this->generateHMAC($event, $secret);
+        $hmac = static::generateHMAC($event, $secret);
 
         $headers = $this->getRequestHeaders($hmac);
 

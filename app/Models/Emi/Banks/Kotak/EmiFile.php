@@ -47,11 +47,13 @@ class EmiFile extends Base\EmiFile
 
     protected function sendKotakEmiFile()
     {
+        $this->fetchAndSendPassword();
+
         $zipFile = $this->getZippedFile();
 
         $data['file'] = $zipFile;
 
-        $data['body'] = 'Please forward the Kotak Emi file to kotak';
+        $data['body'] = 'Please forward the Kotak Emi file to Kotak: cc.loans@kotak.com and libu.john@kotak.com';
 
         $this->mail->queue('emails.message', $data, function ($message) use ($data)
         {
@@ -127,5 +129,22 @@ class EmiFile extends Base\EmiFile
         }
 
         return new $entity;
+    }
+
+    protected function sendEmiPassword()
+    {
+        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+        $data['body'] = 'Kotak Emi File Password for ' . $today . " is " . $this->emiFilePassword;
+
+        $this->mail->queue('emails.message', $data, function ($message) use ($data, $today)
+        {
+            $emails = ['kotakcards.emi@razorpay.com'];
+
+            $message->from('emifiles@razorpay.com', 'Kotak Emi File Password');
+
+            $message->subject('Kotak Emi File Password for ' . $today);
+
+            $message->to($emails);
+        });
     }
 }

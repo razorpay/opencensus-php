@@ -108,11 +108,11 @@ trait Authorize
 
     protected function verifyAuthResponse($auth)
     {
+        $this->isAuthSuccess($auth);
+
         $this->traceAuthEnrolledResponse($auth);
 
         $this->persistAfterAuthEnrolled($auth);
-
-        $this->isAuthSuccess($auth);
 
         if ($this->error)
         {
@@ -155,9 +155,17 @@ trait Authorize
             return false;
         }
 
-        $result = &$authResponse['data']['result'];
-
+        $result = '';
         $errorCode = null;
+
+        if (isset($authResponse['data']['result']) === true)
+        {
+            $result = $authResponse['data']['result'];
+        }
+        else if (isset($authResponse['data']['Error']) === true)
+        {
+            $result = $authResponse['data']['Error'];
+        }
 
         //
         // Check enroll result code.
@@ -192,6 +200,10 @@ trait Authorize
 
             case Payment\Result::CANCELED:
                 $errorCode = Hdfc\ErrorCode::RP00011;
+                break;
+
+            case Hdfc\ErrorCode::PY20085:
+                $errorCode = Hdfc\ErrorCode::PY20085;
                 break;
 
             default:

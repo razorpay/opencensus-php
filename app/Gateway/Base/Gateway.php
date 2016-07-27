@@ -311,6 +311,8 @@ class Gateway
 
     protected function runPaymentVerifyFlow($verify)
     {
+        // This payment is the gateway entity payment.
+        // Also sets this gateway payment in the verify object's payment.
         $payment = $this->getPaymentToVerify($verify->input, $verify);
 
         if (($payment === null) and
@@ -511,7 +513,17 @@ class Gateway
     {
         $crawler = new Crawler($form, $url);
 
-        $form = $crawler->filter('form')->form();
+        $formCrawler = $crawler->filter('form');
+
+        if ($formCrawler->count() === 0)
+        {
+            // This happens because hdfc nb gateway is down.
+            // We will need to verify the request later.
+            throw new Exception\GatewayTimeoutException(
+                'Payment verify request to Hdfc nb gateway timed out');
+        }
+
+        $form = $formCrawler->form();
 
         $content = $form->getValues();
 

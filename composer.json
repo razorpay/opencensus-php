@@ -5,7 +5,6 @@
     "require": {
         "rmccue/requests": ">=1.0",
         "laravel/framework": "5.2.*",
-        "doctrine/dbal": "~2.5",
         "razorpay/razorpay": "dev-master",
         "razorpay/spine": "dev-master",
         "laravelcollective/bus": "^5.2",

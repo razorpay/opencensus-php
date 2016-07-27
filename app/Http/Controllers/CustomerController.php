@@ -80,32 +80,34 @@ class CustomerController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function fetchTokensForGlobalCustomer($appToken)
+    public function fetchTokensForGlobalCustomer()
     {
-        $tokens = (new Customer\Token\Service)->fetchTokensForGlobalCustomer($appToken);
+        $tokens = (new Customer\Token\Service)->fetchTokensForGlobalCustomer();
 
         return ApiResponse::json($tokens);
     }
 
     public function fetchGlobalCustomerStatus($contact)
     {
-        $status = (new Customer\Service)->fetchGlobalCustomerStatus($contact, true);
+        $input = Request::all();
+
+        $status = (new Customer\Service)->fetchGlobalCustomerStatus($contact, $input, true);
 
         return ApiResponse::json($status);
     }
 
-    public function deleteTokenForGlobalCustomer($appToken, $token)
+    public function deleteTokenForGlobalCustomer($token)
     {
-        $data = (new Customer\Token\Service)->deleteTokenForGlobalCustomer($appToken, $token);
+        $data = (new Customer\Token\Service)->deleteTokenForGlobalCustomer($token);
 
         return ApiResponse::json($data);
     }
 
-    public function logoutCustomer($appToken)
+    public function logoutCustomer()
     {
         $input = Request::all();
 
-        $data = (new Customer\App\Service)->deleteAppTokensForGlobalCustomer($appToken, $input);
+        $data = (new Customer\AppToken\Service)->deleteAppTokensForGlobalCustomer($input);
 
         return ApiResponse::json($data);
     }

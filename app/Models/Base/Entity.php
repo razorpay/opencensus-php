@@ -117,6 +117,6 @@ class Entity extends EloquentEx
 
     public function getUpdatedAtAttribute()
     {
-        return (int) $this->attributes[self::CREATED_AT];
+        return (int) $this->attributes[self::UPDATED_AT];
     }
 }

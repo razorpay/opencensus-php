@@ -1,15 +1,21 @@
 <?php
 
-namespace RZP\Models\Event;
+namespace RZP\Listeners;
+
+use Illuminate\Foundation\Bus\DispatchesJobs;
 
 use RZP\Constants;
+use RZP\Jobs\WebHook;
 use RZP\Models\Event;
 use RZP\Models\Payment;
-use Webhook\Fire;
 use RZP\Trace\TraceCode;
+
 
 class ApiEventSubscriber
 {
+    /* Used to push jobs to queues */
+    use DispatchesJobs;
+
     protected $app;
 
     /**
@@ -29,10 +35,8 @@ class ApiEventSubscriber
         $this->app = \App::getFacadeRoot();
 
         $this->event = $this->app['events'];
-
-        $this->queue = $this->app['queue'];
-
         $this->trace = $this->app['trace'];
+        $this->queue = $this->app['queue'];
     }
 
     public function getMode()
@@ -59,7 +63,7 @@ class ApiEventSubscriber
      */
     public function subscribe($events)
     {
-        $events->listen('api.*', 'RZP\Models\Event\ApiEventSubscriber@onEvent');
+        $events->listen('api.*', 'RZP\Listeners\ApiEventSubscriber@onEvent');
     }
 
     protected function getFiringEvent()
@@ -84,9 +88,9 @@ class ApiEventSubscriber
         }
 
         $attributes = array(
-            Entity::EVENT       => $eventFired,
-            Entity::CONTAINS    => Contains::getEntityNamesForEvent($eventFired),
-            Entity::CREATED_AT  => $payment->getAuthorizeTimestamp(),
+            Event\Entity::EVENT       => $eventFired,
+            Event\Entity::CONTAINS    => Event\Contains::getEntityNamesForEvent($eventFired),
+            Event\Entity::CREATED_AT  => $payment->getAuthorizeTimestamp(),
         );
 
         $event = new Event\Entity($attributes);
@@ -106,9 +110,7 @@ class ApiEventSubscriber
             'event'         => json_encode($event->toArrayPublic()),
             'webhook_id'    => $webhook->getId());
 
-        $data = json_encode($data);
-
-        $this->queue->push('RZP\Models\Merchant\Webhook\Queue', $data);
+        $this->dispatch(new Webhook($data));
     }
 
     protected function fireWebhookForEvent($webhook, $event)

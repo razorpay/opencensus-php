@@ -4,6 +4,8 @@ namespace RZP\Models\Terminal;
 
 use App;
 use RZP\Constants\Mode;
+use RZP\Models\Card\Network;
+use RZP\Models\Payment;
 
 use RZP\Trace;
 use RZP\Exception;
@@ -58,7 +60,7 @@ class Selector
         return $merchantTerminals;
     }
 
-    public function select($payment, $mode, $verbose = false)
+    public function select($payment, $mode, $verbose = false, $options = [])
     {
         $this->setup($payment, $mode);
 
@@ -75,7 +77,7 @@ class Selector
         foreach (self::$filters as $filter)
         {
             $filteredTerminals = (new $filter)->filter($filteredTerminals, $this->input, $verbose);
-            $this->traceTerminals($filteredTerminals, 'Terminals after '.$filter, $verbose);
+            $this->traceTerminals($filteredTerminals, 'Terminals after ' . $filter, $verbose);
         }
 
         // Trace available terminals after filtration
@@ -87,26 +89,56 @@ class Selector
         foreach (self::$sorters as $sorter)
         {
             $sortedTerminals = (new $sorter)->sort($sortedTerminals, $this->input, $verbose);
-            $this->traceTerminals($sortedTerminals, 'Terminals after '.$sorter, $verbose);
+            $this->traceTerminals($sortedTerminals, 'Terminals after ' . $sorter, $verbose);
         }
 
         // Trace available terminals after filtration
         $this->traceTerminals($sortedTerminals, 'Terminals after sorting', $verbose);
 
+        $terminal = null;
+
         if ((empty($sortedTerminals)) and ($this->mode === Mode::TEST))
         {
             $terminal = $this->repo->find(Shared::SHARP_RAZORPAY_TERMINAL);
         }
-        else
+        else if (isset($sortedTerminals[0]))
         {
             $terminal = $sortedTerminals[0];
         }
 
+        if (isset($options['chance']))
+        {
+            $terminal = (new Binning)->select($terminal, $options['chance'], $this->input, $terminals);
+        }
+
+        $this->checkForCustomExceptions($terminal);
+
         // When the terminal selector has to activated.
         // uncomment the following code
-        // $this->setTerminalForPayment($payment, $terminal);
+        $this->setTerminalForPayment($payment, $terminal);
 
         return $terminal;
+    }
+
+    protected function getHdfcSharedTerminalIfMaestro($terminals)
+    {
+        $method = $this->payment->getMethod();
+
+        if ($method !== Payment\Method::CARD)
+        {
+            return null;
+        }
+
+        $cardNetwork = $this->payment->card->getNetworkCode();
+
+        if ($cardNetwork !== Network::MAES)
+        {
+            return null;
+        }
+
+        $sharedHdfcTerminal = $terminals->find(Shared::HDFC_RAZORPAY_TERMINAL);
+
+        return $sharedHdfcTerminal;
     }
 
     protected function setTerminalForPayment($payment, $terminal = null)
@@ -139,5 +171,31 @@ class Selector
 
             $this->trace->info(TraceCode::TERMINAL_SELECTION, $traceData);
         }
+    }
+
+    /**
+     * Custom exceptions that are to be only thrown if no terminal is available,
+     * in live mode on cards.
+     *
+     * @param terminal $terminal Chosen terminal
+     * @return void throw custom exception
+     */
+    protected function checkForCustomExceptions($terminal)
+    {
+        if (($terminal === null) and
+            ($this->input['mode'] === Mode::LIVE) and
+            ($this->input['payment']->getMethod() === Payment\Method::CARD))
+        {
+            $network = $this->input['payment']->card->getNetworkCode();
+            // Check for partially supported networks on live
+            $networks = Payment\Gateway::$partiallySupportedCardNetworks;
+
+            if (in_array($network, $networks))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
+            }
+        }
+
     }
 }

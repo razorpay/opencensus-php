@@ -22,7 +22,7 @@ class ReturnTest extends TestCase
             'request' => [
                 'content' => [
                     'callback_url' => $this->getLocalMerchantCallbackUrl(),
-                    'card' => ['number' => '4012001037141112'],
+                    'card' => ['number' => '4012001037167778'],
                 ],
             ],
             'response' => [
@@ -80,23 +80,24 @@ class ReturnTest extends TestCase
             ],
             'response' => [
                 'content' => [
-                    'error' => [
-                        'code' => 'BAD_REQUEST_ERROR',
-                        'description' => 'The number is invalid.',
-                        'field' => 'number',
-                    ],
+                    'error[code]' => 'BAD_REQUEST_ERROR',
+                    'error[description]' => 'The number is invalid.',
+                    'error[field]' => 'number',
                 ],
-                'status_code' => 400,
+                'status_code' => 200,
             ]
         );
+
+        // Status will be 200 because it's a form post to the callback url and we get a response from that.
+        // So we are checking the status code of the response from merchant callback url here.
 
         $this->replaceDefualtValues($testData['request']['content']);
 
         $content = $this->runRequestResponseFlow($testData);
 
-        // Callback flow in this case will be false because we are returning
-        // the result after first request only without any redirection.
-        $this->assertFalse($this->merchantCallbackFlow);
+        // Callback flow in this case will be true because we are returning
+        // the result after first request only but with any redirection.
+        $this->assertTrue($this->merchantCallbackFlow);
     }
 
     public function testReturnUrlWith3dSecureFailure()

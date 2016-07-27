@@ -14,12 +14,11 @@ return [
         ],
         'response' => [
             'content' => [
-                'name'         => 'Harshil',
-                'expiry_month' => 12,
-                'expiry_year'  => 2017,
-                'network'      => 'Visa',
-                'last4'        => '3335',
-                'emi'          => true,
+                'entity'        => 'card',
+                'name'          => 'Harshil',
+                'network'       => 'Visa',
+                'last4'         => '3335',
+                'international' => false,
             ],
         ],
     ],

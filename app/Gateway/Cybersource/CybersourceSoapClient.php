@@ -10,16 +10,13 @@ use RZP\Trace\TraceCode;
 
 class CybersourceSoapClient extends SoapClient
 {
-    protected $user;
-    protected $password;
+    protected $auth;
 
     public function __construct($wsdl, $auth, $options = array())
     {
         parent::__construct($wsdl, $options);
 
-        $this->user = $auth['username'];
-
-        $this->password = $auth['password'];
+        $this->auth = $auth;
 
         $this->app = App::getFacadeRoot();
         $this->trace = $this->app['trace'];
@@ -28,17 +25,16 @@ class CybersourceSoapClient extends SoapClient
     // This section inserts the UsernameToken information in the outgoing SOAP message.
     public function __doRequest($request, $location, $action, $version, $oneWay = 0)
     {
-        $user = $this->user;
-        $password = $this->password;
+        $auth = $this->auth;
 
         $soapHeader = '<SOAP-ENV:Header xmlns:SOAP-ENV=\'http://schemas.xmlsoap.'.
                       'org/soap/envelope/\' xmlns:wsse=\'http://docs.oasis-open'.
                       '.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.'.
                       'xsd\'><wsse:Security SOAP-ENV:mustUnderstand=\'1\'><wsse'.
-                      ':UsernameToken><wsse:Username>'.$user.'</wsse:Username><wsse'.
+                      ':UsernameToken><wsse:Username>'.$auth['username'].'</wsse:Username><wsse'.
                       ':Password Type=\'http://docs.oasis-open.org/wss/2004/01/'.
                       'oasis-200401-wss-username-token-profile-1.0#PasswordText'.
-                      '\'>'.$password.'</wsse:Password></wsse:UsernameToken></wsse:'.
+                      '\'>'.$auth['password'].'</wsse:Password></wsse:UsernameToken></wsse:'.
                       'Security></SOAP-ENV:Header>';
 
         $requestDOM = new \DOMDocument('1.0');
@@ -56,8 +52,6 @@ class CybersourceSoapClient extends SoapClient
         }
         catch (\DOMException $e)
         {
-            $this->trace->traceException($e);
-
             throw new Exception\RuntimeException('Server error', null, $e);
         }
 

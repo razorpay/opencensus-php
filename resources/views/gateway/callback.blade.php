@@ -48,10 +48,20 @@ g('icon').innerHTML = s ? '&#10004' : '!'
 
 onerror = function(message){
   message = JSON.stringify({
-    access_token: '3cddb790e27342ad86f431498a1f8342',
+    access_token: '4a62d17b6108416eaa6da7cbb5cb9aaf',
     data: {
-      environment: 'production',
-      platform: 'popup',
+      client: {
+        javascript: {
+          browser: navigator.userAgent
+        }
+      },
+      context: 'popup',
+      level: 'error',
+      environment: 'prod',
+      request: {
+        url: location.href,
+        user_ip: '$remote_ip'
+      },
       body: {
         message: {
           body: message
@@ -61,16 +71,24 @@ onerror = function(message){
   })
   var xhr = new XMLHttpRequest()
   xhr.open('post', 'https://api.rollbar.com/api/1/item/', true)
-  xhr.setRequestHeader('Content-Type', 'application/json')
   xhr.send(message)
 }
 if(!window.CheckoutBridge){
   if(window.opener) {
-    try{opener.onComplete(data)&&close()}catch(e){onerror(e.message)}
-    opener.postMessage(data,'*')
+    try {
+      opener.onComplete(data);
+      try {
+        close();
+      } catch(e) {
+        onerror(e.message);
+      }
+    } catch(e){}
+    opener.postMessage(data,'*');
   }
-  if(/(\(iP.+(Cr|Fx)iOS|Trident|MSIE )/.test(navigator.userAgent))
-    setTimeout(close, 1000);
+  setTimeout(function(){
+    onerror('unclosed: 300');
+  }, 300)
+  setTimeout(close, 999);
 }
 
 </script></body></html>

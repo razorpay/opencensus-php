@@ -31,6 +31,14 @@ class Processor
     use OtpResend;
     use Topup;
 
+    /**
+     * Callback urls can be hit multiple times by customers.
+     * WIthin certain duration x minutes, we will return payment successfully
+     * processed when the url is hit mulitple times.
+     * After that duration
+     */
+    const CALLBACK_SUCCESS_DURATION = 20;
+
     protected $merchant;
     protected $trace;
     protected $payment;
@@ -187,7 +195,7 @@ class Processor
 
     protected function getSignature($str)
     {
-        return \BasicAuth::sign($str);
+        return $this->app['basicauth']->sign($str);
     }
 
     protected function checkMerchantPermissions()
@@ -343,6 +351,7 @@ class Processor
         {
             throw new Exception\LogicException(
                 'Terminal should not be null here',
+                null,
                 ['payment_id' => $this->payment->getId()]);
         }
 

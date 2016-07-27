@@ -31,6 +31,7 @@ class TraceCode
     const PAYMENT_QUEUE_CAPTURE_FAILURE             = 'PAYMENT_QUEUE_CAPTURE_FAILURE';
     const PAYMENT_CAPTURE_FAILURE_EXCEPTION         = 'PAYMENT_CAPTURE_FAILURE_EXCEPTION';
     const PAYMENT_QUEUE_CAPTURE_DELETE              = 'PAYMENT_QUEUE_CAPTURE_DELETE';
+    const PAYMENT_CAPTURE_ADD_TO_QUEUE              = 'PAYMENT_CAPTURE_ADD_TO_QUEUE';
     const PAYMENT_TIMED_OUT                         = 'PAYMENT_TIMED_OUT';
     const PAYMENT_VERIFY_FAILED                     = 'PAYMENT_VERIFY_FAILED';
     const PAYMENT_FAILED                            = 'PAYMENT_FAILED';
@@ -48,6 +49,11 @@ class TraceCode
     const PAYMENT_CREATE_ON_PUBLIC                  = 'PAYMENT_CREATE_ON_PUBLIC';
     const PAYMENT_CARD_NOT_ENROLLED                 = 'PAYMENT_CARD_NOT_ENROLLED';
     const PAYMENT_INVALID_CONTACT_NUMBER            = 'PAYMENT_INVALID_CONTACT_NUMBER';
+    const PAYMENT_CAPTURE_CREATE_TRANSACTION        = 'PAYMENT_CAPTURE_CREATE_TRANSACTION';
+    const PAYMENT_CAPTURE_UPDATE_TRANSACTION        = 'PAYMENT_CAPTURE_UPDATE_TRANSACTION';
+    const PAYMENT_CAPTURE_ORDER_UPDATE              = 'PAYMENT_CAPTURE_ORDER_UPDATE';
+    const PAYMENT_TRANSACTION_OLD                   = 'PAYMENT_TRANSACTION_OLD';
+    const TRANSACTION_FREE_CREDITS                  = 'TRANSACTION_FREE_CREDITS';
 
     const TERMINAL_SELECTION                        = 'TERMINAL_SELECTION';
     const TERMINAL_SELECTION_MISMATCH               = 'TERMINAL_SELECTION_MISMATCH';
@@ -63,6 +69,17 @@ class TraceCode
     const RUNTIME_ERROR                             = 'RUNTIME_ERROR';
 
     const NETBANKING_PAYMENT_CALLBACK               = 'NETBANKING_PAYMENT_CALLBACK';
+
+    const CHECKOUT_PREFERENCES_REQUEST              = 'CHECKOUT_PREFERENCES_REQUEST';
+
+    // Card Saving related
+    const PAYMENT_FILL_SAVED_APP_TOKEN              = 'PAYMENT_FILL_SAVED_APP_TOKEN';
+    const PAYMENT_GET_CUSTOMER                      = 'PAYMENT_GET_CUSTOMER';
+    const CUSTOMER_SESSION                          = 'CUSTOMER_SESSION';
+    const CUSTOMER_CREATE_APP_TOKEN                 = 'CUSTOMER_CREATE_APP_TOKEN';
+    const PAYMENT_PROCESS_FROM_SAVED_LOCAL          = 'PAYMENT_PROCESS_FROM_SAVED_LOCAL';
+    const PAYMENT_PROCESS_FROM_SAVED_GLOBAL         = 'PAYMENT_PROCESS_FROM_SAVED_GLOBAL';
+    const PAYMENT_SAVE_METHOD                       = 'PAYMENT_SAVE_METHOD';
 
     /*
      * Gateway component error messages
@@ -111,6 +128,7 @@ class TraceCode
     const GATEWAY_RUPAY_CALLBACK                    = 'GATEWAY_RUPAY_CALLBACK';
     const GATEWAY_HDFC_CALLBACK_EMPTY               = 'GATEWAY_HDFC_CALLBACK_EMPTY';
     const GATEWAY_UNSUPPORTED_CARD_NETWORK          = 'GATEWAY_UNSUPPORTED_CARD_NETWORK';
+    const GATEWAY_PAYMENT_VERIFY_UNEXPECTED         = 'GATEWAY_PAYMENT_VERIFY_UNEXPECTED';
 
     const MPR_HDFC_GEN_INITIATED                    = 'MPR_HDFC_GEN_INITIATED';
     const MPR_HDFC_FILE_GENERATED                   = 'MPR_HDFC_FILE_GENERATED';
@@ -220,6 +238,13 @@ class TraceCode
         self::PAYMENT_QUEUE_CAPTURE_FAILURE         => 'Payment failed to capture via queue',
         self::PAYMENT_CAPTURE_FAILURE_EXCEPTION     => 'Payment failed to capture because of an exception',
         self::PAYMENT_QUEUE_CAPTURE_DELETE          => 'Deleting the capture request from the queue',
+        self::PAYMENT_CAPTURE_REQUEST               => 'Payment capture request received',
+        self::PAYMENT_CAPTURE_ADD_TO_QUEUE          => 'Adding capture request to queue',
+        self::PAYMENT_CAPTURE_CREATE_TRANSACTION    => 'Create transaction on payment capture',
+        self::PAYMENT_CAPTURE_UPDATE_TRANSACTION    => 'Update existing transaction on payment capture',
+        self::PAYMENT_CAPTURE_ORDER_UPDATE          => 'Update corresponding order on payment capture',
+        self::PAYMENT_TRANSACTION_OLD               => 'Updating/Creating transaction of an old payment',
+        self::TRANSACTION_FREE_CREDITS              => 'Using free credits for the payment',
 
         self::BAD_REQUEST_INVALID_API_KEY           => 'The api key provided is invalid',
 
@@ -238,6 +263,7 @@ class TraceCode
         self::GATEWAY_SUPPORT_RESPONSE              => 'Support response received',
         self::GATEWAY_SUPPORT_ERROR                 => 'Error in support',
         self::GATEWAY_UNKNOWN_ERROR                 => 'Unknown gateway error',
+        self::GATEWAY_PAYMENT_VERIFY_UNEXPECTED     => 'Unexpected state of events in verify flow',
         self::GATEWAY_UNSUPPORTED_CARD_NETWORK      => 'Card network not supported',
 
         self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured',

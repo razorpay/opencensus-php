@@ -126,6 +126,15 @@ class Netbanking
         IFSC::INDB,
         IFSC::KVBL,
         Netbanking::LAVB_R,
+        IFSC::ICIC,
+        IFSC::UTIB,
+        IFSC::BKID,
+        IFSC::SBBJ,
+        IFSC::SBHY,
+        IFSC::SBIN,
+        IFSC::SBMY,
+        IFSC::STBP,
+        IFSC::SBTR,
     );
 
     protected static $sbiepay = array(
