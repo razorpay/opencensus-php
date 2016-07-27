@@ -41,5 +41,4 @@ class BankCodes
         IFSC::YESB => '1146',
         IFSC::PUNB => '1381',
     );
-
 }
