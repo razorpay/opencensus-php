@@ -14,6 +14,7 @@ use RZP\Gateway\Wallet\Base;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Core;
+use RZP\Models\Payment\TwoFaStatus;
 use Carbon\Carbon;
 use Lib\PhoneBook;
 use RZP\Models\Customer\Token;
@@ -309,11 +310,21 @@ class Gateway extends Base\Gateway
             $errorCode = ResponseCodeMap::getApiErrorCode($content['errorCode']);
 
             // Payment fails, throw exception
-            throw new Exception\GatewayErrorException(
+            $e = new Exception\GatewayErrorException(
                 $errorCode,
                 $content['status'],
                 $content['message']);
+
+            if (ResponseCodeMap::isTwoFaFailed($content['errorCode']) === true)
+            {
+                $e->markTwoFaError();
+            }
+
+            throw $e;
         }
+
+        // set two-fa status as passed
+        $data[\RZP\Models\Payment\Entity::TWO_FA_STATUS] = \RZP\Models\Payment\TwoFaStatus::PASSED;
 
         return $data;
     }

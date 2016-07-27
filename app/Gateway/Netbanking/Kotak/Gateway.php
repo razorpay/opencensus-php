@@ -139,12 +139,6 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function getCallbackResponseData()
-    {
-        return [\RZP\Models\Payment\Entity::TWO_FA_STATUS =>
-                \RZP\Models\Payment\TwoFaStatus::UNKNOWN];
-    }
-
     protected function getDataFromResponse($data)
     {
         $content = explode('|', $data);
