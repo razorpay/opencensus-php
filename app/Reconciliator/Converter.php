@@ -4,10 +4,8 @@ namespace RZP\Reconciliator;
 
 use Excel;
 use Config;
-use Trace;
 
 use RZP\Exception;
-use RZP\Trace\TraceCode;
 
 class Converter
 {
@@ -30,7 +28,7 @@ class Converter
     ];
 
     const MAX_SHEETS_ALLOWED = 10;
-    const ROW_CHUNK_SIZE = 2;
+    const ROW_CHUNK_SIZE = 500;
 
     protected $dataArray;
 
@@ -44,7 +42,7 @@ class Converter
     {
         $filePath = $fileDetails[FileProcessor::FILE_PATH];
 
-        Config::set('excel.import.force_sheets_collection', false);
+        Config::set('excel.import.force_sheets_collection', true);
 
         if (empty($sheetNames) === true)
         {
@@ -77,9 +75,9 @@ class Converter
     }
 
     /**
-     * This is an unused function currently, because of the sheet name issue.
-     * May come in handy or use in a later time when we don't care about the
-     * sheet names at all.
+     * If this function is being used, ensure that the sheet name is not being
+     * used to perform any operations in the core reconciliation flow. Since, this
+     * function does not get any sheet name at all.
      *
      * @param array $fileDetails
      * @return array
@@ -92,18 +90,20 @@ class Converter
 
         foreach (range(0, self::MAX_SHEETS_ALLOWED) as $index)
         {
+            $randomSheetName = '';
+            $allSheetsContent[$randomSheetName] = [];
+
             Excel::filter('chunk')->selectSheetsByIndex($index)->load($filePath)->chunk(
                 self::ROW_CHUNK_SIZE,
-                function ($results) use ($index, & $allSheetsContent)
+                function ($results) use ($randomSheetName, & $allSheetsContent)
                 {
                     foreach ($results as $row)
                     {
-                        // TODO: Figure out a way to get the current sheet name.
                         // Currently, since it returns an array of rows, there's no
                         // way to get the sheet names. And we cannot let it return
                         // an array of sheets because chunk works only on a
                         // cell collection (rows) and not on a row collection (sheets)
-                        $allSheetsContent[$index][] = $row;
+                        $allSheetsContent[$randomSheetName][] = $row;
                     }
                 },
                 false
@@ -139,12 +139,14 @@ class Converter
             }
             catch (\Exception $ex)
             {
+                //
                 // This exception with the below message is thrown when the particular sheet
                 // is not found in the excel file. The reason we let this be is because maatwebsite
                 // does not fail silently if the given sheet does not exist. We have
                 // a possible list of sheets that can be present in the given file, hardcoded
                 // on which we run this code block.
-
+                //
+                
                 if (strpos(strtolower($ex->getMessage()), 'undefined variable: index') !== false)
                 {
                     continue;

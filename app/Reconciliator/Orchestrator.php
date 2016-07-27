@@ -552,28 +552,17 @@ class Orchestrator
     /**
      * Converts and sets the excel content in an array.
      *
-     * @param $fileDetails
-     * @throws Exception\ReconciliationException
+     * @param array $fileDetails
      */
     protected function handleSettingExcelContent(array $fileDetails)
     {
+        //
         // Gets the sheet names which need to be collected for the given gateway.
         // Returns empty if there is no restriction on which sheets to collect.
+        // If sheetNames returned is empty, ensure that the gateway does not perform
+        // any operation based on the sheet name.
+        //
         $sheetNames = $this->gatewayReconciliator->getSheetNames();
-
-        if (empty($sheetNames) === true)
-        {
-            // If a recon file is an excel, it must have a defined set of sheets
-            // that should be read.
-            // If we don't have this check, it may cause an issue later in the flow
-            // where sheet name is being used to perform some actions.
-            // With the current implementation, we cannot get the sheet names through maatwebsite.
-            // That's why we need the sheet names to be defined before hand itself.
-
-            throw new Exception\ReconciliationException(
-                'Sheet names must be defined for the gateway for an excel file.'
-            );
-        }
 
         $sheetsContents = $this->converter->getRowsFromExcelSheetsOptimized($fileDetails, $sheetNames);
 
