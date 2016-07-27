@@ -120,7 +120,7 @@ class Core extends Base\Core
         // Currently all app_tokens will be generated for common rzp merchant
         $appMerchant = $customer->merchant->getId();
 
-        if ($this->isUpdatedAndroidSdk($input))
+        if (Base\Utility::isUpdatedAndroidSdk($input))
         {
             $appMerchant = $merchant->getId();
         }
@@ -137,22 +137,6 @@ class Core extends Base\Core
         $app = (new AppToken\Core)->create($custAppInput);
 
         return $app;
-    }
-
-    protected function isUpdatedAndroidSdk($input)
-    {
-        if ((isset($input['_'])) and
-            (isset($input['_']['platform'])) and
-            ($input['_']['platform'] === 'android') and
-            (isset($input['_']['library'])) and
-            ($input['_']['library'] === 'checkoutjs') and
-            (isset($input['_']['version'])) and
-            (version_compare($input['_']['version'], '1.0.0') >= 0))
-        {
-            return true;
-        }
-
-        return false;
     }
 
     protected function verifyRavenOtp($input, $merchant)
@@ -207,7 +191,7 @@ class Core extends Base\Core
         $customerId = null;
         $merchantId = null;
         $customer = null;
-        $customerApp = null;
+        $appToken = null;
         $appToken = null;
 
         if (empty($input[Payment\Entity::APP_TOKEN]) === false)
@@ -216,11 +200,11 @@ class Core extends Base\Core
 
             Customer\AppToken\Entity::verifyIdAndStripSign($appToken);
 
-            $customerApp = (new Customer\AppToken\Core)->getAppByAppToken(
+            $appToken = (new Customer\AppToken\Core)->getAppByAppToken(
                 $appToken,
                 $merchant);
 
-            $customerId = $customerApp->getCustomerId();
+            $customerId = $appToken->getCustomerId();
 
             $merchantId = Account::SHARED_ACCOUNT;
         }
@@ -245,7 +229,7 @@ class Core extends Base\Core
                 'app_token'   => $appToken,
             ]);
 
-        return array($customer, $customerApp);
+        return array($customer, $appToken);
     }
 
     public function putAppTokenInSession($appToken)
