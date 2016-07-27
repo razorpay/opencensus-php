@@ -463,18 +463,11 @@ class MerchantController extends Controller
 
         $data = [];
 
-        $font = 'lato2';
-
         if (in_array($context, array_keys($urlMap)))
         {
             $url = $urlMap[$context];
-
-            {
-                $framejs = '/v1/checkout-frame-new.js';
-                $css = '/v1/css/checkout-new.css';
-                $font = 'lato3';
-            }
         }
+
         else if (isset($input['checkout']))
         {
             $url = $input['checkout'];
@@ -483,7 +476,7 @@ class MerchantController extends Controller
         $data['checkout'] = $url;
         $data['framejs'] = $url . $framejs;
         $data['css'] = $url . $css;
-        $data['font'] = 'https://cdn.razorpay.com/' . $font;
+        $data['font'] = 'https://cdn.razorpay.com/lato3';
 
         return $data;
     }
