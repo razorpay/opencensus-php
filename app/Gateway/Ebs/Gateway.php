@@ -20,20 +20,20 @@ class Gateway extends Base\Gateway
 
     const SUCCESS                   = '0';
 
-    const HASH_SECRET               = 'hash_secret';
     const HASH_ALGO                 = 'SHA512';
     const MERCHANT_ID               = 'merchant_id';
+    const HASH_SECRET               = 'hash_secret';
 
-    const NAME                      = 'Razorpay';
-    const ADDRESS                   = 'Razorpay office';
-    const CITY                      = 'Bangalore';
-    const COUNTRY_CODE              = 'IND';
-    const POSTAL_CODE               = '560001';
-    const PHONE                     = '9876543210';
-    const EMAIL                     = 'helpdesk@razorpay.com';
-    const DESCRIPTION               = 'razorpay ebs desc';
-    const CURRENCY                  = 'INR';
     const API                       = 'api';
+    const NAME                      = 'Razorpay';
+    const CITY                      = 'Bangalore';
+    const EMAIL                     = 'helpdesk@razorpay.com';
+    const PHONE                     = '9876543210';
+    const ADDRESS                   = 'Razorpay office';
+    const CURRENCY                  = 'INR';
+    const POSTAL_CODE               = '560001';
+    const DESCRIPTION               = 'razorpay ebs desc';
+    const COUNTRY_CODE              = 'IND';
 
     protected $gateway = 'ebs';
 
@@ -53,7 +53,9 @@ class Gateway extends Base\Gateway
         parent::authorize($input);
         $content = $this->getAuthRequestContentArray($input);
 
-        $payment = $this->createGatewayPaymentEntity($content);
+        $attr = $this->getAuthorizeContent($content);
+
+        $payment = $this->createGatewayPaymentEntity($attr);
 
         $request = array(
             'url' => $this->getUrl($this->action),
@@ -88,6 +90,23 @@ class Gateway extends Base\Gateway
         $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
 
+
+        $content = $this->getMappedAttributes($input['gateway']);
+
+        $content[ENTITY::RECEIVED] = 1;
+        $content[ENTITY::TRANSACTION_ID] = $input['gateway'][RESP::TRANSACTION_ID];
+        $content[ENTITY::REQUEST_ID] = $input['gateway'][RESP::REQUEST_ID];
+        $content[ENTITY::STATUS] = Status::AUTHORIZED;
+
+        if ($input['gateway'][RESP::RESPONSE_CODE] !== self::SUCCESS)
+        {
+            $content[ENTITY::STATUS] = Status::AUTHORIZED_FAILED;
+        }
+
+        $payment->fill($content);
+
+        $payment->saveOrFail();
+
         if ($input['gateway'][RESP::RESPONSE_CODE] !== self::SUCCESS)
         {
             // Payment fails, throw exception
@@ -96,16 +115,6 @@ class Gateway extends Base\Gateway
                 $input['gateway']['ResponseCode'],
                 '');
         }
-
-        $content = $this->getMappedAttributes($input['gateway']);
-
-        $content[ENTITY::RECEIVED] = 1;
-        $content[ENTITY::TRANSACTION_ID] = $input['gateway'][RESP::TRANSACTION_ID];
-        $content[ENTITY::REQUEST_ID] = $input['gateway'][RESP::REQUEST_ID];
-
-        $payment->fill($content);
-
-        $payment->saveOrFail();
     }
 
     public function refund(array $input)
@@ -380,6 +389,14 @@ class Gateway extends Base\Gateway
         }
     }
 
+    protected function getAuthorizeContent($content)
+    {
+        $attr = $content;
+        $attr[ENTITY::STATUS] = Status::CREATED;
+
+        return $attr;
+    }
+
     protected function getRefundContent($resp, $input)
     {
         $refundAmount = (float) ($input['refund']['amount']);
@@ -395,11 +412,14 @@ class Gateway extends Base\Gateway
 
         $attr[ENTITY::CURRENCY] = self::CURRENCY;
         $attr[ENTITY::RECEIVED] = 1;
+        $attr[ENTITY::STATUS] = Status::REFUNDED;
+
         if ($attr[ENTITY::ERROR_CODE] !== 0)
         {
             $attr[ENTITY::TXN_AMOUNT] = $refundAmount;
             $attr[ENTITY::MODE] = strtoupper($this->mode);
             $attr[ENTITY::REFUND_PAYMENT_ID] = $input['payment']['id'];
+            $attr[ENTITY::STATUS] = Status::REFUND_FAILED;
         }
         return $attr;
     }

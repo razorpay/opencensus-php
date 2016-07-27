@@ -8,86 +8,92 @@ use RZP\Constants;
 
 class Entity extends Base\Entity
 {
-    const PAYMENT_ID            = 'payment_id';
-    const CHANNEL               = 'channel';
-    const RECEIVED              = 'received';
-    const ACCOUNT_ID            = 'account_id';
-    const TXN_AMOUNT            = 'TxnAmount';
-    const AMOUNT                = 'amount';
+    const ID                    = 'id';
     const NAME                  = 'name';
-    const ADDRESS               = 'address';
     const CITY                  = 'city';
+    const MODE                  = 'mode';
     const STATE                 = 'state';
-    const COUNTRY               = 'country';
-    const POSTAL_CODE           = 'postal_code';
     const PHONE                 = 'phone';
     const EMAIL                 = 'email';
-    const DESCRIPTION           = 'description';
+    const STATUS                = 'status';
+    const AMOUNT                = 'amount';
+    const CHANNEL               = 'channel';
+    const COUNTRY               = 'country';
+    const ADDRESS               = 'address';
     const CURRENCY              = 'currency';
-    const MODE                  = 'mode';
-    const PAYMENT_MODE          = 'payment_mode';
-    const REQUEST_ID            = 'Request_id';
-    const TRANSACTION_ID        = 'transaction_id';
-    const REF_AMOUNT            = 'ref_amount';
-    const EBS_PAYMENT_ID        = 'ebs_payment_id';
-    const ERROR_DESCRIPTION     = 'error_description';
-    const ERROR_CODE            = 'error_code';
+    const RECEIVED              = 'received';
     const REFUND_ID             = 'refund_id';
+    const REQUEST_ID            = 'Request_id';
+    const REF_AMOUNT            = 'ref_amount';
+    const TXN_AMOUNT            = 'TxnAmount';
+    const PAYMENT_ID            = 'payment_id';
+    const ACCOUNT_ID            = 'account_id';
+    const ERROR_CODE            = 'error_code';
+    const POSTAL_CODE           = 'postal_code';
+    const DESCRIPTION           = 'description';
+    const PAYMENT_MODE          = 'payment_mode';
     const REFUND_REF_NO         = 'reference_no';
+    const EBS_PAYMENT_ID        = 'ebs_payment_id';
+    const TRANSACTION_ID        = 'transaction_id';
+    const ERROR_DESCRIPTION     = 'error_description';
     const REFUND_PAYMENT_ID     = 'payment_id';
+    const AUTH_STATUS           = 'AuthStatus';
+    const REF_STATUS            = 'RefStatus';
 
     protected $fields = array(
-        self::PAYMENT_ID,
-        self::CHANNEL,
-        self::RECEIVED,
-        self::ACCOUNT_ID,
-        self::TXN_AMOUNT,
         self::NAME,
-        self::ADDRESS,
         self::CITY,
+        self::MODE,
         self::STATE,
-        self::COUNTRY,
-        self::POSTAL_CODE,
         self::PHONE,
         self::EMAIL,
-        self::DESCRIPTION,
+        self::STATUS,
+        self::CHANNEL,
+        self::ADDRESS,
+        self::COUNTRY,
+        self::RECEIVED,
         self::CURRENCY,
-        self::MODE,
-        self::PAYMENT_MODE,
-        self::REQUEST_ID,
-        self::TRANSACTION_ID,
+        self::ERROR_CODE,
         self::TXN_AMOUNT,
         self::REF_AMOUNT,
+        self::REQUEST_ID,
+        self::PAYMENT_ID,
+        self::ACCOUNT_ID,
+        self::TXN_AMOUNT,
+        self::POSTAL_CODE,
+        self::DESCRIPTION,
+        self::PAYMENT_MODE,
+        self::TRANSACTION_ID,
         self::EBS_PAYMENT_ID,
         self::ERROR_DESCRIPTION,
-        self::ERROR_CODE
     );
 
     protected $fillable = array(
-        self::PAYMENT_ID,
-        self::CHANNEL,
-        self::RECEIVED,
-        self::ACCOUNT_ID,
-        self::TXN_AMOUNT,
         self::NAME,
-        self::ADDRESS,
         self::CITY,
+        self::MODE,
         self::STATE,
-        self::COUNTRY,
-        self::POSTAL_CODE,
         self::PHONE,
         self::EMAIL,
-        self::DESCRIPTION,
+        self::STATUS,
+        self::CHANNEL,
+        self::ADDRESS,
+        self::COUNTRY,
+        self::RECEIVED,
         self::CURRENCY,
-        self::MODE,
-        self::PAYMENT_MODE,
-        self::REQUEST_ID,
-        self::TRANSACTION_ID,
+        self::ERROR_CODE,
         self::TXN_AMOUNT,
         self::REF_AMOUNT,
+        self::REQUEST_ID,
+        self::PAYMENT_ID,
+        self::ACCOUNT_ID,
+        self::TXN_AMOUNT,
+        self::POSTAL_CODE,
+        self::DESCRIPTION,
+        self::PAYMENT_MODE,
+        self::TRANSACTION_ID,
         self::EBS_PAYMENT_ID,
         self::ERROR_DESCRIPTION,
-        self::ERROR_CODE
     );
 
     protected $table = TABLE::EBS;
@@ -98,7 +104,7 @@ class Entity extends Base\Entity
 
     protected function getStatusAttribute()
     {
-        $code = $this->attributes['AuthStatus'];
+        $code = $this->attributes[self::AUTH_STATUS];
 
         if ($code === null)
         {
@@ -110,7 +116,7 @@ class Entity extends Base\Entity
 
     protected function getRefundStatusAttribute()
     {
-        $code = $this->attributes['RefStatus'];
+        $code = $this->attributes[self::REF_STATUS];
 
         if ($code === null)
         {

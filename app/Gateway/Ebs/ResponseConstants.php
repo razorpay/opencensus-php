@@ -26,4 +26,7 @@ class ResponseConstants
     const REFUND_PAYMENT_ID = 'payment_id';
     const TXN_AMOUNT        = 'TXnAmount';
     const SECURE_HASH       = 'SecureHash';
+
+    const REFUNDED          = 'refunded';
+    const REFUND_FAILED     = 'refund_failed';
 }

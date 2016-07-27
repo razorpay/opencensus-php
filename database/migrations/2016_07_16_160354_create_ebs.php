@@ -3,7 +3,8 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-use RZP\Gateway\Ebs;
+use RZP\Constants\Table;
+use RZP\Gateway\Ebs\Entity as Ebs;
 use RZP\Models\Base\UniqueIdEntity;
 
 class CreateEbs extends Migration {
@@ -15,71 +16,79 @@ class CreateEbs extends Migration {
      */
     public function up()
     {
-        Schema::create('ebs', function(Blueprint $table)
+        Schema::create(Table::EBS, function(Blueprint $table)
         {
             $table->engine = 'InnoDB';
-            $table->increments('id');
-            $table->char('payment_id', UniqueIdEntity::ID_LENGTH);
-            $table->string('action');
-            $table->string('TxnAmount');
-            $table->string('name')->nullable();
-            $table->string('address')->nullable();
-            $table->string('city')->nullable();
-            $table->string('state')->nullable();
-            $table->string('country')->nullable();
-            $table->string('phone')->nullable();
-            $table->string('email')->nullable();
-            $table->string('postal_code')->nullable();
-            $table->string('ship_name')->nullable();
-            $table->string('ship_address')->nullable();
-            $table->string('ship_state')->nullable();
-            $table->string('ship_city')->nullable();
-            $table->string('ship_postal_code')->nullable();
-            $table->string('ship_country')->nullable();
-            $table->string('ship_phone')->nullable();
-            $table->string('description')->nullable();
-            $table->string('currency');
-            $table->string('mode')->nullable();
-            $table->string('payment_mode')->nullable();
-            $table->string('channel')->nullable();
-            $table->boolean('received')->default(0);
-            $table->string('ReferenceNo')->nullable();
 
-            $table->string('SecurityType')->nullable();
-            $table->string('TxnDate')->nullable();
-            $table->string('TxnReferenceNo')->nullable();
-            $table->string('AuthStatus')->nullable();
-            $table->string('SettlementType')->nullable();
-            $table->string('error_status')->nullable();
-            $table->string('error_description')->nullable();
-            $table->string('RequestType')->nullable();
-            $table->string('ref_amount')->nullable();
-            $table->string('RefDateTime')->nullable();
-            $table->string('RefStatus')->nullable();
-            $table->string('RefundId')->nullable();
-            $table->string('request_id')->nullable();
-            $table->string('transaction_id')->nullable();
-            $table->string('ebs_payment_id')->nullable();
-            $table->string('error_code')->nullable();
-            $table->string('error_reason')->nullable();
-            $table->string('account_id')->nullable();
-            $table->string('ProcessStatus')->nullable();
+            $table->increments(Ebs::ID);
 
-            $table->string('refund_id', UniqueIdEntity::ID_LENGTH)->nullable();
+            $table->char(Ebs::REFUND_PAYMENT_ID, UniqueIdEntity::ID_LENGTH);
+
+            $table->string(Ebs::TXN_AMOUNT);
+
+            $table->string(Ebs::NAME)->nullable();
+
+            $table->string(Ebs::ADDRESS)->nullable();
+
+            $table->string(Ebs::CITY)->nullable();
+
+            $table->string(Ebs::STATE)->nullable();
+
+            $table->string(Ebs::COUNTRY)->nullable();
+
+            $table->string(Ebs::PHONE)->nullable();
+
+            $table->string(Ebs::EMAIL)->nullable();
+
+            $table->string(Ebs::POSTAL_CODE)->nullable();
+
+            $table->string(Ebs::DESCRIPTION)->nullable();
+
+            $table->string(Ebs::STATUS);
+
+            $table->string(Ebs::CURRENCY);
+
+            $table->string(Ebs::ACTION);
+
+            $table->string(Ebs::REQUEST_ID)->nullable();
+
+            $table->string(Ebs::MODE)->nullable();
+
+            $table->string(Ebs::PAYMENT_MODE)->nullable();
+
+            $table->string(Ebs::CHANNEL)->nullable();
+
+            $table->boolean(Ebs::RECEIVED)->default(0);
+
+            $table->string(Ebs::ERROR_CODE)->nullable();
+
+            $table->string(Ebs::ERROR_DESCRIPTION)->nullable();
+
+            $table->string(Ebs::REF_AMOUNT)->nullable();
+
+            $table->string(Ebs::TRANSACTION_ID)->nullable();
+
+            $table->string(Ebs::EBS_PAYMENT_ID)->nullable();
+
+            $table->string(Ebs::ACCOUNT_ID)->nullable();
+
+            $table->string(Ebs::REF_STATUS)->nullable();
+
+            $table->string(Ebs::AUTH_STATUS)->nullable();
+
+            $table->string(Ebs::REFUND_ID, UniqueIdEntity::ID_LENGTH)->nullable();
 
             // Adds created_at and updated_at columns to the table
             $table->integer('created_at');
+
             $table->integer('updated_at');
 
-            $table->foreign('payment_id')
+            $table->foreign(Ebs::PAYMENT_ID)
                   ->references('id')
                   ->on('payments')
                   ->on_delete('restrict');
 
-            $table->index('received');
-            $table->index('AuthStatus');
-            $table->index('TxnReferenceNo');
-            $table->index('RefundId');
+            $table->index(Ebs::RECEIVED);
         });
     }
 
@@ -90,12 +99,12 @@ class CreateEbs extends Migration {
      */
     public function down()
     {
-        Schema::table('ebs', function($table)
+        Schema::table(Table::EBS, function($table)
         {
             $table->dropForeign('ebs_payment_id_foreign');
         });
 
-        Schema::drop('ebs');
+        Schema::drop(Table::EBS);
     }
 
 }
