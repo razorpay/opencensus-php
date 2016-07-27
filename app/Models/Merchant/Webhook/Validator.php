@@ -38,11 +38,11 @@ class Validator extends Base\Validator
         {
             $scheme = strtolower($components['scheme']);
 
-            if (($scheme !== 'http') or
+            if (($scheme !== 'http') and
                 ($scheme !== 'https'))
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    'Only http or https schemes allowed in webhook url.');
+                    'Only http or https schemes are allowed in webhook url.');
             }
         }
 
@@ -50,7 +50,7 @@ class Validator extends Base\Validator
         {
             $port = $components['port'];
 
-            if (($port !== '80') or
+            if (($port !== '80') and
                 ($port !== '443'))
             {
                 throw new Exception\BadRequestValidationFailureException(
