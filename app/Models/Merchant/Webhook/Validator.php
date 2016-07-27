@@ -32,6 +32,12 @@ class Validator extends Base\Validator
             return;
         }
 
+        if (empty($input[Entity::URL]) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Empty webhook URL is not allowed.');
+        }
+
         $components = parse_url($input[Entity::URL]);
 
         if (isset($components['port']) === false)
@@ -49,17 +55,21 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateEvents($input) {
+    protected function validateEvents($input)
+    {
         $events = $input[Entity::EVENTS];
 
-        foreach ($events as $event => $value) {
-            if (Event::validateEventName($event) === false) {
+        foreach ($events as $event => $value)
+        {
+            if (Event::validateEventName($event) === false)
+            {
                 throw new Exception\BadRequestValidationFailureException(
                     'Not a valid event name: ' . $event,
                     Entity::EVENTS);
             }
 
-            if (($value !== '0') and ($value !== '1')) {
+            if (($value !== '0') and ($value !== '1'))
+            {
                 throw new Exception\BadRequestValidationFailureException(
                     'Not a valid event value',
                     Entity::EVENTS);
