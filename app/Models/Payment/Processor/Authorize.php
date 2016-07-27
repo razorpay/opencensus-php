@@ -170,10 +170,10 @@ trait Authorize
      */
     protected function prePaymentAuthorizeProcessing($payment, $input, array & $gatewayInput)
     {
-        $this->verifyPaymentMethodEnabled($payment, $input);
-
         // also sets the card details in $gatewayInput (passed by reference), if applicable.
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
+
+        $this->verifyPaymentMethodEnabled($payment, $input);
 
         $terminalSelected = null;
 
@@ -606,7 +606,7 @@ trait Authorize
         switch ($paymentMethod)
         {
             case Payment\Method::CARD:
-                $this->verifyCardEnabledInLive($input);
+                $this->verifyCardEnabledInLive($payment, $input);
                 break;
 
             case Payment\Method::NETBANKING:
@@ -1138,8 +1138,10 @@ trait Authorize
         }
     }
 
-    protected function verifyCardEnabledInLive($input)
+    protected function verifyCardEnabledInLive($payment, $input)
     {
+        $card = $payment->card;
+
         $merchantMethods = $this->methods;
 
         $this->checkAndValidateAmexIfNotEnabled($merchantMethods, $input['card']);
@@ -1150,11 +1152,28 @@ trait Authorize
             return;
         }
 
-        if (($merchantMethods === null) or
-            ($merchantMethods->isCardEnabled() === false))
+        if ($merchantMethods->isCardEnabled() === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_NOT_ENALBED_FOR_MERCHANT);
+        }
+
+        $type = $card->getType();
+
+        if ($type === Card\Type::UNKNOWN)
+        {
+            return;
+        }
+
+        $type = ucfirst($type);
+
+        $func = 'is' . $type . 'CardEnabled';
+
+        if ($merchantMethods->$func() === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                $type . ' card transactions are not allowed',
+                'number');
         }
     }
 

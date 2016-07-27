@@ -11,6 +11,7 @@ use Queue;
 use Requests;
 use Trace;
 use RZP\Trace\TraceCode;
+use App;
 
 class Dashboard
 {
@@ -136,7 +137,7 @@ class Dashboard
 
     public static function send($type, $resource)
     {
-        $app = \App::getFacadeRoot();
+        $app = App::getFacadeRoot();
 
         $collection = $resource;
 

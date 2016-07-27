@@ -195,7 +195,7 @@ class Processor
 
     protected function getSignature($str)
     {
-        return \BasicAuth::sign($str);
+        return $this->app['basicauth']->sign($str);
     }
 
     protected function checkMerchantPermissions()

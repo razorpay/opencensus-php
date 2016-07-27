@@ -17,12 +17,11 @@ class Raven
          $this->raven = $app['raven'];
     }
 
-    public function sendOtp($input)
+    public function sendOtp($input, $merchant)
     {
-        $input['receiver'] = $input['contact'];
-        unset($input['contact']);
+        $request = $this->getRavenSendOtpRequestInput($input, $merchant);
 
-        $response = $this->raven->sendOtp($input);
+        $response = $this->raven->sendOtp($request);
 
         if (isset($response['sms_id']))
         {
@@ -32,12 +31,11 @@ class Raven
         return ['success' => false];
     }
 
-    public function verifyOtp($input)
+    public function verifyOtp($input, $merchant)
     {
-        $input['receiver'] = $input['contact'];
-        unset($input['contact']);
+        $request = $this->getRavenVerifyOtpRequestInput($input, $merchant);
 
-        $response = $this->raven->verifyOtp($input);
+        $response = $this->raven->verifyOtp($request);
 
         return $response;
     }
@@ -47,7 +45,32 @@ class Raven
         $result = $this->raven->smsCallback($id, $input);
 
         return $result;
+    }
 
+    protected function getRavenSendOtpRequestInput($input, $merchant)
+    {
+        $request = array(
+            'context' => $merchant->getId(),
+            'receiver' => $input['contact'],
+            'source' => 'api',
+            'params' => [
+                'merchant_name' => $merchant->getBillingLabelElseName()
+            ]
+        );
+
+        return $request;
+    }
+
+    protected function getRavenVerifyOtpRequestInput($input, $merchant)
+    {
+        $request = array(
+            'context' => $merchant->getId(),
+            'receiver' => $input['contact'],
+            'source' => 'api',
+            'otp' => $input['otp']
+        );
+
+        return $request;
     }
 }
 

@@ -6,7 +6,7 @@ use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Customer;
 use RZP\Models\Terminal;
-use RZP\Models\Customer\App;
+use RZP\Models\Customer\AppToken;
 use RZP\Models\Customer\Token;
 use RZP\Models\Merchant\Account;
 use RZP\Error\ErrorCode;

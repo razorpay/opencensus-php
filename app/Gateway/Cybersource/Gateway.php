@@ -207,12 +207,8 @@ class Gateway extends Base\Gateway
 
         $authReply = $this->fetchAuthorizeReplyFromContent($content);
 
-        if (isset($authReply['RFlag']) === false)
-        {
-            throw new Exception\GatewayErrorException(
-                Error\ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
-        }
-        else
+        // Payment is failed when ics_auth is not present
+        if (isset($authReply['RFlag']) === true)
         {
             if ($authReply['RFlag'] !== ReplyFlag::SOK)
             {
@@ -221,6 +217,8 @@ class Gateway extends Base\Gateway
             else if ($authReply['RFlag'] === ReplyFlag::SOK)
             {
                 $this->verifyPaymentReconcileWithGatewayResponse($verify);
+
+                $this->getVerifyContentFromResponse($verify);
             }
         }
 
@@ -769,13 +767,13 @@ class Gateway extends Base\Gateway
     protected function setBillingInfo(&$content, $input)
     {
         $content['billTo'] = [
-            'firstName'     => $input['card']['name'],
-            'lastName'      => 'a',
-            'street1'       => 'a',
-            'city'          => 'a',
-            'state'         => 'a',
-            'postalCode'    => '5',
-            'country'       => 'India',
+            'firstName'     => 'noreal',
+            'lastName'      => 'name',
+            'street1'       => '1295 Charleston Rd',
+            'city'          => 'Mountain View',
+            'state'         => 'CA',
+            'postalCode'    => '94043',
+            'country'       => 'US',
             'email'         => $input['payment']['email']
         ];
     }
@@ -1033,6 +1031,26 @@ class Gateway extends Base\Gateway
                 ResponseCode::getMappedCode($reasonCode),
                 $reasonCode,
                 $desc);
+    }
+
+    protected function getVerifyContentFromResponse($verify)
+    {
+        $content = $verify->verifyResponseContent;
+
+        $paymentData = $content['Requests']['Request']['PaymentData'];
+
+        $paInfo = $paymentData['PayerAuthenticationInfo'];
+
+        $data = [
+            'eci' => str_pad($paInfo['ECI'], 2, '0', STR_PAD_LEFT),
+            'cavv' => $paInfo['AAV_CAVV'],
+            'xid' => $paInfo['XID'],
+            'reason_code' => 100,
+            'action' => Base\Action::AUTHORIZE,
+            'status' => Status::AUTHORIZED
+        ];
+
+        $verify->verifyResponseContent = $data;
     }
 
     protected function xmlToArray($data)
