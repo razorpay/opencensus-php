@@ -80,7 +80,7 @@ class Converter
      * This is an unused function currently, because of the sheet name issue.
      * May come in handy or use in a later time when we don't care about the
      * sheet names at all.
-     * 
+     *
      * @param array $fileDetails
      * @return array
      */
@@ -150,7 +150,6 @@ class Converter
                     continue;
                 }
 
-                // TODO: Add a trace exception here
                 throw $ex;
             }
         }

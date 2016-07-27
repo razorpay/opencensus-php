@@ -46,8 +46,6 @@ class FileProcessor
 
     const SETTLEMENT_STORAGE_PATH = 'files/settlement';
 
-    const FIVE_HUNDRED_KB = 500000;
-
     /********************
      * Instance objects
      ********************/

@@ -553,6 +553,7 @@ class Orchestrator
      * Converts and sets the excel content in an array.
      *
      * @param $fileDetails
+     * @throws Exception\ReconciliationException
      */
     protected function handleSettingExcelContent(array $fileDetails)
     {
@@ -569,7 +570,9 @@ class Orchestrator
             // With the current implementation, we cannot get the sheet names through maatwebsite.
             // That's why we need the sheet names to be defined before hand itself.
 
-            // TODO: Throw an exception stating that sheet names array cannot be empty
+            throw new Exception\ReconciliationException(
+                'Sheet names must be defined for the gateway for an excel file.'
+            );
         }
 
         $sheetsContents = $this->converter->getRowsFromExcelSheetsOptimized($fileDetails, $sheetNames);
