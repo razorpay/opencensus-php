@@ -602,8 +602,12 @@ class Gateway
 
         if ($payment['otp_attempts'] >= $limit)
         {
-            throw new Exception\BadRequestException(
+            $e = new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED);
+
+            $e->markTwoFaError();
+
+            throw $e;
         }
     }
 

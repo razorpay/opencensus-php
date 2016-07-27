@@ -68,7 +68,7 @@ class Gateway extends Base\Gateway
                 'payment_id' => $input['payment']['id'],
             ]);
 
-        $this->verifyPaymentCallbackResponse($input);
+        return $this->verifyPaymentCallbackResponse($input['gateway']);
     }
 
     public function sendPaymentVerifyRequest($verify)
@@ -380,10 +380,7 @@ class Gateway extends Base\Gateway
             }
             else
             {
-                throw new Exception\GatewayErrorException(
-                    ResponseCodeMap::getApiErrorCode($code),
-                    $responseArray['statuscode'],
-                    $responseArray['statusdescription']);
+                $this->throwPaymentFailureException($responseArray);
             }
         }
 
@@ -402,6 +399,8 @@ class Gateway extends Base\Gateway
         $this->action = Action::AUTHORIZE;
 
         $this->createGatewayPaymentEntity($content);
+
+        return $this->getCallbackResponseData($content);
     }
 
     protected function getAuthorizeRequestContent($input)
@@ -672,22 +671,55 @@ class Gateway extends Base\Gateway
         return $refund;
     }
 
-
     protected function verifyPaymentCallbackResponse($input)
     {
-        $content = $input['gateway'];
-        $code = (int) $input['gateway']['statuscode'];
-
-        if ($content['statuscode'] !== Status::SUCCESS)
+        if ($input['statuscode'] !== Status::SUCCESS)
         {
-            $errorCode = ResponseCodeMap::getApiErrorCode($code);
-
             // Payment fails, throw exception
-            throw new Exception\GatewayErrorException(
-                $errorCode,
-                $input['gateway']['statuscode'],
-                $input['gateway']['statusmessage']);
+            $this->throwPaymentFailureException($input);
         }
+        else
+        {
+            return $this->getCallbackResponseData($input);
+        }
+    }
+
+    protected function throwPaymentFailureException($response)
+    {
+        $code = $response['statuscode'];
+
+        $errorCode = ResponseCodeMap::getApiErrorCode($code);
+
+        $message = '';
+
+        if (isset($response['statusmessage']) === true)
+        {
+            $message = $response['statusmessage'];
+        }
+        else
+        {
+            $message = $response['statusdescription'];
+        }
+
+        $e = new Exception\GatewayErrorException(
+            $errorCode,
+            $code,
+            $message);
+
+        if (ResponseCodeMap::isTwoFaFailed($code) === true)
+        {
+            $e->markTwoFaError();
+        }
+
+        throw $e;
+    }
+
+    protected function getCallbackResponseData($input)
+    {
+        $code = $input['statuscode'];
+
+        return [\RZP\Models\Payment\Entity::TWO_FA_STATUS =>
+                ResponseCodeMap::getTwoFaStatus($code)];
     }
 
     protected function getUrlDomain()

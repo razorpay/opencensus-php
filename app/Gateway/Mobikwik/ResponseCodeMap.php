@@ -4,6 +4,7 @@ namespace RZP\Gateway\Mobikwik;
 
 use RZP\Error;
 use RZP\Error\ErrorCode;
+use RZP\Models\Payment\TwoFaStatus;
 
 class ResponseCodeMap
 {
@@ -58,6 +59,26 @@ class ResponseCodeMap
     protected static $success = array(
         1, 8,
     );
+
+    public static function isTwoFaFailed($code)
+    {
+        return self::getTwoFaStatus($code) === TwoFaStatus::FAILED;
+    }
+
+    public static function getTwoFaStatus($code)
+    {
+        switch ($code) {
+            case '0':
+                return TwoFaStatus::PASSED;
+            case '164':
+            case '155':
+            case '148':
+            case '60':
+                return TwoFaStatus::FAILED;
+            default:
+                return TwoFaStatus::UNKNOWN;
+        }
+    }
 
     public static function isWalletUserNotPresent($code)
     {

@@ -658,10 +658,13 @@ class Processor
 
     protected function updatePaymentTwoFaStatus($data)
     {
-        $payment = $this->payment;
+        if (isset($data[PaymentEntity::TWO_FA_STATUS]) === true)
+        {
+            $payment = $this->payment;
 
-        $payment->setTwoFaStatus($data[PaymentEntity::TWO_FA_STATUS]);
+            $payment->setTwoFaStatus($data[PaymentEntity::TWO_FA_STATUS]);
 
-        $payment->saveOrFail();
+            $payment->saveOrFail();
+        }
     }
 }
