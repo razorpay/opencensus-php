@@ -30,13 +30,14 @@ class CreateTerminalAuditLogs extends Migration
             $table->boolean(AuditLog::STATUS)
                 ->default(1);
 
-            $table->float(AuditLog::RESPONSE_TIME)
+            $table->double(AuditLog::RESPONSE_TIME,8,5)
                 ->default(0);
 
             $table->integer(AuditLog::STATUS_CODE)
                 ->default(0);
 
-            $table->text(AuditLog::STATUS_MSG);
+            $table->text(AuditLog::STATUS_MSG)
+                ->nullable();
 
             $table->tinyInteger(AuditLog::PAYMENT_TYPE)
                 ->default(0);

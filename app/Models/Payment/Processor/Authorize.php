@@ -19,6 +19,7 @@ use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Status;
 use RZP\Models\Merchant\Methods;
+use RZP\Models\Terminal\AuditLog;
 
 use RZP\Error;
 use RZP\Exception;
@@ -889,13 +890,20 @@ trait Authorize
 
     protected function callGatewayAuthorize(array $data)
     {
+        // injecting terminal payment analytics here
+        $start = microtime();
+
+        $callbackData = null;
+
+        $isFailedPayment = false;
+
+        $ex = null;
+
         try
         {
             $callbackData = $this->callGatewayFunction(
                                             Payment\Action::AUTHORIZE,
                                             $data);
-
-            return $callbackData;
         }
         catch (Exception\BaseException $e)
         {
@@ -903,8 +911,38 @@ trait Authorize
                     $e->getError(),
                     TraceCode::PAYMENT_AUTH_FAILURE);
 
-            throw $e;
+            $isFailedPayment = true;
+
+            $ex = $e;
         }
+
+        $end = microtime();
+
+        $response_time = $end - $start;
+
+        // record payment actions
+        $auditLogService = new AuditLog\Service();
+
+        $input = array("payment_id" => $data["payment"]["id"],
+                        "terminal_id" => $data["payment"]["terminal_id"],
+                        "response_time" => $response_time,
+                        "payment_type" => 1);
+
+        if($isFailedPayment)
+        {
+            $input['status'] = 0;
+            $input['status_code'] = 100;
+            $input['status_msg'] = $ex->getError();
+            $response = $auditLogService->createAuditLog($input);
+            throw $ex;
+        }
+
+        $response = $auditLogService->createAuditLog($input);
+
+        SD($response);
+
+        return $callbackData;
+
     }
 
     /**
