@@ -149,7 +149,7 @@ class Core extends Base\Core
 
         $merchant->edit($input);
 
-        $this->repo->saveOrFail($merchant);
+        $this->saveAndNotify($merchant);
 
         return $merchant;
     }
