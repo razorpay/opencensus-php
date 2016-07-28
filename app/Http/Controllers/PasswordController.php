@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Input;
 use Password;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Lang;
 
 class PasswordController extends Controller
 {
@@ -40,7 +41,7 @@ class PasswordController extends Controller
             'email', 'password', 'password_confirmation', 'token'
         );
 
-        $response = Password::user()->reset($credentials, function($user, $password)
+        $response = Password::reset($credentials, function($user, $password)
         {
             DB::transaction(function() use ($user, $password)
             {
