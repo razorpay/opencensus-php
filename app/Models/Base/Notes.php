@@ -14,8 +14,13 @@ use Illuminate\Contracts\Support\Arrayable;
 class Notes extends ArrayObject implements  Arrayable,  Jsonable, JsonSerializable
 {
 
-    public function __construct(array $data = array())
+    public function __construct($data = array())
     {
+        if (is_null($data))
+        {
+            $data = [];
+        }
+
         parent::__construct($data, ArrayObject::STD_PROP_LIST|ArrayObject::ARRAY_AS_PROPS);
     }
 
