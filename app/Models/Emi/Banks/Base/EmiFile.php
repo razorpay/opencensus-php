@@ -19,6 +19,10 @@ class EmiFile
     public function __construct()
     {
         $this->mail = \Mail::getFacadeRoot();
+
+        $this->app = \App::getFacadeRoot();
+
+        $this->repo = $this->app['repo'];
     }
 
     public function generate($input)
@@ -52,9 +56,8 @@ class EmiFile
         return Str::random(self::EMI_FILE_PASSWORD_LENGTH);
     }
 
-    protected function getZippedFile()
+    protected function getZippedFile($fullPath)
     {
-        $fullPath = $this->getExcelFullFilePath();
         $fileArray = array($fullPath);
 
         $zipPath = $this->makeZipFile($fileArray, $this->emiFilePassword);
