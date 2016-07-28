@@ -149,8 +149,8 @@ class Core extends Base\Core
 
         try
         {
-            $app = \App::getFacadeRoot();
-            $app['slack']->queue(
+
+            $this->app['slack']->queue(
                 'Missing IIN for payment',
                 $slackArray,
                 ['channel' => '#settlements']);

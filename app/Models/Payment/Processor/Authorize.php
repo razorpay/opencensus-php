@@ -254,8 +254,6 @@ trait Authorize
         {
             $traceData['payment_id_link'] = $payment->getDashboardEntityLinkForSlack();
 
-            // $this->app['slack']->queue($terminalSelectionStatus, $traceData, ['channel' => '#dev-test']);
-
             $this->trace->warn(TraceCode::TERMINAL_SELECTION_MISMATCH, $traceData);
         }
         else

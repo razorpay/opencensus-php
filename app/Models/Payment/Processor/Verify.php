@@ -8,6 +8,7 @@ use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
 use RZP\Models\Payment\VerifyResult;
+use App;
 
 trait Verify
 {
@@ -81,7 +82,7 @@ trait Verify
             $message = 'Payment verification failed.';
         }
 
-        $app = \App::getFacadeRoot();
+        $app = App::getFacadeRoot();
 
         $app['slack']->queue(
             $message,

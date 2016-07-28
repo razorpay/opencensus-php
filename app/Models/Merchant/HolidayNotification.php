@@ -20,11 +20,9 @@ class HolidayNotification
 
     public function __construct()
     {
-        $app = \App::getFacadeRoot();
+        $this->app = \App::getFacadeRoot();
 
-        $this->app = $app;
-
-        $this->mode = $app['rzp.mode'];
+        $this->mode = $this->app['rzp.mode'];
     }
 
     public function send($input)
