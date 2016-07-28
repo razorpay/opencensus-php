@@ -68,6 +68,18 @@ class CybersourceGatewayTest extends TestCase
         });
     }
 
+    public function testThreeDSAuthFailedPayment()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '41476700000006';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testGatewayError()
     {
         $payment = $this->getDefaultPaymentArray();
@@ -101,10 +113,15 @@ class CybersourceGatewayTest extends TestCase
 
         $this->doAuthAndCapturePayment($payment);
 
-        $payment = $this->getLastEntity('cybersource', true);
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['two_fa_status'],
+            \RZP\Models\Payment\TwoFaStatus::SKIPPED);
+
+        $gatewayPayment = $this->getLastEntity('cybersource', true);
 
         $this->assertArraySelectiveEquals(
-            $this->testData['testNotEnrolledCSEntity'], $payment);
+            $this->testData['testNotEnrolledCSEntity'], $gatewayPayment);
     }
 
     public function testPaymentRefund()

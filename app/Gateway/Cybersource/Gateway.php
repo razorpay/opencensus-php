@@ -100,7 +100,7 @@ class Gateway extends Base\Gateway
 
         $response = $this->postAuthEnrolledRequest($input);
 
-        $this->postEnrollAuthorize($input);
+        return $this->postEnrollAuthorize($input);
     }
 
     public function capture(array $input)
@@ -337,12 +337,19 @@ class Gateway extends Base\Gateway
             $response = $this->postRequest($request);
 
             $this->persistAfterAuthorize($input, $response, $request);
+
+            return $this->getCallbackResponseData($response);
         }
         catch (SoapFault $exception)
         {
             throw new Exception\RuntimeException(
                 'Authorization failed.', null, $exception);
         }
+    }
+
+    protected function getCallbackResponseData($response)
+    {
+        return [\RZP\Models\Payment\Entity::TWO_FA_STATUS => \RZP\Models\Payment\TwoFaStatus::PASSED];
     }
 
     protected function postNotEnrolledAuthorize($input, $enrollResponse)
@@ -1061,10 +1068,18 @@ class Gateway extends Base\Gateway
                 $reasonCode);
         }
 
-        throw new Exception\GatewayErrorException(
+        $e = new Exception\GatewayErrorException(
                 ResponseCode::getMappedCode($reasonCode),
                 $reasonCode,
                 $desc);
+
+        // check if 3d secure auth failed
+        if (ResponseCode::isTwoFaFailed($reasonCode) === true)
+        {
+            $e->markTwoFaError();
+        }
+
+        throw $e;
     }
 
     protected function getVerifyContentFromResponse($verify)

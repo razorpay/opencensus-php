@@ -187,6 +187,16 @@ class Server extends Base\Mock\Server
                 $response['payerAuthEnrollReply']['ucafCollectionIndicator'] = '1';
                 break;
 
+            case '41476700000006':
+                $response['decision'] = 'REJECT';
+                $response['reasonCode'] = 476;
+                $response['payerAuthEnrollReply'] = [
+                    'reasonCode' => 476
+                ];
+                $response['missingField'] = 'c:authRequestID';
+                $response['requestToken'] = 'AhjjLwSR/H2rNiTcqkX45p6D4dUQCsgfIwdIy6SZbpAeLRGAdmIW';
+                break;
+
             default:
                 $response['decision'] = 'ACCEPT';
                 $response['reasonCode'] = Cybersource\Result::SUCCESS;

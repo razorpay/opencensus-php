@@ -17,7 +17,7 @@ trait CustomAssertions
     }
 
     public function assertArraySelectiveEquals(array $expected, array $actual)
-    {//sd($expected, $actual);
+    {
         if ((isset($actual['entity'])) and (is_string($actual['entity'])))
         {
             $this->validateEntity($actual);

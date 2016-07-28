@@ -182,4 +182,9 @@ class ResponseCode
 
         return false;
     }
+
+    public static function isTwoFaFailed($code)
+    {
+        return self::$errorCodeMap[$code] === ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED;
+    }
 }
