@@ -33,6 +33,7 @@ class Validator extends Base\Validator
         'card.accountNumber'                => 'required|string|min:13|max:19',
         'card.expirationMonth'              => 'required|numeric|digits:2',
         'card.expirationYear'               => 'required|numeric|digits:4',
+        'card.cvNumber'                     => 'required|numeric|digits_between:3,4',
         'purchaseTotals'                    => 'required|array',
         'purchaseTotals.currency'           => 'required|in:INR',
         'item'                              => 'required|array',
