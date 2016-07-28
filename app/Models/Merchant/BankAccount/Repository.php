@@ -15,6 +15,11 @@ class Repository extends Base\Repository
 
     const WITH_TRASHED = 'with_trashed';
 
+    protected $entityFetchParamRules = array(
+        Entity::ENTITY_ID       => 'sometimes|alpha_num',
+        Entity::TYPE            => 'sometimes',
+    );
+
     protected $appFetchParamRules = array(
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
         self::WITH_TRASHED      => 'sometimes|in:0,1',
@@ -35,7 +40,18 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        return $repo::query()->orderBy(BankAccount\Entity::CREATED_AT)->get();
+        return $repo::query()
+                    ->orderBy(BankAccount\Entity::CREATED_AT)
+                    ->get();
+    }
+
+    public function getAllMerchantAccountsOrderedByCreatedAt()
+    {
+        $repo = $this->repo;
+
+        return $repo::where(BankAccount\Entity::TYPE, '=', BankAccount\Type::MERCHANT)
+                    ->orderBy(BankAccount\Entity::CREATED_AT)
+                    ->get();
     }
 
     protected function addQueryOrder($query)

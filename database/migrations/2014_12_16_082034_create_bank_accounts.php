@@ -25,6 +25,11 @@ class CreateBankAccounts extends Migration
 
             $table->char(BankAccount::MERCHANT_ID, BankAccount::ID_LENGTH);
 
+            $table->char(BankAccount::ENTITY_ID, BankAccount::ID_LENGTH);
+
+            $table->char(BankAccount::TYPE, 20);
+
+
             $table->char(BankAccount::IFSC_CODE, BankAccount::IFSC_CODE_LENGTH);
 
             $table->string(BankAccount::ACCOUNT_NUMBER, 40);

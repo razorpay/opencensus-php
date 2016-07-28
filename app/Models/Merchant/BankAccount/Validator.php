@@ -13,6 +13,8 @@ class Validator extends Base\Validator
     const INVALID_IFSC_CODE_MESSAGE = 'Invalid IFSC Code in Bank Account';
 
     protected static $addBankAccountRules = array(
+        'entity_id'             => 'required|alpha_num|size:14',
+        'type'                  => 'required|max:20',
         'ifsc_code'             => 'required|alpha_num|size:11',
         'account_number'        => 'required|alpha_num|between:5,20',
         'beneficiary_name'      => 'required|min:4|max:40|alpha_space_num',

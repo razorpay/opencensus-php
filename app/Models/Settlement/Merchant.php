@@ -190,6 +190,8 @@ class Merchant
     protected function attachTestBank($merchant)
     {
         $attributes = array(
+            'entity_id'             => $merchant->getId(),
+            'type'                  => BankAccount\Type::MERCHANT,
             'ifsc_code'             => BankAccount\Entity::SPECIAL_IFSC_CODE,
             'beneficiary_name'      => random_alpha_string(5),
             'beneficiary_email'     => $merchant->getAttribute('email'),

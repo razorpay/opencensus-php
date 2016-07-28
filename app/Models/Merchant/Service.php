@@ -334,6 +334,10 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
+        $input[BankAccount\Entity::ENTITY_ID] = $id;
+
+        $input[BankAccount\Entity::TYPE] = BankAccount\Type::MERCHANT;
+
         $ba = (new BankAccount\Core)->createOrChangeBankAccount($input, $merchant);
 
         return $ba->toArray();
@@ -343,7 +347,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        $ba = (new BankAccount\Repository)->getBankAccount($merchant);
+       $ba = $this->repo->bank_account->getBankAccount($merchant);
 
         if ($ba === null)
         {
@@ -356,7 +360,7 @@ class Service extends Base\Service
 
     public function getOwnBankAccount()
     {
-        $ba = (new BankAccount\Repository)->getBankAccount($this->merchant);
+        $ba = $this->repo->bank_account->getBankAccount($this->merchant);
 
         if ($ba === null)
         {

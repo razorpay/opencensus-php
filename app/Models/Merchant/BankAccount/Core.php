@@ -45,6 +45,47 @@ class Core extends Base\Core
         return $this->changeBankAccount($input, $merchant, $oldBankAccount);
     }
 
+    public function addOrUpdateBankAccount($input, $merchant)
+    {
+        $currentAccounts = $this->getBankAccountsByEntity(
+            $input[BankAccount\Entity::ENTITY_ID],
+            $input[BankAccount\Entity::TYPE],
+            $merchant);
+
+        $newBankAccount = $this->buildBankAccount($input, $merchant, $this->mode);
+
+        foreach ($currentAccounts as $existingAccount)
+        {
+            if ($newBankAccount->equals($existingAccount))
+            {
+                $this->trace->info(
+                    TraceCode::MISC_TRACE_CODE,
+                    [
+                        'new' => $newBankAccount->toArray(),
+                        'old' => $existingAccount->toArray(),
+                    ]);
+
+                return $existingAccount;
+            }
+        }
+
+        $this->repo->saveOrFail($newBankAccount);
+
+        return $newBankAccount;
+    }
+
+    public function getBankAccountsByEntity($entityId, $type, $merchant)
+    {
+        $params = array(
+            BankAccount\Entity::ENTITY_ID   => $entityId,
+            BankAccount\Entity::TYPE        => $type
+        );
+
+        $currentAccounts = $this->repo->fetch($params, $merchant->getId());
+
+        return $currentAccounts;
+    }
+
     /**
      * This takes the oldBank Account as it's last parameter
      * @param  Array $input Input Array with new bank account details
@@ -69,6 +110,8 @@ class Core extends Base\Core
     public function createTestBankAccount($merchant)
     {
         $input = array(
+            'entity_id'             => $merchant->getId(),
+            'type'                  => BankAccount\Type::MERCHANT,
             'ifsc_code'             => Entity::SPECIAL_IFSC_CODE,
             'beneficiary_name'      => $merchant->getAttribute('name'),
             'beneficiary_email'     => $merchant->getAttribute('email'),
