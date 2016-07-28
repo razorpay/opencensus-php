@@ -27,9 +27,11 @@ class MerchantFilter extends Terminal\Filter
      * TPV required merchants, and non TPV terminals for non
      * TPV merchants.
      *
+     * @param Terminal\Entity $terminal
+     * @param array $input
      * @return bool
      */
-    public function tpvFilter($terminal, $input)
+    public function tpvFilter(Terminal\Entity $terminal, array $input)
     {
         if ($input['payment']->isNetbanking())
         {

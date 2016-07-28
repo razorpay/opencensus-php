@@ -498,7 +498,7 @@ class Gateway
         return $gateways;
     }
 
-    public static function getGatewaysPriority($method, $mode = 'live')
+    public static function getGatewaysPriority($method, $mode = Mode::LIVE)
     {
         $gateways = [];
 
@@ -511,6 +511,7 @@ class Gateway
                 {
                     $gateways = array_merge($gateways, self::$directCardGatewaysInTest);
                 }
+
                 break;
 
             case Method::NETBANKING:
@@ -522,6 +523,7 @@ class Gateway
                 }
 
                 array_unshift($gateways, 'direct');
+
                 break;
 
             default:
