@@ -2,6 +2,9 @@
 
 namespace RZP\Gateway\Cybersource;
 
+use Cache;
+use Crypt;
+use Config;
 use Requests;
 use RZP\Error;
 use RZP\Exception;
@@ -68,6 +71,13 @@ class Gateway extends Base\Gateway
     protected $model = null;
 
     protected $enrollRequest;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->secureCache = Config::get('cache.secure_default');
+    }
 
     public function authorize(array $input)
     {
@@ -363,7 +373,9 @@ class Gateway extends Base\Gateway
         if ($response['reasonCode'] !== Result::SUCCESS)
         {
             $attributes = array(
-                Entity::REASON_CODE => $response['reasonCode']
+                Entity::REASON_CODE     => $response['reasonCode'],
+                Entity::PARES_STATUS    => (isset($payAuthRep['paresStatus']) ? $payAuthRep['paresStatus'] : null),
+                Entity::XID             => (isset($payAuthRep['xid']) ? $payAuthRep['xid'] : null)
             );
 
             $gateway->fill($attributes);
@@ -594,6 +606,8 @@ class Gateway extends Base\Gateway
 
         $this->setBillingInfo($content, $input);
         $this->setCardInfoFromTokenex($content, $input);
+        // We temporarily persist cvv
+        $content['card']['cvNumber'] = $this->getCardCvv($input);
 
         $request = $this->getStandardSoapRequest($content);
 
@@ -648,9 +662,10 @@ class Gateway extends Base\Gateway
                 break;
         }
 
-        $content['card']['accountNumber'] = $input['card']['number'];
+        $content['card']['accountNumber']   = $input['card']['number'];
         $content['card']['expirationMonth'] = $input['card']['expiry_month'];
-        $content['card']['expirationYear'] = $input['card']['expiry_year'];
+        $content['card']['expirationYear']  = $input['card']['expiry_year'];
+        $content['card']['cvNumber']        = $input['card']['cvv'];
 
         $this->setBillingInfo($content, $input);
 
@@ -778,6 +793,15 @@ class Gateway extends Base\Gateway
         ];
     }
 
+    protected function getCardCvv($input)
+    {
+        $key = 'cybersource_' . $input['payment']['id'] . '_cvv';
+
+        $encryptedCvv = Cache::store($this->secureCache)->pull($key);
+
+        return Crypt::decrypt($encryptedCvv);
+    }
+
     protected function setCardInfoFromTokenex(&$request, $input)
     {
         $request['card']['accountNumber'] = Card\Tokenex::getCardNumber($input['card']['vault_token']);
@@ -792,6 +816,8 @@ class Gateway extends Base\Gateway
         switch ($enrollResponse['reasonCode'])
         {
             case Result::ENROLLED:
+                $this->persistCvvTemporarily($input);
+
                 return $this->getFieldsForFormSubmitToBankACS($enrollResponse, $input);
 
             case Result::NOT_ENROLLED:
@@ -802,6 +828,14 @@ class Gateway extends Base\Gateway
             default:
                 throw new Exception\LogicException(TraceCode::GATEWAY_UNSUPPORTED_CARD_NETWORK);
         }
+    }
+
+    protected function persistCvvTemporarily($input)
+    {
+        $encryptedCvv = Crypt::encrypt($input['card']['cvv']);
+        $key = 'cybersource_' . $input['payment']['id'] . '_cvv';
+
+        Cache::store($this->secureCache)->put($key, $encryptedCvv, 10);
     }
 
     protected function getFieldsForFormSubmitToBankACS($enrollResponse, $input)

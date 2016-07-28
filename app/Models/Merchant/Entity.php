@@ -466,7 +466,7 @@ class Entity extends Base\PublicEntity
     {
         $features = $this->attributes[self::FEATURES];
 
-        if ($features === null)
+        if (empty($features))
         {
             return [];
         }
