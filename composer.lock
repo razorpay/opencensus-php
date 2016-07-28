@@ -1350,12 +1350,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/slack.git",
-                "reference": "d93b9653be19576ef81d3cce996294a30c771f65"
+                "reference": "2b97e15a489bf790562662e3369edab87f2c8c0d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/slack/zipball/d93b9653be19576ef81d3cce996294a30c771f65",
-                "reference": "d93b9653be19576ef81d3cce996294a30c771f65",
+                "url": "https://api.github.com/repos/razorpay/slack/zipball/2b97e15a489bf790562662e3369edab87f2c8c0d",
+                "reference": "2b97e15a489bf790562662e3369edab87f2c8c0d",
                 "shasum": ""
             },
             "require": {
@@ -1395,7 +1395,7 @@
                 "source": "https://github.com/razorpay/slack/tree/f/queue-with-retry",
                 "issues": "https://github.com/razorpay/slack/issues"
             },
-            "time": "2016-07-18 16:00:09"
+            "time": "2016-07-28 07:24:33"
         },
         {
             "name": "monolog/monolog",
