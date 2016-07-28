@@ -154,7 +154,7 @@
             <div id="contact">{{$data['contact']}}</div>
             <div id="amount" class="right">Rs. {{$data['amount']}}</div>
         </div>
-        <form class="card" id='otpform' name='otpform' onsubmit="return true;">
+        <form class="card" id="otpform" name="otpform" action="{{$data['request']['url']}}" method="post" onsubmit="return false;">
             <div id="prompt" class="center">We have sent an OTP to your registered mobile Number ({{$data['contact']}})</div>
             <div>
                 <input id='otp' type="text" name="otp" maxlength="6" />
@@ -163,11 +163,16 @@
                 <span id="resend">Resend OTP</span><span id="spinner"></span>
                 <span id="addfunds">Add Funds</span>
             </div>
+            <input type="hidden" name="type" value="otp">
             <div>
                 <button type="submit" id='submitotp'>CONFIRM</button>
             </div>
         </form>
         <form id='mirror' name='mirror'>
+        </form>
+        <form id="form2" name="form2">
+            <input type="hidden" name="type" value="{{$data['type']}}">
+            <input type="hidden" name="gateway" value="{{$data['gateway']}}">
         </form>
     </div>
 
