@@ -33,6 +33,7 @@ class Table
     const HDFC              = 'hdfc';
     const AXIS              = 'axis';
     const CYBERSOURCE       = 'cybersource';
+    const FIRST_DATA        = 'first_data';
     const PAYTM             = 'paytm';
     const BILLDESK          = 'billdesk';
     const MOBIKWIK          = 'mobikwik';

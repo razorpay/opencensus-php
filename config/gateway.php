@@ -57,6 +57,11 @@ return array(
         'test_merchant_secret'  => env('CYBERSOURCE_GATEWAY_TEST_SECRET', 'cybersource_secret'),
     ),
 
+    'first_data' => array(
+        'test_store_id'         => env('FIRST_DATA_TEST_STORE_ID'),
+        'test_shared_secret'    => env('FIRST_DATA_TEST_SHARED_SECRET'),
+    ),
+
     'amex' => array(
         'test_hash_secret'  => env('AMEX_GATEWAY_TEST_HASH_SECRET'),
         'test_merchant_id'  => env('AMEX_GATEWAY_TEST_MERCHANT_ID'),
