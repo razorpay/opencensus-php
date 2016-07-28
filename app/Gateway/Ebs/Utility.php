@@ -22,8 +22,8 @@ class Utility extends \RZP\Gateway\Utility
         if (array_key_exists(RESP::ERROR, $fields))
         {
             $err = array(
-                RESP::ERRORCODE => $fields[RESP::ERRORCODE],
-                RESP::ERROR => $fields[RESP::ERROR],
+                RESP::ERRORCODE     => $fields[RESP::ERRORCODE],
+                RESP::ERROR         => $fields[RESP::ERROR],
             );
 
             return $err;

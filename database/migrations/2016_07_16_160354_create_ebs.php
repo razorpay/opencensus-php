@@ -26,24 +26,6 @@ class CreateEbs extends Migration {
 
             $table->string(Ebs::TXN_AMOUNT);
 
-            $table->string(Ebs::NAME)->nullable();
-
-            $table->string(Ebs::ADDRESS)->nullable();
-
-            $table->string(Ebs::CITY)->nullable();
-
-            $table->string(Ebs::STATE)->nullable();
-
-            $table->string(Ebs::COUNTRY)->nullable();
-
-            $table->string(Ebs::PHONE)->nullable();
-
-            $table->string(Ebs::EMAIL)->nullable();
-
-            $table->string(Ebs::POSTAL_CODE)->nullable();
-
-            $table->string(Ebs::DESCRIPTION)->nullable();
-
             $table->string(Ebs::STATUS);
 
             $table->string(Ebs::CURRENCY);
@@ -70,8 +52,6 @@ class CreateEbs extends Migration {
 
             $table->string(Ebs::EBS_PAYMENT_ID)->nullable();
 
-            $table->string(Ebs::ACCOUNT_ID)->nullable();
-
             $table->string(Ebs::REF_STATUS)->nullable();
 
             $table->string(Ebs::AUTH_STATUS)->nullable();
@@ -79,12 +59,12 @@ class CreateEbs extends Migration {
             $table->string(Ebs::REFUND_ID, UniqueIdEntity::ID_LENGTH)->nullable();
 
             // Adds created_at and updated_at columns to the table
-            $table->integer('created_at');
+            $table->integer(Ebs::CREATED_AT);
 
-            $table->integer('updated_at');
+            $table->integer(Ebs::UPDATED_AT);
 
             $table->foreign(Ebs::PAYMENT_ID)
-                  ->references('id')
+                  ->references(Ebs::ID)
                   ->on('payments')
                   ->on_delete('restrict');
 
