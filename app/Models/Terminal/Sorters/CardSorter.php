@@ -17,9 +17,9 @@ class CardSorter extends Terminal\Sorter
     {
         $method = $input['payment']->getMethod();
 
-        // No need unless doing for card or emi
         $methodsAllowed = [Method::CARD, Method::EMI];
 
+        // No need to sort unless the method is either card or EMI.
         if (in_array($method, $methodsAllowed) === false)
         {
             return $terminals;
@@ -30,7 +30,7 @@ class CardSorter extends Terminal\Sorter
 
         $gatewaysPriority = Gateway::getGatewaysPriority($method, $input['mode']);
 
-        $testTerminals = [];
+        $sortedTerminals = [];
 
         foreach ($gatewaysPriority as $gateway)
         {
@@ -40,12 +40,11 @@ class CardSorter extends Terminal\Sorter
             {
                 if ($terminal->getGateway() === $gateway)
                 {
-                    $testTerminals[] = $terminal;
+                    $sortedTerminals[] = $terminal;
                 }
             }
         }
 
-        return $testTerminals;
+        return $sortedTerminals;
     }
-
 }
