@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Ebs;
 
 use RZP\Gateway\Ebs;
+use RZP\Gateway\Ebs\ResponseConstants as RESP;
 
 class Utility extends \RZP\Gateway\Utility
 {
@@ -18,19 +19,19 @@ class Utility extends \RZP\Gateway\Utility
     {
         $fields = self::returnFields($response);
 
-        if (array_key_exists('error', $fields))
+        if (array_key_exists(RESP::ERROR, $fields))
         {
             $err = array(
-                'errorCode' => $fields['errorCode'],
-                'error' => $fields['error'],
+                RESP::ERRORCODE => $fields[RESP::ERRORCODE],
+                RESP::ERROR => $fields[RESP::ERROR],
             );
 
             return $err;
         }
         else
         {
-            $fields['error'] = false;
-            $fields['errorCode'] = 0;
+            $fields[RESP::ERROR] = false;
+            $fields[RESP::ERRORCODE] = 0;
 
             return $fields;
         }

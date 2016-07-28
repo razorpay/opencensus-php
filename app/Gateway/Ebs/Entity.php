@@ -16,6 +16,7 @@ class Entity extends Base\Entity
     const PHONE                 = 'phone';
     const EMAIL                 = 'email';
     const STATUS                = 'status';
+    const ACTION                = 'action';
     const AMOUNT                = 'amount';
     const CHANNEL               = 'channel';
     const COUNTRY               = 'country';
