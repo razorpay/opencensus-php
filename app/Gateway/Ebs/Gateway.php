@@ -24,6 +24,9 @@ class Gateway extends Base\Gateway
     const MERCHANT_ID               = 'merchant_id';
     const HASH_SECRET               = 'hash_secret';
 
+    const NETBANKING_CHANNEL        = '0';
+    const CARD_CHANNEL              = '2';
+
     const API                       = 'api';
     const NAME                      = 'Razorpay';
     const CITY                      = 'Bangalore';
@@ -278,7 +281,7 @@ class Gateway extends Base\Gateway
 
     protected function setContentForCard(&$content, $input)
     {
-        $content[REQ::CHANNEL] = '2';
+        $content[REQ::CHANNEL] = self::CARD_CHANNEL;
         $content[REQ::NAME_ON_CARD] = $input['card']['name'];
         $content[REQ::CARD_NUMBER] = $input['card']['number'];
         $content[REQ::CARD_EXPIRY] = $this->getExpiry($input);
@@ -288,7 +291,7 @@ class Gateway extends Base\Gateway
 
     protected function setContentForNetBanking(&$content, $input)
     {
-        $content[REQ::CHANNEL] = '0';
+        $content[REQ::CHANNEL] = self::NETBANKING_CHANNEL;
         $bankId = BankCodes::$bankCodeMap[$input['payment']['bank']];
         $content[REQ::PAYMENT_OPTION] = $bankId;
     }
@@ -337,35 +340,32 @@ class Gateway extends Base\Gateway
         {
             $retVal = REQ::VISA;
         }
-        else if ($input['card']['network'] === Card\Network::VISA)
+        else
         {
-            $retVal = REQ::VISA;
-        }
-        else if ($input['card']['network'] === Card\Network::MC)
-        {
-            $retVal = REQ::MC;
-        }
-        else if ($input['card']['network'] === Card\Network::MAES)
-        {
-            $retVal = REQ::MAES;
-        }
-        else if ($input['card']['network'] === Card\Network::DICL)
-        {
-            $retVal = REQ::DICL;
-        }
-        else if ($input['card']['network'] === Card\Network::AMEX)
-        {
-            $retVal = REQ::AMEX;
-        }
-        else if ($input['card']['network'] === Card\Network::JCB)
-        {
-            $retVal = REQ::JCB;
-        }
+            switch ($input['card']['network'])
+            {
+                case Card\Network::VISA:
+                    $retVal = REQ::VISA;
 
-        if (empty($retVal))
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Card Network not implemented');
+                case Card\Network::MC:
+                    $retVal = REQ::MC;
+
+                case Card\Network::MAES:
+                    $retVal = REQ::MAES;
+
+                case Card\Network::DICL:
+                    $retVal = REQ::DICL;
+
+                case Card\Network::AMEX:
+                    $retVal = REQ::AMEX;
+
+                case Card\Network::JCB:
+                    $retVal = REQ::JCB;
+
+                default:
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Card Network not implemented');
+            }
         }
 
         return $retVal;
