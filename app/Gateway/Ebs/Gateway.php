@@ -4,6 +4,7 @@ namespace RZP\Gateway\Ebs;
 
 use Carbon\Carbon;
 use RZP\Exception;
+use RZP\Constants;
 use RZP\Models\Card;
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
@@ -17,7 +18,6 @@ use RZP\Gateway\Ebs\RequestConstants as REQ;
 
 class Gateway extends Base\Gateway
 {
-
     const SUCCESS                   = '0';
 
     const HASH_ALGO                 = 'SHA512';
@@ -35,7 +35,7 @@ class Gateway extends Base\Gateway
     const DESCRIPTION               = 'razorpay ebs desc';
     const COUNTRY_CODE              = 'IND';
 
-    protected $gateway = 'ebs';
+    protected $gateway = Constants\Table::EBS;
 
     protected $map = array(
         RESP::AMOUNT                => ENTITY::TXN_AMOUNT,
