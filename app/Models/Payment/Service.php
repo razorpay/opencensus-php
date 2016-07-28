@@ -131,6 +131,11 @@ class Service extends Base\Service
         return ['status' => $status];
     }
 
+    public function redirect($id)
+    {
+        return $this->processor()->redirect($id);
+    }
+
     public function forceAuthorizeFailed($id, $input)
     {
         $payment = $this->core->retrieveById($id);

@@ -22,9 +22,16 @@
             padding: 0;
         }
 
+        @font-face {
+            font-family:'lato';
+            src: url("https://cdn.razorpay.com/lato3.woff2") format('woff');
+            font-weight:normal;
+            font-style:normal
+        }
+
         html, body {
             height: 100%;
-            font-family: sans-serif;
+            font-family: 'lato';
         }
 
         .right {
@@ -43,6 +50,7 @@
 
         .pad {
             padding-top: 20px;
+            text-align: center;
         }
 
         #spinner {
@@ -94,10 +102,12 @@
 
         #otp {
             font-size: 28px;
-            width: 95px;
+            width: 120px;
             margin: 10px auto;
             border: 0;
             border-bottom: 2px solid #ddd;
+            letter-spacing: 1px;
+            text-align: center;
             outline: none;
             padding: 10px;
             display: block;
@@ -105,14 +115,14 @@
 
         button {
             display: block;
-            padding: 24px;
+            padding: 12px;
             background: #00BE70;
             color: #fff;
             font-size: 28px;
             border: 0;
             width: 100%;
             margin: 40px auto 20px;
-            font-weight: bold;
+            letter-spacing: 1.5px;
         }
 
         #resend, #addfunds {
@@ -121,6 +131,14 @@
             border-bottom: 1px solid #00BE70;
             padding-bottom: 4px;
             line-height: 30px;
+        }
+
+        #addfunds {
+            display: none;
+        }
+
+        #addfunds.shown {
+            display: inline-block;
         }
 
     </style>
@@ -143,7 +161,7 @@
             </div>
             <div class="pad">
                 <span id="resend">Resend OTP</span><span id="spinner"></span>
-                <span id="addfunds" class="right">Add funds</span>
+                <span id="addfunds">Add Funds</span>
             </div>
             <div>
                 <button type="submit" id='submitotp'>CONFIRM</button>
@@ -181,7 +199,7 @@
         }
 
         function resendOTP () {
-            gel('spinner').className = "shown";
+
             var xhr;
             if (window.XMLHttpRequest) {
                 xhr = new XMLHttpRequest();
@@ -194,12 +212,17 @@
             xhr.onreadystatechange = function() {
                 if (xhr.readyState == 4 && xhr.status == 200) {
                     var res = JSON.parse(xhr.responseText);
-                    gel('spinner').className = "";
                 }
             }
 
             xhr.open('POST', url);
             xhr.send();
+        }
+
+        function addFunds() {
+            gel('mirror').setAttribute('action', '/v1/payments/{{$data["payment_id"]}}/topup?key_id=' + key_id);
+            gel('mirror').setAttribute('method', 'POST');
+            gel('mirror').submit();
         }
 
         function onSubmit(e){
@@ -216,22 +239,37 @@
                 xhr = new ActiveXObject("Microsoft.XMLHTTP");
             }
 
-            var url = '/v1/payments/{{$data["payment_id"]}}/otp_resend?key_id=' + key_id;
+            // var url = '/v1/payments/{{$data["payment_id"]}}/otp_resend?key_id=' + key_id;
+            var url = request_url;
+            gel('spinner').className = "shown";
 
             xhr.onreadystatechange = function() {
                 try{
                     var res = JSON.parse(xhr.responseText);
                 } catch (e){
-
                 }
 
-                if (xhr.readyState == 4 && xhr.status == 200) {
-                    // TODO redirect to `callback_url` here
-                } else if(xhr.staus === 400 && res.error.action==='RETRY') {
-                    alert('Entered OTP is incorrect, please re-enter the OTP.');
-                }
+                if (xhr.readyState == 4) {
 
-                gel('submitotp').disable = false;
+                    if(xhr.status === 400) {
+                        if (res.error.action==='RETRY') {
+                            gel('prompt').innerHTML = 'Entered OTP was incorrect. Re-enter to proceed.'
+                            return;
+                        } else if (res.error.action === 'TOPUP') {
+                            gel('prompt').innerHTML = 'Insufficient balance';
+                            gel('addfunds').className = 'shown';
+                            gel('resend').remove();
+                            gel('submitotp').remove();
+                            gel('otp').remove();
+                            return;
+                        }
+                    }
+
+                    gel('mirror').setAttribute('action', '/v1/payments/{{$data["payment_id"]}}/redirect?key_id=' + key_id);
+                    gel('mirror').setAttribute('method', 'POST');
+                    gel('mirror').submit();
+                    gel('submitotp').disable = false;
+                }
             }
 
             xhr.open('POST', url);
@@ -243,9 +281,7 @@
         gel('otp').addEventListener('keydown', enterOTP);
         gel('resend').addEventListener('click', resendOTP);
         gel('otpform').addEventListener('submit', onSubmit);
-        gel('addfunds').addEventListener('click', function(){
-            gel('mirror').submit();
-        });
+        gel('addfunds').addEventListener('click', addFunds);
     </script>
 
 </body>
