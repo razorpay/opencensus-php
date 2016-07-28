@@ -132,24 +132,40 @@ class Gateway extends Base\Gateway
             'content' => $content);
 
         $response = $this->sendGatewayRequest($request);
-
         $resp = Utility::parseResponseXml($response->body);
-        //TODO fix split with space
 
         $attr = $this->getRefundContent($resp, $input);
 
         $refund = $this->createGatewayPaymentEntity($attr);
 
+
         if ($resp[RESP::ERROR] !== false)
         {
-            $this->trace->error(
-                TraceCode::PAYMENT_REFUND_FAILURE,
-                [$response->body]);
+            try
+            {
+                $errorCode = $resp[RESP::ERRORCODE];
 
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_REFUND_FAILED);
+                $desc = ResponseCode::$reasonCodes[$errorCode];;
+
+                $this->trace->error(
+                    TraceCode::PAYMENT_REFUND_FAILURE,
+                    [$response->body]);
+
+                throw new Exception\GatewayErrorException(
+                    ResponseCode::getMappedCode($errorCode),
+                    $errorCode,
+                    $desc);
+            }
+            catch (Exception\InvalidArgumentException $e)
+            {
+                $errorCode = $resp[RESP::ERRORCODE];
+
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_REFUND_FAILED,
+                    $errorCode,
+                    ResponseCode::UNKNOWN_ERROR);
+            }
         }
-
     }
 
     public function verify(array $input)

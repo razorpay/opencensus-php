@@ -272,6 +272,7 @@ class ErrorCode
     const BAD_REQUEST_CUSTOMER_WALLET_ALREADY_EXISTS                                = 'BAD_REQUEST_CUSTOMER_WALLET_ALREADY_EXISTS';
 
     const BAD_REQUEST_RECONCILIATION                                                = 'BAD_REQUEST_RECONCILIATION';
+    const BAD_REQUEST_INSUFFICIENT_BALANCE                                          = 'BAD_REQUEST_INSUFFICIENT_BALANCE';
 
     const BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED                                     = 'BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED';
     const BAD_REQUEST_OTP_MAXIMUM_ATTEMPTS_REACHED                                  = 'BAD_REQUEST_OTP_MAXIMUM_ATTEMPTS_REACHED';
