@@ -44,9 +44,8 @@ class Gateway extends Base\Gateway
         Resp::EBS_PAYMENT_ID        => ENTITY::EBS_PAYMENT_ID,
         Resp::TRANSACTION_ID        => ENTITY::TRANSACTION_ID,
         Resp::PAYMENT_ID            => ENTITY::EBS_PAYMENT_ID,
-        Resp::MODE                  => ENTITY::MODE,
         Resp::REFERENCE             => ENTITY::PAYMENT_ID,
-        Resp::ERRORCODE             => ENTITY::ERROR_CODE,
+        Resp::ERROR_CODE             => ENTITY::ERROR_CODE,
         Resp::ERROR                 => ENTITY::ERROR_DESCRIPTION,
     );
 
@@ -137,7 +136,7 @@ class Gateway extends Base\Gateway
 
         if ($parsed_response[Resp::ERROR] !== false)
         {
-            $errorCode = $parsed_response[Resp::ERRORCODE];
+            $errorCode = $parsed_response[Resp::ERROR_CODE];
 
             $desc = ResponseCode::$reasonCodes[$errorCode];
 
