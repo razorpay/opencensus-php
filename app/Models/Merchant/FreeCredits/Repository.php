@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Merchant;
+namespace RZP\Models\Merchant\FreeCredits;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant\FreeCredits\Entity;
@@ -33,6 +33,7 @@ class Repository extends Base\Repository
         $logs = Entity::where(Entity::CAMPAIGN, '=', $merchantId)
             ->orderBy(Entity::CREATED_AT)
             ->get();
+
         foreach($logs as $creditLog)
         {
             array_push($campaigns, $creditLog->campaign);

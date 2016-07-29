@@ -2,10 +2,11 @@
 
 namespace RZP\Models\Merchant\FreeCredits;
 
-use RZP\Trace\TraceCode;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\FreeCredits;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
@@ -41,31 +42,21 @@ class Core extends Base\Core
      */
     public function deductFreeCredits($id, $credits)
     {
-        $res = array(
-            'deducted' => true,
-            'error'    => null,
-        );
         $free_credits_log = $this->repo->findOrFailPublic($id);
         $merchant = $free_credits_log->merchant;
         $merchantBalance = (new Merchant\Balance\Repository)->getMerchantBalance($merchant);
         if ($merchantBalance < $credits)
         {
-            $res['deducted'] = false;
-            $res['error'] = 'Total Free Credits is lower than credits to subtracted';
-            return $res;
+            throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_MERCHANT_TOTAL_CREDITS_LESSER_THAN_CREDITS_TO_SUBTRACT);
         }
         else if ($free_credits_log->credits < $credits)
         {
-
-            $res['deducted'] = false;
-            $res['error'] = 'Free Credits granted in this campaign is lower than credits to subtracted';
-            return $res;
+            throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_MERCHANT_CAMPAIGN_CREDITS_LESSER_THAN_CREDITS_TO_SUBTRACT);
         }
         $free_credits_log->credits -= $credits;
         $this->repo->saveOrFail($free_credits_log);
-        (new Merchant\Balance\Repository)->editMerchantFreeCredits(
-            $merchant, $credits
-        );
-        return $res;
+        (new Merchant\Balance\Repository)->editMerchantFreeCredits($merchant, $credits);
     }
 }

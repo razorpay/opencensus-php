@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Merchanti\FreeCredits;
+namespace RZP\Models\Merchant\FreeCredits;
 
 use RZP\Constants\Mode;
 use Carbon\Carbon;
@@ -22,10 +22,8 @@ class Service extends Base\Service
         $freeCreditLogExists = (new FreeCredits\Core)->checkIfFreeCreditsLogExists($id);
         if ($freeCreditLogExists)
         {
-            return array(
-                'success' => false,
-                'error'   => 'Free Credits already given for the merchant in the campaign. Update the log',
-            );
+            throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_MERCHANT_FREE_CREDITS_LOG_FOR_CAMPAIGN_EXISTS);
         }
         $freeCreditLog = (new FreeCredits\Core)->create($input);
         $response = array(
@@ -58,18 +56,7 @@ class Service extends Base\Service
         }
         else if ($op === 'deduct')
         {
-            $res = $this->deductFreeCredits($id, $credits);
-            if ($res['deducted'])
-            {
-
-                //TODO: Send Mail or Notify Merchant
-                return $response;
-            }
-            else
-            {
-                $response['success'] = false;
-                $response['error'] = $res['error'];
-            }
+            $this->deductFreeCredits($id, $credits);
             return $response;
         }
         else {
