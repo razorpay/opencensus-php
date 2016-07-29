@@ -108,7 +108,7 @@ final class Route
         'merchant_add_features'                   => ['post',     'merchants/{id}/features',                  'MerchantController@postMerchantFeatures'                           ],
         'merchant_get_features'                   => ['get',      'merchants/{id}/features',                  'MerchantController@getMerchantFeatures'                            ],
         'merchant_notify_holiday'                 => ['post',     'merchants/notify/holiday',                 'MerchantController@postMerchantsNotifyHoliday'                     ],
-        'freecredits_add'                         => ['post',     'merchants/free_credits',                   'MerchantController@postAddFreeCredits'                             ],
+        'freecredits_create'                      => ['post',     'merchants/free_credits',                   'MerchantController@postAddFreeCredits'                             ],
         'freecredits_get'                         => ['post',     'merchants/free_credits/{id}',              'MerchantController@getFetchFreeCreditsLog'                         ],
         'freecredits_update'                      => ['put',      'merchant/free_credits/{id}/{op}_credits/', 'MerchantController@putUpdateFreeCreditsLog'                        ],
         'freecredits_aggregate_campaign'          => ['get',      'merchant/free_credits/campaign/{name}',    'MerchantController@getShowFreeCreditsGrantedInCampaign'            ],
