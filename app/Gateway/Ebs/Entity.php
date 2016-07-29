@@ -36,8 +36,6 @@ class Entity extends Base\Entity
     const EBS_PAYMENT_ID        = 'ebs_payment_id';
     const TRANSACTION_ID        = 'transaction_id';
     const ERROR_DESCRIPTION     = 'error_description';
-    const AUTH_STATUS           = 'auth_status';
-    const REF_STATUS            = 'ref_status';
 
     protected $fields = array(
         self::NAME,

@@ -3,17 +3,17 @@
 namespace RZP\Gateway\Ebs;
 
 use RZP\Exception;
+use RZP\Constants;
 use RZP\Gateway\Base;
 
 class Repository extends Base\Repository
 {
-    protected $entity = 'ebs';
+    protected $entity = Constants\ENTITY::EBS;
 
     protected $appFetchParamRules = array(
-        Entity::PAYMENT_ID      => 'sometimes|string|min:14|max:18',
+        Entity::PAYMENT_ID      => 'sometimes|string',
         Entity::RECEIVED        => 'sometimes|in:0,1',
-        Entity::AUTH_STATUS     => 'sometimes|max:5',
-        Entity::REF_STATUS      => 'sometimes|max:5',
+        Entity::EBS_PAYMENT_ID  => 'sometimes|string',
         Entity::REFUND_ID       => 'sometimes|string',
     );
 
