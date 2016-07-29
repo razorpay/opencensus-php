@@ -35,7 +35,7 @@ class Handler extends ExceptionHandler
     {
         parent::__construct($log);
 
-        $this->app = \App::getFacadeRoot();
+        $this->app = App::getFacadeRoot();
 
         $this->trace = $this->app['trace'];
     }
@@ -254,7 +254,18 @@ class Handler extends ExceptionHandler
 
         $httpStatusCode = $error->getHttpStatusCode();
 
-        $data = $debug ? $error->toDebugArray() : $error->toPublicArray();
+        if ($debug === true)
+        {
+            $data = $error->toDebugArray();
+        }
+        else if ($this->isPublicAuth() === true)
+        {
+            $data = $error->toCustomerArray();
+        }
+        else
+        {
+            $data = $error->toPublicArray();
+        }
 
         return ApiResponse::generateResponse($data, $httpStatusCode);
     }
@@ -324,5 +335,10 @@ class Handler extends ExceptionHandler
     protected function isDebug()
     {
         return config('app.debug');
+    }
+
+    protected function isPublicAuth()
+    {
+        return $this->app['basicauth']->isPublicAuth();
     }
 }

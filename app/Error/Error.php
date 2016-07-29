@@ -208,6 +208,13 @@ class Error extends Support\Fluent
         return $this->getAttribute(self::HTTP_STATUS_CODE);
     }
 
+    public function getCustomerDescription()
+    {
+        $code = $this->getInternalErrorCode();
+
+        return $this->getCustomerDescriptionFromErrorCode($code);
+    }
+
     protected function handleBadRequestErrors()
     {
         $code = $this->getInternalErrorCode();
@@ -272,6 +279,25 @@ class Error extends Support\Fluent
         return array('error' => $array);
     }
 
+    public function toCustomerArray()
+    {
+        $array = array(
+            self::PUBLIC_ERROR_CODE => $this->getPublicErrorCode(),
+            self::DESCRIPTION       => $this->getCustomerDescription());
+
+        $action = $this->getAttribute(self::ACTION);
+
+        if ($action !== null)
+            $array[self::ACTION] = $action;
+
+        $field = $this->getAttribute(self::FIELD);
+
+        if ($field !== null)
+            $array[self::FIELD] = $field;
+
+        return array('error' => $array);
+    }
+
     public function toDebugArray()
     {
         return array('error' => $this->getAttributes());
@@ -285,6 +311,39 @@ class Error extends Support\Fluent
         {
             return constant(PublicErrorDescription::class.'::'.$code);
         }
+    }
+
+    protected function getCustomerDescriptionFromErrorCode($code)
+    {
+        $code = strtoupper($code);
+        $desc = null;
+
+        if ($this->isValidationError($code))
+        {
+            return $this->getDescription();
+        }
+
+        if (defined(CustomerErrorDescription::class . '::' . $code))
+        {
+            return constant(CustomerErrorDescription::class . '::' . $code);
+        }
+
+        $desc = $this->getDescriptionFromErrorCode($code);
+
+        if ($desc === null)
+        {
+            $code = $this->getPublicErrorCode();
+
+            $desc = $this->getDescriptionFromErrorCode($code);
+
+            if ($desc === null)
+            {
+                throw new Exception\InvalidArgumentException(
+                        'Description not provided for code: '. $code);
+            }
+        }
+
+        return $desc;
     }
 
     protected function getErrorClassFromErrorCode($code)
@@ -330,5 +389,15 @@ class Error extends Support\Fluent
         {
             throw new Exception\InvalidArgumentException($class . ' is not a valid class');
         }
+    }
+
+    protected function isValidationError($code)
+    {
+        $validationErrorCodes = [
+            ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED
+        ];
+
+        return in_array($code, $validationErrorCodes, true);
     }
 }
