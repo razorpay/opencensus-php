@@ -11,7 +11,6 @@ return [
         'status'                    => 'captured',
         'amount_authorized'         => 50000,
         'amount_refunded'           => 0,
-        'refund_status'             => null,
         'currency'                  => 'INR',
         'description'               => 'random description',
         'bank'                      => 'ICIC',
@@ -77,25 +76,50 @@ return [
     'testPaymentEbsEntity'          => [
         'action'                    => 'authorize',
         'received'                  => true,
-        'currency'                  => 'INR',
-        "TxnAmount"                 => '50000',
         'refund_id'                 => null,
         'entity'                    => 'ebs',
-        'refund_status'             => null,
         'refund_id'                 => null,
         'error_code'                => null,
-        'mode'                      => 'TEST',
 
     ],
+
+    'testPaymentRefundWithoutCapture' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED,
+        ],
+    ],
+
+    'testErrorOnCard' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::SERVER_ERROR,
+                    'description'   => PublicErrorDescription::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\RuntimeException',
+            'internal_error_code'   => ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
+        ],
+    ],
+
     'testPaymentRefund'             => [
         'received'                  => true,
-        'TxnAmount'                 => '50000',
-        'currency'                  => 'INR',
-        'ref_amount'                => '500.00',
+        'ref_amount'                => '500',
         'action'                    => 'refund',
-        'mode'                      => 'TEST',
         'entity'                    => 'ebs',
-        'TxnAmount'                 => '50000',
     ],
 
     'testTransactionAfterRefundingAuthorizedPayment' => [

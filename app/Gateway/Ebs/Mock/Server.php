@@ -36,10 +36,9 @@ class Server extends Base\Mock\Server
             'TransactionID'     => random_alpha_string(8),
             'PaymentMethod'     => '1001',
             'RequestID'         => random_alpha_string(8),
-
         );
 
-        $content['SecureHash'] = $this->getGatewayInstance()->getSecureHash($content);
+        $content['SecureHash'] = $this->getGatewayInstance()->getSecureHash($content, Null);
 
         $this->content($content);
 
@@ -55,7 +54,6 @@ class Server extends Base\Mock\Server
     public function refund($input)
     {
         parent::refund($input);
-
         $this->validateActionInput($input, 'refund');
 
         $payment = $this->getRepo()->findByEbsPaymentIdAndActionOrFail(
@@ -80,18 +78,5 @@ class Server extends Base\Mock\Server
         $this->content($content);
 
         return $this->makeResponse($content);
-    }
-
-
-    protected function makeRequest($request)
-    {
-        $method = $request['method'];
-
-        $response = Requests::$method(
-            $request['url'],
-            $request['headers'],
-            $request['content']);
-
-        return $response;
     }
 }

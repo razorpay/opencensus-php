@@ -94,8 +94,8 @@ return array(
 
     'ebs' => array(
         // SINGLE SET OF KEYS AS LIVE/TEST CREDS ARE SAME
-        'merchant_id'      => env('EBS_GATEWAY_MERCHANT_ID'),
-        'hash_secret'      => env('EBS_GATEWAY_HASH_SECRET'),
+        'merchant_id'      => env('EBS_GATEWAY_MERCHANT_ID', 'random'),
+        'hash_secret'      => env('EBS_GATEWAY_HASH_SECRET', 'secret'),
     ),
 
     'kotak' => array(

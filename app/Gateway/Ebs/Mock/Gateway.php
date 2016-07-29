@@ -16,17 +16,4 @@ class Gateway extends Ebs\Gateway
     {
         return $this->authorizeMock($input);
     }
-
-    protected function sendGatewayRequestForEbsAuthorize($request)
-    {
-        $response = new Requests_Response();
-
-        $txt = $this->getHtmlText($request);
-
-        $response->body = $txt;
-        $response->status_code = 200;
-        $response->success = true;
-
-        return $response;
-    }
 }

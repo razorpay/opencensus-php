@@ -4,6 +4,8 @@ namespace RZP\Gateway\Ebs;
 
 class Status
 {
+    const SUCCESS                   = '0';
+
     const CREATED                   = 'created';
     const REFUNDED                  = 'refunded';
     const AUTHORIZED                = 'authorized';

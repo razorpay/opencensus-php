@@ -24,9 +24,8 @@ class Entity extends Base\Entity
     const CURRENCY              = 'currency';
     const RECEIVED              = 'received';
     const REFUND_ID             = 'refund_id';
-    const REQUEST_ID            = 'Request_id';
+    const REQUEST_ID            = 'request_id';
     const REF_AMOUNT            = 'ref_amount';
-    const TXN_AMOUNT            = 'TxnAmount';
     const PAYMENT_ID            = 'payment_id';
     const ACCOUNT_ID            = 'account_id';
     const ERROR_CODE            = 'error_code';
@@ -37,9 +36,8 @@ class Entity extends Base\Entity
     const EBS_PAYMENT_ID        = 'ebs_payment_id';
     const TRANSACTION_ID        = 'transaction_id';
     const ERROR_DESCRIPTION     = 'error_description';
-    const REFUND_PAYMENT_ID     = 'payment_id';
-    const AUTH_STATUS           = 'AuthStatus';
-    const REF_STATUS            = 'RefStatus';
+    const AUTH_STATUS           = 'auth_status';
+    const REF_STATUS            = 'ref_status';
 
     protected $fields = array(
         self::NAME,
@@ -55,12 +53,10 @@ class Entity extends Base\Entity
         self::RECEIVED,
         self::CURRENCY,
         self::ERROR_CODE,
-        self::TXN_AMOUNT,
         self::REF_AMOUNT,
         self::REQUEST_ID,
         self::PAYMENT_ID,
         self::ACCOUNT_ID,
-        self::TXN_AMOUNT,
         self::POSTAL_CODE,
         self::DESCRIPTION,
         self::PAYMENT_MODE,
@@ -83,12 +79,10 @@ class Entity extends Base\Entity
         self::RECEIVED,
         self::CURRENCY,
         self::ERROR_CODE,
-        self::TXN_AMOUNT,
         self::REF_AMOUNT,
         self::REQUEST_ID,
         self::PAYMENT_ID,
         self::ACCOUNT_ID,
-        self::TXN_AMOUNT,
         self::POSTAL_CODE,
         self::DESCRIPTION,
         self::PAYMENT_MODE,
@@ -101,29 +95,4 @@ class Entity extends Base\Entity
 
     protected $entity = Constants\ENTITY::EBS;
 
-    protected $appends = array('status', 'refund_status');
-
-    protected function getStatusAttribute()
-    {
-        $code = $this->attributes[self::AUTH_STATUS];
-
-        if ($code === null)
-        {
-            return null;
-        }
-
-        return AuthStatus::$statusMap[$code];
-    }
-
-    protected function getRefundStatusAttribute()
-    {
-        $code = $this->attributes[self::REF_STATUS];
-
-        if ($code === null)
-        {
-            return null;
-        }
-
-        return RefundStatus::$statusMap[$code];
-    }
 }

@@ -20,8 +20,6 @@ class EbsGatewayTest extends TestCase
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $this->gateway = 'ebs';
-
-        $this->setMockGatewayTrue();
     }
 
     public function testPayment()
@@ -47,6 +45,7 @@ class EbsGatewayTest extends TestCase
         $this->assertTestResponse($payment);
 
         $payment = $this->getLastEntity('ebs', true);
+
         $this->assertArraySelectiveEquals(
             $this->testData['testPaymentEbsEntity'], $payment);
     }
@@ -71,13 +70,17 @@ class EbsGatewayTest extends TestCase
 
     public function testPaymentRefundWithoutCapture()
     {
-        $this->setExpectedException('RZP\Exception\BadRequestException');
         $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $data = $this->testData['testPaymentRefundWithoutCapture'];
 
         $payment = $this->doauthpayment($payment);
 
         $payment = $this->getlastentity('payment', true);
-        $this->refundpayment($payment['id']);
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->refundpayment($payment['id']);
+        });
     }
 
     public function testAuthorizedPaymentRefund()
@@ -104,13 +107,15 @@ class EbsGatewayTest extends TestCase
      */
     public function testErrorOnCard()
     {
-        $this->setExpectedException('RZP\Exception\RuntimeException');
-
         $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $data = $this->testData['testErrorOnCard'];
 
         $payment['method'] = 'card';
 
-        $payment = $this->doAuthPayment($payment);
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $payment = $this->doAuthPayment($payment);
+        });
     }
 
     public function testPaymentInvalidRefund()

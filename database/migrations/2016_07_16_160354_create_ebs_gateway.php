@@ -3,11 +3,13 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
+
 use RZP\Constants\Table;
 use RZP\Gateway\Ebs\Entity as Ebs;
 use RZP\Models\Base\UniqueIdEntity;
 
-class CreateEbs extends Migration {
+class CreateEbsGateway extends Migration
+{
 
     /**
      * Run the migrations.
@@ -22,13 +24,9 @@ class CreateEbs extends Migration {
 
             $table->increments(Ebs::ID);
 
-            $table->char(Ebs::REFUND_PAYMENT_ID, UniqueIdEntity::ID_LENGTH);
-
-            $table->string(Ebs::TXN_AMOUNT);
+            $table->char(Ebs::PAYMENT_ID, UniqueIdEntity::ID_LENGTH);
 
             $table->string(Ebs::STATUS);
-
-            $table->string(Ebs::CURRENCY);
 
             $table->string(Ebs::ACTION);
 

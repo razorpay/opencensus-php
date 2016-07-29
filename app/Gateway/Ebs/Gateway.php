@@ -10,16 +10,16 @@ use RZP\Gateway\Base;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
-use RZP\Constants\ModeEbs;
+use RZP\Constants\Mode;
 use RZP\Gateway\Ebs\Entity;
 use RZP\Gateway\Base\Action;
-use RZP\Gateway\Ebs\ResponseConstants as RESP;
-use RZP\Gateway\Ebs\RequestConstants as REQ;
+use RZP\Gateway\Ebs\ResponseConstants as Resp;
+use RZP\Gateway\Ebs\RequestConstants as Req;
+use RZP\Gateway\Ebs\CardType;
+use RZP\Gateway\Ebs\Utility;
 
 class Gateway extends Base\Gateway
 {
-    const SUCCESS                   = '0';
-
     const HASH_ALGO                 = 'SHA512';
     const MERCHANT_ID               = 'merchant_id';
     const HASH_SECRET               = 'hash_secret';
@@ -41,30 +41,26 @@ class Gateway extends Base\Gateway
     protected $gateway = Constants\Table::EBS;
 
     protected $map = array(
-        RESP::AMOUNT                => ENTITY::TXN_AMOUNT,
-        RESP::EBS_PAYMENT_ID        => ENTITY::EBS_PAYMENT_ID,
-        RESP::TRANSACTION_ID        => ENTITY::TRANSACTION_ID,
-        RESP::PAYMENT_ID            => ENTITY::EBS_PAYMENT_ID,
-        RESP::MODE                  => ENTITY::MODE,
-        RESP::REFERENCE             => ENTITY::PAYMENT_ID,
-        RESP::ERRORCODE             => ENTITY::ERROR_CODE,
-        RESP::ERROR                 => ENTITY::ERROR_DESCRIPTION,
+        Resp::EBS_PAYMENT_ID        => ENTITY::EBS_PAYMENT_ID,
+        Resp::TRANSACTION_ID        => ENTITY::TRANSACTION_ID,
+        Resp::PAYMENT_ID            => ENTITY::EBS_PAYMENT_ID,
+        Resp::MODE                  => ENTITY::MODE,
+        Resp::REFERENCE             => ENTITY::PAYMENT_ID,
+        Resp::ERRORCODE             => ENTITY::ERROR_CODE,
+        Resp::ERROR                 => ENTITY::ERROR_DESCRIPTION,
     );
 
     public function authorize(array $input)
     {
         parent::authorize($input);
+
         $content = $this->getAuthRequestContentArray($input);
 
         $attr = $this->getAuthorizeContent($content);
 
-        $payment = $this->createGatewayPaymentEntity($attr);
+        $payment = $this->createGatewayPaymentEntity($attr, $input);
 
-        $request = array(
-            'url' => $this->getUrl($this->action),
-            'method' => 'post',
-            'content' => $content
-        );
+        $request = $this->getStandardRequestArray($content);
 
         $this->traceGatewayPaymentRequest($request, $input);
 
@@ -84,39 +80,30 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        $this->validateCallbackGetSecureHash($input['gateway']);
-
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             $input['gateway']);
 
+        $this->validateCallbackGetSecureHash($input['gateway'], $input['terminal']);
+
         $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
 
-
-        $content = $this->getMappedAttributes($input['gateway']);
-
-        $content[ENTITY::RECEIVED] = 1;
-        $content[ENTITY::TRANSACTION_ID] = $input['gateway'][RESP::TRANSACTION_ID];
-        $content[ENTITY::REQUEST_ID] = $input['gateway'][RESP::REQUEST_ID];
-        $content[ENTITY::STATUS] = Status::AUTHORIZED;
-
-        if ($input['gateway'][RESP::RESPONSE_CODE] !== self::SUCCESS)
-        {
-            $content[ENTITY::STATUS] = Status::AUTHORIZED_FAILED;
-        }
+        $content = $this->getGatewayEntityDataFromResponse($input);
 
         $payment->fill($content);
 
         $payment->saveOrFail();
 
-        if ($input['gateway'][RESP::RESPONSE_CODE] !== self::SUCCESS)
+        $errorCode = $input['gateway'][Resp::RESPONSE_CODE];
+
+        if ($errorCode !== Status::SUCCESS)
         {
             // Payment fails, throw exception
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-                $input['gateway']['ResponseCode'],
-                '');
+                ResponseCode::getMappedCode($errorCode),
+                $errorCode,
+                $desc);
         }
     }
 
@@ -129,61 +116,53 @@ class Gateway extends Base\Gateway
 
         $content = $this->getPaymentRefundRequestContent($payment, $input);
 
-        $request = array(
-            'url' => $this->getUrl($this->action),
-            'method' => 'post',
-            'content' => $content);
+        $request = $this->getStandardRequestArray($content);
+
+
+        $this->traceGatewayApiRequest($request);
 
         $response = $this->sendGatewayRequest($request);
-        $resp = Utility::parseResponseXml($response->body);
 
-        $attr = $this->getRefundContent($resp, $input);
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_RESPONSE,
+            [$response->body]);
 
-        $refund = $this->createGatewayPaymentEntity($attr);
+        $utility = new Utility;
 
+        $parsed_response = $utility->parseResponseXml($response->body);
 
-        if ($resp[RESP::ERROR] !== false)
+        $attr = $this->getRefundContent($parsed_response, $input);
+
+        $refund = $this->createGatewayPaymentEntity($attr, $input);
+
+        if ($parsed_response[Resp::ERROR] !== false)
         {
-            try
-            {
-                $errorCode = $resp[RESP::ERRORCODE];
+            $errorCode = $parsed_response[Resp::ERRORCODE];
 
-                $desc = ResponseCode::$reasonCodes[$errorCode];;
+            $desc = ResponseCode::$reasonCodes[$errorCode];
 
-                $this->trace->error(
-                    TraceCode::PAYMENT_REFUND_FAILURE,
-                    [$response->body]);
 
-                throw new Exception\GatewayErrorException(
-                    ResponseCode::getMappedCode($errorCode),
-                    $errorCode,
-                    $desc);
-            }
-            catch (Exception\InvalidArgumentException $e)
-            {
-                $errorCode = $resp[RESP::ERRORCODE];
-
-                throw new Exception\GatewayErrorException(
-                    ErrorCode::BAD_REQUEST_REFUND_FAILED,
-                    $errorCode,
-                    ResponseCode::UNKNOWN_ERROR);
-            }
+            throw new Exception\GatewayErrorException(
+                ResponseCode::getMappedCode($errorCode),
+                $errorCode,
+                $desc);
         }
     }
 
     public function verify(array $input)
     {
+        // TODO complete this
     }
 
-    public function getSecureHash($content)
+    public function getSecureHash($content, $terminal)
     {
-        $hashData = $this->config[self::HASH_SECRET];
+        $hashData = $this->getSecretKey($terminal);
 
         ksort($content);
 
         foreach ($content as $key => $value)
         {
-            if (strlen($value) > 0)
+            if (empty($value))
             {
                 $hashData .= '|' . $value;
             }
@@ -193,28 +172,73 @@ class Gateway extends Base\Gateway
 
         return $hashValue;
     }
-
-    protected function getPaymentRefundRequestContent($payment, $input)
+    protected function getGatewayEntityDataFromResponse($input)
     {
-        $refundAmount = (float) ($input['refund']['amount']);
+        $content = $this->getMappedAttributes($input['gateway']);
 
-        $refundAmount = (string) number_format($refundAmount/100, 2, '.', '');
+        $content[ENTITY::RECEIVED] = True;
 
-        $content = array(
-            REQ::REFUND_ACTION      => 'refund',
-            REQ::REFUND_ACCOUNT_ID  => $this->config[self::MERCHANT_ID],
-            REQ::REFUND_SECRET_KEY  => $this->config[self::HASH_SECRET],
-            REQ::REFUND_AMOUNT      => $refundAmount,
-            REQ::REFUND_PAYMENT_ID  => $payment['ebs_payment_id'],
-        );
+        $content[ENTITY::TRANSACTION_ID] = $input['gateway'][Resp::TRANSACTION_ID];
+
+        $content[ENTITY::REQUEST_ID] = $input['gateway'][Resp::REQUEST_ID];
+
+        $content[ENTITY::STATUS] = Status::AUTHORIZED;
+
+        if ($input['gateway'][Resp::RESPONSE_CODE] !== Status::SUCCESS)
+        {
+            $content[ENTITY::STATUS] = Status::AUTHORIZED_FAILED;
+        }
+
         return $content;
     }
 
-    protected function createGatewayPaymentEntity($attributes)
+    protected function traceGatewayApiRequest($request)
+    {
+        unset ($request['content'][Req::API_SECRET_KEY]);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_REQUEST,
+            [$request]);
+    }
+
+    protected function getPaymentRefundRequestContent($payment, $input)
+    {
+        $refundAmount = (string) ($input['refund']['amount']/100);
+
+        $content = array(
+            Req::API_ACTION         => 'refund',
+            Req::API_ACCOUNT_ID     => $this->getAccountId($input['terminal']),
+            Req::API_SECRET_KEY     => $this->getSecretKey($input['terminal']),
+            Req::API_AMOUNT         => $refundAmount,
+            Req::API_PAYMENT_ID     => $payment['ebs_payment_id'],
+        );
+
+        return $content;
+    }
+
+    protected function getAccountId($terminal)
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->config[self::MERCHANT_ID];
+        }
+        return $terminal['gateway_merchant_id'];
+    }
+
+    protected function getSecretKey($terminal)
+    {
+
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->config[self::HASH_SECRET];
+        }
+        return $terminal['gateway_secure_secret'];
+    }
+
+    protected function createGatewayPaymentEntity($attributes, $input)
     {
         $payment = $this->getNewGatewayPaymentEntity();
-        $attributes[REQ::TXN_AMOUNT] = $attributes[REQ::AMOUNT]*100;
-        $payment->setPaymentId($attributes[REQ::REFRENCE_NO]);
+        $payment->setPaymentId($input['payment']['id']);
         $payment->fill($attributes);
         $payment->setAction($this->action);
         $payment->saveOrFail();
@@ -243,21 +267,21 @@ class Gateway extends Base\Gateway
     protected function getAuthRequestContentArray($input)
     {
         $content = array(
-            REQ::ACCOUNT_ID    => $this->config[self::MERCHANT_ID],
-            REQ::REFRENCE_NO   => $input['payment']['id'],
-            REQ::AMOUNT        => $input['payment']['amount']/100,
-            REQ::CALLBACK      => $input['callbackUrl'],
-            REQ::NAME          => self::NAME,
-            REQ::ADDRESS       => self::ADDRESS,
-            REQ::CITY          => self::CITY,
-            REQ::COUNTRY       => self::COUNTRY_CODE,
-            REQ::POSTAL_CODE   => self::POSTAL_CODE,
-            REQ::PHONE         => self::PHONE,
-            REQ::EMAIL         => self::EMAIL,
-            REQ::DESCRIPTION   => self::DESCRIPTION,
-            REQ::CURRENCY      => self::CURRENCY,
-            REQ::MODE          => strtoupper($this->mode),
-            REQ::PAYMENT_MODE  => $this->getpaymentMode($input),
+            Req::ACCOUNT_ID    => $this->getAccountId($input['terminal']),
+            Req::REFRENCE_NO   => $input['payment']['id'],
+            Req::AMOUNT        => $input['payment']['amount']/100,
+            Req::CALLBACK      => $input['callbackUrl'],
+            Req::NAME          => self::NAME,
+            Req::ADDRESS       => self::ADDRESS,
+            Req::CITY          => self::CITY,
+            Req::COUNTRY       => self::COUNTRY_CODE,
+            Req::POSTAL_CODE   => self::POSTAL_CODE,
+            Req::PHONE         => self::PHONE,
+            Req::EMAIL         => self::EMAIL,
+            Req::DESCRIPTION   => self::DESCRIPTION,
+            Req::CURRENCY      => self::CURRENCY,
+            Req::MODE          => strtoupper($this->mode),
+            Req::PAYMENT_MODE  => $this->getPaymentMode($input),
         );
 
         if ($input['payment']['method'] === Payment\Method::CARD)
@@ -274,26 +298,26 @@ class Gateway extends Base\Gateway
                 'Invalid Payment Method');
         }
 
-        $content[REQ::SECURE_HASH] = $this->getSecureHash($content);
+        $content[Req::SECURE_HASH] = $this->getSecureHash($content, $input['terminal']);
 
         return $content;
     }
 
     protected function setContentForCard(&$content, $input)
     {
-        $content[REQ::CHANNEL] = self::CARD_CHANNEL;
-        $content[REQ::NAME_ON_CARD] = $input['card']['name'];
-        $content[REQ::CARD_NUMBER] = $input['card']['number'];
-        $content[REQ::CARD_EXPIRY] = $this->getExpiry($input);
-        $content[REQ::CARD_BRAND] = $this->getcardBrand($input);
-        $content[REQ::CARD_CVV] = $input['card']['cvv'];
+        $content[Req::CHANNEL] = self::CARD_CHANNEL;
+        $content[Req::NAME_ON_CARD] = $input['card']['name'];
+        $content[Req::CARD_NUMBER] = $input['card']['number'];
+        $content[Req::CARD_EXPIRY] = $this->getExpiry($input);
+        $content[Req::CARD_BRAND] = $this->getCardBrand($input);
+        $content[Req::CARD_CVV] = $input['card']['cvv'];
     }
 
     protected function setContentForNetBanking(&$content, $input)
     {
-        $content[REQ::CHANNEL] = self::NETBANKING_CHANNEL;
+        $content[Req::CHANNEL] = self::NETBANKING_CHANNEL;
         $bankId = BankCodes::$bankCodeMap[$input['payment']['bank']];
-        $content[REQ::PAYMENT_OPTION] = $bankId;
+        $content[Req::PAYMENT_OPTION] = $bankId;
     }
 
     protected function getExpiry($input)
@@ -303,25 +327,25 @@ class Gateway extends Base\Gateway
         return Carbon::createFromDate($year, $month)->format('my');
     }
 
-    protected function getpaymentMode($input)
+    protected function getPaymentMode($input)
     {
-        if ($this->mode === 'test')
+        if ($this->mode === Mode::TEST)
         {
-            $retVal = REQ::CREDIT;
+            $retVal = Req::CREDIT;
         }
         else if ($input['payment']['method'] === Payment\Method::NETBANKING)
         {
-            $retVal = REQ::NETBANKING;
+            $retVal = Req::NETBANKING;
         }
         else if ($input['payment']['method'] === Payment\Method::CARD)
         {
             if ($input['card']['type'] === Card\Type::DEBIT)
             {
-                $retVal = REQ::DEBIT;
+                $retVal = Req::DEBIT;
             }
             else if ($input['card']['type'] === Card\Type::CREDIT)
             {
-                $retVal = REQ::CREDIT;
+                $retVal = Req::CREDIT;
             }
         }
 
@@ -334,33 +358,33 @@ class Gateway extends Base\Gateway
         return $retVal;
     }
 
-    protected function getcardBrand($input)
+    protected function getCardBrand($input)
     {
-        if ($this->mode === 'test')
+        if ($this->mode === Mode::TEST)
         {
-            $retVal = REQ::VISA;
+            $retVal = Req::VISA;
         }
         else
         {
             switch ($input['card']['network'])
             {
                 case Card\Network::VISA:
-                    $retVal = REQ::VISA;
+                    $retVal = CardType::VISA;
 
                 case Card\Network::MC:
-                    $retVal = REQ::MC;
+                    $retVal = CardType::MC;
 
                 case Card\Network::MAES:
-                    $retVal = REQ::MAES;
+                    $retVal = CardType::MAES;
 
                 case Card\Network::DICL:
-                    $retVal = REQ::DICL;
+                    $retVal = CardType::DICL;
 
                 case Card\Network::AMEX:
-                    $retVal = REQ::AMEX;
+                    $retVal = CardType::AMEX;
 
                 case Card\Network::JCB:
-                    $retVal = REQ::JCB;
+                    $retVal = CardType::JCB;
 
                 default:
                     throw new Exception\BadRequestValidationFailureException(
@@ -385,40 +409,43 @@ class Gateway extends Base\Gateway
         return parent::getUrlDomain();
     }
 
-    protected function validateCallbackGetSecureHash(array $input)
+    protected function validateCallbackGetSecureHash(array $input, $terminal)
     {
-        $hash = $input[RESP::SECURE_HASH];
+        $hash = $input[Resp::SECURE_HASH];
+
         if (empty($hash))
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Invalid Hash');
+                ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET);
         }
 
         // Remove secureHash Value to calculate Expected Hash Value
-        unset($input[RESP::SECURE_HASH]);
+        unset($input[Resp::SECURE_HASH]);
 
-        $expectedHash = $this->getSecureHash($input);
+        $expectedHash = $this->getSecureHash($input, $terminal);
         if ($hash !== $expectedHash)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Failed Hash Verification');
+                ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET);
         }
     }
 
     protected function getAuthorizeContent($content)
     {
-        $attr = $content;
+        $attr = array();
+
+        $attr[Req::REFRENCE_NO] = $content[Req::REFRENCE_NO];
+        $attr[Req::AMOUNT] = $content[Req::AMOUNT];
         $attr[ENTITY::STATUS] = Status::CREATED;
 
         return $attr;
     }
 
-    protected function getRefundContent($resp, $input)
+    protected function getRefundContent($response, $input)
     {
-        $refundAmount = (float) ($input['refund']['amount']);
-        $refundAmount = (string) number_format($refundAmount/100, 2, '.', '');
+        $refundAmount = (string) ($input['refund']['amount']/100);
 
-        $attr = $this->getMappedAttributes($resp);
+        $attr = $this->getMappedAttributes($response);
 
         $attr[ENTITY::REF_AMOUNT] = $refundAmount;
 
@@ -426,17 +453,16 @@ class Gateway extends Base\Gateway
         $attr[ENTITY::REFUND_REF_NO] = $input['payment']['id'];
         $attr[ENTITY::AMOUNT] = $refundAmount;
 
-        $attr[ENTITY::CURRENCY] = self::CURRENCY;
-        $attr[ENTITY::RECEIVED] = 1;
+        $attr[ENTITY::RECEIVED] = True;
         $attr[ENTITY::STATUS] = Status::REFUNDED;
+        $attr[ENTITY::PAYMENT_ID] = $input['payment']['id'];
+        $attr[ENTITY::MODE] = strtoupper($this->mode);
 
         if ($attr[ENTITY::ERROR_CODE] !== 0)
         {
-            $attr[ENTITY::TXN_AMOUNT] = $refundAmount;
-            $attr[ENTITY::MODE] = strtoupper($this->mode);
-            $attr[ENTITY::REFUND_PAYMENT_ID] = $input['payment']['id'];
             $attr[ENTITY::STATUS] = Status::REFUND_FAILED;
         }
+
         return $attr;
     }
 }

@@ -69,7 +69,7 @@ class ResponseCode
         25  => ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_REFUND_INITIATED,
         26  => ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED,
         27  => ErrorCode::BAD_REQUEST_PAYMENT_PROBLEM_IN_UPDATING,
-        29  => ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE,
+        29  => ErrorCode::BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE,
     );
 
     public static function getMappedCode($code)

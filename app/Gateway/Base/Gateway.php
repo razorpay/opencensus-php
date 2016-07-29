@@ -481,7 +481,14 @@ class Gateway
     {
         $ns = $this->getGatewayNamespace();
 
-        return constant($ns.'\Url::'.$type);
+        $val = '';
+
+        if (defined(($ns.'\Url::'.$type)))
+        {
+            $val = constant($ns.'\Url::'.$type);
+        }
+
+        return $val;
     }
 
     protected function getUrl($type = null)

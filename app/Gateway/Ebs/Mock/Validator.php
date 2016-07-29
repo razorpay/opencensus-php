@@ -3,47 +3,45 @@
 namespace RZP\Gateway\Ebs\Mock;
 
 use RZP\Models\Base;
-use RZP\Gateway\Ebs\Entity as Ebs;
+use RZP\Gateway\Ebs\RequestConstants as Request;
 
 class Validator extends Base\Validator
 {
     protected static $authRules = array(
-        Ebs::CHANNEL            => 'required|alpha_num',
-        Ebs::ACCOUNT_ID         => 'required|alpha_num',
-        'return_url'            => 'required|url',
-        Ebs::REFUND_REF_NO      => 'required|alpha_num',
-        Ebs::AMOUNT             => 'required|',
-        Ebs::NAME               => 'required|alpha_num',
-        Ebs::ADDRESS            => 'required|',
-        Ebs::CITY               => 'required|alpha_num',
-        Ebs::COUNTRY            => 'required|alpha_num',
-        Ebs::POSTAL_CODE        => 'required|',
-        Ebs::PHONE              => 'required|alpha_num',
-        Ebs::EMAIL              => 'required|',
-        Ebs::DESCRIPTION        => 'required|',
-        Ebs::CURRENCY           => 'required|alpha_num',
-        Ebs::MODE               => 'required|alpha_num',
-        'name_on_card'          => 'sometimes|alpha_num',
-        'card_number'           => 'sometimes|alpha_num',
-        'card_expiry'           => 'sometimes|alpha_num',
-        Ebs::PAYMENT_MODE       => 'required|alpha_num',
-        'card_brand'            => 'sometimes|alpha_num',
-        'card_cvv'              => 'sometimes|alpha_num',
-        'payment_option'        => 'sometimes|alpha_num',
-        'secure_hash'           => 'required|alpha_num',
+        Request::CHANNEL            => 'required|alpha_num',
+        Request::ACCOUNT_ID         => 'required|alpha_num',
+        Request::CALLBACK           => 'required|url',
+        Request::REFRENCE_NO        => 'required|alpha_num',
+        Request::AMOUNT             => 'required|',
+        Request::NAME               => 'required|alpha_num',
+        Request::ADDRESS            => 'required|',
+        Request::CITY               => 'required|alpha_num',
+        Request::COUNTRY            => 'required|alpha_num',
+        Request::POSTAL_CODE        => 'required|',
+        Request::PHONE              => 'required|contact_syntax|phone:AUTO,LENIENT,IN,mobile,fixed_line',
+        Request::EMAIL              => 'required|email',
+        Request::DESCRIPTION        => 'required|',
+        Request::CURRENCY           => 'required|alpha_num',
+        Request::MODE               => 'required|alpha_num',
+        Request::NAME_ON_CARD       => 'required_if:channel,2',
+        Request::CARD_NUMBER        => 'required_if:channel,2',
+        Request::CARD_EXPIRY        => 'required_if:channel,2',
+        Request::PAYMENT_MODE       => 'required|alpha_num',
+        Request::CARD_BRAND         => 'required_if:channel,2',
+        Request::CARD_CVV           => 'required_if:channel,2',
+        Request::PAYMENT_OPTION     => 'sometimes|alpha_num',
+        Request::SECURE_HASH        => 'required|alpha_num',
     );
 
     protected static $verifyRules = array(
-        'RequestType'           => 'required|in:0122',
-        'secure_hash'           => 'required|alpha_num',
     );
 
     protected static $refundRules = array(
-        'Action'                => 'required|alpha_num',
-        'AccountID'             => 'required|alpha_num',
-        'SecretKey'             => 'required|alpha_num',
-        'Amount'                => 'required|',
-        'PaymentID'             => 'required|alpha_num',
+        Request::API_ACTION         => 'required|alpha_num',
+        Request::API_ACCOUNT_ID     => 'required|alpha_num',
+        Request::API_SECRET_KEY     => 'required|alpha_num',
+        Request::API_AMOUNT         => 'required|',
+        Request::API_PAYMENT_ID     => 'required|alpha_num',
 
     );
 }

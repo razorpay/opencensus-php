@@ -2,22 +2,20 @@
 
 namespace RZP\Gateway\Ebs;
 
-use RZP\Gateway\Ebs;
 use RZP\Gateway\Ebs\ResponseConstants as RESP;
 
 class Utility extends \RZP\Gateway\Utility
 {
-    public static function returnFields($response)
+    public function returnFields($response)
     {
-        $parser = xml_parser_create();
-        xml_parser_set_option($parser,XML_OPTION_CASE_FOLDING,0);
-        xml_parse_into_struct($parser, $response, $vals, $index);
-        return $vals[0]['attributes'];
+        $arrayResponse = (array)simplexml_load_string($response);
+
+        return $arrayResponse['@attributes'];
     }
 
-    public static function parseResponseXml($response)
+    public function parseResponseXml($response)
     {
-        $fields = self::returnFields($response);
+        $fields = $this->returnFields($response);
 
         if (array_key_exists(RESP::ERROR, $fields))
         {
