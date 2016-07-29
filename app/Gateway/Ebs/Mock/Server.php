@@ -11,6 +11,7 @@ use RZP\Gateway\Base\Action;
 use RZP\Models\Card;
 use Requests;
 use RZP\Models\Payment\Core;
+use RZP\Gateway\Ebs\ResponseConstants as Response;
 
 class Server extends Base\Mock\Server
 {
@@ -24,21 +25,21 @@ class Server extends Base\Mock\Server
         $date = Carbon::today('Asia/Kolkata')->format('d-m-Y H:i:s');
 
         $content = array(
-            'ResponseCode'      => '0',
-            'ResponseMessage'   => 'Transaction Successful',
-            'DateCreated'       => $date,
-            'PaymentID'         => random_alpha_string(8),
-            'MerchantRefNo'     => $input['reference_no'],
-            'Amount'            => $input['amount'],
-            'Mode'              => $input['mode'],
-            'Description'       => $input['description'],
-            'IsFlagged'         => 'NO',
-            'TransactionID'     => random_alpha_string(8),
-            'PaymentMethod'     => '1001',
-            'RequestID'         => random_alpha_string(8),
+            Response::RESPONSE_CODE     => '0',
+            Response::RESPONSE_MESSAGE  => 'Transaction Successful',
+            Response::DATE_CREATED      => $date,
+            Response::EBS_PAYMENT_ID    => random_alpha_string(8),
+            Response::MERCHANT_REF_NO   => $input['reference_no'],
+            Response::AMOUNT            => $input['amount'],
+            Response::MODE              => $input['mode'],
+            Response::DESCRIPTION       => $input['description'],
+            Response::IS_FLAGGED        => 'NO',
+            Response::TRANSACTION_ID    => random_alpha_string(8),
+            Response::PAYMENT_METHOD    => '1001',
+            Response::REQUEST_ID        => random_alpha_string(8),
         );
 
-        $content['SecureHash'] = $this->getGatewayInstance()->getSecureHash($content, Null);
+        $content[Response::SECURE_HASH] = $this->getGatewayInstance()->getSecureHash($content, Null);
 
         $this->content($content);
 
