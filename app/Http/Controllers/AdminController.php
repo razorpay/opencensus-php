@@ -72,7 +72,7 @@ class AdminController extends Controller
     {
         $input = Input::all();
 
-        list($error, $data) = (new Admin\Service)->changePassword($input, Auth::admin()->get());
+        list($error, $data) = (new Admin\Service)->changePassword($input, Auth::guard('admin')->user());
 
         return AppResponse::jsonResponse($error);
     }

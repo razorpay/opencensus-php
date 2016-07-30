@@ -281,7 +281,7 @@ class Service extends Base\Service
                 'password'  => $input['password']
             );
 
-            $user = Auth::user();
+            $user = Auth::guard('user');
 
             if ($user->once($credentials))
             {

@@ -1,19 +1,21 @@
 <?php
+
 namespace Tests\Functional;
 
 use Laracasts\TestDummy\Factory;
 use Eloquent;
-use DB;
+use Illuminate\Support\Facades\DB;
 use Artisan;
 use Route;
-use TestCase as ParentTestCase;
+use Tests\TestCase as BaseTestCase;
 
-class TestCase extends ParentTestCase
+class TestCase extends BaseTestCase
 {
-    protected static $fixtures = array(
-        'merchant' => 'App\Merchant\Entity',
-        'merchant_details' => 'App\MerchantDetails\Entity',
-        'admin' => 'App\Models\Entity');
+    protected static $fixtures = [
+        'merchant'          => 'App\Merchant\Entity',
+        'merchant_details'  => 'App\MerchantDetails\Entity',
+        'admin'             => 'App\Admin\Entity'
+    ];
 
     public function setUp()
     {

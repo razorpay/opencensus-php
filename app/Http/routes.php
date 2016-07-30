@@ -224,7 +224,7 @@ Route::group(['middleware'  =>  'admin'], function()
 
     Route::post('/admin/{mode}/reconciliate', 'AdminController@postReconciliate');
 
-    Route::group(['middleware'  =>  ['auth:admin', 'superadmin']], function()
+    Route::group(['middleware'  =>  ['admin', 'superadmin']], function()
     {
         // This is the RAW API route which processes api calls
         Route::post('/api/{path?}', 'AdminController@passThrough')

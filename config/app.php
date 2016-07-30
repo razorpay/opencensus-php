@@ -13,7 +13,7 @@ return array(
     |
     */
 
-    'debug' => env('APP_DEBUG', true),
+    'debug' => env('APP_DEBUG', false),
 
     /*
     |--------------------------------------------------------------------------
@@ -26,7 +26,7 @@ return array(
     |
     */
 
-    'url' => 'https://dashboard.razorpay.com',
+    'url' => env('BASE_URL', 'https://dashboard.razorpay.com'),
 
     /*
     |--------------------------------------------------------------------------
@@ -39,7 +39,7 @@ return array(
     |
     */
 
-   'cipher' => MCRYPT_RIJNDAEL_256,
+    'cipher' => MCRYPT_RIJNDAEL_256,
 
     'timezone' => 'UTC',
 
@@ -133,7 +133,6 @@ return array(
         Illuminate\Auth\Passwords\PasswordResetServiceProvider::class,
         Illuminate\Session\SessionServiceProvider::class,
         Illuminate\Translation\TranslationServiceProvider::class,
-        Illuminate\Validation\ValidationServiceProvider::class,
         Illuminate\View\ViewServiceProvider::class,
 
         /*
@@ -160,7 +159,8 @@ return array(
         'Maatwebsite\Excel\ExcelServiceProvider',
         'Maknz\Slack\SlackServiceProvider',
         'Marlek\LaravelAutomigrate\LaravelAutomigrateServiceProvider',
-        Conner\Tagging\Providers\TaggingServiceProvider::class
+        \Conner\Tagging\Providers\TaggingServiceProvider::class,
+        Illuminate\Validation\ValidationServiceProvider::class,
     ],
 
     /*

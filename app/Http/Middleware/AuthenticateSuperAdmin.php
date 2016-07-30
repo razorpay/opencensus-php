@@ -15,7 +15,7 @@ class AuthenticateSuperAdmin {
     {
         if(!Auth::guard('admin')->user()->isSuperAdmin())
         {
-            return response()->son(array('success' => false, 'errors' => ['Unauthorised']));
+            return response()->json(array('success' => false, 'errors' => ['Unauthorised']));
         }
         return $next($request);
     }

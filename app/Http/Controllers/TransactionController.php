@@ -1,11 +1,14 @@
 <?php
+
 namespace App\Http\Controllers;
 
+use Auth;
 use App\Api;
 use App\Merchant;
 use App\Http\AppResponse;
 use App\Transaction;
 use Input;
+use Response;
 
 class TransactionController extends Controller
 {

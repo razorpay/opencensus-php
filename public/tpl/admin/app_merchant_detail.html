@@ -20,7 +20,7 @@
         <a ui-sref="app.merchants.activation({id:merchant.details.id})" class="list-group-item">
           See Activation Form Details
         </a>
-        <a href class="list-group-item" ng-show="merchant.details.locked==0" ng-click="lockForm()">
+        <a href class="list-group-item lock-form" ng-show="merchant.details.locked==0" ng-click="lockForm()">
           Lock Activation Form <i class="pull-right fa fa-lock"></i>
         </a>
         <a href class="list-group-item" ng-show="merchant.details.locked==1" ng-click="unlockForm()">
@@ -87,7 +87,7 @@
         <a href class="list-group-item" ng-click="openAssignPricing()">
           Assign Pricing <i class="pull-right fa fa-percent"></i>
         </a>
-        <a href class="list-group-item" ng-click="openAssignTerminal()">
+        <a href class="list-group-item assign-terminal" ng-click="openAssignTerminal()">
           Assign Terminal <i class="pull-right fa fa-terminal"></i>
         </a>
         <a href class="list-group-item" ng-click="openAssignBanks()">

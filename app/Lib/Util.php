@@ -1,6 +1,6 @@
 <?php
 
-namespace Lib;
+namespace App\Lib;
 
 class Util
 {

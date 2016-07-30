@@ -3,7 +3,8 @@
 namespace App\MerchantDetails;
 
 use Auth;
-use AWS;
+use Aws\Laravel\AwsFacade as AWS;
+use Illuminate\Support\Facades\App as App;
 use Carbon\Carbon;
 use Config;
 use Mail;
@@ -174,19 +175,20 @@ class Service extends Base\Service
         $extension = $data['file']->getClientOriginalExtension();
         $mime = $data['file']->getMimeType();
 
-        $s3 =  AWS::get('s3');
+        $s3 = App::make('aws')->createClient('s3');
 
         try
         {
             $s3Obj = array(
-                'Bucket'        => $_ENV['AWS_ACTIVATION_BUCKET'],
+                'Bucket'        => env('AWS_ACTIVATION_BUCKET'),
                 'Key'           => $id.'/'.$data['key'].'.'.$extension,
                 'ContentType'   => $mime,
                 'SourceFile'    => $data['file']->getRealPath(),
             );
 
             $field = $data['field'];
-            if (getenv('S3_MOCK'))
+
+            if (env('S3_MOCK'))
             {
                 $url = 'https://example.com';
             }

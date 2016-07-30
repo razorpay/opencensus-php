@@ -2,7 +2,8 @@
 
 namespace App\Admin;
 
-use AWS;
+use Aws\Laravel\AwsFacade as AWS;
+use Illuminate\Support\Facades\App as App;
 use Auth;
 use Hash;
 use Carbon\Carbon;
@@ -16,11 +17,10 @@ use App\Admin;
 use App\Merchant;
 use App\MerchantDetails;
 use App\Transaction;
-
+use App\Trace\TraceCode;
 use Razorpay\Api\Request as ApiRequest;
 use Razorpay\Api\Errors\Error as ApiError;
 use Razorpay\Api\Errors\BadRequestError as BadRequestError;
-
 
 class Service extends Base\Service
 {
@@ -170,9 +170,10 @@ class Service extends Base\Service
                     break;
 
                 case "pending":
+
                     $response = $data->filter(function($merchant)
                     {
-                        return ($merchant->activated == 0 and $merchant->merchant_details->submitted == 1);
+                        return ($merchant->activated == 0 and $merchant->merchantDetails->submitted == 1);
                     });
                     break;
 
@@ -219,7 +220,7 @@ class Service extends Base\Service
     {
         $error = array();
 
-        if ($id === Auth::admin()->id())
+        if ($id === Auth::guard('admin')->id())
         {
             $error[] = self::SELF_DELETE_ERROR;
         }
@@ -283,7 +284,7 @@ class Service extends Base\Service
             $extension_position = strrpos($file, '.', -1);
             $extension  = substr($file, $extension_position + 1);
 
-            $s3 =  \AWS::get('s3');
+            $s3 = App::make('aws')->createClient('s3');
 
             try
             {
@@ -1036,7 +1037,7 @@ class Service extends Base\Service
 
             // Log activation on marketing google spreadsheet
             $zapierData = $this->activationZapierData($details);
-            Queue::push('App\Models\Service@postActivationToZapier', $zapierData);
+            Queue::push('App\Admin\Service@postActivationToZapier', $zapierData);
 
             $this->logActionToSlack($merchant, Actions::ACTIVATED);
         }
@@ -1422,7 +1423,7 @@ class Service extends Base\Service
      */
     protected function getBeneficiaryFileUrl($date)
     {
-        $s3 = AWS::get('s3');
+        $s3 = App::make('aws')->createClient('s3');
 
         $beneficiaryBucket = Config::get('aws::config.buckets')['beneficiary'];
         $filename = $date.'.xls';
@@ -1514,7 +1515,7 @@ class Service extends Base\Service
      */
     protected function uploadToS3($objectPath, $filePath)
     {
-        $s3 =  AWS::get('s3');
+        $s3 = App::make('aws')->createClient('s3');
         $s3Obj = [
             'Bucket'        => $_ENV['AWS_ACTIVATION_BUCKET'],
             'Key'           => $objectPath,
@@ -1532,7 +1533,7 @@ class Service extends Base\Service
      */
     public function getScreenshot($id)
     {
-        $s3 =  \AWS::get('s3');
+        $s3 = App::make('aws')->createClient('s3');
         $bucket = $_ENV['AWS_ACTIVATION_BUCKET'];
         $keys = MerchantDetails\Entity::getUrlKeys();
 
@@ -1556,7 +1557,7 @@ class Service extends Base\Service
 
         try
         {
-            $input['email'] = Auth::admin()->get()->email;
+            $input['email'] = Auth::guard('admin')->get()->email;
 
             return [null, $this->api->admin->sendTestNewsletter($input)
                 ->toArray()];

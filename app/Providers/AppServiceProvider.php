@@ -7,7 +7,7 @@ use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-    protected $defer = true;
+    protected $defer = false;
 
     /**
      * Bootstrap any application services.
@@ -32,9 +32,9 @@ class AppServiceProvider extends ServiceProvider
 
     protected function registerValidatorResolver()
     {
-        $this->app->validator->resolver(function($translator, $data, $rules, $messages, $customAttributes)
+        $this->app['validator']->resolver(function($translator, $data, $rules, $messages, $customAttributes)
         {
-            return new Razorpay\Spine\Validation\LaravelValidatorEx(
+            return new \Razorpay\Spine\Validation\LaravelValidatorEx(
                 $translator, $data, $rules, $messages, $customAttributes
             );
         });
@@ -42,7 +42,6 @@ class AppServiceProvider extends ServiceProvider
 
     public function register()
     {
-
+        ;
     }
-
 }

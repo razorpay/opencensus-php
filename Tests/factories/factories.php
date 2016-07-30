@@ -9,7 +9,7 @@ $factory('App\Merchant\Entity', [
     'password'  =>  $password
 ]);
 
-$factory('Models\User\Entity', [
+$factory('App\User\Entity', [
     'id'  =>  $faker->word,
     'name'  =>  $faker->word,
     'email'  =>  $faker->email,
@@ -25,7 +25,7 @@ $factory('App\Admin\Entity', [
 ]);
 
 $factory('App\MerchantDetails\Entity', [
-    'merchant_id'   => 'App\Merchant\Entity',
+    'merchant_id'   => '10000000000000',
     'contact_name'  => $faker->word,
     'contact_email' => $faker->email,
     'transaction_report_email'=>$faker->email,

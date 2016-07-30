@@ -2,7 +2,6 @@
 
 namespace App\Trace;
 
-use Trace\TraceCode;
 use Models\Payment\Entity as Payment;
 
 class TraceFields
@@ -21,7 +20,6 @@ class TraceFields
             'transaction',
             'mode',
         ),
-
     );
 
     /**
@@ -31,10 +29,13 @@ class TraceFields
      */
     public static function getFields($traceCode)
     {
-        if (isset(self::$fields[$traceCode]) === false)
-            return [];
 
-        return self::$fields[$traceCode];
+        if (array_key_exists($traceCode, self::$fields))
+        {
+            return self::$fields[$traceCode];
+        }
+
+        return [];
     }
 
     public static function checkFields($code, $fields)

@@ -1,4 +1,5 @@
 <?php
+
 namespace Tests\Functional;
 
 use Uuid;

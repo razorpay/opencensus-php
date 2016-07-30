@@ -36,6 +36,7 @@ class Trace extends TraceWriter
             $values[$key] = $record[$key];
         }
 
+
         $context = $values;
 
         TraceFields::checkFields($code, array_keys($context));

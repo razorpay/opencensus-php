@@ -1,73 +1,28 @@
 <?php
+
 namespace Tests\Integration;
 
-use Config, App;
+use App;
+use Artisan;
+use Tests\TestCase as BaseTestCase;
 use Laracasts\TestDummy\Factory;
 use Eloquent;
-use DB;
+use Illuminate\Support\Facades\DB;
 use PHPUnit_Runner_BaseTestRunner;
+use PHPUnit_Extensions_Selenium2TestCase_ScreenshotListener as ScreenshotListener;
 
-class TestCase extends ZizacoIntegrationTestCase
+class TestCase extends BaseTestCase
 {
-    protected static $fixtures = array(
-        'merchant' => 'App\Merchant\Entity',
-        'merchant_details' => 'App\MerchantDetails\Entity',
-        'admin' => 'App\Models\Entity',
-        'user' => 'Models\User\Entity');
+    use BrowserHelper;
+
+    protected static $fixtures = [
+        'merchant'          => 'App\Merchant\Entity',
+        'merchant_details'  => 'App\MerchantDetails\Entity',
+        'admin'             => 'App\Admin\Entity',
+        'user'              => 'App\User\Entity',
+    ];
 
     // Overriding this
-    protected function startBrowser()
-    {
-        // Set the Application URL containing the port of the test server
-        Config::set(
-            'app.url',
-            Config::get('app.url').':4443'
-        );
-
-        App::setRequestForConsoleEnvironment(); // This is a must
-
-        if(! TestCase::$loadedBrowser)
-        {
-            $client  = new \Selenium\Client('localhost', 4444);
-            $client->setBrowserClass('Tests\Integration\BrowserWrapper');
-            $this->browser = $client->getBrowser('http://localhost:4443');
-            $this->browser->start();
-            $this->browser->windowMaximize();
-
-            TestCase::$loadedBrowser = $this->browser;
-        }
-        else
-        {
-            $this->browser = TestCase::$loadedBrowser;
-            $this->browser->open('/');
-        }
-
-    }
-
-	public static function setUpBeforeClass()
-    {
-        parent::setUpBeforeClass();
-
-        Factory::$factoriesPath = __DIR__.'/../factories/';
-
-        // Refresh the db before a test
-        exec('cd ' . __DIR__ . '/../.. & php artisan migrate --env=testing');
-    }
-
-    public function tearDown()
-    {
-        $status = $this->getStatus();
-
-        /** Take a screenshot in case of failure **/
-        if (($status == PHPUnit_Runner_BaseTestRunner::STATUS_ERROR) or
-            ($status == PHPUnit_Runner_BaseTestRunner::STATUS_FAILURE))
-        {
-            $this->browser->captureEntirePageScreenshot(storage_path().'/selenium.png', "");
-        }
-
-        parent::tearDown();
-    }
-
     protected function createEntity($entity, $attributes = array(), $times = 1)
     {
         Eloquent::unguard();
@@ -115,5 +70,19 @@ class TestCase extends ZizacoIntegrationTestCase
         }
 
         DB::statement("SET foreign_key_checks=1");
+    }
+
+    public function tearDown()
+    {
+        $this->listener->addError($this, new \Exception(), NULL);
+    }
+
+    public function setUp()
+    {
+        parent::setUp();
+
+        $this->listener = new ScreenshotListener(
+            storage_path() . '/screenshots'
+        );
     }
 }

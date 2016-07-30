@@ -22,7 +22,7 @@ class TraceServiceProvider extends BaseServiceProvider
     {
         $this->app->singleton('trace', function($app)
         {
-            return new Trace;
+            return new Trace($app);
         });
 
         $this->app->singleton('trace.instance', function($app)

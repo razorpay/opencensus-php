@@ -138,7 +138,7 @@ class Service extends Base\Service
 
         $this->subscribeToMailingList($user);
 
-        Auth::user()->login($user);
+        Auth::guard('user')->login($user);
     }
 
     public function subscribeToMailingList(User\Entity $user)
@@ -148,7 +148,7 @@ class Service extends Base\Service
             'email' =>  $user->email
         ];
 
-        Queue::push('Models\User\Service@postToMailchimp', $data);
+        Queue::push('App\User\Service@postToMailchimp', $data);
     }
 
     /**
@@ -162,12 +162,11 @@ class Service extends Base\Service
         $apiKey = $config['api_key'];
         $listId = $config['list_id'];
 
-        $mailchimp = new MailChimp($apiKey);
-
         // Mock can be false or null for falsy cases
         // Unset mock is considered true
         if (! $config['mock'])
         {
+            $mailchimp = new MailChimp($apiKey);
             // TODO: Break down the name in 2 parts and send
             // LNAME separately
             $mailchimp->post("lists/$listId/members", [
@@ -256,10 +255,10 @@ class Service extends Base\Service
         $zapierData = $this->getZapierData($merchant, $user, $referer, $phoneNumber);
 
         // We want to keep environment conditional checks as late as possible
-        if ($_ENV['SLACK_ENABLE'] === true)
+        if (getenv('SLACK_ENABLE') === true)
         {
-            Queue::push('Models\User\Service@postToSortingHat', $sortingHatData);
-            Queue::push('Models\User\Service@postToZapier', $zapierData);
+            Queue::push('App\User\Service@postToSortingHat', $sortingHatData);
+            Queue::push('App\User\Service@postToZapier', $zapierData);
         }
 
         // These are displayed on the frontend

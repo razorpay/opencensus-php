@@ -32,7 +32,7 @@ class Api extends Razorpay\Api\Api
         }
         else
         {
-            $className = __NAMESPACE__ . '\\' . ucwords($name);
+            $className =  'App\\RZP\\' . ucwords($name);
         }
 
         if (class_exists($className) === true)

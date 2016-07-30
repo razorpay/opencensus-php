@@ -50,6 +50,7 @@ return [
             'driver'    => 'mysql',
             'host'      => env('DB_MYSQL_HOST'),
             'database'  => env('DB_MYSQL_DATABASE'),
+            'port'      => env('DB_MYSQL_PORT', 3306),
             'username'  => env('DB_MYSQL_USERNAME'),
             'password'  => env('DB_MYSQL_PASSWORD'),
             'charset'   => 'utf8',

@@ -41,7 +41,7 @@ trait Logger
             return false;
         }
 
-        $adminId = Auth::admin()->get()->username;
+        $adminId = Auth::guard('admin')->user()->username;
 
         $text = $this->getMerchantDashboardSlackText($merchant);
         $text .= " $action by $adminId";
