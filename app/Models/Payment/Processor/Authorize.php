@@ -176,14 +176,14 @@ trait Authorize
 
         $terminalSelected = null;
 
-        $verbose = false;
-
         $options = $this->getOptionsForTerminals();
 
         // Terminal picked is the terminal used for payment processing.
         $terminalPicked = (new TerminalPicker)->selectTerminal($payment, $this->mode, $options);
 
-        $terminalSelected = (new Terminal\Selector)->select($payment, $this->mode, $verbose, $options);
+        $terminalSelector = new Terminal\Selector($payment, $this->mode);
+
+        $terminalSelected = $terminalSelector->select($options);
 
         $this->logTerminalPickedAndSelected($terminalSelected, $terminalPicked, $payment);
 
@@ -1120,12 +1120,14 @@ trait Authorize
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_NOT_ENALBED_FOR_MERCHANT);
         }
 
-        $type = ucfirst($card->getType());
+        $type = $card->getType();
 
         if ($type === Card\Type::UNKNOWN)
         {
             return;
         }
+
+        $type = ucfirst($type);
 
         $func = 'is' . $type . 'CardEnabled';
 

@@ -22,6 +22,21 @@ return [
         ],
     ],
 
+    'testResetFeatureForMerchant' => [
+        'request' => [
+            'content' => [
+                'features'    => '',
+            ],
+            'url' => '/merchants/10000000000000/features',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'id' => '10000000000000',
+            ],
+        ],
+    ],
+
     'testAddInvalidFeatureToMerchant' => [
         'request' => [
             'content' => [

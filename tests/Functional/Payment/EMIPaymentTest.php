@@ -127,12 +127,26 @@ class EmiPaymentTest extends TestCase
 
         // Extraction fails, unset password
         $this->assertEquals($zip->extractTo($pathinfo['dirname']), false);
-        unlink($pathinfo['dirname'].'/'.$pathinfo['filename'].'.xlsx');
+        $this->deleteExtractedFile($pathinfo);
 
         $zip->setPassword('incorrect_password');
         // Extraction fails, incorrect password
         $this->assertEquals($zip->extractTo($pathinfo['dirname']), false);
-        unlink($pathinfo['dirname'].'/'.$pathinfo['filename'].'.xlsx');
+        $this->deleteExtractedFile($pathinfo);
+    }
+
+    protected function deleteExtractedFile($pathinfo)
+    {
+        $excelFileName = $pathinfo['dirname'].'/'.$pathinfo['filename'].'.xlsx';
+        $txtFileName = $pathinfo['dirname'].'/'.$pathinfo['filename'].'.txt';
+        if (file_exists($excelFileName) === true)
+        {
+            unlink($excelFileName);
+        }
+        else if (file_exists($txtFileName) === true)
+        {
+            unlink($txtFileName);
+        }
     }
 
     protected function makeEmiPaymentOnCard($card, $emiDuration, $save = 0, $appToken = null, $customerId =  null)
