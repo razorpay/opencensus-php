@@ -115,10 +115,12 @@ class Merchant
         foreach ($entityTypes as $entityType)
         {
             $totalAmount = 0;
+
             $entityTxns = $this->txns->filter(function($txn)
                 use ($entityType, & $totalFee, & $totalServiceTax, & $totalAmount)
             {
-                if ($txn->getType() === $entityType) {
+                if ($txn->getType() === $entityType)
+                {
                     $totalServiceTax    += $txn->getServiceTax();
                     $totalFee           += ($txn->getFee() - $txn->getServiceTax());
                     $totalAmount        += $txn->getAmount();
@@ -127,31 +129,29 @@ class Merchant
                 }
             });
 
-            $setlDetailEntity = $this->getSettlementDetailsEntity($entityType, $entityTxns->count(), $totalAmount);
-
-            $this->setlDetails->push($setlDetailEntity);
+            $this->createSetlDetailsEntity($entityType, $entityTxns->count(), $totalAmount);
         }
 
-        $this->setlDetails->push($this->getSettlementDetailsEntity(SettlementDetails\Type::SERVICE_TAX, 0, $totalServiceTax));
+        $this->createSetlDetailsEntity(SettlementDetails\Type::SERVICE_TAX, null, $totalServiceTax);
 
-        $this->setlDetails->push($this->getSettlementDetailsEntity(SettlementDetails\Type::FEE, 0, $totalFee));
+        $this->createSetlDetailsEntity(SettlementDetails\Type::FEE, 0, $totalFee);
     }
 
-    protected function getSettlementDetailsEntity($type, $count, $amount)
+    protected function createSetlDetailsEntity($type, $count, $amount)
     {
         $input = array(
-            SettlementDetails\Entity::MERCHANT_ID   => $this->merchant->getId(),
-            SettlementDetails\Entity::SETTLEMENT_ID => $this->setl->getId(),
             SettlementDetails\Entity::TYPE          => $type,
             SettlementDetails\Entity::AMOUNT        => $amount,
             SettlementDetails\Entity::COUNT         => $count
         );
 
         $setlDetailEntity = new SettlementDetails\Entity;
-        $setlDetailEntity->fillAndGenerateId($input);
+        $setlDetailEntity->build($input);
 
         $setlDetailEntity->merchant()->associate($this->merchant);
         $setlDetailEntity->settlement()->associate($this->setl);
+
+        $this->setlDetails->push($setlDetailEntity);
 
         return $setlDetailEntity;
     }

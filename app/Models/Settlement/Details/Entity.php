@@ -26,6 +26,8 @@ class Entity extends Base\PublicEntity
 
     protected static $delimiter = '';
 
+    protected $generateIdOnCreate = true;
+
     protected $fillable = array(
         self::ID,
         self::TYPE,

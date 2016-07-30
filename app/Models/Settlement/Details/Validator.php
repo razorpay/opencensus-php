@@ -9,19 +9,35 @@ class Validator extends Base\Validator
 {
     protected static $createRules = array(
         Entity::TYPE            => 'required|max:20',
-        Entity::COUNT           => 'required|integer',
+        Entity::COUNT           => 'sometimes|integer',
         Entity::AMOUNT          => 'required|integer',
-        Entity::DESCRIPTION     => 'sometimes'
+        Entity::DESCRIPTION     => 'sometimes|max:255'
     );
 
     protected static $validateRules = array(
         Entity::TYPE,
+        Entity::COUNT,
     );
 
-    protected function ValidateType($input)
+    protected function validateType($input)
     {
         $type = $input[Entity::TYPE];
 
         Details\Type::validateType($type);
+    }
+
+    protected function validateCount($input)
+    {
+        $count = $input[Entity::COUNT];
+
+        if (($type === Type::FEE) or
+            ($type === Type::SERVICE_TAX))
+        {
+            assert ($count === null);
+        }
+        else
+        {
+            assert (is_int($count));
+        }
     }
 }
