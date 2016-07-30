@@ -36,6 +36,7 @@ class Validator extends Base\Validator
         Entity::NAME                        => 'sometimes|alpha_space_num|max:200',
         Entity::RISK_RATING                 => 'sometimes|min:0|max:5',
         Entity::FEE_BEARER                  => 'sometimes|in:customer,platform',
+        Entity::MAX_PAYMENT_AMOUNT          => 'sometimes|integer',
     );
 
     protected static $uniqueEmailRules = array(
