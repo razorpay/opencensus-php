@@ -28,16 +28,13 @@ class Merchant
 
     protected $setlDetails;
 
-    public function __construct($merchant, $channel)
+    public function __construct($merchant, $channel, $repo)
     {
         $this->merchant = $merchant;
 
         $this->channel = $channel;
 
-        $this->merchantRepo = new \RZP\Models\Merchant\Repository;
-        $this->txnRepo = new Transaction\Repository;
-        $this->setlRepo = new Settlement\Repository;
-        $this->setlDetailsRepo = new Settlement\Details\Repository;
+        $this->repo = $repo;
 
         // Get merchant bank account
         $this->attachMerchantBankAccount();
@@ -101,7 +98,7 @@ class Merchant
 
         $this->createSettlementDetailsEntities();
 
-        $this->saveSetlEntitiesToDb();
+        $this->repo->saveOrFailCollection($this->setlDetails);
     }
 
     protected function createSettlementDetailsEntities()
@@ -112,9 +109,8 @@ class Merchant
 
         $entityTypes = array(
             Transaction\Type::PAYMENT,
-                Transaction\Type::REFUND,
-                Transaction\Type::ADJUSTMENT
-                );
+            Transaction\Type::REFUND,
+            Transaction\Type::ADJUSTMENT);
 
         foreach ($entityTypes as $entityType)
         {
@@ -226,20 +222,12 @@ class Merchant
     protected function saveChangesToDb()
     {
         // Saves to db
-        $this->txnRepo->saveOrFail($this->setlTransaction);
-        $this->setlRepo->saveOrFail($this->setl);
+        $this->repo->saveOrFail($this->setlTransaction);
+        $this->repo->saveOrFail($this->setl);
 
-        $this->saveSetlEntitiesToDb();
+        $this->repo->saveOrFailCollection($this->setlDetails);
 
-        $this->txnRepo->updateSettlementId($this->txns, $this->setl->getId());
-    }
-
-    protected function saveSetlEntitiesToDb()
-    {
-        foreach ($this->setlDetails->all() as $setlDetailsEntity)
-        {
-            $this->setlDetailsRepo->saveOrFail($setlDetailsEntity);
-        }
+        $this->repo->transaction->updateSettlementId($this->txns, $this->setl->getId());
     }
 
     protected function updateBalances()
@@ -261,7 +249,7 @@ class Merchant
         }
         else
         {
-            $ba = (new BankAccount\Repository)->getBankAccount($this->merchant);
+            $ba = $this->repo->bank_account->getBankAccount($this->merchant);
 
             if ($ba === null)
             {
@@ -295,7 +283,7 @@ class Merchant
 
         $merchant->setRelation('bankAccount', $ba);
 
-        $ba->save();
+        $this->repo->bank_account->save($ba);
 
         return $ba;
     }

@@ -8,8 +8,8 @@ use RZP\Models\Merchant;
 use RZP\Models\Settlement;
 use RZP\Models\Settlement\Details\Entity;
 
-class CreateSettlementDetailsTable extends Migration {
-
+class CreateSettlementDetailsTable extends Migration
+{
 	/**
 	 * Run the migrations.
 	 *

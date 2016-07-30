@@ -69,6 +69,14 @@ class RepositoryManager extends \Illuminate\Support\Manager
         $repo->pushOrFail($entity);
     }
 
+    public function saveOrFailCollection($collection)
+    {
+        foreach ($this->collection->all() as $entity)
+        {
+            $this->repo->saveOrFail($entity);
+        }
+    }
+
     public function reload(& $entity)
     {
         $repo = $this->repo;
