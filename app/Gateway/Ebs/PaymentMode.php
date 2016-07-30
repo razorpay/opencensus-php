@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Ebs;
 
-class CardType
+class PaymentMode
 {
     const CREDIT                = '1';
     const DEBIT                 = '2';

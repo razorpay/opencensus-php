@@ -13,7 +13,7 @@ class Repository extends Base\Repository
     protected $appFetchParamRules = array(
         Entity::PAYMENT_ID      => 'sometimes|string',
         Entity::RECEIVED        => 'sometimes|in:0,1',
-        Entity::EBS_PAYMENT_ID  => 'sometimes|string',
+        Entity::REFERENCE_ID    => 'sometimes|string',
         Entity::REFUND_ID       => 'sometimes|string',
     );
 
@@ -28,7 +28,7 @@ class Repository extends Base\Repository
     public function findByEbsPaymentIdAndActionOrFail($paymentId, $action)
     {
         return $this->newQuery()
-            ->where(Entity::EBS_PAYMENT_ID, '=', $paymentId)
+            ->where(Entity::REFERENCE_ID, '=', $paymentId)
             ->where(Entity::ACTION, '=', $action)
             ->firstOrFail();
     }

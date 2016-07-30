@@ -183,4 +183,15 @@ class PublicErrorDescription
     const BAD_REQUEST_RECONCILIATION                                            = 'Error occurred during reconciliation';
 
     const BAD_REQUEST_GATEWAY_CANNOT_TOPUP                                      = 'Payment processing failed because topup cannot be done';
+
+    const GATEWAY_ERROR_PAYMENT_INVALID_REFERENCE_NO                            = 'Payment have invalid reference number';
+    const GATEWAY_ERROR_PAYMENT_CANNOT_BE_RETRIEVED                             = 'This payment cannot be retrieved';
+    const BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED                               = 'This payment cannot be cancelled';
+    const BAD_REQUEST_PAYMENT_ALREADY_CANCELLED                                 = 'Payment already cancelled';
+    const BAD_REQUEST_PAYMENT_ALREADY_REFUND_INITIATED                          = 'Refund already initiated';
+    const BAD_REQUEST_PAYMENT_REFUND_LESS_THAN_TWENTY_ONE                       = 'Less than Rs.21 could not be refunded';
+    const BAD_REQUEST_PAYMENT_REFUND_AFTER_EIGHTY_DAYS                          = 'There are no refunds available after 80 days';
+    const BAD_REQUEST_PAYMENT_AMOUNT_CANNOT_BE_CANCELLED                        = 'This amount can not be cancelled';
+    const BAD_REQUEST_PAYMENT_PROBLEM_IN_UPDATING                               = 'Problem in updating payment';
+
 }

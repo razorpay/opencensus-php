@@ -37,17 +37,5 @@ class RequestConstants
     const API_AMOUNT            = 'Amount';
     const API_PAYMENT_ID        = 'PaymentID';
 
-    const CREDIT                = '1';
-    const DEBIT                 = '2';
-    const NETBANKING            = '3';
-    const CREDIT_EMI            = '4';
-    const DEBIT_EMI             = '5';
-
-    const VISA                  = '1';
-    const MC                    = '2';
-    const MAES                  = '3';
-    const DICL                  = '4';
-    const AMEX                  = '5';
-    const JCB                   = '6';
 
 }

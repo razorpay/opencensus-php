@@ -117,7 +117,6 @@ return [
 
     'testPaymentRefund'             => [
         'received'                  => true,
-        'ref_amount'                => '500',
         'action'                    => 'refund',
         'entity'                    => 'ebs',
     ],

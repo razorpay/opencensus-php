@@ -40,17 +40,15 @@ class CreateEbsGateway extends Migration
 
             $table->boolean(Ebs::RECEIVED)->default(0);
 
+            $table->integer(Ebs::AMOUNT);
+
             $table->string(Ebs::ERROR_CODE)->nullable();
 
             $table->string(Ebs::ERROR_DESCRIPTION)->nullable();
 
-            $table->string(Ebs::REF_AMOUNT)->nullable();
-
             $table->string(Ebs::TRANSACTION_ID)->nullable();
 
-            $table->string(Ebs::EBS_PAYMENT_ID)->nullable();
-
-            $table->string(Ebs::REFUND_ID, UniqueIdEntity::ID_LENGTH)->nullable();
+            $table->string(Ebs::REFERENCE_ID)->nullable();
 
             // Adds created_at and updated_at columns to the table
             $table->integer(Ebs::CREATED_AT);

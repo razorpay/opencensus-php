@@ -9,4 +9,5 @@ class Url
     const API_DOMAIN            = 'https://api.secure.ebs.in/api/1_0';
 
     const AUTHORIZE             = '/payment/request';
+    const REFUND                = '';
 }
