@@ -15,11 +15,6 @@ class Repository extends Base\Repository
 
     const WITH_TRASHED = 'with_trashed';
 
-    protected $entityFetchParamRules = array(
-        Entity::ENTITY_ID       => 'sometimes|alpha_num',
-        Entity::TYPE            => 'sometimes',
-    );
-
     protected $appFetchParamRules = array(
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
         self::WITH_TRASHED      => 'sometimes|in:0,1',
@@ -56,6 +51,17 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where(BankAccount\Entity::TYPE, '=', BankAccount\Type::MERCHANT)
+                    ->orderBy(BankAccount\Entity::CREATED_AT)
+                    ->get();
+    }
+
+    public function fetchByEntityIdAndType($entityId, $type, $merchantId)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(BankAccount\Entity::TYPE, '=', $type)
+                    ->where(BankAccount\Entity::ENTITY_ID, '=', $entityId)
+                    ->where(BankAccount\Entity::MERCHANT_ID, '=', $merchantId)
                     ->orderBy(BankAccount\Entity::CREATED_AT)
                     ->get();
     }
