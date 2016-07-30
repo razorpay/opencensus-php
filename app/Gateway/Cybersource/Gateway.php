@@ -373,7 +373,9 @@ class Gateway extends Base\Gateway
         if ($response['reasonCode'] !== Result::SUCCESS)
         {
             $attributes = array(
-                Entity::REASON_CODE => $response['reasonCode']
+                Entity::REASON_CODE     => $response['reasonCode'],
+                Entity::PARES_STATUS    => (isset($payAuthRep['paresStatus']) ? $payAuthRep['paresStatus'] : null),
+                Entity::XID             => (isset($payAuthRep['xid']) ? $payAuthRep['xid'] : null)
             );
 
             $gateway->fill($attributes);

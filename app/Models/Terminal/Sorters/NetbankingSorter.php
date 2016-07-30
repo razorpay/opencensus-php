@@ -34,7 +34,7 @@ class NetbankingSorter extends Terminal\Sorter
 
         $this->arrangePriorityByMerchantAndBank($gatewaysPriority, $input['merchant']->getId(), $bank);
 
-        $testTerminals = [];
+        $sortedTerminals = [];
 
         foreach ($gatewaysPriority as $gatewayType)
         {
@@ -47,12 +47,12 @@ class NetbankingSorter extends Terminal\Sorter
             {
                 if ($terminal->getGateway() === $gateway)
                 {
-                    $testTerminals[] = $terminal;
+                    $sortedTerminals[] = $terminal;
                 }
             }
         }
 
-        return $testTerminals;
+        return $sortedTerminals;
     }
 
     /**
