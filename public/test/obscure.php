@@ -67,6 +67,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
                 <option value="paytm">Paytm</option>
                 <option value="mobikwik">Mobikwik</option>
                 <option value="payzapp">Payzapp</option>
+                <option value="payumoney">Payumoney</option>
             </select>
         </td>
     </tr>
@@ -80,7 +81,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
                 <option value="12">12 Months @14%</option>
             </select>
         </td>
-    </tr>    
+    </tr>
     <tr>
         <td colspan='40'>CardHolder/Member Name:</td>
         <td><input type="text" name="card[name]" size="25" value="shashank"></td>
@@ -102,7 +103,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
         <td><input type="text" name="card[expiry_year]" value="2020"></td>
         <tr>
             <td colspan='40'>Amount:</td>
-            <td><input type="text" name="amount" size="25" value="500"></td>
+            <td><input type="text" name="amount" size="25" value="100"></td>
     </tr>
     <tr>
         <td colspan='40'>Email:</td>
@@ -110,11 +111,30 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
         <td><input type="text" name="contact" size="25" value="1234567890"></td>
     </tr>
     <tr>
+        <td colspan='40'>Razorpay Order Id:</td>
+        <td><input type="text" name="order_id" size="25" value=""></td>
+    </tr>
+    <tr>
         <td colspan='40'>Order Id:</td>
         <td><input type="text" name="notes[order_id]" size="25" value="3453"></td>
     </tr>
     <tr>
-        <td colspan="100" align="center"><input type="submit" value="  Submit  "></td>
+        <td colspan='40'>Customer Id:</td>
+        <td><input type="text" name="customer_id" size="25" value=""></td>
+    </tr>
+    <tr>
+        <td colspan='40'>App Token:</td>
+        <td><input type="text" name="app_token" size="25" value=""></td>
+    </tr>
+    <tr>
+        <td colspan='40'>Token:</td>
+        <td><input type="text" name="token" size="25" value=""></td>
+        <td><input type="checkbox" name="save" value="1">save</td>
+    </tr>
+    <tr>
+        <td colspan="100" align="center">
+            <input type="submit" value="  Submit  " >
+        </td>
     </tr>
     <tr>
         <th colspan="50" bgcolor="brown" height="15"></th>

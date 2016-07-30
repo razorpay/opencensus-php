@@ -1,8 +1,8 @@
 <?php
 
-namespace Models\Settlement\Details;
+namespace RZP\Models\Settlement\Details;
 
-use Models\Base;
+use RZP\Models\Base;
 
 class Repository extends Base\Repository
 {

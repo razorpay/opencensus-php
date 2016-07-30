@@ -1,18 +1,28 @@
 <?php
 
-namespace Models\Settlement\Details;
+namespace RZP\Models\Settlement\Details;
 
-use Models\Base;
+use RZP\Models\Base;
+use RZP\Models\Settlement\Details;
 
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        Entity::ID                      =>      'required|max:14',
-        Entity::MERCHANT_ID             =>      'required|max:14',
-        Entity::SETTLEMENT_ID           =>      'required|max:14'            
-        Entity::TYPE                    =>      'required|in:payment,refund,adjustment,fee,service_tax'    
-        Entity::COUNT                   =>      'required|integer'    
-        Entity::AMOUNT                  =>      'required|integer'    
-        Entity::DESCRIPTION             =>      'sometimes'        
+        Entity::ID              => 'required|max:14',
+        Entity::TYPE            => 'required|max:20',
+        Entity::COUNT           => 'required|integer',
+        Entity::AMOUNT          => 'required|integer',
+        Entity::DESCRIPTION     => 'sometimes'
     );
+
+    protected static $validateRules = array(
+        Entity::TYPE,
+    );
+
+    protected function ValidateType($input)
+    {
+        $type = $input[Entity::TYPE];
+
+        Details\Type::validateType($type);
+    }
 }

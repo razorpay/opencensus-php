@@ -1,0 +1,22 @@
+<?php
+
+namespace RZP\Tests\Unit;
+
+use Config;
+
+class ConfigTest extends \RZP\Tests\TestCase
+{
+    protected $config;
+
+    public function setUp()
+    {
+        parent::setUp();
+
+        $this->config = Config::getFacadeRoot();
+    }
+
+    public function testHdfcConfigTimeout()
+    {
+        $this->assertEquals(30, \RZP\Gateway\Hdfc\Gateway::TIMEOUT);
+    }
+}

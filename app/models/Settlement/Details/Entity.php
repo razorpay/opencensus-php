@@ -1,9 +1,9 @@
 <?php
 
-namespace Models\Settlement\Details;
+namespace RZP\Models\Settlement\Details;
 
-use Models\Base;
-use EE\Exception;
+use RZP\Models\Base;
+use RZP\Exception;
 
 class Entity extends Base\PublicEntity
 {
@@ -17,7 +17,7 @@ class Entity extends Base\PublicEntity
     const CREATED_AT            =      'created_at';
     const UPDATED_AT            =      'updated_at';
 
-    protected $table = \Constants\Table::SETTLEMENT_DETAIL;
+    protected $table = RZP\Constants\Table::SETTLEMENT_DETAIL;
 
     protected $entity = 'settlement_detail';
 
@@ -26,6 +26,14 @@ class Entity extends Base\PublicEntity
     protected static $delimiter = '';
 
     protected $fillable = array(
+        self::ID,
+        self::TYPE,
+        self::COUNT,
+        self::AMOUNT,
+        self::DESCRIPTION
+    );
+
+    protected $visible = array(
         self::ID,
         self::MERCHANT_ID,
         self::SETTLEMENT_ID,
@@ -36,49 +44,44 @@ class Entity extends Base\PublicEntity
     );
 
     protected $public = array(
-        self::ID,
-        self::MERCHANT_ID,
-        self::SETTLEMENT_ID,
         self::TYPE,
         self::COUNT,
-        self::AMOUNT,
-        self::DESCRIPTION,
-        self::CREATED_AT
+        self::AMOUNT
     );
 
     public function merchant()
     {
-        return $this->belongsTo('Models\Merchant\Entity');
+        return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
     public function settlement()
     {
-        return $this->belongsTo('Models\Settlement\Entity');
+        return $this->belongsTo('RZP\Models\Settlement\Entity');
     }
 
     public function getCount()
     {
-        return (int) $this->getAttribute(self::COUNT);
+        return $this->getAttribute(self::COUNT);
     }
 
     public function getAmount()
     {
-        return (int) $this->getAttribute(self::AMOUNT);
+        return $this->getAttribute(self::AMOUNT);
     }
 
     //get Attribute
-    public function getCountAttribute()
+    protected function getCountAttribute()
     {
         return (int) $this->attributes[self::COUNT];
     }
 
-    public function getAmountAttribute()
+    protected function getAmountAttribute()
     {
         return (int) $this->attributes[self::AMOUNT];
     }
 
     //setter
-    public function setCount($count)
+    protected function setCount($count)
     {
         $this->setAttribute(self::COUNT, $count);
     }

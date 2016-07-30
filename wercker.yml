@@ -15,7 +15,13 @@ build:
     steps:
       - script:
           name: copy env file
-          code: cp .env.wercker.php .env.testing.php
+          code: cp ./environment/.env.wercker ./environment/.env.testing
+      - script:
+          name: copy environment.php
+          code: cp ./environment/env.sample.php ./environment/env.php
+      - script:
+          name: set environment/env.php 'env' -> 'testing'
+          code: sed -i 's/dev/testing/g' ./environment/env.php
       - script:
           name: set composer to use github oauth token
           code: composer config -g github-oauth.github.com $github_token
@@ -33,14 +39,16 @@ build:
           name: install dependencies
           code: composer install --no-interaction
       - script:
+          name: Export wercker DB env var to API environment variables
+          code: >
+              export DB_TEST_HOST="$MYSQL_PORT_3306_TCP_ADDR"
+              export DB_TEST_PORT="$MYSQL_PORT_3306_TCP_PORT"
+      - script:
           name: Run unit tests
           code: php -d memory_limit=1024M vendor/phpunit/phpunit/phpunit --debug --verbose
       - script:
           name: List directory
           code: ls -lah
-      - script:
-          name: Copy entire data to wercker-output-directory
-          code: ls -lah && cp -vr . $WERCKER_OUTPUT_DIR/
     after-steps:
       - slack-notifier:
           url: $SLACK_URL
@@ -50,9 +58,6 @@ build:
 
 deploy:
     steps:
-      - script:
-          name: Change to production mode
-          code: sed -i "/'debug'/c\ 'debug' => false," app/config/app.php
       - script:
           name: Run composer
           code: composer config -g github-oauth.github.com $github_token

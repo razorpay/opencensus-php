@@ -1,35 +1,27 @@
 <?php
 
-namespace Models\Settlement\Details;
+namespace RZP\Models\Settlement\Details;
 
-use Models\Base;
-use Models\Settlement;
+use RZP\Models\Base;
+use RZP\Models\Settlement;
 use Trace\TraceCode;
 
 class Core extends Base\Core
 {
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->repo = new Repository;
-        $this->setlRepo = new Settlement\Repository;
-    }
-
     public function postSettlementDetailsForOldTxns($input)
     {
         $processed = 0;
         $skipped = 0;
         $failed = 0;
 
-        $setls = $this->setlRepo->fetch($input);
+        $setls = $this->repo->settlement->fetch($input);
 
-        foreach ($setls as $setl) 
+        foreach ($setls as $setl)
         {
             try
             {
                 $merchant = $setl->merchant;
-                $setlDetails = $this->repo->getSettlementDetails($setl->getId(), $merchant);
+                $setlDetails = $this->repo->settlement_details->getSettlementDetails($setl->getId(), $merchant);
 
                 if($setlDetails->count() === 0)
                 {

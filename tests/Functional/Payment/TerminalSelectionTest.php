@@ -1,0 +1,135 @@
+<?php
+
+namespace RZP\Tests\Functional\Payment;
+
+use RZP\Exception\RuntimeException;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\TestCase;
+
+class TerminalSelectionTest extends TestCase
+{
+    use PaymentTrait;
+
+    public function testChooseGatewayWithSharedTerminals()
+    {
+        $this->fixtures->create('terminal:multiple_netbanking_terminals');
+
+        // Create all shared terminals
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        // ICIC should be served with billdesk under these conditions
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('billdesk', $payment['gateway']);
+        $this->assertEquals('1000BdeskTrmnl', $payment['terminal_id']);
+    }
+
+    public function testChooseTerminalWithCategory()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:multiple_category_terminals');
+
+        $this->fixtures->merchant->setCategory(123);
+
+        // Make Payment
+        $payment = $this->getDefaultPaymentArray();
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        // Payment should have been made through shared terminl of correct category
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('SharedTrmnl123', $payment['terminal_id']);
+    }
+
+    public function testHDFCCardTerminalNotUsedForEmi()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_hdfc_emi_terminal');
+        $emiPlan = $this->fixtures->create('emi_plan:default_emi_plans');
+
+        $this->fixtures->merchant->enableEmi();
+        $this->mockTokenex();
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['amount'] = 500000;
+        $payment['method'] = 'emi';
+        $payment['emi_duration'] = 9;
+        $payment['card']['number'] = '41476700000006';
+
+        $content = $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        // Payment should have been made through shared emi terminl
+        $this->assertEquals('ShrdHdfcEmiTrm', $payment['terminal_id']);
+    }
+
+    public function testHDFCEmiTerminalNotUsedForCard()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_hdfc_emi_terminal');
+        $emiPlan = $this->fixtures->create('emi_plan:default_emi_plans');
+
+        $this->fixtures->merchant->enableEmi();
+        $this->mockTokenex();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $content = $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        // Payment should have been made through shared terminl of correct category
+        // $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('1000HdfcShared', $payment['terminal_id']);
+    }
+
+    public function testKotakEmisFlowThroughCardTerminal()
+    {
+        // Disable particular hdfc terminal, enable shared hdfc and shared hdfc emi terminal
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_amex_terminal');
+        $this->fixtures->create('terminal:all_shared_terminals');
+
+        // $this->fixtures->create('terminal:shared_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_hdfc_emi_terminal');
+
+        // Enable default emi plans and mocktokenex
+        $this->emiPlan = $this->fixtures->create('emi_plan:default_emi_plans');
+        $this->fixtures->merchant->enableEmi();
+
+        $this->mockTokenex();
+
+        $emiPlan = $this->emiPlan;
+
+
+        $this->payment = $this->getDefaultPaymentArray();
+        $this->ba->publicAuth();
+        $this->payment['amount'] = 500000;
+        $this->payment['method'] = 'emi';
+        $this->payment['emi_duration'] = 9;
+        $this->payment['card']['number'] = '42809500000009';
+
+        $content = $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('1000HdfcShared', $payment['terminal_id']);
+        $this->fixtures->merchant->disableEmi();
+    }
+
+    public function testTerminalChoiceOnRiskyMerchant()
+    {
+        $this->fixtures->merchant->enableRisky();
+        $this->fixtures->create('terminal:all_shared_terminals');
+
+        $payment = $this->getDefaultPaymentArray();
+        $content = $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('1000AxisMigsTl', $payment['terminal_id']);
+
+        $this->fixtures->merchant->disableRisky();
+    }
+
+}

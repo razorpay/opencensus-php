@@ -3,10 +3,10 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-use Constants\Table;
-use Models\Merchant;
-use Models\Settlement;
-use Models\Settlement\Details\Entity;
+use RZP\Constants\Table;
+use RZP\Models\Merchant;
+use RZP\Models\Settlement;
+use RZP\Models\Settlement\Details\Entity;
 
 class CreateSettlementDetailsTable extends Migration {
 
@@ -33,13 +33,10 @@ class CreateSettlementDetailsTable extends Migration {
             $table->integer(Entity::COUNT);
 
             $table->integer(Entity::AMOUNT);
-            
+
             $table->integer(Entity::CREATED_AT);
 
             $table->integer(Entity::UPDATED_AT);
-
-            $table->index(Entity::MERCHANT_ID);
-            $table->index(Entity::SETTLEMENT_ID);
 
             $table->foreign(Entity::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)

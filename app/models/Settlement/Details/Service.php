@@ -1,20 +1,13 @@
 <?php
 
-namespace Models\Settlement\Details;
+namespace RZP\Models\Settlement\Details;
 
-use Models\Base;
-use Models\Settlement;
+use RZP\Models\Base;
+use RZP\Models\Settlement;
 
 class Service extends Base\Service
 {
     protected $repo;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->repo = new Repository;
-    }
 
     public function getSettlementDetails($id)
     {
@@ -22,7 +15,7 @@ class Service extends Base\Service
 
         $merchant = $this->merchant;
 
-        $setlDetails = $this->repo->getSettlementDetails($id, $merchant);
+        $setlDetails = $this->repo->settlement_details->getSettlementDetails($id, $merchant);
 
         return $setlDetails->toArrayPublic();
     }
@@ -30,7 +23,7 @@ class Service extends Base\Service
     public function postSettlementDetailsForOldTxns($input)
     {
         $data = (new Core)->postSettlementDetailsForOldTxns($input);
-        
+
         return $data;
     }
 }
