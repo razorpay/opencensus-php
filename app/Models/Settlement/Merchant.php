@@ -10,7 +10,7 @@ use RZP\Models\Adjustment;
 use RZP\Models\Merchant\BankAccount;
 use RZP\Models\Transaction;
 use RZP\Models\Settlement;
-use RZP\Models\Settlement\Details;
+use RZP\Models\Settlement\Details as SettlementDetails;
 
 class Merchant
 {
@@ -136,21 +136,22 @@ class Merchant
             $this->setlDetails->push($setlDetailEntity);
         }
 
-        $this->setlDetails->push($this->getSettlementDetailsEntity('service_tax', 0, $totalServiceTax));
-        $this->setlDetails->push($this->getSettlementDetailsEntity('fee', 0, $totalFee));
+        $this->setlDetails->push($this->getSettlementDetailsEntity(SettlementDetails\Type::SERVICE_TAX, 0, $totalServiceTax));
+
+        $this->setlDetails->push($this->getSettlementDetailsEntity(SettlementDetails\Type::FEE, 0, $totalFee));
     }
 
     protected function getSettlementDetailsEntity($type, $count, $amount)
     {
         $input = array(
-            Settlement\Details\Entity::MERCHANT_ID       => $this->merchant->getId(),
-            Settlement\Details\Entity::SETTLEMENT_ID     => $this->setl->getId(),
-            Settlement\Details\Entity::TYPE              => $type,
-            Settlement\Details\Entity::AMOUNT            => $amount,
-            Settlement\Details\Entity::COUNT             => $count
+            SettlementDetails\Entity::MERCHANT_ID   => $this->merchant->getId(),
+            SettlementDetails\Entity::SETTLEMENT_ID => $this->setl->getId(),
+            SettlementDetails\Entity::TYPE          => $type,
+            SettlementDetails\Entity::AMOUNT        => $amount,
+            SettlementDetails\Entity::COUNT         => $count
         );
 
-        $setlDetailEntity = new Settlement\Details\Entity;
+        $setlDetailEntity = new SettlementDetails\Entity;
         $setlDetailEntity->fillAndGenerateId($input);
 
         $setlDetailEntity->merchant()->associate($this->merchant);

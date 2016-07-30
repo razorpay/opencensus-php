@@ -4,6 +4,7 @@ namespace RZP\Models\Settlement\Details;
 
 use RZP\Models\Base;
 use RZP\Exception;
+use RZP\Constants;
 
 class Entity extends Base\PublicEntity
 {
@@ -17,7 +18,7 @@ class Entity extends Base\PublicEntity
     const CREATED_AT            =      'created_at';
     const UPDATED_AT            =      'updated_at';
 
-    protected $table = RZP\Constants\Table::SETTLEMENT_DETAIL;
+    protected $table = Constants\Table::SETTLEMENT_DETAIL;
 
     protected $entity = 'settlement_detail';
 
