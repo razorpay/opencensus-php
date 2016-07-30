@@ -23,7 +23,7 @@ class RequestConstants
     const NAME_ON_CARD          = 'name_on_card';
     const CARD_NUMBER           = 'card_number';
     const CARD_EXPIRY           = 'card_expiry';
-    const CARD_BRAND            = 'card_branch';
+    const CARD_NETWORK          = 'card_branch';
     const CARD_CVV              = 'card_cvv';
     const BANK_CODE             = 'bank_code';
     const PAYMENT_OPTION        = 'payment_option';

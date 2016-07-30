@@ -30,4 +30,5 @@ class ResponseConstants
     const CURRENCY          = 'currency';
     const REFUND_PAYMENT_ID = 'payment_id';
     const SECURE_HASH       = 'SecureHash';
+    const RESPONSE          = 'response';
 }

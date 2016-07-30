@@ -269,6 +269,7 @@ class Terminal extends Base
             'merchant_id'           => '1MercShareTerm',
             'gateway'               => 'ebs',
             'gateway_merchant_id'   => 'abcd',
+            'gateway_secure_secret' => 'secret',
             'card'                  => 0,
             'netbanking'            => 1,
             'shared'                => 1,

@@ -5,6 +5,7 @@ namespace RZP\Gateway\Ebs;
 class Status
 {
     const SUCCESS                   = '0';
+    const API_SUCCESS               = 'SUCCESS';
 
     const CREATED                   = 'created';
     const REFUNDED                  = 'refunded';

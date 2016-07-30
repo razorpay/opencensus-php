@@ -42,17 +42,6 @@ class Gateway extends Base\Gateway
         Resp::IS_FLAGGED            => Entity::IS_FLAGGED,
         Resp::TRANSACTION_ID        => Entity::TRANSACTION_ID,
         Resp::REQUEST_ID            => Entity::REQUEST_ID,
-/*
-        Resp::MERCHANT_REF_NO       => Entity::PAYMENT_ID,
-        Resp::PAYMENT_ID            => Entity::PAYMENT_ID,
-        Resp::REFERENCE             => Entity::PAYMENT_ID,
-        Resp::ERROR_CODE            => Entity::ERROR_CODE,
-        Resp::ERROR                 => Entity::ERROR_DESCRIPTION,
-        Resp::REQUEST_ID            => Entity::REQUEST_ID,
-
- *
- *
- * */
     );
 
     public function authorize(array $input)
@@ -77,7 +66,7 @@ class Gateway extends Base\Gateway
         $payment = $this->getRepo()->findByPaymentIdAndAction(
             $input['payment']['id'], Action::AUTHORIZE);
 
-        assert($payment[Entity::RECEIVED], true);
+        assert($payment[Entity::STATUS] === Status::AUTHORIZED);
     }
 
 
@@ -140,7 +129,8 @@ class Gateway extends Base\Gateway
 
         $refund = $this->createGatewayPaymentEntity($attributes, $input);
 
-        if ($parsedResponse[Resp::ERROR] !== false)
+        if (!(isset($parsedResponse[Resp::RESPONSE]) and
+            ($parsedResponse[Resp::RESPONSE] === Status::API_SUCCESS)))
         {
             $responseCode = $parsedResponse[Resp::ERROR_CODE];
 
@@ -190,8 +180,6 @@ class Gateway extends Base\Gateway
 
         if ($input['gateway'][Resp::RESPONSE_CODE] !== Status::SUCCESS)
         {
-            $content[Entity::RECEIVED] = false;
-
             $content[Entity::STATUS] = Status::AUTHORIZED_FAILED;
         }
 
@@ -204,7 +192,7 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(
             $traceCode,
-            [$request]);
+            $request);
     }
 
     protected function getPaymentRefundRequestContent($payment, $input)
@@ -320,7 +308,7 @@ class Gateway extends Base\Gateway
         $content[Req::NAME_ON_CARD]     = $input['card']['name'];
         $content[Req::CARD_NUMBER]      = $input['card']['number'];
         $content[Req::CARD_EXPIRY]      = $this->getExpiry($input);
-        $content[Req::CARD_BRAND]       = $this->getCardBrand($input);
+        $content[Req::CARD_NETWORK]     = $this->getCardNetwork($input);
         $content[Req::CARD_CVV]         = $input['card']['cvv'];
     }
 
@@ -459,15 +447,17 @@ class Gateway extends Base\Gateway
         $attributes[Entity::AMOUNT] = $refundAmount;
 
         $attributes[Entity::RECEIVED] = true;
-        $attributes[Entity::STATUS] = Status::REFUNDED;
         $attributes[Entity::PAYMENT_ID] = $input['payment']['id'];
-        $attributes[Entity::MODE] = strtoupper($this->mode);
 
-        if ($response[Resp::ERROR_CODE] !== 0)
+        if (isset($response[Resp::ERROR_CODE]))
         {
             $attributes[Entity::ERROR_CODE] = $response[Resp::ERROR_CODE];
             $attributes[Entity::ERROR_DESCRIPTION] = $response[Resp::ERROR];
             $attributes[Entity::STATUS] = Status::REFUND_FAILED;
+        }
+        else
+        {
+            $attributes[Entity::STATUS] = Status::REFUNDED;
         }
 
         return $attributes;
@@ -477,23 +467,6 @@ class Gateway extends Base\Gateway
     {
         $arrayResponse = (array) simplexml_load_string($response);
 
-        $fields = $arrayResponse['@attributes'];
-
-        if (isset($fields['response']) and ($fields['response'] === 'SUCCESS'))
-        {
-            $fields[Resp::ERROR] = false;
-            $fields[Resp::ERROR_CODE] = 0;
-
-            return $fields;
-        }
-        else
-        {
-            $err = array(
-                Resp::ERROR_CODE    => $fields[RESP::ERROR_CODE],
-                Resp::ERROR         => $fields[RESP::ERROR],
-            );
-
-            return $err;
-        }
+        return $arrayResponse['@attributes'];
     }
 }

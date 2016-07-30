@@ -101,10 +101,6 @@ class EbsGatewayTest extends TestCase
             $this->testData['testTransactionAfterRefundingAuthorizedPayment'], $txn);
     }
 
-    /*
-     * throw Run-time exception if payment method is Card
-     * Ebs is enabled for netbanking only
-     */
     public function testErrorOnCard()
     {
         $payment = $this->getDefaultNetbankingPaymentArray();
@@ -130,16 +126,13 @@ class EbsGatewayTest extends TestCase
 
         $this->getErrorInRefund();
 
-        try
-        {
+        $data = $this->testData['testPaymentInvalidRefund'];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
             $this->refundPayment($payment['id']);
-        }
-        catch (Exception\GatewayErrorException $e)
-        {
-        }
+        });
 
         $refund = $this->getLastEntity('ebs', true);
-
         $this->assertEquals($refund['error_code'], "29");
         $this->assertEquals($refund['error_description'], "Insufficient balance");
     }

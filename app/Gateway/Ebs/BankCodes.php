@@ -3,7 +3,6 @@
 namespace RZP\Gateway\Ebs;
 
 use RZP\Models\Bank\IFSC;
-use RZP\Models\Payment\Processor\Netbanking;
 
 class BankCodes
 {

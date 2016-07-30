@@ -10,7 +10,6 @@ use RZP\Models\Base\UniqueIdEntity;
 
 class CreateEbsGateway extends Migration
 {
-
     /**
      * Run the migrations.
      *
@@ -35,8 +34,6 @@ class CreateEbsGateway extends Migration
             $table->string(Ebs::REQUEST_ID)->nullable();
 
             $table->string(Ebs::REFERENCE_ID)->nullable();
-
-            $table->string(Ebs::MODE)->nullable();
 
             $table->string(Ebs::PAYMENT_MODE)->nullable();
 
@@ -63,6 +60,12 @@ class CreateEbsGateway extends Migration
                   ->on_delete('restrict');
 
             $table->index(Ebs::RECEIVED);
+
+            $table->index(Ebs::PAYMENT_ID);
+
+            $table->index(Ebs::REFERENCE_ID);
+
+            $table->index(Ebs::IS_FLAGGED);
         });
     }
 
