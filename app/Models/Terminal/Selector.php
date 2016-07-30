@@ -23,6 +23,7 @@ class Selector
     protected static $filters = [
         Filters\TransactionFilter::class,
         Filters\MerchantFilter::class,
+        Filters\MiscFilter::class,
     ];
 
     /**
@@ -60,7 +61,7 @@ class Selector
     {
         // Fetch terminals for both the current merchant and the shared Merchant
         $merchantTerminals = $this->repo->getTerminalsForMerchantAndSharedMerchant(
-                                            $this->merchant->getId());
+            $this->merchant->getId());
 
         // Fetch Shared Terminals
         $sharedTerminals = $this->repo->getAllSharedTerminals();
@@ -83,6 +84,11 @@ class Selector
         // filter classes.
         //
         $filteredTerminals = $terminals->all();
+
+        if(isset($options['exclude']) and is_array($options['exclude']))
+        {
+            $this->input['exclude'] = $options['exclude'];
+        }
 
         foreach (self::$filters as $filter)
         {
@@ -115,6 +121,8 @@ class Selector
                 // The current list of terminals which were retrieved earlier does
                 // not contain the sharp terminal and hence, making a call to DB.
                 $terminal = $this->repo->find(Shared::SHARP_RAZORPAY_TERMINAL);
+
+                $sortedTerminals = array($terminal);
             }
             else
             {
@@ -131,14 +139,23 @@ class Selector
         if (isset($options['chance']))
         {
             $terminal = (new Binning)->select($terminal, $options['chance'], $this->input, $terminals);
+
+            $sortedTerminals = array($terminal);
         }
 
         $this->setTerminalForPayment($this->payment, $terminal);
 
+        // hack to return multiple terminals if needed.
+        //TODO: implement the multiple terminal selection in Binning as well.
+        if(isset($options['multiple']) and $options['multiple'] === true)
+        {
+            return $sortedTerminals;
+        }
+
         return $terminal;
     }
 
-    protected function setTerminalForPayment($payment, $terminal = null)
+    public function setTerminalForPayment($payment, $terminal = null)
     {
         if ($terminal === null)
         {

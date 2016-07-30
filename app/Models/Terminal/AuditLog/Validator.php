@@ -15,7 +15,7 @@ class Validator extends Base\Validator
         Entity::TERMINAL_ID     => 'required|alpha_num|size:14',
         Entity::STATUS          => 'sometimes|boolean',
         Entity::RESPONSE_TIME   => 'required|numeric',
-        Entity::STATUS_CODE     => 'required|integer',
+        Entity::STATUS_CODE     => 'sometimes|integer',
         Entity::STATUS_MSG      => 'sometimes|string',
         Entity::PAYMENT_TYPE    => 'required|integer|in:0,1'
     );
