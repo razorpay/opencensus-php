@@ -66,7 +66,7 @@ class AdminController extends Controller
         $input = Request::all();
     }
 
-    public function getSlackTest()
+    public function getSlackTestQueue()
     {
         $input = Request::all();
 
@@ -75,7 +75,48 @@ class AdminController extends Controller
         // post via direct send
         $rand = rand();
 
-        $headline = "Test Headline[send] ->".$rand;
+        $rand = rand();
+
+        $headline = "Successful Send[queue] ->".$rand;
+
+        $message = array("Test Details[queue]->".$rand => "Test Message->".$rand);
+
+        // message should appear successfully
+        $app['slack']->queue($headline, $message, ['channel' => '#dev-test-2',
+            'username' => 'Jordan Belfort',
+            'icon' => ':boom:']);
+
+        $endpoint = $app['slack']->getEndPoint();
+
+        $app['slack']->setEndPoint("http://www.google.com");
+
+        $headline = "Failing Endpoint Message[queue] ->".$rand;
+
+        // this should fail with bad endpoint
+        $app['slack']->queue($headline, $message, ['channel' => '#dev-test-2',
+            'username' => 'Jordan Belfort',
+            'icon' => ':boom:']);
+
+        sleep(10);
+
+        // message should start appearing now
+        $app['slack']->setEndPoint($endpoint);
+
+        $data = array('status' => 'posted to slack[queue]');
+
+        return ApiResponse::json($data);
+    }
+
+    public function getSlackTestSend()
+    {
+        $input = Request::all();
+
+        $app = App::getFacadeRoot();
+
+        // post via direct send
+        $rand = rand();
+
+        $headline = "Successful Message[send] ->".$rand;
 
         $message = array("Test Details[Send]->".$rand => "Test Message->".$rand);
 
@@ -83,19 +124,24 @@ class AdminController extends Controller
             'username' => 'Jordan Belfort',
             'icon' => ':boom:']);
 
-        // post via queue
+        $endpoint = $app['slack']->getEndPoint();
 
-        $rand = rand();
+        $app['slack']->setEndPoint("http://www.google.com");
 
-        $headline = "Test Headline[queue] ->".$rand;
+        $headline = "Failing Endpoint Message[send] ->".$rand;
 
-        $message = array("Test Details[queue]->".$rand => "Test Message->".$rand);
-
-        $app['slack']->queue($headline, $message, ['channel' => '#dev-test-2',
+        // this should get queued, as this fails and should get automatically
+        // released for queue
+        $app['slack']->send($headline, $message, ['channel' => '#dev-test-2',
             'username' => 'Jordan Belfort',
             'icon' => ':boom:']);
 
-        $data = array('status' => 'posted to slack');
+        sleep(10);
+
+        // message should start appearing after this
+        $app['slack']->setEndPoint($endpoint);
+
+        $data = array('status' => 'posted to slack[send]');
 
         return ApiResponse::json($data);
     }
