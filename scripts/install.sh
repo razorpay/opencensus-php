@@ -12,7 +12,7 @@ cd /home/ubuntu/dashboard/ && php artisan down
 cd $BASEDIR && rsync -avz --force --delete --progress --exclude-from=./.rsyncignore ./ /home/ubuntu/dashboard/
 
 # Fix permissions
-cd /home/ubuntu/dashboard/ && sudo chmod 777 -R app/storage
+cd /home/ubuntu/dashboard/ && sudo chmod 777 -R storage
 
 # DB Migrate
 cd /home/ubuntu/dashboard/ && php artisan migrate
