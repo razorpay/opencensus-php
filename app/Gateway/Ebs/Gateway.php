@@ -77,7 +77,7 @@ class Gateway extends Base\Gateway
         $payment = $this->getRepo()->findByPaymentIdAndAction(
             $input['payment']['id'], Action::AUTHORIZE);
 
-        assert($payment[ENTITY::RECEIVED], true);
+        assert($payment[Entity::RECEIVED], true);
     }
 
 
@@ -182,17 +182,17 @@ class Gateway extends Base\Gateway
     {
         $content = $this->getMappedAttributes($input['gateway']);
 
-        $content[ENTITY::RECEIVED] = true;
+        $content[Entity::RECEIVED] = true;
 
-        $content[ENTITY::REQUEST_ID] = $input['gateway'][Resp::REQUEST_ID];
+        $content[Entity::REQUEST_ID] = $input['gateway'][Resp::REQUEST_ID];
 
-        $content[ENTITY::STATUS] = Status::AUTHORIZED;
+        $content[Entity::STATUS] = Status::AUTHORIZED;
 
         if ($input['gateway'][Resp::RESPONSE_CODE] !== Status::SUCCESS)
         {
-            $content[ENTITY::RECEIVED] = false;
+            $content[Entity::RECEIVED] = false;
 
-            $content[ENTITY::STATUS] = Status::AUTHORIZED_FAILED;
+            $content[Entity::STATUS] = Status::AUTHORIZED_FAILED;
         }
 
         return $content;
@@ -481,16 +481,16 @@ class Gateway extends Base\Gateway
 
         if (isset($fields['response']) and ($fields['response'] === 'SUCCESS'))
         {
-            $fields[RESP::ERROR] = false;
-            $fields[RESP::ERROR_CODE] = 0;
+            $fields[Resp::ERROR] = false;
+            $fields[Resp::ERROR_CODE] = 0;
 
             return $fields;
         }
         else
         {
             $err = array(
-                RESP::ERROR_CODE    => $fields[RESP::ERROR_CODE],
-                RESP::ERROR         => $fields[RESP::ERROR],
+                Resp::ERROR_CODE    => $fields[RESP::ERROR_CODE],
+                Resp::ERROR         => $fields[RESP::ERROR],
             );
 
             return $err;
