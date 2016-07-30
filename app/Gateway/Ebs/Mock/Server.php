@@ -55,6 +55,7 @@ class Server extends Base\Mock\Server
     public function refund($input)
     {
         parent::refund($input);
+
         $this->validateActionInput($input, 'refund');
 
         $payment = $this->getRepo()->findByEbsPaymentIdAndActionOrFail(

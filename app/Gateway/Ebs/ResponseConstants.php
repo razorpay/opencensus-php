@@ -19,7 +19,7 @@ class ResponseConstants
     const ACTION            = 'Action';
     const ACCOUNT_ID        = 'AccountID';
     const SECRET_KEY        = 'SecretKey';
-    const PAYMENT_ID        = 'paymentId';
+    const PAYMENT_ID        = 'PaymentID';
     const REFERENCE         = 'referenceNo';
     const ERROR_CODE        = 'errorCode';
     const ERROR             = 'error';

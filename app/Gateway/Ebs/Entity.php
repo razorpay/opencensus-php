@@ -34,30 +34,35 @@ class Entity extends Base\Entity
     const REFERENCE_ID          = 'reference_id';
     const TRANSACTION_ID        = 'transaction_id';
     const ERROR_DESCRIPTION     = 'error_description';
+    const IS_FLAGGED            = 'is_flagged';
 
     protected $fields = array(
         self::STATUS,
         self::CHANNEL,
+        self::AMOUNT,
         self::RECEIVED,
         self::ERROR_CODE,
+        self::IS_FLAGGED,
         self::REQUEST_ID,
         self::PAYMENT_ID,
         self::PAYMENT_MODE,
-        self::TRANSACTION_ID,
         self::REFERENCE_ID,
+        self::TRANSACTION_ID,
         self::ERROR_DESCRIPTION,
     );
 
     protected $fillable = array(
         self::STATUS,
+        self::AMOUNT,
         self::CHANNEL,
         self::RECEIVED,
         self::ERROR_CODE,
+        self::IS_FLAGGED,
         self::REQUEST_ID,
         self::PAYMENT_ID,
         self::PAYMENT_MODE,
-        self::TRANSACTION_ID,
         self::REFERENCE_ID,
+        self::TRANSACTION_ID,
         self::ERROR_DESCRIPTION,
     );
 

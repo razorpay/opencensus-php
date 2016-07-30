@@ -76,9 +76,7 @@ return [
     'testPaymentEbsEntity'          => [
         'action'                    => 'authorize',
         'received'                  => true,
-        'refund_id'                 => null,
         'entity'                    => 'ebs',
-        'refund_id'                 => null,
         'error_code'                => null,
 
     ],
