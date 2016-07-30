@@ -17,15 +17,18 @@ use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
-    public function grantFreeCreditsForMerchantInCampaign(array $input)
+
+    public function grantFreeCreditsForMerchantInCampaign($mid, array $input)
     {
-        $freeCreditLogExists = (new FreeCredits\Core)->checkIfFreeCreditsLogExists($id);
-        if ($freeCreditLogExists)
+        $campaign = $input['campaign'];
+        $freeCreditsLogExists = (new FreeCredits\Core)->checkIfFreeCreditsLogExists(
+            $mid, $campaign);
+        if ($freeCreditsLogExists)
         {
-            throw new Exception\BadRequestException(
-            ErrorCode::BAD_REQUEST_MERCHANT_FREE_CREDITS_LOG_FOR_CAMPAIGN_EXISTS);
+            throw new Exception\BadRequestValidationFailureException(
+            'The record already exists for given campaign and merchant.');
         }
-        $freeCreditLog = (new FreeCredits\Core)->create($input);
+        $freeCreditLog = (new FreeCredits\Core)->create($mid, $input);
         $response = array(
             'success' => true,
             'error'   => null,
@@ -35,28 +38,36 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function fetchFreeCreditsLog($id)
+    public function fetchFreeCreditsLog($mid, $id)
     {
         // Raises Exception if record does not exist.
         $freeCreditsLog = (new FreeCredits\Core)->retrieveById($id);
         return $freeCreditsLog->toArrayPublic();
     }
 
-    public function UpdateFreeCreditsLog($id, $op, $input)
+    public function UpdateFreeCreditsLog($mid, $id, $input)
     {
         $credits = $input['credits'];
+        if ($credits > 0)
+        {
+            $op = 'add';
+        }
+        else
+        {
+            $op = 'deduct';
+        }
         $response = array(
             'success' => true,
             'error'   => null,
         );
         if ($op === 'add')
         {
-            $this->addMoreFreeCredits($id, $credits);
+            (new FreeCredits\Core)->grantFreeCredits($id, $credits);
             return $response;
         }
         else if ($op === 'deduct')
         {
-            $this->deductFreeCredits($id, $credits);
+            (new FreeCredits\Core)->deductFreeCredits($id, $credits);
             return $response;
         }
         else {
@@ -74,5 +85,4 @@ class Service extends Base\Service
         );
         return $response;
     }
-
 }

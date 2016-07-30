@@ -10,30 +10,38 @@ use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
-    public function checkIfFreeCreditsLogExists($id)
+    public function checkIfFreeCreditsLogExists($merchant_id, $campaign)
     {
-        return $this->repo->recordExists($id);
+        return $this->repo->free_credits->recordExists($merchant_id, $campaign);
     }
 
-    public function create($input)
+    public function create($mid, $input)
     {
+        $input['merchant_id'] = $mid;
         $freeCreditLog = (new FreeCredits\Entity)->build($input);
         $this->repo->saveOrFail($freeCreditLog);
+        return $freeCreditLog;
     }
 
     public function retrieveById($id)
     {
-        return $this->repo->findOrFailPublic($id);
+        return $this->repo->free_credits->findOrFailPublic($id);
     }
 
     /*
      * Add Free Credits to the merchant for a campaign
      */
-    public function addMoreFreeCredits($id, $credits)
+    public function grantFreeCredits($id, $credits)
     {
-        $free_credits_log = $this->repo->findOrFailPublic($id);
+        $free_credits_log = $this->repo->free_credits->findOrFailPublic($id);
         $free_credits_log->credits += $credits;
-        $this->repo->saveOrFail($free_credits_log);
+        $free_credits_log->saveOrFail();
+        $merchant = $free_credits_log->merchant;
+        // Update the merchant balance credit.
+        $merchantBalance = (new Merchant\Balance\Repository)->getMerchantBalance($merchant);
+        $mBalance = $merchantBalance->credits + $credits;
+        (new Merchant\Balance\Repository)->editMerchantFreeCredits(
+            $free_credits_log->merchant, $mBalance);
     }
 
     /*
@@ -42,10 +50,11 @@ class Core extends Base\Core
      */
     public function deductFreeCredits($id, $credits)
     {
-        $free_credits_log = $this->repo->findOrFailPublic($id);
+        $free_credits_log = $this->repo->free_credits->findOrFailPublic($id);
         $merchant = $free_credits_log->merchant;
         $merchantBalance = (new Merchant\Balance\Repository)->getMerchantBalance($merchant);
-        if ($merchantBalance < $credits)
+
+        if ($merchantBalance->credits < $credits)
         {
             throw new Exception\BadRequestException(
             ErrorCode::BAD_REQUEST_MERCHANT_TOTAL_CREDITS_LESSER_THAN_CREDITS_TO_SUBTRACT);
@@ -55,8 +64,10 @@ class Core extends Base\Core
             throw new Exception\BadRequestException(
             ErrorCode::BAD_REQUEST_MERCHANT_CAMPAIGN_CREDITS_LESSER_THAN_CREDITS_TO_SUBTRACT);
         }
-        $free_credits_log->credits -= $credits;
-        $this->repo->saveOrFail($free_credits_log);
-        (new Merchant\Balance\Repository)->editMerchantFreeCredits($merchant, $credits);
+        $free_credits_log->credits -= abs($credits);
+        $free_credits_log->saveOrFail();
+        $mBalance = $merchantBalance->credits - abs($credits);
+        (new merchant\balance\repository)->editmerchantfreecredits($merchant, $mBalance);
+        var_dump($free_credits_log);
     }
 }

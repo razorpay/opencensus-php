@@ -108,10 +108,10 @@ final class Route
         'merchant_add_features'                   => ['post',     'merchants/{id}/features',                  'MerchantController@postMerchantFeatures'                           ],
         'merchant_get_features'                   => ['get',      'merchants/{id}/features',                  'MerchantController@getMerchantFeatures'                            ],
         'merchant_notify_holiday'                 => ['post',     'merchants/notify/holiday',                 'MerchantController@postMerchantsNotifyHoliday'                     ],
-        'freecredits_create'                      => ['post',     'merchants/free_credits',                   'MerchantController@postAddFreeCredits'                             ],
-        'freecredits_get'                         => ['post',     'merchants/free_credits/{id}',              'MerchantController@getFetchFreeCreditsLog'                         ],
-        'freecredits_update'                      => ['put',      'merchant/free_credits/{id}/{op}_credits/', 'MerchantController@putUpdateFreeCreditsLog'                        ],
-        'freecredits_aggregate_campaign'          => ['get',      'merchant/free_credits/campaign/{name}',    'MerchantController@getShowFreeCreditsGrantedInCampaign'            ],
+        'freecredits_create'                      => ['post',     'merchants/{id}/free_credits',              'MerchantController@postCreateFreeCreditsLog'                       ],
+        'freecredits_get'                         => ['get',      'merchants/{mid}/free_credits/{id}',        'MerchantController@getFreeCreditsLog'                              ],
+        'freecredits_update'                      => ['put',      'merchants/{mid}/free_credits/{id}',        'MerchantController@putFreeCreditsLog'                              ],
+        'freecredits_aggregate_campaign'          => ['get',      'merchants/free_credits/campaign/{name}',   'MerchantController@getShowFreeCreditsGrantedInCampaign'            ],
         'key_fetch_by_id'                         => ['get',      'keys/{id}',                                'KeyController@getKey'                                              ],
         'key_fetch_multiple'                      => ['get',      'keys',                                     'KeyController@getKeys'                                             ],
         'terminal_delete'                         => ['delete',   'terminals/{id}',                           'MerchantController@deleteTerminal2'                                ],
@@ -414,6 +414,8 @@ final class Route
         'es_migrate_entity',
         'dummy_critical_error',
         'reconciliate',
+        'freecredits_create',
+        'freecredits_update',
     );
 
     public static $proxy = array(

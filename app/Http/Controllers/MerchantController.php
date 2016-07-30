@@ -556,23 +556,23 @@ class MerchantController extends Controller
     }
 
     // ****Free Credits Request Handlers****
-    public function postAddFreeCredits()
+    public function postCreateFreeCreditsLog($id)
     {
         $input = Request::all();
-        $data = (new FreeCredits\Service)->grantFreeCreditsForMerchantInCampaign($input);
+        $data = (new FreeCredits\Service)->grantFreeCreditsForMerchantInCampaign($id, $input);
         return ApiResponse::json($data);
     }
 
-    public function getFetchFreeCreditsLog($id)
+    public function getFreeCreditsLog($mid, $id)
     {
-        $data = (new FreeCredits\Service)->fetchFreeCreditsLog($id);
+        $data = (new FreeCredits\Service)->fetchFreeCreditsLog($mid, $id);
         return ApiResponse::json($data);
     }
 
-    public function putUpdateFreeCredits($id, $op)
+    public function putFreeCreditsLog($mid, $id)
     {
         $input = Request::all();
-        $data = (new FreeCredits\Service)->updateFreeCreditsLog($id, $op, $input);
+        $data = (new FreeCredits\Service)->updateFreeCreditsLog($mid, $id, $input);
         return ApiResponse::json($data);
     }
 

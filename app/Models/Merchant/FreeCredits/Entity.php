@@ -5,7 +5,7 @@ namespace RZP\Models\Merchant\FreeCredits;
 use RZP\Models\Base;
 use RZP\Models\Base\Traits\NotesTrait;
 
-class Entity extends Base\Entity
+class Entity extends Base\PublicEntity
 {
     use NotesTrait;
 

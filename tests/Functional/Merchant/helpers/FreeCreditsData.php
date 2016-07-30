@@ -7,10 +7,17 @@ use RZP\Error\PublicErrorDescription;
 
 return [
 
-    'testAddFreeCreditsLogRoute' => [
+    'testAddFreeCreditsLog' => [
         'request' => [
-            'url' => '/merchant/free_credits/2',
+            'url' => '/merchants/1000000000000/free_credits/',
             'method' => 'post',
+            'content' => [
+                'credits' => 25,
+                'notes' => [
+                    'referred_party' => 'asd',
+                ],
+                'campaign' => 'silent-ads',
+            ],
         ],
         'response' => [
             'content' => [
@@ -22,8 +29,15 @@ return [
 
     'testFreeCreditsLogAlreadyExists' => [
         'request' => [
-            'url' => '/merchant/free_credits/1',
+            'url' => '/merchants/10000000000000/free_credits/',
             'method' => 'post',
+            'content' => [
+                'credits' => 25,
+                'notes' => [
+                    'referred_party' => 'asd',
+                ],
+                'campaign' => 'silent-ads',
+            ],
         ],
         'response' => [
             'content' => [
@@ -32,43 +46,55 @@ return [
                 ],
             ],
             'status_code' => 400,
-            'exception' => [
-                'class' => 'RZP\Exception\BadRequestException',
-                'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FREE_CREDITS_LOG_FOR_CAMPAIGN_EXISTS,
-            ],
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'error_description' => 'The record already exists for given campaign and merchant.',
         ],
     ],
 
-    'testAddMoreFreeCredits' => [
+    'testGrantFreeCredits' => [
         'request' => [
-            'url' => '/merchant/free_credits/1/add_credits',
+            'url' => '/merchants/1000000000000/free_credits/123/',
             'method' => 'put',
+            'content' => [
+                'credits' => 120,
+            ],
         ],
         'response' => [
             'content' => [
-                'success' => false,
+                'success' => true,
                 'error' => null,
             ],
+            'status_code' => true,
         ],
     ],
 
     'testDeductFreeCredits' => [
         'request' => [
-            'url' => '/merchant/free_credits/1/subtract_credits',
+            'url' => '/merchants/1000000000000/free_credits/123/',
             'method' => 'put',
+            'content' => [
+                'credits' => -50,
+            ]
         ],
         'response' => [
             'content' => [
-                'success' => false,
+                'success' => true,
                 'error' => null,
             ],
+            'status_code' => true,
         ],
     ],
 
     'testFailDeductFreeCredits' => [
         'request' => [
-            'url' => '/merchant/free_credits/1/subtract_credits',
+            'url' => '/merchants/1000000000000/free_credits/123/',
             'method' => 'put',
+            'content' => [
+                'credits' => -150,
+            ]
         ],
         'response' => [
             'content' => [
@@ -77,16 +103,16 @@ return [
                 ],
             ],
             'status_code' => 400,
-            'exception' => [
-                'class' => 'RZP\Exception\BadRequestException',
-                'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_TOTAL_CREDITS_LESSER_THAN_CREDITS_TO_SUBTRACT,
-            ],
-        ]
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_TOTAL_CREDITS_LESSER_THAN_CREDITS_TO_SUBTRACT,
+        ],
     ],
 
     'testFailDeductFreeCreditsCampaign' => [
         'request' => [
-            'url' => '/merchant/free_credits/1/subtract_credits',
+            'url' => '/merchants/1000000000000/free_credits/123/',
             'method' => 'put',
         ],
         'response' => [
@@ -96,10 +122,10 @@ return [
                 ],
             ],
             'status_code' => 400,
-            'exception' => [
-                'class' => 'RZP\Exception\BadRequestException',
-                'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_CAMPAIGN_CREDITS_LESSER_THAN_CREDITS_TO_SUBTRACT,
-            ],
-        ]
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_CAMPAIGN_CREDITS_LESSER_THAN_CREDITS_TO_SUBTRACT,
+        ],
     ],
 ];
