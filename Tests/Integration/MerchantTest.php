@@ -138,6 +138,7 @@ class MerchantTest extends TestCase
     /**
      * Tests payments panel display
      */
+
     public function testPaymentsList()
     {
         $this->url('#/access/signin');
@@ -196,7 +197,7 @@ class MerchantTest extends TestCase
         $this->clickByClassName('confirm-ok');
         $this->waitAndClickByClassName('roll_key');
         $this->clickByClassName('modal-ok');
-        $this->waitUntilDisplayedByClassName('modal-content');
+        $this->waitUntilDisplayedByClassName('new-key-modal');
         $this->clickByClassName('modal-ok');
         $this->waitUntilDisplayedByClassName('confirm-modal');
         $this->clickByClassName('confirm-ok');
