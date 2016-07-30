@@ -39,7 +39,7 @@ class Server extends Base\Mock\Server
             Response::REQUEST_ID        => random_alpha_string(8),
         );
 
-        $content[Response::SECURE_HASH] = $this->getGatewayInstance()->getSecureHash($content, Null);
+        $content[Response::SECURE_HASH] = $this->getGatewayInstance()->getSecureHash($content, null);
 
         $this->content($content);
 
