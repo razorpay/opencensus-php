@@ -6,12 +6,10 @@ use Carbon\Carbon;
 use App\Http\AppResponse;
 use Auth;
 use App\Base;
-use App\Trace;
+use Trace;
 
 class Service extends Base\Service
 {
-    // Corresponds to 15th November 2015 00:00
-    const SB_CESS_START = 1447525800;
 
     public function __construct()
     {

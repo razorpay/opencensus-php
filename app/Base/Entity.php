@@ -2,7 +2,7 @@
 
 namespace App\Base;
 use Illuminate\Database\Eloquent;
-use App\Trace;
+use Trace;
 
 class Entity extends \Razorpay\Spine\Entity
 {
