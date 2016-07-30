@@ -114,7 +114,7 @@ class Service extends Base\Service
 
         $customer = $this->repo->customer->findByIdAndMerchantId($id, $this->merchant->getId());
 
-        $accounts = $this->repo->bank_account->getBankAccountsForCustomer($customer->getId());
+        $accounts = $this->repo->bank_account->getBankAccountsForCustomer($customer);
 
         return $accounts->toArrayPublic();
     }

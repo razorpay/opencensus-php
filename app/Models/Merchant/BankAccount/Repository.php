@@ -27,7 +27,10 @@ class Repository extends Base\Repository
 
     public function getBankAccount($merchant)
     {
-        return $merchant->bankAccount;
+        return $this->newQuery()
+                    ->where(Entity::ENTITY_ID, '=', $merchant->getId())
+                    ->where(Entity::TYPE, '=', Type::MERCHANT)
+                    ->get();
     }
 
     public function getBankAccountsForCustomer($customer)
