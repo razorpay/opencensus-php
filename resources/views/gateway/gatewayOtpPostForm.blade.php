@@ -157,7 +157,7 @@
         <form class="card" id="otpform" name="otpform" action="{{$data['request']['url']}}" method="post" onsubmit="return false;">
             <div id="prompt" class="center">We have sent an OTP to your registered mobile Number ({{$data['contact']}})</div>
             <div>
-                <input id='otp' type="text" name="otp" maxlength="6" />
+                <input id='otp' type="text" name="otp" maxlength="6" required pattern="^[0-9]{6}$">
             </div>
             <div class="pad">
                 <span id="resend">Resend OTP</span><span id="spinner"></span>
@@ -233,10 +233,6 @@
         function onSubmit(e){
             var xhr;
             gel('submitotp').disable = true;
-
-            if(!gel('otp').value){
-                alert('please enter the OTP.');
-            }
 
             if (window.XMLHttpRequest) {
                 xhr = new XMLHttpRequest();
