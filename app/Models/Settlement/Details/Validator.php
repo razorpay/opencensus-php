@@ -8,7 +8,6 @@ use RZP\Models\Settlement\Details;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        Entity::ID              => 'required|max:14',
         Entity::TYPE            => 'required|max:20',
         Entity::COUNT           => 'required|integer',
         Entity::AMOUNT          => 'required|integer',

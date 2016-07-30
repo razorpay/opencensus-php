@@ -20,7 +20,7 @@ class Entity extends Base\PublicEntity
 
     protected $table = Constants\Table::SETTLEMENT_DETAIL;
 
-    protected $entity = 'settlement_detail';
+    protected $entity = 'settlement_details';
 
     protected static $sign = '';
 
@@ -50,6 +50,11 @@ class Entity extends Base\PublicEntity
         self::AMOUNT
     );
 
+    protected $casts = array(
+        self::COUNT     => 'int',
+        self::AMOUNT    => 'int'
+    );
+
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');
@@ -70,18 +75,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AMOUNT);
     }
 
-    //get Attribute
-    protected function getCountAttribute()
-    {
-        return (int) $this->attributes[self::COUNT];
-    }
-
-    protected function getAmountAttribute()
-    {
-        return (int) $this->attributes[self::AMOUNT];
-    }
-
-    //setter
     protected function setCount($count)
     {
         $this->setAttribute(self::COUNT, $count);

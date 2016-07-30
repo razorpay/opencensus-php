@@ -8,7 +8,7 @@ use Trace\TraceCode;
 
 class Core extends Base\Core
 {
-    public function postSettlementDetailsForOldTxns($input)
+    public function addSettlementDetailsForOldTxns($input)
     {
         $processed = 0;
         $skipped = 0;

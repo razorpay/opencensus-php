@@ -12,9 +12,8 @@ class Repository extends Base\Repository
 
     public function getSettlementDetails($id, $merchant)
     {
-        $repo = $this->repo;
-
-        return $repo::where(Entity::MERCHANT_ID, '=', $merchant->getId())
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, '=', $merchant->getId())
                     ->where(Entity::SETTLEMENT_ID, '=', $id)
                     ->get();
     }

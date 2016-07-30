@@ -71,9 +71,9 @@ class RepositoryManager extends \Illuminate\Support\Manager
 
     public function saveOrFailCollection($collection)
     {
-        foreach ($this->collection->all() as $entity)
+        foreach ($collection->all() as $entity)
         {
-            $this->repo->saveOrFail($entity);
+            $this->saveOrFail($entity);
         }
     }
 

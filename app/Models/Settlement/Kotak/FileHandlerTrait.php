@@ -239,7 +239,7 @@ trait FileHandlerTrait
         fwrite($file, $txt);
         fclose($file);
 
-        // chmod($fullpath, 0777);  // keep it 0777. This step is important.
+        chmod($fullpath, 0777);  // keep it 0777. This step is important.
 
         return $fullpath;
     }

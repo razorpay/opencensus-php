@@ -7,8 +7,6 @@ use RZP\Models\Settlement;
 
 class Service extends Base\Service
 {
-    protected $repo;
-
     public function getSettlementDetails($id)
     {
         Settlement\Entity::verifyIdAndStripSign($id);
@@ -22,7 +20,7 @@ class Service extends Base\Service
 
     public function postSettlementDetailsForOldTxns($input)
     {
-        $data = (new Core)->postSettlementDetailsForOldTxns($input);
+        $data = (new Core)->addSettlementDetailsForOldTxns($input);
 
         return $data;
     }
