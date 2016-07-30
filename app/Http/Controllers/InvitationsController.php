@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Invitation;
 use App\Http\AppResponse;
 use Auth;
+use Input;
 
 class InvitationsController extends Controller
 {
