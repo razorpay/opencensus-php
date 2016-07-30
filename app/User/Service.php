@@ -351,14 +351,21 @@ class Service extends Base\Service
             'password'  => $input['password']
         );
 
-        if (Auth::attempt($credentials + ['confirm_token' => null]) === false)
+        // Credentials are correct
+        if (Auth::attempt($credentials))
         {
-            // Tries to login user if confirmed, throws error if user is not confirmed
-            $error = ['not activated'];
-            return array($error, null);
+            // And user is not confirmed
+            if (Auth::attempt($credentials + ['confirm_token' => null]) === false)
+            {
+                $error = ['User account not confirmed'];
+            }
+        }
+        else
+        {
+            $error = ['Email or password is invalid'];
         }
 
-        return array($error, null);
+        return [$error, null];
     }
 
     public function changePassword(array $input)
