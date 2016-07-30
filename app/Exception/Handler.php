@@ -145,10 +145,45 @@ class Handler extends ExceptionHandler
             'code'      => $exception->getCode(),
             'message'   => $exception->getMessage(),
             'data'      => $data,
-            'stack'     => $stack,
+            'stack'     => $this->parseStack($stack),
             'previous'  => $previous);
 
         return $traceData;
+    }
+
+    /**
+     * Parses the stack so it becomes better
+     */
+    protected function parseStack($stack)
+    {
+        $baseDir = dirname(app_path());
+        $baseDirLen = strlen($baseDir);
+        return array_map(function ($stackMessage) use ($baseDir, $baseDirLen)
+        {
+            $ret = preg_match('/#\d+ (.*?)(\((\d+)\))?: (.*?)$/', $stackMessage, $matches);
+
+            if ($ret === 1)
+            {
+                $file = $matches[1];
+                $line = $matches[3];
+                $message = $matches[4];
+
+                if (strpos($file, $baseDir) !== false)
+                {
+                    $file = substr($file, $baseDirLen);
+                }
+
+                return [
+                    'line'      =>  $line,
+                    'message'   =>  $message,
+                    'file'      =>  $file
+                ];
+            }
+            else
+            {
+                return $stackMessage;
+            }
+        }, $stack);
     }
 
     protected function getDataArrayPropertyFromException($e)
