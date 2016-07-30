@@ -282,25 +282,6 @@ class Error extends Support\Fluent
         return array('error' => $array);
     }
 
-    public function toCustomerArray()
-    {
-        $array = array(
-            self::PUBLIC_ERROR_CODE => $this->getPublicErrorCode(),
-            self::DESCRIPTION       => $this->getCustomerDescription());
-
-        $action = $this->getAttribute(self::ACTION);
-
-        if ($action !== null)
-            $array[self::ACTION] = $action;
-
-        $field = $this->getAttribute(self::FIELD);
-
-        if ($field !== null)
-            $array[self::FIELD] = $field;
-
-        return array('error' => $array);
-    }
-
     public function toDebugArray()
     {
         return array('error' => $this->getAttributes());
@@ -331,22 +312,7 @@ class Error extends Support\Fluent
             return constant(CustomerErrorDescription::class . '::' . $code);
         }
 
-        $desc = $this->getDescriptionFromErrorCode($code);
-
-        if ($desc === null)
-        {
-            $code = $this->getPublicErrorCode();
-
-            $desc = $this->getDescriptionFromErrorCode($code);
-
-            if ($desc === null)
-            {
-                throw new Exception\InvalidArgumentException(
-                        'Description not provided for code: '. $code);
-            }
-        }
-
-        return $desc;
+        return $this->getDescription();
     }
 
     protected function getErrorClassFromErrorCode($code)
