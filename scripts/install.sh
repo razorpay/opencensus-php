@@ -17,8 +17,5 @@ cd /home/ubuntu/dashboard/ && sudo chmod 777 -R storage
 # DB Migrate
 cd /home/ubuntu/dashboard/ && php artisan migrate
 
-# DB Automigrate (runs package migrations)
-cd /home/ubuntu/dashboard/ && php artisan automigrate
-
 # Take the app up
 cd /home/ubuntu/dashboard/ && php artisan up
