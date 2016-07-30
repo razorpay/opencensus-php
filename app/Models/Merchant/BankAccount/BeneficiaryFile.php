@@ -44,7 +44,7 @@ class BeneficiaryFile
 
     public function generate()
     {
-        $list = (new BankAccount\Repository)->getAllMerchantAccountsOrderedByCreatedAt();
+        $list = (new BankAccount\Repository)->getAllActivatedMerchantAccountsOrderedByCreatedAt();
 
         $data = array();
 

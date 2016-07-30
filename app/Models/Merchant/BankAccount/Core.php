@@ -10,18 +10,9 @@ use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->repo = new Repository;
-
-        $this->trace = \Trace::getFacadeRoot();
-    }
-
     public function createOrChangeBankAccount($input, $merchant)
     {
-        $oldBankAccount = $this->repo->getBankAccount($merchant);
+        $oldBankAccount = $this->repo->bank_account->getBankAccount($merchant);
 
         if ($oldBankAccount === null)
         {
@@ -45,14 +36,13 @@ class Core extends Base\Core
         return $this->changeBankAccount($input, $merchant, $oldBankAccount);
     }
 
-    public function addOrUpdateBankAccount($input, $merchant)
+    public function addOrUpdateBankAccountForCustomer($input, $customer)
     {
-        $currentAccounts = $this->getBankAccountsByEntity(
-            $input[BankAccount\Entity::ENTITY_ID],
-            $input[BankAccount\Entity::TYPE],
-            $merchant);
+        $currentAccounts = $this->repo->bank_account->getBankAccountsForCustomer($customer);
 
-        $newBankAccount = $this->buildBankAccount($input, $merchant, $this->mode);
+        $newBankAccount = $this->buildBankAccount($input, $customer->merchant, $this->mode);
+
+        $newBankAccount->associateCustomer($customer);
 
         foreach ($currentAccounts as $existingAccount)
         {
@@ -72,18 +62,6 @@ class Core extends Base\Core
         $this->repo->saveOrFail($newBankAccount);
 
         return $newBankAccount;
-    }
-
-    public function getBankAccountsByEntity($entityId, $type, $merchant)
-    {
-        $params = array(
-            BankAccount\Entity::ENTITY_ID   => $entityId,
-            BankAccount\Entity::TYPE        => $type
-        );
-
-        $currentAccounts = $this->repo->fetch($params, $merchant->getId());
-
-        return $currentAccounts;
     }
 
     /**

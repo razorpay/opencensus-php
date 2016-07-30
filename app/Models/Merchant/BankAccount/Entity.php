@@ -241,4 +241,11 @@ class Entity extends Base\PublicEntity
 
         return $beneficiaryCode;
     }
+
+    public function associateCustomer($customer)
+    {
+        $this->attributes[self::ENTITY_ID] = $customer->getId();
+
+        $this->attributes[self::TYPE] = Type::CUSTOMER;
+    }
 }

@@ -103,10 +103,7 @@ class Service extends Base\Service
 
         $customer = $this->repo->customer->findByIdAndMerchantId($id, $this->merchant->getId());
 
-        $input[BankAccount\Entity::ENTITY_ID] = $customer->getId();
-        $input[BankAccount\Entity::TYPE] = BankAccount\Type::CUSTOMER;
-
-        $ba = (new BankAccount\Core)->addOrUpdateBankAccount($input, $customer->merchant);
+        $ba = (new BankAccount\Core)->addOrUpdateBankAccountForCustomer($input, $customer);
 
         return $ba->toArrayPublic();
     }
@@ -117,10 +114,7 @@ class Service extends Base\Service
 
         $customer = $this->repo->customer->findByIdAndMerchantId($id, $this->merchant->getId());
 
-        $accounts = (new BankAccount\Core)->getBankAccountsByEntity(
-            $customer->getId(),
-            BankAccount\Type::CUSTOMER,
-            $this->merchant);
+        $accounts = $this->repo->bank_account->getBankAccountsForCustomer($customer->getId());
 
         return $accounts->toArrayPublic();
     }

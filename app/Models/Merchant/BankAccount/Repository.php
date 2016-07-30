@@ -35,6 +35,13 @@ class Repository extends Base\Repository
         return $merchant->bankAccount;
     }
 
+    public function getBankAccountsForCustomer($customer)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ENTITY_ID, '=', $customer->getId())
+                    ->where(Entity::TYPE, '=', Type::CUSTOMER)
+                    ->get();
+    }
 
     public function getAllOrderedByCreatedAt()
     {
@@ -45,11 +52,10 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getAllMerchantAccountsOrderedByCreatedAt()
+    public function getAllActivatedMerchantAccountsOrderedByCreatedAt()
     {
-        $repo = $this->repo;
-
-        return $repo::where(BankAccount\Entity::TYPE, '=', BankAccount\Type::MERCHANT)
+        return $this->newQuery()
+                    ->where(BankAccount\Entity::TYPE, '=', BankAccount\Type::MERCHANT)
                     ->orderBy(BankAccount\Entity::CREATED_AT)
                     ->get();
     }
