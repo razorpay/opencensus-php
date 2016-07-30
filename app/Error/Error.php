@@ -260,11 +260,14 @@ class Error extends Support\Fluent
         return $this->attributes;
     }
 
-    public function toPublicArray()
+    public function toPublicArray($isPublicRoute = false)
     {
+        $description = $isPublicRoute ? $this->getCustomerDescription() : $this->getDescription();
+
         $array = array(
             self::PUBLIC_ERROR_CODE => $this->getPublicErrorCode(),
-            self::DESCRIPTION       => $this->getDescription());
+            self::DESCRIPTION       => $description,
+        );
 
         $action = $this->getAttribute(self::ACTION);
 

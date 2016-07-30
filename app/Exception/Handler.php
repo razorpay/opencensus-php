@@ -205,21 +205,10 @@ class Handler extends ExceptionHandler
         return true;
     }
 
-    public function getErrorResponseFields($code)
-    {
-        $error = new Error($code);
-
-        $publicError = $error->toPublicArray();
-
-        $httpStatusCode = $error->getHttpStatusCode();
-
-        return array($publicError, $httpStatusCode);
-    }
-
     protected function generateServerErrorResponse($debug, $exception)
     {
         list($publicError, $httpStatusCode) =
-                $this->getErrorResponseFields(ErrorCode::SERVER_ERROR);
+                ApiResponse::getErrorResponseFields(ErrorCode::SERVER_ERROR);
 
         if (($debug) and
             ($exception !== null))
@@ -235,7 +224,7 @@ class Handler extends ExceptionHandler
     protected function toStringExceptionResponse($debug, $exception)
     {
         list($publicError, $httpStatusCode) =
-            $this->getErrorResponseFields(ErrorCode::SERVER_ERROR_TO_STRING_EXCEPTION);
+            ApiResponse::getErrorResponseFields(ErrorCode::SERVER_ERROR_TO_STRING_EXCEPTION);
 
         if ($debug)
         {
@@ -252,22 +241,7 @@ class Handler extends ExceptionHandler
 
         $error = $exception->getError();
 
-        $httpStatusCode = $error->getHttpStatusCode();
-
-        if ($debug === true)
-        {
-            $data = $error->toDebugArray();
-        }
-        else if ($this->isPublicAuth() === true)
-        {
-            $data = $error->toCustomerArray();
-        }
-        else
-        {
-            $data = $error->toPublicArray();
-        }
-
-        return ApiResponse::generateResponse($data, $httpStatusCode);
+        return ApiResponse::generateErrorResponse($error, $debug);
     }
 
     protected function getExceptionData($exception)
@@ -335,10 +309,5 @@ class Handler extends ExceptionHandler
     protected function isDebug()
     {
         return config('app.debug');
-    }
-
-    protected function isPublicAuth()
-    {
-        return $this->app['basicauth']->isPublicAuth();
     }
 }
