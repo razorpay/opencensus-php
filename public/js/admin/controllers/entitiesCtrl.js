@@ -116,8 +116,8 @@ app.controller('EntitiesCtrl', [
       },
       app_token: {
         customer_id: ['Customer Id'],
-        merchant_id: ['Merchant Id'],
-        device_token: ['Device Token']
+        device_token: ['Device Token'],
+        merchant_id: ['Merchant Id']
       },
       axis_genius: {
         payment_id: ['Payment Id'],
@@ -127,10 +127,10 @@ app.controller('EntitiesCtrl', [
       axis_migs: {
         payment_id: ['Payment Id'],
         received: booleanList,
-        vpc_TransactionNo: ['Transaction No'],
-        vpc_ShopTransactionNo: ['Shop Transaction No'],
-        vpc_TxnResponseCode: ['Txn Response Code'],
         vpc_ReceiptNo: ['Receipt No'],
+        vpc_ShopTransactionNo: ['Shop Transaction No'],
+        vpc_TransactionNo: ['Transaction No'],
+        vpc_TxnResponseCode: ['Txn Response Code'],
         vpc_3DSstatus: [
             'all',
             'Y',
@@ -140,8 +140,8 @@ app.controller('EntitiesCtrl', [
         ],
       },
       bank_account: {
-        merchant_id: ['Merchant Id'],
-        deleted: booleanList
+        deleted: booleanList,
+        merchant_id: ['Merchant Id']
       },
       balance: {},
       billdesk: {
@@ -153,17 +153,19 @@ app.controller('EntitiesCtrl', [
           '0399',
           'NA'
         ],
-        received: booleanList,
-        payment_id: ['Payment Id'],
-        TxnReferenceNo: ['Txn Reference No'],
-        RefundId: ['Billdesk Refund Id'],
         BankReferenceNo: ['Bank Reference No'],
-        RefStatus: ['Refund Status']
+        payment_id: ['Payment Id'],
+        received: booleanList,
+        RefStatus: ['Refund Status'],
+        RefundId: ['Billdesk Refund Id'],
+        TxnReferenceNo: ['Txn Reference No']
       },
       card: {
-        merchant_id: ['Merchant Id'],
+        global_card_id: ['Global Card Id'],
         iin: ['IIN'],
+        international: booleanList,
         last4: ['last4'],
+        merchant_id: ['Merchant Id'],
         network: [
           'all',
           'Visa',
@@ -176,7 +178,8 @@ app.controller('EntitiesCtrl', [
           'Discover'
         ],
         status: statusList,
-        international: booleanList
+        vault: ['Vault'],
+        vault_token: ['Vault Token'],
       },
       customer: {
         merchant_id: ['Merchant Id'],
@@ -193,11 +196,11 @@ app.controller('EntitiesCtrl', [
       daily_settlement: {},
       emi_plan: {},
       hdfc: {
+        auth: ['Auth Code'],
+        gateway_transaction_id: ['Gateway Transaction Id'],
         payment_id: ['Payment Id'],
         received: booleanList,
-        gateway_transaction_id: ['Gateway Transaction Id'],
-        ref: ['Reference'],
-        auth: ['Auth Code']
+        ref: ['Reference']
       },
       iin: {
         emi: booleanList,
@@ -214,37 +217,37 @@ app.controller('EntitiesCtrl', [
         merchant_id: ['Merchant Id']
       },
       merchant: {
-        email: ['Email'],
         activated: booleanList,
-        hold_funds: booleanList,
-        live: booleanList,
-        international: booleanList,
-        category: ['MCC Code'],
-        pricing_plan_id: ['Pricing Plan Id'],
-        receipt_email_enabled: booleanList,
-        paytm: booleanList2,
-        mobikwik: booleanList2,
-        payzapp: booleanList2,
-        payumoney: booleanList2,
+        amex: booleanList2,
         card: booleanList2,
-        amex: booleanList2
+        category: ['MCC Code'],
+        email: ['Email'],
+        hold_funds: booleanList,
+        international: booleanList,
+        live: booleanList,
+        mobikwik: booleanList2,
+        paytm: booleanList2,
+        payumoney: booleanList2,
+        payzapp: booleanList2,
+        pricing_plan_id: ['Pricing Plan Id'],
+        receipt_email_enabled: booleanList
       },
       methods: {
-        merchant_id: ['Merchant Id'],
-        card: booleanList,
         amex: booleanList,
+        card: booleanList,
         emi: booleanList,
-        paytm: booleanList,
+        merchant_id: ['Merchant Id'],
         mobikwik: booleanList,
-        payzapp: booleanList,
-        payumoney: booleanList
+        paytm: booleanList,
+        payumoney: booleanList,
+        payzapp: booleanList
       },
       netbanking: {
-        payment_id: ['Payment Id'],
-        received: booleanList,
-        caps_payment_id: ['Caps Payment Id'],
         bank_payment_id: ['Bank Reference Id'],
-        int_payment_id: ['Int Payment Id']
+        caps_payment_id: ['Caps Payment Id'],
+        int_payment_id: ['Int Payment Id'],
+        payment_id: ['Payment Id'],
+        received: booleanList
       },
       order:{
         merchant_id: ['Merchant Id'],
@@ -258,19 +261,29 @@ app.controller('EntitiesCtrl', [
         receipt_id: ['Receipt Id']
       },
       payment: {
+        app_token: ['App Token'],
         bank: ['Bank Code'],
+        card_id: ['Card Id'],
+        customer_id: ['Customer Id'],
+        global_customer_id: ['Global Customer Id'],
         email: ['Contact Email'],
         gateway: gatewayList,
+        global_token: ['Global Token'],
+        iin: ['Card IIN'],
+        international: booleanList,
+        last4: ['Card Last 4'],
         merchant_id: ['Merchant Id'],
-        card_id: ['Card Id'],
         method: methodList,
+        notes: ['Notes'],
         refund_status: [
           'all',
           'null',
           'partial',
           'full'
         ],
+        save: booleanList,
         status: statusList,
+        token: ['Token'],
         verified: [
           'all',
           'null',
@@ -278,11 +291,7 @@ app.controller('EntitiesCtrl', [
           1,
           2
         ],
-        wallet: walletList,
-        iin: ['Card IIN'],
-        last4: ['Card Last 4'],
-        notes: ['Notes'],
-        international: booleanList
+        wallet: walletList
       },
       paytm: {
         payment_id: ['Payment Id'],
@@ -300,9 +309,9 @@ app.controller('EntitiesCtrl', [
         payment_id: ['Payment Id']
       },
       settlement: {
-        transaction_id: ['Transaction Id'],
         merchant_id: ['Merchant Id'],
-        status: ['all', 'created', 'failed', 'processed']
+        status: ['all', 'created', 'failed', 'processed'],
+        transaction_id: ['Transaction Id']
       },
       terminal: {
         gateway: gatewayList,
@@ -312,9 +321,9 @@ app.controller('EntitiesCtrl', [
       transaction: {
         entity_id: ['Payment/Refund/Settlement Id'],
         merchant_id: ['Merchant Id'],
+        reconciled: booleanList,
         settled: booleanList,
         settlement_id: ['Settlement Id'],
-        reconciled: booleanList,
         type: [
           'all',
           'payment',
@@ -324,13 +333,13 @@ app.controller('EntitiesCtrl', [
         ]
       },
       token: {
-        token: ['Token'],
+        bank: ['Bank Code'],
+        card_id: ['Card Id'],
         customer_id: ['Customer Id'],
         merchant_id: ['Merchant Id'],
-        card_id: ['Card Id'],
         method: methodList,
         terminal_id: ['Terminal Id'],
-        bank: ['Bank Code'],
+        token: ['Token'],
         wallet: walletList
       },
       wallet: {
