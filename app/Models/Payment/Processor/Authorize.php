@@ -184,14 +184,14 @@ trait Authorize
 
         $terminalSelected = null;
 
-        $verbose = false;
-
         $options = $this->getOptionsForTerminals();
 
         // Terminal picked is the terminal used for payment processing.
         $terminalPicked = (new TerminalPicker)->selectTerminal($payment, $this->mode, $options);
 
-        $terminalSelected = (new Terminal\Selector)->select($payment, $this->mode, $verbose, $options);
+        $terminalSelector = new Terminal\Selector($payment, $this->mode);
+
+        $terminalSelected = $terminalSelector->select($options);
 
         $this->logTerminalPickedAndSelected($terminalSelected, $terminalPicked, $payment);
 
