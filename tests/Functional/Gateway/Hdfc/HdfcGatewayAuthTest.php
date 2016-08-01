@@ -96,15 +96,19 @@ class HdfcGatewayAuthTest extends TestCase
         $this->doAuthAndCapturePayment($payment);
         $payment = $this->getLastPayment(true);
         $this->assertEquals($payment['gateway'], 'hdfc');
+        // what to do???
+        // $this->assertEquals($payment['two_fa_status'], 'passed');
     }
 
     public function testCreditCardAuthNotApproved()
     {
+        // is this not enrolled??
         $this->startTest();
     }
 
     public function testDebitCardAuthNotApproved()
     {
+        // is this not enrolled??
         $this->startTest();
     }
 

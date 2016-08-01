@@ -60,6 +60,8 @@ class HdfcGatewayTest extends TestCase
 
         $payment = $this->getLastPayment(true);
         $this->assertNotNull($payment['transaction_id']);
+
+        $this->assertEquals($payment['two_fa_status'], 'passed');
     }
 
     public function testRupayCard()
@@ -71,6 +73,7 @@ class HdfcGatewayTest extends TestCase
 
         $payment = $this->getLastPayment(true);
         $this->assertNotNull($payment['transaction_id']);
+        $this->assertEquals($payment['two_fa_status'], 'passed');
 
         $this->verifyPayment($payment['id']);
         $this->capturePayment($payment['id'], $payment['amount']);

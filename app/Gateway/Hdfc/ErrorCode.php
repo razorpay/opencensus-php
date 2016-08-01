@@ -4,6 +4,7 @@ namespace RZP\Gateway\Hdfc;
 
 use RZP\Error;
 use RZP\Gateway\Hdfc;
+use RZP\Models\Payment\TwoFaStatus;
 
 class ErrorCode
 {
@@ -343,4 +344,9 @@ class ErrorCode
     );
 
     public static $invalidErrorCode = Hdfc\ErrorCode::RP00001;
+
+    public static function getTwoFaStatus($code)
+    {
+        return TwoFaStatus::UNKNOWN;
+    }
 }

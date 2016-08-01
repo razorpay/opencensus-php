@@ -79,29 +79,29 @@ class Gateway extends Base\Gateway
      * @var array
      */
     protected $enrollRequest = array(
-        'url' => Hdfc\Urls::ENROLL_URL,
-        'type' => 'enroll',
-        'fields' => array('trackid', 'member', 'card', 'expmonth', 'expyear', 'cvv2',
+        'url'       => Hdfc\Urls::ENROLL_URL,
+        'type'      => 'enroll',
+        'fields'    => array('trackid', 'member', 'card', 'expmonth', 'expyear', 'cvv2',
                           'amt', 'action', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
-        'xml' => '',
-        'headers' => array('Content-Type'=>'text/xml'),
-        'data' => array());
+        'xml'       => '',
+        'headers'   => array('Content-Type'=>'text/xml'),
+        'data'      => array());
 
     /**
      * Response received after sending enroll card request
      * @var array
      */
     protected $enrollResponse = array(
-        'fields' => array(
-                    'result', 'eci', 'paymentid', 'trackid', 'PAReq', 'url', 'error_text'),
-        'fieldsEnrolled' => array('result', 'url', 'PAReq', 'paymentid', 'trackid',
-                                  'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
+        'fields'            => array('result', 'eci', 'paymentid', 'trackid',
+                                'PAReq', 'url', 'error_text'),
+        'fieldsEnrolled'    => array('result', 'url', 'PAReq', 'paymentid',
+                                'trackid', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
         'fieldsNotEnrolled' => array('result', 'PAReq', 'paymentid', 'trackid',
-                                     'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
-        'type' => 'enroll',
-        'xml' => '',
-        'data' => array(),
-        'error' => null);
+                                'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
+        'type'              => 'enroll',
+        'xml'               => '',
+        'data'              => array(),
+        'error'             => null);
 
     /**
      * The assoc array is used to construct auth
@@ -109,21 +109,21 @@ class Gateway extends Base\Gateway
      * @var array
      */
     protected $authEnrolledRequest = array(
-        'url' => Hdfc\Urls::AUTH_ENROLLED_URL,
-        'type' => 'auth_enrolled',
-        'fields' => array('paymentid', 'PaRes'),
-        'headers' => array('Content-Type:text/xml'),
-        'xml' => '',
-        'data' => array());
+        'url'       => Hdfc\Urls::AUTH_ENROLLED_URL,
+        'type'      => 'auth_enrolled',
+        'fields'    => array('paymentid', 'PaRes'),
+        'headers'   => array('Content-Type:text/xml'),
+        'xml'       => '',
+        'data'      => array());
 
     protected $authEnrolledResponse = array(
-        'fields' => array(
-            'result', 'auth', 'ref', 'avr', 'postdate', 'paymentid', 'tranid', 'trackid',
-            'udf1', 'udf2', 'udf3', 'udf4', 'udf5', 'error_text'),
-        'type' => 'auth_enrolled',
-        'xml' => '',
-        'data' => array(),
-        'error' => null);
+        'fields'    => array('result', 'auth', 'ref', 'avr', 'postdate',
+                        'paymentid', 'tranid', 'trackid', 'udf1', 'udf2', 'udf3',
+                        'udf4', 'udf5', 'error_text'),
+        'type'      => 'auth_enrolled',
+        'xml'       => '',
+        'data'      => array(),
+        'error'     => null);
 
     /**
      * The assoc array is used to constructing
@@ -131,26 +131,27 @@ class Gateway extends Base\Gateway
      * @var array
      */
     protected $authNotEnrolledRequest = array(
-        'url' => Hdfc\Urls::AUTH_NOT_ENROLLED_URL,
-        'type' => 'auth_not_enrolled',
-        'fields' => array('trackid', 'member', 'card', 'expmonth', 'expyear', 'cvv2', 'action',
-                          'zip', 'addr', 'amt', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
-        'headers' => array('Content-Type:text/xml'),
-        'xml' => '',
-        'data' => array());
+        'url'       => Hdfc\Urls::AUTH_NOT_ENROLLED_URL,
+        'type'      => 'auth_not_enrolled',
+        'fields'    => array('trackid', 'member', 'card', 'expmonth', 'expyear',
+                        'cvv2', 'action', 'zip', 'addr', 'amt', 'udf1', 'udf2',
+                        'udf3', 'udf4', 'udf5'),
+        'headers'   => array('Content-Type:text/xml'),
+        'xml'       => '',
+        'data'      => array());
 
     /**
      * Response received after sending authNotEnrolledRequest
      * @var array
      */
     protected $authNotEnrolledResponse = array(
-        'fields' =>  array(
-            'result', 'auth', 'ref', 'avr', 'postdate', 'tranid', 'trackid', 'payid',
-            'udf1', 'udf2', 'udf3', 'udf4', 'udf5', 'amt', 'error_text'),
-        'type' => 'auth_not_enrolled',
-        'xml' => '',
-        'data' => array(),
-        'error' => null);
+        'fields'    =>  array('result', 'auth', 'ref', 'avr', 'postdate', 'tranid',
+                        'trackid', 'payid', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5',
+                        'amt', 'error_text'),
+        'type'      => 'auth_not_enrolled',
+        'xml'       => '',
+        'data'      => array(),
+        'error'     => null);
 
     /**
      * The assoc array is used to construct
@@ -158,37 +159,36 @@ class Gateway extends Base\Gateway
      * @var array
      */
     protected $supportPaymentRequest = array(
-        'url' => Hdfc\Urls::SUPPORT_PAYMENT_URL,
-        'type' => '',
-        'fields' => array('action', 'amt', 'member', 'transid', 'trackid', 'udf5'),
-        'headers' => array('Content-Type:text/xml'),
-        'xml' => '',
-        'data' => array());
+        'url'       => Hdfc\Urls::SUPPORT_PAYMENT_URL,
+        'type'      => '',
+        'fields'    => array('action', 'amt', 'member', 'transid', 'trackid', 'udf5'),
+        'headers'   => array('Content-Type:text/xml'),
+        'xml'       => '',
+        'data'      => array());
 
     protected $supportPaymentResponse = array(
-        'fields' => array(
-            'result', 'auth', 'ref', 'avr', 'postdate', 'tranid', 'trackid', 'payid',
-            'udf2', 'udf5', 'amt', 'error_text'),
-        'type' => '',
-        'xml' => '',
-        'data' => array(),
-        'error' => null);
+        'fields'    => array('result', 'auth', 'ref', 'avr', 'postdate', 'tranid',
+                        'trackid', 'payid', 'udf2', 'udf5', 'amt', 'error_text'),
+        'type'      => '',
+        'xml'       => '',
+        'data'      => array(),
+        'error'     => null);
 
     protected $inquiryRequest = array(
-        'url' => Hdfc\Urls::SUPPORT_PAYMENT_URL,
-        'fields' => array('action', 'amt', 'member', 'transid', 'trackid', 'udf5'),
-        'type' => 'inquiry',
-        'xml' => '',
-        'data' => array(),
-        'error' => null);
+        'url'       => Hdfc\Urls::SUPPORT_PAYMENT_URL,
+        'fields'    => array('action', 'amt', 'member', 'transid', 'trackid', 'udf5'),
+        'type'      => 'inquiry',
+        'xml'       => '',
+        'data'      => array(),
+        'error'     => null);
 
     protected $inquiryResponse = array(
-        'type' => 'inquiry',
-        'fields' => array('result', 'auth', 'ref', 'avr', 'postdate', 'tranid', 'trackid', 'payid', 'amt',
-                    'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
-        'data' => array(),
-        'xml' => '',
-        'error' => null);
+        'type'      => 'inquiry',
+        'fields'    => array('result', 'auth', 'ref', 'avr', 'postdate', 'tranid',
+                        'trackid', 'payid', 'amt', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
+        'data'      => array(),
+        'xml'       => '',
+        'error'     => null);
 
     /**
      * The array is used to specify fields that are not to be logged by trace class
@@ -321,9 +321,7 @@ class Gateway extends Base\Gateway
 
             $this->model = $this->repo->findByGatewayTransactionIdOrFail($trackId);
 
-            $this->verifyAuthResponse($authResponse);
-
-            return;
+            return $this->verifyAuthResponse($authResponse);
         }
 
         $this->validateCallbackGatewayFields($input, $network);
@@ -341,7 +339,7 @@ class Gateway extends Base\Gateway
                 'app payment '. $this->id . ' should be equal to payment id . '. $paymentId);
         }
 
-        $this->postAuthEnrolledRequest($input);
+        return $this->postAuthEnrolledRequest($input);
     }
 
     public function verify(array $input)

@@ -41,6 +41,7 @@ return [
         'response' => [
             'content' => [
                 'status' => 'authorized',
+                'two_fa_status' => 'skipped',
                 'captured' => false,
                 'fee' => null,
                 'service_tax' => null,

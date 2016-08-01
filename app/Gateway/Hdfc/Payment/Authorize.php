@@ -103,7 +103,7 @@ trait Authorize
             $this->authEnrolledRequest,
             $this->authEnrolledResponse);
 
-        $this->verifyAuthResponse($this->authEnrolledResponse);
+        return $this->verifyAuthResponse($this->authEnrolledResponse);
     }
 
     protected function verifyAuthResponse($auth)
@@ -118,6 +118,8 @@ trait Authorize
         {
             $this->throwException($auth['error']);
         }
+
+        return [\RZP\Models\Payment\Entity::TWO_FA_STATUS => \RZP\Models\Payment\TwoFaStatus::PASSED];
     }
 
     protected function postAuthNotEnrolledRequestToBank()

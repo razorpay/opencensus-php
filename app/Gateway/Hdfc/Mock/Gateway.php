@@ -48,7 +48,6 @@ class Gateway extends Hdfc\Gateway
         $server->setInput($requestVar['content']);
 
         $response = null;
-
         switch($requestVar['type'])
         {
             case 'enroll':
