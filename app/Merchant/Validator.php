@@ -25,7 +25,7 @@ class Validator extends Base\Validator
     );
 
     protected static $changeNameRules = array(
-        'name'         => 'required|min:4|alpha_space|max:200'
+        'name'         => 'required|min:4|alpha_space_num|max:200'
     );
 
     protected static $loginRules = array(

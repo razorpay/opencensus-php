@@ -35,7 +35,7 @@
           Notes
         </a>
         <div class="panel-body">
-          <a href class="list-group-item" ng-repeat="(label,key) in entity.notes">
+          <a href class="list-group-item" ng-repeat="(label,key) in entity.notes" tooltip="{{getTooltip(label)}}">
             <span class="pull-right">{{key}}</span>
             {{label}}
           </a>

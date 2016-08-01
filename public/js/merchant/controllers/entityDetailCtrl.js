@@ -1,3 +1,4 @@
+"use strict";
 //Single Entity Details controller
 app.controller('EntityDetailCtrl', [
   '$scope',
@@ -15,6 +16,13 @@ app.controller('EntityDetailCtrl', [
       fetchEntity();
     };
 
+    $scope.getTooltip = function(label) {
+      if (label === 'admin_comment') {
+        return 'This refund was initiated by Razorpay. Kindly get in touch with support@razorpay.com for more details.';
+      }
+      return null;
+    }
+
     function fetchEntity() {
       var request = $http.get('/' + $scope.mode + '/' + $scope.entity.type + 's/' + $scope.entity.id);
       request.success(function (data) {
@@ -22,7 +30,7 @@ app.controller('EntityDetailCtrl', [
         if (data.success) {
           $scope.entity = data.data.items[0];
         } else {
-          angular.forEach(data.errors, function (error, key) {
+          angular.forEach(data.errors, function (error) {
             $scope.alerts.addAlert('danger', error);
           });
         }
