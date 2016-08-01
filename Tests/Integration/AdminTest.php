@@ -162,7 +162,7 @@ class AdminTest extends TestCase
         $this->displayedByCss('div.butterbar.hide');
         $this->execScript('$("body").css("MozTransform", "scale(1,1)")');
         $this->execScript('$(".merchant_type").val("0").trigger("change")');
-        $this->waitAndClickByClassName('merchant_go');
+        $this->execScript('$(".merchant_go").click()');
         $this->waitUntilDisplayedByClassName('merchants-table-body');
         $this->waitUntilContainsByCss('body', $this->merchant->id);
         $this->waitUntilContainsByCss('body', $this->merchant->email);
@@ -278,8 +278,7 @@ class AdminTest extends TestCase
         $this->submitByName('submit');
         $this->clickByXPath('a','id','merchantsNav');
         $this->execScript('$(".merchant_type").val("0").trigger("change")');
-        $this->selectByClassNameAndValue('merchant_type', '0');
-        $this->clickByClassName('merchant_go');
+        $this->execScript('$(".merchant_go").click()');
         $this->assertTrue($this->displayedByClassName('merchants-table-body'));
         $this->clickByXPath('a','text',$this->merchant->id);
         $this->waitUntilDisplayedByClassName('merchant-wrapper');
@@ -309,8 +308,7 @@ class AdminTest extends TestCase
         $this->submitByName('submit');
         $this->clickByXPath('a','id','merchantsNav');
         $this->execScript('$(".merchant_type").val("0").trigger("change")');
-        $this->selectByClassNameAndValue('merchant_type', '0');
-        $this->clickByClassName('merchant_go');
+        $this->execScript('$(".merchant_go").click()');
         $this->assertTrue($this->displayedByClassName('merchants-table-body'));
         $this->clickByXPath('a','text',$this->merchant->id);
         $this->waitUntilDisplayedByClassName('merchant-wrapper');
@@ -340,8 +338,7 @@ class AdminTest extends TestCase
         $this->submitByName('submit');
         $this->clickByXPath('a','id','merchantsNav');
         $this->execScript('$(".merchant_type").val("0").trigger("change")');
-        $this->selectByNameAndValue('merchant_type', '0');
-        $this->clickByClassName('merchant_go');
+        $this->execScript('$(".merchant_go").click()');
         $this->assertTrue($this->displayedByClassName('merchants-table-body'));
         $this->clickByXPath('a','text',$this->merchant->id);
         $this->waitUntilDisplayedByClassName('merchant-wrapper');
