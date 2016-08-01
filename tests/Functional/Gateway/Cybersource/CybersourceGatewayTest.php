@@ -124,6 +124,18 @@ class CybersourceGatewayTest extends TestCase
             $this->testData['testNotEnrolledCSEntity'], $gatewayPayment);
     }
 
+    public function testAuthenticationFailurePayment()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4111460212312338';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            return $this->doAuthPayment($payment);
+        });
+    }
+
     public function testPaymentRefund()
     {
         $payment = $this->doAuthAndCapturePayment();
