@@ -7,6 +7,7 @@ use Password;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Lang;
 use DB;
+use Hash;
 
 class PasswordController extends Controller
 {
