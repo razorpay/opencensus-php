@@ -179,7 +179,7 @@ class SettlementController extends Controller
 
         $data = (new Settlement\Details\Service)->postSettlementDetailsForOldTxns($input);
 
-        return $ApiResponse::json($data);
+        return ApiResponse::json($data);
     }
 
     public function getSettlementCombinedReport()
