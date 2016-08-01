@@ -63,7 +63,7 @@ trait Authorize
 
         $totalTerminals = count($terminalsSelected);
 
-        if($this->MAX_RETRY_ATTEMPTS < $totalTerminals)
+        if($this->MAX_RETRY_ATTEMPTS > $totalTerminals)
         {
             $this->MAX_RETRY_ATTEMPTS = $totalTerminals;
         }
