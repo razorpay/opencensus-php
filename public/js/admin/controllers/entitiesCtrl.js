@@ -255,7 +255,7 @@ app.controller('EntitiesCtrl', [
           'paid',
         ],
         authorized: booleanList,
-        receipt: ['Receipt Id']
+        receipt_id: ['Receipt Id']
       },
       payment: {
         bank: ['Bank Code'],
