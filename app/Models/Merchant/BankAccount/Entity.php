@@ -248,4 +248,11 @@ class Entity extends Base\PublicEntity
 
         $this->attributes[self::TYPE] = Type::CUSTOMER;
     }
+
+    public function associateMerchant($merchant)
+    {
+        $this->attributes[self::ENTITY_ID] = $merchant->getId();
+
+        $this->attributes[self::TYPE] = Type::MERCHANT;
+    }
 }

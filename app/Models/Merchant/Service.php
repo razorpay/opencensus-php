@@ -334,10 +334,6 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        $input[BankAccount\Entity::ENTITY_ID] = $id;
-
-        $input[BankAccount\Entity::TYPE] = BankAccount\Type::MERCHANT;
-
         $ba = (new BankAccount\Core)->createOrChangeBankAccount($input, $merchant);
 
         return $ba->toArray();

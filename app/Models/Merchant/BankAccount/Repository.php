@@ -18,19 +18,15 @@ class Repository extends Base\Repository
     protected $appFetchParamRules = array(
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
         self::WITH_TRASHED      => 'sometimes|in:0,1',
+        Entity::TYPE            => 'sometimes|in:customer,merchant',
     );
-
-    public function updateBankAccount($ba)
-    {
-        $ba->saveOrFail();
-    }
 
     public function getBankAccount($merchant)
     {
         return $this->newQuery()
                     ->where(Entity::ENTITY_ID, '=', $merchant->getId())
                     ->where(Entity::TYPE, '=', Type::MERCHANT)
-                    ->get();
+                    ->first();
     }
 
     public function getBankAccountsForCustomer($customer)

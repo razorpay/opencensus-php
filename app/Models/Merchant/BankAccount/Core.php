@@ -88,8 +88,6 @@ class Core extends Base\Core
     public function createTestBankAccount($merchant)
     {
         $input = array(
-            'entity_id'             => $merchant->getId(),
-            'type'                  => BankAccount\Type::MERCHANT,
             'ifsc_code'             => Entity::SPECIAL_IFSC_CODE,
             'beneficiary_name'      => $merchant->getAttribute('name'),
             'beneficiary_email'     => $merchant->getAttribute('email'),
@@ -118,6 +116,8 @@ class Core extends Base\Core
     protected function createBankAccount($input, $merchant, $mode)
     {
         $ba = $this->buildBankAccount($input, $merchant, $mode);
+
+        $ba->associateMerchant($merchant);
 
         $this->repo->saveOrFail($ba);
 
