@@ -42,7 +42,9 @@ class Table
     const SESSION           = 'sessions';
 
     // Terminal Performance
-    const TERMINAL_AUDITLOG    = 'terminal_audit_logs';
     const TERMINAL_ACTION    = 'terminal_action_logs';
     const TERMINAL_ABSENCE  = 'terminal_absence_schedule';
+
+    // Payment Analytics
+    const PAYMENT_ANALYTICS    = 'payment_analytics';
 }

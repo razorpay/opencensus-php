@@ -37,8 +37,8 @@ class Entity
     const BANK_ACCOUNT      = 'bank_account';
     const DAILY_SETTLEMENT  = 'daily_settlement';
     const TERMINAL_ACTION   = 'terminal_action';
-    const TERMINAL_AUDITLOG = 'terminal_auditlog';
-    const TERMINAL_ABSENCE = 'terminal_absence';
+    const PAYMENT_ANALYTICS = 'payment_analytics';
+    const TERMINAL_ABSENCE  = 'terminal_absence';
 
     //
     // Gateway entities
@@ -92,7 +92,7 @@ class Entity
         self::NETBANKING_KOTAK  => \RZP\Gateway\Netbanking\Kotak::class,
         self::WALLET_PAYUMONEY  => \RZP\Gateway\Wallet\Payumoney::class,
         self::TERMINAL_ACTION   => \RZP\Models\Terminal\Action::class,
-        self::TERMINAL_AUDITLOG => \RZP\Models\Terminal\AuditLog::class,
+        self::PAYMENT_ANALYTICS => \RZP\Models\Payment\Analytics::class,
         self::TERMINAL_ABSENCE  => \RZP\Models\Terminal\Absence::class,
     );
 

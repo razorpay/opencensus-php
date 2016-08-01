@@ -1,11 +1,8 @@
 <?php
 
-namespace RZP\Models\Terminal\AuditLog;
+namespace RZP\Models\Payment\Analytics;
 
-use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Models\Base;
-use RZP\Models\Terminal;
 
 class Validator extends Base\Validator
 {

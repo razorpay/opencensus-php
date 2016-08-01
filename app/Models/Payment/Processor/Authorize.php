@@ -19,7 +19,7 @@ use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Status;
 use RZP\Models\Merchant\Methods;
-use RZP\Models\Terminal\AuditLog;
+use RZP\Models\Payment\Analytics;
 
 use RZP\Error;
 use RZP\Exception;
@@ -1000,13 +1000,13 @@ trait Authorize
         $response_time = $end - $start;
 
         // record payment actions
-        $auditLogService = new AuditLog\Service();
+        $pAnalyticsService = new Analytics\Service();
 
         $input = array("payment_id" => $payment["id"],
                        "terminal_id" => $payment["terminal_id"],
-                        "response_time" => $response_time,
-                        "payment_type" => 1,
-                        "status" => 1);
+                       "terminal_response_time" => $response_time,
+                       "payment_type" => 1,
+                       "status" => 1);
 
         $errorCode = null;
 
@@ -1036,9 +1036,7 @@ trait Authorize
 
         }
 
-        $auditLogService = (new AuditLog\Service);
-
-        $auditLogService->createAuditLog($input);
+        $pAnalyticsService->createAuditLog($input);
 
     }
 

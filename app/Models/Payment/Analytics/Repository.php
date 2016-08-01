@@ -1,21 +1,19 @@
 <?php
 
-namespace RZP\Models\Terminal\AuditLog;
+namespace RZP\Models\Payment\Analytics;
 
 use RZP\Models\Base;
-use RZP\Models\Terminal\AuditLog\Entity;
-use RZP\Exception;
 
 class Repository extends Base\Repository
 {
     use Base\RepositoryFetch;
 
-    protected $entity = 'terminal_auditlog';
+    protected $entity = 'payment_analytics';
 
 
     public function findForTerminal($id)
     {
-        $repo = $this->repo->terminal_auditlog;
+        $repo = $this->repo->payment_analytics;
 
         return $repo::withTrashed()
             ->where(Entity::TERMINAL_ID, '=', $id)
@@ -24,7 +22,7 @@ class Repository extends Base\Repository
 
     public function findForPayment($payment_id, $id=null)
     {
-        $repo = $this->repo->terminal_auditlog;
+        $repo = $this->repo->payment_analytics;
 
         $results =  $repo::withTrashed()
                          ->where(Entity::PAYMENT_ID, '=', $payment_id);
@@ -39,7 +37,7 @@ class Repository extends Base\Repository
 
     public function findBetweenTimestampsForTerminal($from, $to, $terminal_id, $payment_id=null)
     {
-        $repo = $this->repo->terminal_auditlog;
+        $repo = $this->repo->payment_analytics;
 
         $results = $repo::withTrashed()
                         ->where(Entity::TERMINAL_ID, '=', $terminal_id)
