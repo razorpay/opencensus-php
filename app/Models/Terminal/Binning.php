@@ -26,7 +26,7 @@ class Binning
             'binFor'         => Shared::BILLDESK_RAZORPAY_TERMINAL,
             'binWith'        => '59U9GqsARtkw2r',
             'bank'           => IFSC::KKBK,
-            'load'           => 30,
+            'load'           => 5,
         ]
     ];
 
