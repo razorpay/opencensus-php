@@ -7,7 +7,6 @@ use RZP\Exception\RecoverableException;
 use RZP\Models\Admin;
 use Request;
 use Redirect;
-use App;
 
 class AdminController extends Controller
 {
