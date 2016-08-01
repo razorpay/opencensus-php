@@ -29,6 +29,25 @@
             font-style:normal
         }
 
+        @keyframes spin {
+          0% {
+            transform: scale(0.5);
+            opacity: 0;
+            border-width: 8px;
+          }
+
+          20% {
+            transform: scale(0.6);
+            opacity: 0.8;
+            border-width: 4px;
+          }
+
+          90% {
+            transform: scale(1);
+            opacity: 0;
+          }
+        }
+
         html, body {
             height: 100%;
             font-family: 'lato';
@@ -49,24 +68,51 @@
         }
 
         .pad {
-            padding-top: 20px;
+            padding-top: 15px;
+            text-align: center;
+        }
+
+        .red {
+            color: red;
+        }
+
+        .spin {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto;
+        }
+
+        .spin div {
+            width: 100%;
+            height: 100%;
+            vertical-align: middle;
+            display: inline-block;
+            border-radius: 50%;
+            border: 4px solid #29b7d6;
+            animation: spin 1.3s linear infinite;
+            box-sizing: border-box;
+            opacity: 0;
+        }
+
+        .spin2 {
+            margin: -60px auto 20px;
+        }
+
+        .spin2 div {
+            animation-delay: 0.65s;
+        }
+
+        #resend-text {
+            margin-top: 10px;
             text-align: center;
         }
 
         #spinner {
             display: none;
-            border: 5px solid #888;
-            border-radius: 30px;
-            height: 15px;
-            margin: 0 0 -5px 15px;
-            opacity: 0;
-            width: 15px;
-            animation: pulsate 1s ease-out;
-            animation-iteration-count: infinite;
         }
 
         #spinner.shown {
-            display: inline-block;
+            display: block;
         }
 
         #content {
@@ -75,6 +121,28 @@
             background: #FBFBFB;
             padding: 24px;
             box-sizing: border-box;
+            position: relative;
+            /*border: 1px solid #adadad;*/
+        }
+
+        #overlay {
+            position: absolute;
+            padding-top: 150px;
+            top: 24px;
+            bottom: 24px;
+            right: 24px;
+            left: 24px;
+            background: white;
+            display: none;
+        }
+
+        #overlay.shown {
+            display: block;
+        }
+
+        #message-text {
+            font-size: 22px;
+            min-height: 100px;
         }
 
         #banner {
@@ -98,6 +166,11 @@
         #prompt {
             line-height: 36px;
             font-size: 18px;
+            min-height: 76px;
+        }
+
+        #otpform {
+            min-height: 280px;
         }
 
         #otp {
@@ -115,12 +188,11 @@
 
         button {
             display: block;
-            padding: 12px;
+            padding: 12px 40px;
             background: #00BE70;
             color: #fff;
-            font-size: 28px;
+            font-size: 22px;
             border: 0;
-            width: 100%;
             margin: 40px auto 20px;
             letter-spacing: 1.5px;
         }
@@ -145,6 +217,19 @@
 </head>
 <body>
     <div id='content'>
+        <div id="overlay">
+            <div id='message-text' class="center">
+                Verifying OTP
+            </div>
+            <div id="spinner" class="shown">
+                <div class="spin">
+                    <div></div>
+                </div>
+                <div class="spin spin2">
+                    <div></div>
+                </div>
+            </div>
+        </div>
         <div id="banner">
             <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAI0AAAAgCAMAAAAYAgunAAAAMFBMVEXT46mRuSr7/PeGsxakxk/I3JXz9+fr8ti30nTj7sqyzmqcwD+sy17d6b2+1oL///+7L4YrAAAAEHRSTlP///////////////////8A4CNdGQAAA+xJREFUeNrNV4tuIyEMNAbMw0D+/29vbEi2Fylt79RInSgrwMaeHWykpdv/gXMY5fbT+F82smL6PWyYtM42C/8KNkDTCH1+C5v5W9iwwdiMn2fDhm9QuIYyMxGt3rP8LBuW1or9yqeMuMBN9lBKTgG62I6fBZWujjTyZw3SBlyyO3BOqY/wlg7vMQYHXna+9ssRSC5OGVFXTm9hE6Jmw4L4/bU462LTjM16F5t+CqNHbSwFEGEs4GHw0ZM2oa6kXY7VN1wDB5/ZY+phr4iwupH54yLY1DOhEGZbfaAqcmMmPLal5Mx/s4lBFxU386xjjDVZch+jnk3csi0/nBqMsJLstHPdfTlj68m/8gc2DWxIQ0oaopL0MMo21KjyxCaGvGNIDdEQ1ogOJRgka9wYlotzONPeMPM9AX/NImon4mGR9YlNI5pz0kBR5BDOe2ocH7Vpnvf0l9VdXVWNUF81Wav5ahh72V6pJRh9GhY7N105d/hO7jGQhyJw/cAmgw0zu/oYTo10J51vL7RhhCQRbLC8IhN56SZIUZuIEPJDnIwkhWF1rmWY9MxlBUSBbcnpE7IqFkOhD13SNM6SYpVDeprvxebSRpDdF7FGNs/gaVqk5mRXgCPXGPbUG6XpCTQVGYxAMRsiNFe6A8NlBOM2J1YDSQ3J3VZUeaUN2KgPKmK5wIhyg0Kn5vzNuTtlAKEmm0I0gawgUhDBSl1AxKgdBF2F0VMJADPaJ4cECM23F3XzTTbhsKmHTdCEn0awuRdOwcTrzbWpawoShaB3NlOR8pTND2sTNdgvaBZzybBSRJpTN/uiYtRVna3Z+RHLgGmXzWGjnnDqxabc2fR/0kYzZTIUturpgo0W4OopwPIXT2L9BG6W3svG/IAOqtQxtM55rU17NIRVsXD9WxuNQ3hj50qNecDnmc1poxYCMWyWM8V+jgcweX3Qy2s2cMZToLU1/PSeurSBnqYsrCJWvlztIBoU4ovNvQOpiLRqnWjbOk+c57nmLsCNX7PBc99+y28/D1se2tgtAOtaq6Yxd+SUu1cnhv1iY7dVGkNBUZx1GHruCiF9JgOIHjYDItzZ4D323Y9HmmxsQrm04dJNZWCfd0mYRa9OSsbpojNcAmv2x/Eob9us6sag1n4bslJ1M+kQdxr+viUPS5ZqYzO60x6UyxrSKr4nYbarsyHyBS6TcqYmvGe0Lu1YmhtncetZK7JplXK2+MK+Re+e7nQGvHch1MMMXxztwJiYn78GBP/HjGKkZyN//7viU+uVxnvv6y+Yoqbgu+H1Kl+wYVoJ0vCbuRTqGtHZX7CRgVLLb5eGUvSL4EttKri8HS3pmOzDP+UnwTXbEK2hAAAAAElFTkSuQmCC" alt="" height='28px'>
 
@@ -159,13 +244,15 @@
             <div>
                 <input id='otp' type="text" name="otp" maxlength="6" required pattern="^[0-9]{6}$">
             </div>
-            <div class="pad">
-                <span id="resend">Resend OTP</span><span id="spinner"></span>
-                <span id="addfunds">Add Funds</span>
+            <div id='resend-text'>
             </div>
             <input type="hidden" name="type" value="otp">
             <div>
                 <button type="submit" id='submitotp'>CONFIRM</button>
+            </div>
+            <div class="center">
+                <span id="resend">Resend OTP</span><span id="spinner"></span>
+                <span id="addfunds">Add Funds</span>
             </div>
         </form>
         <form id='mirror' name='mirror'>
@@ -203,8 +290,21 @@
             return false;
         }
 
-        function resendOTP () {
+        function showMessage (message) {
+            gel('overlay').className = 'shown';
+            gel('message-text').innerHTML = message.text;
+            gel('spinner').className = message.loader ? "shown" : '';
+        }
 
+        function hideMessage (prompt) {
+            if (prompt) {
+                gel('prompt').innerHTML = prompt;
+            }
+
+            gel('overlay').className = '';
+        }
+
+        function resendOTP () {
             var xhr;
             if (window.XMLHttpRequest) {
                 xhr = new XMLHttpRequest();
@@ -212,11 +312,17 @@
                 xhr = new ActiveXObject("Microsoft.XMLHTTP");
             }
 
+            showMessage({
+                text: 'Resending OTP',
+                loader: true
+            })
+
             var url = '/v1/payments/{{$data["payment_id"]}}/otp_resend?key_id=' + key_id;
 
             xhr.onreadystatechange = function() {
                 if (xhr.readyState == 4 && xhr.status == 200) {
                     var res = JSON.parse(xhr.responseText);
+                    hideMessage("OTP sent, please check your inbox");
                 }
             }
 
@@ -242,7 +348,11 @@
 
             // var url = '/v1/payments/{{$data["payment_id"]}}/otp_resend?key_id=' + key_id;
             var url = request_url;
-            gel('spinner').className = "shown";
+
+            showMessage({
+                text: 'Verifying OTP',
+                loader: true
+            })
 
             xhr.onreadystatechange = function() {
                 try{
@@ -251,11 +361,12 @@
                 }
 
                 if (xhr.readyState == 4) {
-
+                    gel('otp').value = '';
                     if(xhr.status === 400) {
+                        hideMessage();
                         if (res.error.action==='RETRY') {
-                            gel('prompt').innerHTML = 'Entered OTP was incorrect. Re-enter to proceed.'
-                            return;
+                            gel('prompt').innerHTML = '<span class="red">Entered OTP was incorrect. Re-enter to proceed. <span>'
+                            return
                         } else if (res.error.action === 'TOPUP') {
                             gel('prompt').innerHTML = 'Insufficient balance';
                             gel('addfunds').className = 'shown';
