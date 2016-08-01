@@ -473,10 +473,7 @@ class PayumoneyGatewayTest extends TestCase
     {
         $mock = $this->isGatewayMocked();
 
-        $json = (($this->isResponseInstanceType($response, 'json')) and
-                 ($response->headers->get('content-type') === 'application/json'));
-
-        list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback, $json);
+        list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
 
         $this->response     = $response;
         $this->callbackUrl  = $url;
