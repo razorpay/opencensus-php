@@ -182,6 +182,7 @@ class Gateway
         self::HDFC,
         self::AMEX,
         self::NETBANKING_HDFC,
+        self::NETBANKING_KOTAK,
         self::WALLET_PAYZAPP,
     );
 
