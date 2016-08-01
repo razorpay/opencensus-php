@@ -41,6 +41,7 @@ class Entity extends Base\Entity
         self::CHANNEL,
         self::AMOUNT,
         self::RECEIVED,
+        self::REFUND_ID,
         self::ERROR_CODE,
         self::IS_FLAGGED,
         self::REQUEST_ID,
@@ -56,6 +57,7 @@ class Entity extends Base\Entity
         self::AMOUNT,
         self::CHANNEL,
         self::RECEIVED,
+        self::REFUND_ID,
         self::ERROR_CODE,
         self::IS_FLAGGED,
         self::REQUEST_ID,
@@ -70,8 +72,8 @@ class Entity extends Base\Entity
         self::AMOUNT        => 'int',
     ];
 
-    protected $table = TABLE::EBS;
+    protected $table = Table::EBS;
 
-    protected $entity = Constants\ENTITY::EBS;
+    protected $entity = Constants\Entity::EBS;
 
 }

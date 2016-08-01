@@ -35,6 +35,8 @@ class CreateEbsGateway extends Migration
 
             $table->string(Ebs::REFERENCE_ID)->nullable();
 
+            $table->char(Ebs::REFUND_ID, UniqueIdEntity::ID_LENGTH)->nullable();
+
             $table->string(Ebs::PAYMENT_MODE)->nullable();
 
             $table->string(Ebs::CHANNEL)->nullable();
@@ -59,11 +61,18 @@ class CreateEbsGateway extends Migration
                   ->on('payments')
                   ->on_delete('restrict');
 
+            $table->foreign(Ebs::REFUND_ID)
+                  ->references(Ebs::ID)
+                  ->on('payments')
+                  ->on_delete('restrict');
+
             $table->index(Ebs::RECEIVED);
 
             $table->index(Ebs::PAYMENT_ID);
 
             $table->index(Ebs::REFERENCE_ID);
+
+            $table->index(Ebs::REFUND_ID);
 
             $table->index(Ebs::IS_FLAGGED);
         });
