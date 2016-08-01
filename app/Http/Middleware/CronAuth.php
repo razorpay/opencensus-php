@@ -3,10 +3,10 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use Input;
-use App\Http\SlackResponse;
+use Auth;
+use Response;
 
-class Slack {
+class CronAuth {
     /**
      * Handle an incoming request.
      *
@@ -16,13 +16,10 @@ class Slack {
      */
     public function handle($request, Closure $next)
     {
-        $slackToken = config('razorpay.slack.command_token');
-
-        $tokenFromInput = Input::get('token', false);
-
-        if ($slackToken !== $tokenFromInput)
+        if (($_SERVER['PHP_AUTH_USER'] !== \Config::get('cron.auth_user')) or
+        ($_SERVER['PHP_AUTH_PW'] !== \Config::get('cron.auth_pass')))
         {
-            return SlackResponse::jsonResponse("Invalid Slack Token");
+            return Response::json(array('success' => false, 'errors' => ['Unauthorised']));
         }
 
         return $next($request);
