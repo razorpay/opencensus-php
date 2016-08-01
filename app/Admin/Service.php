@@ -288,13 +288,14 @@ class Service extends Base\Service
 
             try
             {
-                $result = $s3->getObjectUrl(
-                            $_ENV['AWS_ACTIVATION_BUCKET'],
-                            $id.'/'.$key.'.'.$extension,
-                            '+10 minutes'
-                );
+                $cmd = $s3->getCommand('GetObject', [
+                    'Bucket' => env('AWS_ACTIVATION_BUCKET'),
+                    'Key'    => $id.'/'.$key.'.'.$extension
+                ]);
 
-                $file = $result;
+                $request = $s3->createPresignedRequest($cmd, '+60 minutes');
+
+                $file = (string) $request->getUri();
             }
             catch (\Exception $e)
             {
