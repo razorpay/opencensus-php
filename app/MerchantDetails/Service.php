@@ -233,7 +233,7 @@ class Service extends Base\Service
         // Take screenshots as well
         $urls = $merchantDetails->getUrls();
 
-        Queue::push('App\Models\Creevey', [
+        Queue::push('App\Admin\Creevey', [
             $customer['id'],
             $urls,
             $customer['business_name']
