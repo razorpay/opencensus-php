@@ -21,11 +21,14 @@ class Core extends Base\Core
             try
             {
                 $merchant = $setl->merchant;
+
                 $setlDetails = $this->repo->settlement_details->getSettlementDetails($setl->getId(), $merchant);
 
                 if($setlDetails->count() === 0)
                 {
-                    (new Settlement\Merchant($merchant, $setl->getChannel()))->createSettlementDetails($setl);
+                    (new Settlement\Merchant($merchant, $setl->getChannel(), $this->repo))
+                        ->createSettlementDetails($setl);
+
                     $processed++;
                 }
                 else
