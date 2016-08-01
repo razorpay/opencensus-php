@@ -123,13 +123,6 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postRedirect($id)
-    {
-        $data = $this->payment->redirect($id);
-
-        return $this->returnRedirectResponse($data);
-    }
-
     public function postAutoCapture()
     {
         $data = $this->payment->autoCaptureOldAuthorizedPayments();
@@ -287,39 +280,5 @@ class PaymentController extends Controller
         $data = $this->refund->verify($id);
 
         return ApiResponse::json($data);
-    }
-
-    protected function returnRedirectResponse($data)
-    {
-        if (isset($data['type']))
-        {
-            $type = $data['type'];
-
-            if ($type === 'return')
-            {
-                return $this->returnMerchantFullRedirectView($data);
-            }
-        }
-
-        assert ($data !== null);
-
-        return $this->returnCheckoutCallbackView($data);
-    }
-
-    /**
-     * This contains the json response and does a call to the parent/checkout
-     * window.
-     */
-    protected function returnCheckoutCallbackView($data)
-    {
-        return View::make('gateway.callback')->with('data', $data);
-    }
-
-    /**
-     * Redirect to the url provided by the merchant.
-     */
-    protected function returnMerchantFullRedirectView($data)
-    {
-        return View::make('gateway.callbackReturnUrl')->with('data', $data);
     }
 }
