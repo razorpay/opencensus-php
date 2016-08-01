@@ -1073,6 +1073,43 @@ trait PaymentTrait
     }
 
     /**
+     * Get Otp Submit Url
+     */
+    public function getOtpSubmitUrl($payment)
+    {
+        $secret = \App::make('config')->get('app.key');
+
+        $hash = hash_hmac('sha1', $payment->getPublicId(), $secret);
+
+        $params = [
+            'id' => $payment->getPublicId(),
+            'hash' => $hash,
+            'key_id' => $this->ba->getKey()
+        ];
+
+        $url = \URL::route('payment_otp_submit', $params, false);
+        $url = 'http://localhost' . $url;
+
+        return $url;
+    }
+
+    /**
+     * Get Otp resend Url
+     */
+    public function getOtpResendUrl($payment)
+    {
+        $params = [
+            'id' => $payment->getPublicId(),
+            'key_id' => $this->ba->getKey()
+        ];
+
+        $url = \URL::route('payment_otp_resend', $params, false);
+        $url = 'http://localhost' . $url;
+
+        return $url;
+    }
+
+    /**
      * Checks the laravel class of $response,
      * whether it's json, http or redirect.
      * @param  string  $type
