@@ -177,7 +177,7 @@ class AxisGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertEquals($payment[Entity::TWO_FA_STATUS], TwoFaStatus::FAILED);
+        $this->assertEquals(TwoFaStatus::FAILED, $payment[Entity::TWO_FA_STATUS]);
 
         $this->assertEquals($payment['status'], 'failed');
     }

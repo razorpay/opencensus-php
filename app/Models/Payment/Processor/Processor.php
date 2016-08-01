@@ -320,7 +320,7 @@ class Processor
 
         $payment->setError($code, $desc, $internalCode);
 
-        if ((method_exists($e, 'hasTwoFaError') === true) and ($e->hasTwoFaError() === true))
+        if (is_a($e, '\RZP\Exception\GatewayErrorException') and $e->hasTwoFaError())
         {
             $payment->setTwoFaStatusFailed();
         }

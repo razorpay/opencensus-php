@@ -656,6 +656,7 @@ class Gateway extends Base\Gateway
 
         if (ThreeDSecureStatus::is3DSecureFailed($threeDSstatus) === true)
         {
+            s('2fa marked');
             $e->markTwoFaError();
         }
 
