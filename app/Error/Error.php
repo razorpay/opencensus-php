@@ -208,6 +208,13 @@ class Error extends Support\Fluent
         return $this->getAttribute(self::HTTP_STATUS_CODE);
     }
 
+    public function getCustomerDescription()
+    {
+        $code = $this->getInternalErrorCode();
+
+        return $this->getCustomerDescriptionFromErrorCode($code);
+    }
+
     protected function handleBadRequestErrors()
     {
         $code = $this->getInternalErrorCode();
@@ -253,11 +260,14 @@ class Error extends Support\Fluent
         return $this->attributes;
     }
 
-    public function toPublicArray()
+    public function toPublicArray($isPublicRoute = false)
     {
+        $description = $isPublicRoute ? $this->getCustomerDescription() : $this->getDescription();
+
         $array = array(
             self::PUBLIC_ERROR_CODE => $this->getPublicErrorCode(),
-            self::DESCRIPTION       => $this->getDescription());
+            self::DESCRIPTION       => $description,
+        );
 
         $action = $this->getAttribute(self::ACTION);
 
@@ -285,6 +295,24 @@ class Error extends Support\Fluent
         {
             return constant(PublicErrorDescription::class.'::'.$code);
         }
+    }
+
+    protected function getCustomerDescriptionFromErrorCode($code)
+    {
+        $code = strtoupper($code);
+        $desc = null;
+
+        if ($this->isValidationError($code))
+        {
+            return $this->getDescription();
+        }
+
+        if (defined(CustomerErrorDescription::class . '::' . $code))
+        {
+            return constant(CustomerErrorDescription::class . '::' . $code);
+        }
+
+        return $this->getDescription();
     }
 
     protected function getErrorClassFromErrorCode($code)
@@ -330,5 +358,15 @@ class Error extends Support\Fluent
         {
             throw new Exception\InvalidArgumentException($class . ' is not a valid class');
         }
+    }
+
+    protected function isValidationError($code)
+    {
+        $validationErrorCodes = [
+            ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED
+        ];
+
+        return in_array($code, $validationErrorCodes, true);
     }
 }
