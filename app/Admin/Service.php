@@ -1461,7 +1461,7 @@ class Service extends Base\Service
 
         if (count($urls) >= 7)
         {
-            \Queue::push('App\Models\Creevey', [$id, $urls, $name]);
+            \Queue::push('App\Admin\Creevey', [$id, $urls, $name]);
             return [];
         }
         else
