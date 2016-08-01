@@ -629,7 +629,7 @@ class Gateway extends Base\Gateway
                 break;
 
             case Card\Network::MC:
-                $content['ucaf'][self::AUTHENTICATION_DATA] = $gateway->getAuthData();
+                $content['ucaf'][self::AUTHENTICATION_DATA] = $gateway->getAuthCode();
                 $content['ucaf'][self::COLLECTION_INDICATOR] = $gateway->getCollectionIndicator();
                 break;
 
