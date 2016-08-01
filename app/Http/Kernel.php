@@ -28,7 +28,8 @@ class Kernel extends HttpKernel {
         'auth.basic'    => 'Illuminate\Auth\Middleware\AuthenticateWithBasicAuth',
         'guest'         => 'App\Http\Middleware\RedirectIfAuthenticated',
         'admin'         => 'App\Http\Middleware\AuthenticateAdmin',
-        'superadmin'    =>  'App\Http\Middleware\AuthenticateSuperAdmin'
+        'superadmin'    => 'App\Http\Middleware\AuthenticateSuperAdmin',
+        'slack'         => 'App\Http\Middleware\Slack',
     ];
 
 }

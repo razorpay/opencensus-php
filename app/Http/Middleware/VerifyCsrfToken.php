@@ -13,6 +13,7 @@ class VerifyCsrfToken extends BaseVerifier
      */
     protected $except = [
         '/(test|live)/transactions/(payment|refund|settlement|transaction)',
+        '/slack',
     ];
 
 	/**

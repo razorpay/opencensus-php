@@ -3,9 +3,9 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use Auth;
+use Input;
 
-class AuthenticateAdmin {
+class Slack {
     /**
      * Handle an incoming request.
      *
@@ -15,10 +15,15 @@ class AuthenticateAdmin {
      */
     public function handle($request, Closure $next)
     {
-        if(!Auth::guard('admin')->user())
+        $slackToken = config('razorpay.slack.command_token');
+
+        $tokenFromInput = Input::get('token', false);
+
+        if ($slackToken !== $tokenFromInput)
         {
-            return response()->json(array('success' => false, 'errors' => ['Unauthorised']), 401);
+            return SlackResponse::jsonResponse("Invalid Slack Token");
         }
+
         return $next($request);
     }
 }
