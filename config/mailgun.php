@@ -20,19 +20,19 @@ return [
      * Mailgun (private) API key
      *
      */
-    'api_key' => 'key-7231363487a56ca70808987512475881',
+    'api_key' => env('MAILGUN_API_KEY', 'key-7231363487a56ca70808987512475881'),
 
     /*
      * Mailgun public API key
      *
      */
-    'public_api_key' => 'pubkey-69fd2327dc8d9680275d619cc5ff90fe',
+    'public_api_key' => env('MAILGUN_PUBLIC_KEY', 'pubkey-69fd2327dc8d9680275d619cc5ff90fe'),
 
     /**
      * Domain name registered with Mailgun
      *
      */
-    'domain' => 'razorpay.com',
+    'domain' => env('MAILGUN_DOMAIN', 'razorpay.com'),
 
     /**
      * Force the from address
@@ -59,7 +59,6 @@ return [
      */
     'catch_all' => "",
 
-
     /**
      * Testing
      *
@@ -71,5 +70,5 @@ return [
      *
      * Note: Mailgun does charge your account for messages sent in test mode.
      */
-    'testmode' => env('MAIL_PRETEND'),
+    'testmode' => env('MAILGUN_MOCK', false),
 ];
