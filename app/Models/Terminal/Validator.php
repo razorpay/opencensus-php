@@ -27,6 +27,7 @@ class Validator extends Base\Validator
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
         Entity::SHARED                      => 'sometimes|boolean',
         Entity::GATEWAY_ACQUIRER            => 'sometimes|string',
+        Entity::STATUS                      => 'sometimes|enum',
     );
 
     protected static $editTerminalGateways = array(

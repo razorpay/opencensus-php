@@ -122,11 +122,11 @@ trait Authorize
 
         // at this point, its a successful payment and the terminal could have changed
         // if so, save the payment with the new successful terminal now
-        if($currentTerminal->id !== $terminalsSelected[0])
+        if($currentTerminal->id !== $terminalsSelected[0]->id)
         {
             $this->repo->saveOrFail($payment);
         }
-
+        
         // we have tried the payment with multiple terminals
         // and if we still encounter timeout exception
         // record it here and throw it back to caller.
@@ -332,10 +332,7 @@ trait Authorize
             $chance = rand(1,100);
 
             $options['chance'] = $chance;
-        }
-        if (($this->mode === Mode::LIVE) and
-            (App::environment('testing') === false))
-        {
+
             $options['multiple'] = true;
         }
 
