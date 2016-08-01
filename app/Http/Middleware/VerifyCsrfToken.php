@@ -12,8 +12,16 @@ class VerifyCsrfToken extends BaseVerifier
      * @var array
      */
     protected $except = [
-        '/(test|live)/transactions/(payment|refund|settlement|transaction)',
         '/slack',
+
+        '/test/transactions/*',
+        '/live/transactions/*',
+
+        '/test/analytics/aggregations',
+        '/test/analytics/payment/aggregations',
+
+        '/live/analytics/aggregations',
+        '/live/analytics/payment/aggregations'
     ];
 
 	/**
