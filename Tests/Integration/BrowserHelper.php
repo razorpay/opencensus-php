@@ -136,6 +136,15 @@ trait BrowserHelper
         }, 20000);
 	}
 
+	public function waitAndClickById($id)
+	{
+		$this->waitUntil(function() use($id){
+			$this->assertTrue($this->displayedById($id));
+            $this->clickById($id);
+            return true;
+        }, 20000);
+	}
+
 	public function waitAndClickByLinkText($text)
 	{
 		$this->waitUntil(function() use($text){
