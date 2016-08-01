@@ -90,8 +90,15 @@ trait Authorize
             }
             catch (\Exception $e)
             {
+                if (($this->mode === Mode::TEST) and
+                    (App::environment('testing') === true))
+                {
+                    throw $e;
+                }
+
                 // handle timeout exceptions differently
                 // this is a terminal/gateway failure
+                // TODO: log this here with trace log
                 if($e instanceof Exception\GatewayTimeoutException or $e instanceof \Requests_Exception)
                 {
                     $retry_attempts += 1;
@@ -254,6 +261,13 @@ trait Authorize
 
         $terminalsSelected = $this->terminalSelector->select($options);
 
+        if(!isset($options['multiple']))
+        {
+            // this is for test mode
+            // make this into an array, since the caller expects an array
+            $terminalsSelected = array($terminalsSelected);
+        }
+
         $this->logTerminalPickedAndSelected($terminalsSelected[0], $terminalPicked, $payment);
 
         return $terminalsSelected;
@@ -319,8 +333,11 @@ trait Authorize
 
             $options['chance'] = $chance;
         }
-
-        $options['multiple'] = true;
+        if (($this->mode === Mode::LIVE) and
+            (App::environment('testing') === false))
+        {
+            $options['multiple'] = true;
+        }
 
         return $options;
     }
