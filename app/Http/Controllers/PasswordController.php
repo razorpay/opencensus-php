@@ -6,6 +6,7 @@ use Input;
 use Password;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Lang;
+use DB;
 
 class PasswordController extends Controller
 {
