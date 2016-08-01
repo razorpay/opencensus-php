@@ -8,3 +8,4 @@ Thumbs.db
 /node_modules/*
 /storage/selenium.png
 /config/dev/*
+/storage/logs/*
