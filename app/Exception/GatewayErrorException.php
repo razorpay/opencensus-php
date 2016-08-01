@@ -7,7 +7,7 @@ use RZP\Error\ErrorCode;
 
 class GatewayErrorException extends RecoverableException
 {
-    protected $two_fa_error = false;
+    protected $twoFaError = false;
 
     public function __construct(
         $code,
@@ -35,11 +35,11 @@ class GatewayErrorException extends RecoverableException
 
     public function markTwoFaError()
     {
-        $this->two_fa_error = true;
+        $this->twoFaError = true;
     }
 
     public function hasTwoFaError()
     {
-        return $this->two_fa_error === true ;
+        return $this->twoFaError ;
     }
 }
