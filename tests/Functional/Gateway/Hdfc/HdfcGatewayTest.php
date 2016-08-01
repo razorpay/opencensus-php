@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Hdfc;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 
@@ -142,7 +143,7 @@ class HdfcGatewayTest extends TestCase
                 'content' => [
                     'error' => [
                         'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                        'description' => 'The payment failed most possibly due to an invalid card number',
+                        'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_CARD_NUMBER_POSSIBLY_INVALID,
                     ],
                 ],
                 'status_code' => 400,
