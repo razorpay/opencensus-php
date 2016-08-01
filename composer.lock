@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "128040dc1402c7e361b6c55601dd8e6e",
-    "content-hash": "842d2064feb6e49f48ee6478b1ecfd57",
+    "hash": "631bf56562d2007f819281e989268d8a",
+    "content-hash": "4a521971ffc6a52091557fe51826c7c5",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -1540,50 +1540,6 @@
             "time": "2016-07-07 23:02:18"
         },
         {
-            "name": "marlek/laravel-automigrate",
-            "version": "2.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/marlek/laravel-automigrate.git",
-                "reference": "7a6d3ec46367f88276df113bfe0239ffe5a62270"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/marlek/laravel-automigrate/zipball/7a6d3ec46367f88276df113bfe0239ffe5a62270",
-                "reference": "7a6d3ec46367f88276df113bfe0239ffe5a62270",
-                "shasum": ""
-            },
-            "require": {
-                "illuminate/support": "5.*",
-                "php": ">=5.4.0"
-            },
-            "require-dev": {
-                "phpspec/phpspec": "2.0.*@dev"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-0": {
-                    "Marlek\\LaravelAutomigrate": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Marko Lekić",
-                    "email": "markotheman@gmail.com"
-                }
-            ],
-            "description": "Laravel package which allows automatically running migrations from different folders, useful when you have custom folder structure",
-            "keywords": [
-                "laravel",
-                "migrations"
-            ],
-            "time": "2016-02-02 08:54:32"
-        },
-        {
             "name": "maximebf/debugbar",
             "version": "v1.11.1",
             "source": {
@@ -1646,16 +1602,16 @@
         },
         {
             "name": "monolog/monolog",
-            "version": "1.20.0",
+            "version": "1.21.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Seldaek/monolog.git",
-                "reference": "55841909e2bcde01b5318c35f2b74f8ecc86e037"
+                "reference": "f42fbdfd53e306bda545845e4dbfd3e72edb4952"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/55841909e2bcde01b5318c35f2b74f8ecc86e037",
-                "reference": "55841909e2bcde01b5318c35f2b74f8ecc86e037",
+                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/f42fbdfd53e306bda545845e4dbfd3e72edb4952",
+                "reference": "f42fbdfd53e306bda545845e4dbfd3e72edb4952",
                 "shasum": ""
             },
             "require": {
@@ -1720,7 +1676,7 @@
                 "logging",
                 "psr-3"
             ],
-            "time": "2016-07-02 14:02:10"
+            "time": "2016-07-29 03:23:52"
         },
         {
             "name": "mtdowling/cron-expression",
@@ -1960,54 +1916,6 @@
                 "php"
             ],
             "time": "2016-04-19 13:41:41"
-        },
-        {
-            "name": "nitmedia/wkhtml2pdf",
-            "version": "2.0.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/NitMedia/wkhtml2pdf.git",
-                "reference": "d1a071179f7fb01e154c726e0468db0d6f487a1c"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/NitMedia/wkhtml2pdf/zipball/d1a071179f7fb01e154c726e0468db0d6f487a1c",
-                "reference": "d1a071179f7fb01e154c726e0468db0d6f487a1c",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.0"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.0.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-0": {
-                    "Nitmedia\\Wkhtml2pdf": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Nithin Meppurathu",
-                    "email": "admin@nitmedia.com"
-                }
-            ],
-            "description": "Html 2 Pdf - using wkhtml2pdf, work on 32bit and 64 bit linux + MacOS",
-            "keywords": [
-                "illuminate",
-                "laravel",
-                "pdf",
-                "wkhtml2pdf",
-                "wkhtmltopdf"
-            ],
-            "time": "2016-02-20 00:39:12"
         },
         {
             "name": "paragonie/random_compat",
