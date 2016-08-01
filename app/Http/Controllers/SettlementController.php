@@ -5,6 +5,7 @@ namespace RZP\Http\Controllers;
 use RZP\Http\ApiResponse;
 use RZP\Exception\RecoverableException;
 use RZP\Models\Settlement;
+use RZP\Models\Settlement\Details;
 use RZP\Models\Transaction;
 use Request;
 
@@ -163,6 +164,22 @@ class SettlementController extends Controller
         $data = (new Settlement\Service)->calculatePrevousSettlementServiceTax();
 
         return ApiResponse::json($data);
+    }
+
+    public function getSettlementDetails($id)
+    {
+        $data = (new Settlement\Details\Service)->getSettlementDetails($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postSettlementDetailsForOldTxns()
+    {
+        $input = Input::all();
+
+        $data = (new Settlement\Details\Service)->postSettlementDetailsForOldTxns($input);
+
+        return $ApiResponse::json($data);
     }
 
     public function getSettlementCombinedReport()
