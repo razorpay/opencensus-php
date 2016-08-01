@@ -106,10 +106,13 @@ class Gateway extends Base\Gateway
 
         if ($attrs['status'] !== 'Y')
         {
+            $this->trace->info(
+                TraceCode::PAYMENT_CALLBACK_FAILURE,
+                ['content' => $content]);
+
             // Payment fails, throw exception
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-                $attrs,'');
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
         }
     }
 
@@ -122,6 +125,41 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
+    public function verifyPayment($verify)
+    {
+        $payment = $verify->payment;
+        $content = $verify->verifyResponseContent;
+
+        $status = VerifyResult::STATUS_MATCH;
+
+        $verify->apiSuccess = true;
+        $verify->gatewaySuccess = false;
+
+        if ($content['AuthorizationStatus'] === 'Y')
+        {
+            $verify->gatewaySuccess = true;
+        }
+
+        $input = $verify->input;
+
+        // If payment status is either failed or created,
+        // this is an api failure
+        if (($input['payment']['status'] === 'failed') or
+            ($input['payment']['status'] === 'created'))
+        {
+            $verify->apiSuccess = false;
+        }
+
+        // If both don't match we have a status mis match
+        if ($verify->gatewaySuccess !== $verify->apiSuccess)
+        {
+            $status = VerifyResult::STATUS_MISMATCH;
+        }
+
+        $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
+
+        return $status;
+    }
     protected function validateCallbackChecksum($content)
     {
         $expectedHash = $content['Checksum'];
@@ -193,6 +231,10 @@ class Gateway extends Base\Gateway
         $response = $this->sendGatewayRequest($request);
         $content = $response->body;
         $content = $this->getDataFromResponse($content);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            ['responseContent' => $content]);
 
         $verify->verifyResponse = $response;
         $verify->verifyResponseBody = $response->body;
