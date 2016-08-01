@@ -175,7 +175,7 @@ class SettlementController extends Controller
 
     public function postSettlementDetailsForOldTxns()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Settlement\Details\Service)->postSettlementDetailsForOldTxns($input);
 
