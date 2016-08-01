@@ -122,7 +122,7 @@ class Merchant
                 if ($txn->getType() === $entityType)
                 {
                     $totalServiceTax    += $txn->getServiceTax();
-                    $totalFee           += ($txn->getFee() - $txn->getServiceTax());
+                    $totalFee           += $txn->getFee();
                     $totalAmount        += $txn->getAmount();
 
                     return true;
