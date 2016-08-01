@@ -153,12 +153,11 @@ return array(
         App\Providers\PasswordStrengthServiceProvider::class,
 
         // Package providers follow
-        'Aws\Laravel\AwsServiceProvider',
+        Aws\Laravel\AwsServiceProvider::class,
         'Barryvdh\Debugbar\ServiceProvider',
         Bogardo\Mailgun\MailgunServiceProvider::class,
         'Maatwebsite\Excel\ExcelServiceProvider',
         'Maknz\Slack\SlackServiceProvider',
-        'Marlek\LaravelAutomigrate\LaravelAutomigrateServiceProvider',
         \Conner\Tagging\Providers\TaggingServiceProvider::class,
         Illuminate\Validation\ValidationServiceProvider::class,
     ],

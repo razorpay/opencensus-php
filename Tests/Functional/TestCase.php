@@ -23,8 +23,6 @@ class TestCase extends BaseTestCase
 
         Artisan::call('migrate');
 
-        Artisan::call('automigrate');
-
         DB::beginTransaction();
     }
 
