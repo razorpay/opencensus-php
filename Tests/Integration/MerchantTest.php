@@ -198,7 +198,7 @@ class MerchantTest extends TestCase
         $this->waitAndClickByClassName('roll_key');
         $this->clickByClassName('modal-ok');
         $this->waitUntilDisplayedByClassName('roll-key-modal');
-        $this->execScript('$(".modal-ok").click()');
+        $this->clickById('new_keys_ok');
         $this->waitUntilDisplayedByClassName('confirm-modal');
         $this->waitAndClickByClassName('confirm-ok');
         $this->waitUntilAbsentByClassName('roll-key-modal');
