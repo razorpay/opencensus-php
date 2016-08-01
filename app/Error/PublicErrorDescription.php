@@ -184,8 +184,6 @@ class PublicErrorDescription
 
     const BAD_REQUEST_GATEWAY_CANNOT_TOPUP                                      = 'Payment processing failed because topup cannot be done';
 
-    const GATEWAY_ERROR_PAYMENT_INVALID_REFERENCE_NO                            = 'Payment have invalid reference number';
-    const GATEWAY_ERROR_PAYMENT_CANNOT_BE_RETRIEVED                             = 'This payment cannot be retrieved';
     const BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED                               = 'This payment cannot be cancelled';
     const BAD_REQUEST_PAYMENT_ALREADY_CANCELLED                                 = 'Payment already cancelled';
     const BAD_REQUEST_PAYMENT_ALREADY_REFUND_INITIATED                          = 'Refund already initiated';

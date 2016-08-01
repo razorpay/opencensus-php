@@ -7,6 +7,8 @@ use Illuminate\Database\Migrations\Migration;
 use RZP\Constants\Table;
 use RZP\Gateway\Ebs\Entity as Ebs;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Payment;
+use RZP\Models\Payment\Refund;
 
 class CreateEbsGateway extends Migration
 {
@@ -35,6 +37,8 @@ class CreateEbsGateway extends Migration
 
             $table->string(Ebs::REFERENCE_ID)->nullable();
 
+            $table->char(Ebs::REFUND_ID, UniqueIdEntity::ID_LENGTH)->nullable();
+
             $table->string(Ebs::PAYMENT_MODE)->nullable();
 
             $table->string(Ebs::CHANNEL)->nullable();
@@ -55,8 +59,8 @@ class CreateEbsGateway extends Migration
             $table->integer(Ebs::UPDATED_AT);
 
             $table->foreign(Ebs::PAYMENT_ID)
-                  ->references(Ebs::ID)
-                  ->on('payments')
+                  ->references(Payment\Entity::ID)
+                  ->on(Table::PAYMENT)
                   ->on_delete('restrict');
 
             $table->index(Ebs::RECEIVED);
@@ -64,6 +68,8 @@ class CreateEbsGateway extends Migration
             $table->index(Ebs::PAYMENT_ID);
 
             $table->index(Ebs::REFERENCE_ID);
+
+            $table->index(Ebs::REFUND_ID);
 
             $table->index(Ebs::IS_FLAGGED);
         });

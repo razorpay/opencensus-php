@@ -9,9 +9,7 @@ use RZP\Models\Card;
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
-use RZP\Error\ErrorCode;
 use RZP\Constants\Mode;
-use RZP\Gateway\Ebs\Entity;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Ebs\ResponseConstants as Resp;
@@ -64,10 +62,12 @@ class Gateway extends Base\Gateway
 
     public function capture(array $input)
     {
-        $payment = $this->getRepo()->findByPaymentIdAndAction(
+        parent::capture($input);
+
+        $gatewayPayment = $this->getRepo()->findByPaymentIdAndAction(
             $input['payment']['id'], Action::AUTHORIZE);
 
-        assert($payment[Entity::STATUS] === Status::AUTHORIZED);
+        assert($gatewayPayment[Entity::STATUS] === Status::AUTHORIZED);
     }
 
 
@@ -81,13 +81,13 @@ class Gateway extends Base\Gateway
 
         $this->validateCallbackGetSecureHash($input['gateway'], $input['terminal']);
 
-        $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
+        $gatewayPayment = $this->getRepo()->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
 
         $attributes = $this->getGatewayEntityDataFromResponse($input);
 
-        $payment->fill($attributes);
-        $payment->saveOrFail();
+        $gatewayPayment->fill($attributes);
+        $gatewayPayment->saveOrFail();
         $responseCode = $input['gateway'][Resp::RESPONSE_CODE];
 
         if ($responseCode !== Status::SUCCESS)
@@ -95,7 +95,7 @@ class Gateway extends Base\Gateway
             //
             // Payment fails, throw exception
             //
-            $desc = ResponseCode::$reasonCodes[$errorCode];
+            $desc = ResponseCode::$reasonCodes[$responseCode];
 
             throw new Exception\GatewayErrorException(
                 ResponseCode::getMappedCode($responseCode),
@@ -290,7 +290,7 @@ class Gateway extends Base\Gateway
 
         if ($input['gateway'][Resp::RESPONSE_CODE] !== Status::SUCCESS)
         {
-            $content[Entity::STATUS] = Status::AUTHORIZED_FAILED;
+            $content[Entity::STATUS] = Status::AUTHORIZE_FAILED;
         }
 
         return $content;
@@ -320,7 +320,7 @@ class Gateway extends Base\Gateway
 
     protected function getPaymentRefundRequestContent($payment, $input)
     {
-        $refundAmount = (string) ($input['refund']['amount']/100);
+        $refundAmount = $input['refund']['amount']/100;
 
         $content = array(
             Req::API_ACTION         => 'refund',
@@ -355,17 +355,17 @@ class Gateway extends Base\Gateway
 
     protected function createGatewayPaymentEntity($attributes, $input)
     {
-        $payment = $this->getNewGatewayPaymentEntity();
+        $gatewayPayment = $this->getNewGatewayPaymentEntity();
 
-        $payment->setPaymentId($input['payment']['id']);
+        $gatewayPayment->setPaymentId($input['payment']['id']);
 
-        $payment->fill($attributes);
+        $gatewayPayment->fill($attributes);
 
-        $payment->setAction($this->action);
+        $gatewayPayment->setAction($this->action);
 
-        $payment->saveOrFail();
+        $gatewayPayment->saveOrFail();
 
-        return $payment;
+        return $gatewayPayment;
     }
 
     protected function getMappedAttributes($attributes)
@@ -388,7 +388,7 @@ class Gateway extends Base\Gateway
 
     protected function getAuthRequestContentArray($input)
     {
-        $amount = (string) ($input['payment']['amount']/100);
+        $amount = $input['payment']['amount']/100;
 
         $content = array(
             Req::ACCOUNT_ID    => $this->getAccountId($input['terminal']),
@@ -554,7 +554,7 @@ class Gateway extends Base\Gateway
     protected function getAuthorizeContent($content)
     {
         $attributes = array();
-        $attributes[Entity::AMOUNT]     = (string)$content[Req::AMOUNT];
+        $attributes[Entity::AMOUNT]     = $content[Req::AMOUNT];
         $attributes[Entity::PAYMENT_ID] = $content[Req::REFRENCE_NO];
         $attributes[Entity::AMOUNT]     = $content[Req::AMOUNT];
         $attributes[Entity::STATUS]     = Status::CREATED;
@@ -564,15 +564,15 @@ class Gateway extends Base\Gateway
 
     protected function getRefundContent($response, $input)
     {
-        $refundAmount = (string) ($input['refund']['amount']/100);
+        $refundAmount = $input['refund']['amount']/100;
 
         $attributes = $this->getMappedAttributes($response);
 
         $attributes[Entity::REFUND_ID] = $input['refund']['id'];
+
         $attributes[Entity::AMOUNT] = $refundAmount;
 
         $attributes[Entity::RECEIVED] = true;
-        $attributes[Entity::PAYMENT_ID] = $input['payment']['id'];
 
         if (isset($response[Resp::ERROR_CODE]))
         {
