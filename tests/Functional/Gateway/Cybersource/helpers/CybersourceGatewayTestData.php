@@ -45,6 +45,22 @@ return [
         ]
     ],
 
+    'testAuthenticationFailurePayment' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => 'Payment failed due to processing error on gateway',
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED,
+        ],
+    ],
+
     'testPayment' => [
         'merchant_id' => '10000000000000',
         'amount' => 50000,
