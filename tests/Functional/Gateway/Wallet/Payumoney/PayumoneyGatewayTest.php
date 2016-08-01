@@ -50,6 +50,40 @@ class PayumoneyGatewayTest extends TestCase
         $this->assertTestResponse($wallet, 'testPaymentWalletEntity');
     }
 
+    public function testPaymentWithRedirection()
+    {
+        $payment = $this->getDefaultWalletPaymentArray('payumoney');
+
+        $authPayment = $this->doAuthPayment($payment);
+
+        $response = $this->redirectPayment($authPayment['razorpay_payment_id']);
+
+        $this->assertArraySelectiveEquals($authPayment, $response);
+    }
+
+    public function testFailedPaymentWithRedirection()
+    {
+        $payment = $this->getDefaultWalletPaymentArray('payumoney');
+
+        $this->setOtp(Otp::EXPIRED);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $authResponse = $this->runRequestResponseFlow($data, function() use ($payment) {
+            return $this->doAuthPaymentViaAjaxRoute($payment);
+        });
+
+        $content = $this->getJsonContentFromResponse($this->response);
+
+        $data = $this->testData['testExpiredOtpPaymentRedirection'];
+
+        $redirectResponse = $this->runRequestResponseFlow($data, function() use ($content) {
+            return $this->redirectPayment($content['payment_id']);
+        });
+
+        $this->assertArraySelectiveEquals($authResponse, $redirectResponse);
+    }
+
     public function testOtpRetryPayment()
     {
         $payment = $this->getDefaultWalletPaymentArray('payumoney');
@@ -194,7 +228,7 @@ class PayumoneyGatewayTest extends TestCase
         // Make topup redirection request
         $topupRedirect = $this->sendRequest($topupResponse['request']);
 
-        $ret = (($this->isResponseInstanceType('redirect', $topupRedirect)) and
+        $ret = (($this->isResponseInstanceType($topupRedirect, 'redirect')) and
             ($topupRedirect->getStatusCode() === 302));
 
         if ($ret === true)
@@ -439,7 +473,10 @@ class PayumoneyGatewayTest extends TestCase
     {
         $mock = $this->isGatewayMocked();
 
-        list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
+        $json = (($this->isResponseInstanceType($response, 'json')) and
+                 ($response->headers->get('content-type') === 'application/json'));
+
+        list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback, $json);
 
         $this->response     = $response;
         $this->callbackUrl  = $url;

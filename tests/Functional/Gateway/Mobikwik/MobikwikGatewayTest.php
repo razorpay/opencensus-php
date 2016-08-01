@@ -198,7 +198,7 @@ class MobikwikGatewayTest extends TestCase
         // Make topup redirection request
         $topupRedirect = $this->sendRequest($topupResponse['request']);
 
-        $ret = (($this->isResponseInstanceType('redirect', $topupRedirect)) and
+        $ret = (($this->isResponseInstanceType($topupRedirect, 'redirect')) and
             ($topupRedirect->getStatusCode() === 302));
 
         if ($ret === true)

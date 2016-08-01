@@ -289,6 +289,24 @@ trait PaymentTrait
         return $this->doAuthPayment($payment);
     }
 
+    protected function doAuthPaymentViaAjaxRoute($payment)
+    {
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $request = [
+            'content' => $payment,
+            'url' => '/payments/create/ajax',
+            'method' => 'post'
+        ];
+
+        $this->ba->publicAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function doAuthPaymentViaCheckoutRoute($payment)
     {
         if ($payment === null)
@@ -333,6 +351,32 @@ trait PaymentTrait
         $content = $this->makeRequestAndGetContent($request);
 
         return $content;
+    }
+
+    protected function redirectPayment($id)
+    {
+        $request = [
+            'method'    => 'POST',
+            'url'       => '/payments/'.$id.'/redirect',
+            'content'   => []
+        ];
+
+        $this->ba->publicAuth();
+
+        $response = $this->sendRequest($request);
+
+        $content = $response->getContent();
+
+        $marker = '// Callback data //';
+
+        if (strpos($content, $marker) !== false)
+        {
+            $content = $this->getPaymentJsonFromCallback($content);
+
+            $response->setContent($content);
+        }
+
+        return $this->getJsonContentFromResponse($response);
     }
 
     protected function getOtp()
@@ -873,7 +917,7 @@ trait PaymentTrait
 
         $content = $response->getContent();
 
-        if ($this->isResponseInstanceType('http', $response))
+        if ($this->isResponseInstanceType($response, 'http'))
         {
             $formData = $this->getSecondFormDataFromResponse($content, 'http://localhost');
 
@@ -913,6 +957,7 @@ trait PaymentTrait
     {
         $urls = array(
             '/payments/create/jsonp',
+            '/payments/create/ajax',
             '/payments/create/checkout',
             '/payments');
 
@@ -934,7 +979,7 @@ trait PaymentTrait
 
         if ($request['url'] === '/payments/create/checkout')
         {
-            $this->assertTrue($this->isResponseInstanceType('http', $response));
+            $this->assertTrue($this->isResponseInstanceType($response, 'http'));
             $this->assertEquals($response->headers->get('content-type'), 'text/html; charset=UTF-8');
 
             $marker = '// Callback data //';
@@ -976,19 +1021,45 @@ trait PaymentTrait
             // Has to be either redirect or a html form post.o
             // First check for normal html form post.
             $ret = ((json_decode($content) === null) and
-                    ($this->isResponseInstanceType('http', $response)) and
+                    ($this->isResponseInstanceType($response, 'http')) and
                     ($response->headers->get('content-type') === 'text/html; charset=UTF-8') and
                     ($response->getStatusCode() === 200));
 
             if ($ret === false)
             {
                 // Now check for redirect
-                $ret = (($this->isResponseInstanceType('redirect', $response)) and
+                $ret = (($this->isResponseInstanceType($response, 'redirect')) and
                         ($response->getStatusCode() === 302));
 
                 if ($ret === true)
                 {
                     $gateway = $response->headers->get('X-gateway');
+                }
+                else if (($response->getStatusCode() === 200) and
+                         ($this->isResponseInstanceType($response, 'json')) and
+                         ($response->headers->get('content-type') === 'application/json'))
+                {
+                    $content = $this->getJsonContentFromResponse($response);
+
+                    if (isset($content['type']) === true)
+                    {
+                        if ($content['type'] === 'first')
+                        {
+                            $gateway = $content['gateway'];
+                        }
+                        else if ($content['type'] === 'return')
+                        {
+                            return $this->processMerchantReturnCallbackForm($response);
+                        }
+                        else if ($content['type'] === 'otp')
+                        {
+                            $gateway = $content['gateway'];
+                        }
+                    }
+                    else
+                    {
+                        return $response;
+                    }
                 }
                 else
                 {
@@ -1007,18 +1078,20 @@ trait PaymentTrait
                 //
                 $content = $this->getSecondFormDataFromResponse($content, 'http://localhost');
 
-                if ((isset($content['type'])) and
-                    ($content['type'] === 'first'))
+                if (isset($content['type']) === true)
                 {
-                    $gateway = $content['gateway'];
-                }
-                else if ($content['type'] === 'return')
-                {
-                    return $this->processMerchantReturnCallbackForm($response);
-                }
-                else if ($content['type'] === 'otp')
-                {
-                    $gateway = $content['gateway'];
+                    if ($content['type'] === 'first')
+                    {
+                        $gateway = $content['gateway'];
+                    }
+                    else if ($content['type'] === 'return')
+                    {
+                        return $this->processMerchantReturnCallbackForm($response);
+                    }
+                    else if ($content['type'] === 'otp')
+                    {
+                        $gateway = $content['gateway'];
+                    }
                 }
             }
         }
@@ -1176,11 +1249,12 @@ trait PaymentTrait
         return false;
     }
 
-    protected function getDataForGatewayRequest($response, &$callback = null)
+    protected function getDataForGatewayRequest($response, &$callback = null, $json = false)
     {
         $url = $values = $method = null;
 
-        if ($callback)
+        if (($callback !== null) or
+            ($json === true))
         {
             $content = $this->getJsonContentFromResponse($response, $callback);
             $callback = null;
@@ -1262,7 +1336,7 @@ trait PaymentTrait
      * @param  mixed   $response
      * @return boolean
      */
-    protected function isResponseInstanceType($type = 'json', $response)
+    protected function isResponseInstanceType($response, $type = 'json')
     {
         $match = 'Response';
 
@@ -1278,7 +1352,7 @@ trait PaymentTrait
 
     protected function assertResponse($type, $response)
     {
-        $this->assertTrue($this->isResponseInstanceType($type, $response));
+        $this->assertTrue($this->isResponseInstanceType($response, $type));
     }
 
     protected function mockServerContentFunction($closure)
