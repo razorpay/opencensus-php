@@ -22,7 +22,7 @@
         "razorpay/spine": "dev-master",
         "rmccue/requests": ">=1.0",
         "rtconner/laravel-tagging": "~2.1",
-        "schuppo/password-strength": "~1.3",
+        "schuppo/password-strength": "~1.5",
         "sunra/php-simple-html-dom-parser": "v1.5.0",
         "vipsoft/unzip": "^1.1"
     },
