@@ -44,6 +44,15 @@ class EmiFile
         return $cardNumber;
     }
 
+    protected function getAuthCode($payment)
+    {
+        $gateway = $payment->getGateway();
+
+        $gatewayPayment = $this->repo->$gateway->findCapturedPaymentById($payment->getId());
+
+        return $gatewayPayment->getAuthCode();
+    }
+
     protected function fetchAndSendPassword()
     {
         $this->emiFilePassword = $this->generateEmiFilePassword();

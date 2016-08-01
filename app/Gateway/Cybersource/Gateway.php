@@ -370,6 +370,8 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_VALIDATE_RESPONSE, $response);
 
+        $payAuthRep = $response[self::PAYER_AUTH_VALIDATE_REPLY];
+
         if ($response['reasonCode'] !== Result::SUCCESS)
         {
             $attributes = array(
@@ -384,8 +386,6 @@ class Gateway extends Base\Gateway
 
             $this->throwException($response);
         }
-
-        $payAuthRep = $response[self::PAYER_AUTH_VALIDATE_REPLY];
 
         $attributes = array(
             Entity::COMMERCE_INDICATOR => $payAuthRep[self::COMMERCE_INDICATOR],
@@ -404,11 +404,45 @@ class Gateway extends Base\Gateway
                         ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
                 }
 
+                $eci = (int) $payAuthRep[self::ECI];
+
+                if (($eci === 7) or ($eci === 0))
+                {
+                    $message = 'ECI param value is invalid';
+
+                    if (isset($payAuthRep['authenticationStatusMessage']))
+                    {
+                        $message = $payAuthRep['authenticationStatusMessage'];
+                    }
+
+                    throw new Exception\GatewayErrorException(
+                        ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED,
+                        $response['reasonCode'],
+                        $message);
+                }
+
                 $attributes[Entity::ECI] = $payAuthRep[Entity::ECI];
                 $attributes[Entity::CAVV] = $payAuthRep[self::CAVV];
                 break;
 
             case Card\Network::MC:
+                $colInd = (int) $payAuthRep[self::UCAF_COLLECTION_INDICATOR];
+
+                if(($colInd === 0) or ($colInd === 7))
+                {
+                    $message = 'UCAF param value is invalid';
+
+                    if (isset($payAuthRep['authenticationStatusMessage']))
+                    {
+                        $message = $payAuthRep['authenticationStatusMessage'];
+                    }
+
+                    throw new Exception\GatewayErrorException(
+                        ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED,
+                        $response['reasonCode'],
+                        $message);
+                }
+
                 $attributes[Entity::AUTH_DATA] = $payAuthRep[self::UCAF_AUTHENTICATION_DATA];
                 $attributes[Entity::COLLECTION_INDICATOR] = $payAuthRep[self::UCAF_COLLECTION_INDICATOR];
                 break;
@@ -595,7 +629,7 @@ class Gateway extends Base\Gateway
                 break;
 
             case Card\Network::MC:
-                $content['ucaf'][self::AUTHENTICATION_DATA] = $gateway->getAuthData();
+                $content['ucaf'][self::AUTHENTICATION_DATA] = $gateway->getAuthCode();
                 $content['ucaf'][self::COLLECTION_INDICATOR] = $gateway->getCollectionIndicator();
                 break;
 
