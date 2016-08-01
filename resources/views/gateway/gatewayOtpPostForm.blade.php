@@ -320,9 +320,10 @@
             var url = '/v1/payments/{{$data["payment_id"]}}/otp_resend?key_id=' + key_id;
 
             xhr.onreadystatechange = function() {
+                gel('otp').value = '';
                 if (xhr.readyState == 4 && xhr.status == 200) {
                     var res = JSON.parse(xhr.responseText);
-                    hideMessage("OTP sent, please check your inbox");
+                    hideMessage("An OTP has been sent to {{$data['contact']}}");
                 }
             }
 
@@ -346,7 +347,6 @@
                 xhr = new ActiveXObject("Microsoft.XMLHTTP");
             }
 
-            // var url = '/v1/payments/{{$data["payment_id"]}}/otp_resend?key_id=' + key_id;
             var url = request_url;
 
             showMessage({
