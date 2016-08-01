@@ -77,7 +77,7 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
-            $input['gateway']);
+            ['gateway' => $input['gateway']]);
 
         $this->validateCallbackGetSecureHash($input['gateway'], $input['terminal']);
 
@@ -92,6 +92,7 @@ class Gateway extends Base\Gateway
 
         if ($responseCode !== Status::SUCCESS)
         {
+            //
             // Payment fails, throw exception
             //
             $desc = ResponseCode::$reasonCodes[$errorCode];

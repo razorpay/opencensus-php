@@ -24,12 +24,12 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
-    public function findByEbsPaymentIdAndActionOrFail($paymentId, $action)
+    public function findByEbsPaymentIdAndActionOrFail($ebsPaymentId, $action)
     {
         $repo = $this->repo;
 
-        return $repo::where(Entity::REFERENCE_ID, '=', $paymentId)
-            ->where(Entity::ACTION, '=', $action)
-            ->firstOrFail();
+        return $repo::where(Entity::REFERENCE_ID, '=', $ebsPaymentId)
+                    ->where(Entity::ACTION, '=', $action)
+                    ->firstOrFail();
     }
 }
