@@ -37,7 +37,6 @@ class BilldeskGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('txn_'.$payment['transaction_id'], $txn['id']);
-        $this->assertEquals($payment['two_fa_status'], TwoFaStatus::PASSED);
 
         $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
 
@@ -53,23 +52,6 @@ class BilldeskGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             $this->testData['testPaymentBilldeskEntity'], $payment);
-    }
-
-    public function testAuthFailedPayment()
-    {
-        $payment = $this->getDefaultNetbankingPaymentArray();
-        $payment['bank'] = 'ALLA';
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $this->runRequestResponseFlow($testData, function() use ($payment)
-        {
-            $payment = $this->doAuthPayment($payment);
-        });
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertEquals($payment['two_fa_status'], TwoFaStatus::FAILED);
     }
 
     public function testPaymentOnDirectBilldeskTerminal()

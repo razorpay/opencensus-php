@@ -49,6 +49,7 @@ trait ResponseFieldsTrait
         'BankID',
         'BankMerchantID',
         'TxnType',
+        'AuthStatus',
         'CurrencyName',
         'ItemCode',
         'SecurityType',
@@ -65,7 +66,6 @@ trait ResponseFieldsTrait
         'AdditionalInfo7',
         'ErrorStatus',
         'ErrorDescription',
-        'AuthStatus',
         'Checksum',
     );
 

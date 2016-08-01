@@ -42,12 +42,10 @@ class AuthStatus
     public static function getTwoFaStatus($code)
     {
         switch ($code) {
-            case '0399':
-                return TwoFaStatus::FAILED;
             case '0300':
                 return TwoFaStatus::PASSED;
             default:
                 return TwoFaStatus::UNKNOWN;
-        }
+            }
     }
 }

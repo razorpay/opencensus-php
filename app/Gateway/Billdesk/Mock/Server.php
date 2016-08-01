@@ -34,6 +34,7 @@ class Server extends Base\Mock\Server
             'BankID'            => $input['BankID'],
             'BankMerchantID'    => $input['BankID'],
             'TxnType'           => 'INR',
+            'AuthStatus'        => '0300',
             'CurencyName'       => 'INR',
             'ItemCode'          => 'DIRECT',
             'SecurityType'      => 'NA',
@@ -51,8 +52,6 @@ class Server extends Base\Mock\Server
             'ErrorStatus'       => 'NA',
             'ErrorDescription'  => 'NA',
         );
-
-        $this->addAuthStatus($content, $input);
 
         $msg = $this->getGatewayInstance()->getMessageStringWithHash($content);
 
@@ -181,17 +180,6 @@ class Server extends Base\Mock\Server
         $this->input = $input;
 
         return $input;
-    }
-
-    protected function addAuthStatus(array & $content, $input)
-    {
-        switch ($content['BankID']) {
-            case 'ALB':
-                $content['AuthStatus'] = '0399';
-                break;
-            default:
-                $content['AuthStatus'] = '0300';
-        }
     }
 
     protected function makeRequest($request)
