@@ -13,6 +13,7 @@ use RZP\Error\ErrorCode;
 use RZP\Constants\Mode;
 use RZP\Gateway\Ebs\Entity;
 use RZP\Gateway\Base\Action;
+use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Ebs\ResponseConstants as Resp;
 use RZP\Gateway\Ebs\RequestConstants as Req;
 
@@ -145,7 +146,115 @@ class Gateway extends Base\Gateway
 
     public function verify(array $input)
     {
-        // TODO complete this
+        parent::verify($input);
+
+        $verify = new Base\Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
+    }
+
+    protected function verifyPayment($verify)
+    {
+        $payment = $verify->payment;
+        $content = $verify->verifyResponseContent;
+        $input = $verify->input;
+
+        $verify->status = VerifyResult::STATUS_MATCH;
+
+        if (isset($content[Resp::ERROR_CODE]) and
+            $content[Resp::ERROR_CODE] !== 0)
+        {
+            $verify->apiSuccess = false;
+        }
+        else
+        {
+            $verify->gatewaySuccess = true;
+
+            if (($input['payment']['status'] !== 'created') and
+                ($input['payment']['status'] !== 'failed'))
+            {
+                $verify->apiSuccess = true;
+            }
+            else
+            {
+                $verify->status = VerifyResult::STATUS_MISMATCH;
+                $verify->apiSuccess = false;
+            }
+        }
+
+        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
+        $verify->payment = $this->saveVerifyContentIfNeeded($payment, $content);
+
+        return $verify->status;
+    }
+
+    protected function saveVerifyContentIfNeeded($payment, $response)
+    {
+        $attributes = $this->getVerifyContents($payment, $response);
+
+        if ($payment === null)
+        {
+            $payment = $this->createGatewayPaymentEntity($attributes);
+        }
+        else if ($payment['received'] === false)
+        {
+            $payment->fill($attributes);
+            $payment->saveOrFail();
+        }
+
+        $this->action = Action::VERIFY;
+
+        return $payment;
+    }
+
+    protected function getVerifyContents($payment, $content)
+    {
+        $content = array(
+            Entity::RECEIVED            => true,
+            Entity::STATUS              => Status::SUCCESS,
+            Entity::AMOUNT              => $this->input['payment']['amount'],
+            Entity::IS_FLAGGED          => $content[Resp::API_IS_FLAGGED],
+            Entity::TRANSACTION_ID      => $content[Resp::API_TRANSACTION_ID],
+            Entity::REFERENCE_ID        => $content[Resp::API_REFERENCE_ID],
+        );
+
+        if (isset($payment['amount']) === false)
+        {
+            $content['amount'] = $this->input['payment']['amount'];
+        }
+
+        return $content;
+    }
+
+
+    protected function sendPaymentVerifyRequest($verify)
+    {
+        $input = $verify->input;
+
+        $payment = $this->getRepo()->findByPaymentIdAndAction(
+            $input['payment']['id'], Action::AUTHORIZE);
+
+        $content = $this->getPaymentVerifyRequestContent($input, $payment);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $traceCode = TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST;
+
+        $this->traceGatewayApiRequest($request, $traceCode);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $parsedResponse = $this->parseResponseXml($response->body);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            [$response->body]);
+
+        $verify->verifyResponse = $response;
+        $verify->verifyResponseBody = $response->body;
+        $verify->verifyResponseContent = $parsedResponse;
+
+        return $parsedResponse;
     }
 
     public function getSecureHash($content, $terminal)
@@ -157,7 +266,7 @@ class Gateway extends Base\Gateway
 
         foreach ($content as $key => $value)
         {
-            if (empty($value))
+            if (strlen($value) > 0)
             {
                 $hashData .= '|' . $value;
             }
@@ -193,6 +302,19 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             $traceCode,
             $request);
+    }
+
+    protected function getPaymentVerifyRequestContent($input, $payment)
+    {
+        $content = array(
+            Req::API_ACTION         => 'status',
+            Req::API_ACCOUNT_ID     => $this->getAccountId($input['terminal']),
+            Req::API_SECRET_KEY     => $this->getSecretKey($input['terminal']),
+            Req::API_PAYMENT_ID     => $payment[Entity::REFERENCE_ID],
+            req::API_TRANSACTION_ID => $payment[Entity::TRANSACTION_ID],
+        );
+
+        return $content;
     }
 
     protected function getPaymentRefundRequestContent($payment, $input)
@@ -265,10 +387,12 @@ class Gateway extends Base\Gateway
 
     protected function getAuthRequestContentArray($input)
     {
+        $amount = (string) ($input['payment']['amount']/100);
+
         $content = array(
             Req::ACCOUNT_ID    => $this->getAccountId($input['terminal']),
             Req::REFRENCE_NO   => $input['payment']['id'],
-            Req::AMOUNT        => $input['payment']['amount']/100,
+            Req::AMOUNT        => $amount,
             Req::CALLBACK      => $input['callbackUrl'],
             Req::NAME          => self::NAME,
             Req::ADDRESS       => self::ADDRESS,

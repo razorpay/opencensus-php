@@ -15,6 +15,38 @@ use RZP\Gateway\Ebs\ResponseConstants as Response;
 
 class Server extends Base\Mock\Server
 {
+    public function verify($input)
+    {
+        parent::refund($input);
+
+        $this->validateActionInput($input, 'verify');
+
+        $payment = $this->getRepo()->findByEbsPaymentIdAndActionOrFail(
+            $input['PaymentID'], Action::AUTHORIZE);
+
+        $date = Carbon::today('Asia/Kolkata')->format('d-m-Y H:i:s');
+
+        $content = '<output transactionId="'.
+            $payment['transaction_id'].
+            '" paymentId="'.
+            $payment['reference_id'].
+            '" amount="'.
+            $payment['amount'].
+            '" dateTime="'.
+            $date.
+            '" mode='.
+            '"TEST"'.
+            ' referenceNo="'.
+            $payment['payment_id'].
+            '" transactionType='.
+            '"Authorized" '.
+            'status="Processing" isFlagged="NO" />';
+
+        $this->content($content);
+
+        return $this->makeResponse($content);
+
+    }
     public function authorize($input)
     {
         parent::authorize($input);
@@ -64,19 +96,18 @@ class Server extends Base\Mock\Server
         $date = Carbon::today('Asia/Kolkata')->format('d-m-Y H:i:s');
 
         $content = '<output response="SUCCESS" transactionId="'.
-            $payment["TransactionID"].
+            $payment['transaction_id'].
             '" paymentId="'.
-            $payment["ebs_payment_id"].
+            $payment['reference_id'].
             '" amount="'.
             $input['Amount'].
             '" dateTime="'.
             $date.
-            '" mode="'.
-            $payment["mode"].
-            '" referenceNo="'.
+            '" mode='.
+            '"TEST"'.
+            ' referenceNo="'.
             $payment["payment_id"].
-            '" transactionType="refunded" status="Processing"/>';
-
+            '" transactionType="refunded" status="Processing" />';
         $this->content($content);
 
         return $this->makeResponse($content);

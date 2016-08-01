@@ -36,6 +36,5 @@ class RequestConstants
     const API_SECRET_KEY        = 'SecretKey';
     const API_AMOUNT            = 'Amount';
     const API_PAYMENT_ID        = 'PaymentID';
-
-
+    const API_TRANSACTION_ID    = 'TransactionID';
 }

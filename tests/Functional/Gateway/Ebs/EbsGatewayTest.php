@@ -136,4 +136,12 @@ class EbsGatewayTest extends TestCase
         $this->assertEquals($refund['error_code'], "29");
         $this->assertEquals($refund['error_description'], "Insufficient balance");
     }
+
+    public function testPaymentVerify()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $this->verifyPayment($payment['id']);
+    }
 }

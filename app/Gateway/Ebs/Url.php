@@ -10,4 +10,5 @@ class Url
 
     const AUTHORIZE             = '/payment/request';
     const REFUND                = '';
+    const VERIFY                = '';
 }
