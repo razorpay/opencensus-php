@@ -106,10 +106,13 @@ class Gateway extends Base\Gateway
 
         if ($attrs['status'] !== 'Y')
         {
+            $this->trace->info(
+                TraceCode::PAYMENT_CALLBACK_FAILURE,
+                ['content' => $content]);
+
             // Payment fails, throw exception
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-                $attrs,'');
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
         }
     }
 
