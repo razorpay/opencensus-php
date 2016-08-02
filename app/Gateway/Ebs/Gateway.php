@@ -197,42 +197,22 @@ class Gateway extends Base\Gateway
 
         if (isset($content[Resp::ERROR_CODE]))
         {
-            $responseCode = $content[Resp::ERROR_CODE];
-
-            if (array_key_exists($responseCode,
-                ResponseCode::$gatewayNonCriticalCodes))
-            {
-                $gatewayStatus = false;
-            }
-            else
-            {
-                $desc = '';
-                if (isset(ResponseCode::$reasonCodes[$responseCode]))
-                {
-                    $desc = ResponseCode::$reasonCodes[$responseCode];
-                }
-
-                throw new Exception\GatewayErrorException(
-                    ResponseCode::getMappedCode($responseCode),
-                    $responseCode,
-                    $desc);
-            }
+            $gatewayStatus = false;
         }
-        if (isset($content['transactionType']))
+        if (isset($content[Resp::API_TRANSACTION_TYPE]))
         {
-            if ($content['transactionType'] === 'Authorized')
+            if ($content[Resp::API_TRANSACTION_TYPE] === Status::API_AUTHORIZED)
             {
                 $gatewayStatus = true;
             }
-            else if ($content['transactionType'] === 'AuthFailed')
+            else if ($content[Resp::API_TRANSACTION_TYPE] === Status::API_AUTHORIZED_FAILED)
             {
                 $gatewayStatus = false;
             }
         }
         else
         {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR, '', '');
+            $gatewayStatus = false;
         }
 
         return $gatewayStatus;
