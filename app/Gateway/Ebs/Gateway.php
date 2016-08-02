@@ -195,11 +195,12 @@ class Gateway extends Base\Gateway
     {
         $gatewayStatus = false;
 
-        if (isset($content[Resp::ERROR_CODE]))
+        if ((isset($content[Resp::ERROR_CODE]) and
+            ($content[Resp::ERROR_CODE] !== '0')))
         {
             $gatewayStatus = false;
         }
-        if (isset($content[Resp::API_TRANSACTION_TYPE]))
+        else if (isset($content[Resp::API_TRANSACTION_TYPE]))
         {
             if ($content[Resp::API_TRANSACTION_TYPE] === Status::API_AUTHORIZED)
             {
@@ -209,10 +210,22 @@ class Gateway extends Base\Gateway
             {
                 $gatewayStatus = false;
             }
+            else
+            {
+                $gatewayStatus = false;
+
+                $this->trace->warning(
+                    TraceCode::GATEWAY_PAYMENT_VERIFY_UNEXPECTED,
+                    $content);
+            }
         }
         else
         {
             $gatewayStatus = false;
+
+            $this->trace->warning(
+                TraceCode::GATEWAY_PAYMENT_VERIFY_UNEXPECTED,
+                $content);
         }
 
         return $gatewayStatus;
@@ -244,12 +257,15 @@ class Gateway extends Base\Gateway
 
     protected function saveVerifyContentIfNeeded($payment, $response)
     {
-        $attributes = $this->getVerifyContents($payment, $response);
-
-        if ($payment['received'] === false)
+        if (isset($response[Resp::API_TRANSACTION_ID]))
         {
-            $payment->fill($attributes);
-            $payment->saveOrFail();
+            $attributes = $this->getVerifyContents($payment, $response);
+
+            if ($payment['received'] === false)
+            {
+                $payment->fill($attributes);
+                $payment->saveOrFail();
+            }
         }
 
         $this->action = Action::VERIFY;
