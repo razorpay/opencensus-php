@@ -45,7 +45,6 @@ class Server extends Base\Mock\Server
         $this->content($content);
 
         return $this->makeResponse($content);
-
     }
     public function authorize($input)
     {

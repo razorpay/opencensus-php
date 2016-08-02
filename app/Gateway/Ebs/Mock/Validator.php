@@ -34,7 +34,7 @@ class Validator extends Base\Validator
     );
 
     protected static $verifyRules = array(
-        Request::API_ACTION         => 'required|alpha_num',
+        Request::API_ACTION         => 'required|in:status',
         Request::API_ACCOUNT_ID     => 'required|alpha_num',
         Request::API_SECRET_KEY     => 'required|alpha_num',
         Request::API_PAYMENT_ID     => 'required|alpha_num',
@@ -42,11 +42,10 @@ class Validator extends Base\Validator
     );
 
     protected static $refundRules = array(
-        Request::API_ACTION         => 'required|alpha_num',
+        Request::API_ACTION         => 'required|in:refund',
         Request::API_ACCOUNT_ID     => 'required|alpha_num',
         Request::API_SECRET_KEY     => 'required|alpha_num',
         Request::API_AMOUNT         => 'required|',
         Request::API_PAYMENT_ID     => 'required|alpha_num',
-
     );
 }
