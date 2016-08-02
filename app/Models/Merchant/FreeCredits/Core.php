@@ -12,17 +12,25 @@ use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
-    public function checkIfFreeCreditsLogExists($merchant_id, $campaign)
+    public function checkIfFreeCreditsLogExists($merchantId, $campaign)
     {
-        return $this->repo->free_credits->recordExists($merchant_id, $campaign);
+        return $this->repo->free_credits->recordExists($merchantId, $campaign);
     }
 
     public function create($mid, $input)
     {
         $input['merchant_id'] = $mid;
-        $freeCreditLog = (new FreeCredits\Entity)->build($input);
-        $this->repo->free_credits->saveOrFail($freeCreditLog);
-        return $freeCreditLog;
+        $freeCreditsLog = (new FreeCredits\Entity)->build($input);
+        $this->repo->free_credits->saveOrFail($freeCreditsLog);
+
+        // Add the free credits to merchant's main balance
+        // TODO: Check if we can do it asynchronously.
+        $merchant = $freeCreditsLog->merchant;
+        $merchantBalance = (new Merchant\Balance\Repository)->getMerchantBalance($merchant);
+        $mBalance = $merchantBalance->credits + $freeCreditsLog->credits;
+        (new Merchant\Balance\Repository)->editMerchantFreeCredits($merchant, $mBalance);
+
+        return $freeCreditsLog;
     }
 
     public function retrieveById($id)

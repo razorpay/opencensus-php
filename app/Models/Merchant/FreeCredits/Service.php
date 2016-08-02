@@ -17,7 +17,6 @@ use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
-
     public function grantFreeCreditsForMerchantInCampaign($mid, array $input)
     {
         $campaign = $input['campaign'];
@@ -28,13 +27,13 @@ class Service extends Base\Service
             throw new Exception\BadRequestValidationFailureException(
             'The record already exists for given campaign and merchant.');
         }
-        $freeCreditLog = (new FreeCredits\Core)->create($mid, $input);
+        $freeCreditsLog = (new FreeCredits\Core)->create($mid, $input);
         $response = array(
             'success' => true,
             'error'   => null,
-            'log_id'  => $freeCreditLog->id,
+            'log_id'  => $freeCreditsLog->id,
         );
-        // TODO: Add Free Credits to the Merchant Model
+
         return $response;
     }
 
@@ -42,16 +41,17 @@ class Service extends Base\Service
     {
         // Raises Exception if record does not exist.
         $freeCreditsLog = (new FreeCredits\Core)->retrieveById($id);
+
         return $freeCreditsLog->toArrayPublic();
     }
 
     public function UpdateFreeCreditsLog($mid, $id, $input)
     {
-
         $response = array(
             'success' => true,
             'error'   => null,
         );
+
         $credits = $input['credits'];
         if ($credits > 0)
         {
@@ -61,6 +61,7 @@ class Service extends Base\Service
         {
             $op = 'deduct';
         }
+
         $credits = abs($credits);
         if ($op === 'add')
         {
@@ -76,6 +77,7 @@ class Service extends Base\Service
                 $response['success'] = false;
                 $response['error'] = 'Invalid Op Code Given';
         }
+
         return $response;
     }
 
@@ -85,6 +87,7 @@ class Service extends Base\Service
         $response = array(
             'credits' => $freeCredits,
         );
+
         return $response;
     }
 
@@ -96,6 +99,7 @@ class Service extends Base\Service
         {
             array_push($logArray, $log->toArrayPublic());
         }
+
         return $logArray;
     }
 }

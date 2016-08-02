@@ -108,4 +108,10 @@ class FreeCreditsTest extends TestCase
         $this->fixtures->create('free_credits', ['id' => '125', 'credits' => '90']);
         $this->startTest();
     }
+
+    public function testGetFreeCreditsLog()
+    {
+        $this->fixtures->create('free_credits', ['id' => '123', 'credits' => 90]);
+        $this->startTest();
+    }
 }

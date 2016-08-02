@@ -27,6 +27,22 @@ return [
         ],
     ],
 
+    'testGetFreeCreditsLog' => [
+        'request' => [
+            'url' => '/merchants/10000000000000/free_credits/123',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'id' => '123',
+                'credits' => 90,
+                'notes' => [],
+                'merchant_id'=> '10000000000000',
+                'campaign' => 'silent-ads',
+            ],
+        ],
+    ],
+
     'testFreeCreditsLogAlreadyExists' => [
         'request' => [
             'url' => '/merchants/10000000000000/free_credits/',

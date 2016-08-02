@@ -9,7 +9,6 @@ use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
-
     protected static $createRules = array(
         Entity::ID                          => 'sometimes|alpha_num|size:14|unique:free_credits',
         Entity::CAMPAIGN                    => 'required|alpha_dash|max:255',
