@@ -40,4 +40,11 @@ class Table
 
     // Sessions table
     const SESSION           = 'sessions';
+    
+    // Terminal Performance
+    const TERMINAL_ACTION    = 'terminal_action_logs';
+    const TERMINAL_ABSENCE  = 'terminal_absence_schedule';
+
+    // Payment Analytics
+    const PAYMENT_ANALYTICS    = 'payment_analytics';
 }

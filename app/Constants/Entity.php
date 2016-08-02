@@ -37,6 +37,9 @@ class Entity
     const BANK_ACCOUNT          = 'bank_account';
     const DAILY_SETTLEMENT      = 'daily_settlement';
     const SETTLEMENT_DETAILS    = 'settlement_details';
+    const TERMINAL_ACTION   = 'terminal_action';
+    const PAYMENT_ANALYTICS = 'payment_analytics';
+    const TERMINAL_ABSENCE  = 'terminal_absence';
 
     //
     // Gateway entities
@@ -90,6 +93,9 @@ class Entity
         self::NETBANKING_KOTAK      => \RZP\Gateway\Netbanking\Kotak::class,
         self::WALLET_PAYUMONEY      => \RZP\Gateway\Wallet\Payumoney::class,
         self::SETTLEMENT_DETAILS    => \RZP\Models\Settlement\Details::class,
+        self::TERMINAL_ACTION   => \RZP\Models\Terminal\Action::class,
+        self::PAYMENT_ANALYTICS => \RZP\Models\Payment\Analytics::class,
+        self::TERMINAL_ABSENCE  => \RZP\Models\Terminal\Absence::class,
     );
 
     protected static $repository = array(
