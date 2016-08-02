@@ -25,7 +25,7 @@ class CreateEbsGateway extends Migration
 
             $table->increments(Ebs::ID);
 
-            $table->char(Ebs::PAYMENT_ID, UniqueIdEntity::ID_LENGTH);
+            $table->string(Ebs::PAYMENT_ID, UniqueIdEntity::ID_LENGTH);
 
             $table->string(Ebs::TRANSACTION_ID)->nullable();
 
@@ -37,7 +37,7 @@ class CreateEbsGateway extends Migration
 
             $table->string(Ebs::REFERENCE_ID)->nullable();
 
-            $table->char(Ebs::REFUND_ID, UniqueIdEntity::ID_LENGTH)->nullable();
+            $table->string(Ebs::REFUND_ID, UniqueIdEntity::ID_LENGTH)->nullable();
 
             $table->string(Ebs::PAYMENT_MODE)->nullable();
 
@@ -45,7 +45,7 @@ class CreateEbsGateway extends Migration
 
             $table->boolean(Ebs::RECEIVED)->default(0);
 
-            $table->string(Ebs::IS_FLAGGED)->default('NO');
+            $table->boolean(Ebs::IS_FLAGGED)->default(0);
 
             $table->integer(Ebs::AMOUNT);
 
@@ -72,6 +72,10 @@ class CreateEbsGateway extends Migration
             $table->index(Ebs::REFUND_ID);
 
             $table->index(Ebs::IS_FLAGGED);
+
+            $table->index(Ebs::CREATED_AT);
+
+            $table->index(Ebs::UPDATED_AT);
         });
     }
 

@@ -6,9 +6,6 @@ use RZP\Error\ErrorCode;
 
 class ResponseCode
 {
-
-    const UNKNOWN_ERROR     = 'Unknown Error';
-
     public static $reasonCodes = array(
         0   => 'Successful transaction',
         1   => 'Invalid Action',
@@ -78,6 +75,7 @@ class ResponseCode
         {
             return self::$errorCodeMap[$code];
         }
-        return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
+
+        return ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR;
     }
 }

@@ -131,8 +131,8 @@ class Gateway extends Base\Gateway
 
         $refund = $this->createGatewayPaymentEntity($attributes, $input);
 
-        if (!(isset($parsedResponse[Resp::RESPONSE]) and
-            ($parsedResponse[Resp::RESPONSE] === Status::API_SUCCESS)))
+        if ((isset($parsedResponse[Resp::RESPONSE]) === false) or
+            ($parsedResponse[Resp::RESPONSE] !== Status::API_SUCCESS))
         {
             $responseCode = $parsedResponse[Resp::ERROR_CODE];
 
@@ -210,11 +210,13 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyContents($payment, $content)
     {
+        $isFlagged = (strtolower($content[Resp::API_IS_FLAGGED]) === 'yes') ? true : false;
+
         $content = array(
             Entity::RECEIVED            => true,
             Entity::STATUS              => Status::SUCCESS,
             Entity::AMOUNT              => $this->input['payment']['amount'],
-            Entity::IS_FLAGGED          => $content[Resp::API_IS_FLAGGED],
+            Entity::IS_FLAGGED          => $isFlagged,
             Entity::TRANSACTION_ID      => $content[Resp::API_TRANSACTION_ID],
             Entity::REFERENCE_ID        => $content[Resp::API_REFERENCE_ID],
         );
@@ -226,7 +228,6 @@ class Gateway extends Base\Gateway
 
         return $content;
     }
-
 
     protected function sendPaymentVerifyRequest($verify)
     {
@@ -281,6 +282,8 @@ class Gateway extends Base\Gateway
     protected function getGatewayEntityDataFromResponse($input)
     {
         $content = $this->getMappedAttributes($input['gateway']);
+
+        $content[Entity::IS_FLAGGED] = (strtolower($content[Entity::IS_FLAGGED]) === 'yes') ? true : false;
 
         $content[Entity::RECEIVED] = true;
 
@@ -567,7 +570,10 @@ class Gateway extends Base\Gateway
         $refundAmount = $input['refund']['amount']/100;
 
         $attributes = $this->getMappedAttributes($response);
-
+        if (isset($response[Entity::IS_FLAGGED]))
+        {
+            $attributes[Entity::IS_FLAGGED] = (strtolower($response[Entity::IS_FLAGGED]) === 'yes') ? true : false;
+        }
         $attributes[Entity::REFUND_ID] = $input['refund']['id'];
 
         $attributes[Entity::AMOUNT] = $refundAmount;

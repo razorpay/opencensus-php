@@ -180,6 +180,7 @@ class Gateway
     public static $verifyEnabled = array(
         self::AXIS_MIGS,
         self::BILLDESK,
+        self::EBS,
         self::MOBIKWIK,
         self::PAYTM,
         self::HDFC,
@@ -318,7 +319,8 @@ class Gateway
      * @var array
      */
     public static $directNetbankingGateways = array(
-        Gateway::BILLDESK);
+        Gateway::BILLDESK,
+        Gateway::EBS);
 
     /**
      * Gateways which support netbanking in test mode
