@@ -210,7 +210,13 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyContents($payment, $content)
     {
-        $isFlagged = (strtolower($content[Resp::API_IS_FLAGGED]) === 'yes') ? true : false;
+        $isFlagged = false;
+
+        if ((isset($content[Resp::API_IS_FLAGGED])) and
+            (strtolower($content[Resp::API_IS_FLAGGED]) === 'yes'))
+        {
+            $isFlagged = true;
+        }
 
         $content = array(
             Entity::RECEIVED            => true,
@@ -283,7 +289,12 @@ class Gateway extends Base\Gateway
     {
         $content = $this->getMappedAttributes($input['gateway']);
 
-        $content[Entity::IS_FLAGGED] = (strtolower($content[Entity::IS_FLAGGED]) === 'yes') ? true : false;
+        $content[Entity::IS_FLAGGED] = false;
+        if ((isset($content[Entity::IS_FLAGGED])) and
+            (strtolower($content[Entity::IS_FLAGGED]) === 'yes'))
+        {
+            $content[Entity::IS_FLAGGED] = true;
+        }
 
         $content[Entity::RECEIVED] = true;
 
@@ -303,9 +314,7 @@ class Gateway extends Base\Gateway
     {
         unset($request['content'][Req::API_SECRET_KEY]);
 
-        $this->trace->info(
-            $traceCode,
-            $request);
+        $this->trace->info($traceCode, $request);
     }
 
     protected function getPaymentVerifyRequestContent($input, $payment)
@@ -570,10 +579,15 @@ class Gateway extends Base\Gateway
         $refundAmount = $input['refund']['amount']/100;
 
         $attributes = $this->getMappedAttributes($response);
-        if (isset($response[Entity::IS_FLAGGED]))
+
+        $attributes[Entity::IS_FLAGGED] = false;
+
+        if ((isset($response[Entity::IS_FLAGGED])) and
+            (strtolower($response[Entity::IS_FLAGGED]) === 'yes'))
         {
-            $attributes[Entity::IS_FLAGGED] = (strtolower($response[Entity::IS_FLAGGED]) === 'yes') ? true : false;
+            $attributes[Entity::IS_FLAGGED] = true;
         }
+
         $attributes[Entity::REFUND_ID] = $input['refund']['id'];
 
         $attributes[Entity::AMOUNT] = $refundAmount;
