@@ -122,7 +122,7 @@ class Gateway extends Base\Gateway
 
         $traceCode = TraceCode::GATEWAY_REFUND_REQUEST;
 
-        $this->traceGatewayApiRequest($request, $traceCode);
+        $this->traceGatewayApiRequest($traceCode, $request);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -177,11 +177,11 @@ class Gateway extends Base\Gateway
 
         if ($verify->apiSuccess === $verify->gatewaySuccess)
         {
-            $verify->status === VerifyResult::STATUS_MATCH;
+            $verify->status = VerifyResult::STATUS_MATCH;
         }
         else
         {
-            $verify->status === VerifyResult::STATUS_MISMATCH;
+            $verify->status = VerifyResult::STATUS_MISMATCH;
         }
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
@@ -317,11 +317,11 @@ class Gateway extends Base\Gateway
 
         $traceCode = TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST;
 
-        $this->traceGatewayApiRequest($request, $traceCode);
+        $this->traceGatewayApiRequest($traceCode, $request);
 
         $response = $this->sendGatewayRequest($request);
 
-        $parsedResponse = $this->parseResponseXml($response->body);
+        $verifyResponse = $this->parseResponseXml($response->body);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
@@ -329,9 +329,9 @@ class Gateway extends Base\Gateway
 
         $verify->verifyResponse = $response;
         $verify->verifyResponseBody = $response->body;
-        $verify->verifyResponseContent = $parsedResponse;
+        $verify->verifyResponseContent = $verifyResponse;
 
-        return $parsedResponse;
+        return $verifyResponse;
     }
 
     public function getSecureHash($content, $terminal)
@@ -379,7 +379,7 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected function traceGatewayApiRequest($request, $traceCode)
+    protected function traceGatewayApiRequest($traceCode, $request)
     {
         unset($request['content'][Req::API_SECRET_KEY]);
 
