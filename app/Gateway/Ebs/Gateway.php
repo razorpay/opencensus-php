@@ -165,7 +165,7 @@ class Gateway extends Base\Gateway
 
     protected function verifyPayment($verify)
     {
-        $payment = $verify->payment;
+        $gatewayPayment = $verify->payment;
         $content = $verify->verifyResponseContent;
         $input = $verify->input;
 
@@ -173,7 +173,7 @@ class Gateway extends Base\Gateway
 
         $verify->gatewaySuccess = $this->getVerifyGatewayStatus($content);
 
-        $verify->apiSuccess = $this->getVerifyApiStatus($payment, $input);
+        $verify->apiSuccess = $this->getVerifyApiStatus($gatewayPayment, $input);
 
         if ($verify->apiSuccess === $verify->gatewaySuccess)
         {
@@ -186,7 +186,7 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
 
-        $verify->payment = $this->saveVerifyContentIfNeeded($payment, $content);
+        $verify->payment = $this->saveVerifyContentIfNeeded($gatewayPayment, $content);
 
         return $verify->status;
     }
@@ -231,25 +231,38 @@ class Gateway extends Base\Gateway
         return $gatewayStatus;
     }
 
-    protected function getVerifyApiStatus($payment, $input)
+    protected function getVerifyApiStatus($gatewayPayment, $input)
     {
-        $apiStatus = false;
+        if (($input['payment']['status'] === 'failed') or
+            ($input['payment']['status'] === 'created'))
+        {
+            $apiStatus = false;
 
-        if (($payment === null) and
-            (($input['payment']['status'] === 'failed') or
-            ($input['payment']['status'] === 'created')))
-        {
-            $apiStatus = false;
+            if (($gatewayPayment['received'] === true) or
+                ($gatewayPayment['status'] === Status::AUTHORIZED))
+            {
+                $this->trace->info(
+                    TraceCode::GATEWAY_PAYMENT_VERIFY_UNEXPECTED,
+                    [
+                        'gateway_payment'   => $gatewayPayment,
+                        'payment'           => $input['payment']
+                    ]);
+            }
         }
-        else if (($payment['received'] === false) and
-            (($payment['status'] === null) or
-            ($payment['status'] !== (string) Status::AUTHORIZED)))
-        {
-            $apiStatus = false;
-        }
-        else if ($payment['status'] === (string) Status::AUTHORIZED)
+        else
         {
             $apiStatus = true;
+
+            if (($gatewayPayment['received'] === false) or
+                ($gatewayPayment['status'] !== Status::AUTHORIZED))
+            {
+                $this->trace->info(
+                    TraceCode::GATEWAY_PAYMENT_VERIFY_UNEXPECTED,
+                    [
+                        'gateway_payment'   => $gatewayPayment,
+                        'payment'           => $input['payment']
+                    ]);
+            }
         }
 
         return $apiStatus;
