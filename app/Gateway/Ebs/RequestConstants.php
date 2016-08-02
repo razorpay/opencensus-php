@@ -5,7 +5,7 @@ namespace RZP\Gateway\Ebs;
 class RequestConstants
 {
     const ACCOUNT_ID            = 'account_id';
-    const REFRENCE_NO           = 'reference_no';
+    const REFERENCE_NO          = 'reference_no';
     const AMOUNT                = 'amount';
     const CALLBACK              = 'return_url';
     const NAME                  = 'name';
@@ -31,8 +31,10 @@ class RequestConstants
     const ACTION                = 'Action';
     const SECRET_KEY            = 'secret_key';
     const PAYMENT_ID            = 'payment_id';
-    
-    
+
+    //
+    // These are for API Request
+    //
     const API_ACTION            = 'Action';
     const API_ACCOUNT_ID        = 'AccountID';
     const API_SECRET_KEY        = 'SecretKey';

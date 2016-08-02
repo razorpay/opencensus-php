@@ -36,7 +36,7 @@ class Entity extends Base\Entity
     const ERROR_DESCRIPTION     = 'error_description';
     const IS_FLAGGED            = 'is_flagged';
 
-    protected $fields = array(
+    protected $fields = [
         self::STATUS,
         self::CHANNEL,
         self::AMOUNT,
@@ -50,9 +50,9 @@ class Entity extends Base\Entity
         self::REFERENCE_ID,
         self::TRANSACTION_ID,
         self::ERROR_DESCRIPTION,
-    );
+    ];
 
-    protected $fillable = array(
+    protected $fillable = [
         self::STATUS,
         self::AMOUNT,
         self::CHANNEL,
@@ -66,7 +66,7 @@ class Entity extends Base\Entity
         self::REFERENCE_ID,
         self::TRANSACTION_ID,
         self::ERROR_DESCRIPTION,
-    );
+    ];
 
     protected $casts = [
         self::AMOUNT        => 'int',

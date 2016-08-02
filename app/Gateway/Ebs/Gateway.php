@@ -290,8 +290,8 @@ class Gateway extends Base\Gateway
         $content = $this->getMappedAttributes($input['gateway']);
 
         $content[Entity::IS_FLAGGED] = false;
-        if ((isset($content[Entity::IS_FLAGGED])) and
-            (strtolower($content[Entity::IS_FLAGGED]) === 'yes'))
+        if ((isset($content[Resp::IS_FLAGGED])) and
+            (strtolower($content[Resp::IS_FLAGGED]) === 'yes'))
         {
             $content[Entity::IS_FLAGGED] = true;
         }
@@ -404,7 +404,7 @@ class Gateway extends Base\Gateway
 
         $content = array(
             Req::ACCOUNT_ID    => $this->getAccountId($input['terminal']),
-            Req::REFRENCE_NO   => $input['payment']['id'],
+            Req::REFERENCE_NO  => $input['payment']['id'],
             Req::AMOUNT        => $amount,
             Req::CALLBACK      => $input['callbackUrl'],
             Req::NAME          => self::NAME,
@@ -567,7 +567,7 @@ class Gateway extends Base\Gateway
     {
         $attributes = array();
         $attributes[Entity::AMOUNT]     = $content[Req::AMOUNT];
-        $attributes[Entity::PAYMENT_ID] = $content[Req::REFRENCE_NO];
+        $attributes[Entity::PAYMENT_ID] = $content[Req::REFERENCE_NO];
         $attributes[Entity::AMOUNT]     = $content[Req::AMOUNT];
         $attributes[Entity::STATUS]     = Status::CREATED;
 
@@ -580,8 +580,8 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getMappedAttributes($response);
 
-        if ((isset($response[Entity::IS_FLAGGED])) and
-            (strtolower($response[Entity::IS_FLAGGED]) === 'yes'))
+        if ((isset($response[Resp::API_IS_FLAGGED])) and
+            (strtolower($response[Resp::API_IS_FLAGGED]) === 'yes'))
         {
             $attributes[Entity::IS_FLAGGED] = true;
         }
@@ -592,7 +592,8 @@ class Gateway extends Base\Gateway
 
         $attributes[Entity::RECEIVED] = true;
 
-        if (isset($response[Resp::ERROR_CODE]))
+        if ((isset($response[Resp::RESPONSE]) === false) or
+            ($response[Resp::RESPONSE] !== Status::API_SUCCESS))
         {
             $attributes[Entity::ERROR_CODE] = $response[Resp::ERROR_CODE];
             $attributes[Entity::ERROR_DESCRIPTION] = $response[Resp::ERROR];

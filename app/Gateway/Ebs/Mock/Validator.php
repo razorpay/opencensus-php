@@ -11,7 +11,7 @@ class Validator extends Base\Validator
         Request::CHANNEL            => 'required|alpha_num',
         Request::ACCOUNT_ID         => 'required|alpha_num',
         Request::CALLBACK           => 'required|url',
-        Request::REFRENCE_NO        => 'required|alpha_num',
+        Request::REFERENCE_NO       => 'required|alpha_num',
         Request::AMOUNT             => 'required|numeric',
         Request::NAME               => 'required|alpha_num',
         Request::ADDRESS            => 'required|',
