@@ -39,4 +39,17 @@ trait PaymentEbsTrait
 
         $this->setMockServer($server);
     }
+
+    public function getErrorWithInvalidReturnCodeInVerify()
+    {
+        $server = $this->mockServer()
+            ->shouldReceive('content')
+            ->andReturnUsing(function (& $content)
+            {
+                $content = '<output  errorCode="55" />';
+                return $content;
+            })->mock();
+
+        $this->setMockServer($server);
+    }
 }

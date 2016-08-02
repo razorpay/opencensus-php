@@ -10,6 +10,7 @@ use RZP\Gateway\Base;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Ebs\ResponseConstants as Resp;
@@ -95,7 +96,11 @@ class Gateway extends Base\Gateway
             //
             // Payment fails, throw exception
             //
-            $desc = ResponseCode::$reasonCodes[$responseCode];
+            $desc = '';
+            if (isset(ResponseCode::$reasonCodes[$responseCode]))
+            {
+                $desc = ResponseCode::$reasonCodes[$responseCode];
+            }
 
             throw new Exception\GatewayErrorException(
                 ResponseCode::getMappedCode($responseCode),
@@ -136,7 +141,11 @@ class Gateway extends Base\Gateway
         {
             $responseCode = $refundResponse[Resp::ERROR_CODE];
 
-            $desc = ResponseCode::$reasonCodes[$responseCode];
+            $desc = '';
+            if (isset(ResponseCode::$reasonCodes[$responseCode]))
+            {
+                $desc = ResponseCode::$reasonCodes[$responseCode];
+            }
 
             throw new Exception\GatewayErrorException(
                 ResponseCode::getMappedCode($responseCode),
@@ -162,42 +171,102 @@ class Gateway extends Base\Gateway
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
-        if (isset($content[Resp::ERROR_CODE]) and
-            $content[Resp::ERROR_CODE] !== 0)
+        $verify->gatewaySuccess = $this->getVerifyGatewayStatus($content);
+
+        $verify->apiSuccess = $this->getVerifyApiStatus($payment, $input);
+
+        if ($verify->apiSuccess === $verify->gatewaySuccess)
         {
-            $verify->apiSuccess = false;
+            $verify->status === VerifyResult::STATUS_MATCH;
         }
         else
         {
-            $verify->gatewaySuccess = true;
-
-            if (($input['payment']['status'] !== 'created') and
-                ($input['payment']['status'] !== 'failed'))
-            {
-                $verify->apiSuccess = true;
-            }
-            else
-            {
-                $verify->status = VerifyResult::STATUS_MISMATCH;
-                $verify->apiSuccess = false;
-            }
+            $verify->status === VerifyResult::STATUS_MISMATCH;
         }
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
+
         $verify->payment = $this->saveVerifyContentIfNeeded($payment, $content);
 
         return $verify->status;
+    }
+
+    protected function getVerifyGatewayStatus($content)
+    {
+        $gatewayStatus = false;
+
+        if (isset($content[Resp::ERROR_CODE]))
+        {
+            $responseCode = $content[Resp::ERROR_CODE];
+
+            if (array_key_exists($responseCode,
+                ResponseCode::$gatewayNonCriticalCodes))
+            {
+                $gatewayStatus = false;
+            }
+            else
+            {
+                $desc = '';
+                if (isset(ResponseCode::$reasonCodes[$responseCode]))
+                {
+                    $desc = ResponseCode::$reasonCodes[$responseCode];
+                }
+
+                throw new Exception\GatewayErrorException(
+                    ResponseCode::getMappedCode($responseCode),
+                    $responseCode,
+                    $desc);
+            }
+        }
+        if (isset($content['transactionType']))
+        {
+            if ($content['transactionType'] === 'Authorized')
+            {
+                $gatewayStatus = true;
+            }
+            else if ($content['transactionType'] === 'AuthFailed')
+            {
+                $gatewayStatus = false;
+            }
+        }
+        else
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR, '', '');
+        }
+
+        return $gatewayStatus;
+    }
+
+    protected function getVerifyApiStatus($payment, $input)
+    {
+        $apiStatus = false;
+
+        if (($payment === null) and
+            (($input['payment']['status'] === 'failed') or
+            ($input['payment']['status'] === 'created')))
+        {
+            $apiStatus = false;
+        }
+        else if (($payment['received'] === false) and
+            (($payment['status'] === null) or
+            ($payment['status'] !== (string) Status::AUTHORIZED)))
+        {
+            $apiStatus = false;
+        }
+        else if ($payment['status'] === (string) Status::AUTHORIZED)
+        {
+            $apiStatus = true;
+        }
+
+        return $apiStatus;
     }
 
     protected function saveVerifyContentIfNeeded($payment, $response)
     {
         $attributes = $this->getVerifyContents($payment, $response);
 
-        if ($payment === null)
-        {
-            $payment = $this->createGatewayPaymentEntity($attributes);
-        }
-        else if ($payment['received'] === false)
+        if ($payment['received'] === false)
         {
             $payment->fill($attributes);
             $payment->saveOrFail();

@@ -69,6 +69,14 @@ class ResponseCode
         29  => ErrorCode::BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE,
     );
 
+    public static $gatewayNonCriticalCodes = [
+        4,
+        5,
+        10,
+        16,
+        27,
+    ];
+
     public static function getMappedCode($code)
     {
         if (isset(self::$errorCodeMap[$code]))

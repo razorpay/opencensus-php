@@ -17,7 +17,7 @@ class Server extends Base\Mock\Server
 {
     public function verify($input)
     {
-        parent::refund($input);
+        parent::verify($input);
 
         $this->validateActionInput($input, 'verify');
 
@@ -107,6 +107,7 @@ class Server extends Base\Mock\Server
             ' referenceNo="'.
             $payment["payment_id"].
             '" transactionType="refunded" status="Processing" />';
+
         $this->content($content);
 
         return $this->makeResponse($content);

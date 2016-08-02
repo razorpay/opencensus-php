@@ -31,7 +31,12 @@ class ResponseConstants
     const REFUND_PAYMENT_ID     = 'payment_id';
     const SECURE_HASH           = 'SecureHash';
     const RESPONSE              = 'response';
+
+    //
+    // API response Fields
+    //
     const API_IS_FLAGGED        = 'isFlagged';
     const API_TRANSACTION_ID    = 'transactionId';
     const API_REFERENCE_ID      = 'paymentId';
+    const API_TRANSACTION_TYPE  = 'transactionType';
 }
