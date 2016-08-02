@@ -175,11 +175,7 @@ class Gateway extends Base\Gateway
 
         $verify->apiSuccess = $this->getVerifyApiStatus($gatewayPayment, $input);
 
-        if ($verify->apiSuccess === $verify->gatewaySuccess)
-        {
-            $verify->status = VerifyResult::STATUS_MATCH;
-        }
-        else
+        if ($verify->apiSuccess !== $verify->gatewaySuccess)
         {
             $verify->status = VerifyResult::STATUS_MISMATCH;
         }
@@ -193,8 +189,6 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyGatewayStatus($content)
     {
-        $gatewayStatus = false;
-
         if ((isset($content[Resp::ERROR_CODE]) and
             ($content[Resp::ERROR_CODE] !== '0')))
         {
