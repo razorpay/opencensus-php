@@ -16,12 +16,7 @@ return [
     | http://docs.aws.amazon.com/aws-sdk-php/v3/guide/guide/configuration.html
     |
     */
-    // You can override settings for specific services
-    'credentials' => [
-        'key'    => env('AWS_KEY_ID', ''),
-        'secret' => env('AWS_KEY_SECRET', ''),
-    ],
-    
+
     'region' => env('AWS_REGION', 'us-east-1'),
     'version' => 'latest',
     'ua_append' => [
