@@ -3,12 +3,9 @@
 namespace RZP\Models\Terminal\Absence;
 
 use RZP\Models\Base;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Entity extends Base\PublicEntity
 {
-    use SoftDeletes;
-
     const ID                            = 'id';
     const GATEWAY                       = 'gateway';
     const DOWNTIME_FROM                 = 'downtime_from';
