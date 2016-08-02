@@ -9,7 +9,7 @@ return [
 
     'testAddFreeCreditsLog' => [
         'request' => [
-            'url' => '/merchants/1000000000000/free_credits/',
+            'url' => '/merchants/10000000000000/free_credits/',
             'method' => 'post',
             'content' => [
                 'credits' => 25,
@@ -93,6 +93,28 @@ return [
             'url' => '/merchants/1000000000000/free_credits/123/',
             'method' => 'put',
             'content' => [
+                'credits' => -170,
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testFailDeductFreeCreditsCampaign' => [
+        'request' => [
+            'url' => '/merchants/1000000000000/free_credits/123/',
+            'method' => 'put',
+            'content' => [
                 'credits' => -150,
             ]
         ],
@@ -105,27 +127,8 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_TOTAL_CREDITS_LESSER_THAN_CREDITS_TO_SUBTRACT,
-        ],
-    ],
-
-    'testFailDeductFreeCreditsCampaign' => [
-        'request' => [
-            'url' => '/merchants/1000000000000/free_credits/123/',
-            'method' => 'put',
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_CAMPAIGN_CREDITS_LESSER_THAN_CREDITS_TO_SUBTRACT,
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 ];

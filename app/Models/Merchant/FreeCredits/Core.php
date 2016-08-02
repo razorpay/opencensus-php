@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Merchant\FreeCredits;
 
+
+use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
@@ -19,7 +21,7 @@ class Core extends Base\Core
     {
         $input['merchant_id'] = $mid;
         $freeCreditLog = (new FreeCredits\Entity)->build($input);
-        $this->repo->saveOrFail($freeCreditLog);
+        $this->repo->free_credits->saveOrFail($freeCreditLog);
         return $freeCreditLog;
     }
 
@@ -33,15 +35,15 @@ class Core extends Base\Core
      */
     public function grantFreeCredits($id, $credits)
     {
-        $free_credits_log = $this->repo->free_credits->findOrFailPublic($id);
-        $free_credits_log->credits += $credits;
-        $free_credits_log->saveOrFail();
-        $merchant = $free_credits_log->merchant;
+        $freeCreditsLog = $this->retrieveById($id);
+        $freeCreditsLog->credits += $credits;
+        $freeCreditsLog->saveOrFail();
+        $merchant = $freeCreditsLog->merchant;
         // Update the merchant balance credit.
         $merchantBalance = (new Merchant\Balance\Repository)->getMerchantBalance($merchant);
         $mBalance = $merchantBalance->credits + $credits;
         (new Merchant\Balance\Repository)->editMerchantFreeCredits(
-            $free_credits_log->merchant, $mBalance);
+            $freeCreditsLog->merchant, $mBalance);
     }
 
     /*
@@ -50,24 +52,23 @@ class Core extends Base\Core
      */
     public function deductFreeCredits($id, $credits)
     {
-        $free_credits_log = $this->repo->free_credits->findOrFailPublic($id);
-        $merchant = $free_credits_log->merchant;
+        $freeCreditsLog = $this->repo->free_credits->findOrFailPublic($id);
+        $merchant = $freeCreditsLog->merchant;
         $merchantBalance = (new Merchant\Balance\Repository)->getMerchantBalance($merchant);
 
         if ($merchantBalance->credits < $credits)
         {
-            throw new Exception\BadRequestException(
-            ErrorCode::BAD_REQUEST_MERCHANT_TOTAL_CREDITS_LESSER_THAN_CREDITS_TO_SUBTRACT);
+            throw new Exception\BadRequestValidationFailureException(
+            'Credits to deduct is more than total credits available');
         }
-        else if ($free_credits_log->credits < $credits)
+        else if ($freeCreditsLog->credits < $credits)
         {
-            throw new Exception\BadRequestException(
-            ErrorCode::BAD_REQUEST_MERCHANT_CAMPAIGN_CREDITS_LESSER_THAN_CREDITS_TO_SUBTRACT);
+            throw new Exception\BadRequestValidationFailureException(
+            'Credits to deduct is more than credits assigned to merchant in campaign');
         }
-        $free_credits_log->credits -= abs($credits);
-        $free_credits_log->saveOrFail();
+        $freeCreditsLog->credits -= abs($credits);
+        $freeCreditsLog->saveOrFail();
         $mBalance = $merchantBalance->credits - abs($credits);
-        (new merchant\balance\repository)->editmerchantfreecredits($merchant, $mBalance);
-        var_dump($free_credits_log);
+        (new merchant\balance\repository)->editMerchantFreeCredits($merchant, $mBalance);
     }
 }

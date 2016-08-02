@@ -47,6 +47,11 @@ class Service extends Base\Service
 
     public function UpdateFreeCreditsLog($mid, $id, $input)
     {
+
+        $response = array(
+            'success' => true,
+            'error'   => null,
+        );
         $credits = $input['credits'];
         if ($credits > 0)
         {
@@ -56,10 +61,7 @@ class Service extends Base\Service
         {
             $op = 'deduct';
         }
-        $response = array(
-            'success' => true,
-            'error'   => null,
-        );
+        $credits = abs($credits);
         if ($op === 'add')
         {
             (new FreeCredits\Core)->grantFreeCredits($id, $credits);
