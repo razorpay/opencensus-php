@@ -193,8 +193,6 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyGatewayStatus($content)
     {
-        $gatewayStatus = false;
-
         if ((isset($content[Resp::ERROR_CODE]) and
             ($content[Resp::ERROR_CODE] !== '0')))
         {
@@ -298,17 +296,11 @@ class Gateway extends Base\Gateway
 
         $content = array(
             Entity::RECEIVED            => true,
-            Entity::STATUS              => Status::SUCCESS,
-            Entity::AMOUNT              => $this->input['payment']['amount'],
+            Entity::STATUS              => Status::AUTHORIZED,
             Entity::IS_FLAGGED          => $isFlagged,
             Entity::TRANSACTION_ID      => $content[Resp::API_TRANSACTION_ID],
             Entity::REFERENCE_ID        => $content[Resp::API_REFERENCE_ID],
         );
-
-        if (isset($payment['amount']) === false)
-        {
-            $content['amount'] = $this->input['payment']['amount'];
-        }
 
         return $content;
     }
