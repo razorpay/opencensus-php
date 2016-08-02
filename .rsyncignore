@@ -1,9 +1,11 @@
-.env.*
+/environment/.env*
+/environment/env.php
 .DS_Store
 Thumbs.db
 /bootstrap/environment.php
-/app/storage/*
+/storage/*
 /.git/*
 /node_modules/*
-app/storage/selenium.png
-app/config/dev/*
+/storage/selenium.png
+/config/dev/*
+/storage/logs/*

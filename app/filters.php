@@ -1,8 +1,10 @@
 <?php
 
+namespace App;
+
 use Razorpay\Api\Request as ApiRequest;
-use Http\AppResponse;
-use Http\SlackResponse;
+use App\Http\AppResponse;
+use App\Http\SlackResponse;
 
 /*
 |--------------------------------------------------------------------------
@@ -46,7 +48,7 @@ Route::filter('auth.user', function()
     }
     else
     {
-        $user = Auth::user()->user();
+        $user = Auth::user();
         ApiRequest::addHeader('X-Dashboard-Merchant', $user->email);
 
         // Just in case an admin user is performing the action

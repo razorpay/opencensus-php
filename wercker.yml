@@ -3,6 +3,9 @@ services:
     - wercker/mysql
 build:
     steps:
+      - script:
+          name: copy env file
+          code: cp ./environment/.env.wercker ./environment/.env.testing
       - install-packages:
           packages: lsof
       - add-ssh-key:
@@ -15,6 +18,14 @@ build:
                 java -version
                 echo $JAVA_HOME
       - script:
+          name: Copy wercker environment variables
+          code: >
+                export DB_MYSQL_HOST="$WERCKER_MYSQL_HOST"
+                export DB_MYSQL_PORT="$WERCKER_MYSQL_PORT"
+                export DB_MYSQL_DATABASE="$WERCKER_MYSQL_DATABASE"
+                export DB_MYSQL_USERNAME="$WERCKER_MYSQL_USERNAME"
+                export DB_MYSQL_PASSWORD="$WERCKER_MYSQL_PASSWORD"
+      - script:
           name: Enable virtual display
           code: |-
                 # Start xvfb which gives the context a virtual display
@@ -24,32 +35,31 @@ build:
                 # Give xvfb time to start. 3 seconds is the default for all xvfb-run commands.
                 sleep 3
       - script:
-          name: copy wercker config
-          code:  cp .env.wercker.php .env.testing.php
-      - script:
           name: install dependencies
           code: composer install --no-interaction
       - wercker/npm-install@0.9.3
       - script:
+          name: clear cache
+          code: php artisan cache:clear; php artisan clear-compiled
+      - script:
           name: Create grunt config and set environment
-          code: cp app/config/grunt.sample.json app/config/grunt.json && sed -i "2s/development/production/" app/config/grunt.json
+          code: cp config/grunt.sample.json config/grunt.json && sed -i "2s/development/production/" config/grunt.json
       - grunt:
           tasks: default
           fail-on-warnings: true
       # This pins the selenium version to our choice
       - script:
           name: Install selenium
-          code: wget http://selenium-release.storage.googleapis.com/2.49/selenium-server-standalone-2.49.0.jar
+          code: wget http://selenium-release.storage.googleapis.com/2.53/selenium-server-standalone-2.53.1.jar
       - script:
           name: Start selenium
-          code: nohup java -jar selenium-server-standalone-2.49.0.jar > $WERCKER_REPORT_ARTIFACTS_DIR/selenium.log 2>&1&
+          code: nohup java -jar selenium-server-standalone-2.53.1.jar > $WERCKER_REPORT_ARTIFACTS_DIR/selenium.log 2>&1&
+      - script:
+          name: Run artisan migrate
+          code: APP_ENV=testing php artisan migrate --env=testing
       - script:
           name: run unit tests
           code: phpunit --stop-on-error --stop-on-failure
-      # This is because wercker is untrusworthy
-      - script:
-          name: List directory
-          code: ls -lah
     after-steps:
       - slack-notifier:
           url: $SLACK_URL
@@ -57,19 +67,20 @@ build:
           username: wercker
           icon_url: https://cdn.rawgit.com/wantedly/step-pretty-slack-notify/master/icons/$WERCKER_RESULT.jpg
       - script:
+          name: copy trace logs
+          code: cp storage/logs/trace.log $WERCKER_REPORT_ARTIFACTS_DIR/. || true
+      - script:
+          name: copy trace logs
+          code: cp storage/logs/laravel*.log $WERCKER_REPORT_ARTIFACTS_DIR/. || true
+      - script:
+          name: copy artisan server logs
+          code: cp /tmp/rzp-dbd* $WERCKER_REPORT_ARTIFACTS_DIR/
+      - script:
           name: copy screenshot
           # We want this step to not fail even if the file is missing
-          code: cp app/storage/selenium.png $WERCKER_REPORT_ARTIFACTS_DIR/selenium.png || true
+          code: cp storage/screenshots/* $WERCKER_REPORT_ARTIFACTS_DIR/. || true
 deploy:
     steps:
-      - script:
-          name: Change to production mode
-          code: >
-              sed -i "/'debug'/c\ 'debug' => false," app/config/app.php
-      # We don't trust wercker anymore
-      - script:
-          name: List directory
-          code: ls -lah
       - script:
           name: check vendor dir exists
           code: if [ ! -d vendor ] ; then exit 1 ; fi;
