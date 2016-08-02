@@ -36,7 +36,7 @@ class FreeCreditsTest extends TestCase
      */
     public function testFreeCreditsLogAlreadyExists()
     {
-        $free_credit_log = $this->fixtures->create('free_credits');
+        $this->fixtures->create('free_credits');
         $this->startTest();
     }
 
@@ -88,8 +88,24 @@ class FreeCreditsTest extends TestCase
 
     public function testFailDeductFreeCreditsCampaign()
     {
-        // ID 123 is given in the data so it should match
-        $freeCreditsLog = $this->fixtures->create('free_credits', ['id' => '123', 'credits' => '90']);
+        // id 123 is given in the data so it should match
+        $freecreditslog = $this->fixtures->create('free_credits', ['id' => '123', 'credits' => '90']);
+        $this->startTest();
+    }
+
+    public function testFreeCreditsGrantedInCampaign()
+    {
+        $this->fixtures->create('free_credits', ['id' => '123', 'credits' => '90']);
+        $this->fixtures->create('free_credits', ['id' => '124', 'credits' => '90']);
+        $this->fixtures->create('free_credits', ['id' => '125', 'credits' => '90']);
+        $this->startTest();
+    }
+
+    public function testFreeCreditsGrantedToMerchant()
+    {
+
+        $this->fixtures->create('free_credits', ['id' => '123', 'credits' => '90']);
+        $this->fixtures->create('free_credits', ['id' => '125', 'credits' => '90']);
         $this->startTest();
     }
 }

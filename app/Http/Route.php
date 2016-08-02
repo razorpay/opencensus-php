@@ -111,7 +111,8 @@ final class Route
         'freecredits_create'                      => ['post',     'merchants/{id}/free_credits',              'MerchantController@postCreateFreeCreditsLog'                       ],
         'freecredits_get'                         => ['get',      'merchants/{mid}/free_credits/{id}',        'MerchantController@getFreeCreditsLog'                              ],
         'freecredits_update'                      => ['put',      'merchants/{mid}/free_credits/{id}',        'MerchantController@putFreeCreditsLog'                              ],
-        'freecredits_aggregate_campaign'          => ['get',      'merchants/free_credits/campaign/{name}',   'MerchantController@getShowFreeCreditsGrantedInCampaign'            ],
+        'freecredits_agg_campaign'                => ['get',      'merchants/free_credits/campaign/{name}',   'MerchantController@getFreeCreditsGrantedInCampaign'                ],
+        'freecredits_agg_merchant'                => ['get',      'merchants/{mid}/free_credits/all',         'MerchantController@getFreeCreditsGrantedToMerchant'                ],
         'key_fetch_by_id'                         => ['get',      'keys/{id}',                                'KeyController@getKey'                                              ],
         'key_fetch_multiple'                      => ['get',      'keys',                                     'KeyController@getKeys'                                             ],
         'terminal_delete'                         => ['delete',   'terminals/{id}',                           'MerchantController@deleteTerminal2'                                ],
@@ -416,6 +417,8 @@ final class Route
         'reconciliate',
         'freecredits_create',
         'freecredits_update',
+        'freecredits_agg_campaign',
+        'freecredits_agg_merchant',
     );
 
     public static $proxy = array(

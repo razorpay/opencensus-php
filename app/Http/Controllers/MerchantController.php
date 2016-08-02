@@ -576,9 +576,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getShowFreeCreditsGrantedInCampaign($campaignName)
+    public function getFreeCreditsGrantedInCampaign($campaign)
     {
-        $data = (new FreeCredits\Service)->getFreeCreditsGrantedInCampaign($campaignName);
+        $data = (new FreeCredits\Service)->fetchFreeCreditsGrantedInCampaign($campaign);
+        return ApiResponse::json($data);
+    }
+
+    public function getFreeCreditsGrantedToMerchant($mid)
+    {
+        $data = (new FreeCredits\Service)->fetchFreeCreditsGrantedToMerchant($mid);
         return ApiResponse::json($data);
     }
 }

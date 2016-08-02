@@ -79,12 +79,23 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function getFreeCreditsGrantedInCampaign($campaign)
+    public function fetchFreeCreditsGrantedInCampaign($campaign)
     {
-        $freeCredits = (new FreeCredits\Repository)->getFreeCreditsGrantedInCampaign($credits);
+        $freeCredits = (new FreeCredits\Repository)->getFreeCreditsGrantedInCampaign($campaign);
         $response = array(
             'credits' => $freeCredits,
         );
         return $response;
+    }
+
+    public function fetchFreeCreditsGrantedToMerchant($merchantId)
+    {
+        $logs = (new FreeCredits\Repository)->getFreeCreditsLogsOfMerchant($merchantId);
+        $logArray = array();
+        foreach($logs as $log)
+        {
+            array_push($logArray, $log->toArrayPublic());
+        }
+        return $logArray;
     }
 }

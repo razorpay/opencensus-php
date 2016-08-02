@@ -131,4 +131,43 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testFreeCreditsGrantedInCampaign' => [
+        'request' => [
+            'url' => '/merchants/free_credits/campaign/silent-ads/',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                    'credits' => 270,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testFreeCreditsGrantedToMerchant' => [
+        'request' => [
+            'url' => '/merchants/10000000000000/free_credits/all',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'id' => '123',
+                    'credits' => 90,
+                    'notes' => [],
+                    'merchant_id'=> '10000000000000',
+                    'campaign' => 'silent-ads',
+                ],
+                [
+                    'id' => '125',
+                    'credits' => 90,
+                    'notes' => [],
+                    'merchant_id'=> '10000000000000',
+                    'campaign' => 'silent-ads',
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];

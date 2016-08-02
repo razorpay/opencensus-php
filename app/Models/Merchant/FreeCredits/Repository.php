@@ -29,12 +29,17 @@ class Repository extends Base\Repository
         return $total_free_credits;
     }
 
+    public function getFreeCreditsLogsOfMerchant($merchantId)
+    {
+        return Entity::where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->orderBy(Entity::CREATED_AT)
+            ->get();
+    }
+
     public function getCampaignsMerchantParticipated($merchantId)
     {
         $campaigns = array();
-        $logs = Entity::where(Entity::CAMPAIGN, '=', $merchantId)
-            ->orderBy(Entity::CREATED_AT)
-            ->get();
+        $logs = $this->getFreeCreditsLogsOfMerchant($merchantId);
 
         foreach($logs as $creditLog)
         {
