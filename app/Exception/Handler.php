@@ -45,6 +45,11 @@ class Handler extends ExceptionHandler
     public function report(Exception $e)
     {
 
+        if (!$this->isCritical($e))
+        {
+            return;
+        }
+
         $context = $this->getExceptionDetails($e);
 
         $app = \App::getFacadeRoot();
@@ -56,7 +61,6 @@ class Handler extends ExceptionHandler
         $trace->addRecord(Trace::CRITICAL, 'ERROR_EXCEPTION', $context);
 
         return parent::report($e);
-
     }
 
     /**
@@ -203,5 +207,17 @@ class Handler extends ExceptionHandler
             }
         }
         return $data;
+    }
+
+    protected function isCritical(Exception $e)
+    {
+        if (($e instanceof ModelNotFoundException) or
+            ($e instanceof NotFoundHttpException) or
+            ($e instanceof MethodNotFoundException))
+        {
+            return false;
+        }
+
+        return true;
     }
 }
