@@ -6,12 +6,9 @@ use Crypt;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Entity extends Base\PublicEntity
 {
-    use SoftDeletes;
-
     const ID                            = 'id';
 
     const TERMINAL_ID                   = 'terminal_id';
