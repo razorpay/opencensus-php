@@ -31,6 +31,8 @@ class RequestConstants
     const ACTION                = 'Action';
     const SECRET_KEY            = 'secret_key';
     const PAYMENT_ID            = 'payment_id';
+    
+    
     const API_ACTION            = 'Action';
     const API_ACCOUNT_ID        = 'AccountID';
     const API_SECRET_KEY        = 'SecretKey';

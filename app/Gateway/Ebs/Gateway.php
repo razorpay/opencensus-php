@@ -108,10 +108,10 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        $payment = $this->getRepo()->findByPaymentIdAndAction(
+        $gatewayPayment = $this->getRepo()->findByPaymentIdAndAction(
                                 $input['payment']['id'], Action::AUTHORIZE);
 
-        $content = $this->getPaymentRefundRequestContent($payment, $input);
+        $content = $this->getPaymentRefundRequestContent($gatewayPayment, $input);
 
         $request = $this->getStandardRequestArray($content);
 
@@ -125,16 +125,16 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_REFUND_RESPONSE,
             [$response->body]);
 
-        $parsedResponse = $this->parseResponseXml($response->body);
+        $refundResponse = $this->parseResponseXml($response->body);
 
-        $attributes = $this->getRefundContent($parsedResponse, $input);
+        $attributes = $this->getRefundContent($refundResponse, $input);
 
         $refund = $this->createGatewayPaymentEntity($attributes, $input);
 
-        if ((isset($parsedResponse[Resp::RESPONSE]) === false) or
-            ($parsedResponse[Resp::RESPONSE] !== Status::API_SUCCESS))
+        if ((isset($refundResponse[Resp::RESPONSE]) === false) or
+            ($refundResponse[Resp::RESPONSE] !== Status::API_SUCCESS))
         {
-            $responseCode = $parsedResponse[Resp::ERROR_CODE];
+            $responseCode = $refundResponse[Resp::ERROR_CODE];
 
             $desc = ResponseCode::$reasonCodes[$responseCode];
 
@@ -330,7 +330,7 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected function getPaymentRefundRequestContent($payment, $input)
+    protected function getPaymentRefundRequestContent($gatewayPayment, $input)
     {
         $refundAmount = $input['refund']['amount']/100;
 
@@ -339,7 +339,7 @@ class Gateway extends Base\Gateway
             Req::API_ACCOUNT_ID     => $this->getAccountId($input['terminal']),
             Req::API_SECRET_KEY     => $this->getSecretKey($input['terminal']),
             Req::API_AMOUNT         => $refundAmount,
-            Req::API_PAYMENT_ID     => $payment[Entity::REFERENCE_ID],
+            Req::API_PAYMENT_ID     => $gatewayPayment[Entity::REFERENCE_ID],
         );
 
         return $content;
@@ -579,8 +579,6 @@ class Gateway extends Base\Gateway
         $refundAmount = $input['refund']['amount']/100;
 
         $attributes = $this->getMappedAttributes($response);
-
-        $attributes[Entity::IS_FLAGGED] = false;
 
         if ((isset($response[Entity::IS_FLAGGED])) and
             (strtolower($response[Entity::IS_FLAGGED]) === 'yes'))
