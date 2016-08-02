@@ -103,13 +103,29 @@ trait Authorize
                 {
                     $retry_attempts += 1;
 
-                    $currentTerminal = $terminalsSelected[$retry_attempts];
-
-                    $this->terminalSelector->setTerminalForPayment($payment, $currentTerminal);
-
                     $timeoutException = $e;
 
-                    continue;
+                    // retry only if it is safe to do so
+                    if(property_exists($e, "safe_retry") === true and $e->safe_retry === true)
+                    {
+                        // handle edge case with only a single terminal selected
+                        if($retry_attempts >= $this->MAX_RETRY_ATTEMPTS)
+                        {
+                            break;
+                        }
+
+                        $currentTerminal = $terminalsSelected[$retry_attempts];
+
+                        $this->terminalSelector->setTerminalForPayment($payment, $currentTerminal);
+
+                        continue;
+
+                    }
+
+                    else
+                    {
+                        break;
+                    }
                 }
                 else
                 {

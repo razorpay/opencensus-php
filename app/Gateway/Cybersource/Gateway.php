@@ -284,6 +284,7 @@ class Gateway extends Base\Gateway
 
     protected function enroll($input)
     {
+        //TODO: add timeout exception handling here
         $request = $this->getEnrollRequestObject($input);
 
         $this->traceGatewayRequest(TraceCode::GATEWAY_ENROLL_REQUEST, $request);

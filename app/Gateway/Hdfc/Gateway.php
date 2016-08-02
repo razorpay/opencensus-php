@@ -32,6 +32,7 @@ use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Payment;
 use RZP\Models\Card;
 use RZP\Trace\TraceCode;
+use RZP\Gateway\Base\Action;
 
 class Gateway extends Base\Gateway
 {
@@ -264,9 +265,6 @@ class Gateway extends Base\Gateway
 
         $status = $this->enrollCard($input);
 
-        //
-        // After enroll is done, auth is to be done
-        //
         return $this->decideAuthStepAfterEnroll($status);
     }
 
@@ -634,7 +632,7 @@ class Gateway extends Base\Gateway
 
 // -------------------------Exceptions -----------------------------------------
 
-    protected function throwGatewayTimeoutException($code)
+    protected function throwGatewayTimeoutException($code, $safe_retry = false)
     {
         $msg = null;
         $e = null;
@@ -649,7 +647,7 @@ class Gateway extends Base\Gateway
             $msg = ErrorCode::$errorMessages[$code];
         }
 
-        $exception = new Exception\GatewayTimeoutException($msg, $e);
+        $exception = new Exception\GatewayTimeoutException($msg, $e, $safe_retry);
 
         $desc = Hdfc\ErrorCode::$errorMessages[$code];
 
@@ -660,14 +658,14 @@ class Gateway extends Base\Gateway
         throw $exception;
     }
 
-    protected function throwException($error)
+    protected function throwException($error, $safe_retry = false)
     {
         $gatewayErrorCode = $error['code'];
 
         if (($gatewayErrorCode === Hdfc\ErrorCode::RP00003) or
             ($gatewayErrorCode === Hdfc\ErrorCode::RP00004))
         {
-            $this->throwGatewayTimeoutException($gatewayErrorCode);
+            $this->throwGatewayTimeoutException($gatewayErrorCode, $safe_retry);
         }
 
         $gatewayErrorDesc = $error['text'];
