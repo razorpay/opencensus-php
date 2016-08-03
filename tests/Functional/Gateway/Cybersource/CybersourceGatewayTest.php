@@ -83,7 +83,7 @@ class CybersourceGatewayTest extends TestCase
     public function testGatewayTimeoutError()
     {
         $payment = $this->getDefaultPaymentArray();
-        $payment['card']['number'] = '4012001038443335';
+        $payment['card']['number'] = '41476700000006';
 
         $data = $this->testData[__FUNCTION__];
 
