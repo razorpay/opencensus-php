@@ -13,7 +13,7 @@ class Entity extends Base\PublicEntity
     const PAYMENT_ID                    = 'payment_id';
     const TERMINAL_ID                   = 'terminal_id';
     const STATUS                        = 'status';
-    const RESPONSE_TIME                 = 'terminal_response_time';
+    const TERMINAL_RESPONSE_TIME        = 'terminal_response_time';
     const STATUS_CODE                   = 'status_code';
     const STATUS_MSG                    = 'status_msg';
     const PAYMENT_TYPE                  = 'payment_type';
@@ -24,7 +24,7 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_ID,
         self::TERMINAL_ID,
         self::STATUS,
-        self::RESPONSE_TIME,
+        self::TERMINAL_RESPONSE_TIME,
         self::STATUS_CODE,
         self::STATUS_MSG,
         self::PAYMENT_TYPE,
@@ -35,7 +35,7 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_ID,
         self::TERMINAL_ID,
         self::STATUS,
-        self::RESPONSE_TIME,
+        self::TERMINAL_RESPONSE_TIME,
         self::STATUS_CODE,
         self::STATUS_MSG,
         self::PAYMENT_TYPE,
@@ -68,9 +68,9 @@ class Entity extends Base\PublicEntity
         return $this->attributes[self::STATUS];
     }
 
-    public function getResponseTime()
+    public function getTerminalResponseTime()
     {
-        return $this->attributes[self::RESPONSE_TIME];
+        return $this->attributes[self::TERMINAL_RESPONSE_TIME];
     }
 
     public function getStatusCode()

@@ -1060,9 +1060,9 @@ trait Authorize
         {
             // we care about this exception, since its an indicator of
             // terminal failure
-            $input['status_code'] = $e->getCode();
+            $input['status_code'] = $ex->getCode();
 
-            $input['status_msg'] = $e->getMessage();
+            $input['status_msg'] = $ex->getMessage();
 
         }
 

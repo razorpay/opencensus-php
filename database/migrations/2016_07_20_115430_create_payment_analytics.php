@@ -30,7 +30,7 @@ class CreatePaymentAnalytics extends Migration
             $table->boolean(Analytics::STATUS)
                 ->default(1);
 
-            $table->double(Analytics::RESPONSE_TIME,8,5)
+            $table->double(Analytics::TERMINAL_RESPONSE_TIME,8,5)
                 ->default(0);
 
             $table->integer(Analytics::STATUS_CODE)
