@@ -88,13 +88,16 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment->fill($attributes);
         $gatewayPayment->saveOrFail();
-        $responseCode = $input['gateway'][Resp::RESPONSE_CODE];
 
-        if ($responseCode !== Status::SUCCESS)
+        if ((isset($input['gateway'][Resp::RESPONSE_CODE])) and
+            ($input['gateway'][Resp::RESPONSE_CODE] !== Status::SUCCESS))
         {
             //
             // Payment fails, throw exception
             //
+
+            $responseCode = $input['gateway'][Resp::RESPONSE_CODE];
+
             $desc = '';
             if (isset(ResponseCode::$reasonCodes[$responseCode]))
             {
@@ -159,6 +162,7 @@ class Gateway extends Base\Gateway
 
         return $msg[Resp::MERCHANT_REF_NO];
     }
+
     public function verify(array $input)
     {
         parent::verify($input);
