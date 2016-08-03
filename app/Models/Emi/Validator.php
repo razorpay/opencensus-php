@@ -23,7 +23,8 @@ class Validator extends Base\Validator
 
     protected function validateBank($input)
     {
-        if (in_array($input['bank'], Gateway::$emiBanks) === false)
+        if ((isset($input['bank']) === true) and
+            (in_array($input['bank'], Gateway::$emiBanks) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'invalid bank name: '. $input['bank']);
