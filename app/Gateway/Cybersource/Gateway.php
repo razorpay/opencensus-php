@@ -9,6 +9,7 @@ use Requests;
 use RZP\Error;
 use RZP\Exception;
 use RZP\Constants;
+use RZP\Gateway\Utility;
 use RZP\Models\Card;
 use RZP\Trace\Trace;
 use RZP\Gateway\Base;
@@ -63,6 +64,7 @@ class Gateway extends Base\Gateway
     const TEST_WSDL_FILE              = 'cybstest.wsdl.xml';
     const LIVE_WSDL_FILE              = 'cybslive.wsdl.xml';
     const XID                         = 'xid';
+    const CONNECTION_TIMEOUT          = 30;
 
     protected $gateway = Constants\Table::CYBERSOURCE;
 
@@ -137,8 +139,7 @@ class Gateway extends Base\Gateway
         }
         catch (SoapFault $exception)
         {
-            throw new Exception\RuntimeException(
-                'Capture request failed.', null, $exception);
+            $this->handleSoapFault($exception, "Capture request failed");
         }
     }
 
@@ -158,8 +159,7 @@ class Gateway extends Base\Gateway
         }
         catch (SoapFault $exception)
         {
-            throw new Exception\RuntimeException(
-                'Refund request failed.', null, $exception);
+            $this->handleSoapFault($exception, "Refund request failed");
         }
     }
 
@@ -298,8 +298,7 @@ class Gateway extends Base\Gateway
         }
         catch (SoapFault $exception)
         {
-            throw new Exception\RuntimeException(
-                'Server error occurred', null, $exception);
+            $this->handleSoapFault($exception, "Enroll: Server Error occured");
         }
     }
 
@@ -321,8 +320,7 @@ class Gateway extends Base\Gateway
         }
         catch (SoapFault $exception)
         {
-            throw new Exception\RuntimeException(
-                'Validation request failed.', null, $exception);
+            $this->handleSoapFault($exception, "Post Auth Enroll: Validation Request Failed");
         }
     }
 
@@ -340,8 +338,7 @@ class Gateway extends Base\Gateway
         }
         catch (SoapFault $exception)
         {
-            throw new Exception\RuntimeException(
-                'Authorization failed.', null, $exception);
+            $this->handleSoapFault($exception, "Post Enroll Authorize: Authorization Failed");
         }
     }
 
@@ -359,8 +356,7 @@ class Gateway extends Base\Gateway
         }
         catch (SoapFault $exception)
         {
-            throw new Exception\RuntimeException(
-                'Authorization failed.', null, $exception);
+            $this->handleSoapFault($exception, "Post Not Enrolled Authorize: Authorization failed");
         }
     }
 
@@ -775,7 +771,9 @@ class Gateway extends Base\Gateway
 
     protected function getSoapClientObject($request)
     {
-        $soapClient = new CybersourceSoapClient($request['url'], $request['options']['auth']);
+        $soapClient = new CybersourceSoapClient($request['url'],
+                                                $request['options']['auth'],
+                                                $request['connect_options']);
 
         return $soapClient;
     }
@@ -953,8 +951,14 @@ class Gateway extends Base\Gateway
             'content' => $content,
             'options' => [
                 'auth' => $this->getCredentials()
-            ]
+            ],
+            'connect_options' => [
+                'exception' => true,
+                'connection_timeout' => self::CONNECTION_TIMEOUT
+            ],
         ];
+
+        ini_set("default_socket_timeout", self::CONNECTION_TIMEOUT);
 
         return $request;
     }
@@ -1075,31 +1079,6 @@ class Gateway extends Base\Gateway
         return [];
     }
 
-    /** Exceptions **/
-    protected function throwException($response)
-    {
-        if (isset($response['reasonCode']) === false)
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
-        }
-
-        $reasonCode = $response['reasonCode'];
-
-        $desc = ResponseCode::$reasonCodes[$reasonCode];
-
-        if (ResponseCode::isValidationError($reasonCode))
-        {
-            throw new Exception\BadRequestException(
-                ResponseCode::getMappedCode($reasonCode),
-                $reasonCode);
-        }
-
-        throw new Exception\GatewayErrorException(
-                ResponseCode::getMappedCode($reasonCode),
-                $reasonCode,
-                $desc);
-    }
 
     protected function getVerifyContentFromResponse($verify)
     {
@@ -1131,5 +1110,54 @@ class Gateway extends Base\Gateway
     protected function isSequentialArray($array)
     {
         return array_keys($array) === range(0, count($array) - 1);
+    }
+
+    // Exception handling
+
+    /**
+     * @param \SoapFault $sf
+     * @throws Exception\GatewayTimeoutException
+     * @throws Exception\RuntimeException
+     */
+    protected function handleSoapFault(\SoapFault $sf, $errMsg)
+    {
+        if(Utility::checkSoapTimeout($sf) === true)
+        {
+            throw new Exception\GatewayTimeoutException(
+                                                $sf->getMessage(), $sf);
+        }
+
+        throw new Exception\RuntimeException(
+            'Authorization failed.', null, $sf);
+    }
+
+    /**
+     * @param $response
+     * @throws Exception\BadRequestException
+     * @throws Exception\GatewayErrorException
+     */
+    protected function throwException($response)
+    {
+        if (isset($response['reasonCode']) === false)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+        }
+
+        $reasonCode = $response['reasonCode'];
+
+        $desc = ResponseCode::$reasonCodes[$reasonCode];
+
+        if (ResponseCode::isValidationError($reasonCode))
+        {
+            throw new Exception\BadRequestException(
+                ResponseCode::getMappedCode($reasonCode),
+                $reasonCode);
+        }
+
+        throw new Exception\GatewayErrorException(
+            ResponseCode::getMappedCode($reasonCode),
+            $reasonCode,
+            $desc);
     }
 }

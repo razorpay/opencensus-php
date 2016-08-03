@@ -36,4 +36,24 @@ class Utility
             return false;
         }
     }
+
+    /**
+     * Checks whether the SoapFault exception is a timeout exception
+     * If so, this should be treated as a gateway failure
+     */
+
+    public static function checkSoapTimeout(\SoapFault $sf)
+    {
+        $msg = strotlower($sf->getMessage());
+
+        if ((strpos($msg, 'could not connect to host') !== false) or
+            (strpos($msg, 'connection timed out') !== false) or
+            (strpos($msg, 'error fetching http headers') !== false)
+        )
+        {
+            return true;
+        }
+
+        return false;
+    }
 }
