@@ -6,12 +6,9 @@ use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Services\SlackPoster;
 
 class Core extends Base\Core
 {
-    use SlackPoster;
-
     protected $card = null;
 
     public function create($input, $merchant)
@@ -161,7 +158,8 @@ class Core extends Base\Core
 
         try
         {
-            $this->slackPost(
+
+            $this->app['slack']->queue(
                 'Missing IIN for payment',
                 $slackArray,
                 ['channel' => '#settlements']);

@@ -118,17 +118,14 @@ return array(
     // Allow Markdown in all fields
     'markdown_in_attachments' => ['pretext', 'text', 'title', 'fields', 'fallback'],
 
-    'token' => env('SLACK_TOKEN'),
-
-    'team' => 'razorpay',
-
-    'mock' => env('SLACK_MOCK'),
-
     'channels'  =>  [
         'low'            => '#transactions',
         'high'           => '#transactions_high',
         'risky'          => '#transactions_risky',
         'reconciliation' => '#reconciliation',
         'highrisk'       => '#transactions_highrisk',
-    ]
+    ],
+
+    //'is_slack_enabled' => env('SLACK_MOCK') === true ? false : true
+    'is_slack_enabled' => true
 );
