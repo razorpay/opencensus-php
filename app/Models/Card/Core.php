@@ -119,10 +119,19 @@ class Core extends Base\Core
 
             $emi = IIN\IIN::isEmiAvailableForCard($details, $input['number']);
 
+            // Since AMEX is handled as a different case,
+            // mark all amex cards as non international
+            $isInternational = $details->isInternational();
+
+            if ($network === Card\Network::AMEX)
+            {
+                $isInternational = false;
+            }
+
             $arr = array(
                 Entity::ISSUER          => $details['issuer'],
                 Entity::COUNTRY         => $details['country'],
-                Entity::INTERNATIONAL   => $details->isInternational(),
+                Entity::INTERNATIONAL   => $isInternational,
                 Entity::EMI             => $emi,
             );
 

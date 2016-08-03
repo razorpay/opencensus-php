@@ -3,11 +3,12 @@
 namespace RZP\Http;
 
 use App;
-use RZP\Error\Error;
-use RZP\Error\ErrorCode;
+use View;
 use Request;
 use Response;
-use View;
+use BasicAuth;
+use RZP\Error\Error;
+use RZP\Error\ErrorCode;
 
 class ApiResponse
 {
@@ -101,9 +102,9 @@ class ApiResponse
         }
     }
 
-    public static function generateErrorResponse($code)
+    public static function generateErrorResponse($error, $debug = false)
     {
-        list($publicError, $httpStatusCode) = self::getErrorResponseFields($code);
+        list($publicError, $httpStatusCode) = self::getErrorResponseFields($error, $debug);
 
         return self::generateResponse($publicError, $httpStatusCode);
     }
@@ -115,26 +116,20 @@ class ApiResponse
         return self::json($publicError, $httpStatusCode);
     }
 
-    public static function getErrorResponseFields($code)
+    public static function getErrorResponseFields($error, $debug = false)
     {
-        $error = new Error($code);
+        $isPublicAuth = BasicAuth::isPublicAuth();
 
-        $publicError = $error->toPublicArray();
+        if (($error instanceof Error) === false)
+        {
+            $error = new Error($error);
+        }
+
+        $data = $debug ? $error->toDebugArray() : $error->toPublicArray($isPublicAuth);
 
         $httpStatusCode = $error->getHttpStatusCode();
 
-        return array($publicError, $httpStatusCode);
-    }
-
-    public static function recoverableError($debug, $exception = null)
-    {
-        $error = $exception->getError();
-
-        $httpStatusCode = $error->getHttpStatusCode();
-
-        $data = $debug ? $error->toDebugArray() : $error->toPublicArray();
-
-        return self::generateResponse($data, $httpStatusCode);
+        return [$data, $httpStatusCode];
     }
 
     protected static function debugException($e)
@@ -245,6 +240,7 @@ class ApiResponse
             'payment_create_checkout',
             'payment_callback_with_key_post',
             'payment_callback_with_key_get',
+            'payment_redirect'
         );
 
         return (in_array($route, $callbackRoutes));
@@ -256,6 +252,7 @@ class ApiResponse
             'payment_create_checkout',
             'payment_callback_with_key_post',
             'payment_callback_with_key_get',
+            'payment_redirect'
         );
 
         return (in_array($route, $callbackRoutes));

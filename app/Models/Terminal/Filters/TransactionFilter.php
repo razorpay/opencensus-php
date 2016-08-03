@@ -33,12 +33,10 @@ class TransactionFilter extends Terminal\Filter
         switch ($method)
         {
             case Method::CARD:
-                return (($terminal->isCardEnabled()) and ($terminal->isEmiEnabled() === false)) ;
-                break;
+                return (($terminal->isCardEnabled()) and ($terminal->isEmiEnabled() === false));
 
             case Method::NETBANKING:
                 return $terminal->isNetbankingEnabled();
-                break;
 
             case Method::EMI:
                 $bank = $input['payment']->getBank();
@@ -46,7 +44,6 @@ class TransactionFilter extends Terminal\Filter
                 $emiDuration = $input['payment']->emiPlan->getDuration();
 
                 return $terminal->isValidForEmiDurationAndBank($bank, $emiDuration);
-                break;
 
             // Pick the right terminal only
             case Method::WALLET:
@@ -57,7 +54,7 @@ class TransactionFilter extends Terminal\Filter
                 return ($gateway === $terminal->getGateway());
 
             default:
-                break;
+                throw new Exception\LogicException('Unknown payment method passed.', null, ['method' => $method]);
         }
     }
 
@@ -132,8 +129,7 @@ class TransactionFilter extends Terminal\Filter
         {
             $network = $input['payment']->card->getNetworkCode();
 
-            // For Maes card, support only enabled for shared terminal
-            // on live mode
+            // Only shared terminals support Maestro on Live mode.
             if (($network === Network::MAES) and
                 ($input['mode'] === Mode::LIVE))
             {

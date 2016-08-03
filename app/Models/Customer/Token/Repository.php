@@ -52,11 +52,12 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function getByMethodAndCustomerId($method, $customerId)
+    public function getByMethodAndCustomerId($method, $customer)
     {
         return $this->newQuery()
                     ->where(Entity::METHOD, '=', $method)
-                    ->where(Entity::CUSTOMER_ID, '=', $customerId)
+                    ->where(Entity::CUSTOMER_ID, '=', $customer->getId())
+                    ->where(Entity::MERCHANT_ID, '=', $customer->merchant->getId())
                     ->get();
     }
 

@@ -80,7 +80,9 @@ class CustomerTokenTest extends TestCase
     {
         $this->ba->publicAuth();
 
-        $this->startTest();
+        $response = $this->startTest();
+
+        $this->assertEquals(isset($response['email']), false);
     }
 
     public function testFetchSavedCustomerStatusWithDeviceToken()
@@ -94,7 +96,9 @@ class CustomerTokenTest extends TestCase
     {
         $this->ba->publicAuth();
 
-        $this->startTest();
+        $response = $this->startTest();
+
+        $this->assertEquals(isset($response['email']), false);
     }
 
     public function testDeleteAppToken()

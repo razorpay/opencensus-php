@@ -138,7 +138,6 @@ class Service extends Base\Service
         if ($customer !== null)
         {
             $data['saved'] = true;
-            $data['email'] = $customer->getEmail();
 
             if (isset($input['device_token']))
             {
@@ -146,10 +145,14 @@ class Service extends Base\Service
 
                 $result = $this->validateDeviceToken($deviceToken, $customer);
 
-                if (($result['valid'] === true) and
-                    (isset($result['tokens'])))
+                if (($result['valid'] === true))
                 {
-                    $data['tokens'] = $result['tokens'];
+                    $data['email'] = $customer->getEmail();
+
+                    if (isset($result['tokens']))
+                    {
+                        $data['tokens'] = $result['tokens'];
+                    }
                 }
             }
             else if ($sendOtp === true)

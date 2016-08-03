@@ -9,25 +9,35 @@ use RZP\Models\Payment;
 
 use RZP\Trace;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 
 class Selector
 {
+    protected $mode;
+    protected $payment;
+    protected $repo;
+    protected $trace;
+    protected $merchant;
+    protected $input;
+
     protected static $filters = [
         Filters\TransactionFilter::class,
         Filters\MerchantFilter::class,
     ];
 
+    /**
+     * Very important that the sorting order is maintained
+     * @var array
+     */
     protected static $sorters = [
         Sorters\CardSorter::class,
         Sorters\NetbankingSorter::class,
         Sorters\MerchantSorter::class,
     ];
 
-    public function setup($payment, $mode)
+    public function __construct(Payment\Entity $payment, $mode)
     {
-        $app = \App::getFacadeRoot();
+        $app = App::getFacadeRoot();
 
         $this->mode = $mode;
 
@@ -60,19 +70,19 @@ class Selector
         return $merchantTerminals;
     }
 
-    public function select($payment, $mode, $verbose = false, $options = [])
+    public function select($options = [], $verbose = false)
     {
-        $this->setup($payment, $mode);
-
         $terminals = $this->getTerminals();
 
-        // Trace available terminals before selection
         $this->traceTerminals($terminals, 'Terminals fetched from db', $verbose);
 
-        // Terminals first filtered
-        // Terminals that result in failure due to gateway are recorded and
-        // removed in the next attempt
-        $filteredTerminals = $terminals;
+        //
+        // Initially, the terminals are run through a filter class, which removes
+        // the terminals which do not match the filters. For further iterations, the
+        // filtered list of terminals is used to further filter upon using the other
+        // filter classes.
+        //
+        $filteredTerminals = $terminals->all();
 
         foreach (self::$filters as $filter)
         {
@@ -80,10 +90,12 @@ class Selector
             $this->traceTerminals($filteredTerminals, 'Terminals after ' . $filter, $verbose);
         }
 
-        // Trace available terminals after filtration
         $this->traceTerminals($filteredTerminals, 'Terminals after filtration', $verbose);
 
-        // Terminals next sorted
+        //
+        // Sorting is done on the final list of filtered terminals.
+        // The sorting is run for each of the sorting classes.
+        //
         $sortedTerminals = $filteredTerminals;
 
         foreach (self::$sorters as $sorter)
@@ -92,16 +104,26 @@ class Selector
             $this->traceTerminals($sortedTerminals, 'Terminals after ' . $sorter, $verbose);
         }
 
-        // Trace available terminals after filtration
         $this->traceTerminals($sortedTerminals, 'Terminals after sorting', $verbose);
 
         $terminal = null;
 
-        if ((empty($sortedTerminals)) and ($this->mode === Mode::TEST))
+        if (empty($sortedTerminals) === true)
         {
-            $terminal = $this->repo->find(Shared::SHARP_RAZORPAY_TERMINAL);
+            if ($this->mode === Mode::TEST)
+            {
+                // The current list of terminals which were retrieved earlier does
+                // not contain the sharp terminal and hence, making a call to DB.
+                $terminal = $this->repo->find(Shared::SHARP_RAZORPAY_TERMINAL);
+            }
+            else
+            {
+                throw new Exception\RuntimeException(
+                    'No terminal found.',
+                    ['payment' => $this->payment->toArrayAdmin()]);
+            }
         }
-        else if (isset($sortedTerminals[0]))
+        else
         {
             $terminal = $sortedTerminals[0];
         }
@@ -111,34 +133,9 @@ class Selector
             $terminal = (new Binning)->select($terminal, $options['chance'], $this->input, $terminals);
         }
 
-        $this->checkForCustomExceptions($terminal);
-
-        // When the terminal selector has to activated.
-        // uncomment the following code
-        $this->setTerminalForPayment($payment, $terminal);
+        $this->setTerminalForPayment($this->payment, $terminal);
 
         return $terminal;
-    }
-
-    protected function getHdfcSharedTerminalIfMaestro($terminals)
-    {
-        $method = $this->payment->getMethod();
-
-        if ($method !== Payment\Method::CARD)
-        {
-            return null;
-        }
-
-        $cardNetwork = $this->payment->card->getNetworkCode();
-
-        if ($cardNetwork !== Network::MAES)
-        {
-            return null;
-        }
-
-        $sharedHdfcTerminal = $terminals->find(Shared::HDFC_RAZORPAY_TERMINAL);
-
-        return $sharedHdfcTerminal;
     }
 
     protected function setTerminalForPayment($payment, $terminal = null)
@@ -157,8 +154,7 @@ class Selector
 
     protected function traceTerminals($terminals, $msg, $verbose = false)
     {
-        if (($verbose) and
-            ($terminals))
+        if (($verbose === true) and (empty($terminals) === false))
         {
             $terminalIds = [];
 
@@ -171,31 +167,5 @@ class Selector
 
             $this->trace->info(TraceCode::TERMINAL_SELECTION, $traceData);
         }
-    }
-
-    /**
-     * Custom exceptions that are to be only thrown if no terminal is available,
-     * in live mode on cards.
-     *
-     * @param terminal $terminal Chosen terminal
-     * @return void throw custom exception
-     */
-    protected function checkForCustomExceptions($terminal)
-    {
-        if (($terminal === null) and
-            ($this->input['mode'] === Mode::LIVE) and
-            ($this->input['payment']->getMethod() === Payment\Method::CARD))
-        {
-            $network = $this->input['payment']->card->getNetworkCode();
-            // Check for partially supported networks on live
-            $networks = Payment\Gateway::$partiallySupportedCardNetworks;
-
-            if (in_array($network, $networks))
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
-            }
-        }
-
     }
 }

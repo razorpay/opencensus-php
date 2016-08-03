@@ -61,12 +61,8 @@ class Core extends Base\Core
 
     protected function validateExistingToken($token)
     {
-        $params = array(
-            Token\Entity::METHOD      => $token->getMethod(),
-            Token\Entity::CUSTOMER_ID => $token->customer->getId());
-
         $existingTokens = $this->repo->token->getByMethodAndCustomerId(
-                                $token->getMethod(), $token->customer->getId());
+                                $token->getMethod(), $token->customer);
 
         $func = 'validateExistingToken'.$token->getMethod();
 

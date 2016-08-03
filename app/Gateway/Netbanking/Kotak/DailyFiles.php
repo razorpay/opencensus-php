@@ -36,7 +36,7 @@ class DailyFiles
         $amount['total'] = $claimsAmount - $refundAmount;
 
         // Send the mail only when amount of refunds is greater than zero
-        if ($amount['refunds'] > 0)
+        if ($amount['refunds'] + $amount['claims']> 0)
         {
             $this->sendMail($amount, $claimsFile, $refundsFile);
         }
