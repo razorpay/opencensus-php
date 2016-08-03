@@ -51,23 +51,44 @@ class Entity extends Base\PublicEntity
         self::CAMPAIGN          => null,
     );
 
-// --------------------- Mutators -------------------------------------------
 
-// --------------------- End Mutators ----------------------------------------
+// --------------------- Setters -------------------------------------------
 
-// --------------------- Setters ---------------------------------------------
-
-    public function setCampaign(string $campaignName)
+    public function setCampaign($campaignName)
     {
         $this->setAttribute(self::CAMPAIGN, $campaignName);
     }
 
-    public function setCredits(int $credits)
+    public function setCredits($credits)
     {
         $this->setAttribute(self::CREDITS, $credits);
     }
 
 // --------------------- End Setters -----------------------------------------
+
+// --------------------- Getters -----------------------------------------
+
+    public function getCredits()
+    {
+        return $this->getAttribute(self::CREDITS);
+    }
+
+// --------------------- End Getters -----------------------------------------
+
+// --------------------- Modifiers -------------------------------------------
+
+    public function addCredits($credits)
+    {
+        $credits = $this->getCredits() + $credits;
+        $this->setCredits($credits);
+    }
+
+    public function deductCredits($credits)
+    {
+        $credits = $this->getCredits() - $credits;
+        $this->setCredits($credits);
+    }
+// --------------------- End Modifiers ---------------------------------------
 
 // --------------------- Foreign Key Relations -------------------------------
 

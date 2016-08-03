@@ -15,19 +15,15 @@ class CreateFreeCreditsTable extends Migration
      */
     public function up()
     {
-        Schema::create(Table::FREE_CREDITS, function (Blueprint $table) {
+        Schema::create(Table::FREE_CREDITS, function (Blueprint $table)
+        {
 
             $table->engine = 'InnoDB';
 
             $table->increments(FreeCredits::ID);
 
-            $table->char(FreeCredits::CAMPAIGN, 255);
-            $table->char(FreeCredits::MERCHANT_ID, FreeCredits::ID_LENGTH);
-
-            $table->foreign(FreeCredits::MERCHANT_ID)
-                ->references(FreeCredits::ID)
-                ->on(Table::MERCHANT)
-                ->on_delete('restrict');
+            $table->string(FreeCredits::CAMPAIGN, 255);
+            $table->string(FreeCredits::MERCHANT_ID, FreeCredits::ID_LENGTH);
 
             $table->integer(FreeCredits::CREDITS)->default(0);
             $table->text(FreeCredits::NOTES);
@@ -35,6 +31,11 @@ class CreateFreeCreditsTable extends Migration
             // Timstamp logs of the model
             $table->integer(FreeCredits::CREATED_AT);
             $table->integer(FreeCredits::UPDATED_AT);
+
+            $table->foreign(FreeCredits::MERCHANT_ID)
+                ->references(FreeCredits::ID)
+                ->on(Table::MERCHANT)
+                ->on_delete('restrict');
 
             // Indices
             $table->index(FreeCredits::CREATED_AT);
@@ -49,7 +50,8 @@ class CreateFreeCreditsTable extends Migration
      */
     public function down()
     {
-        Schema::drop(Table::FREE_CREDITS, function (Blueprint $table) {
+        Schema::drop(Table::FREE_CREDITS, function (Blueprint $table)
+        {
             // Drop the foreign key
             $table->dropForeign(
                 Table::FREE_CREDITS.'_'.FreeCredits::MERCHANT_ID.'_foreign');

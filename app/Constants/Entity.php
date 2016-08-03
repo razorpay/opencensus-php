@@ -37,7 +37,7 @@ class Entity
     const BANK_ACCOUNT          = 'bank_account';
     const DAILY_SETTLEMENT      = 'daily_settlement';
     const SETTLEMENT_DETAILS    = 'settlement_details';
-    const FREE_CREDITS      = 'free_credits';
+    const FREE_CREDITS          = 'free_credits';
 
     //
     // Gateway entities

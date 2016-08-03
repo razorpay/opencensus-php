@@ -109,10 +109,9 @@ final class Route
         'merchant_get_features'                   => ['get',      'merchants/{id}/features',                  'MerchantController@getMerchantFeatures'                            ],
         'merchant_notify_holiday'                 => ['post',     'merchants/notify/holiday',                 'MerchantController@postMerchantsNotifyHoliday'                     ],
         'freecredits_create'                      => ['post',     'merchants/{id}/free_credits',              'MerchantController@postCreateFreeCreditsLog'                       ],
-        'freecredits_update'                      => ['put',      'merchants/{mid}/free_credits/{id}',        'MerchantController@putFreeCreditsLog'                              ],
-        'freecredits_agg_campaign'                => ['get',      'merchants/free_credits/campaign/{name}',   'MerchantController@getFreeCreditsGrantedInCampaign'                ],
-        'freecredits_agg_merchant'                => ['get',      'merchants/{mid}/free_credits/all',         'MerchantController@getFreeCreditsGrantedToMerchant'                ],
-        'freecredits_get'                         => ['get',      'merchants/{mid}/free_credits/{id}',        'MerchantController@getFreeCreditsLog'                              ],
+        'freecredits_edit'                        => ['put',      'merchants/{mid}/free_credits/{id}',        'MerchantController@putFreeCreditsLog'                              ],
+        'freecredits_fetch_by_id'                 => ['get',      'merchants/{mid}/free_credits/{id}',        'MerchantController@getFreeCreditsLog'                              ],
+        'freecredits_fetch_multiple'              => ['get',      'free_credits',                             'MerchantController@getFreeCreditsLogs'                             ],
         'key_fetch_by_id'                         => ['get',      'keys/{id}',                                'KeyController@getKey'                                              ],
         'key_fetch_multiple'                      => ['get',      'keys',                                     'KeyController@getKeys'                                             ],
         'terminal_delete'                         => ['delete',   'terminals/{id}',                           'MerchantController@deleteTerminal2'                                ],
@@ -233,6 +232,8 @@ final class Route
         'otp_verify'                              => ['post',     'otp/verify',                               'CustomerController@verifyOtp'                                      ],
         'sms_callback'                            => ['post',     'sms/{id}/callback',                        'CustomerController@updateSmsStatus'                                ],
         'es_migrate_entity'                       => ['post',     'es/migrate/{entityName}',                  'EsController@migrateEntity'                                        ],
+        'dummy_test_slack_send'                   => ['get',      'dummy/testslack/send',                    'AdminController@getSlackTestSend'                                   ],
+        'dummy_test_slack_queue'                  => ['get',      'dummy/testslack/queue',                   'AdminController@getSlackTestQueue'                                  ],
     );
 
     public static $public = array(
@@ -416,10 +417,7 @@ final class Route
         'dummy_critical_error',
         'reconciliate',
         'freecredits_create',
-        'freecredits_update',
-        'freecredits_agg_campaign',
-        'freecredits_agg_merchant',
-        'freecredits_get',
+        'freecredits_edit',
     );
 
     public static $proxy = array(
@@ -455,6 +453,8 @@ final class Route
         'customer_update_token',
         'device_verify_token',
         'app_fetch_tokens',
+        'freecredits_fetch_multiple',
+        'freecredits_fetch_by_id',
     );
 
     public static $direct = array(

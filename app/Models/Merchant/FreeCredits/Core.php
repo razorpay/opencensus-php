@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Merchant\FreeCredits;
 
-
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -12,71 +11,73 @@ use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
-    public function checkIfFreeCreditsLogExists($merchantId, $campaign)
+    public function checkIfFreeCreditsLogExists($merchant, $campaign)
     {
-        return $this->repo->free_credits->recordExists($merchantId, $campaign);
+        return $this->repo->free_credits->findByCampaignAndMerchantId($campaign, $merchant);
     }
 
-    public function create($mid, $input)
+    public function create($merchant, $input)
     {
-        $input['merchant_id'] = $mid;
         $freeCreditsLog = (new FreeCredits\Entity)->build($input);
-        $this->repo->free_credits->saveOrFail($freeCreditsLog);
+        $freeCreditsLog->merchant()->associate($merchant);
+        $this->repo->saveOrFail($freeCreditsLog);
 
         // Add the free credits to merchant's main balance
         // TODO: Check if we can do it asynchronously.
         $merchant = $freeCreditsLog->merchant;
-        $merchantBalance = (new Merchant\Balance\Repository)->getMerchantBalance($merchant);
-        $mBalance = $merchantBalance->credits + $freeCreditsLog->credits;
-        (new Merchant\Balance\Repository)->editMerchantFreeCredits($merchant, $mBalance);
+        $merchantBalance = $this->repo->balance->getMerchantBalance($merchant);
+        $mBalance = $merchantBalance->getCredits() + $freeCreditsLog->getCredits();
+        $this->repo->balance->editMerchantFreeCredits($merchant, $mBalance);
 
         return $freeCreditsLog;
-    }
-
-    public function retrieveById($id)
-    {
-        return $this->repo->free_credits->findOrFailPublic($id);
     }
 
     /*
      * Add Free Credits to the merchant for a campaign
      */
-    public function grantFreeCredits($id, $credits)
+    public function grantFreeCredits($freeCreditsLog, $credits)
     {
-        $freeCreditsLog = $this->retrieveById($id);
-        $freeCreditsLog->credits += $credits;
-        $freeCreditsLog->saveOrFail();
+        // Update the freeCreditLog
+        $freeCreditsLog->addCredits($credits);
+        $this->repo->saveOrFail($freeCreditsLog);
         $merchant = $freeCreditsLog->merchant;
+
         // Update the merchant balance credit.
-        $merchantBalance = (new Merchant\Balance\Repository)->getMerchantBalance($merchant);
-        $mBalance = $merchantBalance->credits + $credits;
-        (new Merchant\Balance\Repository)->editMerchantFreeCredits(
-            $freeCreditsLog->merchant, $mBalance);
+        $merchantBalance = $this->repo->balance->getMerchantBalance($merchant);
+        $mBalance = $merchantBalance->getCredits() + $credits;
+        $this->repo->balance->editMerchantFreeCredits($merchant, $mBalance);
+
+        return $freeCreditsLog;
     }
 
     /*
      *  Deduct Free Credits from the merchant for a campaign
      *  @return array
      */
-    public function deductFreeCredits($id, $credits)
+    public function deductFreeCredits($freeCreditsLog, $credits)
     {
-        $freeCreditsLog = $this->repo->free_credits->findOrFailPublic($id);
+        // Make it to absolute value to make cmp easier. Dev may not send abs values everytime.
+        $credits = abs($credits);
         $merchant = $freeCreditsLog->merchant;
-        $merchantBalance = (new Merchant\Balance\Repository)->getMerchantBalance($merchant);
+        $merchantBalance = $this->repo->balance->getMerchantBalance($merchant);
 
-        if ($merchantBalance->credits < $credits)
+        if ($merchantBalance->getCredits() < $credits)
         {
             throw new Exception\BadRequestValidationFailureException(
-            'Credits to deduct is more than total credits available');
+                'Credits to deduct is more than total credits available');
         }
-        else if ($freeCreditsLog->credits < $credits)
+        else if ($freeCreditsLog->getCredits() < $credits)
         {
             throw new Exception\BadRequestValidationFailureException(
-            'Credits to deduct is more than credits assigned to merchant in campaign');
+                'Credits to deduct is more than credits assigned to merchant in campaign');
         }
-        $freeCreditsLog->credits -= abs($credits);
+
+        $freeCreditsLog->deductCredits($credits);
         $freeCreditsLog->saveOrFail();
-        $mBalance = $merchantBalance->credits - abs($credits);
-        (new merchant\balance\repository)->editMerchantFreeCredits($merchant, $mBalance);
+        //$this->repo->saveOrFail($freeCreditsLog);
+        $mBalance = $merchantBalance->getCredits() - $credits;
+        $this->repo->balance->editMerchantFreeCredits($merchant, $mBalance);
+
+        return $freeCreditsLog;
     }
 }

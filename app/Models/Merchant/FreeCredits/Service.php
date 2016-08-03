@@ -2,17 +2,15 @@
 
 namespace RZP\Models\Merchant\FreeCredits;
 
-use RZP\Constants\Mode;
 use Carbon\Carbon;
 use Mail;
 
+use RZP\Constants\Mode;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\FreeCredits;
-
-use RZP\Exception;
 use RZP\Error\ErrorCode;
-
+use RZP\Exception;
 use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
@@ -20,86 +18,62 @@ class Service extends Base\Service
     public function grantFreeCreditsForMerchantInCampaign($mid, array $input)
     {
         $campaign = $input['campaign'];
+        $merchant = $this->repo->merchant->findOrFailPublic($mid);
+
+        // Check if the log already exists, API is meant to use for creation only.
+        // TODO: Consult @shk to replace it with getOrCreate if it is too much hassle.
         $freeCreditsLogExists = (new FreeCredits\Core)->checkIfFreeCreditsLogExists(
-            $mid, $campaign);
+            $merchant, $campaign);
         if ($freeCreditsLogExists)
         {
             throw new Exception\BadRequestValidationFailureException(
-            'The record already exists for given campaign and merchant.');
+                'The record already exists for given campaign and merchant.');
         }
-        $freeCreditsLog = (new FreeCredits\Core)->create($mid, $input);
-        $response = array(
-            'success' => true,
-            'error'   => null,
-            'log_id'  => $freeCreditsLog->id,
-        );
 
-        return $response;
+        $freeCreditsLog = (new FreeCredits\Core)->create($merchant, $input);
+
+        return $freeCreditsLog->toArray();
     }
 
     public function fetchFreeCreditsLog($mid, $id)
     {
         // Raises Exception if record does not exist.
-        $freeCreditsLog = (new FreeCredits\Core)->retrieveById($id);
+        $freeCreditsLog = $this->repo->free_credits->findOrFailPublic($id);
 
         return $freeCreditsLog->toArrayPublic();
     }
 
-    public function UpdateFreeCreditsLog($mid, $id, $input)
+    /*
+     * Update the FreeCreditsLog, Presently We support update of credits only.
+     *
+     * @return array
+     */
+    public function updateFreeCreditsLog($mid, $id, $input)
     {
-        $response = array(
-            'success' => true,
-            'error'   => null,
-        );
-
         $credits = $input['credits'];
-        if ($credits > 0)
+        $freeCreditsLog = $this->repo->free_credits->findByIdAndMerchantId($id, $mid);
+        // Add more credits
+        if ($credits >= 0)
         {
-            $op = 'add';
-        }
-        else
+            $freeCreditsLog = (new FreeCredits\Core)->grantFreeCredits($freeCreditsLog, $credits);
+        } // Deduct credits
+        else if ($credits < 0)
         {
-            $op = 'deduct';
+            $freeCreditsLog = (new FreeCredits\Core)->deductFreeCredits($freeCreditsLog, abs($credits));
         }
 
-        $credits = abs($credits);
-        if ($op === 'add')
-        {
-            (new FreeCredits\Core)->grantFreeCredits($id, $credits);
-            return $response;
-        }
-        else if ($op === 'deduct')
-        {
-            (new FreeCredits\Core)->deductFreeCredits($id, $credits);
-            return $response;
-        }
-        else {
-                $response['success'] = false;
-                $response['error'] = 'Invalid Op Code Given';
-        }
-
-        return $response;
+        return $freeCreditsLog->toArrayPublic();
     }
 
-    public function fetchFreeCreditsGrantedInCampaign($campaign)
+    /**
+     * Fetches multiple free credit logs based on query params.
+     *
+     * @return array
+     */
+    public function fetchMultiple($input)
     {
-        $freeCredits = (new FreeCredits\Repository)->getFreeCreditsGrantedInCampaign($campaign);
-        $response = array(
-            'credits' => $freeCredits,
-        );
+        $freeCreditsLogs = $this->repo->free_credits->fetch($input, $this->merchant->getId());
 
-        return $response;
-    }
-
-    public function fetchFreeCreditsGrantedToMerchant($merchantId)
-    {
-        $logs = (new FreeCredits\Repository)->getFreeCreditsLogsOfMerchant($merchantId);
-        $logArray = array();
-        foreach($logs as $log)
-        {
-            array_push($logArray, $log->toArrayPublic());
-        }
-
-        return $logArray;
+        return $freeCreditsLogs->toArrayPublic();
     }
 }

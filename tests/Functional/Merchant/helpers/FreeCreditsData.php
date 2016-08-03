@@ -7,7 +7,7 @@ use RZP\Error\PublicErrorDescription;
 
 return [
 
-    'testAddFreeCreditsLog' => [
+    'testCreateFreeCreditsLog' => [
         'request' => [
             'url' => '/merchants/10000000000000/free_credits/',
             'method' => 'post',
@@ -21,8 +21,11 @@ return [
         ],
         'response' => [
             'content' => [
-                'success' =>  true,
-                'error'=> null,
+                'credits' => '25',
+                'notes' => [
+                    'referred_party' => 'asd',
+                ],
+                'campaign' => 'silent-ads',
             ],
         ],
     ],
@@ -72,7 +75,7 @@ return [
 
     'testGrantFreeCredits' => [
         'request' => [
-            'url' => '/merchants/1000000000000/free_credits/123/',
+            'url' => '/merchants/10000000000000/free_credits/123/',
             'method' => 'put',
             'content' => [
                 'credits' => 120,
@@ -80,16 +83,18 @@ return [
         ],
         'response' => [
             'content' => [
-                'success' => true,
-                'error' => null,
+                'id' => '123',
+                'merchant_id' => '10000000000000',
+                'credits' => 270,
+                'campaign' => 'silent-ads',
             ],
-            'status_code' => true,
+            'status_code' => 200,
         ],
     ],
 
     'testDeductFreeCredits' => [
         'request' => [
-            'url' => '/merchants/1000000000000/free_credits/123/',
+            'url' => '/merchants/10000000000000/free_credits/123/',
             'method' => 'put',
             'content' => [
                 'credits' => -50,
@@ -97,16 +102,18 @@ return [
         ],
         'response' => [
             'content' => [
-                'success' => true,
-                'error' => null,
+                'id' => '123',
+                'merchant_id' => '10000000000000',
+                'credits' => 100,
+                'campaign' => 'silent-ads',
             ],
-            'status_code' => true,
+            'status_code' => 200,
         ],
     ],
 
     'testFailDeductFreeCredits' => [
         'request' => [
-            'url' => '/merchants/1000000000000/free_credits/123/',
+            'url' => '/merchants/10000000000000/free_credits/123/',
             'method' => 'put',
             'content' => [
                 'credits' => -170,
@@ -128,7 +135,7 @@ return [
 
     'testFailDeductFreeCreditsCampaign' => [
         'request' => [
-            'url' => '/merchants/1000000000000/free_credits/123/',
+            'url' => '/merchants/10000000000000/free_credits/123/',
             'method' => 'put',
             'content' => [
                 'credits' => -150,
@@ -150,12 +157,29 @@ return [
 
     'testFreeCreditsGrantedInCampaign' => [
         'request' => [
-            'url' => '/merchants/free_credits/campaign/silent-ads/',
+            'url' => '/free_credits?campaign=silent-ads',
             'method' => 'get',
         ],
         'response' => [
             'content' => [
-                    'credits' => 270,
+				'entity' => "collection",
+				'count' => 2,
+				'items' => [
+                    [
+						'id' => "125",
+						'campaign' => "silent-ads",
+						'merchant_id' => "10000000000000",
+						'credits' => 90,
+						'notes' => [],
+					],
+                    [
+                        'id' => "124",
+                        'campaign' => "silent-ads",
+                        'merchant_id' => "10000000000000",
+                        'credits' => 90,
+                        'notes' => [],
+				    ],
+			    ],
             ],
             'status_code' => 200,
         ],
@@ -163,27 +187,26 @@ return [
 
     'testFreeCreditsGrantedToMerchant' => [
         'request' => [
-            'url' => '/merchants/10000000000000/free_credits/all',
+            'url' => '/free_credits/',
             'method' => 'get',
         ],
         'response' => [
             'content' => [
-                [
-                    'id' => '123',
-                    'credits' => 90,
-                    'notes' => [],
-                    'merchant_id'=> '10000000000000',
-                    'campaign' => 'silent-ads',
-                ],
-                [
-                    'id' => '125',
-                    'credits' => 90,
-                    'notes' => [],
-                    'merchant_id'=> '10000000000000',
-                    'campaign' => 'silent-ads',
-                ],
+				'entity' => "collection",
+				'count' => 1,
+				'items' => [
+                    [
+						'id' => "125",
+						'campaign' => "silent-ads",
+						'merchant_id' => "10000000000000",
+						'credits' => 90,
+						'notes' => [],
+					],
+			    ],
             ],
             'status_code' => 200,
         ],
     ],
+
+    // Test for proxy auth access to GET for free credit logs.
 ];

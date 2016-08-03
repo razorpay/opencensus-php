@@ -555,7 +555,7 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    // ****Free Credits Request Handlers****
+// --------------------- FreeCredits API Handlers -----------------------------------------
 
     public function postCreateFreeCreditsLog($id)
     {
@@ -593,4 +593,14 @@ class MerchantController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function getFreeCreditsLogs()
+    {
+        $input = Request::all();
+        $data = (new FreeCredits\Service)->fetchMultiple($input);
+
+        return ApiResponse::json($data);
+    }
+
+// --------------------- End FreeCredits API Handlers -----------------------------------------
 }

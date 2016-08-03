@@ -25,7 +25,7 @@ class FreeCreditsTest extends TestCase
     /**
      * Tests if a free credit log can be created for a merchant
      */
-    public function testAddFreeCreditsLog()
+    public function testCreateFreeCreditsLog()
     {
         $this->startTest();
     }
@@ -50,9 +50,9 @@ class FreeCreditsTest extends TestCase
         $assignedCredits = 150;
         $opCredits = $this->testData[__FUNCTION__]['request']['content']['credits'];
         $freeCreditsLog = $this->fixtures->create('free_credits', ['id' => '123', 'credits' => $assignedCredits]);
-        $balance = (new Merchant\Balance\Repository)->getMerchantBalance($freeCreditsLog->merchant);
         $merchant = $freeCreditsLog->merchant;
-        $oldBalanceCredits = $balance->credits;
+        $balance = (new Merchant\Balance\Repository)->getMerchantBalance($merchant);
+        $oldBalanceCredits = $balance->getCredits();
         $this->startTest();
 
         // Assert If FreeCreditsLog is updated
@@ -71,47 +71,55 @@ class FreeCreditsTest extends TestCase
         $freeCreditsLog = $this->fixtures->create('free_credits', ['id' => '123', 'credits' => $assignedCredits]);
         $balance = (new Merchant\Balance\Repository)->getMerchantBalance($freeCreditsLog->merchant);
         $merchant = $freeCreditsLog->merchant;
-        $oldBalanceCredits = $balance->credits;
+        $oldBalanceCredits = $balance->getCredits();
         $this->startTest();
+
         $freeCreditsLog = $this->getEntityById('free_credits', '123', true);
         $this->assertEquals($freeCreditsLog['credits'], $assignedCredits - abs($opCredits));
         $balance = (new Merchant\Balance\Repository)->getMerchantBalance($merchant);
-        $this->assertEquals($balance->credits, $oldBalanceCredits - abs($opCredits));
+        $this->assertEquals($balance->getCredits(), $oldBalanceCredits - abs($opCredits));
     }
 
     public function testFailDeductFreeCredits()
     {
         // ID 123 is given in the data so it should match
-        $freeCreditsLog = $this->fixtures->create('free_credits', ['id' => '123', 'credits' => '190']);
+        $freeCreditsLog = $this->fixtures->create('free_credits', ['id' => '123', 'credits' => 190]);
         $this->startTest();
     }
 
     public function testFailDeductFreeCreditsCampaign()
     {
         // id 123 is given in the data so it should match
-        $freecreditslog = $this->fixtures->create('free_credits', ['id' => '123', 'credits' => '90']);
+        $freeCreditslog = $this->fixtures->create('free_credits', ['id' => '123', 'credits' => 90]);
         $this->startTest();
     }
 
     public function testFreeCreditsGrantedInCampaign()
     {
-        $this->fixtures->create('free_credits', ['id' => '123', 'credits' => '90']);
-        $this->fixtures->create('free_credits', ['id' => '124', 'credits' => '90']);
-        $this->fixtures->create('free_credits', ['id' => '125', 'credits' => '90']);
+        $this->fixtures->create('free_credits', ['id' => '123', 'credits' => 90, 'campaign' => 'noisy-ads']);
+        $this->fixtures->create('free_credits', ['id' => '124', 'credits' => 90]);
+        $this->fixtures->create('free_credits', ['id' => '125', 'credits' => 90]);
+
+        $this->ba->proxyAuth();
         $this->startTest();
     }
 
     public function testFreeCreditsGrantedToMerchant()
     {
 
-        $this->fixtures->create('free_credits', ['id' => '123', 'credits' => '90']);
-        $this->fixtures->create('free_credits', ['id' => '125', 'credits' => '90']);
+        $this->fixtures->create('merchant', ['id' => '10000']);
+        $this->fixtures->create('free_credits', ['id' => '123', 'credits' => 90, 'merchant_id'=>'10000']);
+        $this->fixtures->create('free_credits', ['id' => '125', 'credits' => 90]);
+
+        $this->ba->proxyAuth();
         $this->startTest();
     }
 
     public function testGetFreeCreditsLog()
     {
         $this->fixtures->create('free_credits', ['id' => '123', 'credits' => 90]);
+
+        $this->ba->proxyAuth();
         $this->startTest();
     }
 }
