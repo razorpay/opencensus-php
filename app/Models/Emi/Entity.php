@@ -83,12 +83,12 @@ class Entity extends Base\PublicEntity
 
     protected function getRateAttribute()
     {
-        return (integer)$this->attributes[self::RATE];
+        return (int)$this->attributes[self::RATE];
     }
 
     protected function getDurationAttribute()
     {
-        return (integer)$this->attributes[self::DURATION];
+        return (int)$this->attributes[self::DURATION];
     }
 
     protected function getBankAttribute()
@@ -103,6 +103,6 @@ class Entity extends Base\PublicEntity
 
     protected function getMinAmountAttribute()
     {
-        return (integer)$this->attributes[self::MIN_AMOUNT];
+        return (int)$this->attributes[self::MIN_AMOUNT];
     }
 }

@@ -77,7 +77,8 @@ class IIN
 
     public static function isEmiAvailableForCard($iin, $cardNumber)
     {
-        $emi = $iin->isEmiAvailable() and self::isValidCardForBank($iin->getIssuer(), $cardNumber);
+        $emi = (($iin->isEmiAvailable()) and
+                (self::isValidCardForBank($iin->getIssuer(), $cardNumber)));
 
         return $emi;
     }

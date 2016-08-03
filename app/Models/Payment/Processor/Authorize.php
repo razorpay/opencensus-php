@@ -647,6 +647,12 @@ trait Authorize
         $emiPlan = (new Emi\Repository)->fetchByBankAndDuration(
                         $iinEntity->getIssuer(), $emiDuration);
 
+        if ($payment->getAmount() < $emiPlan->getMinAmount())
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'min amount allowed for emi transaction on this card should be ' . $emiPlan->getMinAmount());
+        }
+
         $payment->emiPlan()->associate($emiPlan);
     }
 
