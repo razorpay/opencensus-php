@@ -1128,7 +1128,7 @@ class Gateway extends Base\Gateway
         }
 
         throw new Exception\RuntimeException(
-            'Authorization failed.', null, $sf);
+            $errMsg, null, $sf);
     }
 
     /**
