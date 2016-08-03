@@ -9,16 +9,16 @@
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.18.35",
+            "version": "3.18.36",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "8133c4ce336c8cac97218546f896f491bb6ffd7e"
+                "reference": "48362bce008fa9c20a71dfa6a68aebac65a8ab1b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/8133c4ce336c8cac97218546f896f491bb6ffd7e",
-                "reference": "8133c4ce336c8cac97218546f896f491bb6ffd7e",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/48362bce008fa9c20a71dfa6a68aebac65a8ab1b",
+                "reference": "48362bce008fa9c20a71dfa6a68aebac65a8ab1b",
                 "shasum": ""
             },
             "require": {
@@ -85,7 +85,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2016-07-29 01:07:59"
+            "time": "2016-08-02 20:49:01"
         },
         {
             "name": "aws/aws-sdk-php-laravel",
@@ -1297,16 +1297,16 @@
         },
         {
             "name": "league/flysystem",
-            "version": "1.0.25",
+            "version": "1.0.26",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thephpleague/flysystem.git",
-                "reference": "a76afa4035931be0c78ca8efc6abf3902362f437"
+                "reference": "fb3b30dca320b36931ea878fea17ebe136fba1b0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/flysystem/zipball/a76afa4035931be0c78ca8efc6abf3902362f437",
-                "reference": "a76afa4035931be0c78ca8efc6abf3902362f437",
+                "url": "https://api.github.com/repos/thephpleague/flysystem/zipball/fb3b30dca320b36931ea878fea17ebe136fba1b0",
+                "reference": "fb3b30dca320b36931ea878fea17ebe136fba1b0",
                 "shasum": ""
             },
             "require": {
@@ -1376,7 +1376,7 @@
                 "sftp",
                 "storage"
             ],
-            "time": "2016-07-18 12:22:57"
+            "time": "2016-08-03 09:49:11"
         },
         {
             "name": "maatwebsite/excel",
