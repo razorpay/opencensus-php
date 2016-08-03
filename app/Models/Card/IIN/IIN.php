@@ -75,6 +75,10 @@ class IIN
         return true;
     }
 
+    /**
+     * This checks for the special case of Axis Bank which works on first 8 digits
+     * of the card instea of the first 6.
+     */
     public static function isEmiAvailableForCard($iin, $cardNumber)
     {
         $emi = (($iin->isEmiAvailable()) and
