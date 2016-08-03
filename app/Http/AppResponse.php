@@ -116,6 +116,6 @@ class AppResponse
         $csv->insertOne($headings);
         $csv->insertAll($data);
 
-        $csv->output('lalalala.csv');
+        $csv->output('export.csv');
     }
 }
