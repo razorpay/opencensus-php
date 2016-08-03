@@ -12,11 +12,17 @@ class VerifyCsrfToken extends BaseVerifier
      * @var array
      */
     protected $except = [
+        // This is posted from razorpay.com
+        '/contact',
+
+        // This is posted from Slack
         '/slack',
 
+        // Posted from API
         '/test/transactions/*',
         '/live/transactions/*',
 
+        // Aggregation requests
         '/test/analytics/aggregations',
         '/test/analytics/payment/aggregations',
 
