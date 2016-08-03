@@ -12,6 +12,7 @@ use App\Base;
 use Queue;
 use App\Mailers\MerchantMailer;
 use Requests;
+use Trace;
 
 class Service extends Base\Service
 {
@@ -194,7 +195,10 @@ class Service extends Base\Service
             }
             else
             {
-                $url = $s3->putObject($s3Obj)->get('ObjectURL');
+                $response = $s3->putObject($s3Obj);
+                $url = $response->get('ObjectURL');
+
+                Trace::debug('MISC_TRACE_CODE', $response->toArray());
             }
 
             $merchantDetails->$field = $url;
