@@ -96,15 +96,6 @@ class EmiFile extends Base\EmiFile
         return Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata')->format('d-M-Y');
     }
 
-    protected function getAuthCode($payment)
-    {
-        $gateway = $payment->gateway;
-
-        $gateway = $this->repo->$gateway->findByPaymentIdAndAction($payment->id, Action::CAPTURE);
-
-        return $gateway->getAuthCode();
-    }
-
     protected function sendEmiPassword()
     {
         $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');

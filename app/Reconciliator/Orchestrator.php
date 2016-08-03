@@ -552,28 +552,42 @@ class Orchestrator
     /**
      * Converts and sets the excel content in an array.
      *
-     * @param $fileDetails
+     * @param array $fileDetails
      */
     protected function handleSettingExcelContent(array $fileDetails)
     {
+        //
         // Gets the sheet names which need to be collected for the given gateway.
         // Returns empty if there is no restriction on which sheets to collect.
+        // If sheetNames returned is empty, ensure that the gateway does not perform
+        // any operation based on the sheet name.
+        //
         $sheetNames = $this->gatewayReconciliator->getSheetNames();
 
-        $sheets = $this->converter->getAllExcelSheets($fileDetails, $sheetNames);
+        $sheetsContents = $this->converter->getRowsFromExcelSheetsOptimized($fileDetails, $sheetNames);
 
-        // Every sheet is equivalent to a different file.
-        foreach ($sheets as $sheet)
+        foreach ($sheetsContents as $sheetName => $rows)
         {
-            $sheetArray = $this->converter->convertExcelSheetToArray($sheet);
+            if (empty($rows) === true)
+            {
+                // This would happen when the sheet name sent, does not exist
+                continue;
+            }
 
-            $this->handleOneRowSheet($sheetArray);
+            $sheetArray = [];
 
-            $fileDetails[FileProcessor::SHEET_NAME] = $sheet->getTitle();
+            foreach ($rows as $cellCollection)
+            {
+                $sheetArray[] = $cellCollection->all();
+            }
+
+            $fileDetails[FileProcessor::SHEET_NAME] = $sheetName;
 
             $this->setExtraDetails($sheetArray, $fileDetails);
+
             $this->allFilesContents[] = $sheetArray;
         }
+
     }
 
     /**
@@ -586,6 +600,10 @@ class Orchestrator
      */
     protected function handleOneRowSheet(array & $sheetArray)
     {
+        //
+        // Checks whether the first element is an array in itself
+        // If it's not, it means that it's an associative array
+        //
         if (is_array(reset($sheetArray)) === false)
         {
             $sheetArray = array($sheetArray);

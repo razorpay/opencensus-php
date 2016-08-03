@@ -2,12 +2,13 @@
 
 namespace RZP\Tests\Unit\EE\Exception;
 
-use RZP\Exception;
-use RZP\Error\ErrorCode;
-use RZP\Error\PublicErrorDescription;
 use Mockery;
+use RZP\Exception;
 use RZP\Models\Card;
 use RZP\Tests\TestCase;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorDescription;
+use RZP\Error\CustomerErrorDescription;
 
 class ExceptionTest extends TestCase
 {
@@ -16,6 +17,50 @@ class ExceptionTest extends TestCase
     public function setUp()
     {
         parent::setUp();
+    }
+
+    public function testBadRequestExceptionWCustomerDescription()
+    {
+        $this->mockExceptionHandlerReturnTestingFalse();
+
+        $this->mockPublicAuth();
+
+        $this->app['config']->set('app.debug', false);
+
+        $exception = new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED);
+
+        $response = $this->app['exception.handler']->render(null, $exception);
+
+        $content = $response->getContent();
+
+        $this->assertJson($content);
+
+        $content = json_decode($content, true);
+
+        $this->assertEquals($content['error']['code'], ErrorCode::BAD_REQUEST_ERROR);
+        $this->assertEquals($content['error']['description'], CustomerErrorDescription::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED);
+    }
+
+    public function testValidationExceptionPublicAuth()
+    {
+        $this->mockExceptionHandlerReturnTestingFalse();
+
+        $this->mockPublicAuth();
+
+        $this->app['config']->set('app.debug', false);
+
+        $exception = new Exception\BadRequestValidationFailureException('Dummy exception');
+
+        $response = $this->app['exception.handler']->render(null, $exception);
+
+        $content = $response->getContent();
+
+        $this->assertJson($content);
+
+        $content = json_decode($content, true);
+
+        $this->assertEquals($content['error']['code'], ErrorCode::BAD_REQUEST_ERROR);
+        $this->assertEquals($content['error']['description'], 'Dummy exception');
     }
 
     public function testLogicalException()
@@ -82,6 +127,22 @@ class ExceptionTest extends TestCase
         $this->assertJson($content);
 
         return json_encode($content, true);
+    }
+
+    protected function mockPublicAuth()
+    {
+        $class = RZP\Http\BasicAuth\BasicAuth::class;
+
+        $handler = Mockery::mock($class)->makePartial();
+
+        $handler->shouldReceive('isPublicAuth')
+                ->once()
+                ->andReturnUsing(function ()
+                {
+                    return true;
+                })->mock();
+
+        $this->app->instance('basicauth', $handler);
     }
 
     protected function mockExceptionHandlerReturnTestingFalse()

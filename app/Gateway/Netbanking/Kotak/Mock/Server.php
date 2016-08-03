@@ -72,7 +72,7 @@ class Server extends Base\Mock\Server
             'BankReference'       => random_integer(6),
         );
 
-        $content = ['msg' => $this->getDataWithChecksum($content)];
+        $content = ['msg' => $this->getGatewayInstance()->getMessageStringWithHash($content)];
 
         return $this->makeResponse($content);
     }
