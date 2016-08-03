@@ -77,6 +77,8 @@ class Handler extends ExceptionHandler
             'errors'  => [self::SERVER_ERROR]
         ];
 
+        $response = null;
+
         if ($e instanceof ModelNotFoundException)
         {
             $e = new NotFoundHttpException($e->getMessage(), $e);
