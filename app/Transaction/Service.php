@@ -189,7 +189,7 @@ class Service extends Base\Service
 
             foreach ($array as $obj)
             {
-                if ((int)($obj->created_at) == $i)
+                if ((int)($obj->created_at->timestamp) == $i)
                 {
                     $data[] = $obj->toArray();
                     $flag = true;
