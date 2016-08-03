@@ -102,6 +102,16 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateMinAmountWithEmiPlanAmount($emiPlan)
+    {
+        if ($this->entity->getAmount() < $emiPlan->getMinAmount())
+        {
+            // We need to do this check here because currently amex has a higher limit of 5k.
+            throw new Exception\BadRequestValidationFailureException(
+                'Minimum amount allowed for EMI payment on this card must be ' . $emiPlan->getMinAmount());
+        }
+    }
+
     protected function validateBank($input)
     {
         if ($input['method'] !== Payment\Method::NETBANKING)
