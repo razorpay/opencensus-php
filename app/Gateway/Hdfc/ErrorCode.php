@@ -347,6 +347,13 @@ class ErrorCode
 
     public static function getTwoFaStatus($code)
     {
-        return TwoFaStatus::UNKNOWN;
+        switch ($code) {
+            case 'GV00004':
+            case 'GV00007':
+            case 'GV00008':
+                return TwoFaStatus::FAILED;
+            default:
+                return TwoFaStatus::UNKNOWN;
+        }
     }
 }
