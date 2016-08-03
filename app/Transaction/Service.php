@@ -7,7 +7,6 @@ use App\Transaction;
 use App\Merchant;
 use App\MerchantDetails;
 
-
 class Service extends Base\Service
 {
     protected static $timeIntervals = array(
@@ -36,7 +35,6 @@ class Service extends Base\Service
         // Only Payments analytics are stored
         if ($input['resource'] === "payment")
         {
-
             $this->aggregatePayment($input, $mode);
 
             foreach (static::$timeIntervals as $type => $interval)
@@ -44,7 +42,7 @@ class Service extends Base\Service
                 $obj = Transaction\Entity::retrieveLastByType($input['merchant_id'], $type, $mode);
 
                 if (($obj === null) or
-                    ((int) $obj->created_at + $interval <= $input['updated_at']))
+                    ((int) $obj->created_at->timestamp + $interval <= $input['updated_at']))
                 {
                     $this->create($input, $type, $mode);
                 }
