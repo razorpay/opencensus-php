@@ -33,7 +33,7 @@ return array(
         'submissions'   =>  'https://hooks.zapier.com/hooks/catch/1088429/46x8fa/',
         'activations'   =>  'https://hooks.zapier.com/hooks/catch/1088429/4twqyo/',
         // Define this and set to true in order to enable mocking
-        'mock'          =>  getenv('ZAPIER_MOCK', false),
+        'mock'          =>  env('ZAPIER_MOCK', false),
     ],
 
     'slack' =>  [
