@@ -154,6 +154,12 @@ class Gateway extends Base\Gateway
         }
     }
 
+    public function getPaymentIdFromServerCallback($input)
+    {
+        $msg = $input['msg'];
+
+        return $msg['MerchantRefNo'];
+    }
     public function verify(array $input)
     {
         parent::verify($input);
