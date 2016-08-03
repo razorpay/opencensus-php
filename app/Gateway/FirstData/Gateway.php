@@ -49,7 +49,7 @@ class Gateway extends Base\Gateway
     const TEST_STORE_ID             = 'test_store_id';
     const TEST_SHARED_SECRET        = 'test_shared_secret';
 
-    protected $gateway = Constants\Table::FIRST_DATA;
+    protected $gateway = \RZP\Constants\Entity::FIRST_DATA;
 
     public function authorize(array $input)
     {
@@ -59,7 +59,7 @@ class Gateway extends Base\Gateway
 
         $payment = $this->createGatewayPaymentEntity($content);
 
-        $request = $this->getRequestArray($content);
+        $request = $this->getStandardRequestArray($content, 'post');
 
         $this->traceGatewayPaymentRequest($request, $input);
 
@@ -68,12 +68,13 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function getRequestArray($content)
+    protected function getStandardRequestArray($content = [], $method = 'post')
     {
         $request = array(
             'url'       => $this->getUrl('processing'),
             'content'   => $content,
-            'method'    => 'post');
+            'method'    => $method
+        );
 
         return $request;
     }
@@ -86,7 +87,7 @@ class Gateway extends Base\Gateway
 
         $method = $input['card']['network_code'];
 
-        $content[self::PAYMENT_METHOD] = Codes::$paymentMethodCodes[$method];
+        $content[self::PAYMENT_METHOD] = Mapping::$paymentMethodCodes[$method];
 
         $this->setCardDetails($content, $input);
 
@@ -134,17 +135,17 @@ class Gateway extends Base\Gateway
     protected function getRequestContentArray($input)
     {
         $createdAt = $input['payment']['created_at'];
-        $dateTime = Carbon::createFromTimestamp($createdAt, Codes::ASIA_KOLKATA_TIME_ZONE);
+        $dateTime = Carbon::createFromTimestamp($createdAt, 'Asia/Kolkata');
         $txnDateTime = $dateTime->format(Codes::DATE_TIME_FORMAT);
 
         $chargeTotal = $input['payment']['amount'] / 100;
         $chargeTotal = number_format($chargeTotal,2,'.','');
 
         $currency = $input['payment']['currency'];
-        $currencyCode = Codes::$isoNumericCodes[$currency];
+        $currencyCode = Mapping::$isoNumericCodes[$currency];
 
         $content = array(
-            self::TIMEZONE                  => Codes::ASIA_KOLKATA_TIME_ZONE,
+            self::TIMEZONE                  => 'Asia/Kolkata',
             self::TXNDATETIME               => $txnDateTime,
             self::HASH_ALGORITHM            => Codes::HASH_ALGORITHM_SHA256,
             self::HASH                      => $this->getHash($txnDateTime, $chargeTotal, $currencyCode),
@@ -179,7 +180,7 @@ class Gateway extends Base\Gateway
             return $this->config[self::TEST_STORE_ID];
         }
 
-        return $this->terminal['store_id'];
+        return $this->terminal['gateway_merchant_id'];
     }
 
     private function getSharedSecret()
@@ -191,6 +192,6 @@ class Gateway extends Base\Gateway
             return $this->config[self::TEST_SHARED_SECRET];
         }
 
-        return $this->terminal['shared_secret'];
+        return $this->terminal['gateway_secure_secret'];
     }
 }

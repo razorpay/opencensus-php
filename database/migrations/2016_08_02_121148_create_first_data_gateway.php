@@ -27,7 +27,7 @@ class CreateFirstDataGateway extends Migration
 
             $table->integer(FirstData::RECEIVED)->default(0);
 
-            $table->char(FirstData::REFUND_ID, FirstData::ID_LENGTH)->nullable();
+            $table->char(FirstData::REFUND_ID, FirstData::ID_LENGTH)->nullable()->default(null);
 
             $table->char(FirstData::TXNDATETIME, 20)->nullable();
 
@@ -46,8 +46,6 @@ class CreateFirstDataGateway extends Migration
             $table->char(FirstData::TDATE, 20)->nullable();
 
             $table->char(FirstData::REFNUMBER, 20)->nullable();
-
-            $table->char(FirstData::TERMINAL_ID, 20)->nullable();
 
             $table->integer(FirstData::CREATED_AT);
 

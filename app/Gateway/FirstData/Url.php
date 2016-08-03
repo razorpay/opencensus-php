@@ -6,5 +6,5 @@ class Url
 {
     const TEST_DOMAIN   = 'https://test.ipg-online.com';
 
-    const PROCESSING     = '/connect/gateway/processing';
+    const PROCESSING    = '/connect/gateway/processing';
 }

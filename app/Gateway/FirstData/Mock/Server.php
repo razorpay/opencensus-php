@@ -25,7 +25,7 @@ class Server extends Base\Mock\Server
 
         $this->validateAuthorizeInput($input);
 
-        $timestamp = Carbon::now(FirstData\Codes::ASIA_KOLKATA_TIME_ZONE);
+        $timestamp = Carbon::now('Asia/Kolkata');
 
         $tdate = $timestamp->format('YmdHis').random_integer(5);
         $txndate_processed = $timestamp->format(FirstData\Codes::DATE_TIME_FORMAT);

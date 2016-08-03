@@ -20,7 +20,6 @@ class Entity extends Base\Entity
     const TXNDATE_PROCESSED         = 'txndate_processed';
     const RESPONSE_HASH             = 'response_hash';
     const PROCESSOR_RESPONSE_CODE   = 'processor_response_code';
-    const TERMINAL_ID               = 'terminal_id';
     const FAIL_REASON               = 'fail_reason';
     const FAIL_RC                   = 'fail_rc';
 
@@ -45,13 +44,11 @@ class Entity extends Base\Entity
         self::STATUS,
         self::RESPONSE_HASH,
         self::PROCESSOR_RESPONSE_CODE,
-        self::TERMINAL_ID,
         self::TDATE,
         self::PAYMENT_METHOD,
         self::CREATED_AT,
         self::UPDATED_AT,
-
-        );
+    );
 
     protected $fillable = array(
         self::PAYMENT_ID,
@@ -66,10 +63,13 @@ class Entity extends Base\Entity
         self::STATUS,
         self::RESPONSE_HASH,
         self::PROCESSOR_RESPONSE_CODE,
-        self::TERMINAL_ID,
         self::TDATE,
         self::PAYMENT_METHOD,
-        );
+    );
+
+    protected $casts = [
+        self::AMOUNT => 'int',
+    ];
 
     protected $table = Constants\Table::FIRST_DATA;
 
@@ -88,7 +88,7 @@ class Entity extends Base\Entity
 
     public function getAmount()
     {
-        return (int) $this->getAttribute(self::AMOUNT);
+        return $this->getAttribute(self::AMOUNT);
     }
 
     public function setAmount($amount)

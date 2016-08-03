@@ -49,8 +49,8 @@ class Validator extends Base\Validator
 
     protected function validateTxntype($input)
     {
-        if (isset($input['txntype']) === false or
-            in_array($input['txntype'], FirstData\Codes::$txnTypes) === false)
+        if ((isset($input['txntype']) === false) or
+            (in_array($input['txntype'], FirstData\Codes::$txnTypes) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid txntype');
@@ -59,8 +59,8 @@ class Validator extends Base\Validator
 
     protected function validateMode($input)
     {
-        if (isset($input['mode']) === true and
-            in_array($input['mode'], FirstData\Codes::$paymentModes) === false)
+        if ((isset($input['mode']) === true) and
+            (in_array($input['mode'], FirstData\Codes::$paymentModes) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid mode');
@@ -69,8 +69,8 @@ class Validator extends Base\Validator
 
     protected function validatePaymentMethod($input)
     {
-        if (isset($input['paymentMethod']) === false or
-            in_array($input['paymentMethod'], array_values(FirstData\Codes::$paymentMethodCodes)) === false)
+        if ((isset($input['paymentMethod']) === false) or
+            (in_array($input['paymentMethod'], array_values(FirstData\Mapping::$paymentMethodCodes)) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid paymentMethod');
@@ -79,8 +79,8 @@ class Validator extends Base\Validator
 
     protected function validateLanguage($input)
     {
-        if (isset($input['language']) === true and
-            $input['language'] !== FirstData\Codes::ENGLISH_UK_LANG_CODE)
+        if ((isset($input['language']) === true) and
+            ($input['language'] !== FirstData\Codes::ENGLISH_UK_LANG_CODE))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Unsupported language');
@@ -89,8 +89,8 @@ class Validator extends Base\Validator
 
     protected function validateCurrency($input)
     {
-        if (isset($input['currency']) === false or
-            $input['currency'] !== FirstData\Codes::$isoNumericCodes['INR'])
+        if ((isset($input['currency']) === false) or
+            ($input['currency'] !== FirstData\Mapping::$isoNumericCodes['INR']))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Unsupported currency');
@@ -99,8 +99,8 @@ class Validator extends Base\Validator
 
     protected function validateHashAlgorithm($input)
     {
-        if (isset($input['hash_algorithm']) === false or
-            $input['hash_algorithm'] !== FirstData\Codes::HASH_ALGORITHM_SHA256)
+        if ((isset($input['hash_algorithm']) === false) or
+            ($input['hash_algorithm'] !== FirstData\Codes::HASH_ALGORITHM_SHA256))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Unsupported hash_algorithm');

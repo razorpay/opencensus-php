@@ -44,7 +44,6 @@ class Shared
         self::CYBERSOURCE_HDFC_TERMINAL,
         self::CYBERSOURCE_AXIS_TERMINAL,
         self::FIRST_DATA_RAZORPAY_TERMINAL,
-
     );
 
     // NOTE: No two shared terminal should be present for same gateway
