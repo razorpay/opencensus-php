@@ -315,5 +315,8 @@ app.controller('PaymentDetailCtrl', [
       }
       $modalInstance.close(data);
     };
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
   }
 ]);
