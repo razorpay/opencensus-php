@@ -11,25 +11,16 @@ use RZP\Models\Bank\IFSC;
 
 class Service extends Base\Service
 {
-    protected $repo;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->repo = new Repository;
-    }
-
     public function all()
     {
-        $emiPlans = $this->repo->getAllEmiPlans();
+        $emiPlans = $this->repo->emi_plan->getAllEmiPlans();
 
         return $emiPlans->toArrayPublic();
     }
 
     public function fetch($id)
     {
-        $emiPlans = $this->repo->findOrFail($id);
+        $emiPlans = $this->repo->emi_plan->findOrFail($id);
 
         return $emiPlans->toArrayPublic();
     }
@@ -43,9 +34,9 @@ class Service extends Base\Service
 
     public function deleteEmiPlan($id)
     {
-        $emiPlan = $this->repo->findOrFailPublic($id);
+        $emiPlan = $this->repo->emi_plan->findOrFailPublic($id);
 
-        $this->repo->deleteOrFail($emiPlan);
+        $this->repo->emi_plan->deleteOrFail($emiPlan);
 
         return $emiPlan->toArrayPublic();
     }

@@ -27,17 +27,11 @@ class Core extends Base\Core
 
     protected $merchant;
 
-    protected $merchantRepo;
-
-    protected $balanceRepo;
-
     public function __construct()
     {
         parent::__construct();
 
         $this->merchant = $this->app['basicauth']->getMerchant();
-        $this->merchantRepo = $this->repo->merchant;
-        $this->balanceRepo = $this->repo->balance;
     }
 
     public function createFromPaymentAuthorized(Payment\Entity $payment)
@@ -48,7 +42,7 @@ class Core extends Base\Core
 
         $this->updateNodalBalance($txn);
 
-        $this->balanceRepo->updateBalance($this->merchantBalance);
+        $this->repo->balance->updateBalance($this->merchantBalance);
 
         return $txn;
     }
@@ -375,7 +369,7 @@ class Core extends Base\Core
         $merchantBalance = $this->getBalanceLockForUpdate($txn->merchant);
 
         $merchantBalance->updateBalance($txn);
-        $this->balanceRepo->updateBalance($merchantBalance);
+        $this->repo->balance->updateBalance($merchantBalance);
 
         $txn->setBalance($merchantBalance->getBalance());
 
@@ -389,7 +383,7 @@ class Core extends Base\Core
         $nodalBalance = $this->getNodalBalanceLockForUpdate($channel);
 
         $nodalBalance->updateBalance($txn);
-        $this->balanceRepo->updateBalance($nodalBalance);
+        $this->repo->balance->updateBalance($nodalBalance);
 
         $txn->setEscrowBalance($nodalBalance->getBalance());
 
@@ -436,7 +430,7 @@ class Core extends Base\Core
             return $this->nodalBalance;
         }
 
-        $nodalBalance = $this->balanceRepo->getNodalBalanceLockForUpdate($channel);
+        $nodalBalance = $this->repo->balance->getNodalBalanceLockForUpdate($channel);
 
         $this->nodalBalance = $nodalBalance;
 
@@ -450,7 +444,7 @@ class Core extends Base\Core
             return $this->merchantBalance;
         }
 
-        $merchantBalance = $this->balanceRepo->getBalanceLockForUpdate($merchant->getId());
+        $merchantBalance = $this->repo->balance->getBalanceLockForUpdate($merchant->getId());
 
         $this->merchantBalance = $merchantBalance;
 
