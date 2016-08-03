@@ -22,7 +22,7 @@ class Entity extends Base\PublicEntity
 
     protected static $sign      = '';
 
-    protected $entity           = 'emi';
+    protected $entity           = 'emi_plan';
 
     protected $table            = \RZP\Constants\Table::EMI_PLAN;
 

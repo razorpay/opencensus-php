@@ -3,13 +3,14 @@
 namespace RZP\Models\Emi;
 
 use RZP\Models\Base;
+use RZP\Models\Card\Network;
 
 class Repository extends Base\Repository
 {
     use Base\RepositoryFetch;
     use Base\RepositoryUpdateTestAndLive;
 
-    protected $entity = 'emi';
+    protected $entity = 'emi_plan';
 
     public function getAllEmiPlans()
     {
@@ -18,13 +19,24 @@ class Repository extends Base\Repository
         return $repo::get();
     }
 
-    public function fetchByNetworkBankAndDuration($network, $bank, $duration)
+    public function fetchRelevantEmiPlan($iin, $duration)
     {
-        $repo = $this->repo;
+        $bank = $iin->getIssuer();
+        $network = $iin->getNetworkCode();
 
-        return $repo::where(Entity::NETWORK, '=', $network)
-                    ->where(Entity::BANK, '=', $bank)
-                    ->where(Entity::DURATION, '=', $duration)
-                    ->firstOrFail();
+        $query = $this->newQuery()
+                      ->where(Entity::DURATION, '=', $duration);
+
+        if ($bank)
+        {
+            $query->where(Entity::BANK, '=', $bank);
+        }
+
+        if ($network === Network::AMEX)
+        {
+            $query->where(Entity::NETWORK, '=', $network);
+        }
+
+        return $query->firstOrFail();
     }
 }
