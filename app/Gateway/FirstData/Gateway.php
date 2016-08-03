@@ -12,6 +12,7 @@ use RZP\Gateway\Base;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use Carbon\Carbon;
 
 class Gateway extends Base\Gateway
 {
@@ -26,18 +27,15 @@ class Gateway extends Base\Gateway
     const CURRENCY                  = 'currency';
     const OID                       = 'oid';
     const TDATE                     = 'tdate';
-
     const PAYMENT_METHOD            = 'paymentMethod';
     const CUSTOMERID                = 'customerid';
     const INVOICENUMBER             = 'invoicenumber';
-    // const MANDATE_REFERENCE         = 'mandateReference';
-    // const MANDATE_TYPE              = 'mandateType';
     const CARD_FUNCTION             = 'cardFunction';
     const COMMENTS                  = 'comments';
     const RESPONSE_SUCCESS_URL      = 'responseSuccessURL';
     const RESPONSE_FAIL_URL         = 'responseFailURL';
     const DYNAMIC_MERCHANT_NAME     = 'dynamicMerchantName';
-    const LANGUAGE                  = 'language'
+    const LANGUAGE                  = 'language';
     const HASH_EXTENDED             = 'hashExtended';
     const NUMBER_OF_INSTALLMENTS    = 'numberOfInstallments';
     const TRX_ORIGIN                = 'trxOrigin';
@@ -53,7 +51,7 @@ class Gateway extends Base\Gateway
 
     protected $gateway = Constants\Table::FIRST_DATA;
 
-    public function preauth(array $input)
+    public function authorize(array $input)
     {
         parent::authorize($input);
 
@@ -65,7 +63,7 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentRequest($request, $input);
 
-        $request = $this->makeRequestAndGetFormData($request);
+        // $request = $this->makeRequestAndGetFormData($request);
 
         return $request;
     }
@@ -84,10 +82,11 @@ class Gateway extends Base\Gateway
     {
         $content = $this->getRequestContentArray($input);
 
-        $content[self::TXNTYPE] = Constants::TXNTYPE_PREAUTH;
+        $content[self::TXNTYPE] = Codes::TXNTYPE_PREAUTH;
 
-        $method = $input['payment']['method'];
-        $content[self::PAYMENT_METHOD] = Constants::$paymentMethodCodes[$method];
+        $method = $input['card']['network_code'];
+
+        $content[self::PAYMENT_METHOD] = Codes::$paymentMethodCodes[$method];
 
         $this->setCardDetails($content, $input);
 
@@ -96,24 +95,26 @@ class Gateway extends Base\Gateway
 
     protected function setCardDetails(&$content, $input)
     {
-        $request[self::CARDNUMBER] = Card\Tokenex::getCardNumber($input['card']['vault_token']);
+        // $content[self::CARDNUMBER] = Card\Tokenex::getCardNumber($input['card']['vault_token']);
+        $content[self::CARDNUMBER] = $input['card']['number'];
 
-        $request[self::EXPMONTH] = $input['card']['expiry_month'];
-        $request[self::EXPYEAR ] = $input['card']['expiry_year'];
-        $request[self::CVM]      = $input['card']['cvv'],
+        $content[self::EXPMONTH] = $input['card']['expiry_month'];
+        $content[self::EXPYEAR ] = $input['card']['expiry_year'];
+        $content[self::CVM]      = $input['card']['cvv'];
     }
 
     protected function createGatewayPaymentEntity($content)
     {
         $payment = $this->getNewGatewayPaymentEntity();
-        $payment->setPaymentId($content[self::INVOICENUMBER]);
 
         $payment->fill($content);
+        $payment->setPaymentId($content[self::INVOICENUMBER]);
         $payment->setAction($this->action);
         $payment->saveOrFail();
 
         return $payment;
     }
+
 
     // This is a SHA hash of the following fields :
     // storename + txndatetime + chargetotal + currency + sharedsecret.
@@ -123,7 +124,7 @@ class Gateway extends Base\Gateway
         $sharedSecret = $this->getSharedSecret();
 
         $stringToHash = $storeId . $txnDateTime . $chargeTotal . $currencyCode . $sharedSecret;
-        $hash_algorithm = strtolower(Constants::HASH_ALGORITHM);
+        $hash_algorithm = strtolower(Codes::HASH_ALGORITHM_SHA256);
 
         $hash = hash($hash_algorithm, bin2hex($stringToHash));
 
@@ -133,39 +134,37 @@ class Gateway extends Base\Gateway
     protected function getRequestContentArray($input)
     {
         $createdAt = $input['payment']['created_at'];
-        $dateTime = Carbon::createFromTimestamp($createdAt, Constants::ASIA_KOLKATA_TIME_ZONE);
-        $txnDateTime = $dateTime->format(Constants::DATE_TIME_FORMAT);
+        $dateTime = Carbon::createFromTimestamp($createdAt, Codes::ASIA_KOLKATA_TIME_ZONE);
+        $txnDateTime = $dateTime->format(Codes::DATE_TIME_FORMAT);
 
-        $chargetotal = $input['payment']['amount'] / 100;
+        $chargeTotal = $input['payment']['amount'] / 100;
+        $chargeTotal = number_format($chargeTotal,2,'.','');
 
         $currency = $input['payment']['currency'];
-        $currencyCode = Constants::$isoNumericCodes[$currency]
+        $currencyCode = Codes::$isoNumericCodes[$currency];
 
         $content = array(
-            self::TIMEZONE                  => Constants::ASIA_KOLKATA_TIME_ZONE,
+            self::TIMEZONE                  => Codes::ASIA_KOLKATA_TIME_ZONE,
             self::TXNDATETIME               => $txnDateTime,
-            self::HASH_ALGORITHM            => Constants::HASH_ALGORITHM_SHA256,
-            self::HASH                      => $this->getHash($txnDateTime, $chargetotal, $currencyCode),
+            self::HASH_ALGORITHM            => Codes::HASH_ALGORITHM_SHA256,
+            self::HASH                      => $this->getHash($txnDateTime, $chargeTotal, $currencyCode),
             self::STORENAME                 => $this->getStoreName(),
-            self::MODE                      => Constants::PAYMENT_MODE_PAYONLY,
-            self::CHARGETOTAL               => $chargetotal,
+            self::MODE                      => Codes::PAYMENT_MODE_PAYONLY,
+            self::CHARGETOTAL               => $chargeTotal,
             self::CURRENCY                  => $currencyCode,
 
-            self::OID                       => $input['payment']['order_id'],
-            self::CUSTOMERID                => $input['payment']['customer_id'],
+            // self::OID                       => $input['payment']['order_id'],
+            // self::CUSTOMERID                => $input['payment']['customer_id'],
             self::INVOICENUMBER             => $input['payment']['id'],
-
-            // self::MANDATE_REFERENCE         => 'param',
-            // self::MANDATE_TYPE              => 'param',
 
             self::CARD_FUNCTION             => $input['card']['type'],
             self::COMMENTS                  => '',
 
-            self::RESPONSE_SUCCESS_URL      => 'param',
-            self::RESPONSE_FAIL_URL         => 'param',
+            self::RESPONSE_SUCCESS_URL      => $input['callbackUrl'],
+            self::RESPONSE_FAIL_URL         => $input['callbackUrl'],
 
             self::DYNAMIC_MERCHANT_NAME     => 'Razorpay Payments',
-            self::LANGUAGE                  => Constants::ENGLISH_UK_LANG_CODE,
+            self::LANGUAGE                  => Codes::ENGLISH_UK_LANG_CODE,
         );
 
         return $content;

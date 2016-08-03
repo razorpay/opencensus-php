@@ -4,7 +4,7 @@ namespace RZP\Gateway\FirstData;
 
 use RZP\Models\Card;
 
-final class Constants
+final class Codes
 {
     const ASIA_KOLKATA_TIME_ZONE = 'Asia/Kolkata';
 
@@ -18,10 +18,23 @@ final class Constants
     const PAYMENT_MODE_PAYPLUS = 'payplus';
     const PAYMENT_MODE_FULLPAY = 'fullpay';
 
+    public static $paymentModes = array(
+        self::PAYMENT_MODE_PAYONLY,
+        self::PAYMENT_MODE_PAYPLUS,
+        self::PAYMENT_MODE_FULLPAY,
+    );
+
     const TXNTYPE_SALE      = 'sale';
     const TXNTYPE_PREAUTH   = 'preauth';
     const TXNTYPE_POSTAUTH  = 'postauth';
     const TXNTYPE_VOID      = 'void';
+
+    public static $txnTypes = array(
+        self::TXNTYPE_SALE,
+        self::TXNTYPE_PREAUTH,
+        self::TXNTYPE_POSTAUTH,
+        self::TXNTYPE_VOID,
+    );
 
     public static $paymentMethodCodes = array(
         // MasterCard

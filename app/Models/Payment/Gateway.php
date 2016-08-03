@@ -29,6 +29,7 @@ class Gateway
     const WALLET_PAYZAPP    = 'wallet_payzapp';
     const WALLET_PAYUMONEY  = 'wallet_payumoney';
     const CYBERSOURCE       = 'cybersource';
+    const FIRST_DATA        = 'first_data';
 
     const NOT_SUPPORTED     = 'not_supported';
     const SUPPORTED         = 'supported';
@@ -61,6 +62,7 @@ class Gateway
         self::WALLET_PAYZAPP    => Settlement\Channel::KOTAK,
         self::WALLET_PAYUMONEY  => Settlement\Channel::KOTAK,
         self::CYBERSOURCE       => Settlement\Channel::KOTAK,
+        self::FIRST_DATA        => Settlement\Channel::KOTAK,
     );
 
     /**
@@ -79,6 +81,7 @@ class Gateway
             self::PAYTM,
             self::AMEX,
             self::CYBERSOURCE,
+            self::FIRST_DATA,
         ),
 
         Method::NETBANKING => array(
@@ -115,6 +118,7 @@ class Gateway
         ],
         self::AMEX => [],
         self::CYBERSOURCE => [],
+        self::FIRST_DATA => [],
     );
 
     /**
@@ -159,6 +163,14 @@ class Gateway
         self::CYBERSOURCE => array(
             Network::MC,
             Network::VISA),
+        self::FIRST_DATA => array(
+            Network::MC,
+            Network::VISA,
+            Network::AMEX,
+            Network::DICL,
+            Network::JCB,
+            Network::MAES,
+            Network::RUPAY),
     );
 
     public static $walletToGatewayMap = array(
@@ -204,6 +216,7 @@ class Gateway
         Gateway::AXIS_MIGS,
         Gateway::AMEX,
         Gateway::CYBERSOURCE,
+        Gateway::FIRST_DATA,
     );
 
     /**
@@ -216,6 +229,7 @@ class Gateway
         Gateway::AXIS_MIGS,
         Gateway::AMEX,
         Gateway::CYBERSOURCE,
+        Gateway::FIRST_DATA,
     );
 
     /**
@@ -230,6 +244,7 @@ class Gateway
         Gateway::AXIS_GENIUS,
         Gateway::SHARP,
         Gateway::CYBERSOURCE,
+        Gateway::FIRST_DATA,
     );
 
     /**
@@ -246,6 +261,7 @@ class Gateway
         Gateway::AXIS_MIGS,
         Gateway::AMEX,
         Gateway::CYBERSOURCE,
+        Gateway::FIRST_DATA,
         );
 
     /**
@@ -265,6 +281,7 @@ class Gateway
         Gateway::ATOM,
         Gateway::SHARP,
         Gateway::CYBERSOURCE,
+        Gateway::FIRST_DATA,
     );
 
     /**

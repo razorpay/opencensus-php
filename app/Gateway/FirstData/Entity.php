@@ -8,19 +8,25 @@ use RZP\Constants;
 class Entity extends Base\Entity
 {
     const ID                        = 'id';
-    const AMOUNT                    = 'amount';
+    const AMOUNT                    = 'chargetotal';
     const TXNDATETIME               = 'txndatetime';
     const HASH                      = 'hash';
     const OID                       = 'oid';
     const TDATE                     = 'tdate';
     const PAYMENT_METHOD            = 'paymentMethod';
-
+    const APPROVAL_CODE             = 'approval_code';
     const REFNUMBER                 = 'refnumber';
     const STATUS                    = 'status';
     const TXNDATE_PROCESSED         = 'txndate_processed';
     const RESPONSE_HASH             = 'response_hash';
     const PROCESSOR_RESPONSE_CODE   = 'processor_response_code';
     const TERMINAL_ID               = 'terminal_id';
+    const FAIL_REASON               = 'fail_reason';
+    const FAIL_RC                   = 'fail_rc';
+
+    const CCBIN                     = 'ccbin';
+    const CCCOUNTRY                 = 'cccountry';
+    const CCBRAND                   = 'ccbrand';
 
     const CREATED_AT                = 'created_at';
     const UPDATED_AT                = 'updated_at';
@@ -64,8 +70,6 @@ class Entity extends Base\Entity
         self::TDATE,
         self::PAYMENT_METHOD,
         );
-
-    protected $guarded = array();
 
     protected $table = Constants\Table::FIRST_DATA;
 
