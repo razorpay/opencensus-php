@@ -561,6 +561,7 @@ class Service extends Base\Service
 
     /**
      * Fetches merchant balance
+     * Uses Proxy Auth on the API
      *
      * @param  string $merchantId Merchant Id
      * @return array contains both test and live balances
@@ -569,11 +570,11 @@ class Service extends Base\Service
     {
         $this->setApiCredentials($merchantId, 'test');
 
-        $test = $this->api->merchant->setId($merchantId)->fetchBalance()->toArray();
+        $test = $this->api->merchant->fetchProxyBalance()->toArray();
 
         $this->setApiCredentials($merchantId, 'live');
 
-        $live = $this->api->merchant->setId($merchantId)->fetchBalance()->toArray();
+        $live = $this->api->merchant->fetchProxyBalance()->toArray();
 
         return compact('test', 'live');
     }

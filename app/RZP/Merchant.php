@@ -17,6 +17,7 @@ class Merchant extends Entity
     const CONFIG_LOGO_URL = 'account/config/logo';
     const SUBMERCHANT_CREATE_URL = 'submerchants';
     const BANK_ACCOUNT_URL = 'account/bank_account';
+    const PROXY_BALANCE_URL = 'balance';
 
     public function create($params = null)
     {
@@ -177,6 +178,11 @@ class Merchant extends Entity
         $relativeUrl = $this->getEntityUrl().$this->id.'/balance';
 
         return $this->request('GET', $relativeUrl);
+    }
+
+    public function fetchProxyBalance()
+    {
+        return $this->request('GET', self::PROXY_BALANCE_URL);
     }
 
     public function generateBeneficiaryFile()
