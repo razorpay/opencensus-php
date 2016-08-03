@@ -301,7 +301,7 @@ class Gateway extends Base\Gateway
         }
         catch (SoapFault $exception)
         {
-            $this->handleSoapFault($exception, "Enroll: Server Error occured");
+            $this->handleSoapFault($exception, "Enroll: Server Error occured", true);
         }
     }
 
@@ -1120,12 +1120,12 @@ class Gateway extends Base\Gateway
      * @throws Exception\GatewayTimeoutException
      * @throws Exception\RuntimeException
      */
-    protected function handleSoapFault(SoapFault $sf, $errMsg)
+    protected function handleSoapFault(SoapFault $sf, $errMsg, $safe_retry = false)
     {
         if (Utility::checkSoapTimeout($sf) === true)
         {
             throw new Exception\GatewayTimeoutException(
-                                $sf->getMessage(), $sf);
+                                $sf->getMessage(), $sf, $safe_retry);
         }
 
         throw new Exception\RuntimeException(
