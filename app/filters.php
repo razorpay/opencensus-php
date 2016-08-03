@@ -40,27 +40,6 @@ App::after(function($request, $response)
 |
 */
 
-Route::filter('auth.user', function()
-{
-    if (Auth::user()->guest())
-    {
-        return Response::json(array('success' => false, 'data' => array()));
-    }
-    else
-    {
-        $user = Auth::user();
-        ApiRequest::addHeader('X-Dashboard-Merchant', $user->email);
-
-        // Just in case an admin user is performing the action
-        $admin = Auth::admin()->user();
-        if ($admin)
-        {
-            $adminUsername = $admin->username;
-            ApiRequest::addHeader('X-Dashboard-Username', $adminUsername);
-        }
-    }
-});
-
 Route::filter('slack', function()
 {
     $slackToken = Config::get('razorpay.slack.command_token');
