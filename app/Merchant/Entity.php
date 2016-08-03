@@ -84,7 +84,6 @@ class Entity extends Base\Entity
     public static function createFromUser(User\Entity $user, $data)
     {
         $merchant = new static();
-        $merchant->timestamps = false;
 
         $merchant->id = Uuid::generate();
         $merchant->name = $data['business_name'];
@@ -92,8 +91,6 @@ class Entity extends Base\Entity
 
         $merchant->password = $user->password;
         $merchant->confirm_token = $user->confirm_token;
-        $merchant->created_at = $user->created_at;
-        $merchant->updated_at = $user->updated_at;
 
         return $merchant;
     }
