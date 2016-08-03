@@ -13,6 +13,7 @@ return [
                 'duration' => 3,
                 'rate' => 1045,
                 'methods' => 'card',
+                'min_amount' => 400000
             ],
             'method' => 'POST',
             'url' => '/emi',
@@ -23,6 +24,7 @@ return [
                 'duration' => 3,
                 'rate' => 1045,
                 'methods' => 'card',
+                'min_amount' => 400000
             ],
         ],
     ],
@@ -53,7 +55,7 @@ return [
                 'rate' => 1045,
                 'duration' => 3,
                 'methods' => 'card',
-                'min_amount' => 300000
+                'min_amount' => 400000
             ],
         ],
     ],
@@ -71,7 +73,7 @@ return [
                 'rate' => 1045,
                 'duration' => 3,
                 'methods' => 'card',
-                'min_amount' => 300000
+                'min_amount' => 400000
             ],
         ],
     ],
