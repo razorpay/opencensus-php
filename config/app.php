@@ -223,6 +223,7 @@ return array(
         'View'            => Illuminate\Support\Facades\View::class,
 
         'AWS'             => Aws\Laravel\AwsFacade::class,
+        'Debugbar'        => Barryvdh\Debugbar\Facade::class,
         'Excel'           => Maatwebsite\Excel\Facades\Excel::class,
         'Mailgun'         => Bogardo\Mailgun\Facades\Mailgun::class,
         'PDF'             => Nitmedia\Wkhtml2pdf\Facades\Wkhtml2pdf::class,

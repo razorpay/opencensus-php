@@ -2,6 +2,7 @@
 
 namespace App\Http;
 
+use Debugbar;
 use Response;
 use League\Csv\Writer;
 use SplTempFileObject;
@@ -87,6 +88,12 @@ class AppResponse
 
     public static function csvResponse(array $data)
     {
+
+        // We need to disable debugbar because we are using
+        // csv->output, which Debugbar can pollute with its
+        // HTML not knowing it is a csv response.
+
+        Debugbar::disable();
         // Flatten all the inner keys
         // So internal arrays (like notes)
         // are converted properly
@@ -109,12 +116,6 @@ class AppResponse
         $csv->insertOne($headings);
         $csv->insertAll($data);
 
-        $response = Response::make($csv);
-
-        $response->header('Content-Type', 'text/csv');
-        $response->header('Content-Disposition','attachment;filename=export.csv');
-        $response->header('Content-Description', 'File Transfer');
-
-        return $response;
+        $csv->output('lalalala.csv');
     }
 }

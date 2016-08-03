@@ -9,7 +9,7 @@ trait Logger
 {
     public function logDataExport($entity, $params)
     {
-        $adminId = Auth::admin()->get()->username;
+        $adminId = Auth::guard('admin')->user()->username;
 
         $this->slackPost("Data export by $adminId ($entity)", $params, '#tech_logs');
     }
