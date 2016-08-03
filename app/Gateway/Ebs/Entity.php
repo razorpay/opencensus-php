@@ -70,6 +70,7 @@ class Entity extends Base\Entity
 
     protected $casts = [
         self::AMOUNT        => 'int',
+        self::IS_FLAGGED    => 'boolean',
     ];
 
     protected $table = Table::EBS;

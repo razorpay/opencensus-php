@@ -53,4 +53,17 @@ trait PaymentEbsTrait
 
         $this->setMockServer($server);
     }
+
+    public function getHackedResponse()
+    {
+        $server = $this->mockServer()
+            ->shouldReceive('content')
+            ->andReturnUsing(function (& $content)
+            {
+                $content['IsFlagged'] = 'YES';
+                return $content;
+            })->mock();
+
+        $this->setMockServer($server);
+    }
 }

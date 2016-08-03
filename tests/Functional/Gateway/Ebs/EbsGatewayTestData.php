@@ -77,8 +77,16 @@ return [
         'action'                    => 'authorize',
         'received'                  => true,
         'entity'                    => 'ebs',
+        'is_flagged'                => false,
         'error_code'                => null,
+    ],
 
+    'testPaymentFlaggedEbsEntity'   => [
+        'action'                    => 'authorize',
+        'received'                  => true,
+        'entity'                    => 'ebs',
+        'is_flagged'                => true,
+        'error_code'                => null,
     ],
 
     'testPaymentRefundWithoutCapture' => [
@@ -110,6 +118,22 @@ return [
         'exception' => [
             'class'                 => 'RZP\Exception\GatewayErrorException',
             'internal_error_code'   => 'BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE',
+        ],
+    ],
+
+    'testHackedPayment' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::SERVER_ERROR,
+                    'description'   => PublicErrorDescription::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\LogicException',
+            'internal_error_code'   => ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
         ],
     ],
 
@@ -149,6 +173,7 @@ return [
         'received'                  => true,
         'action'                    => 'refund',
         'entity'                    => 'ebs',
+        'is_flagged'                => false,
     ],
 
     'testTransactionAfterRefundingAuthorizedPayment' => [
