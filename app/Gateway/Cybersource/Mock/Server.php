@@ -152,6 +152,10 @@ class Server extends Base\Mock\Server
         switch ($request['card']['accountNumber'])
         {
             case '4012001038443335':
+                throw new \SoapFault('HTTP', 'Error Fetching http headers');
+                break;
+
+            case '4012001038443335':
                 $response['decision'] = 'REJECT';
                 $response['reasonCode'] = Cybersource\Result::ENROLLED;
 

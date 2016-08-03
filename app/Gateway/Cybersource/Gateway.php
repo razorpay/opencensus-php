@@ -6,6 +6,7 @@ use Cache;
 use Crypt;
 use Config;
 use Requests;
+use SoapFault;
 use RZP\Error;
 use RZP\Exception;
 use RZP\Constants;
@@ -1119,12 +1120,12 @@ class Gateway extends Base\Gateway
      * @throws Exception\GatewayTimeoutException
      * @throws Exception\RuntimeException
      */
-    protected function handleSoapFault(\SoapFault $sf, $errMsg)
+    protected function handleSoapFault(SoapFault $sf, $errMsg)
     {
-        if(Utility::checkSoapTimeout($sf) === true)
+        if (Utility::checkSoapTimeout($sf) === true)
         {
             throw new Exception\GatewayTimeoutException(
-                                                $sf->getMessage(), $sf);
+                                $sf->getMessage(), $sf);
         }
 
         throw new Exception\RuntimeException(

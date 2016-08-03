@@ -44,7 +44,7 @@ class Utility
 
     public static function checkSoapTimeout(\SoapFault $sf)
     {
-        $msg = strotlower($sf->getMessage());
+        $msg = strtolower($sf->getMessage());
 
         if ((strpos($msg, 'could not connect to host') !== false) or
             (strpos($msg, 'connection timed out') !== false) or
