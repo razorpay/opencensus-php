@@ -23,9 +23,9 @@ return array(
     'sorting_hat'   =>  [
         // This is the token we pass to sorting-hat
         // to verify authenticity of signups
-        'token' =>  '4cace071107c854f0e320c309da81ff62c950da324e2c21d312362f174ca5b5e',
+        'token' =>  env('SORTING_HAT_TOKEN', '4cace071107c854f0e320c309da81ff62c950da324e2c21d312362f174ca5b5e'),
         // sorting-hat url
-        'url'   =>  'https://sorting-hat-slack.herokuapp.com/'
+        'url'   =>  env('SORTING_HAT_URL', 'https://sorting-hat-slack.herokuapp.com/')
     ],
 
     'zapier'    =>  [
@@ -33,7 +33,7 @@ return array(
         'submissions'   =>  'https://hooks.zapier.com/hooks/catch/1088429/46x8fa/',
         'activations'   =>  'https://hooks.zapier.com/hooks/catch/1088429/4twqyo/',
         // Define this and set to true in order to enable mocking
-        'mock'          =>  getenv('ZAPIER_MOCK'),
+        'mock'          =>  getenv('ZAPIER_MOCK', false),
     ],
 
     'slack' =>  [
@@ -44,7 +44,7 @@ return array(
         'risk'          =>  '#risk',
 
         // This is used by the /v query command on slack
-        'command_token' =>  'By9i0lp0y0T4mvgUn0Ljj1Rt',
+        'command_token' =>  env('SLACK_COMMAND_TOKEN', 'By9i0lp0y0T4mvgUn0Ljj1Rt'),
     ],
 
     'mailchimp' => [

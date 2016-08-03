@@ -254,8 +254,10 @@ class Service extends Base\Service
         $sortingHatData = $this->getSortingHatData($merchant, $user, $referer, $phoneNumber);
         $zapierData = $this->getZapierData($merchant, $user, $referer, $phoneNumber);
 
+
         // We want to keep environment conditional checks as late as possible
-        if (getenv('SLACK_ENABLE') === true)
+
+        if (config('slack.enable'))
         {
             Queue::push('App\User\Service@postToSortingHat', $sortingHatData);
             Queue::push('App\User\Service@postToZapier', $zapierData);

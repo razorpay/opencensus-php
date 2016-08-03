@@ -26,7 +26,7 @@ class Service
 
     public function slackPost($headline, $postdata, $channel, $pretext = '', $color = 'good')
     {
-        if(getenv('SLACK_ENABLE') === true)
+        if (config('slack.enable'))
         {
             $data = array();
             $data['fallback'] = $headline.'\n';

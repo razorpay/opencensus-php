@@ -111,12 +111,13 @@ return [
   |
   */
 
-  'markdown_in_attachments' => ['pretext', 'text', 'title', 'fields', 'fallback']
+  'markdown_in_attachments' => ['pretext', 'text', 'title', 'fields', 'fallback'],
 
   // Allow Markdown in just the text and title fields
   // 'markdown_in_attachments' => ['text', 'title']
 
   // Allow Markdown in all fields
   // 'markdown_in_attachments' => ['pretext', 'text', 'title', 'fields', 'fallback']
+  'enable' => env('SLACK_ENABLE', true),
 
 ];
