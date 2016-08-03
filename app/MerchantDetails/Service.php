@@ -169,7 +169,7 @@ class Service extends Base\Service
     protected function uploadFileToS3($data)
     {
         $merchantDetails = $this->merchantDetails;
-        $id = $merchantDetails->merchant_id;
+        $id = $merchantDetails->getMerchantId();
 
         $error = array();
 

@@ -179,6 +179,11 @@ class Entity extends Base\Entity
         return $details;
     }
 
+    public function getMerchantId()
+    {
+        return $this->attributes['merchant_id'];
+    }
+
     public function filterDetails()
     {
         $data = array_intersect_key(
