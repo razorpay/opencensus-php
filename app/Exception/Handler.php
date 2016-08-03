@@ -58,9 +58,7 @@ class Handler extends ExceptionHandler
 
         // TODO: Imrpve so that not everything is critical
         // Use the same checks as in render
-        $trace->addRecord(Trace::CRITICAL, 'ERROR_EXCEPTION', $context);
-
-        return parent::report($e);
+        return $trace->addRecord(Trace::CRITICAL, 'ERROR_EXCEPTION', $context);
     }
 
     /**
