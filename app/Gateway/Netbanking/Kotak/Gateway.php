@@ -142,6 +142,10 @@ class Gateway extends Base\Gateway
 
         $input = $verify->input;
 
+        // From verified content put the bank payment id and
+        // status
+        $this->fillStatusAndBankPaymentId($input, $content);
+
         // If payment status is either failed or created,
         // this is an api failure
         if (($input['payment']['status'] === 'failed') or
@@ -160,6 +164,25 @@ class Gateway extends Base\Gateway
 
         return $status;
     }
+
+    /**
+     * For verify, Set bank payment and status from
+     * verified response.
+     */
+    protected function fillStatusAndBankPaymentId($input, $content)
+    {
+        $payment = $this->getRepo()->retrieveByPaymentIdOrFail(
+            $input['payment']['id']);
+
+        $attrs['received'] = true;
+        $attrs['status'] = $content['AuthorizationStatus'];
+        $attrs['bank_payment_id'] = $content['BankReference'];
+
+        $payment->fill($attrs);
+
+        $payment->saveOrFail();
+    }
+
     protected function validateCallbackChecksum($content)
     {
         $expectedHash = $content['Checksum'];
