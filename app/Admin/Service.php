@@ -29,7 +29,7 @@ class Service extends Base\Service
     const ALREADY_ARCHIVED = 'Merchant already archived.';
     const CANT_ARCHIVE_LIVE = 'Live merchants can not be archived.';
     const INVALID_CREDENTIALS = 'Username or password is invalid.';
-    const PRIMARY_LOGIN_ERROR = "Could not log you in to the primary owner's account";
+    const PRIMARY_LOGIN_ERROR = "There is no user associated with this account.";
     const SELF_DELETE_ERROR = 'You can not delete yourself.';
 
     // This is the Admin\Logger trait
@@ -88,13 +88,17 @@ class Service extends Base\Service
      */
     public function loginUsingPrimaryOwner($merchant_id)
     {
-        $error = array();
+        $error = [];
 
         $merchant = Merchant\Entity::findOrFail($merchant_id);
 
-        $user = Auth::guard('user')->loginUsingId($merchant->primaryOwner()->id);
+        $ownerUser = $merchant->primaryOwner();
 
-        if(!$user)
+        if ($ownerUser)
+        {
+            $user = Auth::guard('user')->loginUsingId($ownerUser->id);
+        }
+        else
         {
             $error[] = self::PRIMARY_LOGIN_ERROR;
         }
