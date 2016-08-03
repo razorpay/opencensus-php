@@ -644,8 +644,10 @@ trait Authorize
         $payment->setBank($iinEntity->getIssuer());
 
         // Set emi plan id
-        $emiPlan = (new Emi\Repository)->fetchByBankAndDuration(
-                        $iinEntity->getIssuer(), $emiDuration);
+        $emiPlan = (new Emi\Repository)->fetchByNetworkBankAndDuration(
+                        $iinEntity->getNetwork(),
+                        $iinEntity->getIssuer(),
+                        $emiDuration);
 
         if ($payment->getAmount() < $emiPlan->getMinAmount())
         {

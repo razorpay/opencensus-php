@@ -11,6 +11,7 @@ class Entity extends Base\PublicEntity
 
     const ID                    = 'id';
     const BANK                  = 'bank';
+    const NETWORK               = 'network';
     const RATE                  = 'rate';
     const DURATION              = 'duration';
     const METHODS               = 'methods';
@@ -30,6 +31,7 @@ class Entity extends Base\PublicEntity
     protected $fillable = array(
         self::ID,
         self::BANK,
+        self::NETWORK,
         self::RATE,
         self::DURATION,
         self::METHODS,
@@ -38,6 +40,7 @@ class Entity extends Base\PublicEntity
     protected $visible = array(
         self::ID,
         self::BANK,
+        self::NETWORK,
         self::RATE,
         self::DURATION,
         self::METHODS,
@@ -52,6 +55,8 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = array(
         self::MIN_AMOUNT => 300000,
+        self::BANK       => null,
+        self::NETWORK    => null,
     );
 
     protected $guarded = array(self::ID);
@@ -69,6 +74,11 @@ class Entity extends Base\PublicEntity
     public function getBank()
     {
         return $this->getAttribute(self::BANK);
+    }
+
+    public function getNetwork()
+    {
+        return $this->getAttribute(self::NETWORK);
     }
 
     public function getMethods()

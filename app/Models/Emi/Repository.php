@@ -6,9 +6,9 @@ use RZP\Models\Base;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;   
+    use Base\RepositoryFetch;
     use Base\RepositoryUpdateTestAndLive;
-    
+
     protected $entity = 'emi';
 
     public function getAllEmiPlans()
@@ -18,12 +18,13 @@ class Repository extends Base\Repository
         return $repo::get();
     }
 
-    public function fetchByBankAndDuration($bank, $duration)
+    public function fetchByNetworkBankAndDuration($network, $bank, $duration)
     {
         $repo = $this->repo;
 
-        return $repo::where(Entity::BANK, '=', $bank)
+        return $repo::where(Entity::NETWORK, '=', $network)
+                    ->where(Entity::BANK, '=', $bank)
                     ->where(Entity::DURATION, '=', $duration)
-                    ->firstOrFail();    
+                    ->firstOrFail();
     }
 }

@@ -329,6 +329,12 @@ class Gateway
         Gateway::PAYTM,
         Gateway::ATOM);
 
+    public static $emiBanks = array(
+        IFSC::HDFC,
+        IFSC::KKBK,
+        IFSC::UTIB,
+    );
+
     public static $emiBanksUsingCardTerminals = array(
         IFSC::KKBK,
         IFSC::UTIB,

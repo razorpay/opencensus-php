@@ -9,7 +9,8 @@ use RZP\Models\Payment\Gateway;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        'bank'                  => 'required|size:4',
+        'bank'                  => 'sometimes|size:4',
+        'network'               => 'sometimes|size:5|in:amex',
         'duration'              => 'required|integer|in:3,6,9,12,18,24',
         'rate'                  => 'required|integer',
         'methods'               => 'sometimes|in:card,wallet,netbanking',
@@ -17,11 +18,15 @@ class Validator extends Base\Validator
     );
 
     protected static $createValidators = array(
-        'bank'
+        'bank',
     );
 
     protected function validateBank($input)
     {
-
+        if (in_array($input['bank'], Gateway::$emiBanks) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'invalid bank name: '. $input['bank']);
+        }
     }
 }
