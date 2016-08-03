@@ -20,6 +20,8 @@ class Entity extends Base\Entity
 
     protected $primaryKey = 'merchant_id';
 
+    public $incrementing = false;
+
     protected $fillable = array(
         'merchant_id',
         'contact_name',
