@@ -180,12 +180,12 @@ class Service extends Base\Service
 
         try
         {
-            $s3Obj = array(
+            $s3Obj = [
                 'Bucket'        => env('AWS_ACTIVATION_BUCKET'),
                 'Key'           => $id.'/'.$data['key'].'.'.$extension,
                 'ContentType'   => $mime,
                 'SourceFile'    => $data['file']->getRealPath(),
-            );
+            ];
 
             $field = $data['field'];
 
@@ -198,7 +198,10 @@ class Service extends Base\Service
                 $response = $s3->putObject($s3Obj);
                 $url = $response->get('ObjectURL');
 
-                Trace::debug('MISC_TRACE_CODE', $response->toArray());
+                Trace::debug('MISC_TRACE_CODE', [
+                    'request'  => $s3Obj,
+                    'response' => $response->toArray()
+                ]);
             }
 
             $merchantDetails->$field = $url;
