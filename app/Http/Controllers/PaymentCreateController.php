@@ -83,51 +83,7 @@ class PaymentCreateController extends Controller
 
         $data = $this->payment->process($input);
 
-        //
-        // Check for call from API
-        //
-        if (isset($data['request']))
-        {
-            if ($data['type'] === 'first')
-            {
-                if ($data['request']['method'] === 'post')
-                {
-                    return View::make('gateway.gatewayPostForm')
-                               ->with('data', $data);
-                }
-                else if ($data['request']['method'] === 'get')
-                {
-                    $response = \Redirect::away($data['request']['url']);
-                    $response->headers->set('X-gateway', $data['gateway']);
-
-                    return $response;
-                }
-                else if ($data['request']['method'] === 'direct')
-                {
-                    $response = Response::make($data['request']['content']);
-                    $response->headers->set('X-gateway', $data['gateway']);
-
-                    return $response;
-                }
-            }
-            else if ($data['type'] === 'otp')
-            {
-                return View::make('gateway.gatewayOtpPostForm')
-                           ->with('data', $data);
-            }
-            else if ($data['type'] === 'return')
-            {
-                return $this->returnMerchantFullRedirectView($data);
-            }
-            else
-            {
-                assert(false, 'Should not reach here');
-            }
-        }
-        else
-        {
-            return $data;
-        }
+        return $this->processCoprotoData($data);
     }
 
     /**
@@ -248,6 +204,18 @@ class PaymentCreateController extends Controller
         return ApiResponse::json($data);
     }
 
+    /*
+     * Topup Wallet for a payment
+     */
+    public function postTopup($id)
+    {
+        $input = Request::all();
+
+        $data = $this->payment->topup($id, $input);
+
+        return $this->processCoprotoData($data);
+    }
+
     public function postAutoCapture()
     {
         $data = $this->payment->autoCaptureOldAuthorizedPayments();
@@ -284,6 +252,13 @@ class PaymentCreateController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postRedirect($id)
+    {
+        $data = $this->payment->redirect($id);
+
+        return $this->returnCallbackResponse($data);
+    }
+
     protected function returnCallbackResponse($data)
     {
         if (isset($data['type']))
@@ -299,6 +274,55 @@ class PaymentCreateController extends Controller
         assert ($data !== null);
 
         return $this->returnCheckoutCallbackView($data);
+    }
+
+    protected function processCoprotoData($data)
+    {
+        //
+        // Check for call from API
+        //
+        if (isset($data['request']))
+        {
+            if ($data['type'] === 'first')
+            {
+                if ($data['request']['method'] === 'post')
+                {
+                    return View::make('gateway.gatewayPostForm')
+                               ->with('data', $data);
+                }
+                else if ($data['request']['method'] === 'get')
+                {
+                    $response = \Redirect::away($data['request']['url']);
+                    $response->headers->set('X-gateway', $data['gateway']);
+
+                    return $response;
+                }
+                else if ($data['request']['method'] === 'direct')
+                {
+                    $response = Response::make($data['request']['content']);
+                    $response->headers->set('X-gateway', $data['gateway']);
+
+                    return $response;
+                }
+            }
+            else if ($data['type'] === 'otp')
+            {
+                return View::make('gateway.gatewayOtpPostForm')
+                           ->with('data', $data);
+            }
+            else if ($data['type'] === 'return')
+            {
+                return $this->returnMerchantFullRedirectView($data);
+            }
+            else
+            {
+                assert(false, 'Should not reach here');
+            }
+        }
+        else
+        {
+            return $data;
+        }
     }
 
     /**
