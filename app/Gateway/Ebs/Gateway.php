@@ -158,7 +158,7 @@ class Gateway extends Base\Gateway
     {
         $msg = $input['msg'];
 
-        return $msg['MerchantRefNo'];
+        return $msg[Resp::MERCHANT_REF_NO];
     }
     public function verify(array $input)
     {

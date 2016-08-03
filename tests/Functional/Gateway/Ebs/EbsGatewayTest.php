@@ -149,29 +149,12 @@ class EbsGatewayTest extends TestCase
         $this->assertSame($payment['verified'], 1);
     }
 
-    public function testPaymentFailedVerifyWithIrrecoverableGatewayError()
+    public function testPaymentFailedVerify()
     {
         $payment = $this->getDefaultNetbankingPaymentArray();
         $payment = $this->doAuthAndCapturePayment($payment);
 
         $this->getErrorInVerify();
-        $payment = $this->getLastEntity('payment', true);
-
-        $data = $this->testData['testPaymentFailedVerifyWithIrrecoverableGatewayError'];
-
-        $this->runRequestResponseFlow($data, function() use ($payment) {
-            $this->verifyPayment($payment['id']);
-        });
-
-        $this->assertSame($payment['verified'], null);
-    }
-
-    public function testPaymentFailedVerifyWithrecoverableGatewayError()
-    {
-        $payment = $this->getDefaultNetbankingPaymentArray();
-        $payment = $this->doAuthAndCapturePayment($payment);
-
-        $this->getErrorWithInvalidReturnCodeInVerify();
         $payment = $this->getLastEntity('payment', true);
 
         $data = $this->testData['testPaymentFailedVerify'];
@@ -183,12 +166,12 @@ class EbsGatewayTest extends TestCase
         $this->assertSame($payment['verified'], null);
     }
 
-    public function testPaymentFailedVerifyWithrecoverableGatewayErrorAndRetry()
+    public function testPaymentFailedVerifyAndRetry()
     {
         $payment = $this->getDefaultNetbankingPaymentArray();
         $payment = $this->doAuthAndCapturePayment($payment);
 
-        $this->getErrorWithInvalidReturnCodeInVerify();
+        $this->getErrorInVerify();
         $payment = $this->getLastEntity('payment', true);
 
         $data = $this->testData['testPaymentFailedVerify'];
