@@ -59,6 +59,12 @@ class Entity extends Base\PublicEntity
         self::NETWORK    => null,
     );
 
+    protected $casts = array(
+        self::RATE          => 'int',
+        self::MIN_AMOUNT    => 'int',
+        self::DURATION      => 'int',
+    );
+
     protected $guarded = array(self::ID);
 
     public function getRate()
@@ -91,16 +97,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MIN_AMOUNT);
     }
 
-    protected function getRateAttribute()
-    {
-        return (int)$this->attributes[self::RATE];
-    }
-
-    protected function getDurationAttribute()
-    {
-        return (int)$this->attributes[self::DURATION];
-    }
-
     protected function getBankAttribute()
     {
        return $this->attributes[self::BANK];
@@ -109,10 +105,5 @@ class Entity extends Base\PublicEntity
     protected function getMethodsAttribute()
     {
        return $this->attributes[self::METHODS];
-    }
-
-    protected function getMinAmountAttribute()
-    {
-        return (int)$this->attributes[self::MIN_AMOUNT];
     }
 }
