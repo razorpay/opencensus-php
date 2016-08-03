@@ -831,18 +831,6 @@ trait Authorize
         $this->app['events']->fire('api.payment.authorized', array($this->payment));
     }
 
-    protected function checkForRecentFailedPayment($payment)
-    {
-        // Difference should be less than 30 minutes
-        $diff = time() - $payment->getUpdatedAt();
-
-        if (($payment->isFailed()) and
-            ($diff < 30 * 60))
-        {
-            $this->rethrowFailedPaymentErrorException($payment);
-        }
-    }
-
     protected function traceAuthorizeFailedOperationData($payment)
     {
         $traceData = array(
@@ -977,6 +965,9 @@ trait Authorize
                 'version' => 1,
                 'payment_id' => $payment->getPublicId(),
                 'gateway' => $this->getEncryptedGatewayText($payment->getGateway()),
+                // TODO: Return metadata in a better format
+                'contact' => $payment->getContact(),
+                'amount'  => number_format(($payment->getAmount()/100), 2),
             );
         }
         catch (Exception\BaseException $e)
