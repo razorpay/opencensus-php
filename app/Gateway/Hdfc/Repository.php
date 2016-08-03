@@ -34,6 +34,15 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function findCapturedPaymentById($paymentId)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Entity::PAYMENT_ID, '=', $paymentId)
+                    ->where(Entity::ACTION, '=', Action::CAPTURE)
+                    ->firstOrFail();
+    }
+
     public function persistAfterEnroll($request, $response)
     {
         $result = $response['enroll_result'];

@@ -294,7 +294,8 @@ class Entity extends Base\PublicEntity
     {
         $amount = $this->attributes[self::MAX_PAYMENT_AMOUNT];
 
-        if ($amount === null)
+        if (($amount === null) or
+            ($amount === '0'))
         {
             $amount = self::MAX_PAYMENT_AMOUNT_DEFAULT;
         }

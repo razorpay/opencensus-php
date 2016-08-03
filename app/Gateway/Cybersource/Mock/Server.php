@@ -81,7 +81,7 @@ class Server extends Base\Mock\Server
         return $this->getAuthEnrolledRequest($input);
     }
 
-    public function getCaptureResponse($request)
+    public function getCaptureResponse($input)
     {
         $response = array();
 
@@ -90,7 +90,7 @@ class Server extends Base\Mock\Server
         $response['requestID'] = '4661468455476856801016';
 
         $ccCaptureReply = array();
-        $ccCaptureReply['reconciliationID'] = 'razorpay';
+        $ccCaptureReply['reconciliationID'] = $input['merchantReferenceCode'];;
 
         $response['ccCaptureReply'] = $ccCaptureReply;
 
@@ -111,6 +111,13 @@ class Server extends Base\Mock\Server
         $payerAuthValidateReply['commerceIndicator'] = 'Internet';
         $payerAuthValidateReply['cavv'] = '1';
 
+        if ($input['card']['accountNumber'] === '4111460212312338')
+        {
+            $payerAuthValidateReply['eci'] = '07';
+            $payerAuthValidateReply['paresStatus'] = 'U';
+            $payerAuthValidateReply['authenticationStatusMessage'] = 'Issuer unable to perform authentication';
+        }
+
         $response['payerAuthValidateReply'] = $payerAuthValidateReply;
 
         return $response;
@@ -125,7 +132,7 @@ class Server extends Base\Mock\Server
         $response['requestID'] = '4661454138166750401020';
 
         $ccAuthReply = array();
-        $ccAuthReply['reconciliationID'] = 'razorpay';
+        $ccAuthReply['reconciliationID'] = $input['ccAuthService']['reconciliationID'];
 
         $response['ccAuthReply'] = $ccAuthReply;
 
@@ -145,6 +152,17 @@ class Server extends Base\Mock\Server
         switch ($request['card']['accountNumber'])
         {
             case '4012001038443335':
+                $response['decision'] = 'REJECT';
+                $response['reasonCode'] = Cybersource\Result::ENROLLED;
+
+                $params = array('gateway' => 'cybersource');
+                $response['payerAuthEnrollReply']['acsURL'] = Http\Route::getUrl('mockcybersource_acs', $params);
+                $response['payerAuthEnrollReply']['paReq'] = 'eNpVUttygjAQfc9XMP0AkiAw';
+                $response['payerAuthEnrollReply']['xid'] = 'cGdKQXF5STA1TFl3OUtueHJnWDA';
+                $response['payerAuthEnrollReply']['veresEnrolled'] = 'Y';
+                break;
+
+            case '4111460212312338':
                 $response['decision'] = 'REJECT';
                 $response['reasonCode'] = Cybersource\Result::ENROLLED;
 
