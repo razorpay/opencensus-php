@@ -65,35 +65,9 @@ class Entity extends \Razorpay\Spine\Entity
         return array();
     }
 
-    /**
-     * Laravel 5 callse getDates, which returns [UPDATED_AT, CREATED_AT] by
-     * default to mark which tables are valid dates. These are then
-     * converted to DateTime somehow. Our dates are integers
-     * and it breaks!, so we bypass that by telling Laravel
-     * that we don't have date columns!
-     * @return [type] [description]
-     */
-    public function getDates()
+    protected function getDateFormat()
     {
-        return [];
-    }
-
-
-    protected function asDateTime($value)
-    {
-        //
-        // If this value is an integer, we will assume
-        // it is a UNIX timestamp's value and return as it is.
-        // Otherwise we will call the parent function to handle it.
-        //
-        if (is_numeric($value))
-        {
-            return $value;
-        }
-        else
-        {
-            return parent::asDateTime($value);
-        }
+        return 'U';
     }
 
     /**
