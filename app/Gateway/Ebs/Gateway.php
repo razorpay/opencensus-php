@@ -36,7 +36,6 @@ class Gateway extends Base\Gateway
     protected $gateway = Constants\Table::EBS;
 
     protected $map = array(
-
         Resp::PAYMENT_ID            => Entity::REFERENCE_ID,
         Resp::MERCHANT_REF_NO       => Entity::PAYMENT_ID,
         Resp::IS_FLAGGED            => Entity::IS_FLAGGED,

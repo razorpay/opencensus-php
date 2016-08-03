@@ -187,8 +187,8 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED                               = 'This payment cannot be cancelled';
     const BAD_REQUEST_PAYMENT_ALREADY_CANCELLED                                 = 'Payment already cancelled';
     const BAD_REQUEST_PAYMENT_ALREADY_REFUND_INITIATED                          = 'Refund already initiated';
-    const BAD_REQUEST_PAYMENT_REFUND_LESS_THAN_TWENTY_ONE                       = 'Less than Rs.21 could not be refunded';
-    const BAD_REQUEST_PAYMENT_REFUND_AFTER_EIGHTY_DAYS                          = 'There are no refunds available after 80 days';
+    const BAD_REQUEST_PAYMENT_REFUND_LESS_THAN_MIN_VALUE                        = 'Amount requested for refund is less than minimun value';
+    const BAD_REQUEST_PAYMENT_REFUND_AFTER_MAX_PERIOD                           = 'Refund acnnot be done after this period';
     const BAD_REQUEST_PAYMENT_AMOUNT_CANNOT_BE_CANCELLED                        = 'This amount can not be cancelled';
     const BAD_REQUEST_PAYMENT_PROBLEM_IN_UPDATING                               = 'Problem in updating payment';
 
