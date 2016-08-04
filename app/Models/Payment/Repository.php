@@ -68,7 +68,7 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        return $repo::whereBetween(Payment\Entity::CAPTURED_AT, array($from, $to))
+        return $repo::whereBetween(Payment\Entity::AUTHORIZED_AT, array($from, $to))
                     ->whereIn('status', $status)
                     ->where(Payment\Entity::GATEWAY, '=', $gateway)
                     ->get();
