@@ -89,8 +89,6 @@ class Gateway extends Base\Gateway
         $gatewayPayment->fill($attributes);
         $gatewayPayment->saveOrFail();
 
-        $responseCode = $input['gateway'][Resp::RESPONSE_CODE];
-
         if ((isset($input['gateway'][Resp::RESPONSE_CODE])) and
             ($input['gateway'][Resp::RESPONSE_CODE] !== Status::SUCCESS))
         {
@@ -622,8 +620,6 @@ class Gateway extends Base\Gateway
         $refundAmount = $input['refund']['amount']/100;
 
         $attributes = $this->getMappedAttributes($response);
-
-        $attributes[Entity::IS_FLAGGED] = false;
 
         if ((isset($response[Entity::IS_FLAGGED]) === true) and
             (strtolower($response[Entity::IS_FLAGGED]) === 'yes'))
