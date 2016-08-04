@@ -1,32 +1,36 @@
 <?php
 
+/*
+ | ----------------------------------------------------------------------------------
+ | Detect The Application Environment
+ | ----------------------------------------------------------------------------------
+ |
+ */
+use Dotenv\Dotenv;
+use Dotenv\Exception\InvalidPathException;
+
 $app->useEnvironmentPath(__DIR__.'/../environment');
 
 $app->detectEnvironment(function() use ($app) {
     $env = 'production';
 
-    $envLocation = __DIR__ . '/../environment/env.php';
-
     if (env('APP_ENV') === 'testing')
     {
         $env = 'testing';
     }
-
-    else if (file_exists($envLocation))
+    else if (file_exists($file = __DIR__ . '/../environment/env.php'))
     {
-        $env = require($envLocation);
+        $env = require $file;
     }
 
-    $envSuffix = ($env==='production') ? '' : ".$env";
-
-    $file = $app->environmentFile().$envSuffix;
-
-    // sd($file);
-    //
-    // sd($app->environmentPath());
+    $file = $app->environmentFile().($env==='production'?'':'.'.$env);
 
     if (file_exists($app->environmentPath().'/'.$file))
     {
         $app->loadEnvironmentFrom($file);
     }
+
+    putenv("APP_ENV=$env");
+
+    return $env;
 });

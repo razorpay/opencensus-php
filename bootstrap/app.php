@@ -15,8 +15,10 @@ $app = new Illuminate\Foundation\Application(
     realpath(__DIR__.'/../')
 );
 
-/**
- * Setup the environment
+/*
+ |-------------------------------------------------------------------------
+ | Load Environment Configuration
+ |-------------------------------------------------------------------------
  */
 require __DIR__ . '/environment.php';
 
@@ -32,18 +34,18 @@ require __DIR__ . '/environment.php';
 */
 
 $app->singleton(
-    'Illuminate\Contracts\Http\Kernel',
-    'App\Http\Kernel'
+    Illuminate\Contracts\Http\Kernel::class,
+    App\Http\Kernel::class
 );
 
 $app->singleton(
-    'Illuminate\Contracts\Console\Kernel',
-    'App\Console\Kernel'
+    Illuminate\Contracts\Console\Kernel::class,
+    App\Console\Kernel::class
 );
 
 $app->singleton(
-    'Illuminate\Contracts\Debug\ExceptionHandler',
-    'App\Exception\Handler'
+    Illuminate\Contracts\Debug\ExceptionHandler::class,
+    App\Exception\Handler::class
 );
 
 /*
