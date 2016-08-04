@@ -7,6 +7,7 @@ use RZP\Exception\RecoverableException;
 use RZP\Models\Admin;
 use Request;
 use Redirect;
+use App;
 
 class AdminController extends Controller
 {
@@ -64,4 +65,37 @@ class AdminController extends Controller
     {
         $input = Request::all();
     }
+
+    public function getSlackTestQueue()
+    {
+        $input = Request::all();
+        $app = App::getFacadeRoot();
+        // post via direct send
+        $rand = rand();
+        $rand = rand();
+        $headline = "Successful Send[queue] ->".$rand;
+        $message = array("Test Details[queue]->".$rand => "Test Message->".$rand);
+        // message should appear successfully
+        $app['slack']->queue($headline, $message, ['channel' => '#dev-test-2',
+            'username' => 'Jordan Belfort',
+            'icon' => ':boom:']);
+        $data = array('status' => 'posted to slack[queue]');
+        return ApiResponse::json($data);
+    }
+
+    public function getSlackTestSend()
+    {
+        $input = Request::all();
+        $app = App::getFacadeRoot();
+        // post via direct send
+        $rand = rand();
+        $headline = "Successful Message[send] ->".$rand;
+        $message = array("Test Details[Send]->".$rand => "Test Message->".$rand);
+        $app['slack']->send($headline, $message, ['channel' => '#dev-test-2',
+            'username' => 'Jordan Belfort',
+            'icon' => ':boom:']);
+        $data = array('status' => 'posted to slack[send]');
+        return ApiResponse::json($data);
+    }
+
 }

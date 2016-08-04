@@ -228,6 +228,8 @@ final class Route
         'otp_verify'                              => ['post',     'otp/verify',                               'CustomerController@verifyOtp'                                      ],
         'sms_callback'                            => ['post',     'sms/{id}/callback',                        'CustomerController@updateSmsStatus'                                ],
         'es_migrate_entity'                       => ['post',     'es/migrate/{entityName}',                  'EsController@migrateEntity'                                        ],
+        'dummy_test_slack_send'                   => ['get',      'dummy/testslack/send',                    'AdminController@getSlackTestSend'                                  ],
+        'dummy_test_slack_queue'                  => ['get',      'dummy/testslack/queue',                   'AdminController@getSlackTestQueue'                                 ],
     );
 
     public static $public = array(
@@ -458,7 +460,9 @@ final class Route
         'gateway_payment_callback_kotak_cancel',
         'gateway_payment_callback_get',
         'gateway_payment_callback_post',
-        'sms_callback'
+        'sms_callback',
+        'dummy_test_slack_send',
+        'dummy_test_slack_queue',
     );
 
     public static $internalApps = array(
