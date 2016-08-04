@@ -86,8 +86,7 @@ class Validator extends Base\Validator
                 'amount');
         }
 
-        if (($input['method'] === Payment\Method::EMI) and
-            ($amount < 300000))
+        if (($input['method'] === Payment\Method::EMI) and ($amount < 300000))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT_FOR_EMI,
@@ -100,6 +99,16 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Amount exceeds maximum amount allowed.');
+        }
+    }
+
+    public function validateMinAmountWithEmiPlanAmount($emiPlan)
+    {
+        if ($this->entity->getAmount() < $emiPlan->getMinAmount())
+        {
+            // We need to do this check here because currently amex has a higher limit of 5k.
+            throw new Exception\BadRequestValidationFailureException(
+                'Minimum amount allowed for EMI payment on this card must be ' . $emiPlan->getMinAmount());
         }
     }
 

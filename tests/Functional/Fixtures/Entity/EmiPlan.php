@@ -11,7 +11,7 @@ class EmiPlan extends Base
             'rate'              => '1200',
             'methods'           => 'debitcard',
             'bank'              => 'HDFC',
-            'min_amount'        => '500000',
+            'min_amount'        => '300000',
         ),
         array(
             'id'                => '10101010101011',
@@ -19,7 +19,7 @@ class EmiPlan extends Base
             'rate'              => '1400',
             'methods'           => 'debitcard',
             'bank'              => 'UTIB',
-            'min_amount'        => '500000',
+            'min_amount'        => '300000',
         ),
         array(
             'id'                => '10101010101100',
@@ -27,7 +27,7 @@ class EmiPlan extends Base
             'rate'              => '1400',
             'methods'           => 'debitcard',
             'bank'              => 'KKBK',
-            'min_amount'        => '500000',
+            'min_amount'        => '300000',
         ),
     );
 

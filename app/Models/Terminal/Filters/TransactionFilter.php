@@ -39,11 +39,7 @@ class TransactionFilter extends Terminal\Filter
                 return $terminal->isNetbankingEnabled();
 
             case Method::EMI:
-                $bank = $input['payment']->getBank();
-
-                $emiDuration = $input['payment']->emiPlan->getDuration();
-
-                return $terminal->isValidForEmiDurationAndBank($bank, $emiDuration);
+                return $this->isValidEmiTerminal($terminal, $input);
 
             // Pick the right terminal only
             case Method::WALLET:
@@ -138,5 +134,34 @@ class TransactionFilter extends Terminal\Filter
         }
 
         return true;
+    }
+
+    protected function isValidEmiTerminal($terminal, $input)
+    {
+        $bank = $input['payment']->getBank();
+
+        // check if banks emi transactions can be processed from any card terminal
+        if ((empty($bank) === false) and
+            (in_array($bank, Gateway::$emiBanksUsingCardTerminals)))
+        {
+            return (($terminal->isCardEnabled()) and ($terminal->isEmiEnabled() === false));
+        }
+
+        // validate terminal using the gateway and emi duration
+        $network = $input['payment']->card->getNetworkCode();
+
+        if ($network === Network::AMEX)
+        {
+            $gateway = Gateway::AMEX;
+        }
+        else
+        {
+            $gateway = Gateway::$emiBankToGatewayMap[$bank];
+        }
+
+        $emiDuration = $input['payment']->emiPlan->getDuration();
+
+        return $terminal->isValidEmiTerminal($gateway, $emiDuration);
+
     }
 }
