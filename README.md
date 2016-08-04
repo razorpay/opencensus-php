@@ -7,7 +7,7 @@
 * `sudo a2ensite dashboard.razorpay.dev.conf`
 * `sudo chmod -R o+wx storage/`
 * Copy over `environment/env.sample.php` to `environment/env.php`
-* Copy `env`
+* Copy `environment/.env.example` to `environment/.env.dev` and edit it accordingly
 * Run `php composer.phar install` to install laravel
 * Run `php artisan migrate --seed` to migrate and seed the db. If you face problem regarding null fields, turn off strict SQL mode.
 * `npm install`
@@ -20,7 +20,7 @@
 
 ## Setup instructions for testing
 
-* copy over `.env.sample.php` to `.env.testing.php` and add db name & password
+* Copy `environment/.env.example` to `environment/.env.testing` and edit it accordingly
 * Create a `$HOME/.selenium` directory
 * Download the latest selenium server jar file from `http://www.seleniumhq.org/download/` and download it in the `~/.selenium` directory.
 * Make sure you have firefox installed.
@@ -34,10 +34,6 @@
 * `sudo apt-get install openjdk-7-jre xvfb firefox`
 * Run selenium server manually : `java -jar ~/.selenium/selenium-server.jar`
 * Run tests : `xvfb-run phpunit`
-
-# Selenium
-
-If you can't get selenium to work, make sure `API_MOCK` is true in `.env.testing.php`.
 
 # Docs
 
