@@ -48,7 +48,7 @@ class EmiFile extends Base\EmiFile
         $zipFile = $this->getZippedFile($fullPath);
 
         $data['file'] = $zipFile;
-        $data['body'] = 'Please forward the Axis Emi file to axis';
+        $data['body'] = 'Please process the attached EMI file';
 
         $this->mail->queue('emails.message', $data, function ($message) use ($data)
         {
