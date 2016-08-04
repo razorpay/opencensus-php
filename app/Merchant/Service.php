@@ -568,15 +568,27 @@ class Service extends Base\Service
      */
     public function fetchMerchantBalance($merchantId)
     {
-        $this->setApiCredentials($merchantId, 'test');
-
-        $test = $this->api->merchant->fetchProxyBalance()->toArray();
-
-        $this->setApiCredentials($merchantId, 'live');
-
-        $live = $this->api->merchant->fetchProxyBalance()->toArray();
+        $test = $this->fetchProxyMerchantBalance($merchantId, 'test');
+        $live = $this->fetchProxyMerchantBalance($merchantId, 'live');
 
         return compact('test', 'live');
+    }
+
+    protected function fetchProxyMerchantBalance($merchantId, $mode)
+    {
+        try
+        {
+            $this->setApiCredentials($merchantId, $mode);
+            return $this->api->merchant->fetchProxyBalance()->toArray();
+        }
+
+        catch(BadRequestError $e)
+        {
+            return [
+                'id'        =>  $merchantId,
+                'balance'   =>  0
+            ];
+        }
     }
 
     public function fetchReferredMerchants($merchantId)
