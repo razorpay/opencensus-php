@@ -126,6 +126,6 @@ return array(
         'highrisk'       => '#transactions_highrisk',
     ],
 
-    //'is_slack_enabled' => env('SLACK_MOCK') === true ? false : true
-    'is_slack_enabled' => true
+    'is_slack_enabled' => env('SLACK_MOCK') === true ? false : true
+
 );
