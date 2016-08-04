@@ -13,6 +13,7 @@ class EbsGatewayTest extends TestCase
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/EbsGatewayTestData.php';
+
         parent::setUp();
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_ebs_terminal');
@@ -76,7 +77,9 @@ class EbsGatewayTest extends TestCase
         $this->assertEquals('txn_'.$payment['transaction_id'], $txn['id']);
 
         $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
+
         $this->refundPayment($payment['id']);
+
         $refund = $this->getLastEntity('ebs', true);
         $this->assertTestResponse($refund);
     }
@@ -87,9 +90,9 @@ class EbsGatewayTest extends TestCase
 
         $data = $this->testData['testPaymentRefundWithoutCapture'];
 
-        $payment = $this->doauthpayment($payment);
+        $payment = $this->doAuthPayment($payment);
 
-        $payment = $this->getlastentity('payment', true);
+        $payment = $this->getLastEntity('payment', true);
 
         $this->runRequestResponseFlow($data, function() use ($payment) {
             $this->refundpayment($payment['id']);

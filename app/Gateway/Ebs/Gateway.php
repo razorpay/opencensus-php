@@ -146,6 +146,7 @@ class Gateway extends Base\Gateway
             $responseCode = $refundResponse[Resp::ERROR_CODE];
 
             $desc = '';
+
             if (isset(ResponseCode::$reasonCodes[$responseCode]))
             {
                 $desc = ResponseCode::$reasonCodes[$responseCode];

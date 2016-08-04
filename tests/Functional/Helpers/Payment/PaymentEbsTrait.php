@@ -31,8 +31,6 @@ trait PaymentEbsTrait
             ->andReturnUsing(function (& $content)
             {
                 $content = '<output errorCode="29" error="Insufficient balance"/>';
-
-                return $content;
             })->mock();
 
         $this->setMockServer($server);
@@ -44,9 +42,7 @@ trait PaymentEbsTrait
             ->shouldReceive('content')
             ->andReturnUsing(function (& $content)
             {
-                $content = '<output  errorCode="5" />';
-
-                return $content;
+                $content = '<output errorCode="5"/>';
             })->mock();
 
         $this->setMockServer($server);
@@ -59,7 +55,6 @@ trait PaymentEbsTrait
             ->andReturnUsing(function (& $content)
             {
                 $content['IsFlagged'] = 'YES';
-                return $content;
             })->mock();
 
         $this->setMockServer($server);
