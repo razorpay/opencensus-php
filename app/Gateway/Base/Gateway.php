@@ -573,9 +573,9 @@ class Gateway
     protected function getStandardRequestArray($content = [], $method = 'post')
     {
         $request = array(
-            'url' => $this->getUrl(),
-            'method' => $method,
-            'content' => $content,
+            'url'       => $this->getUrl(),
+            'method'    => $method,
+            'content'   => $content,
         );
 
         return $request;

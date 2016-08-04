@@ -6,7 +6,7 @@ use RZP\Models\Bank\IFSC;
 
 class BankCodes
 {
-    public static $bankCodeMap = array(
+    public static $bankCodeMap = [
         IFSC::ANDB => '1378',
         IFSC::UTIB => '1004',
         IFSC::BKID => '1214',
@@ -39,5 +39,16 @@ class BankCodes
         IFSC::VIJB => '1379',
         IFSC::YESB => '1146',
         IFSC::PUNB => '1381',
-    );
+    ];
+
+    public static function getMappedCode($bankCode)
+    {
+        if (isset(self::$bankCodeMap[$bankCode]) === true)
+        {
+            return self::$bankCodeMap[$bankCode];
+        }
+
+        throw new Exception\BadRequestValidationFailureException(
+            'Bank not supported');
+    }
 }

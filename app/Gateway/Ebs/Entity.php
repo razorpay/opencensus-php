@@ -28,13 +28,13 @@ class Entity extends Base\Entity
     const PAYMENT_ID            = 'payment_id';
     const ACCOUNT_ID            = 'account_id';
     const ERROR_CODE            = 'error_code';
+    const IS_FLAGGED            = 'is_flagged';
     const POSTAL_CODE           = 'postal_code';
     const DESCRIPTION           = 'description';
     const PAYMENT_MODE          = 'payment_mode';
     const REFERENCE_ID          = 'reference_id';
     const TRANSACTION_ID        = 'transaction_id';
     const ERROR_DESCRIPTION     = 'error_description';
-    const IS_FLAGGED            = 'is_flagged';
 
     protected $fields = [
         self::STATUS,

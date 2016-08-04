@@ -7,14 +7,14 @@ use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Card;
 use RZP\Gateway\Base;
+use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
-use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\VerifyResult;
-use RZP\Gateway\Ebs\ResponseConstants as Resp;
 use RZP\Gateway\Ebs\RequestConstants as Req;
+use RZP\Gateway\Ebs\ResponseConstants as Resp;
 
 class Gateway extends Base\Gateway
 {
@@ -88,6 +88,8 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment->fill($attributes);
         $gatewayPayment->saveOrFail();
+
+        $responseCode = $input['gateway'][Resp::RESPONSE_CODE];
 
         if ((isset($input['gateway'][Resp::RESPONSE_CODE])) and
             ($input['gateway'][Resp::RESPONSE_CODE] !== Status::SUCCESS))
@@ -365,8 +367,9 @@ class Gateway extends Base\Gateway
         $content = $this->getMappedAttributes($input['gateway']);
 
         $content[Entity::IS_FLAGGED] = false;
-        if ((isset($content[Resp::IS_FLAGGED])) and
-            (strtolower($content[Resp::IS_FLAGGED]) === 'yes'))
+
+        if ((isset($content[Entity::IS_FLAGGED]) === true) and
+            (strtolower($content[Entity::IS_FLAGGED]) === 'yes'))
         {
             $content[Entity::IS_FLAGGED] = true;
         }
@@ -495,13 +498,14 @@ class Gateway extends Base\Gateway
             Req::PAYMENT_MODE  => $this->getPaymentMode($input),
         );
 
-        if ($input['payment']['method'] === Payment\Method::CARD)
-        {
-            $this->setContentForCard($content, $input);
-        }
-        else if ($input['payment']['method'] === Payment\Method::NETBANKING)
+
+        if ($input['payment']['method'] === Payment\Method::NETBANKING)
         {
             $this->setContentForNetBanking($content, $input);
+        }
+        else if ($input['payment']['method'] === Payment\Method::CARD)
+        {
+            $this->setContentForCard($content, $input);
         }
         else
         {
@@ -516,22 +520,21 @@ class Gateway extends Base\Gateway
 
     protected function setContentForCard(&$content, $input)
     {
-        $content[Req::CHANNEL]          = Channel::CARD;
-        $content[Req::NAME_ON_CARD]     = $input['card']['name'];
-        $content[Req::CARD_NUMBER]      = $input['card']['number'];
-        $content[Req::CARD_EXPIRY]      = $this->getExpiry($input);
-        $content[Req::CARD_NETWORK]     = $this->getCardNetwork($input);
-        $content[Req::CARD_CVV]         = $input['card']['cvv'];
+        $content[Req::CHANNEL]       = Channel::CARD;
+        $content[Req::NAME_ON_CARD]  = $input['card']['name'];
+        $content[Req::CARD_NUMBER]   = $input['card']['number'];
+        $content[Req::CARD_EXPIRY]   = $this->getCardExpiry($input);
+        $content[Req::CARD_CVV]      = $input['card']['cvv'];
+        $content[Req::CARD_NETWORK]  = CardNetwork::map($input['card']['network_code']);
     }
 
     protected function setContentForNetBanking(&$content, $input)
     {
-        $content[Req::CHANNEL] = Channel::NETBANKING;
-        $bankId = BankCodes::$bankCodeMap[$input['payment']['bank']];
-        $content[Req::PAYMENT_OPTION] = $bankId;
+        $content[Req::CHANNEL]        = Channel::NETBANKING;
+        $content[Req::PAYMENT_OPTION] = BankCodes::getMappedCode($input['payment']['bank']);
     }
 
-    protected function getExpiry($input)
+    protected function getCardExpiry($input)
     {
         $month = $input['card']['expiry_month'];
         $year = $input['card']['expiry_year'];
@@ -560,46 +563,10 @@ class Gateway extends Base\Gateway
         if (empty($paymentMode) === true)
         {
             throw new Exception\LogicException(
-                'Use Netbanking or Valid Credit/Debit Card');
+                'Invalid payment mode');
         }
 
         return $paymentMode;
-    }
-
-    protected function getCardNetwork($input)
-    {
-        switch ($input['card']['network'])
-        {
-            case Card\Network::VISA:
-                $cardNetwork = CardNetwork::VISA;
-                break;
-
-            case Card\Network::MC:
-                $cardNetwork = CardNetwork::MC;
-                break;
-
-            case Card\Network::MAES:
-                $cardNetwork = CardNetwork::MAES;
-                break;
-
-            case Card\Network::DICL:
-                $cardNetwork = CardNetwork::DICL;
-                break;
-
-            case Card\Network::AMEX:
-                $cardNetwork = CardNetwork::AMEX;
-                break;
-
-            case Card\Network::JCB:
-                $cardNetwork = CardNetwork::JCB;
-                break;
-
-            default:
-                throw new Exception\BadRequestValidationFailureException(
-                    'Card Network not supported');
-        }
-
-        return $cardNetwork;
     }
 
     protected function getUrlDomain()
@@ -616,9 +583,9 @@ class Gateway extends Base\Gateway
         return parent::getUrlDomain();
     }
 
-    protected function validateCallbackGetSecureHash(array $input, $terminal)
+    protected function validateCallbackGetSecureHash(array $content, $terminal)
     {
-        $hash = $input[Resp::SECURE_HASH];
+        $hash = $content[Resp::SECURE_HASH];
 
         if (empty($hash))
         {
@@ -627,9 +594,9 @@ class Gateway extends Base\Gateway
         }
 
         // Remove secureHash Value to calculate Expected Hash Value
-        unset($input[Resp::SECURE_HASH]);
+        unset($content[Resp::SECURE_HASH]);
 
-        $expectedHash = $this->getSecureHash($input, $terminal);
+        $expectedHash = $this->getSecureHash($content, $terminal);
 
         if ($hash !== $expectedHash)
         {
@@ -655,8 +622,10 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getMappedAttributes($response);
 
-        if ((isset($response[Resp::API_IS_FLAGGED])) and
-            (strtolower($response[Resp::API_IS_FLAGGED]) === 'yes'))
+        $attributes[Entity::IS_FLAGGED] = false;
+
+        if ((isset($response[Entity::IS_FLAGGED]) === true) and
+            (strtolower($response[Entity::IS_FLAGGED]) === 'yes'))
         {
             $attributes[Entity::IS_FLAGGED] = true;
         }
@@ -667,16 +636,14 @@ class Gateway extends Base\Gateway
 
         $attributes[Entity::RECEIVED] = true;
 
+        $attributes[Entity::STATUS] = Status::REFUNDED;
+
         if ((isset($response[Resp::RESPONSE]) === false) or
             ($response[Resp::RESPONSE] !== Status::API_SUCCESS))
         {
-            $attributes[Entity::ERROR_CODE] = $response[Resp::ERROR_CODE];
+            $attributes[Entity::ERROR_CODE]        = $response[Resp::ERROR_CODE];
             $attributes[Entity::ERROR_DESCRIPTION] = $response[Resp::ERROR];
-            $attributes[Entity::STATUS] = Status::REFUND_FAILED;
-        }
-        else
-        {
-            $attributes[Entity::STATUS] = Status::REFUNDED;
+            $attributes[Entity::STATUS]            = Status::REFUND_FAILED;
         }
 
         return $attributes;

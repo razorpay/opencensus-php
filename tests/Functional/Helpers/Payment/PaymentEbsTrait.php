@@ -14,14 +14,11 @@ trait PaymentEbsTrait
         $mock = $this->isGatewayMocked();
 
         list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
+
         if ($mock)
         {
             $request = $this->makeFirstGatewayPaymentMockRequest(
                                                     $url, $method, $content);
-        }
-        else
-        {
-            ;
         }
 
         return $this->submitPaymentCallbackRequest($request);
@@ -33,7 +30,8 @@ trait PaymentEbsTrait
             ->shouldReceive('content')
             ->andReturnUsing(function (& $content)
             {
-                $content = '<output  errorCode="29"  error="Insufficient balance"  />';
+                $content = '<output errorCode="29" error="Insufficient balance"/>';
+
                 return $content;
             })->mock();
 
