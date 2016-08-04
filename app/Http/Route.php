@@ -165,7 +165,7 @@ final class Route
         'mockatom_rzp_payment'                    => ['post',     'gateway/mockanb/payment',                  'MockGatewayController@postAtomRzpPayment'                          ],
         'mockatom_rzp_payment_submit'             => ['post',     'gateway/mockanb/payment/submit',           'MockGatewayController@postAtomRzpPaymentSubmit'                    ],
         'mock_axis_migs_payment'                  => ['post',     'gateway/mockaxismigs/payment',             'MockGatewayController@postAxisPayment'                             ],
-        'mock_first_data_payment'                 => ['post',     'gateway/mockfirstdatamigs/payment',        'MockGatewayController@postFirstDataPayment'                        ],
+        'mock_first_data_payment'                 => ['post',     'gateway/mockfirstdata/payment',            'MockGatewayController@postFirstDataPayment'                        ],
         'mock_axis_genius_payment'                => ['post',     'gateway/mockaxisgenius/payment',           'MockGatewayController@postAxisGeniusPayment'                       ],
         'mock_kotak_payment'                      => ['get',      'gateway/mockkotak/payment',                'MockGatewayController@getKotakPayment'                             ],
         'mock_paytm_payment'                      => ['post',     'gateway/mockpaytm/payment',                'MockGatewayController@postPaytmPayment'                            ],

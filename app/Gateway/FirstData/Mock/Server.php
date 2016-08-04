@@ -45,7 +45,6 @@ class Server extends Base\Mock\Server
             FirstData\Entity::FAIL_REASON               => '',
             FirstData\Entity::PROCESSOR_RESPONSE_CODE   => '',
             FirstData\Entity::FAIL_RC                   => '',
-            FirstData\Entity::TERMINAL_ID               => '',
             FirstData\Entity::CCBIN                     => '',
             FirstData\Entity::CCCOUNTRY                 => '',
             FirstData\Entity::CCBRAND                   => '',
