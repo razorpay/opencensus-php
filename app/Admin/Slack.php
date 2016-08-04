@@ -125,10 +125,10 @@ class Slack
         // Another approach is to search by email address
         preg_match(static::EMAIL_REGEX, $message, $matches);
 
-        if (isset($matches[1]))
+        if (isset($matches[0]))
         {
             // We have an email address
-            $email = $matches[1];
+            $email = $matches[0];
             $params = [
                 'count' =>  1,
                 'email' =>  $email

@@ -22,7 +22,7 @@ class Admin extends Entity
         return $this->request('GET', $relativeUrl);
     }
 
-    public function fetchMultipleEntities($entity, $options = array())
+    public function fetchMultipleEntities($entity, $options = [])
     {
         $relativeUrl = $this->getEntityUrl().$entity;
 
