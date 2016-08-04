@@ -131,7 +131,7 @@ trait Callback
 
         try
         {
-            $data = $this->callGatewayCallback($payment, $input);
+            $data = $this->callGatewayCallback($input);
         }
         catch (Exception\BaseException $e)
         {
@@ -143,7 +143,7 @@ trait Callback
         $this->updateAndNotifyPaymentAuthorized();
     }
 
-    protected function callGatewayCallback($payment, $input)
+    protected function callGatewayCallback($input)
     {
         // TODO: Refactor
         if ((isset($input['gateway']['type'])) and
@@ -226,8 +226,7 @@ trait Callback
 
         if (Error\Error::hasAction($code) === false)
         {
-            $this->updatePaymentFailed(
-                $e, TraceCode::PAYMENT_AUTH_FAILURE);
+            $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
         }
         else
         {

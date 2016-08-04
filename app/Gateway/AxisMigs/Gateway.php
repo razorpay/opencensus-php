@@ -648,11 +648,9 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
-    protected function throwException($code, $gatewayErrorCode, $gatewayErrorDesc,
-        $threeDSstatus = null)
+    protected function throwException($code, $gatewayErrorCode, $gatewayErrorDesc, $threeDSstatus = null)
     {
-        $e = new Exception\GatewayErrorException($code, $gatewayErrorCode,
-                    $gatewayErrorDesc);
+        $e = new Exception\GatewayErrorException($code, $gatewayErrorCode, $gatewayErrorDesc);
 
         if (ThreeDSecureStatus::is3DSecureFailed($threeDSstatus) === true)
         {
