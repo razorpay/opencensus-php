@@ -22,7 +22,6 @@ class Entity extends Base\PublicEntity
     protected $fillable = array(
         self::ID,
         self::CAMPAIGN,
-        self::MERCHANT_ID,
         self::VALUE,
         self::NOTES,
     );
@@ -45,10 +44,15 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = array(
         self::NOTES             => [],
-        self::VALUE           => 0,
+        self::VALUE             => 0,
         self::CAMPAIGN          => null,
     );
 
+    // Casts the attributes to native types
+    protected $casts = [
+        'value'                 => 'integer',
+        'campaign'              => 'string',
+    ];
 
 // --------------------- Setters -------------------------------------------
 
@@ -68,7 +72,7 @@ class Entity extends Base\PublicEntity
 
     public function getValue()
     {
-        return (int) $this->getAttribute(self::VALUE);
+        return $this->getAttribute(self::VALUE);
     }
 
 // --------------------- End Getters -----------------------------------------

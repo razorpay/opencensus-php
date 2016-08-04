@@ -14,6 +14,7 @@ class CreditsTest extends TestCase
     {
         $this->testDataFilePath = __DIR__.'/helpers/CreditsData.php';
         parent::setUp();
+
         $merchantId = '10000000000000';
         $merchant = (new Merchant\Repository)->findOrFailPublic($merchantId);
         $balance = (new Merchant\Balance\Repository)->editMerchantFreeCredits($merchant, 150);
@@ -49,10 +50,14 @@ class CreditsTest extends TestCase
         // ID 123 is given in the data so it should match
         $assignedCredits = 150;
         $opCredits = $this->testData[__FUNCTION__]['request']['content']['value'];
-        $creditsLog = $this->fixtures->create('credits', ['id' => '123', 'value' => $assignedCredits]);
+        $creditsLog = $this->fixtures->create(
+            'credits',
+            ['id' => '123', 'value' => $assignedCredits]);
+
         $merchant = $creditsLog->merchant;
         $balance = (new Merchant\Balance\Repository)->getMerchantBalance($merchant);
         $oldBalanceCredits = $balance->getCredits();
+
         $this->startTest();
 
         // Assert If CreditsLog is updated
@@ -68,10 +73,14 @@ class CreditsTest extends TestCase
         // ID 123 is given in the data so it should match
         $assignedCredits = 150;
         $opCredits = $this->testData[__FUNCTION__]['request']['content']['value'];
-        $creditsLog = $this->fixtures->create('credits', ['id' => '123', 'value' => $assignedCredits]);
+        $creditsLog = $this->fixtures->create(
+            'credits',
+            ['id' => '123', 'value' => $assignedCredits]);
+
         $balance = (new Merchant\Balance\Repository)->getMerchantBalance($creditsLog->merchant);
         $merchant = $creditsLog->merchant;
         $oldBalanceCredits = $balance->getCredits();
+
         $this->startTest();
 
         $creditsLog = $this->getEntityById('credits', '123', true);
@@ -83,20 +92,24 @@ class CreditsTest extends TestCase
     public function testFailDeductCredits()
     {
         // ID 123 is given in the data so it should match
-        $creditsLog = $this->fixtures->create('credits', ['id' => '123', 'value' => 190]);
+        $creditsLog = $this->fixtures->create(
+            'credits', ['id' => '123', 'value' => 190]);
         $this->startTest();
     }
 
     public function testFailDeductCreditsCampaign()
     {
         // id 123 is given in the data so it should match
-        $creditslog = $this->fixtures->create('credits', ['id' => '123', 'value' => 90]);
+        $creditslog = $this->fixtures->create(
+            'credits', ['id' => '123', 'value' => 90]);
         $this->startTest();
     }
 
     public function testCreditsGrantedInCampaign()
     {
-        $this->fixtures->create('credits', ['id' => '123', 'value' => 90, 'campaign' => 'noisy-ads']);
+        $this->fixtures->create(
+            'credits',
+            ['id' => '123', 'value' => 90, 'campaign' => 'noisy-ads']);
         $this->fixtures->create('credits', ['id' => '124', 'value' => 90]);
         $this->fixtures->create('credits', ['id' => '125', 'value' => 90]);
 

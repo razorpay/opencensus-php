@@ -21,7 +21,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'value' => '25',
+                'value' => 25,
                 'notes' => [
                     'referred_party' => 'asd',
                 ],

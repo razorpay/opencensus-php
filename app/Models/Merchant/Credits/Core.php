@@ -18,7 +18,7 @@ class Core extends Base\Core
 
     public function create($merchant, $input)
     {
-        return $this->repo->transaction(function() use($merchant, $input)
+        return $this->repo->transaction(function() use ($merchant, $input)
         {
             $creditsLog = (new Credits\Entity)->build($input);
             $creditsLog->merchant()->associate($merchant);
@@ -30,17 +30,17 @@ class Core extends Base\Core
         });
     }
 
-    public function updateCreditsInMerchantAccount($merchant, $credits, $op='grant')
+    public function updateCreditsInMerchantAccount($merchant, $credits, $operation = 'grant')
     {
         // Add the credits to merchant's main balance
-        $merchantBalance = $this->repo->balance->getMerchantBalance($merchant);
-        if($op === 'grant')
+        $merchantBalance = $merchant->balance->getCredits();
+        if ($operation === 'grant')
         {
-            $newCredits = $merchantBalance->getCredits() + $credits;
+            $newCredits = $merchantBalance + $credits;
         }
-        else if($op === 'deduct')
+        else if ($operation === 'deduct')
         {
-            $newCredits = $merchantBalance->getCredits() - $credits;
+            $newCredits = $merchantBalance - $credits;
         }
         $this->repo->balance->editMerchantFreeCredits($merchant, $newCredits);
     }
@@ -50,8 +50,7 @@ class Core extends Base\Core
      */
     public function grantCredits($creditsLog, $credits)
     {
-
-        return $this->repo->transaction(function() use($creditsLog, $credits)
+        return $this->repo->transaction(function() use ($creditsLog, $credits)
         {
             // Update the creditsLog
             $creditsLog->addCredits($credits);
@@ -73,11 +72,11 @@ class Core extends Base\Core
         // Make it to absolute value to make cmp easier. Dev may not send abs values everytime.
         $credits = abs($credits);
         $merchant = $creditsLog->merchant;
-        $merchantBalance = $this->repo->balance->getmerchantbalance($merchant);
+        $merchantBalance = $this->repo->balance->getMerchantBalance($merchant);
 
         Credits\Validator::validateCreditsForDeduction($creditsLog, $merchantBalance, $credits);
 
-        return $this->repo->transaction(function() use($merchant, $creditsLog, $credits)
+        return $this->repo->transaction(function() use ($merchant, $creditsLog, $credits)
         {
 
             $creditsLog->deductCredits($credits);

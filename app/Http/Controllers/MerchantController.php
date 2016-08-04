@@ -557,36 +557,36 @@ class MerchantController extends Controller
 
 // --------------------- Credits API Handlers -----------------------------------------
 
-    public function postCreateCreditsLog($id)
+    public function postCreateCreditsLog(Credits\Service $service, $id)
     {
         $input = Request::all();
 
-        $data = (new Credits\Service)->grantCreditsForMerchantInCampaign($id, $input);
+        $data = $service->grantCreditsForMerchantInCampaign($id, $input);
 
         return ApiResponse::json($data);
     }
 
-    public function getCreditsLog($mid, $id)
+    public function getCreditsLog(Credits\Service $service, $mid, $id)
     {
-        $data = (new Credits\Service)->fetchCreditsLog($mid, $id);
+        $data = $service->fetchCreditsLog($mid, $id);
 
         return ApiResponse::json($data);
     }
 
-    public function putCreditsLog($mid, $id)
+    public function putCreditsLog(Credits\Service $service, $mid, $id)
     {
         $input = Request::all();
 
-        $data = (new Credits\Service)->updateCreditsLog($mid, $id, $input);
+        $data = $service->updateCreditsLog($mid, $id, $input);
 
         return ApiResponse::json($data);
     }
 
-    public function getCreditsLogs()
+    public function getCreditsLogs(Credits\Service $service)
     {
         $input = Request::all();
 
-        $data = (new Credits\Service)->fetchMultiple($input);
+        $data = $service->fetchMultiple($input);
 
         return ApiResponse::json($data);
     }

@@ -30,7 +30,7 @@ class Service extends Base\Service
     public function fetchCreditsLog($mid, $id)
     {
         // Raises Exception if record does not exist.
-        $creditsLog = $this->repo->credits->findByIdAndMerchantId($mid, $id);
+        $creditsLog = $this->repo->credits->findByIdAndMerchantIdOrFail($mid, $id);
 
         return $creditsLog->toArrayPublic();
     }
