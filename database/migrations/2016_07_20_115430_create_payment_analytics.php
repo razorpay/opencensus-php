@@ -20,8 +20,7 @@ class CreatePaymentAnalytics extends Migration
         Schema::create(Table::PAYMENT_ANALYTICS, function(Blueprint $table) {
             $table->engine = 'InnoDB';
 
-            $table->char(Analytics::ID, Analytics::ID_LENGTH)
-                ->primary();
+            $table->increments(Analytics::ID);
 
             $table->char(Analytics::PAYMENT_ID, Analytics::ID_LENGTH);
 

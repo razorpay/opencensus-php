@@ -9,9 +9,9 @@ use RZP\Models\Terminal;
 
 class Service extends Base\Service
 {
-    public function createAction($id, $input)
+    public function createAction($gateway, $input)
     {
-        $action = $this->repo->terminal_action->createAction($id, $input);
+        $action = (new Action\Core)->create($input, $gateway);
 
         return $action->toArrayPublic();
     }

@@ -19,8 +19,7 @@ class CreateTerminalAbsence extends Migration
         Schema::create(Table::TERMINAL_ABSENCE, function(Blueprint $table) {
             $table->engine = 'InnoDB';
 
-            $table->char(DowntimeTrace::ID, DowntimeTrace::ID_LENGTH)
-                ->primary();
+            $table->increments(DowntimeTrace::ID);
 
             $table->string(DowntimeTrace::GATEWAY);
 

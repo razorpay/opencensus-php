@@ -20,8 +20,7 @@ class CreateTerminalActionLogs extends Migration
         Schema::create(Table::TERMINAL_ACTION, function(Blueprint $table) {
             $table->engine = 'InnoDB';
 
-            $table->char(Action::ID, Action::ID_LENGTH)
-                ->primary();
+            $table->increments(Action::ID);
 
             $table->char(Action::TERMINAL_ID, Action::ID_LENGTH);
 
