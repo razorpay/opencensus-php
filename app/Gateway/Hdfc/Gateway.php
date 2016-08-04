@@ -632,7 +632,7 @@ class Gateway extends Base\Gateway
 
 // -------------------------Exceptions -----------------------------------------
 
-    protected function throwGatewayTimeoutException($code, $safe_retry = false)
+    protected function throwGatewayTimeoutException($code, $safeRetry = false)
     {
         $msg = null;
         $e = null;
@@ -647,7 +647,7 @@ class Gateway extends Base\Gateway
             $msg = ErrorCode::$errorMessages[$code];
         }
 
-        $exception = new Exception\GatewayTimeoutException($msg, $e, $safe_retry);
+        $exception = new Exception\GatewayTimeoutException($msg, $e, $safeRetry);
 
         $desc = Hdfc\ErrorCode::$errorMessages[$code];
 
@@ -658,14 +658,14 @@ class Gateway extends Base\Gateway
         throw $exception;
     }
 
-    protected function throwException($error, $safe_retry = false)
+    protected function throwException($error, $safeRetry = false)
     {
         $gatewayErrorCode = $error['code'];
 
         if (($gatewayErrorCode === Hdfc\ErrorCode::RP00003) or
             ($gatewayErrorCode === Hdfc\ErrorCode::RP00004))
         {
-            $this->throwGatewayTimeoutException($gatewayErrorCode, $safe_retry);
+            $this->throwGatewayTimeoutException($gatewayErrorCode, $safeRetry);
         }
 
         $gatewayErrorDesc = $error['text'];

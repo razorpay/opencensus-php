@@ -31,18 +31,11 @@ class Entity extends Base\PublicEntity
 
     protected $table = \RZP\Constants\Table::TERMINAL_ABSENCE;
 
-    protected $generateIdOnCreate = true;
-
     protected $entity = 'terminal_absence';
 
     protected static $sign = '';
 
     protected static $delimiter = '';
-
-    //protected static $generators = array(self::ID, self::GATEWAY,
-    //                                     self::DOWNTIME_FROM, self::DOWNTIME_TO,
-    //                                     self::CREATED_AT, self::UPDATED_AT
-    //                                    );
 
     public function getGateway()
     {

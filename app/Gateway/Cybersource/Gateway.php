@@ -1120,12 +1120,12 @@ class Gateway extends Base\Gateway
      * @throws Exception\GatewayTimeoutException
      * @throws Exception\RuntimeException
      */
-    protected function handleSoapFault(SoapFault $sf, $errMsg, $safe_retry = false)
+    protected function handleSoapFault(SoapFault $sf, $errMsg, $safeRetry = false)
     {
         if (Utility::checkSoapTimeout($sf) === true)
         {
             throw new Exception\GatewayTimeoutException(
-                                $sf->getMessage(), $sf, $safe_retry);
+                                $sf->getMessage(), $sf, $safeRetry);
         }
 
         throw new Exception\RuntimeException(

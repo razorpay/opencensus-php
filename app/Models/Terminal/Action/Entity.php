@@ -41,15 +41,11 @@ class Entity extends Base\PublicEntity
 
     protected $table = \RZP\Constants\Table::TERMINAL_ACTION;
 
-    protected $generateIdOnCreate = true;
-
     protected $entity = 'terminal_action';
 
     protected static $sign = '';
 
     protected static $delimiter = '';
-
-    //protected static $generators = array(self::ID, self::TERMINAL_ID, self::ACTION);
 
     public function getTerminalId()
     {
