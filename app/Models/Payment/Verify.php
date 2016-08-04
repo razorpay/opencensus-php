@@ -10,13 +10,10 @@ use RZP\Models\Transaction;
 use RZP\Exception;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use RZP\Services\SlackPoster;
 use App;
 
 class Verify
 {
-    use SlackPoster;
-
     const MIN_TIME_BEFORE_VERIFY = 120; // 2 minutes
 
     const SUCCESS       = 'success';
@@ -34,9 +31,14 @@ class Verify
         $app = App::getFacadeRoot();
 
         $this->mode = $mode;
+
         $this->trace = $trace;
+
         $this->core = new Payment\Core;
+
         $this->paymentRepo = $app['repo']->payment;
+
+        $this->app = $app;
     }
 
     public function verifyPaymentsWithFilter($filter)
@@ -168,7 +170,7 @@ class Verify
         {
             // Drop all false values (NULL, 0, "")
             $slackArray = array_filter($results);
-            $this->slackPost($message, $slackArray, ['channel' => '#tech_logs']);
+            $this->app['slack']->queue($message, $slackArray, ['channel' => '#tech_logs']);
         }
 
         return $results;

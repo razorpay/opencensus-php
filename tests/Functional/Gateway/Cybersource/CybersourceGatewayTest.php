@@ -80,6 +80,18 @@ class CybersourceGatewayTest extends TestCase
         });
     }
 
+    public function testGatewayTimeoutError()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '41476700000006';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testGatewayWithSavedCard()
     {
         $payment = $this->getDefaultPaymentArray();

@@ -36,7 +36,7 @@ class DailyFiles
         $amount['total'] = $claimsAmount - $refundAmount;
 
         // Send the mail only when amount of refunds is greater than zero
-        if ($amount['refunds'] > 0)
+        if ($amount['refunds'] + $amount['claims']> 0)
         {
             $this->sendMail($amount, $claimsFile, $refundsFile);
         }
@@ -81,7 +81,7 @@ class DailyFiles
 
     protected function getClaimsData($from, $to)
     {
-        $status = [Payment\Status::CAPTURED, Payment\Status::REFUNDED];
+        $status = [Payment\Status::AUTHORIZED, Payment\Status::CAPTURED, Payment\Status::REFUNDED];
 
         $claims = (new Payment\Repository)->
                         fetchPaymentsWithStatus($from, $to, $this->gateway, $status);

@@ -117,7 +117,7 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::CAVV);
     }
 
-    public function getAuthData()
+    public function getAuthCode()
     {
         return $this->getAttribute(self::AUTH_DATA);
     }
