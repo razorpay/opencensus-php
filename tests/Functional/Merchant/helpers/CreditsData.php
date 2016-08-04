@@ -7,12 +7,12 @@ use RZP\Error\PublicErrorDescription;
 
 return [
 
-    'testCreateFreeCreditsLog' => [
+    'testCreateCreditsLog' => [
         'request' => [
-            'url' => '/merchants/10000000000000/free_credits/',
+            'url' => '/merchants/10000000000000/credits_log/',
             'method' => 'post',
             'content' => [
-                'credits' => 25,
+                'value' => 25,
                 'notes' => [
                     'referred_party' => 'asd',
                 ],
@@ -21,7 +21,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'credits' => '25',
+                'value' => '25',
                 'notes' => [
                     'referred_party' => 'asd',
                 ],
@@ -30,28 +30,12 @@ return [
         ],
     ],
 
-    'testGetFreeCreditsLog' => [
+    'testCreditsLogAlreadyExists' => [
         'request' => [
-            'url' => '/merchants/10000000000000/free_credits/123',
-            'method' => 'get',
-        ],
-        'response' => [
-            'content' => [
-                'id' => '123',
-                'credits' => 90,
-                'notes' => [],
-                'merchant_id'=> '10000000000000',
-                'campaign' => 'silent-ads',
-            ],
-        ],
-    ],
-
-    'testFreeCreditsLogAlreadyExists' => [
-        'request' => [
-            'url' => '/merchants/10000000000000/free_credits/',
+            'url' => '/merchants/10000000000000/credits_log/',
             'method' => 'post',
             'content' => [
-                'credits' => 25,
+                'value' => 25,
                 'notes' => [
                     'referred_party' => 'asd',
                 ],
@@ -73,50 +57,46 @@ return [
         ],
     ],
 
-    'testGrantFreeCredits' => [
+    'testGrantCredits' => [
         'request' => [
-            'url' => '/merchants/10000000000000/free_credits/123/',
+            'url' => '/merchants/10000000000000/credits/123/',
             'method' => 'put',
             'content' => [
-                'credits' => 120,
+                'value' => 120,
             ],
         ],
         'response' => [
             'content' => [
-                'id' => '123',
-                'merchant_id' => '10000000000000',
-                'credits' => 270,
+                'value' => 270,
                 'campaign' => 'silent-ads',
             ],
             'status_code' => 200,
         ],
     ],
 
-    'testDeductFreeCredits' => [
+    'testDeductCredits' => [
         'request' => [
-            'url' => '/merchants/10000000000000/free_credits/123/',
+            'url' => '/merchants/10000000000000/credits/123/',
             'method' => 'put',
             'content' => [
-                'credits' => -50,
+                'value' => -50,
             ]
         ],
         'response' => [
             'content' => [
-                'id' => '123',
-                'merchant_id' => '10000000000000',
-                'credits' => 100,
+                'value' => 100,
                 'campaign' => 'silent-ads',
             ],
             'status_code' => 200,
         ],
     ],
 
-    'testFailDeductFreeCredits' => [
+    'testFailDeductCredits' => [
         'request' => [
-            'url' => '/merchants/10000000000000/free_credits/123/',
+            'url' => '/merchants/10000000000000/credits/123/',
             'method' => 'put',
             'content' => [
-                'credits' => -170,
+                'value' => -170,
             ]
         ],
         'response' => [
@@ -133,12 +113,12 @@ return [
         ],
     ],
 
-    'testFailDeductFreeCreditsCampaign' => [
+    'testFailDeductCreditsCampaign' => [
         'request' => [
-            'url' => '/merchants/10000000000000/free_credits/123/',
+            'url' => '/merchants/10000000000000/credits/123/',
             'method' => 'put',
             'content' => [
-                'credits' => -150,
+                'value' => -150,
             ]
         ],
         'response' => [
@@ -155,9 +135,9 @@ return [
         ],
     ],
 
-    'testFreeCreditsGrantedInCampaign' => [
+    'testCreditsGrantedInCampaign' => [
         'request' => [
-            'url' => '/free_credits?campaign=silent-ads',
+            'url' => '/credits?campaign=silent-ads',
             'method' => 'get',
         ],
         'response' => [
@@ -166,17 +146,13 @@ return [
 				'count' => 2,
 				'items' => [
                     [
-						'id' => "125",
 						'campaign' => "silent-ads",
-						'merchant_id' => "10000000000000",
-						'credits' => 90,
+						'value' => 90,
 						'notes' => [],
 					],
                     [
-                        'id' => "124",
                         'campaign' => "silent-ads",
-                        'merchant_id' => "10000000000000",
-                        'credits' => 90,
+                        'value' => 90,
                         'notes' => [],
 				    ],
 			    ],
@@ -185,9 +161,9 @@ return [
         ],
     ],
 
-    'testFreeCreditsGrantedToMerchant' => [
+    'testCreditsGrantedToMerchant' => [
         'request' => [
-            'url' => '/free_credits/',
+            'url' => '/credits/',
             'method' => 'get',
         ],
         'response' => [
@@ -196,10 +172,8 @@ return [
 				'count' => 1,
 				'items' => [
                     [
-						'id' => "125",
 						'campaign' => "silent-ads",
-						'merchant_id' => "10000000000000",
-						'credits' => 90,
+						'value' => 90,
 						'notes' => [],
 					],
 			    ],

@@ -37,7 +37,7 @@ class Entity
     const BANK_ACCOUNT          = 'bank_account';
     const DAILY_SETTLEMENT      = 'daily_settlement';
     const SETTLEMENT_DETAILS    = 'settlement_details';
-    const FREE_CREDITS          = 'free_credits';
+    const CREDITS               = 'credits';
 
     //
     // Gateway entities
@@ -91,7 +91,7 @@ class Entity
         self::NETBANKING_KOTAK      => \RZP\Gateway\Netbanking\Kotak::class,
         self::WALLET_PAYUMONEY      => \RZP\Gateway\Wallet\Payumoney::class,
         self::SETTLEMENT_DETAILS    => \RZP\Models\Settlement\Details::class,
-        self::FREE_CREDITS          => \RZP\Models\Merchant\FreeCredits::class,
+        self::CREDITS               => \RZP\Models\Merchant\Credits::class,
     );
 
     protected static $repository = array(

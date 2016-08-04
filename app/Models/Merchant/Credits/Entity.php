@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Merchant\FreeCredits;
+namespace RZP\Models\Merchant\Credits;
 
 use RZP\Models\Base;
 use RZP\Models\Base\Traits\NotesTrait;
@@ -12,18 +12,18 @@ class Entity extends Base\PublicEntity
     const ID                        = 'id';
     const CAMPAIGN                  = 'campaign';
     const MERCHANT_ID               = 'merchant_id';
-    const CREDITS                   = 'credits';
+    const VALUE                     = 'value';
     const NOTES                     = 'notes';
 
-    protected $entity               = 'free_credits';
+    protected $entity               = 'credits';
 
-    protected $table                = \RZP\Constants\Table::FREE_CREDITS;
+    protected $table                = \RZP\Constants\Table::CREDITS;
 
     protected $fillable = array(
         self::ID,
         self::CAMPAIGN,
         self::MERCHANT_ID,
-        self::CREDITS,
+        self::VALUE,
         self::NOTES,
     );
 
@@ -31,15 +31,13 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::CAMPAIGN,
         self::MERCHANT_ID,
-        self::CREDITS,
+        self::VALUE,
         self::NOTES,
     );
 
     protected $public = array(
-        self::ID,
         self::CAMPAIGN,
-        self::MERCHANT_ID,
-        self::CREDITS,
+        self::VALUE,
         self::NOTES,
     );
 
@@ -47,7 +45,7 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = array(
         self::NOTES             => [],
-        self::CREDITS           => 0,
+        self::VALUE           => 0,
         self::CAMPAIGN          => null,
     );
 
@@ -59,18 +57,18 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CAMPAIGN, $campaignName);
     }
 
-    public function setCredits($credits)
+    public function setValue($value)
     {
-        $this->setAttribute(self::CREDITS, $credits);
+        $this->setAttribute(self::VALUE, $value);
     }
 
 // --------------------- End Setters -----------------------------------------
 
 // --------------------- Getters -----------------------------------------
 
-    public function getCredits()
+    public function getValue()
     {
-        return $this->getAttribute(self::CREDITS);
+        return (int) $this->getAttribute(self::VALUE);
     }
 
 // --------------------- End Getters -----------------------------------------
@@ -79,15 +77,18 @@ class Entity extends Base\PublicEntity
 
     public function addCredits($credits)
     {
-        $credits = $this->getCredits() + $credits;
-        $this->setCredits($credits);
+        $credits = $this->getValue() + $credits;
+
+        $this->setValue($credits);
     }
 
     public function deductCredits($credits)
     {
-        $credits = $this->getCredits() - $credits;
-        $this->setCredits($credits);
+        $credits = $this->getValue() - $credits;
+
+        $this->setValue($credits);
     }
+
 // --------------------- End Modifiers ---------------------------------------
 
 // --------------------- Foreign Key Relations -------------------------------

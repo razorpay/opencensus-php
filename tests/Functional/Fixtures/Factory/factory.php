@@ -266,10 +266,10 @@ $factory(\RZP\Models\Customer\AppToken\Entity::class, [
     'merchant_id'  => '10000000000000'
 ]);
 
-$factory(\RZP\Models\Merchant\FreeCredits\Entity::class, [
+$factory(\RZP\Models\Merchant\Credits\Entity::class, [
     'id'            => $faker->randomNumber(5),
     'merchant_id'   => '10000000000000',
-    'credits'       => 140,
+    'value'         => 140,
     'campaign'      => 'silent-ads',
     'notes'         => null,
 ]);

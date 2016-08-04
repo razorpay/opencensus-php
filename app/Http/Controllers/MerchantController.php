@@ -5,7 +5,7 @@ namespace RZP\Http\Controllers;
 use RZP\Constants\Mode;
 use RZP\Http\ApiResponse;
 use RZP\Models\Merchant;
-use RZP\Models\Merchant\FreeCredits;
+use RZP\Models\Merchant\Credits;
 use RZP\Models\Terminal;
 use RZP\Models\Key;
 use Request;
@@ -555,52 +555,41 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-// --------------------- FreeCredits API Handlers -----------------------------------------
+// --------------------- Credits API Handlers -----------------------------------------
 
-    public function postCreateFreeCreditsLog($id)
+    public function postCreateCreditsLog($id)
     {
         $input = Request::all();
-        $data = (new FreeCredits\Service)->grantFreeCreditsForMerchantInCampaign($id, $input);
+
+        $data = (new Credits\Service)->grantCreditsForMerchantInCampaign($id, $input);
 
         return ApiResponse::json($data);
     }
 
-    public function getFreeCreditsLog($mid, $id)
+    public function getCreditsLog($mid, $id)
     {
-        $data = (new FreeCredits\Service)->fetchFreeCreditsLog($mid, $id);
+        $data = (new Credits\Service)->fetchCreditsLog($mid, $id);
 
         return ApiResponse::json($data);
     }
 
-    public function putFreeCreditsLog($mid, $id)
-    {
-        $input = Request::all();
-        $data = (new FreeCredits\Service)->updateFreeCreditsLog($mid, $id, $input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function getFreeCreditsGrantedInCampaign($campaign)
-    {
-        $data = (new FreeCredits\Service)->fetchFreeCreditsGrantedInCampaign($campaign);
-
-        return ApiResponse::json($data);
-    }
-
-    public function getFreeCreditsGrantedToMerchant($mid)
-    {
-        $data = (new FreeCredits\Service)->fetchFreeCreditsGrantedToMerchant($mid);
-
-        return ApiResponse::json($data);
-    }
-
-    public function getFreeCreditsLogs()
+    public function putCreditsLog($mid, $id)
     {
         $input = Request::all();
-        $data = (new FreeCredits\Service)->fetchMultiple($input);
+
+        $data = (new Credits\Service)->updateCreditsLog($mid, $id, $input);
 
         return ApiResponse::json($data);
     }
 
-// --------------------- End FreeCredits API Handlers -----------------------------------------
+    public function getCreditsLogs()
+    {
+        $input = Request::all();
+
+        $data = (new Credits\Service)->fetchMultiple($input);
+
+        return ApiResponse::json($data);
+    }
+
+// --------------------- End Credits API Handlers -----------------------------------------
 }

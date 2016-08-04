@@ -46,7 +46,7 @@ class Base
         'settlement'    => \RZP\Models\Settlement\Entity::class,
         'transaction'   => \RZP\Models\Transaction\Entity::class,
         'bank_account'  => \RZP\Models\Merchant\BankAccount\Entity::class,
-        'free_credits'  => \RZP\Models\Merchant\FreeCredits\Entity::class,
+        'credits'       => \RZP\Models\Merchant\Credits\Entity::class,
     );
 
     protected static $liveAndTest = array(
