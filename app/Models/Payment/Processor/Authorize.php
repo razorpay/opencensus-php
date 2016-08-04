@@ -179,13 +179,13 @@ trait Authorize
         $options = $this->getOptionsForTerminals();
 
         // Terminal picked is the terminal used for payment processing.
-        $terminalPicked = (new TerminalPicker)->selectTerminal($payment, $this->mode, $options);
+        //$terminalPicked = (new TerminalPicker)->selectTerminal($payment, $this->mode, $options);
 
         $terminalSelector = new Terminal\Selector($payment, $this->mode);
 
         $terminalSelected = $terminalSelector->select($options);
 
-        $this->logTerminalPickedAndSelected($terminalSelected, $terminalPicked, $payment);
+        //$this->logTerminalPickedAndSelected($terminalSelected, $terminalPicked, $payment);
 
         $this->runPaymentGatewayRelatedPreProcessing($payment, $gatewayInput);
 
