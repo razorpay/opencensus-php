@@ -67,6 +67,7 @@ return [
         ],
         'response' => [
             'content' => [
+                'id' => 123,
                 'value' => 270,
                 'campaign' => 'silent-ads',
             ],
@@ -84,6 +85,7 @@ return [
         ],
         'response' => [
             'content' => [
+                'id' => 123,
                 'value' => 100,
                 'campaign' => 'silent-ads',
             ],
@@ -181,6 +183,4 @@ return [
             'status_code' => 200,
         ],
     ],
-
-    // Test for proxy auth access to GET for free credit logs.
 ];

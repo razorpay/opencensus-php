@@ -55,7 +55,7 @@ class Service extends Base\Service
             $creditsLog = (new Credits\Core)->deductCredits($creditsLog, abs($credits));
         }
 
-        return $creditsLog->toArrayPublic();
+        return $creditsLog->toArray();
     }
 
     /**

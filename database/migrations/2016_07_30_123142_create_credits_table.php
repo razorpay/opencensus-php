@@ -23,21 +23,18 @@ class CreateCreditsTable extends Migration
             $table->increments(Credits::ID);
 
             $table->string(Credits::CAMPAIGN, 255);
-            $table->string(Credits::MERCHANT_ID, Credits::ID_LENGTH);
+            $table->string(Credits::MERCHANT_ID, Merchant\Entity::ID_LENGTH);
             $table->integer(Credits::VALUE)->default(0);
             $table->text(Credits::NOTES);
 
-            // Timestamp logs of the model
             $table->integer(Credits::CREATED_AT);
             $table->integer(Credits::UPDATED_AT);
 
-            // Indices
             $table->index(Credits::CREATED_AT);
             $table->index(Credits::CAMPAIGN);
 
-            // Foreign Keys
             $table->foreign(Credits::MERCHANT_ID)
-                ->references(MERCHANT\Entity::ID)
+                ->references(Merchant\Entity::ID)
                 ->on(Table::MERCHANT)
                 ->on_delete('restrict');
         });
@@ -52,7 +49,6 @@ class CreateCreditsTable extends Migration
     {
         Schema::drop(Table::CREDITS, function (Blueprint $table)
         {
-            // Drop the foreign key
             $table->dropForeign(
                 Table::CREDITS.'_'.Credits::MERCHANT_ID.'_foreign');
         });

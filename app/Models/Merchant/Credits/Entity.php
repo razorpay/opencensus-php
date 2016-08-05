@@ -54,6 +54,8 @@ class Entity extends Base\PublicEntity
         'campaign'              => 'string',
     ];
 
+    public $incrementing = true;
+
 // --------------------- Setters -------------------------------------------
 
     public function setCampaign($campaignName)

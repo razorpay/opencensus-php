@@ -10,14 +10,13 @@ use RZP\Error\ErrorCode;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        Entity::CAMPAIGN                    => 'required|alpha_dash|max:255',
-        Entity::VALUE                       => 'required|integer',
-        Entity::MERCHANT_ID                 => 'sometimes|alpha_num',
-        Entity::NOTES                       => 'sometimes|notes',
+        Entity::CAMPAIGN                => 'required|alpha_dash|max:255',
+        Entity::VALUE                   => 'required|integer',
+        Entity::NOTES                   => 'sometimes|notes',
     );
 
     protected static $editRules = array(
-        Entity::VALUE                     => 'sometimes|integer',
+        Entity::VALUE                   => 'sometimes|integer',
     );
 
     public static function validateCreditsForDeduction($creditsLog, $balance, $credits)
@@ -39,6 +38,7 @@ class Validator extends Base\Validator
         // Check if the log already exists, API is meant to use for creation only.
         $creditsLogExists = (new Credits\Core)->checkIfCreditsLogExists(
             $merchant, $campaign);
+
         if ($creditsLogExists)
         {
             throw new Exception\BadRequestValidationFailureException(
