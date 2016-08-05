@@ -91,6 +91,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::AMOUNT);
     }
 
+    public function getTxndatetime()
+    {
+        return $this->getAttribute(self::TXNDATETIME);
+    }
+
     public function setAmount($amount)
     {
         $this->setAttribute(self::AMOUNT, $amount);

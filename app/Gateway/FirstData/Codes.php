@@ -4,7 +4,7 @@ namespace RZP\Gateway\FirstData;
 
 final class Codes
 {
-    const HASH_ALGORITHM_SHA256 = 'SHA256';
+    const FIRST_DATA_HASH_ALGORITHM = 'SHA1';
 
     const ENGLISH_UK_LANG_CODE = 'en_GB';
 

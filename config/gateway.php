@@ -61,7 +61,7 @@ return array(
 
     'first_data' => array(
         'test_store_id'         => env('FIRST_DATA_TEST_STORE_ID'),
-        'test_shared_secret'    => env('FIRST_DATA_TEST_SHARED_SECRET'),
+        'test_hash_secret'    	=> env('FIRST_DATA_TEST_HASH_SECRET'),
     ),
 
     'amex' => array(

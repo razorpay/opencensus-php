@@ -12,7 +12,7 @@ class Validator extends Base\Validator
         FirstData\Gateway::TIMEZONE                  => 'required|string',
         FirstData\Gateway::TXNDATETIME               => 'required|string',
         FirstData\Gateway::HASH_ALGORITHM            => 'required|',
-        FirstData\Gateway::HASH                      => 'required|size:64|string',
+        FirstData\Gateway::HASH                      => 'required|size:40|string',
         FirstData\Gateway::STORENAME                 => 'required|size:10|string',
         FirstData\Gateway::MODE                      => 'sometimes|',
         FirstData\Gateway::CHARGETOTAL               => 'required|numeric',
@@ -28,7 +28,7 @@ class Validator extends Base\Validator
         FirstData\Gateway::RESPONSE_FAIL_URL         => 'required|url',
         FirstData\Gateway::DYNAMIC_MERCHANT_NAME     => 'sometimes|string',
         FirstData\Gateway::LANGUAGE                  => 'sometimes|',
-        FirstData\Gateway::HASH_EXTENDED             => 'sometimes|size:64|string',
+        FirstData\Gateway::HASH_EXTENDED             => 'sometimes|size:40|string',
         FirstData\Gateway::NUMBER_OF_INSTALLMENTS    => 'sometimes|',
         FirstData\Gateway::CARDNUMBER                => 'required|numeric|digits_between:12,19',
         FirstData\Gateway::EXPMONTH                  => 'required|size:2',
@@ -100,7 +100,7 @@ class Validator extends Base\Validator
     protected function validateHashAlgorithm($input)
     {
         if ((isset($input['hash_algorithm']) === false) or
-            ($input['hash_algorithm'] !== FirstData\Codes::HASH_ALGORITHM_SHA256))
+            ($input['hash_algorithm'] !== FirstData\Codes::FIRST_DATA_HASH_ALGORITHM))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Unsupported hash_algorithm');

@@ -46,13 +46,18 @@ class Gateway extends Base\Gateway
     const EXPYEAR                   = 'expyear';
     const CVM                       = 'cvm';
 
+    const APPROVAL_CODE             = 'approval_code';
+    const RESPONSE_HASH             = 'response_hash';
+
     const TEST_STORE_ID             = 'test_store_id';
-    const TEST_SHARED_SECRET        = 'test_shared_secret';
+    const TEST_HASH_SECRET          = 'test_hash_secret';
 
     protected $gateway = \RZP\Constants\Entity::FIRST_DATA;
 
     public function authorize(array $input)
     {
+        $input['card']['type']='credit';
+
         parent::authorize($input);
 
         $content = $this->getPreauthRequestContentArray($input);
@@ -119,13 +124,28 @@ class Gateway extends Base\Gateway
 
     // This is a SHA hash of the following fields :
     // storename + txndatetime + chargetotal + currency + sharedsecret.
-    protected function getHash($txnDateTime, $chargeTotal, $currencyCode)
+    protected function getRequestHash($txnDateTime, $chargeTotal, $currencyCode)
     {
         $storeId = $this->getStoreName();
-        $sharedSecret = $this->getSharedSecret();
+        $sharedSecret = $this->getSecret();
 
         $stringToHash = $storeId . $txnDateTime . $chargeTotal . $currencyCode . $sharedSecret;
-        $hash_algorithm = strtolower(Codes::HASH_ALGORITHM_SHA256);
+        $hash_algorithm = strtolower(Codes::FIRST_DATA_HASH_ALGORITHM);
+
+        $hash = hash($hash_algorithm, bin2hex($stringToHash));
+
+        return $hash;
+    }
+
+    // This is a SHA hash of the following fields :
+    // sharedsecret + approvalcode + chargetotal + currency + txndatetime + storename.
+    protected function getResponseHash($approvalCode, $chargeTotal, $currencyCode, $txnDateTime)
+    {
+        $storeId = $this->getStoreName();
+        $sharedSecret = $this->getSecret();
+
+        $stringToHash = $sharedSecret . $approvalCode . $chargeTotal . $currencyCode . $txnDateTime . $storeId;
+        $hash_algorithm = strtolower(Codes::FIRST_DATA_HASH_ALGORITHM);
 
         $hash = hash($hash_algorithm, bin2hex($stringToHash));
 
@@ -147,14 +167,14 @@ class Gateway extends Base\Gateway
         $content = array(
             self::TIMEZONE                  => 'Asia/Kolkata',
             self::TXNDATETIME               => $txnDateTime,
-            self::HASH_ALGORITHM            => Codes::HASH_ALGORITHM_SHA256,
-            self::HASH                      => $this->getHash($txnDateTime, $chargeTotal, $currencyCode),
+            self::HASH_ALGORITHM            => Codes::FIRST_DATA_HASH_ALGORITHM,
+            self::HASH                      => $this->getRequestHash($txnDateTime, $chargeTotal, $currencyCode),
             self::STORENAME                 => $this->getStoreName(),
             self::MODE                      => Codes::PAYMENT_MODE_PAYONLY,
             self::CHARGETOTAL               => $chargeTotal,
             self::CURRENCY                  => $currencyCode,
 
-            // self::OID                       => $input['payment']['order_id'],
+            self::OID                       => $input['payment']['id'],
             // self::CUSTOMERID                => $input['payment']['customer_id'],
             self::INVOICENUMBER             => $input['payment']['id'],
 
@@ -171,7 +191,56 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    private function getStoreName()
+    public function callback(array $input)
+    {
+        parent::callback($input);
+
+        if ((isset($input['gateway']['approval_code']) === false) or
+            ($input['gateway']['approval_code'][0] !== 'Y'))
+        {
+            $this->trace->info(
+                TraceCode::GATEWAY_AUTHORIZE_RESPONSE, [$input['gateway']]);
+
+            throw new Exception\GatewayErrorException(
+                        Error\ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
+        }
+
+        $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
+            $input['gateway']['oid'], Base\Action::AUTHORIZE);
+
+        $this->verifyHash($input['gateway'],$payment);
+
+        // $payment->fill($input['gateway']);
+        $payment->saveOrFail();
+
+        $this->verifyPaymentCallbackResponse($input);
+    }
+
+    protected function verifyPaymentCallbackResponse($input)
+    {
+        ;
+    }
+
+    private function verifyHash($input)
+    {
+        $approvalCode = $input[self::APPROVAL_CODE];
+
+        $txnDateTime = $input[self::TXNDATETIME];
+        $chargeTotal = $input[self::CHARGETOTAL];
+        $currencyCode = $input[self::CURRENCY];
+
+        $expectedHash = $this->getResponseHash($approvalCode, $chargeTotal, $currencyCode, $txnDateTime);
+
+        if ($expectedHash != $input[self::RESPONSE_HASH])
+        {
+            $this->trace->error(
+                TraceCode::GATEWAY_AUTHORIZE_RESPONSE, array($input,$expectedHash));
+
+            throw new Exception\BadRequestValidationFailureException('Failed response_hash verification');
+        }
+    }
+
+    protected function getStoreName()
     {
         $terminal = $this->terminal;
 
@@ -183,13 +252,13 @@ class Gateway extends Base\Gateway
         return $this->terminal['gateway_merchant_id'];
     }
 
-    private function getSharedSecret()
+    protected function getSharedSecret()
     {
         $terminal = $this->terminal;
 
         if ($this->mode ===Mode::TEST)
         {
-            return $this->config[self::TEST_SHARED_SECRET];
+            return $this->config[self::TEST_HASH_SECRET];
         }
 
         return $this->terminal['gateway_secure_secret'];

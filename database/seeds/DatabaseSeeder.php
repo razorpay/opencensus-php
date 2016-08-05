@@ -372,6 +372,20 @@ class DatabaseSeeder extends Seeder
 
         DB::table(Table::TERMINAL)->insert(
             array(
+                'id'                        => Terminal\Shared::FIRST_DATA_RAZORPAY_TERMINAL,
+                'merchant_id'               => Account::DEMO_ACCOUNT,
+                'gateway'                   => Gateway::FIRST_DATA,
+                'card'                      => '1',
+                'gateway_merchant_id'       => 'demo_merchant_first_data',
+                'gateway_terminal_id'       => 'shared_terminal_first_data',
+                'gateway_terminal_password' => Crypt::encrypt('demo_account_first_data_terminal_pass'),
+                'created_at'                =>  time(),
+                'updated_at'                =>  time(),
+                )
+            );
+
+        DB::table(Table::TERMINAL)->insert(
+            array(
                 'id'                    => Terminal\Shared::AXIS_GENIUS_RAZORPAY_TERMINAL,
                 'merchant_id'           => Account::DEMO_ACCOUNT,
                 'gateway'               => Gateway::AXIS_GENIUS,
