@@ -209,7 +209,7 @@ class Server extends Base\Mock\Server
                 $response['payerAuthEnrollReply']['ucafCollectionIndicator'] = '1';
                 break;
 
-            case '41476700000006':
+            case '42809500000009':
                 $response['decision'] = 'REJECT';
                 $response['reasonCode'] = 476;
                 $response['payerAuthEnrollReply'] = [

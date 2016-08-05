@@ -71,7 +71,7 @@ class CybersourceGatewayTest extends TestCase
     public function testThreeDSAuthFailedPayment()
     {
         $payment = $this->getDefaultPaymentArray();
-        $payment['card']['number'] = '41476700000006';
+        $payment['card']['number'] = '42809500000009';
 
         $data = $this->testData[__FUNCTION__];
 
