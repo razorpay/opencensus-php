@@ -129,7 +129,7 @@ class Server extends Base\Mock\Server
 
         $response['decision'] = 'ACCEPT';
         $response['reasonCode'] = Cybersource\Result::SUCCESS;
-        $response['requestID'] = '4661454138166750401020';
+        $response['requestID'] = '4661454138166750401025';
 
         $ccAuthReply = array();
         $ccAuthReply['reconciliationID'] = $input['ccAuthService']['reconciliationID'];
