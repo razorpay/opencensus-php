@@ -59,6 +59,7 @@ app.controller('EntitiesCtrl', [
       'axis_genius',
       'axis_migs',
       'billdesk',
+      'ebs',
       'cybersource',
       'ezeclick',
       'hdfc',
@@ -144,6 +145,7 @@ app.controller('EntitiesCtrl', [
         merchant_id: ['Merchant Id']
       },
       balance: {},
+      ebs: {},
       billdesk: {
         AuthStatus: [
           'all',
