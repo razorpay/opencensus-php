@@ -31,12 +31,7 @@ class AuthStatus
     {
         $twoFaStatus = self::getTwoFaStatus($code);
 
-        if ($twoFaStatus === TwoFaStatus::FAILED)
-        {
-            return true;
-        }
-
-        return false;
+        return ($twoFaStatus === TwoFaStatus::FAILED);
     }
 
     public static function getTwoFaStatus($code)

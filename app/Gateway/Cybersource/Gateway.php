@@ -12,6 +12,7 @@ use RZP\Exception;
 use RZP\Constants;
 use RZP\Gateway\Utility;
 use RZP\Models\Card;
+use RZP\Models\Payment;
 use RZP\Trace\Trace;
 use RZP\Gateway\Base;
 use RZP\Constants\Mode;
@@ -338,7 +339,7 @@ class Gateway extends Base\Gateway
 
             $this->persistAfterAuthorize($input, $response, $request);
 
-            return $this->getCallbackResponseData($response);
+            return $this->getCallbackResponseData();
         }
         catch (SoapFault $exception)
         {
@@ -346,9 +347,9 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function getCallbackResponseData($response)
+    protected function getCallbackResponseData()
     {
-        return [\RZP\Models\Payment\Entity::TWO_FA_STATUS => \RZP\Models\Payment\TwoFaStatus::PASSED];
+        return [Payment\Entity::TWO_FA_STATUS => Payment\TwoFaStatus::PASSED];
     }
 
     protected function postNotEnrolledAuthorize($input, $enrollResponse)

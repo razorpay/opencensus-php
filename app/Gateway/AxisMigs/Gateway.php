@@ -620,7 +620,7 @@ class Gateway extends Base\Gateway
             //
 
             if (($input['merchant']['international'] === false) and
-                (ThreeDSecureStatus::is3DSecureSuccess($threeDSstatus) === false))
+                (ThreeDSecureStatus::isThreeDSsuccess($threeDSstatus) === false))
             {
                 $apiErrorCode = Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED;
             }
@@ -641,9 +641,9 @@ class Gateway extends Base\Gateway
 
     protected function getCallbackResponseData(array $input)
     {
-        $two_fa_status = ThreeDSecureStatus::getThreeDsStatus($input['threeDSstatus']);
+        $twoFaStatus = ThreeDSecureStatus::getThreeDSstatus($input['threeDSstatus']);
 
-        $data = array(\RZP\Models\Payment\Entity::TWO_FA_STATUS => $two_fa_status);
+        $data = array(\RZP\Models\Payment\Entity::TWO_FA_STATUS => $twoFaStatus);
 
         return $data;
     }
@@ -652,7 +652,7 @@ class Gateway extends Base\Gateway
     {
         $e = new Exception\GatewayErrorException($code, $gatewayErrorCode, $gatewayErrorDesc);
 
-        if (ThreeDSecureStatus::is3DSecureFailed($threeDSstatus) === true)
+        if (ThreeDSecureStatus::isThreeDSFailed($threeDSstatus) === true)
         {
             $e->markTwoFaError();
         }

@@ -21,21 +21,21 @@ class ThreeDSecureStatus
     const U = 'U';
     const A = 'A';
 
-    public static function is3DSecureSuccess($status)
+    public static function isThreeDSsuccess($status)
     {
-        $twoFaStatus = self::getThreeDsStatus($status);
+        $twoFaStatus = self::getThreeDSstatus($status);
 
         return ($twoFaStatus === TwoFaStatus::PASSED);
     }
 
-    public static function is3DSecureFailed($status)
+    public static function isThreeDSFailed($status)
     {
-        $twoFaStatus = self::getThreeDsStatus($status);
+        $twoFaStatus = self::getThreeDSstatus($status);
 
         return ($twoFaStatus === TwoFaStatus::FAILED);
     }
 
-    public static function getThreeDsStatus($status)
+    public static function getThreeDSstatus($status)
     {
         switch ($status) {
             case self::Y:

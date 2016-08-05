@@ -10,6 +10,7 @@ use RZP\Gateway\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Billdesk;
+use RZP\Models\Payment;
 use Requests;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
@@ -107,16 +108,11 @@ class Gateway extends Base\Gateway
 
     protected function getCallbackResponseData(array $content)
     {
-        $two_fa_status = AuthStatus::getTwoFaStatus($content['AuthStatus']);
+        $twoFaStatus = AuthStatus::getTwoFaStatus($content['AuthStatus']);
 
-        $data = array(\RZP\Models\Payment\Entity::TWO_FA_STATUS => $two_fa_status);
+        $data = array(Payment\Entity::TWO_FA_STATUS => $twoFaStatus);
 
         return $data;
-    }
-
-    protected function getTwoFaStatus($code)
-    {
-        return AuthStatus::getTwoFaStatus($code);
     }
 
     public function refund(array $input)

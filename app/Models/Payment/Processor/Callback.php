@@ -144,15 +144,17 @@ trait Callback
         try
         {
             $data = $this->callGatewayCallback($input);
+
+            $twoFaStatus = isset($data[Payment\Entity::TWO_FA_STATUS]) ? $data[Payment\Entity::TWO_FA_STATUS] : null;
+
+            $this->updatePaymentTwoFaStatus($twoFaStatus);
+
+            $this->updateAndNotifyPaymentAuthorized();
         }
         catch (Exception\BaseException $e)
         {
             $this->processPaymentCallbackException($e);
         }
-
-        $this->updatePaymentTwoFaStatus($data);
-
-        $this->updateAndNotifyPaymentAuthorized();
     }
 
     protected function callGatewayCallback($input)

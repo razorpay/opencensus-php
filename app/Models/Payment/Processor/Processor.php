@@ -334,9 +334,9 @@ class Processor
 
         $payment->setError($code, $desc, $internalCode);
 
-        if (($e instanceof Exception\GatewayErrorException) and $e->hasTwoFaError())
+        if (($e instanceof Exception\GatewayErrorException) and ($e->hasTwoFaError()))
         {
-            $payment->setTwoFaStatusFailed();
+            $payment->setTwoFaStatus(Payment\TwoFaStatus::FAILED);
         }
 
         $payment->saveOrFail();
@@ -679,13 +679,13 @@ class Processor
         return substr($contact, -10);
     }
 
-    protected function updatePaymentTwoFaStatus($data)
+    protected function updatePaymentTwoFaStatus($twoFaStatus)
     {
-        if (isset($data[PaymentEntity::TWO_FA_STATUS]) === true)
+        if ($twoFaStatus !== null)
         {
             $payment = $this->payment;
 
-            $payment->setTwoFaStatus($data[PaymentEntity::TWO_FA_STATUS]);
+            $payment->setTwoFaStatus($twoFaStatus);
 
             $payment->saveOrFail();
         }

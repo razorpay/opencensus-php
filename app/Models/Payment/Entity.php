@@ -328,11 +328,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::TWO_FA_STATUS, $status);
     }
 
-    public function setTwoFaStatusFailed()
-    {
-        $this->setAttribute(self::TWO_FA_STATUS, TwoFaStatus::FAILED);
-    }
-
     public function setRefundStatus($status)
     {
         $this->setAttribute(self::REFUND_STATUS, $status);
@@ -858,6 +853,10 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CARD_ID);
     }
 
+    public function getTwoFaStatus()
+    {
+        return $this->getAttribute(self::TWO_FA_STATUS);
+    }
     /**
      * This function returns the current payment method
      * and a detail string for that particular method

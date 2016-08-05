@@ -73,7 +73,7 @@ class ResponseCode
         '5002'      => 'Amount exceeds available funds, "refund" requeted for amount that exceeds availalbe transaction remianing balance, Correct reufnd amount or issue "calculated" refund request (no amount or amount is 0). In this case PaySecure refunds full transaction balance',
         '5003'      => 'Tran bus day exceeded, Authorize the transaction PaySecure, Internal to PaySecure only',
         'ACCU000'   => 'PIN was successfully received (PIN is verified on authorize web service call), End the session for the user from the merchant website as a security measure',
-        'ACCU400'   => 'User has been inactive for X minutes, Process the transaction as a 'credit' through already etablished means',
+        'ACCU400'   => "User has been inactive for X minutes, Process the transaction as a 'credit' through already etablished means",
         'ACCU600'   => 'Invalid data was posted to the PaySecure PIN pad, Error occurred on issuer side, select another payment type',
         'ACCU800'   => 'Generic PaySecure error, None',
         'ACCU999'   => 'PIN Pad was successfully opened',
@@ -94,7 +94,7 @@ class ResponseCode
         }
     }
 
-    public statis function isTwoFaFailed?($code)
+    public static function isTwoFaFailed($code)
     {
         $twoFaStatus = self::getTwoFaStatus($code);
 

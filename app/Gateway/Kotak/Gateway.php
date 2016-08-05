@@ -7,6 +7,7 @@ use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Gateway\Kotak;
+use RZP\Models\Payment\Entity as PaymentEntity;
 use Requests;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
@@ -167,7 +168,7 @@ class Gateway extends Base\Gateway
         // Payment successful
         if (in_array($code, ResponseCode::PAYMENT_SUCCESS_STATUS))
         {
-            return  [PaymentEntity::TWO_FA_STATUS => ResponseCode::getTwoFaStatus($code)]
+            return [PaymentEntity::TWO_FA_STATUS => ResponseCode::getTwoFaStatus($code)];
         }
         // Payment fails, throw exception
         else

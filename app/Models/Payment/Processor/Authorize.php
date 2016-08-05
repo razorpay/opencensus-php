@@ -64,11 +64,12 @@ trait Authorize
             return $this->getPaymentGatewayRequestData($request, $payment);
         }
 
-        // If request is null, then payment is a one-step process,
+        //
+        // Else if $request is null, then payment is a one-step process,
         // i.e. without 2-factor authentication
-        $data = array(PaymentEntity::TWO_FA_STATUS => TwoFaStatus::SKIPPED);
+        //
 
-        $this->updatePaymentTwoFaStatus($data);
+        $this->updatePaymentTwoFaStatus(TwoFaStatus::SKIPPED);
 
         $this->updateAndNotifyPaymentAuthorized();
 

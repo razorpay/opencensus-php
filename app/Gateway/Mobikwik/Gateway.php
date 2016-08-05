@@ -690,8 +690,6 @@ class Gateway extends Base\Gateway
 
         $errorCode = ResponseCodeMap::getApiErrorCode($code);
 
-        $message = '';
-
         if (isset($response['statusmessage']) === true)
         {
             $message = $response['statusmessage'];
