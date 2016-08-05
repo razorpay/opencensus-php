@@ -222,6 +222,8 @@ trait Callback
             $token = $this->createOrUpdateToken($input, $data);
 
             $payment->setGlobalToken($token->getToken());
+
+            $payment->globalToken()->associate($token);
         }
 
         $this->repo->saveOrFail($payment);

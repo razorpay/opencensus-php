@@ -2,12 +2,16 @@
 
 namespace RZP\Tests\Functional\CustomerToken;
 
-use Tests\Functional\TestCase;
-use Tests\Functional\Helpers\Payment\PaymentTrait;
+use Mockery;
+use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
 class CustomerTokenTest extends TestCase
 {
     use PaymentTrait;
+    use InteractsWithSession;
 
     public function setUp()
     {

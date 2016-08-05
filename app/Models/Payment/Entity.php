@@ -38,7 +38,9 @@ class Entity extends Base\PublicEntity
     const APP_ID                = 'app_id';
     const APP_TOKEN             = 'app_token';
     const TOKEN                 = 'token';
+    const TOKEN_ID              = 'token_id';
     const GLOBAL_TOKEN          = 'global_token';
+    const GLOBAL_TOKEN_ID       = 'global_token_id';
     const EMAIL                 = 'email';
     const CONTACT               = 'contact';
     const NOTES                 = 'notes';
@@ -118,6 +120,8 @@ class Entity extends Base\PublicEntity
         self::APP_ID,
         self::TOKEN,
         self::GLOBAL_TOKEN,
+        self::TOKEN_ID,
+        self::GLOBAL_TOKEN_ID,
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
@@ -1076,6 +1080,16 @@ class Entity extends Base\PublicEntity
     public function globalCustomer()
     {
         return $this->belongsTo('RZP\Models\Customer\Entity', self::GLOBAL_CUSTOMER_ID);
+    }
+
+    public function token()
+    {
+        return $this->belongsTo('RZP\Models\Customer\Token\Entity', self::TOKEN_ID);
+    }
+
+    public function globalToken()
+    {
+        return $this->belongsTo('RZP\Models\Customer\Token\Entity', self::GLOBAL_TOKEN_ID);
     }
 
     public function app()
