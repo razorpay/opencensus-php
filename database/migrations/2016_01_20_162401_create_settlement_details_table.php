@@ -30,6 +30,8 @@ class CreateSettlementDetailsTable extends Migration
 
             $table->string(Entity::TYPE);
 
+            $table->string(Entity::TYPEXYZ);
+
             $table->integer(Entity::COUNT)
                   ->nullable();
 

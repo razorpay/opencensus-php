@@ -10,7 +10,7 @@ use RZP\Models\Adjustment;
 use RZP\Models\Merchant\BankAccount;
 use RZP\Models\Transaction;
 use RZP\Models\Settlement;
-use RZP\Models\Settlement\Details as SettlementDetails;
+use RZP\Models\Settlement\Details as SetlDetails;
 
 class Merchant
 {
@@ -103,58 +103,93 @@ class Merchant
 
     protected function createSettlementDetailsEntities()
     {
-        $totalServiceTax = 0;
-        $totalFee = 0;
-        $totalAmount = 0;
-
         $entityTypes = array(
             Transaction\Type::PAYMENT,
             Transaction\Type::REFUND,
-            Transaction\Type::ADJUSTMENT);
-
-        foreach ($entityTypes as $entityType)
-        {
-            $totalAmount = 0;
-
-            $entityTxns = $this->txns->filter(function($txn)
-                use ($entityType, & $totalFee, & $totalServiceTax, & $totalAmount)
-            {
-                if ($txn->getType() === $entityType)
-                {
-                    $totalServiceTax    += $txn->getServiceTax();
-
-                    $totalFee           += $txn->getFee();
-
-                    if ($txn->getCredit() > 0)
-                    {
-                        $totalAmount    += $txn->getAmount();
-                    }
-                    else
-                    {
-                        $totalAmount    -= $txn->getAmount();
-                    }
-
-                    return true;
-                }
-            });
-
-            $this->createSetlDetailsEntity($entityType, $entityTxns->count(), $totalAmount);
-        }
-
-        $this->createSetlDetailsEntity(SettlementDetails\Type::SERVICE_TAX, null, $totalServiceTax);
-
-        $this->createSetlDetailsEntity(SettlementDetails\Type::FEE, 0, $totalFee);
-    }
-
-    protected function createSetlDetailsEntity($type, $count, $amount)
-    {
-        $input = array(
-            SettlementDetails\Entity::TYPE          => $type,
-            SettlementDetails\Entity::AMOUNT        => $amount,
-            SettlementDetails\Entity::COUNT         => $count
+            Transaction\Type::ADJUSTMENT,
         );
 
-        $setlDetailEntity = new SettlementDetails\Entity;
+        $details = [];
+        $totalServiceTax = 0;
+        $totalFee = 0;
+
+        foreach ($entityTypes as $type)
+        {
+            $details[$type]['amount'] = 0;
+
+            $details[$type]['count'] = 0;
+        }
+
+        foreach ($this->txns as $txn)
+        {
+            $txnType = $txn->getType();
+
+            $details[$txnType]['count'] += 1;
+
+            if ($txn->getType() === Transaction\Type::PAYMENT)
+            {
+                $details[$txnType]['amount'] += $txn->getAmount();
+            }
+            else if ($txn->getType() === Transaction\Type::REFUND)
+            {
+                $details[$txnType]['amount'] -= $txn->getAmount();
+            }
+            else if ($txn->getType() === Transaction\Type::ADJUSTMENT)
+            {
+                $details[$txnType]['amount'] += $txn->getCredit();
+
+                $details[$txnType]['amount'] -= $txn->getDebit();
+            }
+
+            $totalServiceTax += $txn->getServiceTax();
+
+            $totalFee += ($txn->getFee() - $txn->getServiceTax());
+        }
+
+        foreach ($entityTypes as $type)
+        {
+            $txnType = 'credit';
+
+            if ($details[$type]['amount'] < 0)
+            {
+                $details[$type]['amount'] = abs($details[$type]['amount']);
+
+                $txnType = 'debit';
+            }
+
+            if ($details[$type]['count'] !== 0)
+            {
+                $this->createSetlDetailsEntity(
+                    $type,
+                    $txnType,
+                    $details[$type]['count'],
+                    $details[$type]['amount']);
+            }
+        }
+
+        $this->createSetlDetailsEntity(
+            SetlDetails\Type::SERVICE_TAX,
+            'debit',
+            null,
+            $totalServiceTax);
+
+        $this->createSetlDetailsEntity(
+            SetlDetails\Type::FEE,
+            'debit',
+            null,
+            $totalFee);
+    }
+
+    protected function createSetlDetailsEntity($type, $typexyz, $count, $amount)
+    {
+        $input = array(
+            SetlDetails\Entity::TYPE          => $type,
+            SetlDetails\Entity::TYPEXYZ       => $typexyz,
+            SetlDetails\Entity::AMOUNT        => $amount,
+            SetlDetails\Entity::COUNT         => $count
+        );
+
+        $setlDetailEntity = new SetlDetails\Entity;
         $setlDetailEntity->build($input);
 
         $setlDetailEntity->merchant()->associate($this->merchant);

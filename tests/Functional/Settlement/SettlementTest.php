@@ -261,15 +261,28 @@ class SettlementTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-
         $this->assertArrayHasKey('entity', $content);
         $this->assertSame('collection', $content['entity']);
-        $this->assertSame($content['count'], 5);
+        $this->assertSame($content['count'], 4);
 
-        //payment + adjustment + refund(it will be -ve) - fee(inclusive of service tax)
-        $totalAmount =
-            (((int)$content['items'][0]['amount'] +  (int)$content['items'][1]['amount'] +
-             (int)$content['items'][2]['amount']) - ((int)$content['items'][4]['amount']));
+        $totalAmount = 0;
+
+        foreach ($content['items'] as $details)
+        {
+            if ($details['typexyz'] == 'debit')
+            {
+                $totalAmount -= $details['amount'];
+            }
+            else
+            {
+                $totalAmount += $details['amount'];
+            }
+        }
+
+        // //payment + adjustment - refund(it will be -ve) - fee(inclusive of service tax)
+        // $totalAmount =
+        //     (((int)$content['items'][0]['amount'] +  (int)$content['items'][1]['amount'] +
+        //      (int)$content['items'][2]['amount']) - ((int)$content['items'][4]['amount']));
 
         $this->assertSame($totalAmount, $setl['amount']);
     }
