@@ -81,7 +81,7 @@ class DailyFiles
 
     protected function getClaimsData($from, $to)
     {
-        $status = [Payment\Status::CAPTURED, Payment\Status::REFUNDED];
+        $status = [Payment\Status::AUTHORIZED, Payment\Status::CAPTURED, Payment\Status::REFUNDED];
 
         $claims = (new Payment\Repository)->
                         fetchPaymentsWithStatus($from, $to, $this->gateway, $status);

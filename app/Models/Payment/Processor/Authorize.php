@@ -259,19 +259,19 @@ trait Authorize
         return $payment->reload()->toArrayAdmin();
     }
 
+
     /**
+     *
      * Methods selects a list of terminals for payment. We are
      * selecting a list here since, we want to iterate through
      * a bunch of terminals, in case the terminal fails
      * @param $payment
+     * @return array|Terminal\Entity
      */
     protected function selectTerminalsForPayment($payment)
     {
 
         $options = $this->getOptionsForTerminals();
-
-        // Terminal picked is the terminal used for payment processing.
-        $terminalPicked = (new TerminalPicker)->selectTerminal($payment, $this->mode, $options);
 
         $this->terminalSelector = new Terminal\Selector($payment, $this->mode);
 
@@ -279,12 +279,9 @@ trait Authorize
 
         if(!isset($options['multiple']))
         {
-            // this is for test mode
             // make this into an array, since the caller expects an array
             $terminalsSelected = array($terminalsSelected);
         }
-
-        $this->logTerminalPickedAndSelected($terminalsSelected[0], $terminalPicked, $payment);
 
         return $terminalsSelected;
 
