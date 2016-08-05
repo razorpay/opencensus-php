@@ -72,7 +72,7 @@ trait RequestResponseFlowTrait
         return $content;
     }
 
-    protected function  checkStatusCodeIfJsonp(& $content, $statusCode = '200')
+    protected function checkStatusCodeIfJsonp(& $content, $statusCode = '200')
     {
         if ((isset($data['json']) === false) or
             ($data['jsonp'] === false))

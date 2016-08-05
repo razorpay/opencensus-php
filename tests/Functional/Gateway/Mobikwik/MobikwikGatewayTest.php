@@ -115,14 +115,7 @@ class MobikwikGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $secret = \App::make('config')->get('app.key');
-
-        $hash = hash_hmac('sha1', $payment->getPublicId(), $secret);
-
-        $params = ['id' => $payment->getPublicId(), 'hash' => $hash, 'key_id' => $this->ba->getKey()];
-
-        $url = \URL::route('payment_otp_submit', $params, false);
-        $url = 'http://localhost' . $url;
+        $url = $this->getOtpSubmitUrl($payment);
 
         $data['request']['url'] = $url;
 
@@ -145,11 +138,7 @@ class MobikwikGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $params = ['id' => $payment->getPublicId(), 'key_id' => $this->ba->getKey()];
-        $wallet = $this->getLastEntity('terminal', true);
-
-        $url = \URL::route('payment_otp_resend', $params, false);
-        $url = 'http://localhost' . $url;
+        $url = $this->getOtpResendUrl($payment);
 
         $data['request']['url'] = $url;
 
@@ -183,23 +172,21 @@ class MobikwikGatewayTest extends TestCase
         // Get Insufficient balance response
         $response = $this->testInsufficientBalancePayment();
 
-        $responseData = $this->response->original->data;
-
-        $topupRequest = $this->testData['topupData'];
+        $response = $this->response->getOriginalContent()->data;
 
         // Send topup request
-        $topupResponse = $this->topupPayment($responseData['payment_id']);
+        $response = $this->topupPayment($response['payment_id']);
 
         // Make topup redirection request
-        $topupRedirect = $this->sendRequest($topupResponse['request']);
+        $redirect = $this->sendRequest($response['request']);
 
-        $ret = (($this->isResponseInstanceType('redirect', $topupRedirect)) and
-            ($topupRedirect->getStatusCode() === 302));
+        $ret = (($this->isResponseInstanceType($redirect, 'redirect')) and
+                ($redirect->getStatusCode() === 302));
 
         if ($ret === true)
         {
             $callback = array(
-                'url' => $topupRedirect->getTargetUrl(),
+                'url' => $redirect->getTargetUrl(),
                 'method' => 'get',
                 'content' => []
             );
@@ -211,7 +198,7 @@ class MobikwikGatewayTest extends TestCase
             assert(false);
         }
 
-        $this->assertArrayHasKey('razorpay_payment_id', $callbackResponse->original->data);
+        $this->assertArrayHasKey('razorpay_payment_id', $callbackResponse->getOriginalContent()->data);
 
         $mobikwik = $this->getLastEntity('mobikwik', true);
 
@@ -256,12 +243,13 @@ class MobikwikGatewayTest extends TestCase
                             'wallet'        => 'mobikwik',
                             'gateway'       => 'mobikwik',
                             'card_id'       => null,
-                            'terminal_id'   => $this->sharedTerminal->id
+                            'terminal_id'   => $this->sharedTerminal->getId()
                         ]);
 
         $id = $payment->getPublicId();
 
-        $this->runRequestResponseFlow($data, function() use ($id) {
+        $this->runRequestResponseFlow($data, function() use ($id)
+        {
             $this->verifyPayment($id);
         });
 

@@ -29,6 +29,8 @@ final class Route
         'payment_otp_submit'                      => ['post',     'payments/{id}/otp_submit/{hash}',          'PaymentCreateController@postOtpSubmit'                             ],
         'payment_otp_resend'                      => ['post',     'payments/{id}/otp_resend',                 'PaymentCreateController@postOtpResend'                             ],
         'payment_topup_ajax'                      => ['post',     'payments/{id}/topup/ajax',                 'PaymentCreateController@postTopupAjax'                             ],
+        'payment_topup_post'                      => ['post',     'payments/{id}/topup',                      'PaymentCreateController@postTopup'                                 ],
+        'payment_redirect'                        => ['post',     'payments/{id}/redirect',                   'PaymentCreateController@postRedirect'                              ],
         'payment_refund'                          => ['post',     'payments/{id}/refund',                     'PaymentController@postRefund'                                      ],
         'payment_capture'                         => ['post',     'payments/{id}/capture',                    'PaymentController@postCapture'                                     ],
         'payment_verify'                          => ['get',      'payments/{id}/verify',                     'PaymentController@getVerify'                                       ],
@@ -144,6 +146,8 @@ final class Route
         'setl_return_generate'                    => ['post',     'settlements/return/generate',              'SettlementController@postSettlementReturnGenerate'                 ],
         'setl_return'                             => ['post',     'settlements/return',                       'SettlementController@postSettlementReturn'                         ],
         'setl_calc_previous_fees'                 => ['post',     'settlements/fees/previous',                'SettlementController@postSettlementCalculateFees',                 ],
+        'setl_get_details'                        => ['get',      'settlements/{id}/details',                 'SettlementController@getSettlementDetails',                        ],
+        'setl_post_details_old'                   => ['post',     'settlements/details',                      'SettlementController@postSettlementDetailsForOldTxns'              ],
         'setl_combined_report'                    => ['get',      'settlements/report/combined',              'SettlementController@getSettlementCombinedReport'                  ],
         'daily_setl_calc_previous_fees'           => ['post',     'dailysettlements/fees/previous',           'SettlementController@postDailySettlementCalculatePreviousFees'     ],
         'daily_setl_fetch_by_id'                  => ['get',      'dailysettlements/{id}',                    'SettlementController@getDailySettlement'                           ],
@@ -224,6 +228,8 @@ final class Route
         'otp_verify'                              => ['post',     'otp/verify',                               'CustomerController@verifyOtp'                                      ],
         'sms_callback'                            => ['post',     'sms/{id}/callback',                        'CustomerController@updateSmsStatus'                                ],
         'es_migrate_entity'                       => ['post',     'es/migrate/{entityName}',                  'EsController@migrateEntity'                                        ],
+        'dummy_test_slack_send'                   => ['get',      'dummy/testslack/send',                    'AdminController@getSlackTestSend'                                  ],
+        'dummy_test_slack_queue'                  => ['get',      'dummy/testslack/queue',                   'AdminController@getSlackTestQueue'                                 ],
     );
 
     public static $public = array(
@@ -236,6 +242,8 @@ final class Route
         'payment_otp_submit',
         'payment_otp_resend',
         'payment_topup_ajax',
+        'payment_topup_post',
+        'payment_redirect',
         'payment_cancel',
         'payment_add_metadata',
         'merchant_public_get_banks',
@@ -357,6 +365,7 @@ final class Route
         'setl_edit',
         'setl_delete_file',
         'setl_calc_previous_fees',
+        'setl_post_details_old',
         'setl_fixer',
         'daily_setl_fetch_by_id',
         'daily_setl_fetch_multiple',
@@ -413,6 +422,7 @@ final class Route
         'setl_fetch_by_id',
         'setl_fetch_multiple',
         'setl_fetch_transactions',
+        'setl_get_details',
         'adj_fetch_by_id',
         'adj_fetch_multiple',
         'adj_add',
@@ -450,7 +460,9 @@ final class Route
         'gateway_payment_callback_kotak_cancel',
         'gateway_payment_callback_get',
         'gateway_payment_callback_post',
-        'sms_callback'
+        'sms_callback',
+        'dummy_test_slack_send',
+        'dummy_test_slack_queue',
     );
 
     public static $internalApps = array(

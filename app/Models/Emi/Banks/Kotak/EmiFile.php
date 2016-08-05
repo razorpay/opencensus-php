@@ -56,7 +56,7 @@ class EmiFile extends Base\EmiFile
 
         $data['file'] = $zipFile;
 
-        $data['body'] = 'Please forward the Kotak Emi file to Kotak: cc.loans@kotak.com and libu.john@kotak.com';
+        $data['body'] = 'Please process the attached EMI file';
 
         $this->mail->queue('emails.message', $data, function ($message) use ($data)
         {
@@ -112,15 +112,6 @@ class EmiFile extends Base\EmiFile
         }
 
         return $data;
-    }
-
-    protected function getAuthCode($payment)
-    {
-        $gateway = $payment->gateway;
-
-        $gateway = $this->repo->$gateway->findByPaymentIdAndAction($payment->id, Action::CAPTURE);
-
-        return $gateway->getAuthCode();
     }
 
     protected function sendEmiPassword()

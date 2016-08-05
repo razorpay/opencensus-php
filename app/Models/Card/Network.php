@@ -120,13 +120,13 @@ class Network
 
     public static function isValidNetwork($network)
     {
-        return ((in_array($network, self::$networks)) or
-                (in_array($network, array_values(self::$fullName))));
+        return ((defined(get_class().'::'.$network)) or
+                (NetworkName::isValidNetworkFullName($network)));
     }
 
     public static function isValidNetworkName($network)
     {
-        return (array_search($network, self::$fullName) !== false);
+        return (NetworkName::isValidNetworkFullName($network));
     }
 
     public static function isUnsupportedNetwork($network)
@@ -146,9 +146,7 @@ class Network
 
     public static function getCode($fullName)
     {
-        $codes = array_flip(self::$fullName);
-
-        return $codes[$fullName];
+        return NetworkName::$codes[$fullName];
     }
 
     public static function getSupportedNetworksNamesMap()

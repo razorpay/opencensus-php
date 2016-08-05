@@ -9,7 +9,6 @@ use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Models\Merchant;
 use RZP\Exception;
-use RZP\Services\SlackPoster;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
@@ -402,7 +401,7 @@ class FeeCalculator
             /*
             $slackArray = ['id' => $payment->card->getDashboardEntityLinkForSlack() ];
 
-            $this->slackPost(
+            $this->app['slack']->queue(
                 'Unknown card type found',
                 $slackArray,
                 ['channel' => '#tech_logs']);

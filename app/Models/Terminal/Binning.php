@@ -19,7 +19,7 @@ class Binning
             'binFor'         => Shared::HDFC_RAZORPAY_TERMINAL,
             'binWith'        => '5yKTyCuDne8eiz',
             'binWithGateway' => Gateway::CYBERSOURCE,
-            'load'           => 2,
+            'load'           => 5,
         ],
         [
             'method'         => Method::NETBANKING,

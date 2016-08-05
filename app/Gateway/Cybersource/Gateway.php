@@ -6,9 +6,11 @@ use Cache;
 use Crypt;
 use Config;
 use Requests;
+use SoapFault;
 use RZP\Error;
 use RZP\Exception;
 use RZP\Constants;
+use RZP\Gateway\Utility;
 use RZP\Models\Card;
 use RZP\Trace\Trace;
 use RZP\Gateway\Base;
@@ -63,6 +65,8 @@ class Gateway extends Base\Gateway
     const TEST_WSDL_FILE              = 'cybstest.wsdl.xml';
     const LIVE_WSDL_FILE              = 'cybslive.wsdl.xml';
     const XID                         = 'xid';
+    //soap client timeout in seconds
+    const CONNECTION_TIMEOUT          = 60;
 
     protected $gateway = Constants\Table::CYBERSOURCE;
 
@@ -137,8 +141,7 @@ class Gateway extends Base\Gateway
         }
         catch (SoapFault $exception)
         {
-            throw new Exception\RuntimeException(
-                'Capture request failed.', null, $exception);
+            $this->handleSoapFault($exception, "Capture request failed");
         }
     }
 
@@ -158,8 +161,7 @@ class Gateway extends Base\Gateway
         }
         catch (SoapFault $exception)
         {
-            throw new Exception\RuntimeException(
-                'Refund request failed.', null, $exception);
+            $this->handleSoapFault($exception, "Refund request failed");
         }
     }
 
@@ -298,8 +300,7 @@ class Gateway extends Base\Gateway
         }
         catch (SoapFault $exception)
         {
-            throw new Exception\RuntimeException(
-                'Server error occurred', null, $exception);
+            $this->handleSoapFault($exception, "Enroll: Server Error occured");
         }
     }
 
@@ -321,8 +322,7 @@ class Gateway extends Base\Gateway
         }
         catch (SoapFault $exception)
         {
-            throw new Exception\RuntimeException(
-                'Validation request failed.', null, $exception);
+            $this->handleSoapFault($exception, "Post Auth Enroll: Validation Request Failed");
         }
     }
 
@@ -342,8 +342,7 @@ class Gateway extends Base\Gateway
         }
         catch (SoapFault $exception)
         {
-            throw new Exception\RuntimeException(
-                'Authorization failed.', null, $exception);
+            $this->handleSoapFault($exception, "Post Enroll Authorize: Authorization Failed");
         }
     }
 
@@ -366,8 +365,7 @@ class Gateway extends Base\Gateway
         }
         catch (SoapFault $exception)
         {
-            throw new Exception\RuntimeException(
-                'Authorization failed.', null, $exception);
+            $this->handleSoapFault($exception, "Post Not Enrolled Authorize: Authorization failed");
         }
     }
 
@@ -636,7 +634,7 @@ class Gateway extends Base\Gateway
                 break;
 
             case Card\Network::MC:
-                $content['ucaf'][self::AUTHENTICATION_DATA] = $gateway->getAuthData();
+                $content['ucaf'][self::AUTHENTICATION_DATA] = $gateway->getAuthCode();
                 $content['ucaf'][self::COLLECTION_INDICATOR] = $gateway->getCollectionIndicator();
                 break;
 
@@ -782,7 +780,9 @@ class Gateway extends Base\Gateway
 
     protected function getSoapClientObject($request)
     {
-        $soapClient = new CybersourceSoapClient($request['url'], $request['options']['auth']);
+        $soapClient = new CybersourceSoapClient($request['url'],
+                                                $request['options']['auth'],
+                                                $request['connect_options']);
 
         return $soapClient;
     }
@@ -960,7 +960,11 @@ class Gateway extends Base\Gateway
             'content' => $content,
             'options' => [
                 'auth' => $this->getCredentials()
-            ]
+            ],
+            'connect_options' => [
+                'exception' => true,
+                'connection_timeout' => self::CONNECTION_TIMEOUT
+            ],
         ];
 
         return $request;
@@ -1082,7 +1086,62 @@ class Gateway extends Base\Gateway
         return [];
     }
 
-    /** Exceptions **/
+    protected function getVerifyContentFromResponse($verify)
+    {
+        $content = $verify->verifyResponseContent;
+
+        $paymentData = $content['Requests']['Request']['PaymentData'];
+
+        $paInfo = $paymentData['PayerAuthenticationInfo'];
+
+        $data = [
+            'eci' => str_pad($paInfo['ECI'], 2, '0', STR_PAD_LEFT),
+            'cavv' => $paInfo['AAV_CAVV'],
+            'xid' => $paInfo['XID'],
+            'reason_code' => 100,
+            'action' => Base\Action::AUTHORIZE,
+            'status' => Status::AUTHORIZED
+        ];
+
+        $verify->verifyResponseContent = $data;
+    }
+
+    protected function xmlToArray($data)
+    {
+        $xml_values = simplexml_load_string($data);
+
+        return json_decode(json_encode($xml_values), true);
+    }
+
+    protected function isSequentialArray($array)
+    {
+        return array_keys($array) === range(0, count($array) - 1);
+    }
+
+    // Exception handling
+
+    /**
+     * @param \SoapFault $sf
+     * @throws Exception\GatewayTimeoutException
+     * @throws Exception\RuntimeException
+     */
+    protected function handleSoapFault(SoapFault $sf, $errMsg)
+    {
+        if (Utility::checkSoapTimeout($sf) === true)
+        {
+            throw new Exception\GatewayTimeoutException(
+                                $sf->getMessage(), $sf);
+        }
+
+        throw new Exception\RuntimeException(
+            $errMsg, null, $sf);
+    }
+
+    /**
+     * @param $response
+     * @throws Exception\BadRequestException
+     * @throws Exception\GatewayErrorException
+     */
     protected function throwException($response)
     {
         if (isset($response['reasonCode']) === false)
@@ -1114,37 +1173,5 @@ class Gateway extends Base\Gateway
         }
 
         throw $e;
-    }
-
-    protected function getVerifyContentFromResponse($verify)
-    {
-        $content = $verify->verifyResponseContent;
-
-        $paymentData = $content['Requests']['Request']['PaymentData'];
-
-        $paInfo = $paymentData['PayerAuthenticationInfo'];
-
-        $data = [
-            'eci' => str_pad($paInfo['ECI'], 2, '0', STR_PAD_LEFT),
-            'cavv' => $paInfo['AAV_CAVV'],
-            'xid' => $paInfo['XID'],
-            'reason_code' => 100,
-            'action' => Base\Action::AUTHORIZE,
-            'status' => Status::AUTHORIZED
-        ];
-
-        $verify->verifyResponseContent = $data;
-    }
-
-    protected function xmlToArray($data)
-    {
-        $xml_values = simplexml_load_string($data);
-
-        return json_decode(json_encode($xml_values), true);
-    }
-
-    protected function isSequentialArray($array)
-    {
-        return array_keys($array) === range(0, count($array) - 1);
     }
 }

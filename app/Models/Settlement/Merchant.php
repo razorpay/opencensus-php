@@ -10,6 +10,7 @@ use RZP\Models\Adjustment;
 use RZP\Models\Merchant\BankAccount;
 use RZP\Models\Transaction;
 use RZP\Models\Settlement;
+use RZP\Models\Settlement\Details as SettlementDetails;
 
 class Merchant
 {
@@ -25,15 +26,15 @@ class Merchant
 
     protected $txns;
 
-    public function __construct($merchant, $channel)
+    protected $setlDetails;
+
+    public function __construct($merchant, $channel, $repo)
     {
         $this->merchant = $merchant;
 
         $this->channel = $channel;
 
-        $this->merchantRepo = new \RZP\Models\Merchant\Repository;
-        $this->txnRepo = new Transaction\Repository;
-        $this->setlRepo = new Settlement\Repository;
+        $this->repo = $repo;
 
         // Get merchant bank account
         $this->attachMerchantBankAccount();
@@ -48,6 +49,10 @@ class Merchant
         $this->serviceTax = $serviceTax;
 
         $setl = $this->createSetlEntityAndTxn();
+        $this->setlDetails = new Base\PublicCollection;
+
+        // Create Settlement Details entity
+        $this->createSettlementDetailsEntities();
 
         // Updates merchant and api balance
         $this->updateBalances();
@@ -62,6 +67,7 @@ class Merchant
         $this->amount = $apiFee;
         $this->fee = 0;
         $this->txns = new Base\PublicCollection;
+        $this->setlDetails = new Base\PublicCollection;
         $this->serviceTax = 0;
 
         $adjInput = array(
@@ -81,6 +87,82 @@ class Merchant
         $this->saveChangesToDb();
 
         return [$setl, $adj->transaction];
+    }
+
+    public function createSettlementDetails($setl)
+    {
+        $this->setl = $setl;
+        $this->txns = $setl->setlTransactions;
+
+        $this->setlDetails = new Base\PublicCollection;
+
+        $this->createSettlementDetailsEntities();
+
+        $this->repo->saveOrFailCollection($this->setlDetails);
+    }
+
+    protected function createSettlementDetailsEntities()
+    {
+        $totalServiceTax = 0;
+        $totalFee = 0;
+        $totalAmount = 0;
+
+        $entityTypes = array(
+            Transaction\Type::PAYMENT,
+            Transaction\Type::REFUND,
+            Transaction\Type::ADJUSTMENT);
+
+        foreach ($entityTypes as $entityType)
+        {
+            $totalAmount = 0;
+
+            $entityTxns = $this->txns->filter(function($txn)
+                use ($entityType, & $totalFee, & $totalServiceTax, & $totalAmount)
+            {
+                if ($txn->getType() === $entityType)
+                {
+                    $totalServiceTax    += $txn->getServiceTax();
+
+                    $totalFee           += $txn->getFee();
+
+                    if ($txn->getCredit() > 0)
+                    {
+                        $totalAmount    += $txn->getAmount();
+                    }
+                    else
+                    {
+                        $totalAmount    -= $txn->getAmount();
+                    }
+
+                    return true;
+                }
+            });
+
+            $this->createSetlDetailsEntity($entityType, $entityTxns->count(), $totalAmount);
+        }
+
+        $this->createSetlDetailsEntity(SettlementDetails\Type::SERVICE_TAX, null, $totalServiceTax);
+
+        $this->createSetlDetailsEntity(SettlementDetails\Type::FEE, 0, $totalFee);
+    }
+
+    protected function createSetlDetailsEntity($type, $count, $amount)
+    {
+        $input = array(
+            SettlementDetails\Entity::TYPE          => $type,
+            SettlementDetails\Entity::AMOUNT        => $amount,
+            SettlementDetails\Entity::COUNT         => $count
+        );
+
+        $setlDetailEntity = new SettlementDetails\Entity;
+        $setlDetailEntity->build($input);
+
+        $setlDetailEntity->merchant()->associate($this->merchant);
+        $setlDetailEntity->settlement()->associate($this->setl);
+
+        $this->setlDetails->push($setlDetailEntity);
+
+        return $setlDetailEntity;
     }
 
     protected function createSetlEntityAndTxn()
@@ -149,10 +231,12 @@ class Merchant
     protected function saveChangesToDb()
     {
         // Saves to db
-        $this->txnRepo->saveOrFail($this->setlTransaction);
-        $this->setlRepo->saveOrFail($this->setl);
+        $this->repo->saveOrFail($this->setlTransaction);
+        $this->repo->saveOrFail($this->setl);
 
-        $this->txnRepo->updateSettlementId($this->txns, $this->setl->getId());
+        $this->repo->saveOrFailCollection($this->setlDetails);
+
+        $this->repo->transaction->updateSettlementId($this->txns, $this->setl->getId());
     }
 
     protected function updateBalances()
@@ -174,7 +258,7 @@ class Merchant
         }
         else
         {
-            $ba = (new BankAccount\Repository)->getBankAccount($this->merchant);
+            $ba = $this->repo->bank_account->getBankAccount($this->merchant);
 
             if ($ba === null)
             {
@@ -208,7 +292,7 @@ class Merchant
 
         $merchant->setRelation('bankAccount', $ba);
 
-        $ba->save();
+        $this->repo->bank_account->save($ba);
 
         return $ba;
     }
