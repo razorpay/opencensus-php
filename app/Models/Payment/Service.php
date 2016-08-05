@@ -376,7 +376,8 @@ class Service extends Base\Service
             'total time'    => $time . ' secs');
 
         $message = 'Authorized payments refunded: ' . $refunded;
-        $this->slackPost($message, $results, ['channel' => '#tech_logs']);
+
+        $this->slack->queue($message, $results, ['channel' => '#tech_logs']);
 
         return $results;
     }
@@ -398,7 +399,7 @@ class Service extends Base\Service
             $message = 'Payment authorizations till ' .
                         $date->format('d-m-y') . ': ' . $count;
 
-            $this->slackPost($message, [], ['channel' => '#tech_logs']);
+            $this->slack->queue($message, [], ['channel' => '#tech_logs']);
         }
 
         return ['count' => $count];

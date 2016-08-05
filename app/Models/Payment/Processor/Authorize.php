@@ -179,13 +179,13 @@ trait Authorize
         $options = $this->getOptionsForTerminals();
 
         // Terminal picked is the terminal used for payment processing.
-        $terminalPicked = (new TerminalPicker)->selectTerminal($payment, $this->mode, $options);
+        //$terminalPicked = (new TerminalPicker)->selectTerminal($payment, $this->mode, $options);
 
         $terminalSelector = new Terminal\Selector($payment, $this->mode);
 
         $terminalSelected = $terminalSelector->select($options);
 
-        $this->logTerminalPickedAndSelected($terminalSelected, $terminalPicked, $payment);
+        //$this->logTerminalPickedAndSelected($terminalSelected, $terminalPicked, $payment);
 
         $this->runPaymentGatewayRelatedPreProcessing($payment, $gatewayInput);
 
@@ -253,8 +253,6 @@ trait Authorize
         if ($terminalSelectionStatus === 'TERMINAL_SELECTION_MISMATCH')
         {
             $traceData['payment_id_link'] = $payment->getDashboardEntityLinkForSlack();
-
-            // $this->slackPost($terminalSelectionStatus, $traceData, ['channel' => '#dev-test']);
 
             $this->trace->warn(TraceCode::TERMINAL_SELECTION_MISMATCH, $traceData);
         }
@@ -367,7 +365,7 @@ trait Authorize
             $this->preProcessPaymentForGlobalCustomer($customer, $customerApp, $payment, $input, $gatewayInput);
         }
 
-        if ($payment->isMethod(Payment\Method::EMI))
+        if ($payment->isEmi())
         {
             $cardNumber = $gatewayInput['card']['number'];
 
@@ -435,7 +433,7 @@ trait Authorize
             ]);
 
         // Token should definitely exist in database.
-        $token = (new Token\Repository)->getByTokenAndCustomerId(
+        $token = $this->repo->token->getByTokenAndCustomerId(
             $input[Payment\Entity::TOKEN],
             $customer->getId());
 
@@ -458,7 +456,7 @@ trait Authorize
             ]);
 
         // Token should definitely exist in database.
-        $token = (new Token\Repository)->getByTokenAndCustomerId(
+        $token = $this->repo->token->getByTokenAndCustomerId(
             $input[Payment\Entity::TOKEN],
             $customer->getId());
 
@@ -630,22 +628,17 @@ trait Authorize
 
     protected function setBankAndEmiPlanDetails($payment, $cardNumber, $emiDuration)
     {
-        // Set the bank
-        $iin = substr($cardNumber, 0, 6);
+        $iinEntity = $payment->card->iinRelation;
 
-        $iinEntity = (new IIN\Repository)->findOrFail($iin);
-
-        if (IIN\IIN::isEmiAvailableForCard($iinEntity, $cardNumber) === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_EMI_NOT_AVAILABLE_ON_CARD);
-        }
+        IIN\IIN::validateEmiAvailableForCard($iinEntity, $cardNumber);
 
         $payment->setBank($iinEntity->getIssuer());
 
         // Set emi plan id
-        $emiPlan = (new Emi\Repository)->fetchByBankAndDuration(
-                        $iinEntity->getIssuer(), $emiDuration);
+        $emiPlan = $this->repo->emi_plan->fetchRelevantEmiPlan(
+                                            $iinEntity, $emiDuration);
+
+        $payment->getValidator()->validateMinAmountWithEmiPlanAmount($emiPlan);
 
         $payment->emiPlan()->associate($emiPlan);
     }
@@ -660,7 +653,7 @@ trait Authorize
 
             $payment->card->setVault(Card\Vault::TOKENEX);
 
-            (new Card\Repository)->saveOrFail($payment->card);
+            $this->repo->card->saveOrFail($payment->card);
         }
     }
 
@@ -836,7 +829,7 @@ trait Authorize
 
         $slackData = ['id' => $payment->getDashboardEntityLinkForSlack()];
 
-        $this->slackPost($message, $slackData, ['color' => 'good', 'channel' => '#tech_logs']);
+        $this->app['slack']->queue($message, $slackData, ['color' => 'good', 'channel' => '#tech_logs']);
 
         $this->trace->info(
             TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,

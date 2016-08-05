@@ -543,7 +543,7 @@ class Service extends Base\Service
 
     public function getMerchantBeneficiaryFile()
     {
-        $file = (new BankAccount\BeneficiaryFile2)->generate();
+        $file = (new BankAccount\BeneficiaryFile3)->generate();
 
         return $file;
     }
@@ -592,7 +592,7 @@ class Service extends Base\Service
             $message = "Merchant Beneficiary file generated. Merchants activated since last".
                     " report is ".$merchantsActivatedSinceLastReport;
 
-            $this->slackPost($message,[],['channel' => '#settlements']);
+            $this->slack->queue($message,[],['channel' => '#settlements']);
         }
 
         //Log response in trace

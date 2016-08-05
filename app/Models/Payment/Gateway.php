@@ -21,6 +21,7 @@ class Gateway
     const EBS               = 'ebs';
     const HDFC              = 'hdfc';
     const KOTAK             = 'kotak';
+    const AXIS              = 'axis';
     const MOBIKWIK          = 'mobikwik';
     const PAYTM             = 'paytm';
     const SBIEPAY           = 'sbiepay';
@@ -100,9 +101,8 @@ class Gateway
         ),
 
         Method::EMI => array(
+            self::AMEX,
             self::HDFC,
-            self::KOTAK,
-            self::AXIS_MIGS,
         ),
     );
 
@@ -336,9 +336,9 @@ class Gateway
         Gateway::ATOM);
 
     public static $emiBanks = array(
-        self::HDFC      => IFSC::HDFC,
-        self::KOTAK     => IFSC::KKBK,
-        self::AXIS_MIGS => IFSC::UTIB,
+        IFSC::HDFC,
+        IFSC::KKBK,
+        IFSC::UTIB,
     );
 
     public static $emiBanksUsingCardTerminals = array(
@@ -348,12 +348,11 @@ class Gateway
 
     public static $emiFileBanks = array(
         self::KOTAK     => IFSC::KKBK,
-        self::AXIS_MIGS => IFSC::UTIB,
+        self::AXIS      => IFSC::UTIB,
     );
 
     public static $emiBankToGatewayMap = array(
         IFSC::HDFC      =>  Gateway::HDFC,
-        IFSC::UTIB      =>  Gateway::AXIS_MIGS
     );
 
     public static function isNetbankingBankDirectlySupported($bank)

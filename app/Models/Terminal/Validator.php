@@ -66,6 +66,8 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACCESS_CODE         => 'required|alpha_num|size:8',
         Entity::GATEWAY_TERMINAL_ID         => 'required',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'required',
+        Entity::EMI                         => 'sometimes|boolean',
+        Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12',
     );
 
     protected static $axisMigsTerminalRules = array(
