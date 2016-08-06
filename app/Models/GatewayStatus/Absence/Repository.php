@@ -10,16 +10,7 @@ class Repository extends Base\Repository
     use Base\RepositoryFetch;
 
     protected $entity = 'gateway_absence';
-
-    public function findForTerminal($terminal)
-    {
-        $repo = $this->repo;
-
-        return $repo::withTrashed()
-            ->where(Entity::TERMINAL_ID, '=', $terminal->getId())
-            ->get();
-    }
-
+    
     public function findForGateway($gateway)
     {
         $repo = $this->repo;
