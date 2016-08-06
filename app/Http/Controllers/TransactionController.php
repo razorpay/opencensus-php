@@ -278,42 +278,18 @@ class TransactionController extends Controller
             return AppResponse::validationErrorResponse($error);
         }
     }
-
-    public function updateWeekAggregations($mode)
+    /**
+    * Expects date input in format "3 august 2016"
+    */
+    public function updateTypeAggregations($mode, $type)
     {
         $input = Input::all();
 
-        $created_at = strtotime('o-\\WW', strtotime($input['date']));
+        $created_at = (new Transaction\Service)->getCreatedAtFromInputAndType(strtotime($input['date']), $type);
 
-        $data = (new Transaction\Service)->getDailyTransactionsForTheWeek($created_at, $mode);
+        $data = (new Transaction\Service)->getTimelyTransactionsForTheType($created_at, $mode, $type);
 
-        list($error, $data) = (new Transaction\Service)->updateTypeAggregations($data, $created_at, $mode, 'week');
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function updateMonthAggregations($mode)
-    {
-        $input = Input::all();
-
-        $created_at = strtotime('1 Jan ' . date('Y', strtotime($input['date'])));
-
-        $data = (new Transaction\Service)->getWeeklyTransactionsForTheMonth($created_at, $mode);
-
-        list($error, $data) = (new Transaction\Service)->updateTypeAggregations($data, $created_at, $mode, 'month');
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function updateYearAggregations($mode)
-    {
-        $input = Input::all();
-
-        $created_at = strtotime('1 Jan ' . date('Y', strtotime($input['date'])));
-
-        $data = (new Transaction\Service)->getMonthlyTransactionsForTheYear($created_at, $mode);
-
-        list($error, $data) = (new Transaction\Service)->updateTypeAggregations($data, $created_at, $mode, 'year');
+        list($error, $data) = (new Transaction\Service)->updateTypeAggregations($data, $created_at, $mode, $type);
 
         return AppResponse::jsonResponse($error, $data);
     }

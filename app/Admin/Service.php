@@ -1920,34 +1920,51 @@ class Service extends Base\Service
         $params['count'] = self::PAGE_SIZE;
         $params['to'] = $dateTo;
 
-        $total_data = [];
-
         while (1)
         {
             $params['skip'] = $count_done;
 
-            list($error, $data) = $this->fetchMultipleEntities($mode, 'payment', $params);
+            list($error, $payments) = $this->fetchMultipleEntities($mode, 'payment', $params);
 
-            $count_done += self::PAGE_SIZE;
+            $count = $payments['count'];
 
-            $total_data = array_merge($total_data, $data['items']);
+            $payments = $payments['items'];
 
-            if ($data['count'] < self::PAGE_SIZE)
+            $payments = array_values(array_filter($payments, function($payment) {
+                return $payment['captured_at'] !== NULL;
+            }));
+
+            $total_payments = [];
+
+            foreach ($payments as $payment) {
+
+                $payment = $this->cleanUpPayment($payment);
+
+                $total_payments[$payment['merchant_id']][] = $payment;
+            }
+
+            if ($count < self::PAGE_SIZE)
             {
                 break;
             }
+
+            $count_done += self::PAGE_SIZE;
         }
 
-        list($error, $response) = $this->updateDayAggregations($mode, $total_data);
+        list($error, $response) = (new Transaction\Service)->processDayAggregations($total_payments, $mode);
 
         return array($error, $response);
     }
 
-    protected function updateDayAggregations($mode, $input)
+    protected function cleanUpPayment($payment)
     {
-        $data = $input;
+        $minimal_keys = ['merchant_id', 'amount', 'updated_at'];
 
-        $error = (new Transaction\Service)->processDayAggregations($data, $mode);
+        $minimal_payment = array_filter($payment, function($key) use($minimal_keys) {
+            return in_array($key, $minimal_keys);
+        }, ARRAY_FILTER_USE_KEY);
+
+        return $minimal_payment;
     }
 }
 
