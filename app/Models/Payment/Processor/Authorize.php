@@ -522,7 +522,7 @@ trait Authorize
         // If token is set, then pay using global saved card
         if (empty($input[Payment\Entity::TOKEN]) === false)
         {
-            $this->payment->setToken(null);
+            $this->payment->setToken(null);
 
             $this->payment->setGlobalToken($input[Payment\Entity::TOKEN]);
 
@@ -637,7 +637,7 @@ trait Authorize
         {
             $this->payment->setToken($token->getToken());
 
-            $this->payment->associate($token);
+            $this->payment->token()->associate($token);
         }
     }
 
@@ -663,7 +663,7 @@ trait Authorize
         {
             $this->payment->setGlobalToken($token->getToken());
 
-            $this->payment->globalToken()->associate($tokne);
+            $this->payment->globalToken()->associate($token);
         }
     }
 
