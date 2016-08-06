@@ -18,6 +18,7 @@ class Entity extends Base\PublicEntity
     const PAYZAPP           = 'payzapp';
     const PAYUMONEY         = 'payumoney';
     const EMI               = 'emi';
+    const RECURRING         = 'recurring';
     const DEBIT_CARD        = 'debit_card';
     const CREDIT_CARD       = 'credit_card';
 
@@ -73,9 +74,14 @@ class Entity extends Base\PublicEntity
         self::OLAMONEY      => false,
         self::BANKS         => [],
         self::EMI           => false,
+        self::RECURRING     => false,
         self::NETBANKING    => true,
         self::CREDIT_CARD   => true,
         self::DEBIT_CARD    => true,
+    );
+
+    protected $casts = array(
+        self::RECURRING     => 'boolean'
     );
 
     protected $wallets = array(
@@ -174,6 +180,11 @@ class Entity extends Base\PublicEntity
         return $this->getEmiAttribute();
     }
 
+    public function isRecurringEnabled()
+    {
+        return $this->getRecurring();
+    }
+
     public function isMethodEnabled($method)
     {
         $func = 'is'.ucfirst($method).'Enabled';
@@ -228,9 +239,14 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::OLAMONEY);
     }
 
-    public function getEMi()
+    public function getEmi()
     {
         return $this->getAttribute(self::EMI);
+    }
+
+    public function getRecurring()
+    {
+        return $this->getAttribute(self::RECURRING);
     }
 
     public function setWallets($wallets)
@@ -322,6 +338,13 @@ class Entity extends Base\PublicEntity
         assert($this->isCardEnabled(), "Cannot enable emi without Card method");
 
         $this->setAttribute(self::EMI, $emi);
+    }
+
+    public function setRecurring($recurring)
+    {
+        assert($this->isCardEnabled(), "Cannot enable recurring without Card method");
+
+        $this->setAttribute(self::RECURRING, $recurring);
     }
 
     protected function getAmexAttribute()
@@ -420,8 +443,13 @@ class Entity extends Base\PublicEntity
             self::MOBIKWIK,
             self::PAYZAPP,
             self::PAYUMONEY,
+<<<<<<< 3e886c79619a554a9e53ca360803c63fb8e5d50c
             self::OLAMONEY,
             self::EMI
+=======
+            self::EMI,
+            self::RECURRING
+>>>>>>> [recurring] Add recurring method to merchant methods
         );
     }
 }
