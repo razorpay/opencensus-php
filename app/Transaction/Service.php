@@ -199,18 +199,21 @@ class Service extends Base\Service
         $error = [];
         try
         {
-            foreach ($payments_by_merchant as $key => $payment_by_merchant) {
+            foreach ($payments_by_merchant as $key => $payment_by_merchant)
+            {
 
                 $inputByMerchant[$key]['count'] = count($payment_by_merchant);
                 $inputByMerchant[$key]['amount'] = 0;
 
-                foreach ($payment_by_merchant as $value) {
+                foreach ($payment_by_merchant as $value)
+                {
                     $inputByMerchant[$key]['amount'] += $value['amount'];
                 }
                 $inputByMerchant[$key]['updated_at'] = time();
             }
 
-            foreach ($inputByMerchant as $key => $value) {
+            foreach ($inputByMerchant as $key => $value)
+            {
 
                 $created_at = strtotime(date('j F Y', $value['updated_at']));
 
@@ -273,7 +276,8 @@ class Service extends Base\Service
         $error = [];
         try
         {
-            foreach ($data as $merchant_aggregate) {
+            foreach ($data as $merchant_aggregate)
+            {
                 $key = $merchant_aggregate->merchant_id;
                 $input = [];
                 $input['updated_at'] = $created_at + self::$timeIntervals[$type];

@@ -1946,7 +1946,8 @@ class Service extends Base\Service
                 return $payment['captured_at'] !== NULL;
             }));
 
-            foreach ($payments as $payment) {
+            foreach ($payments as $payment)
+            {
 
                 $payment = $this->cleanUpPayment($payment);
 
