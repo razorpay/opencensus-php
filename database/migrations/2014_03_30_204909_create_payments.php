@@ -151,6 +151,9 @@ class CreatePayments  extends Migration
                   ->nullable()
                   ->default(null);
 
+            $table->boolean(Payment::RECURRING)
+                  ->default(0);
+
             $table->boolean(Payment::SAVE)
                   ->default(0);
             

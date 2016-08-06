@@ -62,6 +62,7 @@ class Entity extends Base\PublicEntity
     const OTP_ATTEMPTS          = 'otp_attempts';
     const OTP_COUNT             = 'otp_count';
     const FEE                   = 'fee';
+    const RECURRING             = 'recurring';
     const SAVE                  = 'save';
     const LATE_AUTHORIZED       = 'late_authorized';
 
@@ -97,6 +98,7 @@ class Entity extends Base\PublicEntity
         self::CALLBACK_URL,
         self::FEE,
         self::SERVICE_TAX,
+        self::RECURRING,
         self::SAVE);
 
     protected $visible = array(
@@ -139,6 +141,7 @@ class Entity extends Base\PublicEntity
         self::SIGNED,
         self::VERIFIED,
         self::CALLBACK_URL,
+        self::RECURRING,
         self::SAVE,
         self::FEE,
         self::SERVICE_TAX,
@@ -212,6 +215,10 @@ class Entity extends Base\PublicEntity
         self::FEE,
         self::SERVICE_TAX
     );
+
+    protected $casts = [
+        self::RECURRING => 'boolean'
+    ];
 
 // --------------------- Generators --------------------------------------------
 
@@ -403,6 +410,11 @@ class Entity extends Base\PublicEntity
     public function setFee($fee)
     {
         $this->setAttribute(self::FEE, $fee);
+    }
+
+    public function setRecurring($recurring)
+    {
+        $this->setAttribute(self::RECURRING, $recurring);
     }
 
     public function setErrorNull()
@@ -864,6 +876,11 @@ class Entity extends Base\PublicEntity
     public function getGlobalToken()
     {
         return $this->getAttribute(self::GLOBAL_TOKEN);
+    }
+
+    public function getRecurring()
+    {
+        return $this->getAttribute(self::RECURRING);
     }
 
     public function getCardId()

@@ -20,6 +20,7 @@ class Entity extends Base\PublicEntity
     const WALLET                = 'wallet';
     const GATEWAY_TOKEN         = 'gateway_token';
     const GATEWAY_TOKEN2        = 'gateway_token2';
+    const RECURRING             = 'recurring';
     const EXPIRED_AT            = 'expired_at';
     const CREATED_AT            = 'created_at';
     const UPDATED_AT            = 'updated_at';
@@ -41,6 +42,7 @@ class Entity extends Base\PublicEntity
         self::TOKEN,
         self::GATEWAY_TOKEN,
         self::GATEWAY_TOKEN2,
+        self::RECURRING,
         self::EXPIRED_AT,
     );
 
@@ -57,6 +59,7 @@ class Entity extends Base\PublicEntity
         self::TERMINAL_ID,
         self::GATEWAY_TOKEN,
         self::GATEWAY_TOKEN2,
+        self::RECURRING,
         self::EXPIRED_AT,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -75,6 +78,7 @@ class Entity extends Base\PublicEntity
         self::BANK           => null,
         self::CARD_ID        => null,
         self::GATEWAY_TOKEN2 => null,
+        self::RECURRING      => false,
         self::EXPIRED_AT     => null
     );
 
@@ -82,6 +86,10 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::CARD);
+
+    protected $casts = array(
+        self::RECURRING => 'boolean'
+    );
 
     protected static $generators = array(
         self::TOKEN
@@ -137,6 +145,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::GATEWAY_TOKEN2);
     }
 
+    public function getRecurring()
+    {
+        return $this->getAttribute(self::RECURRING);
+    }
+
     public function getExpiredAt()
     {
         return $this->getAttribute(self::EXPIRED_AT);
@@ -152,6 +165,11 @@ class Entity extends Base\PublicEntity
         }
 
         return ($expiredAt <= time());
+    }
+
+    public function isRecurring()
+    {
+        return $this->getRecurring();
     }
 
     protected function setPublicCardAttribute(array & $array)

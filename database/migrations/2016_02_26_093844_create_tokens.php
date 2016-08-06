@@ -53,6 +53,9 @@ class CreateTokens extends Migration {
             $table->string(Token::GATEWAY_TOKEN2, 50)
                   ->nullable();
 
+            $table->boolean(Token::RECURRING)
+                  ->default(false);
+
             $table->integer(Token::EXPIRED_AT)
                   ->nullable();
 
