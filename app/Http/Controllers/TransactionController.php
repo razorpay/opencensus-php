@@ -278,4 +278,43 @@ class TransactionController extends Controller
             return AppResponse::validationErrorResponse($error);
         }
     }
+
+    public function updateWeekAggregations($mode)
+    {
+        $input = Input::all();
+
+        $created_at = strtotime('o-\\WW', strtotime($input['date']));
+
+        $data = (new Transaction\Service)->getDailyTransactionsForTheWeek($created_at, $mode);
+
+        $error = (new Transaction\Service)->updateTypeAggregations($data, $created_at, $mode, 'week');
+
+        return AppResponse::jsonResponse($error);
+    }
+
+    public function updateMonthAggregations($mode)
+    {
+        $input = Input::all();
+
+        $created_at = strtotime('1 Jan ' . date('Y', strtotime($input['date'])));
+
+        $data = (new Transaction\Service)->getWeeklyTransactionsForTheMonth($created_at, $mode);
+
+        $error = (new Transaction\Service)->updateTypeAggregations($data, $created_at, $mode, 'month');
+
+        return AppResponse::jsonResponse($error);
+    }
+
+    public function updateYearAggregations($mode)
+    {
+        $input = Input::all();
+
+        $created_at = strtotime('1 Jan ' . date('Y', strtotime($input['date'])));
+
+        $data = (new Transaction\Service)->getMonthlyTransactionsForTheYear($created_at, $mode);
+
+        $error = (new Transaction\Service)->updateTypeAggregations($data, $created_at, $mode, 'year');
+
+        return AppResponse::jsonResponse($error);
+    }
 }

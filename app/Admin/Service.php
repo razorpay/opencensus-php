@@ -1911,26 +1911,5 @@ class Service extends Base\Service
 
         $error = (new Transaction\Service)->processDayAggregations($data, $mode);
     }
-
-    public function updateMerchantWeekAggregations($mode, $input)
-    {
-        $data = $input['items'];
-
-        $error = (new Transaction\Service)->processWeekAggregations($data, $mode);
-    }
-
-    public function updateMerchantMonthAggregations($mode, $input)
-    {
-        $data = $input['items'];
-
-        $error = (new Transaction\Service)->processMonthAggregations($data, $mode);
-    }
-
-    public function updateMerchantYearAggregations($mode, $input)
-    {
-        $data = $input['items'];
-
-        $error = (new Transaction\Service)->processYearAggregations($data, $mode);
-    }
 }
 

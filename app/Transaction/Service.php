@@ -6,6 +6,7 @@ use App\Base;
 use App\Transaction;
 use App\Merchant;
 use App\MerchantDetails;
+use DB;
 
 class Service extends Base\Service
 {
@@ -255,70 +256,6 @@ class Service extends Base\Service
         return array();
     }
 
-    public function processWeekAggregations(array $input, $mode)
-    {
-        $inputByMerchant = [];
-
-        foreach ($input as $value) {
-
-            $this->filterInput($value, $inputByMerchant);
-        }
-
-        foreach ($inputByMerchant as $key => $value) {
-
-            $created_at = strtotime(date('o-\\WW', $value['updated_at']));
-
-            $type = 'week';
-
-            $this->createOrUpdate($key, $value, $type, $created_at, $mode);
-        }
-
-        return array();
-    }
-
-    public function processMonthAggregations(array $input, $mode)
-    {
-        $inputByMerchant = [];
-
-        foreach ($input as $value) {
-
-            $this->filterInput($value, $inputByMerchant);
-        }
-
-        foreach ($inputByMerchant as $key => $value) {
-
-            $created_at = strtotime(date('M Y', $value['updated_at']));
-            sd($created_at);
-
-            $type = 'month';
-
-            $this->createOrUpdate($key, $value, $type, $created_at, $mode);
-        }
-
-        return array();
-    }
-
-    public function processYearAggregations(array $input, $mode)
-    {
-        $inputByMerchant = [];
-
-        foreach ($input as $value) {
-
-            $this->filterInput($value, $inputByMerchant);
-        }
-
-        foreach ($inputByMerchant as $key => $value) {
-
-            $created_at = strtotime('1 Jan ' . date('Y', $value['updated_at']));
-
-            $type = 'year';
-
-            $this->createOrUpdate($key, $value, $type, $created_at, $mode);
-        }
-
-        return array();
-    }
-
     protected function filterInput($value, &$inputByMerchant)
     {
         if ($value['captured_at'] === NULL)
@@ -353,15 +290,76 @@ class Service extends Base\Service
     protected function createOrUpdate($key, $inputByMerchant, $type, $created_at, $mode)
     {
         $obj = Transaction\Entity::retrieveByTypeAndCreatedAt($key, $type, $created_at, $mode);
-
         if (($obj === null) or
-            ((int) $obj->created_at->timestamp + self::$timeIntervals[$type] <= $inputByMerchant['updated_at']))
+            ($obj->created_at->timestamp + self::$timeIntervals[$type] <= $inputByMerchant['updated_at']))
         {
             $this->createAggregate($key, $inputByMerchant, $type, $mode);
         }
         else
         {
             $this->updateAggregate($inputByMerchant, $obj);
+        }
+    }
+
+    public function getMonthlyTransactionsForTheYear($created_at, $mode)
+    {
+        $year_end = $created_at + self::$timeIntervals['year'];
+
+        $data = Transaction\Entity::select('merchant_id', DB::raw('sum(count) as count'), DB::raw('sum(amount) as amount'))
+            ->where('type','=','month')
+            ->where('created_at','>=',$created_at)
+            ->where('created_at','<=',$year_end)
+            ->where('mode', '=', $mode)
+            ->groupBy('merchant_id')
+            ->get();
+
+        return $data;
+    }
+
+    public function getDailyTransactionsForTheWeek($created_at, $mode)
+    {
+        $week_end = $created_at + self::$timeIntervals['week'];
+
+        $data = Transaction\Entity::select('merchant_id', DB::raw('sum(count) as count'), DB::raw('sum(amount) as amount'))
+            ->where('type','=','day')
+            ->where('created_at','>=',$created_at)
+            ->where('created_at','<=',$week_end)
+            ->where('mode', '=', $mode)
+            ->groupBy('merchant_id')
+            ->get();
+
+        return $data;
+    }
+
+    public function getWeeklyTransactionsForTheMonth($created_at, $mode)
+    {
+        $month_end = $created_at + self::$timeIntervals['month'];
+
+        $data = Transaction\Entity::select('merchant_id', DB::raw('sum(count) as count'), DB::raw('sum(amount) as amount'))
+            ->where('type','=','week')
+            ->where('created_at','>=',$created_at)
+            ->where('created_at','<=',$month_end)
+            ->where('mode', '=', $mode)
+            ->groupBy('merchant_id')
+            ->get();
+
+        return $data;
+    }
+
+    public function updateTypeAggregations($data, $created_at, $mode, $type)
+    {
+        foreach ($data as $merchant_aggregate) {
+            $key = $merchant_aggregate->merchant_id;
+            $input = [];
+            $input['updated_at'] = $created_at + self::$timeIntervals[$type];
+            if ($type === 'year')
+            {
+                $input['updated_at'] = time();
+            }
+            $input['amount'] = $merchant_aggregate->amount;
+            $input['count'] = $merchant_aggregate->count;
+            $input['merchant_id'] = $key;
+            $this->createOrUpdate($key, $input, $type, $created_at, $mode);
         }
     }
 }
