@@ -2,20 +2,18 @@
 
 namespace RZP\Models\Payment\Analytics;
 
-use Crypt;
 use RZP\Models\Base;
 use RZP\Models\Payment;
-use RZP\Models\Merchant;
 
 class Entity extends Base\PublicEntity
 {
     const ID                            = 'id';
     const PAYMENT_ID                    = 'payment_id';
     const TERMINAL_ID                   = 'terminal_id';
-    const STATUS                        = 'status';
+    const TERMINAL_STATUS               = 'terminal_status';
     const TERMINAL_RESPONSE_TIME        = 'terminal_response_time';
-    const STATUS_CODE                   = 'status_code';
-    const STATUS_MSG                    = 'status_msg';
+    const TERMINAL_STATUS_CODE          = 'terminal_status_code';
+    const TERMINAL_STATUS_MSG           = 'terminal_status_msg';
     const PAYMENT_TYPE                  = 'payment_type';
     const CREATED_AT                    = 'created_at';
     const UPDATED_AT                    = 'updated_at';
@@ -23,10 +21,10 @@ class Entity extends Base\PublicEntity
     protected $fillable = array(
         self::PAYMENT_ID,
         self::TERMINAL_ID,
-        self::STATUS,
+        self::TERMINAL_STATUS,
         self::TERMINAL_RESPONSE_TIME,
-        self::STATUS_CODE,
-        self::STATUS_MSG,
+        self::TERMINAL_STATUS_CODE,
+        self::TERMINAL_STATUS_MSG,
         self::PAYMENT_TYPE,
     );
 
@@ -34,10 +32,10 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::PAYMENT_ID,
         self::TERMINAL_ID,
-        self::STATUS,
+        self::TERMINAL_STATUS,
         self::TERMINAL_RESPONSE_TIME,
-        self::STATUS_CODE,
-        self::STATUS_MSG,
+        self::TERMINAL_STATUS_CODE,
+        self::TERMINAL_STATUS_MSG,
         self::PAYMENT_TYPE,
         self::CREATED_AT,
         self::UPDATED_AT
@@ -53,37 +51,37 @@ class Entity extends Base\PublicEntity
 
     public function getPaymentId()
     {
-        return $this->attributes[self::PAYMENT_ID];
+        return $this->getAttributes(self::PAYMENT_ID);
     }
 
     public function getTerminalId()
     {
-        return $this->attributes[self::TERMINAL_ID];
+        return $this->getAttributes(self::TERMINAL_ID);
     }
 
-    public function getStatus()
+    public function getTerminalStatus()
     {
-        return $this->attributes[self::STATUS];
+        return $this->getAttributes(self::TERMINAL_STATUS);
     }
 
     public function getTerminalResponseTime()
     {
-        return $this->attributes[self::TERMINAL_RESPONSE_TIME];
+        return $this->getAttributes(self::TERMINAL_RESPONSE_TIME);
     }
 
-    public function getStatusCode()
+    public function getTerminalStatusCode()
     {
-        return $this->attributes[self::STATUS_CODE];
+        return $this->getAttributes(self::TERMINAL_STATUS_CODE);
     }
 
-    public function getStatusMsg()
+    public function getTerminalStatusMsg()
     {
-        return $this->attributes[self::STATUS_MSG];
+        return $this->getAttributes(self::TERMINAL_STATUS_MSG);
     }
 
     public function getPaymentType()
     {
-        return $this->attributes[self::PAYMENT_TYPE];
+        return $this->getAttributes(self::PAYMENT_TYPE);
     }
 
 }

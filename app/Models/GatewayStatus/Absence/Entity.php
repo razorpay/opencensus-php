@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Terminal\Absence;
+namespace RZP\Models\GatewayStatus\Absence;
 
 use RZP\Models\Base;
 
@@ -12,12 +12,14 @@ class Entity extends Base\PublicEntity
     const DOWNTIME_TO                   = 'downtime_to';
     const CREATED_AT                    = 'created_at';
     const UPDATED_AT                    = 'updated_at';
+    const REASON                        = 'reason';
 
 
     protected $fillable = array(
         self::GATEWAY,
         self::DOWNTIME_FROM,
-        self::DOWNTIME_TO
+        self::DOWNTIME_TO,
+        self::REASON
     );
 
     protected $public = array(
@@ -26,12 +28,13 @@ class Entity extends Base\PublicEntity
         self::DOWNTIME_FROM,
         self::DOWNTIME_TO,
         self::CREATED_AT,
-        self::UPDATED_AT
+        self::UPDATED_AT,
+        self::REASON
     );
 
-    protected $table = \RZP\Constants\Table::TERMINAL_ABSENCE;
+    protected $table = \RZP\Constants\Table::GATEWAYSTATUS_ABSENCE;
 
-    protected $entity = 'terminal_absence';
+    protected $entity = 'gateway_absence';
 
     protected static $sign = '';
 
@@ -44,12 +47,17 @@ class Entity extends Base\PublicEntity
 
     public function getDowntimeFrom()
     {
-        return $this->attributes[self::DOWNTIME_FROM];
+        return $this->getAttributes(self::DOWNTIME_FROM);
     }
 
     public function getDowntimeTo()
     {
-        return $this->attributes[self::DOWNTIME_TO];
+        return $this->getAttributes(self::DOWNTIME_TO);
+    }
+
+    public function getReason()
+    {
+        return $this->getAttributes(self::REASON);
     }
 
 }

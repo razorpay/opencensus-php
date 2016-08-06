@@ -17,8 +17,6 @@ class Core extends Base\Core
 
         $action = (new Action\Entity)->build($input);
 
-        //$this->validateExistingAction($action);
-
         $this->repo->terminal_action->saveOrFail($action);
 
         return $action;

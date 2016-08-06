@@ -4,10 +4,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
-use RZP\Models\Terminal;
-use RZP\Models\Terminal\Absence\Entity as DowntimeTrace;
+use RZP\Models\GatewayStatus\Absence\Entity as DowntimeTrace;
 
-class CreateTerminalAbsence extends Migration
+class CreateGatewayAbsence extends Migration
 {
     /**
      * Run the migrations.
@@ -16,7 +15,7 @@ class CreateTerminalAbsence extends Migration
      */
     public function up()
     {
-        Schema::create(Table::TERMINAL_ABSENCE, function(Blueprint $table) {
+        Schema::create(Table::GATEWAYSTATUS_ABSENCE, function(Blueprint $table) {
             $table->engine = 'InnoDB';
 
             $table->increments(DowntimeTrace::ID);
@@ -31,6 +30,9 @@ class CreateTerminalAbsence extends Migration
 
             $table->integer(DowntimeTrace::UPDATED_AT);
 
+            $table->text(DowntimeTrace::REASON)
+                  ->nullable();
+
             $table->index(DowntimeTrace::GATEWAY);
             
         });
@@ -43,6 +45,6 @@ class CreateTerminalAbsence extends Migration
      */
     public function down()
     {
-        Schema::drop(Table::TERMINAL_ABSENCE);
+        Schema::drop(Table::GATEWAYSTATUS_ABSENCE);
     }
 }

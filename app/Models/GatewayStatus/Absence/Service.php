@@ -1,8 +1,7 @@
 <?php
 
-namespace RZP\Models\Terminal\Absence;
+namespace RZP\Models\GatewayStatus\Absence;
 
-use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Terminal\Absence;
 
@@ -18,14 +17,14 @@ class Service extends Base\Service
 
     public function getScheduleForGateway($gateway)
     {
-        $schedule = $this->repo->terminal_absence->findForGateway($gateway);
+        $schedule = $this->repo->gateway_absence->findForGateway($gateway);
 
         return $schedule->toArrayPublic();
     }
 
     public function getSchedulesBetween($from, $to)
     {
-        $schedule = $this->repo->terminal_absence->findBetweenTimestampsForGateway($from, $to);
+        $schedule = $this->repo->gateway_absence->findBetweenTimestampsForGateway($from, $to);
 
         return $schedule->toArrayPublic();
     }

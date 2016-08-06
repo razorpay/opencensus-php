@@ -43,7 +43,7 @@ class Table
     
     // Terminal Performance
     const TERMINAL_ACTION       = 'terminal_action_logs';
-    const TERMINAL_ABSENCE      = 'terminal_absence_schedule';
+    const GATEWAYSTATUS_ABSENCE = 'gatewaystatus_absence';
 
     // Payment Analytics
     const PAYMENT_ANALYTICS     = 'payment_analytics';

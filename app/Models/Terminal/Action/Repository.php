@@ -15,7 +15,7 @@ class Repository extends Base\Repository
 
     public function findForTerminal($id)
     {
-        $repo = $this->repo->terminal_action;
+        $repo = $this->repo;
 
         return $repo::withTrashed()
             ->where(Entity::TERMINAL_ID, '=', $id)
@@ -24,7 +24,7 @@ class Repository extends Base\Repository
 
     public function findBetweenTimesampsForTerminal($from, $to, $id)
     {
-        $repo = $this->repo->terminal_action;
+        $repo = $this->repo;
 
         return $repo::withTrashed()
                 ->where(Entity::TERMINAL_ID, '=', $id)

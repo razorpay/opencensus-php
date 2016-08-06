@@ -15,9 +15,9 @@ class Entity extends Base\PublicEntity
 
     const ACTION                        = 'action';
 
-    //TODO: we would ideally want only one time field called timestamp.
+    // We would ideally want only one time field called timestamp.
     // However, laravel implementation dictates having created_at and
-    // updated at. Need to find a way to change this.
+    // updated at.
     const CREATED_AT                    = 'created_at';
 
     const UPDATED_AT                    = 'updated_at';
@@ -49,12 +49,12 @@ class Entity extends Base\PublicEntity
 
     public function getTerminalId()
     {
-        return $this->attributes[self::TERMINAL_ID];
+        return $this->getAttributes(self::TERMINAL_ID);
     }
 
     public function getAction()
     {
-        return $this->attributes[self::ACTION];
+        return $this->getAttributes(self::ACTION);
     }
 
 }

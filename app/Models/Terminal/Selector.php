@@ -146,8 +146,7 @@ class Selector
         $this->setTerminalForPayment($this->payment, $terminal);
 
         // hack to return multiple terminals if needed.
-        //TODO: implement the multiple terminal selection in Binning as well.
-        if(isset($options['multiple']) and $options['multiple'] === true)
+        if(isset($options['multiple']) and ($options['multiple'] === true))
         {
             return $sortedTerminals;
         }
@@ -184,5 +183,46 @@ class Selector
 
             $this->trace->info(TraceCode::TERMINAL_SELECTION, $traceData);
         }
+    }
+
+    protected function getOptionsForTerminals()
+    {
+        $options = [];
+
+        if (($this->mode === Mode::LIVE) and
+            (App::environment('testing') === false))
+        {
+            $chance = rand(1,100);
+
+            $options['chance'] = $chance;
+
+            $options['multiple'] = true;
+        }
+
+        return $options;
+    }
+
+
+
+    /**
+     * Methods selects a list of terminals for payment. We are
+     * selecting a list here since, we want to iterate through
+     * a bunch of terminals, in case the terminal fails
+     * @return Entity
+     */
+    public function selectTerminalsForPayment()
+    {
+        $options = $this->getOptionsForTerminals();
+
+        $terminalsSelected = $this->select($options);
+
+        if(!isset($options['multiple']))
+        {
+            // make this into an array, since the caller expects an array
+            $terminalsSelected = array($terminalsSelected);
+        }
+
+        return $terminalsSelected;
+
     }
 }

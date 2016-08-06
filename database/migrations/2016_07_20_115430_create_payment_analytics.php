@@ -26,16 +26,16 @@ class CreatePaymentAnalytics extends Migration
 
             $table->char(Analytics::TERMINAL_ID, Analytics::ID_LENGTH);
 
-            $table->boolean(Analytics::STATUS)
+            $table->boolean(Analytics::TERMINAL_STATUS)
                 ->default(1);
 
             $table->double(Analytics::TERMINAL_RESPONSE_TIME,8,5)
                 ->default(0);
 
-            $table->integer(Analytics::STATUS_CODE)
+            $table->integer(Analytics::TERMINAL_STATUS_CODE)
                 ->default(0);
 
-            $table->text(Analytics::STATUS_MSG)
+            $table->text(Analytics::TERMINAL_STATUS_MSG)
                 ->nullable();
 
             $table->tinyInteger(Analytics::PAYMENT_TYPE)

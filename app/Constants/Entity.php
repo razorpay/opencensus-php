@@ -39,7 +39,7 @@ class Entity
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const TERMINAL_ACTION       = 'terminal_action';
     const PAYMENT_ANALYTICS     = 'payment_analytics';
-    const TERMINAL_ABSENCE      = 'terminal_absence';
+    const GATEWAY_ABSENCE       = 'gateway_absence';
 
     //
     // Gateway entities
@@ -95,7 +95,7 @@ class Entity
         self::SETTLEMENT_DETAILS    => \RZP\Models\Settlement\Details::class,
         self::TERMINAL_ACTION       => \RZP\Models\Terminal\Action::class,
         self::PAYMENT_ANALYTICS     => \RZP\Models\Payment\Analytics::class,
-        self::TERMINAL_ABSENCE      => \RZP\Models\Terminal\Absence::class,
+        self::GATEWAY_ABSENCE       => \RZP\Models\GatewayStatus\Absence::class,
     );
 
     protected static $repository = array(
