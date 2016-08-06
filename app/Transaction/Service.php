@@ -352,17 +352,17 @@ class Service extends Base\Service
         try
         {
             foreach ($data as $merchant_aggregate) {
-            $key = $merchant_aggregate->merchant_id;
-            $input = [];
-            $input['updated_at'] = $created_at + self::$timeIntervals[$type];
-            if ($type === 'year')
-            {
-                $input['updated_at'] = time();
-            }
-            $input['amount'] = $merchant_aggregate->amount;
-            $input['count'] = $merchant_aggregate->count;
-            $input['merchant_id'] = $key;
-            $this->createOrUpdate($key, $input, $type, $created_at, $mode);
+                $key = $merchant_aggregate->merchant_id;
+                $input = [];
+                $input['updated_at'] = $created_at + self::$timeIntervals[$type];
+                if ($type === 'year')
+                {
+                    $input['updated_at'] = time();
+                }
+                $input['amount'] = $merchant_aggregate->amount;
+                $input['count'] = $merchant_aggregate->count;
+                $input['merchant_id'] = $key;
+                $this->createOrUpdate($key, $input, $type, $created_at, $mode);
             }
         }
         catch(\Exception $e)

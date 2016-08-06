@@ -32,7 +32,7 @@ class Service extends Base\Service
     const INVALID_CREDENTIALS = 'Username or password is invalid.';
     const PRIMARY_LOGIN_ERROR = "There is no user associated with this account.";
     const SELF_DELETE_ERROR = 'You can not delete yourself.';
-    const PAGE_SIZE = 10;
+    const PAGE_SIZE = 1000;
 
     // This is the Admin\Logger trait
     use Logger;
@@ -1932,7 +1932,7 @@ class Service extends Base\Service
 
             $total_data = array_merge($total_data, $data['items']);
 
-            if ($data['count'] === 0)
+            if ($data['count'] < self::PAGE_SIZE)
             {
                 break;
             }
