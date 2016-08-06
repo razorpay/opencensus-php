@@ -287,7 +287,7 @@ class NodalAccount
      * @param array $txns all txns that need to be processed
      * @return array Array containing url of text and excel files generated.
      */
-    public function generateSettlementFile3($settlements, $txns)
+    public function generateSettlementFile($settlements, $txns)
     {
         $textData = array();
         $excelData = array();
