@@ -1909,6 +1909,16 @@ class Service extends Base\Service
 
     public function updateMerchantDayAggregations($mode, $input)
     {
+        
+        $total_payments = $this->fetchPaymentsToAggregate($input, $mode);
+
+        list($error, $response) = (new Transaction\Service)->processDayAggregations($total_payments, $mode);
+
+        return array($error, $response);
+    }
+
+    protected function fetchPaymentsToAggregate($input, $mode)
+    {
         $dateFrom = strtotime(date('j F Y', strtotime($input['date'])));
 
         $dateTo = $dateFrom + TransactionService::$timeIntervals['day'];
@@ -1919,6 +1929,8 @@ class Service extends Base\Service
         $params['from'] = $dateFrom;
         $params['count'] = self::PAGE_SIZE;
         $params['to'] = $dateTo;
+
+        $total_payments = [];
 
         while (1)
         {
@@ -1933,8 +1945,6 @@ class Service extends Base\Service
             $payments = array_values(array_filter($payments, function($payment) {
                 return $payment['captured_at'] !== NULL;
             }));
-
-            $total_payments = [];
 
             foreach ($payments as $payment) {
 
@@ -1951,9 +1961,7 @@ class Service extends Base\Service
             $count_done += self::PAGE_SIZE;
         }
 
-        list($error, $response) = (new Transaction\Service)->processDayAggregations($total_payments, $mode);
-
-        return array($error, $response);
+        return $total_payments;
     }
 
     protected function cleanUpPayment($payment)
