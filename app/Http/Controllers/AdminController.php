@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Http\AppResponse;
 use App\Http\SlackResponse;
 use App\Admin;
+use App\Transaction\Service as TransactionService;
 use App\Merchant;
 use Auth;
 use Input;
@@ -705,6 +706,110 @@ class AdminController extends Controller
         $input = Input::all();
 
         list($error, $response) = (new Admin\Service)->makeReconciliateRequest($input);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
+
+    public function updateDayAggregations($mode)
+    {
+        $input = Input::all();
+
+        $dateFrom = strtotime(date('j F Y', strtotime($input['date'])));
+
+        $dateTo = $dateFrom + TransactionService::$timeIntervals['day'];
+
+        unset($input['date']);
+
+        $input['status'] = 'captured,refunded';
+        $input['from'] = $dateFrom;
+        $input['to'] = $dateTo;
+
+        list($error, $data) = (new Admin\Service)->fetchMultipleEntities($mode, 'payment', $input);
+
+        if ($data === NULL)
+        {
+            return AppResponse::jsonResponse($error, $data);
+        }
+
+        list($error, $response) = (new Admin\Service)->updateMerchantDayAggregations($mode, $data);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
+
+    public function updateWeekAggregations($mode)
+    {
+        $input = Input::all();
+
+        $dateFrom = strtotime(date('o-\\WW', strtotime($input['date'])));
+
+        $dateTo = $dateFrom + TransactionService::$timeIntervals['week'];
+
+        unset($input['date']);
+
+        $input['status'] = 'captured,refunded';
+        $input['from'] = $dateFrom;
+        $input['to'] = $dateTo;
+
+        list($error, $data) = (new Admin\Service)->fetchMultipleEntities($mode, 'payment', $input);
+
+        if ($data === NULL)
+        {
+            return AppResponse::jsonResponse($error, $data);
+        }
+
+        list($error, $response) = (new Admin\Service)->updateMerchantWeekAggregations($mode, $data);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
+
+    public function updateMonthAggregations($mode)
+    {
+        $input = Input::all();
+
+        $dateFrom = strtotime(date('M Y', strtotime($input['date'])));
+
+        $dateTo = $dateFrom + TransactionService::$timeIntervals['month'];
+
+        unset($input['date']);
+
+        $input['status'] = 'captured,refunded';
+        $input['from'] = $dateFrom;
+        $input['to'] = $dateTo;
+
+        list($error, $data) = (new Admin\Service)->fetchMultipleEntities($mode, 'payment', $input);
+
+        if ($data === NULL)
+        {
+            return AppResponse::jsonResponse($error, $data);
+        }
+
+        list($error, $response) = (new Admin\Service)->updateMerchantMonthAggregations($mode, $data);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
+
+    public function updateYearAggregations($mode)
+    {
+        $input = Input::all();
+
+        $dateFrom = strtotime('1 Jan ' . date('Y', strtotime($input['date'])));
+
+        $dateTo = $dateFrom + TransactionService::$timeIntervals['year'];
+
+        unset($input['date']);
+
+        $input['status'] = 'captured,refunded';
+        $input['from'] = $dateFrom;
+        $input['to'] = $dateTo;
+
+        list($error, $data) = (new Admin\Service)->fetchMultipleEntities($mode, 'payment', $input);
+
+        if ($data === NULL)
+        {
+            return AppResponse::jsonResponse($error, $data);
+        }
+
+        list($error, $response) = (new Admin\Service)->updateMerchantYearAggregations($mode, $data);
 
         return AppResponse::jsonResponse($error, $response);
     }

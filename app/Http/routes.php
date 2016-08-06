@@ -253,6 +253,10 @@ Route::group(['middleware' => ['auth.internal']], function()
 
 Route::group(['middleware' => ['auth.cron']], function()
 {
-    Route::post('/{mode}/analytics/aggregations', 'TransactionController@updateAggregations');
-    Route::post('/{mode}/analytics/payment/aggregations', 'TransactionController@updatePaymentAggregations');
+    // Route::post('/{mode}/analytics/aggregations', 'TransactionController@updateAggregations');
+    // Route::post('/{mode}/analytics/payment/aggregations', 'TransactionController@updatePaymentAggregations');
+    Route::post('/{mode}/analytics/aggregations/day', 'AdminController@updateDayAggregations');
+    Route::post('/{mode}/analytics/aggregations/week', 'AdminController@updateWeekAggregations');
+    Route::post('/{mode}/analytics/aggregations/month', 'AdminController@updateMonthAggregations');
+    Route::post('/{mode}/analytics/aggregations/year', 'AdminController@updateYearAggregations');
 });
