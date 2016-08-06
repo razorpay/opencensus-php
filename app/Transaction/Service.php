@@ -241,6 +241,7 @@ class Service extends Base\Service
         $inputByMerchant = [];
 
         foreach ($input as $value) {
+
             $this->filterInput($value, $inputByMerchant);
         }
 
@@ -348,7 +349,9 @@ class Service extends Base\Service
 
     public function updateTypeAggregations($data, $created_at, $mode, $type)
     {
-        foreach ($data as $merchant_aggregate) {
+        try
+        {
+            foreach ($data as $merchant_aggregate) {
             $key = $merchant_aggregate->merchant_id;
             $input = [];
             $input['updated_at'] = $created_at + self::$timeIntervals[$type];
@@ -360,6 +363,13 @@ class Service extends Base\Service
             $input['count'] = $merchant_aggregate->count;
             $input['merchant_id'] = $key;
             $this->createOrUpdate($key, $input, $type, $created_at, $mode);
+            }
         }
+        catch(\Exception $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return array($error, null);
     }
 }

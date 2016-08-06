@@ -287,9 +287,9 @@ class TransactionController extends Controller
 
         $data = (new Transaction\Service)->getDailyTransactionsForTheWeek($created_at, $mode);
 
-        $error = (new Transaction\Service)->updateTypeAggregations($data, $created_at, $mode, 'week');
+        list($error, $data) = (new Transaction\Service)->updateTypeAggregations($data, $created_at, $mode, 'week');
 
-        return AppResponse::jsonResponse($error);
+        return AppResponse::jsonResponse($error, $data);
     }
 
     public function updateMonthAggregations($mode)
@@ -300,9 +300,9 @@ class TransactionController extends Controller
 
         $data = (new Transaction\Service)->getWeeklyTransactionsForTheMonth($created_at, $mode);
 
-        $error = (new Transaction\Service)->updateTypeAggregations($data, $created_at, $mode, 'month');
+        list($error, $data) = (new Transaction\Service)->updateTypeAggregations($data, $created_at, $mode, 'month');
 
-        return AppResponse::jsonResponse($error);
+        return AppResponse::jsonResponse($error, $data);
     }
 
     public function updateYearAggregations($mode)
@@ -313,8 +313,8 @@ class TransactionController extends Controller
 
         $data = (new Transaction\Service)->getMonthlyTransactionsForTheYear($created_at, $mode);
 
-        $error = (new Transaction\Service)->updateTypeAggregations($data, $created_at, $mode, 'year');
+        list($error, $data) = (new Transaction\Service)->updateTypeAggregations($data, $created_at, $mode, 'year');
 
-        return AppResponse::jsonResponse($error);
+        return AppResponse::jsonResponse($error, $data);
     }
 }

@@ -32,7 +32,7 @@ class Service extends Base\Service
     const INVALID_CREDENTIALS = 'Username or password is invalid.';
     const PRIMARY_LOGIN_ERROR = "There is no user associated with this account.";
     const SELF_DELETE_ERROR = 'You can not delete yourself.';
-    const PAGE_SIZE = 1000;
+    const PAGE_SIZE = 10;
 
     // This is the Admin\Logger trait
     use Logger;
@@ -1920,35 +1920,32 @@ class Service extends Base\Service
         $params['count'] = self::PAGE_SIZE;
         $params['to'] = $dateTo;
 
+        $total_data = [];
+
         while (1)
         {
             $params['skip'] = $count_done;
 
             list($error, $data) = $this->fetchMultipleEntities($mode, 'payment', $params);
 
+            $count_done += self::PAGE_SIZE;
+
+            $total_data = array_merge($total_data, $data['items']);
+
             if ($data['count'] === 0)
             {
-                return array($error, $data);
-            }
-
-            list($error, $response) = $this->updateDayAggregations($mode, $data);
-
-            if ($error === NULL)
-            {
-                $count_done += self::PAGE_SIZE;
-            }
-            else
-            {
-                return array($error, $response);
+                break;
             }
         }
+
+        list($error, $response) = $this->updateDayAggregations($mode, $total_data);
 
         return array($error, $response);
     }
 
     protected function updateDayAggregations($mode, $input)
     {
-        $data = $input['items'];
+        $data = $input;
 
         $error = (new Transaction\Service)->processDayAggregations($data, $mode);
     }
