@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 use App\Http\AppResponse;
 use App\Http\SlackResponse;
 use App\Admin;
-use App\Transaction\Service as TransactionService;
 use App\Merchant;
 use Auth;
 use Input;
@@ -714,22 +713,7 @@ class AdminController extends Controller
     {
         $input = Input::all();
 
-        $dateFrom = strtotime(date('j F Y', strtotime($input['date'])));
-
-        $dateTo = $dateFrom + TransactionService::$timeIntervals['day'];
-
-        $params['status'] = 'captured,refunded';
-        $params['from'] = $dateFrom;
-        $params['to'] = $dateTo;
-
-        list($error, $data) = (new Admin\Service)->fetchMultipleEntities($mode, 'payment', $params);
-
-        if ($data === NULL)
-        {
-            return AppResponse::jsonResponse($error, $data);
-        }
-
-        list($error, $response) = (new Admin\Service)->updateMerchantDayAggregations($mode, $data);
+        list($error, $response) = (new Admin\Service)->updateMerchantDayAggregations($mode, $input);
 
         return AppResponse::jsonResponse($error, $response);
     }

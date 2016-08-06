@@ -21,6 +21,7 @@ use App\Trace\TraceCode;
 use Razorpay\Api\Request as ApiRequest;
 use Razorpay\Api\Errors\Error as ApiError;
 use Razorpay\Api\Errors\BadRequestError as BadRequestError;
+use App\Transaction\Service as TransactionService;
 
 class Service extends Base\Service
 {
@@ -31,6 +32,7 @@ class Service extends Base\Service
     const INVALID_CREDENTIALS = 'Username or password is invalid.';
     const PRIMARY_LOGIN_ERROR = "There is no user associated with this account.";
     const SELF_DELETE_ERROR = 'You can not delete yourself.';
+    const PAGE_SIZE = 1000;
 
     // This is the Admin\Logger trait
     use Logger;
@@ -1906,6 +1908,45 @@ class Service extends Base\Service
     }
 
     public function updateMerchantDayAggregations($mode, $input)
+    {
+        $dateFrom = strtotime(date('j F Y', strtotime($input['date'])));
+
+        $dateTo = $dateFrom + TransactionService::$timeIntervals['day'];
+
+        $count_done = 0;
+
+        $params['status'] = 'captured,refunded';
+        $params['from'] = $dateFrom;
+        $params['count'] = self::PAGE_SIZE;
+        $params['to'] = $dateTo;
+
+        while (1)
+        {
+            $params['skip'] = $count_done;
+
+            list($error, $data) = $this->fetchMultipleEntities($mode, 'payment', $params);
+
+            if ($data['count'] === 0)
+            {
+                return array($error, $data);
+            }
+
+            list($error, $response) = $this->updateDayAggregations($mode, $data);
+
+            if ($error === NULL)
+            {
+                $count_done += self::PAGE_SIZE;
+            }
+            else
+            {
+                return array($error, $response);
+            }
+        }
+
+        return array($error, $response);
+    }
+
+    protected function updateDayAggregations($mode, $input)
     {
         $data = $input['items'];
 
