@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Card;
 
+use RZP\Constants\Mode;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Error\ErrorCode;
@@ -137,7 +138,8 @@ class Core extends Base\Core
         else
         {
             // For cards other than AMEX notify slack of missing IIN
-            if (($card->isAmex()) === false)
+            if ((($card->isAmex()) === false) and
+                ($this->mode !== Mode::TEST))
             {
                 $this->notifySlack($card);
             }
@@ -154,11 +156,11 @@ class Core extends Base\Core
         $slackArray = array(
             'iin'       => $card->getIin(),
             'card_id'   => $card->getDashboardEntityLinkForSlack(),
+            'merchant'  => $card->merchant->getBillingLabelElseName()
         );
 
         try
         {
-
             $this->app['slack']->queue(
                 'Missing IIN for payment',
                 $slackArray,
