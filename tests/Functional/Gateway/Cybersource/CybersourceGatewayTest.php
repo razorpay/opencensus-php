@@ -204,6 +204,10 @@ class CybersourceGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
+        $cybersource = $this->getLastEntity('cybersource', true);
+
+        $this->assertEquals('4661454138166750401025', $cybersource['ref']);
+
         $this->resetMockServer();
 
         $this->authorizeFailedPayment($payment['id']);

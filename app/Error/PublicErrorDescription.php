@@ -96,8 +96,8 @@ class PublicErrorDescription
     const BAD_REQUEST_NOTES_VALUE_CANNOT_BE_ARRAY                               = 'Notes values themselves should not be an array';
     const BAD_REQUEST_NOTES_KEY_TOO_LARGE                                       = 'Notes key cannot be greater 255 characters';
     const BAD_REQUEST_NOTES_VALUE_TOO_LARGE                                     = 'Notes value cannot be greater 255 characters';
-    const BAD_REQUEST_DESCRIPTION_SHOULD_BE_STRING                              = 'Description provides should be string';
-    const BAD_REQUEST_DESCRIPTION_TOO_LARGE                                     = 'Description provides should be max 1000 characters';
+    const BAD_REQUEST_DESCRIPTION_SHOULD_BE_STRING                              = 'Description provided should be string';
+    const BAD_REQUEST_DESCRIPTION_TOO_LARGE                                     = 'Description provided should be max 255 characters';
     const BAD_REQUEST_NOTES_SHOULD_BE_ARRAY                                     = 'Notes should be provided as a dictionary';
     const BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED                           = 'Please provide your api key for authentication purposes.';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY                              = 'The api key provided is invalid';

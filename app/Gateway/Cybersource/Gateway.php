@@ -505,6 +505,11 @@ class Gateway extends Base\Gateway
                 Entity::REASON_CODE => $response['reasonCode']
             );
 
+            if (isset($response[self::REQUEST_ID]) === true)
+            {
+                $attributes[Entity::REF] = $response[self::REQUEST_ID];
+            }
+
             $gateway->fill($attributes);
 
             $gateway->saveOrFail();
