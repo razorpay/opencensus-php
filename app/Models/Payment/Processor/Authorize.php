@@ -69,7 +69,7 @@ trait Authorize
         // i.e. without 2-factor authentication
         //
 
-        $this->updatePaymentTwoFaStatus(TwoFaStatus::SKIPPED);
+        $this->updatePaymentTwoFaStatus(TwoFaStatus::NOT_APPLICABLE);
 
         $this->updateAndNotifyPaymentAuthorized();
 

@@ -10,7 +10,7 @@ return [
         'amount' => 50000,
         'method' => 'card',
         'status' => 'captured',
-        'two_fa_status' => 'skipped',
+        'two_fa_status' => 'not_applicable',
         'captured' => true,
         'amount_authorized' => 50000,
         'amount_refunded' => 0,
