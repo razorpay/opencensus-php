@@ -3,21 +3,29 @@
 namespace RZP\Models\Payment\Analytics;
 
 use RZP\Models\Base;
-use RZP\Models\Payment\Metadata;
 
 class Validator extends Base\Validator
 {
-    protected static $metadataRules = array(
-        Entity::CHECKOUT_ID             => 'sometimes|alpha_num|size:14',
-        Entity::PLATFORM                => 'sometimes',
-        Entity::LIBRARY                 => 'sometimes',
-    );
+    protected static $createRules = array(
+         Entity::PAYMENT_ID                 => 'required|alpha_num|size:14',
+         Entity::CHECKOUT_ID                => 'sometimes|alpha_num|size:14',
+         Entity::ATTEMPTS                   => 'sometimes|integer|min:0',
+         Entity::LIBRARY                    => 'sometimes',
+         Entity::PLATFORM                   => 'sometimes',
+         Entity::BROWSER                    => 'sometimes',
+         Entity::OS                         => 'sometimes',
+         Entity::DEVICE                     => 'sometimes',
+         Entity::REFERER                    => 'sometimes|url',
+         Entity::USER_AGENT                 => 'required|string',
+         Entity::IP                         => 'required|ip',
+
+     );
 
     protected static $metadataValidators = array(
-        'metadata');
+        'create');
 
 
-    protected function validateMetadata($metadata)
+    protected function validateCreate($metadata)
     {
         if (isset($metadata[Entity::CHECKOUT_ID]))
         {
@@ -32,6 +40,21 @@ class Validator extends Base\Validator
         if (isset($metadata[Entity::LIBRARY]))
         {
             Metadata::validateLibrary($metadata[Entity::LIBRARY]);
+        }
+
+        if (isset($metadata[Entity::BROWSER]))
+        {
+            Metadata::validateBrowser($metadata[Entity::BROWSER]);
+        }
+
+        if (isset($metadata[Entity::OS]))
+        {
+            Metadata::validateOs($metadata[Entity::OS]);
+        }
+
+        if (isset($metadata[Entity::DEVICE]))
+        {
+            Metadata::validateDevice($metadata[Entity::DEVICE]);
         }
     }
 }

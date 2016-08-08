@@ -15,9 +15,9 @@ class Repository extends Base\Repository
         $timestamp = time() - 30 * 60;
 
         return $this->newQuery()
-                    ->where(Payment\Entity::CHECKOUT_ID, '=', $checkoutId)
-                    ->where(Payment\Entity::CREATED_AT, '>=', $timestamp)
-                    ->orderBy(Payment\Entity::ID, 'desc')
+                    ->where(Entity::CHECKOUT_ID, '=', $checkoutId)
+                    ->where(Entity::CREATED_AT, '>=', $timestamp)
+                    ->orderBy(Entity::PAYMENT_ID, 'desc')
                     ->get();
     }
 

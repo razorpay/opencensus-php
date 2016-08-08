@@ -19,7 +19,7 @@ use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Status;
 use RZP\Models\Merchant\Methods;
-use RZP\Models\Payment\Analytics\Entity as AnalyticsEntity;
+use RZP\Models\Payment\Analytics as Analytics;
 
 use RZP\Error;
 use RZP\Exception;
@@ -87,23 +87,26 @@ trait Authorize
             TraceCode::PAYMENT_METADATA,
             ['metadata' => $metadata, 'payment_id' => $payment->getId()]);
 
-        try
-        {
-            $paymentAnalytic = new AnalyticsEntity();
+        // try
+        // {
+            $paymentAnalytic = new Analytics\Service();
 
-            $paymentAnalytic->payment_id = $payment->id;
+            $data = ['payment_id' => $payment->id];
 
-            $paymentAnalytic->buildLog($metadata);
+            $paymentAnalytic->setPaymentAnalyticData($metadata, $data);
 
-            $paymentAnalytic->saveOrFail();
-        }
-        catch (\Exception $e)
-        {
-            sd($e);
-            $this->trace->traceException($e);
+            s($data);
 
-            return;
-        }
+            $paymentAnalytic->createAuditLog($data);
+
+        // }
+        // catch (\Exception $e)
+        // {
+        //     sd($e);
+        //     $this->trace->traceException($e);
+
+        //     return;
+        // }
     }
 
     public function authorizeFailedPayment($payment)

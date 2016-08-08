@@ -44,9 +44,9 @@ class Metadata
     const DIRECT        = 'direct';
 
     const LIBRARY_VALUES = array(
-        self::CHECKOUT      => 0,
-        self::RAZORPAYJS    => 1,
-        self::DIRECT        => 2,
+        self::CHECKOUT      => 1,
+        self::RAZORPAYJS    => 2,
+        self::DIRECT        => 3,
     );
 
     // Browser values
@@ -117,17 +117,17 @@ class Metadata
 
     public static function validateBrowser($browser)
     {
-        if ($browser === null)
-        {
-            return null;
-        }
-
         return array_key_exists(strtolower($browser), self::BROWSER_VALUES);
     }
 
     public static function getValueForBrowser($browser)
     {
         return ($browser === null) ? null : self::BROWSER_VALUES[strtolower($browser)];
+    }
+
+    public static function validateDevice($device)
+    {
+        return array_key_exists(strtolower($device), self::DEVICE_VALUES);
     }
 
     public static function getValueForDevice($device)

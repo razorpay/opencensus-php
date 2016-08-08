@@ -405,8 +405,6 @@ class Processor
 
         $metadata = isset($input['_']) ? $input['_'] : null;
 
-        // $this->setPaymentMetadata($payment, $input);
-
         $this->trace->info(
             TraceCode::PAYMENT_METADATA,
             ['metadata' => $metadata, 'payment_id' => $payment->getId()]);

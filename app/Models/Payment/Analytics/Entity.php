@@ -3,7 +3,6 @@
 namespace RZP\Models\Payment\Analytics;
 
 use Crypt;
-use RZP\Constants\HttpRequestHeader;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -225,116 +224,5 @@ class Entity extends Base\PublicEntity
         $analyticVal->validateInput('metadata', $metadata);
 
         $this->setPaymentAnalyticData($metadata);
-    }
-
-    protected function setPaymentAnalyticData($metadata)
-    {
-        // set checkout_id
-        if (isset($metadata[self::CHECKOUT_ID]))
-        {
-            $this->setCheckoutId($metadata[self::CHECKOUT_ID]);
-
-            // set attempts
-            $this->setPaymentAttempts();
-        }
-
-        // set library
-        if (isset($metadata[self::LIBRARY]))
-        {
-            $this->setLibrary($metadata[self::LIBRARY]);
-        }
-
-        // set platform
-        if (isset($metadata[self::PLATFORM]))
-        {
-            $this->setPlatformAttribute($metadata[self::PLATFORM]);
-        }
-
-        $this->setHttpRequestData();
-    }
-
-    protected function setPaymentAttempts()
-    {
-        $checkoutId = $this->getCheckoutId();
-
-        if ($checkoutId === null)
-        {
-            return;
-        }
-
-        $oldPayments = $this->paymentAnalyticRepo->getRecentMerchantPaymentsForCheckoutId($checkoutId);
-
-        $count = $oldPayments->count();
-
-        if (($count > 0) and
-            ($count !== $oldPayments->first()->getAttempt()))
-        {
-            $this->trace->warning(
-                TraceCode::PAYMENT_CHECKOUT_INVALID_ID,
-                $checkoutId);
-
-            return;
-        }
-
-        $attempt = $count + 1;
-
-        $this->setAttempts($attempt);
-    }
-
-    protected function setHttpRequestData()
-    {
-        // get user-agent service
-        $app = \App::getFacadeRoot();
-
-        $uAgent = $app['agent'];
-
-        // set browser
-        $this->setBrowserAttribute($uAgent->browser());
-
-        // set os
-        $this->setOsAttribute($uAgent->platform());
-
-        // set device
-        $device = $this->getDeviceValue($uAgent);
-
-        $this->setDeviceAttribute($device);
-
-        // get the HTTP request
-        $request = $app['request'];
-
-        // set ip
-        $ip = $request->ip();
-
-        $this->setIpAttribute($ip);
-
-        // set referer
-        if ($request->header(HttpRequestHeader::REFERER) !== null)
-        {
-            $this->setRefererAttribute($request->header(HttpRequestHeader::REFERER));
-        }
-
-        // set user-agent
-        if ($request->header(HttpRequestHeader::USER_AGENT) !== null)
-        {
-            $this->setUserAgentAttribute($request->header(HttpRequestHeader::USER_AGENT));
-        }
-    }
-
-    protected function getDeviceValue($uAgent)
-    {
-        if ($uAgent->isMobile())
-        {
-            $device = Metadata::MOBILE;
-        }
-        else if($uAgent->isDesktop())
-        {
-            $device = Metadata::DESKTOP;
-        }
-        else if ($uAgent->isTablet())
-        {
-            $device = Metadata::TABLET;
-        }
-
-        return $device;
     }
 }
