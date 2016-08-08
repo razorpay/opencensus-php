@@ -49,7 +49,7 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->app->singleton('card.tokenex', function($app)
         {
-            return new TokenEx($app);
+            return TokenEx::getInstance($app);
         });
 
         $this->app->singleton('raven', function($app)
