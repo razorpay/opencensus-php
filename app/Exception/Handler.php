@@ -8,6 +8,8 @@ use Response;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Illuminate\Session\TokenMismatchException;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 
 class Handler extends ExceptionHandler
@@ -30,8 +32,11 @@ class Handler extends ExceptionHandler
      * @var array
      */
     protected $dontReport = [
+        DecryptException::class,
         HttpException::class,
         ModelNotFoundException::class,
+        NotFoundHttpException::class,
+        TokenMismatchException::class,
     ];
 
     /**
@@ -85,10 +90,14 @@ class Handler extends ExceptionHandler
         {
             $response = Response::json(self::RESPONSE_404, 404);
         }
-
         else if ($e instanceof MethodNotFoundException)
         {
             $response = Response::json(array('success' => false, 'errors' => [self::METHOD_NOT_ALLOWED]));
+        }
+        else if (($e instanceof TokenMismatchException) or
+                 ($e instanceof DecryptException))
+        {
+            return redirect('/');
         }
 
         else
@@ -211,11 +220,12 @@ class Handler extends ExceptionHandler
 
     protected function isCritical(Exception $e)
     {
-        if (($e instanceof ModelNotFoundException) or
-            ($e instanceof NotFoundHttpException) or
-            ($e instanceof MethodNotFoundException))
+        foreach ($dontReport as $type)
         {
-            return false;
+            if ($e instanceof $type)
+            {
+                return false;
+            }
         }
 
         return true;
