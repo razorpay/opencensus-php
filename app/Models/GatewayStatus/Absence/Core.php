@@ -13,7 +13,7 @@ class Core extends Base\Core
 
         $downWindow = (new Absence\Entity)->build($input);
 
-        $this->repo->gateway_absence->saveOrFail($downWindow);
+        $this->repo->saveOrFail($downWindow);
 
         return $downWindow;
     }

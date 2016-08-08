@@ -9,9 +9,9 @@ class Service extends Base\Service
 {
     public function create($input, $gateway)
     {
-        $down_window = (new Absence\Core)->create($input, $gateway);
+        $downWindow = (new Absence\Core)->create($input, $gateway);
 
-        return $down_window->toArrayPublic();
+        return $downWindow->toArrayPublic();
 
     }
 

@@ -211,7 +211,7 @@ class Selector
      * a bunch of terminals, in case the terminal fails
      * @return Entity
      */
-    public function selectTerminalsForPayment()
+    public function selectTerminals()
     {
         $options = $this->getOptionsForTerminals();
 

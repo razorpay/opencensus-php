@@ -37,7 +37,7 @@ trait Authorize
      */
     protected $type;
 
-    protected $MAX_RETRY_ATTEMPTS = 3;
+    protected $maxRetryAttempts = 3;
 
     protected $terminalSelector;
 
@@ -65,7 +65,7 @@ trait Authorize
     {
         $this->terminalSelector = new Terminal\Selector($payment, $this->mode);
 
-        $this->terminalsSelected = $this->terminalSelector->selectTerminalsForPayment();
+        $this->terminalsSelected = $this->terminalSelector->selectTerminals();
 
     }
 
@@ -98,9 +98,9 @@ trait Authorize
     {
         $totalTerminals = count($this->terminalsSelected);
 
-        if ($this->MAX_RETRY_ATTEMPTS > $totalTerminals)
+        if ($this->maxRetryAttempts > $totalTerminals)
         {
-            $this->MAX_RETRY_ATTEMPTS = $totalTerminals;
+            $this->maxRetryAttempts = $totalTerminals;
         }
 
         $retryAttempts = 0;
@@ -111,7 +111,7 @@ trait Authorize
 
         $timeoutException = null;
 
-        while ($retryAttempts < $this->MAX_RETRY_ATTEMPTS)
+        while ($retryAttempts < $this->maxRetryAttempts)
         {
             $terminalGatewayInput = $gatewayInput;
 

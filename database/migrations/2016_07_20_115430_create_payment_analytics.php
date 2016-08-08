@@ -41,17 +41,6 @@ class CreatePaymentAnalytics extends Migration
             $table->tinyInteger(Analytics::PAYMENT_TYPE)
                 ->default(0);
 
-            $table->foreign(Analytics::PAYMENT_ID)
-                ->references(Payment\Entity::ID)
-                ->on(Table::PAYMENT)
-                ->on_delete('restrict');
-
-            $table->foreign(Analytics::TERMINAL_ID)
-                ->references(Terminal\Entity::ID)
-                ->on(Table::TERMINAL)
-                ->on_delete('restrict');
-
-
             $table->integer(Analytics::CREATED_AT);
 
             $table->integer(Analytics::UPDATED_AT);

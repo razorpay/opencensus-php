@@ -22,7 +22,7 @@ class CreateGatewayAbsence extends Migration
 
             $table->string(DowntimeTrace::GATEWAY);
 
-            $table->dateTime(DowntimeTrace::DOWNTIME_FROM);
+            $table->integer(DowntimeTrace::DOWNTIME_FROM);
 
             $table->dateTime(DowntimeTrace::DOWNTIME_TO);
 

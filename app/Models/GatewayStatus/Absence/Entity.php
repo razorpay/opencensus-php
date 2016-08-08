@@ -8,11 +8,11 @@ class Entity extends Base\PublicEntity
 {
     const ID                            = 'id';
     const GATEWAY                       = 'gateway';
-    const DOWNTIME_FROM                 = 'downtime_from';
-    const DOWNTIME_TO                   = 'downtime_to';
+    const DOWNTIME_FROM                 = 'from';
+    const DOWNTIME_TO                   = 'to';
+    const REASON                        = 'reason';
     const CREATED_AT                    = 'created_at';
     const UPDATED_AT                    = 'updated_at';
-    const REASON                        = 'reason';
 
 
     protected $fillable = array(
@@ -42,7 +42,7 @@ class Entity extends Base\PublicEntity
 
     public function getGateway()
     {
-        return $this->attributes[self::GATEWAY];
+        return $this->getAttributes(self::GATEWAY);
     }
 
     public function getDowntimeFrom()
