@@ -92,6 +92,15 @@ class Gateway extends Base\Gateway
         return $this->decideAuthStepAfterEnroll($response, $input);
     }
 
+    public function recurring(array $input)
+    {
+        parent::authorize($input);
+
+        $response = $this->authorizeRecurring($input);
+
+        $this->persistAfterAuthorizeRecurring($response, $input);
+    }
+
     public function callback(array $input)
     {
         parent::callback($input);
@@ -165,6 +174,40 @@ class Gateway extends Base\Gateway
         {
             $this->handleSoapFault($exception, "Refund request failed");
         }
+    }
+
+    protected function authorizeRecurring($input)
+    {
+        $request = $this->createRecurringAuthorizeRequestFields($input);
+
+        return $this->postRequest($request);
+    }
+
+    protected function createRecurringAuthorizeRequestFields($input)
+    {
+        $content = [
+            'merchantID' => $this->getMerchantID($input['terminal']),
+            'merchantReferenceCode' => $input['payment']['id'],
+            'purchaseTotals' => [
+                'currency' => $input['payment']['currency'],
+                'grandTotalAmount' => ($input['payment']['amount'] / 100)
+            ],
+            'card' => [
+                'accountNumber' => $input['card']['number'],
+                'expirationMonth' => $input['card']['expiry_month'],
+                'expirationYear' => $input['card']['expiry_year']
+            ],
+            'ccAuthService' => [
+                'run' => 'true',
+                'commerceIndicator' => 'recurring'
+            ]
+        ];
+
+        $this->setBillingInfo($content, $input);
+
+        $request = $this->getStandardSoapRequest($content);
+
+        return $request;
     }
 
     public function sendPaymentVerifyRequest($verify)
@@ -505,6 +548,41 @@ class Gateway extends Base\Gateway
     protected function persistAfterAuthorize($input, $response, $request)
     {
         $gateway = $this->getRepo()->retrieveByPaymentIdOrFail($input['payment']['id']);
+
+        $this->trace->info(TraceCode::GATEWAY_AUTHORIZE_RESPONSE, $response);
+
+        if ($response['reasonCode'] !== Result::SUCCESS)
+        {
+            $attributes = array(
+                Entity::STATUS      => Status::AUTHORIZE_FAILED,
+                Entity::REASON_CODE => $response['reasonCode']
+            );
+
+            if (isset($response[self::REQUEST_ID]) === true)
+            {
+                $attributes[Entity::REF] = $response[self::REQUEST_ID];
+            }
+
+            $gateway->fill($attributes);
+
+            $gateway->saveOrFail();
+
+            $this->throwException($response);
+        }
+
+        $attributes = array(
+            Entity::REF    => $response[self::REQUEST_ID],
+            Entity::STATUS => Status::AUTHORIZED
+        );
+
+        $gateway->fill($attributes);
+
+        $gateway->saveOrFail();
+    }
+
+    protected function persistAfterAuthorizeRecurring($input, $response)
+    {
+        $gatewayPayment = $this->createGatewayPaymentEntity();
 
         $this->trace->info(TraceCode::GATEWAY_AUTHORIZE_RESPONSE, $response);
 
