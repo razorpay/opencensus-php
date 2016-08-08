@@ -82,7 +82,7 @@ class NodalAccount
         $this->mail = \Mail::getFacadeRoot();
     }
 
-    public function generateSettlementFile($settlements, $txns)
+    public function generateSettlementFile0($settlements, $txns)
     {
         $textData = array();
         $excelData = array();
@@ -179,7 +179,7 @@ class NodalAccount
         return [$urlText, $urlExcel];
     }
 
-    public function generateSettlementFile2($settlements, $txns)
+    public function generateSettlementFile($settlements, $txns)
     {
         $textData = array();
         $excelData = array();
