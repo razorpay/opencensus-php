@@ -19,6 +19,7 @@ use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Status;
 use RZP\Models\Merchant\Methods;
+use RZP\Models\Payment\Analytics\Entity as AnalyticsEntity;
 
 use RZP\Error;
 use RZP\Exception;
@@ -53,6 +54,9 @@ trait Authorize
 
         $request = $this->callGatewayAuthorize($gatewayInput);
 
+        // set analytics information for the payment
+        $this->setPaymentAnalyticsData($payment, $input);
+
         //
         // If $request is not null, then payment is two-step process
         // where client needs to provide additional info via his browser.
@@ -73,6 +77,33 @@ trait Authorize
         }
 
         return $this->postPaymentAuthorizeProcessing($payment);
+    }
+
+    protected function setPaymentAnalyticsData($payment, $input)
+    {
+        $metadata = isset($input['_']) ? $input['_'] : [];
+
+        $this->trace->info(
+            TraceCode::PAYMENT_METADATA,
+            ['metadata' => $metadata, 'payment_id' => $payment->getId()]);
+
+        try
+        {
+            $paymentAnalytic = new AnalyticsEntity();
+
+            $paymentAnalytic->payment_id = $payment->id;
+
+            $paymentAnalytic->buildLog($metadata);
+
+            $paymentAnalytic->saveOrFail();
+        }
+        catch (\Exception $e)
+        {
+            sd($e);
+            $this->trace->traceException($e);
+
+            return;
+        }
     }
 
     public function authorizeFailedPayment($payment)

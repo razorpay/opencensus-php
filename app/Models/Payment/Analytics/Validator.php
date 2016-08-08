@@ -19,7 +19,6 @@ class Validator extends Base\Validator
 
     protected function validateMetadata($metadata)
     {
-        sd('validating?');
         if (isset($metadata[Entity::CHECKOUT_ID]))
         {
             Entity::validateCheckDigit($metadata[Entity::CHECKOUT_ID]);

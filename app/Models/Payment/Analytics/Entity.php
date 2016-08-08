@@ -220,13 +220,9 @@ class Entity extends Base\PublicEntity
 
     public function buildLog($metadata)
     {
-        // Figure out validaiton!
+        $analyticVal = $this->getValidator();
 
-        // $analyticVal = $this->getValidator();
-        // s($analyticVal);
-        // $analyticVal->validateInput('metadata', $metadata);
-        // sd('validated');
-        //
+        $analyticVal->validateInput('metadata', $metadata);
 
         $this->setPaymentAnalyticData($metadata);
     }

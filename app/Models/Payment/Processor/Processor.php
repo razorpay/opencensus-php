@@ -12,7 +12,6 @@ use RZP\Models\Merchant;
 use RZP\Models\Merchant\BankAccount;
 use RZP\Models\Terminal;
 use RZP\Models\Payment;
-use RZP\Models\Payment\Analytics\Entity as AnalyticsEntity;
 use RZP\Models\Order;
 use RZP\Models\Pricing;
 use RZP\Exception;
@@ -406,7 +405,7 @@ class Processor
 
         $metadata = isset($input['_']) ? $input['_'] : null;
 
-        $this->setPaymentMetadata($payment, $metadata);
+        // $this->setPaymentMetadata($payment, $input);
 
         $this->trace->info(
             TraceCode::PAYMENT_METADATA,
@@ -428,33 +427,6 @@ class Processor
         $this->payment = $payment;
 
         return $payment;
-    }
-
-    protected function setPaymentMetadata($payment, $input)
-    {
-        $metadata = isset($input['_']) ? $input['_'] : [];
-
-        $this->trace->info(
-            TraceCode::PAYMENT_METADATA,
-            ['metadata' => $metadata, 'payment_id' => $payment->getId()]);
-
-        try
-        {
-            $paymentAnalytic = new AnalyticsEntity();
-
-            $paymentAnalytic->payment_id = $payment->id;
-
-            $paymentAnalytic->buildLog($metadata);
-
-            $paymentAnalytic->saveOrFail();
-        }
-        catch (\Exception $e)
-        {
-            sd($e);
-            $this->trace->traceException($e);
-
-            return;
-        }
     }
 
     /**

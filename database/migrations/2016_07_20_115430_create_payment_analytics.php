@@ -18,57 +18,58 @@ class CreatePaymentAnalytics extends Migration
             $table->engine = 'InnoDB';
 
             $table->char(Analytics::ID, Analytics::ID_LENGTH)
-                ->primary();
+                  ->primary();
 
             $table->char(Analytics::PAYMENT_ID, Analytics::ID_LENGTH);
 
             $table->char(Analytics::CHECKOUT_ID, Analytics::ID_LENGTH)
                   ->nullable();
 
-            $table->char(Analytics::TERMINAL_ID, Analytics::ID_LENGTH);
+            $table->char(Analytics::TERMINAL_ID, Analytics::ID_LENGTH)
+                  ->nullable();
 
             $table->boolean(Analytics::STATUS)
-                ->default(1);
+                  ->default(1);
 
             $table->smallInteger(Analytics::ATTEMPTS)
                   ->nullable();
 
             $table->double(Analytics::TERMINAL_RESPONSE_TIME,8,5)
-                ->default(0);
+                  ->default(0);
 
             $table->integer(Analytics::STATUS_CODE)
-                ->default(0);
+                  ->default(0);
 
             $table->text(Analytics::STATUS_MSG)
-                ->nullable();
+                  ->nullable();
 
             $table->tinyInteger(Analytics::PAYMENT_TYPE)
-                ->default(0);
+                  ->default(0);
 
             $table->tinyInteger(Analytics::LIBRARY)
-                ->default(0);
+                  ->default(0);
 
             $table->tinyInteger(Analytics::BROWSER)
-                ->default(0);
+                  ->default(0);
 
             $table->tinyInteger(Analytics::OS)
-                ->default(0);
+                  ->default(0);
 
             $table->tinyInteger(Analytics::DEVICE)
-                ->default(0);
+                  ->default(0);
 
             $table->tinyInteger(Analytics::PLATFORM)
-                ->default(0);
+                  ->default(0);
 
             // http://stackoverflow.com/questions/1076714/max-length-for-client-ip-address
             $table->char(Analytics::IP, 45)
-                ->nullable();
+                  ->nullable();
 
             $table->char(Analytics::REFERER)
-                ->nullable();
+                  ->nullable();
 
             $table->text(Analytics::USER_AGENT)
-                ->nullable();
+                  ->nullable();
 
             $table->foreign(Analytics::PAYMENT_ID)
                 ->references(Payment\Entity::ID)
@@ -76,9 +77,9 @@ class CreatePaymentAnalytics extends Migration
                 ->on_delete('restrict');
 
             $table->foreign(Analytics::TERMINAL_ID)
-                ->references(Terminal\Entity::ID)
-                ->on(Table::TERMINAL)
-                ->on_delete('restrict');
+                  ->references(Terminal\Entity::ID)
+                  ->on(Table::TERMINAL)
+                  ->on_delete('restrict');
 
             $table->index(Analytics::CHECKOUT_ID);
 
