@@ -23,8 +23,7 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        $results =  $repo::withTrashed()
-                         ->where(Entity::PAYMENT_ID, '=', $paymentId);
+        $results =  $repo->where(Entity::PAYMENT_ID, '=', $paymentId);
 
         if ($id !== null)
         {

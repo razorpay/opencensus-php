@@ -134,12 +134,6 @@ trait Authorize
 
             catch (\Exception $e)
             {
-                if (($this->mode === Mode::TEST) and
-                    (App::environment('testing') === true))
-                {
-                    throw $e;
-                }
-
                 // handle timeout exceptions differently
                 // this is a terminal/gateway failure
                 if ($e instanceof Exception\GatewayTimeoutException or $e instanceof \Requests_Exception)
