@@ -51,7 +51,6 @@ class Entity extends Base\PublicEntity
     // Casts the attributes to native types
     protected $casts = [
         'value'                 => 'integer',
-        'campaign'              => 'string',
     ];
 
     public $incrementing = true;

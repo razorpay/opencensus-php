@@ -36,8 +36,8 @@ class Validator extends Base\Validator
     public static function validateNewCreditLog($campaign, $merchant)
     {
         // Check if the log already exists, API is meant to use for creation only.
-        $creditsLogExists = (new Credits\Core)->checkIfCreditsLogExists(
-            $merchant, $campaign);
+        $creditsLogExists = (new Credits\Repository)->creditsLogExists(
+            $campaign, $merchant);
 
         if ($creditsLogExists)
         {

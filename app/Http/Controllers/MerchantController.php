@@ -561,7 +561,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = $service->grantCreditsForMerchantInCampaign($id, $input);
+        $data = $service->grantCreditsForMerchant($id, $input);
 
         return ApiResponse::json($data);
     }

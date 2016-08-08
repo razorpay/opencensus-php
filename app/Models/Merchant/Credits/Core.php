@@ -11,10 +11,6 @@ use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
-    public function checkIfCreditsLogExists($merchant, $campaign)
-    {
-        return $this->repo->credits->findByCampaignAndMerchantId($campaign, $merchant);
-    }
 
     public function create($merchant, $input)
     {

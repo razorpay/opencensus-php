@@ -15,7 +15,7 @@ use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
-    public function grantCreditsForMerchantInCampaign($mid, array $input)
+    public function grantCreditsForMerchant($mid, array $input)
     {
         $campaign = $input['campaign'];
         $merchant = $this->repo->merchant->findOrFailPublic($mid);
@@ -30,7 +30,7 @@ class Service extends Base\Service
     public function fetchCreditsLog($mid, $id)
     {
         // Raises Exception if record does not exist.
-        $creditsLog = $this->repo->credits->findByIdAndMerchantIdOrFail($mid, $id);
+        $creditsLog = $this->repo->credits->findByIdAndMerchantId($mid, $id);
 
         return $creditsLog->toArrayPublic();
     }

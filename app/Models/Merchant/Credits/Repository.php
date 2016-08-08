@@ -28,7 +28,7 @@ class Repository extends Base\Repository
      *
      * @return bool
      */
-    public function findByCampaignAndMerchantId($campaign, Merchant\Entity $merchant)
+    public function creditsLogExists($campaign, Merchant\Entity $merchant)
     {
          return $this->newQuery()
              ->where(Entity::CAMPAIGN, '=', $campaign)
