@@ -14,9 +14,8 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        return $repo::withTrashed()
-            ->where(Entity::TERMINAL_ID, '=', $id)
-            ->get();
+        return $repo->where(Entity::TERMINAL_ID, '=', $id)
+                    ->get();
     }
 
     public function findForPayment($paymentId, $id = null)

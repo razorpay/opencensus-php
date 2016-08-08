@@ -44,9 +44,7 @@ class CreatePaymentAnalytics extends Migration
             $table->integer(Analytics::CREATED_AT);
 
             $table->integer(Analytics::UPDATED_AT);
-
-            $table->index(Analytics::TERMINAL_ID);
-
+            
             $table->index(Analytics::CREATED_AT);
 
         });
