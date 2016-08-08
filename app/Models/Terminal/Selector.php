@@ -196,8 +196,9 @@ class Selector
 
             $options['chance'] = $chance;
 
-            $options['multiple'] = true;
         }
+
+        $options['multiple'] = true;
 
         return $options;
     }
