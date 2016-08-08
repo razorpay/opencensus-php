@@ -230,6 +230,7 @@ app.controller('EntityDetailCtrl', [
           'bank_account',
           'bank_account',
           'billdesk',
+          'ebs',
           'card',
           'customer',
           'daily_settlement',
