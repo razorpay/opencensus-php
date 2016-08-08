@@ -40,4 +40,7 @@ class Table
 
     // Sessions table
     const SESSION           = 'sessions';
+
+    // Payment Analytics
+    const PAYMENT_ANALYTICS     = 'payment_analytics';
 }

@@ -299,4 +299,111 @@ class UniqueIdEntity extends Entity
 
         return $res;
     }
+
+    public static function generateUniqueIdWithCheckDigit()
+    {
+        $base62 = self::generateUniqueId();
+
+        $base62[13] = 0;
+
+        $digit = self::base62GetCheckDigit($base62);
+
+        if ($digit === 0)
+        {
+            return $base62;
+        }
+        else
+        {
+            $base62[13] = array_flip(self::$baseValues)[62 - $digit];
+        }
+
+        return $base62;
+    }
+    public static function getCheckDigit($uid)
+    {
+        $uid[13] = ' ';
+
+        $uid = trim($uid);
+
+        $digit = self::base62GetCheckDigit($uid);
+
+        $base62Digit = array_flip(self::$baseValues)[62 - $digit];
+
+        return $base62Digit;
+    }
+    public static function base62GetCheckDigit($num)
+    {
+        $number = $num;
+
+        $sum = 0;
+
+        $flip = 0;
+
+        $len = strlen($number);
+
+        for ($i = $len - 1; $i >= 0; $i--)
+        {
+            try
+            {
+                $multiplier = ($flip++ % 2) ? 1 : 2;
+
+                $base62Digit = self::$baseValues[$number[$i]];
+
+                if ($multiplier === 2)
+                {
+                    $base62Digit = $base62Digit * 2;
+
+                    if ($base62Digit >= 62)
+                    {
+                        $base62Digit = ($base62Digit % 62) + 1;
+                    }
+                }
+
+                $sum += $base62Digit;
+            }
+            catch (\ErrorException $e)
+            {
+                return false;
+            }
+        }
+        return $sum % 62;
+    }
+    public static function validateCheckDigit($num)
+    {
+        $number = $num;
+
+        $sum = 0;
+
+        $flip = 0;
+
+        $len = strlen($number);
+
+        for ($i = $len - 1; $i >= 0; $i--)
+        {
+            try
+            {
+                $multiplier = ($flip++ % 2) ? 1 : 2;
+
+                $base62Digit = self::$baseValues[$number[$i]];
+
+                if ($multiplier === 2)
+                {
+                    $base62Digit = $base62Digit * 2;
+
+                    if ($base62Digit >= 62)
+                    {
+                        $base62Digit = ($base62Digit % 62) + 1;
+                    }
+                }
+
+                $sum += $base62Digit;
+            }
+            catch (\ErrorException $e)
+            {
+                return false;
+            }
+        }
+
+        return (($sum % 62) === 0);
+    }
 }
