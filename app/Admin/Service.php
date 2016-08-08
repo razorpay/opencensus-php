@@ -1942,12 +1942,12 @@ class Service extends Base\Service
 
             $payments = $payments['items'];
 
-            $payments = array_values(array_filter($payments, function($payment) {
-                return $payment['captured_at'] !== NULL;
-            }));
-
             foreach ($payments as $payment)
             {
+                if ($payment['captured_at'] === NULL)
+                {
+                    continue;
+                }
 
                 $payment = $this->cleanUpPayment($payment);
 
