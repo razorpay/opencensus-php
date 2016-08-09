@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Payment;
 
+use RZP\Constants\Table;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -29,18 +30,20 @@ class CheckoutTest extends TestCase
         $payment['_']['checkout_id'] = $checkoutId;
 
         $payment = $this->doAuthPayment($payment);
-        $paymentAnalytic = $this->getLastEntity('payment_analytics', true);
+        $paymentAnalytic = $this->getLastEntity(Table::PAYMENT_ANALYTICS, true);
 
         $this->assertEquals($checkoutId, $paymentAnalytic['checkout_id']);
         $this->assertEquals(1, $paymentAnalytic['attempts']);
 
-        // $payment = $this->getDefaultPaymentArray();
-        // $payment['_']['checkout_id'] = $checkoutId;
+        // ------------------------------------------------------------------ //
 
-        // $payment = $this->doAuthPayment($payment);
-        // $payment = $this->getLastEntity('payment', true);
+        $payment = $this->getDefaultPaymentArray();
+        $payment['_']['checkout_id'] = $checkoutId;
 
-        // $this->assertEquals(checkout_id, $payment['checkout_id']);
-        // $this->assertEquals(1, $payment['attempt']);
+        $payment = $this->doAuthPayment($payment);
+        $paymentAnalytic = $this->getLastEntity(Table::PAYMENT_ANALYTICS, true);
+
+        $this->assertEquals($checkoutId, $paymentAnalytic['checkout_id']);
+        $this->assertEquals(2, $paymentAnalytic['attempts']);
     }
 }

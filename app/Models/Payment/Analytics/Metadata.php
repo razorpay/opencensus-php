@@ -90,6 +90,11 @@ class Metadata
 
     public static function validateOs($os)
     {
+        if (!$os)
+        {
+            return true;
+        }
+
         return array_key_exists(strtolower($os), self::OS_VALUES);
     }
 

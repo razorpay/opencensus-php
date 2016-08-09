@@ -182,4 +182,11 @@ class PublicErrorDescription
     const BAD_REQUEST_RECONCILIATION                                            = 'Error occurred during reconciliation';
 
     const BAD_REQUEST_GATEWAY_CANNOT_TOPUP                                      = 'Payment processing failed because topup cannot be done';
+
+    const BAD_REQUEST_INVALID_CHECKOUT_ID                                       = 'The payment request has invalid checkout_id';
+    const BAD_REQUEST_INVALID_PLATFORM                                          = 'The payment request has invalid platform';
+    const BAD_REQUEST_INVALID_LIBRARY                                           = 'The payment request has invalid library';
+    const BAD_REQUEST_INVALID_BROWSER                                           = 'The payment request has invalid browser';
+    const BAD_REQUEST_INVALID_OS                                                = 'The payment request has invalid operating system';
+    const BAD_REQUEST_INVALID_DEVICE                                            = 'The payment request has invalid device';
 }

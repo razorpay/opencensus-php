@@ -119,7 +119,7 @@ class Entity extends Base\PublicEntity
         return $this->attributes[self::STATUS_MSG];
     }
 
-    public function getAttemptsAttribute()
+    public function getAttempts()
     {
         return $this->attributes[self::ATTEMPTS];
     }

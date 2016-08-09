@@ -17,7 +17,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::CHECKOUT_ID, '=', $checkoutId)
                     ->where(Entity::CREATED_AT, '>=', $timestamp)
-                    ->orderBy(Entity::PAYMENT_ID, 'desc')
+                    ->orderBy(Entity::CREATED_AT, 'desc')
                     ->get();
     }
 

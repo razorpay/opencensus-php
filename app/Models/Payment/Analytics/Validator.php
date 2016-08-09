@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Payment\Analytics;
 
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 
 class Validator extends Base\Validator
@@ -21,40 +23,108 @@ class Validator extends Base\Validator
 
      );
 
-    protected static $metadataValidators = array(
-        'create');
+    protected static $createValidators = array(
+        'checkout_id',
+        'library',
+        'platform',
+        'browser',
+        'os',
+        'device',
+    );
 
+    protected function validateDevice($metadata)
+    {
+        if (isset($metadata[Entity::DEVICE]))
+        {
+            if (Metadata::validateDevice($metadata[Entity::DEVICE]) !== true)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_DEVICE);
+            }
 
-    protected function validateCreate($metadata)
+            return true;
+        }
+
+        return true;
+    }
+
+    protected function validateOs($metadata)
+    {
+        if (isset($metadata[Entity::OS]))
+        {
+            if (Metadata::validateOs($metadata[Entity::OS]) !== true)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_OS);
+            }
+
+            return true;
+        }
+
+        return true;
+    }
+
+    protected function validateBrowser($metadata)
+    {
+        if (isset($metadata[Entity::BROWSER]))
+        {
+            if (Metadata::validateBrowser($metadata[Entity::BROWSER]) !== true)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_BROWSER);
+            }
+
+            return true;
+        }
+
+        return true;
+    }
+
+    protected function validateLibrary($metadata)
+    {
+        if (isset($metadata[Entity::LIBRARY]))
+        {
+            if (Metadata::validateLibrary($metadata[Entity::LIBRARY]) !== true)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_LIBRARY);
+            }
+
+            return true;
+        }
+
+        return true;
+    }
+
+    protected function validatePlatform($metadata)
+    {
+        if (isset($metadata[Entity::PLATFORM]))
+        {
+            if (Metadata::validatePlatform($metadata[Entity::PLATFORM]) !== true)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_PLATFORM);
+            }
+
+            return true;
+        }
+
+        return true;
+    }
+
+    protected function validateCheckoutId($metadata)
     {
         if (isset($metadata[Entity::CHECKOUT_ID]))
         {
-            Entity::validateCheckDigit($metadata[Entity::CHECKOUT_ID]);
+            if (Entity::validateCheckDigit($metadata[Entity::CHECKOUT_ID]) !== true)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_CHECKOUT_ID);
+            }
+
+            return true;
         }
 
-        if (isset($metadata[Entity::PLATFORM]))
-        {
-            Metadata::validatePlatform($metadata[Entity::PLATFORM]);
-        }
-
-        if (isset($metadata[Entity::LIBRARY]))
-        {
-            Metadata::validateLibrary($metadata[Entity::LIBRARY]);
-        }
-
-        if (isset($metadata[Entity::BROWSER]))
-        {
-            Metadata::validateBrowser($metadata[Entity::BROWSER]);
-        }
-
-        if (isset($metadata[Entity::OS]))
-        {
-            Metadata::validateOs($metadata[Entity::OS]);
-        }
-
-        if (isset($metadata[Entity::DEVICE]))
-        {
-            Metadata::validateDevice($metadata[Entity::DEVICE]);
-        }
+        return true;
     }
 }

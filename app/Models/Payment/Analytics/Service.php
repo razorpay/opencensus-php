@@ -78,12 +78,13 @@ class Service extends Base\Service
             return;
         }
 
-        $oldPayments = $this->repo->payment_analytics->getRecentMerchantPaymentsForCheckoutId($checkoutId);
+        $oldPayments = $this->repo->payment_analytics
+                                    ->getRecentMerchantPaymentsForCheckoutId($checkoutId);
 
         $count = $oldPayments->count();
 
         if (($count > 0) and
-            ($count !== $oldPayments->first()->getAttempt()))
+            ($count !== $oldPayments->first()->getAttempts()))
         {
             $this->trace->warning(
                 TraceCode::PAYMENT_CHECKOUT_INVALID_ID,
@@ -92,9 +93,9 @@ class Service extends Base\Service
             return;
         }
 
-        $attempt = $count + 1;
+        $attempts = $count + 1;
 
-        $data[Entity::ATTEMPTS] = $attempt;
+        $data[Entity::ATTEMPTS] = $attempts;
 
         return $data;
     }
