@@ -11,8 +11,8 @@ class Entity extends Base\PublicEntity
     const ID            = 'id';
     const MERCHANT_ID   = 'merchant_id';
     const SETTLEMENT_ID = 'settlement_id';
+    const COMPONENT     = 'component';
     const TYPE          = 'type';
-    const TYPEXYZ       = 'typexyz';
     const COUNT         = 'count';
     const AMOUNT        = 'amount';
     const DESCRIPTION   = 'description';
@@ -32,7 +32,7 @@ class Entity extends Base\PublicEntity
     protected $fillable = array(
         self::ID,
         self::TYPE,
-        self::TYPEXYZ,
+        self::COMPONENT,
         self::COUNT,
         self::AMOUNT,
         self::DESCRIPTION
@@ -43,7 +43,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::SETTLEMENT_ID,
         self::TYPE,
-        self::TYPEXYZ,
+        self::COMPONENT,
         self::COUNT,
         self::AMOUNT,
         self::DESCRIPTION
@@ -51,7 +51,7 @@ class Entity extends Base\PublicEntity
 
     protected $public = array(
         self::TYPE,
-        self::TYPEXYZ,
+        self::COMPONENT,
         self::COUNT,
         self::AMOUNT
     );

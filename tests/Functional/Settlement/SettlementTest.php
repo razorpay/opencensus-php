@@ -269,7 +269,7 @@ class SettlementTest extends TestCase
 
         foreach ($content['items'] as $details)
         {
-            if ($details['typexyz'] == 'debit')
+            if ($details['type'] == 'debit')
             {
                 $totalAmount -= $details['amount'];
             }
@@ -278,11 +278,6 @@ class SettlementTest extends TestCase
                 $totalAmount += $details['amount'];
             }
         }
-
-        // //payment + adjustment - refund(it will be -ve) - fee(inclusive of service tax)
-        // $totalAmount =
-        //     (((int)$content['items'][0]['amount'] +  (int)$content['items'][1]['amount'] +
-        //      (int)$content['items'][2]['amount']) - ((int)$content['items'][4]['amount']));
 
         $this->assertSame($totalAmount, $setl['amount']);
     }

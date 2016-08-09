@@ -104,41 +104,41 @@ class Merchant
     protected function createSettlementDetailsEntities()
     {
         $entityTypes = array(
-            Transaction\Type::PAYMENT,
-            Transaction\Type::REFUND,
-            Transaction\Type::ADJUSTMENT,
+            SetlDetails\Component::PAYMENT,
+            SetlDetails\Component::REFUND,
+            SetlDetails\Component::ADJUSTMENT,
         );
 
         $details = [];
         $totalServiceTax = 0;
         $totalFee = 0;
 
-        foreach ($entityTypes as $type)
+        foreach ($entityTypes as $componentType)
         {
-            $details[$type]['amount'] = 0;
+            $details[$componentType]['amount'] = 0;
 
-            $details[$type]['count'] = 0;
+            $details[$componentType]['count'] = 0;
         }
 
         foreach ($this->txns as $txn)
         {
-            $txnType = $txn->getType();
+            $componentType = $txn->getType();
 
-            $details[$txnType]['count'] += 1;
+            $details[$componentType]['count'] += 1;
 
             if ($txn->getType() === Transaction\Type::PAYMENT)
             {
-                $details[$txnType]['amount'] += $txn->getAmount();
+                $details[$componentType]['amount'] += $txn->getAmount();
             }
             else if ($txn->getType() === Transaction\Type::REFUND)
             {
-                $details[$txnType]['amount'] -= $txn->getAmount();
+                $details[$componentType]['amount'] -= $txn->getAmount();
             }
             else if ($txn->getType() === Transaction\Type::ADJUSTMENT)
             {
-                $details[$txnType]['amount'] += $txn->getCredit();
+                $details[$componentType]['amount'] += $txn->getCredit();
 
-                $details[$txnType]['amount'] -= $txn->getDebit();
+                $details[$componentType]['amount'] -= $txn->getDebit();
             }
 
             $totalServiceTax += $txn->getServiceTax();
@@ -146,47 +146,47 @@ class Merchant
             $totalFee += ($txn->getFee() - $txn->getServiceTax());
         }
 
-        foreach ($entityTypes as $type)
+        foreach ($entityTypes as $componentType)
         {
             $txnType = 'credit';
 
-            if ($details[$type]['amount'] < 0)
+            if ($details[$componentType]['amount'] < 0)
             {
-                $details[$type]['amount'] = abs($details[$type]['amount']);
+                $details[$componentType]['amount'] = abs($details[$componentType]['amount']);
 
                 $txnType = 'debit';
             }
 
-            if ($details[$type]['count'] !== 0)
+            if ($details[$componentType]['count'] !== 0)
             {
                 $this->createSetlDetailsEntity(
-                    $type,
+                    $componentType,
                     $txnType,
-                    $details[$type]['count'],
-                    $details[$type]['amount']);
+                    $details[$componentType]['count'],
+                    $details[$componentType]['amount']);
             }
         }
 
         $this->createSetlDetailsEntity(
-            SetlDetails\Type::SERVICE_TAX,
+            SetlDetails\Component::SERVICE_TAX,
             'debit',
             null,
             $totalServiceTax);
 
         $this->createSetlDetailsEntity(
-            SetlDetails\Type::FEE,
+            SetlDetails\Component::FEE,
             'debit',
             null,
             $totalFee);
     }
 
-    protected function createSetlDetailsEntity($type, $typexyz, $count, $amount)
+    protected function createSetlDetailsEntity($component, $type, $count, $amount)
     {
         $input = array(
-            SetlDetails\Entity::TYPE          => $type,
-            SetlDetails\Entity::TYPEXYZ       => $typexyz,
-            SetlDetails\Entity::AMOUNT        => $amount,
-            SetlDetails\Entity::COUNT         => $count
+            SetlDetails\Entity::COMPONENT => $component,
+            SetlDetails\Entity::TYPE      => $type,
+            SetlDetails\Entity::AMOUNT    => $amount,
+            SetlDetails\Entity::COUNT     => $count
         );
 
         $setlDetailEntity = new SetlDetails\Entity;
