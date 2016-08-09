@@ -377,6 +377,16 @@ trait Support
 
                 if ($count === 0)
                 {
+                    $captureFailedEntities = $this->repo->findByPaymentIdAndStatus($id, Payment\Status::CAPTURE_FAILED);
+
+                    foreach ($captureFailedEntities as $captureFailedEntity)
+                    {
+                        if ($captureFailedEntity->getErrorCode() === Hdfc\ErrorCode::GW00176)
+                        {
+                            return false;
+                        }
+                    }
+
                     return true;
                 }
 
