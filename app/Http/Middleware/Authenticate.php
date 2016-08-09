@@ -1,7 +1,10 @@
 <?php namespace App\Http\Middleware;
 
 use Closure;
+use Auth;
+use Gate;
 use Illuminate\Contracts\Auth\Guard;
+use App\Policies\getUser;
 
 class Authenticate {
 
@@ -43,8 +46,27 @@ class Authenticate {
 				return redirect()->guest('auth/login');
 			}
 		}
+		else
+		{
+			$user = Auth::guard('user')->user();
 
-		return $next($request);
+			if ($user)
+			{
+				$routeName = $request->route()->getName();
+
+				if (!Gate::has($routeName))
+				{
+					return $next($request);
+				}
+				if (Gate::allows($routeName, $user))
+				{
+		            return $next($request);
+		        }
+		        else
+		        {
+		            return response()->json(array('success' => false, 'errors' => ['Unauthorised']));
+		        }
+			}
+		}
 	}
-
 }

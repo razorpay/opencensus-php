@@ -26,6 +26,60 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies($gate);
 
-        //
+        $gate->define('post_refund', function($user){
+            return ($user->getUserRoleWithCurrentMerchant() !== 'finance');
+        });
+
+        $gate->define('post_capture', function($user){
+            return ($user->getUserRoleWithCurrentMerchant() !== 'finance');
+        });
+
+        $gate->define('get_keys', function($user){
+            return ($user->getUserRoleWithCurrentMerchant() === 'owner');
+        });
+
+        $gate->define('post_keys', function($user){
+            return ($user->getUserRoleWithCurrentMerchant() === 'owner');
+        });
+
+        $gate->define('get_activation_details', function($user){
+            return (($user->getUserRoleWithCurrentMerchant() === 'owner') || ($user->getUserRoleWithCurrentMerchant() === 'manager'));
+        });
+
+        $gate->define('post_activation', function($user){
+            return (($user->getUserRoleWithCurrentMerchant() === 'owner') || ($user->getUserRoleWithCurrentMerchant() === 'manager'));
+        });
+
+        $gate->define('post_activation_save_step', function($user){
+            return (($user->getUserRoleWithCurrentMerchant() === 'owner') || ($user->getUserRoleWithCurrentMerchant() === 'manager'));
+        });
+
+        $gate->define('post_activation_save_file', function($user){
+            return (($user->getUserRoleWithCurrentMerchant() === 'owner') || ($user->getUserRoleWithCurrentMerchant() === 'manager'));
+        });
+
+        $gate->define('get_webhooks', function($user){
+            return (($user->getUserRoleWithCurrentMerchant() === 'owner') || ($user->getUserRoleWithCurrentMerchant() === 'manager'));
+        });
+
+        $gate->define('post_webhooks', function($user){
+            return (($user->getUserRoleWithCurrentMerchant() === 'owner') || ($user->getUserRoleWithCurrentMerchant() === 'manager'));
+        });
+
+        $gate->define('edit_webhooks', function($user){
+            return (($user->getUserRoleWithCurrentMerchant() === 'owner') || ($user->getUserRoleWithCurrentMerchant() === 'manager'));
+        });
+
+        $gate->define('get_config', function($user){
+            return (($user->getUserRoleWithCurrentMerchant() === 'owner') || ($user->getUserRoleWithCurrentMerchant() === 'manager'));
+        });
+
+        $gate->define('put_config', function($user){
+            return (($user->getUserRoleWithCurrentMerchant() === 'owner') || ($user->getUserRoleWithCurrentMerchant() === 'manager'));
+        });
+
+        $gate->define('post_config_logo', function($user){
+            return (($user->getUserRoleWithCurrentMerchant() === 'owner') || ($user->getUserRoleWithCurrentMerchant() === 'manager'));
+        });
     }
 }

@@ -22,7 +22,7 @@ Route::group(['middleware'  =>  'auth:user'], function()
     // This returns all the needed information
     Route::get('/user', 'UserController@getUserDetails');
     Route::get('/user/details', 'UserController@getUserDetails');
-    Route::get('/activation/details', 'MerchantController@getActivationDetails');
+    Route::get('/activation/details', ['as' => 'get_activation_details', 'uses' => 'MerchantController@getActivationDetails']);
     Route::get('/{mode}/payments', 'TransactionController@getPayments');
 
     // Order Routes
@@ -47,16 +47,16 @@ Route::group(['middleware'  =>  'auth:user'], function()
     Route::get('/{mode}/analytics/aggregations', 'TransactionController@getAggregations');
     Route::get('/{mode}/analytics/payment/aggregations', 'TransactionController@getPaymentAggregations');
 
-    Route::get('/{mode}/keys', 'MerchantController@getKeys');
+    Route::get('/{mode}/keys', ['as' => 'get_keys', 'uses' => 'MerchantController@getKeys']);
     Route::get('/keys/csv', 'MerchantController@getCsv');
     Route::get('/apihost', 'MerchantController@getApihost');
 
-    Route::get('/config', 'MerchantController@getMerchantConfig');
-    Route::put('/config', 'MerchantController@putMerchantConfig');
-    Route::post('/config/logo', 'MerchantController@postMerchantConfigLogo');
+    Route::get('/config', ['as' => 'get_config', 'uses' => 'MerchantController@getMerchantConfig']);
+    Route::put('/config', ['as' => 'put_config', 'uses' => 'MerchantController@putMerchantConfig']);
+    Route::post('/config/logo', ['as' => 'post_config_logo', 'uses' => 'MerchantController@postMerchantConfigLogo']);
 
     Route::get('/referrals', 'MerchantController@getReferredMerchants');
-    Route::get('/{mode}/webhooks', 'MerchantController@getWebhooks');
+    Route::get('/{mode}/webhooks', ['as' => 'get_webhooks', 'uses' => 'MerchantController@getWebhooks']);
     Route::get('/{mode}/balance', 'MerchantController@getBalance');
     Route::get('/bank_account', 'MerchantController@getBankAccount');
 
@@ -87,16 +87,16 @@ Route::group(['middleware'  =>  'auth:user'], function()
     Route::delete('settings/invitations/{invite}/reject', 'InvitationsController@deleteRejectMerchantInvitation');
 
     Route::post('/password', 'UserController@postPassword');
-    Route::post('/activation', 'MerchantController@postActivation');
-    Route::post('/activation/save/step/{id}', 'MerchantController@postSaveActivationStep');
-    Route::post('/activation/save/file', 'MerchantController@postSaveActivationFile');
-    Route::post('/{mode}/keys', 'MerchantController@postKeys');
+    Route::post('/activation', ['as' => 'post_activation', 'uses' => 'MerchantController@postActivation']);
+    Route::post('/activation/save/step/{id}', ['as' => 'post_activation_save_step', 'uses' => 'MerchantController@postSaveActivationStep']);
+    Route::post('/activation/save/file', ['as' => 'post_activation_save_file', 'uses' => 'MerchantController@postSaveActivationFile']);
+    Route::post('/{mode}/keys', ['as' => 'post_keys', 'uses' => 'MerchantController@postKeys']);
     Route::post('/{mode}/key/new', 'MerchantController@postNewKey');
-    Route::post('/{mode}/payments/{id}/capture', 'TransactionController@postCapturePayment');
-    Route::post('/{mode}/payments/{id}/refund', 'TransactionController@postRefundPayment');
+    Route::post('/{mode}/payments/{id}/capture', ['as' => 'post_capture', 'uses' => 'TransactionController@postCapturePayment']);
+    Route::post('/{mode}/payments/{id}/refund', ['as' => 'post_refund', 'uses' => 'TransactionController@postRefundPayment']);
     Route::post('/{mode}/addfunds', 'TransactionController@postAddfunds');
-    Route::post('/{mode}/webhooks', 'MerchantController@postAddWebhook');
-    Route::put('/{mode}/webhooks/{id}', 'MerchantController@putEditWebhook');
+    Route::post('/{mode}/webhooks', ['as' => 'post_webhooks', 'uses' => 'MerchantController@postAddWebhook']);
+    Route::put('/{mode}/webhooks/{id}', ['as' => 'edit_webhooks', 'uses' => 'MerchantController@putEditWebhook']);
 
     // Upgrades a standard invited user to a merchant
     Route::post('/merchants/register', 'UserController@postUpgradeUserToMerchant');
