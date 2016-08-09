@@ -13,18 +13,12 @@ return [
             'method' => 'post',
             'content' => [
                 'value' => 25,
-                'notes' => [
-                    'referred_party' => 'asd',
-                ],
                 'campaign' => 'silent-ads',
             ],
         ],
         'response' => [
             'content' => [
                 'value' => 25,
-                'notes' => [
-                    'referred_party' => 'asd',
-                ],
                 'campaign' => 'silent-ads',
             ],
         ],
@@ -49,9 +43,6 @@ return [
             'method' => 'post',
             'content' => [
                 'value' => 25,
-                'notes' => [
-                    'referred_party' => 'asd',
-                ],
                 'campaign' => 'silent-ads',
             ],
         ],
@@ -161,12 +152,10 @@ return [
                     [
 						'campaign' => "silent-ads",
 						'value' => 90,
-						'notes' => [],
 					],
                     [
                         'campaign' => "silent-ads",
                         'value' => 90,
-                        'notes' => [],
                     ],
                 ],
             ],
@@ -187,7 +176,6 @@ return [
                     [
 						'campaign' => "silent-ads",
 						'value' => 90,
-						'notes' => [],
 					],
                 ],
             ],

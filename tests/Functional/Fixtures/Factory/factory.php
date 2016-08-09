@@ -271,5 +271,4 @@ $factory(\RZP\Models\Merchant\Credits\Entity::class, [
     'merchant_id'   => '10000000000000',
     'value'         => 150,
     'campaign'      => 'silent-ads',
-    'notes'         => null,
 ]);

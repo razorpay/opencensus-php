@@ -15,7 +15,6 @@ class Validator extends Base\Validator
     protected static $createRules = array(
         Entity::CAMPAIGN                => 'required|alpha_dash|max:255',
         Entity::VALUE                   => 'required|integer|min:1|max:'.self::MAX_CREDITS,
-        Entity::NOTES                   => 'sometimes|notes',
     );
 
     protected static $editRules = array(

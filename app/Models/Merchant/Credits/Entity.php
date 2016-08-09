@@ -3,17 +3,13 @@
 namespace RZP\Models\Merchant\Credits;
 
 use RZP\Models\Base;
-use RZP\Models\Base\Traits\NotesTrait;
 
 class Entity extends Base\PublicEntity
 {
-    use NotesTrait;
-
     const ID                        = 'id';
     const CAMPAIGN                  = 'campaign';
     const MERCHANT_ID               = 'merchant_id';
     const VALUE                     = 'value';
-    const NOTES                     = 'notes';
 
     protected $entity               = 'credits';
 
@@ -25,7 +21,6 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::CAMPAIGN,
         self::VALUE,
-        self::NOTES,
     );
 
     protected $visible = array(
@@ -33,18 +28,15 @@ class Entity extends Base\PublicEntity
         self::CAMPAIGN,
         self::MERCHANT_ID,
         self::VALUE,
-        self::NOTES,
     );
 
     protected $public = array(
         self::ID,
         self::CAMPAIGN,
         self::VALUE,
-        self::NOTES,
     );
 
     protected $defaults = array(
-        self::NOTES             => [],
         self::VALUE             => 0,
         self::CAMPAIGN          => null,
     );

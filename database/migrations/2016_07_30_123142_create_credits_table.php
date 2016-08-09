@@ -28,8 +28,6 @@ class CreateCreditsTable extends Migration
             $table->integer(Credits::VALUE)
                   ->unsigned();
 
-            $table->text(Credits::NOTES);
-
             $table->integer(Credits::CREATED_AT);
             $table->integer(Credits::UPDATED_AT);
 
