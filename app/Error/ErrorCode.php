@@ -76,6 +76,7 @@ class ErrorCode
     const GATEWAY_ERROR_INVALID_PARAMETERS                                          = 'GATEWAY_ERROR_INVALID_PARAMETERS';
 // Generic bad requests
     const BAD_REQUEST_INVALID_ID                                                    = 'BAD_REQUEST_INVALID_ID';
+    const BAD_REQUEST_NO_RECORDS_FOUND                                              = 'BAD_REQUEST_NO_RECORDS_FOUND';
     const BAD_REQUEST_ONLY_HTTPS_ALLOWED                                            = 'BAD_REQUEST_ONLY_HTTPS_ALLOWED';
     const BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED                                       = 'BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED';
     const BAD_REQUEST_ERROR                                                         = 'BAD_REQUEST_ERROR';

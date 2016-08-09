@@ -21,6 +21,8 @@ class Repository extends \Razorpay\Spine\Repository
 
     protected $queue;
 
+    protected $manager;
+
     public function __construct()
     {
         parent::__construct();
@@ -32,6 +34,8 @@ class Repository extends \Razorpay\Spine\Repository
         $this->auth = $this->app['basicauth'];
 
         $this->queue = $this->app['queue'];
+
+        $this->manager = $this->app['repo'];
     }
 
     public function findOrFailPublic($id, $columns = array('*'))
