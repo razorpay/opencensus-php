@@ -72,7 +72,7 @@ return [
 
     'testPositiveUpdateCredits' => [
         'request' => [
-            'url' => '/merchants/10000000000000/credits/123/',
+            'url' => '/merchants/10000000000000/credits/',
             'method' => 'put',
             'content' => [
                 'value' => 190,
@@ -89,15 +89,15 @@ return [
 
     'testNegativeUpdateCredits' => [
         'request' => [
-            'url' => '/merchants/10000000000000/credits/123/',
+            'url' => '/merchants/10000000000000/credits/',
             'method' => 'put',
             'content' => [
-                'value' => 10,
+                'value' => 100,
             ]
         ],
         'response' => [
             'content' => [
-                'value' => 10,
+                'value' => 100,
                 'campaign' => 'silent-ads',
             ],
             'status_code' => 200,
@@ -202,12 +202,9 @@ return [
         ],
         'response' => [
             'content' => [
-                'campaign' => "silent-ads",
-                'value' => 150,
-                'notes' => [],
+                'success' => true
 			],
             'status_code' => 200,
         ],
     ],
-
 ];

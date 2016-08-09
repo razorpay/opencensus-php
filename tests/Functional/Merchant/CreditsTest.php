@@ -3,21 +3,18 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Merchant;
 
 class CreditsTest extends TestCase
 {
-    use RequestResponseFlowTrait;
+    use PaymentTrait;
 
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/helpers/CreditsData.php';
-        parent::setUp();
 
-        $merchantId = '10000000000000';
-        $merchant = (new Merchant\Repository)->findOrFailPublic($merchantId);
-        $balance = (new Merchant\Balance\Repository)->editMerchantFreeCredits($merchant, 150);
+        parent::setUp();
 
         // All API calls to Credits have to be through admin account.
         $this->ba->appAuth();
@@ -39,10 +36,8 @@ class CreditsTest extends TestCase
     {
         $creditsLog = $this->fixtures->create('credits');
 
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-        $url = $url.$creditsLog->getId();
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-        $this->testData[__FUNCTION__]['response']['content']['id'] = 'credits_'.$creditsLog->getId();
+        $this->testData[__FUNCTION__]['request']['url'] .= $creditsLog->getId();
+        $this->testData[__FUNCTION__]['response']['content']['id'] = $creditsLog->getPublicId();
 
         $this->ba->proxyAuth();
         $this->startTest();
@@ -50,45 +45,34 @@ class CreditsTest extends TestCase
 
     public function testPositiveUpdateCredits()
     {
-        // ID 123 is given in the data so it should match
-        $opCredits = $this->testData[__FUNCTION__]['request']['content']['value'];
-        $creditsLog = $this->fixtures->create(
-            'credits',
-            ['id' => '123', 'value' => 150]);
+        $creditsLog = $this->addCredits(['value' => 150, 'campaign' => 'silent-ads']);
+        $id = $creditsLog['id'];
 
-        $merchant = $creditsLog->merchant;
-        $balance = (new Merchant\Balance\Repository)->editMerchantFreeCredits($merchant, 150);
-        $oldBalanceCredits = $balance->getCredits();
-        $creditsDifference = $opCredits - $creditsLog->getValue();
+        $this->testData[__FUNCTION__]['request']['url'] .= $id;
 
         $this->startTest();
 
-        // Assert If CreditsLog is updated
-        $creditsLog = $this->getEntityById('credits', '123', true);
-        $this->assertEquals($opCredits, $creditsLog['value']);
-        // Assert If Merchant Balance is updated
-        $balance = (new Merchant\Balance\Repository)->getMerchantBalance($merchant);
-        $this->assertEquals($balance->getCredits(), $oldBalanceCredits + $creditsDifference);
+        $creditsLog = $this->getEntityById('credits', $id, true);
+        $this->assertEquals($creditsLog['value'], 190);
+
+        $balance = $this->fetchBalance();
+        $this->assertEquals($balance['credits'], 190);
     }
 
     public function testNegativeUpdateCredits()
     {
-        // ID 123 is given in the data so it should match
-        $opCredits = $this->testData[__FUNCTION__]['request']['content']['value'];
-        $creditsLog = $this->fixtures->create(
-            'credits',
-            ['id' => '123', 'value' => 150]);
-        $merchant = $creditsLog->merchant;
-        $balance = (new Merchant\Balance\Repository)->editMerchantFreeCredits($merchant, 150);
-        $oldBalanceCredits = $balance->getCredits();
-        $creditsDifference = $opCredits - $creditsLog->getValue();
+        $creditsLog = $this->addCredits(['value' => 150, 'campaign' => 'silent-ads']);
+        $id = $creditsLog['id'];
+
+        $this->testData[__FUNCTION__]['request']['url'] .= $id;
 
         $this->startTest();
 
-        $creditsLog = $this->getEntityById('credits', '123', true);
-        $this->assertEquals($creditsLog['value'], $opCredits);
-        $balance = (new Merchant\Balance\Repository)->getMerchantBalance($merchant);
-        $this->assertEquals($balance->getCredits(), $oldBalanceCredits + $creditsDifference);
+        $creditsLog = $this->getEntityById('credits', $id, true);
+        $this->assertEquals($creditsLog['value'], 100);
+
+        $balance = $this->fetchBalance();
+        $this->assertEquals($balance['credits'], 100);
     }
 
     public function testFailNegativeUpdateCredits()
@@ -123,7 +107,6 @@ class CreditsTest extends TestCase
 
     public function testCreditsGrantedToMerchant()
     {
-
         $this->fixtures->create('merchant', ['id' => '10000']);
         $this->fixtures->create('credits', ['id' => '123', 'value' => 90, 'merchant_id'=>'10000']);
         $this->fixtures->create('credits', ['id' => '125', 'value' => 90]);
@@ -134,9 +117,11 @@ class CreditsTest extends TestCase
 
     public function testDeleteCreditsLog()
     {
+        $creditsLog = $this->addCredits(['value' => 150, 'campaign' => 'silent-ads']);
+
         $creditsLog = $this->fixtures->create('credits');
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-        $this->testData[__FUNCTION__]['request']['url'] = $url.$creditsLog->getId();
+
+        $this->testData[__FUNCTION__]['request']['url'] .= $creditsLog->getId();
 
         $this->startTest();
     }
