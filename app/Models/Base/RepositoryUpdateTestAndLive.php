@@ -68,6 +68,32 @@ trait RepositoryUpdateTestAndLive
         $entity->exists = true;
     }
 
+    public function delete($entity)
+    {
+        $this->manager->transactionOnLiveAndTest(function () use ($entity)
+        {
+            $testEntity = clone $entity;
+            $liveEntity = clone $entity;
+
+            $testEntity->delete();
+            $liveEntity->delete();
+        });
+    }
+
+    public function forceDelete($entity)
+    {
+        $this->manager->transactionOnLiveAndTest(function () use ($entity)
+        {
+            $testEntity = clone $entity;
+            $liveEntity = clone $entity;
+
+            $testEntity->forceDelete();
+            $liveEntity->forceDelete();
+        });
+
+        return true;
+    }
+
     protected function dualUpdateVerifyEntityClass($entity)
     {
         if (get_class($entity) !== $this->repo)

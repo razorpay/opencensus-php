@@ -60,10 +60,9 @@ class Repository extends Base\Repository
 
     public function getPricingRulesForCard($id)
     {
-        $repo = $this->repo;
-
         // cannot use laravel's whereIn here because it doesn't give correct result with 'null'
-        return $repo::where(Pricing\Entity::PLAN_ID, '=', $id)
+        return $this->newQuery()
+                    ->planId($id)
                     ->where(Pricing\Entity::PAYMENT_METHOD, '=', Payment\Method::CARD)
                     ->orderBy(Pricing\Entity::ID, 'desc')
                     ->get();
@@ -71,27 +70,24 @@ class Repository extends Base\Repository
 
     public function getPricingRulesForMethod($pricingPlanId, $method)
     {
-        $repo = $this->repo;
-
-        return $repo::where(Pricing\Entity::PLAN_ID, '=', $pricingPlanId)
+        return $this->newQuery()
+                    ->planId($pricingPlanId)
                     ->where(Pricing\Entity::PAYMENT_METHOD, '=', $method)
                     ->get();
     }
 
     public function getZeroPricingPlanRuleForMethod($method)
     {
-        $repo = $this->repo;
-
-        return $repo::where(Pricing\Entity::PLAN_ID, '=', Pricing\Entity::ZERO_PRICING)
+        return $this->newQuery()
+                    ->planId(Pricing\Entity::ZERO_PRICING)
                     ->where(Pricing\Entity::PAYMENT_METHOD, '=', $method)
                     ->firstOrFail();
     }
 
     public function getPricingPlansOrderedByPlanId()
     {
-        $repo = $this->repo;
-
-        return $repo::orderBy(Pricing\Entity::PLAN_ID, 'desc')
+        return $this->newQuery()
+                    ->orderBy(Pricing\Entity::PLAN_ID, 'desc')
                     ->orderBy(Pricing\Entity::ID, 'desc')
                     ->get();
     }
@@ -109,17 +105,15 @@ class Repository extends Base\Repository
 
     public function getGatewayPricingPlans()
     {
-        $repo = $this->repo;
-
-        return $repo::whereNotNull(Pricing\Entity::GATEWAY)
+        return $this->newQuery()
+                    ->whereNotNull(Pricing\Entity::GATEWAY)
                     ->orderBy(Pricing\Entity::ID, 'desc')->get();
     }
 
     public function getPricingPlanByName($name)
     {
-        $repo = $this->repo;
-
-        return $repo::where(Pricing\Entity::PLAN_NAME, '=', $name)
+        return $this->newQuery()
+                    ->where(Pricing\Entity::PLAN_NAME, '=', $name)
                     ->orderBy(Pricing\Entity::ID, 'desc')
                     ->get();
     }
@@ -134,17 +128,16 @@ class Repository extends Base\Repository
 
     public function deletePlanRule($planId, $ruleId)
     {
-        $repo = $this->repo;
-
-        $rule = $repo::where(Entity::PLAN_ID, '=', $planId)
-                     ->where(Entity::ID, '=', $ruleId)
-                     ->firstOrFail();
+        $rule = $this->newQuery()
+                    ->where(Entity::PLAN_ID, '=', $planId)
+                    ->where(Entity::ID, '=', $ruleId)
+                    ->firstOrFailPublic();
 
         $count = $rule->payments->count();
 
         if ($count === 0)
         {
-            return $rule->forceDelete();
+            return $this->forceDelete($rule);
         }
         else
         {
@@ -155,21 +148,20 @@ class Repository extends Base\Repository
 
     public function deletePlanRuleForce($planId, $ruleId)
     {
-        $repo = $this->repo;
-
-        $rule = $repo::where(Entity::PLAN_ID, '=', $planId)
-                     ->where(Entity::ID, '=', $ruleId)
-                     ->firstOrFail();
+        $rule = $this->newQuery()
+                    ->where(Entity::PLAN_ID, '=', $planId)
+                    ->where(Entity::ID, '=', $ruleId)
+                    ->firstOrFailPublic();
 
         $count = $rule->payments->count();
 
         if ($count === 0)
         {
-            return $rule->forceDelete();
+            return $this->forceDelete($rule);
         }
         else
         {
-            $rule->delete();
+            $this->delete($rule);
 
             return true;
         }
