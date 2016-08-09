@@ -252,14 +252,11 @@ class SettlementTest extends TestCase
 
         $setl = $this->getLastEntity('settlement', true);
 
-        $this->ba->proxyAuth();
+        // $request = array('url' => '/settlements/details', 'method' => 'post');
+        // $content = $this->makeRequestAndGetContent($request);
+        // sd($content);
 
-        $request = array(
-            'url' => '/settlements/'.$setl['id'].'/details',
-            'method' => 'GET'
-        );
-
-        $content = $this->makeRequestAndGetContent($request);
+        $content = $this->getEntities('settlement_details', ['settlement_id' => $setl['id']], true);
 
         $this->assertArrayHasKey('entity', $content);
         $this->assertSame('collection', $content['entity']);
