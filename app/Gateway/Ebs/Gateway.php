@@ -33,7 +33,9 @@ class Gateway extends Base\Gateway
     const DESCRIPTION               = 'razorpay ebs desc';
     const COUNTRY_CODE              = 'IND';
 
-    protected $gateway = Constants\Table::EBS;
+    protected $gateway = 'ebs';
+
+    $this->sortRequestContent = true;
 
     protected $map = array(
         Resp::PAYMENT_ID            => Entity::REFERENCE_ID,
@@ -49,7 +51,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->getAuthRequestContentArray($input);
 
-        $attributes = $this->getAuthorizeContent($content);
+        $attributes = $this->getAuthorizeAttributesForPaymentEntity($content);
 
         $payment = $this->createGatewayPaymentEntity($attributes, $input);
 
@@ -87,7 +89,7 @@ class Gateway extends Base\Gateway
         $attributes = $this->getGatewayEntityDataFromResponse($input);
 
         $gatewayPayment->fill($attributes);
-        $gatewayPayment->saveOrFail();
+        $this->repo->saveOrFail($gatewayPayment);
 
         if (isset($input['gateway'][Resp::RESPONSE_CODE]) == false)
         {
@@ -123,30 +125,14 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $this->getRepo()->findByPaymentIdAndAction(
                                 $input['payment']['id'], Action::AUTHORIZE);
 
-        $content = $this->getPaymentRefundRequestContent($gatewayPayment, $input);
+        $attributes = $this->sendRefundGatewayRequest($gatewayPayment, $input);
 
-        $request = $this->getStandardRequestArray($content);
+        $refundEntity = $this->createGatewayPaymentEntity($attributes, $input);
 
-        $traceCode = TraceCode::GATEWAY_REFUND_REQUEST;
-
-        $this->traceGatewayApiRequest($traceCode, $request);
-
-        $response = $this->sendGatewayRequest($request);
-
-        $this->trace->info(
-            TraceCode::GATEWAY_REFUND_RESPONSE,
-            [$response->body]);
-
-        $refundResponse = $this->parseResponseXml($response->body);
-
-        $attributes = $this->getRefundContent($refundResponse, $input);
-
-        $refund = $this->createGatewayPaymentEntity($attributes, $input);
-
-        if ((isset($refundResponse[Resp::RESPONSE]) === false) or
-            ($refundResponse[Resp::RESPONSE] !== Status::API_SUCCESS))
+        if ((isset($refundEntity[Resp::RESPONSE]) === false) or
+            ($refundEntity[Resp::RESPONSE] !== Status::API_SUCCESS))
         {
-            $responseCode = $refundResponse[Resp::ERROR_CODE];
+            $responseCode = $refundEntity[Resp::ERROR_CODE];
 
             $desc = '';
 
@@ -176,6 +162,23 @@ class Gateway extends Base\Gateway
         $verify = new Base\Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
+    }
+
+    protected function sendRefundGatewayRequest($gatewayPayment, $input)
+    {
+        $content = $this->getPaymentRefundRequestContent($gatewayPayment, $input);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_RESPONSE,
+            [$response->body]);
+
+        $refundResponse = $this->parseResponseXml($response->body);
+
+        return $this->getRefundContent($refundResponse, $input);
     }
 
     protected function verifyPayment($verify)
@@ -348,39 +351,24 @@ class Gateway extends Base\Gateway
 
     public function getSecureHash($content, $terminal)
     {
-        // Secret is the first key of the string
-        $hashData = $this->getSecretKey($terminal);
-
-        ksort($content);
-
-        foreach ($content as $key => $value)
-        {
-            if (strlen($value) > 0)
-            {
-                $hashData .= '|' . $value;
-            }
-        }
-
-        $hashValue = strtoupper(hash(self::HASH_ALGO, $hashData));
-
-        return $hashValue;
+        return $this->getHashOfString($content);
     }
 
     protected function getGatewayEntityDataFromResponse($input)
     {
-        $content = $this->getMappedAttributes($input['gateway']);
+        $content = $input['gateway'];
+        $content['gateway_payment_id'] = $content['payment_id'];
+        unset($content['payment_id']);
 
         $content[Entity::IS_FLAGGED] = false;
 
-        if ((isset($content[Entity::IS_FLAGGED]) === true) and
-            (strtolower($content[Entity::IS_FLAGGED]) === 'yes'))
+        if ((isset($input['gateway'][Resp::IS_FLAGGED]) === true) and
+            (strtolower($input['gateway'][Resp::IS_FLAGGED]) === 'yes'))
         {
             $content[Entity::IS_FLAGGED] = true;
         }
 
         $content[Entity::RECEIVED] = true;
-
-        $content[Entity::REQUEST_ID] = $input['gateway'][Resp::REQUEST_ID];
 
         $content[Entity::STATUS] = Status::AUTHORIZED;
 
@@ -423,6 +411,8 @@ class Gateway extends Base\Gateway
             Req::API_AMOUNT         => $refundAmount,
             Req::API_PAYMENT_ID     => $gatewayPayment[Entity::REFERENCE_ID],
         );
+
+        $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST, $content);
 
         return $content;
     }
@@ -505,11 +495,11 @@ class Gateway extends Base\Gateway
 
         if ($input['payment']['method'] === Payment\Method::NETBANKING)
         {
-            $this->setContentForNetBanking($content, $input);
+            $this->setAuthRequestContentForNetBanking($content, $input);
         }
         else if ($input['payment']['method'] === Payment\Method::CARD)
         {
-            $this->setContentForCard($content, $input);
+            $this->setAuthRequestContentForCard($content, $input);
         }
 
         $content[Req::SECURE_HASH] = $this->getSecureHash($content, $input['terminal']);
@@ -517,7 +507,7 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected function setContentForCard(&$content, $input)
+    protected function setAuthRequestContentForCard(&$content, $input)
     {
         $content[Req::CHANNEL]       = Channel::CARD;
         $content[Req::NAME_ON_CARD]  = $input['card']['name'];
@@ -527,7 +517,7 @@ class Gateway extends Base\Gateway
         $content[Req::CARD_NETWORK]  = CardNetwork::map($input['card']['network_code']);
     }
 
-    protected function setContentForNetBanking(&$content, $input)
+    protected function setAuthRequestContentForNetBanking(&$content, $input)
     {
         $content[Req::CHANNEL]        = Channel::NETBANKING;
         $content[Req::PAYMENT_OPTION] = BankCodes::getMappedCode($input['payment']['bank']);
@@ -606,7 +596,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function getAuthorizeContent($content)
+    protected function getAuthorizeAttributesForPaymentEntity($content)
     {
         $attributes = array();
         $attributes[Entity::AMOUNT]     = $content[Req::AMOUNT];
@@ -652,5 +642,14 @@ class Gateway extends Base\Gateway
         $arrayResponse = (array) simplexml_load_string($response);
 
         return $arrayResponse['@attributes'];
+    }
+
+    protected function getHashOfString($str)
+    {
+        $secret = $this->getSecret();
+
+        $str = $secret . '|' . $str;
+
+        return strtoupper(hash(self::HASH_ALGO, $str));
     }
 }
