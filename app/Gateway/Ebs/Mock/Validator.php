@@ -8,7 +8,7 @@ use RZP\Gateway\Ebs\RequestConstants as Request;
 class Validator extends Base\Validator
 {
     protected static $authRules = array(
-        Request::CHANNEL            => 'required|alpha_num',
+        Request::CHANNEL            => 'required|in:0,2',
         Request::ACCOUNT_ID         => 'required|alpha_num',
         Request::CALLBACK           => 'required|url',
         Request::REFERENCE_NO       => 'required|alpha_num',
@@ -17,7 +17,7 @@ class Validator extends Base\Validator
         Request::ADDRESS            => 'required|',
         Request::CITY               => 'required|alpha_num',
         Request::COUNTRY            => 'required|alpha_num',
-        Request::POSTAL_CODE        => 'required|',
+        Request::POSTAL_CODE        => 'required|alpha_num',
         Request::PHONE              => 'required|contact_syntax',
         Request::EMAIL              => 'required|email',
         Request::DESCRIPTION        => 'required|',
@@ -45,7 +45,7 @@ class Validator extends Base\Validator
         Request::API_ACTION         => 'required|in:refund',
         Request::API_ACCOUNT_ID     => 'required|alpha_num',
         Request::API_SECRET_KEY     => 'required|alpha_num',
-        Request::API_AMOUNT         => 'required|',
+        Request::API_AMOUNT         => 'required|numeric',
         Request::API_PAYMENT_ID     => 'required|alpha_num',
     );
 }

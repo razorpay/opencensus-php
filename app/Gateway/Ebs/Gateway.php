@@ -89,8 +89,12 @@ class Gateway extends Base\Gateway
         $gatewayPayment->fill($attributes);
         $gatewayPayment->saveOrFail();
 
-        if ((isset($input['gateway'][Resp::RESPONSE_CODE])) and
-            ($input['gateway'][Resp::RESPONSE_CODE] !== Status::SUCCESS))
+        if (isset($input['gateway'][Resp::RESPONSE_CODE]) == false)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR, '', '');
+        }
+        else if ($input['gateway'][Resp::RESPONSE_CODE] !== Status::SUCCESS)
         {
             //
             // Payment fails, throw exception
@@ -211,7 +215,7 @@ class Gateway extends Base\Gateway
             {
                 $gatewayStatus = true;
             }
-            else if ($content[Resp::API_TRANSACTION_TYPE] === Status::API_AUTHORIZED_FAILED)
+            else if ($content[Resp::API_TRANSACTION_TYPE] === Status::API_AUTHORIZE_FAILED)
             {
                 $gatewayStatus = false;
             }
@@ -277,7 +281,7 @@ class Gateway extends Base\Gateway
     {
         if (isset($response[Resp::API_TRANSACTION_ID]))
         {
-            $attributes = $this->getVerifyContents($payment, $response);
+            $attributes = $this->getVerifyContents($response);
 
             if ($payment['received'] === false)
             {
@@ -291,7 +295,7 @@ class Gateway extends Base\Gateway
         return $payment;
     }
 
-    protected function getVerifyContents($payment, $content)
+    protected function getVerifyContents($content)
     {
         $isFlagged = false;
 
@@ -507,11 +511,6 @@ class Gateway extends Base\Gateway
         {
             $this->setContentForCard($content, $input);
         }
-        else
-        {
-            throw new Exception\LogicException(
-                'Invalid Payment Method');
-        }
 
         $content[Req::SECURE_HASH] = $this->getSecureHash($content, $input['terminal']);
 
@@ -612,7 +611,6 @@ class Gateway extends Base\Gateway
         $attributes = array();
         $attributes[Entity::AMOUNT]     = $content[Req::AMOUNT];
         $attributes[Entity::PAYMENT_ID] = $content[Req::REFERENCE_NO];
-        $attributes[Entity::AMOUNT]     = $content[Req::AMOUNT];
         $attributes[Entity::STATUS]     = Status::CREATED;
 
         return $attributes;

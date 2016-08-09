@@ -33,7 +33,7 @@ class ResponseConstants
     const RESPONSE              = 'response';
 
     //
-    // API response Fields
+    // EBS API response Fields
     //
     const API_IS_FLAGGED        = 'isFlagged';
     const API_TRANSACTION_ID    = 'transactionId';

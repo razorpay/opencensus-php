@@ -12,8 +12,9 @@ class Repository extends Base\Repository
 
     protected $appFetchParamRules = array(
         Entity::PAYMENT_ID      => 'sometimes|string',
-        Entity::RECEIVED        => 'sometimes|in:true,false',
+        Entity::RECEIVED        => 'sometimes|boolean',
         Entity::REFUND_ID       => 'sometimes|string',
+        Entity::REFERENCE_ID    => 'sometimes|string',
     );
 
 
