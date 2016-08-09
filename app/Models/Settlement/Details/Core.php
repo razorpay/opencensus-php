@@ -14,7 +14,7 @@ class Core extends Base\Core
         $skipped = 0;
         $failed = 0;
 
-        $setls = $this->repo->settlement->fetch($input);
+        $setls = $this->repo->settlement->getFewSettlementsWithNoCorrespondingSettlementDetails();
 
         foreach ($setls as $setl)
         {

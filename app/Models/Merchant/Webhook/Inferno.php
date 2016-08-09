@@ -40,7 +40,7 @@ class Inferno
      * We keep it internally as 7 seconds
      * but publicly we only say it's 5 seconds.
      */
-    const WEBHOOK_TIMEOUT = 7;
+    const WEBHOOK_TIMEOUT = 20;
 
     public function __construct()
     {
@@ -207,7 +207,9 @@ class Inferno
             //
             if (\RZP\Gateway\Utility::checkTimeout($e))
             {
-                $this->errorMessage = 'Webhook request timed out. We keep the timeout duration as 5 seconds. We will only retry 3 times before deactivating webhook.';
+                $this->errorMessage = 'Webhook request timed out. We keep the timeout duration as ' .
+                    round(self::WEBHOOK_TIMEOUT * 0.75) .
+                    ' seconds. We will only retry 3 times before deactivating webhook.';
             }
             else if ($this->isKnownRequestsException($e))
             {

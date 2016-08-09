@@ -488,6 +488,7 @@ final class Route
             'payment_capture_reminder',
             'emi_generate_excel',
             'es_migrate_entity',
+            'setl_post_details_old',
         ),
 
         'mailgun' => array(
