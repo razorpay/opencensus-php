@@ -689,6 +689,11 @@ trait Authorize
             $saveMethodInput['method'] = Payment\Method::CARD;
 
             $saveMethodInput['card_id'] = $savedCardId;
+
+            if ($payment->isRecurring() === true)
+            {
+                $saveMethodInput['recurring'] = true;
+            }
         }
         else if ($payment->isMethod(Payment\Method::NETBANKING))
         {

@@ -21,6 +21,7 @@ class Entity extends Base\PublicEntity
     const GATEWAY_TOKEN         = 'gateway_token';
     const GATEWAY_TOKEN2        = 'gateway_token2';
     const RECURRING             = 'recurring';
+    const AUTHENTICATED         = 'authenticated';
     const EXPIRED_AT            = 'expired_at';
     const CREATED_AT            = 'created_at';
     const UPDATED_AT            = 'updated_at';
@@ -43,6 +44,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_TOKEN,
         self::GATEWAY_TOKEN2,
         self::RECURRING,
+        self::AUTHENTICATED,
         self::EXPIRED_AT,
     );
 
@@ -60,6 +62,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_TOKEN,
         self::GATEWAY_TOKEN2,
         self::RECURRING,
+        self::AUTHENTICATED,
         self::EXPIRED_AT,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -79,6 +82,7 @@ class Entity extends Base\PublicEntity
         self::CARD_ID        => null,
         self::GATEWAY_TOKEN2 => null,
         self::RECURRING      => false,
+        self::AUTHENTICATED  => false,
         self::EXPIRED_AT     => null
     );
 
@@ -88,7 +92,8 @@ class Entity extends Base\PublicEntity
         self::CARD);
 
     protected $casts = array(
-        self::RECURRING => 'boolean'
+        self::RECURRING     => 'boolean',
+        self::AUTHENTICATED => 'boolean'
     );
 
     protected static $generators = array(
@@ -150,6 +155,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::RECURRING);
     }
 
+    public function getAuthenticated()
+    {
+        return $this->getAttribute(self::AUTHENTICATED);
+    }
+
     public function getExpiredAt()
     {
         return $this->getAttribute(self::EXPIRED_AT);
@@ -170,6 +180,11 @@ class Entity extends Base\PublicEntity
     public function isRecurring()
     {
         return $this->getRecurring();
+    }
+
+    public function isAuthenticated()
+    {
+        return $this->getAuthenticated();
     }
 
     protected function setPublicCardAttribute(array & $array)

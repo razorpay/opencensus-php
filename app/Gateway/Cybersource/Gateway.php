@@ -94,8 +94,6 @@ class Gateway extends Base\Gateway
 
     public function recurring(array $input)
     {
-        parent::authorize($input);
-
         $response = $this->authorizeRecurring($input);
 
         $this->persistAfterAuthorizeRecurring($response, $input);
