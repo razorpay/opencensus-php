@@ -13,18 +13,13 @@ class Repository extends Base\Repository
 
     protected $entity = 'credits';
 
-    // These are merchant allowed params to search on. These also act as default params.
-    protected $entityFetchParamRules = array(
-        Entity::ID                      => 'sometimes|string',
-    );
-
-    // These are proxy allowed params to search on.
+    // These are admin allowed params to search on.
     protected $appFetchParamRules = array(
         Entity::CAMPAIGN                => 'sometimes|string|max:255',
         Entity::MERCHANT_ID             => 'sometimes|string',
     );
 
-    // These are admin allowed params to search on.
+    // These are proxy allowed params to search on.
     protected $proxyFetchParamRules = array(
         Entity::CAMPAIGN                => 'sometimes|string|max:255',
     );
@@ -37,9 +32,25 @@ class Repository extends Base\Repository
      */
     public function creditsLogExists($campaign, Merchant\Entity $merchant)
     {
-         return $this->newQuery()
-             ->where(Entity::CAMPAIGN, '=', $campaign)
-             ->where(Entity::MERCHANT_ID, '=',  $merchant->getId())
-             ->exists();
+        return $this->newQuery()
+                    ->where(Entity::CAMPAIGN, '=', $campaign)
+                    ->merchantId($merchant->getId())
+                    ->exists();
+    }
+
+    public function validateCamapignCreditsNotAssigned($campaign, Merchant\Entity $merchant)
+    {
+        // Check if the log already exists, API is meant to be used for creation only.
+        $creditsLog = $this->newQuery()
+            ->where(Entity::CAMPAIGN, '=', $campaign)
+            ->merchantId($merchant->getId())
+            ->first();
+
+        if ($creditsLog)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The campaign credits has already been assigned to merchant. ' .
+                'Credits Id: ' . $creditsLog->getId());
+        }
     }
 }

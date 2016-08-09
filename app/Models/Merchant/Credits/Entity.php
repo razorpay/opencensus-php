@@ -19,6 +19,8 @@ class Entity extends Base\PublicEntity
 
     protected $table                = \RZP\Constants\Table::CREDITS;
 
+    protected $generateIdOnCreate = true;
+
     protected $fillable = array(
         self::ID,
         self::CAMPAIGN,
@@ -63,7 +65,7 @@ class Entity extends Base\PublicEntity
 
     public function setValue($value)
     {
-        assert ($value >= 0 && $value <= 1000000);
+        assert (($value >= 0) and ($value <= 1000000));
 
         $this->setAttribute(self::VALUE, $value);
     }
@@ -75,6 +77,11 @@ class Entity extends Base\PublicEntity
     public function getValue()
     {
         return $this->getAttribute(self::VALUE);
+    }
+
+    public function getCampaign()
+    {
+        return $this->getAttribute(self::CAMPAIGN);
     }
 
 // --------------------- End Getters -----------------------------------------

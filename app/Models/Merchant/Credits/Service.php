@@ -17,10 +17,7 @@ class Service extends Base\Service
 {
     public function grantCreditsForMerchant($mid, array $input)
     {
-        $campaign = $input['campaign'];
         $merchant = $this->repo->merchant->findOrFailPublic($mid);
-
-        Credits\Validator::validateNewCreditLog($campaign, $merchant);
 
         $creditsLog = (new Credits\Core)->create($merchant, $input);
 
@@ -43,7 +40,9 @@ class Service extends Base\Service
     public function updateCreditsLog($mid, $id, $input)
     {
         $credits = $input['value'];
+
         $creditsLog = $this->repo->credits->findByIdAndMerchantId($id, $mid);
+
         $creditsLog = (new Credits\Core)->updateCredits($creditsLog, $credits);
 
         return $creditsLog->toArray();
@@ -64,8 +63,9 @@ class Service extends Base\Service
     public function deleteCreditsLog($mid, $id)
     {
         $creditsLog = $this->repo->credits->findByIdAndMerchantId($id, $mid);
-        (new Credits\Core)->deleteCredits($creditsLog);
-        return $creditsLog->toArray();
 
+        (new Credits\Core)->deleteCredits($creditsLog);
+
+        return ['success' => true];
     }
 }

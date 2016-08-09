@@ -14,12 +14,15 @@ class Core extends Base\Core
 
     public function create($merchant, $input)
     {
-        return $this->repo->transaction(function() use ($merchant, $input)
+        $creditsLog = (new Credits\Entity)->build($input);
+
+        $creditsLog->merchant()->associate($merchant);
+
+        $this->repo->credits->validateCamapignCreditsNotAssigned(
+                                $creditsLog->getCampaign(), $merchant);
+
+        return $this->repo->transaction(function() use ($merchant, $creditsLog)
         {
-            $creditsLog = new Credits\Entity;
-            $creditsLog = (new Credits\Entity)->build($input);
-            $creditsLog->generateId();
-            $creditsLog->merchant()->associate($merchant);
             $this->repo->saveOrFail($creditsLog);
 
             $this->updateCreditsInMerchantAccount($merchant, $creditsLog->getValue());
@@ -32,7 +35,9 @@ class Core extends Base\Core
     {
         // Add the credits to merchant's main balance
         $merchantBalance = $merchant->balance->getCredits();
+
         $newCredits = $merchantBalance + $credits;
+
         $this->repo->balance->editMerchantFreeCredits($merchant, $newCredits);
     }
 
@@ -41,16 +46,21 @@ class Core extends Base\Core
      */
     public function updateCredits($creditsLog, $credits)
     {
-        // When we update the credits, We need to subsequently add/subtract credits from merchant balance.
+        //
+        // When we update the credits, We need to subsequently add/subtract credits
+        // from merchant balance.
         // Transaction is rolled back if merchant credit balance is less than zero.
-        Credits\Validator::validateNewCreditsValue($creditsLog, $credits);
+        //
+
+        Credits\Validator::validateNewCreditsValue($creditsLog, (int) $credits);
+
         return $this->repo->transaction(function() use ($creditsLog, $credits)
         {
             $creditsDifference = $credits - $creditsLog->getValue();
             $creditsLog->setValue($credits);
             $this->repo->saveOrFail($creditsLog);
-            $merchant = $creditsLog->merchant;
-            $this->updateCreditsInMerchantAccount($merchant, $creditsDifference);
+
+            $this->updateCreditsInMerchantAccount($creditsLog->merchant, $creditsDifference);
 
             return $creditsLog;
         });
@@ -65,8 +75,8 @@ class Core extends Base\Core
         {
             $credits = $creditsLog->getValue();
             $this->repo->deleteOrFail($creditsLog);
-            $merchant = $creditsLog->merchant;
-            $this->updateCreditsInMerchantAccount($merchant, -$credits);
+
+            $this->updateCreditsInMerchantAccount($creditsLog->merchant, -$credits);
 
             return $creditsLog;
         });
