@@ -73,10 +73,11 @@ class Core extends Base\Core
     {
         return $this->repo->transaction(function() use ($creditsLog)
         {
-            $credits = $creditsLog->getValue();
+            // Since we are deleting, value should be negative
+            $credits = -1 * $creditsLog->getValue();
             $this->repo->deleteOrFail($creditsLog);
 
-            $this->updateCreditsInMerchantAccount($creditsLog->merchant, -$credits);
+            $this->updateCreditsInMerchantAccount($creditsLog->merchant, $credits);
 
             return $creditsLog;
         });
