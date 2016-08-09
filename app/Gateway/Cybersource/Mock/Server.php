@@ -125,10 +125,51 @@ class Server extends Base\Mock\Server
 
     protected function getEnrollAuthorizeResponse($input)
     {
+        if ((isset($input['ccAuthService']['commerceIndicator']) === true) and
+            ($input['ccAuthService']['commerceIndicator'] === 'recurring'))
+        {
+            return [
+                'merchantReferenceCode' => "64VOYMNaWmKfQv",
+                'requestID' => "4707408464166875104008",
+                'decision' => "ACCEPT",
+                'reasonCode' => 100,
+                'requestToken' => "Ahj/7wSR/mDU4ntLegYQ5lmjdg3aMHDRs0Ytmzhu1YsGjBg4S36dGFvgFLfp0YW+WQPkYToZNJMt0gPFojgGkf5g1OJ7S3oGEAAA/wYA",
+                'purchaseTotals' => [
+                    'currency' => "INR",
+                ],
+                'ccAuthReply' => [
+                    'reasonCode' => 100,
+                    'amount' => "1.00",
+                    'authorizationCode' => "831000",
+                    'avsCode' => "Y",
+                    'avsCodeRaw' => "Y",
+                    'authorizedDateTime' => "2016-08-09T11:07:26Z",
+                    'processorResponse' => "00",
+                    'reconciliationID' => "4707408464166875104008",
+                    'merchantAdviceCode' => "01",
+                    'merchantAdviceCodeRaw' => "M001",
+                    'cavvResponseCode' => "2",
+                    'cavvResponseCodeRaw' => "2",
+                    'paymentNetworkTransactionID' => "016153570198200",
+                ],
+                'receiptNumber' => "166565",
+                'additionalData' => "ABC",
+            ];
+        }
+
         $response = array();
 
-        $response['decision'] = 'ACCEPT';
-        $response['reasonCode'] = Cybersource\Result::SUCCESS;
+        $result = Cybersource\Result::SUCCESS;
+        $decision = 'ACCEPT';
+
+        if ($input['card']['accountNumber'] === '4000000000000002')
+        {
+            $decision = 'REJECT';
+            $result = 203;
+        }
+
+        $response['decision'] = $decision;
+        $response['reasonCode'] = $result;
         $response['requestID'] = '4661454138166750401025';
 
         $ccAuthReply = array();
@@ -167,6 +208,17 @@ class Server extends Base\Mock\Server
                 break;
 
             case '4111460212312338':
+                $response['decision'] = 'REJECT';
+                $response['reasonCode'] = Cybersource\Result::ENROLLED;
+
+                $params = array('gateway' => 'cybersource');
+                $response['payerAuthEnrollReply']['acsURL'] = Http\Route::getUrl('mockcybersource_acs', $params);
+                $response['payerAuthEnrollReply']['paReq'] = 'eNpVUttygjAQfc9XMP0AkiAw';
+                $response['payerAuthEnrollReply']['xid'] = 'cGdKQXF5STA1TFl3OUtueHJnWDA';
+                $response['payerAuthEnrollReply']['veresEnrolled'] = 'Y';
+                break;
+
+            case '4000000000000002':
                 $response['decision'] = 'REJECT';
                 $response['reasonCode'] = Cybersource\Result::ENROLLED;
 

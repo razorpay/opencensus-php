@@ -87,7 +87,8 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        if (($input['token']->isRecurring() === true) and
+        if ((isset($input['token']) === true) and
+            ($input['token']->isRecurring() === true) and
             ($input['token']->isAuthenticated() === true))
         {
             return $this->recurring($input);
