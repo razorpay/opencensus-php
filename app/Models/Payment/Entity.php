@@ -1046,7 +1046,7 @@ class Entity extends Base\PublicEntity
 
     public function app()
     {
-        return $this->belongsTo('RZP\Models\Customer\App\Entity', self::APP_TOKEN);
+        return $this->belongsTo('RZP\Models\Customer\AppToken\Entity', self::APP_TOKEN);
     }
 
     public function emiPlan()

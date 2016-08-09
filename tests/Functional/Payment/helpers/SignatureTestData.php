@@ -76,6 +76,9 @@ return [
     'testCaptureFailAfterSignedRequest' => [
         'request' => [
             'method' => 'POST',
+            'content' => [
+                'amount' => 50000,
+            ],
         ],
         'response' => [
             'content' => [

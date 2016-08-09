@@ -22,6 +22,14 @@ trait Capture
      */
     public function capture($id, array $input = array())
     {
+        $this->trace->info(
+            TraceCode::PAYMENT_CAPTURE_REQUEST,
+            [
+                'payment_id' => $id,
+                'input' => $input,
+            ]
+        );
+
         $payment = $this->retrieve($id);
 
         //
@@ -31,6 +39,15 @@ trait Capture
         if ($this->merchant->isFeeBearerCustomer())
         {
             $input['amount'] = $input['amount'] + $payment->getFee();
+
+            $this->trace->info(
+                TraceCode::PAYMENT_CAPTURE_REQUEST,
+                [
+                    'payment_id' => $id,
+                    'amount' => $input['amount'],
+                    'message' => 'Adds fee to the amount because fee bearer is customer',
+                ]
+            );
         }
 
         (new Payment\Validator)->captureValidate($payment, $input);
@@ -121,6 +138,10 @@ trait Capture
 
                 $data['mode'] = $this->mode;
 
+                $this->trace->info(
+                    TraceCode::PAYMENT_CAPTURE_ADD_TO_QUEUE, ['payment_id' => $this->payment->getId()]
+                );
+
                 $this->app['queue']->push('RZP\Jobs\Capture', ['data' => $data]);
             }
 
@@ -200,7 +221,7 @@ trait Capture
         $payment->setCaptureTimestamp();
     }
 
-    protected function createTransactionFromCapturedPayment($payment)
+    protected function createTransactionFromCapturedPayment(Payment\Entity $payment)
     {
         $txnCore = new Transaction\Core;
 
@@ -243,8 +264,16 @@ trait Capture
     {
         $order = $payment->order;
 
-        if (isset($order))
+        if (isset($order) === true)
         {
+            $this->trace->info(
+                TraceCode::PAYMENT_CAPTURE_ORDER_UPDATE,
+                [
+                    'payment_id' => $payment->getId(),
+                    'order_id' => $order->getId(),
+                ]
+            );
+
             $order->setStatus(Order\Status::PAID);
 
             $order->saveOrFail();

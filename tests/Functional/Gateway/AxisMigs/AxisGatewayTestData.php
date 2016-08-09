@@ -123,14 +123,14 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'code' => PublicErrorCode::SERVER_ERROR,
                 ],
             ],
-            'status_code' => 400,
+            'status_code' => 500,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED,
+            'class' => 'RZP\Exception\RuntimeException',
+            'internal_error_code' => ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
         ],
     ],
 

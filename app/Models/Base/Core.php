@@ -3,25 +3,28 @@
 namespace RZP\Models\Base;
 
 use App;
+use Illuminate\Foundation\Application;
+use RZP\Base\RepositoryManager;
+use RZP\Trace\Trace;
 
 class Core
 {
     /**
      * The application instance.
      *
-     * @var Illuminate\Foundation\Application
+     * @var Application
      */
     protected $app;
 
     /**
      * Repository manager instance
-     * @var Base\RepositoryManager
+     * @var RepositoryManager
      */
     protected $repo;
 
     /**
      * Trace instance used for tracing
-     * @var Trace\Trace
+     * @var Trace
      */
     protected $trace;
 

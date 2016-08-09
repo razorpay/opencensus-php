@@ -129,7 +129,7 @@ return array(
 
     'redis' => array(
 
-        'cluster' => true,
+        'cluster' => false,
 
         'default' => array(
             'host'     => env('REDIS_HOST'),
@@ -137,6 +137,11 @@ return array(
             'database' => env('REDIS_DB'),
         ),
 
+        'secure' => array(
+            'host'     => env('SECURE_REDIS_HOST'),
+            'port'     => env('SECURE_REDIS_PORT'),
+            'database' => env('SECURE_REDIS_DB'),
+        )
     ),
 
     /*

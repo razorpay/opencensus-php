@@ -29,6 +29,8 @@ final class Route
         'payment_otp_submit'                      => ['post',     'payments/{id}/otp_submit/{hash}',          'PaymentCreateController@postOtpSubmit'                             ],
         'payment_otp_resend'                      => ['post',     'payments/{id}/otp_resend',                 'PaymentCreateController@postOtpResend'                             ],
         'payment_topup_ajax'                      => ['post',     'payments/{id}/topup/ajax',                 'PaymentCreateController@postTopupAjax'                             ],
+        'payment_topup_post'                      => ['post',     'payments/{id}/topup',                      'PaymentCreateController@postTopup'                                 ],
+        'payment_redirect'                        => ['post',     'payments/{id}/redirect',                   'PaymentCreateController@postRedirect'                              ],
         'payment_refund'                          => ['post',     'payments/{id}/refund',                     'PaymentController@postRefund'                                      ],
         'payment_capture'                         => ['post',     'payments/{id}/capture',                    'PaymentController@postCapture'                                     ],
         'payment_verify'                          => ['get',      'payments/{id}/verify',                     'PaymentController@getVerify'                                       ],
@@ -144,6 +146,8 @@ final class Route
         'setl_return_generate'                    => ['post',     'settlements/return/generate',              'SettlementController@postSettlementReturnGenerate'                 ],
         'setl_return'                             => ['post',     'settlements/return',                       'SettlementController@postSettlementReturn'                         ],
         'setl_calc_previous_fees'                 => ['post',     'settlements/fees/previous',                'SettlementController@postSettlementCalculateFees',                 ],
+        'setl_get_details'                        => ['get',      'settlements/{id}/details',                 'SettlementController@getSettlementDetails',                        ],
+        'setl_post_details_old'                   => ['post',     'settlements/details',                      'SettlementController@postSettlementDetailsForOldTxns'              ],
         'setl_combined_report'                    => ['get',      'settlements/report/combined',              'SettlementController@getSettlementCombinedReport'                  ],
         'daily_setl_calc_previous_fees'           => ['post',     'dailysettlements/fees/previous',           'SettlementController@postDailySettlementCalculatePreviousFees'     ],
         'daily_setl_fetch_by_id'                  => ['get',      'dailysettlements/{id}',                    'SettlementController@getDailySettlement'                           ],
@@ -237,6 +241,8 @@ final class Route
         'payment_otp_submit',
         'payment_otp_resend',
         'payment_topup_ajax',
+        'payment_topup_post',
+        'payment_redirect',
         'payment_cancel',
         'payment_add_metadata',
         'merchant_public_get_banks',
@@ -264,8 +270,6 @@ final class Route
         'dummy_return_callback',
         'get_emi_plans',
         'customer_get_saved_status',
-        'device_verify_token',
-        'app_fetch_tokens',
         'app_delete_token',
         'customer_logout_global',
         'otp_post',
@@ -361,6 +365,7 @@ final class Route
         'setl_edit',
         'setl_delete_file',
         'setl_calc_previous_fees',
+        'setl_post_details_old',
         'setl_fixer',
         'daily_setl_fetch_by_id',
         'daily_setl_fetch_multiple',
@@ -403,9 +408,6 @@ final class Route
         'get_emi_plan_by_id',
         'emi_generate_excel',
         'order_update',
-        'customer_delete',
-        'customer_create_token',
-        'customer_update_token',
         'refund_verify',
         'es_migrate_entity',
         'dummy_critical_error',
@@ -420,6 +422,7 @@ final class Route
         'setl_fetch_by_id',
         'setl_fetch_multiple',
         'setl_fetch_transactions',
+        'setl_get_details',
         'adj_fetch_by_id',
         'adj_fetch_multiple',
         'adj_add',
@@ -439,6 +442,11 @@ final class Route
         'account_fetch_balance',
         'account_fetch_config',
         'submerchant_create',
+        'customer_delete',
+        'customer_create_token',
+        'customer_update_token',
+        'device_verify_token',
+        'app_fetch_tokens',
     );
 
     public static $direct = array(
@@ -452,7 +460,7 @@ final class Route
         'gateway_payment_callback_kotak_cancel',
         'gateway_payment_callback_get',
         'gateway_payment_callback_post',
-        'sms_callback'
+        'sms_callback',
     );
 
     public static $internalApps = array(
@@ -482,6 +490,7 @@ final class Route
             'payment_capture_reminder',
             'emi_generate_excel',
             'es_migrate_entity',
+            'setl_post_details_old',
         ),
 
         'mailgun' => array(
@@ -520,8 +529,6 @@ final class Route
         'customer_get_saved_status' => 'cardsaving',
         'customer_logout_global'    => 'cardsaving',
         'app_delete_token'          => 'cardsaving',
-        'app_fetch_tokens'          => 'cardsaving',
-        'device_verify_token'       => 'cardsaving',
         'otp_post'                  => 'cardsaving',
         'otp_verify'                => 'cardsaving',
     );

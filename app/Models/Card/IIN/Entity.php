@@ -107,6 +107,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::NETWORK);
     }
 
+    public function getNetworkCode()
+    {
+        return $this->getNetworkCodeAttribute();
+    }
+
+    protected function getNetworkCodeAttribute()
+    {
+        return Card\Network::getCode($this->getNetwork());
+    }
+
     public function getTrivia()
     {
         return $this->getAttribute(self::TRIVIA);

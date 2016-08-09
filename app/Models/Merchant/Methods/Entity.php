@@ -18,6 +18,8 @@ class Entity extends Base\PublicEntity
     const PAYZAPP           = 'payzapp';
     const PAYUMONEY         = 'payumoney';
     const EMI               = 'emi';
+    const DEBIT_CARD        = 'debit_card';
+    const CREDIT_CARD       = 'credit_card';
 
     const METHODS           = 'methods';
 
@@ -62,16 +64,18 @@ class Entity extends Base\PublicEntity
         self::METHODS);
 
     protected $defaults = array(
-        self::CARD       => false,
-        self::AMEX       => false,
-        self::PAYTM      => false,
-        self::MOBIKWIK   => false,
-        self::PAYZAPP    => false,
-        self::PAYUMONEY  => false,
-        self::OLAMONEY   => false,
-        self::BANKS      => [],
-        self::EMI        => false,
-        self::NETBANKING => true,
+        self::CARD          => false,
+        self::AMEX          => false,
+        self::PAYTM         => false,
+        self::MOBIKWIK      => false,
+        self::PAYZAPP       => false,
+        self::PAYUMONEY     => false,
+        self::OLAMONEY      => false,
+        self::BANKS         => [],
+        self::EMI           => false,
+        self::NETBANKING    => true,
+        self::CREDIT_CARD   => true,
+        self::DEBIT_CARD    => true,
     );
 
     protected $wallets = array(
@@ -95,6 +99,16 @@ class Entity extends Base\PublicEntity
     public function isCardEnabled()
     {
         return $this->getCardAttribute();
+    }
+
+    public function isDebitCardEnabled()
+    {
+        return $this->getDebitCardAttribute();
+    }
+
+    public function isCreditCardEnabled()
+    {
+        return $this->getCreditCardAttribute();
     }
 
     public function isNetbankingEnabled()
@@ -288,6 +302,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CARD, $card);
     }
 
+    public function setCreditCard($card)
+    {
+        $this->setAttribute(self::CREDIT_CARD, $card);
+    }
+
+    public function setDebitCard($card)
+    {
+        $this->setAttribute(self::DEBIT_CARD, $card);
+    }
+
     public function setNetbanking($netbanking)
     {
         $this->setAttribute(self::NETBANKING, $netbanking);
@@ -313,6 +337,16 @@ class Entity extends Base\PublicEntity
     protected function getCardAttribute()
     {
         return (bool) $this->attributes[self::CARD];
+    }
+
+    protected function getCreditCardAttribute()
+    {
+        return (bool) $this->attributes[self::CREDIT_CARD];
+    }
+
+    protected function getDebitCardAttribute()
+    {
+        return (bool) $this->attributes[self::DEBIT_CARD];
     }
 
     protected function getNetbankingAttribute()

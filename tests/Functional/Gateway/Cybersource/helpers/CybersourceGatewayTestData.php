@@ -37,12 +37,44 @@ return [
         ],
     ],
 
+    'testGatewayTimeoutError' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => PublicErrorDescription::GATEWAY_ERROR_REQUEST_TIMEOUT,
+                ],
+            ],
+            'status_code' => 504,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\GatewayTimeoutException',
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
+        ],
+    ],
+
     'testGatewayWithSavedCard' => [
         'response' => [
             'content' => [
                 'razorpay_payment_id'
             ],
         ]
+    ],
+
+    'testAuthenticationFailurePayment' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => 'Payment failed due to processing error on gateway',
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED,
+        ],
     ],
 
     'testPayment' => [
@@ -145,5 +177,21 @@ return [
         'currency' => 'INR',
         'entity' => 'refund',
         'admin' => true,
+    ],
+
+    'testAuthorizeFailedPayment' => [
+        'action' => 'authorize',
+        'received' => true,
+        'refund_id' => null,
+        'auth_data' => null,
+        'amount' => 50000,
+        'pares_status' => 'Y',
+        'status' => 'authorized',
+        'xid' => 'eW5DZTVGTkVaRWF3VnowSXYzNzA=',
+        'eci' => '05',
+        'cavv' => 'AAABAWFlmQAAAABjRWWZEEFgFz+=',
+        'ref' => '4661454138166750401025',
+        'capture_ref' => null,
+        'reason_code' => 100
     ]
 ];

@@ -104,13 +104,7 @@ class Service extends Base\Service
      */
     public function sendOtp($input)
     {
-        $input['context'] = $this->merchant->getId();
-
-        $input['source'] = 'api';
-
-        $input['params']['merchant_name'] = $this->merchant->getBillingLabelElseName();
-
-        $data = (new Customer\Core)->sendOtp($input);
+        $data = (new Customer\Core)->sendOtp($input, $this->merchant);
 
         return $data;
     }
@@ -131,7 +125,7 @@ class Service extends Base\Service
      * @param  boolean if to send otp or not
      * @return global customer existance, send otp if true
      */
-    public function fetchGlobalCustomerStatus($contact, $sendOtp = false)
+    public function fetchGlobalCustomerStatus($contact, $input, $sendOtp = false)
     {
         $data = ['saved' => false];
 
@@ -144,6 +138,25 @@ class Service extends Base\Service
         if ($customer !== null)
         {
             $data['saved'] = true;
+
+            if (isset($input['device_token']))
+            {
+                $deviceToken = $input['device_token'];
+
+                $result = $this->validateDeviceToken($deviceToken, $customer);
+
+                if (($result['valid'] === true))
+                {
+                    $data['email'] = $customer->getEmail();
+
+                    if (isset($result['tokens']))
+                    {
+                        $data['tokens'] = $result['tokens'];
+                    }
+
+                    $sendOtp = false;
+                }
+            }
 
             if ($sendOtp === true)
             {
@@ -160,41 +173,30 @@ class Service extends Base\Service
      * @param  input params
      * @return issues a new app_token if device_token is valid
      */
-    public function validateDeviceToken($deviceToken, $input)
+    private function validateDeviceToken($deviceToken, $customer)
     {
         $result = ['valid' => false];
 
-        $contact = Customer\Validator::validateAndParseContact($input[Entity::CONTACT]);
+        $apps = $this->repo->app_token->fetchAppsByDeviceToken(
+            $customer,
+            $deviceToken);
 
-        $merchant = $this->repo->merchant->getSharedAccount();
-
-        $customer = $this->repo->customer->findByContactAndMerchant($contact, $merchant);
-
-        if ($customer !== null)
+        if (($apps !== null) and ($apps->count() > 0))
         {
-            $apps = $this->repo->app_token->fetchAppsByDeviceToken(
-                $customer,
-                $deviceToken);
-
-            if (($apps !== null) and ($apps->count() > 0))
-            {
-                $result['valid'] = true;
-            }
+            $result['valid'] = true;
         }
 
         // If result is valid, then create a new app token.
         if ($result['valid'] === true)
         {
             $custAppInput = array(
-                App\Entity::CUSTOMER_ID     => $customer->getId(),
-                App\Entity::MERCHANT_ID     => $this->merchant->getId(),
-                App\Entity::DEVICE_TOKEN    => $deviceToken);
+                AppToken\Entity::CUSTOMER_ID     => $customer->getId(),
+                AppToken\Entity::MERCHANT_ID     => $this->merchant->getId(),
+                AppToken\Entity::DEVICE_TOKEN    => $deviceToken);
 
-            $app = (new App\Core)->create($custAppInput);
+            $app = (new AppToken\Core)->create($custAppInput);
 
             (new Customer\Core)->putAppTokenInSession($app);
-
-            $result['email'] = $customer->getEmail();
 
             // Fetch existing tokens if exists
             $tokens = (new Customer\Token\Core)->fetchTokensByCustomer($customer);

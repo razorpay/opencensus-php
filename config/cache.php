@@ -15,6 +15,8 @@ return [
 
     'default' => env('CACHE_DRIVER', 'file'),
 
+    'secure_default' => env('SECURE_CACHE_DRIVER', 'file'),
+
     /*
     |--------------------------------------------------------------------------
     | Cache Stores
@@ -61,6 +63,11 @@ return [
         'redis' => [
             'driver' => 'redis',
             'connection' => 'default',
+        ],
+
+        'secure_redis' => [
+            'driver' => 'redis',
+            'connection' => 'secure'
         ],
 
     ],

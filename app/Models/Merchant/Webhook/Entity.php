@@ -16,6 +16,7 @@ class Entity extends Base\PublicEntity
     const FAILURE_COUNT      = 'failure_count';
     const ACTIVE             = 'active';
     const CREATED_AT         = 'created_at';
+    const UPDATED_AT         = 'updated_at';
     const SECRET             = 'secret';
     const LAST_SUCCESSFUL_AT = 'last_successful_at';
 
@@ -47,6 +48,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::FAILURE_COUNT,
         self::CREATED_AT,
+        self::UPDATED_AT,
         self::SECRET,
         self::LAST_SUCCESSFUL_AT
     );
@@ -57,6 +59,7 @@ class Entity extends Base\PublicEntity
         self::EVENTS,
         self::ACTIVE,
         self::CREATED_AT,
+        self::UPDATED_AT,
         self::LAST_SUCCESSFUL_AT
     );
 

@@ -20,6 +20,7 @@ class Gateway
     const BILLDESK          = 'billdesk';
     const HDFC              = 'hdfc';
     const KOTAK             = 'kotak';
+    const AXIS              = 'axis';
     const MOBIKWIK          = 'mobikwik';
     const PAYTM             = 'paytm';
     const SBIEPAY           = 'sbiepay';
@@ -100,9 +101,8 @@ class Gateway
         ),
 
         Method::EMI => array(
+            self::AMEX,
             self::HDFC,
-            self::KOTAK,
-            self::AXIS_MIGS,
         ),
     );
 
@@ -186,6 +186,7 @@ class Gateway
         self::HDFC,
         self::AMEX,
         self::NETBANKING_HDFC,
+        self::NETBANKING_KOTAK,
         self::WALLET_PAYZAPP,
     );
 
@@ -333,9 +334,9 @@ class Gateway
         Gateway::ATOM);
 
     public static $emiBanks = array(
-        self::HDFC      => IFSC::HDFC,
-        self::KOTAK     => IFSC::KKBK,
-        self::AXIS_MIGS => IFSC::UTIB,
+        IFSC::HDFC,
+        IFSC::KKBK,
+        IFSC::UTIB,
     );
 
     public static $emiBanksUsingCardTerminals = array(
@@ -345,12 +346,11 @@ class Gateway
 
     public static $emiFileBanks = array(
         self::KOTAK     => IFSC::KKBK,
-        self::AXIS_MIGS => IFSC::UTIB,
+        self::AXIS      => IFSC::UTIB,
     );
 
     public static $emiBankToGatewayMap = array(
         IFSC::HDFC      =>  Gateway::HDFC,
-        IFSC::UTIB      =>  Gateway::AXIS_MIGS
     );
 
     public static function isNetbankingBankDirectlySupported($bank)
@@ -502,7 +502,7 @@ class Gateway
         return $gateways;
     }
 
-    public static function getGatewaysPriority($method, $mode = 'live')
+    public static function getGatewaysPriority($method, $mode = Mode::LIVE)
     {
         $gateways = [];
 
@@ -515,6 +515,7 @@ class Gateway
                 {
                     $gateways = array_merge($gateways, self::$directCardGatewaysInTest);
                 }
+
                 break;
 
             case Method::NETBANKING:
@@ -526,6 +527,7 @@ class Gateway
                 }
 
                 array_unshift($gateways, 'direct');
+
                 break;
 
             default:

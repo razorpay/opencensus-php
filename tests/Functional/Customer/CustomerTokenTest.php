@@ -25,21 +25,21 @@ class CustomerTokenTest extends TestCase
     {
         $this->fixtures->create('card', ['id' => '10000savedcard']);
 
-        $this->ba->appAuth();
+        $this->ba->proxyAuth();
 
         $this->startTest();
     }
 
     public function testAddCustomerTokenWallet()
     {
-        $this->ba->appAuth();
+        $this->ba->proxyAuth();
 
         $this->startTest();
     }
 
     public function testAddCustomerTokenNetbanking()
     {
-        $this->ba->appAuth();
+        $this->ba->proxyAuth();
 
         $this->startTest();
     }
@@ -71,7 +71,7 @@ class CustomerTokenTest extends TestCase
     {
         $this->mockSession();
 
-        $this->ba->publicAuth();
+        $this->ba->proxyAuth();
 
         $this->startTest();
     }
@@ -80,10 +80,12 @@ class CustomerTokenTest extends TestCase
     {
         $this->ba->publicAuth();
 
-        $this->startTest();
+        $response = $this->startTest();
+
+        $this->assertEquals(isset($response['email']), false);
     }
 
-    public function testVerifyDeviceToken()
+    public function testFetchSavedCustomerStatusWithDeviceToken()
     {
         $this->ba->publicAuth();
 
@@ -94,7 +96,9 @@ class CustomerTokenTest extends TestCase
     {
         $this->ba->publicAuth();
 
-        $this->startTest();
+        $response = $this->startTest();
+
+        $this->assertEquals(isset($response['email']), false);
     }
 
     public function testDeleteAppToken()

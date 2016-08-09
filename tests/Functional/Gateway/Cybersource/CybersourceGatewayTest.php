@@ -80,6 +80,18 @@ class CybersourceGatewayTest extends TestCase
         });
     }
 
+    public function testGatewayTimeoutError()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '41476700000006';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testGatewayWithSavedCard()
     {
         $payment = $this->getDefaultPaymentArray();
@@ -105,6 +117,18 @@ class CybersourceGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             $this->testData['testNotEnrolledCSEntity'], $payment);
+    }
+
+    public function testAuthenticationFailurePayment()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4111460212312338';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            return $this->doAuthPayment($payment);
+        });
     }
 
     public function testPaymentRefund()
@@ -163,12 +187,22 @@ class CybersourceGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
+        $cybersource = $this->getLastEntity('cybersource', true);
+
+        $this->assertEquals('4661454138166750401025', $cybersource['ref']);
+
         $this->resetMockServer();
 
         $this->authorizeFailedPayment($payment['id']);
 
         $payment = $this->getLastEntity('payment', true);
+
         $this->assertEquals($payment['status'], 'authorized');
+
+        $cybersource = $this->getLastEntity('cybersource', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testAuthorizeFailedPayment'], $cybersource);
     }
 
     protected function failAuthorizePayment(array $replace = array())

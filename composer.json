@@ -5,7 +5,6 @@
     "require": {
         "rmccue/requests": ">=1.0",
         "laravel/framework": "5.2.*",
-        "doctrine/dbal": "~2.5",
         "razorpay/razorpay": "dev-master",
         "razorpay/spine": "dev-master",
         "laravelcollective/bus": "^5.2",
@@ -13,7 +12,7 @@
         "mailgun/mailgun-php": "~2.0",
         "aws/aws-sdk-php-laravel": "~3.0",
         "symfony/event-dispatcher": "~2.2",
-        "maknz/slack": "dev-queue",
+        "maknz/slack": "dev-f/queue-with-retry",
         "cebe/markdown": "~1.0.1",
         "elasticsearch/elasticsearch": "^2.1",
         "razorpay/ifsc": "~0.1",

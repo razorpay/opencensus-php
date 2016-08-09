@@ -3,6 +3,7 @@
 namespace RZP\Models\Terminal;
 
 use App;
+use RZP\Models\Bank\IFSC;
 use RZP\Models\Card\Network;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
@@ -14,12 +15,19 @@ class Binning
      */
     protected static $rules = [
         [
-            'method'      => Method::CARD,
-            'cardNetwork' => [Network::MC, Network::VISA],
-            'binFor'      => Shared::HDFC_RAZORPAY_TERMINAL,
-            'binWith'     => '5yKTyCuDne8eiz',
-            'loadPercent' => 2,
+            'method'         => Method::CARD,
+            'binFor'         => Shared::HDFC_RAZORPAY_TERMINAL,
+            'binWith'        => '5yKTyCuDne8eiz',
+            'binWithGateway' => Gateway::CYBERSOURCE,
+            'load'           => 20,
         ],
+        [
+            'method'         => Method::NETBANKING,
+            'binFor'         => Shared::BILLDESK_RAZORPAY_TERMINAL,
+            'binWith'        => '59U9GqsARtkw2r',
+            'bank'           => IFSC::KKBK,
+            'load'           => 5,
+        ]
     ];
 
     public function getRules()
@@ -31,17 +39,18 @@ class Binning
      * Used in the Terminal/Selector to select a terminal
      * if a binning rule is defined for the current case.
      *
-     * @param  array    Array of possible terminals
-     * @param  int      Chance Variable
-     * @return terminal
+     * @param  Entity $terminal
+     * @param  array  $input
+     * @param  int    $chancePercent Chance variable
+     * @param  array  $terminals     Array of possible terminals
+     * @return Entity
      */
-    public function select($terminal, $chancePercent, $input, $terminals)
+    public function select($selectedTerminal, $chancePercent, $input, $terminals)
     {
         // Since only the first terminal would be selected
         // Check condition on binFor only on first terminal
-        $checkTerminal = $terminal;
 
-        list($returnTlId, $rule) = $this->chooseTerminalWithRules($checkTerminal, $chancePercent, $input);
+        list($returnTlId, $rule) = $this->chooseTerminalWithRules($selectedTerminal, $chancePercent, $input);
 
         if (empty($rule) === false)
         {
@@ -56,7 +65,7 @@ class Binning
             }
         }
 
-        return $checkTerminal;
+        return $selectedTerminal;
     }
 
     /**
@@ -104,37 +113,39 @@ class Binning
      */
     public function isRuleApplicable($terminal, $rule, $chancePercent, $input = [])
     {
-        if ((isset($rule['method'])) and
+        if ((isset($rule['method']) === true) and
             ($rule['method'] === $input['payment']->getMethod()))
         {
+            $check = (($chancePercent <= $rule['load']) and
+                      ($rule['binFor'] === $terminal->getId()));
 
-            $check = (($chancePercent <= $rule['loadPercent']) and
-                    ($rule['binFor'] === $terminal->getId()));
-
-            switch ($rule['method']) {
+            switch ($rule['method'])
+            {
                 case Method::NETBANKING:
                     if ($rule['bank'] === $input['payment']->getBank())
                     {
                         return $check;
                     }
+
                     break;
 
                 case Method::CARD:
+                case Method::EMI:
                     $network = $input['payment']->card->getNetworkCode();
-                    if (in_array($network, $rule['cardNetwork']))
+
+                    if (Gateway::isCardNetworkSupported($network, $rule['binWithGateway']))
                     {
                         return $check;
                     }
+
                     break;
 
-                case Method::EMI:
                 case Method::WALLET:
                     return $check;
-                    break;
             }
-
-            return false;
         }
+
+        return false;
     }
 
     /**

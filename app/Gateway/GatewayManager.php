@@ -39,7 +39,7 @@ class GatewayManager extends \Illuminate\Support\Manager
         $action = camel_case($action);
 
         // Call function on actual gateway instance
-        return  $gateway->$action($input);
+        return $gateway->$action($input);
     }
 
     protected function registerMocks($gatewayConfig)
