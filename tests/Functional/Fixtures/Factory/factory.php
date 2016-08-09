@@ -267,9 +267,9 @@ $factory(\RZP\Models\Customer\AppToken\Entity::class, [
 ]);
 
 $factory(\RZP\Models\Merchant\Credits\Entity::class, [
-    'id'            => $faker->randomNumber(5),
+    'id'            => $faker->uniqueid,
     'merchant_id'   => '10000000000000',
-    'value'         => 140,
+    'value'         => 150,
     'campaign'      => 'silent-ads',
     'notes'         => null,
 ]);

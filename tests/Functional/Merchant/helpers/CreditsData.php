@@ -30,6 +30,19 @@ return [
         ],
     ],
 
+    'testGetCreditsLog' => [
+        'request' => [
+            'url' => '/merchants/10000000000000/credits/',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'value' => 150,
+                'campaign' => 'silent-ads',
+            ],
+        ],
+    ],
+
     'testCreditsLogAlreadyExists' => [
         'request' => [
             'url' => '/merchants/10000000000000/credits_log/',
@@ -57,48 +70,46 @@ return [
         ],
     ],
 
-    'testGrantCredits' => [
+    'testPositiveUpdateCredits' => [
         'request' => [
             'url' => '/merchants/10000000000000/credits/123/',
             'method' => 'put',
             'content' => [
-                'value' => 120,
+                'value' => 190,
             ],
         ],
         'response' => [
             'content' => [
-                'id' => 123,
-                'value' => 270,
+                'value' => 190,
                 'campaign' => 'silent-ads',
             ],
             'status_code' => 200,
         ],
     ],
 
-    'testDeductCredits' => [
+    'testNegativeUpdateCredits' => [
         'request' => [
             'url' => '/merchants/10000000000000/credits/123/',
             'method' => 'put',
             'content' => [
-                'value' => -50,
+                'value' => 10,
             ]
         ],
         'response' => [
             'content' => [
-                'id' => 123,
-                'value' => 100,
+                'value' => 10,
                 'campaign' => 'silent-ads',
             ],
             'status_code' => 200,
         ],
     ],
 
-    'testFailDeductCredits' => [
+    'testFailNegativeUpdateCredits' => [
         'request' => [
             'url' => '/merchants/10000000000000/credits/123/',
             'method' => 'put',
             'content' => [
-                'value' => -170,
+                'value' => 1,
             ]
         ],
         'response' => [
@@ -139,7 +150,7 @@ return [
 
     'testCreditsGrantedInCampaign' => [
         'request' => [
-            'url' => '/credits?campaign=silent-ads',
+            'url' => '/credits/?campaign=silent-ads',
             'method' => 'get',
         ],
         'response' => [
@@ -156,8 +167,8 @@ return [
                         'campaign' => "silent-ads",
                         'value' => 90,
                         'notes' => [],
-				    ],
-			    ],
+                    ],
+                ],
             ],
             'status_code' => 200,
         ],
@@ -178,9 +189,25 @@ return [
 						'value' => 90,
 						'notes' => [],
 					],
-			    ],
+                ],
             ],
             'status_code' => 200,
         ],
     ],
+
+    'testDeleteCreditsLog' => [
+        'request' => [
+            'url' => '/merchants/10000000000000/credits/',
+            'method' => 'delete',
+        ],
+        'response' => [
+            'content' => [
+                'campaign' => "silent-ads",
+                'value' => 150,
+                'notes' => [],
+			],
+            'status_code' => 200,
+        ],
+    ],
+
 ];

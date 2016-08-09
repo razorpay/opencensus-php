@@ -16,7 +16,9 @@ class Core extends Base\Core
     {
         return $this->repo->transaction(function() use ($merchant, $input)
         {
+            $creditsLog = new Credits\Entity;
             $creditsLog = (new Credits\Entity)->build($input);
+            $creditsLog->generateId();
             $creditsLog->merchant()->associate($merchant);
             $this->repo->saveOrFail($creditsLog);
 
@@ -26,61 +28,47 @@ class Core extends Base\Core
         });
     }
 
-    public function updateCreditsInMerchantAccount($merchant, $credits, $operation = 'grant')
+    public function updateCreditsInMerchantAccount($merchant, $credits)
     {
         // Add the credits to merchant's main balance
         $merchantBalance = $merchant->balance->getCredits();
-        if ($operation === 'grant')
-        {
-            $newCredits = $merchantBalance + $credits;
-        }
-        else if ($operation === 'deduct')
-        {
-            $newCredits = $merchantBalance - $credits;
-        }
+        $newCredits = $merchantBalance + $credits;
         $this->repo->balance->editMerchantFreeCredits($merchant, $newCredits);
     }
 
     /*
-     * Add Credits to the merchant for a campaign
+     * Update credits in the credits Log and merchant credits.
      */
-    public function grantCredits($creditsLog, $credits)
+    public function updateCredits($creditsLog, $credits)
     {
+        // When we update the credits, We need to subsequently add/subtract credits from merchant balance.
+        // Transaction is rolled back if merchant credit balance is less than zero.
+        Credits\Validator::validateNewCreditsValue($creditsLog, $credits);
         return $this->repo->transaction(function() use ($creditsLog, $credits)
         {
-            // Update the creditsLog
-            $creditsLog->addCredits($credits);
+            $creditsDifference = $credits - $creditsLog->getValue();
+            $creditsLog->setValue($credits);
             $this->repo->saveOrFail($creditsLog);
             $merchant = $creditsLog->merchant;
-
-            $this->updateCreditsInMerchantAccount($merchant, $credits);
+            $this->updateCreditsInMerchantAccount($merchant, $creditsDifference);
 
             return $creditsLog;
         });
     }
 
     /*
-     *  Deduct Credits from the merchant for a campaign
-     *  @return array
+     * Deletes Credit log for a merchant in a campaign
      */
-    public function deductCredits($creditsLog, $credits)
+    public function deleteCredits($creditsLog)
     {
-        // Make it to absolute value to make cmp easier. Dev may not send abs values everytime.
-        $credits = abs($credits);
-        $merchant = $creditsLog->merchant;
-        $merchantBalance = $this->repo->balance->getMerchantBalance($merchant);
-
-        Credits\Validator::validateCreditsForDeduction($creditsLog, $merchantBalance, $credits);
-
-        return $this->repo->transaction(function() use ($merchant, $creditsLog, $credits)
+        return $this->repo->transaction(function() use ($creditsLog)
         {
-
-            $creditsLog->deductCredits($credits);
-            $this->repo->saveOrFail($creditsLog);
-            $this->updateCreditsInMerchantAccount($merchant, $credits, 'deduct');
+            $credits = $creditsLog->getValue();
+            $this->repo->deleteOrFail($creditsLog);
+            $merchant = $creditsLog->merchant;
+            $this->updateCreditsInMerchantAccount($merchant, -$credits);
 
             return $creditsLog;
         });
-
     }
 }

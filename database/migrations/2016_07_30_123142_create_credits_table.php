@@ -20,7 +20,8 @@ class CreateCreditsTable extends Migration
         {
             $table->engine = 'InnoDB';
 
-            $table->increments(Credits::ID);
+            $table->char(Credits::ID, Credits::ID_LENGTH)
+                  ->primary();
 
             $table->string(Credits::CAMPAIGN, 255);
             $table->string(Credits::MERCHANT_ID, Merchant\Entity::ID_LENGTH);

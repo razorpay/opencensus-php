@@ -30,7 +30,7 @@ class Service extends Base\Service
     public function fetchCreditsLog($mid, $id)
     {
         // Raises Exception if record does not exist.
-        $creditsLog = $this->repo->credits->findByIdAndMerchantId($mid, $id);
+        $creditsLog = $this->repo->credits->findByIdAndMerchantId($id, $mid);
 
         return $creditsLog->toArrayPublic();
     }
@@ -44,16 +44,7 @@ class Service extends Base\Service
     {
         $credits = $input['value'];
         $creditsLog = $this->repo->credits->findByIdAndMerchantId($id, $mid);
-
-        // Add more credits
-        if ($credits >= 0)
-        {
-            $creditsLog = (new Credits\Core)->grantCredits($creditsLog, $credits);
-        } // Deduct credits
-        else if ($credits < 0)
-        {
-            $creditsLog = (new Credits\Core)->deductCredits($creditsLog, abs($credits));
-        }
+        $creditsLog = (new Credits\Core)->updateCredits($creditsLog, $credits);
 
         return $creditsLog->toArray();
     }
@@ -68,5 +59,13 @@ class Service extends Base\Service
         $creditsLogs = $this->repo->credits->fetch($input, $this->merchant->getId());
 
         return $creditsLogs->toArrayPublic();
+    }
+
+    public function deleteCreditsLog($mid, $id)
+    {
+        $creditsLog = $this->repo->credits->findByIdAndMerchantId($id, $mid);
+        (new Credits\Core)->deleteCredits($creditsLog);
+        return $creditsLog->toArray();
+
     }
 }

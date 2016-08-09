@@ -35,12 +35,11 @@ class Entity extends Base\PublicEntity
     );
 
     protected $public = array(
+        self::ID,
         self::CAMPAIGN,
         self::VALUE,
         self::NOTES,
     );
-
-    protected $guarded = array(self::ID);
 
     protected $defaults = array(
         self::NOTES             => [],
@@ -53,9 +52,9 @@ class Entity extends Base\PublicEntity
         'value'                 => 'integer',
     ];
 
-    public $incrementing = true;
+    protected static $sign      = 'credits';
 
-// --------------------- Setters -------------------------------------------
+// --------------------- Setters ----------------------------------------
 
     public function setCampaign($campaignName)
     {
@@ -64,10 +63,12 @@ class Entity extends Base\PublicEntity
 
     public function setValue($value)
     {
+        assert ($value >= 0 && $value <= 1000000);
+
         $this->setAttribute(self::VALUE, $value);
     }
 
-// --------------------- End Setters -----------------------------------------
+// --------------------- End Setters -------------------------------------
 
 // --------------------- Getters -----------------------------------------
 

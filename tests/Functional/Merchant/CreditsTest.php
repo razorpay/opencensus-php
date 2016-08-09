@@ -23,77 +23,81 @@ class CreditsTest extends TestCase
         $this->ba->appAuth();
     }
 
-    /**
-     * Tests if a  credit log can be created for a merchant
-     */
     public function testCreateCreditsLog()
     {
         $this->startTest();
     }
 
-    /**
-     * Tests if Credit log already exists
-     *
-     */
+
     public function testCreditsLogAlreadyExists()
     {
         $this->fixtures->create('credits');
         $this->startTest();
     }
 
-    /**
-     * Test to check if we can add more credits to already assigned
-     * campaign for merchant.
-     */
-    public function testGrantCredits()
+    public function testGetCreditsLog()
+    {
+        $creditsLog = $this->fixtures->create('credits');
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+        $url = $url.$creditsLog->getId();
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+        $this->testData[__FUNCTION__]['response']['content']['id'] = 'credits_'.$creditsLog->getId();
+
+        $this->ba->proxyAuth();
+        $this->startTest();
+    }
+
+    public function testPositiveUpdateCredits()
     {
         // ID 123 is given in the data so it should match
-        $assignedCredits = 150;
         $opCredits = $this->testData[__FUNCTION__]['request']['content']['value'];
         $creditsLog = $this->fixtures->create(
             'credits',
-            ['id' => '123', 'value' => $assignedCredits]);
+            ['id' => '123', 'value' => 150]);
 
         $merchant = $creditsLog->merchant;
-        $balance = (new Merchant\Balance\Repository)->getMerchantBalance($merchant);
+        $balance = (new Merchant\Balance\Repository)->editMerchantFreeCredits($merchant, 150);
         $oldBalanceCredits = $balance->getCredits();
+        $creditsDifference = $opCredits - $creditsLog->getValue();
 
         $this->startTest();
 
         // Assert If CreditsLog is updated
         $creditsLog = $this->getEntityById('credits', '123', true);
-        $this->assertEquals($assignedCredits + $opCredits, $creditsLog['value']);
+        $this->assertEquals($opCredits, $creditsLog['value']);
         // Assert If Merchant Balance is updated
         $balance = (new Merchant\Balance\Repository)->getMerchantBalance($merchant);
-        $this->assertEquals($balance->getCredits(), $oldBalanceCredits + $opCredits);
+        $this->assertEquals($balance->getCredits(), $oldBalanceCredits + $creditsDifference);
     }
 
-    public function testDeductCredits()
+    public function testNegativeUpdateCredits()
     {
         // ID 123 is given in the data so it should match
-        $assignedCredits = 150;
         $opCredits = $this->testData[__FUNCTION__]['request']['content']['value'];
         $creditsLog = $this->fixtures->create(
             'credits',
-            ['id' => '123', 'value' => $assignedCredits]);
-
-        $balance = (new Merchant\Balance\Repository)->getMerchantBalance($creditsLog->merchant);
+            ['id' => '123', 'value' => 150]);
         $merchant = $creditsLog->merchant;
+        $balance = (new Merchant\Balance\Repository)->editMerchantFreeCredits($merchant, 150);
         $oldBalanceCredits = $balance->getCredits();
+        $creditsDifference = $opCredits - $creditsLog->getValue();
 
         $this->startTest();
 
         $creditsLog = $this->getEntityById('credits', '123', true);
-        $this->assertEquals($creditsLog['value'], $assignedCredits - abs($opCredits));
+        $this->assertEquals($creditsLog['value'], $opCredits);
         $balance = (new Merchant\Balance\Repository)->getMerchantBalance($merchant);
-        $this->assertEquals($balance->getCredits(), $oldBalanceCredits - abs($opCredits));
+        $this->assertEquals($balance->getCredits(), $oldBalanceCredits + $creditsDifference);
     }
 
-    public function testFailDeductCredits()
+    public function testFailNegativeUpdateCredits()
     {
         // ID 123 is given in the data so it should match
         $creditsLog = $this->fixtures->create(
-            'credits', ['id' => '123', 'value' => 190]);
+            'credits', ['id' => '123', 'value' => 150]);
+        $merchant = $creditsLog->merchant;
+        $balance = (new Merchant\Balance\Repository)->editMerchantFreeCredits($merchant, 10);
         $this->startTest();
     }
 
@@ -125,6 +129,15 @@ class CreditsTest extends TestCase
         $this->fixtures->create('credits', ['id' => '125', 'value' => 90]);
 
         $this->ba->proxyAuth();
+        $this->startTest();
+    }
+
+    public function testDeleteCreditsLog()
+    {
+        $creditsLog = $this->fixtures->create('credits');
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+        $this->testData[__FUNCTION__]['request']['url'] = $url.$creditsLog->getId();
+
         $this->startTest();
     }
 }
