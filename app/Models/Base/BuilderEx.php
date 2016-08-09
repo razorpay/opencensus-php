@@ -26,7 +26,7 @@ class BuilderEx extends \Razorpay\Spine\BuilderEx
      * @param  array  $columns
      * @return \Illuminate\Database\Eloquent\Model|static
      *
-     * @throws ModelNotFoundException
+     * @throws Exception\BadRequestException
      */
     public function firstOrFailPublic($columns = array('*'))
     {

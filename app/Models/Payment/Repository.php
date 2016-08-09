@@ -273,7 +273,7 @@ class Repository extends Base\Repository
         }
         else
         {
-            $quere->whereNotNull(Entity::CAPTURED_AT);
+            $query->whereNotNull(Entity::CAPTURED_AT);
         }
     }
 
@@ -289,8 +289,6 @@ class Repository extends Base\Repository
         $joins = $query->getQuery()->joins;
 
         $joins = ($joins) ? $joins : [];
-
-        $joined = false;
 
         foreach ($joins as $join)
         {
