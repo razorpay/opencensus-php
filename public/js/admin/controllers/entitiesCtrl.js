@@ -315,6 +315,10 @@ app.controller('EntitiesCtrl', [
         status: ['all', 'created', 'failed', 'processed'],
         transaction_id: ['Transaction Id']
       },
+      settlement_details: {
+        merchant_id: ['Merchant Id'],
+        settlement_id: ['Settlement Id']
+      },
       terminal: {
         gateway: gatewayList,
         merchant_id: ['Merchant Id'],
