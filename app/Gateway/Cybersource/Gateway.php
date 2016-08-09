@@ -240,7 +240,7 @@ class Gateway extends Base\Gateway
         return $verify->status;
     }
 
-    protected function verifyNonExistentCase($verify, $input)
+    protected function verifyNonExistentCase($verify)
     {
         $payment = $verify->payment;
         $input = $verify->input;

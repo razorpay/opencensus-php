@@ -27,6 +27,8 @@ class AmexGatewayTest extends TestCase
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'amex');
 
+        $this->fixtures->create('merchant:bank_account', ['merchant_id' => '10000000000000']);
+
         $this->payment = $this->getDefaultPaymentArray();
         $this->payment['card']['number'] = '341111111111111';
         $this->payment['card']['cvv'] = '8888';
@@ -58,7 +60,6 @@ class AmexGatewayTest extends TestCase
         $this->assertArraySelectiveEquals(
             $this->testData['testPaymentAmexEntity'], $payment);
     }
-
 
     public function testPaymentRefund()
     {

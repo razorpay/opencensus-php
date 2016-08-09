@@ -27,9 +27,13 @@ class Gateway extends Base\Gateway
 
         $content = $this->getPaymentAuthorizeRequestContent($input);
 
+        $this->addSubMerchantDetails($content, $input);
+
         $content['vpc_SecureHash'] = $this->generateHash($content);
 
         $request = $this->getAuthRequestArray($content);
+
+        $this->traceGatewayPaymentRequest($request, $input);
 
         return $request;
     }
@@ -421,6 +425,11 @@ class Gateway extends Base\Gateway
         $this->addMerchantIdAndAccessCode($content, $input['terminal']);
 
         return $content;
+    }
+
+    protected function addSubMerchantDetails(array & $content, array $input)
+    {
+        ;
     }
 
     protected function getPaymentCaptureRequestContent($input, $payment)
