@@ -33,7 +33,7 @@ class RequestConstants
     const PAYMENT_ID            = 'payment_id';
 
     //
-    // These are for API Request
+    // These are for EBS API Request
     //
     const API_ACTION            = 'Action';
     const API_ACCOUNT_ID        = 'AccountID';

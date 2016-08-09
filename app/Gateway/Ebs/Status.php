@@ -14,5 +14,5 @@ class Status
     const AUTHORIZE_FAILED          = 'authorize_failed';
 
     const API_AUTHORIZED            = 'Authorized';
-    const API_AUTHORIZED_FAILED     = 'AuthFailed';
+    const API_AUTHORIZE_FAILED      = 'AuthFailed';
 }

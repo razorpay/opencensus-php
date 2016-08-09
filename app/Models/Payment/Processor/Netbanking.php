@@ -271,7 +271,7 @@ class Netbanking
         // Merge paytm and billdesk supported banks and remove
         // duplicate values
         //
-        return array_unique(array_merge(self::$paytm, self::$billdesk, [IFSC::KKBK]));
+        return array_unique(array_merge(self::$paytm, self::$billdesk, self::$ebs, [IFSC::KKBK]));
     }
 
     public static function getDisabledBanks($banks)
@@ -319,6 +319,11 @@ class Netbanking
         return self::$billdesk;
     }
 
+    public static function getEbsSupportedBanks()
+    {
+        return self::$ebs;
+    }
+
     public static function getSupportedBanks($mode = Mode::LIVE, $isTPVRequired = false)
     {
         $banks = self::getSupportedBanksInLiveMode();
@@ -341,7 +346,7 @@ class Netbanking
 
     public static function getSupportedBanksInLiveMode()
     {
-        return array_unique(array_merge(self::$billdesk, self::$self));
+        return array_unique(array_merge(self::$billdesk, self::$ebs, self::$self));
     }
 
     public static function getSbiepaySupportedBanks()
@@ -362,6 +367,11 @@ class Netbanking
     public static function isPaytmSupportedBank($bank)
     {
         return in_array($bank, self::$paytm);
+    }
+
+    public static function isEbsSupportedBank($bank)
+    {
+        return in_array($bank, self::$ebs);
     }
 
     public static function isBilldeskSupportedBank($bank)

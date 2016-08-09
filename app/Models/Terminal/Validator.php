@@ -54,8 +54,8 @@ class Validator extends Base\Validator
 
     protected static $ebsTerminalRules = array(
         Entity::GATEWAY                     => 'required|in:ebs',
-        Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|size:5',
-        Entity::GATEWAY_SECURE_SECRET       => 'required|alpha_num|size:32',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|max:5',
+        Entity::GATEWAY_SECURE_SECRET       => 'required|alpha_num|max:32',
     );
 
     protected static $axisGeniusTerminalRules = array(
