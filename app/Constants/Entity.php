@@ -67,6 +67,7 @@ class Entity
     const NETBANKING_HDFC       = 'netbanking_hdfc';
     const NETBANKING_KOTAK      = 'netbanking_kotak';
     const UPI_ICICI             = 'upi_icici';
+    const WALLET_FREECHARGE     = 'wallet_freecharge';
     const WALLET_PAYZAPP        = 'wallet_payzapp';
     const WALLET_PAYUMONEY      = 'wallet_payumoney';
     const WALLET_OLAMONEY       = 'wallet_olamoney';
@@ -113,6 +114,7 @@ class Entity
         self::PAYMENT_ANALYTICS     => \RZP\Models\Payment\Analytics::class,
         self::GATEWAY_ABSENCE       => \RZP\Models\GatewayStatus\Absence::class,
         self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
+        self::WALLET_FREECHARGE     => \RZP\Gateway\Wallet\Freecharge::class,
     );
 
     protected static $repository = array(
@@ -123,6 +125,7 @@ class Entity
         self::WALLET_OLAMONEY    => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_PAYUMONEY   => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_PAYZAPP     => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_FREECHARGE  => \RZP\Gateway\Wallet\Base::class,
     );
 
     public static function getEntityNamespace($entity)
