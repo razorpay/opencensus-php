@@ -212,7 +212,7 @@ trait Authorize
             TraceCode::TERMINAL_FAILURE, $traceData);
 
         // handle edge case with only a single terminal selected
-        if ($retryAttempts >= $this->MAX_RETRY_ATTEMPTS)
+        if ($retryAttempts >= $this->maxRetryAttempts)
         {
             return $returnArray;
         }
