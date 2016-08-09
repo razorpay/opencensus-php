@@ -99,6 +99,7 @@ class Gateway extends Base\Gateway
             $responseCode = $input['gateway'][Resp::RESPONSE_CODE];
 
             $desc = '';
+
             if (isset(ResponseCode::$reasonCodes[$responseCode]))
             {
                 $desc = ResponseCode::$reasonCodes[$responseCode];
@@ -543,6 +544,8 @@ class Gateway extends Base\Gateway
 
     protected function getPaymentMode($input)
     {
+        $paymentMode = null;
+
         if ($input['payment']['method'] === Payment\Method::NETBANKING)
         {
             $paymentMode = PaymentMode::NETBANKING;
