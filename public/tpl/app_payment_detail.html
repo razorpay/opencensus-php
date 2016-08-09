@@ -128,10 +128,10 @@
           </div>
         </div>
         <div class="text-center">
-          <div  ng-show="entity.status==='authorized'">
+          <div  ng-show="entity.status==='authorized' && role !== 'finance'">
             <button  class="btn btn-success btn-rounded" busy="Please Wait..." busy-disabled="false" ng-click="openCaptureModal()">Capture Payment</button>
           </div>
-          <div  ng-show="entity.status==='captured' && entity.refund_status !== 'full'">
+          <div  ng-show="entity.status==='captured' && entity.refund_status !== 'full' && role !== 'finance'">
             <button  class="btn btn-primary btn-rounded" busy="Please Wait..." busy-disabled="false" ng-click="openRefundModal()">Refund Payment</button>
           </div>
         </div>
