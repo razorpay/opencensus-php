@@ -165,6 +165,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::EXPIRED_AT);
     }
 
+    public function setAuthenticated($authenticated)
+    {
+        $this->setAttribute(self::AUTHENTICATED, $authenticated);
+    }
+
     public function isExpired()
     {
         $expiredAt = $this->getExpiredAt();

@@ -720,6 +720,11 @@ class Entity extends Base\PublicEntity
         return $this->card->isInternational();
     }
 
+    public function isRecurring()
+    {
+        return $this->getRecurring();
+    }
+
 // ----------------------- Getters ---------------------------------------------
 
     public function getMerchantId()

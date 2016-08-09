@@ -330,6 +330,11 @@ trait Authorize
         {
             $gatewayInput['order'] = $payment->order->toArray();
         }
+
+        if ($payment->token !== null)
+        {
+            $gatewayInput['token'] = $payment->token()->first();
+        }
     }
 
     protected function logTerminalPickedAndSelected($terminalSelected, $terminalPicked, $payment)
@@ -596,7 +601,8 @@ trait Authorize
     protected function preProcessPaymentFromUserDataLocal($customer, $payment, $input, & $gatewayInput)
     {
         // Flow if card details are entered with save set to true/false
-        $saveMethod = ((isset($input['save'])) and (boolval($input['save']) === true));
+        $saveMethod = ((isset($input['save']) and (boolval($input['save']) === true)  or
+                       (isset($input['recurring']) and (boolval($input['recurring']) === true))));
 
         if ($saveMethod === false)
         {
@@ -838,6 +844,19 @@ trait Authorize
         $data['image'] = $payment->merchant->getFullLogoUrlWithSize(Merchant\Logo::MEDIUM_SIZE);
 
         return $data;
+    }
+
+    protected function updateTokenIfRecurring()
+    {
+        $token = $this->payment->token()->first();
+
+        if (($token !== null) and
+            ($token->isRecurring() === true))
+        {
+            $token->setAuthenticated(true);
+
+            $this->repo->saveOrFail($token);
+        }
     }
 
     protected function updateAndNotifyPaymentAuthorized($wasFailed = false)

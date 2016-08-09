@@ -87,6 +87,12 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
+        if (($input['token']->isRecurring() === true) and
+            ($input['token']->isAuthenticated() === true))
+        {
+            return $this->recurring($input);
+        }
+
         $response = $this->enroll($input);
 
         return $this->decideAuthStepAfterEnroll($response, $input);
@@ -96,7 +102,7 @@ class Gateway extends Base\Gateway
     {
         $response = $this->authorizeRecurring($input);
 
-        $this->persistAfterAuthorizeRecurring($response, $input);
+        $this->persistAfterAuthorizeRecurring($input, $response);
     }
 
     public function callback(array $input)
@@ -580,15 +586,14 @@ class Gateway extends Base\Gateway
 
     protected function persistAfterAuthorizeRecurring($input, $response)
     {
-        $gatewayPayment = $this->createGatewayPaymentEntity();
-
         $this->trace->info(TraceCode::GATEWAY_AUTHORIZE_RESPONSE, $response);
 
         if ($response['reasonCode'] !== Result::SUCCESS)
         {
             $attributes = array(
                 Entity::STATUS      => Status::AUTHORIZE_FAILED,
-                Entity::REASON_CODE => $response['reasonCode']
+                Entity::REASON_CODE => $response['reasonCode'],
+                Entity::AMOUNT      => $input['payment']['amount']
             );
 
             if (isset($response[self::REQUEST_ID]) === true)
@@ -596,21 +601,19 @@ class Gateway extends Base\Gateway
                 $attributes[Entity::REF] = $response[self::REQUEST_ID];
             }
 
-            $gateway->fill($attributes);
-
-            $gateway->saveOrFail();
+            $gatewayPayment = $this->createGatewayPaymentEntity($attributes, $input);
 
             $this->throwException($response);
         }
 
-        $attributes = array(
-            Entity::REF    => $response[self::REQUEST_ID],
-            Entity::STATUS => Status::AUTHORIZED
-        );
+        $attributes = [
+            Entity::REF         => $response[self::REQUEST_ID],
+            Entity::REASON_CODE => $response['reasonCode'],
+            Entity::AMOUNT      => $input['payment']['amount'],
+            Entity::STATUS      => Status::AUTHORIZED
+        ];
 
-        $gateway->fill($attributes);
-
-        $gateway->saveOrFail();
+        $gatewayPayment = $this->createGatewayPaymentEntity($attributes, $input);
     }
 
     protected function persistAfterEnroll($input, $response, $request)

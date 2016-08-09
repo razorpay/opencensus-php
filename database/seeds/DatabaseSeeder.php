@@ -182,6 +182,8 @@ class DatabaseSeeder extends Seeder
             if ($name === Mode::TEST)
             {
                 $this->createTestTerminals();
+
+                $this->createLocalCustomer();
             }
 
             DB::table(Table::METHODS)->insert(
@@ -210,6 +212,7 @@ class DatabaseSeeder extends Seeder
                     'payumoney'     => '1',
                     'card'          => '1',
                     'emi'           => '1',
+                    'recurring'     => '1',
                     'created_at'    =>  time(),
                     'updated_at'    =>  time()
                 )
@@ -228,6 +231,47 @@ class DatabaseSeeder extends Seeder
                 )
             );
         });
+    }
+
+    protected function createLocalCustomer()
+    {
+        DB::table(Table::CUSTOMER)->insert(
+            array(
+                array(
+                    'id'                    => '1n25f6uN5S1Z3a',
+                    'merchant_id'           => Account::TEST_ACCOUNT,
+                    'name'                  => 'Vivek',
+                    'contact'               => '+918199080070',
+                    'email'                 => 'vivek@razorpay.com',
+                    'notes'                 => '{}',
+                    'active'                => true,
+                    'created_at'            =>  time(),
+                    'updated_at'            =>  time(),
+                ),
+                array(
+                    'id'                    => '1n25f6uN5S1Z2a',
+                    'merchant_id'           => Account::TEST_ACCOUNT,
+                    'name'                  => 'Vivek',
+                    'contact'               => '+918199080072',
+                    'email'                 => 'test@razorpay.com',
+                    'notes'                 => '{}',
+                    'active'                => true,
+                    'created_at'            =>  time(),
+                    'updated_at'            =>  time(),
+                ),
+                array(
+                    'id'                    => '1n25f6uN5S1Z1a',
+                    'merchant_id'           => Account::TEST_ACCOUNT,
+                    'name'                  => 'Vivek',
+                    'contact'               => '+918199080071',
+                    'email'                 => 'test1@razorpay.com',
+                    'notes'                 => '{}',
+                    'active'                => true,
+                    'created_at'            =>  time(),
+                    'updated_at'            =>  time(),
+                ),
+            )
+        );
     }
 
     protected function createTestTerminals()
