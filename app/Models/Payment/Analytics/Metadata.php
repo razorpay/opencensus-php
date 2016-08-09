@@ -5,12 +5,16 @@ namespace RZP\Models\Payment\Analytics;
 class Metadata
 {
     // Platform values
-    const WEB           = 'web';
-    const APP           = 'app';
+    const BROWSER       = 'browser';
+    const MOBILE_SDK    = 'mobile_sdk';
+    const CORDOVA       = 'cordova';
+    const SERVER        = 'server';
 
     const PLATFORM_VALUES = array(
-        self::WEB       => 1,
-        self::APP       => 2,
+        self::BROWSER       => 1,
+        self::MOBILE_SDK    => 2,
+        self::CORDOVA       => 3,
+        self::SERVER        => 4
     );
 
     // Device values
