@@ -24,8 +24,10 @@ class CreateCreditsTable extends Migration
                   ->primary();
 
             $table->string(Credits::CAMPAIGN, 255);
-            $table->string(Credits::MERCHANT_ID, Merchant\Entity::ID_LENGTH);
-            $table->integer(Credits::VALUE)->default(0);
+            $table->char(Credits::MERCHANT_ID, Merchant\Entity::ID_LENGTH);
+            $table->integer(Credits::VALUE)
+                  ->unsigned();
+
             $table->text(Credits::NOTES);
 
             $table->integer(Credits::CREATED_AT);
