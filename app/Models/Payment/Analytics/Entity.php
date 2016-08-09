@@ -14,7 +14,7 @@ class Entity extends Base\PublicEntity
     const CHECKOUT_ID                   = 'checkout_id';
     const TERMINAL_ID                   = 'terminal_id';
     const STATUS                        = 'status';
-    const ATTEMPTS                      = 'attempt';
+    const ATTEMPTS                      = 'attempts';
     const TERMINAL_RESPONSE_TIME        = 'terminal_response_time';
     const STATUS_CODE                   = 'status_code';
     const STATUS_MSG                    = 'status_msg';
@@ -68,6 +68,10 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_TYPE,
         self::CREATED_AT,
         self::UPDATED_AT
+    );
+
+     protected $defaults = array(
+        self::LIBRARY     => Metadata::LIBRARY_VALUES[Metadata::DIRECT],
     );
 
     protected $table = \RZP\Constants\Table::PAYMENT_ANALYTICS;
@@ -182,9 +186,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CHECKOUT_ID, $checkoutId);
     }
 
-    public function setLibrary($library = Metadata::DIRECT)
+    public function setLibrary($library)
     {
-        $this->setAttribute(self::LIBRARY, $library);
+        $this->setAttribute(self::LIBRARY, Metadata::getValueForLibrary($library));
     }
 
     public function setBrowserAttribute($browser)

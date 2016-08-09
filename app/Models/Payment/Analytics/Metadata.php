@@ -68,12 +68,17 @@ class Metadata
 
     public static function validatePlatform($platform)
     {
+        if (!$platform)
+        {
+            return true;
+        }
+
         return array_key_exists(strtolower($platform), self::PLATFORM_VALUES);
     }
 
     public static function getValueForPlatform($platform)
     {
-        return ($platform === null) ? null : self::PLATFORM_VALUES[strtolower($platform)];
+        return (!$platform) ? null : self::PLATFORM_VALUES[strtolower($platform)];
     }
 
     public static function getStringForPlatformValue($value)
@@ -92,10 +97,10 @@ class Metadata
     {
         if (strtolower($os) === 'os x')
         {
-            $os = 'MACOS';
+            $os = self::MACOS;
         }
 
-        return ($os === null) ? null : self::OS_VALUES[strtolower($os)];
+        return (!$os) ? null : self::OS_VALUES[strtolower($os)];
     }
 
     public static function validateLibrary($library)
@@ -105,7 +110,7 @@ class Metadata
 
     public static function getValueForLibrary($library)
     {
-        return ($library === null) ? null : self::LIBRARY_VALUES[strtolower($library)];
+        return (!$library) ? null : self::LIBRARY_VALUES[strtolower($library)];
     }
 
     public static function getStringForLibraryValue($value)
@@ -117,22 +122,32 @@ class Metadata
 
     public static function validateBrowser($browser)
     {
+        if (!$browser)
+        {
+            return true;
+        }
+
         return array_key_exists(strtolower($browser), self::BROWSER_VALUES);
     }
 
     public static function getValueForBrowser($browser)
     {
-        return ($browser === null) ? null : self::BROWSER_VALUES[strtolower($browser)];
+        return (!$browser) ? null : self::BROWSER_VALUES[strtolower($browser)];
     }
 
     public static function validateDevice($device)
     {
+        if (!$device)
+        {
+            return true;
+        }
+
         return array_key_exists(strtolower($device), self::DEVICE_VALUES);
     }
 
     public static function getValueForDevice($device)
     {
 
-        return ($device === null) ? null : self::DEVICE_VALUES[strtolower($device)];
+        return (!$device) ? null : self::DEVICE_VALUES[strtolower($device)];
     }
 }

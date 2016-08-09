@@ -106,8 +106,6 @@ class Service extends Base\Service
 
         $uAgent = $app['agent'];
 
-        s(get_class_methods($uAgent));
-
         // set browser
         $data[Entity::BROWSER] = $uAgent->browser();
 

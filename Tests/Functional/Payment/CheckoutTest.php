@@ -32,7 +32,7 @@ class CheckoutTest extends TestCase
         $paymentAnalytic = $this->getLastEntity('payment_analytics', true);
 
         $this->assertEquals($checkoutId, $paymentAnalytic['checkout_id']);
-        $this->assertEquals(1, $payment['attempt']);
+        $this->assertEquals(1, $paymentAnalytic['attempts']);
 
         // $payment = $this->getDefaultPaymentArray();
         // $payment['_']['checkout_id'] = $checkoutId;

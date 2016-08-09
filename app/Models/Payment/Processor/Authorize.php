@@ -95,8 +95,6 @@ trait Authorize
 
             $paymentAnalytic->setPaymentAnalyticData($metadata, $data);
 
-            s($data);
-
             $paymentAnalytic->createAuditLog($data);
 
         // }
