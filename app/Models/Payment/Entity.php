@@ -942,6 +942,20 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    public function setTerminal($terminal)
+    {
+        if ($terminal === null)
+        {
+            throw new Exception\RuntimeException(
+                'Terminal should not be null',
+                ['payment' => $this->toArrayAdmin()]);
+        }
+
+        $this->terminal()->associate($terminal);
+
+        $this->setGateway($terminal->getGateway());
+    }
+
 
 // ----------------------- Getters Ends-----------------------------------------
 

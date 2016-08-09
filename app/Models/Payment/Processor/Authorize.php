@@ -56,9 +56,8 @@ trait Authorize
 
         $this->getTerminalsForPayment($payment);
 
-        $request = $this->authorizeAcrossTerminals($gatewayInput, $payment, $input);
+        return  $this->authorizeAcrossTerminals($gatewayInput, $payment, $input);
 
-        return $this->processAuthResponse($request, $payment);
     }
 
     protected function getTerminalsForPayment($payment)
@@ -66,6 +65,116 @@ trait Authorize
         $this->terminalSelector = new Terminal\Selector($payment, $this->mode);
 
         $this->terminalsSelected = $this->terminalSelector->selectTerminals();
+
+    }
+
+    protected function authorizeAcrossTerminals($gatewayInput, $payment, $input)
+    {
+        $totalTerminals = count($this->terminalsSelected);
+
+        $this->maxRetryAttempts = min($totalTerminals, $this->maxRetryAttempts);
+
+        $retryAttempts = 0;
+
+        $timeoutException = null;
+
+        $request = null;
+
+        while ($retryAttempts < $this->maxRetryAttempts)
+        {
+            $terminalGatewayInput = $gatewayInput;
+
+            $currentTerminal = $this->terminalsSelected[$retryAttempts];
+
+            $payment->setTerminal($currentTerminal);
+
+            $this->runGatewaySpecificPreProcessing($payment, $terminalGatewayInput);
+
+            if ($this->canRunOtpPaymentFlow($payment, $input))
+            {
+                return $this->runOtpPaymentFlow($terminalGatewayInput, $payment);
+            }
+
+            try
+            {
+                $request = $this->callGatewayAuthorize($terminalGatewayInput);
+
+                $timeoutException = null;
+
+                break;
+            }
+
+            catch (\Exception $e)
+            {
+                // handle timeout exceptions differently
+                // this is a terminal/gateway failure
+                if ($e instanceof Exception\GatewayTimeoutException or $e instanceof \Requests_Exception)
+                {
+                    $retryAttempts += 1;
+
+                    $timeoutException = $e;
+
+                    $status = $this->logAndCheckForAuthRetry($e, $payment, $retryAttempts);
+
+                    if ($status === true)
+                    {
+                        continue;
+                    }
+                    break;
+                }
+                else
+                {
+                    // any other exception, throw an error
+                    throw $e;
+                }
+
+            }
+        }
+
+        $this->handleTimeoutException($timeoutException);
+
+        return $this->processAuthResponse($request, $payment);
+
+    }
+
+    protected function logAndCheckForAuthRetry($e, $payment, $retryAttempts)
+    {
+        $traceData = array(
+            'errorcode' => $e->getCode(),
+            'message' => $e->getMessage(),
+            'payment_id' => $payment->getId()
+        );
+
+        $this->trace->info(
+            TraceCode::TERMINAL_FAILURE, $traceData);
+
+        // retry only if it is safe to do so
+        if (property_exists($e, "safeRetry") === true and $e->safeRetry === true)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+
+    protected function handleTimeoutException($timeoutException)
+    {
+        // we have tried the payment with multiple terminals
+        // and if we still encounter timeout exception
+        // record it here and throw it back to caller.
+        if ($timeoutException !== null)
+        {
+            if($timeoutException->getError() === null){
+                $timeoutException->setGatewayErrorCodeAndDesc($timeoutException->getCode(),
+                    $timeoutException->getMessage());
+            }
+            $this->updatePaymentFailed(
+                $timeoutException->getError(),
+                TraceCode::PAYMENT_AUTH_FAILURE);
+
+            throw $timeoutException;
+        }
 
     }
 
@@ -94,143 +203,6 @@ trait Authorize
 
     }
 
-    protected function authorizeAcrossTerminals($gatewayInput, $payment, $input)
-    {
-        $totalTerminals = count($this->terminalsSelected);
-
-        if ($this->maxRetryAttempts > $totalTerminals)
-        {
-            $this->maxRetryAttempts = $totalTerminals;
-        }
-
-        $retryAttempts = 0;
-
-        $currentTerminal = $this->terminalsSelected[0];
-
-        $request = null;
-
-        $timeoutException = null;
-
-        while ($retryAttempts < $this->maxRetryAttempts)
-        {
-            $terminalGatewayInput = $gatewayInput;
-
-            $this->runGatewaySpecificPreProcessing($payment, $terminalGatewayInput);
-
-            if ($this->canRunOtpPaymentFlow($payment, $input))
-            {
-                return $this->runOtpPaymentFlow($terminalGatewayInput, $payment);
-            }
-
-            try
-            {
-
-                $request = $this->callGatewayAuthorize($terminalGatewayInput);
-
-                $timeoutException = null;
-
-                break;
-            }
-
-            catch (\Exception $e)
-            {
-                // handle timeout exceptions differently
-                // this is a terminal/gateway failure
-                if ($e instanceof Exception\GatewayTimeoutException or $e instanceof \Requests_Exception)
-                {
-                    $retryAttempts += 1;
-
-                    $timeoutException = $e;
-
-                    $statusDict = $this->logAndCheckForAuthRetry($e, $payment, $retryAttempts);
-
-                    if ($statusDict['should_retry'] === true)
-                    {
-                        $currentTerminal = $statusDict['current_terminal'];
-
-                        continue;
-                    }
-
-                    break;
-                }
-                else
-                {
-                    // any other exception, throw an error
-                    throw $e;
-                }
-
-            }
-        }
-
-        // at this point, its a successful payment and the terminal could have changed
-        // if so, save the payment with the new successful terminal now
-        if($currentTerminal->getId() !== $this->terminalsSelected[0]->getId())
-        {
-            $this->repo->saveOrFail($payment);
-        }
-
-        return $this->handleAuthorizationRequest($request, $timeoutException);
-    }
-
-    protected function handleAuthorizationRequest($request, $timeoutException)
-    {
-
-        // we have tried the payment with multiple terminals
-        // and if we still encounter timeout exception
-        // record it here and throw it back to caller.
-        if ($timeoutException !== null)
-        {
-            if($timeoutException->getError() === null){
-                $timeoutException->setGatewayErrorCodeAndDesc($timeoutException->getCode(),
-                    $timeoutException->getMessage());
-            }
-            $this->updatePaymentFailed(
-                $timeoutException->getError(),
-                TraceCode::PAYMENT_AUTH_FAILURE);
-
-            throw $timeoutException;
-        }
-
-        return $request;
-
-    }
-
-    protected function logAndCheckForAuthRetry($e, $payment, $retryAttempts)
-    {
-        $traceData = array(
-            'errorcode' => $e->getCode(),
-            'message' => $e->getMessage(),
-            'payment_id' => $payment->getId()
-        );
-
-        $returnArray = array(
-            'should_retry' => false,
-            'current_terminal' => null)
-        ;
-
-        $this->trace->info(
-            TraceCode::TERMINAL_FAILURE, $traceData);
-
-        // handle edge case with only a single terminal selected
-        if ($retryAttempts >= $this->maxRetryAttempts)
-        {
-            return $returnArray;
-        }
-
-        // retry only if it is safe to do so
-        if (property_exists($e, "safeRetry") === true and $e->safeRetry === true)
-        {
-            $currentTerminal = $this->terminalsSelected[$retryAttempts];
-
-            $this->terminalSelector->setTerminalForPayment($payment, $currentTerminal);
-
-            $returnArray['current_terminal'] = $currentTerminal;
-
-            $returnArray['should_retry'] = true;
-        }
-
-        return $returnArray;
-    }
 
     public function authorizeFailedPayment($payment)
     {

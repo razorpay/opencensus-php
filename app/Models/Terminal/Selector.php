@@ -143,7 +143,7 @@ class Selector
             $sortedTerminals = array($terminal);
         }
 
-        $this->setTerminalForPayment($this->payment, $terminal);
+        $this->payment->setTerminal($terminal);
 
         // hack to return multiple terminals if needed.
         if(isset($options['multiple']) and ($options['multiple'] === true))
@@ -152,20 +152,6 @@ class Selector
         }
 
         return $terminal;
-    }
-
-    public function setTerminalForPayment($payment, $terminal = null)
-    {
-        if ($terminal === null)
-        {
-            throw new Exception\RuntimeException(
-                'Terminal should not be null',
-                ['payment' => $payment->toArrayAdmin()]);
-        }
-
-        $payment->terminal()->associate($terminal);
-
-        $payment->setGateway($terminal->getGateway());
     }
 
     protected function traceTerminals($terminals, $msg, $verbose = false)
@@ -202,8 +188,6 @@ class Selector
 
         return $options;
     }
-
-
 
     /**
      * Methods selects a list of terminals for payment. We are
