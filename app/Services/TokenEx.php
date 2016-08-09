@@ -47,18 +47,6 @@ class TokenEx
         $this->baseUrl = $this->config['url'];
     }
 
-    public static function getInstance($app)
-    {
-        $tokenexMock = $app['config']->get('applications.card_tokenex.mock');
-
-        if ($tokenexMock === true)
-        {
-            return new Mock\TokenEx($app);
-        }
-
-        return new self($app);
-    }
-
     public function tokenize($data)
     {
         $input = array(

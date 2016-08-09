@@ -4,6 +4,7 @@ namespace RZP\Services;
 
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use RZP\Gateway\GatewayManager;
+use RZP\Services;
 use RZP;
 
 class ApiServiceProvider extends BaseServiceProvider
@@ -49,7 +50,14 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->app->singleton('card.tokenex', function($app)
         {
-            return TokenEx::getInstance($app);
+            $tokenexMock = $app['config']->get('applications.card_tokenex.mock');
+
+            if ($tokenexMock === true)
+            {
+                return new Services\Mock\TokenEx($app);
+            }
+
+            return new Services\TokenEx($app);
         });
 
         $this->app->singleton('raven', function($app)
