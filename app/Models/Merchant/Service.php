@@ -565,42 +565,34 @@ class Service extends Base\Service
     */
     public function postMerchantBeneficiaryFile($input)
     {
-        $filterDays = 1;
-        $today = Carbon::today('Asia/Kolkata');
-        $filterDate = Carbon::today('Asia/Kolkata');
+        $to = Carbon::today('Asia/Kolkata');
 
-        $dayToday = $today->dayOfWeek;
-        if ($dayToday === Carbon::MONDAY)
-        {
-            $filterDays = 3;
-        }
+        $from = Holidays::getPreviousWorkingDay($to);
 
-        $filterDate = $filterDate->subDays($filterDays);
-
-        $merchantsActivatedSinceLastReport = $this->repo->merchant->getCountOfMerchantsActivatedBetween(
-                                                        $filterDate->timestamp,
-                                                        $today->timestamp);
+        $merchantsActivatedSinceLastWorkingDay = $this->repo->merchant->getCountOfMerchantsActivatedBetween(
+                                                        $from->timestamp,
+                                                        $to->timestamp);
 
         if ((isset($input['hostToHostFormat'])) and ($input['hostToHostFormat'] === '1'))
         {
-            (new BankAccount\BeneficiaryFile3)->generate();
+            (new BankAccount\BeneficiaryFile3)->generate($from, $to);
         }
-        else if ($merchantsActivatedSinceLastReport > 0)
+        else if ($merchantsActivatedSinceLastWorkingDay > 0)
         {
             (new BankAccount\BeneficiaryFile2)->generate();
-
-            $message = "Merchant Beneficiary file generated. Merchants activated since last".
-                    " report is ".$merchantsActivatedSinceLastReport;
-
-            $this->slack->queue($message,[],['channel' => '#settlements']);
         }
+
+        $message = "Merchant Beneficiary file generated. Merchants activated since last".
+                " report is ".$merchantsActivatedSinceLastWorkingDay;
+
+        $this->slack->queue($message,[],['channel' => '#settlements']);
 
         //Log response in trace
         $this->trace->info(
             TraceCode::MERCHANT_BENEFICIARY_FILE_GENERATE,
-            array('new_merchants_activated' => $merchantsActivatedSinceLastReport));
+            array('new_merchants_activated' => $merchantsActivatedSinceLastWorkingDay));
 
-        return $merchantsActivatedSinceLastReport;
+        return $merchantsActivatedSinceLastWorkingDay;
     }
 
     /**
