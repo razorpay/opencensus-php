@@ -450,7 +450,7 @@ class Gateway extends Base\Gateway
             $response['response'] = $this->postRequest($request);
 
             // uncommment this to simulate an exception here for s2s - strictly for testing only
-            throw new \Requests_Exception("operation timed out","operation timed out");
+            //throw new \Requests_Exception("operation timed out","operation timed out");
         }
         catch(\Requests_Exception $e)
         {
