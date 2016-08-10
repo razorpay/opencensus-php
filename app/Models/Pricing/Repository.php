@@ -23,10 +23,11 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        $pricing = $repo::where(Pricing\Entity::PLAN_ID, '=', $id)
-                     ->orderBy(Pricing\Entity::PLAN_ID, 'desc')
-                     ->orderBy(Pricing\Entity::ID, 'desc')
-                     ->get();
+        $pricing = $this->newQuery()
+                        ->where(Pricing\Entity::PLAN_ID, '=', $id)
+                        ->orderBy(Pricing\Entity::PLAN_ID, 'desc')
+                        ->orderBy(Pricing\Entity::ID, 'desc')
+                        ->get();
 
         if (($pricing->count() === 0) and
             ($fail))
@@ -97,7 +98,8 @@ class Repository extends Base\Repository
         $repo = $this->repo;
 
         // For merchant pricing plans, gateway will not be specified
-        return $repo::whereNull(Pricing\Entity::GATEWAY)
+        return $this->newQuery()
+                    ->whereNull(Pricing\Entity::GATEWAY)
                     ->orderBy(Pricing\Entity::PLAN_ID, 'desc')
                     ->orderBy(Pricing\Entity::ID, 'desc')
                     ->get();
@@ -120,10 +122,7 @@ class Repository extends Base\Repository
 
     public function getPricingPlanRule($id)
     {
-        $repo = $this->repo;
-        $rule = $repo::findOrFailPublic($id);
-
-        return $rule;
+        return $this->newQuery()->findOrFailPublic($id);
     }
 
     public function deletePlanRule($planId, $ruleId)
@@ -161,9 +160,7 @@ class Repository extends Base\Repository
         }
         else
         {
-            $this->delete($rule);
-
-            return true;
+            return $this->delete($rule);
         }
     }
 }
