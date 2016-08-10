@@ -37,7 +37,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    protected function getBankAccountsBetweenTimestamp($from, $to)
+    public function getBankAccountsBetweenTimestamp($from, $to)
     {
         return $this->newQuery()
                     ->whereBetween(BankAccount\Entity::CREATED_AT, array($from, $to))
@@ -45,7 +45,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    protected function getCountOfBankAccountsCreatedBetween($from, $to)
+    public function getCountOfBankAccountsCreatedBetween($from, $to)
     {
         return $this->newQuery()
                     ->whereBetween(BankAccount\Entity::CREATED_AT, array($from, $to))
