@@ -40,7 +40,10 @@ class Table
 
     // Sessions table
     const SESSION               = 'sessions';
-    
+
+    // Internal Purposes
+    const CREDITS           = 'credits';
+
     // Terminal Performance
     const TERMINAL_ACTION       = 'terminal_action_logs';
     const GATEWAYSTATUS_ABSENCE = 'gatewaystatus_absence';

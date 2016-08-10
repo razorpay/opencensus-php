@@ -82,7 +82,7 @@ class NodalAccount
         $this->mail = \Mail::getFacadeRoot();
     }
 
-    public function generateSettlementFile0($settlements, $txns)
+    public function generateSettlementFile($settlements, $txns)
     {
         $textData = array();
         $excelData = array();
@@ -132,7 +132,6 @@ class NodalAccount
             $array = array(
                 'Client_Code'           => 'RAZORNODAL',
                 'Product_Code'          => 'MERPAY',
-                'Payment_Type'          => $type,
                 'Payment_Ref_No.'       => $settlement->getPublicId(),
                 'Payment_Date'          => $this->date,
                 'Dr_Ac_No'              => static::$nodalAccountNumber,
@@ -152,9 +151,6 @@ class NodalAccount
 
             array_push($textData, $textDataArray);
 
-            // Excel file has couple extra fields for calculating text data of that row.
-            $array['Symbol'] = '~';
-            $array['Text File'] = $this->getExcelTextFieldFormula($row);
             $row++;
 
             array_push($excelData, $array);
@@ -179,7 +175,7 @@ class NodalAccount
         return [$urlText, $urlExcel];
     }
 
-    public function generateSettlementFile($settlements, $txns)
+    public function generateSettlementFile2($settlements, $txns)
     {
         $textData = array();
         $excelData = array();

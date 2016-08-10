@@ -5,6 +5,7 @@ namespace RZP\Http\Controllers;
 use RZP\Constants\Mode;
 use RZP\Http\ApiResponse;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Credits;
 use RZP\Models\Terminal;
 use RZP\Models\Key;
 use Request;
@@ -553,4 +554,49 @@ class MerchantController extends Controller
 
         return ApiResponse::json($data);
     }
+
+// --------------------- Credits API Handlers -----------------------------------------
+
+    public function postCreateCreditsLog(Credits\Service $service, $id)
+    {
+        $input = Request::all();
+
+        $data = $service->grantCreditsForMerchant($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getCreditsLog(Credits\Service $service, $mid, $id)
+    {
+        $data = $service->fetchCreditsLog($mid, $id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function putCreditsLog(Credits\Service $service, $mid, $id)
+    {
+        $input = Request::all();
+
+        $data = $service->updateCreditsLog($mid, $id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getCreditsLogs(Credits\Service $service)
+    {
+        $input = Request::all();
+
+        $data = $service->fetchMultiple($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function deleteCreditsLog(Credits\Service $service, $mid, $id)
+    {
+        $data = $service->deleteCreditsLog($mid, $id);
+
+        return ApiResponse::json($data);
+    }
+
+// --------------------- End Credits API Handlers -----------------------------------------
 }
