@@ -78,7 +78,7 @@ return [
         'received'                  => true,
         'entity'                    => 'ebs',
         'is_flagged'                => false,
-        'error_code'                => null,
+        'error_code'                => '0',
     ],
 
     'testPaymentFlaggedEbsEntity'   => [

@@ -368,7 +368,7 @@ class Gateway extends Base\Gateway
 
     protected function unsetExtraResponseData($content)
     {
-        unset($content[Resp::PAYMENT_ID]);
+        unset($content[Resp::GATEWAY_PAYMENT_ID]);
 
         unset($content[Resp::REQUEST_ID]);
 
