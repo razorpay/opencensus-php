@@ -4,7 +4,6 @@ use Closure;
 use Auth;
 use Gate;
 use Illuminate\Contracts\Auth\Guard;
-use App\Policies\getUser;
 
 class Authenticate {
 

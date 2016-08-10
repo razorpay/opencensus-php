@@ -22,7 +22,7 @@ Route::group(['middleware'  =>  'auth:user'], function()
     // This returns all the needed information
     Route::get('/user', 'UserController@getUserDetails');
     Route::get('/user/details', 'UserController@getUserDetails');
-    Route::get('/activation/details', 'MerchantController@getActivationDetails as get_activation_details');
+    Route::get('/activation/details', 'MerchantController@getActivationDetails', 'get_activation_details');
     Route::get('/{mode}/payments', 'TransactionController@getPayments');
 
     // Order Routes
@@ -47,16 +47,16 @@ Route::group(['middleware'  =>  'auth:user'], function()
     Route::get('/{mode}/analytics/aggregations', 'TransactionController@getAggregations');
     Route::get('/{mode}/analytics/payment/aggregations', 'TransactionController@getPaymentAggregations');
 
-    Route::get('/{mode}/keys', 'MerchantController@getKeys as get_keys');
+    Route::get('/{mode}/keys', 'MerchantController@getKeys', 'get_keys');
     Route::get('/keys/csv', 'MerchantController@getCsv');
     Route::get('/apihost', 'MerchantController@getApihost');
 
-    Route::get('/config', 'MerchantController@getMerchantConfig as get_config');
-    Route::put('/config', 'MerchantController@putMerchantConfig as put_config');
-    Route::post('/config/logo', 'MerchantController@postMerchantConfigLogo as post_config_logo');
+    Route::get('/config', 'MerchantController@getMerchantConfig', 'get_config');
+    Route::put('/config', 'MerchantController@putMerchantConfig', 'put_config');
+    Route::post('/config/logo', 'MerchantController@postMerchantConfigLogo', 'post_config_logo');
 
     Route::get('/referrals', 'MerchantController@getReferredMerchants');
-    Route::get('/{mode}/webhooks', 'MerchantController@getWebhooks as get_webhooks');
+    Route::get('/{mode}/webhooks', 'MerchantController@getWebhooks', 'get_webhooks');
     Route::get('/{mode}/balance', 'MerchantController@getBalance');
     Route::get('/bank_account', 'MerchantController@getBankAccount');
 
@@ -87,16 +87,16 @@ Route::group(['middleware'  =>  'auth:user'], function()
     Route::delete('settings/invitations/{invite}/reject', 'InvitationsController@deleteRejectMerchantInvitation');
 
     Route::post('/password', 'UserController@postPassword');
-    Route::post('/activation', 'MerchantController@postActivation as post_activation');
-    Route::post('/activation/save/step/{id}', 'MerchantController@postSaveActivationStep as post_activation_save_step');
-    Route::post('/activation/save/file', 'MerchantController@postSaveActivationFile as post_activation_save_file');
-    Route::post('/{mode}/keys', 'MerchantController@postKeys as post_keys');
+    Route::post('/activation', 'MerchantController@postActivation', 'post_activation');
+    Route::post('/activation/save/step/{id}', 'MerchantController@postSaveActivationStep', 'post_activation_save_step');
+    Route::post('/activation/save/file', 'MerchantController@postSaveActivationFile', 'post_activation_save_file');
+    Route::post('/{mode}/keys', 'MerchantController@postKeys', 'post_keys');
     Route::post('/{mode}/key/new', 'MerchantController@postNewKey');
-    Route::post('/{mode}/payments/{id}/capture', 'TransactionController@postCapturePayment as post_capture');
-    Route::post('/{mode}/payments/{id}/refund', 'TransactionController@postRefundPayment as post_refund');
+    Route::post('/{mode}/payments/{id}/capture', 'TransactionController@postCapturePayment', 'post_capture');
+    Route::post('/{mode}/payments/{id}/refund', 'TransactionController@postRefundPayment', 'post_refund');
     Route::post('/{mode}/addfunds', 'TransactionController@postAddfunds');
-    Route::post('/{mode}/webhooks', 'MerchantController@postAddWebhook as post_webhooks');
-    Route::put('/{mode}/webhooks/{id}', 'MerchantController@putEditWebhook as edit_webhooks');
+    Route::post('/{mode}/webhooks', 'MerchantController@postAddWebhook', 'post_webhooks');
+    Route::put('/{mode}/webhooks/{id}', 'MerchantController@putEditWebhook', 'edit_webhooks');
 
     // Upgrades a standard invited user to a merchant
     Route::post('/merchants/register', 'UserController@postUpgradeUserToMerchant');
