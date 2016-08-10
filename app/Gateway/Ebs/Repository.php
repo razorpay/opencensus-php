@@ -11,10 +11,10 @@ class Repository extends Base\Repository
     protected $entity = Constants\Entity::EBS;
 
     protected $appFetchParamRules = array(
-        Entity::PAYMENT_ID      => 'sometimes|string',
-        Entity::RECEIVED        => 'sometimes|boolean',
-        Entity::REFUND_ID       => 'sometimes|string',
-        Entity::REFERENCE_ID    => 'sometimes|string',
+        Entity::PAYMENT_ID          => 'sometimes|string',
+        Entity::RECEIVED            => 'sometimes|boolean',
+        Entity::REFUND_ID           => 'sometimes|string',
+        Entity::GATEWAY_PAYMENT_ID  => 'sometimes|string',
     );
 
 
@@ -22,7 +22,7 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        return $repo::where(Entity::REFERENCE_ID, '=', $ebsPaymentId)
+        return $repo::where(Entity::GATEWAY_PAYMENT_ID, '=', $ebsPaymentId)
                     ->where(Entity::ACTION, '=', $action)
                     ->firstOrFail();
     }

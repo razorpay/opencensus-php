@@ -29,19 +29,13 @@ class CreateEbsGateway extends Migration
 
             $table->string(Ebs::TRANSACTION_ID)->nullable();
 
-            $table->string(Ebs::STATUS);
-
             $table->string(Ebs::ACTION);
 
             $table->string(Ebs::REQUEST_ID)->nullable();
 
-            $table->string(Ebs::REFERENCE_ID)->nullable();
+            $table->string(Ebs::GATEWAY_PAYMENT_ID)->nullable();
 
             $table->string(Ebs::REFUND_ID, UniqueIdEntity::ID_LENGTH)->nullable();
-
-            $table->string(Ebs::PAYMENT_MODE)->nullable();
-
-            $table->string(Ebs::CHANNEL)->nullable();
 
             $table->boolean(Ebs::RECEIVED)->default(0);
 
@@ -67,7 +61,7 @@ class CreateEbsGateway extends Migration
 
             $table->index(Ebs::PAYMENT_ID);
 
-            $table->index(Ebs::REFERENCE_ID);
+            $table->index(Ebs::GATEWAY_PAYMENT_ID);
 
             $table->index(Ebs::REFUND_ID);
 
