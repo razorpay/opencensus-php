@@ -28,14 +28,6 @@ class Gateway extends Base\Gateway
 
     protected $sortRequestContent = true;
 
-    protected $map = array(
-        Resp::PAYMENT_ID            => Entity::GATEWAY_PAYMENT_ID,
-        Resp::MERCHANT_REF_NO       => Entity::PAYMENT_ID,
-        Resp::IS_FLAGGED            => Entity::IS_FLAGGED,
-        Resp::TRANSACTION_ID        => Entity::TRANSACTION_ID,
-        Resp::REQUEST_ID            => Entity::REQUEST_ID,
-    );
-
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -447,24 +439,6 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
-    protected function getMappedAttributes($attributes)
-    {
-        $attr = [];
-
-        $map = $this->map;
-
-        foreach ($attributes as $key => $value)
-        {
-            if (isset($map[$key]))
-            {
-                $newKey = $map[$key];
-                $attr[$newKey] = $value;
-            }
-        }
-
-        return $attr;
-    }
-
     protected function getDefaultRequestContent()
     {
         $content = array(
@@ -615,19 +589,17 @@ class Gateway extends Base\Gateway
     {
         $refundAmount = $input['refund']['amount']/100;
 
-        $attributes = $this->getMappedAttributes($response);
+        $attributes = [
+            Entity::REFUND_ID   => $input['refund']['id'],
+            Entity::AMOUNT      => $refundAmount,
+            Entity::RECEIVED    => true,
+        ];
 
         if ((isset($response[Entity::IS_FLAGGED]) === true) and
             (strtolower($response[Entity::IS_FLAGGED]) === 'yes'))
         {
             $attributes[Entity::IS_FLAGGED] = true;
         }
-
-        $attributes[Entity::REFUND_ID] = $input['refund']['id'];
-
-        $attributes[Entity::AMOUNT] = $refundAmount;
-
-        $attributes[Entity::RECEIVED] = true;
 
         if ((isset($response[Resp::RESPONSE]) === false) or
             ($response[Resp::RESPONSE] !== Status::API_SUCCESS))
