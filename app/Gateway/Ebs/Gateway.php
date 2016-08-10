@@ -75,10 +75,10 @@ class Gateway extends Base\Gateway
 
         $this->repo->saveOrFail($gatewayPayment);
 
-        if (isset($input['gateway'][Resp::RESPONSE_CODE]) == false)
+        if (isset($input['gateway'][Resp::RESPONSE_CODE]) === false)
         {
             throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR, '', '');
+                ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR);
         }
         else if ($input['gateway'][Resp::RESPONSE_CODE] !== Status::SUCCESS)
         {
@@ -262,22 +262,22 @@ class Gateway extends Base\Gateway
         return $apiStatus;
     }
 
-    protected function saveVerifyContentIfNeeded($payment, $response)
+    protected function saveVerifyContentIfNeeded($gatewayPayment, $response)
     {
         if (isset($response[Resp::API_TRANSACTION_ID]))
         {
             $attributes = $this->getVerifyContents($response);
 
-            if ($payment['received'] === false)
+            if ($gatewayPayment['received'] === false)
             {
-                $payment->fill($attributes);
-                $payment->saveOrFail();
+                $gatewayPayment->fill($attributes);
+                $this->repo->saveOrFail($gatewayPayment);
             }
         }
 
         $this->action = Action::VERIFY;
 
-        return $payment;
+        return $gatewayPayment;
     }
 
     protected function getVerifyContents($content)
@@ -443,7 +443,7 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment->setAction($this->action);
 
-        $gatewayPayment->saveOrFail();
+        $this->repo->saveOrFail($gatewayPayment);
 
         return $gatewayPayment;
     }
