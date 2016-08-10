@@ -210,17 +210,7 @@ trait Authorize
 
     protected function getOptionsForTerminals()
     {
-        $options = [];
-
-        if (($this->mode === Mode::LIVE) and
-            (App::environment('testing') === false))
-        {
-            $chance = rand(1,100);
-
-            $options['chance'] = $chance;
-        }
-
-        return $options;
+        return new Terminal\Options;
     }
 
     protected function logTerminalPickedAndSelected($terminalSelected, $terminalPicked, $payment)

@@ -41,6 +41,7 @@ return array(
     ),
 
     'card_tokenex' => array(
+        'mock'      => env('TOKENEX_MOCK', false),
         'id'        => env('TOKENEX_ID'),
         'key'       => env('TOKENEX_API_KEY'),
         'url'       => env('TOKENEX_API_URL'),
