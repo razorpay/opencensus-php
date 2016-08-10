@@ -220,13 +220,40 @@ class HdfcGatewayTest extends TestCase
         $this->assertEquals($payment['internal_error_code'], ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK);
     }
 
+    public function testPaymentFailWithFailureResultCode()
+    {
+        $this->hdfcPaymentMockResultCode('FAILURE(DENIED BY RISK)', 'authorize');
+
+        $this->makeRequestAndCatchException(
+            function ()
+            {
+                $payment = $this->doAuthPayment();
+            });
+
+        $hdfc = $this->getLastEntity('hdfc', true);
+
+        $this->assertEquals($hdfc['result'], 'DENIED BY RISK');
+    }
+
     protected function hdfcPaymentFailedDueToDeniedByRisk()
     {
         $server = $this->mockServerContentFunction(function (& $content, $action)
                         {
                             $content['result'] = 'DENIED BY RISK';
-                            return $content;
                         });
+    }
+
+    protected function hdfcPaymentMockResultCode($result, $expectedAction)
+    {
+        $server = $this->mockServerContentFunction(
+            function (& $content, $action) use ($result, $expectedAction)
+            {
+                if ($action === $expectedAction)
+                {
+                    $content['result'] = $result;
+                }
+            });
+
     }
 
     protected function timeoutHdfcAuthorizePayment()

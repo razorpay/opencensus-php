@@ -123,6 +123,8 @@ trait Support
 
         $response = & $this->supportPaymentResponse;
 
+        Result::modifySpecificResultValueIfRequred($response['data']['result']);
+
         $result = $response['data']['result'];
 
         $success = Payment\Result::isResultCodeIndicatingSuccess($result);
@@ -136,12 +138,6 @@ trait Support
             $this->error = true;
 
             return false;
-        }
-
-        // We get SUCCESS only for rupay and maybe for purchase action.
-        if ($response['data']['result'] === Result::SUCCESS)
-        {
-            $response['data']['result'] = Result::CAPTURED;
         }
 
         return true;

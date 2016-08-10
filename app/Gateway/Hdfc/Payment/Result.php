@@ -123,4 +123,24 @@ final class Result
     {
         return in_array($result, self::$successResultCodes);
     }
+
+    public static function modifySpecificResultValueIfRequred(& $result)
+    {
+        // We get SUCCESS only for rupay and maybe for purchase action.
+        if ($result === self::SUCCESS)
+        {
+            return Result::CAPTURED;
+        }
+
+        //
+        // Sometimes hdfc sends result codes as "FAILURE(<Actual code>)"
+        // We need to get the actual code from within the small brackets
+        //
+        if (substr($result, 0, 8) === 'FAILURE(')
+        {
+            preg_match('~\((.*)\)~', $result, $output);
+
+            $result = $output[1];
+        }
+    }
 }

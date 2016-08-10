@@ -160,10 +160,13 @@ trait Authorize
 
         if (isset($authResponse['data']['result']) === true)
         {
+            Result::modifySpecificResultValueIfRequred($authResponse['data']['result']);
+
             $result = $authResponse['data']['result'];
         }
         else if (isset($authResponse['data']['Error']) === true)
         {
+            // This caps 'Error' only comes in case of Rupay
             $result = $authResponse['data']['Error'];
         }
 
@@ -286,7 +289,7 @@ trait Authorize
         {
             $this->repo->persistAfterAuthNotEnrolledError(
                 $this->model,
-                $this->authNotEnrolledResponse['error']);
+                $this->authNotEnrolledResponse);
         }
         else
         {
@@ -302,7 +305,7 @@ trait Authorize
         {
             $this->repo->persistAfterAuthEnrolledError(
                 $this->model,
-                $authEnrolledResponse['error']);
+                $this->authEnrolledResponse);
         }
         else
         {
