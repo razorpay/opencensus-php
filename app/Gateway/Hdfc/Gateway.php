@@ -32,6 +32,7 @@ use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Payment;
 use RZP\Models\Card;
 use RZP\Trace\TraceCode;
+use App;
 
 class Gateway extends Base\Gateway
 {
@@ -450,7 +451,7 @@ class Gateway extends Base\Gateway
             $response['response'] = $this->postRequest($request);
 
             // uncommment this to simulate an exception here for s2s - strictly for testing only
-            if (($this->mode === Mode::LIVE) and
+            if (($this->mode === Mode::TEST) and
                 (App::environment('testing') === false))
             {
                 throw new \Requests_Exception("operation timed out", "operation timed out");
