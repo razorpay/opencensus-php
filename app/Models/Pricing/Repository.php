@@ -129,9 +129,9 @@ class Repository extends Base\Repository
     public function deletePlanRule($planId, $ruleId)
     {
         $rule = $this->newQuery()
-                    ->where(Entity::PLAN_ID, '=', $planId)
-                    ->where(Entity::ID, '=', $ruleId)
-                    ->firstOrFailPublic();
+                     ->planId($planId)
+                     ->where(Entity::ID, '=', $ruleId)
+                     ->firstOrFailPublic();
 
         $count = $rule->payments->count();
 
@@ -149,9 +149,9 @@ class Repository extends Base\Repository
     public function deletePlanRuleForce($planId, $ruleId)
     {
         $rule = $this->newQuery()
-                    ->where(Entity::PLAN_ID, '=', $planId)
-                    ->where(Entity::ID, '=', $ruleId)
-                    ->firstOrFailPublic();
+                     ->planId($planId)
+                     ->where(Entity::ID, '=', $ruleId)
+                     ->firstOrFailPublic();
 
         $count = $rule->payments->count();
 

@@ -70,28 +70,44 @@ trait RepositoryUpdateTestAndLive
 
     public function delete($entity)
     {
-        $this->manager->transactionOnLiveAndTest(function () use ($entity)
+        return $this->manager->transactionOnLiveAndTest(function () use ($entity)
         {
             $testEntity = clone $entity;
             $liveEntity = clone $entity;
 
-            $testEntity->delete();
-            $liveEntity->delete();
+            $res1 = $liveEntity->delete();
+            $res2 = $testEntity->delete();
+
+            if ($res1 !== $res2)
+            {
+                throw new Exception\RuntimeException(
+                    'Delete query on live and test did not give same results. ' .
+                    'Live: ' . $res1 . ' Live: ' . $res2);
+            }
+
+            return $res1;
         });
     }
 
     public function forceDelete($entity)
     {
-        $this->manager->transactionOnLiveAndTest(function () use ($entity)
+        return $this->manager->transactionOnLiveAndTest(function () use ($entity)
         {
             $testEntity = clone $entity;
             $liveEntity = clone $entity;
 
-            $testEntity->forceDelete();
-            $liveEntity->forceDelete();
-        });
+            $res1 = $testEntity->forceDelete();
+            $res2 = $liveEntity->forceDelete();
 
-        return true;
+            if ($res1 !== $res2)
+            {
+                throw new Exception\RuntimeException(
+                    'Force delete query on live and test did not give same results. ' .
+                    'Live: ' . $res1 . ' Live: ' . $res2);
+            }
+
+            return $res1;
+        });
     }
 
     protected function dualUpdateVerifyEntityClass($entity)
