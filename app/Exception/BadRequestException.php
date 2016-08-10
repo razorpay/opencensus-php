@@ -14,7 +14,7 @@ class BadRequestException extends RecoverableException
         $data = null)
     {
         $this->error = new Error($code, null, $field, $data);
-        
+
         $this->data = $data;
 
         $message = $this->error->getDescription();

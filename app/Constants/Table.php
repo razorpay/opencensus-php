@@ -41,4 +41,7 @@ class Table
 
     // Sessions table
     const SESSION           = 'sessions';
+
+    // Internal Purposes
+    const CREDITS           = 'credits';
 }

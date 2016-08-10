@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Settlement\Details;
 
-class Type
+class Component
 {
     const REFUND        = 'refund';
     const PAYMENT       = 'payment';
@@ -10,12 +10,12 @@ class Type
     const FEE           = 'fee';
     const SERVICE_TAX   = 'service_tax';
 
-    public static function validateType($type)
+    public static function validateComponent($component)
     {
-        if (defined(__CLASS__.'::'.strtoupper($type)) === false)
+        if (defined(__CLASS__.'::'.strtoupper($component)) === false)
         {
             throw new Exception\InvalidArgumentException(
-                'Not a valid settlemnt component type: ' . $type);
+                'Not a valid settlemnt component: ' . $component);
         }
     }
 }

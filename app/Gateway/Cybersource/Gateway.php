@@ -239,7 +239,7 @@ class Gateway extends Base\Gateway
         return $verify->status;
     }
 
-    protected function verifyNonExistentCase($verify, $input)
+    protected function verifyNonExistentCase($verify)
     {
         $payment = $verify->payment;
         $input = $verify->input;
@@ -918,6 +918,12 @@ class Gateway extends Base\Gateway
                 break;
 
             case Card\Network::MC:
+                if (isset($payerAuth[self::UCAF_COLLECTION_INDICATOR]) === false)
+                {
+                    throw new Exception\GatewayErrorException(
+                        ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
+                }
+
                 $ucaf = (int) $payerAuth[self::UCAF_COLLECTION_INDICATOR];
 
                 if (($ucaf === 0) or ($ucaf === 7))
