@@ -82,7 +82,7 @@ trait RepositoryUpdateTestAndLive
             {
                 throw new Exception\RuntimeException(
                     'Delete query on live and test did not give same results. ' .
-                    'Live: ' . $res1 . ' Live: ' . $res2);
+                    'Live: ' . $res1 . ' Test: ' . $res2);
             }
 
             return $res1;
@@ -103,7 +103,7 @@ trait RepositoryUpdateTestAndLive
             {
                 throw new Exception\RuntimeException(
                     'Force delete query on live and test did not give same results. ' .
-                    'Live: ' . $res1 . ' Live: ' . $res2);
+                    'Live: ' . $res1 . ' Test: ' . $res2);
             }
 
             return $res1;
