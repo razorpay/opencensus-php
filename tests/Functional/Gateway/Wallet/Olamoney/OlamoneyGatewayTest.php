@@ -31,6 +31,21 @@ class OlamoneyGatewayTest extends TestCase
         $this->fixtures->merchant->enableWallet('10000000000000', 'olamoney');
     }
 
+    public function testPayment()
+    {
+        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+
+        $authPayment = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertTestResponse($payment, 'testPayment');
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $this->assertTestResponse($wallet, 'testPaymentWalletEntity');
+    }
+
     public function testVerifyPayment()
     {
         $payment = $this->getDefaultWalletPaymentArray('olamoney');
@@ -83,21 +98,6 @@ class OlamoneyGatewayTest extends TestCase
         $refund = $this->getLastEntity('wallet', true);
 
         $this->assertTestResponse($refund, 'testAuthPaymentRefund');
-    }
-
-    public function testPayment()
-    {
-        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
-
-        $authPayment = $this->doAuthPayment($payment);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertTestResponse($payment, 'testPayment');
-
-        $wallet = $this->getLastEntity('wallet', true);
-
-        $this->assertTestResponse($wallet, 'testPaymentWalletEntity');
     }
 
     public function testFailedPayment()
