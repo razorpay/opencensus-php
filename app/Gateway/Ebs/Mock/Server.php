@@ -56,18 +56,18 @@ class Server extends Base\Mock\Server
         $date = Carbon::today('Asia/Kolkata')->format('d-m-Y H:i:s');
 
         $content = array(
-            Response::RESPONSE_CODE     => '0',
-            Response::RESPONSE_MESSAGE  => 'Transaction Successful',
-            Response::DATE_CREATED      => $date,
-            Response::EBS_PAYMENT_ID    => random_alpha_string(8),
-            Response::MERCHANT_REF_NO   => $input['reference_no'],
-            Response::AMOUNT            => $input['amount'],
-            Response::MODE              => $input['mode'],
-            Response::DESCRIPTION       => $input['description'],
-            Response::IS_FLAGGED        => 'NO',
-            Response::TRANSACTION_ID    => random_alpha_string(8),
-            Response::PAYMENT_METHOD    => '1001',
-            Response::REQUEST_ID        => random_alpha_string(8),
+            Response::RESPONSE_CODE         => '0',
+            Response::RESPONSE_MESSAGE      => 'Transaction Successful',
+            Response::DATE_CREATED          => $date,
+            Response::GATEWAY_PAYMENT_ID    => random_alpha_string(8),
+            Response::MERCHANT_REF_NO       => $input['reference_no'],
+            Response::AMOUNT                => $input['amount'],
+            Response::MODE                  => $input['mode'],
+            Response::DESCRIPTION           => $input['description'],
+            Response::IS_FLAGGED            => 'NO',
+            Response::TRANSACTION_ID        => random_alpha_string(8),
+            Response::PAYMENT_METHOD        => '1001',
+            Response::REQUEST_ID            => random_alpha_string(8),
         );
 
         $content[Response::SECURE_HASH] = $this->getGatewayInstance()->getSecureHash($content, null);

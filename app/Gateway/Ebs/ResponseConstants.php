@@ -7,7 +7,7 @@ class ResponseConstants
     const RESPONSE_CODE         = 'ResponseCode';
     const RESPONSE_MESSAGE      = 'ResponseMessage';
     const DATE_CREATED          = 'DateCreated';
-    const EBS_PAYMENT_ID        = 'PaymentID';
+    const GATEWAY_PAYMENT_ID    = 'PaymentID';
     const MERCHANT_REF_NO       = 'MerchantRefNo';
     const AMOUNT                = 'Amount';
     const MODE                  = 'Mode';
@@ -19,16 +19,13 @@ class ResponseConstants
     const ACTION                = 'Action';
     const ACCOUNT_ID            = 'AccountID';
     const SECRET_KEY            = 'SecretKey';
-    const PAYMENT_ID            = 'PaymentID';
     const REFERENCE             = 'referenceNo';
     const ERROR_CODE            = 'errorCode';
     const ERROR                 = 'error';
-    const RECEIVED              = 'received';
     const REF_AMOUNT            = 'RefAmount';
     const REFUND_ID             = 'refund_id';
     const REFUND_REF_NO         = 'reference_no';
     const CURRENCY              = 'currency';
-    const REFUND_PAYMENT_ID     = 'payment_id';
     const SECURE_HASH           = 'SecureHash';
     const RESPONSE              = 'response';
 

@@ -336,7 +336,7 @@ class Gateway extends Base\Gateway
         $content = $input['gateway'];
 
         $entityContent = [
-            Entity::GATEWAY_PAYMENT_ID  => $content[Resp::PAYMENT_ID],
+            Entity::GATEWAY_PAYMENT_ID  => $content[Resp::GATEWAY_PAYMENT_ID],
             Entity::REQUEST_ID          => $content[Resp::REQUEST_ID],
             Entity::TRANSACTION_ID      => $content[Resp::TRANSACTION_ID],
             Entity::IS_FLAGGED          => false,
@@ -347,6 +347,16 @@ class Gateway extends Base\Gateway
             (strtolower($input['gateway'][Resp::IS_FLAGGED]) === 'yes'))
         {
             $content[Entity::IS_FLAGGED] = true;
+        }
+
+        if ((isset($input['gateway'][Resp::RESPONSE_CODE]) === true))
+        {
+            $content[Entity::ERROR_CODE] = $input['gateway'][Resp::RESPONSE_CODE];
+        }
+
+        if ((isset($input['gateway'][Resp::RESPONSE_MESSAGE]) === true))
+        {
+            $content[Entity::ERROR_DESCRIPTION] = $input['gateway'][Resp::RESPONSE_MESSAGE];
         }
 
         $content = array_merge($content, $entityContent);
