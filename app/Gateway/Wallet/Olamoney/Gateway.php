@@ -85,6 +85,11 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
+    public function getPaymentIdFromServerCallback($input)
+    {
+        return $input['merchantBillId'];
+    }
+
     /**
      * This fuction is not being used right now.
      * This method will be used when power-wallet is enabled for Olamoney.
@@ -214,6 +219,8 @@ class Gateway extends Base\Gateway
             ResponseFields::AMOUNT,
             ResponseFields::COMMENTS,
             ResponseFields::UDF,
+            ResponseFields::IS_CASHBACK_ATTEMPTED,
+            ResponseFields::IS_CASHBACK_SUCCESSFUL,
             ResponseFields::TIMESTAMP,
         );
 
@@ -234,9 +241,11 @@ class Gateway extends Base\Gateway
     {
         $content = $this->getOtpGenerateAttributes($input);
 
+        $contact = $this->getFormattedContact($input['payment']['contact']);
+
         $queryArray = array(
             RequestFields::BILL   => base64_encode(json_encode($content)),
-            RequestFields::PHONE  => $input['payment']['contact'],
+            RequestFields::PHONE  => $contact,
         );
 
         $query = http_build_query($queryArray);
@@ -255,16 +264,19 @@ class Gateway extends Base\Gateway
 
     protected function getOtpGenerateAttributes($input)
     {
-        $amount = (string) ($input['payment']['amount'] / 100);
+        $amount = (string) number_format($input['payment']['amount'] / 100, 2, '.', '');
+
+        $udf = [RequestFields::MERCHANT_DISPLAY_NAME => $input['merchant']['name']];
+        $udf = json_encode($udf);
 
         $content = array(
             RequestFields::COMMAND          => Command::DEBIT,
             RequestFields::ACCESS_TOKEN     => $this->getAccessToken($input['terminal']),
             RequestFields::UNIQUE_ID        => $input['payment']['id'],
             RequestFields::COMMENTS         => 'Razorpay_payment',
-            RequestFields::UDF              => $input['payment']['public_id'],
+            RequestFields::UDF              => $udf,
             RequestFields::RETURN_URL       => $input['callbackUrl'],
-            RequestFields::NOTIFICATION_URL => '',
+            RequestFields::NOTIFICATION_URL => 'http://sandbox.olamoney.in/olamoney/dummy_return',
             RequestFields::AMOUNT           => $amount,
             RequestFields::CURRENCY         => $input['payment']['currency'],
             RequestFields::COUPON_CODE      => 'NA',

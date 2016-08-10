@@ -197,7 +197,8 @@ class Gateway
      * @var array
      */
     public static $s2sCallbackGateways = array(
-        Gateway::BILLDESK);
+        Gateway::BILLDESK,
+        Gateway::WALLET_OLAMONEY);
 
     /**
      * Card gateways which support international payments

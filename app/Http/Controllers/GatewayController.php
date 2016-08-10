@@ -43,6 +43,29 @@ class GatewayController extends Controller
         return (new Payment\Service)->s2sCallback($paymentId, $input);
     }
 
+    protected function callbackOlamoney($input)
+    {
+        $gateway = $this->app['gateway']->gateway('wallet_olamoney');
+
+        $paymentId = $gateway->getPaymentIdFromServerCallback($input);
+
+        $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
+
+        \Database\DefaultConnection::set($mode);
+
+        if ($mode === null)
+        {
+            throw new Exception\LogicException(
+                'Payment id not found in either database: ' . $paymentId);
+        }
+
+        $this->app['basicauth']->setMode($mode);
+
+        $paymentId = Payment\Entity::getSignedId($paymentId);
+
+        return (new Payment\Service)->s2sCallback($paymentId, $input);
+    }
+
     public function callbackGateway($gateway)
     {
         $input = Request::all();
@@ -53,6 +76,10 @@ class GatewayController extends Controller
         {
             case 'billdesk':
                 $data = $this->callbackBilldesk($input);
+                break;
+
+            case 'wallet_olamoney':
+                $data = $this->callbackOlamoney($input);
                 break;
 
             case 'upi':

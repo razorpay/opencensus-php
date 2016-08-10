@@ -16,6 +16,8 @@ class ResponseFields
     const MESSAGE               = 'message';
     const ERROR_CODE            = 'errorCode';
     const UNIQUE_BILL_ID        = 'uniqueBillId';
+    const IS_CASHBACK_ATTEMPTED = 'isCashbackAttempted';
+    const IS_CASHBACK_SUCCESSFUL= 'isCashbackSuccessful';
 
     const VERIFY_FAILED_STATUS  = [Status::INITIATED, Status::FAILED];
 

@@ -23,4 +23,5 @@ class RequestFields
     const HASH              = 'hash';
     const BILL              = 'bill';
     const PHONE             = 'phone';
+    const MERCHANT_DISPLAY_NAME = 'merchantDisplayName';
 }

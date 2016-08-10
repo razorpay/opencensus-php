@@ -9,7 +9,7 @@ return [
         'merchant_id'       => '10000000000000',
         'amount'            => 50000,
         'method'            => 'wallet',
-        'status'            => 'captured',
+        'status'            => 'authorized',
         'amount_authorized' => 50000,
         'amount_refunded'   => 0,
         'refund_status'     => null,
