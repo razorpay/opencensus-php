@@ -4,6 +4,7 @@ namespace RZP\Tests;
 
 use Mockery;
 use ReflectionObject;
+use RZP\Models\Terminal\Options as TerminalOptions;
 use Illuminate\Foundation\Testing\TestCase as IlluminateTestCase;
 /**
  * Base test case class provided bdy laravel all, test cases inherit it
@@ -33,6 +34,8 @@ class TestCase extends IlluminateTestCase
         $unitTesting = true;
 
         $testEnvironment = 'testing';
+
+        TerminalOptions::setTestChance(0);
 
         $app = require __DIR__.'/../bootstrap/app.php';
 
