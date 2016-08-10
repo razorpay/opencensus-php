@@ -336,7 +336,7 @@ class Gateway extends Base\Gateway
         $content = $input['gateway'];
 
         $entityContent = [
-            Entity::GATEWAY_PAYMENT_ID  =>$content[Resp::PAYMENT_ID],
+            Entity::GATEWAY_PAYMENT_ID  => $content[Resp::PAYMENT_ID],
             Entity::REQUEST_ID          => $content[Resp::REQUEST_ID],
             Entity::TRANSACTION_ID      => $content[Resp::TRANSACTION_ID],
             Entity::IS_FLAGGED          => false,

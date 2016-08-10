@@ -20,6 +20,10 @@ trait PaymentEbsTrait
             $request = $this->makeFirstGatewayPaymentMockRequest(
                                                     $url, $method, $content);
         }
+        else
+        {
+            assert (false, 'Mock is not enabled');
+        }
 
         return $this->submitPaymentCallbackRequest($request);
     }
