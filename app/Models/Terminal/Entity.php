@@ -39,7 +39,7 @@ class Entity extends Base\PublicEntity
 
     const STATUS                        = 'status';
 
-    const PRIORITY                      = 'priority';
+    //const PRIORITY                      = 'priority';
 
     protected $fillable = array(
         self::MERCHANT_ID,

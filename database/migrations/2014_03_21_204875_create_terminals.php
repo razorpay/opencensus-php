@@ -91,8 +91,9 @@ class CreateTerminals extends Migration
             $table->enum(Terminal::STATUS, ['ACTIVE','INACTIVE', 'SUSPENDED'])
                     ->default('ACTIVE');
 
-            $table->integer(Terminal::PRIORITY)
-                  ->default(5);
+            // Needed for future
+            //$table->integer(Terminal::PRIORITY)
+            //      ->default(5);
 
             $table->index(Terminal::CATEGORY);
             $table->index(Terminal::GATEWAY);
