@@ -76,26 +76,7 @@ trait Support
             $this->supportPaymentResponse);
 
 
-        if ($this->error === false)
-        {
-            $this->verifyAndSaveSupportResponse($type, $input);
-        }
-
-        if ($this->error)
-        {
-            if ($this->isAnAcceptedError() === true)
-            {
-                return;
-            }
-
-            // This is being done to enable testing of capture timeout queue.
-            // Removes stale data.
-            $error = $this->supportPaymentResponse['error'];
-            $this->supportPaymentResponse['error'] = [];
-            $this->error = false;
-
-            $this->throwException($error);
-        }
+        $this->verifyAndSaveSupportResponse($type, $input);
     }
 
     protected function retrievePreviousGatewayTransaction($input, $type)
@@ -260,17 +241,31 @@ trait Support
     {
         $data = $this->supportPaymentResponse['data'];
 
-        $this->validateSupportPaymentTrackId();
+        if ($this->error === false)
+        {
+            $this->validateSupportPaymentTrackId();
 
-        $this->validatePostDate($data['postdate']);
+            $this->validatePostDate($data['postdate']);
 
-        $this->isSupportPaymentSuccess();
+            $this->isSupportPaymentSuccess();
+        }
 
         $this->persistAfterSupportPayment($type, $input);
 
         if ($this->error)
         {
-            $this->throwException($this->supportPaymentResponse['error']);
+            if ($this->isAnAcceptedError() === true)
+            {
+                return;
+            }
+
+            // This is being done to enable testing of capture timeout queue.
+            // Removes stale data.
+            $error = $this->supportPaymentResponse['error'];
+            $this->supportPaymentResponse['error'] = [];
+            $this->error = false;
+
+            $this->throwException($error);
         }
     }
 
