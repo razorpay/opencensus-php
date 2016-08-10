@@ -18,7 +18,7 @@ class CardNetwork
             return constant(__CLASS__ . '::' . $network);
         }
 
-        throw new Exception\BadRequestValidationFailureException(
+        throw new Exception\InvalidArgumentException(
             'Card Network not supported');
     }
 }

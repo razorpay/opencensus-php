@@ -320,10 +320,6 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
-        $traceCode = TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST;
-
-        $this->traceGatewayApiRequest($traceCode, $request);
-
         $response = $this->sendGatewayRequest($request);
 
         $verifyResponse = $this->parseResponseXml($response->body);
@@ -384,13 +380,6 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected function traceGatewayApiRequest($traceCode, $request)
-    {
-        unset($request['content'][Req::API_SECRET_KEY]);
-
-        $this->trace->info($traceCode, $request);
-    }
-
     protected function getPaymentVerifyRequestContent($input, $payment)
     {
         $content = array(
@@ -400,6 +389,8 @@ class Gateway extends Base\Gateway
             Req::API_PAYMENT_ID     => $payment[Entity::GATEWAY_PAYMENT_ID],
             req::API_TRANSACTION_ID => $payment[Entity::TRANSACTION_ID],
         );
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST, $content);
 
         return $content;
     }

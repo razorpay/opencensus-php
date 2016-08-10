@@ -48,7 +48,7 @@ class BankCodes
             return self::$bankCodeMap[$bankCode];
         }
 
-        throw new Exception\BadRequestValidationFailureException(
+        throw new Exception\InvalidArgumentException(
             'Bank not supported');
     }
 }
