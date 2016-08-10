@@ -47,9 +47,9 @@
             <span class="pull-right">{{entity.wallet}}</span>
             Wallet
           </a>
-          <a href class="list-group-item">
+          <a href class="list-group-item" ng-show="entity.method === 'card'">
             <span class="pull-right">
-              <button class="btn btn-default btn-xs pull-right"  ng-click="toggleCardDetails()" ng-show="entity.method === 'card'">Show/Hide</button>
+              <button class="btn btn-default btn-xs pull-right"  ng-click="toggleCardDetails()">Show/Hide</button>
             </span>
             Card Details
           </a>
