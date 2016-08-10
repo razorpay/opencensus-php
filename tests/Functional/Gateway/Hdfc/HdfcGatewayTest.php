@@ -185,7 +185,7 @@ class HdfcGatewayTest extends TestCase
     {
         $payment = $this->doAuthAndCapturePayment();
 
-        $this->refundFailedDueToDeniedByRisk();
+        $this->hdfcPaymentFailedDueToDeniedByRisk();
 
         $this->makeRequestAndCatchException(
             function () use ($payment)
@@ -200,15 +200,31 @@ class HdfcGatewayTest extends TestCase
         $this->assertEquals($payment['status'], 'captured');
     }
 
-    protected function refundFailedDueToDeniedByRisk()
+    public function testCaptureDeniedByRisk()
+    {
+        $payment = $this->doAuthPayment();
+
+        $this->hdfcPaymentFailedDueToDeniedByRisk();
+
+        $this->makeRequestAndCatchException(
+            function () use ($payment)
+            {
+                $this->capturePayment($payment['razorpay_payment_id'], '50000');
+            });
+
+        $hdfc = $this->getLastEntity('hdfc', true);
+        $this->assertTestResponse($hdfc);
+
+        $payment = $this->getLastPayment(true);
+        $this->assertEquals($payment['status'], 'failed');
+        $this->assertEquals($payment['internal_error_code'], ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK);
+    }
+
+    protected function hdfcPaymentFailedDueToDeniedByRisk()
     {
         $server = $this->mockServerContentFunction(function (& $content, $action)
                         {
-                            if ($action === 'refund')
-                            {
-                                $content['result'] = 'DENIED BY RISK';
-                            }
-
+                            $content['result'] = 'DENIED BY RISK';
                             return $content;
                         });
     }

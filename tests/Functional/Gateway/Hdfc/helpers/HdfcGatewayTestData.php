@@ -107,6 +107,23 @@ return [
         'error_code' => 'RP00005',
         'error_text' => 'Denied by risk. Response result code is "DENIED BY RISK"',
         'entity' => 'hdfc',
-    ]
+    ],
+
+    'testCaptureDeniedByRisk' => [
+        'action' => 5,
+        'received' => true,
+        'amount' => '500',
+        'enroll_result' => null,
+        'status' => 'capture_failed',
+        'result' => 'DENIED BY RISK',
+        'eci' => null,
+        'auth' => null,
+        'ref' => null,
+        'avr' => null,
+        'postdate' => null,
+        'error_code' => 'RP00005',
+        'error_text' => 'Denied by risk. Response result code is "DENIED BY RISK"',
+        'entity' => 'hdfc',
+    ],
 ];
 
