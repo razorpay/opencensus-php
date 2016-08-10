@@ -18,7 +18,6 @@ class EbsGatewayTest extends TestCase
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_ebs_terminal');
 
-        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $this->gateway = 'ebs';
     }
@@ -119,6 +118,8 @@ class EbsGatewayTest extends TestCase
 
     public function testErrorOnCard()
     {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
         $payment = $this->getDefaultNetbankingPaymentArray();
 
         $data = $this->testData['testErrorOnCard'];
