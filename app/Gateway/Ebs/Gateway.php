@@ -19,8 +19,8 @@ use RZP\Gateway\Ebs\ResponseConstants as Resp;
 class Gateway extends Base\Gateway
 {
     const HASH_ALGO                 = 'SHA512';
-    const MERCHANT_ID               = 'merchant_id';
-    const HASH_SECRET               = 'hash_secret';
+    const MERCHANT_ID               = 'test_merchant_id';
+    const HASH_SECRET               = 'test_hash_secret';
 
     const API                       = 'api';
 
@@ -489,6 +489,13 @@ class Gateway extends Base\Gateway
         $content[Req::SECURE_HASH] = $this->getHashOfArray($content);
 
         return $content;
+    }
+
+    public function getHashOfArray($content)
+    {
+        $str = parent::getHashOfArray($content);
+
+        return strtoupper(hash(self::HASH_ALGO, $str));
     }
 
     protected function setAuthRequestContentForCard(&$content, $input)

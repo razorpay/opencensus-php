@@ -95,8 +95,6 @@ return array(
     'ebs' => array(
         'test_merchant_id' => env('EBS_GATEWAY_TEST_MERCHANT_ID', 'random'),
         'test_hash_secret' => env('EBS_GATEWAY_TEST_HASH_SECRET', 'secret'),
-        'merchant_id'      => env('EBS_GATEWAY_MERCHANT_ID', 'random'),
-        'hash_secret'      => env('EBS_GATEWAY_HASH_SECRET', 'secret'),
     ),
 
     'kotak' => array(
