@@ -145,7 +145,7 @@ class Server extends Base\Mock\Server
 
         $this->copyUdfValues($res);
 
-        $res = $this->content($res, $this->action);
+        $this->content($res, $this->action);
 
         $xml = Hdfc\Utility::createXml($res);
 
@@ -159,7 +159,7 @@ class Server extends Base\Mock\Server
 
         $res = $this->getAuthResponse($this->data['paymentid']);
 
-        $res = $this->content($res, $this->action);
+        $this->content($res, $this->action);
 
         $xml = Hdfc\Utility::createXml($res);
 
@@ -230,7 +230,7 @@ class Server extends Base\Mock\Server
             $this->copyUdfValues($res);
         }
 
-        $res = $this->content($res, $this->action);
+        $this->content($res, $this->action);
 
         $xml = Hdfc\Utility::createXml($res);
 
