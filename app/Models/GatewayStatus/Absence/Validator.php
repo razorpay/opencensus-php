@@ -8,8 +8,8 @@ class Validator extends Base\Validator
 {
     protected static $createRules = array (
         Entity::GATEWAY         => 'required',
-        Entity::DOWNTIME_FROM   => 'required|integer',
-        Entity::DOWNTIME_TO     => 'required|integer',
+        Entity::FROM            => 'required|integer',
+        Entity::TO              => 'required|integer',
         Entity::REASON          => 'sometimes|string'
     );
 }

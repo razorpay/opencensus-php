@@ -8,8 +8,8 @@ class Entity extends Base\PublicEntity
 {
     const ID                            = 'id';
     const GATEWAY                       = 'gateway';
-    const DOWNTIME_FROM                 = 'from';
-    const DOWNTIME_TO                   = 'to';
+    const FROM                          = 'from';
+    const TO                            = 'to';
     const REASON                        = 'reason';
     const CREATED_AT                    = 'created_at';
     const UPDATED_AT                    = 'updated_at';
@@ -17,19 +17,19 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = array(
         self::GATEWAY,
-        self::DOWNTIME_FROM,
-        self::DOWNTIME_TO,
+        self::FROM,
+        self::TO,
         self::REASON
     );
 
     protected $public = array(
         self::ID,
         self::GATEWAY,
-        self::DOWNTIME_FROM,
-        self::DOWNTIME_TO,
+        self::FROM,
+        self::TO,
+        self::REASON,
         self::CREATED_AT,
-        self::UPDATED_AT,
-        self::REASON
+        self::UPDATED_AT
     );
 
     protected $table = \RZP\Constants\Table::GATEWAYSTATUS_ABSENCE;
@@ -47,12 +47,12 @@ class Entity extends Base\PublicEntity
 
     public function getDowntimeFrom()
     {
-        return $this->getAttributes(self::DOWNTIME_FROM);
+        return $this->getAttributes(self::FROM);
     }
 
     public function getDowntimeTo()
     {
-        return $this->getAttributes(self::DOWNTIME_TO);
+        return $this->getAttributes(self::TO);
     }
 
     public function getReason()
