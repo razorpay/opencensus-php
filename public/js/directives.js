@@ -342,4 +342,13 @@ angular.module('app.directives', ['ui.load']).directive('uiModule', [
       }
     }
   };
-}]);
+}]).directive("myRole", function() {
+    return {
+      link: function(scope, element, attributes) {
+        var roles = attributes.roles.split(' ');
+        if(roles.indexOf(scope.role) === -1)
+          element.hide();
+      }
+    };
+  }
+);

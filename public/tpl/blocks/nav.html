@@ -76,20 +76,20 @@
     <li class="hidden-folded padder m-t m-b-sm text-muted text-xs">
       <span>Settings</span>
     </li>
-    <li ng-show="merchant && user.merchants[user.current].pivot.role == 'owner'">
+    <li ng-show="merchant" my-role roles="owner">
       <a id="keysNav" ui-sref="app.keys">
         <i class="icon-key icon text-success-lter"></i>
         <span>Api Keys</span>
       </a>
     </li>
-    <li ng-show="merchant && user.merchants[user.current].pivot.role != 'finance' && user.merchants[user.current].pivot.role != 'operations'">
+    <li ng-show="merchant" my-role roles="owner manager">
       <a id="activationNav" ui-sref="app.activation">
         <i class="icon-question icon text-success-lter"></i>
         <b class="badge bg-success dk pull-right">{{user.activation_progress}}%</b>
         <span>Activation</span>
       </a>
     </li>
-    <li ng-show="merchant && user.merchants[user.current].pivot.role != 'finance' && user.merchants[user.current].pivot.role != 'operations'">
+    <li ng-show="merchant" my-role roles="owner manager">
       <a id="webhookNav" ui-sref="app.webhooks">
         <i class="icon-share icon text-success-lter"></i>
         <span>Webhook</span>
@@ -102,7 +102,7 @@
         <span>Profile</span>
       </a>
     </li>
-    <li ng-show="merchant && user.merchants[user.current].pivot.role != 'finance' && user.merchants[user.current].pivot.role != 'operations'">
+    <li ng-show="merchant" my-role roles="owner manager">
       <a id="configNav" ui-sref="app.config">
         <i class="icon-settings icon text-warning-lter"></i>
         <span>Configuration</span>

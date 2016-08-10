@@ -18,8 +18,6 @@ app.controller('PaymentDetailCtrl', [
 
     user.identity(true).then(function (data) {
       $scope.tags = data.tags;
-
-      $scope.role = data.merchants[data.id].pivot.role;
     });
 
     $scope.getStatusClass = getStatusClass;
