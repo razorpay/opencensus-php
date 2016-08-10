@@ -548,7 +548,8 @@ class Gateway extends Base\Gateway
     {
         $apiDomainActionList = array(
             Action::CAPTURE,
-            Action::REFUND);
+            Action::REFUND,
+            Action::VERIFY);
 
         if (in_array($this->action, $apiDomainActionList))
         {
@@ -561,12 +562,6 @@ class Gateway extends Base\Gateway
     protected function validateCallbackGetSecureHash(array $content, $terminal)
     {
         $hash = $content[Resp::SECURE_HASH];
-
-        if (empty($hash))
-        {
-            throw new Exception\LogicException(
-                'Checksum verification failed');
-        }
 
         // Remove secureHash Value to calculate Expected Hash Value
         unset($content[Resp::SECURE_HASH]);
@@ -584,7 +579,6 @@ class Gateway extends Base\Gateway
     {
         $attributes = array();
         $attributes[Entity::AMOUNT]     = $content[Req::AMOUNT];
-        $attributes[Entity::PAYMENT_ID] = $content[Req::REFERENCE_NO];
 
         return $attributes;
     }
