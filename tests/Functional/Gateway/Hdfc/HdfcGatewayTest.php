@@ -181,6 +181,38 @@ class HdfcGatewayTest extends TestCase
         $payment = $this->getLastEntity('hdfc', true);
     }
 
+    public function testRefundDeniedByRisk()
+    {
+        $payment = $this->doAuthAndCapturePayment();
+
+        $this->refundFailedDueToDeniedByRisk();
+
+        $this->makeRequestAndCatchException(
+            function () use ($payment)
+            {
+                $this->refundPayment($payment['id']);
+            });
+
+        $hdfc = $this->getLastEntity('hdfc', true);
+        $this->assertTestResponse($hdfc);
+
+        $payment = $this->getLastPayment();
+        $this->assertEquals($payment['status'], 'captured');
+    }
+
+    protected function refundFailedDueToDeniedByRisk()
+    {
+        $server = $this->mockServerContentFunction(function (& $content, $action)
+                        {
+                            if ($action === 'refund')
+                            {
+                                $content['result'] = 'DENIED BY RISK';
+                            }
+
+                            return $content;
+                        });
+    }
+
     protected function timeoutHdfcAuthorizePayment()
     {
         $server = $this->mockServerContentFunction(function (& $content, $action)

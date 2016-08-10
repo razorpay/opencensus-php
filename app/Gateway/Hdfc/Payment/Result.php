@@ -82,6 +82,12 @@ final class Result
     const CANCELED          = 'CANCELED';
     const NOT_SUPPORTED     = 'NOT SUPPORTED';
 
+    protected static $successResultCodes = array(
+        self::APPROVED,
+        self::CAPTURED,
+        self::SUCCESS,
+    );
+
     public static function getResultCode($result)
     {
         $success = true;
@@ -111,5 +117,10 @@ final class Result
         }
 
         return array($result, $success);
+    }
+
+    public static function isResultCodeIndicatingSuccess($result)
+    {
+        return in_array($result, self::$successResultCodes);
     }
 }

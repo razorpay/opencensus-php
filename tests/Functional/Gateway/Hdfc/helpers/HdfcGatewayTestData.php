@@ -91,5 +91,22 @@ return [
         'error_text' => null,
         'entity' => 'hdfc',
     ],
+
+    'testRefundDeniedByRisk' => [
+        'action' => 2,
+        'received' => true,
+        'amount' => '500',
+        'enroll_result' => null,
+        'status' => 'refund_failed',
+        'result' => 'DENIED BY RISK',
+        'eci' => null,
+        'auth' => null,
+        'ref' => null,
+        'avr' => null,
+        'postdate' => null,
+        'error_code' => 'RP00005',
+        'error_text' => 'Denied by risk. Response result code is "DENIED BY RISK"',
+        'entity' => 'hdfc',
+    ]
 ];
 

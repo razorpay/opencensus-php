@@ -76,20 +76,10 @@ trait Support
             $this->supportPaymentResponse);
 
 
-        if ((isset($this->supportPaymentResponse['data']['result'])) and
-            ($this->supportPaymentResponse['data']['result'] === 'SUCCESS'))
-        {
-            $this->supportPaymentResponse['data']['result'] = Result::CAPTURED;
-        }
-        
-        $this->isSupportPaymentSuccess();
-
         if ($this->error === false)
         {
-            $this->validateSupportPaymentResponse();
+            $this->verifyAndSaveSupportResponse($type, $input);
         }
-
-        $this->persistAfterSupportPayment($type, $input);
 
         if ($this->error)
         {
@@ -154,47 +144,26 @@ trait Support
 
         $result = $response['data']['result'];
 
-        //
-        // Check enroll result code.
-        // 'enrollSuccess' variable tells us whether
-        // its a success code or failure.
-        //
-        switch ($result)
+        $success = Payment\Result::isResultCodeIndicatingSuccess($result);
+
+        if ($success === false)
         {
-            // See Payment\Result for code details
-            case Payment\Result::CAPTURED:
-                break;
+            $errorCode = Hdfc\ErrorCode::getErrorCodeForResult($result);
 
-            case Payment\Result::NOT_CAPTURED:
-                Hdfc\ErrorHandler::setErrorInResponse(
-                    $authResponse,
-                    Hdfc\ErrorCode::RP00006);
-                $this->error = true;
-                break;
+            Hdfc\ErrorHandler::setErrorInResponse($response, $errorCode);
 
-            case Payment\Result::HOST_TIMEOUT:
-                Hdfc\ErrorHandler::setErrorInResponse(
-                    $authResponse,
-                    Hdfc\ErrorCode::RP00004);
-                $this->error = true;
-                break;
+            $this->error = true;
 
-            case Payment\Result::DENIED_BY_RISK:
-                Hdfc\ErrorHandler::setErrorInResponse(
-                    $authResponse,
-                    Hdfc\ErrorCode::RP00005);
-                $this->error = true;
-                break;
-
-            default:
-                Hdfc\ErrorHandler::setErrorInResponse(
-                    $authResponse,
-                    Hdfc\ErrorCode::RP00002);
-                $this->error = true;
-                break;
+            return false;
         }
 
-        return ! ($this->error);
+        // We get SUCCESS only for rupay and maybe for purchase action.
+        if ($response['data']['result'] === Result::SUCCESS)
+        {
+            $response['data']['result'] = Result::CAPTURED;
+        }
+
+        return true;
     }
 
     protected function isAnAcceptedError()
@@ -287,13 +256,22 @@ trait Support
         }
     }
 
-    protected function validateSupportPaymentResponse()
+    protected function verifyAndSaveSupportResponse($type, $input)
     {
         $data = $this->supportPaymentResponse['data'];
 
         $this->validateSupportPaymentTrackId();
 
         $this->validatePostDate($data['postdate']);
+
+        $this->isSupportPaymentSuccess();
+
+        $this->persistAfterSupportPayment($type, $input);
+
+        if ($this->error)
+        {
+            $this->throwException($this->supportPaymentResponse['error']);
+        }
     }
 
     /**
@@ -334,6 +312,7 @@ trait Support
 
             $this->model = $this->repo->persistAfterSupportPaymentError(
                                 $this->supportPaymentRequest['data'],
+                                $this->supportPaymentResponse['data'],
                                 $this->supportPaymentResponse['error'],
                                 $type,
                                 $paymentId,
