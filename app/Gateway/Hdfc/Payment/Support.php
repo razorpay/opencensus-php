@@ -81,6 +81,8 @@ trait Support
         {
             $this->supportPaymentResponse['data']['result'] = Result::CAPTURED;
         }
+        
+        $this->isSupportPaymentSuccess();
 
         if ($this->error === false)
         {
@@ -223,7 +225,7 @@ trait Support
 
     protected function setSupportPaymentType($type)
     {
-        Assert(($type === 'capture') or
+        assert(($type === 'capture') or
                ($type === 'refund'));
 
         $this->supportPaymentRequest['type'] = $type;
