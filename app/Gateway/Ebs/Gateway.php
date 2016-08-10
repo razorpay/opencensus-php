@@ -326,11 +326,6 @@ class Gateway extends Base\Gateway
         return $verifyResponse;
     }
 
-    public function getSecureHash($content, $terminal)
-    {
-        return $this->getStringHash($content);
-    }
-
     protected function getGatewayEntityDataFromResponse($input)
     {
         $content = $input['gateway'];
@@ -491,7 +486,7 @@ class Gateway extends Base\Gateway
             $this->setAuthRequestContentForCard($content, $input);
         }
 
-        $content[Req::SECURE_HASH] = $this->getSecureHash($content, $input['terminal']);
+        $content[Req::SECURE_HASH] = $this->getHashOfArray($content);
 
         return $content;
     }
@@ -576,7 +571,7 @@ class Gateway extends Base\Gateway
         // Remove secureHash Value to calculate Expected Hash Value
         unset($content[Resp::SECURE_HASH]);
 
-        $expectedHash = $this->getSecureHash($content, $terminal);
+        $expectedHash = $this->getHashOfArray($content);
 
         if ($hash !== $expectedHash)
         {
@@ -636,7 +631,7 @@ class Gateway extends Base\Gateway
     {
         $secret = $this->getSecret();
 
-        $str = $secret . '|' . $this->getHashOfArray($str);
+        $str = $secret . '|' . $str;
 
         return strtoupper(hash(self::HASH_ALGO, $str));
     }
