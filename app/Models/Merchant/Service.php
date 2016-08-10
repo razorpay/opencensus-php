@@ -545,6 +545,8 @@ class Service extends Base\Service
     {
         $file = (new BankAccount\BeneficiaryFile3)->generate();
 
+        (new BankAccount\BeneficiaryFile2)->generate();
+
         return $file;
     }
 
@@ -565,7 +567,14 @@ class Service extends Base\Service
     */
     public function postMerchantBeneficiaryFile($input)
     {
-        $today = Carbon::today('Asia/Kolkata');
+        if (isset($input['on']))
+        {
+            $today = Carbon::createFromTimestamp($input['on'], 'Asia/Kolkata');
+        }
+        else
+        {
+            $today = Carbon::today('Asia/Kolkata');
+        }
 
         if (Holidays::isWorkingDay($today) == false)
         {
@@ -578,14 +587,12 @@ class Service extends Base\Service
                                                         $from->timestamp,
                                                         $today->timestamp);
 
-        if ((isset($input['hostToHostFormat'])) and ($input['hostToHostFormat'] === '1'))
+        if ($merchantsActivatedSinceLastWorkingDay > 0)
         {
             (new BankAccount\BeneficiaryFile3)->generateBetweenTimestamps(
                                                         $from->timestamp,
                                                         $today->timestamp);
-        }
-        else if ($merchantsActivatedSinceLastWorkingDay > 0)
-        {
+
             (new BankAccount\BeneficiaryFile2)->generate();
         }
 
