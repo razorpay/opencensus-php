@@ -85,7 +85,7 @@ class Selector
         //
         $filteredTerminals = $terminals->all();
 
-        if(isset($options['exclude']) and is_array($options['exclude']))
+        if (isset($options['exclude']) and is_array($options['exclude']))
         {
             $this->input['exclude'] = $options['exclude'];
         }
@@ -146,7 +146,7 @@ class Selector
         $this->payment->setTerminal($terminal);
 
         // hack to return multiple terminals if needed.
-        if(isset($options['multiple']) and ($options['multiple'] === true))
+        if (isset($options['multiple']) and ($options['multiple'] === true))
         {
             return $sortedTerminals;
         }
@@ -201,7 +201,7 @@ class Selector
 
         $terminalsSelected = $this->select($options);
 
-        if(!isset($options['multiple']))
+        if (!isset($options['multiple']))
         {
             // make this into an array, since the caller expects an array
             $terminalsSelected = array($terminalsSelected);

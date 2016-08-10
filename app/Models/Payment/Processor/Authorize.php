@@ -134,7 +134,6 @@ trait Authorize
         $this->handleTimeoutException($timeoutException);
 
         return $this->processAuthResponse($request, $payment);
-
     }
 
     protected function logAndCheckForAuthRetry($e, $payment, $retryAttempts)
@@ -157,7 +156,6 @@ trait Authorize
         return false;
     }
 
-
     protected function handleTimeoutException($timeoutException)
     {
         // we have tried the payment with multiple terminals
@@ -165,7 +163,7 @@ trait Authorize
         // record it here and throw it back to caller.
         if ($timeoutException !== null)
         {
-            if($timeoutException->getError() === null){
+            if ($timeoutException->getError() === null){
                 $timeoutException->setGatewayErrorCodeAndDesc($timeoutException->getCode(),
                     $timeoutException->getMessage());
             }
@@ -175,7 +173,6 @@ trait Authorize
 
             throw $timeoutException;
         }
-
     }
 
     protected function processAuthResponse($request, $payment)
@@ -200,7 +197,6 @@ trait Authorize
         }
 
         return $this->postPaymentAuthorizeProcessing($payment);
-
     }
 
 
@@ -297,7 +293,7 @@ trait Authorize
      * @throws Exception\BadRequestException
      * @throws Exception\RuntimeException
      */
-    protected function  prePaymentAuthorizeProcessing($payment, $input, array & $gatewayInput)
+    protected function prePaymentAuthorizeProcessing($payment, $input, array & $gatewayInput)
     {
         // also sets the card details in $gatewayInput (passed by reference), if applicable.
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
@@ -310,7 +306,6 @@ trait Authorize
 
     protected function runGatewaySpecificPreProcessing($payment, array & $gatewayInput)
     {
-
         $this->runPaymentGatewayRelatedPreProcessing($payment, $gatewayInput);
 
         $this->repo->saveOrFail($payment);
@@ -331,7 +326,6 @@ trait Authorize
             $gatewayInput['order'] = $payment->order->toArray();
         }
     }
-
 
     protected function logTerminalPickedAndSelected($terminalSelected, $terminalPicked, $payment)
     {
@@ -986,14 +980,14 @@ trait Authorize
     protected function recordTerminalAudit($start, $end, array $payment,
                                             \Exception $ex=null)
     {
-        $response_time = $end - $start;
+        $responseTime = $end - $start;
 
         // record payment actions
         $pAnalyticsService = new Analytics\Service();
 
         $input = array("payment_id" => $payment["id"],
                        "terminal_id" => $payment["terminal_id"],
-                       "terminal_response_time" => $response_time,
+                       "terminal_response_time" => $responseTime,
                        "payment_type" => 1,
                        "terminal_status" => 1);
 
@@ -1001,12 +995,12 @@ trait Authorize
 
         $errorMsg = null;
 
-        if($ex !== null)
+        if ($ex !== null)
         {
             $input['terminal_status'] = 0;
         }
 
-        if($ex instanceOf Exception\GatewayTimeoutException)
+        if ($ex instanceOf Exception\GatewayTimeoutException)
         {
             // we care about this exception, since its an indicator of
             // terminal failure
@@ -1015,7 +1009,7 @@ trait Authorize
             $input['terminal_status_msg'] = $ex->getError()->getDescription();
         }
 
-        elseif($ex instanceof \Requests_Exception)
+        elseif ($ex instanceof \Requests_Exception)
         {
             // we care about this exception, since its an indicator of
             // terminal failure
@@ -1026,7 +1020,6 @@ trait Authorize
         }
 
         $pAnalyticsService->createAuditLog($input);
-
     }
 
     protected function callGatewayAuthorize(array $data)
@@ -1053,7 +1046,7 @@ trait Authorize
 
             $errorMsg = null;
 
-            if($e instanceOf Exception\GatewayTimeoutException or $e instanceof \Requests_Exception)
+            if ($e instanceOf Exception\GatewayTimeoutException or $e instanceof \Requests_Exception)
             {
                 // record a failed payment for given terminal and continue
                 $this->recordTerminalAudit($start, $end, $data["payment"], $e);
@@ -1062,7 +1055,7 @@ trait Authorize
             {
                 // ideally, shouldn't be reaching here and cannot be
                 // any other type other than that of base exception alone
-                if($e->getError() === null)
+                if ($e->getError() === null)
                 {
                     $e->setGatewayErrorCodeAndDesc($e->getCode(), $e->getMessage());
                 }

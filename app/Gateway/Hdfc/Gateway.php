@@ -32,7 +32,6 @@ use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Payment;
 use RZP\Models\Card;
 use RZP\Trace\TraceCode;
-use RZP\Gateway\Base\Action;
 
 class Gateway extends Base\Gateway
 {
@@ -83,7 +82,7 @@ class Gateway extends Base\Gateway
         'url' => Hdfc\Urls::ENROLL_URL,
         'type' => 'enroll',
         'fields' => array('trackid', 'member', 'card', 'expmonth', 'expyear', 'cvv2',
-                          'amt', 'action', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
+            'amt', 'action', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
         'xml' => '',
         'headers' => array('Content-Type'=>'text/xml'),
         'data' => array());
@@ -94,11 +93,11 @@ class Gateway extends Base\Gateway
      */
     protected $enrollResponse = array(
         'fields' => array(
-                        'result', 'eci', 'paymentid', 'trackid', 'PAReq', 'url', 'error_text'),
-                        'fieldsEnrolled' => array('result', 'url', 'PAReq', 'paymentid', 'trackid',
-                                                'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
-                        'fieldsNotEnrolled' => array('result', 'PAReq', 'paymentid', 'trackid',
-                                                'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
+            'result', 'eci', 'paymentid', 'trackid', 'PAReq', 'url', 'error_text'),
+        'fieldsEnrolled' => array('result', 'url', 'PAReq', 'paymentid', 'trackid',
+            'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
+        'fieldsNotEnrolled' => array('result', 'PAReq', 'paymentid', 'trackid',
+            'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
         'type' => 'enroll',
         'xml' => '',
         'data' => array(),
@@ -119,8 +118,8 @@ class Gateway extends Base\Gateway
 
     protected $authEnrolledResponse = array(
         'fields' => array(
-                        'result', 'auth', 'ref', 'avr', 'postdate', 'paymentid', 'tranid', 'trackid',
-                        'udf1', 'udf2', 'udf3', 'udf4', 'udf5', 'error_text'),
+            'result', 'auth', 'ref', 'avr', 'postdate', 'paymentid', 'tranid', 'trackid',
+            'udf1', 'udf2', 'udf3', 'udf4', 'udf5', 'error_text'),
         'type' => 'auth_enrolled',
         'xml' => '',
         'data' => array(),
@@ -135,7 +134,7 @@ class Gateway extends Base\Gateway
         'url' => Hdfc\Urls::AUTH_NOT_ENROLLED_URL,
         'type' => 'auth_not_enrolled',
         'fields' => array('trackid', 'member', 'card', 'expmonth', 'expyear', 'cvv2', 'action',
-                        'zip', 'addr', 'amt', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
+            'zip', 'addr', 'amt', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
         'headers' => array('Content-Type:text/xml'),
         'xml' => '',
         'data' => array());
@@ -146,8 +145,8 @@ class Gateway extends Base\Gateway
      */
     protected $authNotEnrolledResponse = array(
         'fields' =>  array(
-                        'result', 'auth', 'ref', 'avr', 'postdate', 'tranid', 'trackid', 'payid',
-                        'udf1', 'udf2', 'udf3', 'udf4', 'udf5', 'amt', 'error_text'),
+            'result', 'auth', 'ref', 'avr', 'postdate', 'tranid', 'trackid', 'payid',
+            'udf1', 'udf2', 'udf3', 'udf4', 'udf5', 'amt', 'error_text'),
         'type' => 'auth_not_enrolled',
         'xml' => '',
         'data' => array(),
@@ -168,8 +167,8 @@ class Gateway extends Base\Gateway
 
     protected $supportPaymentResponse = array(
         'fields' => array(
-                        'result', 'auth', 'ref', 'avr', 'postdate', 'tranid', 'trackid', 'payid',
-                        'udf2', 'udf5', 'amt', 'error_text'),
+            'result', 'auth', 'ref', 'avr', 'postdate', 'tranid', 'trackid', 'payid',
+            'udf2', 'udf5', 'amt', 'error_text'),
         'type' => '',
         'xml' => '',
         'data' => array(),
@@ -186,7 +185,7 @@ class Gateway extends Base\Gateway
     protected $inquiryResponse = array(
         'type' => 'inquiry',
         'fields' => array('result', 'auth', 'ref', 'avr', 'postdate', 'tranid', 'trackid', 'payid', 'amt',
-                        'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
+            'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
         'data' => array(),
         'xml' => '',
         'error' => null);

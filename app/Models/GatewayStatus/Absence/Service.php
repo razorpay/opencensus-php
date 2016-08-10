@@ -22,10 +22,4 @@ class Service extends Base\Service
         return $schedule->toArrayPublic();
     }
 
-    public function getSchedulesBetween($from, $to)
-    {
-        $schedule = $this->repo->gateway_absence->findBetweenTimestampsForGateway($from, $to);
-
-        return $schedule->toArrayPublic();
-    }
 }
