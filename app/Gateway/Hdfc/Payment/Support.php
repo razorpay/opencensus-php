@@ -224,7 +224,7 @@ trait Support
 
     protected function setSupportPaymentType($type)
     {
-        Assert(($type === 'capture') or
+        assert(($type === 'capture') or
                ($type === 'refund'));
 
         $this->supportPaymentRequest['type'] = $type;
@@ -369,6 +369,8 @@ trait Support
 
         $id = $input['payment']['id'];
 
+        // Gets the first gateway entity matching the action
+        // authorize or purchase
         $gatewayEntity = $this->repo->findByPaymentIdToVerify($id);
 
         $gatewayAction = (int) $gatewayEntity->getAction();
