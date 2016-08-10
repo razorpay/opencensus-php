@@ -307,8 +307,6 @@ trait Authorize
 
     protected function runGatewaySpecificPreProcessing($payment, array & $gatewayInput)
     {
-        $this->runPaymentGatewayRelatedPreProcessing($payment, $gatewayInput);
-
         $this->repo->saveOrFail($payment);
 
         $this->trace(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
@@ -746,20 +744,6 @@ trait Authorize
         $payment->getValidator()->validateMinAmountWithEmiPlanAmount($emiPlan);
 
         $payment->emiPlan()->associate($emiPlan);
-    }
-
-    protected function runPaymentGatewayRelatedPreProcessing($payment, $gatewayInput)
-    {
-        if (($payment->isMethodCardOrEmi() === true) and
-            ($payment->isGateway(Payment\Gateway::CYBERSOURCE) === true) and
-            ($payment->card->getVaultToken() === null))
-        {
-            $payment->card->setVaultToken(Card\Tokenex::getVaultToken($gatewayInput['card']['number']));
-
-            $payment->card->setVault(Card\Vault::TOKENEX);
-
-            $this->repo->card->saveOrFail($payment->card);
-        }
     }
 
     protected function getReturnRequestDataForMerchant($payment)
