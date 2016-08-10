@@ -2,17 +2,13 @@
 
 namespace RZP\Services\Mock;
 
-use Str;
-use Cache;
 use RZP\Services\TokenEx as BaseTokenEx;
 
 class TokenEx extends BaseTokenEx
 {
     public function tokenize($data)
     {
-        $token = Str::quickRandom(8);
-
-        Cache::store('file')->forever($token, $data);
+        $token = base64_encode($data);
 
         return $token;
     }
@@ -29,15 +25,13 @@ class TokenEx extends BaseTokenEx
 
     public function detokenize($token)
     {
-        $data = Cache::store('file')->get($token);
+        $data = base64_decode($token);
 
         return $data;
     }
 
     public function deleteToken($token)
     {
-        Cache::store('file')->forget($token);
-
         return [
             'Error' => '',
             'ReferenceNumber' => rand(10000000000, 99999999999),
