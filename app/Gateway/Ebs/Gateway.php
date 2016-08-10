@@ -56,7 +56,6 @@ class Gateway extends Base\Gateway
                ($gatewayPayment[Entity::ERROR_CODE] === '0'));
     }
 
-
     public function callback(array $input)
     {
         parent::callback($input);
@@ -594,6 +593,11 @@ class Gateway extends Base\Gateway
             Entity::AMOUNT      => $refundAmount,
             Entity::RECEIVED    => true,
         ];
+
+        if (isset($response[Resp::TRANSACTION_ID]))
+        {
+            $attributes[Entity::TRANSACTION_ID] = $response[Resp::API_TRANSACTION_ID];
+        }
 
         if ((isset($response[Entity::IS_FLAGGED]) === true) and
             (strtolower($response[Entity::IS_FLAGGED]) === 'yes'))
