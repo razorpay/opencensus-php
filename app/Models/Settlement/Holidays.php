@@ -96,7 +96,7 @@ class Holidays
 
         while (self::isWorkingDay($prevDay) === false)
         {
-            $prevDay = $date->subDay();
+            $prevDay = $prevDay->subDay();
         }
 
         return $prevDay;

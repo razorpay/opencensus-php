@@ -32,15 +32,16 @@ class Repository extends Base\Repository
 
     public function getAllOrderedByCreatedAt()
     {
-        $repo = $this->repo;
-
-        return $repo::query()->orderBy(BankAccount\Entity::CREATED_AT)->get();
+        return $this->newQuery()
+                    ->orderBy(BankAccount\Entity::CREATED_AT)
+                    ->get();
     }
 
     protected function getBankAccountsBetweenTimestamp($from, $to)
     {
         return $this->newQuery()
-                    ->whereBetween(Entity::CREATED_AT, array($from, $to))
+                    ->whereBetween(BankAccount\Entity::CREATED_AT, array($from, $to))
+                    ->orderBy(BankAccount\Entity::CREATED_AT)
                     ->get();
     }
 

@@ -565,17 +565,24 @@ class Service extends Base\Service
     */
     public function postMerchantBeneficiaryFile($input)
     {
-        $to = Carbon::today('Asia/Kolkata');
+        $today = Carbon::today('Asia/Kolkata');
 
-        $from = Holidays::getPreviousWorkingDay($to);
+        if (Holidays::isWorkingDay($today) == false)
+        {
+            return ['message' => 'Today is a holiday! Happy holidays :)'];
+        }
+
+        $from = Holidays::getPreviousWorkingDay($today);
 
         $merchantsActivatedSinceLastWorkingDay = $this->repo->merchant->getCountOfMerchantsActivatedBetween(
                                                         $from->timestamp,
-                                                        $to->timestamp);
+                                                        $today->timestamp);
 
         if ((isset($input['hostToHostFormat'])) and ($input['hostToHostFormat'] === '1'))
         {
-            (new BankAccount\BeneficiaryFile3)->generate($from, $to);
+            (new BankAccount\BeneficiaryFile3)->generateBetweenTimestamps(
+                                                        $from->timestamp,
+                                                        $today->timestamp);
         }
         else if ($merchantsActivatedSinceLastWorkingDay > 0)
         {
