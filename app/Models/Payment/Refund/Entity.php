@@ -107,11 +107,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CURRENCY, $this->payment->getCurrency());
     }
 
-    public function getMerchantId()
-    {
-        return $this->getAttribute(self::MERCHANT_ID);
-    }
-
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
