@@ -14,9 +14,7 @@ class Repository extends Base\Repository
 
     public function getAllEmiPlans()
     {
-        $repo = $this->repo;
-
-        return $repo::get();
+        return $this->newQuery()->get();
     }
 
     public function fetchRelevantEmiPlan($iin, $duration)

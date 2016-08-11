@@ -250,6 +250,7 @@ trait RequestResponseFlowTrait
         catch (\Exception $e)
         {
             ;
+            // throw $e;
         }
     }
 

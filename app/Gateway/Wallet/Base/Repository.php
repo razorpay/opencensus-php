@@ -16,25 +16,22 @@ class Repository extends Base\Repository
 
     public function fetchGatewayPaymentId2ByPaymentId($paymentId)
     {
-        $repo = $this->repo;
-
-        return $repo::where('payment_id' , '=', $paymentId)
+        return $this->newQuery()
+                    ->where('payment_id' , '=', $paymentId)
                     ->lists('gateway_payment_id_2');
     }
 
     public function fetchWalletByPaymentId($paymentId)
     {
-        $repo = $this->repo;
-
-        return $repo::where('payment_id' , '=', $paymentId)
+        return $this->newQuery()
+                    ->where('payment_id' , '=', $paymentId)
                     ->first();
     }
 
     public function findByGatewayRefundId($gatewayRefundId)
     {
-        $repo = $this->repo;
-
-        return $repo::where('gateway_refund_id', '=', $gatewayRefundId)
+        return $this->newQuery()
+                    ->where('gateway_refund_id', '=', $gatewayRefundId)
                     ->firstOrFail();
     }
 }

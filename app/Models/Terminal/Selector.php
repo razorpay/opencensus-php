@@ -70,7 +70,7 @@ class Selector
         return $merchantTerminals;
     }
 
-    public function select($options = [], $verbose = false)
+    public function select(Options $options = null, $verbose = false)
     {
         $terminals = $this->getTerminals();
 
@@ -128,9 +128,9 @@ class Selector
             $terminal = $sortedTerminals[0];
         }
 
-        if (isset($options['chance']))
+        if ($options and $options->getChance() > 0)
         {
-            $terminal = (new Binning)->select($terminal, $options['chance'], $this->input, $terminals);
+            $terminal = (new Binning)->select($terminal, $options->getChance(), $this->input, $terminals);
         }
 
         $this->setTerminalForPayment($this->payment, $terminal);
