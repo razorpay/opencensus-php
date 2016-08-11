@@ -19,28 +19,25 @@ class Repository extends Base\Repository
 
     public function retrieveByPaymentIdAndStatus($id, $status)
     {
-        $repo = $this->repo;
-
-        return $repo::where(Entity::PAYMENT_ID, '=', $id)
-                  ->where(Entity::STATUS, '=', $status)
-                  ->firstOrFail();
+        return $this->newQuery()
+                    ->where(Entity::PAYMENT_ID, '=', $id)
+                    ->where(Entity::STATUS, '=', $status)
+                    ->firstOrFail();
     }
 
     public function findCapturedPaymentById($paymentId)
     {
-        $repo = $this->repo;
-
-        return $repo::where(Entity::PAYMENT_ID, '=', $paymentId)
-                  ->where(Entity::ACTION, '=', Status::CAPTURED)
-                  ->firstOrFail();
+        return $this->newQuery()
+                    ->where(Entity::PAYMENT_ID, '=', $paymentId)
+                    ->where(Entity::ACTION, '=', Status::CAPTURED)
+                    ->firstOrFail();
     }
 
     public function retrieveCapturedByPaymentId($id)
     {
-        $repo = $this->repo;
-
-        return $repo::where(Entity::PAYMENT_ID, '=', $id)
-                  ->where(Entity::STATUS, '=', Status::CAPTURED)
-                  ->first();
+        return $this->newQuery()
+                    ->where(Entity::PAYMENT_ID, '=', $id)
+                    ->where(Entity::STATUS, '=', Status::CAPTURED)
+                    ->first();
     }
 }
