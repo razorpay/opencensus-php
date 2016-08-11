@@ -243,7 +243,7 @@ class Service extends Base\Service
     {
         $merchantId = $this->merchant->getId();
 
-        $payments = (new Payment\Repository)->fetch($input, $merchantId);
+        $payments = $this->repo->payment->fetch($input, $merchantId);
 
         return $payments->toArrayPublic();
     }
@@ -273,8 +273,7 @@ class Service extends Base\Service
             $card = $payment->card;
 
             $cardIin = $card->iin;
-            $repo = new Card\IIN\Repository;
-            $iin = $repo->find($cardIin);
+            $iin = $this->repo->iin->find($cardIin);
 
             if ($iin === null)
             {
@@ -284,7 +283,7 @@ class Service extends Base\Service
             if ($otpRead === '1')
             {
                 $iin->setOtpRead(true);
-                $repo->saveOrFail($iin);
+                $this->repo->saveOrFail($iin);
             }
             else if (($otpRead === '0') and
                      ($iin->getOtpRead() === true))
@@ -307,7 +306,7 @@ class Service extends Base\Service
         $date = Carbon::today('Asia/Kolkata');
         $ts = $date->subDays($days)->timestamp;
 
-        $payments = (new Payment\Repository)->getAuthorizedPaymentsBeforeTimestamp($ts);
+        $payments = $this->repo->payment->getAuthorizedPaymentsBeforeTimestamp($ts);
 
         $authorized = $payments->count();
         $refunded = 0;
@@ -387,7 +386,7 @@ class Service extends Base\Service
         $date = Carbon::yesterday('Asia/Kolkata');
         $timestamp = $date->timestamp;
 
-        $payments = (new Payment\Repository)->getAuthorizedPaymentsBeforeTimestamp(
+        $payments = $this->repo->payment->getAuthorizedPaymentsBeforeTimestamp(
                             $timestamp);
 
         $count = $payments->count();
@@ -410,10 +409,10 @@ class Service extends Base\Service
         $timestamp = time() - 9 * 60;
 
         // Timeout all the pending payments, changing the error to timeout
-        $count = (new Payment\Repository)->timeoutOldPayments($timestamp);
+        $count = $this->repo->payment->timeoutOldPayments($timestamp);
 
         // Timeout old payment while retaining the error, if set
-        $payments = (new Payment\Repository)->fetchCreatedPaymentsWithInternalError($timestamp);
+        $payments = $this->repo->payment->fetchCreatedPaymentsWithInternalError($timestamp);
 
         foreach ($payments as $payment)
         {
@@ -450,7 +449,7 @@ class Service extends Base\Service
         $timeLowerLimit = time() - (48 * 60 * 60);
         $timeUpperLimit = time() - (24 * 60 * 60);
 
-        $payments = (new Payment\Repository)->getAuthorizedPaymentsBetweenTimestamps(
+        $payments = $this->repo->payment->getAuthorizedPaymentsBetweenTimestamps(
                             $timeLowerLimit, $timeUpperLimit);
 
         $count = 0;
@@ -475,7 +474,7 @@ class Service extends Base\Service
         $timeLowerLimit = Carbon::yesterday('Asia/Kolkata')->timestamp;
         $timeUpperLimit = Carbon::today('Asia/Kolkata')->timestamp;
 
-        $payments = (new Payment\Repository)->getAutoCapturedPaymentsBetweenTimestamps(
+        $payments = $this->repo->payment->getAutoCapturedPaymentsBetweenTimestamps(
                                                         $timeLowerLimit, $timeUpperLimit);
 
         $count = $payments->count();
@@ -547,7 +546,7 @@ class Service extends Base\Service
         $result['from'] = (string) $start;
         $result['to']   = (string) $end;
 
-        $authorizedPayments = (new Payment\Repository)->getAuthorizedPaymentsBetweenTimestamps($from, $to);
+        $authorizedPayments = $this->repo->payment->getAuthorizedPaymentsBetweenTimestamps($from, $to);
 
         $grouped = $authorizedPayments->keyBy(Payment\Entity::MERCHANT_ID);
 
@@ -629,14 +628,13 @@ class Service extends Base\Service
 
     public function computeServiceTax()
     {
-        $repo = new Payment\Repository;
-        $payments = $repo->getNonTaxComputedPayments();
+        $payments = $this->repo->payment->getNonTaxComputedPayments();
 
         $totalRecords = 0;
         $updatedRecords = 0;
         $totalServiceTax = 0;
 
-        $repo->transaction(function() use ($payments, &$totalRecords, &$updatedRecords, &$totalServiceTax)
+        $this->repo->transaction(function() use ($payments, &$totalRecords, &$updatedRecords, &$totalServiceTax)
         {
             $totalRecords = $payments->count();
             foreach ($payments as $payment)
@@ -648,8 +646,8 @@ class Service extends Base\Service
                 $payment->setServiceTax($txn->getServiceTax());
                 $payment->setFee($txn->getFee());
 
-                $txn->saveOrFail();
-                $payment->saveOrFail();
+                $this->repo->saveOrFail($txn);
+                $this->repo->saveOrFail($payment);
 
                 $updatedRecords++;
                 $totalServiceTax += $txn -> getServiceTax();
