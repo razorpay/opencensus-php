@@ -21,8 +21,6 @@ class Repository extends Base\Repository
 
     public function getPricingPlanById($id, $fail = false, $public = false)
     {
-        $repo = $this->repo;
-
         $pricing = $this->newQuery()
                         ->where(Pricing\Entity::PLAN_ID, '=', $id)
                         ->orderBy(Pricing\Entity::PLAN_ID, 'desc')
@@ -95,8 +93,6 @@ class Repository extends Base\Repository
 
     public function getMerchantPricingPlans()
     {
-        $repo = $this->repo;
-
         // For merchant pricing plans, gateway will not be specified
         return $this->newQuery()
                     ->whereNull(Pricing\Entity::GATEWAY)
