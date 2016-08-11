@@ -343,7 +343,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        $ba = (new BankAccount\Repository)->getBankAccount($merchant);
+        $ba = $this->repo->bank_account->getBankAccount($merchant);
 
         if ($ba === null)
         {
@@ -356,7 +356,7 @@ class Service extends Base\Service
 
     public function getOwnBankAccount()
     {
-        $ba = (new BankAccount\Repository)->getBankAccount($this->merchant);
+        $ba = $this->repo->bank_account->getBankAccount($this->merchant);
 
         if ($ba === null)
         {

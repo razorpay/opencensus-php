@@ -69,7 +69,7 @@ class Core extends Base\Core
             $methods = $this->getPaymentMethods($merchant);
         }
 
-        $plan = (new Pricing\Repository)->getMerchantPricingPlan($merchant);
+        $plan = $this->repo->pricing->getMerchantPricingPlan($merchant);
 
         $this->validatePricingPlanForMethods($merchant, $plan, $methods);
     }

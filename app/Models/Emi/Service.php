@@ -68,7 +68,7 @@ class Service extends Base\Service
 
     protected function generateEmiFileForBank($bankIfsc, $from, $to, $bank)
     {
-        $emiPaymentsForBank = (new Payment\Repository)->fetchEmiPaymentsBetween($from, $to, $bankIfsc);
+        $emiPaymentsForBank = $this->repo->payment->fetchEmiPaymentsBetween($from, $to, $bankIfsc);
 
         $count = $emiPaymentsForBank->count();
 

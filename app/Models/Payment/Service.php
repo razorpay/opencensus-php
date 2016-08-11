@@ -117,7 +117,7 @@ class Service extends Base\Service
 
         $merchantId = $payment->getMerchantId();
 
-        $merchant = (new Merchant\Repository)->findOrFail($merchantId);
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
 
         $data = $this->processor($merchant)->verify($payment);
 
@@ -140,7 +140,7 @@ class Service extends Base\Service
     {
         $payment = $this->core->retrieveById($id);
 
-        $merchant = (new Merchant\Repository)->findOrFail($payment->getMerchantId());
+        $merchant = $this->repo->merchant->findOrFail($payment->getMerchantId());
 
         $data = $this->processor($merchant)
                      ->forceAuthorizeFailedPayment($payment, $input);
@@ -154,7 +154,7 @@ class Service extends Base\Service
 
         $merchantId = $payment->getMerchantId();
 
-        $merchant = (new Merchant\Repository)->findOrFail($merchantId);
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
 
         $data = $this->processor($merchant)->authorizeFailedPayment($payment);
 
@@ -166,7 +166,7 @@ class Service extends Base\Service
         Payment\Entity::verifyIdAndStripSign($paymentId);
         Refund\Entity::verifyIdAndStripSign($rfndId);
 
-        $refund = (new Refund\Repository)->fetchByIdPaymentIdMerchantId(
+        $refund = $this->repo->refund->fetchByIdPaymentIdMerchantId(
                                     $rfndId,
                                     $paymentId,
                                     $this->merchant->getKey());
@@ -191,7 +191,7 @@ class Service extends Base\Service
 
         $payment = $this->repo->payment->findByIdAndMerchantId($id, $this->merchant->getId());
 
-        $refunds = (new Refund\Repository)->findForPayment($payment, $this->merchant);
+        $refunds = $this->repo->refund->findForPayment($payment, $this->merchant);
 
         return $refunds->toArrayPublic();
     }
@@ -496,7 +496,7 @@ class Service extends Base\Service
                 $i++;
             }
 
-            $merchant = (new Merchant\Repository)->findOrFail($merchantId);
+            $merchant = $this->repo->merchant->findOrFail($merchantId);
             $this->app['mailgun']->sendAutoCaptureEmail($merchant->email, $str);
             $emailCount++;
         }

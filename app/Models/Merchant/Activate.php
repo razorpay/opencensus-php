@@ -25,7 +25,7 @@ class Activate
     {
         $this->app = $app;
 
-        $this->repo = new Merchant\Repository;
+        $this->repo = $app['repo'];
 
         $this->trace = $app['trace'];
     }
@@ -38,7 +38,7 @@ class Activate
                 ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED);
         }
 
-        $plan = $this->repo->getPricingPlanOrFailPublic($merchant);
+        $plan = $this->repo->merchant->getPricingPlanOrFailPublic($merchant);
 
         //
         // Ensure that all payment methods enabled for the merchant
@@ -54,7 +54,7 @@ class Activate
         //         ErrorCode::BAD_REQUEST_MERCHANT_NO_TERMINAL_ASSIGNED);
         // }
 
-        $ba = (new BankAccount\Repository)->getBankAccount($merchant);
+        $ba = $this->repo->bank_account->getBankAccount($merchant);
 
         if ($ba === null)
         {
