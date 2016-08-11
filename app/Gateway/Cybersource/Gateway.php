@@ -290,24 +290,9 @@ class Gateway extends Base\Gateway
     {
         $data = $this->getCardDetailsFromCache($input);
 
-        if (is_array($data) === true)
-        {
-            if (empty($input['card']['number']) === true)
-            {
-                $input['card']['number'] = Card\Tokenex::getCardNumber($data['vault_token']);
-            }
+        $input['card']['number'] = Card\Tokenex::getCardNumber($data['vault_token']);
 
-            $input['card']['cvv'] = $data['cvv'];
-
-            return;
-        }
-
-        if (empty($input['card']['number']) === true)
-        {
-            $input['card']['number'] = Card\Tokenex::getCardNumber($input['card']['vault_token']);
-        }
-
-        $input['card']['cvv'] = $data;
+        $input['card']['cvv'] = $data['cvv'];
     }
 
     protected function enroll($input)
@@ -873,9 +858,9 @@ class Gateway extends Base\Gateway
 
         if ($data === null)
         {
-            $encryptedCvv = Cache::store($this->secureCache)->pull($fallbackKey);
+            $data['cvv'] = Cache::store($this->secureCache)->pull($fallbackKey);
 
-            return Crypt::decrypt($encryptedCvv);
+            $data['vault_token'] = $input['card']['vault_token'];
         }
 
         $data['cvv'] = Crypt::decrypt($data['cvv']);
@@ -914,17 +899,25 @@ class Gateway extends Base\Gateway
 
     protected function persistCardDetailsTemporarily($input)
     {
+        $cvv = $input['card']['cvv'];
+
+        $vaultToken = null;
+
+        if (empty($input['card']['vault_token']) === false)
+        {
+            $vaultToken = $input['card']['vault_token'];
+        }
+        else
+        {
+            $vaultToken = Card\Tokenex::getVaultToken($input['card']['number']);
+        }
+
         $key = 'cybersource_' . $input['payment']['id'] . '_card_details';
 
         $data = [
-            'cvv' => Crypt::encrypt($input['card']['cvv'])
+            'cvv'         => Crypt::encrypt($cvv),
+            'vault_token' => $vaultToken
         ];
-
-        if ($input['card']['vault_token'] === null)
-        {
-            $data['vault_token'] = Card\Tokenex::getVaultToken($input['card']['number']);
-
-        }
 
         Cache::store($this->secureCache)->put($key, $data, 10);
     }
