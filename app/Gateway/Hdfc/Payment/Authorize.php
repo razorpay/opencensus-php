@@ -160,7 +160,7 @@ trait Authorize
 
         if (isset($authResponse['data']['result']) === true)
         {
-            Result::modifySpecificResultValueIfRequred($authResponse['data']['result']);
+            Result::modifySpecificResultValueIfRequired($authResponse['data']['result']);
 
             $result = $authResponse['data']['result'];
         }

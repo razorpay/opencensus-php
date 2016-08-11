@@ -237,15 +237,15 @@ class HdfcGatewayTest extends TestCase
 
     protected function hdfcPaymentFailedDueToDeniedByRisk()
     {
-        $server = $this->mockServerContentFunction(function (& $content, $action)
-                        {
-                            $content['result'] = 'DENIED BY RISK';
-                        });
+        $this->mockServerContentFunction(function (& $content, $action)
+        {
+            $content['result'] = 'DENIED BY RISK';
+        });
     }
 
     protected function hdfcPaymentMockResultCode($result, $expectedAction)
     {
-        $server = $this->mockServerContentFunction(
+        $this->mockServerContentFunction(
             function (& $content, $action) use ($result, $expectedAction)
             {
                 if ($action === $expectedAction)
@@ -253,20 +253,19 @@ class HdfcGatewayTest extends TestCase
                     $content['result'] = $result;
                 }
             });
-
     }
 
     protected function timeoutHdfcAuthorizePayment()
     {
-        $server = $this->mockServerContentFunction(function (& $content, $action)
-                        {
-                            if ($action === 'authorize')
-                            {
-                                throw new Exception\GatewayTimeoutException('Timed out');
-                            }
+        $this->mockServerContentFunction(function (& $content, $action)
+        {
+            if ($action === 'authorize')
+            {
+                throw new Exception\GatewayTimeoutException('Timed out');
+            }
 
-                            return $content;
-                        });
+            return $content;
+        });
 
         $this->makeRequestAndCatchException(
             function ()
@@ -277,24 +276,24 @@ class HdfcGatewayTest extends TestCase
 
     protected function succeedPaymentVerify()
     {
-        $server = $this->mockServerContentFunction(function (& $content)
-                        {
-                            $content['RESPCODE'] = '0';
-                            $content['RESPMSG'] = 'Transaction succeeded';
-                            $content['STATUS'] = 'TXN_SUCCESS';
+        $this->mockServerContentFunction(function (& $content)
+        {
+            $content['RESPCODE'] = '0';
+            $content['RESPMSG'] = 'Transaction succeeded';
+            $content['STATUS'] = 'TXN_SUCCESS';
 
-                            return $content;
-                        });
+            return $content;
+        });
     }
 
     protected function authErrorOnRupayPayment()
     {
-        $server = $this->mockServerContentFunction(function (& $content)
-                        {
-                            $content['amt'] = '1.0';
-                            $content['result'] = 'AUTH ERROR';
-                            unset($content['PAReq'], $content['eci']);
-                            return $content;
-                        });
+        $this->mockServerContentFunction(function (& $content)
+        {
+            $content['amt'] = '1.0';
+            $content['result'] = 'AUTH ERROR';
+            unset($content['PAReq'], $content['eci']);
+            return $content;
+        });
     }
 }

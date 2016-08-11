@@ -85,6 +85,7 @@ final class Result
     protected static $successResultCodes = array(
         self::APPROVED,
         self::CAPTURED,
+        // We get SUCCESS only for Rupay and maybe for purchase action.
         self::SUCCESS,
     );
 
@@ -124,7 +125,7 @@ final class Result
         return in_array($result, self::$successResultCodes);
     }
 
-    public static function modifySpecificResultValueIfRequred(& $result)
+    public static function modifySpecificResultValueIfRequired(& $result)
     {
         // We get SUCCESS only for rupay and maybe for purchase action.
         if ($result === self::SUCCESS)
@@ -138,9 +139,9 @@ final class Result
         //
         if (substr($result, 0, 8) === 'FAILURE(')
         {
-            preg_match('~\((.*)\)~', $result, $output);
+            preg_match('~\((.*)\)~', $result, $matches);
 
-            $result = $output[1];
+            $result = $matches[1];
         }
     }
 }

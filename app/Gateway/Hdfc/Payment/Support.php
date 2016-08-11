@@ -123,7 +123,7 @@ trait Support
 
         $response = & $this->supportPaymentResponse;
 
-        Result::modifySpecificResultValueIfRequred($response['data']['result']);
+        Result::modifySpecificResultValueIfRequired($response['data']['result']);
 
         $result = $response['data']['result'];
 
