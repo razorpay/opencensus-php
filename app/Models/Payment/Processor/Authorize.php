@@ -141,7 +141,8 @@ trait Authorize
         $traceData = array(
             'errorcode' => $e->getCode(),
             'message' => $e->getMessage(),
-            'payment_id' => $payment->getId()
+            'payment_id' => $payment->getId(),
+            'terminal_id' => $payment->terminal->getId()
         );
 
         $this->trace->info(
