@@ -596,9 +596,9 @@ class Gateway extends Base\Gateway
             RequestFields::UNIQUE_ID        => $input['refund']['id'],
             RequestFields::COMMENTS         => 'Razorpay_refund',
             RequestFields::UDF              => $input['payment']['public_id'],
-            RequestFields::RETURN_URL       => '',
-            RequestFields::NOTIFICATION_URL => '',
-            RequestFields::AMOUNT           => (string) ($input['refund']['amount'] / 100),
+            RequestFields::RETURN_URL       => 'test',
+            RequestFields::NOTIFICATION_URL => 'test',
+            RequestFields::AMOUNT           => (string) number_format($input['refund']['amount'] / 100, 2, '.', ''),
             RequestFields::BALANCE_TYPE     => 'cash',
             RequestFields::BALANCE_NAME     => 'cash',
             RequestFields::SALE_ID          => $input['payment']['id'],
@@ -607,7 +607,7 @@ class Gateway extends Base\Gateway
 
         $content[RequestFields::HASH] = $this->getHashForRefundRequest($content);
 
-        $request = $this->getStandardRequestArray($content);
+        $request = $this->getStandardRequestArray(json_encode($content));
 
         $request['headers'] = $this->getRequestHeaders();
 

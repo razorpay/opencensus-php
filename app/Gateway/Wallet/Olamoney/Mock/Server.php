@@ -49,6 +49,8 @@ class Server extends Base\Mock\Server
 
     public function refund($input)
     {
+        $input = json_decode($input, true);
+
         parent::refund($input);
 
         $this->validateActionInput($input, Command::REFUND);
@@ -69,6 +71,8 @@ class Server extends Base\Mock\Server
 
     public function verify($input)
     {
+        $input = json_decode($input, true);
+
         parent::verify($input);
 
         $this->validateActionInput($this->mockRequest['content']);
