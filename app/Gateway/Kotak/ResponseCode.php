@@ -87,7 +87,6 @@ class ResponseCode
                 return TwoFaStatus::PASSED;
             case '55':
             case '75':
-            case '406':
                 return TwoFaStatus::FAILED;
             default:
                 return TwoFaStatus::UNKNOWN;
