@@ -451,11 +451,11 @@ class Gateway extends Base\Gateway
             $response['response'] = $this->postRequest($request);
 
             // uncommment this to simulate an exception here for s2s - strictly for testing only
-            if (($this->mode === Mode::TEST) and
+            /*if (($this->mode === Mode::TEST) and
                 (App::environment('testing') === false))
             {
                 throw new \Requests_Exception("operation timed out", "operation timed out");
-            }
+            }*/
         }
         catch(\Requests_Exception $e)
         {

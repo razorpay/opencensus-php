@@ -182,7 +182,7 @@ class Selector
     {
         $options = new Terminal\Options();
 
-        $terminalsSelected = $this->select($options, true);
+        $terminalsSelected = $this->select($options);
 
         if ($options->getMultiple() === false)
         {
