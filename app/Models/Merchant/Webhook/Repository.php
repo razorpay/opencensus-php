@@ -18,9 +18,8 @@ class Repository extends Base\Repository
 
     public function findByMerchant($merchant)
     {
-        $repo = $this->repo;
-
-        return $repo::where(Entity::MERCHANT_ID, '=', $merchant->getId())
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, '=', $merchant->getId())
                     ->get();
     }
 
@@ -32,9 +31,8 @@ class Repository extends Base\Repository
 
     public function findByMerchantId($merchantId)
     {
-        $repo = $this->repo;
-
-        return $repo::where(Entity::MERCHANT_ID, '=', $merchantId)
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
                     ->first();
     }
 
@@ -43,7 +41,7 @@ class Repository extends Base\Repository
         $webhook->resetFailureCount();
         $webhook->saveOrFail();
     }
-    
+
     public function setLastSuccessfulAt($webhook)
     {
         $webhook->setLastSuccessfulAt();
