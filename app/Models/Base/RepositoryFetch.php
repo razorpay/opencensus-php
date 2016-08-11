@@ -241,6 +241,15 @@ trait RepositoryFetch
         return $this->merchantIdRequiredForMultipleFetch;
     }
 
+    public function findByPublicIdAndMerchant($id, $merchant)
+    {
+        $entity = $this->getEntityClass();
+
+        $id = $entity::verifyIdAndStripSign($id);
+
+        return $this->findByIdAndMerchant($id, $merchant);
+    }
+
     public function findByIdAndMerchant($id, $merchant)
     {
         return $this->newQuery()
