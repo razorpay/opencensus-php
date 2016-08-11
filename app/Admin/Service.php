@@ -15,6 +15,7 @@ use Session;
 use App\Base;
 use App\Admin;
 use App\Merchant;
+use App\User;
 use App\MerchantDetails;
 use App\Transaction;
 use App\Trace\TraceCode;
@@ -97,6 +98,7 @@ class Service extends Base\Service
         if ($ownerUser)
         {
             $user = Auth::guard('user')->loginUsingId($ownerUser->id);
+            (new User\Service)->switchCurrentMerchantForUser($merchant_id, $user);
         }
         else
         {
