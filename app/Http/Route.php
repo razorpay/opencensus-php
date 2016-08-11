@@ -108,6 +108,11 @@ final class Route
         'merchant_add_features'                   => ['post',     'merchants/{id}/features',                  'MerchantController@postMerchantFeatures'                           ],
         'merchant_get_features'                   => ['get',      'merchants/{id}/features',                  'MerchantController@getMerchantFeatures'                            ],
         'merchant_notify_holiday'                 => ['post',     'merchants/notify/holiday',                 'MerchantController@postMerchantsNotifyHoliday'                     ],
+        'credits_create'                          => ['post',     'merchants/{id}/credits_log',               'MerchantController@postCreateCreditsLog'                           ],
+        'credits_fetch_by_id'                     => ['get',      'merchants/{mid}/credits/{id}',             'MerchantController@getCreditsLog'                                  ],
+        'credits_edit'                            => ['put',      'merchants/{mid}/credits/{id}',             'MerchantController@putCreditsLog'                                  ],
+        'credits_delete'                          => ['delete',   'merchants/{mid}/credits/{id}',             'MerchantController@deleteCreditsLog'                               ],
+        'credits_fetch_multiple'                  => ['get',      'credits',                                  'MerchantController@getCreditsLogs'                                 ],
         'key_fetch_by_id'                         => ['get',      'keys/{id}',                                'KeyController@getKey'                                              ],
         'key_fetch_multiple'                      => ['get',      'keys',                                     'KeyController@getKeys'                                             ],
         'terminal_delete'                         => ['delete',   'terminals/{id}',                           'MerchantController@deleteTerminal2'                                ],
@@ -412,6 +417,9 @@ final class Route
         'es_migrate_entity',
         'dummy_critical_error',
         'reconciliate',
+        'credits_create',
+        'credits_edit',
+        'credits_delete',
     );
 
     public static $proxy = array(
@@ -447,6 +455,8 @@ final class Route
         'customer_update_token',
         'device_verify_token',
         'app_fetch_tokens',
+        'credits_fetch_multiple',
+        'credits_fetch_by_id',
     );
 
     public static $direct = array(

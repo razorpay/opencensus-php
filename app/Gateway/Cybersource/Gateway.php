@@ -424,6 +424,12 @@ class Gateway extends Base\Gateway
                 break;
 
             case Card\Network::MC:
+                if (isset($payAuthRep[self::UCAF_COLLECTION_INDICATOR]) === false)
+                {
+                    throw new Exception\GatewayErrorException(
+                        ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
+                }
+
                 $colInd = (int) $payAuthRep[self::UCAF_COLLECTION_INDICATOR];
 
                 if(($colInd === 0) or ($colInd === 7))
@@ -918,6 +924,12 @@ class Gateway extends Base\Gateway
                 break;
 
             case Card\Network::MC:
+                if (isset($payerAuth[self::UCAF_COLLECTION_INDICATOR]) === false)
+                {
+                    throw new Exception\GatewayErrorException(
+                        ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
+                }
+
                 $ucaf = (int) $payerAuth[self::UCAF_COLLECTION_INDICATOR];
 
                 if (($ucaf === 0) or ($ucaf === 7))

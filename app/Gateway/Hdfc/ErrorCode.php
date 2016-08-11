@@ -4,6 +4,7 @@ namespace RZP\Gateway\Hdfc;
 
 use RZP\Error;
 use RZP\Gateway\Hdfc;
+use RZP\Gateway\Hdfc\Payment\Result;
 
 class ErrorCode
 {
@@ -167,7 +168,7 @@ class ErrorCode
 
     /**
      * When enroll response result code is
-     * AUTH ERROR
+     * CANCELLED
      */
     const RP00011   = 'RP00011';
 
@@ -176,6 +177,16 @@ class ErrorCode
      * NOT SUPPORTED
      */
     const RP00012   = 'RP00012';
+
+    public static $resultToErrorCodeMap = array(
+        Result::HOST_TIMEOUT        => self::RP00004,
+        Result::DENIED_BY_RISK      => self::RP00005,
+        Result::NOT_APPROVED        => self::RP00006,
+        Result::NOT_CAPTURED        => self::RP00007,
+        Result::AUTH_ERROR          => self::RP00010,
+        Result::CANCELED            => self::RP00011,
+        Result::NOT_SUPPORTED       => self::RP00012,
+    );
 
     public static $errorMessages = array(
         Hdfc\ErrorCode::FSS0001   => 'Authentication Not Available',
@@ -343,4 +354,16 @@ class ErrorCode
     );
 
     public static $invalidErrorCode = Hdfc\ErrorCode::RP00001;
+
+    public static $invalidResultErrorCode = self::RP00002;
+
+    public static function getErrorCodeForResult($result)
+    {
+        if (isset(self::$resultToErrorCodeMap[$result]))
+        {
+            return self::$resultToErrorCodeMap[$result];
+        }
+
+        return self::$invalidResultErrorCode;
+    }
 }
