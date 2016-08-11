@@ -12,16 +12,11 @@ class Options
 
     protected $hasMultiple = false;
 
-    protected static $mode;
-
-    public function __construct($mode = null)
+    public function __construct()
     {
-        self::$mode = $mode;
-
         $this->setChance();
 
         $this->setMultiple();
-
     }
 
     public function setMultiple()
@@ -59,10 +54,6 @@ class Options
 
     public static function getTestChance()
     {
-        if (self::$mode === Mode::TEST)
-        {
-            self::setTestChance();
-        }
         return static::$testChance;
     }
 
