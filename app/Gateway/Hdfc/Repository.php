@@ -144,11 +144,21 @@ class Repository extends Base\Repository
         $this->saveOrFail($model);
     }
 
-    public function persistAfterAuthNotEnrolledError($model, $error)
+    public function persistAfterAuthNotEnrolledError($model, $authResponse)
     {
+        $error = $authResponse['error'];
+
+        $result = null;
+
+        if (isset($authResponse['data']['result']))
+        {
+            $result = $authResponse['data']['result'];
+        }
+
         $attributes = array(
             'received'      => '1',
             'status'        => Payment\Status::AUTH_NOT_ENROLL_FAILED,
+            'result'        => $result,
             'error_code'    => $error['code'],
             'error_text'    => $error['text']);
 
@@ -157,11 +167,21 @@ class Repository extends Base\Repository
         $this->saveOrFail($model);
     }
 
-    public function persistAfterAuthEnrolledError($model, $error)
+    public function persistAfterAuthEnrolledError($model, $authResponse)
     {
+        $error = $authResponse['error'];
+
+        $result = null;
+
+        if (isset($authResponse['data']['result']))
+        {
+            $result = $authResponse['data']['result'];
+        }
+
         $attributes = array(
             'received'      => '1',
             'status'        => Payment\Status::AUTH_ENROLL_FAILED,
+            'result'        => $result,
             'error_code'    => $error['code'],
             'error_text'    => $error['text']);
 
@@ -210,7 +230,8 @@ class Repository extends Base\Repository
     }
 
     public function persistAfterSupportPaymentError(
-        $requestdata,
+        $requestData,
+        $responseData,
         array $error,
         $type,
         $paymentId,
@@ -239,16 +260,24 @@ class Repository extends Base\Repository
             $errorText = $error['result'];
         }
 
+        $result = null;
+
+        if (isset($responseData['result']))
+        {
+            $result = $responseData['result'];
+        }
+
         $attributes = array(
             'received'                  => '1',
             'payment_id'                => $paymentId,
             'refund_id'                 => $refundId,
-            'gateway_transaction_id'    => $requestdata['transid'],
-            'amount'                    => $requestdata['amt'],
+            'gateway_transaction_id'    => $requestData['transid'],
+            'amount'                    => $requestData['amt'],
             'error_code'                => $error['code'],
             'error_text'                => $errorText,
             'action'                    => $action,
-            'status'                    => $status);
+            'status'                    => $status,
+            'result'                    => $result);
 
         return $this->createOrFail($attributes);
     }

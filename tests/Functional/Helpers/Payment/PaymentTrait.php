@@ -1172,8 +1172,6 @@ trait PaymentTrait
                        ->mock();
 
         $this->setMockServer($server);
-
-        return $server;
     }
 
     protected function mockServer()
