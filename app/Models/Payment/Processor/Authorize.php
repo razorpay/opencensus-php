@@ -307,8 +307,6 @@ trait Authorize
 
     protected function runGatewaySpecificPreProcessing($payment, array & $gatewayInput)
     {
-        $this->runPaymentGatewayRelatedPreProcessing($payment, $gatewayInput);
-
         $this->repo->saveOrFail($payment);
 
         $this->trace(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
