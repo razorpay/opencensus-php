@@ -41,6 +41,8 @@ class HdfcGatewayAuthTest extends TestCase
 
         $hdfc = $this->getLastEntity('hdfc', true);
 
+        SD($hdfc);
+
         $this->assertEquals($hdfc['error_code'], 'RP00003');
     }
 
@@ -96,6 +98,27 @@ class HdfcGatewayAuthTest extends TestCase
         $this->doAuthAndCapturePayment($payment);
         $payment = $this->getLastPayment(true);
         $this->assertEquals($payment['gateway'], 'hdfc');
+    }
+
+    public function testTerminalRotator()
+    {
+        // fail the payment with a card that throws timeout and
+        // succeed wih another terminal and assert so.
+        $this->fixtures->create('terminal:shared_axis_terminal');
+
+        $defaultPayment = $this->getDefaultPaymentArray();
+
+        $defaultPayment['card']['number'] = '4012001036275556';
+
+        $payment = array();
+
+        $payment = array_merge($defaultPayment, $payment);
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastPayment(true);
+
+        $this->assertEquals($payment['gateway'], 'axis_migs');
     }
 
     public function testCreditCardAuthNotApproved()
