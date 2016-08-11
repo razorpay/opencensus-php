@@ -90,7 +90,7 @@ class Entity extends Base\PublicEntity
     {
         return $this->hasMany('RZP\Models\Payment\Entity');
     }
-    
+
     public function invoice()
     {
         return $this->hasOne('RZP\Models\Invoice\Entity');
@@ -122,6 +122,11 @@ class Entity extends Base\PublicEntity
     public function getAmount()
     {
         return $this->getAmountAttribute();
+    }
+
+    public function getCurrency()
+    {
+        return $this->getAttribute(self::CURRENCY);
     }
 
     public function getAccountNumber()

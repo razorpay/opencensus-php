@@ -44,19 +44,13 @@ class Core extends Base\Core
         // TODO: Should we move this to validator?
         $this->validateRequest($input);
 
-        $itemsDetails = $input['items'];
+        $itemsDetails = $input[Entity::ITEMS];
 
-        $customerDetails = $input['customer'];
+        $customerDetails = $input[Entity::CUSTOMER_DETAILS];
 
         $items = $this->getItemsFromInput($itemsDetails);
 
-        var_dump($items);die;
-
         $invoiceOrder = $this->createOrderForInvoice($items);
-
-        $input[Entity::TOTAL_AMOUNT] = $invoiceOrder->getAmount();
-
-        $input[Entity::CURRENCY] = $invoiceOrder->getCurrency();
 
         $customer = $this->getExistingOrCreateCustomerFromInput($customerDetails);
 
@@ -91,10 +85,10 @@ class Core extends Base\Core
 
     protected function validateRequest(array $input)
     {
-        assert(isset($input['customer']));
+        assert(isset($input[Entity::CUSTOMER_DETAILS]));
 
-        assert((isset($input['items'])) and
-               (count($input['items']) > 0));
+        assert((isset($input[Entity::ITEMS])) and
+               (count($input[Entity::ITEMS]) > 0));
     }
 
     protected function createOrderForInvoice(array $items)
@@ -133,7 +127,7 @@ class Core extends Base\Core
             }
             else
             {
-                $items[] = $this->itemCore->create($itemDetails);
+                $items[] = $this->itemCore->create($itemDetails, $this->merchant);
             }
         }
 

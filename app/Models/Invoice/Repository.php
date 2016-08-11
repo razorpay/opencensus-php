@@ -2,8 +2,9 @@
 
 namespace RZP\Models\Invoice;
 
+use RZP\Models\Base;
 
-class Repository
+class Repository extends Base\Repository
 {
-
+    use Base\RepositoryFetch;
 }

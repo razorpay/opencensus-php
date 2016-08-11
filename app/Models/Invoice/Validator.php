@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Invoice;
 
-use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Base;
 
 class Validator extends Base\Validator

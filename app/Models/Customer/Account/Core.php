@@ -37,7 +37,7 @@ class Core extends Base\Core
         {
             if ($failOnDuplicate === false)
             {
-                $existingCustomer->merchant->associate($merchant);
+                $existingCustomer->merchant()->associate($merchant);
 
                 return $existingCustomer;
             }

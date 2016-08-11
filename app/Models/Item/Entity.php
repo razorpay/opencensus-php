@@ -32,6 +32,8 @@ class Entity extends Base\PublicEntity
     const LISTING_ID    = 'listing_id';
 
     const INR           = 'INR';
+    
+    const QUANTITY      = 'quantity';
 
     protected static $sign = 'item';
 

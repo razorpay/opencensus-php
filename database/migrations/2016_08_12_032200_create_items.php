@@ -35,7 +35,7 @@ class CreateItems extends Migration
             $table->char(Entity::CURRENCY, 8)
                   ->nullable();
 
-            $table->string(Entity::LISTING_ID)
+            $table->string(Entity::LISTING_ID, 512)
                   ->nullable();
 
             $table->integer(Entity::CREATED_AT);

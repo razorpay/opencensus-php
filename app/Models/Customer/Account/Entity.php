@@ -77,7 +77,7 @@ class Entity extends Base\PublicEntity
     {
         return $this->hasMany('RZP\Models\Customer\Token\Entity');
     }
-    
+
     public function invoices()
     {
         return $this->hasMany('RZP\Models\Invoice\Entity');
@@ -97,12 +97,12 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::CONTACT);
     }
-    
+
     public function getAddress()
     {
         return $this->getAttribute(self::ADDRESS);
     }
-    
+
     public function isActive()
     {
         return (bool)$this->getAttribute(self::ACTIVE);

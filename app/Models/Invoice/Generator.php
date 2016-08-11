@@ -39,11 +39,16 @@ class Generator
     {
         $invoice = new Entity();
 
+        unset($input[Entity::CUSTOMER_DETAILS]);
+        unset($input[Entity::ITEMS]);
+
         $invoice->build($input);
 
         $invoice->order()->associate($this->order);
 
         $invoice->customer()->associate($this->customer);
+
+        $this->repo->saveOrFail($invoice);
 
         return $invoice;
     }

@@ -32,10 +32,10 @@ class CreateInvoices extends Migration
 
             $table->string(Entity::STATUS, 32);
 
-            $table->tinyInteger(Entity::EMAIL_STATUS)
+            $table->string(Entity::EMAIL_STATUS, 32)
                   ->nullable();
 
-            $table->tinyInteger(Entity::SMS_STATUS)
+            $table->string(Entity::SMS_STATUS, 32)
                   ->nullable();
 
             $table->string(Entity::CUSTOMER_ADDRESS)

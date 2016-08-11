@@ -229,7 +229,7 @@ class UniqueIdEntity extends Entity
     protected static function getNanotimeInteger()
     {
         exec('date +%s%N', $nanotime, $status);
-        return 1470951471599940000;
+        //return 1470951471599940000;
         return $nanotime[0];
     }
 

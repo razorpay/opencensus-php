@@ -39,6 +39,8 @@ class Entity extends Base\PublicEntity
     const TOTAL_AMOUNT          = 'total_amount';
     const CURRENCY              = 'currency';
 
+    const CUSTOMER_DETAILS      = 'customer_details';
+
     // const TOTAL_TAX             = 'total_tax';
 
     const DEFAULT_DUE_DAYS      = 60;
@@ -55,13 +57,14 @@ class Entity extends Base\PublicEntity
         self::STATUS            => Status::CREATED,
         // self::ADJUSTMENT        => 0,
         // self::SHIPPING          => 0,
-        self::EMAIL_NOTIFY      => true,
-        self::SMS_NOTIFY        => true,
-        self::CURRENCY          => 'INR',
+        self::EMAIL_STATUS      => Status::PENDING,
+        self::SMS_STATUS        => Status::PENDING,
     ];
 
     protected $fillable = [
         self::DUE_BY,
+        self::EMAIL_STATUS,
+        self::SMS_STATUS,
         // self::ADJUSTMENT,
         // self::SHIPPING,
         // self::DISCOUNT,
@@ -111,12 +114,32 @@ class Entity extends Base\PublicEntity
     protected static $generators = [
         // self::DISCOUNT,
         self::DUE_BY,
+        self::EMAIL_STATUS,
+        self::SMS_STATUS,
     ];
 
     protected $dates = array(self::DUE_BY);
 
     //------------------Generators--------------------------------------
-    
+
+    public function generateEmailStatus($input)
+    {
+        if ((empty($input[self::EMAIL_NOTIFY]) === false) and
+            ($input[self::EMAIL_NOTIFY] === false))
+        {
+            $this->setAttribute(self::EMAIL_STATUS, null);
+        }
+    }
+
+    public function generateSmsStatus($input)
+    {
+        if ((empty($input[self::SMS_NOTIFY]) === false) and
+            ($input[self::SMS_NOTIFY] === false))
+        {
+            $this->setAttribute(self::SMS_STATUS, null);
+        }
+    }
+
     public function generateDueBy($input)
     {
         $dueDays = self::DEFAULT_DUE_DAYS;
@@ -166,20 +189,20 @@ class Entity extends Base\PublicEntity
     //
     //     $this->setAttribute(self::DISCOUNT, $discount);
     // }
-    
-    //--------------------- End Generators ------------------------------------ 
-    
+
+    //--------------------- End Generators ------------------------------------
+
     //-------------------------- Relations ------------------------------------
 
     public function order()
     {
         return $this->belongsTo('RZP\Models\Order\Entity');
     }
-    
+
     public function customer()
     {
         return $this->belongsTo('RZP\Models\Customer\Entity');
     }
-    
+
     //-------------------------- End Relations --------------------------------
 }

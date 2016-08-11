@@ -12,7 +12,7 @@ class Core extends Base\Core
     {
         parent::__construct();
     }
-    
+
     public function create(array $input, Merchant\Entity $merchant)
     {
         $item = (new Entity)->build($input);
