@@ -71,8 +71,6 @@ class Server extends Base\Mock\Server
 
     public function verify($input)
     {
-        $input = json_decode($input, true);
-
         parent::verify($input);
 
         $this->validateActionInput($this->mockRequest['content']);
