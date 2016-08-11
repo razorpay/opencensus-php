@@ -92,11 +92,11 @@ class Holidays
 
     public static function getPreviousWorkingDay($date)
     {
-        $prevDay = $date->subDay();
+        $prevDay = $date->copy()->subDay();
 
         while (self::isWorkingDay($prevDay) === false)
         {
-            $prevDay = $prevDay->subDay();
+            $prevDay->subDay();
         }
 
         return $prevDay;
