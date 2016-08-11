@@ -254,4 +254,12 @@ class Entity extends Base\PublicEntity
     {
         return (int) $this->attributes[self::FIXED_RATE];
     }
+
+    /*
+     * For adding plan id easily in queries
+     */
+    public function scopePlanId($query, $planId)
+    {
+        $query->where(self::PLAN_ID, '=', $planId);
+    }
 }
