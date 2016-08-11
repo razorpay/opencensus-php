@@ -129,7 +129,7 @@ final class Result
         // We get SUCCESS only for rupay and maybe for purchase action.
         if ($result === self::SUCCESS)
         {
-            return Result::CAPTURED;
+            $result = Result::CAPTURED;
         }
 
         //
