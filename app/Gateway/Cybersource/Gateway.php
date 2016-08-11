@@ -292,7 +292,7 @@ class Gateway extends Base\Gateway
 
         $input['card']['number'] = Card\Tokenex::getCardNumber($data['vault_token']);
 
-        $input['card']['cvv'] = $data['cvv'];
+        $input['card']['cvv']    = Crypt::decrypt($data['cvv']);
     }
 
     protected function enroll($input)
@@ -851,21 +851,9 @@ class Gateway extends Base\Gateway
 
     protected function getCardDetailsFromCache($input)
     {
-        $fallbackKey = 'cybersource_' . $input['payment']['id'] . '_cvv';
-        $key         = 'cybersource_' . $input['payment']['id'] . '_card_details';
+        $key = 'cybersource_' . $input['payment']['id'] . '_card_details';
 
-        $data = Cache::store($this->secureCache)->pull($key);
-
-        if ($data === null)
-        {
-            $data['cvv'] = Cache::store($this->secureCache)->pull($fallbackKey);
-
-            $data['vault_token'] = $input['card']['vault_token'];
-        }
-
-        $data['cvv'] = Crypt::decrypt($data['cvv']);
-
-        return $data;
+        return Cache::store($this->secureCache)->pull($key);
     }
 
     protected function setCardInfo(&$request, $input)
