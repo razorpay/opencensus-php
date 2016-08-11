@@ -74,6 +74,11 @@ class PublicEntity extends UniqueIdEntity
 
         return $array;
     }
+    
+    public function toArrayInvoice()
+    {
+        // TODO: Fill this up
+    }
 
     /**
      * Create a new Eloquent Collection instance.

@@ -13,9 +13,9 @@ use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
-    public function createLocalCustomer($input, $merchant)
+    public function createLocalCustomer($input, $merchant, $failOnDuplicate = true)
     {
-        return $this->create($input, $merchant);
+        return $this->create($input, $merchant, $failOnDuplicate);
     }
 
     public function createGlobalCustomer($input)
@@ -38,6 +38,7 @@ class Core extends Base\Core
             if ($failOnDuplicate === false)
             {
                 $existingCustomer->merchant->associate($merchant);
+
                 return $existingCustomer;
             }
             else
@@ -258,8 +259,6 @@ class Core extends Base\Core
 
     protected function verifyUniqueCustomer($customer, $failOnDuplicate = true)
     {
-        $customers = null;
-
         if ($customer->merchant->isShared() === true)
         {
             $customer = $this->repo->customer->findByContactAndMerchant(

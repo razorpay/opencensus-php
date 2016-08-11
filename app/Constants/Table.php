@@ -8,9 +8,11 @@ class Table
     const IIN               = 'iins';
     const KEY               = 'keys';
     const CARD              = 'cards';
+    const ITEM              = 'items';
     const ORDER             = 'orders';
     const TOKEN             = 'tokens';
     const REFUND            = 'refunds';
+    const INVOICE           = 'invoices';
     const BALANCE           = 'balance';
     const METHODS           = 'merchant_banks';
     const PRICING           = 'pricing';

@@ -27,6 +27,8 @@ class Core
      * @var Trace
      */
     protected $trace;
+    
+    protected $merchant;
 
     public function __construct()
     {
@@ -40,5 +42,7 @@ class Core
         $this->trace = $this->app['trace'];
 
         $this->repo = $this->app['repo'];
+        
+        $this->merchant = $this->app['basicauth']->getMerchant();
     }
 }

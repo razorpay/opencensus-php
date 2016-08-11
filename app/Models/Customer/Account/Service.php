@@ -26,14 +26,14 @@ class Service extends Base\Service
 
         unset($input['flag']);
 
-        $customer = (new Customer\Core)->createLocalCustomer($input, $this->merchant, $failOnDuplicate);
+        $customer = (new Customer\Core)->createLocalCustomer($input, $this->merchant);
 
         return $customer->toArrayPublic();
     }
 
     /**
      * Creates Global customer entity for shared merchant
-     * @param  array customer data
+     * @param  array $input customer data
      * @return array customer data
      */
     public function createGlobalCustomer($input)

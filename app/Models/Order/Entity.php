@@ -78,8 +78,6 @@ class Entity extends Base\PublicEntity
 
     protected static $sign = 'order';
 
-    protected static $delimiter = '_';
-
     protected $entity           = 'order';
 
     /** Related Models */
@@ -91,6 +89,11 @@ class Entity extends Base\PublicEntity
     public function payment()
     {
         return $this->hasMany('RZP\Models\Payment\Entity');
+    }
+    
+    public function invoice()
+    {
+        return $this->hasOne('RZP\Models\Invoice\Entity');
     }
 
     /** End Related Models */

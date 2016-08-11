@@ -71,6 +71,11 @@ class Entity extends Base\PublicEntity
     {
         return $this->hasMany('RZP\Models\Customer\Token\Entity');
     }
+    
+    public function invoices()
+    {
+        return $this->hasMany('RZP\Models\Invoice\Entity');
+    }
 
     public function getName()
     {
