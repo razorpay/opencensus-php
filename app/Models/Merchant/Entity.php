@@ -191,20 +191,22 @@ class Entity extends Base\PublicEntity
 
     public function keys()
     {
-        return $this->hasMany(
-            'RZP\Models\Key\Entity');
+        return $this->hasMany('RZP\Models\Key\Entity');
     }
 
     public function pricing()
     {
-        return $this->belongsTo(
-            'RZP\Models\Pricing\Entity', self::PRICING_PLAN_ID, 'plan_id');
+        return $this->belongsTo('RZP\Models\Pricing\Entity', self::PRICING_PLAN_ID, 'plan_id');
     }
 
     public function payments()
     {
-        return $this->hasMany(
-            'RZP\Models\Payment\Entity');
+        return $this->hasMany('RZP\Models\Payment\Entity');
+    }
+
+    public function items()
+    {
+        return $this->hasMany('RZP\Models\Item\Entity');
     }
 
     public function balance()

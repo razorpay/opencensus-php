@@ -13,6 +13,7 @@ class Validator extends Base\Validator
         Entity::NAME            => 'sometimes|alpha_space_num|max:50',
         Entity::EMAIL           => 'sometimes|email',
         Entity::NOTES           => 'sometimes|notes',
+        Entity::ADDRESS         => 'sometimes',
     );
 
     protected static $editRules = array(
@@ -20,6 +21,7 @@ class Validator extends Base\Validator
         Entity::NAME            => 'sometimes|alpha_space_num|max:50',
         Entity::ACTIVE          => 'sometimes|in:0,1',
         Entity::EMAIL           => 'sometimes|email',
+        Entity::ADDRESS         => 'sometimes',
     );
 
     protected static $globalCreateRules = array(

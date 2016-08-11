@@ -19,6 +19,8 @@ class Service extends Base\Service
     
     public function create($input)
     {
-       // TODO: Fill this up 
+        $item = $this->core->createItem($input, $this->merchant);
+
+        return $item->toArrayPublic();
     }
 }

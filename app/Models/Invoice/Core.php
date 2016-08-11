@@ -50,10 +50,12 @@ class Core extends Base\Core
 
         $items = $this->getItemsFromInput($itemsDetails);
 
+        var_dump($items);die;
+
         $invoiceOrder = $this->createOrderForInvoice($items);
-        
+
         $input[Entity::TOTAL_AMOUNT] = $invoiceOrder->getAmount();
-        
+
         $input[Entity::CURRENCY] = $invoiceOrder->getCurrency();
 
         $customer = $this->getExistingOrCreateCustomerFromInput($customerDetails);
@@ -131,7 +133,7 @@ class Core extends Base\Core
             }
             else
             {
-                $items[] = $this->itemService->create($itemDetails);
+                $items[] = $this->itemCore->create($itemDetails);
             }
         }
 

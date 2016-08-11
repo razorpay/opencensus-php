@@ -20,11 +20,12 @@ class Entity extends Base\PublicEntity
     // This is the tax computed from either
     // tax_flat or tax_percent received from the request
     //
-    const TAX_COMPUTED  = 'computed_tax';
-    const TAX_FLAT      = 'flat_tax';
-    const TAX_PERCENT   = 'tax_percent';
+    // const TAX_COMPUTED  = 'computed_tax';
+    // const TAX_FLAT      = 'flat_tax';
+    // const TAX_PERCENT   = 'tax_percent';
     const AMOUNT        = 'amount';
     const CURRENCY      = 'currency';
+    const MERCHANT_ID   = 'merchant_id';
     //
     // This is something like an SKU
     //
@@ -42,9 +43,9 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = [
         self::DESCRIPTION       => null,
-        self::TAX_COMPUTED      => 0,
-        self::TAX_FLAT          => 0,
-        self::TAX_PERCENT       => 0,
+        // self::TAX_COMPUTED      => 0,
+        // self::TAX_FLAT          => 0,
+        // self::TAX_PERCENT       => 0,
         self::LISTING_ID        => null,
         self::CURRENCY          => self::INR,
     ];
@@ -52,9 +53,9 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::NAME,
         self::DESCRIPTION,
-        self::TAX_COMPUTED,
-        self::TAX_FLAT,
-        self::TAX_PERCENT,
+        // self::TAX_COMPUTED,
+        // self::TAX_FLAT,
+        // self::TAX_PERCENT,
         self::AMOUNT,
         self::LISTING_ID,
         self::CURRENCY,
@@ -65,8 +66,8 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION,
         self::AMOUNT,
         self::LISTING_ID,
-        self::TAX_PERCENT,
-        self::TAX_FLAT,
+        // self::TAX_PERCENT,
+        // self::TAX_FLAT,
         self::CURRENCY,
     ];
 
@@ -87,4 +88,13 @@ class Entity extends Base\PublicEntity
     }
 
     // -------------------------- Getters Ends --------------------------
+    
+    // -------------------- Relations ---------------------------
+    
+    public function merchant()
+    {
+        return $this->belongsTo('RZP\Models\Merchant\Entity');
+    }
+    
+    // -------------------- End Rleations -----------------------   
 }

@@ -6,7 +6,7 @@ use RZP\Http\ApiResponse;
 use RZP\Models\Invoice;
 use Request;
 
-class InvoiceController
+class InvoiceController extends Controller
 {
     protected $service;
 

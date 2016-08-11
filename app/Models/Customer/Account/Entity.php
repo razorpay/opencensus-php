@@ -2,9 +2,10 @@
 
 namespace RZP\Models\Customer;
 
+use RZP\Constants\Table;
 use RZP\Models\Base;
-use RZP\Models\Merchant\Account;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Merchant\Account;
 
 class Entity extends Base\PublicEntity
 {
@@ -16,6 +17,7 @@ class Entity extends Base\PublicEntity
     const MERCHANT_ID           = 'merchant_id';
     const ACTIVE                = 'active';
     const NOTES                 = 'notes';
+    const ADDRESS               = 'address';
     const CREATED_AT            = 'created_at';
     const UPDATED_AT            = 'updated_at';
     const DELETED_AT            = 'deleted_at';
@@ -24,7 +26,7 @@ class Entity extends Base\PublicEntity
 
     protected $entity           = 'customer';
 
-    protected $table            = \RZP\Constants\Table::CUSTOMER;
+    protected $table            = Table::CUSTOMER;
 
     protected $generateIdOnCreate = true;
 
@@ -35,6 +37,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::ACTIVE,
         self::CONTACT,
+        self::ADDRESS,
         self::MERCHANT_ID,
     );
 
@@ -45,21 +48,24 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::ACTIVE,
         self::CONTACT,
+        self::ADDRESS,
         self::MERCHANT_ID,
     );
 
     protected $public = array(
         self::ID,
         self::NAME,
+        self::NOTES,
         self::EMAIL,
         self::CONTACT,
-        self::NOTES,
+        self::ADDRESS,
         self::CREATED_AT,
     );
 
     protected $defaults = array(
         self::ACTIVE    => true,
         self::NOTES     => [],
+        self::ADDRESS   => null,
     );
 
     public function merchant()
@@ -91,7 +97,12 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::CONTACT);
     }
-
+    
+    public function getAddress()
+    {
+        return $this->getAttribute(self::ADDRESS);
+    }
+    
     public function isActive()
     {
         return (bool)$this->getAttribute(self::ACTIVE);

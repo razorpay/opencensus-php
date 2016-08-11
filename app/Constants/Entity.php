@@ -18,6 +18,7 @@ class Entity
     const IIN                   = 'iin';
     const KEY                   = 'key';
     const CARD                  = 'card';
+    const ITEM                  = 'item';
     const ORDER                 = 'order';
     const TOKEN                 = 'token';
     const REFUND                = 'refund';
@@ -27,6 +28,7 @@ class Entity
     const PRICING               = 'pricing';
     const PAYMENT               = 'payment';
     const WEBHOOK               = 'webhook';
+    const INVOICE               = 'invoice';
     const EMI_PLAN              = 'emi_plan';
     const MERCHANT              = 'merchant';
     const TERMINAL              = 'terminal';
