@@ -71,7 +71,7 @@ class Selector
         return $merchantTerminals;
     }
 
-    public function select($options = [], $verbose = false)
+    public function select(Options $options = null, $verbose = false)
     {
         $terminals = $this->getTerminals();
 
@@ -136,9 +136,9 @@ class Selector
             $terminal = $sortedTerminals[0];
         }
 
-        if (isset($options['chance']))
+        if ($options and $options->getChance() > 0)
         {
-            $terminal = (new Binning)->select($terminal, $options['chance'], $this->input, $terminals);
+            $terminal = (new Binning)->select($terminal, $options->getChance(), $this->input, $terminals);
 
             $sortedTerminals = array($terminal);
         }
@@ -146,7 +146,8 @@ class Selector
         $this->payment->setTerminal($terminal);
 
         // hack to return multiple terminals if needed.
-        if (isset($options['multiple']) and ($options['multiple'] === true))
+        if (($options->getMultiple() !== null) and
+            ($options->getMultiple() === true))
         {
             return $sortedTerminals;
         }
@@ -171,23 +172,6 @@ class Selector
         }
     }
 
-    protected function getOptionsForTerminals()
-    {
-        $options = [];
-
-        if (($this->mode === Mode::LIVE) and
-            (App::environment('testing') === false))
-        {
-            $chance = rand(1,100);
-
-            $options['chance'] = $chance;
-
-        }
-
-        $options['multiple'] = true;
-
-        return $options;
-    }
 
     /**
      * Methods selects a list of terminals for payment. We are
@@ -197,11 +181,12 @@ class Selector
      */
     public function selectTerminals()
     {
-        $options = $this->getOptionsForTerminals();
+        $options = new Terminal\Options;
 
         $terminalsSelected = $this->select($options);
 
-        if (!isset($options['multiple']))
+        if (($options->getMultiple() === false() or
+            ($options->getMultiple() === null))
         {
             // make this into an array, since the caller expects an array
             $terminalsSelected = array($terminalsSelected);
