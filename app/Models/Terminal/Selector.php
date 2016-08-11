@@ -10,6 +10,7 @@ use RZP\Models\Payment;
 use RZP\Trace;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
+use RZP\Models\Terminal;
 
 class Selector
 {
@@ -85,11 +86,6 @@ class Selector
         //
         $filteredTerminals = $terminals->all();
 
-        if (isset($options['exclude']) and is_array($options['exclude']))
-        {
-            $this->input['exclude'] = $options['exclude'];
-        }
-
         foreach (self::$filters as $filter)
         {
             $filteredTerminals = (new $filter)->filter($filteredTerminals, $this->input, $verbose);
@@ -146,8 +142,7 @@ class Selector
         $this->payment->setTerminal($terminal);
 
         // hack to return multiple terminals if needed.
-        if (($options->getMultiple() !== null) and
-            ($options->getMultiple() === true))
+        if ($options and $options->getMultiple() === true)
         {
             return $sortedTerminals;
         }
@@ -181,12 +176,11 @@ class Selector
      */
     public function selectTerminals()
     {
-        $options = new Terminal\Options;
+        $options = new Terminal\Options($this->mode);
 
         $terminalsSelected = $this->select($options);
 
-        if (($options->getMultiple() === false() or
-            ($options->getMultiple() === null))
+        if ($options->getMultiple() === false)
         {
             // make this into an array, since the caller expects an array
             $terminalsSelected = array($terminalsSelected);

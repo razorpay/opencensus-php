@@ -2,19 +2,26 @@
 
 namespace RZP\Models\Terminal;
 
+use RZP\Constants\Mode;
+
 class Options
 {
     protected $chance;
 
     protected static $testChance;
 
-    protected $hasMultiple;
+    protected $hasMultiple = false;
 
-    public function __construct()
+    protected static $mode;
+
+    public function __construct($mode = null)
     {
+        self::$mode = $mode;
+
         $this->setChance();
 
         $this->setMultiple();
+
     }
 
     public function setMultiple()
@@ -52,6 +59,10 @@ class Options
 
     public static function getTestChance()
     {
+        if (self::$mode === Mode::TEST)
+        {
+            self::setTestChance();
+        }
         return static::$testChance;
     }
 
