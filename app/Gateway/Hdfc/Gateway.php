@@ -459,8 +459,6 @@ class Gateway extends Base\Gateway
         }
         catch(Exception\GatewayTimeoutException $e)
         {
-            $this->exception = $e;
-
             $this->error = true;
 
             $response['content'] = '';
