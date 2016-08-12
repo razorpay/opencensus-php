@@ -131,7 +131,6 @@ trait Authorize
                     // any other exception, throw an error
                     throw $e;
                 }
-
             }
         }
 
