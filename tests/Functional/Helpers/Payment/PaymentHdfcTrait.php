@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Helpers\Payment;
 
 use Requests;
+use RZP\Exception\GatewayTimeoutException;
 use Symfony\Component\DomCrawler\Crawler;
 
 trait PaymentHdfcTrait
@@ -106,9 +107,9 @@ trait PaymentHdfcTrait
                         ->shouldReceive('content')
                         ->andReturnUsing(function (& $content)
                         {
-                            throw new \Requests_Exception(
+                            throw new GatewayTimeoutException(
                                 'cURL error 28: Operation timed out after ' .
-                                '10001 milliseconds with 0 bytes received', 'curlerror');
+                                '10001 milliseconds with 0 bytes received');
                         }, function (& $content)
                         {
                             return $content;
