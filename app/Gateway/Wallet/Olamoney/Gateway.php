@@ -267,6 +267,12 @@ class Gateway extends Base\Gateway
         $amount = (string) number_format($input['payment']['amount'] / 100, 2, '.', '');
 
         $udf = [RequestFields::MERCHANT_DISPLAY_NAME => $input['merchant']['name']];
+
+        if (isset($input['merchant']['billing_label']))
+        {
+            $udf[RequestFields::MERCHANT_DISPLAY_NAME] = $input['merchant']['billing_label'];
+        }
+
         $udf = json_encode($udf);
 
         $content = array(
@@ -461,7 +467,7 @@ class Gateway extends Base\Gateway
                 $gatewayPayment = $this->createGatewayPaymentEntity($walletAttributes);
             }
             else if (($gatewayPayment['received'] === false) or
-                     ($gatewayPayment['status'] !== Status::SUCCESS))
+                     ($gatewayPayment['status_code'] !== Status::SUCCESS))
             {
                 $gatewayPayment->fill($walletAttributes);
                 $gatewayPayment->saveOrFail();
