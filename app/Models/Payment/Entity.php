@@ -434,6 +434,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::GLOBAL_TOKEN, $globalToken);
     }
 
+    public function setSave($save)
+    {
+        $this->setAttribute(self::SAVE, $save);
+    }
+
     public function incrementOtpAttempts()
     {
         $attempts = $this->getOtpAttemptsAttribute() + 1;
