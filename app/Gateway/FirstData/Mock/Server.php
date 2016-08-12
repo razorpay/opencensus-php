@@ -53,7 +53,7 @@ class Server extends Base\Mock\Server
             FirstData\Entity::PROCESSOR_RESPONSE_CODE   => 00,
             FirstData\Entity::REFNUMBER                 => $this->generateId('REF0000'),
             FirstData\Entity::RESPONSE_HASH             => $response_hash,
-            FirstData\Entity::STATUS                    => '',
+            FirstData\Entity::STATUS                    => FirstData\Codes::STATUS_AUTHORIZED,
             FirstData\Entity::TDATE                     => $tdate,
             FirstData\Entity::TXNDATE_PROCESSED         => $txndate_processed,
         );

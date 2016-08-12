@@ -65,6 +65,7 @@ class Entity extends Base\Entity
         self::PROCESSOR_RESPONSE_CODE,
         self::TDATE,
         self::PAYMENT_METHOD,
+        self::TXNDATE_PROCESSED,
     );
 
     protected $casts = [

@@ -9,4 +9,13 @@ use RZP\Gateway\Base;
 class Repository extends Base\Repository
 {
     protected $entity = 'FirstData';
+
+    public function retrieveCapturedByPaymentId($id)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Entity::PAYMENT_ID, '=', $id)
+                  ->where(Entity::STATUS, '=', Codes::STATUS_CAPTURED)
+                  ->first();
+    }
 }

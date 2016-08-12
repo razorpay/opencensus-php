@@ -27,6 +27,7 @@ class Gateway extends Base\Gateway
     const CURRENCY                  = 'currency';
     const OID                       = 'oid';
     const TDATE                     = 'tdate';
+    const NAME                      = 'bname';
     const PAYMENT_METHOD            = 'paymentMethod';
     const CUSTOMERID                = 'customerid';
     const INVOICENUMBER             = 'invoicenumber';
@@ -68,8 +69,6 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentRequest($request, $input);
 
-        // $request = $this->makeRequestAndGetFormData($request);
-
         return $request;
     }
 
@@ -104,6 +103,7 @@ class Gateway extends Base\Gateway
         // $content[self::CARDNUMBER] = Card\Tokenex::getCardNumber($input['card']['vault_token']);
         $content[self::CARDNUMBER] = $input['card']['number'];
 
+        $content[self::NAME]     = $input['card']['name'];
         $content[self::EXPMONTH] = $input['card']['expiry_month'];
         $content[self::EXPYEAR ] = $input['card']['expiry_year'];
         $content[self::CVM]      = $input['card']['cvv'];
@@ -120,7 +120,6 @@ class Gateway extends Base\Gateway
 
         return $payment;
     }
-
 
     // This is a SHA hash of the following fields :
     // storename + txndatetime + chargetotal + currency + sharedsecret.
@@ -195,6 +194,28 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
+        $this->verifyPaymentCallbackResponse($input);
+
+        $payment = $this->getRepo()
+                        ->findByPaymentIdAndActionOrFail($input['gateway']['oid'], Base\Action::AUTHORIZE);
+
+        $this->verifyHash($input['gateway'],$payment);
+
+        $attributes = array(
+            Entity::RECEIVED            => true,
+            Entity::TDATE               => $input['gateway'][Entity::TDATE],
+            Entity::APPROVAL_CODE       => $input['gateway'][Entity::APPROVAL_CODE],
+            Entity::REFNUMBER           => $input['gateway'][Entity::REFNUMBER],
+            Entity::STATUS              => $input['gateway'][Entity::STATUS],
+            Entity::TXNDATE_PROCESSED   => $input['gateway'][Entity::TXNDATE_PROCESSED],
+        );
+
+        $payment->fill($attributes);
+        $payment->saveOrFail();
+    }
+
+    protected function verifyPaymentCallbackResponse($input)
+    {
         if ((isset($input['gateway']['approval_code']) === false) or
             ($input['gateway']['approval_code'][0] !== 'Y'))
         {
@@ -204,21 +225,6 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                         Error\ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
         }
-
-        $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
-            $input['gateway']['oid'], Base\Action::AUTHORIZE);
-
-        $this->verifyHash($input['gateway'],$payment);
-
-        // $payment->fill($input['gateway']);
-        $payment->saveOrFail();
-
-        $this->verifyPaymentCallbackResponse($input);
-    }
-
-    protected function verifyPaymentCallbackResponse($input)
-    {
-        ;
     }
 
     private function verifyHash($input)

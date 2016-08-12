@@ -31,6 +31,7 @@ class Validator extends Base\Validator
         FirstData\Gateway::HASH_EXTENDED             => 'sometimes|size:40|string',
         FirstData\Gateway::NUMBER_OF_INSTALLMENTS    => 'sometimes|',
         FirstData\Gateway::CARDNUMBER                => 'required|numeric|digits_between:12,19',
+        FirstData\Gateway::NAME                      => 'sometimes|',
         FirstData\Gateway::EXPMONTH                  => 'required|size:2',
         FirstData\Gateway::EXPYEAR                   => 'required|size:4',
         FirstData\Gateway::CVM                       => 'required|numeric|digits_between:2,4',
