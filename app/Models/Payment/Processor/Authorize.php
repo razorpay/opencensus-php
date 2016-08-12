@@ -19,6 +19,7 @@ use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Status;
 use RZP\Models\Merchant\Methods;
+use RZP\Models\Payment\Analytics;
 
 use RZP\Error;
 use RZP\Exception;
@@ -36,6 +37,13 @@ trait Authorize
      */
     protected $type;
 
+    protected $maxRetryAttempts = 3;
+
+    protected $terminalSelector;
+
+    protected $terminalsSelected;
+
+
     public function authorize($payment, $input)
     {
         $this->verifyMerchantIsLiveForLiveRequest();
@@ -46,13 +54,130 @@ trait Authorize
         // Adds callback url, payment and card info to $gatewayInput
         $this->prePaymentAuthorizeProcessing($payment, $input, $gatewayInput);
 
-        if ($this->canRunOtpPaymentFlow($payment, $input))
+        $this->getTerminalsForPayment($payment);
+
+        return  $this->authorizeAcrossTerminals($gatewayInput, $payment, $input);
+
+    }
+
+    protected function getTerminalsForPayment($payment)
+    {
+        $this->terminalSelector = new Terminal\Selector($payment, $this->mode);
+
+        $this->terminalsSelected = $this->terminalSelector->selectTerminals();
+
+    }
+
+    protected function authorizeAcrossTerminals($gatewayInput, $payment, $input)
+    {
+        $totalTerminals = count($this->terminalsSelected);
+
+        $this->maxRetryAttempts = min($totalTerminals, $this->maxRetryAttempts);
+
+        $retryAttempts = 0;
+
+        $timeoutException = null;
+
+        $request = null;
+
+        while ($retryAttempts < $this->maxRetryAttempts)
         {
-            return $this->runOtpPaymentFlow($gatewayInput, $payment);
+            $terminalGatewayInput = $gatewayInput;
+
+            $currentTerminal = $this->terminalsSelected[$retryAttempts];
+
+            $payment->setTerminal($currentTerminal);
+
+            $this->runGatewaySpecificPreProcessing($payment, $terminalGatewayInput);
+
+            if ($this->canRunOtpPaymentFlow($payment, $input))
+            {
+                return $this->runOtpPaymentFlow($terminalGatewayInput, $payment);
+            }
+
+            try
+            {
+                $request = $this->callGatewayAuthorize($terminalGatewayInput);
+
+                $timeoutException = null;
+
+                break;
+            }
+
+            catch (\Exception $e)
+            {
+                // handle timeout exceptions differently
+                // this is a terminal/gateway failure
+                if ($e instanceof Exception\GatewayTimeoutException or $e instanceof \Requests_Exception)
+                {
+                    $retryAttempts += 1;
+
+                    $timeoutException = $e;
+
+                    $status = $this->logAndCheckForAuthRetry($e, $payment, $retryAttempts);
+
+                    if ($status === true)
+                    {
+                        continue;
+                    }
+                    break;
+                }
+                else
+                {
+                    // any other exception, throw an error
+                    throw $e;
+                }
+
+            }
         }
 
-        $request = $this->callGatewayAuthorize($gatewayInput);
+        $this->handleTimeoutException($timeoutException);
 
+        return $this->processAuthResponse($request, $payment);
+    }
+
+    protected function logAndCheckForAuthRetry($e, $payment, $retryAttempts)
+    {
+        $traceData = array(
+            'errorcode' => $e->getCode(),
+            'message' => $e->getMessage(),
+            'payment_id' => $payment->getId(),
+            'terminal_id' => $payment->terminal->getId()
+        );
+
+        $this->trace->info(
+            TraceCode::TERMINAL_FAILURE, $traceData);
+
+        // retry only if it is safe to do so
+        if (property_exists($e, "safeRetry") === true and $e->safeRetry === true)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function handleTimeoutException($timeoutException)
+    {
+        // we have tried the payment with multiple terminals
+        // and if we still encounter timeout exception
+        // record it here and throw it back to caller.
+        if ($timeoutException !== null)
+        {
+            if ($timeoutException->getError() === null){
+                $timeoutException->setGatewayErrorCodeAndDesc($timeoutException->getCode(),
+                    $timeoutException->getMessage());
+            }
+            $this->updatePaymentFailed(
+                $timeoutException->getError(),
+                TraceCode::PAYMENT_AUTH_FAILURE);
+
+            throw $timeoutException;
+        }
+    }
+
+    protected function processAuthResponse($request, $payment)
+    {
         //
         // If $request is not null, then payment is two-step process
         // where client needs to provide additional info via his browser.
@@ -74,6 +199,7 @@ trait Authorize
 
         return $this->postPaymentAuthorizeProcessing($payment);
     }
+
 
     public function authorizeFailedPayment($payment)
     {
@@ -154,6 +280,7 @@ trait Authorize
         return $payment->reload()->toArrayAdmin();
     }
 
+
     /**
      * It does the following -
      * Verifies payment method, if it's enabled for the merchant or not.
@@ -174,19 +301,11 @@ trait Authorize
 
         $this->verifyPaymentMethodEnabled($payment, $input);
 
-        $terminalSelected = null;
+        return $gatewayInput;
+    }
 
-        $options = $this->getOptionsForTerminals();
-
-        // Terminal picked is the terminal used for payment processing.
-        //$terminalPicked = (new TerminalPicker)->selectTerminal($payment, $this->mode, $options);
-
-        $terminalSelector = new Terminal\Selector($payment, $this->mode);
-
-        $terminalSelected = $terminalSelector->select($options);
-
-        //$this->logTerminalPickedAndSelected($terminalSelected, $terminalPicked, $payment);
-
+    protected function runGatewaySpecificPreProcessing($payment, array & $gatewayInput)
+    {
         $this->repo->saveOrFail($payment);
 
         $this->trace(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
@@ -204,11 +323,6 @@ trait Authorize
         {
             $gatewayInput['order'] = $payment->order->toArray();
         }
-    }
-
-    protected function getOptionsForTerminals()
-    {
-        return new Terminal\Options;
     }
 
     protected function logTerminalPickedAndSelected($terminalSelected, $terminalPicked, $payment)
@@ -688,14 +802,19 @@ trait Authorize
     protected function getPaymentGatewayRequestData($request, $payment)
     {
         $data['type'] = 'first';
+
         $data['request'] = $request;
+
         $data['version'] = 1;
+
         $data['payment_id'] = $payment->getPublicId();
 
         $data['gateway'] = $this->getEncryptedGatewayText($payment->getGateway());
 
         $amount = $payment->getAmount() / 100;
+
         $data['amount'] = sprintf($amount == intval($amount) ? "%d" : "%.2f", $amount);
+
         $data['image'] = $payment->merchant->getFullLogoUrlWithSize(Merchant\Logo::MEDIUM_SIZE);
 
         return $data;
@@ -844,24 +963,97 @@ trait Authorize
             ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
     }
 
+    protected function recordTerminalAudit($start, $end, array $payment,
+                                            \Exception $ex=null)
+    {
+        $responseTime = $end - $start;
+
+        // record payment actions
+        $pAnalyticsService = new Analytics\Service();
+
+        $input = array("payment_id" => $payment["id"],
+                       "terminal_id" => $payment["terminal_id"],
+                       "terminal_response_time" => $responseTime,
+                       "payment_type" => 1,
+                       "terminal_status" => 1);
+
+        $errorCode = null;
+
+        $errorMsg = null;
+
+        if ($ex !== null)
+        {
+            $input['terminal_status'] = 0;
+        }
+
+        if ($ex instanceOf Exception\GatewayTimeoutException)
+        {
+            // we care about this exception, since its an indicator of
+            // terminal failure
+            $input['terminal_status_code'] = $ex->getError()->getHttpStatusCode();
+
+            $input['terminal_status_msg'] = $ex->getError()->getDescription();
+        }
+
+        elseif ($ex instanceof \Requests_Exception)
+        {
+            // we care about this exception, since its an indicator of
+            // terminal failure
+            $input['terminal_status_code'] = $ex->getCode();
+
+            $input['terminal_status_msg'] = $ex->getMessage();
+
+        }
+
+        $pAnalyticsService->createAuditLog($input);
+    }
+
     protected function callGatewayAuthorize(array $data)
     {
+        $callbackData = null;
+
+        $start = microtime();
+
         try
         {
             $callbackData = $this->callGatewayFunction(
                                             Payment\Action::AUTHORIZE,
                                             $data);
+            $end = microtime();
 
-            return $callbackData;
+            // record a successful payment here for the given terminal id
+            $this->recordTerminalAudit($start, $end, $data["payment"]);
         }
-        catch (Exception\BaseException $e)
+        catch(\Exception $e)
         {
-            $this->updatePaymentFailed(
+            $end = microtime();
+
+            $errorCode = null;
+
+            $errorMsg = null;
+
+            if ($e instanceOf Exception\GatewayTimeoutException or $e instanceof \Requests_Exception)
+            {
+                // record a failed payment for given terminal and continue
+                $this->recordTerminalAudit($start, $end, $data["payment"], $e);
+            }
+            else
+            {
+                // ideally, shouldn't be reaching here and cannot be
+                // any other type other than that of base exception alone
+                if ($e->getError() === null)
+                {
+                    $e->setGatewayErrorCodeAndDesc($e->getCode(), $e->getMessage());
+                }
+                $this->updatePaymentFailed(
                     $e->getError(),
                     TraceCode::PAYMENT_AUTH_FAILURE);
+            }
 
             throw $e;
         }
+
+        return $callbackData;
     }
 
     /**
