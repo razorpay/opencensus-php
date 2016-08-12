@@ -298,7 +298,7 @@ class Gateway extends Base\Gateway
 
         $network = $input['card']['network'];
 
-        if ($network === 'RuPay')
+        if ($network === Card\NetworkName::RUPAY)
         {
             $this->trace->info(
                 TraceCode::GATEWAY_RUPAY_CALLBACK,
@@ -445,33 +445,15 @@ class Gateway extends Base\Gateway
 
         $this->requestVar = $request;
 
-        try
+        // send the request and get response
+        $response['response'] = $this->postRequest($request);
+
+        // uncomment this to simulate an exception here for s2s - strictly for testing only
+        /*if (($this->mode === Mode::TEST) and
+            (App::environment('testing') === false))
         {
-            // send the request and get response
-            $response['response'] = $this->postRequest($request);
-
-            // uncommment this to simulate an exception here for s2s - strictly for testing only
-            /*if (($this->mode === Mode::TEST) and
-                (App::environment('testing') === false))
-            {
-                throw new \Requests_Exception("operation timed out", "operation timed out");
-            }*/
-        }
-        catch(Exception\GatewayTimeoutException $e)
-        {
-            if ($this->action === Base\Action::AUTHORIZE)
-            {
-                throw $e;
-            }
-
-            $this->error = true;
-
-            $response['content'] = '';
-
-            Hdfc\ErrorHandler::setTimeoutError($response);
-
-            return;
-        }
+            throw new \Requests_Exception("operation timed out", "operation timed out");
+        }*/
 
         $response['xml'] = $response['response']->body;
 

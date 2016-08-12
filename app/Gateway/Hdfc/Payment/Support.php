@@ -71,9 +71,20 @@ trait Support
             TraceCode::GATEWAY_SUPPORT_REQUEST,
             $this->supportPaymentRequest);
 
-        $this->runRequestResponseFlow(
-            $this->supportPaymentRequest,
-            $this->supportPaymentResponse);
+        try
+        {
+            $this->runRequestResponseFlow(
+                $this->supportPaymentRequest,
+                $this->supportPaymentResponse);
+        }
+        catch(Exception\GatewayTimeoutException $e)
+        {
+            $this->error = true;
+
+            $this->supportPaymentResponse['content'] = '';
+
+            Hdfc\ErrorHandler::setTimeoutError($this->supportPaymentResponse);
+        }
 
 
         $this->verifyAndSaveSupportResponse($type, $input);

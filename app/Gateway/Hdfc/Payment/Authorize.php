@@ -99,9 +99,20 @@ trait Authorize
             TraceCode::GATEWAY_ENROLLED_AUTH_REQUEST,
             $this->authEnrolledRequest);
 
-        $this->runRequestResponseFlow(
-            $this->authEnrolledRequest,
-            $this->authEnrolledResponse);
+        try
+        {
+            $this->runRequestResponseFlow(
+                $this->authEnrolledRequest,
+                $this->authEnrolledResponse);
+        }
+        catch(Exception\GatewayTimeoutException $e)
+        {
+            $this->error = true;
+
+            $this->supportPaymentResponse['content'] = '';
+
+            Hdfc\ErrorHandler::setTimeoutError($this->supportPaymentResponse);
+        }
 
         $this->verifyAuthResponse($this->authEnrolledResponse);
     }
