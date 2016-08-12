@@ -482,6 +482,8 @@ trait Authorize
         // No card saving, normal simple flow
         if ($payment->isMethodCardOrEmi())
         {
+            $payment->setSave(false);
+
             $vault = $payment->isMethod(Payment\Method::EMI);
 
             $gatewayInput['card'] = $this->createCardEntity($input['card'], $vault, $this->merchant);
