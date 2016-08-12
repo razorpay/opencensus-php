@@ -457,29 +457,17 @@ class Gateway extends Base\Gateway
                 throw new \Requests_Exception("operation timed out", "operation timed out");
             }*/
         }
-        catch(\Requests_Exception $e)
+        catch(Exception\GatewayTimeoutException $e)
         {
             $this->exception = $e;
 
-            //
-            // Some error occurred.
-            // Check that whether the gateway response timed out.
-            // Mostly it should be gateway timeout only
-            //
-            if (Utility::checkTimeout($e))
-            {
-                $this->error = true;
+            $this->error = true;
 
-                $response['content'] = '';
+            $response['content'] = '';
 
-                Hdfc\ErrorHandler::setTimeoutError($response);
+            Hdfc\ErrorHandler::setTimeoutError($response);
 
-                return;
-            }
-            else
-            {
-                throw $e;
-            }
+            return;
         }
 
         $response['xml'] = $response['response']->body;
