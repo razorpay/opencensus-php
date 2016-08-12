@@ -40,7 +40,7 @@ class HdfcGatewayAuthTest extends TestCase
         $this->startTest();
 
         $hdfc = $this->getLastEntity('hdfc', true);
-
+        
         $this->assertEquals($hdfc['error_code'], 'RP00003');
     }
 

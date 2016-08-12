@@ -102,7 +102,7 @@ trait RequestResponseFlowTrait
         $this->assertExceptionClass($actual, $class);
 
         $internalError = $actual->getError()->getAttributes();
-
+        
         $this->assertErrorDataEquals($expected, $internalError);
     }
 

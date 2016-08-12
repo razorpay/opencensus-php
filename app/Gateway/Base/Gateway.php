@@ -287,7 +287,6 @@ class Gateway
         catch (\Requests_Exception $e)
         {
             $this->exception = $e;
-
             //
             // Some error occurred.
             // Check that whether the gateway response timed out.

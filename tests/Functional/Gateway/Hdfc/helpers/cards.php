@@ -25,8 +25,8 @@ return [
         ],
         'exception' => [
             'class' => 'RZP\Exception\GatewayTimeoutException',
-            'internal_error_code' => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
             'gateway_error_code'  => Hdfc\ErrorCode::RP00003,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
         ],
     ],
 

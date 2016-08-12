@@ -64,7 +64,6 @@ trait Enroll
             $this->enrollRequest,
             $this->enrollResponse);
 
-
         //
         // If there is an error then just return
         //
