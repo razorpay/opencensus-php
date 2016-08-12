@@ -459,6 +459,11 @@ class Gateway extends Base\Gateway
         }
         catch(Exception\GatewayTimeoutException $e)
         {
+            if ($this->action === Base\Action::AUTHORIZE)
+            {
+                throw $e;
+            }
+
             $this->error = true;
 
             $response['content'] = '';
