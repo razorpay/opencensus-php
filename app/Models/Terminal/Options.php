@@ -2,15 +2,31 @@
 
 namespace RZP\Models\Terminal;
 
+use RZP\Constants\Mode;
+
 class Options
 {
     protected $chance;
 
     protected static $testChance;
 
+    protected $hasMultiple = false;
+
     public function __construct()
     {
         $this->setChance();
+
+        $this->setMultiple();
+    }
+
+    public function setMultiple()
+    {
+        $this->hasMultiple = true;
+    }
+
+    public function getMultiple()
+    {
+        return $this->hasMultiple;
     }
 
     public function getChance()

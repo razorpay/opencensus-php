@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Invoice\InvoiceItems;
+namespace RZP\Models\Invoice\InvoiceItem;
 
 use RZP\Models\Base;
 use RZP\Models\Order;

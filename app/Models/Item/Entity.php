@@ -13,9 +13,8 @@ class Entity extends Base\PublicEntity
     // so that later we can use this as an independent
     // entity if we want. For example, for product inventory
 
-    const ID            = 'id';
-    const NAME          = 'name';
-    const DESCRIPTION   = 'description';
+    const NAME                  = 'name';
+    const DESCRIPTION           = 'description';
     //
     // This is the tax computed from either
     // tax_flat or tax_percent received from the request
@@ -23,17 +22,17 @@ class Entity extends Base\PublicEntity
     // const TAX_COMPUTED  = 'computed_tax';
     // const TAX_FLAT      = 'flat_tax';
     // const TAX_PERCENT   = 'tax_percent';
-    const AMOUNT        = 'amount';
-    const CURRENCY      = 'currency';
-    const MERCHANT_ID   = 'merchant_id';
+    const AMOUNT                = 'amount';
+    const CURRENCY              = 'currency';
+    const MERCHANT_ID           = 'merchant_id';
     //
     // This is something like an SKU
     //
-    const LISTING_ID    = 'listing_id';
+    const LISTING_ID            = 'listing_id';
 
-    const INR           = 'INR';
-    
-    const QUANTITY      = 'quantity';
+    const INR                   = 'INR';
+
+    const QUANTITY              = 'quantity';
 
     protected static $sign = 'item';
 
@@ -50,6 +49,19 @@ class Entity extends Base\PublicEntity
         // self::TAX_PERCENT       => 0,
         self::LISTING_ID        => null,
         self::CURRENCY          => self::INR,
+        self::QUANTITY          => 1,
+    ];
+
+    protected $visible = [
+        self::NAME,
+        self::DESCRIPTION,
+        self::AMOUNT,
+        self::LISTING_ID,
+        self::CURRENCY,
+        self::CREATED_AT,
+        self::UPDATED_AT,
+        self::MERCHANT_ID,
+        self::QUANTITY,
     ];
 
     protected $public = [
@@ -61,6 +73,8 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::LISTING_ID,
         self::CURRENCY,
+        self::QUANTITY,
+        self::CREATED_AT,
     ];
 
     protected $fillable = [
@@ -68,6 +82,7 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION,
         self::AMOUNT,
         self::LISTING_ID,
+        self::QUANTITY,
         // self::TAX_PERCENT,
         // self::TAX_FLAT,
         self::CURRENCY,
@@ -90,13 +105,18 @@ class Entity extends Base\PublicEntity
     }
 
     // -------------------------- Getters Ends --------------------------
-    
+
     // -------------------- Relations ---------------------------
-    
+
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
-    
-    // -------------------- End Rleations -----------------------   
+
+    public function invoiceItems()
+    {
+        return $this->hasMany('RZP\Models\Invoice\InvoiceItem\Entity');
+    }
+
+    // -------------------- End Rleations -----------------------
 }

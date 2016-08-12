@@ -13,6 +13,11 @@ class Core extends Base\Core
         parent::__construct();
     }
 
+    /**
+     * @param array $input
+     * @param Merchant\Entity $merchant
+     * @return Entity
+     */
     public function create(array $input, Merchant\Entity $merchant)
     {
         $item = (new Entity)->build($input);
@@ -31,9 +36,20 @@ class Core extends Base\Core
         array_map(function($item) use (& $totalAmount)
         {
             $totalAmount += $item->getAmount();
-
         }, $items);
 
         return $totalAmount;
+    }
+    
+    public function getIdsFromItems(array $items)
+    {
+        $itemIds = [];
+        
+        array_map(function($item) use (& $itemIds)
+        {
+            $itemIds[] = $item->getId();
+        }, $items);
+        
+        return $itemIds;
     }
 }

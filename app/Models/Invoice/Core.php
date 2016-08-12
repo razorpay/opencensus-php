@@ -11,8 +11,6 @@ use RZP\Models\Customer;
 
 class Core extends Base\Core
 {
-    const CURRENCY = 'INR';
-
     protected $itemService;
 
     protected $itemRepository;
@@ -44,43 +42,16 @@ class Core extends Base\Core
         // TODO: Should we move this to validator?
         $this->validateRequest($input);
 
-        $itemsDetails = $input[Entity::ITEMS];
-
-        $customerDetails = $input[Entity::CUSTOMER_DETAILS];
-
-        $items = $this->getItemsFromInput($itemsDetails);
-
-        $invoiceOrder = $this->createOrderForInvoice($items);
-
-        $customer = $this->getExistingOrCreateCustomerFromInput($customerDetails);
-
-        $this->invoiceGenerator = new Generator($this->merchant, $invoiceOrder, $customer);
-
-        $invoice = $this->generateInvoice($input, $items);
+        $invoice = $this->generateInvoice($input);
 
         return $invoice;
     }
 
-    protected function generateInvoice(array $input, array $items)
+    protected function generateInvoice(array $input)
     {
-        $invoice = $this->invoiceGenerator->generate($input, $items);
+        $invoice = (new Generator($this->merchant))->generate($input);
 
         return $invoice;
-    }
-
-    protected function getExistingOrCreateCustomerFromInput($customerDetails)
-    {
-        if (isset($customerDetails['id']) === true)
-        {
-            $customer = $this->customerRepository
-                             ->findByIdAndMerchantId($customerDetails['id'], $this->merchant->getId());
-        }
-        else
-        {
-            $customer = $this->customerCore->createLocalCustomer($customerDetails, $this->merchant, false);
-        }
-
-        return $customer;
     }
 
     protected function validateRequest(array $input)
@@ -89,48 +60,5 @@ class Core extends Base\Core
 
         assert((isset($input[Entity::ITEMS])) and
                (count($input[Entity::ITEMS]) > 0));
-    }
-
-    protected function createOrderForInvoice(array $items)
-    {
-        $orderAmount = $this->itemCore->getTotalAmountFromItems($items);
-
-        // TODO: Add a validation for items that all the
-        // items given in the input have the same currency.
-        $orderCurrency = $items[0]->getCurrency();
-
-        // TODO: Should we store any specific value here?
-        $orderReceipt = 'Invoice Order';
-
-        $orderInput = [
-            Order\Entity::AMOUNT    => $orderAmount,
-            Order\Entity::CURRENCY  => $orderCurrency,
-            Order\Entity::RECEIPT   => $orderReceipt,
-        ];
-
-        $order = $this->orderCore->create($orderInput, $this->merchant);
-
-        return $order;
-    }
-
-    // TODO: Should we move this function to Item\Service?
-    protected function getItemsFromInput(array $itemsDetails)
-    {
-        $items = [];
-
-        foreach ($itemsDetails as $itemDetails)
-        {
-            if (empty($itemDetails['id']) === false)
-            {
-                $items[] = $this->itemRepository
-                                ->findByIdAndMerchantId($itemDetails['id'], $this->merchant->getId());
-            }
-            else
-            {
-                $items[] = $this->itemCore->create($itemDetails, $this->merchant);
-            }
-        }
-
-        return $items;
     }
 }

@@ -24,9 +24,9 @@ class CreateItems extends Migration
                   ->primary();
 
             $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH);
-            
+
             $table->string(Entity::NAME, 512);
-            
+
             $table->string(Entity::DESCRIPTION, 2048)
                   ->nullable();
 
@@ -37,6 +37,8 @@ class CreateItems extends Migration
 
             $table->string(Entity::LISTING_ID, 512)
                   ->nullable();
+
+            $table->integer(Entity::QUANTITY);
 
             $table->integer(Entity::CREATED_AT);
             $table->integer(Entity::UPDATED_AT);

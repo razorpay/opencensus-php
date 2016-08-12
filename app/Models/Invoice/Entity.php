@@ -12,7 +12,6 @@ class Entity extends Base\PublicEntity
 {
     use NotesTrait;
 
-    const ID                    = 'id';
     const ORDER_ID              = 'order_id';
     // TODO: Should we store this here? Orders entity already
     // has a customer_id field. We can use that.
@@ -202,6 +201,11 @@ class Entity extends Base\PublicEntity
     public function customer()
     {
         return $this->belongsTo('RZP\Models\Customer\Entity');
+    }
+    
+    public function invoiceItems()
+    {
+        return $this->hasMany('RZP\Models\Invoice\InvoiceItem\Entity');
     }
 
     //-------------------------- End Relations --------------------------------

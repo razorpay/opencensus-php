@@ -38,7 +38,11 @@ class Entity
     const SETTLEMENT            = 'settlement';
     const TRANSACTION           = 'transaction';
     const BANK_ACCOUNT          = 'bank_account';
+    const INVOICE_ITEM          = 'invoice_item';
+    const GATEWAY_ABSENCE       = 'gateway_absence';
+    const TERMINAL_ACTION       = 'terminal_action';
     const DAILY_SETTLEMENT      = 'daily_settlement';
+    const PAYMENT_ANALYTICS     = 'payment_analytics';
     const SETTLEMENT_DETAILS    = 'settlement_details';
 
     //
@@ -87,12 +91,16 @@ class Entity
         self::NETBANKING            => \RZP\Gateway\Netbanking\Base::class,
         self::AXIS_GENIUS           => \RZP\Gateway\AxisGenius::class,
         self::CYBERSOURCE           => \RZP\Gateway\Cybersource::class,
+        self::INVOICE_ITEM          => \RZP\Models\Invoice\InvoiceItem::class,
         self::BANK_ACCOUNT          => \RZP\Models\Merchant\BankAccount::class,
         self::WALLET_PAYZAPP        => \RZP\Gateway\Wallet\Payzapp::class,
+        self::TERMINAL_ACTION       => \RZP\Models\Terminal\Action::class,
         self::NETBANKING_HDFC       => \RZP\Gateway\Netbanking\Hdfc::class,
+        self::GATEWAY_ABSENCE       => \RZP\Models\GatewayStatus\Absence::class,
         self::DAILY_SETTLEMENT      => \RZP\Models\Settlement\Daily::class,
         self::NETBANKING_KOTAK      => \RZP\Gateway\Netbanking\Kotak::class,
         self::WALLET_PAYUMONEY      => \RZP\Gateway\Wallet\Payumoney::class,
+        self::PAYMENT_ANALYTICS     => \RZP\Models\Payment\Analytics::class,
         self::SETTLEMENT_DETAILS    => \RZP\Models\Settlement\Details::class,
     );
 
