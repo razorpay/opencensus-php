@@ -302,7 +302,6 @@ trait Authorize
         $this->verifyPaymentMethodEnabled($payment, $input);
 
         return $gatewayInput;
-
     }
 
     protected function runGatewaySpecificPreProcessing($payment, array & $gatewayInput)
