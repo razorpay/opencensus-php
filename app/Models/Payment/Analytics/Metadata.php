@@ -60,6 +60,7 @@ class Metadata
     const SAFARI        = 'safari';
     const UCWEB         = 'ucweb';
     const OPERA         = 'opera';
+    const EDGE          = 'edge';
 
     const BROWSER_VALUES = array(
         self::CHROME          => 1,
@@ -68,6 +69,7 @@ class Metadata
         self::SAFARI          => 4,
         self::UCWEB           => 5,
         self::OPERA           => 6,
+        self::EDGE            => 7,
     );
 
     public static function validatePlatform($platform)
