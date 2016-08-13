@@ -112,9 +112,12 @@ trait Authorize
                 {
                     $retryAttempts += 1;
 
-                    $timeoutException = $e;
+                    if ($e instanceof Exception\GatewayTimeoutException)
+                    {
+                        $timeoutException = $e;
+                    }
 
-                    $status = $this->logAndCheckForAuthRetry($e, $payment, $retryAttempts);
+                    $status = $this->logAndCheckForAuthRetry($e, $payment);
 
                     if ($status === true)
                     {
@@ -127,7 +130,6 @@ trait Authorize
                     // any other exception, throw an error
                     throw $e;
                 }
-
             }
         }
 
@@ -136,7 +138,7 @@ trait Authorize
         return $this->processAuthResponse($request, $payment);
     }
 
-    protected function logAndCheckForAuthRetry($e, $payment, $retryAttempts)
+    protected function logAndCheckForAuthRetry($e, $payment)
     {
         $traceData = array(
             'errorcode' => $e->getCode(),
