@@ -111,7 +111,7 @@ class Entity extends Base\PublicEntity
         self::RECEIPT_EMAIL_ENABLED => true,
         self::HOLD_FUNDS            => false,
         self::SETTLEMENT_SCHEDULE   => 3,
-        self::FEATURES              => null,
+        self::FEATURES              => Features::CARD_SAVING,
         self::FEE_BEARER            => FeeBearer::PLATFORM,
         self::BRAND_COLOR           => null,
         self::RISK_RATING           => 3,
