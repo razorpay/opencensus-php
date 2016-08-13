@@ -229,7 +229,7 @@ class AdminTest extends TestCase
         $this->waitUntilContainsByCss('body', 'Terminal Assigned successfully');
 
         // Edit Merchant Details
-        $this->clickByLinkText('Edit Merchant');
+        $this->execScript('$(".edit-merchant").click()');
         $this->waitUntilDisplayedByClassName('merchant-modal');
         $this->selectByNameAndValue('international', '0');
         $this->setValueByName('category', '1234');
@@ -241,7 +241,7 @@ class AdminTest extends TestCase
         $this->waitUntilAbsentByClassName('alert-danger');
 
         // Activate Merchant
-        $this->clickByLinkText('Activate Merchant');
+        $this->execScript('$(".activate-merchant").click()');
         $this->waitUntilDisplayedByClassName('confirm-ok');
         $this->clickByClassName('confirm-ok');
         $this->waitUntilAbsentByClassName('confirm-modal');
@@ -251,19 +251,19 @@ class AdminTest extends TestCase
         $this->execScript('location.reload()');
 
         $this->waitUntilContainsByCss('body', 'Disable Live Transactions');
-        $this->clickByLinkText('Disable Live Transactions');
+        $this->execScript('$(".disable-live-transactions").click()');
         $this->waitUntilDisplayedByClassName('confirm-ok');
         $this->clickByClassName('confirm-ok');
         $this->waitUntilAbsentByClassName('confirm-modal');
         $this->waitUntilAbsentByClassName('alert-danger');
         $this->waitUntilContainsByCss('body', 'Live transactions for merchant disabled successfully');
 
-        $this->clickByLinkText('Enable Live Transactions');
+        $this->execScript('$(".enable-live-transactions").click()');
         $this->waitUntilAbsentByClassName('alert-danger');
         $this->waitUntilContainsByCss('body', 'Live transactions for merchant enabled successfully');
 
         // See Merchant Activation Details
-        $this->clickByLinkText('See Activation Form Details');
+        $this->execScript('$(".see-activation-form").click()');
         $this->waitUntilDisplayedByClassName('activation-wrapper');
     }
 
