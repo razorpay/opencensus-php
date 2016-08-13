@@ -201,7 +201,7 @@ class AdminTest extends TestCase
         $this->waitUntilContainsByCss('body', 'Merchant Form unlocked successfully');
 
         //Assign Pricing
-        $this->waitAndClickByLinkText('Assign Pricing');
+        $this->execScript('$(".assign-pricing").click()');
         $this->waitUntilDisplayedByClassName('pricing-modal');
         $this->waitUntilDisplayedByName('pricing_plan_id');
         //$this->select($this->byXPath('//select[@Name="pricing_plan_id"]/option[0]'));
