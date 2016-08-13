@@ -184,6 +184,7 @@ class AdminTest extends TestCase
         $this->execScript('$(".merchant_go").click()');
         $this->assertTrue($this->displayedByClassName('merchants-table-body'));
         $this->clickByLinkText($this->merchant->id);
+        $this->window($this->windowHandles()[1]);
         $this->waitUntilDisplayedByClassName('merchant-wrapper');
         $this->waitUntilContainsByCss('body', $this->merchant->id);
         $this->waitUntilContainsByCss('body', 'Merchant Detail');
@@ -281,11 +282,12 @@ class AdminTest extends TestCase
         $this->execScript('$(".merchant_go").click()');
         $this->assertTrue($this->displayedByClassName('merchants-table-body'));
         $this->clickByXPath('a','text',$this->merchant->id);
+        $this->window($this->windowHandles()[1]);
         $this->waitUntilDisplayedByClassName('merchant-wrapper');
         $this->waitUntilContainsByCss('body', $this->merchant->id);
         $this->waitUntilContainsByCss('body', 'Merchant Detail');
         $this->clickByLinkText('Login as Merchant');
-        $this->window($this->windowHandles()[1]);
+        $this->window($this->windowHandles()[2]);
         $this->waitUntilContainsByCss('body', 'Welcome to Razorpay');
 
         // Logout is currently broken
@@ -311,6 +313,7 @@ class AdminTest extends TestCase
         $this->execScript('$(".merchant_go").click()');
         $this->assertTrue($this->displayedByClassName('merchants-table-body'));
         $this->clickByXPath('a','text',$this->merchant->id);
+        $this->window($this->windowHandles()[1]);
         $this->waitUntilDisplayedByClassName('merchant-wrapper');
         $this->waitUntilContainsByCss('body', $this->merchant->id);
         $this->waitUntilContainsByCss('body', 'Merchant Detail');
@@ -341,6 +344,7 @@ class AdminTest extends TestCase
         $this->execScript('$(".merchant_go").click()');
         $this->assertTrue($this->displayedByClassName('merchants-table-body'));
         $this->clickByXPath('a','text',$this->merchant->id);
+        $this->window($this->windowHandles()[1]);
         $this->waitUntilDisplayedByClassName('merchant-wrapper');
         $this->waitUntilContainsByCss('body', $this->merchant->id);
         $this->waitUntilContainsByCss('body', 'Merchant Detail');
