@@ -782,6 +782,7 @@ app.controller('MerchantDetailCtrl', [
         $scope.alerts.addAlert('danger', null);
       });
     }
+
     function fetchBalance() {
       var request = $http.get('/admin/merchant/' + $scope.merchant.id + '/balance');
       request.success(function (data) {

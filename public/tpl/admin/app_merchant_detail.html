@@ -20,7 +20,7 @@
         <a ui-sref="app.merchants.activation({id:merchant.details.id})" class="list-group-item">
           See Activation Form Details
         </a>
-        <a href class="list-group-item" ng-show="merchant.details.locked==0" ng-click="lockForm()">
+        <a href class="list-group-item lock-form" ng-show="merchant.details.locked==0" ng-click="lockForm()">
           Lock Activation Form <i class="pull-right fa fa-lock"></i>
         </a>
         <a href class="list-group-item" ng-show="merchant.details.locked==1" ng-click="unlockForm()">
@@ -87,7 +87,7 @@
         <a href class="list-group-item" ng-click="openAssignPricing()">
           Assign Pricing <i class="pull-right fa fa-percent"></i>
         </a>
-        <a href class="list-group-item" ng-click="openAssignTerminal()">
+        <a href class="list-group-item assign-terminal" ng-click="openAssignTerminal()">
           Assign Terminal <i class="pull-right fa fa-terminal"></i>
         </a>
         <a href class="list-group-item" ng-click="openAssignBanks()">
@@ -142,7 +142,7 @@
   </div>
   <div class="panel panel-default col-sm-6" >
     <div class="panel-heading m-t m-b">
-      Merchant: <strong>{{merchant.details.id}}</strong>
+      Merchant: <strong>{{merchant.details.id}}</strong> (<a ui-sref="app.entitiesdetail({type:'merchant', id: merchant.details.id, mode: 'live'})">View as Entity</a>)
     </div>
     <div class="text-center m-t">
       <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
@@ -218,7 +218,7 @@
         <a href class="list-group-item">
           <span class="pull-right" ng-if="merchant.details.activated_at">{{merchant.details.activated_at*1000 | date:'medium'}}</span>
           <span class="pull-right" ng-if="!merchant.details.activated_at">NULL</span>
-          Activatation Date
+          Activation Date
         </a>
         <a href class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.confirm_token == null ? 'Confirmed' : 'Not Confirmed'}}">
@@ -377,44 +377,44 @@
           </span>
           Terminal
         </a>
-          <div collapse="isTerminalCollapsed" class="panel-body">
-            <div class="list-group-item">
-              <div class="m-t list-group-item">
-                <table class="table table-striped b-light horz-scroll">
-                  <thead>
-                    <th>Terminal Id</th>
-                    <th>Mode</th>
-                    <th>Gateway</th>
-                    <th>Category</th>
-                    <th>Merchant Id</th>
-                    <th>Merchant Id 2</th>
-                    <th>Terminal Id</th>
-                    <th>Card Allowed</th>
-                    <th>Emi</th>
-                    <th>Emi Duration (Months)</th>
-                    <th>Shared</th>
-                    <th>Created At</th>
-                  </thead>
-                  <tbody>
-                  <tr ng-repeat="terminal in merchant.terminals.items">
-                    <td>{{terminal.id}}</td>
-                    <td>{{terminal.mode}}</td>
-                    <td>{{terminal.gateway}}</td>
-                    <td>{{terminal.category}}</td>
-                    <td>{{terminal.gateway_merchant_id}}</td>
-                    <td>{{terminal.gateway_merchant_id2}}</td>
-                    <td>{{terminal.gateway_terminal_id}}</td>
-                    <td>{{terminal.card}}</td>
-                    <td>{{terminal.emi}}</td>
-                    <th>{{terminal.emi_duration}}</th>
-                    <th>{{terminal.shared}}</th>
-                    <td>{{terminal.created_at*1000 | date:'short'}}</td>
-                  </tr>
-                </tbody>
-                </table>
-              </div>
+        <div collapse="isTerminalCollapsed" class="panel-body">
+          <div class="list-group-item">
+            <div class="m-t list-group-item">
+              <table class="table table-striped b-light horz-scroll">
+                <thead>
+                  <th>Terminal Id</th>
+                  <th>Mode</th>
+                  <th>Gateway</th>
+                  <th>Category</th>
+                  <th>Merchant Id</th>
+                  <th>Merchant Id 2</th>
+                  <th>Terminal Id</th>
+                  <th>Card Allowed</th>
+                  <th>Emi</th>
+                  <th>Emi Duration (Months)</th>
+                  <th>Shared</th>
+                  <th>Created At</th>
+                </thead>
+                <tbody>
+                <tr ng-repeat="terminal in merchant.terminals.items">
+                  <td>{{terminal.id}}</td>
+                  <td>{{terminal.mode}}</td>
+                  <td>{{terminal.gateway}}</td>
+                  <td>{{terminal.category}}</td>
+                  <td>{{terminal.gateway_merchant_id}}</td>
+                  <td>{{terminal.gateway_merchant_id2}}</td>
+                  <td>{{terminal.gateway_terminal_id}}</td>
+                  <td>{{terminal.card}}</td>
+                  <td>{{terminal.emi}}</td>
+                  <th>{{terminal.emi_duration}}</th>
+                  <th>{{terminal.shared}}</th>
+                  <td>{{terminal.created_at*1000 | date:'short'}}</td>
+                </tr>
+              </tbody>
+              </table>
             </div>
           </div>
+        </div>
       </div>
     </div>
   </div>
@@ -499,9 +499,20 @@
              <option value="wallet_payumoney">Payumoney</option>
              <option value="mobikwik">Mobikwik</option><
              <option value="billdesk">Billdesk</option>
+             <option value="ebs">EBS</option>
              <option value="kotak">Kotak</option>
              <option value="netbanking_hdfc">Netbanking HDFC</option>
              <option value="netbanking_kotak">Netbanking KOTAK</option>
+             <option value="cybersource">Cybersource</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-lg-3 control-label">Acquirer:</label>
+        <div class="col-lg-9" >
+          <select class="form-control m-b" ng-model="terminal.gateway_acquirer">
+             <option value="hdfc" selected>HDFC</option>
+             <option value="axis">Axis</option>
           </select>
         </div>
       </div>

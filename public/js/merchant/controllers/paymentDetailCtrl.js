@@ -13,6 +13,9 @@ app.controller('PaymentDetailCtrl', [
 
     $scope.tags = [];
 
+    $scope.card = null;
+    $scope.showCardDetails = false;
+
     user.identity(true).then(function (data) {
       $scope.tags = data.tags;
     });
@@ -32,6 +35,30 @@ app.controller('PaymentDetailCtrl', [
         $scope.refund(data);
       }, $.noop);
     };
+
+    $scope.fetchAndShowCardDetails = function() {
+      var request = $http({
+        method: 'get',
+        url: '/' + $scope.mode + '/payments/' + $scope.entity.id + '/card',
+      });
+      request.success(function (data) {
+        if (data.success) {
+          $scope.card = data.data;
+          $scope.showCardDetails = true;
+        }
+      });
+    };
+
+    $scope.toggleCardDetails = function() {
+      if ($scope.card === null) {
+        $scope.fetchAndShowCardDetails();
+      }
+      else
+      {
+        $scope.showCardDetails = ! $scope.showCardDetails;
+      }
+    };
+
     $scope.openCaptureModal = function () {
       var modalInstance = $modal.open({
         templateUrl: 'captureModalContent.html',

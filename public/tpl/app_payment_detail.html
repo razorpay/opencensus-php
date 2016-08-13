@@ -44,6 +44,18 @@
             Wallet
           </a>
           <a href class="list-group-item">
+            <span class="pull-right">
+              <button class="btn btn-default btn-xs pull-right"  ng-click="toggleCardDetails()" ng-show="entity.method === 'card'">Show/Hide</button>
+            </span>
+            Card Details
+          </a>
+          <div collapse="!showCardDetails" class="panel-body">
+            <a href class="list-group-item" ng-repeat="(key,value) in card">
+              <span class="pull-right">{{value}}</span>
+              {{key|titlecase}}
+            </a>
+          </div>
+          <a href class="list-group-item">
             <span class="pull-right" ng-show="entity.refund_status">{{entity.refund_status | titlecase}}</span>
             <span class="pull-right" ng-hide="entity.refund_status">None</span>
             Refund Status

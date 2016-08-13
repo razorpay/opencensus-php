@@ -1,8 +1,10 @@
 <?php
 
+namespace App;
+
 use Razorpay\Api\Request as ApiRequest;
-use Http\AppResponse;
-use Http\SlackResponse;
+use App\Http\AppResponse;
+use App\Http\SlackResponse;
 
 /*
 |--------------------------------------------------------------------------
@@ -37,27 +39,6 @@ App::after(function($request, $response)
 | integrates HTTP Basic authentication for quick, simple checking.
 |
 */
-
-Route::filter('auth.user', function()
-{
-    if (Auth::user()->guest())
-    {
-        return Response::json(array('success' => false, 'data' => array()));
-    }
-    else
-    {
-        $user = Auth::user()->user();
-        ApiRequest::addHeader('X-Dashboard-Merchant', $user->email);
-
-        // Just in case an admin user is performing the action
-        $admin = Auth::admin()->user();
-        if ($admin)
-        {
-            $adminUsername = $admin->username;
-            ApiRequest::addHeader('X-Dashboard-Username', $adminUsername);
-        }
-    }
-});
 
 Route::filter('slack', function()
 {

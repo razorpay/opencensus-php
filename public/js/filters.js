@@ -9,7 +9,7 @@ angular.module('app.filters', []).filter('fromNow', function () {
   return function (input) {
     if (!input)
       return input;
-    var words = input.toString().split(' ');
+    var words = input.toString().split(/[\s_]/);
     for (var i = 0; i < words.length; i++) {
       words[i] = words[i].charAt(0).toUpperCase() + words[i].slice(1);
     }

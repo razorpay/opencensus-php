@@ -66,6 +66,8 @@ app.controller('ActivationCtrl', [
         angular.forEach(data.data.data, function (value, key) {
           $scope.data[key] = value;
         });
+        $scope.data[4].bank_account_number_confirmation = $scope.data[4].bank_account_number;
+
         angular.forEach(data.data.files, function (value, key) {
           $scope.fileAlerts[key].addAlert('success', 'File already uploaded');
         });
@@ -85,6 +87,15 @@ app.controller('ActivationCtrl', [
     }
     function saveStep(step) {
       var data = $scope.data[step];
+      if (step === 4) {
+        if (data.bank_account_number !== data.bank_account_number_confirmation) {
+          $scope.alerts[step].addAlert('danger', 'Bank Account Number doesn\'t match');
+          return;
+        }
+        data = angular.copy(data, {});
+        delete data.bank_account_number_confirmation;
+      }
+
       var request = $http({
         method: 'post',
         url: '/activation/save/step/' + step,

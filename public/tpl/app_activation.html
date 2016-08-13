@@ -359,7 +359,13 @@
         <div class="form-group">
           <label for="bank_account_number" class="col-sm-3 control-label">Bank Account Number</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" name="bank_account_number" ng-model="data.4.bank_account_number" placeholder="Bank Account Number" required>
+            <input type="password" class="form-control" name="bank_account_number" ng-model="data.4.bank_account_number" placeholder="Bank Account Number" required autocomplete="off">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="bank_account_number" class="col-sm-3 control-label">Re-enter Bank Account Number</label>
+          <div class="col-sm-8">
+            <input type="text" ng-class="{'ng-invalid': data.4.bank_account_number !== data.4.bank_account_number_confirmation, 'form-control': true, 'ng-valid': data.4.bank_account_number === data.4.bank_account_number_confirmation}" name="bank_account_number_confirmation" ng-model="data.4.bank_account_number_confirmation" placeholder="Re-enter your Bank Account Number">
           </div>
         </div>
         <div class="form-group">
