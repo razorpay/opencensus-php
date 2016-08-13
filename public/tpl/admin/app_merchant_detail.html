@@ -218,7 +218,7 @@
         <a href class="list-group-item">
           <span class="pull-right" ng-if="merchant.details.activated_at">{{merchant.details.activated_at*1000 | date:'medium'}}</span>
           <span class="pull-right" ng-if="!merchant.details.activated_at">NULL</span>
-          Activatation Date
+          Activation Date
         </a>
         <a href class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.confirm_token == null ? 'Confirmed' : 'Not Confirmed'}}">
