@@ -187,12 +187,10 @@ class Entity extends Base\PublicEntity
 
     protected function setPublicItemsDetailsAttribute(array & $array)
     {
-        $invoiceItems = $this->invoiceItems()->getResults();
-
-        foreach ($invoiceItems as $invoiceItem)
-        {
-            $array[self::ITEMS_DETAILS][] = $invoiceItem->item->toArrayPublic();
-        }
+        // TODO: This will output a collection of items directly.
+        // Should we instead iterate through each item in the collection
+        // and return back an array of items instead of an entity collection?
+        $array[self::ITEMS_DETAILS] = $this->items()->getResults()->toArrayPublic();
     }
 
     // -------------------------------------- End Public Setters --------------------------------------
@@ -281,9 +279,10 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Customer\Entity');
     }
 
-    public function invoiceItems()
+    public function items()
     {
-        return $this->hasMany('RZP\Models\Invoice\InvoiceItem\Entity');
+        return $this->belongsToMany('RZP\Models\Item\Entity', Table::INVOICE_ITEM)
+                    ->withTimestamps();
     }
 
     // TODO: We don't need to really store merchant in this entity. Invoice is

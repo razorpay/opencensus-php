@@ -33,8 +33,6 @@ class Generator
 
         $this->itemCore = new Item\Core();
 
-        $this->invoiceItemCore = new InvoiceItem\Core();
-
         $this->repo = $this->app['repo'];
     }
 
@@ -58,19 +56,12 @@ class Generator
         // it uses $this->customer which is set in setAssociations.
         $this->setCustomerDetailsAttributes();
 
-        //$this->invoice->setItemsDetails($this->items);
-
         // Saving here for the associations
         $this->repo->saveOrFail($this->invoice);
 
         // This function should be called only after saving the invoice entity and the items entities
-        // because the invoiceItems entity required the invoice and items to be created first.
+        // because the invoiceItems entity requires the invoice and items to be created first.
         $this->createMappingBetweenInvoiceAndItems();
-
-        // // This function should be called only after the mapping is done.
-        // $this->invoice->setItemsDetails();
-
-        //$this->invoice->saveOrFail();
 
         return $this->invoice;
     }
@@ -85,12 +76,15 @@ class Generator
 
     protected function createMappingBetweenInvoiceAndItems()
     {
-        // TODO: Instead, use firstOrCreate?
+        $itemIds = [];
 
-        foreach ($this->items as $item)
+        array_map(function($item) use (& $itemIds)
         {
-            $this->invoiceItemCore->mapItemToInvoice($this->invoice, $item);
-        }
+            $itemIds[] = $item->getId();
+        }, $this->items);
+
+        // attach can be used when a relation is defined as belongsToMany()
+        $this->invoice->items()->attach($itemIds);
     }
 
     protected function createAssociatedEntities(array $itemsDetails, array $customerDetails)

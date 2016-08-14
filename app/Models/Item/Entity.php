@@ -116,9 +116,10 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
-    public function invoiceItems()
+    public function invoices()
     {
-        return $this->hasMany('RZP\Models\Invoice\InvoiceItem\Entity');
+        return $this->belongsToMany('RZP\Models\Invoice\Entity', Table::INVOICE_ITEM)
+                    ->withTimestamps();
     }
 
     // -------------------- End Rleations -----------------------

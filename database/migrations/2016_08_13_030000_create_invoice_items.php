@@ -21,8 +21,7 @@ class CreateInvoiceItems extends Migration
         {
             $table->engine = 'InnoDB';
 
-            $table->char(Entity::ID, Entity::ID_LENGTH)
-                  ->primary();
+            $table->increments(Entity::ID);
 
             $table->char(Entity::INVOICE_ID, Invoice\Entity::ID_LENGTH);
 
@@ -35,8 +34,6 @@ class CreateInvoiceItems extends Migration
 
             $table->index(Entity::CREATED_AT);
             $table->index(Entity::UPDATED_AT);
-            $table->index(Entity::INVOICE_ID);
-            $table->index(Entity::ITEM_ID);
 
             $table->foreign(Entity::INVOICE_ID)
                 ->references(Invoice\Entity::ID)
