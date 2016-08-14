@@ -65,6 +65,34 @@ trait FileHandlerTrait
         return $url;
     }
 
+
+    public function writeToExcelFileH2H($data, $name)
+    {
+        \Config::set('excel::export.calculate', true);
+
+        $columnFormat = $this->getColumnFormatForExcel();
+
+        $excel = $this->createExcelObject($data, $name, $columnFormat);
+
+        $fileMetadata = $excel->store('xlsx', storage_path('files/settlement'), true);
+        $fullpath = $fileMetadata['full'];
+
+        $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+
+        $bucket = 'h2h_bucket';
+
+        $metadata = array(
+            'gid'   => 10000,
+            'uid'   => 10001,
+            'mtime' => Carbon::now('Asia/Kolkata')->timestamp,
+            'mode'  => '0x777'
+        );
+
+        $url = $this->saveToAws($name.'.xlsx', $fullpath, $xlsxMimeType, $bucket, $metadata);
+
+        return $url;
+    }
+
     protected function createExcelObject($data, $name, $columnFormat = [])
     {
         $excel = Excel::create($name, function($excel) use ($data, $columnFormat)
@@ -191,7 +219,8 @@ trait FileHandlerTrait
         return $this->saveToAws($name, $fullpath, 'text/plain');
     }
 
-    protected function saveToAws($name, $fullpath, $mime = 'text/plain')
+    protected function saveToAws(
+        $name, $fullpath, $mime = 'text/plain', $bucket = 'settlement_bucket', $metadata = array())
     {
         $config =  \Config::get('aws');
 
@@ -207,10 +236,11 @@ trait FileHandlerTrait
         try
         {
             $s3Obj = array(
-                'Bucket'        => $config['settlement_bucket'],
+                'Bucket'        => $config[$bucket],
                 'Key'           => $name,
                 'ContentType'   => $mime,
                 'SourceFile'    => $fullpath,
+                'Metadata'      => $metadata,
             );
 
             $this->trace()->info(TraceCode::AWS_FILE_UPLOAD, $s3Obj);

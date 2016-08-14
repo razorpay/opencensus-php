@@ -164,7 +164,7 @@ class NodalAccount
         $count['neft']  = $neftCount;
         $count['ift']   = $iftCount;
 
-        $urlExcel = $this->writeToExcelFile($excelData, $this->getFileToWriteNameWithoutExt());
+        $urlExcel = $this->writeToExcelFileH2H($excelData, $this->getFileToWriteNameWithoutExt());
 
         $txt = $this->generateText($textData);
 
