@@ -47,6 +47,15 @@ class Core extends Base\Core
         return $invoice;
     }
 
+    public function retrieveByIdAndMerchantId($id, $merchantId)
+    {
+        Entity::verifyIdAndStripSign($id);
+
+        $invoice = $this->repo->invoice->findByIdAndMerchantId($id, $merchantId);
+
+        return $invoice;
+    }
+
     protected function generateInvoice(array $input)
     {
         $invoice = (new Generator($this->merchant))->generate($input);

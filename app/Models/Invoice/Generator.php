@@ -54,16 +54,39 @@ class Generator
 
         $this->setAssociations();
 
+        // This function should be called only after setAssociations since
+        // it uses $this->customer which is set in setAssociations.
+        $this->setCustomerDetailsAttributes();
+
+        //$this->invoice->setItemsDetails($this->items);
+
         // Saving here for the associations
         $this->repo->saveOrFail($this->invoice);
 
+        // This function should be called only after saving the invoice entity and the items entities
+        // because the invoiceItems entity required the invoice and items to be created first.
         $this->createMappingBetweenInvoiceAndItems();
+
+        // // This function should be called only after the mapping is done.
+        // $this->invoice->setItemsDetails();
+
+        //$this->invoice->saveOrFail();
 
         return $this->invoice;
     }
-    
+
+    protected function setCustomerDetailsAttributes()
+    {
+        $this->invoice->setCustomerName($this->customer->getName());
+        $this->invoice->setCustomerContact($this->customer->getContact());
+        $this->invoice->setCustomerEmail($this->customer->getEmail());
+        $this->invoice->setCustomerAddress($this->customer->getAddress());
+    }
+
     protected function createMappingBetweenInvoiceAndItems()
     {
+        // TODO: Instead, use firstOrCreate?
+
         foreach ($this->items as $item)
         {
             $this->invoiceItemCore->mapItemToInvoice($this->invoice, $item);
@@ -72,7 +95,7 @@ class Generator
 
     protected function createAssociatedEntities(array $itemsDetails, array $customerDetails)
     {
-        $this->items = $this->createItemsFromInputAndMapToInvoice($itemsDetails);
+        $this->items = $this->createItemsFromInput($itemsDetails);
 
         $this->order = $this->createOrderForInvoice($this->items);
 
@@ -84,9 +107,11 @@ class Generator
         $this->invoice->order()->associate($this->order);
 
         $this->invoice->customer()->associate($this->customer);
+
+        $this->invoice->merchant()->associate($this->merchant);
     }
 
-    protected function createItemsFromInputAndMapToInvoice(array $itemsDetails)
+    protected function createItemsFromInput(array $itemsDetails)
     {
         $items = [];
 

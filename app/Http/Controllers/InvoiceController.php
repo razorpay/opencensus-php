@@ -23,4 +23,11 @@ class InvoiceController extends Controller
 
         return ApiResponse::json($data);
     }
+    
+    public function getInvoice($id)
+    {
+        $payment = $this->service->fetch($id);
+
+        return ApiResponse::json($payment);
+    }
 }

@@ -53,6 +53,8 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $visible = [
+        self::ID,
+        self::PUBLIC_ID,
         self::NAME,
         self::DESCRIPTION,
         self::AMOUNT,
@@ -65,6 +67,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $public = [
+        self::ID,
         self::NAME,
         self::DESCRIPTION,
         // self::TAX_COMPUTED,

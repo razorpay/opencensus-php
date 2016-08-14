@@ -233,7 +233,8 @@ final class Route
         'otp_verify'                              => ['post',     'otp/verify',                               'CustomerController@verifyOtp'                                      ],
         'sms_callback'                            => ['post',     'sms/{id}/callback',                        'CustomerController@updateSmsStatus'                                ],
         'es_migrate_entity'                       => ['post',     'es/migrate/{entityName}',                  'EsController@migrateEntity'                                        ],
-        'invoice_create'                          => ['post',      'invoices',                                'InvoiceController@createInvoice'                                   ],
+        'invoice_create'                          => ['post',     'invoices',                                 'InvoiceController@createInvoice'                                   ],
+        'invoice_fetch'                           => ['get',      'invoices/{id}',                            'InvoiceController@getInvoice'                                      ],
     );
 
     public static $public = array(
@@ -310,6 +311,7 @@ final class Route
         'customer_fetch_tokens',
         'setl_combined_report',
         'invoice_create',
+        'invoice_fetch',
     );
 
     public static $internal = array(

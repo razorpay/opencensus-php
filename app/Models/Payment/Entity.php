@@ -1108,11 +1108,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT_REFUNDED, $amountRefunded);
     }
 
-    public function scopeMerchantId($query, $merchantId)
-    {
-        return $query->where(self::MERCHANT_ID,'=',$merchantId);
-    }
-
     public function toArrayTraceRelevant()
     {
         $fields = array(
@@ -1139,6 +1134,11 @@ class Entity extends Base\PublicEntity
     public function scopeCreatedAtLessThan($query, $ts)
     {
         return $query->where(Payment\Entity::CREATED_AT, '<', $ts);
+    }
+
+    public function scopeMerchantId($query, $merchantId)
+    {
+        return $query->where(self::MERCHANT_ID,'=',$merchantId);
     }
 
 // --------------------- Query scopes section ends -----------------------------

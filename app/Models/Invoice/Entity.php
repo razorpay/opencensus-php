@@ -13,14 +13,12 @@ class Entity extends Base\PublicEntity
     use NotesTrait;
 
     const ORDER_ID              = 'order_id';
-    // TODO: Should we store this here? Orders entity already
-    // has a customer_id field. We can use that.
     const CUSTOMER_ID           = 'customer_id';
     const CUSTOMER_NAME         = 'customer_name';
     const CUSTOMER_EMAIL        = 'customer_email';
-    // TODO: Should we use an address ID here instead?
+    // TODO: Use an address ID here instead.
     const CUSTOMER_ADDRESS      = 'customer_address';
-    const CUSTOMER_PHONE        = 'customer_phone';
+    const CUSTOMER_CONTACT      = 'customer_contact';
     const STATUS                = 'status';
     const DUE_BY                = 'due_by';
     // const SHIPPING              = 'shipping';
@@ -39,6 +37,7 @@ class Entity extends Base\PublicEntity
     const CURRENCY              = 'currency';
 
     const CUSTOMER_DETAILS      = 'customer_details';
+    const ITEMS_DETAILS         = 'items_details';
 
     // const TOTAL_TAX             = 'total_tax';
 
@@ -60,6 +59,17 @@ class Entity extends Base\PublicEntity
         self::SMS_STATUS        => Status::PENDING,
     ];
 
+    // Generates fields to be filled in the DB.
+    // No validation performed on these fields.
+    protected static $generators = [
+        // self::DISCOUNT,
+        self::DUE_BY,
+        self::EMAIL_STATUS,
+        self::SMS_STATUS,
+    ];
+
+    // Fields that can be inserted by ->fill() directly
+    // This array should also include the fields mentioned in the generator.
     protected $fillable = [
         self::DUE_BY,
         self::EMAIL_STATUS,
@@ -69,6 +79,7 @@ class Entity extends Base\PublicEntity
         // self::DISCOUNT,
     ];
 
+    // Fields to be exposed by the entity in general
     protected $visible = [
         self::ID,
         self::PUBLIC_ID,
@@ -76,29 +87,35 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_ID,
         self::MERCHANT_ID,
         self::ORDER_ID,
-        self::CUSTOMER_EMAIL,
-        self::CUSTOMER_PHONE,
-        self::CUSTOMER_NAME,
-        self::CUSTOMER_ADDRESS,
+        // self::CUSTOMER_EMAIL,
+        // self::CUSTOMER_CONTACT,
+        // self::CUSTOMER_NAME,
+        // self::CUSTOMER_ADDRESS,
         self::DUE_BY,
+        self::CUSTOMER_DETAILS,
+        self::ITEMS_DETAILS,
         // self::ADJUSTMENT,
         // self::SHIPPING,
         // self::DISCOUNT,
         self::SMS_STATUS,
         self::EMAIL_STATUS,
         self::CURRENCY,
+        self::MERCHANT_ID,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
 
+    // Fields to be exposed to the client
     protected $public = [
         self::ID,
         self::ENTITY,
+        // TODO: Customer ID is separate because the details of customer id
+        // can change later. The invoice details will be in customer_details.
+        // The customer_id at the time of generation of the invoice for the
+        // given customer details would be this customer id here.
         self::CUSTOMER_ID,
-        self::CUSTOMER_ADDRESS,
-        self::CUSTOMER_EMAIL,
-        self::CUSTOMER_NAME,
-        self::CUSTOMER_PHONE,
+        self::CUSTOMER_DETAILS,
+        self::ITEMS_DETAILS,
         self::STATUS,
         self::CREATED_AT,
         self::DUE_BY,
@@ -110,16 +127,77 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
     ];
 
-    protected static $generators = [
-        // self::DISCOUNT,
-        self::DUE_BY,
-        self::EMAIL_STATUS,
-        self::SMS_STATUS,
+    // Fields to be added while retrieving the entity
+    protected $appends = [
+        self::PUBLIC_ID, self::ENTITY, self::CUSTOMER_DETAILS,
     ];
 
-    protected $dates = array(self::DUE_BY);
+    // The functions for these fields will be called only
+    // via toArrayPublic()
+    protected $publicSetters = [
+        self::ID,
+        self::ENTITY,
+        self::ITEMS_DETAILS,
+    ];
 
-    //------------------Generators--------------------------------------
+    // -------------------------------------- Setters --------------------------------------
+
+    public function setCustomerName($customerName)
+    {
+        $this->setAttribute(self::CUSTOMER_NAME, $customerName);
+    }
+
+    public function setCustomerAddress($customerAddress)
+    {
+        $this->setAttribute(self::CUSTOMER_ADDRESS, $customerAddress);
+    }
+
+    public function setCustomerEmail($customerEmail)
+    {
+        $this->setAttribute(self::CUSTOMER_EMAIL, $customerEmail);
+    }
+
+    public function setCustomerContact($customerContact)
+    {
+        $this->setAttribute(self::CUSTOMER_CONTACT, $customerContact);
+    }
+
+    public function setItemsDetails($items)
+    {
+        $this->setAttribute(self::ITEMS_DETAILS, $items);
+    }
+
+    // -------------------------------------- End Setters --------------------------------------
+
+    // -------------------------------------- Accessors --------------------------------------
+
+    protected function getCustomerDetailsAttribute()
+    {
+        return [
+            self::CUSTOMER_NAME     => $this->attributes[self::CUSTOMER_NAME],
+            self::CUSTOMER_EMAIL    => $this->attributes[self::CUSTOMER_EMAIL],
+            self::CUSTOMER_CONTACT  => $this->attributes[self::CUSTOMER_CONTACT],
+            self::CUSTOMER_ADDRESS  => $this->attributes[self::CUSTOMER_ADDRESS],
+        ];
+    }
+
+    // -------------------------------------- End Accessors --------------------------------------
+
+    // -------------------------------------- Public Setters --------------------------------------
+
+    protected function setPublicItemsDetailsAttribute(array & $array)
+    {
+        $invoiceItems = $this->invoiceItems()->getResults();
+
+        foreach ($invoiceItems as $invoiceItem)
+        {
+            $array[self::ITEMS_DETAILS][] = $invoiceItem->item->toArrayPublic();
+        }
+    }
+
+    // -------------------------------------- End Public Setters --------------------------------------
+
+    // -------------------------------------- Generators --------------------------------------
 
     public function generateEmailStatus($input)
     {
@@ -189,9 +267,9 @@ class Entity extends Base\PublicEntity
     //     $this->setAttribute(self::DISCOUNT, $discount);
     // }
 
-    //--------------------- End Generators ------------------------------------
+    // -------------------------------------- End Generators --------------------------------------
 
-    //-------------------------- Relations ------------------------------------
+    // -------------------------------------- Relations --------------------------------------
 
     public function order()
     {
@@ -202,11 +280,45 @@ class Entity extends Base\PublicEntity
     {
         return $this->belongsTo('RZP\Models\Customer\Entity');
     }
-    
+
     public function invoiceItems()
     {
         return $this->hasMany('RZP\Models\Invoice\InvoiceItem\Entity');
     }
 
-    //-------------------------- End Relations --------------------------------
+    // TODO: We don't need to really store merchant in this entity. Invoice is
+    // already associated with an order, which in turn is associated with
+    // a  merchant. But, I don't want to tightly couple orders with invoices,
+    // wherever possible. Orders was not initially meant for this kind of use-case.
+    // The more we couple orders to other entities, its purpose gets lost and the
+    // complexity increases exponentially with every new feature using orders.
+    //
+    // Also, querying becomes easier by storing the merchant in the invoices table itself.
+    // Lesser complexity.
+    // Thoughts please.
+    public function merchant()
+    {
+        return $this->belongsTo('RZP\Models\Merchant\Entity');
+    }
+
+    // -------------------------------------- End Relations --------------------------------------
+
+    // -------------------------------------- Query scopes --------------------------------------
+
+    public function scopeStatus($query, $status)
+    {
+        return $query->where(Entity::STATUS, '=', $status);
+    }
+
+    public function scopeCreatedAtLessThan($query, $ts)
+    {
+        return $query->where(Entity::CREATED_AT, '<', $ts);
+    }
+
+    public function scopeMerchantId($query, $merchantId)
+    {
+        return $query->where(self::MERCHANT_ID,'=',$merchantId);
+    }
+
+// -------------------------------------- Query scopes section ends --------------------------------------
 }

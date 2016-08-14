@@ -7,6 +7,7 @@ use RZP\Models\Invoice\Entity;
 use RZP\Models\Order;
 use RZP\Constants\Table;
 use RZP\Models\Customer;
+use RZP\Models\Merchant;
 
 class CreateInvoices extends Migration
 {
@@ -28,6 +29,8 @@ class CreateInvoices extends Migration
 
             $table->char(Entity::CUSTOMER_ID, Entity::ID_LENGTH);
 
+            $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH);
+
             $table->integer(Entity::DUE_BY);
 
             $table->string(Entity::STATUS, 32);
@@ -47,7 +50,7 @@ class CreateInvoices extends Migration
             $table->string(Entity::CUSTOMER_EMAIL)
                   ->nullable();
 
-            $table->string(Entity::CUSTOMER_PHONE)
+            $table->string(Entity::CUSTOMER_CONTACT)
                   ->nullable();
 
             $table->integer(Entity::CREATED_AT);
@@ -68,6 +71,11 @@ class CreateInvoices extends Migration
                   ->references(Customer\Entity::ID)
                   ->on(Table::CUSTOMER)
                   ->on_delete('restrict');
+
+            $table->foreign(Entity::MERCHANT_ID)
+                ->references(Merchant\Entity::ID)
+                ->on(Table::MERCHANT)
+                ->on_delete('restrict');
         });
     }
 
@@ -91,6 +99,14 @@ class CreateInvoices extends Migration
             $table->dropForeign
             (
                 Table::TRANSACTION . '_' . Entity::CUSTOMER_ID . '_foreign'
+            );
+        });
+
+        Schema::table(Table::INVOICE, function($table)
+        {
+            $table->dropForeign
+            (
+                Table::MERCHANT . '_' . Entity::MERCHANT_ID . '_foreign'
             );
         });
 
