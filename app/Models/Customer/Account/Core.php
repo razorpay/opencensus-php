@@ -70,7 +70,7 @@ class Core extends Base\Core
     {
         $input[Entity::CONTACT] = Customer\Validator::validateAndParseContact(
             $input[Entity::CONTACT]);
-
+        
         $data = (new Customer\Raven)->sendOtp($input, $merchant);
 
         return $data;

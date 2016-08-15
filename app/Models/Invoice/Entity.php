@@ -140,6 +140,31 @@ class Entity extends Base\PublicEntity
         self::ITEMS_DETAILS,
     ];
 
+    // -------------------------------------- Getters --------------------------------------
+
+    public function getEmailStatus()
+    {
+        return $this->getAttribute(self::EMAIL_STATUS);
+    }
+
+    public function getSmsStatus()
+    {
+        return $this->getAttribute(self::SMS_STATUS);
+    }
+
+    public function getCustomerEmail()
+    {
+        return $this->getAttribute(self::CUSTOMER_EMAIL);
+    }
+
+    public function getCustomerContact()
+    {
+        return $this->getAttribute(self::CUSTOMER_CONTACT);
+    }
+
+    // -------------------------------------- End Getters --------------------------------------
+
+
     // -------------------------------------- Setters --------------------------------------
 
     public function setCustomerName($customerName)
@@ -165,6 +190,20 @@ class Entity extends Base\PublicEntity
     public function setItemsDetails($items)
     {
         $this->setAttribute(self::ITEMS_DETAILS, $items);
+    }
+
+    public function setSmsStatus(Status $status)
+    {
+        Status::checkStatus($status);
+
+        $this->setAttribute(self::SMS_STATUS, $status);
+    }
+
+    public function setEmailStatus(Status $status)
+    {
+        Status::checkStatus($status);
+
+        $this->setAttribute(self::EMAIL_STATUS, $status);
     }
 
     // -------------------------------------- End Setters --------------------------------------

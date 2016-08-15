@@ -27,6 +27,12 @@ class Raven
 
     protected $mode;
 
+    const RAVEN_URLS = [
+        'send-otp'      => 'sms/send-otp',
+        'send-invoice'  => 'sms/send-invoice',
+        'verify-otp'    => 'sms/verify-otp',
+    ];
+
     protected $validationErrors = [
         ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED
@@ -59,7 +65,23 @@ class Raven
         }
         else
         {
-            $response = $this->sendRequest('sms/send-otp', 'post', $input);
+            $response = $this->sendRequest(self::RAVEN_URLS['send-otp'], 'post', $input);
+        }
+
+        return $response;
+    }
+
+    public function sendInvoice($input)
+    {
+        $response = null;
+
+        if ($this->mode === Mode::TEST)
+        {
+            $response['sms_id'] = '1000000invoice';
+        }
+        else
+        {
+            $response = $this->sendRequest(self::RAVEN_URLS['send-invoice'], 'post', $input);
         }
 
         return $response;
@@ -75,7 +97,7 @@ class Raven
         }
         else
         {
-            $response = $this->sendRequest('sms/verify-otp', 'post', $input);
+            $response = $this->sendRequest(self::RAVEN_URLS['verify-otp'], 'post', $input);
         }
 
         return $response;
@@ -83,7 +105,7 @@ class Raven
 
     public function smsCallback($id, $input)
     {
-        $relativeUrl = 'sms/'.$id.'/callback';
+        $relativeUrl = 'sms/' . $id . '/callback';
 
         $response = $this->sendRequest($relativeUrl, 'post', $input);
 
@@ -95,7 +117,9 @@ class Raven
         $url = $this->baseUrl . $url;
 
         if ($data === null)
+        {
             $data = '';
+        }
 
         $authHeader = 'Basic '. base64_encode($this->key . ':' . $this->secret);
 
@@ -117,6 +141,8 @@ class Raven
         $response = $this->sendRavenRequest($request);
 
         $decodedResponse = json_decode($response->body, true);
+
+        $this->trace->info(TraceCode::RAVEN_RESPONSE, $decodedResponse);
 
         $this->checkErrors($decodedResponse);
 
@@ -147,8 +173,6 @@ class Raven
 
     protected function checkErrors($response)
     {
-        $this->trace->info(TraceCode::RAVEN_RESPONSE, $response);
-
         if (isset($response['error']))
         {
             $errorCode = $response['error']['internal_error_code'];

@@ -16,18 +16,25 @@ class Service extends Base\Service
 
         $this->core = new Core();
     }
-    
+
     public function create($input)
     {
         $invoice = $this->core->create($input);
 
         return $invoice->toArrayPublic();
     }
-    
+
     public function fetch($id)
     {
         $invoice = $this->core->retrieveByIdAndMerchantId($id, $this->merchant->getId());
 
         return $invoice->toArrayPublic();
+    }
+
+    public function fetchMultiple(array $input)
+    {
+        $invoices = $this->repo->invoice->fetch($input, $this->merchant->getId());
+
+        return $invoices->toArrayPublic();
     }
 }

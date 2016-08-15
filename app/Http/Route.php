@@ -235,6 +235,8 @@ final class Route
         'es_migrate_entity'                       => ['post',     'es/migrate/{entityName}',                  'EsController@migrateEntity'                                        ],
         'invoice_create'                          => ['post',     'invoices',                                 'InvoiceController@createInvoice'                                   ],
         'invoice_fetch'                           => ['get',      'invoices/{id}',                            'InvoiceController@getInvoice'                                      ],
+        'invoice_fetch_multiple'                  => ['get',      'invoices',                                 'InvoiceController@getInvoices'                                     ],
+        'invoice_notification_update'             => ['put',      'invoices/{medium}',                        'InvoiceController@updateInvoiceNotificationStatus'                 ],
     );
 
     public static $public = array(
@@ -312,6 +314,7 @@ final class Route
         'setl_combined_report',
         'invoice_create',
         'invoice_fetch',
+        'invoice_fetch_multiple',
     );
 
     public static $internal = array(

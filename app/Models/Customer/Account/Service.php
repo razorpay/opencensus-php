@@ -173,7 +173,7 @@ class Service extends Base\Service
      * @param  input params
      * @return issues a new app_token if device_token is valid
      */
-    private function validateDeviceToken($deviceToken, $customer)
+    public function validateDeviceToken($deviceToken, $customer)
     {
         $result = ['valid' => false];
 
@@ -217,4 +217,3 @@ class Service extends Base\Service
         return $data;
     }
 }
-

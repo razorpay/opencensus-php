@@ -30,4 +30,19 @@ class InvoiceController extends Controller
 
         return ApiResponse::json($payment);
     }
+
+    public function getInvoices()
+    {
+        $input = Request::all();
+        
+        $invoices = $this->service->fetchMultiple($input);
+
+        return ApiResponse::json($invoices);
+    }
+    
+    public function updateInvoiceNotificationStatus($medium)
+    {
+        // TODO: Fill this up once we finalize on how to update
+        // email and sms statuses to sent/viewed, after delivery confirmation.
+    }
 }

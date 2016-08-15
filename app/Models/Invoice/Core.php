@@ -56,6 +56,62 @@ class Core extends Base\Core
         return $invoice;
     }
 
+    public function sendInvoiceSms($contact, $invoiceLink, Merchant\Entity $merchant)
+    {
+        $contact = Customer\Validator::validateAndParseContact($contact);
+
+        $request = $this->getRavenSendInvoiceRequestInput($contact, $invoiceLink, $merchant);
+
+        $response = $this->app['raven']->sendInvoice($request);
+
+        if (isset($response['sms_id']))
+        {
+            return ['success' => true];
+        }
+
+        return ['success' => false];
+    }
+
+    protected function getRavenSendInvoiceRequestInput($contact, $invoiceLink, $merchant)
+    {
+        $request = array(
+            'context' => $merchant->getId(),
+            'receiver' => $contact,
+            'source' => 'api',
+            'params' => [
+                'merchant_name' => $merchant->getBillingLabelElseName(),
+                'invoice_link'  => $invoiceLink,
+            ]
+        );
+
+        return $request;
+    }
+
+    public function sendInvoiceEmail(Entity $invoice, $invoiceLink)
+    {
+        // TODO: Figure out a proper subject name
+        $subject = 'Razorpay | Invoice from ' . $invoice->merchant->getBillingLabelElseName();
+
+        $data = [
+            'to_email'  => $invoice->getCustomerEmail(),
+            'date'      => date('d-M-Y H:m:s T'),
+            'subject'   => $subject,
+            'mode'      => $this->mode,
+            'link'      => $invoiceLink,
+        ];
+
+        Mail::queue('emails.invoice.generated', $data, function($message) use ($data)
+        {
+            $message->from('invoices@razorpay.com', 'Razorpay Invoices');
+
+            $message->replyTo('support@razorpay.com', 'Razorpay Support');
+
+            $message->subject($data['subject']);
+
+            $message->to($data['to_email']);
+        });
+    }
+
     protected function generateInvoice(array $input)
     {
         $invoice = (new Generator($this->merchant))->generate($input);

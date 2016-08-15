@@ -2,11 +2,13 @@
 
 namespace RZP\Models\Invoice;
 
+use App;
+use Mail;
+
+use RZP\Models\Customer;
 use RZP\Models\Item;
 use RZP\Models\Merchant;
-use App;
 use RZP\Models\Order;
-use RZP\Models\Customer;
 
 class Generator
 {
@@ -52,8 +54,8 @@ class Generator
 
         $this->setAssociations();
 
-        // This function should be called only after setAssociations since
-        // it uses $this->customer which is set in setAssociations.
+        // This function should be called only after createAssociatedEntities since
+        // it uses $this->customer which is set in createAssociatedEntities.
         $this->setCustomerDetailsAttributes();
 
         // Saving here for the associations
@@ -63,7 +65,50 @@ class Generator
         // because the invoiceItems entity requires the invoice and items to be created first.
         $this->createMappingBetweenInvoiceAndItems();
 
+        // TODO: Fix this.
+        $invoiceLink = 'invoices.razorpay.com';
+
+        $this->sendNotificationToCustomer($invoiceLink);
+
         return $this->invoice;
+    }
+
+    protected function sendNotificationToCustomer($invoiceLink)
+    {
+        if ($this->invoice->getEmailStatus !== Status::PENDING)
+        {
+            $this->sendEmailNotificationToCustomer($invoiceLink);
+        }
+
+        if ($this->invoice->getSmsStatus !== Status::PENDING)
+        {
+            $this->sendSmsNotificationToCustomer($invoiceLink);
+        }
+    }
+
+    protected function sendEmailNotificationToCustomer($invoiceLink)
+    {
+        (new Core())->sendInvoiceEmail($this->invoice, $invoiceLink);
+
+        $this->setEmailStatus(Status::SENT);
+        $this->invoice->saveOrFail();
+    }
+
+    protected function sendSmsNotificationToCustomer($invoiceLink)
+    {
+        $contact = $this->invoice->getCustomerContact();
+
+        $response = (new Core())->sendInvoiceSms($contact, $invoiceLink, $this->merchant);
+
+        if ($response['success'] === true)
+        {
+            $this->invoice->setSmsStatus(Status::SENT);
+            $this->invoice->saveOrFail();
+        }
+        else
+        {
+            // TODO: Trace an error here
+        }
     }
 
     protected function setCustomerDetailsAttributes()
@@ -114,7 +159,7 @@ class Generator
             if (empty($itemDetails['id']) === false)
             {
                 $item = $this->repo->item
-                             ->findByIdAndMerchantId($itemsDetails[Item\Entity::ID], $this->merchant->getId());
+                             ->findByIdAndMerchantId($itemDetails[Item\Entity::ID], $this->merchant->getId());
 
             }
             else
