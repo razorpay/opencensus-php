@@ -3,8 +3,6 @@
 namespace RZP\Models\Invoice;
 
 use RZP\Models\Base;
-use RZP\Models\Order;
-use RZP\Models\Payment;
 
 class Service extends Base\Service
 {
@@ -16,17 +14,19 @@ class Service extends Base\Service
 
         $this->core = new Core();
     }
-
+    
     public function create($input)
     {
         $invoice = $this->core->create($input);
 
         return $invoice->toArrayPublic();
     }
-
+    
     public function fetch($id)
     {
-        $invoice = $this->core->retrieveByIdAndMerchantId($id, $this->merchant->getId());
+        Entity::verifyIdAndStripSign($id);
+
+        $invoice = $this->repo->invoice->findByIdAndMerchantId($id, $this->merchant->getId());
 
         return $invoice->toArrayPublic();
     }

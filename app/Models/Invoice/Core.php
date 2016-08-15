@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Invoice;
 
+use Mail;
+
 use RZP\Models\Base;
 use RZP\Exception;
 use RZP\Models\Item;
@@ -47,15 +49,6 @@ class Core extends Base\Core
         return $invoice;
     }
 
-    public function retrieveByIdAndMerchantId($id, $merchantId)
-    {
-        Entity::verifyIdAndStripSign($id);
-
-        $invoice = $this->repo->invoice->findByIdAndMerchantId($id, $merchantId);
-
-        return $invoice;
-    }
-
     public function sendInvoiceSms($contact, $invoiceLink, Merchant\Entity $merchant)
     {
         $contact = Customer\Validator::validateAndParseContact($contact);
@@ -93,11 +86,11 @@ class Core extends Base\Core
         $subject = 'Razorpay | Invoice from ' . $invoice->merchant->getBillingLabelElseName();
 
         $data = [
-            'to_email'  => $invoice->getCustomerEmail(),
-            'date'      => date('d-M-Y H:m:s T'),
-            'subject'   => $subject,
-            'mode'      => $this->mode,
-            'link'      => $invoiceLink,
+            'to_email'      => $invoice->getCustomerEmail(),
+            'date'          => date('d-M-Y H:m:s T'),
+            'subject'       => $subject,
+            'mode'          => $this->mode,
+            'invoice_link'  => $invoiceLink,
         ];
 
         Mail::queue('emails.invoice.generated', $data, function($message) use ($data)

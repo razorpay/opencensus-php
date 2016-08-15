@@ -2,9 +2,10 @@
 
 namespace RZP\Http\Controllers;
 
+use Request;
+
 use RZP\Http\ApiResponse;
 use RZP\Models\Invoice;
-use Request;
 
 class InvoiceController extends Controller
 {
@@ -12,6 +13,8 @@ class InvoiceController extends Controller
 
     public function __construct()
     {
+        parent::__construct();
+        
         $this->service = new Invoice\Service();
     }
 
@@ -19,16 +22,16 @@ class InvoiceController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service->create($input);
+        $invoice = $this->service->create($input);
 
-        return ApiResponse::json($data);
+        return ApiResponse::json($invoice);
     }
     
     public function getInvoice($id)
     {
-        $payment = $this->service->fetch($id);
+        $invoice = $this->service->fetch($id);
 
-        return ApiResponse::json($payment);
+        return ApiResponse::json($invoice);
     }
 
     public function getInvoices()

@@ -192,14 +192,14 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ITEMS_DETAILS, $items);
     }
 
-    public function setSmsStatus(Status $status)
+    public function setSmsStatus($status)
     {
         Status::checkStatus($status);
 
         $this->setAttribute(self::SMS_STATUS, $status);
     }
 
-    public function setEmailStatus(Status $status)
+    public function setEmailStatus($status)
     {
         Status::checkStatus($status);
 

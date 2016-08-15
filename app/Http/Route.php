@@ -237,6 +237,9 @@ final class Route
         'invoice_fetch'                           => ['get',      'invoices/{id}',                            'InvoiceController@getInvoice'                                      ],
         'invoice_fetch_multiple'                  => ['get',      'invoices',                                 'InvoiceController@getInvoices'                                     ],
         'invoice_notification_update'             => ['put',      'invoices/{medium}',                        'InvoiceController@updateInvoiceNotificationStatus'                 ],
+        'item_create'                             => ['post',     'items',                                    'ItemController@createItem'                                         ],
+        'item_fetch'                              => ['get',      'items/{id}',                               'ItemController@getItem'                                            ],
+        'item_fetch_multiple'                     => ['get',      'items',                                    'ItemController@getItems'                                           ],
     );
 
     public static $public = array(
@@ -315,6 +318,9 @@ final class Route
         'invoice_create',
         'invoice_fetch',
         'invoice_fetch_multiple',
+        'item_create',
+        'item_fetch',
+        'item_fetch_multiple',
     );
 
     public static $internal = array(

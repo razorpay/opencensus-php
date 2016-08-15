@@ -75,23 +75,24 @@ class Generator
 
     protected function sendNotificationToCustomer($invoiceLink)
     {
-        if ($this->invoice->getEmailStatus !== Status::PENDING)
+        if ($this->invoice->getEmailStatus() === Status::PENDING)
         {
             $this->sendEmailNotificationToCustomer($invoiceLink);
         }
 
-        if ($this->invoice->getSmsStatus !== Status::PENDING)
+        if ($this->invoice->getSmsStatus() === Status::PENDING)
         {
             $this->sendSmsNotificationToCustomer($invoiceLink);
         }
+
+        $this->invoice->saveOrFail();
     }
 
     protected function sendEmailNotificationToCustomer($invoiceLink)
     {
         (new Core())->sendInvoiceEmail($this->invoice, $invoiceLink);
 
-        $this->setEmailStatus(Status::SENT);
-        $this->invoice->saveOrFail();
+        $this->invoice->setEmailStatus(Status::SENT);
     }
 
     protected function sendSmsNotificationToCustomer($invoiceLink)
@@ -103,7 +104,6 @@ class Generator
         if ($response['success'] === true)
         {
             $this->invoice->setSmsStatus(Status::SENT);
-            $this->invoice->saveOrFail();
         }
         else
         {
@@ -121,12 +121,7 @@ class Generator
 
     protected function createMappingBetweenInvoiceAndItems()
     {
-        $itemIds = [];
-
-        array_map(function($item) use (& $itemIds)
-        {
-            $itemIds[] = $item->getId();
-        }, $this->items);
+        $itemIds = $this->itemCore->getIdsFromItems($this->items);
 
         // attach can be used when a relation is defined as belongsToMany()
         $this->invoice->items()->attach($itemIds);
