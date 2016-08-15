@@ -21,6 +21,7 @@ class Entity extends Base\PublicEntity
     const CUSTOMER_CONTACT      = 'customer_contact';
     const STATUS                = 'status';
     const DUE_BY                = 'due_by';
+    const SCHEDULED_AT          = 'scheduled_at';
     // const SHIPPING              = 'shipping';
     // const DISCOUNT              = 'discount';
     const EMAIL_STATUS          = 'email_status';
@@ -28,6 +29,7 @@ class Entity extends Base\PublicEntity
 
     // Present only in request
     const DUE_IN                = 'due_in';
+    const SCHEDULED_IN          = 'scheduled_in';
     const ITEMS                 = 'items';
     // const DISCOUNT_FLAT         = 'discount_flat';
     // const DISCOUNT_PERCENT      = 'discount_percent';
@@ -64,6 +66,7 @@ class Entity extends Base\PublicEntity
     protected static $generators = [
         // self::DISCOUNT,
         self::DUE_BY,
+        self::SCHEDULED_AT,
         self::EMAIL_STATUS,
         self::SMS_STATUS,
     ];
@@ -72,6 +75,7 @@ class Entity extends Base\PublicEntity
     // This array should also include the fields mentioned in the generator.
     protected $fillable = [
         self::DUE_BY,
+        self::SCHEDULED_AT,
         self::EMAIL_STATUS,
         self::SMS_STATUS,
         // self::ADJUSTMENT,
@@ -92,6 +96,7 @@ class Entity extends Base\PublicEntity
         // self::CUSTOMER_NAME,
         // self::CUSTOMER_ADDRESS,
         self::DUE_BY,
+        self::SCHEDULED_AT,
         self::CUSTOMER_DETAILS,
         self::ITEMS_DETAILS,
         // self::ADJUSTMENT,
@@ -119,6 +124,7 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::CREATED_AT,
         self::DUE_BY,
+        self::SCHEDULED_AT,
         // self::SHIPPING,
         // self::ADJUSTMENT,
         // self::DISCOUNT,
@@ -129,7 +135,9 @@ class Entity extends Base\PublicEntity
 
     // Fields to be added while retrieving the entity
     protected $appends = [
-        self::PUBLIC_ID, self::ENTITY, self::CUSTOMER_DETAILS,
+        self::PUBLIC_ID,
+        self::ENTITY,
+        self::CUSTOMER_DETAILS,
     ];
 
     // The functions for these fields will be called only
@@ -160,6 +168,16 @@ class Entity extends Base\PublicEntity
     public function getCustomerContact()
     {
         return $this->getAttribute(self::CUSTOMER_CONTACT);
+    }
+
+    public function getScheduledAt()
+    {
+        return $this->getAttribute(self::SCHEDULED_AT);
+    }
+    
+    public function getStatus()
+    {
+        return $this->getAttribute(self::STATUS);
     }
 
     // -------------------------------------- End Getters --------------------------------------
@@ -204,6 +222,13 @@ class Entity extends Base\PublicEntity
         Status::checkStatus($status);
 
         $this->setAttribute(self::EMAIL_STATUS, $status);
+    }
+    
+    public function setStatus($status)
+    {
+        Status::checkStatus($status);
+        
+        $this->setAttribute(self::STATUS, $status);
     }
 
     // -------------------------------------- End Setters --------------------------------------
@@ -266,6 +291,18 @@ class Entity extends Base\PublicEntity
         $dueBy = Carbon::now('Asia/Kolkata')->addDays($dueDays)->timestamp;
 
         $this->setAttribute(self::DUE_BY, $dueBy);
+    }
+
+    public function generateScheduledAt($input)
+    {
+        $scheduledAt = Carbon::now('Asia/Kolkata');
+
+        if (empty($input[self::SCHEDULED_IN]) === false)
+        {
+            $scheduledAt = $scheduledAt->addDays($input[self::SCHEDULED_IN]);
+        }
+
+        $this->setAttribute(self::SCHEDULED_AT, $scheduledAt->timestamp);
     }
 
     // public function generateDiscount($input)

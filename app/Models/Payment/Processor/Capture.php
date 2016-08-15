@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use RZP\Models\Invoice;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Order;
@@ -97,8 +98,9 @@ trait Capture
     protected function capturePayment($payment, $amount)
     {
         $data = array(
-            'payment' => $payment->toArray(),
-            'amount' => $amount);
+            'payment'   => $payment->toArray(),
+            'amount'    => $amount
+        );
 
         if (($payment->getMethod() === Payment\Method::CARD) or
             ($payment->getMethod() === Payment\Method::EMI))
@@ -277,6 +279,37 @@ trait Capture
             $order->setStatus(Order\Status::PAID);
 
             $order->saveOrFail();
+
+            // TODO: Should we de-couple orders and invoices? With more complexity
+            // in invoices, the orders flow might get messy and complicated.
+            // If we add more features which use orders, this flow will get really bad.
+            if ($order->invoice !== null)
+            {
+                $this->updatePaidInvoiceStatus($order);
+            }
         }
+    }
+
+    protected function updatePaidInvoiceStatus($order)
+    {
+        $invoice = $order->invoice;
+
+        assert($invoice);
+
+        if ($invoice->getStatus() === Invoice\Status::PAID)
+        {
+            throw new Exception\LogicException(
+                'The invoice is already paid for.',
+                null,
+                [
+                    'payment_id'    => $order->payment->getId(),
+                    'invoice_id'    => $invoice->getId(),
+                    'order_id'      => $order->getId(),
+                ]);
+        }
+
+        $invoice->setStatus(Invoice\Status::PAID);
+
+        $invoice->saveOrFail();
     }
 }

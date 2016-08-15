@@ -14,7 +14,7 @@ class InvoiceController extends Controller
     public function __construct()
     {
         parent::__construct();
-        
+
         $this->service = new Invoice\Service();
     }
 
@@ -26,7 +26,7 @@ class InvoiceController extends Controller
 
         return ApiResponse::json($invoice);
     }
-    
+
     public function getInvoice($id)
     {
         $invoice = $this->service->fetch($id);
@@ -37,12 +37,12 @@ class InvoiceController extends Controller
     public function getInvoices()
     {
         $input = Request::all();
-        
+
         $invoices = $this->service->fetchMultiple($input);
 
         return ApiResponse::json($invoices);
     }
-    
+
     public function updateInvoiceNotificationStatus($medium)
     {
         // TODO: Fill this up once we finalize on how to update

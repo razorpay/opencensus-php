@@ -168,8 +168,6 @@ class Processor
         }
 
         $this->verifySignature($input, $payment);
-
-        return true;
     }
 
     protected function verifySignature($input, $payment)

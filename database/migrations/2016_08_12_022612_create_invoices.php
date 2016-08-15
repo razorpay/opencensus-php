@@ -33,6 +33,8 @@ class CreateInvoices extends Migration
 
             $table->integer(Entity::DUE_BY);
 
+            $table->integer(Entity::SCHEDULED_AT);
+
             $table->string(Entity::STATUS, 32);
 
             $table->string(Entity::EMAIL_STATUS, 32)
@@ -59,6 +61,7 @@ class CreateInvoices extends Migration
             $table->index(Entity::CREATED_AT);
             $table->index(Entity::STATUS);
             $table->index(Entity::DUE_BY);
+            $table->index(Entity::SCHEDULED_AT);
             $table->index(Entity::EMAIL_STATUS);
             $table->index(Entity::SMS_STATUS);
 

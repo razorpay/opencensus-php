@@ -11,7 +11,10 @@ class Validator extends Base\Validator
         // Entity::DISCOUNT_PERCENT    => 'sometimes|integer|min:1|max:100',
         // Entity::ADJUSTMENT          => 'sometimes|integer',
         // Entity::SHIPPING            => 'sometimes|integer|min:1',
+
+        // If due_in is 0, it will get expired immediately. Hence the minimum value of 1.
         Entity::DUE_IN              => 'sometimes|integer|min:1|max:365',
+        Entity::SCHEDULED_IN        => 'sometimes|integer|min:0|max:365',
         Entity::SMS_NOTIFY          => 'sometimes|boolean',
         Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
     ];
@@ -34,7 +37,7 @@ class Validator extends Base\Validator
     //             'Both discount_flat and discount_percent should not be set.'
     //         );
     //     }
-    //    
+    //
     //     $totalAmount = $discountableAmount = $input[Entity::TOTAL_AMOUNT];
     //
     //     if (isset($input[Entity::TOTAL_TAX]) === true)

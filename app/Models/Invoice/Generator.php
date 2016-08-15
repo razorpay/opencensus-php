@@ -4,7 +4,7 @@ namespace RZP\Models\Invoice;
 
 use App;
 use Mail;
-
+use Carbon\Carbon;
 use RZP\Models\Customer;
 use RZP\Models\Item;
 use RZP\Models\Merchant;
@@ -22,6 +22,9 @@ class Generator
     protected $order;
     protected $repo;
     protected $orderRepo;
+
+    // 300 seconds (5*60)
+    const FIVE_MINUTES = 300;
 
     public function __construct(Merchant\Entity $merchant)
     {
@@ -75,6 +78,21 @@ class Generator
 
     protected function sendNotificationToCustomer($invoiceLink)
     {
+        $scheduledAt = $this->invoice->getScheduledAt();
+
+        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+
+        // TODO: Add a cron job to send invoice notifications periodically
+        
+        // If it's not scheduled for within 5 minutes, do not send
+        // the notification. Ideally, scheduled_at would be the same
+        // as the current time if scheduled_in is set to 0.
+        if ($scheduledAt > ($currentTime + self::FIVE_MINUTES))
+        {
+            // TODO: trace here
+            return;
+        }
+
         if ($this->invoice->getEmailStatus() === Status::PENDING)
         {
             $this->sendEmailNotificationToCustomer($invoiceLink);

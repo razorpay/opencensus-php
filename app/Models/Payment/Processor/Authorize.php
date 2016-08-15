@@ -56,7 +56,7 @@ trait Authorize
 
         $this->getTerminalsForPayment($payment);
 
-        return  $this->authorizeAcrossTerminals($gatewayInput, $payment, $input);
+        return $this->authorizeAcrossTerminals($gatewayInput, $payment, $input);
 
     }
 
@@ -103,7 +103,6 @@ trait Authorize
 
                 break;
             }
-
             catch (\Exception $e)
             {
                 // handle timeout exceptions differently
@@ -123,6 +122,7 @@ trait Authorize
                     {
                         continue;
                     }
+
                     break;
                 }
                 else
@@ -151,7 +151,8 @@ trait Authorize
             TraceCode::TERMINAL_FAILURE, $traceData);
 
         // retry only if it is safe to do so
-        if (property_exists($e, "safeRetry") === true and $e->safeRetry === true)
+        if ((property_exists($e, "safeRetry") === true) and
+            ($e->safeRetry === true))
         {
             return true;
         }
@@ -167,9 +168,11 @@ trait Authorize
         if ($timeoutException !== null)
         {
             if ($timeoutException->getError() === null){
-                $timeoutException->setGatewayErrorCodeAndDesc($timeoutException->getCode(),
+                $timeoutException->setGatewayErrorCodeAndDesc(
+                    $timeoutException->getCode(),
                     $timeoutException->getMessage());
             }
+
             $this->updatePaymentFailed(
                 $timeoutException->getError(),
                 TraceCode::PAYMENT_AUTH_FAILURE);
@@ -193,6 +196,9 @@ trait Authorize
 
         $payment = $this->payment;
 
+        
+        // TODO: Should we do it separately for invoice payments? The invoice payments will also
+        // be signed from hosted. So, this flow should ideally suffice.
         if ($payment->isSigned())
         {
             // If payment is signed, then we capture it in this step only.
