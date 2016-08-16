@@ -23,7 +23,7 @@ trait AuthorizeFailed
         }
 
         if ($e === null)
-        {sd($e);
+        {
             throw new Exception\LogicException(
                 'When converting failed payment to authorized, payment verification ' .
                 'should have failed but instead it did not',
