@@ -82,10 +82,10 @@ trait FileHandlerTrait
         $bucket = 'h2h_bucket';
 
         $metadata = array(
-            'gid'   => 10000,
-            'uid'   => 10001,
-            'mtime' => Carbon::now('Asia/Kolkata')->timestamp,
-            'mode'  => '0x777'
+            'x-amz-meta-gid'   => '10000',
+            'x-amz-meta-uid'   => '10001',
+            'x-amz-meta-mtime' => Carbon::now()->timestamp,
+            'x-amz-meta-mode'  => '33188'
         );
 
         $url = $this->saveToAws($name.'.xlsx', $fullpath, $xlsxMimeType, $bucket, $metadata);
