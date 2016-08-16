@@ -52,30 +52,27 @@ class Service extends Base\Service
 
         $pricing->generateId();
 
-        $this->repo->saveOrFail($pricing);
+        $this->repo->transactionOnLiveAndTest(function() use ($pricing, $input){
 
-        $planId = $pricing->plan_id;
+            $this->repo->saveOrFail($pricing);
 
-        $plan = $this->repo->pricing->getPricingPlanByIdOrFailPublic($planId);
+            $planId = $pricing->plan_id;
+            $plan = $this->repo->pricing->getPricingPlanByIdOrFailPublic($planId);
 
-        foreach ($input as $key => $value)
-        {
-            if ($key === 0)
+            foreach ($input as $key => $value)
             {
-                continue;
+                if ($key === 0)
+                {
+                    continue;
+                }
+                $rule = (new Pricing\Entity)->addPlanRule($value, $plan);
+
+                $rule->getValidator()->matchPaymentRules($plan);
+                $rule->generateId();
+
+                $this->repo->saveOrFail($rule);
             }
-
-            $this->trace->info(
-            TraceCode::PRICING_PLAN_RULE_ADD_ATTEMPT,
-            ['id' => $planId, $value]);
-
-            $rule = (new Pricing\Entity)->addPlanRule($value, $plan);
-
-            $rule->getValidator()->matchPaymentRules($plan);
-            $rule->generateId();
-
-            (new Pricing\Repository)->saveOrFail($rule);
-        }
+        });
 
         $plan = $this->repo->pricing->getPricingPlanByName($input[0][Entity::PLAN_NAME]);
 
