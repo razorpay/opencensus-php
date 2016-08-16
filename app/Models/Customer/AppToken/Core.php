@@ -17,20 +17,20 @@ class Core extends Base\Core
         return $app;
     }
 
-    public function deleteAppTokensForGlobalCustomer($customer, $input)
+    public function deleteAppTokens($app, $input)
     {
         $params = array(
-            AppToken\Entity::CUSTOMER_ID     => $customer->getId()
+            AppToken\Entity::CUSTOMER_ID     => $app->customer->getId()
         );
 
         if ($input['logout'] === 'app')
         {
-            $params[AppToken\Entity::ID] = AppToken\Entity::verifyIdAndStripSign($input['app_token']);
-            $params[AppToken\Entity::DEVICE_TOKEN] = $input[AppToken\Entity::DEVICE_TOKEN];
+            $params[AppToken\Entity::ID] = $app->getId();
+            $params[AppToken\Entity::DEVICE_TOKEN] = $app->getDeviceToken();
         }
         else if ($input['logout'] === 'device')
         {
-            $params[AppToken\Entity::DEVICE_TOKEN] = $input[AppToken\Entity::DEVICE_TOKEN];
+            $params[AppToken\Entity::DEVICE_TOKEN] = $app->getDeviceToken();
         }
 
         $apps = $this->repo->app_token->fetch($params);
