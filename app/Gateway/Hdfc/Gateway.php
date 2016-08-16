@@ -457,8 +457,9 @@ class Gateway extends Base\Gateway
                 throw new \Requests_Exception("operation timed out", "operation timed out");
             }*/
         }
-        catch(Exception\GatewayTimeoutException $e)
+        catch (Exception\GatewayTimeoutException $e)
         {
+            // For verify we should throw exception as is.
             if ($this->action === 'verify')
             {
                 throw $e;
@@ -655,6 +656,11 @@ class Gateway extends Base\Gateway
 
     protected function throwException($error, $safeRetry = false)
     {
+        // Mark error as false now to remove the stale state for future functions
+        // calls.
+        // @todo: refactor and remove this completely.
+        $this->error = false;
+
         $gatewayErrorCode = $error['code'];
 
         if (($gatewayErrorCode === Hdfc\ErrorCode::RP00003) or
