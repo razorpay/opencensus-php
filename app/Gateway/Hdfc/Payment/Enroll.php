@@ -60,20 +60,10 @@ trait Enroll
         // This function also checks for and sets
         // generic error
         //
-        try
-        {
-            $this->runRequestResponseFlow(
-                $this->enrollRequest,
-                $this->enrollResponse);
-        }
-        catch(Exception\GatewayTimeoutException $e)
-        {
-            $this->error = true;
+        $this->runRequestResponseFlow(
+            $this->enrollRequest,
+            $this->enrollResponse);
 
-            $this->enrollResponse['content'] = '';
-
-            Hdfc\ErrorHandler::setTimeoutError($this->enrollResponse);
-        }
 
         //
         // If there is an error then just return
