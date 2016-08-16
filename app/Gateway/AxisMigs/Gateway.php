@@ -629,7 +629,7 @@ class Gateway extends Base\Gateway
             // then we need to block the transaction on the international card.
             //
 
-            if (ThreeDSecureStatus::is3DSecureSuccess($threeDSstatus) === false)
+            if (ThreeDSecureStatus::isThreeDSsuccess($threeDSstatus) === false)
             {
                 if ($input['merchant']['international'] === false)
                 {
