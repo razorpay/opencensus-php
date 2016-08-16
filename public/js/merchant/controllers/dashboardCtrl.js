@@ -76,7 +76,7 @@ app.controller('DashboardAggregationsCtrl', [
       // Calculate percentages
       for (var i in headers) {
         var method = headers[i];
-        result[method] = Math.ceil((data[method] * 100)/total);
+        result[method] = ((data[method] * 100)/total).toFixed(1);
       }
 
       // Return response
