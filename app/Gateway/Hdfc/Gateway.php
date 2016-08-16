@@ -445,16 +445,33 @@ class Gateway extends Base\Gateway
 
         $this->requestVar = $request;
 
-        // send the request and get response
-
-        $response['response'] = $this->postRequest($request);
-
-        // uncomment this to simulate an exception here for s2s - strictly for testing only
-        /*if (($this->mode === Mode::TEST) and
-            (App::environment('testing') === false))
+        try
         {
-            throw new \Requests_Exception("operation timed out", "operation timed out");
-        }*/
+            // send the request and get response
+            $response['response'] = $this->postRequest($request);
+
+            // uncomment this to simulate an exception here for s2s - strictly for testing only
+            /*if (($this->mode === Mode::TEST) and
+                (App::environment('testing') === false))
+            {
+                throw new \Requests_Exception("operation timed out", "operation timed out");
+            }*/
+        }
+        catch(Exception\GatewayTimeoutException $e)
+        {
+            if ($this->action === 'verify')
+            {
+                throw $e;
+            }
+
+            $this->error = true;
+
+            $response['content'] = '';
+
+            Hdfc\ErrorHandler::setTimeoutError($response);
+
+            return;
+        }
 
         $response['xml'] = $response['response']->body;
 
