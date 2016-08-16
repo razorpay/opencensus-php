@@ -73,7 +73,7 @@ trait Authorize
         $totalTerminals = count($this->terminalsSelected);
 
         $this->maxRetryAttempts = min($totalTerminals, $this->maxRetryAttempts);
-
+        
         $retryAttempts = 0;
 
         $timeoutException = null;
