@@ -266,13 +266,7 @@ class Gateway extends Base\Gateway
     {
         $amount = (string) number_format($input['payment']['amount'] / 100, 2, '.', '');
 
-        $udf = [RequestFields::MERCHANT_DISPLAY_NAME => $input['merchant']['name']];
-
-        if (isset($input['merchant']['billing_label']))
-        {
-            $udf[RequestFields::MERCHANT_DISPLAY_NAME] = $input['merchant']['billing_label'];
-        }
-
+        $udf = [RequestFields::MERCHANT_DISPLAY_NAME => $input['merchant']->getBillingLabelElseName()];
         $udf = json_encode($udf);
 
         $content = array(
