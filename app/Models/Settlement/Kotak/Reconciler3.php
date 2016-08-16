@@ -183,7 +183,7 @@ class Reconciler3
 
     protected function loadSettlementAndRelations($row)
     {
-        $setlId = $row['Payment Ref No'];
+        $setlId = $row['Payment_Ref_No.'];
         $setlId = str_replace(' ', '_', $setlId);
 
         if ($setlId === '')
