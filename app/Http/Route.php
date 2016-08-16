@@ -236,7 +236,9 @@ final class Route
         'invoice_create'                          => ['post',     'invoices',                                 'InvoiceController@createInvoice'                                   ],
         'invoice_fetch'                           => ['get',      'invoices/{id}',                            'InvoiceController@getInvoice'                                      ],
         'invoice_fetch_multiple'                  => ['get',      'invoices',                                 'InvoiceController@getInvoices'                                     ],
+        'invoice_send_notifications'              => ['post',     'invoices',                                 'InvoiceController@sendNotifications'                                ],
         'invoice_notification_update'             => ['put',      'invoices/{medium}',                        'InvoiceController@updateInvoiceNotificationStatus'                 ],
+        'invoice_get_details'                     => ['get',      'invoices/{id}/details',                     'InvoiceController@getInvoiceDetails'                              ],
         'item_create'                             => ['post',     'items',                                    'ItemController@createItem'                                         ],
         'item_fetch'                              => ['get',      'items/{id}',                               'ItemController@getItem'                                            ],
         'item_fetch_multiple'                     => ['get',      'items',                                    'ItemController@getItems'                                           ],
@@ -431,6 +433,8 @@ final class Route
         'credits_create',
         'credits_edit',
         'credits_delete',
+        'invoice_send_notifications',
+        'invoice_get_details',
     );
 
     public static $proxy = array(
@@ -512,6 +516,7 @@ final class Route
             'emi_generate_excel',
             'es_migrate_entity',
             'setl_post_details_old',
+            'invoice_send_notifications',
         ),
 
         'mailgun' => array(
@@ -521,6 +526,7 @@ final class Route
 
         'hosted' => array(
             'merchant_secret',
+            'invoice_get_details',
         ),
     );
 
@@ -564,6 +570,7 @@ final class Route
     public static function getCurrentRouteName()
     {
         $router = self::$router;
+
         return $router->currentRouteName();
     }
 

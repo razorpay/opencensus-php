@@ -119,13 +119,13 @@ return array(
     'markdown_in_attachments' => ['pretext', 'text', 'title', 'fields', 'fallback'],
 
     'channels'  =>  [
-        'low'            => '#transactions',
-        'high'           => '#transactions_high',
-        'risky'          => '#transactions_risky',
-        'reconciliation' => '#reconciliation',
-        'highrisk'       => '#transactions_highrisk',
+        'low'               => '#transactions',
+        'high'              => '#transactions_high',
+        'risky'             => '#transactions_risky',
+        'reconciliation'    => '#reconciliation',
+        'highrisk'          => '#transactions_highrisk',
+        'tech_logs'         => '#tech_logs',
     ],
 
     'is_slack_enabled' => env('SLACK_MOCK') === true ? false : true
-
 );

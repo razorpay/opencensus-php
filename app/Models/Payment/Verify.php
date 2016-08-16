@@ -2,15 +2,16 @@
 
 namespace RZP\Models\Payment;
 
+use App;
+use Config;
+
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Transaction;
 use RZP\Exception;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use App;
 
 class Verify
 {
@@ -170,7 +171,7 @@ class Verify
         {
             // Drop all false values (NULL, 0, "")
             $slackArray = array_filter($results);
-            $this->app['slack']->queue($message, $slackArray, ['channel' => '#tech_logs']);
+            $this->app['slack']->queue($message, $slackArray, ['channel' => Config::get('slack.channels.tech_logs')]);
         }
 
         return $results;

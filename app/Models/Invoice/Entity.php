@@ -40,6 +40,9 @@ class Entity extends Base\PublicEntity
 
     const CUSTOMER_DETAILS      = 'customer_details';
     const ITEMS_DETAILS         = 'items_details';
+    
+    const EMAIL                 = 'email';
+    const SMS                   = 'sms';
 
     // const TOTAL_TAX             = 'total_tax';
 

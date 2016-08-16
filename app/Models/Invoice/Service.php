@@ -37,4 +37,9 @@ class Service extends Base\Service
 
         return $invoices->toArrayPublic();
     }
+    
+    public function sendNotificationsInBulk()
+    {
+        return (new Notifier())->sendNotificationsInBulk();
+    }
 }

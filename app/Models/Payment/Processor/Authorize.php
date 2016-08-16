@@ -2,7 +2,11 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use App;
+use Crypt;
+use Config;
 use Mail;
+
 use Lib\PhoneBook;
 use RZP\Models\Emi;
 use RZP\Http\Route;
@@ -26,9 +30,6 @@ use RZP\Exception;
 use RZP\Trace\Trace;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-
-use App;
-use Crypt;
 
 trait Authorize
 {
@@ -932,7 +933,7 @@ trait Authorize
 
         $slackData = ['id' => $payment->getDashboardEntityLinkForSlack()];
 
-        $this->app['slack']->queue($message, $slackData, ['color' => 'good', 'channel' => '#tech_logs']);
+        $this->app['slack']->queue($message, $slackData, ['color' => 'good', 'channel' => Config::get('slack.channels.tech_logs')]);
 
         $this->trace->info(
             TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,

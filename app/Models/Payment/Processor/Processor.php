@@ -3,11 +3,10 @@
 namespace RZP\Models\Payment\Processor;
 
 use App;
-use RZP\Constants\Mode;
 use BasicAuth;
+
+use RZP\Constants\Mode;
 use RZP\Dashboard\Dashboard;
-use RZP\Http\Route;
-use RZP\Models\Gateway;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\BankAccount;
 use RZP\Models\Terminal;
@@ -16,7 +15,6 @@ use RZP\Models\Order;
 use RZP\Models\Pricing;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
-use Request;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer;

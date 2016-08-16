@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Invoice;
 
+use Carbon\Carbon;
 use RZP\Models\Base;
 
 class Repository extends Base\Repository
@@ -23,4 +24,15 @@ class Repository extends Base\Repository
         Entity::STATUS              => 'sometimes|string',
         Entity::MERCHANT_ID         => 'sometimes|alpha_num',
     ];
+
+    public function getInvoicesForNotification($medium)
+    {
+        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+
+        return $this->newQuery()
+                    ->where($medium . '_status', '=', Status::PENDING)
+                    ->where(Entity::STATUS, '=', Status::CREATED)
+                    ->where(Entity::SCHEDULED_AT, '<=', $currentTime)
+                    ->get();
+    }
 }

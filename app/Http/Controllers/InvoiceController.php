@@ -43,6 +43,13 @@ class InvoiceController extends Controller
         return ApiResponse::json($invoices);
     }
 
+    public function sendNotifications()
+    {
+        $summary = $this->service->sendNotifications();
+
+        return ApiResponse::json($summary);
+    }
+
     public function updateInvoiceNotificationStatus($medium)
     {
         // TODO: Fill this up once we finalize on how to update

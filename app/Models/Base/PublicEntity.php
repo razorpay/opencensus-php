@@ -74,11 +74,6 @@ class PublicEntity extends UniqueIdEntity
 
         return $array;
     }
-    
-    public function toArrayInvoice()
-    {
-        // TODO: Fill this up
-    }
 
     /**
      * Create a new Eloquent Collection instance.
@@ -95,7 +90,7 @@ class PublicEntity extends UniqueIdEntity
     {
         foreach ($this->publicSetters as $attr)
         {
-            $func = 'setPublic'.studly_case($attr).'Attribute';
+            $func = 'setPublic' . studly_case($attr) . 'Attribute';
 
             $this->$func($array);
         }

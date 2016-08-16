@@ -4,7 +4,7 @@ namespace RZP\Models\Invoice;
 
 use App;
 use Mail;
-use Carbon\Carbon;
+
 use RZP\Models\Customer;
 use RZP\Models\Item;
 use RZP\Models\Merchant;
@@ -68,65 +68,9 @@ class Generator
         // because the invoiceItems entity requires the invoice and items to be created first.
         $this->createMappingBetweenInvoiceAndItems();
 
-        // TODO: Fix this.
-        $invoiceLink = 'invoices.razorpay.com';
-
-        $this->sendNotificationToCustomer($invoiceLink);
+        (new Notifier($this->invoice))->sendNotificationToCustomer();
 
         return $this->invoice;
-    }
-
-    protected function sendNotificationToCustomer($invoiceLink)
-    {
-        $scheduledAt = $this->invoice->getScheduledAt();
-
-        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
-
-        // TODO: Add a cron job to send invoice notifications periodically
-        
-        // If it's not scheduled for within 5 minutes, do not send
-        // the notification. Ideally, scheduled_at would be the same
-        // as the current time if scheduled_in is set to 0.
-        if ($scheduledAt > ($currentTime + self::FIVE_MINUTES))
-        {
-            // TODO: trace here
-            return;
-        }
-
-        if ($this->invoice->getEmailStatus() === Status::PENDING)
-        {
-            $this->sendEmailNotificationToCustomer($invoiceLink);
-        }
-
-        if ($this->invoice->getSmsStatus() === Status::PENDING)
-        {
-            $this->sendSmsNotificationToCustomer($invoiceLink);
-        }
-
-        $this->invoice->saveOrFail();
-    }
-
-    protected function sendEmailNotificationToCustomer($invoiceLink)
-    {
-        (new Core())->sendInvoiceEmail($this->invoice, $invoiceLink);
-
-        $this->invoice->setEmailStatus(Status::SENT);
-    }
-
-    protected function sendSmsNotificationToCustomer($invoiceLink)
-    {
-        $contact = $this->invoice->getCustomerContact();
-
-        $response = (new Core())->sendInvoiceSms($contact, $invoiceLink, $this->merchant);
-
-        if ($response['success'] === true)
-        {
-            $this->invoice->setSmsStatus(Status::SENT);
-        }
-        else
-        {
-            // TODO: Trace an error here
-        }
     }
 
     protected function setCustomerDetailsAttributes()
