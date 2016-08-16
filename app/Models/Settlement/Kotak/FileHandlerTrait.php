@@ -31,7 +31,7 @@ trait FileHandlerTrait
 
     public function writeToTextFileH2H($txt)
     {
-        $name = 'RAZORNODAL$$'. Carbon::today('Asia/Kolkata')->timestamp;
+        $name = 'RAZORNODAL$$'. Carbon::now('Asia/Kolkata')->format('d-m-Y');;
 
         $fullpath = $this->saveLocally($name, $txt);
 
