@@ -55,36 +55,4 @@ class Url
         self::OTP_SUBMIT,
         self::USER_DETAILS,
     ];
-
-    public static function getEndpointForType($type)
-    {
-        $class_vars = get_class_vars(self);
-
-        return $class_vars[$type];
-    }
-
-    public static function getDomainForType($type, $mode)
-    {
-        $domain = '';
-
-        $endpoint = self::getEndpointForType($type);
-
-        if (in_array($endpoint, self::CHECKOUT_DOMAIN_ENDPOINTS))
-        {
-            $domain = 'CHECKOUT_DOMAIN';
-        }
-        else if (in_array($endpoint, self::LOGIN_DOMAIN_ENDPOINTS))
-        {
-            $domain = 'LOGIN_DOMAIN';
-        }
-        else
-        {
-            throw new Exception\InvalidArgumentException(sprintf(
-                'Not a valid endpoint for Freecharge Wallet: %s', $endpoint));
-        }
-
-        $domain = strtoupper($mode).'_'.$domain;
-
-        return self::$domain;
-    }
 }
