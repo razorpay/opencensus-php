@@ -446,6 +446,7 @@ class Gateway extends Base\Gateway
         $this->requestVar = $request;
 
         // send the request and get response
+
         $response['response'] = $this->postRequest($request);
 
         // uncomment this to simulate an exception here for s2s - strictly for testing only
