@@ -72,10 +72,7 @@ trait Enroll
 
             $this->enrollResponse['content'] = '';
 
-            $this->enrollResponse['error'] = [];
-
             Hdfc\ErrorHandler::setTimeoutError($this->enrollResponse);
-
         }
 
         //
