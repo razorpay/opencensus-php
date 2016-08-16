@@ -233,6 +233,10 @@ final class Route
         'otp_verify'                              => ['post',     'otp/verify',                               'CustomerController@verifyOtp'                                      ],
         'sms_callback'                            => ['post',     'sms/{id}/callback',                        'CustomerController@updateSmsStatus'                                ],
         'es_migrate_entity'                       => ['post',     'es/migrate/{entityName}',                  'EsController@migrateEntity'                                        ],
+        'gateway_create_absence'                  => ['post',     'gateway/absence/{gatewayName}',            'GatewayController@postCreateGatewayAbsence'                        ],
+        'gateway_update_absence'                  => ['put',      'gateway/absence/{id}',                     'GatewayController@putUpdateGatewayAbsence'                         ],
+        'gateway_delete_absence'                  => ['delete',   'gateway/absence/{id}',                     'GatewayController@deleteGatewayAbsence'                            ],
+        'gateway_fetch_timestamp_absence'         => ['get',      'gateway/absence/{timestamp}',              'GatewayController@getAbsentGatewaysForTimestamp'                   ],
     );
 
     public static $public = array(
@@ -418,6 +422,10 @@ final class Route
         'credits_create',
         'credits_edit',
         'credits_delete',
+        'gateway_create_absence',
+        'gateway_update_absence',
+        'gateway_delete_absence',
+        'gateway_fetch_timestamp_absence',
     );
 
     public static $proxy = array(

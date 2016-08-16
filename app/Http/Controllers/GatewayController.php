@@ -10,6 +10,7 @@ use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use Request;
 use Redirect;
+use RZP\Models\GatewayStatus\Absence;
 
 class GatewayController extends Controller
 {
@@ -154,5 +155,57 @@ class GatewayController extends Controller
         }
 
         return ['nb' => $nb, 'mode' => $mode];
+    }
+
+    /**
+     * Method to create a gateway absence entity
+     * @param string $gateway
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function postCreateGatewayAbsence($gateway)
+    {
+        $input = Request::all();
+
+        $data = (new Absence\Service)->create($input, $gateway);
+
+        return ApiResponse::json($data);
+    }
+
+    /**
+     * Method to update gateway absence entity
+     * @param integer $id
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function putUpdateGatewayAbsence($id)
+    {
+        $input = Request::all();
+
+        $data = (new Absence\Service)->edit($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    /**
+     * Method to delete gateway absence entity
+     * @param integer $id
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function deleteGatewayAbsence($id)
+    {
+        $data = (new Absence\Service)->delete($id);
+
+        return ApiResponse::json($data);
+    }
+
+    /**
+     * Method to find the list of gateways absent given a unix epoch timestamp.
+     * @param integer $timestamp
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function getAbsentGatewaysForTimestamp($timestamp)
+    {
+        $data = (new Absence\Service)->findAbsentGatewaysForTimestamp($timestamp);
+
+        return ApiResponse::json($data);
     }
 }

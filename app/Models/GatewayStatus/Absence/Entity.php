@@ -8,6 +8,7 @@ class Entity extends Base\PublicEntity
 {
     const ID                            = 'id';
     const GATEWAY                       = 'gateway';
+    const BANK                          = 'bank';
     const FROM                          = 'from';
     const TO                            = 'to';
     const REASON                        = 'reason';
@@ -27,9 +28,9 @@ class Entity extends Base\PublicEntity
         self::GATEWAY,
         self::FROM,
         self::TO,
-        self::REASON,
         self::CREATED_AT,
-        self::UPDATED_AT
+        self::UPDATED_AT,
+        self::REASON
     );
 
     protected $table = \RZP\Constants\Table::GATEWAYSTATUS_ABSENCE;
@@ -58,6 +59,11 @@ class Entity extends Base\PublicEntity
     public function getReason()
     {
         return $this->getAttributes(self::REASON);
+    }
+
+    public function getBank()
+    {
+        return $this->getAttributes(self::BANK);
     }
 
 }
