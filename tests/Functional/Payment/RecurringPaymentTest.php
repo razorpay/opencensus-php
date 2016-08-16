@@ -49,7 +49,7 @@ class RecurringPaymentTest extends TestCase
 
         $this->assertEquals(true, $tokenEntity['authenticated']);
 
-        $token   = $paymentEntity['token'];
+        $token = $paymentEntity['token'];
 
         $payment['card'] = [];
 
@@ -77,9 +77,27 @@ class RecurringPaymentTest extends TestCase
             $this->doAuthPayment($payment);
         });
 
-        $tokenEntity   = $this->getLastEntity('token', true);
+        $tokenEntity = $this->getLastEntity('token', true);
 
         $this->assertEquals(true, $tokenEntity['recurring']);
         $this->assertEquals(false, $tokenEntity['authenticated']);
+    }
+
+    public function testRecurringPaymentUsingSavedCardToken()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = 500000;
+        $payment['recurring'] = true;
+        $payment['token'] = '10000cardtoken';
+        $payment['customer_id'] = 'cust_100000customer';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->doAuthPayment($payment);
+        });
     }
 }

@@ -548,10 +548,10 @@ trait Authorize
                 'token' => $input[Payment\Entity::TOKEN]
             ]);
 
-        if ((isset($input['recurring']) === true) or
+        if ((isset($input['recurring']) === true) and
             (boolval($input['recurring']) === true))
         {
-            $token = $this->repo->token->getRecurringByTokenAndCustomerId(
+            $token = $this->repo->token->getRecurringByTokenAndCustomerIdOrFail(
                 $input[Payment\Entity::TOKEN],
                 $customer->getId());
         }
@@ -1300,22 +1300,6 @@ trait Authorize
 
         $type = $card->getType();
 
-        if ($type === Card\Type::UNKNOWN)
-        {
-            return;
-        }
-
-        $type = ucfirst($type);
-
-        $func = 'is' . $type . 'CardEnabled';
-
-        if ($merchantMethods->$func() === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                $type . ' card transactions are not allowed',
-                'number');
-        }
-
         if ((isset($input['recurring']) === true) and
             (boolval($input['recurring']) === true))
         {
@@ -1333,6 +1317,21 @@ trait Authorize
             }
         }
 
+        if ($type === Card\Type::UNKNOWN)
+        {
+            return;
+        }
+
+        $type = ucfirst($type);
+
+        $func = 'is' . $type . 'CardEnabled';
+
+        if ($merchantMethods->$func() === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                $type . ' card transactions are not allowed',
+                'number');
+        }
     }
 
     protected function checkAndValidateAmexIfNotEnabled($methods, $card)

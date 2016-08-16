@@ -36,6 +36,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_NET_BANKING_NOT_ENABLED                           = 'Net banking is not enabled for the merchant';
     const BAD_REQUEST_PAYMENT_WALLET_NOT_SUPPORTED                              = 'Wallet is not supported';
     const BAD_REQUEST_PAYMENT_WALLET_NOT_PROVIDED                               = 'Wallet is not provided';
+    const BAD_REQUEST_PAYMENT_RECURRING_NOT_ENABLED_FOR_MERCHANT                = 'Recurring payment is not enabled for the merchant';
     const BAD_REQUEST_PAYMENT_WALLET_NOT_ENALBED_FOR_MERCHANT                   = 'Wallet is not enabled for the merchant';
     const BAD_REQUEST_PAYMENT_CARD_NOT_ENALBED_FOR_MERCHANT                     = 'Card transactions are not enabled for the merchant';
     const BAD_REQUEST_PAYMENT_EMI_NOT_ENALBED_FOR_MERCHANT                      = 'Emi transactions are not enabled for the merchant';
@@ -154,6 +155,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_MISSING_DATA                                      = 'One or more required fields are missing';
     const BAD_REQUEST_INVALID_PARAMETERS                                        = 'One or more fields have invalid data';
     const BAD_REQUEST_PAYMENT_PARTIAL_AMOUNT_APPROVED                           = 'Payment declined because partial amount was approved';
+    const BAD_REQUEST_PAYMENT_INVALID_TOKEN                                     = 'Payment declined because token provided is invalid';
     const BAD_REQUEST_UNSUPPORTED_CHARACTER_SET                                 = 'Error occurred because of invalid data';
 
     const BAD_REQUEST_CARD_AVS_FAILED                                           = 'Payment processing failed because address validation failed';
