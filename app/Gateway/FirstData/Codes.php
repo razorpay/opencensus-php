@@ -8,7 +8,7 @@ final class Codes
 
     const ENGLISH_UK_LANG_CODE = 'en_GB';
 
-    const DATE_TIME_FORMAT = 'Y:m:d-h:m:s';
+    const DATE_TIME_FORMAT = 'Y:m:d-H:i:s';
 
     const PAYMENT_MODE_PAYONLY = 'payonly';
     const PAYMENT_MODE_PAYPLUS = 'payplus';

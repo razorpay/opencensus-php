@@ -94,6 +94,7 @@ class Gateway extends Base\Gateway
         $content[self::PAYMENT_METHOD] = Mapping::$paymentMethodCodes[$method];
 
         $this->setCardDetails($content, $input);
+        $this->setCallbackUrls($content, $input);
 
         return $content;
     }
@@ -107,6 +108,12 @@ class Gateway extends Base\Gateway
         $content[self::EXPMONTH] = $input['card']['expiry_month'];
         $content[self::EXPYEAR ] = $input['card']['expiry_year'];
         $content[self::CVM]      = $input['card']['cvv'];
+    }
+
+    protected function setCallbackUrls(&$content, $input)
+    {
+        $content[self::RESPONSE_SUCCESS_URL]      = $input['callbackUrl'];
+        $content[self::RESPONSE_FAIL_URL]         = $input['callbackUrl'];
     }
 
     protected function createGatewayPaymentEntity($content)
@@ -179,9 +186,6 @@ class Gateway extends Base\Gateway
 
             self::CARD_FUNCTION             => $input['card']['type'],
             self::COMMENTS                  => '',
-
-            self::RESPONSE_SUCCESS_URL      => $input['callbackUrl'],
-            self::RESPONSE_FAIL_URL         => $input['callbackUrl'],
 
             self::DYNAMIC_MERCHANT_NAME     => 'Razorpay Payments',
             self::LANGUAGE                  => Codes::ENGLISH_UK_LANG_CODE,
