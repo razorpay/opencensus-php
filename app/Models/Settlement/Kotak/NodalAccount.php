@@ -164,11 +164,11 @@ class NodalAccount
         $count['neft']  = $neftCount;
         $count['ift']   = $iftCount;
 
-        $urlExcel = $this->writeToExcelFileH2H($excelData, $this->getFileToWriteNameWithoutExt());
+        $urlExcel = $this->writeToExcelFile($excelData, $this->getFileToWriteNameWithoutExt());
 
         $txt = $this->generateText($textData);
 
-        $urlText = $this->writeToTextFile($txt);
+        $urlText = $this->writeToTextFileH2H($txt);
 
         $this->sendKotakSettlementMail($count, $amounts);
 

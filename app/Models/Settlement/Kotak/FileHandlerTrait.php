@@ -29,6 +29,22 @@ trait FileHandlerTrait
         return $url;
     }
 
+    public function writeToTextFileH2H($txt)
+    {
+        $name = 'RAZORNODAL$$'. Carbon::today('Asia/Kolkata')->timestamp;
+
+        $fullpath = $this->saveLocally($name, $txt);
+
+        $bucket = 'h2h_bucket';
+
+        $metadata = $this->getH2HMetadata();
+
+        $url = $this->saveToAws($name, $fullpath, 'text/plain', $bucket, $metadata);
+
+        // This will be local file path if aws is mocked
+        return $url;
+    }
+
     public function writeToCsvFile($data, $name, $fullName = null)
     {
         $excelObject = $this->createExcelObject($data, $name);
@@ -81,12 +97,7 @@ trait FileHandlerTrait
 
         $bucket = 'h2h_bucket';
 
-        $metadata = array(
-            'x-amz-meta-gid'   => '10000',
-            'x-amz-meta-uid'   => '10001',
-            'x-amz-meta-mtime' => Carbon::now()->timestamp,
-            'x-amz-meta-mode'  => '33188'
-        );
+        $metadata = $this->getH2HMetadata();
 
         $url = $this->saveToAws($name.'.xlsx', $fullpath, $xlsxMimeType, $bucket, $metadata);
 
@@ -573,5 +584,15 @@ trait FileHandlerTrait
         $trace = \Trace::getFacadeRoot();
 
         return $trace;
+    }
+
+    protected function getH2HMetadata()
+    {
+        return array(
+            'x-amz-meta-gid'   => '10000',
+            'x-amz-meta-uid'   => '10001',
+            'x-amz-meta-mtime' => Carbon::now()->timestamp,
+            'x-amz-meta-mode'  => '33188'
+        );
     }
 }
