@@ -73,15 +73,7 @@ trait Authorize
         $totalTerminals = count($this->terminalsSelected);
 
         $this->maxRetryAttempts = min($totalTerminals, $this->maxRetryAttempts);
-
-        // restrict international merchants from using terminal rotation to prevent fraud
-        $merchant = $payment->merchant;
-
-        if ($merchant->isInternational() === true)
-        {
-            $this->maxRetryAttempts = 1;
-        }
-
+        
         $retryAttempts = 0;
 
         $timeoutException = null;
