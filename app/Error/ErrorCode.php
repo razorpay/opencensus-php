@@ -22,6 +22,7 @@ class ErrorCode
      * are added in future
      */
     const GATEWAY_ERROR_FATAL_ERROR                                                 = 'GATEWAY_ERROR_FATAL_ERROR';
+    const GATEWAY_ERROR_REQUEST_ERROR                                               = 'GATEWAY_ERROR_REQUEST_ERROR';
 
     const GATEWAY_ERROR_REQUEST_TIMEOUT                                             = 'GATEWAY_ERROR_REQUEST_TIMEOUT';
     const GATEWAY_ERROR_DENIED_BY_RISK                                              = 'GATEWAY_ERROR_DENIED_BY_RISK';
