@@ -25,7 +25,7 @@ return [
 
     'settlement_bucket' => env('AWS_S3_SETTLEMENT_BUCKET'),
     'logo_bucket' => env('AWS_S3_LOGO_BUCKET'),
-    'h2h_bucket'  => env('AWS_S3_H2H_BUCKET'),
+    'h2h_bucket'  => 'prod-us-h2h/kotak/incoming',
 
     'mock' => env('AWS_S3_MOCK')
 ];
