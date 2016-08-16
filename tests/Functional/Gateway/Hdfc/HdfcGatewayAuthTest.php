@@ -41,8 +41,7 @@ class HdfcGatewayAuthTest extends TestCase
 
         $hdfc = $this->getLastEntity('hdfc', true);
 
-        // No Entry will be created for Failed Enroll Request
-        $this->assertEquals($hdfc, null);
+        $this->assertEquals($hdfc['error_code'], 'RP00003');
     }
 
     public function testCreditCardSuccess()
