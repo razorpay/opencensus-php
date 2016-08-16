@@ -6,7 +6,7 @@ use App;
 use Mail;
 
 use RZP\Models\Customer;
-use RZP\Models\Item;
+use RZP\Models\LineItem;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
 
@@ -18,13 +18,13 @@ class Generator
     protected $invoice;
     protected $merchant;
     protected $customer;
-    protected $items;
+    protected $lineItems;
+    protected $lineItemCore;
     protected $order;
     protected $repo;
     protected $orderRepo;
 
-    // 300 seconds (5*60)
-    const FIVE_MINUTES = 300;
+    const ORDER_CURRENCY = 'INR';
 
     public function __construct(Merchant\Entity $merchant)
     {
@@ -36,7 +36,7 @@ class Generator
 
         $this->merchant = $merchant;
 
-        $this->itemCore = new Item\Core();
+        $this->lineItemCore = new LineItem\Core();
 
         $this->repo = $this->app['repo'];
     }
@@ -45,28 +45,29 @@ class Generator
     {
         $this->invoice = new Entity();
 
-        $customerDetails = $input[Entity::CUSTOMER_DETAILS];
-        $itemsDetails = $input[Entity::ITEMS];
+        $customerDetails = $input[Entity::CUSTOMER];
+        $lineItemsDetails = $input[Entity::LINE_ITEMS];
 
-        unset($input[Entity::CUSTOMER_DETAILS]);
-        unset($input[Entity::ITEMS]);
+        unset($input[Entity::CUSTOMER]);
+        unset($input[Entity::LINE_ITEMS]);
 
         $this->invoice->build($input);
 
-        $this->createAssociatedEntities($itemsDetails, $customerDetails);
+        $this->repo->transaction(
+            function() use($lineItemsDetails, $customerDetails)
+            {
+                $this->createAndSetAssociatedEntities($lineItemsDetails, $customerDetails);
 
-        $this->setAssociations();
+                $this->setCustomerDetailsAttributes();
 
-        // This function should be called only after createAssociatedEntities since
-        // it uses $this->customer which is set in createAssociatedEntities.
-        $this->setCustomerDetailsAttributes();
+                // Saving here for the associations
+                $this->repo->saveOrFail($this->invoice);
 
-        // Saving here for the associations
-        $this->repo->saveOrFail($this->invoice);
-
-        // This function should be called only after saving the invoice entity and the items entities
-        // because the invoiceItems entity requires the invoice and items to be created first.
-        $this->createMappingBetweenInvoiceAndItems();
+                // This function should be called only after saving the invoice entity and the items entities
+                // because the invoiceItems entity requires the invoice and items to be created first.
+                $this->associateLineItemsToInvoice();
+            }
+        );
 
         (new Notifier($this->invoice))->sendNotificationToCustomer();
 
@@ -81,62 +82,57 @@ class Generator
         $this->invoice->setCustomerAddress($this->customer->getAddress());
     }
 
-    protected function createMappingBetweenInvoiceAndItems()
+    protected function associateLineItemsToInvoice()
     {
-        $itemIds = $this->itemCore->getIdsFromItems($this->items);
+        foreach ($this->lineItems as $lineItem)
+        {
+            $lineItem->invoice()->associate($this->invoice);
 
-        // attach can be used when a relation is defined as belongsToMany()
-        $this->invoice->items()->attach($itemIds);
+            $this->repo->saveOrFail($lineItem);
+        }
     }
 
-    protected function createAssociatedEntities(array $itemsDetails, array $customerDetails)
+    protected function createAndSetAssociatedEntities(array $lineItemsDetails, array $customerDetails)
     {
-        $this->items = $this->createItemsFromInput($itemsDetails);
+        $this->lineItems = $this->createLineItemsFromInput($lineItemsDetails);
 
-        $this->order = $this->createOrderForInvoice($this->items);
+        $order = $this->createOrderForInvoice($this->lineItems);
+        $this->invoice->order()->associate($order);
 
         $this->customer = $this->getExistingOrCreateCustomerFromInput($customerDetails);
-    }
-
-    protected function setAssociations()
-    {
-        $this->invoice->order()->associate($this->order);
-
         $this->invoice->customer()->associate($this->customer);
 
         $this->invoice->merchant()->associate($this->merchant);
     }
 
-    protected function createItemsFromInput(array $itemsDetails)
+    protected function createLineItemsFromInput(array $lineItemsDetails)
     {
-        $items = [];
+        $lineItems = [];
 
-        foreach ($itemsDetails as $itemDetails)
+        foreach ($lineItemsDetails as $lineItemDetails)
         {
-            if (empty($itemDetails['id']) === false)
+            if (empty($lineItemDetails[LineItem\Entity::ID]) === false)
             {
-                $item = $this->repo->item
-                             ->findByIdAndMerchantId($itemDetails[Item\Entity::ID], $this->merchant->getId());
+                $lineItem = $this->repo->line_item
+                             ->findByIdAndMerchantId($lineItemDetails[LineItem\Entity::ID], $this->merchant->getId());
 
             }
             else
             {
-                $item = $this->itemCore->create($itemDetails, $this->merchant);
+                $lineItem = $this->lineItemCore->create($lineItemDetails, $this->merchant);
             }
 
-            $items[] = $item;
+            $lineItems[] = $lineItem;
         }
 
-        return $items;
+        return $lineItems;
     }
 
-    protected function createOrderForInvoice(array $items)
+    protected function createOrderForInvoice(array $lineItems)
     {
-        $orderAmount = $this->itemCore->getTotalAmountFromItems($items);
+        $orderAmount = $this->lineItemCore->getTotalAmountFromLineItems($lineItems);
 
-        // TODO: Add a validation for items that all the
-        // items given in the input have the same currency.
-        $orderCurrency = $items[0]->getCurrency();
+        $orderCurrency = self::ORDER_CURRENCY;
 
         // TODO: Should we store any specific value here?
         $orderReceipt = 'Invoice Order';

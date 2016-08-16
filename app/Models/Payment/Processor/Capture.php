@@ -278,7 +278,7 @@ trait Capture
 
             $order->setStatus(Order\Status::PAID);
 
-            $order->saveOrFail();
+            $this->repo->saveOrFail($order);
 
             // TODO: Should we de-couple orders and invoices? With more complexity
             // in invoices, the orders flow might get messy and complicated.
@@ -310,6 +310,6 @@ trait Capture
 
         $invoice->setStatus(Invoice\Status::PAID);
 
-        $invoice->saveOrFail();
+        $this->repo->saveOrFail($invoice);
     }
 }

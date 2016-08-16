@@ -12,39 +12,51 @@ class Entity extends Base\PublicEntity
 {
     use NotesTrait;
 
+    // ------------------ Entity Keys --------------------------------
+
     const ORDER_ID              = 'order_id';
     const CUSTOMER_ID           = 'customer_id';
     const CUSTOMER_NAME         = 'customer_name';
     const CUSTOMER_EMAIL        = 'customer_email';
-    // TODO: Use an address ID here instead.
     const CUSTOMER_ADDRESS      = 'customer_address';
     const CUSTOMER_CONTACT      = 'customer_contact';
+    // Invoice status
     const STATUS                = 'status';
     const DUE_BY                = 'due_by';
     const SCHEDULED_AT          = 'scheduled_at';
-    // const SHIPPING              = 'shipping';
-    // const DISCOUNT              = 'discount';
     const EMAIL_STATUS          = 'email_status';
     const SMS_STATUS            = 'sms_status';
 
-    // Present only in request
-    const DUE_IN                = 'due_in';
-    const SCHEDULED_IN          = 'scheduled_in';
-    const ITEMS                 = 'items';
-    // const DISCOUNT_FLAT         = 'discount_flat';
-    // const DISCOUNT_PERCENT      = 'discount_percent';
-    const EMAIL_NOTIFY          = 'email_notify';
-    const SMS_NOTIFY            = 'sms_notify';
     const TOTAL_AMOUNT          = 'total_amount';
     const CURRENCY              = 'currency';
 
+    // ---------------------- Input Keys -------------------------------------
+
+    // Input key for sending line item details
+    const LINE_ITEMS            = 'line_items';
+    // Input key for sending customer details
+    const CUSTOMER              = 'customer';
+    // Input key on whether to notify the customer by email
+    const EMAIL_NOTIFY          = 'email_notify';
+    // Input key on whether to notify the customer by sms
+    const SMS_NOTIFY            = 'sms_notify';
+    // Input key to send the expiry date of the invoice
+    const DUE_IN                = 'due_in';
+    // Input key to send the scheduling time for notifying the customer
+    const SCHEDULED_IN          = 'scheduled_in';
+
+    // ---------------------- Input Keys End -------------------------------------
+
+    // ------------------------- Output Keys --------------------------------------
+
     const CUSTOMER_DETAILS      = 'customer_details';
-    const ITEMS_DETAILS         = 'items_details';
-    
+    const LINE_ITEMS_DETAILS    = 'line_items_details';
+
+    // ------------------------ Output Keys End -----------------------------------
+
     const EMAIL                 = 'email';
     const SMS                   = 'sms';
-
-    // const TOTAL_TAX             = 'total_tax';
+    const ITEMS                 = 'items';
 
     const DEFAULT_DUE_DAYS      = 60;
 
@@ -101,13 +113,9 @@ class Entity extends Base\PublicEntity
         self::DUE_BY,
         self::SCHEDULED_AT,
         self::CUSTOMER_DETAILS,
-        self::ITEMS_DETAILS,
-        // self::ADJUSTMENT,
-        // self::SHIPPING,
-        // self::DISCOUNT,
+        self::LINE_ITEMS_DETAILS,
         self::SMS_STATUS,
         self::EMAIL_STATUS,
-        self::CURRENCY,
         self::MERCHANT_ID,
         self::CREATED_AT,
         self::UPDATED_AT
@@ -117,23 +125,15 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ID,
         self::ENTITY,
-        // TODO: Customer ID is separate because the details of customer id
-        // can change later. The invoice details will be in customer_details.
-        // The customer_id at the time of generation of the invoice for the
-        // given customer details would be this customer id here.
         self::CUSTOMER_ID,
-        self::CUSTOMER_DETAILS,
-        self::ITEMS_DETAILS,
+        // self::CUSTOMER_DETAILS,
+        self::LINE_ITEMS_DETAILS,
         self::STATUS,
-        self::CREATED_AT,
         self::DUE_BY,
         self::SCHEDULED_AT,
-        // self::SHIPPING,
-        // self::ADJUSTMENT,
-        // self::DISCOUNT,
         self::SMS_STATUS,
         self::EMAIL_STATUS,
-        self::CURRENCY,
+        self::CREATED_AT,
     ];
 
     // Fields to be added while retrieving the entity
@@ -148,7 +148,7 @@ class Entity extends Base\PublicEntity
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
-        self::ITEMS_DETAILS,
+        self::LINE_ITEMS_DETAILS,
     ];
 
     // -------------------------------------- Getters --------------------------------------
@@ -177,7 +177,7 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::SCHEDULED_AT);
     }
-    
+
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
@@ -208,9 +208,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CUSTOMER_CONTACT, $customerContact);
     }
 
-    public function setItemsDetails($items)
+    public function setLineItems($lineItems)
     {
-        $this->setAttribute(self::ITEMS_DETAILS, $items);
+        $this->setAttribute(self::LINE_ITEMS, $lineItems);
     }
 
     public function setSmsStatus($status)
@@ -226,11 +226,11 @@ class Entity extends Base\PublicEntity
 
         $this->setAttribute(self::EMAIL_STATUS, $status);
     }
-    
+
     public function setStatus($status)
     {
         Status::checkStatus($status);
-        
+
         $this->setAttribute(self::STATUS, $status);
     }
 
@@ -252,12 +252,12 @@ class Entity extends Base\PublicEntity
 
     // -------------------------------------- Public Setters --------------------------------------
 
-    protected function setPublicItemsDetailsAttribute(array & $array)
+    protected function setPublicLineItemsDetailsAttribute(array & $array)
     {
         // TODO: This will output a collection of items directly.
         // Should we instead iterate through each item in the collection
         // and return back an array of items instead of an entity collection?
-        $array[self::ITEMS_DETAILS] = $this->items()->getResults()->toArrayPublic();
+        $array[self::LINE_ITEMS_DETAILS] = $this->lineItems()->getResults()->toArrayPublic();
     }
 
     // -------------------------------------- End Public Setters --------------------------------------
@@ -358,10 +358,9 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Customer\Entity');
     }
 
-    public function items()
+    public function lineItems()
     {
-        return $this->belongsToMany('RZP\Models\Item\Entity', Table::INVOICE_ITEM)
-                    ->withTimestamps();
+        return $this->hasMany('RZP\Models\LineItem\Entity');
     }
 
     // TODO: We don't need to really store merchant in this entity. Invoice is

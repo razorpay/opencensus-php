@@ -14,14 +14,14 @@ class Service extends Base\Service
 
         $this->core = new Core();
     }
-    
+
     public function create($input)
     {
         $invoice = $this->core->create($input);
 
         return $invoice->toArrayPublic();
     }
-    
+
     public function fetch($id)
     {
         Entity::verifyIdAndStripSign($id);
@@ -37,7 +37,7 @@ class Service extends Base\Service
 
         return $invoices->toArrayPublic();
     }
-    
+
     public function sendNotificationsInBulk()
     {
         return (new Notifier())->sendNotificationsInBulk();

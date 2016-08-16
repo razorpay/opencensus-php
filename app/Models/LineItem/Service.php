@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Item;
+namespace RZP\Models\LineItem;
 
 use RZP\Models\Base;
 
@@ -26,14 +26,14 @@ class Service extends Base\Service
     {
         Entity::verifyIdAndStripSign($id);
 
-        $item = $this->repo->item->findByIdAndMerchantId($id, $this->merchant->getId());
+        $item = $this->repo->line_item->findByIdAndMerchantId($id, $this->merchant->getId());
 
         return $item->toArrayPublic();
     }
 
     public function fetchMultiple(array $input)
     {
-        $items = $this->repo->item->fetch($input, $this->merchant->getId());
+        $items = $this->repo->line_item->fetch($input, $this->merchant->getId());
 
         return $items->toArrayPublic();
     }

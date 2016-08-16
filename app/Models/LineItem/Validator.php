@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Item;
+namespace RZP\Models\LineItem;
 
 use RZP\Models\Base;
 

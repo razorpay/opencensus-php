@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Item;
+namespace RZP\Models\LineItem;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
@@ -29,7 +29,7 @@ class Core extends Base\Core
         return $item;
     }
 
-    public function getTotalAmountFromItems(array $items)
+    public function getTotalAmountFromLineItems(array $items)
     {
         $totalAmount = 0;
 
@@ -41,7 +41,7 @@ class Core extends Base\Core
         return $totalAmount;
     }
     
-    public function getIdsFromItems(array $items)
+    public function getIdsFromLineItems(array $items)
     {
         $itemIds = [];
         

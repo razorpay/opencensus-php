@@ -8,7 +8,6 @@ class Table
     const IIN                       = 'iins';
     const KEY                       = 'keys';
     const CARD                      = 'cards';
-    const ITEM                      = 'items';
     const ORDER                     = 'orders';
     const TOKEN                     = 'tokens';
     const REFUND                    = 'refunds';
@@ -22,6 +21,7 @@ class Table
     const TERMINAL                  = 'terminals';
     const CUSTOMER                  = 'customers';
     const EMI_PLAN                  = 'emi_plans';
+    const LINE_ITEM                 = 'line_items';
     const APP_TOKEN                 = 'customer_apps';
     const ADJUSTMENT                = 'adjustment';
     const SETTLEMENT                = 'settlements';

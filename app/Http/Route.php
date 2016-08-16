@@ -236,12 +236,12 @@ final class Route
         'invoice_create'                          => ['post',     'invoices',                                 'InvoiceController@createInvoice'                                   ],
         'invoice_fetch'                           => ['get',      'invoices/{id}',                            'InvoiceController@getInvoice'                                      ],
         'invoice_fetch_multiple'                  => ['get',      'invoices',                                 'InvoiceController@getInvoices'                                     ],
-        'invoice_send_notifications'              => ['post',     'invoices',                                 'InvoiceController@sendNotifications'                                ],
+        'invoice_send_notifications'              => ['post',     'invoices',                                 'InvoiceController@sendNotifications'                               ],
         'invoice_notification_update'             => ['put',      'invoices/{medium}',                        'InvoiceController@updateInvoiceNotificationStatus'                 ],
-        'invoice_get_details'                     => ['get',      'invoices/{id}/details',                     'InvoiceController@getInvoiceDetails'                              ],
-        'item_create'                             => ['post',     'items',                                    'ItemController@createItem'                                         ],
-        'item_fetch'                              => ['get',      'items/{id}',                               'ItemController@getItem'                                            ],
-        'item_fetch_multiple'                     => ['get',      'items',                                    'ItemController@getItems'                                           ],
+        'invoice_get_details'                     => ['get',      'invoices/{id}/details',                    'InvoiceController@getInvoiceDetails'                               ],
+        'line_item_create'                        => ['post',     'line_items',                               'LineItemController@createLineItem'                                 ],
+        'line_item_fetch'                         => ['get',      'line_items/{id}',                          'LineItemController@getLineItem'                                    ],
+        'line_item_fetch_multiple'                => ['get',      'line_items',                               'LineItemController@getLineItems'                                   ],
     );
 
     public static $public = array(
@@ -320,9 +320,9 @@ final class Route
         'invoice_create',
         'invoice_fetch',
         'invoice_fetch_multiple',
-        'item_create',
-        'item_fetch',
-        'item_fetch_multiple',
+        'line_item_create',
+        'line_item_fetch',
+        'line_item_fetch_multiple',
     );
 
     public static $internal = array(

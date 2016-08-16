@@ -7,6 +7,7 @@ use Config;
 use Mail;
 
 use Carbon\Carbon;
+use RZP\Constants\Mode;
 use RZP\Models\Customer;
 
 class Notifier
@@ -17,6 +18,7 @@ class Notifier
     protected $invoice;
     protected $app;
     protected $repo;
+    protected $mode;
 
     public function __construct($invoice = null)
     {
@@ -30,6 +32,13 @@ class Notifier
         $this->app = App::getFacadeRoot();
 
         $this->repo = $this->app['repo'];
+
+        $this->mode = Mode::TEST;
+
+        if (isset($this->app['rzp.mode']) === true)
+        {
+            $this->mode = $this->app['rzp.mode'];
+        }
     }
 
     public function setInvoice($invoice)
@@ -57,7 +66,7 @@ class Notifier
         }
 
         // Saves the new statuses of email and sms
-        $this->invoice->saveOrFail();
+        $this->repo->saveOrFail($this->invoice);
     }
 
     public function sendEmailNotificationToCustomer()

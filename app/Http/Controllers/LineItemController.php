@@ -5,9 +5,9 @@ namespace RZP\Http\Controllers;
 use Request;
 
 use RZP\Http\ApiResponse;
-use RZP\Models\Item;
+use RZP\Models\LineItem;
 
-class ItemController extends Controller
+class LineItemController extends Controller
 {
     protected $service;
 
@@ -15,10 +15,10 @@ class ItemController extends Controller
     {
         parent::__construct();
 
-        $this->service = new Item\Service();
+        $this->service = new LineItem\Service();
     }
 
-    public function createItem()
+    public function createLineItem()
     {
         $input = Request::all();
 
@@ -27,14 +27,14 @@ class ItemController extends Controller
         return ApiResponse::json($item);
     }
 
-    public function getItem($id)
+    public function getLineItem($id)
     {
         $item = $this->service->fetch($id);
 
         return ApiResponse::json($item);
     }
 
-    public function getItems()
+    public function getLineItems()
     {
         $input = Request::all();
 

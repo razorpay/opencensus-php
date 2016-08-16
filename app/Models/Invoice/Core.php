@@ -6,7 +6,7 @@ use Mail;
 
 use RZP\Models\Base;
 use RZP\Exception;
-use RZP\Models\Item;
+use RZP\Models\LineItem;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Models\Customer;
@@ -28,12 +28,12 @@ class Core extends Base\Core
     {
         parent::__construct();
 
-        $this->itemService = new Item\Service();
+        $this->itemService = new LineItem\Service();
 
-        $this->itemRepository = $this->repo->item;
+        $this->itemRepository = $this->repo->line_item;
         $this->customerRepository = $this->repo->customer;
 
-        $this->itemCore = new Item\Core();
+        $this->itemCore = new LineItem\Core();
         $this->orderCore = new Order\Core();
         $this->customerCore = new Customer\Core();
     }
@@ -44,13 +44,6 @@ class Core extends Base\Core
         // TODO: Should we move this to validator?
         $this->validateRequest($input);
 
-        $invoice = $this->generateInvoice($input);
-
-        return $invoice;
-    }
-
-    protected function generateInvoice(array $input)
-    {
         $invoice = (new Generator($this->merchant))->generate($input);
 
         return $invoice;
@@ -58,9 +51,9 @@ class Core extends Base\Core
 
     protected function validateRequest(array $input)
     {
-        assert(isset($input[Entity::CUSTOMER_DETAILS]));
+        assert(isset($input[Entity::CUSTOMER]));
 
-        assert((isset($input[Entity::ITEMS])) and
-               (count($input[Entity::ITEMS]) > 0));
+        assert((isset($input[Entity::LINE_ITEMS])) and
+               (count($input[Entity::LINE_ITEMS]) > 0));
     }
 }

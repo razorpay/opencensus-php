@@ -3,11 +3,12 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-use RZP\Models\Item\Entity;
+use RZP\Models\LineItem\Entity;
+use RZP\Models\Invoice;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
 
-class CreateItems extends Migration
+class CreateLineItems extends Migration
 {
     /**
      * Run the migrations.
@@ -16,7 +17,7 @@ class CreateItems extends Migration
      */
     public function up()
     {
-        Schema::create(Table::ITEM, function(Blueprint $table)
+        Schema::create(Table::LINE_ITEM, function(Blueprint $table)
         {
             $table->engine = 'InnoDB';
 
@@ -25,15 +26,17 @@ class CreateItems extends Migration
 
             $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH);
 
+            // This is nullable because the association happens after
+            // creating a line item.
+            $table->char(Entity::INVOICE_ID, Entity::ID_LENGTH)
+                  ->nullable();
+
             $table->string(Entity::NAME, 512);
 
             $table->string(Entity::DESCRIPTION, 2048)
                   ->nullable();
 
             $table->integer(Entity::AMOUNT);
-
-            $table->char(Entity::CURRENCY, 8)
-                  ->nullable();
 
             $table->string(Entity::LISTING_ID, 512)
                   ->nullable();
@@ -52,6 +55,11 @@ class CreateItems extends Migration
                 ->references(Merchant\Entity::ID)
                 ->on(Table::MERCHANT)
                 ->on_delete('restrict');
+
+            $table->foreign(Entity::INVOICE_ID)
+                  ->references(Invoice\Entity::ID)
+                  ->on(Table::INVOICE)
+                  ->on_delete('restrict');
         });
     }
 
@@ -62,14 +70,22 @@ class CreateItems extends Migration
      */
     public function down()
     {
-        Schema::table(Table::ITEM, function($table)
+        Schema::table(Table::LINE_ITEM, function($table)
         {
             $table->dropForeign
             (
-                Table::ITEM . '_' . Entity::MERCHANT_ID . '_foreign'
+                Table::LINE_ITEM . '_' . Entity::MERCHANT_ID . '_foreign'
             );
         });
 
-        Schema::drop(Table::ITEM);
+        Schema::table(Table::LINE_ITEM, function($table)
+        {
+            $table->dropForeign
+            (
+                Table::LINE_ITEM . '_' . Entity::INVOICE_ID . '_foreign'
+            );
+        });
+
+        Schema::drop(Table::LINE_ITEM);
     }
 }
