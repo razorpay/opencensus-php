@@ -38,6 +38,50 @@ class Service extends Base\Service
         return $plan->toArrayPublic();
     }
 
+    public function uploadPricingPlan($input)
+    {
+        $pricing = (new Pricing\Entity)->build($input[0]);
+
+        $this->trace->info(
+            TraceCode::PRICING_PLAN_CREATE_ATTEMPT,
+            $input[0]);
+
+        $plan = $this->repo->pricing->getPricingPlanByName($input[0][Entity::PLAN_NAME]);
+
+        Pricing\Validator::validatePlanCountZero($plan);
+
+        $pricing->generateId();
+
+        $this->repo->saveOrFail($pricing);
+
+        $planId = $pricing->plan_id;
+
+        $plan = $this->repo->pricing->getPricingPlanByIdOrFailPublic($planId);
+
+        foreach ($input as $key => $value)
+        {
+            if ($key === 0)
+            {
+                continue;
+            }
+
+            $this->trace->info(
+            TraceCode::PRICING_PLAN_RULE_ADD_ATTEMPT,
+            ['id' => $planId, $value]);
+
+            $rule = (new Pricing\Entity)->addPlanRule($value, $plan);
+
+            $rule->getValidator()->matchPaymentRules($plan);
+            $rule->generateId();
+
+            (new Pricing\Repository)->saveOrFail($rule);
+        }
+
+        $plan = $this->repo->pricing->getPricingPlanByName($input[0][Entity::PLAN_NAME]);
+
+        return $plan->toArrayPublic();
+    }
+
     public function addPricingPlanRule($id, $input)
     {
         $this->trace->info(
