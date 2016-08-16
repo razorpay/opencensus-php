@@ -28,7 +28,7 @@ class Reconciler3
         'UTR number',
         'Reject Reason',
         'DateTime',
-        'Int.ref no.'
+        'Int.ref no.',
         'Dummy');
 
     /**
