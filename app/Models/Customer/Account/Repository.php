@@ -23,18 +23,16 @@ class Repository extends Base\Repository
 
     public function findByContactAndMerchant($contact, $merchant)
     {
-        $repo = $this->repo;
-
-        return $repo::where(Customer\Entity::CONTACT, '=', $contact)
+        return $this->newQuery()
+                    ->where(Customer\Entity::CONTACT, '=', $contact)
                     ->where(Customer\Entity::MERCHANT_ID, '=', $merchant->getId())
                     ->first();
     }
 
     public function findByContactEmailAndMerchant($contact, $email, $merchant)
     {
-        $repo = $this->repo;
-
-        return $repo::where(Customer\Entity::CONTACT, '=', $contact)
+        return $this->newQuery()
+                    ->where(Customer\Entity::CONTACT, '=', $contact)
                     ->where(Customer\Entity::EMAIL, '=', $email)
                     ->where(Customer\Entity::MERCHANT_ID, '=', $merchant->getId())
                     ->first();

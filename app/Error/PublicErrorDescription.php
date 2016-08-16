@@ -13,6 +13,7 @@ class PublicErrorDescription
     const BAD_REQUEST_ONLY_HTTPS_ALLOWED                                        = 'Razorpay API is only available over HTTPS.';
     const BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED                                   = 'The current http method is not supported';
     const BAD_REQUEST_INVALID_ID                                                = 'The id provided does not exist';
+    const BAD_REQUEST_NO_RECORDS_FOUND                                          = 'No db records found.';
     const BAD_REQUEST_PAYMENT_FAILED                                            = 'Payment failed';
     const BAD_REQUEST_PAYMENT_CANCELLED_BY_USER                                 = 'Payment processing cancelled by user';
     const BAD_REQUEST_PAYMENT_CANCELLED_BY_PRESSING_BACK_ON_ANDROID             = 'Payment processing cancelled by pressing back button on android';
@@ -80,6 +81,8 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_WALLET_ACCOUNT_INVALID_MOBILE                     = 'Wallet account seems to be registered with invalid mobile number';
     const BAD_REQUEST_PAYMENT_WALLET_ACCOUNT_INVALID_CREDENTIALS                = 'No Wallet Account is associated with the given email and mobile number combination';
     const BAD_REQUEST_PAYMENT_WALLET_NO_USER_WITH_CELL                          = 'No Wallet Account is associated with specified contact number';
+    const BAD_REQUEST_PAYMENT_WALLET_ACCOUNT_ALREADY_EXIST_WITH_EMAIL           = 'Provided email is already associated with an existing wallet account';
+    const BAD_REQUEST_PAYMENT_WALLET_ACCOUNT_ALREADY_EXIST_WITH_CONTACT         = 'Provided contact is already associated with an existing wallet account';
     const BAD_REQUEST_PAYMENT_WALLET_AUTHENTICATION_FAILED                      = 'Payment failed due to wallet authentication failure';
     const BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE                       = 'Payment failed due to insufficient balance in wallet';
     const BAD_REQUEST_PAYMENT_WALLET_CONTACT_PAYUMONEY                          = 'Payment failed. Please contact care@payumoney.com using your registered email';

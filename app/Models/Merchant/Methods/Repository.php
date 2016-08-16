@@ -28,9 +28,7 @@ class Repository extends Base\Repository
 
     public function getMerchantMethods($id)
     {
-        $repo = $this->repo;
-
-        return $repo::find($id);
+        return $this->find($id);
     }
 
     protected function addQueryOrder($query)

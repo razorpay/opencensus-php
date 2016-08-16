@@ -76,34 +76,7 @@ trait Support
             $this->supportPaymentResponse);
 
 
-        if ((isset($this->supportPaymentResponse['data']['result'])) and
-            ($this->supportPaymentResponse['data']['result'] === 'SUCCESS'))
-        {
-            $this->supportPaymentResponse['data']['result'] = Result::CAPTURED;
-        }
-
-        if ($this->error === false)
-        {
-            $this->validateSupportPaymentResponse();
-        }
-
-        $this->persistAfterSupportPayment($type, $input);
-
-        if ($this->error)
-        {
-            if ($this->isAnAcceptedError() === true)
-            {
-                return;
-            }
-
-            // This is being done to enable testing of capture timeout queue.
-            // Removes stale data.
-            $error = $this->supportPaymentResponse['error'];
-            $this->supportPaymentResponse['error'] = [];
-            $this->error = false;
-
-            $this->throwException($error);
-        }
+        $this->verifyAndSaveSupportResponse($type, $input);
     }
 
     protected function retrievePreviousGatewayTransaction($input, $type)
@@ -150,49 +123,24 @@ trait Support
 
         $response = & $this->supportPaymentResponse;
 
+        Result::modifySpecificResultValueIfRequired($response['data']['result']);
+
         $result = $response['data']['result'];
 
-        //
-        // Check enroll result code.
-        // 'enrollSuccess' variable tells us whether
-        // its a success code or failure.
-        //
-        switch ($result)
+        $success = Payment\Result::isResultCodeIndicatingSuccess($result);
+
+        if ($success === false)
         {
-            // See Payment\Result for code details
-            case Payment\Result::CAPTURED:
-                break;
+            $errorCode = Hdfc\ErrorCode::getErrorCodeForResult($result);
 
-            case Payment\Result::NOT_CAPTURED:
-                Hdfc\ErrorHandler::setErrorInResponse(
-                    $authResponse,
-                    Hdfc\ErrorCode::RP00006);
-                $this->error = true;
-                break;
+            Hdfc\ErrorHandler::setErrorInResponse($response, $errorCode);
 
-            case Payment\Result::HOST_TIMEOUT:
-                Hdfc\ErrorHandler::setErrorInResponse(
-                    $authResponse,
-                    Hdfc\ErrorCode::RP00004);
-                $this->error = true;
-                break;
+            $this->error = true;
 
-            case Payment\Result::DENIED_BY_RISK:
-                Hdfc\ErrorHandler::setErrorInResponse(
-                    $authResponse,
-                    Hdfc\ErrorCode::RP00005);
-                $this->error = true;
-                break;
-
-            default:
-                Hdfc\ErrorHandler::setErrorInResponse(
-                    $authResponse,
-                    Hdfc\ErrorCode::RP00002);
-                $this->error = true;
-                break;
+            return false;
         }
 
-        return ! ($this->error);
+        return true;
     }
 
     protected function isAnAcceptedError()
@@ -223,7 +171,7 @@ trait Support
 
     protected function setSupportPaymentType($type)
     {
-        Assert(($type === 'capture') or
+        assert(($type === 'capture') or
                ($type === 'refund'));
 
         $this->supportPaymentRequest['type'] = $type;
@@ -285,13 +233,36 @@ trait Support
         }
     }
 
-    protected function validateSupportPaymentResponse()
+    protected function verifyAndSaveSupportResponse($type, $input)
     {
         $data = $this->supportPaymentResponse['data'];
 
-        $this->validateSupportPaymentTrackId();
+        if ($this->error === false)
+        {
+            $this->validateSupportPaymentTrackId();
 
-        $this->validatePostDate($data['postdate']);
+            $this->validatePostDate($data['postdate']);
+
+            $this->isSupportPaymentSuccess();
+        }
+
+        $this->persistAfterSupportPayment($type, $input);
+
+        if ($this->error)
+        {
+            if ($this->isAnAcceptedError() === true)
+            {
+                return;
+            }
+
+            // This is being done to enable testing of capture timeout queue.
+            // Removes stale data.
+            $error = $this->supportPaymentResponse['error'];
+            $this->supportPaymentResponse['error'] = [];
+            $this->error = false;
+
+            $this->throwException($error);
+        }
     }
 
     /**
@@ -332,6 +303,7 @@ trait Support
 
             $this->model = $this->repo->persistAfterSupportPaymentError(
                                 $this->supportPaymentRequest['data'],
+                                $this->supportPaymentResponse['data'],
                                 $this->supportPaymentResponse['error'],
                                 $type,
                                 $paymentId,

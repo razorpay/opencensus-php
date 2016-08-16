@@ -5,6 +5,7 @@ namespace RZP\Gateway\AxisMigs;
 use RZP\Constants\Mode;
 use RZP\Error;
 use RZP\Exception;
+use RZP\Models\Payment\Processor\Notify;
 use RZP\Gateway\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\VerifyResult;
@@ -628,10 +629,20 @@ class Gateway extends Base\Gateway
             // then we need to block the transaction on the international card.
             //
 
-            if (($input['merchant']['international'] === false) and
-                (ThreeDSecureStatus::isThreeDSsuccess($threeDSstatus) === false))
+            if (ThreeDSecureStatus::is3DSecureSuccess($threeDSstatus) === false)
             {
-                $apiErrorCode = Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED;
+                if ($input['merchant']['international'] === false)
+                {
+                    $apiErrorCode = Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED;
+                }
+                else if($input['merchant']['risk_rating'] > Notify::MIN_HIGH_RISK_RATING)
+                {
+                    $apiErrorCode = Error\ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK;
+                }
+                else
+                {
+                    return; // payment succeeds
+                }
             }
             else
             {

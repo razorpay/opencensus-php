@@ -31,9 +31,7 @@ class Repository extends Base\Repository
 
     public function findOrFailPublicByParams($id, $merchantId, $paymentId = null)
     {
-        $repo = $this->repo;
-
-        $query = $repo::where(Refund\Entity::MERCHANT_ID, '=', $merchantId);
+        $query = $this->newQuery()->where(Refund\Entity::MERCHANT_ID, '=', $merchantId);
 
         if ($paymentId !== null)
         {
@@ -53,18 +51,16 @@ class Repository extends Base\Repository
 
     public function findBetweenTimestamps($from, $to)
     {
-        $repo = $this->repo;
-
-        return $repo::where(Refund\Entity::CREATED_AT, '>=', $from)
+        return $this->newQuery()
+                    ->where(Refund\Entity::CREATED_AT, '>=', $from)
                     ->where(Refund\Entity::CREATED_AT, '<=', $to)
                     ->get();
     }
 
     public function findBetweenTimesampsForGateway($from, $to, $gateway)
     {
-        $repo = $this->repo;
-
-        return $repo::join('payments', 'refunds.payment_id', '=', 'payments.id')
+        return $this->newQuery()
+                    ->join('payments', 'refunds.payment_id', '=', 'payments.id')
                     ->select('refunds.*', 'payments.gateway')
                     ->where('refunds.created_at', '>=', $from)
                     ->where('refunds.created_at', '<=', $to)
@@ -74,9 +70,8 @@ class Repository extends Base\Repository
 
     public function fetchByIdPaymentIdMerchantId($id, $paymentId, $merchantId)
     {
-        $repo = $this->repo;
-
-        return $repo::where(Refund\Entity::PAYMENT_ID, '=', $paymentId)
+        return $this->newQuery()
+                    ->where(Refund\Entity::PAYMENT_ID, '=', $paymentId)
                     ->where(Refund\Entity::MERCHANT_ID, '=', $merchantId)
                     ->findOrFailPublic($id);
     }

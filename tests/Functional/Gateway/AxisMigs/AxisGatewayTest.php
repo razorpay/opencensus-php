@@ -181,4 +181,21 @@ class AxisGatewayTest extends TestCase
 
         $this->assertEquals($payment['status'], 'failed');
     }
+
+    public function testFailureWhen3DSFailsForRiskyMerchant()
+    {
+        $this->fixtures->merchant->enableInternational();
+
+        $this->fixtures->merchant->enableRisky();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function()
+        {
+            $payment = $this->getDefaultPaymentArray();
+            $payment['card']['number'] = '55553555655655';
+            $payment = $this->doAuthPayment($payment);
+        });
+    }
+
 }

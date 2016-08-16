@@ -26,27 +26,24 @@ class Repository extends Base\Repository
 
     public function getByCustomerId($id)
     {
-        $repo = $this->repo;
-
-        return $repo::where(Token\Entity::CUSTOMER_ID, '=', $id)
+        return $this->newQuery()
+                    ->where(Token\Entity::CUSTOMER_ID, '=', $id)
                     ->orderBy(Entity::ID, 'desc')
                     ->get();
     }
 
     public function getByTokenAndCustomerId($token, $id)
     {
-        $repo = $this->repo;
-
-        return $repo::where(Token\Entity::CUSTOMER_ID, '=', $id)
+        return $this->newQuery()
+                    ->where(Token\Entity::CUSTOMER_ID, '=', $id)
                     ->where(Token\Entity::TOKEN, '=', $token)
                     ->first();
     }
 
     public function getByWalletTerminalAndCustomerId($wallet, $terminal, $customer)
     {
-        $repo = $this->repo;
-
-        return $repo::where(Token\Entity::WALLET, '=', $wallet)
+        return $this->newQuery()
+                    ->where(Token\Entity::WALLET, '=', $wallet)
                     ->where(Token\Entity::TERMINAL_ID, '=', $terminal)
                     ->where(Token\Entity::CUSTOMER_ID, '=', $customer)
                     ->first();

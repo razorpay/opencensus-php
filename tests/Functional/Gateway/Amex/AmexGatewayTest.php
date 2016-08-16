@@ -139,4 +139,19 @@ class AmexGatewayTest extends TestCase
 
         $this->assertEquals($payment['status'], 'failed');
     }
+
+    public function testFailureWhen3DSFailsForRiskyMerchant()
+    {
+        $this->fixtures->merchant->enableInternational();
+
+        $this->fixtures->merchant->enableRisky();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function()
+        {
+            $this->payment['card']['number'] = '345678000000007';
+            $this->doAuthPayment($this->payment);
+        });
+    }
 }
