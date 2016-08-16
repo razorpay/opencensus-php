@@ -32,12 +32,18 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getByTokenAndCustomerId($token, $id)
+    public function getByTokenAndCustomerId($token, $id, $recurring = false)
     {
         return $this->newQuery()
                     ->where(Token\Entity::CUSTOMER_ID, '=', $id)
                     ->where(Token\Entity::TOKEN, '=', $token)
+                    ->where(Token\Entity::RECURRING, '=', $recurring)
                     ->first();
+    }
+
+    public function getRecurringByTokenAndCustomerId($token, $id)
+    {
+        return $this->getByTokenAndCustomerId($token, $id, true);
     }
 
     public function getByWalletTerminalAndCustomerId($wallet, $terminal, $customer)

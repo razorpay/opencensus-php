@@ -548,10 +548,20 @@ trait Authorize
                 'token' => $input[Payment\Entity::TOKEN]
             ]);
 
-        // Token should definitely exist in database.
-        $token = $this->repo->token->getByTokenAndCustomerId(
-            $input[Payment\Entity::TOKEN],
-            $customer->getId());
+        if ((isset($input['recurring']) === true) or
+            (boolval($input['recurring']) === true))
+        {
+            $token = $this->repo->token->getRecurringByTokenAndCustomerId(
+                $input[Payment\Entity::TOKEN],
+                $customer->getId());
+        }
+        else
+        {
+            // Token should definitely exist in database.
+            $token = $this->repo->token->getByTokenAndCustomerId(
+                $input[Payment\Entity::TOKEN],
+                $customer->getId());
+        }
 
         if ($payment->isMethodCardOrEmi())
         {
@@ -1305,6 +1315,24 @@ trait Authorize
                 $type . ' card transactions are not allowed',
                 'number');
         }
+
+        if ((isset($input['recurring']) === true) and
+            (boolval($input['recurring']) === true))
+        {
+            if ($merchantMethods->isRecurringEnabled() === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_RECURRING_NOT_ENABLED_FOR_MERCHANT);
+            }
+
+            if ($type !== Card\Type::CREDIT)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    $type . ' card transactions are not allowed for recurring',
+                    'number');
+            }
+        }
+
     }
 
     protected function checkAndValidateAmexIfNotEnabled($methods, $card)
