@@ -168,6 +168,8 @@ class NodalAccount
 
         $txt = $this->generateText($textData);
 
+        $urlText = $this->writeToTextFileH2H($txt);
+
         $urlText = $this->writeToTextFile($txt);
 
         $this->sendKotakSettlementMail($count, $amounts);
@@ -414,6 +416,8 @@ class NodalAccount
 
         return $str;
     }
+
+
 
     protected function sendKotakSettlementMail($count, $amounts)
     {
