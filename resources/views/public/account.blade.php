@@ -4,7 +4,7 @@
     <meta charset='utf-8'>
     <title>Razorpay · Manage Your Account</title>
     <meta name='viewport' content='user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1'>
-    <link href='http://fonts.googleapis.com/css?family=Lato&subset=latin,latin-ext' rel='stylesheet'>
+    <link href='https://fonts.googleapis.com/css?family=Lato&subset=latin,latin-ext' rel='stylesheet'>
     <link href='https://fonts.googleapis.com/css?family=PT+Mono' rel='stylesheet'>
     <link rel='stylesheet' href='{{{$static}}}/style.css'>
   </head>
@@ -22,7 +22,7 @@
           <div class="elem elem-contact">
             <div id="code" class="select" tabindex="1">
             </div>
-            <input id="contact" type="tel" name="contact" placeholder="Phone Number" required pattern="^\[0-9]{8,15}$" maxlength="15"/>
+            <input id="contact" type="tel" name="contact" placeholder="Phone Number" required pattern="^[0-9]{8,15}$" maxlength="15"/>
           </div>
           <div class="elem elem-email">
             <input id="email" type="email" name="email" placeholder="Email Address" required pattern="^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+$"/>
