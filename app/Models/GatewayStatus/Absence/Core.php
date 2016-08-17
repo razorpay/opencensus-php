@@ -8,10 +8,8 @@ use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
-    public function create($input, $gateway)
+    public function create($input)
     {
-        $input['gateway'] = $gateway;
-
         $downWindow = (new Absence\Entity)->build($input);
 
         $this->repo->saveOrFail($downWindow);

@@ -33,6 +33,8 @@ class Entity extends Base\PublicEntity
         self::REASON
     );
 
+    const END_OF_TIME = 2147483647;
+
     protected $table = \RZP\Constants\Table::GATEWAYSTATUS_ABSENCE;
 
     protected $entity = 'gateway_absence';

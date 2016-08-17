@@ -3,21 +3,38 @@
 namespace RZP\Models\GatewayStatus\Absence;
 
 use RZP\Models\Base;
+use RZP\Models\Payment\Gateway;
+use RZP\Exception;
 
 class Validator extends Base\Validator
 {
     protected static $createRules = array (
         Entity::GATEWAY         => 'required|string',
         Entity::FROM            => 'required|integer',
-        Entity::TO              => 'required|integer',
+        Entity::TO              => 'sometimes|integer',
         Entity::REASON          => 'sometimes|string',
         Entity::BANK            => 'sometimes|string',
     );
 
     protected static $editRules = array(
         Entity::FROM            => 'required|integer',
-        Entity::TO              => 'required|integer',
-        Entity::REASON          => 'sometimes|string',
-        Entity::BANK            => 'sometimes|string',
+        Entity::TO              => 'sometimes|integer',
     );
+
+    protected static $createValidators = array(
+        'gateway',
+    );
+
+    public function validateGateway($input)
+    {
+        $gateway = $input['gateway'];
+
+        $status = Gateway::isValidGateway($gateway);
+
+        if($status === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Gateway ['.$gateway.'] does not exist');
+        }
+    }
 }

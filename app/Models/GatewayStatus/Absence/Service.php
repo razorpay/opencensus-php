@@ -4,22 +4,14 @@ namespace RZP\Models\GatewayStatus\Absence;
 
 use RZP\Models\Base;
 use RZP\Models\GatewayStatus\Absence;
-use RZP\Models\Payment\Gateway;
-use RZP\Exception;
 
 class Service extends Base\Service
 {
     public function create(array $input, $gateway)
     {
-        $status = Gateway::isValidGateway($gateway);
+        $input['gateway'] = $gateway;
 
-        if($status === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Gateway ['.$gateway.'] does not exist');
-        }
-
-        $downWindow = (new Absence\Core)->create($input, $gateway);
+        $downWindow = (new Absence\Core)->create($input);
 
         return $downWindow->toArrayPublic();
 
