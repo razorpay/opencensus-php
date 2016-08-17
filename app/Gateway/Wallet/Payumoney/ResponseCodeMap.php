@@ -23,12 +23,7 @@ class ResponseCodeMap
         0
     );
 
-    public static function isTwoFaFailed($errorCode)
-    {
-        return self::getTwoFaStatus($errorCode) === TwoFaStatus::FAILED;
-    }
-
-    protected static function getTwoFaStatus($errorCode)
+    public static function getTwoFaStatus($errorCode)
     {
         switch ($errorCode) {
             case '3010006':

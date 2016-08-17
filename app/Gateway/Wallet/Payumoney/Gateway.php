@@ -13,6 +13,7 @@ use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Wallet\Base;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payment;
 use RZP\Models\Payment\Core;
 use RZP\Models\Payment\TwoFaStatus;
 use Carbon\Carbon;
@@ -315,7 +316,7 @@ class Gateway extends Base\Gateway
                 $content['status'],
                 $content['message']);
 
-            if (ResponseCodeMap::isTwoFaFailed($content['errorCode']) === true)
+            if ($this->getTwoFaStatus($content['errorCode']) === Payment\TwoFaStatus::FAILED)
             {
                 $e->markTwoFaError();
             }
@@ -324,9 +325,14 @@ class Gateway extends Base\Gateway
         }
 
         // set two-fa status as passed
-        $data[\RZP\Models\Payment\Entity::TWO_FA_STATUS] = \RZP\Models\Payment\TwoFaStatus::PASSED;
+        $data[Payment\Entity::TWO_FA_STATUS] = Payment\TwoFaStatus::PASSED;
 
         return $data;
+    }
+
+    protected function getTwoFaStatus($code)
+    {
+        return ResponseCodeMap::getTwoFaStatus($code);
     }
 
     public function callbackTopupFlow($input)
