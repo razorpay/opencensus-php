@@ -194,7 +194,10 @@ class Checkout
 
                 if ($response['saved'] === true)
                 {
-                    $data['customer']['email'] = $response['email'];
+                    if (isset($response['email']))
+                    {
+                        $data['customer']['email'] = $response['email'];
+                    }
 
                     if (isset($response['tokens']))
                     {
