@@ -19,7 +19,7 @@ class Service extends Base\Service
 
             $app = $appCore->getAppByAppToken($appToken, $this->merchant);
 
-            $data = $appCore->deleteAppTokensForGlobalCustomer($app->customer, $input);
+            $data = $appCore->deleteAppTokens($app, $input);
 
             return $data;
         }
