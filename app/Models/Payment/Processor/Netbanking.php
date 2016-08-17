@@ -239,7 +239,6 @@ class Netbanking
         IFSC::KKBK,
         IFSC::MAHB,
         IFSC::ORBC,
-        IFSC::PUNB,
         IFSC::SBBJ,
         IFSC::SBHY,
         IFSC::SBIN,
@@ -253,6 +252,7 @@ class Netbanking
         IFSC::VYSA,
         IFSC::VIJB,
         IFSC::YESB,
+        Netbanking::PUNB_R,
     );
 
     public static function isSupportedBank($bank)
@@ -271,7 +271,7 @@ class Netbanking
         // Merge paytm and billdesk supported banks and remove
         // duplicate values
         //
-        return array_unique(array_merge(self::$billdesk, self::$ebs, [IFSC::KKBK]));
+        return array_unique(array_merge(self::$paytm, self::$billdesk, self::$ebs, [IFSC::KKBK]));
     }
 
     public static function getDisabledBanks($banks)
