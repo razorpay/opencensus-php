@@ -20,8 +20,6 @@ class GatewayController extends Controller
 
     protected function processS2SCallback($input, $gateway)
     {
-        $msg = $input['msg'];
-
         $gateway = $this->app['gateway']->gateway($gateway);
 
         $paymentId = $gateway->getPaymentIdFromServerCallback($input);
