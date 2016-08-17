@@ -25,6 +25,7 @@ trait PaymentTrait
     use PaymentMobikwikTrait;
     use PaymentSbiepayTrait;
     use PaymentCybersourceTrait;
+    use PaymentEbsTrait;
     use PaymentCreationTrait;
 
     use RequestResponseFlowTrait
