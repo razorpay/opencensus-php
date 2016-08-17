@@ -65,6 +65,23 @@ class HdfcGatewayTest extends TestCase
         $this->assertEquals($payment['two_fa_status'], 'passed');
     }
 
+    public function testTwoFaFailure()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4012001037461114';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getLastPayment(true);
+
+        $this->assertEquals($payment['two_fa_status'], 'failed');
+    }
+
     public function testRupayCard()
     {
         $payment = $this->getDefaultPaymentArray();

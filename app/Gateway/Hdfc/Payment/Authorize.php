@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Payment;
+use RZP\Models\Payment as PaymentModel;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
@@ -119,7 +120,7 @@ trait Authorize
             $this->throwException($auth['error']);
         }
 
-        return [\RZP\Models\Payment\Entity::TWO_FA_STATUS => \RZP\Models\Payment\TwoFaStatus::PASSED];
+        return [PaymentModel\Entity::TWO_FA_STATUS => PaymentModel\TwoFaStatus::PASSED];
     }
 
     protected function postAuthNotEnrolledRequestToBank()

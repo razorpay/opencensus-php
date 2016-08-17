@@ -31,6 +31,7 @@ use RZP\Gateway\Base;
 use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Payment;
 use RZP\Models\Card;
+use RZP\Models\Payment\TwoFaStatus;
 use RZP\Trace\TraceCode;
 use App;
 
@@ -721,7 +722,17 @@ class Gateway extends Base\Gateway
                 break;
         }
 
+        if ($this->getTwoFaStatus($gatewayErrorCode) === TwoFaStatus::FAILED)
+        {
+            $exception->markTwoFaError();
+        }
+
         throw $exception;
+    }
+
+    protected function getTwoFaStatus($gatewayErrorCode)
+    {
+        return ErrorCode::getTwoFaStatus($gatewayErrorCode);
     }
 
 // -------------------------Exceptions Ends ------------------------------------

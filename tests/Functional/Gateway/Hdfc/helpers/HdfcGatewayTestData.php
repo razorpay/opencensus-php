@@ -126,5 +126,22 @@ return [
         'error_text' => 'Denied by risk. Response result code is "DENIED BY RISK"',
         'entity' => 'hdfc',
     ],
+
+    'testTwoFaFailure' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_DECLINED_BY_CLICKING_CANCEL,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_CLICKING_CANCEL,
+            'twoFaError' => true,
+        ],
+    ]
 ];
 
