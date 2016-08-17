@@ -520,7 +520,7 @@ class Entity extends Base\Entity
         // This is only to make sure that the user and merchants are in sync
         // for now. We will drop the method from Merchant\Entity and shift it
         // to User\Entity going ahead.
-        if($this->hasUsers())
+        if ($this->hasUsers())
         {
             $user = $this->users()->where('email', $email)->first();
             if($user)

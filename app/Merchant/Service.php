@@ -254,7 +254,7 @@ class Service extends Base\Service
         // Only create the merchant if it doesn't exist on the API
         if ($merchantOnApi === null)
         {
-            $this->api->merchant->create($merchantApiData);
+            $response = $this->api->merchant->create($merchantApiData);
         }
 
         // Confirm the merchant and associated users (with same email)
