@@ -7,6 +7,7 @@ use RZP\Exception;
 use Requests;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 
 class Raven
 {
@@ -25,6 +26,11 @@ class Raven
     protected $proxy;
 
     protected $mode;
+
+    protected $validationErrors = [
+        ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED
+    ];
 
     public function __construct($app)
     {
@@ -145,7 +151,15 @@ class Raven
 
         if (isset($response['error']))
         {
-            throw new Exception\BadRequestException($response['error']['internal_error_code']);
+            $errorCode = $response['error']['internal_error_code'];
+
+            if (in_array($errorCode, $this->validationErrors, true))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    $response['error']['description']);
+            }
+
+            throw new Exception\BadRequestException($errorCode);
         }
     }
 }

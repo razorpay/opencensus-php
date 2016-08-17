@@ -15,9 +15,7 @@ class Core extends Base\Core
     {
         $auditLog = (new Analytics\Entity)->build($input);
 
-        //$this->validateExistingAction($action);
-
-        $this->repo->payment_analytics->saveOrFail($auditLog);
+        $this->repo->saveOrFail($auditLog);
 
         return $auditLog;
     }

@@ -12,17 +12,15 @@ class Repository extends Base\Repository
 
     public function findByToken($token)
     {
-        $repo = $this->repo;
-
-        return $repo::where('token', '=', $token)
+        return $this->newQuery()
+                    ->where('token', '=', $token)
                     ->first();
     }
 
     public function findByGatewayPaymentId($gatewayTxnId)
     {
-        $repo = $this->repo;
-
-        return $repo::where('gateway_payment_id', '=', $gatewayTxnId)
+        return $this->newQuery()
+                    ->where('gateway_payment_id', '=', $gatewayTxnId)
                     ->first();
     }
 }

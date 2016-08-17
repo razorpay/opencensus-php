@@ -21,27 +21,26 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function findForTerminal($id)
-    {
-        $repo = $this->repo->payment_analytics;
-
-        return $repo::withTrashed()
-            ->where(Entity::TERMINAL_ID, '=', $id)
-            ->get();
-    }
-
     public function findForPayment($payment_id, $id=null)
     {
-        $repo = $this->repo->payment_analytics;
+        $repo = $this->repo;
 
-        $results =  $repo::withTrashed()
-                         ->where(Entity::PAYMENT_ID, '=', $payment_id);
-        if($id !== null)
+        $results =  $repo->where(Entity::PAYMENT_ID, '=', $paymentId);
+
+        if ($id !== null)
         {
             $results = $results->where(Entity::TERMINAL_ID, '=', $id);
         }
 
         return $results->get();
+    }
+
+    public function findForTerminal($id)
+    {
+        $repo = $this->repo;
+
+        return $repo->where(Entity::TERMINAL_ID, '=', $id)
+                    ->get();
     }
 
     public function findBetweenTimestampsForTerminal($from, $to, $terminal_id, $payment_id=null)

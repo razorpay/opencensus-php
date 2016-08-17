@@ -2,23 +2,16 @@
 
 namespace RZP\Models\Payment\Analytics;
 
-use Crypt;
 use RZP\Models\Base;
-use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Models\Payment;
 
 class Entity extends Base\PublicEntity
 {
     const ID                            = 'id';
     const PAYMENT_ID                    = 'payment_id';
     const CHECKOUT_ID                   = 'checkout_id';
-    const TERMINAL_ID                   = 'terminal_id';
-    const STATUS                        = 'status';
     const ATTEMPTS                      = 'attempts';
-    const TERMINAL_RESPONSE_TIME        = 'terminal_response_time';
-    const STATUS_CODE                   = 'status_code';
-    const STATUS_MSG                    = 'status_msg';
-    const PAYMENT_TYPE                  = 'payment_type';
     const LIBRARY                       = 'library';
     const BROWSER                       = 'browser';
     const OS                            = 'os';
@@ -27,14 +20,18 @@ class Entity extends Base\PublicEntity
     const IP                            = 'ip';
     const REFERER                       = 'referer';
     const USER_AGENT                    = 'user_agent';
+    const TERMINAL_ID                   = 'terminal_id';
+    const TERMINAL_STATUS               = 'terminal_status';
+    const TERMINAL_RESPONSE_TIME        = 'terminal_response_time';
+    const TERMINAL_STATUS_CODE          = 'terminal_status_code';
+    const TERMINAL_STATUS_MSG           = 'terminal_status_msg';
+    const PAYMENT_TYPE                  = 'payment_type';
     const CREATED_AT                    = 'created_at';
     const UPDATED_AT                    = 'updated_at';
 
     protected $fillable = array(
         self::PAYMENT_ID,
         self::CHECKOUT_ID,
-        self::TERMINAL_ID,
-        self::STATUS,
         self::ATTEMPTS,
         self::LIBRARY,
         self::BROWSER,
@@ -46,6 +43,11 @@ class Entity extends Base\PublicEntity
         self::TERMINAL_RESPONSE_TIME,
         self::STATUS_CODE,
         self::STATUS_MSG,
+        self::TERMINAL_ID,
+        self::TERMINAL_STATUS,
+        self::TERMINAL_RESPONSE_TIME,
+        self::TERMINAL_STATUS_CODE,
+        self::TERMINAL_STATUS_MSG,
         self::PAYMENT_TYPE,
     );
 
@@ -53,7 +55,6 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::PAYMENT_ID,
         self::TERMINAL_ID,
-        self::STATUS,
         self::ATTEMPTS,
         self::LIBRARY,
         self::BROWSER,
@@ -62,15 +63,16 @@ class Entity extends Base\PublicEntity
         self::PLATFORM,
         self::IP,
         self::REFERER,
+        self::TERMINAL_STATUS,
         self::TERMINAL_RESPONSE_TIME,
-        self::STATUS_CODE,
-        self::STATUS_MSG,
+        self::TERMINAL_STATUS_CODE,
+        self::TERMINAL_STATUS_MSG,
         self::PAYMENT_TYPE,
         self::CREATED_AT,
         self::UPDATED_AT
     );
 
-     protected $defaults = array(
+    protected $defaults = array(
         self::LIBRARY     => Metadata::LIBRARY_VALUES[Metadata::DIRECT],
     );
 
@@ -86,7 +88,7 @@ class Entity extends Base\PublicEntity
 
     public function getPaymentId()
     {
-        return $this->attributes[self::PAYMENT_ID];
+        return $this->getAttributes(self::PAYMENT_ID);
     }
 
     public function getCheckoutId()
@@ -96,27 +98,17 @@ class Entity extends Base\PublicEntity
 
     public function getTerminalId()
     {
-        return $this->attributes[self::TERMINAL_ID];
+        return $this->getAttributes(self::TERMINAL_ID);
     }
 
-    public function getStatus()
+    public function getTerminalStatus()
     {
-        return $this->attributes[self::STATUS];
+        return $this->getAttributes(self::TERMINAL_STATUS);
     }
 
     public function getTerminalResponseTime()
     {
-        return $this->attributes[self::TERMINAL_RESPONSE_TIME];
-    }
-
-    public function getStatusCode()
-    {
-        return $this->attributes[self::STATUS_CODE];
-    }
-
-    public function getStatusMsg()
-    {
-        return $this->attributes[self::STATUS_MSG];
+        return $this->getAttributes(self::TERMINAL_RESPONSE_TIME);
     }
 
     public function getAttempts()
@@ -124,9 +116,19 @@ class Entity extends Base\PublicEntity
         return $this->attributes[self::ATTEMPTS];
     }
 
+    public function getTerminalStatusCode()
+    {
+        return $this->getAttributes(self::TERMINAL_STATUS_CODE);
+    }
+
+    public function getTerminalStatusMsg()
+    {
+        return $this->getAttributes(self::TERMINAL_STATUS_MSG);
+    }
+
     public function getPaymentType()
     {
-        return $this->attributes[self::PAYMENT_TYPE];
+        return $this->getAttributes(self::PAYMENT_TYPE);
     }
 
     public function getLibrary()

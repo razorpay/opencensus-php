@@ -33,7 +33,7 @@ class Service extends Base\Service
 
     public function getAuditsForPaymentAndTerminal($payment_id, $terminal_id)
     {
-        $audits = $this->repo->payment_analytics->findForPayment($payment_id, $terminal_id);
+        $audits = $this->repo->payment_analytics->findForPayment($paymentId, $terminalId);
 
         return $audits->toArrayPublic();
     }

@@ -32,18 +32,16 @@ class Repository extends Base\Repository
 
     public function fetchAppsByDeviceToken($customer, $deviceToken)
     {
-        $repo = $this->repo;
-
-        return $repo::where(AppToken\Entity::CUSTOMER_ID, '=', $customer->getId())
+        return $this->newQuery()
+                    ->where(AppToken\Entity::CUSTOMER_ID, '=', $customer->getId())
                     ->where(AppToken\Entity::DEVICE_TOKEN, '=', $deviceToken)
                     ->get();
     }
 
     public function fetchByDeviceTokenAndMerchant($deviceToken, $merchant)
     {
-        $repo = $this->repo;
-
-        return $repo::where(AppToken\Entity::MERCHANT_ID, '=', $merchant->getId())
+        return $this->newQuery()
+                    ->where(AppToken\Entity::MERCHANT_ID, '=', $merchant->getId())
                     ->where(AppToken\Entity::DEVICE_TOKEN, '=', $deviceToken)
                     ->get();
     }
