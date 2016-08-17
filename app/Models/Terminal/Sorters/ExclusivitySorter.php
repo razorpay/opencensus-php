@@ -20,24 +20,24 @@ class ExclusivitySorter extends Terminal\Sorter
      */
     public function sharedSorter($terminals, array $input)
     {
-        $specificCategoryTerminals = [];
-        $genericCategoryTerminals = [];
+        $sharedTerminals = [];
+        $nonSharedTerminals = [];
 
         // As the terminals are from the priority list
         // append to the terminal
         foreach ($terminals as $terminal)
         {
-            if ($terminal->isShared() === false)
+            if ($terminal->isShared() === true)
             {
-                $specificCategoryTerminals[] = $terminal;
+                $sharedTerminals[] = $terminal;
             }
             else
             {
-                $genericCategoryTerminals[] = $terminal;
+                $nonSharedTerminals[] = $terminal;
             }
         }
 
-        $sortedTerminals = array_merge($specificCategoryTerminals, $genericCategoryTerminals);
+        $sortedTerminals = array_merge($nonSharedTerminals, $sharedTerminals);
 
         return $sortedTerminals;
     }
