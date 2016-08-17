@@ -33,6 +33,8 @@ class Entity extends Base\PublicEntity
 
     const SHARED                        = 'shared';
 
+    const TERMINAL_CATEGORY             = 'terminal_category';
+
     const DELETED_AT                    = 'deleted_at';
 
     const MAX_TERMINALS_COUNT           = 25;

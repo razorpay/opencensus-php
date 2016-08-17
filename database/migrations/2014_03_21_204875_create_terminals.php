@@ -75,6 +75,9 @@ class CreateTerminals extends Migration
             $table->boolean(Terminal::SHARED)
                   ->default(0);
 
+            $table->string(Terminal::TERMINAL_CATEGORY)
+                  ->nullable();
+
             $table->integer(Terminal::CREATED_AT);
 
             $table->integer(Terminal::UPDATED_AT);
