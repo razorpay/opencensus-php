@@ -70,7 +70,8 @@ app.controller('EntitiesCtrl', [
       'paytm',
       'sharp',
       'wallet_payumoney',
-      'wallet_payzapp'
+      'wallet_payzapp',
+      'wallet_olamoney'
     ];
     var walletList = [
       'all',
