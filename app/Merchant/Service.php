@@ -218,11 +218,13 @@ class Service extends Base\Service
     {
         $merchant = Merchant\Entity::findorfail($id);
 
-        if ($merchant->isTestAccount()) {
+        if ($merchant->isTestAccount())
+        {
             return [static::NAME_CHANGE_FORBIDDEN];
         }
 
-        return $merchant->changeName($name);
+        $merchant->changeName($name);
+        $merchant->save();
     }
 
     public function confirm($token)
