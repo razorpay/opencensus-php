@@ -37,11 +37,17 @@ class Service extends Base\Service
 
     public function delete($id)
     {
-        $flag = (new Absence\Core)->delete($id);
-
-        if($flag === true)
+        try
         {
+            $downWindow = $this->repo->gateway_absence->findOrFailPublic($id);
+
+            $this->repo->gateway_absence->delete($downWindow);
+
             return ['message' => 'Gateway Absence successfully deleted'];
+        }
+        catch(\Exception $e)
+        {
+            throw $e;
         }
     }
 
