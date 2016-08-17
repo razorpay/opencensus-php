@@ -18,7 +18,8 @@
           <input type="text" class="form-control" name="description" ng-model="team.email" placeholder="Email address of the user" tooltip-placement="right" tooltip="Email Address" required>
         </div>
         <div class="m-b col-sm-4">
-          <input type="hidden" ng-model="team.role">
+          <select class="form-control" ng-model="team.role" tooltip-placement="right" tooltip="User Role" required ng-options="role.value as role.name for role in roleOptions">
+          </select>
         </div>
       </div>
       <button  class="btn btn-primary btn-rounded" ng-click="sendInvitation()">Send Invitation</button>
