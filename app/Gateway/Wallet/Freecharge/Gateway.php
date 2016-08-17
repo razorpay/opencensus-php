@@ -384,8 +384,9 @@ class Gateway extends Base\Gateway
     public function getOtpGenerateRequestArray($input)
     {
         $content = array(
-            'email'     => $input['payment']['email'],
-            'mobileNumber'    => $this->getFormattedContact($input['payment']['contact'])
+            'email'         => $input['payment']['email'],
+            'mobileNumber'  => $this->getFormattedContact($input['payment']['contact']),
+            'merchantId'    => $this->getMerchantId($input['terminal']),
         );
 
         $content['checksum'] = $this->getHashForRegisterUser($content);
@@ -585,11 +586,13 @@ class Gateway extends Base\Gateway
         $wallet = $this->getRepo()->fetchWalletByPaymentId($input['payment']['id']);
 
         $content =  array(
-            'merchantId'    => $this->getMerchantId($input['terminal']),
-            'merchantTxnId' => $wallet['gateway_payment_id'],
-            'refundAmount'  => (string) ($input['refund']['amount'] / 100),
+            'merchantId'            => $this->getMerchantId($input['terminal']),
+            'merchantTxnId'         => $wallet['gateway_payment_id'],
+            'refundAmount'          => $input['refund']['amount'] / 100,
+            // TODO: Fill it
+            'refundMerchantTxnId'   => 'WEB',
             // Not mandatory when we send payment id
-            'txnId'         => $input['payment']['txnId'],
+            'txnId'                 => $input['payment']['txnId'],
         );
 
         $content['checksum'] = $this->getHashForRefund($content);
