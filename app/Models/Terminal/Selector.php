@@ -156,7 +156,7 @@ class Selector
 
     protected function traceTerminals($terminals, $msg, $verbose = false)
     {
-        if ($this->merchant->getId() === '2aTeFCKTYWwfrF')
+        if ($this->merchant->getId() === '4izmfM9TFCAgFN')
         {
             $verbose = true;
         }

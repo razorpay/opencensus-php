@@ -49,7 +49,7 @@ class Sorter
 
     protected function traceTerminals($terminals, $msg, $verbose = false, $merchantId=null)
     {
-        if ($merchantId === '2aTeFCKTYWwfrF')
+        if ($merchantId === '4izmfM9TFCAgFN')
         {
             $verbose = true;
         }
