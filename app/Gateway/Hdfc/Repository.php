@@ -38,6 +38,8 @@ class Repository extends Base\Repository
     {
         $result = $response['enroll_result'];
 
+        $status = null;
+
         if ($result === Payment\Result::ENROLLED)
         {
             $status = Payment\Status::ENROLLED;

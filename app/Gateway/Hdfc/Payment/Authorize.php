@@ -136,11 +136,10 @@ trait Authorize
 
     protected function callbackAlreadyProcessed($auth)
     {
-        // We may not want to check for the entity persisted in our db because it's
-        // an unnecessary db call in the payment creation flow. Increases latency without
-        // any added benefit. Also, the entity may not have actually been persisted yet at this
-        // point. (This already happened at least once)
-        
+        // We may not want to check for the entity persisted in our db because it's an
+        // unnecessary db call in the payment creation flow. Increases latency without any added
+        // benefit. Also, the entity may not have actually been persisted yet at this point.
+
         // HDFC throws CM90004 when the authorize request has already been
         // sent for this payment.
         if ($auth['error']['code'] === Hdfc\ErrorCode::CM90004)
