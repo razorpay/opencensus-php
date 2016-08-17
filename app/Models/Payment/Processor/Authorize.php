@@ -116,10 +116,7 @@ trait Authorize
                     continue;
                 }
 
-                $this->handleGatewayRequestException($e);
-
-                // Should not reach here.
-                assert (false);
+                $this->updatePaymentAuthFailedAndThrowException($e);
             }
             catch (Exception\BaseException $e)
             {
@@ -127,11 +124,7 @@ trait Authorize
                 // An error occurred on gateway due to user or gateway.
                 // We need to record this and mark payment as failed.
                 //
-                $this->updatePaymentFailed(
-                    $e->getError(),
-                    TraceCode::PAYMENT_AUTH_FAILURE);
-
-                throw $e;
+                $this->updatePaymentAuthFailedAndThrowException($e);
             }
         }
 
@@ -159,16 +152,13 @@ trait Authorize
         return false;
     }
 
-    protected function handleGatewayRequestException(Exception\GatewayRequestException $e)
+    protected function updatePaymentAuthFailedAndThrowException($e)
     {
-        //
-        // we have tried the payment with multiple terminals
-        // and if we still encounter gateway request exception
-        // record it here and throw it back to caller.
-        //
         $this->updatePaymentFailed(
             $e->getError(),
             TraceCode::PAYMENT_AUTH_FAILURE);
+
+        throw $e;
     }
 
     protected function processAuthResponse($request, $payment)
