@@ -21,6 +21,9 @@ rm -rf $TMP_STAGING
 
 if [[ $EXIT_CODE -eq 1 ]];then
   printf "\e[1;31m\tAborting commit due to syntax errors in staged files.\e[0m\n" >&2;
+  exit 1
 fi
 
-exit $EXIT_CODE
+printf "Validating Coding Standards\n"
+
+bash ./scripts/bin/phpcs

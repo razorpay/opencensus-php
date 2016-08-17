@@ -1,0 +1,117 @@
+<?xml version="1.0"?>
+<ruleset name="Razorpay">
+  <description>Razorpay coding standard.</description>
+
+  <!-- Code analysis -->
+  <rule ref="Generic.CodeAnalysis.EmptyStatement"/>
+  <rule ref="Generic.CodeAnalysis.JumbledIncrementer"/>
+  <rule ref="Generic.CodeAnalysis.UnconditionalIfStatement"/>
+  <rule ref="Generic.CodeAnalysis.UnusedFunctionParameter"/>
+  <rule ref="Generic.CodeAnalysis.UselessOverridingMethod"/>
+
+   <!-- There MUST NOT be more than one statement per line. -->
+  <rule ref="Generic.Formatting.DisallowMultipleStatements"/>
+
+  <!-- Code MUST use an indent of 4 spaces, and MUST NOT use tabs for indenting. -->
+  <rule ref="Generic.WhiteSpace.ScopeIndent">
+    <properties>
+    <property name="ignoreIndentationTokens" type="array" value="T_COMMENT,T_DOC_COMMENT_OPEN_TAG"/>
+      <property name="indent" value="4"/>
+      <property name="exact" value="false"/>
+    </properties>
+  </rule>
+  <rule ref="Generic.WhiteSpace.DisallowTabIndent"/>
+
+  <!-- No trailing whitespace. -->
+  <rule ref="Squiz.WhiteSpace.SuperfluousWhitespace"/>
+
+  <!-- Space between arguments of function call -->
+  <rule ref="Squiz.Functions.FunctionDeclarationArgumentSpacing">
+    <properties>
+      <property name="equalsSpacing" value="1"/>
+    </properties>
+  </rule>
+
+  <!-- Use space to separate conditions of for, foreach loop -->
+  <rule ref="Squiz.ControlStructures.ForLoopDeclaration"/>
+  <rule ref="Squiz.ControlStructures.ForEachLoopDeclaration"/>
+
+  <!-- Opening brace of a function on new line -->
+  <rule ref="Generic.Functions.OpeningFunctionBraceBsdAllman"/>
+
+  <!-- Ensures all language constructs (without brackets) contain
+    a single space between themselves and their content. -->
+  <rule ref="Squiz.WhiteSpace.LanguageConstructSpacing"/>
+  <!-- Ensures that the colon in a property or label definition has a single¬
+    space after it and no space before it.-->
+  <rule ref="Squiz.WhiteSpace.PropertyLabelSpacing"/>
+  <!-- Checks that the closing braces of scopes are aligned correctly -->
+  <rule ref="Squiz.WhiteSpace.ScopeClosingBrace"/>
+  <!-- Ensure there is no whitespace before a semicolon -->
+  <!-- <rule ref="Squiz.WhiteSpace.SemicolonSpacing"/> -->
+
+  <!-- Naming conventions
+  Camel caps, and the first letter is capitalised -->
+  <rule ref="Squiz.Classes.ValidClassName"/>
+  <rule ref="Squiz.Classes.ClassFileName"/>
+  <rule ref="Squiz.Classes.ClassDeclaration"/>
+  <rule ref="Squiz.Classes.LowercaseClassKeywords"/>
+  <rule ref="Generic.NamingConventions.CamelCapsFunctionName"/>
+  <rule ref="Generic.NamingConventions.UpperCaseConstantName"/>
+
+  <!-- __construct() instead of ClassName() -->
+  <rule ref="Generic.NamingConventions.ConstructorName"/>
+
+  <!-- Ensures all control structure keywords are lowercase -->
+  <rule ref="Squiz.ControlStructures.ForEachLoopDeclaration"/>
+  <!-- Ensures all class keywords are lowercase -->
+  <rule ref="Squiz.Functions.LowercaseFunctionKeywords"/>
+
+  <!-- Single space after cast statement -->
+  <rule ref="Generic.Formatting.SpaceAfterCast"/>
+
+  <!-- Enforce === statement -->
+  <rule ref="Squiz.Operators.ComparisonOperatorUsage"/>
+
+  <!-- The body of each structure MUST be enclosed by braces. This standardizes how the
+  structures look, and reduces the likelihood of introducing errors as new lines get added
+  to the body. To avoid these type of errors controlstructures are used-->
+  <rule ref="Generic.ControlStructures.InlineControlStructure"/>
+  <!-- Lines can be 80 chars long, show errors at 120 chars -->
+  <rule ref="Generic.Files.LineLength">
+    <properties>
+      <property name="lineLimit" value="120"/>
+      <property name="absoluteLineLimit" value="0"/>
+    </properties>
+  </rule>
+
+  <!-- all uses of true, false and null are lowerrcase -->
+  <rule ref="Generic.PHP.LowerCaseConstant"/>
+
+  <!-- Use Unix newlines -->
+  <rule ref="Generic.Files.LineEndings">
+    <properties>
+      <property name="eolChar" value="\n"/>
+    </properties>
+  </rule>
+
+  <!-- opening PHP tag is the first content in a file -->
+  <rule ref="Generic.PHP.ForbiddenFunctions"/>
+  <rule ref="Generic.PHP.DeprecatedFunctions"/>
+
+  <!-- Show warning for code prefixed with an asperand -->
+  <rule ref="Generic.PHP.NoSilencedErrors"/>
+
+  <!-- Tests that the ++ operators are used when possible -->
+  <rule ref="Squiz.Operators.IncrementDecrementUsage"/>
+  <rule ref="Squiz.Whitespace.LogicalOperatorSpacing"/>
+
+  <!-- Checks to ensure that the logical operators 'and'
+    and 'or' are used -->
+  <rule ref="Razorpay.Operators.ValidLogicalOperators"/>
+  <rule ref="Razorpay.Operators.LowerCaseLogicalOperator"/>
+
+  <!-- usage of "$this" in static methods, which will cause runtime errors -->
+  <rule ref="Squiz.Scope.StaticThisUsage"/>
+
+</ruleset>
