@@ -103,14 +103,14 @@ trait Authorize
                 $request = $this->callGatewayAuthorize($terminalGatewayInput);
 
                 // record a successful payment here for the given terminal id
-                $this->recordTerminalAudit($start, $data['payment']);
+                $this->recordTerminalAudit($start, $terminalGatewayInput['payment']);
 
                 break;
             }
             catch (Exception\GatewayRequestException $e)
             {
                 // record a failed payment for given terminal and continue
-                $this->recordTerminalAudit($start, $data['payment'], $e);
+                $this->recordTerminalAudit($start, $terminalGatewayInput['payment'], $e);
 
                 $retryAttempts += 1;
 
@@ -316,8 +316,6 @@ trait Authorize
 
         $this->trace(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
 
-        $this->validateInternationalAllowed($payment);
-
         //
         // Call gateway input
         //
@@ -481,6 +479,8 @@ trait Authorize
 
             $this->setBankAndEmiPlanDetails($payment, $cardNumber, $emiDuration);
         }
+
+        $this->validateInternationalAllowed($payment);
     }
 
     protected function preProcessPaymentWithoutSaving($payment, & $input, array & $gatewayInput)
