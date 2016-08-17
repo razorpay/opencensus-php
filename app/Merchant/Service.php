@@ -247,20 +247,12 @@ class Service extends Base\Service
         // We need to shift this to some other auth
         $this->setApiCredentials();
 
-        try
-        {
-            $merchantOnApi = $this->fetchApiEntityIfExists('merchant', $merchantApiData['id']);
+        $merchantOnApi = $this->fetchApiEntityIfExists('merchant', $merchantApiData['id']);
 
-            // Only create the merchant if it doesn't exist on the API
-            if ($merchantOnApi === null)
-            {
-                $response = $this->api->merchant->create($merchantApiData);
-            }
-        }
-
-        catch(BadRequestError $e)
+        // Only create the merchant if it doesn't exist on the API
+        if ($merchantOnApi === null)
         {
-            return array($e->getMessage());
+            $this->api->merchant->create($merchantApiData);
         }
 
         // Confirm the merchant and associated users (with same email)
