@@ -112,12 +112,43 @@ trait Authorize
 
         $this->traceAuthEnrolledResponse($auth);
 
+        if (($this->error === true) and
+            ($this->callbackAlreadyProcessed($auth) === true))
+        {
+            // We don't want to silently return here because that would mean
+            // that it is considered as authorized and will end up notifying and
+            // triggering a webhook if present.
+
+            // We are throwing an error here itself because we don't want to persist this data.
+            // The second callback should have never come in the first place and hence not storing
+            // this data in the gateway entity. It was a mistake.
+
+            $this->throwException($auth['error']);
+        }
+
         $this->persistAfterAuthEnrolled($auth);
 
         if ($this->error)
         {
             $this->throwException($auth['error']);
         }
+    }
+
+    protected function callbackAlreadyProcessed($auth)
+    {
+        // We may not want to check for the entity persisted in our db because it's
+        // an unnecessary db call in the payment creation flow. Increases latency without
+        // any added benefit. Also, the entity may not have actually been persisted yet at this
+        // point. (This already happened at least once)
+        
+        // HDFC throws CM90004 when the authorize request has already been
+        // sent for this payment.
+        if ($auth['error']['code'] === Hdfc\ErrorCode::CM90004)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function postAuthNotEnrolledRequestToBank()
