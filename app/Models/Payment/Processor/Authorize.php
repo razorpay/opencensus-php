@@ -312,6 +312,11 @@ trait Authorize
 
     protected function runGatewaySpecificPreProcessing($payment, array & $gatewayInput)
     {
+        // International card validation happens here because we want to save the failure.
+        // For payment creation, gateway is compulsory field which is only finalized in
+        // previous step.
+        $this->validateInternationalAllowed($payment);
+
         $this->repo->saveOrFail($payment);
 
         $this->trace(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
@@ -479,8 +484,6 @@ trait Authorize
 
             $this->setBankAndEmiPlanDetails($payment, $cardNumber, $emiDuration);
         }
-
-        $this->validateInternationalAllowed($payment);
     }
 
     protected function preProcessPaymentWithoutSaving($payment, & $input, array & $gatewayInput)
@@ -969,7 +972,8 @@ trait Authorize
             ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
     }
 
-    protected function recordTerminalAudit($start, array $payment, \Exception $e = null)
+    protected function recordTerminalAudit(
+        $start, array $payment, Exception\GatewayRequestException $e = null)
     {
         $end = microtime();
 
@@ -988,28 +992,15 @@ trait Authorize
 
         $errorMsg = null;
 
-        if ($ex !== null)
+        if ($e !== null)
         {
             $input['terminal_status'] = 0;
-        }
 
-        if ($ex instanceOf Exception\GatewayTimeoutException)
-        {
             // we care about this exception, since its an indicator of
             // terminal failure
-            $input['terminal_status_code'] = $ex->getError()->getHttpStatusCode();
+            $input['terminal_status_code'] = $e->getError()->getHttpStatusCode();
 
-            $input['terminal_status_msg'] = $ex->getError()->getDescription();
-        }
-
-        elseif ($ex instanceof \Requests_Exception)
-        {
-            // we care about this exception, since its an indicator of
-            // terminal failure
-            $input['terminal_status_code'] = $ex->getCode();
-
-            $input['terminal_status_msg'] = $ex->getMessage();
-
+            $input['terminal_status_msg'] = $e->getError()->getDescription();
         }
 
         $pAnalyticsService->createAuditLog($input);
