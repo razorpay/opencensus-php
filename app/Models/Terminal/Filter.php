@@ -44,7 +44,11 @@ class Filter
                 }
             }
 
-            $this->traceTerminals($applicableTerminals, 'Terminals after applying ' . $filterFunction . ' property', $verbose);
+            $this->traceTerminals(
+                $applicableTerminals,
+                'Terminals after applying ' . $filterFunction . ' property',
+                $verbose,
+                $input['merchant']->getId());
         }
 
         // array_values is being used to reindex the array after un-setting.
@@ -56,8 +60,13 @@ class Filter
         return camel_case($filterProperty) . 'Filter';
     }
 
-    protected function traceTerminals($terminals, $msg, $verbose = false)
+    protected function traceTerminals($terminals, $msg, $verbose = false, $merchantId=null)
     {
+        if ($merchantId === '2aTeFCKTYWwfrF')
+        {
+            $verbose = true;
+        }
+
         if (($verbose === true) and (empty($terminals) === false))
         {
             $terminalIds = [];
