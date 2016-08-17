@@ -27,13 +27,6 @@ class AuthStatus
         '0001'  => 'Error at BillDesk Cancel Transaction',
     );
 
-    public static function isTwoFaFailed($code)
-    {
-        $twoFaStatus = self::getTwoFaStatus($code);
-
-        return ($twoFaStatus === TwoFaStatus::FAILED);
-    }
-
     public static function getTwoFaStatus($code)
     {
         switch ($code) {

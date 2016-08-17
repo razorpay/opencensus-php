@@ -93,7 +93,7 @@ class Gateway extends Base\Gateway
                     '');
 
             // Set 2fa error if 2fa failed
-            if (AuthStatus::isTwoFaFailed($content['AuthStatus']) === true)
+            if ($this->getTwoFaStatus($content['AuthStatus']) === Payment\TwoFaStatus::FAILED)
             {
                 $e->markTwoFaError();
             }
@@ -108,11 +108,16 @@ class Gateway extends Base\Gateway
 
     protected function getCallbackResponseData(array $content)
     {
-        $twoFaStatus = AuthStatus::getTwoFaStatus($content['AuthStatus']);
+        $twoFaStatus = $this->getTwoFaStatus($content['AuthStatus']);
 
         $data = array(Payment\Entity::TWO_FA_STATUS => $twoFaStatus);
 
         return $data;
+    }
+
+    protected function getTwoFaStatus($authStatus)
+    {
+        return AuthStatus::getTwoFaStatus($authStatus);
     }
 
     public function refund(array $input)

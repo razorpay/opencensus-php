@@ -21,13 +21,6 @@ class ThreeDSecureStatus
     const U = 'U';
     const A = 'A';
 
-    public static function isThreeDSsuccess($status)
-    {
-        $twoFaStatus = self::getThreeDSstatus($status);
-
-        return ($twoFaStatus === TwoFaStatus::PASSED);
-    }
-
     public static function getThreeDSstatus($status)
     {
         switch ($status) {
