@@ -10,6 +10,7 @@ use RZP\Models\Payment;
 use RZP\Trace;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
+use RZP\Models\Terminal;
 
 class Selector
 {
@@ -23,6 +24,7 @@ class Selector
     protected static $filters = [
         Filters\TransactionFilter::class,
         Filters\MerchantFilter::class,
+        Filters\MiscFilter::class,
     ];
 
     /**
@@ -60,7 +62,7 @@ class Selector
     {
         // Fetch terminals for both the current merchant and the shared Merchant
         $merchantTerminals = $this->repo->getTerminalsForMerchantAndSharedMerchant(
-                                            $this->merchant->getId());
+            $this->merchant->getId());
 
         // Fetch Shared Terminals
         $sharedTerminals = $this->repo->getAllSharedTerminals();
@@ -70,7 +72,7 @@ class Selector
         return $merchantTerminals;
     }
 
-    public function select($options = [], $verbose = false)
+    public function select(Options $options = null, $verbose = false)
     {
         $terminals = $this->getTerminals();
 
@@ -115,6 +117,8 @@ class Selector
                 // The current list of terminals which were retrieved earlier does
                 // not contain the sharp terminal and hence, making a call to DB.
                 $terminal = $this->repo->find(Shared::SHARP_RAZORPAY_TERMINAL);
+
+                $sortedTerminals = array($terminal);
             }
             else
             {
@@ -123,33 +127,31 @@ class Selector
                     ['payment' => $this->payment->toArrayAdmin()]);
             }
         }
-        else
+        // if binning is enabled, make the binned terminal the top most one
+        // add other terminals in case of failing binned terminal
+        if ($options and $options->getChance() > 0)
         {
-            $terminal = $sortedTerminals[0];
+            $terminal = (new Binning)->select($sortedTerminals[0], $options->getChance(), $this->input, $terminals);
+
+            array_unshift($sortedTerminals, $terminal);
+
+            $sortedTerminals = array_unique($sortedTerminals, SORT_REGULAR);
+
+            // array unique removes index. We need to renumber it.
+            $sortedTerminals = array_values($sortedTerminals);
         }
 
-        if (isset($options['chance']))
-        {
-            $terminal = (new Binning)->select($terminal, $options['chance'], $this->input, $terminals);
-        }
+        $terminal = $sortedTerminals[0];
 
-        $this->setTerminalForPayment($this->payment, $terminal);
+        $this->payment->setTerminal($terminal);
+
+        // hack to return multiple terminals if needed.
+        if ($options and $options->getMultiple() === true)
+        {
+            return $sortedTerminals;
+        }
 
         return $terminal;
-    }
-
-    protected function setTerminalForPayment($payment, $terminal = null)
-    {
-        if ($terminal === null)
-        {
-            throw new Exception\RuntimeException(
-                'Terminal should not be null',
-                ['payment' => $payment->toArrayAdmin()]);
-        }
-
-        $payment->terminal()->associate($terminal);
-
-        $payment->setGateway($terminal->getGateway());
     }
 
     protected function traceTerminals($terminals, $msg, $verbose = false)
@@ -167,5 +169,34 @@ class Selector
 
             $this->trace->info(TraceCode::TERMINAL_SELECTION, $traceData);
         }
+    }
+
+
+    /**
+     * Methods selects a list of terminals for payment. We are
+     * selecting a list here since, we want to iterate through
+     * a bunch of terminals, in case the terminal fails
+     * @return Entity
+     */
+    public function selectTerminals()
+    {
+        $options = new Terminal\Options();
+
+        $terminalsSelected = $this->select($options);
+
+        if ($options->getMultiple() === false)
+        {
+            // make this into an array, since the caller expects an array
+            $terminalsSelected = array($terminalsSelected);
+        }
+
+        // restrict international merchants from using terminal rotation to prevent fraud
+        if ($this->merchant->isInternational() === true)
+        {
+            return array($terminalsSelected[0]);
+        }
+
+        return $terminalsSelected;
+
     }
 }

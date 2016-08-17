@@ -98,6 +98,8 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $input['gateway']);
 
+        $this->setCardNumberAndCvv($input);
+
         $gatewayPayment = $this->retrieveByPaymentId($input['payment']['id']);
         $gatewayPayment->fill([Entity::RECEIVED => true]);
         $gatewayPayment->saveOrFail();
@@ -284,8 +286,18 @@ class Gateway extends Base\Gateway
         }
     }
 
+    protected function setCardNumberAndCvv(&$input)
+    {
+        $data = $this->getCardDetailsFromCache($input);
+
+        $input['card']['number'] = Card\Tokenex::getCardNumber($data['vault_token']);
+
+        $input['card']['cvv']    = Crypt::decrypt($data['cvv']);
+    }
+
     protected function enroll($input)
     {
+        //TODO: add timeout exception handling here
         $request = $this->getEnrollRequestObject($input);
 
         $this->traceGatewayRequest(TraceCode::GATEWAY_ENROLL_REQUEST, $request);
@@ -300,7 +312,7 @@ class Gateway extends Base\Gateway
         }
         catch (SoapFault $exception)
         {
-            $this->handleSoapFault($exception, "Enroll: Server Error occured");
+            $this->handleSoapFault($exception, "Enroll: Server Error occured", true);
         }
     }
 
@@ -424,6 +436,12 @@ class Gateway extends Base\Gateway
                 break;
 
             case Card\Network::MC:
+                if (isset($payAuthRep[self::UCAF_COLLECTION_INDICATOR]) === false)
+                {
+                    throw new Exception\GatewayErrorException(
+                        ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
+                }
+
                 $colInd = (int) $payAuthRep[self::UCAF_COLLECTION_INDICATOR];
 
                 if(($colInd === 0) or ($colInd === 7))
@@ -603,7 +621,9 @@ class Gateway extends Base\Gateway
         $content[self::PAYER_AUTH_VALIDATE_SERVICE][self::SIGNED_PARES] = $input['gateway'][self::PA_RES];
 
         $this->setBillingInfo($content, $input);
-        $this->setCardInfoFromTokenex($content, $input);
+        $this->setCardInfo($content, $input);
+        // Unset cvv
+        unset($content['card']['cvNumber']);
 
         $request = $this->getStandardSoapRequest($content);
 
@@ -642,9 +662,7 @@ class Gateway extends Base\Gateway
         }
 
         $this->setBillingInfo($content, $input);
-        $this->setCardInfoFromTokenex($content, $input);
-        // We temporarily persist cvv
-        $content['card']['cvNumber'] = $this->getCardCvv($input);
+        $this->setCardInfo($content, $input);
 
         $request = $this->getStandardSoapRequest($content);
 
@@ -832,22 +850,21 @@ class Gateway extends Base\Gateway
         ];
     }
 
-    protected function getCardCvv($input)
+    protected function getCardDetailsFromCache($input)
     {
-        $key = 'cybersource_' . $input['payment']['id'] . '_cvv';
+        $key = 'cybersource_' . $input['payment']['id'] . '_card_details';
 
-        $encryptedCvv = Cache::store($this->secureCache)->pull($key);
-
-        return Crypt::decrypt($encryptedCvv);
+        return Cache::store($this->secureCache)->pull($key);
     }
 
-    protected function setCardInfoFromTokenex(&$request, $input)
+    protected function setCardInfo(&$request, $input)
     {
-        $request['card']['accountNumber'] = Card\Tokenex::getCardNumber($input['card']['vault_token']);
-
-        $request['card']['expirationMonth'] = $input['card']['expiry_month'];
-
-        $request['card']['expirationYear'] = $input['card']['expiry_year'];
+        $request['card'] = [
+            'accountNumber'     => $input['card']['number'],
+            'expirationMonth'   => $input['card']['expiry_month'],
+            'expirationYear'    => $input['card']['expiry_year'],
+            'cvNumber'          => $input['card']['cvv'],
+        ];
     }
 
     protected function decideAuthStepAfterEnroll($enrollResponse, $input)
@@ -855,7 +872,7 @@ class Gateway extends Base\Gateway
         switch ($enrollResponse['reasonCode'])
         {
             case Result::ENROLLED:
-                $this->persistCvvTemporarily($input);
+                $this->persistCardDetailsTemporarily($input);
 
                 return $this->getFieldsForFormSubmitToBankACS($enrollResponse, $input);
 
@@ -869,12 +886,29 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function persistCvvTemporarily($input)
+    protected function persistCardDetailsTemporarily($input)
     {
-        $encryptedCvv = Crypt::encrypt($input['card']['cvv']);
-        $key = 'cybersource_' . $input['payment']['id'] . '_cvv';
+        $cvv = $input['card']['cvv'];
 
-        Cache::store($this->secureCache)->put($key, $encryptedCvv, 10);
+        $vaultToken = null;
+
+        if (empty($input['card']['vault_token']) === false)
+        {
+            $vaultToken = $input['card']['vault_token'];
+        }
+        else
+        {
+            $vaultToken = Card\Tokenex::getVaultToken($input['card']['number']);
+        }
+
+        $key = 'cybersource_' . $input['payment']['id'] . '_card_details';
+
+        $data = [
+            'cvv'         => Crypt::encrypt($cvv),
+            'vault_token' => $vaultToken
+        ];
+
+        Cache::store($this->secureCache)->put($key, $data, 10);
     }
 
     protected function getFieldsForFormSubmitToBankACS($enrollResponse, $input)
@@ -1130,12 +1164,12 @@ class Gateway extends Base\Gateway
      * @throws Exception\GatewayTimeoutException
      * @throws Exception\RuntimeException
      */
-    protected function handleSoapFault(SoapFault $sf, $errMsg)
+    protected function handleSoapFault(SoapFault $sf, $errMsg, $safeRetry = false)
     {
         if (Utility::checkSoapTimeout($sf) === true)
         {
             throw new Exception\GatewayTimeoutException(
-                                $sf->getMessage(), $sf);
+                                $sf->getMessage(), $sf, $safeRetry);
         }
 
         throw new Exception\RuntimeException(

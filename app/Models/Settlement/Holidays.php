@@ -90,6 +90,18 @@ class Holidays
         return self::getNthWorkingDayFrom($date, $countDays, $ignoreBankHolidays);
     }
 
+    public static function getPreviousWorkingDay($date)
+    {
+        $prevDay = $date->copy()->subDay();
+
+        while (self::isWorkingDay($prevDay) === false)
+        {
+            $prevDay->subDay();
+        }
+
+        return $prevDay;
+    }
+
     public static function getNthWorkingDayFrom($date,
                                                 $countDays,
                                                 $ignoreBankHolidays = false)

@@ -82,6 +82,13 @@ final class Result
     const CANCELED          = 'CANCELED';
     const NOT_SUPPORTED     = 'NOT SUPPORTED';
 
+    protected static $successResultCodes = array(
+        self::APPROVED,
+        self::CAPTURED,
+        // We get SUCCESS only for Rupay and maybe for purchase action.
+        self::SUCCESS,
+    );
+
     public static function getResultCode($result)
     {
         $success = true;
@@ -111,5 +118,30 @@ final class Result
         }
 
         return array($result, $success);
+    }
+
+    public static function isResultCodeIndicatingSuccess($result)
+    {
+        return in_array($result, self::$successResultCodes);
+    }
+
+    public static function modifySpecificResultValueIfRequired(& $result)
+    {
+        // We get SUCCESS only for rupay and maybe for purchase action.
+        if ($result === self::SUCCESS)
+        {
+            $result = Result::CAPTURED;
+        }
+
+        //
+        // Sometimes hdfc sends result codes as "FAILURE(<Actual code>)"
+        // We need to get the actual code from within the small brackets
+        //
+        if (substr($result, 0, 8) === 'FAILURE(')
+        {
+            preg_match('~\((.*)\)~', $result, $matches);
+
+            $result = $matches[1];
+        }
     }
 }

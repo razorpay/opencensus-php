@@ -156,20 +156,18 @@ class PaytmGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals($payment['status'], 'authorized');
-
-        $payment = $this->getLastEntity('paytm', true);
     }
 
     protected function failAuthorizePayment()
     {
-        $server = $this->mockServerContentFunction(function (& $content)
-                        {
-                            $content['RESPCODE'] = '18';
-                            $content['RESPMSG'] = 'Transaction failed';
-                            $content['STATUS'] = 'TXN_FAILURE';
+        $this->mockServerContentFunction(function (& $content)
+        {
+            $content['RESPCODE'] = '18';
+            $content['RESPMSG'] = 'Transaction failed';
+            $content['STATUS'] = 'TXN_FAILURE';
 
-                            return $content;
-                        });
+            return $content;
+        });
 
         $this->makeRequestAndCatchException(
             function ()
@@ -180,10 +178,10 @@ class PaytmGatewayTest extends TestCase
 
     protected function timeoutAuthorizePayment()
     {
-        $server = $this->mockServerContentFunction(function (& $content)
-                        {
-                            throw new Exception\GatewayTimeoutException('Timed out');
-                        });
+        $this->mockServerContentFunction(function (& $content)
+        {
+            throw new Exception\GatewayTimeoutException('Timed out');
+        });
 
         $this->makeRequestAndCatchException(
             function ()
@@ -194,13 +192,13 @@ class PaytmGatewayTest extends TestCase
 
     protected function succeedPaymentVerify()
     {
-        $server = $this->mockServerContentFunction(function (& $content)
-                        {
-                            $content['RESPCODE'] = '0';
-                            $content['RESPMSG'] = 'Transaction succeeded';
-                            $content['STATUS'] = 'TXN_SUCCESS';
+        $this->mockServerContentFunction(function (& $content)
+        {
+            $content['RESPCODE'] = '0';
+            $content['RESPMSG'] = 'Transaction succeeded';
+            $content['STATUS'] = 'TXN_SUCCESS';
 
-                            return $content;
-                        });
+            return $content;
+        });
     }
 }
