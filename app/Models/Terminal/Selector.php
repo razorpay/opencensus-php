@@ -145,7 +145,7 @@ class Selector
 
         $terminal = $sortedTerminals[0];
 
-        $this->payment->setTerminal($terminal);
+        $this->payment->associateTerminal($terminal);
 
         // hack to return multiple terminals if needed.
         if ($options and $options->getMultiple() === true)

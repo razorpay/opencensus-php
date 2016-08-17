@@ -9,6 +9,10 @@ namespace RZP\Tests\Functional\Gateway\Hdfc;
  * All test cases follow, GIVEN, WHEN, THEN structure
  */
 
+use RZP\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -132,27 +136,6 @@ class HdfcGatewayAuthTest extends TestCase
         $this->startTest();
     }
 
-    public function testCaptureTimeout()
-    {
-        $this->defaultAuthPayment();
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertEquals($payment['status'], 'authorized');
-
-        $this->captureErrorReturnGatewayTimeout();
-
-        $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
-
-        $this->assertEquals($payment['status'], 'captured');
-
-        $hdfc = $this->getEntities('hdfc', [], true);
-
-        $this->assertEquals($hdfc['items'][0]['status'], 'captured');
-
-        $this->assertEquals($hdfc['items'][1]['status'], 'capture_failed');
-    }
-
     public function testMockOnLiveMode()
     {
         $this->app['config']->set('gateway.mock_hdfc', true);
@@ -166,6 +149,47 @@ class HdfcGatewayAuthTest extends TestCase
              ->create('terminal', ['merchant_id' => '10000000000000']);
 
         $this->startTest();
+    }
+
+    public function testAuthNotEnrolledDeniedByRisk()
+    {
+        $this->hdfcPaymentMockResultCode('DENIED BY RISK', 'authorize');
+
+        // For non 3dsecure case
+        $this->makeRequestAndCatchException(
+            function ()
+            {
+                $payment = $this->doAuthPayment();
+            });
+
+        $hdfc = $this->getLastEntity('hdfc', true);
+        $this->assertTestResponse($hdfc);
+
+        $payment = $this->getLastPayment(true);
+        $this->assertEquals($payment['status'], 'failed');
+        $this->assertEquals($payment['internal_error_code'], ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK);
+
+    }
+
+    public function testAuthEnrolledDeniedByRisk()
+    {
+        $this->hdfcPaymentMockResultCode('DENIED BY RISK', 'authorize');
+        // For 3dsecure case
+        $this->makeRequestAndCatchException(
+            function ()
+            {
+                $payment = $this->getDefaultPaymentArray();
+                $payment['card']['number'] = '4012001037490014';
+                $payment = $this->doAuthPayment($payment);
+            });
+
+        $hdfc = $this->getLastEntity('hdfc', true);
+        $payment = $this->getLastPayment(true);
+        $this->assertTestResponse($hdfc);
+
+        $payment = $this->getLastPayment(true);
+        $this->assertEquals($payment['status'], 'failed');
+        $this->assertEquals($payment['internal_error_code'], ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK);
     }
 
     public function testJsonpPaymentReturnFields()

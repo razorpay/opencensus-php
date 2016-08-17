@@ -103,32 +103,6 @@ class HdfcGatewayTest extends TestCase
         $this->assertNull($txn);
     }
 
-    /**
-     * Tests that a capture succeeds on gateway but fails on our end.
-     * Then on next verify, it succeeds.
-     * Finally, when refunding, it should succeed.
-     * @return [type] [description]
-     */
-    public function testForcedCapture()
-    {
-        $payment = $this->doAuthPayment();
-        $payment = $this->getLastEntity('payment', true);
-
-        $payment = $this->captureErrorReturnGW00176();
-        $payment = $this->getLastEntity('payment', true);
-        $payment = $this->capturePayment($payment['id'], $payment['amount']);
-        $this->assertEquals($payment['status'], 'captured');
-
-        $hdfcPayment = $this->getLastEntity('hdfc', true);
-        $this->assertEquals($hdfcPayment['error_code'], 'GW00176');
-
-        $this->resetGatewayDriver();
-        $this->resetMockServer();
-
-        $refund = $this->refundPayment($payment['id'], $payment['amount']);
-        $this->assertEquals($refund['entity'], 'refund');
-    }
-
     public function testPaymentVerify()
     {
         $payment = $this->doAuthPayment();
@@ -200,26 +174,6 @@ class HdfcGatewayTest extends TestCase
         $this->assertEquals($payment['status'], 'captured');
     }
 
-    public function testCaptureDeniedByRisk()
-    {
-        $payment = $this->doAuthPayment();
-
-        $this->hdfcPaymentFailedDueToDeniedByRisk();
-
-        $this->makeRequestAndCatchException(
-            function () use ($payment)
-            {
-                $this->capturePayment($payment['razorpay_payment_id'], '50000');
-            });
-
-        $hdfc = $this->getLastEntity('hdfc', true);
-        $this->assertTestResponse($hdfc);
-
-        $payment = $this->getLastPayment(true);
-        $this->assertEquals($payment['status'], 'failed');
-        $this->assertEquals($payment['internal_error_code'], ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK);
-    }
-
     public function testPaymentFailWithFailureResultCode()
     {
         $this->hdfcPaymentMockResultCode('FAILURE(DENIED BY RISK)', 'authorize');
@@ -233,26 +187,6 @@ class HdfcGatewayTest extends TestCase
         $hdfc = $this->getLastEntity('hdfc', true);
 
         $this->assertEquals($hdfc['result'], 'DENIED BY RISK');
-    }
-
-    protected function hdfcPaymentFailedDueToDeniedByRisk()
-    {
-        $this->mockServerContentFunction(function (& $content, $action)
-        {
-            $content['result'] = 'DENIED BY RISK';
-        });
-    }
-
-    protected function hdfcPaymentMockResultCode($result, $expectedAction)
-    {
-        $this->mockServerContentFunction(
-            function (& $content, $action) use ($result, $expectedAction)
-            {
-                if ($action === $expectedAction)
-                {
-                    $content['result'] = $result;
-                }
-            });
     }
 
     protected function timeoutHdfcAuthorizePayment()
