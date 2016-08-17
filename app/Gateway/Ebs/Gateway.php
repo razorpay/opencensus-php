@@ -99,6 +99,12 @@ class Gateway extends Base\Gateway
                 $responseCode,
                 $desc);
         }
+        else
+        {
+            $responseCode = $input['gateway'][Resp::RESPONSE_CODE];
+
+            return [Payment\Entity::TWO_FA_STATUS => $this->getTwoFaStatus($responseCode)];
+        }
     }
 
     public function refund(array $input)
@@ -145,6 +151,11 @@ class Gateway extends Base\Gateway
         $verify = new Base\Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
+    }
+
+    protected function getTwoFaStatus($code)
+    {
+        return Payment\TwoFaStatus::UNKNOWN;
     }
 
     protected function sendRefundGatewayRequest($gatewayPayment, $input)
