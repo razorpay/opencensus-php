@@ -138,6 +138,11 @@ class Server extends Base\Mock\Server
                 $res['result'] = 'AUTH ERROR';
             }
         }
+        elseif ($cardNumber === '4000000000000002')
+        {
+            // mock timeout exception for enroll
+            throw new \Requests_Exception("operation timed out", "operation timed out");
+        }
         else
         {
             $res = $this->getResponseParamsForEnroll();
@@ -356,7 +361,7 @@ class Server extends Base\Mock\Server
         $res['udf2'] = (isset($this->data['udf2'])) ? $this->data['udf2'] : '';
         $res['udf5'] = (isset($this->data['udf5'])) ? $this->data['udf5'] : '';
 
-        $res = $this->content($res, $this->action);
+        $this->content($res, $this->action);
 
         $xml = Hdfc\Utility::createXml($res);
 
@@ -384,7 +389,7 @@ class Server extends Base\Mock\Server
         $res['udf2'] = (isset($this->data['udf2'])) ? $this->data['udf2'] : '';
         $res['udf5'] = (isset($this->data['udf5'])) ? $this->data['udf5'] : '';
 
-        $res = $this->content($res, $this->action);
+        $this->content($res, $this->action);
 
         $xml = Hdfc\Utility::createXml($res);
 

@@ -16,6 +16,7 @@ return array(
         'axis_migs',
         'billdesk',
         'cybersource',
+        'ebs',
         'hdfc',
         'kotak',
         'mobikwik',
@@ -41,6 +42,7 @@ return array(
     'mock_netbanking_hdfc'  => env('NETBANKING_HDFC_MOCK'),
     'mock_netbanking_kotak' => env('NETBANKING_KOTAK_MOCK'),
     'mock_billdesk'         => env('BILLDESK_MOCK'),
+    'mock_ebs'              => env('EBS_MOCK'),
     'mock_sbiepay'          => false,
     'mock_wallet_olamoney'  => env('OLAMONEY_MOCK'),
     'mock_wallet_payzapp'   => env('PAYZAPP_MOCK'),
@@ -90,6 +92,11 @@ return array(
         //SECRET FOR SECURITIES MERCHANTS
         'live_hash_secret_sec'  => env('BILLDESK_GATEWAY_SECURITIES_LIVE_HASH_SECRET'),
         'live_access_code_sec'  => env('BILLDESK_GATEWAY_SECURITIES_LIVE_ACCESS_CODE'),
+    ),
+
+    'ebs' => array(
+        'test_merchant_id' => env('EBS_GATEWAY_TEST_MERCHANT_ID', 'random'),
+        'test_hash_secret' => env('EBS_GATEWAY_TEST_HASH_SECRET', 'secret'),
     ),
 
     'kotak' => array(

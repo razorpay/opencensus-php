@@ -434,6 +434,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::GLOBAL_TOKEN, $globalToken);
     }
 
+    public function setSave($save)
+    {
+        $this->setAttribute(self::SAVE, $save);
+    }
+
     public function incrementOtpAttempts()
     {
         $attempts = $this->getOtpAttemptsAttribute() + 1;
@@ -940,6 +945,20 @@ class Entity extends Base\PublicEntity
             $array[self::CARD_ID] =
                 Card\Entity::getIdPrefix() . $this->getAttribute(self::CARD_ID);
         }
+    }
+
+    public function setTerminal($terminal)
+    {
+        if ($terminal === null)
+        {
+            throw new Exception\RuntimeException(
+                'Terminal should not be null',
+                ['payment' => $this->toArrayAdmin()]);
+        }
+
+        $this->terminal()->associate($terminal);
+
+        $this->setGateway($terminal->getGateway());
     }
 
 

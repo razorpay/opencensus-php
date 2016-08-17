@@ -25,6 +25,7 @@ trait PaymentTrait
     use PaymentMobikwikTrait;
     use PaymentSbiepayTrait;
     use PaymentCybersourceTrait;
+    use PaymentEbsTrait;
     use PaymentCreationTrait;
 
     use RequestResponseFlowTrait
@@ -1172,8 +1173,6 @@ trait PaymentTrait
                        ->mock();
 
         $this->setMockServer($server);
-
-        return $server;
     }
 
     protected function mockServer()

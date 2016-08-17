@@ -220,26 +220,52 @@ class HdfcGatewayTest extends TestCase
         $this->assertEquals($payment['internal_error_code'], ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK);
     }
 
+    public function testPaymentFailWithFailureResultCode()
+    {
+        $this->hdfcPaymentMockResultCode('FAILURE(DENIED BY RISK)', 'authorize');
+
+        $this->makeRequestAndCatchException(
+            function ()
+            {
+                $payment = $this->doAuthPayment();
+            });
+
+        $hdfc = $this->getLastEntity('hdfc', true);
+
+        $this->assertEquals($hdfc['result'], 'DENIED BY RISK');
+    }
+
     protected function hdfcPaymentFailedDueToDeniedByRisk()
     {
-        $server = $this->mockServerContentFunction(function (& $content, $action)
-                        {
-                            $content['result'] = 'DENIED BY RISK';
-                            return $content;
-                        });
+        $this->mockServerContentFunction(function (& $content, $action)
+        {
+            $content['result'] = 'DENIED BY RISK';
+        });
+    }
+
+    protected function hdfcPaymentMockResultCode($result, $expectedAction)
+    {
+        $this->mockServerContentFunction(
+            function (& $content, $action) use ($result, $expectedAction)
+            {
+                if ($action === $expectedAction)
+                {
+                    $content['result'] = $result;
+                }
+            });
     }
 
     protected function timeoutHdfcAuthorizePayment()
     {
-        $server = $this->mockServerContentFunction(function (& $content, $action)
-                        {
-                            if ($action === 'authorize')
-                            {
-                                throw new Exception\GatewayTimeoutException('Timed out');
-                            }
+        $this->mockServerContentFunction(function (& $content, $action)
+        {
+            if ($action === 'authorize')
+            {
+                throw new Exception\GatewayTimeoutException('Timed out');
+            }
 
-                            return $content;
-                        });
+            return $content;
+        });
 
         $this->makeRequestAndCatchException(
             function ()
@@ -250,24 +276,24 @@ class HdfcGatewayTest extends TestCase
 
     protected function succeedPaymentVerify()
     {
-        $server = $this->mockServerContentFunction(function (& $content)
-                        {
-                            $content['RESPCODE'] = '0';
-                            $content['RESPMSG'] = 'Transaction succeeded';
-                            $content['STATUS'] = 'TXN_SUCCESS';
+        $this->mockServerContentFunction(function (& $content)
+        {
+            $content['RESPCODE'] = '0';
+            $content['RESPMSG'] = 'Transaction succeeded';
+            $content['STATUS'] = 'TXN_SUCCESS';
 
-                            return $content;
-                        });
+            return $content;
+        });
     }
 
     protected function authErrorOnRupayPayment()
     {
-        $server = $this->mockServerContentFunction(function (& $content)
-                        {
-                            $content['amt'] = '1.0';
-                            $content['result'] = 'AUTH ERROR';
-                            unset($content['PAReq'], $content['eci']);
-                            return $content;
-                        });
+        $this->mockServerContentFunction(function (& $content)
+        {
+            $content['amt'] = '1.0';
+            $content['result'] = 'AUTH ERROR';
+            unset($content['PAReq'], $content['eci']);
+            return $content;
+        });
     }
 }

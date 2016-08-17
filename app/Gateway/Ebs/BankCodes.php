@@ -1,0 +1,54 @@
+<?php
+
+namespace RZP\Gateway\Ebs;
+
+use RZP\Models\Bank\IFSC;
+
+class BankCodes
+{
+    public static $bankCodeMap = [
+        IFSC::ANDB => '1378',
+        IFSC::UTIB => '1004',
+        IFSC::BKID => '1214',
+        IFSC::MAHB => '1229',
+        IFSC::CNRB => '1224',
+        IFSC::CSBK => '1272',
+        IFSC::CBIN => '1147',
+        IFSC::CIUB => '1215',
+        IFSC::CORP => '1135',
+        IFSC::DLXB => '1273',
+        IFSC::FDRL => '1029',
+        IFSC::HDFC => '1007',
+        IFSC::ICIC => '1016',
+        IFSC::IDIB => '1143',
+        IFSC::IOBA => '1213',
+        IFSC::VYSA => '1210',
+        IFSC::JAKA => '1015',
+        IFSC::KARB => '1133',
+        IFSC::KKBK => '1148',
+        IFSC::ORBC => '1154',
+        IFSC::SRCB => '1227',
+        IFSC::SBBJ => '1033',
+        IFSC::SBHY => '1034',
+        IFSC::SBIN => '1032',
+        IFSC::SBMY => '1038',
+        IFSC::STBP => '1035',
+        IFSC::SBTR => '1039',
+        IFSC::UBIN => '1216',
+        IFSC::UTBI => '1212',
+        IFSC::VIJB => '1379',
+        IFSC::YESB => '1146',
+        IFSC::PUNB => '1381',
+    ];
+
+    public static function getMappedCode($bankCode)
+    {
+        if (isset(self::$bankCodeMap[$bankCode]) === true)
+        {
+            return self::$bankCodeMap[$bankCode];
+        }
+
+        throw new Exception\InvalidArgumentException(
+            'Bank not supported');
+    }
+}

@@ -378,15 +378,14 @@ trait RepositoryFetch
 
     public function fetchAllNotesFromCreatedAt($skip, $createdAt, $count)
     {
-        $repo = $this->repo;
-
         // Using created_at and not updated_at because updated_at is not indexed.
-        return $repo::select('id', 'notes', 'merchant_id', 'created_at')
-            ->where(PublicEntity::CREATED_AT, '>=', $createdAt)
-            ->orderBy('id', 'desc')
-            ->skip($skip)
-            ->take($count)
-            ->get();
+        return $this->newQuery()
+                    ->select('id', 'notes', 'merchant_id', 'created_at')
+                    ->where(PublicEntity::CREATED_AT, '>=', $createdAt)
+                    ->orderBy('id', 'desc')
+                    ->skip($skip)
+                    ->take($count)
+                    ->get();
     }
 
     protected function getAttributeWithTableName($col)
