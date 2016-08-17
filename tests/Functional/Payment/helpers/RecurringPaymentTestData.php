@@ -10,14 +10,14 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Card declined by bank',
+                    'description' => 'Unknown card transactions are not allowed for recurring',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\GatewayErrorException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_DECLINED,
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 

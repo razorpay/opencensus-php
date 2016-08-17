@@ -331,7 +331,7 @@ trait Authorize
             $gatewayInput['order'] = $payment->order->toArray();
         }
 
-        if ($payment->token !== null)
+        if (empty($payment->token) === true)
         {
             $gatewayInput['token'] = $payment->token()->first();
         }
@@ -548,8 +548,7 @@ trait Authorize
                 'token' => $input[Payment\Entity::TOKEN]
             ]);
 
-        if ((isset($input['recurring']) === true) and
-            (boolval($input['recurring']) === true))
+        if ($payment->isRecurring() === true)
         {
             $token = $this->repo->token->getRecurringByTokenAndCustomerIdOrFail(
                 $input[Payment\Entity::TOKEN],
@@ -611,8 +610,8 @@ trait Authorize
     protected function preProcessPaymentFromUserDataLocal($customer, $payment, $input, & $gatewayInput)
     {
         // Flow if card details are entered with save set to true/false
-        $saveMethod = ((isset($input['save']) and (boolval($input['save']) === true)  or
-                       (isset($input['recurring']) and (boolval($input['recurring']) === true))));
+        $saveMethod = (($payment->getSave() === true)  or
+                       ($payment->isRecurring() === true));
 
         if ($saveMethod === false)
         {
@@ -627,7 +626,7 @@ trait Authorize
     protected function preProcessPaymentFromUserDataGlobal($customer, $payment, $input, & $gatewayInput)
     {
         // Flow if card details are entered with save set to true/false
-        $saveMethod = ((isset($input['save'])) and (boolval($input['save']) === true));
+        $saveMethod = ($payment->getSave() === true);
 
         if ($saveMethod === false)
         {
@@ -744,6 +743,8 @@ trait Authorize
         {
             case Payment\Method::CARD:
                 $this->verifyCardEnabledInLive($payment, $input);
+
+                $this->verifyRecurringEnabled($payment, $input);
                 break;
 
             case Payment\Method::NETBANKING:
@@ -856,7 +857,7 @@ trait Authorize
         return $data;
     }
 
-    protected function updateTokenIfRecurring()
+    protected function authenticateTokenIfRecurring()
     {
         $token = $this->payment->token()->first();
 
@@ -1300,23 +1301,6 @@ trait Authorize
 
         $type = $card->getType();
 
-        if ((isset($input['recurring']) === true) and
-            (boolval($input['recurring']) === true))
-        {
-            if ($merchantMethods->isRecurringEnabled() === false)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_RECURRING_NOT_ENABLED_FOR_MERCHANT);
-            }
-
-            if ($type !== Card\Type::CREDIT)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    $type . ' card transactions are not allowed for recurring',
-                    'number');
-            }
-        }
-
         if ($type === Card\Type::UNKNOWN)
         {
             return;
@@ -1331,6 +1315,29 @@ trait Authorize
             throw new Exception\BadRequestValidationFailureException(
                 $type . ' card transactions are not allowed',
                 'number');
+        }
+    }
+
+    protected function verifyRecurringEnabled($payment, $input)
+    {
+        $merchantMethods = $this->methods;
+
+        if ($payment->isRecurring() === true)
+        {
+            if ($merchantMethods->isRecurringEnabled() === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_RECURRING_NOT_ENABLED_FOR_MERCHANT);
+            }
+
+            $type = $payment->card->getType();
+
+            if ($type !== Card\Type::CREDIT)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    ucfirst($type) . ' card transactions are not allowed for recurring',
+                    'number');
+            }
         }
     }
 
