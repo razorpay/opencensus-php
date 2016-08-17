@@ -48,6 +48,7 @@ class Entity
 
     const ATOM                  = 'atom';
     const HDFC                  = 'hdfc';
+    const EBS                   = 'ebs';
     const AMEX                  = 'amex';
     const PAYTM                 = 'paytm';
     const SHARP                 = 'sharp';
@@ -80,6 +81,7 @@ class Entity
         self::PRICING               => \RZP\Models\Pricing::class,
         self::WEBHOOK               => \RZP\Models\Merchant\Webhook::class,
         self::BILLDESK              => \RZP\Gateway\Billdesk::class,
+        self::EBS                   => \RZP\Gateway\Ebs::class,
         self::CUSTOMER              => \RZP\Models\Customer::class,
         self::EMI_PLAN              => \RZP\Models\Emi::class,
         self::MOBIKWIK              => \RZP\Gateway\Mobikwik::class,
