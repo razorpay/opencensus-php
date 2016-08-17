@@ -625,7 +625,17 @@ class Gateway extends Base\Gateway
 
     protected function getStringToHash($content, $glue = '|')
     {
-        return implode($glue, $content);
+        $hashData = '';
+
+        foreach($content as $key => $value)
+        {
+            if (strlen($value) > 0)
+            {
+                $hashData .= $glue.$value;
+            }
+        }
+
+        return $hashData;
     }
 
     protected function getHashOfString($str)
