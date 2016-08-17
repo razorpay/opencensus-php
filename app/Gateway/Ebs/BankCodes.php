@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Ebs;
 
+use RZP\Exception;
 use RZP\Models\Bank\IFSC;
 
 class BankCodes

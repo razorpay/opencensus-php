@@ -2,6 +2,8 @@
 
 namespace RZP\Gateway\Ebs;
 
+use RZP\Exception;
+
 class CardNetwork
 {
     const VISA   = '1';
