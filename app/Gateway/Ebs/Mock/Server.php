@@ -70,7 +70,7 @@ class Server extends Base\Mock\Server
             Response::REQUEST_ID            => random_alpha_string(8),
         );
 
-        $content[Response::SECURE_HASH] = $this->getGatewayInstance()->getHashOfArray($content, null);
+        $content[Response::SECURE_HASH] = $this->generateHash($content);
 
         $this->content($content);
 

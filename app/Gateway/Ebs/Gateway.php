@@ -18,11 +18,11 @@ use RZP\Gateway\Ebs\ResponseConstants as Resp;
 
 class Gateway extends Base\Gateway
 {
-    const HASH_ALGO                 = 'SHA512';
-    const MERCHANT_ID               = 'test_merchant_id';
-    const HASH_SECRET               = 'test_hash_secret';
+    const HASH_ALGO    = 'SHA512';
+    const MERCHANT_ID  = 'test_merchant_id';
+    const HASH_SECRET  = 'test_hash_secret';
 
-    const API                       = 'api';
+    const API          = 'api';
 
     protected $gateway = 'ebs';
 
@@ -447,13 +447,13 @@ class Gateway extends Base\Gateway
     {
         $content = array(
             Req::NAME          => 'Razorpay',
-            Req::ADDRESS       => 'Razorpay office',
+            Req::ADDRESS       => 'Razorpay',
             Req::CITY          => 'Bangalore',
             Req::COUNTRY       => 'IND',
             Req::POSTAL_CODE   => '560001',
             Req::PHONE         => '9876543210',
             Req::EMAIL         => 'helpdesk@razorpay.com',
-            Req::DESCRIPTION   => 'razorpay ebs desc',
+            Req::DESCRIPTION   => 'NA',
             Req::CURRENCY      => 'INR',
         );
 
@@ -489,13 +489,6 @@ class Gateway extends Base\Gateway
         $content[Req::SECURE_HASH] = $this->getHashOfArray($content);
 
         return $content;
-    }
-
-    public function getHashOfArray($content)
-    {
-        $str = parent::getHashOfArray($content);
-
-        return strtoupper(hash(self::HASH_ALGO, $str));
     }
 
     protected function setAuthRequestContentForCard(&$content, $input)
@@ -626,6 +619,11 @@ class Gateway extends Base\Gateway
         $arrayResponse = (array) simplexml_load_string($response);
 
         return $arrayResponse['@attributes'];
+    }
+
+    protected function getStringToHash($content, $glue = '|')
+    {
+        return implode($glue, $content);
     }
 
     protected function getHashOfString($str)
