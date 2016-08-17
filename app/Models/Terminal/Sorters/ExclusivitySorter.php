@@ -27,7 +27,7 @@ class ExclusivitySorter extends Terminal\Sorter
         // append to the terminal
         foreach ($terminals as $terminal)
         {
-            if ($terminal->isShared() === true)
+            if ($terminal->isShared() === false)
             {
                 $specificCategoryTerminals[] = $terminal;
             }
