@@ -7,7 +7,7 @@ use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Gateway\Kotak;
-use RZP\Models\Payment\Entity as PaymentEntity;
+use RZP\Models\Payment;
 use Requests;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
@@ -165,10 +165,12 @@ class Gateway extends Base\Gateway
 
         $code = $content['ResponseCode'];
 
+        $twoFaStatus = $this->getTwoFaStatus($code);
+
         // Payment successful
         if (in_array($code, ResponseCode::PAYMENT_SUCCESS_STATUS))
         {
-            return [PaymentEntity::TWO_FA_STATUS => ResponseCode::getTwoFaStatus($code)];
+            return [Payment\Entity::TWO_FA_STATUS => $twoFaStatus];
         }
         // Payment fails, throw exception
         else
@@ -178,13 +180,18 @@ class Gateway extends Base\Gateway
                     null,
                     $input['gateway']['Message']);
 
-            if (ResponseCode::isTwoFaFailed($code) === true)
+            if ($twoFaStatus === Payment\TwoFaStatus::FAILED)
             {
                 $e->markTwoFaError();
             }
 
             throw $e;
         }
+    }
+
+    protected function getTwoFaStatus($code)
+    {
+        return ResponseCode::getTwoFaStatus($code);
     }
 
     protected function getFormattedCardExpiryDate($input)

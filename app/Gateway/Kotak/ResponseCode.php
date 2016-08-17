@@ -92,11 +92,4 @@ class ResponseCode
                 return TwoFaStatus::UNKNOWN;
         }
     }
-
-    public static function isTwoFaFailed($code)
-    {
-        $twoFaStatus = self::getTwoFaStatus($code);
-
-        return $twoFaStatus === TwoFaStatus::FAILED;
-    }
 }
