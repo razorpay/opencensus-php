@@ -69,6 +69,11 @@ class ResponseCode
 
     public static function getTwoFaStatus($code)
     {
-        return TwoFaStatus::UNKNOWN;
+        switch ($code) {
+            case 0:
+                return TwoFaStatus::PASSED;
+            default:
+                return TwoFaStatus::UNKNOWN;
+        }
     }
 }

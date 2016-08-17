@@ -11,6 +11,7 @@ use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Wallet\Base;
+use RZP\Models\Payment;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Core;
@@ -263,11 +264,7 @@ class Gateway extends Base\Gateway
         {
             $resCode = (int) $input['resCode'];
 
-            if ($resCode === 0)
-            {
-                return [\RZP\Models\Payment\Entity::TWO_FA_STATUS => \RZP\Models\Payment\TwoFaStatus::PASSED];
-            }
-
+            return [Payment\Entity::TWO_FA_STATUS => $this->getTwoFaStatus($resCode)];
         }
 
         //trace input
@@ -280,6 +277,11 @@ class Gateway extends Base\Gateway
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
                 $input['resCode'],
                 $input['resDesc']);
+    }
+
+    protected function getTwoFaStatus($code)
+    {
+        return ResponseCode::getTwoFaStatus($code);
     }
 
     protected function verifyPayment($verify)
