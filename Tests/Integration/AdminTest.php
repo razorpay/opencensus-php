@@ -208,7 +208,7 @@ class AdminTest extends TestCase
         $this->clickByClassName('modal-ok');
         $this->waitUntilDisplayedByClassName('confirm-modal');
         $this->clickByClassName('confirm-ok');
-        $this->waitUntilAbsentByClassName('pricing-modal');
+        $this->waitUntilAbsentByClassName('pricing-modal', 30000);
         $this->waitUntilAbsentByClassName('alert-danger');
         $this->waitUntilContainsByCss('body', 'Plan Assigned successfully');
 
@@ -413,7 +413,7 @@ class AdminTest extends TestCase
         $this->submitByName('submit');
         $this->waitUntilDisplayedById('profileNav');
         $this->clickById('profileNav');
-        $this->waitUntilAbsentByClassName('profile-wrapper');
+        $this->waitUntilDisplayedByClassName('profile-wrapper');
         $this->waitUntilContainsByCss('body', $this->admin->name);
         $this->waitUntilContainsByCss('body', $this->admin->username);
 
