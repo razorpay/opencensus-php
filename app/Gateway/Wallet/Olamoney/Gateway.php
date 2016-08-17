@@ -31,7 +31,6 @@ class Gateway extends Base\Gateway
         ResponseFields::STATUS          => Entity::STATUS_CODE,
         ResponseFields::AMOUNT          => Entity::AMOUNT,
         Entity::RECEIVED                => Entity::RECEIVED,
-        Entity::GATEWAY_MERCHANT_ID     => Entity::GATEWAY_MERCHANT_ID,
         ResponseFields::TRANSACTION_ID  => Entity::GATEWAY_PAYMENT_ID,
     );
 
@@ -188,7 +187,6 @@ class Gateway extends Base\Gateway
             Entity::RECEIVED                => true,
             Entity::EMAIL                   => $input['payment']['email'],
             Entity::CONTACT                 => $this->getFormattedContact($input['payment']['contact']),
-            Entity::GATEWAY_MERCHANT_ID     => $this->getMerchantId($input['terminal']),
             ResponseFields::STATUS          => $input['gateway']['status'],
             ResponseFields::TRANSACTION_ID  => $input['gateway']['transactionId'],
         );
@@ -482,7 +480,6 @@ class Gateway extends Base\Gateway
             Entity::RECEIVED                => true,
             Entity::EMAIL                   => $payment['email'],
             Entity::CONTACT                 => $this->getFormattedContact($payment['contact']),
-            Entity::GATEWAY_MERCHANT_ID     => $this->getMerchantId($this->input['terminal']),
             ResponseFields::STATUS          => Status::SUCCESS,
             ResponseFields::TRANSACTION_ID  => $verifyResponse[ResponseFields::UNIQUE_BILL_ID],
         );
@@ -577,7 +574,6 @@ class Gateway extends Base\Gateway
             Entity::WALLET                  => $input['payment']['wallet'],
             Entity::EMAIL                   => $input['payment']['email'],
             Entity::CONTACT                 => $input['payment']['contact'],
-            Entity::GATEWAY_MERCHANT_ID     => $this->getMerchantId($input['terminal']),
             Entity::GATEWAY_REFUND_ID       => $gateway_refund_id,
             Entity::REFUND_ID               => $input['refund']['id'],
             Entity::RESPONSE_CODE           => $response_code,
@@ -643,16 +639,6 @@ class Gateway extends Base\Gateway
         }
 
         return $terminal['gateway_access_code'];
-    }
-
-    protected function getMerchantId($terminal)
-    {
-        if ($this->mode === Mode::TEST)
-        {
-            return $this->config['test_merchant_id'];
-        }
-
-        return $terminal['gateway_merchant_id'];
     }
 
     protected function getHashForOtpGenerate($content)
