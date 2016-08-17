@@ -70,6 +70,14 @@ class Gateway extends Base\Gateway
 
     }
 
+    protected function getFormattedContact($contact)
+    {
+        // Constructor does the basic validation
+        $phoneBook = new PhoneBook($contact, true);
+
+        return $phoneBook->format(PhoneBook::DOMESTIC);
+    }
+
     protected function getMerchantId($terminal)
     {
         if ($this->mode === Mode::TEST)
@@ -78,6 +86,25 @@ class Gateway extends Base\Gateway
         }
 
         return $terminal['gateway_merchant_id'];
+    }
+
+    /*
+     * Creates a login token for freecharge topup
+     * 1. Encrypt accessToken with first 16 chars of merchantId
+     * 2. Convert to hex format and return it
+     *
+     * @return string
+     */
+    protected function createLoginToken($accessToken, $merchantId)
+    {
+        $key = mb_substr($merchantId, 0, 16);
+
+        $cipherText = openssl_encrypt($accessToken, 'aes-256-cbc',
+            $key, OPENSSL_RAW_DATA|OPENSSL_ZERO_PADDING);
+
+        $loginToken = base64_encode($cipherText);
+
+        return $loginToken;
     }
 
 
@@ -163,6 +190,22 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
+    protected function getTokenAttributes($content)
+    {
+        $input = $this->input;
+
+        $attributes = array(
+            Token\Entity::METHOD           => 'wallet',
+            Token\Entity::WALLET           => $input['payment']['wallet'],
+            Token\Entity::TERMINAL_ID      => $input['terminal']['id'],
+            Token\Entity::GATEWAY_TOKEN    => $content['accessToken'],
+            Token\Entity::GATEWAY_TOKEN2   => $content['refreshToken'],
+            Token\Entity::EXPIRED_AT       => time() + $content['accessTokenExpiry'],
+        );
+
+        return $attributes;
+    }
+
     protected function storeOtpIdInCache($otpId, $paymentId, $gateway)
     {
         $key = $this->getCacheKeyForOtpId($paymentId, $gateway);
@@ -186,6 +229,15 @@ class Gateway extends Base\Gateway
     {
         $this->action($input, Action::DEBIT_WALLET);
 
+        $token = $this->getValidWalletToken($input);
+
+        if ($token === null)
+        {
+            throw new Exception\BaseException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+        }
+
+        $this->accessToken = $token->getGatewayToken();
+
         $request = $this->getDebitRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
@@ -198,17 +250,17 @@ class Gateway extends Base\Gateway
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-                $content['status'],
-                $content['message']);
+                $content['errorCode'],
+                $content['errorMessage']);
         }
 
         $contentToSave = array(
             'key'      => $this->getMerchantId($input['terminal']),
             'email'    => $input['payment']['email'],
             'mobile'   => $this->getFormattedContact($input['payment']['contact']),
-            'status'   => $content['status'],
+            'status'   => $content['Status'],
             'amount'   => $input['payment']['amount'],
-            'txnId'    => $content['result'],
+            'txnId'    => $content['txnId'],
             'message'  => $content['message'],
             'received' => true
         );
@@ -262,7 +314,7 @@ class Gateway extends Base\Gateway
             'accessToken'   => $this->accessToken,
         );
 
-        $content['hash'] = $this->getHashForUserWalletLimit($content);
+        $content['checksum'] = $this->getHashForUserWalletLimit($content);
 
         $request = $this->getStandardRequestArray($content, $method = 'get');
 
@@ -287,22 +339,6 @@ class Gateway extends Base\Gateway
         return $this->getHashOfArray($orderedData);
     }
 
-    protected function getTokenAttributes($content)
-    {
-        $input = $this->input;
-
-        $attributes = array(
-            Token\Entity::METHOD           => 'wallet',
-            Token\Entity::WALLET           => $input['payment']['wallet'],
-            Token\Entity::TERMINAL_ID      => $input['terminal']['id'],
-            Token\Entity::GATEWAY_TOKEN    => $content['accessToken'],
-            Token\Entity::GATEWAY_TOKEN2   => $content['refreshToken'],
-            Token\Entity::EXPIRED_AT       => time() + $content['accessTokenExpiry'],
-        );
-
-        return $attributes;
-    }
-
     protected function getDebitRequestArray()
     {
         $content = array(
@@ -315,7 +351,7 @@ class Gateway extends Base\Gateway
             'currency'              => 'INR',
         );
 
-        $content['hash'] = $this->getHashForDebitWallet($content);
+        $content['checksum'] = $this->getHashForDebitWallet($content);
 
         $request = $this->getStandardRequestArray($content);
 
@@ -423,5 +459,163 @@ class Gateway extends Base\Gateway
         $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
 
         return $this->getHashofArray($orderedData);
+    }
+
+    public function topup($input)
+    {
+        $this->action($input, Action::TOPUP_WALLET);
+
+        $token = $this->getValidWalletToken($input);
+
+        if ($token === null)
+        {
+            throw new Exception\BaseException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+        }
+
+        $this->accessToken = $token->getGatewayToken();
+
+        $request = $this->getTopupWalletRequestArray($input);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $content = $this->jsonToArray($response->body);
+
+        $this->trace->info(TraceCode::PAYMENT_TOPUP_RESPONSE, $content);
+
+        if ($content['status'] === Status::SUCCESS)
+        {
+            return $this->getTopupWalletRedirectRequestArray($content);
+        }
+
+        throw new Exception\GatewayErrorException(
+            ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+            $content['status'],
+            $content['message']);
+    }
+
+    protected function getValidWalletToken($input)
+    {
+        $token = (new Customer\Token\Repository)
+                        ->getByWalletTerminalAndCustomerId(
+                            $input['payment']['wallet'],
+                            $input['terminal']['id'],
+                            $input['customer']['id']);
+
+        if ($token !== null and $token->getExpiredAt() > time())
+        {
+            return $token;
+        }
+    }
+
+    protected function getTopupWalletRequestArray($input)
+    {
+        $content = [];
+
+        $merchantId = $this->getMerchantId($input['terminal']);
+
+        $this->loginToken = $this->createLoginToken($this->accessToken, $merchantId);
+
+        $content = array(
+            'merchantId'    => $merchantId,
+            'amount'        => $input['add_amount'] / 100,
+            'loginToken'    => $this->loginToken,
+            'callbackUrl'   => '',
+            'channel'       => 'WEB',
+            'metadata'      => 'dummy',
+        );
+
+        $content['checksum'] = $this->getHashForTopupWallet($content);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $this->trace->info(TraceCode::PAYMENT_TOPUP_REQUEST, $request);
+
+        $request['headers'] = array(
+            'Accept' => 'application/json',
+        );
+
+        return $request;
+    }
+
+    protected function getHashForTopupWallet($content)
+    {
+        $fieldsInOrder = array(
+            'amount',
+            'callbackUrl',
+            'channel',
+            'loginToken',
+            'merchantId',
+            'metadata',
+        );
+
+        $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
+
+        return $this->getHashOfArray($orderedData);
+    }
+
+    public function refund(array $input)
+    {
+        parent::refund($input);
+
+        $request = $this->getRefundRequestArray($input);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $content = $this->jsonToArray($response->body);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+
+        $attributes = $this->getRefundAttributesFromRefundResponse($input, $content);
+
+        $refund = $this->createGatewayRefundEntity($attributes);
+
+        if ($content['status'] !== Status::SUCCESS)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_REFUND_FAILED,
+                $content['status'],
+                $content['message']);
+        }
+    }
+
+    protected function getRefundRequestArray($input)
+    {
+        $content = [];
+
+        $wallet = $this->getRepo()->fetchWalletByPaymentId($input['payment']['id']);
+
+        $content =  array(
+            'merchantId'    => $this->getMerchantId($input['terminal']),
+            'merchantTxnId' => $wallet['gateway_payment_id'],
+            'refundAmount'  => (string) ($input['refund']['amount'] / 100),
+            // Not mandatory when we send payment id
+            'txnId'         => $input['payment']['txnId'],
+        );
+
+        $content['checksum'] = $this->getHashForRefund($content);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+
+        $request['headers'] = array(
+            'Accept' => 'application/json',
+        );
+
+        return $request;
+    }
+
+    protected function getHashForRefund($content)
+    {
+        $fieldsInOrder = array(
+            'merchantId',
+            'merchantTxnId',
+            'refundAmount',
+            'txnId',
+        );
+
+        $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
+
+        return $this->getHashOfArray($orderedData);
     }
 }
