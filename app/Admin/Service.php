@@ -331,6 +331,15 @@ class Service extends Base\Service
         return [[], $data];
     }
 
+    public function fetchMerchantFeatures($id)
+    {
+        $this->setApiCredentials();
+
+        $response = $this->api->merchant->fetch($id)->getFeatures()->toArray();
+
+        return [[], $response];
+    }
+
     public function fetchFullMerchantDetails($id)
     {
         $details = null;
