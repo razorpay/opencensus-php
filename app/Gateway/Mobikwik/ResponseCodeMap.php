@@ -60,11 +60,6 @@ class ResponseCodeMap
         1, 8,
     );
 
-    public static function isTwoFaFailed($code)
-    {
-        return self::getTwoFaStatus($code) === TwoFaStatus::FAILED;
-    }
-
     public static function getTwoFaStatus($code)
     {
         switch ($code) {

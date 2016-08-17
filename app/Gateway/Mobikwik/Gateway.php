@@ -7,8 +7,8 @@ use RZP\Error;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Base;
-// use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\VerifyResult;
+use RZP\Models\Payment;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Mobikwik\Type;
@@ -704,7 +704,7 @@ class Gateway extends Base\Gateway
             $code,
             $message);
 
-        if (ResponseCodeMap::isTwoFaFailed($code) === true)
+        if ($this->getTwoFaStatus($code) === Payment\TwoFaStatus::FAILED)
         {
             $e->markTwoFaError();
         }
@@ -712,12 +712,16 @@ class Gateway extends Base\Gateway
         throw $e;
     }
 
+    protected function getTwoFaStatus($code)
+    {
+        return ResponseCodeMap::getTwoFaStatus($code);
+    }
+
     protected function getCallbackResponseData($input)
     {
         $code = $input['statuscode'];
 
-        return [\RZP\Models\Payment\Entity::TWO_FA_STATUS =>
-                ResponseCodeMap::getTwoFaStatus($code)];
+        return [Payment\Entity::TWO_FA_STATUS => $this->getTwoFaStatus($code)];
     }
 
     protected function getUrlDomain()
