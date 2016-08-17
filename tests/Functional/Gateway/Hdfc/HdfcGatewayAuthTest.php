@@ -132,27 +132,6 @@ class HdfcGatewayAuthTest extends TestCase
         $this->startTest();
     }
 
-    public function testCaptureTimeout()
-    {
-        $this->defaultAuthPayment();
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertEquals($payment['status'], 'authorized');
-
-        $this->captureErrorReturnGatewayTimeout();
-
-        $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
-
-        $this->assertEquals($payment['status'], 'captured');
-
-        $hdfc = $this->getEntities('hdfc', [], true);
-
-        $this->assertEquals($hdfc['items'][0]['status'], 'captured');
-
-        $this->assertEquals($hdfc['items'][1]['status'], 'capture_failed');
-    }
-
     public function testMockOnLiveMode()
     {
         $this->app['config']->set('gateway.mock_hdfc', true);

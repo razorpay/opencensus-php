@@ -8,6 +8,26 @@ use Symfony\Component\DomCrawler\Crawler;
 
 trait PaymentHdfcTrait
 {
+    protected function hdfcPaymentFailedDueToDeniedByRisk()
+    {
+        $this->mockServerContentFunction(function (& $content, $action)
+        {
+            $content['result'] = 'DENIED BY RISK';
+        });
+    }
+
+    protected function hdfcPaymentMockResultCode($result, $expectedAction)
+    {
+        $this->mockServerContentFunction(
+            function (& $content, $action) use ($result, $expectedAction)
+            {
+                if ($action === $expectedAction)
+                {
+                    $content['result'] = $result;
+                }
+            });
+    }
+
     protected function runPaymentCallbackFlowHdfc($response, &$callback = null)
     {
         $tds = $this->is3dSecure($response, $callback);
