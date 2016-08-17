@@ -16,6 +16,7 @@ use RZP\Models\Customer;
 use RZP\Models\Terminal;
 use RZP\Models\Transaction;
 use RZP\Models\Customer\Token;
+use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Status;
 use RZP\Models\Merchant\Methods;
@@ -37,12 +38,9 @@ trait Authorize
      */
     protected $type;
 
-    protected $maxRetryAttempts = 3;
-
     protected $terminalSelector;
 
     protected $terminalsSelected;
-
 
     public function authorize($payment, $input)
     {
@@ -71,23 +69,19 @@ trait Authorize
     {
         $totalTerminals = count($this->terminalsSelected);
 
-        $this->maxRetryAttempts = min($totalTerminals, $this->maxRetryAttempts);
+        $maxRetryAttempts = min($totalTerminals, self::MAX_RETRY_ATTEMPTS);
 
         $retryAttempts = 0;
 
-        $timeoutException = null;
-
         $request = null;
 
-        $gatewayRequestException = null;
-
-        while ($retryAttempts < $this->maxRetryAttempts)
+        while ($retryAttempts < $maxRetryAttempts)
         {
             $terminalGatewayInput = $gatewayInput;
 
             $currentTerminal = $this->terminalsSelected[$retryAttempts];
 
-            $payment->setTerminal($currentTerminal);
+            $payment->associateTerminal($currentTerminal);
 
             $this->runGatewaySpecificPreProcessing($payment, $terminalGatewayInput);
 
@@ -114,16 +108,18 @@ trait Authorize
 
                 $retryAttempts += 1;
 
-                $gatewayRequestException = $e;
+                $retry = $this->logAndCheckForAuthRetry($e, $payment);
 
-                $status = $this->logAndCheckForAuthRetry($e, $payment);
-
-                if ($status === true)
+                if (($retry === true) and
+                    ($retryAttempts < $maxRetryAttempts))
                 {
                     continue;
                 }
 
-                break;
+                $this->handleGatewayRequestException($e);
+
+                // Should not reach here.
+                assert (false);
             }
             catch (Exception\BaseException $e)
             {
@@ -138,8 +134,6 @@ trait Authorize
                 throw $e;
             }
         }
-
-        $this->handleGatewayRequestException($gatewayRequestException);
 
         return $this->processAuthResponse($request, $payment);
     }
@@ -165,21 +159,16 @@ trait Authorize
         return false;
     }
 
-    protected function handleGatewayRequestException($gatewayRequestException)
+    protected function handleGatewayRequestException(Exception\GatewayRequestException $e)
     {
         //
         // we have tried the payment with multiple terminals
         // and if we still encounter gateway request exception
         // record it here and throw it back to caller.
         //
-        if ($gatewayRequestException instanceof Exception\GatewayRequestException)
-        {
-            $this->updatePaymentFailed(
-                $gatewayRequestException->getError(),
-                TraceCode::PAYMENT_AUTH_FAILURE);
-
-            throw $gatewayRequestException;
-        }
+        $this->updatePaymentFailed(
+            $e->getError(),
+            TraceCode::PAYMENT_AUTH_FAILURE);
     }
 
     protected function processAuthResponse($request, $payment)
@@ -1008,28 +997,7 @@ trait Authorize
 
     protected function callGatewayAuthorize(array $data)
     {
-        $callbackData = null;
-
-        try
-        {
-            $callbackData = $this->callGatewayFunction(
-                                            Payment\Action::AUTHORIZE,
-                                            $data);
-        }
-        catch (Exception\BaseException $e)
-        {
-            //
-            // An error occurred on gateway due to user or gateway.
-            // We need to record this and mark payment as failed.
-            //
-            $this->updatePaymentFailed(
-                $e->getError(),
-                TraceCode::PAYMENT_AUTH_FAILURE);
-
-            throw $e;
-        }
-
-        return $callbackData;
+        return $this->callGatewayFunction(Action::AUTHORIZE, $data);
     }
 
     /**
