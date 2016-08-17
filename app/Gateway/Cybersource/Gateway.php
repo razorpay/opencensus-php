@@ -1213,11 +1213,16 @@ class Gateway extends Base\Gateway
                 $desc);
 
         // check if 3d secure auth failed
-        if (ResponseCode::isTwoFaFailed($reasonCode) === true)
+        if ($this->getTwoFaStatus($reasonCode) === Payment\TwoFaStatus::FAILED)
         {
             $e->markTwoFaError();
         }
 
         throw $e;
+    }
+
+    protected function getTwoFaStatus($code)
+    {
+        return ResponseCode::getTwoFaStatus($code);
     }
 }

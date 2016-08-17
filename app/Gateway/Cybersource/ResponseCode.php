@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Cybersource;
 
 use RZP\Error\ErrorCode;
+use RZP\Models\Payment\TwoFaStatus;
 
 class ResponseCode
 {
@@ -183,8 +184,15 @@ class ResponseCode
         return false;
     }
 
-    public static function isTwoFaFailed($code)
+    public static function getTwoFaStatus($code)
     {
-        return self::$errorCodeMap[$code] === ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED;
+        switch ($code) {
+            case 100:
+                return TwoFaStatus::PASSED;
+            case 476:
+                return TwoFaStatus::FAILED;
+            default:
+                return TwoFaStatus::UNKNOWN;
+        }
     }
 }
