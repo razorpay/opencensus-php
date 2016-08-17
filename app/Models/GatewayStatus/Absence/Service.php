@@ -27,9 +27,7 @@ class Service extends Base\Service
     public function edit($id, array $input)
     {
         $downWindow = $this->repo->gateway_absence->findOrFailPublic($id);
-
-        SD($input);
-
+        
         $downWindow = (new Absence\Core)->edit($downWindow, $input);
 
         return $downWindow->toArrayPublic();
