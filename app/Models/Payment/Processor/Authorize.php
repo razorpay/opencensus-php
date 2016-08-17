@@ -144,7 +144,8 @@ trait Authorize
             TraceCode::TERMINAL_FAILURE, $traceData);
 
         // retry only if it is safe to do so
-        if (property_exists($e, 'safeRetry') === true and $e->safeRetry === true)
+        if ((property_exists($e, 'safeRetry') === true) and
+            ($e->safeRetry === true))
         {
             return true;
         }

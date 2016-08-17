@@ -656,8 +656,7 @@ class Gateway extends Base\Gateway
 
     protected function throwException($error, $safeRetry = false)
     {
-        // Mark error as false now to remove the stale state for future functions
-        // calls.
+        // Mark error as false now to remove the stale state for future function calls.
         // @todo: refactor and remove this completely.
         $this->error = false;
 
@@ -695,7 +694,6 @@ class Gateway extends Base\Gateway
                     'time' => time()
                 ]);
         }
-
 
         $exception = null;
 
