@@ -28,13 +28,6 @@ class ThreeDSecureStatus
         return ($twoFaStatus === TwoFaStatus::PASSED);
     }
 
-    public static function isThreeDSFailed($status)
-    {
-        $twoFaStatus = self::getThreeDSstatus($status);
-
-        return ($twoFaStatus === TwoFaStatus::FAILED);
-    }
-
     public static function getThreeDSstatus($status)
     {
         switch ($status) {

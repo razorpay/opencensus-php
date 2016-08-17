@@ -375,6 +375,11 @@ class Gateway
         return $payment;
     }
 
+    protected function getTwoFaStatus($response)
+    {
+        throw new Exception\BadRequestException('Child class must implement it!');
+    }
+
     protected function getNamespace()
     {
         return substr(get_called_class(), 0, strrpos(get_called_class(), '\\'));

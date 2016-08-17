@@ -10,6 +10,7 @@ use RZP\Gateway\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\AxisMigs;
+use RZP\Models\Payment;
 use Requests;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
@@ -629,7 +630,7 @@ class Gateway extends Base\Gateway
             // then we need to block the transaction on the international card.
             //
 
-            if (ThreeDSecureStatus::isThreeDSsuccess($threeDSstatus) === false)
+            if ($this->getTwoFaStatus($threeDSstatus) === Payment\TwoFaStatus::FAILED)
             {
                 if ($input['merchant']['international'] === false)
                 {
@@ -641,7 +642,7 @@ class Gateway extends Base\Gateway
                 }
                 else
                 {
-                    return; // payment succeeds
+                    return $this->getCallbackResponseData(array('threeDSstatus' => $threeDSstatus));; // payment succeeds
                 }
             }
             else
@@ -661,9 +662,9 @@ class Gateway extends Base\Gateway
 
     protected function getCallbackResponseData(array $input)
     {
-        $twoFaStatus = ThreeDSecureStatus::getThreeDSstatus($input['threeDSstatus']);
+        $twoFaStatus = $this->getTwoFaStatus($input['threeDSstatus']);
 
-        $data = array(\RZP\Models\Payment\Entity::TWO_FA_STATUS => $twoFaStatus);
+        $data = array(Payment\Entity::TWO_FA_STATUS => $twoFaStatus);
 
         return $data;
     }
@@ -672,12 +673,19 @@ class Gateway extends Base\Gateway
     {
         $e = new Exception\GatewayErrorException($code, $gatewayErrorCode, $gatewayErrorDesc);
 
-        if (ThreeDSecureStatus::isThreeDSFailed($threeDSstatus) === true)
+        $twoFaStatus = $this->getTwoFaStatus($threeDSstatus);
+
+        if ($twoFaStatus === Payment\TwoFaStatus::FAILED)
         {
             $e->markTwoFaError();
         }
 
         throw $e;
+    }
+
+    protected function getTwoFaStatus($threeDSstatus)
+    {
+        return ThreeDSecureStatus::getThreeDSstatus($threeDSstatus);
     }
 
     protected function getApiErrorCode($input)
