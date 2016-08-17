@@ -4,10 +4,14 @@ namespace RZP\Models\Invoice;
 
 class Status
 {
+    // ------ Email/SMS Statuses -----------
     const PENDING       = 'pending';
-    const CREATED       = 'created';
     const SENT          = 'sent';
     const DELIVERED     = 'delivered';
+    const FAILED        = 'failed';
+
+    // -------- Invoice Statuses -----------
+    const CREATED       = 'created';
     const PAID          = 'paid';
     const EXPIRED       = 'expired';
     const DELETED       = 'deleted';
@@ -16,7 +20,7 @@ class Status
     {
         return (defined(Status::class . '::' . strtoupper($status)));
     }
-    
+
     public static function checkStatus($status)
     {
         if (self::isStatusValid($status) === false)
