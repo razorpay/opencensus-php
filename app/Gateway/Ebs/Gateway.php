@@ -628,7 +628,7 @@ class Gateway extends Base\Gateway
         return $arrayResponse['@attributes'];
     }
 
-    protected function getStringHash($str)
+    protected function getHashOfString($str)
     {
         $secret = $this->getSecret();
 
