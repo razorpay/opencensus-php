@@ -4,14 +4,15 @@ namespace RZP\Models\GatewayStatus\Absence;
 
 use RZP\Models\Base;
 use RZP\Models\GatewayStatus\Absence;
+use RZP\Models\Payment\Gateway;
 use RZP\Exception;
 
 class Service extends Base\Service
 {
     public function create(array $input, $gateway)
     {
-        $status = $this->repo->gateway_absence->verifyGatewayExists($gateway);
-        
+        $status = Gateway::isValidGateway($gateway);
+
         if($status === false)
         {
             throw new Exception\BadRequestValidationFailureException(
@@ -27,7 +28,7 @@ class Service extends Base\Service
     public function edit($id, array $input)
     {
         $downWindow = $this->repo->gateway_absence->findOrFailPublic($id);
-        
+
         $downWindow = (new Absence\Core)->edit($downWindow, $input);
 
         return $downWindow->toArrayPublic();
@@ -36,7 +37,7 @@ class Service extends Base\Service
 
     public function delete($id)
     {
-        $flag = $this->repo->gateway_absence->deleteAbsence($id);
+        $flag = (new Absence\Core)->delete($id);
 
         if($flag === true)
         {
@@ -58,10 +59,4 @@ class Service extends Base\Service
         return $schedule->toArrayPublic();
     }
 
-    public function getSchedulesBetween($from, $to)
-    {
-        $schedule = $this->repo->gateway_absence->findBetweenTimestampsForGateway($from, $to);
-
-        return $schedule->toArrayPublic();
-    }
 }

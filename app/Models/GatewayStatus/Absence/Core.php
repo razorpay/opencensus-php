@@ -31,4 +31,11 @@ class Core extends Base\Core
 
         return $downWindow;
     }
+
+    public function delete($id)
+    {
+        $entity = $this->repo->findOrFail($id);
+
+        $this->repo->entity->deleteOrFail($entity);
+    }
 }
