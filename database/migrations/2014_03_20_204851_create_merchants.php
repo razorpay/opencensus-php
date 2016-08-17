@@ -84,6 +84,10 @@ class CreateMerchants extends Migration
             $table->integer(Merchant::MAX_PAYMENT_AMOUNT)
                   ->nullable();
 
+            $table->text(Merchant::TERMINAL_CATEGORIES)
+                  ->nullable()
+                  ->default(null);
+
             $table->integer(Merchant::CREATED_AT);
             $table->integer(Merchant::UPDATED_AT);
 

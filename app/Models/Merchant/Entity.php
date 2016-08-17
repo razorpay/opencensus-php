@@ -32,6 +32,7 @@ class Entity extends Base\PublicEntity
     const LOGO_URL                  = 'logo_url';
     const AWS_LOGO_URL              = 'aws_logo_url';
     const MAX_PAYMENT_AMOUNT        = 'max_payment_amount';
+    const TERMINAL_CATEGORIES       = 'terminal_categories';
 
     /**
      * Refers to methods relation and not a property;
