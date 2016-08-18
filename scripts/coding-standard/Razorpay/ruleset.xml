@@ -110,6 +110,7 @@
     and 'or' are used -->
   <rule ref="Razorpay.Operators.ValidLogicalOperators"/>
   <rule ref="Razorpay.Operators.LowerCaseLogicalOperator"/>
+  <rule ref="Razorpay.ControlStructures.OpeningBraceBsdAllman"/>
 
   <!-- usage of "$this" in static methods, which will cause runtime errors -->
   <rule ref="Squiz.Scope.StaticThisUsage"/>
