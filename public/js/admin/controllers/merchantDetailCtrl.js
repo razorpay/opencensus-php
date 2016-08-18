@@ -768,6 +768,7 @@ app.controller('MerchantDetailCtrl', [
           $scope.merchant.details.activation_progress = parseInt($scope.merchant.details.steps_finished.length * 100 / 5);
           $scope.referer = getReferer($scope.merchant.details.tags);
           fetchBalance();
+          getMerchantFeatures();
         } else {
           $scope.alerts.resetAlerts(true);
           angular.forEach(data.errors, function (value) {
@@ -779,6 +780,23 @@ app.controller('MerchantDetailCtrl', [
         }
       }).error(function () {
         $scope.alerts.resetAlerts(true);
+        $scope.alerts.addAlert('danger', null);
+      });
+    }
+
+    function getMerchantFeatures() {
+      var request = $http.get('/admin/merchant/' + $scope.merchant.id + '/features');
+      request.success(function (data) {
+        $scope.alerts.resetAlerts(true);
+        if (data.success) {
+          $scope.merchant.details.features = data.data;
+        } else {
+          $scope.alerts.resetAlerts(true);
+          angular.forEach(data.errors, function (value) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
         $scope.alerts.addAlert('danger', null);
       });
     }
