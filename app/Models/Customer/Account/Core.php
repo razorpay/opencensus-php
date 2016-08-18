@@ -38,6 +38,7 @@ class Core extends Base\Core
             if ($failOnDuplicate === false)
             {
                 $existingCustomer->merchant->associate($merchant);
+
                 return $existingCustomer;
             }
             else
@@ -47,9 +48,34 @@ class Core extends Base\Core
             }
         }
 
-        $this->repo->saveOrFail($customer);
+        $this->repo->transaction(function() use ($customer, $merchant)
+        {
+            $this->repo->saveOrFail($customer);
+
+            if (isset($input['address']) === true)
+            {
+                $address = $this->createOrFindAddress($input['address'], $merchant);
+
+                $customer->address()->save($address);
+            }
+        });
 
         return $customer;
+    }
+
+    protected function createOrFindAddress($addressDetails, $merchant)
+    {
+        if (empty($addressDetails[Address\Entity::ID]) === false)
+        {
+            $address = $this->repo->address->findByIdAndMerchantId(
+                $addressDetails[Address\Entity::ID], $merchant->getId());
+        }
+        else
+        {
+            $address = (new Address\Core())->create($addressDetails);
+        }
+
+        return $address;
     }
 
     public function edit($customer, $input)

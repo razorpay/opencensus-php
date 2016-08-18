@@ -14,6 +14,7 @@ class Entity extends Base\PublicEntity
     const CONTACT               = 'contact';
     const EMAIL                 = 'email';
     const MERCHANT_ID           = 'merchant_id';
+    const ADDRESS_ID            = 'address_id';
     const ACTIVE                = 'active';
     const NOTES                 = 'notes';
     const CREATED_AT            = 'created_at';
@@ -35,6 +36,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::ACTIVE,
         self::CONTACT,
+        self::ADDRESS_ID,
         self::MERCHANT_ID,
     );
 
@@ -45,6 +47,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::ACTIVE,
         self::CONTACT,
+        self::ADDRESS_ID,
         self::NOTES,
         self::MERCHANT_ID,
         self::CREATED_AT,
@@ -58,6 +61,7 @@ class Entity extends Base\PublicEntity
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
+        self::ADDRESS_ID,
         self::CREATED_AT,
     );
 
@@ -74,6 +78,11 @@ class Entity extends Base\PublicEntity
     public function tokens()
     {
         return $this->hasMany('RZP\Models\Customer\Token\Entity');
+    }
+    
+    public function address()
+    {
+        return $this->hasOne('RZP\Models\Customer\Address\Entity');
     }
 
     public function getName()

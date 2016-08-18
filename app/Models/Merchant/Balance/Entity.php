@@ -49,7 +49,7 @@ class Entity extends Base\PublicEntity
         if (is_int($arg) === false)
         {
             throw new Exception\InvalidArgumentException('
-                Unsigned integer required. Supplied: '.$amount);
+                Unsigned integer required. Supplied: '.$arg);
         }
     }
 
