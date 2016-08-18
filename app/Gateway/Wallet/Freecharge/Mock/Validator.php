@@ -1,20 +1,26 @@
 <?php
 
-namespace RZP\Gateway\Wallet\Payumoney\Mock;
+namespace RZP\Gateway\Wallet\Freecharge\Mock;
 
 use RZP\Models\Base;
 
 class Validator extends Base\Validator
 {
     protected static $authorizeRules   = array(
-        'paymentId'             => 'required|string',
-        'accessToken'           => 'required|string|in:8c31d80b-83ed-4f52-8377-71301790ccaa'
+        'merchantId'            => 'required|string',
+        'amount'                => 'required|numeric',
+        'channel'               => 'required|string|in:WEB,ANDROID,WINDOWS,IOS,WAP',
+        'loginToken'            => 'required|string',
+        'checksum'              => 'required|string|regex:"^[a-f0-9]+$"',
+        'callbackUrl'           => 'required|url',
+        'metadata'              => 'sometimes|string',
     );
 
     protected static $debitWalletRules = array(
         'merchantId'            => 'required|string',
         'amount'                => 'required|numeric',
         'accessToken'           => 'required|string',
+        'currency'              => 'required|string',
         'merchantTxnId'         => 'required|string',
         'channel'               => 'required|string|in:WEB,ANDROID,WINDOWS,IOS,WAP',
         'checksum'              => 'required|regex:"^[a-f0-9]+$"'
@@ -22,24 +28,33 @@ class Validator extends Base\Validator
 
     protected static $refundRules = array(
         'merchantId'            => 'required|string',
-        'paymentId'             => 'required|string',
         'refundMerchantTxnId'   => 'required|string',
         'txnId'                 => 'required|string',
         'refundAmount'          => 'required|numeric',
+        'merchantTxnId'         => 'sometimes|string',
         'checksum'              => 'required|regex:"^[a-f0-9]+$"',
     );
 
     protected static $verifyRules = array(
-        'client_id'             => 'required|string',
+        'merchantId'            => 'required|string',
         'checksum'              => 'required|regex:"^[a-f0-9]+$"',
-        'merchantTransactionId' => 'required|string'
+        'merchantTxnId'         => 'required|string',
+        'txnId'                 => 'sometimes|string',
+        'txnType'               => 'required|string',
     );
 
     protected static $otpGenerateRules = array(
         'email'                 => 'required|email',
-        'mobile'                => 'required|regex:"^[789]\d{9}$"',
+        'mobileNumber'          => 'required|regex:"^[789]\d{9}$"',
         'merchantId'            => 'required|string',
         'checksum'              => 'required|regex:"^[a-f0-9]+$"'
+    );
+
+    protected static $otpResendRules = array(
+        'channel'               => 'required|string',
+        'otpId'                 => 'required|string',
+        'merchantId'            => 'required|string',
+        'checksum'              => 'required|string',
     );
 
     protected static $otpSubmitRules = array(
@@ -56,12 +71,13 @@ class Validator extends Base\Validator
         'checksum'              => 'required|string|regex:"^[a-f0-9]+$"'
     );
 
-    protected static $topupWalletRules = array(
+    protected static $topupRedirectRules = array(
         'merchantId'            => 'required|string',
         'amount'                => 'required|numeric',
         'channel'               => 'required|string|in:WEB,ANDROID,WINDOWS,IOS,WAP',
-        'logintoken'            => 'required|string',
+        'loginToken'            => 'required|string',
         'checksum'              => 'required|string|regex:"^[a-f0-9]+$"',
         'callbackUrl'           => 'required|url',
+        'metadata'              => 'sometimes|string',
     );
 }

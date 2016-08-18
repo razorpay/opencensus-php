@@ -29,6 +29,24 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
+    /*
+     * Updates the gateway payment entity
+     *
+     * @param wallet        Wallet\Base\Entity      Gateway Payment Entity
+     * @param attributes    array
+     */
+    protected function updateGatewayPaymentEntity($wallet, $attributes)
+    {
+        // wallet is gateway payment entity
+        $attr = $this->getMappedAttributes($attributes);
+
+        $wallet->fill($attr);
+
+        $wallet->saveOrFail();
+
+        return $wallet;
+    }
+
     protected function createGatewayRefundEntity($attributes)
     {
         $refund = $this->getNewGatewayPaymentEntity();
@@ -87,5 +105,22 @@ class Gateway extends Base\Gateway
         $phoneBook = new PhoneBook($contact, true);
 
         return $phoneBook->format(PhoneBook::DOMESTIC);
+    }
+
+    /*
+     * Fetch Payment Gateway (P.G) entity.
+     *
+     * @param paymentId
+     *
+     * @param action        P.G Entity corresponds to what stage (authorize or
+     *                      refund for now)
+     *
+     * @\Wallet\Base\Entity In our case it's a wallet
+     */
+    protected function fetchPaymentGateway($paymentId, $action = Action::AUTHORIZE)
+    {
+
+        return $this->getRepo()
+            ->fetchWalletByPaymentIdAndAction($paymentId, $action);
     }
 }

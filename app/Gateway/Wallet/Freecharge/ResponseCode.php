@@ -62,5 +62,7 @@ class ResponseCode extends Base\ResponseCode
         'EU010'     => 'Please enter correct OTP, or use Resend Code',
         'EU11'      => 'Incorrect username or password',
         'EU12'      => 'You have exceeded the maximum limit of OTPs. Please try after few minutes.',
+        'EU13'      => 'OTP Expired',
+
     ];
 }

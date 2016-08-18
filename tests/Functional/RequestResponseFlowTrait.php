@@ -221,7 +221,7 @@ trait RequestResponseFlowTrait
 
         if ($this->ba->isPublicAuth())
         {
-            $request['content']['key_id'] = $this->ba->getKey();
+            $request['content']['key_id'] = $this->ba->getKey(); 
         }
 
         /**

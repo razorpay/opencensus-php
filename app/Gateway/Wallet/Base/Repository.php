@@ -45,4 +45,12 @@ class Repository extends Base\Repository
                     ->where('gateway_refund_id', '=', $gatewayRefundId)
                     ->firstOrFail();
     }
+
+    public function fetchWalletByPaymentIdAndAction($paymentId, $action)
+    {
+        return $this->newQuery()
+            ->where('payment_id', '=', $paymentId)
+            ->where('action', '=', $action)
+            ->first();
+    }
 }

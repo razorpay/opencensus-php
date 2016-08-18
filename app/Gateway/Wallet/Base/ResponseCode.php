@@ -8,7 +8,7 @@ class ResponseCode
 
     public static function getResponseMessage($code)
     {
-        $codes = self::$codes;
+        $codes = static::$codes;
 
         return $codes[$code];
     }

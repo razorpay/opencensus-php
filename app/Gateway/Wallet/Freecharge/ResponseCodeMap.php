@@ -1,11 +1,15 @@
 <?php
 
+namespace RZP\Gateway\Wallet\Freecharge;
+
 use RZP\Error;
 use RZP\Error\ErrorCode;
 
 class ResponseCodeMap
 {
     public static $codes = array(
+        'EU010' => ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
+        'EU13'  => ErrorCode::BAD_REQUEST_PAYMENT_OTP_EXPIRED,
     );
 
     protected static $success = array(

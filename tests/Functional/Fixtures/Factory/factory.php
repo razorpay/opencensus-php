@@ -291,3 +291,10 @@ $factory(\RZP\Models\Merchant\Credits\Entity::class, [
     'value'         => 150,
     'campaign'      => 'silent-ads',
 ]);
+
+$factory(\RZP\Gateway\Wallet\Base\Entity::class, [
+    'id'            => '12345',
+    'amount'        => 0,
+    'contact'       => '9918899029',
+    'email'         => 'a@b.com',
+]);

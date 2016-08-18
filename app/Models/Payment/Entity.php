@@ -600,6 +600,11 @@ class Entity extends Base\PublicEntity
         return $attempts;
     }
 
+    public function getOtpAttempts()
+    {
+        return $this->getAttribute(self::OTP_ATTEMPTS);
+    }
+
     protected function getOtpCountAttribute()
     {
         $count = $this->attributes[self::OTP_COUNT];

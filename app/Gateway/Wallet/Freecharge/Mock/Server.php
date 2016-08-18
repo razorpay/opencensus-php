@@ -1,20 +1,25 @@
 <?php
 
-namespace RZP\Gateway\Wallet\Payumoney\Mock;
+namespace RZP\Gateway\Wallet\Freecharge\Mock;
 
+use Carbon\Carbon;
+
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Http\Route;
 use RZP\Gateway\Base;
-use RZP\Exception;
-use Carbon\Carbon;
-use RZP\Models\Payment;
-use RZP\Error\ErrorCode;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Wallet\Base\Otp;
-use RZP\Gateway\Wallet\Payumoney;
+use RZP\Gateway\Wallet\Freecharge;
+use RZP\Models\Base\UniqueIdentity;
+use RZP\Models\Payment;
 
 class Server extends Base\Mock\Server
 {
-    protected $accessToken = '8c31d80b-83ed-4f52-8377-71301790ccaa';
+    protected $accessToken          = '8c31d80b-83ed-4f52-8377-71301790ccaa';
+    protected $accessTokenExpiry    = '3600';
+    protected $refreshToken         = '8c31d80b-83ed-4f52-8377-71301790ccaa';
+    protected $refreshTokenExpiry   = '3600';
 
     public function authorize($input)
     {
@@ -22,103 +27,36 @@ class Server extends Base\Mock\Server
 
         $this->validateActionInput($input);
 
-        $args = func_get_args();
+        $this->topupRequest = $input;
 
-        $paymentId = $args[1];
+        $callbackUrl = $input['callbackUrl'];
 
-        $content = array(
-            'mihpayid'              => '403993715514441547',
-            'mode'                  => 'test',
-            'status'                => 'success',
-            'unmappedstatus'        => 'captured',
-            'key'                   => 'Hlbv4P',
-            'txnid'                 => 'pmwallet1110628236',
-            'amount'                => '1000.0',
-            'addedon'               => date('Y-m-d H:i:s'),
-            'productinfo'           => 'productInfo',
-            'firstname'             => 'vivek',
-            'lastname'              => '',
-            'address1'              => '',
-            'address2'              => '',
-            'city'                  => '',
-            'state'                 => '',
-            'country'               => '',
-            'zipcode'               => '',
-            'email'                 => 'vivek@gmail.com',
-            'phone'                 => '8199080070',
-            'udf1'                  => '',
-            'udf2'                  => '',
-            'udf3'                  => '',
-            'udf4'                  => '',
-            'udf5'                  => '',
-            'udf6'                  => '',
-            'udf7'                  => '',
-            'udf8'                  => '',
-            'udf9'                  => '',
-            'udf10'                 => '',
-            'hash'                  => '2451471f3b2e8cf5fbebf255b0034cd433274ab1fba20bebcb34c7d36d060d82d37327eae07c7eff7141d470f00aeb142987ac5746087de01a2d692a953da0e7',
-            'field1'                => '613361387628',
-            'field2'                => '999999',
-            'field3'                => '1152205592161331',
-            'field4'                => '2270245592161330',
-            'field5'                => '',
-            'field6'                => '',
-            'field7'                => '',
-            'field8'                => '',
-            'field9'                => 'SUCCESS',
-            'PG_TYPE'               => 'HDFCPG',
-            'encryptedPaymentId'    => $input['paymentId'],
-            'bank_ref_num'          => '1152205592161331',
-            'bankcode'              => 'CC',
-            'error'                 => 'E000',
-            'error_Message'         => 'No Error',
-            'cardToken'             => '32a29ce86dff3609ba8696db46a5647542027988',
-            'name_on_card'          => 'payu',
-            'cardnum'               => '512345XXXXXX2346',
-            'cardhash'              => 'This field is no longer supported in postback params.',
-            'card_merchant_param'   => '7fc8c60f4d8013bfdbefe054690e',
-            'amount_split'          => '{\'PAYU\': \'1000.0\'}',
-            'payuMoneyId'           => '1110628236',
-            'discount'              => '0.00',
-            'net_amount_debit'      => '1000'
+        $request = array(
+            'status'        => 'COMPLETED',
+            'metadata'      => '',
+            'walletBalance' => '1232',
         );
 
-        $payment = (new Payment\Repository)->find($paymentId);
+        $request['checksum'] = $this->sortKeysAndGenerateHash($request);
 
-        $secret = $this->app->config->get('app.key');
-
-        $publicId = $payment->getPublicId();
-
-        $hash = hash_hmac('sha1', $publicId, $secret);
-
-        $url = Route::getUrlWithPublicCallbackAuth(['id' => $publicId, 'hash' => $hash]);
-
-        $url .= '?' . http_build_query($content);
-
-        return \Redirect::to($url);
+        return \Redirect::to($callbackUrl);
     }
 
     public function verify($input)
     {
         parent::verify($input);
 
-        $this->validateActionInput($this->mockRequest['content']);
+        $this->validateActionInput($this->mockRequest['content'], 'verify');
+        $content = $this->mockRequest['content'];
 
-        $response = array(
-            'status'    => 0,
-            'message'   => 'Transaction status',
-            'result'    => array(
-                array(
-                    'amount'                => 500,
-                    'transactionDirection'  => -1,
-                    'paymentId'             => 1110561680,
-                    'status'                => 'success',
-                    'merchantTransactionId' => $this->mockRequest['content']['merchantTransactionId'],
-                    'completedOn'           => strtotime('-30 mins')
-                )
-            ),
-            'errorCode' => null
-        );
+        $response = [
+            'merchantTxnId'     => $content['merchantTxnId'],
+            'txnId'             => $content['txnId'],
+            'amount'            => '50000',
+            'status'            => Freecharge\Status::TRANSACTION_SUCCESS,
+        ];
+
+        $response['checksum'] = $this->sortKeysAndGenerateHash($response);
 
         return $this->makeResponse($response);
     }
@@ -129,33 +67,43 @@ class Server extends Base\Mock\Server
 
         $this->validateActionInput($input, 'refund');
 
-        $refundResponse = array(
-            'status'    => 0,
-            'rows'      => 0,
-            'message'   => 'Refund Initiated',
-            'result'    => 13797,
-            'guid'      => null,
-            'sessionId' => null,
-            'errorCode' => null
+        $response = array(
+            'status'                => Freecharge\Status::REFUND_SUCCESS,
+            'refundTxnId'           => $this->getRefundTxnId(),
+            'refundMerchantTxnId'   => $this->getRefundMerchantTxnId(),
+            'refundedAmount'        => '100',
+            'errorCode'             => null,
+            'errorMessage'          => null,
         );
 
-        return $this->makeResponse($refundResponse);
+        $response['checksum'] = $this->sortKeysAndGenerateHash($response);
+
+        return $this->makeResponse($response);
     }
 
     public function otpGenerate($input)
     {
         $this->validateActionInput($input, 'otpGenerate');
 
-        $mobile = $input['mobile'];
+        $mobile = $input['mobileNumber'];
 
         $response = array(
-            'status' => 0,
-            'message' => 'SMS sent to ' . substr_replace($mobile, 'xxxxxx', 1, -3),
-            'errorCode' => null,
-            'guid' => null,
-            'result' => null,
-            'userVaultDTO' => null
+            'otpId'         => '1asda2345',
+            'redirectUrl'   => '',
+            'isIvrEnabled'  => 'false',
+            'status'        => 'VERIFY',
         );
+
+        return $this->makeResponse($response);
+    }
+
+    public function otpResend($input)
+    {
+        $this->validateActionInput($input, 'otpResend');
+
+        $response = [
+            'otpId' => '12345a',
+        ];
 
         return $this->makeResponse($response);
     }
@@ -164,19 +112,9 @@ class Server extends Base\Mock\Server
     {
         $this->validateActionInput($input, 'getBalance');
 
-        $response = array(
-            'status' => 0,
-            'message' => 'Wallet limit',
-            'errorCode' => null,
-            'guid' => null,
-            'result' => array(
-                'maxLimit' => 5000,
-                'availableBalance' => 500,
-                'minLimit' => 10
-            ),
-            'userVaultDTO' => null,
-            'mode' => 'test'
-        );
+        $response = [
+            'walletBalance'     => '500',
+        ];
 
         return $this->makeResponse($response);
     }
@@ -185,83 +123,53 @@ class Server extends Base\Mock\Server
     {
         $this->validateActionInput($input, 'otpSubmit');
 
-        $response = array(
-            'status' => 0,
-            'message' => 'access token',
-            'errorCode' => null,
-            'guid' => null,
-            'result' => array(
-                'headers' => array(
-                    'Cache-Control' => array(
-                        'no-store'
-                    ),
-                    'Pragma' => array(
-                        'no-cache'
-                    )
-                ),
-                'body' => array(
-                    'access_token' => $this->accessToken,
-                    'token_type' => 'bearer',
-                    'refresh_token' => 'bfd54a5a-d10a-4e5f-ad51-1d0fd310a4d1',
-                    'expires_in' => 7690192,
-                    'scope' => 'read trust write'
-                ),
-                'statusCode' => 'OK'
-            ),
-            'userVaultDTO' => array(
-                'availableAmount' => 22,
-                'minLimit' => null,
-                'maxLimit' => null
-            )
-        );
-
         if ($input['otp'] === Otp::EXPIRED)
         {
             $response = array(
-                'status'        => -1,
-                'message'       => Payumoney\ResponseCode::getResponseMessage('3010008'),
-                'errorCode'     => '3010008',
-                'guid'          => 'nnhg6878duq7ihb2dtfj6apff',
-                'result'        => null,
-                'userVaultDTO'  => null
+                'errorMessage'  => Freecharge\ResponseCode::getResponseMessage('EU13'),
+                'errorCode'     => 'EU13',
             );
+            $response = $this->makeResponse($response);
+            $response->setStatusCode(202);
+            return $response;
         }
 
         if ($input['otp'] === Otp::INCORRECT)
         {
             $response = array(
-                'status'        => -1,
-                'message'       => Payumoney\ResponseCode::getResponseMessage('3010007'),
-                'errorCode'     => '3010007',
-                'guid'          => 'nnhg6878duq7ihb2dtfj6apff',
-                'result'        => null,
-                'userVaultDTO'  => null
+                'errorMessage'  => Freecharge\ResponseCode::getResponseMessage('EU010'),
+                'errorCode'     => 'EU010',
             );
+            $response = $this->makeResponse($response);
+            $response->setStatusCode(202);
+            return $response;
         }
+
+        $response = [
+            'accessToken'           => $this->accessToken,
+            'accessTokenExpiry'     => $this->accessTokenExpiry,
+            'refreshToken'          => $this->refreshToken,
+            'refreshTokenExpiry'    => $this->refreshTokenExpiry,
+        ];
 
         return $this->makeResponse($response);
     }
 
-    public function topupWallet($input)
+    public function topupRedirect($input)
     {
-        if (isset($input['txnDetails']))
-        {
-            $input['txnDetails'] = json_decode($input['txnDetails'], true);
-        }
-
-        $this->validateActionInput($input, 'topupWallet');
+        $this->validateActionInput($input, 'topupRedirect');
 
         $this->topupRequest = $input;
 
+        $callbackUrl = $input['callbackUrl'];
+
         $response = array(
-            'status' => 0,
-            'message' => 'Payment added successfully',
-            'errorCode' => null,
-            'guid' => null,
-            'result' => '0B663A7D4700F95709A3F5761254B406',
-            'userVaultDTO' => null,
-            'mode' => 'test'
+            'status'        => 'COMPLETED',
+            'metadata'      => '',
+            'walletBalance' => '1232',
         );
+
+        $response['checksum'] = $this->sortKeysAndGenerateHash($response);
 
         return $this->makeResponse($response);
     }
@@ -270,26 +178,18 @@ class Server extends Base\Mock\Server
     {
         $this->validateActionInput($input, 'debitWallet');
 
-        if (!isset($this->mockRequest['headers']['Authorization']))
+        if ($this->mockRequest['content']['accessToken'] === $this->accessToken)
         {
             $response = array(
-                'error'              => 'unauthorized',
-                'error_description'  => 'Full authentication is required to access this resource',
-            );
-
-            return $this->makeResponse($response);
-        }
-
-        if ($this->mockRequest['headers']['Authorization'] === $this->authHeader)
-        {
-            $response = array(
-                'status'        => 0,
-                'message'       => 'Use wallet successful',
+                'txnId'         => $this->getTxnId(),
+                'merchantTxnId' => $this->getMerchantTxnId(),
+                'Amount'        => '123',
+                'Status'        => 'COMPLETED',
                 'errorCode'     => null,
-                'guid'          => null,
-                'result'        => 1110562955,
-                'userVaultDTO'  => null
+                'errorMessage'  => null,
             );
+
+            $response['checksum'] = $this->sortKeysAndGenerateHash($response);
 
             return $this->makeResponse($response);
         }
@@ -302,14 +202,19 @@ class Server extends Base\Mock\Server
         return $this->makeResponse($response);
     }
 
-    protected function getPayuTxnId()
+    protected function getTxnId()
     {
         return mt_rand(1000000000, 2567890123);
     }
 
-    protected function getPayuRefundId()
+    protected function getMerchantTxnId()
     {
         return mt_rand(10000, 35000);
+    }
+
+    protected function getRefundMerchantTxnId()
+    {
+        return mt_rand(5000, 10000);
     }
 
     protected function makeResponse($json)
@@ -320,5 +225,26 @@ class Server extends Base\Mock\Server
         $response->headers->set('Cache-Control', 'no-cache');
 
         return $response;
+    }
+
+    protected function sortKeysAndGenerateHash(array $response)
+    {
+       ksort($response);
+
+       $secretKey = $this->app->config['test_hash_secret'];
+
+       $hashString = json_encode($response).$secretKey;
+
+       return hash('sha256', $hashString);
+    }
+
+    /*
+     * Freecharge requires us to create a refund entity and send its Id before it initiates a refund.
+     * Mocks presently generates a unique Id/
+     *
+     */
+    protected function getRefundTxnId()
+    {
+        return UniqueIdentity::generateUniqueId();
     }
 }

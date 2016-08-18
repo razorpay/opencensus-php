@@ -18,6 +18,7 @@ class Entity extends Base\PublicEntity
     const PAYZAPP           = 'payzapp';
     const PAYUMONEY         = 'payumoney';
     const AIRTELMONEY       = 'airtelmoney';
+    const FREECHARGE        = 'freecharge';
     const EMI               = 'emi';
     const DEBIT_CARD        = 'debit_card';
     const CREDIT_CARD       = 'credit_card';
@@ -42,6 +43,7 @@ class Entity extends Base\PublicEntity
         self::PAYZAPP,
         self::PAYUMONEY,
         self::AIRTELMONEY,
+        self::FREECHARGE,
         self::MOBIKWIK,
         self::OLAMONEY,
         self::EMI,
@@ -60,6 +62,7 @@ class Entity extends Base\PublicEntity
         self::PAYZAPP,
         self::PAYUMONEY,
         self::AIRTELMONEY,
+        self::FREECHARGE,
         self::MOBIKWIK,
         self::OLAMONEY,
         self::EMI,
@@ -82,6 +85,7 @@ class Entity extends Base\PublicEntity
         self::PAYUMONEY     => false,
         self::AIRTELMONEY   => false,
         self::OLAMONEY      => false,
+        self::FREECHARGE    => false,
         self::BANKS         => [],
         self::EMI           => false,
         self::UPI           => false,
@@ -97,6 +101,7 @@ class Entity extends Base\PublicEntity
         self::PAYUMONEY,
         self::OLAMONEY,
         self::AIRTELMONEY,
+        self::FREECHARGE,
     );
 
     public function setMethods(array $input = array())
@@ -187,6 +192,11 @@ class Entity extends Base\PublicEntity
         return $this->getPayumoneyAttribute();
     }
 
+    public function isFreechargeEnabled()
+    {
+        return $this->getFreechargeAttribute();
+    }
+
     public function isMobikwikEnabled()
     {
         return $this->getMobikwikAttribute();
@@ -255,7 +265,12 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AIRTELMONEY);
     }
 
-    public function getEmi()
+    public function getFreecharge()
+    {
+        return $this->getAttribute(self::FREECHARGE);
+    }
+
+    public function getEMi()
     {
         return $this->getAttribute(self::EMI);
     }
@@ -268,6 +283,9 @@ class Entity extends Base\PublicEntity
                 case self::PAYTM:
                 case self::PAYZAPP:
                 case self::PAYUMONEY:
+                    $this->setAttribute($wallet, true);
+                    break;
+                case self::FREECHARGE:
                     $this->setAttribute($wallet, true);
                     break;
 
@@ -327,6 +345,11 @@ class Entity extends Base\PublicEntity
     public function setAirtelmoney($value)
     {
         $this->setAttribute(self::Airtelmoney, $value);
+    }
+
+    public function setFreecharge($value)
+    {
+        $this->setAttribute(self::FREECHARGE, $value);
     }
 
     public function setCard($card)
@@ -416,6 +439,11 @@ class Entity extends Base\PublicEntity
         return (bool) $this->attributes[self::UPI];
     }
 
+    protected function getFreechargeAttribute()
+    {
+        return (bool) $this->attributes[self::FREECHARGE];
+    }
+
     protected function getBanksAttribute()
     {
         return json_decode($this->attributes[self::BANKS], true);
@@ -466,6 +494,7 @@ class Entity extends Base\PublicEntity
             self::AIRTELMONEY,
             self::EMI,
             self::UPI,
+            self::FREECHARGE,
         );
     }
 }
