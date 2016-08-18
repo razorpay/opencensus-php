@@ -231,7 +231,6 @@ class AdminTest extends TestCase
         // Edit Merchant Details
         $this->execScript('$(".edit-merchant").click()');
         $this->waitUntilDisplayedByClassName('merchant-modal');
-        $this->selectByNameAndValue('international', '0');
         $this->setValueByName('category', '1234');
         $this->setValueByName('website', 'http://razorpay.com');
         $this->setValueByName('billing_label', 'razorpay');
@@ -248,6 +247,7 @@ class AdminTest extends TestCase
         $this->waitUntilAbsentByClassName('alert-danger');
         $this->waitUntilContainsByCss('body', 'Merchant Activated successfully');
 
+
         $this->execScript('location.reload()');
 
         $this->waitUntilContainsByCss('body', 'Disable Live Transactions');
@@ -261,6 +261,12 @@ class AdminTest extends TestCase
         $this->execScript('$(".enable-live-transactions").click()');
         $this->waitUntilAbsentByClassName('alert-danger');
         $this->waitUntilContainsByCss('body', 'Live transactions for merchant enabled successfully');
+
+        $this->clickByClassName('btn-enable-international');
+        $this->waitUntilContainsByCss('body', 'Merchant International enabled');
+
+        $this->clickByClassName('btn-disable-international');
+        $this->waitUntilContainsByCss('body', 'Merchant International disabled');
 
         // See Merchant Activation Details
         $this->execScript('$(".see-activation-form").click()');
