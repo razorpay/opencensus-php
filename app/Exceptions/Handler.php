@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Exception;
+namespace App\Exceptions;
 
 use App\Trace\Trace;
 use Exception;
@@ -49,13 +49,13 @@ class Handler extends ExceptionHandler
      */
     public function report(Exception $e)
     {
-
         if (!$this->isCritical($e))
         {
             return;
         }
 
         $context = $this->getExceptionDetails($e);
+
 
         $app = \App::getFacadeRoot();
 
@@ -75,6 +75,8 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $e)
     {
+        sd($e);
+
         $data = [
             'success' => false,
             'errors'  => [self::SERVER_ERROR]
