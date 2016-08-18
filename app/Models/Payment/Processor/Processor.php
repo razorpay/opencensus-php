@@ -40,6 +40,11 @@ class Processor
      */
     const CALLBACK_PROCESS_AGAIN_DURATION = 20;
 
+    /**
+     * If payment fails on gateway then we may retry it with a different terminal/gateway.
+     */
+    const MAX_RETRY_ATTEMPTS = 3;
+
     protected $merchant;
     protected $trace;
     protected $payment;

@@ -143,7 +143,7 @@ class Selector
 
         $terminal = $sortedTerminals[0];
 
-        $this->payment->setTerminal($terminal);
+        $this->payment->associateTerminal($terminal);
 
         // hack to return multiple terminals if needed.
         if ($options and $options->getMultiple() === true)
@@ -156,6 +156,11 @@ class Selector
 
     protected function traceTerminals($terminals, $msg, $verbose = false)
     {
+        if ($this->merchant->getId() === '4izmfM9TFCAgFN')
+        {
+            $verbose = true;
+        }
+
         if (($verbose === true) and (empty($terminals) === false))
         {
             $terminalIds = [];

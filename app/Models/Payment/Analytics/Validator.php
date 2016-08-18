@@ -9,7 +9,6 @@ use RZP\Models\Base;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-
         Entity::PAYMENT_ID              => 'required|alpha_num|size:14',
         Entity::TERMINAL_ID             => 'required|alpha_num|size:14',
         Entity::TERMINAL_STATUS         => 'sometimes|boolean',
@@ -27,7 +26,6 @@ class Validator extends Base\Validator
         Entity::REFERER                 => 'sometimes|url',
         Entity::USER_AGENT              => 'required|string',
         Entity::IP                      => 'required|ip',
-
      );
 
     protected static $createValidators = array(

@@ -220,6 +220,41 @@ class Netbanking
         IFSC::YESB,
     );
 
+    protected static $ebs = array(
+        IFSC::ANDB,
+        IFSC::BKID,
+        IFSC::CBIN,
+        IFSC::CIUB,
+        IFSC::CNRB,
+        IFSC::CORP,
+        IFSC::CSBK,
+        IFSC::DLXB,
+        IFSC::FDRL,
+        IFSC::HDFC,
+        IFSC::ICIC,
+        IFSC::IDIB,
+        IFSC::IOBA,
+        IFSC::JAKA,
+        IFSC::KARB,
+        IFSC::KKBK,
+        IFSC::MAHB,
+        IFSC::ORBC,
+        IFSC::SBBJ,
+        IFSC::SBHY,
+        IFSC::SBIN,
+        IFSC::SBMY,
+        IFSC::SRCB,
+        IFSC::STBP,
+        IFSC::SBTR,
+        IFSC::UTIB,
+        IFSC::UBIN,
+        IFSC::UTBI,
+        IFSC::VYSA,
+        IFSC::VIJB,
+        IFSC::YESB,
+        Netbanking::PUNB_R,
+    );
+
     public static function isSupportedBank($bank)
     {
         return (in_array($bank, self::getAllBanks()));
@@ -236,8 +271,7 @@ class Netbanking
         // Merge paytm and billdesk supported banks and remove
         // duplicate values
         //
-        return array_unique(array_merge(self::$paytm, self::$billdesk,[IFSC::KKBK]));
-//        return array_unique(array_merge(self::$paytm, self::$billdesk, self::$sbiepay));
+        return array_unique(array_merge(self::$paytm, self::$billdesk, self::$ebs, [IFSC::KKBK]));
     }
 
     public static function getDisabledBanks($banks)
@@ -285,6 +319,11 @@ class Netbanking
         return self::$billdesk;
     }
 
+    public static function getEbsSupportedBanks()
+    {
+        return self::$ebs;
+    }
+
     public static function getSupportedBanks($mode = Mode::LIVE, $isTPVRequired = false)
     {
         $banks = self::getSupportedBanksInLiveMode();
@@ -307,7 +346,7 @@ class Netbanking
 
     public static function getSupportedBanksInLiveMode()
     {
-        return array_unique(array_merge(self::$billdesk, self::$self));
+        return array_unique(array_merge(self::$billdesk, self::$ebs, self::$self));
     }
 
     public static function getSbiepaySupportedBanks()
@@ -328,6 +367,11 @@ class Netbanking
     public static function isPaytmSupportedBank($bank)
     {
         return in_array($bank, self::$paytm);
+    }
+
+    public static function isEbsSupportedBank($bank)
+    {
+        return in_array($bank, self::$ebs);
     }
 
     public static function isBilldeskSupportedBank($bank)

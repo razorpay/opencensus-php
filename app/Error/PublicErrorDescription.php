@@ -40,6 +40,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_EMI_NOT_AVAILABLE_ON_CARD                         = 'Emi is not available for the card used in the transaction';
     const BAD_REQUEST_PAYMENT_BANK_NOT_PROVIDED                                 = 'Bank not provided for net banking payment';
     const BAD_REQUEST_PAYMENT_INVALID_BANK_CODE                                 = 'Bank code provided for net banking payment is invalid';
+    const BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE                      = 'Account Balance is insufficient';
     const BAD_REQUEST_PAYMENT_CONTACT_INCORRECT_FORMAT                          = 'Contact number contains invalid characters, only digits and + symbol are allowed';
     const BAD_REQUEST_PAYMENT_CONTACT_INVALID_COUNTRY_CODE                      = 'Contact number contains invalid country code';
     const BAD_REQUEST_PAYMENT_CONTACT_TOO_SHORT                                 = 'Contact number should be at least 8 digits, including country code';
@@ -186,10 +187,16 @@ class PublicErrorDescription
 
     const BAD_REQUEST_GATEWAY_CANNOT_TOPUP                                      = 'Payment processing failed because topup cannot be done';
 
+<<<<<<< HEAD
     const BAD_REQUEST_INVALID_CHECKOUT_ID                                       = 'The payment request has invalid checkout_id';
     const BAD_REQUEST_INVALID_PLATFORM                                          = 'The payment request has invalid platform';
     const BAD_REQUEST_INVALID_LIBRARY                                           = 'The payment request has invalid library';
     const BAD_REQUEST_INVALID_BROWSER                                           = 'The payment request has invalid browser';
     const BAD_REQUEST_INVALID_OS                                                = 'The payment request has invalid operating system';
     const BAD_REQUEST_INVALID_DEVICE                                            = 'The payment request has invalid device';
+=======
+    const BAD_REQUEST_PAYMENT_ALREADY_REFUND_INITIATED                          = 'Refund already initiated';
+    const BAD_REQUEST_PAYMENT_PROBLEM_IN_UPDATING                               = 'Problem in updating payment';
+
+>>>>>>> hdfc_save_timeout_error
 }
