@@ -279,6 +279,7 @@ final class Route
         'get_emi_plans',
         'customer_get_saved_status',
         'app_delete_token',
+        'app_fetch_payments',
         'customer_logout_global',
         'otp_post',
         'otp_verify'
