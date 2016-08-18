@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment\Analytics;
 use RZP\Models\Payment\Analytics\Metadata;
+use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
@@ -45,33 +46,44 @@ class Service extends Base\Service
         return $audits->toArrayPublic();
     }
 
-    public function setPaymentAnalyticData($metadata, array & $data)
+    public function recordPaymentRequestData($rawData, array & $log)
     {
-        // set checkout_id
-        if (isset($metadata[Entity::CHECKOUT_ID]))
+        if (isset($rawData['input']))
         {
-            $data[Entity::CHECKOUT_ID] = $metadata[Entity::CHECKOUT_ID];
+            $input = $rawData['input'];
 
-            // set attempts
-            $data = $this->setPaymentAttempts($data, $metadata[Entity::CHECKOUT_ID]);
+            $metadata = isset($input['_']) ? $input['_'] : [];
+
+            $this->trace->info(
+                TraceCode::PAYMENT_METADATA,
+                ['metadata' => $metadata, 'payment_id' => $rawData['payment_id']]);
+
+            // set checkout_id
+            if (isset($metadata[Entity::CHECKOUT_ID]))
+            {
+                $log[Entity::CHECKOUT_ID] = $metadata[Entity::CHECKOUT_ID];
+
+                // set attempts
+                $log[Entity::ATTEMPTS] = $this->calculatePaymentAttempts($metadata[Entity::CHECKOUT_ID]);
+            }
+
+            // set library
+            if (isset($metadata[Entity::LIBRARY]))
+            {
+                $log[Entity::LIBRARY] = $metadata[Entity::LIBRARY];
+            }
+
+            // set platform
+            if (isset($metadata[Entity::PLATFORM]))
+            {
+                $log[Entity::PLATFORM] = $metadata[Entity::PLATFORM];
+            }
         }
 
-        // set library
-        if (isset($metadata[Entity::LIBRARY]))
-        {
-            $data[Entity::LIBRARY] = $metadata[Entity::LIBRARY];
-        }
-
-        // set platform
-        if (isset($metadata[Entity::PLATFORM]))
-        {
-            $data[Entity::PLATFORM] = $metadata[Entity::PLATFORM];
-        }
-
-        $data = $this->setHttpRequestData($data);
+        $this->setHttpRequestData($log);
     }
 
-    protected function setPaymentAttempts(array & $data, $checkoutId)
+    protected function calculatePaymentAttempts($checkoutId)
     {
         if ($checkoutId === null)
         {
@@ -95,12 +107,10 @@ class Service extends Base\Service
 
         $attempts = $count + 1;
 
-        $data[Entity::ATTEMPTS] = $attempts;
-
-        return $data;
+        return $attempts;
     }
 
-    protected function setHttpRequestData(array & $data)
+    protected function setHttpRequestData(array & $log)
     {
         // get user-agent service
         $app = \App::getFacadeRoot();
@@ -108,15 +118,15 @@ class Service extends Base\Service
         $uAgent = $app['agent'];
 
         // set browser
-        $data[Entity::BROWSER] = $uAgent->browser();
+        $log[Entity::BROWSER] = $uAgent->browser();
 
         // set os
-        $data[Entity::OS] = $uAgent->platform();
+        $log[Entity::OS] = $uAgent->platform();
 
         // set device
         $device = $this->getDeviceValue($uAgent);
 
-        $data[Entity::DEVICE] = $device;
+        $log[Entity::DEVICE] = $device;
 
         // get the HTTP request
         $request = $app['request'];
@@ -124,21 +134,19 @@ class Service extends Base\Service
         // set ip
         $ip = $request->ip();
 
-        $data[Entity::IP] = $ip;
+        $log[Entity::IP] = $ip;
 
         // set referer
         if ($request->header(HttpRequestHeader::REFERER) !== null)
         {
-            $data[Entity::REFERER] = $request->header(HttpRequestHeader::REFERER);
+            $log[Entity::REFERER] = $request->header(HttpRequestHeader::REFERER);
         }
 
         // set user-agent
         if ($request->header(HttpRequestHeader::USER_AGENT) !== null)
         {
-            $data[Entity::USER_AGENT] = $request->header(HttpRequestHeader::USER_AGENT);
+            $log[Entity::USER_AGENT] = $request->header(HttpRequestHeader::USER_AGENT);
         }
-
-        return $data;
     }
 
     protected function getDeviceValue($uAgent)

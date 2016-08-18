@@ -101,6 +101,11 @@ class Metadata
             return true;
         }
 
+        if (strtolower($os) === 'os x')
+        {
+            $os = self::MACOS;
+        }
+
         return array_key_exists(strtolower($os), self::OS_VALUES);
     }
 

@@ -27,7 +27,8 @@ class CreatePaymentAnalytics extends Migration
             $table->char(Analytics::CHECKOUT_ID, Analytics::ID_LENGTH)
                   ->nullable();
 
-            $table->char(Analytics::TERMINAL_ID, Analytics::ID_LENGTH);
+            $table->char(Analytics::TERMINAL_ID, Analytics::ID_LENGTH)
+                ->nullable();
 
             $table->boolean(Analytics::TERMINAL_STATUS)
                 ->default(1);
@@ -111,8 +112,4 @@ class CreatePaymentAnalytics extends Migration
 
         Schema::drop(Table::PAYMENT_ANALYTICS);
     }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> hdfc_save_timeout_error

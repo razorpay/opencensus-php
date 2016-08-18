@@ -40,6 +40,7 @@ class Entity extends Base\PublicEntity
         self::PLATFORM,
         self::IP,
         self::REFERER,
+        self::USER_AGENT,
         self::TERMINAL_ID,
         self::TERMINAL_STATUS,
         self::TERMINAL_RESPONSE_TIME,
@@ -51,6 +52,7 @@ class Entity extends Base\PublicEntity
     protected $public = array(
         self::ID,
         self::PAYMENT_ID,
+        self::CHECKOUT_ID,
         self::TERMINAL_ID,
         self::ATTEMPTS,
         self::LIBRARY,
@@ -60,6 +62,7 @@ class Entity extends Base\PublicEntity
         self::PLATFORM,
         self::IP,
         self::REFERER,
+        self::USER_AGENT,
         self::TERMINAL_STATUS,
         self::TERMINAL_RESPONSE_TIME,
         self::TERMINAL_STATUS_CODE,
