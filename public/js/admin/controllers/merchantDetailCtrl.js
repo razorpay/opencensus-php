@@ -42,15 +42,18 @@ app.controller('MerchantDetailCtrl', [
       var request = $http.post(url, { international: value });
       request.success(function (data) {
         if (data.success) {
-          $scope.alerts.addAlert('success', 'Merchant International set successfully', true);
-          if (value === 1)
-          {
+          var action;
+          if (value === 1) {
             $scope.merchant.details.international = true;
+            action = 'enabled';
           }
-          else
-          {
+          else {
             $scope.merchant.details.international = false;
+            action = 'disabled';
           }
+
+          $scope.alerts.addAlert('success', 'Merchant International ' + action + ' successfully', true);
+
         } else {
           $scope.alerts.resetAlerts();
           angular.forEach(data.errors, function (value) {
