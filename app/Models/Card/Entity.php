@@ -203,6 +203,11 @@ class Entity extends Base\PublicEntity
         return $this->getNetworkCodeAttribute();
     }
 
+    public function getNetworkColorCode()
+    {
+        return Card\Network::getColorCode($this->getNetworkCode());
+    }
+
     protected function getNetworkCodeAttribute()
     {
         return Card\Network::getCode($this->getNetwork());

@@ -239,7 +239,6 @@ class Netbanking
         IFSC::KKBK,
         IFSC::MAHB,
         IFSC::ORBC,
-        IFSC::PUNB,
         IFSC::SBBJ,
         IFSC::SBHY,
         IFSC::SBIN,
@@ -253,6 +252,7 @@ class Netbanking
         IFSC::VYSA,
         IFSC::VIJB,
         IFSC::YESB,
+        Netbanking::PUNB_R,
     );
 
     public static function isSupportedBank($bank)

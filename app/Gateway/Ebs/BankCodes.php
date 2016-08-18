@@ -2,7 +2,9 @@
 
 namespace RZP\Gateway\Ebs;
 
+use RZP\Exception;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Payment\Processor\Netbanking;
 
 class BankCodes
 {
@@ -38,7 +40,7 @@ class BankCodes
         IFSC::UTBI => '1212',
         IFSC::VIJB => '1379',
         IFSC::YESB => '1146',
-        IFSC::PUNB => '1381',
+        Netbanking::PUNB_R => '1381',
     ];
 
     public static function getMappedCode($bankCode)

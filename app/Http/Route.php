@@ -11,6 +11,7 @@ final class Route
      */
 
     protected static $apiRoutes = array(
+        'account'                                 => ['get',      'account',                                  'PublicController@getAccount'                                       ],
         'checkout'                                => ['get',      'checkout',                                 'MerchantController@getCheckout'                                    ],
         'checkout_public'                         => ['get',      'checkout/public',                          'MerchantController@getCheckoutPublic'                              ],
         'merchant_methods'                        => ['get',      'methods',                                  'MerchantController@getPaymentMethods'                              ],
@@ -464,6 +465,7 @@ final class Route
     );
 
     public static $direct = array(
+        'account',
         'dummy_route',
         'checkout_public',
         'mockhdfc_3dsecure',

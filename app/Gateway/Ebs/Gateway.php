@@ -18,11 +18,11 @@ use RZP\Gateway\Ebs\ResponseConstants as Resp;
 
 class Gateway extends Base\Gateway
 {
-    const HASH_ALGO                 = 'SHA512';
-    const MERCHANT_ID               = 'test_merchant_id';
-    const HASH_SECRET               = 'test_hash_secret';
+    const HASH_ALGO    = 'SHA512';
+    const MERCHANT_ID  = 'test_merchant_id';
+    const HASH_SECRET  = 'test_hash_secret';
 
-    const API                       = 'api';
+    const API          = 'api';
 
     protected $gateway = 'ebs';
 
@@ -378,15 +378,16 @@ class Gateway extends Base\Gateway
 
     protected function getPaymentVerifyRequestContent($input, $payment)
     {
-        $content = array(
+        $content = [
             Req::API_ACTION         => 'status',
-            Req::API_ACCOUNT_ID     => $this->getAccountId($input['terminal']),
-            Req::API_SECRET_KEY     => $this->getSecretKey($input['terminal']),
             Req::API_PAYMENT_ID     => $payment[Entity::GATEWAY_PAYMENT_ID],
             req::API_TRANSACTION_ID => $payment[Entity::TRANSACTION_ID],
-        );
+        ];
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST, $content);
+
+        $content[Req::API_ACCOUNT_ID] = $this->getAccountId($input['terminal']);
+        $content[Req::API_SECRET_KEY] = $this->getSecretKey($input['terminal']);
 
         return $content;
     }
@@ -395,15 +396,16 @@ class Gateway extends Base\Gateway
     {
         $refundAmount = $input['refund']['amount']/100;
 
-        $content = array(
+        $content = [
             Req::API_ACTION         => 'refund',
-            Req::API_ACCOUNT_ID     => $this->getAccountId($input['terminal']),
-            Req::API_SECRET_KEY     => $this->getSecretKey($input['terminal']),
             Req::API_AMOUNT         => $refundAmount,
             Req::API_PAYMENT_ID     => $gatewayPayment[Entity::GATEWAY_PAYMENT_ID],
-        );
+        ];
 
         $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST, $content);
+
+        $content[Req::API_ACCOUNT_ID] = $this->getAccountId($input['terminal']);
+        $content[Req::API_SECRET_KEY] = $this->getSecretKey($input['terminal']);
 
         return $content;
     }
@@ -447,13 +449,13 @@ class Gateway extends Base\Gateway
     {
         $content = array(
             Req::NAME          => 'Razorpay',
-            Req::ADDRESS       => 'Razorpay office',
+            Req::ADDRESS       => 'Razorpay',
             Req::CITY          => 'Bangalore',
             Req::COUNTRY       => 'IND',
             Req::POSTAL_CODE   => '560001',
             Req::PHONE         => '9876543210',
             Req::EMAIL         => 'helpdesk@razorpay.com',
-            Req::DESCRIPTION   => 'razorpay ebs desc',
+            Req::DESCRIPTION   => 'NA',
             Req::CURRENCY      => 'INR',
         );
 
@@ -489,13 +491,6 @@ class Gateway extends Base\Gateway
         $content[Req::SECURE_HASH] = $this->getHashOfArray($content);
 
         return $content;
-    }
-
-    public function getHashOfArray($content)
-    {
-        $str = parent::getHashOfArray($content);
-
-        return strtoupper(hash(self::HASH_ALGO, $str));
     }
 
     protected function setAuthRequestContentForCard(&$content, $input)
@@ -628,7 +623,22 @@ class Gateway extends Base\Gateway
         return $arrayResponse['@attributes'];
     }
 
-    protected function getStringHash($str)
+    protected function getStringToHash($content, $glue = '|')
+    {
+        $hashArray = [];
+
+        foreach($content as $key => $value)
+        {
+            if (strlen($value) > 0)
+            {
+                $hashArray[] = $value;
+            }
+        }
+
+        return implode($glue, $hashArray);
+    }
+
+    protected function getHashOfString($str)
     {
         $secret = $this->getSecret();
 

@@ -298,7 +298,7 @@ class Gateway extends Base\Gateway
 
         $network = $input['card']['network'];
 
-        if ($network === 'RuPay')
+        if ($network === Card\NetworkName::RUPAY)
         {
             $this->trace->info(
                 TraceCode::GATEWAY_RUPAY_CALLBACK,
@@ -450,36 +450,28 @@ class Gateway extends Base\Gateway
             // send the request and get response
             $response['response'] = $this->postRequest($request);
 
-            // uncommment this to simulate an exception here for s2s - strictly for testing only
+            // uncomment this to simulate an exception here for s2s - strictly for testing only
             /*if (($this->mode === Mode::TEST) and
                 (App::environment('testing') === false))
             {
                 throw new \Requests_Exception("operation timed out", "operation timed out");
             }*/
         }
-        catch(\Requests_Exception $e)
+        catch (Exception\GatewayTimeoutException $e)
         {
-            $this->exception = $e;
-
-            //
-            // Some error occurred.
-            // Check that whether the gateway response timed out.
-            // Mostly it should be gateway timeout only
-            //
-            if (Utility::checkTimeout($e))
-            {
-                $this->error = true;
-
-                $response['content'] = '';
-
-                Hdfc\ErrorHandler::setTimeoutError($response);
-
-                return;
-            }
-            else
+            // For verify we should throw exception as is.
+            if ($this->action === 'verify')
             {
                 throw $e;
             }
+
+            $this->error = true;
+
+            $response['content'] = '';
+
+            Hdfc\ErrorHandler::setTimeoutError($response);
+
+            return;
         }
 
         $response['xml'] = $response['response']->body;
@@ -664,6 +656,10 @@ class Gateway extends Base\Gateway
 
     protected function throwException($error, $safeRetry = false)
     {
+        // Mark error as false now to remove the stale state for future function calls.
+        // @todo: refactor and remove this completely.
+        $this->error = false;
+
         $gatewayErrorCode = $error['code'];
 
         if (($gatewayErrorCode === Hdfc\ErrorCode::RP00003) or
@@ -698,7 +694,6 @@ class Gateway extends Base\Gateway
                     'time' => time()
                 ]);
         }
-
 
         $exception = null;
 

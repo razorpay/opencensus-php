@@ -78,10 +78,6 @@ class TerminalPicker
             $terminal = (new Terminal\Binning)->pick($terminal, $options['chance'], ['payment' => $payment]);
         }
 
-        // $payment->terminal()->associate($terminal);
-
-        // $payment->setGateway($terminal->getGateway());
-
         return $terminal;
     }
 
