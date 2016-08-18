@@ -3,15 +3,16 @@
 ## Set up instructions for development
 
 *  Copy over `dashboard.razorpay.dev.conf` to `/etc/apache2/sites-available/`.
+*  Edit the vhost to point to correct directory
 * `sudo a2ensite dashboard.razorpay.dev.conf`
 * `sudo chmod -R o+wx storage/`
-* Copy over `.env.sample.php` to `.env.dev.php` and add db name & password.
-* Copy over `bootstrap\environment.sample.php` to `bootstrap\environment.php`. Specify `dev` environment for local development.
+* Copy over `environment/env.sample.php` to `environment/env.php`
+* Copy `environment/.env.example` to `environment/.env.dev` and edit it accordingly
 * Run `php composer.phar install` to install laravel
 * Run `php artisan migrate --seed` to migrate and seed the db. If you face problem regarding null fields, turn off strict SQL mode.
 * `npm install`
 * `npm install -g grunt-cli`
-* `cp app/config/grunt.sample.json app/config/grunt.json`
+* `cp config/grunt.sample.json config/grunt.json`
 * `grunt`
 * `grunt watch`
 
@@ -19,7 +20,7 @@
 
 ## Setup instructions for testing
 
-* copy over `.env.sample.php` to `.env.testing.php` and add db name & password
+* Copy `environment/.env.example` to `environment/.env.testing` and edit it accordingly
 * Create a `$HOME/.selenium` directory
 * Download the latest selenium server jar file from `http://www.seleniumhq.org/download/` and download it in the `~/.selenium` directory.
 * Make sure you have firefox installed.
@@ -33,10 +34,6 @@
 * `sudo apt-get install openjdk-7-jre xvfb firefox`
 * Run selenium server manually : `java -jar ~/.selenium/selenium-server.jar`
 * Run tests : `xvfb-run phpunit`
-
-# Selenium
-
-If you can't get selenium to work, make sure `API_MOCK` is true in `.env.testing.php`.
 
 # Docs
 
