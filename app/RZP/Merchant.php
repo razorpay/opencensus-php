@@ -338,4 +338,11 @@ class Merchant extends Entity
     {
         return $this->request('GET', self::BANK_ACCOUNT_URL);
     }
+
+    public function setInternational($params)
+    {
+        $relativeUrl = $this->getEntityUrl().$this->id.'/international';
+
+        return $this->request('POST', $relativeUrl, $params);
+    }
 }

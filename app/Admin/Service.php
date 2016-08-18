@@ -518,6 +518,24 @@ class Service extends Base\Service
         return array($error, $data);
     }
 
+    public function postSetMerchantInternational($id, $input)
+    {
+        $data = $error = [];
+        $this->setApiCredentials();
+
+        try
+        {
+            $data = $this->api->merchant->fetch($id)->setInternational($input)->toArray();
+        }
+
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return array($error, $data);
+    }
+
     protected function dropFields(array &$array, array $fields)
     {
         foreach ($fields as $key)
