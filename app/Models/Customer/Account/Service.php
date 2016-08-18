@@ -216,5 +216,35 @@ class Service extends Base\Service
 
         return $data;
     }
+
+    public function fetchPaymentsForGlobalCustomer()
+    {
+        $appToken = AppToken\SessionHelper::getAppTokenFromSession($this->mode);
+
+        $payments = new Base\PublicCollection;
+
+        if ($appToken !== null)
+        {
+            $payments = $this->repo->payment->fetchPaymentsForCustomerMethod(
+                $appToken->customer,
+                Payment\Method::CARD);
+        }
+
+        $data = [];
+
+        foreach ($payments as $payment)
+        {
+            $info = array(
+                'merchant'  => $payment->merchant->getBillingLabelElseName(),
+                'card'      => $payment->card->getLast4(),
+                'amount'    => $payment->getAmount(),
+                'time'      => $payment->getAuthorizedAt(),
+                'id'        => $payment->getPublicId());
+
+            $data[] = $info;
+        }
+
+        return $data;
+    }
 }
 

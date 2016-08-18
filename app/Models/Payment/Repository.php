@@ -200,6 +200,15 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchPaymentsForCustomerMethod($customer, $method)
+    {
+        return $this->newQuery()
+                    ->where(Payment\Entity::METHOD, '=', $method)
+                    ->where(Payment\Entity::GLOBAL_CUSTOMER_ID, '=', $customer->getId())
+                    ->take(20)
+                    ->get();
+    }
+
     public function fetchEntitiesForReport($merchantId, $from, $to)
     {
         return $this->fetchBetweenTimestampWithRelations(
