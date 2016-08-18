@@ -103,10 +103,9 @@ app.controller('PaymentDetailCtrl', [
           }
         }
       });
-      modalInstance.result.then(function (amount) {
-        $scope.refund(amount);
-      }, function () {
-      });
+      modalInstance.result.then(function (data) {
+        $scope.refund(data);
+      }, $.noop);
     };
     $scope.refundAuthorized = function () {
       var request = $http({
@@ -140,7 +139,7 @@ app.controller('PaymentDetailCtrl', [
           window.location.reload();
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
@@ -185,7 +184,7 @@ app.controller('PaymentDetailCtrl', [
           $scope.alerts.addAlert('success', 'Payment Verified successfully: ' + payment, true);
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
           window.location.reload();
@@ -216,7 +215,7 @@ app.controller('PaymentDetailCtrl', [
           $scope.entity.amount = captureAmount;
           window.location.reload();
         } else {
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
@@ -224,31 +223,30 @@ app.controller('PaymentDetailCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     };
-    $scope.refund = function (amount) {
-      var refundAmount = parseInt(amount);
+    $scope.refund = function (data) {
+      data.amount = parseInt(data.amount);
       var unrefundedAmount = parseInt($scope.entity.amount) - parseInt($scope.entity.amount_refunded);
-      if (!refundAmount || refundAmount > unrefundedAmount) {
+      if (data.amount > unrefundedAmount) {
         $scope.alerts.addAlert('danger', 'Refund amount should be an integer and less than amount minus amount refunded.', true);
         return;
       }
-      var data = { amount: refundAmount };
+      console.log(data);
       var request = $http({
         method: 'post',
         url: '/admin/' + $scope.mode + '/' + $scope.entity.merchant_id + '/payments/' + $scope.entity.id + '/refund',
-        transformRequest: transformRequestAsFormPost,
         data: data
       });
       request.success(function (data) {
         if (data.success) {
           $scope.alerts.addAlert('success', 'Payment Refunded', true);
-          if (refundAmount == unrefundedAmount)
+          if (data.amount == unrefundedAmount)
             $scope.entity.refund_status = 'full';
           else
             $scope.entity.refund_status = 'partial';
-          $scope.entity.amount_refunded = parseInt($scope.entity.amount_refunded) + refundAmount;
+          $scope.entity.amount_refunded = parseInt($scope.entity.amount_refunded) + data.amount;
           window.location.reload();
         } else {
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
@@ -268,7 +266,7 @@ app.controller('PaymentDetailCtrl', [
           $scope.entity.refunds = data.data.items;
           $scope.isRefundsCollapsed = false;
         } else {
-          angular.forEach(data.errors, function (error, key) {
+          angular.forEach(data.errors, function (error) {
             $scope.alerts.addAlert('danger', error);
           });
         }
@@ -297,9 +295,25 @@ app.controller('PaymentDetailCtrl', [
   '$modalInstance',
   'amount',
   function ($scope, $modalInstance, amount) {
-    $scope.amount = amount;
-    $scope.ok = function (amount) {
-      $modalInstance.close(amount);
+
+    $scope.amount = (amount/100).toFixed(2);
+    $scope.comment = '';
+
+    $scope.valid = function(amount, comment) {
+      return amount > 0 && comment.length > 5;
+    }
+
+    $scope.ok = function (amount, comment) {
+      // We get amount in INR
+      var data = {
+        amount: amount*100
+      };
+      if (comment !== '') {
+        data.notes = {
+          admin_comment: comment
+        };
+      }
+      $modalInstance.close(data);
     };
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');

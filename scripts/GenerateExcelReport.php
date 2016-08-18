@@ -1,5 +1,5 @@
 <?php
-use Models\Api\Service;
+use App\Api\Service;
 
 // This can be run via `php artisan tinker`.
 

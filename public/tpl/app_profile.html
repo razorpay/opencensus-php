@@ -13,7 +13,7 @@
       <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
     </div>
     <alert type="danger" class="text-center" ng-show="!user.current">
-      Your user account is not associated at present with any merchant account.
+      Your user account is not associated at present with any active merchant account.
     </alert>
     <div class="row wrapper" ng-show="user.current">
       <div class="list-group">

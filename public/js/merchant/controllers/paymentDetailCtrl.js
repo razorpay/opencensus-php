@@ -47,7 +47,7 @@ app.controller('PaymentDetailCtrl', [
           $scope.showCardDetails = true;
         }
       });
-    }
+    };
 
     $scope.toggleCardDetails = function() {
       if ($scope.card === null) {
@@ -57,7 +57,7 @@ app.controller('PaymentDetailCtrl', [
       {
         $scope.showCardDetails = ! $scope.showCardDetails;
       }
-    }
+    };
 
     $scope.openCaptureModal = function () {
       var modalInstance = $modal.open({

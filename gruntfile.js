@@ -3,7 +3,7 @@ module.exports = function(grunt){
   "use strict";
   require('load-grunt-tasks')(grunt);
 
-  var config = grunt.file.readJSON('app/config/grunt.json');
+  var config = grunt.file.readJSON('config/grunt.json');
 
   grunt.initConfig({
 
@@ -107,9 +107,9 @@ module.exports = function(grunt){
       phpTemplateFiles: {
         files: [{
           expand: true,
-          cwd: 'app/views/',
+          cwd: 'resources/views/',
           src: ['**/*.blade.php.tmpl'],
-          dest: 'app/views/',
+          dest: 'resources/views/',
           ext: '.blade.php',
           rename: function(dest, src) {
             var index = src.lastIndexOf("/") + 1;
@@ -134,7 +134,7 @@ module.exports = function(grunt){
       },
       dist: {
         src: ['public/css/generated/style.css','public/js/generated/*.js'],
-        dest: ['app/views/**/tmp*.blade.php']
+        dest: ['resources/views/**/tmp*.blade.php']
       },
     },
 

@@ -1,0 +1,67 @@
+<?php
+
+namespace Tests\Functional;
+
+use Uuid;
+use Models;
+use URL;
+
+class AnalyticsTest extends TestCase
+{
+    protected $merchant;
+
+    protected $merchant_details;
+
+    public function setUp()
+    {
+        parent::setUp();
+
+        $this->merchant = $this->createEntity(
+            'merchant',
+           array(
+                'id'=> Uuid::generate(),
+                'email' => static::generateMerchantEmail(),
+                'confirm_token' => static::generateRandomString(24)));
+
+        $this->merchant_details = $this->createEntity(
+                'merchant_details',
+                array('merchant_id' => $this->merchant->id));
+    }
+
+    /**
+     * Tests payment post
+     */
+    public function testPostPayment()
+    {
+        $resources = ['payment', 'refund', 'settlement'];
+
+        foreach ($resources as $resource)
+        {
+            for($i=0; $i<5; $i++)
+            {
+                $data = array(
+                    'amount'        => 500,
+                    'created_at'    => time(),
+                    'updated_at'    => time(),
+                    'merchant_id'   => $this->merchant->id
+                );
+
+                if($resource == 'payment') {
+                    $data['method'] = 'wallet';
+                    $data['network'] = 'Visa';
+                    $data['id'] = 'pay_123456';
+                }
+
+                $response = $this->call('POST', '/test/transactions/'.$resource, $data);
+
+                $content = $response->getContent();
+
+                $this->assertJson($content);
+
+                $obj = json_decode($content);
+
+                $this->assertTrue($obj->success);
+            }
+        }
+    }
+}
