@@ -119,6 +119,15 @@ class Service extends Base\Service
 
             $merchant = Entity::createFromMerchant($currentMerchant, $businessName, $email);
 
+            try
+            {
+                $this->createSubMerchantOnApi($merchant, $currentMerchant);
+            }
+            catch(ApiError $e)
+            {
+                return [[$e->getMessage()], null];
+            }
+
             $merchant->save();
 
             $details = [
@@ -130,15 +139,6 @@ class Service extends Base\Service
 
             // Finally attach the current user to the new user's team
             $this->currentUser->joinMerchantByIdWithRole($merchant->id, 'owner');
-
-            try
-            {
-                $this->createSubMerchantOnApi($merchant, $currentMerchant);
-            }
-            catch(ApiError $e)
-            {
-                return [[$e->getMessage()], null];
-            }
 
             return [null, $merchant->toArray()];
         }
