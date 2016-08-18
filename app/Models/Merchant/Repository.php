@@ -36,9 +36,8 @@ class Repository extends Base\Repository
     {
         if ($this->sharedMerchant === null)
         {
-            $repo = $this->repo;
-
-            $this->sharedMerchant = $repo::where(Entity::ID, "=", Account::SHARED_ACCOUNT)
+            $this->sharedMerchant = $this->newQuery()
+                                         ->where(Entity::ID, "=", Account::SHARED_ACCOUNT)
                                          ->firstOrFail();
         }
 
@@ -60,12 +59,11 @@ class Repository extends Base\Repository
 
     public function fetchMerchantsWithPositiveBalance()
     {
-        $repo = $this->repo;
-
-        return $repo::whereHas('balance', function($q)
-        {
-            $q->where('balance', '>', 0);
-        })->get();
+        return $this->newQuery()
+                    ->whereHas('balance', function($q)
+                    {
+                        $q->where('balance', '>', 0);
+                    })->get();
     }
 
     public function isMerchantIdRequiredForFetch()
@@ -75,23 +73,19 @@ class Repository extends Base\Repository
 
     public function fetchRecentMerchants()
     {
-        $repo = $this->repo;
-
         // 00:00 Today
         $today = \Carbon\Carbon::today("Asia/Kolkata")->timestamp;
 
         $start = \Carbon\Carbon::today("Asia/Kolkata")->subWeeks(3);
 
-        return $repo::whereBetween(Entity::CREATED_AT, [$start, $today]);
+        return $this->newQuery()->whereBetween(Entity::CREATED_AT, [$start, $today]);
     }
 
     public function getCountOfMerchantsActivatedBetween($from, $to)
     {
-
-        $repo = $this->repo;
-
-        return $repo::whereBetween(Entity::ACTIVATED_AT, [$from, $to])->count();
-
+        return $this->newQuery()
+                    ->whereBetween(Entity::ACTIVATED_AT, [$from, $to])
+                    ->count();
     }
 
     public function addQueryParamMethods($query, $params)
@@ -130,23 +124,22 @@ class Repository extends Base\Repository
      */
     public function fetchAllMerchantContacts()
     {
-        $repo = $this->repo;
-
-        return $repo::all(['name', 'email', 'transaction_report_email']);
+        return $this->newQuery()
+                    ->all(['name', 'email', 'transaction_report_email']);
     }
 
     public function fetchMerchantWhereTestBankIsNull()
     {
-        $repo = new $this->repo;
-        return $repo->setConnection(Mode::TEST)
+        $repo = $this->repo;
+
+        return $repo::setConnection(Mode::TEST)
                     ->has('bankAccount', '<', 1)
                     ->get();
     }
 
     public function fetchAllLiveMerchants()
     {
-        $repo = $this->repo;
-
-        return $repo::where(Entity::LIVE, '=', 1);
+        return $this->newQuery()
+                    ->where(Entity::LIVE, '=', 1);
     }
 }

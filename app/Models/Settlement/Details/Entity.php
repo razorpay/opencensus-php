@@ -8,15 +8,16 @@ use RZP\Constants;
 
 class Entity extends Base\PublicEntity
 {
-    const ID                    =      'id';
-    const MERCHANT_ID           =      'merchant_id';
-    const SETTLEMENT_ID         =      'settlement_id';
-    const TYPE                  =      'type';
-    const COUNT                 =      'count';
-    const AMOUNT                =      'amount';
-    const DESCRIPTION           =      'description';
-    const CREATED_AT            =      'created_at';
-    const UPDATED_AT            =      'updated_at';
+    const ID            = 'id';
+    const MERCHANT_ID   = 'merchant_id';
+    const SETTLEMENT_ID = 'settlement_id';
+    const COMPONENT     = 'component';
+    const TYPE          = 'type';
+    const COUNT         = 'count';
+    const AMOUNT        = 'amount';
+    const DESCRIPTION   = 'description';
+    const CREATED_AT    = 'created_at';
+    const UPDATED_AT    = 'updated_at';
 
     protected $table = Constants\Table::SETTLEMENT_DETAIL;
 
@@ -31,6 +32,7 @@ class Entity extends Base\PublicEntity
     protected $fillable = array(
         self::ID,
         self::TYPE,
+        self::COMPONENT,
         self::COUNT,
         self::AMOUNT,
         self::DESCRIPTION
@@ -41,15 +43,21 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::SETTLEMENT_ID,
         self::TYPE,
+        self::COMPONENT,
         self::COUNT,
         self::AMOUNT,
         self::DESCRIPTION
     );
 
     protected $public = array(
-        self::TYPE,
+        self::COMPONENT,
+        self::AMOUNT,
         self::COUNT,
-        self::AMOUNT
+        self::TYPE,
+    );
+
+    protected $amounts = array(
+        self::AMOUNT,
     );
 
     protected $casts = array(

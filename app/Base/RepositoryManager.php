@@ -79,9 +79,9 @@ class RepositoryManager extends \Illuminate\Support\Manager
 
     public function reload(& $entity)
     {
-        $repo = $this->repo;
+        $repo = $this->getRepositoryClassFromObject($entity);
 
-        $reloadedEntity = $repo::findOrFail($entity->getKey());
+        $reloadedEntity = $repo->findOrFail($entity->getKey());
 
         $attributes = $reloadedEntity->getAttributes();
 

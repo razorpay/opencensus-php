@@ -37,6 +37,22 @@ return [
         ],
     ],
 
+    'testGatewayTimeoutError' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => PublicErrorDescription::GATEWAY_ERROR_REQUEST_TIMEOUT,
+                ],
+            ],
+            'status_code' => 504,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\GatewayTimeoutException',
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
+        ],
+    ],
+
     'testGatewayWithSavedCard' => [
         'response' => [
             'content' => [
@@ -174,7 +190,7 @@ return [
         'xid' => 'eW5DZTVGTkVaRWF3VnowSXYzNzA=',
         'eci' => '05',
         'cavv' => 'AAABAWFlmQAAAABjRWWZEEFgFz+=',
-        'ref' => '4661468455476856801012',
+        'ref' => '4661454138166750401025',
         'capture_ref' => null,
         'reason_code' => 100
     ]

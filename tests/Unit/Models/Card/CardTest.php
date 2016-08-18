@@ -70,6 +70,8 @@ class ValidationTest extends TestCase
 
     public function testCardNetworkDetection()
     {
+        $this->app['rzp.mode'] = 'test';
+
         $core = new Card\Core;
 
         $map = array(

@@ -385,6 +385,8 @@ class Settler
     {
         $urls = (new Kotak\NodalAccount)->generateSettlementFile($settlements, $txns);
 
+        $urls1 = (new Kotak\NodalAccount)->generateSettlementFile2($settlements, $txns);
+
         $this->trace->info(TraceCode::SETTLEMENT_FILE_GENERATED_KOTAK);
 
         return $urls;

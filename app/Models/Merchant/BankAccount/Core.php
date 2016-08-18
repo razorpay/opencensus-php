@@ -10,18 +10,9 @@ use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->repo = new Repository;
-
-        $this->trace = \Trace::getFacadeRoot();
-    }
-
     public function createOrChangeBankAccount($input, $merchant)
     {
-        $oldBankAccount = $this->repo->getBankAccount($merchant);
+        $oldBankAccount = $this->repo->bank_account->getBankAccount($merchant);
 
         if ($oldBankAccount === null)
         {

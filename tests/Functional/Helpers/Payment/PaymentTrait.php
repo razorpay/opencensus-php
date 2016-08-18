@@ -26,6 +26,7 @@ trait PaymentTrait
     use PaymentSbiepayTrait;
     use PaymentCybersourceTrait;
     use PaymentFirstDataTrait;
+    use PaymentEbsTrait;
     use PaymentCreationTrait;
 
     use RequestResponseFlowTrait
@@ -660,6 +661,30 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
+    protected function addCredits(array $input = array(), $mid = '10000000000000')
+    {
+        $request = array(
+            'url' => '/merchants/'.$mid.'/credits_log',
+            'method' => 'POST',
+            'content' => $input);
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function editCredits($creditsId, array $input = array(), $mid = '10000000000000')
+    {
+        $request = array(
+            'url' => '/merchants/'.$mid.'/credits/'.$creditsId,
+            'method' => 'PUT',
+            'content' => $input);
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function editWebhook($wid, $input)
     {
         $request = array(
@@ -694,6 +719,11 @@ trait PaymentTrait
         $this->ba->proxyAuth();
 
         return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function fetchBalance($mid = '10000000000000')
+    {
+        return $this->getEntityById('balance', $mid, true);
     }
 
     protected function fetchInvoice(array $input)
@@ -1144,8 +1174,6 @@ trait PaymentTrait
                        ->mock();
 
         $this->setMockServer($server);
-
-        return $server;
     }
 
     protected function mockServer()

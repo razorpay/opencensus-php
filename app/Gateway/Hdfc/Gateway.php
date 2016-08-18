@@ -32,6 +32,7 @@ use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Payment;
 use RZP\Models\Card;
 use RZP\Trace\TraceCode;
+use App;
 
 class Gateway extends Base\Gateway
 {
@@ -82,7 +83,7 @@ class Gateway extends Base\Gateway
         'url' => Hdfc\Urls::ENROLL_URL,
         'type' => 'enroll',
         'fields' => array('trackid', 'member', 'card', 'expmonth', 'expyear', 'cvv2',
-                          'amt', 'action', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
+            'amt', 'action', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
         'xml' => '',
         'headers' => array('Content-Type'=>'text/xml'),
         'data' => array());
@@ -93,11 +94,11 @@ class Gateway extends Base\Gateway
      */
     protected $enrollResponse = array(
         'fields' => array(
-                    'result', 'eci', 'paymentid', 'trackid', 'PAReq', 'url', 'error_text'),
+            'result', 'eci', 'paymentid', 'trackid', 'PAReq', 'url', 'error_text'),
         'fieldsEnrolled' => array('result', 'url', 'PAReq', 'paymentid', 'trackid',
-                                  'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
+            'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
         'fieldsNotEnrolled' => array('result', 'PAReq', 'paymentid', 'trackid',
-                                     'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
+            'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
         'type' => 'enroll',
         'xml' => '',
         'data' => array(),
@@ -134,7 +135,7 @@ class Gateway extends Base\Gateway
         'url' => Hdfc\Urls::AUTH_NOT_ENROLLED_URL,
         'type' => 'auth_not_enrolled',
         'fields' => array('trackid', 'member', 'card', 'expmonth', 'expyear', 'cvv2', 'action',
-                          'zip', 'addr', 'amt', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
+            'zip', 'addr', 'amt', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
         'headers' => array('Content-Type:text/xml'),
         'xml' => '',
         'data' => array());
@@ -185,7 +186,7 @@ class Gateway extends Base\Gateway
     protected $inquiryResponse = array(
         'type' => 'inquiry',
         'fields' => array('result', 'auth', 'ref', 'avr', 'postdate', 'tranid', 'trackid', 'payid', 'amt',
-                    'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
+            'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
         'data' => array(),
         'xml' => '',
         'error' => null);
@@ -264,9 +265,6 @@ class Gateway extends Base\Gateway
 
         $status = $this->enrollCard($input);
 
-        //
-        // After enroll is done, auth is to be done
-        //
         return $this->decideAuthStepAfterEnroll($status);
     }
 
@@ -300,7 +298,7 @@ class Gateway extends Base\Gateway
 
         $network = $input['card']['network'];
 
-        if ($network === 'RuPay')
+        if ($network === Card\NetworkName::RUPAY)
         {
             $this->trace->info(
                 TraceCode::GATEWAY_RUPAY_CALLBACK,
@@ -451,29 +449,29 @@ class Gateway extends Base\Gateway
         {
             // send the request and get response
             $response['response'] = $this->postRequest($request);
-        }
-        catch(\Requests_Exception $e)
-        {
-            $this->exception = $e;
 
-            //
-            // Some error occurred.
-            // Check that whether the gateway response timed out.
-            // Mostly it should be gateway timeout only
-            //
-            if (Utility::checkTimeout($e))
+            // uncomment this to simulate an exception here for s2s - strictly for testing only
+            /*if (($this->mode === Mode::TEST) and
+                (App::environment('testing') === false))
             {
-                $this->error = true;
-
-                $response['content'] = '';
-                Hdfc\ErrorHandler::setTimeoutError($response);
-
-                return;
-            }
-            else
+                throw new \Requests_Exception("operation timed out", "operation timed out");
+            }*/
+        }
+        catch (Exception\GatewayTimeoutException $e)
+        {
+            // For verify we should throw exception as is.
+            if ($this->action === 'verify')
             {
                 throw $e;
             }
+
+            $this->error = true;
+
+            $response['content'] = '';
+
+            Hdfc\ErrorHandler::setTimeoutError($response);
+
+            return;
         }
 
         $response['xml'] = $response['response']->body;
@@ -621,8 +619,8 @@ class Gateway extends Base\Gateway
             // ensure extraneous or sensitive fields aren't traced.
             //
             $context['data'] = Hdfc\Utility::unsetFields(
-                                $context['data'],
-                                $this->stripFieldsList);
+                $context['data'],
+                $this->stripFieldsList);
         }
 
         $this->trace->addRecord($level, $message, $context);
@@ -630,7 +628,7 @@ class Gateway extends Base\Gateway
 
 // -------------------------Exceptions -----------------------------------------
 
-    protected function throwGatewayTimeoutException($code)
+    protected function throwGatewayTimeoutException($code, $safeRetry = false)
     {
         $msg = null;
         $e = null;
@@ -645,7 +643,7 @@ class Gateway extends Base\Gateway
             $msg = ErrorCode::$errorMessages[$code];
         }
 
-        $exception = new Exception\GatewayTimeoutException($msg, $e);
+        $exception = new Exception\GatewayTimeoutException($msg, $e, $safeRetry);
 
         $desc = Hdfc\ErrorCode::$errorMessages[$code];
 
@@ -656,14 +654,18 @@ class Gateway extends Base\Gateway
         throw $exception;
     }
 
-    protected function throwException($error)
+    protected function throwException($error, $safeRetry = false)
     {
+        // Mark error as false now to remove the stale state for future function calls.
+        // @todo: refactor and remove this completely.
+        $this->error = false;
+
         $gatewayErrorCode = $error['code'];
 
         if (($gatewayErrorCode === Hdfc\ErrorCode::RP00003) or
             ($gatewayErrorCode === Hdfc\ErrorCode::RP00004))
         {
-            $this->throwGatewayTimeoutException($gatewayErrorCode);
+            $this->throwGatewayTimeoutException($gatewayErrorCode, $safeRetry);
         }
 
         $gatewayErrorDesc = $error['text'];
@@ -693,7 +695,6 @@ class Gateway extends Base\Gateway
                 ]);
         }
 
-
         $exception = null;
 
         switch ($apiErrorCode)
@@ -702,17 +703,17 @@ class Gateway extends Base\Gateway
             case Error\ErrorCode::GATEWAY_ERROR_PAYMENT_DENIED_NEGATIVE_BIN:
             case Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_AMOUNT:
                 $exception = new Exception\GatewayErrorException(
-                                $apiErrorCode,
-                                $gatewayErrorCode,
-                                $gatewayErrorDesc);
+                    $apiErrorCode,
+                    $gatewayErrorCode,
+                    $gatewayErrorDesc);
 
                 break;
             default:
 
                 $exception = new Exception\GatewayErrorException(
-                                $apiErrorCode,
-                                $gatewayErrorCode,
-                                $gatewayErrorDesc);
+                    $apiErrorCode,
+                    $gatewayErrorCode,
+                    $gatewayErrorDesc);
 
                 break;
         }

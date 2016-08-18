@@ -129,7 +129,7 @@ class Server extends Base\Mock\Server
 
         $response['decision'] = 'ACCEPT';
         $response['reasonCode'] = Cybersource\Result::SUCCESS;
-        $response['requestID'] = '4661454138166750401020';
+        $response['requestID'] = '4661454138166750401025';
 
         $ccAuthReply = array();
         $ccAuthReply['reconciliationID'] = $input['ccAuthService']['reconciliationID'];
@@ -151,6 +151,10 @@ class Server extends Base\Mock\Server
 
         switch ($request['card']['accountNumber'])
         {
+            case '41476700000006':
+                throw new \SoapFault('HTTP', 'Error Fetching http headers');
+                break;
+
             case '4012001038443335':
                 $response['decision'] = 'REJECT';
                 $response['reasonCode'] = Cybersource\Result::ENROLLED;

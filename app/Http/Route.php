@@ -11,6 +11,7 @@ final class Route
      */
 
     protected static $apiRoutes = array(
+        'account'                                 => ['get',      'account',                                  'PublicController@getAccount'                                       ],
         'checkout'                                => ['get',      'checkout',                                 'MerchantController@getCheckout'                                    ],
         'checkout_public'                         => ['get',      'checkout/public',                          'MerchantController@getCheckoutPublic'                              ],
         'merchant_methods'                        => ['get',      'methods',                                  'MerchantController@getPaymentMethods'                              ],
@@ -108,6 +109,11 @@ final class Route
         'merchant_add_features'                   => ['post',     'merchants/{id}/features',                  'MerchantController@postMerchantFeatures'                           ],
         'merchant_get_features'                   => ['get',      'merchants/{id}/features',                  'MerchantController@getMerchantFeatures'                            ],
         'merchant_notify_holiday'                 => ['post',     'merchants/notify/holiday',                 'MerchantController@postMerchantsNotifyHoliday'                     ],
+        'credits_create'                          => ['post',     'merchants/{id}/credits_log',               'MerchantController@postCreateCreditsLog'                           ],
+        'credits_fetch_by_id'                     => ['get',      'merchants/{mid}/credits/{id}',             'MerchantController@getCreditsLog'                                  ],
+        'credits_edit'                            => ['put',      'merchants/{mid}/credits/{id}',             'MerchantController@putCreditsLog'                                  ],
+        'credits_delete'                          => ['delete',   'merchants/{mid}/credits/{id}',             'MerchantController@deleteCreditsLog'                               ],
+        'credits_fetch_multiple'                  => ['get',      'credits',                                  'MerchantController@getCreditsLogs'                                 ],
         'key_fetch_by_id'                         => ['get',      'keys/{id}',                                'KeyController@getKey'                                              ],
         'key_fetch_multiple'                      => ['get',      'keys',                                     'KeyController@getKeys'                                             ],
         'terminal_delete'                         => ['delete',   'terminals/{id}',                           'MerchantController@deleteTerminal2'                                ],
@@ -143,6 +149,7 @@ final class Route
         'setl_initiate'                           => ['post',     'settlements/initiate/{channel?}',          'SettlementController@postSettlementInitiate'                       ],
         'setl_reconcile_generate'                 => ['post',     'settlements/reconcile/generate',           'SettlementController@postSettlementReconcileGenerate'              ],
         'setl_reconcile'                          => ['post',     'settlements/reconcile',                    'SettlementController@postSettlementReconcile'                      ],
+        'setl_reconcile_h2h'                      => ['post',     'settlements/h2hreconcile',                 'SettlementController@postH2HSettlementReconcile'                   ],
         'setl_return_generate'                    => ['post',     'settlements/return/generate',              'SettlementController@postSettlementReturnGenerate'                 ],
         'setl_return'                             => ['post',     'settlements/return',                       'SettlementController@postSettlementReturn'                         ],
         'setl_calc_previous_fees'                 => ['post',     'settlements/fees/previous',                'SettlementController@postSettlementCalculateFees',                 ],
@@ -171,6 +178,7 @@ final class Route
         'mock_paytm_payment'                      => ['post',     'gateway/mockpaytm/payment',                'MockGatewayController@postPaytmPayment'                            ],
         'mock_mobikwik_payment'                   => ['post',     'gateway/mockmobikwik/payment',             'MockGatewayController@postMobikwikPayment'                         ],
         'mock_billdesk_payment'                   => ['post',     'gateway/mockbilldesk/payment',             'MockGatewayController@postBilldeskPayment'                         ],
+        'mock_ebs_payment'                        => ['post',     'gateway/mockebs/payment',                  'MockGatewayController@postEbsPayment'                              ],
         'mock_sharp_payment_post'                 => ['post',     'gateway/mocksharp/payment',                'MockGatewayController@getSharpPayment'                             ],
         'mock_sharp_payment_get'                  => ['get',      'gateway/mocksharp/payment',                'MockGatewayController@getSharpPayment'                             ],
         'mock_amex_payment'                       => ['post',     'gateway/mockamex/payment',                 'MockGatewayController@postAmexPayment'                             ],
@@ -261,6 +269,7 @@ final class Route
         'mock_mobikwik_payment',
         'mock_netbanking_payment',
         'mock_billdesk_payment',
+        'mock_ebs_payment',
         'mock_sharp_payment_post',
         'mock_sharp_payment_get',
         'mock_sharp_payment_submit',
@@ -359,6 +368,7 @@ final class Route
         'pricing_delete_plan_rule_force',
         'setl_initiate',
         'setl_reconcile',
+        'setl_reconcile_h2h',
         'setl_reconcile_generate',
         'setl_return_generate',
         'setl_return',
@@ -412,6 +422,9 @@ final class Route
         'es_migrate_entity',
         'dummy_critical_error',
         'reconciliate',
+        'credits_create',
+        'credits_edit',
+        'credits_delete',
     );
 
     public static $proxy = array(
@@ -447,9 +460,12 @@ final class Route
         'customer_update_token',
         'device_verify_token',
         'app_fetch_tokens',
+        'credits_fetch_multiple',
+        'credits_fetch_by_id',
     );
 
     public static $direct = array(
+        'account',
         'dummy_route',
         'checkout_public',
         'mockhdfc_3dsecure',
@@ -460,7 +476,7 @@ final class Route
         'gateway_payment_callback_kotak_cancel',
         'gateway_payment_callback_get',
         'gateway_payment_callback_post',
-        'sms_callback'
+        'sms_callback',
     );
 
     public static $internalApps = array(
@@ -490,6 +506,7 @@ final class Route
             'payment_capture_reminder',
             'emi_generate_excel',
             'es_migrate_entity',
+            'setl_post_details_old',
         ),
 
         'mailgun' => array(

@@ -8,30 +8,31 @@ use RZP\Models\Settlement\Details;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        Entity::TYPE            => 'required|max:20',
+        Entity::COMPONENT       => 'required|max:20',
+        Entity::TYPE            => 'required|in:debit,credit',
         Entity::COUNT           => 'sometimes|integer',
         Entity::AMOUNT          => 'required|integer',
         Entity::DESCRIPTION     => 'sometimes|max:255'
     );
 
     protected static $validateRules = array(
-        Entity::TYPE,
+        Entity::COMPONENT,
         Entity::COUNT,
     );
 
-    protected function validateType($input)
+    protected function validateComponent($input)
     {
-        $type = $input[Entity::TYPE];
+        $component = $input[Entity::COMPONENT];
 
-        Details\Type::validateType($type);
+        Details\Component::validateComponent($type);
     }
 
     protected function validateCount($input)
     {
         $count = $input[Entity::COUNT];
 
-        if (($type === Type::FEE) or
-            ($type === Type::SERVICE_TAX))
+        if (($type === Component::FEE) or
+            ($type === Component::SERVICE_TAX))
         {
             assert ($count === null);
         }

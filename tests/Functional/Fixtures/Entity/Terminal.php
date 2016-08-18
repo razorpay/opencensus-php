@@ -21,6 +21,7 @@ class Terminal extends Base
         $this->createSharedCybersourceHdfcTerminal();
         $this->createSharedCybersourceAxisTerminal();
         $this->createSharedFirstDataTerminal();
+        $this->createSharedEbsTerminal();
     }
 
     public function createMultipleNetbankingTerminals()
@@ -71,6 +72,20 @@ class Terminal extends Base
         $term->forceDelete();
 
         return $term;
+    }
+
+    public function createEbsTerminal(array $attributes = array())
+    {
+        $attributes = array(
+            'merchant_id'           => '10000000000000',
+            'gateway'               => 'ebs',
+            'gateway_merchant_id'   => 'abcd',
+            'gateway_secure_secret' => 'secret',
+            'card'                  => 0,
+            'netbanking'            => 1,
+            'shared'                => 0);
+
+        return parent::create($attributes);
     }
 
     public function createBilldeskTerminal(array $attributes = array())
@@ -264,6 +279,23 @@ class Terminal extends Base
         );
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedEbsTerminal(array $attributes = array())
+    {
+        $termId = \RZP\Models\Terminal\Shared::EBS_RAZORPAY_TERMINAL;
+
+        $attributes = array(
+            'id'                    => $termId,
+            'merchant_id'           => '1MercShareTerm',
+            'gateway'               => 'ebs',
+            'gateway_merchant_id'   => 'abcd',
+            'gateway_secure_secret' => 'secret',
+            'card'                  => 0,
+            'netbanking'            => 1,
+            'shared'                => 1,
+        );
+        return parent::create($attributes);
     }
 
     public function createSharedBilldeskTerminal(array $attributes = array())

@@ -32,7 +32,11 @@ class Sorter
 
             $currentTerminals = $this->$sorterFunction($currentTerminals, $input);
 
-            $this->traceTerminals($currentTerminals, 'Terminals after applying ' . $sorterFunction . ' property', $verbose);
+            $this->traceTerminals(
+                $currentTerminals,
+                'Terminals after applying ' . $sorterFunction . ' property',
+                $verbose,
+                $input['merchant']->getId());
         }
 
         return $currentTerminals;
@@ -43,8 +47,13 @@ class Sorter
         return camel_case($sorterProperty) . 'Sorter';
     }
 
-    protected function traceTerminals($terminals, $msg, $verbose = false)
+    protected function traceTerminals($terminals, $msg, $verbose = false, $merchantId=null)
     {
+        if ($merchantId === '4izmfM9TFCAgFN')
+        {
+            $verbose = true;
+        }
+
         if (($verbose === true) and (empty($terminals) === false))
         {
             $terminalIds = [];
