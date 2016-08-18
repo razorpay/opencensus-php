@@ -29,7 +29,7 @@ class Validator extends Base\Validator
      );
 
     protected static $createValidators = array(
-        // 'checkout_id',
+        'checkout_id',
         'library',
         'platform',
         'browser',

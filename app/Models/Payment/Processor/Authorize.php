@@ -113,7 +113,7 @@ trait Authorize
                 // record a successful payment here for the given terminal id
                 $end = microtime();
 
-                $rawData['end'] = $end;
+                $rawData['terminal_data']['end'] = $end;
 
                 $this->createAnalyticsLog($rawData);
 
@@ -990,8 +990,10 @@ trait Authorize
 
             $errorMsg = null;
 
-            if ($e !== null)
+            if (isset($terminalData['exception']))
             {
+                $e = $terminalData['exception'];
+
                 $log['terminal_status'] = 0;
 
                 // we care about this exception, since its an indicator of
