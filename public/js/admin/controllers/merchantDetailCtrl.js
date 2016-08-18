@@ -851,6 +851,7 @@ app.controller('MerchantDetailCtrl', [
       'mobikwik',
       'payzapp',
       'payumoney',
+      'olamoney',
       'emi',
       'card',
       'amex',
