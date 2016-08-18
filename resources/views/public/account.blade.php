@@ -12,15 +12,15 @@
     <ul id="nav">
       <div class="container"><i class="ham-menu">A</i>
           <li>
-              <a id="logo-link" href="https://razorpay.com/"></a>
+              <a id="logo-link" href="https://razorpay.com/" target="_parent"></a>
           </li>
           <div id="ham">
-              <li><a href="https://razorpay.com/features/">Features</a></li>
-              <li><a href="https://razorpay.com/pricing/">Pricing</a></li>
+              <li><a href="https://razorpay.com/features/" target="_parent">Features</a></li>
+              <li><a href="https://razorpay.com/pricing/" target="_parent">Pricing</a></li>
 
               <div class="float-right">
-                  <li><a href="https://razorpay.com/about">About us</a></li>
-                  <li><a href="https://razorpay.com/contact">Contact us</a></li>
+                  <li><a href="https://razorpay.com/about" target="_parent">About us</a></li>
+                  <li><a href="https://razorpay.com/contact" target="_parent">Contact us</a></li>
               </div>
           </div>
       </div>
