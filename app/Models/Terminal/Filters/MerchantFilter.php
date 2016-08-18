@@ -18,6 +18,7 @@ class MerchantFilter extends Terminal\Filter
     protected $properties = [
         'tpv',
         'risk',
+        'category',
     ];
 
     /**
@@ -69,4 +70,29 @@ class MerchantFilter extends Terminal\Filter
         // Else allow - By default allow all transactions
         return true;
     }
+
+    // Look at emi very carefully, when for cards
+    public function categoryFilter($terminal, $input)
+    {
+        $category = $terminal->getTerminalCategory();
+
+        $method = $input['payment']->getMethod();
+
+        $gateway = $terminal->getGateway();
+
+        if (empty($category) === true)
+        {
+            return true;
+        }
+
+        // Use Merchant specific for method or maybe overridden for gateway;
+        $merchantTerminalCategory = $input['merchant']->getCategoryForMethodAndGateway($method, $gateway);
+
+        $defaultCategory = Terminal\Category::getDefaultForMethodAndGateway($method, $gateway);
+
+        // If the category matches either of above pass through
+        return (($category === $merchantTerminalCategory) or
+                ($category === $defaultCategory));
+    }
+
 }

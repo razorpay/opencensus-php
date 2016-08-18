@@ -15,7 +15,7 @@ class Category
         GATEWAY::AMEX   => 'retail_services',
     ];
 
-    protected static $AMEX = [
+    protected static $GATEWAY_AMEX = [
         'entertainment',
         'government_business',
         'healthcare',
@@ -34,11 +34,62 @@ class Category
         'retail_services',
     ];
 
-    protected static $NETBANKING = [
+    protected static $METHOD_NETBANKING = [
         'government',
         'ecommerce',
         'wallet',
         'education',
         'corporate',
     ];
+
+    public static function getDefaultForMethodAndGateway($method, $gateway)
+    {
+        $category = null;
+
+        if (isset(self::$DEFAULT_METHOD[$method]))
+        {
+            $category = self::$DEFAULT_METHOD[$method];
+        }
+
+        if (isset(self::$DEFAULT_GATEWAY[$gateway]))
+        {
+            $category = self::$DEFAULT_GATEWAY[$gateway];
+        }
+
+        return $category;
+    }
+
+    public static function isCategoryValidForMethodAndGateway($category, $method, $gateway)
+    {
+        $methodMap = self::getMethodCategoriesMap($method);
+
+        $gatewayMap = self::getGatewayCategoriesName($gateway);
+
+        return ((in_array($category, $methodMap)) or
+                (in_array($category, $gatewayMap)));
+    }
+
+    protected static function getMethodCategoriesMap($method)
+    {
+        $map = 'METHOD_'.strtoupper($method);
+
+        if (isset(self::$map))
+        {
+            return self::$map;
+        }
+
+        return [];
+    }
+
+    protected static function getGatewayCategoriesName($gateway)
+    {
+        $map = 'GATEWAY_'.strtoupper($gateway);
+
+        if (isset(self::$map))
+        {
+            return self::$map;
+        }
+
+        return [];
+    }
 }

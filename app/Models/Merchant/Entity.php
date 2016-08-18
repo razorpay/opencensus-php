@@ -629,6 +629,25 @@ class Entity extends Base\PublicEntity
         return array(9999 => 9999, 6211 => 6211);
     }
 
+    public function getCategoryForMethodAndGateway($method, $gateway)
+    {
+        $terminalCategories = $this->getTerminalCategories();
+
+        $terminalCategory = null;
+
+        if (isset($terminalCategories[$method]))
+        {
+            $terminalCategory = $terminalCategories[$method];
+        }
+
+        if (isset($terminalCategories[$gateway]))
+        {
+            $terminalCategory = $terminalCategories[$gateway];
+        }
+
+        return $terminalCategory;
+    }
+
     public function isShared()
     {
         return ($this->getId() === Account::SHARED_ACCOUNT);
