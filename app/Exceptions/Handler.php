@@ -75,8 +75,6 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $e)
     {
-        sd($e);
-
         $data = [
             'success' => false,
             'errors'  => [self::SERVER_ERROR]
@@ -222,7 +220,7 @@ class Handler extends ExceptionHandler
 
     protected function isCritical(Exception $e)
     {
-        foreach ($dontReport as $type)
+        foreach ($this->dontReport as $type)
         {
             if ($e instanceof $type)
             {
