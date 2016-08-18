@@ -591,7 +591,7 @@ class AdminController extends Controller
 
     public function postSetMerchantInternational($merchantId)
     {
-        $input = Input::all();
+        $input = Input::only('international');
 
         list($error, $response) = (new Admin\Service)
             ->postSetMerchantInternational($merchantId, $input);
