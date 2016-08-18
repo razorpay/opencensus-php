@@ -65,6 +65,7 @@
               <div class="prompt">Looking for saved user</div>
               <div class="spin"><div></div></div>
               <div class="spin spin2"><div></div></div>
+              <button class="dismiss">RETRY</button>
             </div>
         </div>
       </div>
@@ -119,6 +120,8 @@
     }
     var options = {
         "key": "rzp_live_gC8obGlwaRlyui",
+        // "key": "rzp_test_1DP5mmOlF5G5ag",
+        // 'key': 'rzp_live_ILgsfZCZoFIKMb',
         "amount": "100", // 2000 paise = INR 20
         "name": "Razorpay",
         "description": "Demo payment to save card",
