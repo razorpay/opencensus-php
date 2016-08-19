@@ -262,10 +262,10 @@ class AdminTest extends TestCase
         $this->waitUntilAbsentByClassName('alert-danger');
         $this->waitUntilContainsByCss('body', 'Live transactions for merchant enabled successfully');
 
-        $this->clickByClassName('btn-enable-international');
+        $this->execScript('$(".btn-enable-international").click()');
         $this->waitUntilContainsByCss('body', 'Merchant International enabled');
 
-        $this->clickByClassName('btn-disable-international');
+        $this->execScript('$(".btn-disable-international").click()');
         $this->waitUntilContainsByCss('body', 'Merchant International disabled');
 
         // See Merchant Activation Details
