@@ -228,10 +228,10 @@ class Service extends Base\Service
                 //swap roles between user with new email and original owner
                 $oldOwner = $merchant->users()->where('role', 'owner')->first();
                 $merchant->removeUserById($oldOwner->id);
-                $oldOwner->joinMerchantByIdWithRole($id, 'manager');
+                $oldOwner->joinMerchantByIdWithRole($merchant->id, 'manager');
 
                 $merchant->removeUserById($teamUser->id);
-                $teamUser->joinMerchantByIdWithRole($id, 'owner');
+                $teamUser->joinMerchantByIdWithRole($merchant->id, 'owner');
             }
             //There is an existing user with new email but not a team member
             else if ($existingUser !== null)
@@ -239,9 +239,9 @@ class Service extends Base\Service
                 //assign owner to existing user and make existing owner a manager.
                 $oldOwner = $merchant->users()->where('role', 'owner')->first();
                 $merchant->removeUserById($oldOwner->id);
-                $oldOwner->joinMerchantByIdWithRole($id, 'manager');
+                $oldOwner->joinMerchantByIdWithRole($merchant->id, 'manager');
 
-                $existingUser->joinMerchantByIdWithRole($id, 'owner');
+                $existingUser->joinMerchantByIdWithRole($merchant->id, 'owner');
             }
             //change email of existing user attached to the merchant as owner
             else if ($selfUser)
