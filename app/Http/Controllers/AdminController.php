@@ -228,6 +228,13 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function getMerchantFeatures($id)
+    {
+        list($error, $data) = (new Admin\Service)->fetchMerchantFeatures($id);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     public function getMerchantBalance($id)
     {
         $data = (new Merchant\Service)->fetchMerchantBalance($id);
