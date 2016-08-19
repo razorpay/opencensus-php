@@ -89,7 +89,9 @@ class CustomerController extends Controller
 
     public function fetchPaymentsForGlobalCustomer()
     {
-        $payments = (new Customer\Service)->fetchPaymentsForGlobalCustomer();
+        $input = Request::all();
+
+        $payments = (new Customer\Service)->fetchPaymentsForGlobalCustomer($input);
 
         return ApiResponse::json($payments);
     }

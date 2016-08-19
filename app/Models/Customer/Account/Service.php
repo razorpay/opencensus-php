@@ -6,6 +6,7 @@ use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Payment;
 
 class Service extends Base\Service
 {
@@ -217,17 +218,29 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function fetchPaymentsForGlobalCustomer()
+    public function fetchPaymentsForGlobalCustomer($input)
     {
-        $appToken = AppToken\SessionHelper::getAppTokenFromSession($this->mode);
+        $skip = 0;
+
+        if (empty($input['skip']) === false)
+        {
+            $skip = $input['skip'];
+        }
+
+        $appTokenId = AppToken\SessionHelper::getAppTokenFromSession($this->mode);
 
         $payments = new Base\PublicCollection;
 
-        if ($appToken !== null)
+        if ($appTokenId !== null)
         {
+            AppToken\Entity::verifyIdAndStripSign($appTokenId);
+
+            $appToken = (new AppToken\Core)->getAppByAppToken($appTokenId, $this->merchant);
+
             $payments = $this->repo->payment->fetchPaymentsForCustomerMethod(
                 $appToken->customer,
-                Payment\Method::CARD);
+                Payment\Method::CARD,
+                $skip);
         }
 
         $data = [];
@@ -238,7 +251,7 @@ class Service extends Base\Service
                 'merchant'  => $payment->merchant->getBillingLabelElseName(),
                 'card'      => $payment->card->getLast4(),
                 'amount'    => $payment->getAmount(),
-                'time'      => $payment->getAuthorizedAt(),
+                'time'      => $payment->getCaptureTimestamp(),
                 'id'        => $payment->getPublicId());
 
             $data[] = $info;

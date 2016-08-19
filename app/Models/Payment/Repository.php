@@ -200,12 +200,14 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchPaymentsForCustomerMethod($customer, $method)
+    public function fetchPaymentsForCustomerMethod($customer, $method, $skip)
     {
         return $this->newQuery()
                     ->where(Payment\Entity::METHOD, '=', $method)
                     ->where(Payment\Entity::GLOBAL_CUSTOMER_ID, '=', $customer->getId())
-                    ->take(20)
+                    ->whereNotNull(Payment\Entity::CAPTURED_AT)
+                    ->skip($skip)
+                    ->take(10)
                     ->get();
     }
 
