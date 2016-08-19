@@ -295,6 +295,10 @@
           Mobikwik
         </a>
         <a href class="list-group-item">
+          <span class="pull-right" tooltip="{{merchant.details.methods.olamoney == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.olamoney == true, 'fa-times text-danger':merchant.details.methods.olamoney == false}"></i></span>
+          Olamoney
+        </a>
+        <a href class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.methods.card == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.card == true, 'fa-times text-danger':merchant.details.methods.card == false}"></i></span>
           Card
         </a>
@@ -449,7 +453,7 @@
     <h3 class="modal-title">Activate/Deactivate Merchant Payment Methods</h3>
   </div>
   <div class="modal-body methods-modal">
-  <span class="text-danger" ng-show="methods.paytm && (methods.mobikwik || methods.payzapp || methods.payumoney)">
+  <span class="text-danger" ng-show="methods.paytm && (methods.mobikwik || methods.payzapp || methods.payumoney || methods.olamoney)">
     Warning: You shouldn&apos;t enable both PayTM with any other wallet
   </span>
   <form class="form-horizontal">

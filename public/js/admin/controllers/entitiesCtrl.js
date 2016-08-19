@@ -79,6 +79,7 @@ app.controller('EntitiesCtrl', [
       'mobikwik',
       'payzapp',
       'payumoney',
+      'olamoney',
       'ezeclick'
     ];
     var booleanList = [
@@ -232,6 +233,7 @@ app.controller('EntitiesCtrl', [
         paytm: booleanList2,
         payumoney: booleanList2,
         payzapp: booleanList2,
+        olamoney: booleanList2,
         pricing_plan_id: ['Pricing Plan Id'],
         receipt_email_enabled: booleanList
       },
@@ -243,7 +245,8 @@ app.controller('EntitiesCtrl', [
         mobikwik: booleanList,
         paytm: booleanList,
         payumoney: booleanList,
-        payzapp: booleanList
+        payzapp: booleanList,
+        olamoney: booleanList
       },
       netbanking: {
         bank_payment_id: ['Bank Reference Id'],
