@@ -228,6 +228,13 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function getMerchantFeatures($id)
+    {
+        list($error, $data) = (new Admin\Service)->fetchMerchantFeatures($id);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     public function getMerchantBalance($id)
     {
         $data = (new Merchant\Service)->fetchMerchantBalance($id);
@@ -585,6 +592,16 @@ class AdminController extends Controller
 
         list($error, $response) = (new Admin\Service)
             ->syncMerchantFeatures($merchantId, $input);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
+
+    public function postSetMerchantInternational($merchantId)
+    {
+        $input = Input::only('international');
+
+        list($error, $response) = (new Admin\Service)
+            ->postSetMerchantInternational($merchantId, $input);
 
         return AppResponse::jsonResponse($error, $response);
     }
