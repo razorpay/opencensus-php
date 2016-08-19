@@ -31,18 +31,25 @@ trait FileHandlerTrait
 
     public function writeToTextFileH2H($txt)
     {
-        $name = 'RAZORNODAL$$'. Carbon::now('Asia/Kolkata')->format('d-m-Y');;
+        try
+        {
+            $name = 'RAZORNODAL\$\$'. Carbon::now('Asia/Kolkata')->format('dmY') . '.txt';
 
-        $fullpath = $this->saveLocally($name, $txt);
+            $fullpath = $this->saveLocally($name, $txt);
 
-        $bucket = 'h2h_bucket';
+            $bucket = 'h2h_bucket';
 
-        $metadata = $this->getH2HMetadata();
+            $metadata = $this->getH2HMetadata();
 
-        $url = $this->saveToAws($name, $fullpath, 'text/plain', $bucket, $metadata);
+            $url = $this->saveToAws($name, $fullpath, 'text/plain', $bucket, $metadata);
 
-        // This will be local file path if aws is mocked
-        return $url;
+            // This will be local file path if aws is mocked
+            return $url;
+        }
+        catch (\Exception $e)
+        {
+            $this->trace()->traceException($e);
+        }
     }
 
     public function writeToCsvFile($data, $name, $fullName = null)
