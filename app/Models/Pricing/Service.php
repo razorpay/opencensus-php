@@ -15,19 +15,7 @@ class Service extends Base\Service
 {
     public function createPricingPlan($input)
     {
-        $pricing = (new Pricing\Entity)->build($input);
-
-        $this->trace->info(
-            TraceCode::PRICING_PLAN_CREATE_ATTEMPT,
-            $input);
-
-        $plan = $this->repo->pricing->getPricingPlanByName($input[Entity::PLAN_NAME]);
-
-        Pricing\Validator::validatePlanCountZero($plan);
-
-        $pricing->generateId();
-
-        $this->repo->saveOrFail($pricing);
+        $pricing = (new Pricing\Core)->buildPricingPlan($input);
 
         $plan = new Plan(array($pricing));
 
@@ -40,21 +28,9 @@ class Service extends Base\Service
 
     public function uploadPricingPlan($input)
     {
-        $pricing = (new Pricing\Entity)->build($input[0]);
+        $this->repo->transactionOnLiveAndTest(function() use ($input){
 
-        $this->trace->info(
-            TraceCode::PRICING_PLAN_CREATE_ATTEMPT,
-            $input[0]);
-
-        $plan = $this->repo->pricing->getPricingPlanByName($input[0][Entity::PLAN_NAME]);
-
-        Pricing\Validator::validatePlanCountZero($plan);
-
-        $pricing->generateId();
-
-        $this->repo->transactionOnLiveAndTest(function() use ($pricing, $input){
-
-            $this->repo->saveOrFail($pricing);
+            $pricing = (new Pricing\Core)->buildPricingPlan($input[0]);
 
             $planId = $pricing->plan_id;
             $plan = $this->repo->pricing->getPricingPlanByIdOrFailPublic($planId);
@@ -65,12 +41,7 @@ class Service extends Base\Service
                 {
                     continue;
                 }
-                $rule = (new Pricing\Entity)->addPlanRule($value, $plan);
-
-                $rule->getValidator()->matchPaymentRules($plan);
-                $rule->generateId();
-
-                $this->repo->saveOrFail($rule);
+                $rule = (new Pricing\Core)->addPlanRule($value, $plan);
             }
         });
 
@@ -87,12 +58,7 @@ class Service extends Base\Service
 
         $plan = $this->repo->pricing->getPricingPlanByIdOrFailPublic($id);
 
-        $rule = (new Pricing\Entity)->addPlanRule($input, $plan);
-
-        $rule->getValidator()->matchPaymentRules($plan);
-        $rule->generateId();
-
-        (new Pricing\Repository)->saveOrFail($rule);
+        $rule = (new Pricing\Core)->addPlanRule($input, $plan);
 
         $this->trace->info(
             TraceCode::PRICING_PLAN_RULE_ADD_SUCCESS,
