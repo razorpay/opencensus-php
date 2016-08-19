@@ -31,7 +31,7 @@ class ResponseCode
 
     public static function getApiErrorCode($code)
     {
-        $class = 'RZP\Error\ErrorCode::';
+        $errorCodeClass = 'RZP\Error\ErrorCode::';
 
         if (empty($code) or (isset(self::$codes[$code]) === false))
         {
@@ -40,7 +40,7 @@ class ResponseCode
 
         $apiCode = self::$codes[$code];
 
-        if (defined($class . $apiCode))
+        if (defined($errorCodeClass . $apiCode))
         {
             return $apiCode;
         }
