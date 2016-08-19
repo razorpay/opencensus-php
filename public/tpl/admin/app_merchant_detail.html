@@ -53,6 +53,12 @@
         >
           Edit Free Credits <i class="pull-right fa fa-plus-square-o"></i>
         </a>
+        <a href class="list-group-item btn-enable-international" ng-show="merchant.details.international==false" ng-click="setInternational(1)">
+          Enable International <i class="pull-right fa fa-globe"></i>
+        </a>
+        <a href class="list-group-item btn-disable-international" ng-show="merchant.details.international==true" ng-click="setInternational(0)">
+          Disable International <i class="pull-right fa fa-globe"></i>
+        </a>
         <a href class="list-group-item"
           ng-show="merchant.details.hold_funds==1"
           ng-confirm-click="Are you sure you want to release this merchant's funds?"
@@ -698,15 +704,6 @@
   </div>
   <div class="modal-body merchant-modal">
     <form class="form-horizontal" ng-init="merchant={international:current.international, category:current.category, website:current.website, billing_label:current.billing_label, transaction_report_email: current.transaction_report_email.join(), settlement_schedule: current.settlement_schedule, risk_rating: current.risk_rating, fee_bearer: current.fee_bearer, name: current.name}">
-      <div class="form-group">
-        <label class="col-lg-2 control-label">International:</label>
-        <div class="col-lg-10" >
-          <select name="international" class="form-control m-b" ng-model="merchant.international">
-             <option value="1">Yes</option>
-             <option value="0" selected>No</option>
-          </select>
-        </div>
-      </div>
       <div class="form-group">
         <label for="Name" class="col-lg-2 control-label">Name:</label>
         <div class="col-lg-10" >

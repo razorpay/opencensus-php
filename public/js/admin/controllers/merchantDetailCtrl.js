@@ -37,6 +37,34 @@ app.controller('MerchantDetailCtrl', [
       });
     };
 
+    $scope.setInternational = function (value) {
+      var url = '/admin/merchants/' + $scope.merchant.id + '/international';
+      var request = $http.post(url, { international: value });
+      request.success(function (data) {
+        if (data.success) {
+          var action;
+          if (value === 1) {
+            $scope.merchant.details.international = true;
+            action = 'enabled';
+          }
+          else {
+            $scope.merchant.details.international = false;
+            action = 'disabled';
+          }
+
+          $scope.alerts.addAlert('success', 'Merchant International ' + action + ' successfully', true);
+
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
     $scope.confirmAccount = function () {
       var request = $http.put('/admin/merchants/' + $scope.merchant.id + '/confirmed');
       request.success(function (data) {
@@ -379,19 +407,6 @@ app.controller('MerchantDetailCtrl', [
             val = val.join(',');
           }
 
-          // Since `merchant` is the update mechanism
-          // it will always have 0/1 which will be matched against
-          // so $scope.merchant.details.international = true/false
-          // while merchant.international = 0/1
-          //
-          // We need to fix the discrepancy to match them properly
-          if (val === true) {
-            val = 1;
-          }
-
-          if (val === false) {
-            val = 0;
-          }
           // Since merchant[i] is what is being sent in the form
           // it will always be a string, we ensure above that
           // any arrays are converted to string before we match them
@@ -767,6 +782,7 @@ app.controller('MerchantDetailCtrl', [
           $scope.merchant.id = data.data.details.id;
           $scope.merchant.details.activation_progress = parseInt($scope.merchant.details.steps_finished.length * 100 / 5);
           $scope.referer = getReferer($scope.merchant.details.tags);
+          $scope.merchant.details.international = data.data.details.international;
           fetchBalance();
           getMerchantFeatures();
         } else {
@@ -975,10 +991,6 @@ app.controller('MerchantDetailCtrl', [
 
     $scope.riskMap = riskMap;
 
-    // If these fields were not present in the API db, we copy them to the form from dashboard database
-    if (!current.international) {
-      current.international = current.merchant_details.business_international;
-    }
     if (!current.website) {
       current.website = current.merchant_details.business_website;
     }

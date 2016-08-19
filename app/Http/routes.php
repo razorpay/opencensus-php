@@ -181,6 +181,7 @@ Route::group(['middleware'  =>  'admin'], function()
     Route::get('/admin/merchant/{id}/unarchive', 'AdminController@getMerchantUnarchive');
     Route::post('/admin/merchant/{id}/methods', 'AdminController@postEditMethods');
     Route::put('/admin/merchants/{id}/credits', 'AdminController@editCredits');
+    Route::post('/admin/merchants/{id}/international', 'AdminController@postSetMerchantInternational');
     Route::post('/admin/merchant/{id}/terminal', 'AdminController@postMerchantTerminal');
     Route::post('/admin/merchant/{id}/pricing', 'AdminController@postMerchantPricing');
     Route::get('/admin/companies/{cin}/info', 'AdminController@getCompanyInfo');

@@ -596,6 +596,16 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $response);
     }
 
+    public function postSetMerchantInternational($merchantId)
+    {
+        $input = Input::only('international');
+
+        list($error, $response) = (new Admin\Service)
+            ->postSetMerchantInternational($merchantId, $input);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
+
     public function getMerchantTags($merchantId)
     {
         list($error, $response) = (new Admin\Service)
