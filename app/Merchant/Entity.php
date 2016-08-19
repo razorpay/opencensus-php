@@ -314,9 +314,7 @@ class Entity extends Base\Entity
 
     public static function getMerchantFromEmail($email)
     {
-        $data = \DB::table('merchants')
-                    ->where('email','=',$email)
-                    ->first();
+        $data = Entity::whereEmail($email)->first();
         return $data;
     }
 
