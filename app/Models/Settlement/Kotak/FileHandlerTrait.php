@@ -31,18 +31,25 @@ trait FileHandlerTrait
 
     public function writeToTextFileH2H($txt)
     {
-        $name = 'RAZORNODAL$$'. Carbon::now('Asia/Kolkata')->format('d-m-Y');;
+        try
+        {
+            $name = 'RAZORNODAL\$\$'. Carbon::now('Asia/Kolkata')->format('dmYHis') . '.txt';
 
-        $fullpath = $this->saveLocally($name, $txt);
+            $fullpath = $this->saveLocally($name, $txt);
 
-        $bucket = 'h2h_bucket';
+            $bucket = 'h2h_bucket';
 
-        $metadata = $this->getH2HMetadata();
+            $metadata = $this->getH2HMetadata();
 
-        $url = $this->saveToAws($name, $fullpath, 'text/plain', $bucket, $metadata);
+            $url = $this->saveToAws($name, $fullpath, 'text/plain', $bucket, $metadata);
 
-        // This will be local file path if aws is mocked
-        return $url;
+            // This will be local file path if aws is mocked
+            return $url;
+        }
+        catch (\Exception $e)
+        {
+            $this->trace()->traceException($e);
+        }
     }
 
     public function writeToCsvFile($data, $name, $fullName = null)
@@ -589,10 +596,10 @@ trait FileHandlerTrait
     protected function getH2HMetadata()
     {
         return array(
-            'x-amz-meta-gid'   => '10000',
-            'x-amz-meta-uid'   => '10001',
-            'x-amz-meta-mtime' => Carbon::now()->timestamp,
-            'x-amz-meta-mode'  => '33188'
+            'gid'   => '10000',
+            'uid'   => '10001',
+            'mtime' => Carbon::now()->timestamp,
+            'mode'  => '33188'
         );
     }
 }
