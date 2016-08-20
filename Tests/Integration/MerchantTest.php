@@ -260,17 +260,20 @@ class MerchantTest extends TestCase
         $this->waitUntilContainsByCss('body', 'Key Generated');
 
         // New Key generated close the modal
-        $this->clickByClassName('modal-ok');
+        $this->waitAndClickById('new_keys_ok');
         $this->waitUntilDisplayedByClassName('modal-content');
         $this->clickByClassName('confirm-ok');
+
+        // Now roll the key
         $this->waitAndClickByClassName('roll_key');
-        $this->clickByClassName('modal-ok');
-        $this->waitAndClickById('new_keys_ok');
-        $this->waitUntilDisplayedByClassName('confirm-modal');
-        $this->waitAndClickByClassName('confirm-ok');
+        // De-activation choose screen
+        $this->assertTrue($this->displayedByClassName('roll-key-modal'));
+        $this->waitAndClickByClassName('modal-ok');
         $this->waitUntilAbsentByClassName('roll-key-modal');
-        $this->waitUntilAbsentByClassName('alert-danger');
-        $this->waitUntilContainsByCss('body', 'Key Rolled');
+
+        // This modal shows the key itself
+        $this->assertTrue($this->displayedByClassName('new-key-modal'));
+        $this->waitUntilContainsByCss('body', 'New Key'); // Part of the modal
     }
 
     /**

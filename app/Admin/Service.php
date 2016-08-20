@@ -15,6 +15,7 @@ use Session;
 use App\Base;
 use App\Admin;
 use App\Merchant;
+use App\User;
 use App\MerchantDetails;
 use App\Transaction;
 use App\Trace\TraceCode;
@@ -97,6 +98,7 @@ class Service extends Base\Service
         if ($ownerUser)
         {
             $user = Auth::guard('user')->loginUsingId($ownerUser->id);
+            (new User\Service)->switchCurrentMerchantForUser($merchant_id, $user);
         }
         else
         {
@@ -329,6 +331,15 @@ class Service extends Base\Service
         return [[], $data];
     }
 
+    public function fetchMerchantFeatures($id)
+    {
+        $this->setApiCredentials();
+
+        $response = $this->api->merchant->fetch($id)->getFeatures()->toArray();
+
+        return [[], $response];
+    }
+
     public function fetchFullMerchantDetails($id)
     {
         $details = null;
@@ -514,6 +525,11 @@ class Service extends Base\Service
         }
 
         return array($error, $data);
+    }
+
+    public function postSetMerchantInternational($id, array $input)
+    {
+        return $this->postEditMerchant($id, $input);
     }
 
     protected function dropFields(array &$array, array $fields)

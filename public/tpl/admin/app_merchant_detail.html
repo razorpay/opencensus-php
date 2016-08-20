@@ -17,7 +17,7 @@
         <a tooltip="Confirm merchant Account." ng-show="unconfirmed===true" ng-click="confirmAccount()" class="list-group-item" ng-confirm-click="This will mark the merchant as confirmed. This skips email confirmation. Make sure that you have verified the email address on your own. Use with caution.">
           Confirm Merchant
         </a>
-        <a ui-sref="app.merchants.activation({id:merchant.details.id})" class="list-group-item">
+        <a ui-sref="app.merchants.activation({id:merchant.details.id})" class="list-group-item see-activation-form">
           See Activation Form Details
         </a>
         <a href class="list-group-item lock-form" ng-show="merchant.details.locked==0" ng-click="lockForm()">
@@ -26,7 +26,7 @@
         <a href class="list-group-item" ng-show="merchant.details.locked==1" ng-click="unlockForm()">
           Unlock Activation Form <i class="pull-right fa fa-unlock"></i>
         </a>
-        <a href class="list-group-item"
+        <a href class="list-group-item activate-merchant"
         ng-show="merchant.details.activated==0"
         ng-confirm-click="Are you sure you have validated all merchant details, assigned pricing plan and terminal to merchant before activating?"
         ng-click="activateMerchant()"
@@ -53,6 +53,12 @@
         >
           Edit Free Credits <i class="pull-right fa fa-plus-square-o"></i>
         </a>
+        <a href class="list-group-item btn-enable-international" ng-show="merchant.details.international==false" ng-click="setInternational(1)">
+          Enable International <i class="pull-right fa fa-globe"></i>
+        </a>
+        <a href class="list-group-item btn-disable-international" ng-show="merchant.details.international==true" ng-click="setInternational(0)">
+          Disable International <i class="pull-right fa fa-globe"></i>
+        </a>
         <a href class="list-group-item"
           ng-show="merchant.details.hold_funds==1"
           ng-confirm-click="Are you sure you want to release this merchant's funds?"
@@ -60,10 +66,10 @@
         >
           Release Merchant Funds <i class="pull-right fa fa-thumbs-up"></i>
         </a>
-        <a href class="list-group-item" ng-show="merchant.details.activated==1 && merchant.details.live==0" ng-click="enableLive()">
+        <a href class="list-group-item enable-live-transactions" ng-show="merchant.details.activated==1 && merchant.details.live==0" ng-click="enableLive()">
           Enable Live Transactions <i class="pull-right fa fa-check"></i>
         </a>
-        <a href class="list-group-item" ng-show="merchant.details.live==1 "ng-click="disableLive()"
+        <a href class="list-group-item disable-live-transactions" ng-show="merchant.details.live==1 "ng-click="disableLive()"
         ng-confirm-click="All future live transactions from merchant will fail, are you sure you want to do this?">
           Disable Live Transactions <i class="pull-right fa fa-cross"></i>
         </a>
@@ -84,7 +90,7 @@
           Disable Receipt Email <i class="pull-right fa fa-envelope"></i>
         </a>
 
-        <a href class="list-group-item" ng-click="openAssignPricing()">
+        <a href class="list-group-item assign-pricing" ng-click="openAssignPricing()">
           Assign Pricing <i class="pull-right fa fa-percent"></i>
         </a>
         <a href class="list-group-item assign-terminal" ng-click="openAssignTerminal()">
@@ -96,7 +102,7 @@
         <a href class="list-group-item" ng-click="openAddAdjustment()">
           Add Adjustment <i class="pull-right fa fa-adjust"></i>
         </a>
-        <a tooltip="Click me!" href class="list-group-item" ng-click="openEditMerchant()">
+        <a tooltip="Click me!" href class="list-group-item edit-merchant" ng-click="openEditMerchant()">
           Edit Merchant <i class="pull-right fa fa-pencil-square"></i>
         </a>
         <a tooltip="Only superadmins have access to this" href class="list-group-item" ng-click="openEditMerchantEmail()">
@@ -149,11 +155,11 @@
     </div>
     <div class="row wrapper">
       <div class="list-group">
-        <a class="list-group-item" ng-show="merchant.details.tags.length > 0 " ng-click="openTagMerchant()">
+        <a class="list-group-item" ng-click="openTagMerchant()">
           <span class="pull-right">{{merchant.details.tags.join()}}</span>
           Tags
         </a>
-        <a class="list-group-item" ng-show="merchant.details.features.length > 0 " ng-click="openFeatureMerchant()">
+        <a class="list-group-item" ng-click="openFeatureMerchant()">
           <span class="pull-right">{{merchant.details.features.join()}}</span>
           Features
         </a>
@@ -218,7 +224,7 @@
         <a href class="list-group-item">
           <span class="pull-right" ng-if="merchant.details.activated_at">{{merchant.details.activated_at*1000 | date:'medium'}}</span>
           <span class="pull-right" ng-if="!merchant.details.activated_at">NULL</span>
-          Activatation Date
+          Activation Date
         </a>
         <a href class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.confirm_token == null ? 'Confirmed' : 'Not Confirmed'}}">
@@ -293,6 +299,10 @@
         <a href class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.methods.mobikwik == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.mobikwik == true, 'fa-times text-danger':merchant.details.methods.mobikwik == false}"></i></span>
           Mobikwik
+        </a>
+        <a href class="list-group-item">
+          <span class="pull-right" tooltip="{{merchant.details.methods.olamoney == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.olamoney == true, 'fa-times text-danger':merchant.details.methods.olamoney == false}"></i></span>
+          Olamoney
         </a>
         <a href class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.methods.card == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.card == true, 'fa-times text-danger':merchant.details.methods.card == false}"></i></span>
@@ -449,7 +459,7 @@
     <h3 class="modal-title">Activate/Deactivate Merchant Payment Methods</h3>
   </div>
   <div class="modal-body methods-modal">
-  <span class="text-danger" ng-show="methods.paytm && (methods.mobikwik || methods.payzapp || methods.payumoney)">
+  <span class="text-danger" ng-show="methods.paytm && (methods.mobikwik || methods.payzapp || methods.payumoney || methods.olamoney)">
     Warning: You shouldn&apos;t enable both PayTM with any other wallet
   </span>
   <form class="form-horizontal">
@@ -497,6 +507,7 @@
              <option value="paytm">Paytm</option>
              <option value="wallet_payzapp">Payzapp</option>
              <option value="wallet_payumoney">Payumoney</option>
+             <option value="wallet_olamoney">Olamoney</option>
              <option value="mobikwik">Mobikwik</option><
              <option value="billdesk">Billdesk</option>
              <option value="ebs">EBS</option>
@@ -693,15 +704,6 @@
   </div>
   <div class="modal-body merchant-modal">
     <form class="form-horizontal" ng-init="merchant={international:current.international, category:current.category, website:current.website, billing_label:current.billing_label, transaction_report_email: current.transaction_report_email.join(), settlement_schedule: current.settlement_schedule, risk_rating: current.risk_rating, fee_bearer: current.fee_bearer, name: current.name}">
-      <div class="form-group">
-        <label class="col-lg-2 control-label">International:</label>
-        <div class="col-lg-10" >
-          <select name="international" class="form-control m-b" ng-model="merchant.international">
-             <option value="1">Yes</option>
-             <option value="0" selected>No</option>
-          </select>
-        </div>
-      </div>
       <div class="form-group">
         <label for="Name" class="col-lg-2 control-label">Name:</label>
         <div class="col-lg-10" >

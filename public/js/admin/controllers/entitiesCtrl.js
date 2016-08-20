@@ -70,7 +70,8 @@ app.controller('EntitiesCtrl', [
       'paytm',
       'sharp',
       'wallet_payumoney',
-      'wallet_payzapp'
+      'wallet_payzapp',
+      'wallet_olamoney'
     ];
     var walletList = [
       'all',
@@ -78,6 +79,7 @@ app.controller('EntitiesCtrl', [
       'mobikwik',
       'payzapp',
       'payumoney',
+      'olamoney',
       'ezeclick'
     ];
     var booleanList = [
@@ -231,6 +233,7 @@ app.controller('EntitiesCtrl', [
         paytm: booleanList2,
         payumoney: booleanList2,
         payzapp: booleanList2,
+        olamoney: booleanList2,
         pricing_plan_id: ['Pricing Plan Id'],
         receipt_email_enabled: booleanList
       },
@@ -242,7 +245,8 @@ app.controller('EntitiesCtrl', [
         mobikwik: booleanList,
         paytm: booleanList,
         payumoney: booleanList,
-        payzapp: booleanList
+        payzapp: booleanList,
+        olamoney: booleanList
       },
       netbanking: {
         bank_payment_id: ['Bank Reference Id'],
@@ -314,6 +318,10 @@ app.controller('EntitiesCtrl', [
         merchant_id: ['Merchant Id'],
         status: ['all', 'created', 'failed', 'processed'],
         transaction_id: ['Transaction Id']
+      },
+      settlement_details: {
+        merchant_id: ['Merchant Id'],
+        settlement_id: ['Settlement Id']
       },
       terminal: {
         gateway: gatewayList,

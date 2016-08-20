@@ -246,6 +246,7 @@ app.controller('EntityDetailCtrl', [
           'pricing',
           'refund',
           'settlement',
+          'settlement_details',
           'terminal',
           'token',
           'transaction',

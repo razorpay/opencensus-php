@@ -336,12 +336,36 @@ app.controller('ActionsCtrl', [
       });
     };
 
+    $scope.confirmMerchant = function (id) {
+      var request = $http.put('/admin/merchants/' + id + '/confirmed');
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Merchant confirmed successfully', true);
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
     $scope.openArchiveMerchant = function () {
       var modalInstance = $modal.open({
         templateUrl: 'archiveMerchantModal.html',
         controller: 'archiveMerchantModalCtrl'
       });
       modalInstance.result.then($scope.archiveMerchant, $.noop);
+    };
+
+    $scope.openConfirmMerchant = function () {
+      var modalInstance = $modal.open({
+        templateUrl: 'confirmMerchantModal.html',
+        controller: 'archiveMerchantModalCtrl'
+      });
+      modalInstance.result.then($scope.confirmMerchant, $.noop);
     };
     $scope.openAuthorizeFailedPayment = function () {
       var modalInstance = $modal.open({

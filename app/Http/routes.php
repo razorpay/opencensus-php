@@ -131,6 +131,7 @@ Route::group(['middleware'  =>  'admin'], function()
     Route::get('/admin/merchant/{id}', 'AdminController@getMerchant');
     Route::get('/admin/merchant/{id}/balance', 'AdminController@getMerchantBalance');
     Route::get('/admin/merchant/{id}/details', 'AdminController@getMerchantDetails');
+    Route::get('/admin/merchant/{id}/features', 'AdminController@getMerchantFeatures');
     // This is the list of banks in netbanking
     Route::get('/admin/merchant/{id}/banks', 'AdminController@getMerchantBanks');
     Route::get('/admin/networks', 'AdminController@getSupportedNetworks');
@@ -180,6 +181,7 @@ Route::group(['middleware'  =>  'admin'], function()
     Route::get('/admin/merchant/{id}/unarchive', 'AdminController@getMerchantUnarchive');
     Route::post('/admin/merchant/{id}/methods', 'AdminController@postEditMethods');
     Route::put('/admin/merchants/{id}/credits', 'AdminController@editCredits');
+    Route::post('/admin/merchants/{id}/international', 'AdminController@postSetMerchantInternational');
     Route::post('/admin/merchant/{id}/terminal', 'AdminController@postMerchantTerminal');
     Route::post('/admin/merchant/{id}/pricing', 'AdminController@postMerchantPricing');
     Route::get('/admin/companies/{cin}/info', 'AdminController@getCompanyInfo');

@@ -119,6 +119,15 @@ class Service extends Base\Service
 
             $merchant = Entity::createFromMerchant($currentMerchant, $businessName, $email);
 
+            try
+            {
+                $this->createSubMerchantOnApi($merchant, $currentMerchant);
+            }
+            catch(ApiError $e)
+            {
+                return [[$e->getMessage()], null];
+            }
+
             $merchant->save();
 
             $details = [
@@ -130,15 +139,6 @@ class Service extends Base\Service
 
             // Finally attach the current user to the new user's team
             $this->currentUser->joinMerchantByIdWithRole($merchant->id, 'owner');
-
-            try
-            {
-                $this->createSubMerchantOnApi($merchant, $currentMerchant);
-            }
-            catch(ApiError $e)
-            {
-                return [[$e->getMessage()], null];
-            }
 
             return [null, $merchant->toArray()];
         }
@@ -218,11 +218,13 @@ class Service extends Base\Service
     {
         $merchant = Merchant\Entity::findorfail($id);
 
-        if ($merchant->isTestAccount()) {
+        if ($merchant->isTestAccount())
+        {
             return [static::NAME_CHANGE_FORBIDDEN];
         }
 
-        return $merchant->changeName($name);
+        $merchant->changeName($name);
+        $merchant->save();
     }
 
     public function confirm($token)
@@ -247,20 +249,12 @@ class Service extends Base\Service
         // We need to shift this to some other auth
         $this->setApiCredentials();
 
-        try
-        {
-            $merchantOnApi = $this->fetchApiEntityIfExists('merchant', $merchantApiData['id']);
+        $merchantOnApi = $this->fetchApiEntityIfExists('merchant', $merchantApiData['id']);
 
-            // Only create the merchant if it doesn't exist on the API
-            if ($merchantOnApi === null)
-            {
-                $response = $this->api->merchant->create($merchantApiData);
-            }
-        }
-
-        catch(BadRequestError $e)
+        // Only create the merchant if it doesn't exist on the API
+        if ($merchantOnApi === null)
         {
-            return array($e->getMessage());
+            $response = $this->api->merchant->create($merchantApiData);
         }
 
         // Confirm the merchant and associated users (with same email)

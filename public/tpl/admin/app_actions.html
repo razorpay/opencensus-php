@@ -38,6 +38,9 @@
         <a href class="list-group-item" ng-click="openArchiveMerchant()">
           Archive Merchant
         </a>
+        <a href class="list-group-item" ng-click="openConfirmMerchant()">
+          Confirm Merchant
+        </a>
         <a href class="list-group-item" ng-click="verifyAllPayments()">
           Verify All Payments
         </a>
@@ -339,6 +342,26 @@
 <script type="text/ng-template" id="archiveMerchantModal.html">
   <div class="modal-header">
     <h3 class="modal-title">Archive Merchant</h3>
+  </div>
+  <div class="modal-body terminal-modal">
+    <form class="form-horizontal" ng-init="id=''">
+      <div class="form-group">
+        <label for="id" class="col-lg-2 control-label">Merchant Id: </label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" name="id" ng-model="id" placeholder="Merchant Id"/>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(id)">OK</button>
+  </div>
+</script>
+
+<script type="text/ng-template" id="confirmMerchantModal.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Confirm Merchant</h3>
   </div>
   <div class="modal-body terminal-modal">
     <form class="form-horizontal" ng-init="id=''">
