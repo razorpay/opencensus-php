@@ -33,7 +33,7 @@ trait FileHandlerTrait
     {
         try
         {
-            $name = 'RAZORNODAL\$\$'. Carbon::now('Asia/Kolkata')->format('dmY') . '.txt';
+            $name = 'RAZORNODAL\$\$'. Carbon::now('Asia/Kolkata')->format('dmYHis') . '.txt';
 
             $fullpath = $this->saveLocally($name, $txt);
 
@@ -596,10 +596,10 @@ trait FileHandlerTrait
     protected function getH2HMetadata()
     {
         return array(
-            'x-amz-meta-gid'   => '10000',
-            'x-amz-meta-uid'   => '10001',
-            'x-amz-meta-mtime' => Carbon::now()->timestamp,
-            'x-amz-meta-mode'  => '33188'
+            'gid'   => '10000',
+            'uid'   => '10001',
+            'mtime' => Carbon::now()->timestamp,
+            'mode'  => '33188'
         );
     }
 }
