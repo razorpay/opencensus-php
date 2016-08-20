@@ -12,6 +12,7 @@ class Shared
     const AXIS_GENIUS_RAZORPAY_TERMINAL     = '1000AxisGenius';
     const AXIS_MIGS_RAZORPAY_TERMINAL       = '1000AxisMigsTl';
     const BILLDESK_RAZORPAY_TERMINAL        = '1000BdeskTrmnl';
+    const EBS_RAZORPAY_TERMINAL             = '100000EbsTrmnl';
     const HDFC_RAZORPAY_TERMINAL            = '1000HdfcShared';
     const KOTAK_RAZORPAY_TERMINAL           = '1000KotakTrmnl';
     const MOBIKWIK_RAZORPAY_TERMINAL        = '1000MobiKwikTl';
@@ -30,6 +31,7 @@ class Shared
         self::AXIS_MIGS_RAZORPAY_TERMINAL,
         self::AXIS_GENIUS_RAZORPAY_TERMINAL,
         self::BILLDESK_RAZORPAY_TERMINAL,
+        self::EBS_RAZORPAY_TERMINAL,
         self::HDFC_RAZORPAY_TERMINAL,
         self::KOTAK_RAZORPAY_TERMINAL,
         self::MOBIKWIK_RAZORPAY_TERMINAL,
@@ -52,6 +54,7 @@ class Shared
         self::AXIS_GENIUS_RAZORPAY_TERMINAL => Gateway::AXIS_GENIUS,
         self::AXIS_MIGS_RAZORPAY_TERMINAL   => Gateway::AXIS_MIGS,
         self::BILLDESK_RAZORPAY_TERMINAL    => Gateway::BILLDESK,
+        self::EBS_RAZORPAY_TERMINAL         => Gateway::EBS,
         self::CYBERSOURCE_HDFC_TERMINAL     => Gateway::CYBERSOURCE,
         self::HDFC_RAZORPAY_TERMINAL        => Gateway::HDFC,
         self::KOTAK_RAZORPAY_TERMINAL       => Gateway::KOTAK,

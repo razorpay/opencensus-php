@@ -29,6 +29,48 @@ trait FileHandlerTrait
         return $url;
     }
 
+    public function writeToTextFileH2H($txt)
+    {
+        try
+        {
+            $name = 'RAZORNODAL\$\$'. Carbon::now('Asia/Kolkata')->format('dmYHis') . '.txt';
+
+            $fullpath = $this->saveLocally($name, $txt);
+
+            $bucket = 'h2h_bucket';
+
+            $metadata = $this->getH2HMetadata();
+
+            $url = $this->saveToAws($name, $fullpath, 'text/plain', $bucket, $metadata);
+
+            // This will be local file path if aws is mocked
+            return $url;
+        }
+        catch (\Exception $e)
+        {
+            $this->trace()->traceException($e);
+        }
+    }
+
+    public function writeToCsvFile($data, $name, $fullName = null)
+    {
+        $excelObject = $this->createExcelObject($data, $name);
+
+        $fileMetadata = $excelObject->store('csv', storage_path('files/settlement'), true);
+        $fullpath = $fileMetadata['full'];
+
+        if ($fullName != null)
+        {
+            rename($fullpath, $fullName);
+            $fullpath = $fullName;
+        }
+
+        $url = $this->saveToAws($name, $fullpath, 'text/csv');
+
+        // This will be local file path if aws is mocked
+        return $url;
+    }
+
     public function writeToExcelFile($data, $name)
     {
         \Config::set('excel::export.calculate', true);
@@ -42,6 +84,29 @@ trait FileHandlerTrait
 
         $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
         $url = $this->saveToAws($name.'.xlsx', $fullpath, $xlsxMimeType);
+
+        return $url;
+    }
+
+
+    public function writeToExcelFileH2H($data, $name)
+    {
+        \Config::set('excel::export.calculate', true);
+
+        $columnFormat = $this->getColumnFormatForExcel();
+
+        $excel = $this->createExcelObject($data, $name, $columnFormat);
+
+        $fileMetadata = $excel->store('xlsx', storage_path('files/settlement'), true);
+        $fullpath = $fileMetadata['full'];
+
+        $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+
+        $bucket = 'h2h_bucket';
+
+        $metadata = $this->getH2HMetadata();
+
+        $url = $this->saveToAws($name.'.xlsx', $fullpath, $xlsxMimeType, $bucket, $metadata);
 
         return $url;
     }
@@ -172,7 +237,8 @@ trait FileHandlerTrait
         return $this->saveToAws($name, $fullpath, 'text/plain');
     }
 
-    protected function saveToAws($name, $fullpath, $mime = 'text/plain')
+    protected function saveToAws(
+        $name, $fullpath, $mime = 'text/plain', $bucket = 'settlement_bucket', $metadata = array())
     {
         $config =  \Config::get('aws');
 
@@ -188,10 +254,11 @@ trait FileHandlerTrait
         try
         {
             $s3Obj = array(
-                'Bucket'        => $config['settlement_bucket'],
+                'Bucket'        => $config[$bucket],
                 'Key'           => $name,
                 'ContentType'   => $mime,
                 'SourceFile'    => $fullpath,
+                'Metadata'      => $metadata,
             );
 
             $this->trace()->info(TraceCode::AWS_FILE_UPLOAD, $s3Obj);
@@ -338,6 +405,13 @@ trait FileHandlerTrait
     protected function getExcelFullFilePath()
     {
         $name = $this->getExcelFileToWriteName();
+
+        return $this->getFullFilePath($name);
+    }
+
+    protected function getTextFullFilePath()
+    {
+        $name = $this->getFileToWriteName();
 
         return $this->getFullFilePath($name);
     }
@@ -517,5 +591,15 @@ trait FileHandlerTrait
         $trace = \Trace::getFacadeRoot();
 
         return $trace;
+    }
+
+    protected function getH2HMetadata()
+    {
+        return array(
+            'gid'   => '10000',
+            'uid'   => '10001',
+            'mtime' => Carbon::now()->timestamp,
+            'mode'  => '33188'
+        );
     }
 }

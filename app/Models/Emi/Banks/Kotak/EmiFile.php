@@ -6,6 +6,7 @@ use Gateway;
 use RZP\Models\Emi;
 use RZP\Services\TokenEx;
 use RZP\Models\Emi\Banks\Base;
+use RZP\Gateway\Base\Action;
 
 use Carbon\Carbon;
 
@@ -49,15 +50,17 @@ class EmiFile extends Base\EmiFile
     {
         $this->fetchAndSendPassword();
 
-        $zipFile = $this->getZippedFile();
+        $fullPath = $this->getExcelFullFilePath();
+
+        $zipFile = $this->getZippedFile($fullPath);
 
         $data['file'] = $zipFile;
 
-        $data['body'] = 'Please forward the Kotak Emi file to Kotak: cc.loans@kotak.com and libu.john@kotak.com';
+        $data['body'] = 'Please process the attached EMI file';
 
         $this->mail->queue('emails.message', $data, function ($message) use ($data)
         {
-            $emails = ['settlements@razorpay.com'];
+            $emails = ['kotakcards.emi@razorpay.com', 'settlements@razorpay.com'];
 
             $message->from('emifiles@razorpay.com', 'Kotak Emi File');
 
@@ -85,9 +88,7 @@ class EmiFile extends Base\EmiFile
 
             $emiPercent = $emiPlan['rate']/100;
 
-            $gatewayEntity = $this->getGatewayEntity($emiPayment);
-
-            $authCode = $gatewayEntity->getAuthCode();
+            $authCode = $this->getAuthCode($emiPayment);
 
             $data[] = array(
             'EMI ID'                     => $emiPayment->getId(),
@@ -97,7 +98,7 @@ class EmiFile extends Base\EmiFile
             'Tx Amount'                  => $emiPayment->getAmount()/ 100,
             'Tenure'                     => $emiPlan['duration'],
             'Manufacturer'               => '', // Non Mandatory
-            'Merchant Name'              => $emiPayment->merchant->getName(),
+            'Merchant Name'              => 'Razorpay Payments',
             'Address1'                   => '', // Non Mandatory
             'Acquirer'                   => '', // Non Mandatory
             'MID'                        => '', // Non Mandatory
@@ -111,24 +112,6 @@ class EmiFile extends Base\EmiFile
         }
 
         return $data;
-    }
-
-    protected function getGatewayEntity($payment)
-    {
-        $gateway = ucfirst($payment->gateway);
-
-        $entity = 'RZP\Gateway\\'.$gateway.'\\Entity';
-
-        $repo = 'RZP\Gateway\\'.$gateway.'\\Repository';
-
-        if (defined($repo))
-        {
-            $attributes = $repo->findByPaymentId($payment->id);
-
-            return (new $entity)->build($attributes);
-        }
-
-        return new $entity;
     }
 
     protected function sendEmiPassword()

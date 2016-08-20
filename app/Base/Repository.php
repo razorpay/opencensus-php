@@ -21,6 +21,8 @@ class Repository extends \Razorpay\Spine\Repository
 
     protected $queue;
 
+    protected $manager;
+
     public function __construct()
     {
         parent::__construct();
@@ -32,6 +34,15 @@ class Repository extends \Razorpay\Spine\Repository
         $this->auth = $this->app['basicauth'];
 
         $this->queue = $this->app['queue'];
+
+        //
+        // Currently, using $this->manager because
+        // we have $this->repo being used for creting queries.
+        // Once we shift to the new way of querying via newQuery()
+        // then we can change this back to $this->repo. Till then,
+        // we will need to keep use of $this->manager to minimum.
+        //
+        $this->manager = $this->app['repo'];
     }
 
     public function findOrFailPublic($id, $columns = array('*'))

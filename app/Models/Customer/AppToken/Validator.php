@@ -1,9 +1,9 @@
 <?php
 
-namespace RZP\Models\Customer\App;
+namespace RZP\Models\Customer\AppToken;
 
 use RZP\Models\Base;
-use RZP\Models\Customer\App\Entity;
+use RZP\Models\Customer\AppToken\Entity;
 
 class Validator extends Base\Validator
 {

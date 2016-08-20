@@ -14,6 +14,7 @@ use RZP\Models\Terminal;
 use RZP\Models\Transaction;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement\Holidays;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
@@ -26,17 +27,11 @@ class Core extends Base\Core
 
     protected $merchant;
 
-    protected $merchantRepo;
-
-    protected $balanceRepo;
-
     public function __construct()
     {
         parent::__construct();
 
-        $this->merchant = \BasicAuth::getMerchant();
-        $this->merchantRepo = $this->repo->merchant;
-        $this->balanceRepo = $this->repo->balance;
+        $this->merchant = $this->app['basicauth']->getMerchant();
     }
 
     public function createFromPaymentAuthorized(Payment\Entity $payment)
@@ -47,7 +42,7 @@ class Core extends Base\Core
 
         $this->updateNodalBalance($txn);
 
-        $this->balanceRepo->updateBalance($this->merchantBalance);
+        $this->repo->balance->updateBalance($this->merchantBalance);
 
         return $txn;
     }
@@ -62,12 +57,27 @@ class Core extends Base\Core
 
         $this->updateMerchantBalance($txn);
 
+        $this->trace->info(
+            TraceCode::PAYMENT_CAPTURE_UPDATE_TRANSACTION,
+            [
+                'payment_id'     => $payment->getId(),
+                'transaction_id' => $txn->getId(),
+            ]
+        );
+
         return $txn;
     }
 
     public function createFromPaymentCaptured(Payment\Entity $payment)
     {
         $txn = $this->txnCreationFromPaymentOperation($payment);
+
+        $this->trace->info(
+            TraceCode::PAYMENT_CAPTURE_CREATE_TRANSACTION,
+            [
+                'payment_id'     => $payment->getId(),
+                'transaction_id' => $txn->getId()
+            ]);
 
         $settledAt = $this->getSettledAtTimestamp($payment);
 
@@ -115,17 +125,26 @@ class Core extends Base\Core
 
         $amount = $payment->getAmount();
 
-        $oldTransaction = $this->checkIfOldTransaction($payment);
+        $oldTransaction = $this->checkIfOldPayment($payment);
 
         if ($oldTransaction === true)
         {
             $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($payment);
+
             $fee = 0;
             $serviceTax = 0;
             $credit = $amount;
         }
         else if ($freeCredits > 0)
         {
+            $this->trace->info(
+                TraceCode::TRANSACTION_FREE_CREDITS,
+                [
+                    'payment_id' => $payment->getId(),
+                    'amount' => $amount,
+                    'free_credits' => $freeCredits,
+                ]
+            );
             $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($payment);
 
             $credit = $amount;
@@ -158,12 +177,21 @@ class Core extends Base\Core
         return $txn;
     }
 
-    protected function checkIfOldTransaction($payment)
+    protected function checkIfOldPayment($payment)
     {
         if (($payment->getCreatedTimestamp() < self::JULY_FIRST_EPOCH) and
             ($payment->transaction === null) and
             ($payment->isAuthorized() === true))
         {
+            $this->trace->info(
+                TraceCode::PAYMENT_TRANSACTION_OLD,
+                [
+                    'payment_id' => $payment->getId(),
+                    'payment_created' => Carbon::createFromTimestamp($payment->getCreatedTimestamp())
+                                               ->toDateTimeString()
+                ]
+            );
+
             return true;
         }
 
@@ -341,7 +369,7 @@ class Core extends Base\Core
         $merchantBalance = $this->getBalanceLockForUpdate($txn->merchant);
 
         $merchantBalance->updateBalance($txn);
-        $this->balanceRepo->updateBalance($merchantBalance);
+        $this->repo->balance->updateBalance($merchantBalance);
 
         $txn->setBalance($merchantBalance->getBalance());
 
@@ -355,7 +383,7 @@ class Core extends Base\Core
         $nodalBalance = $this->getNodalBalanceLockForUpdate($channel);
 
         $nodalBalance->updateBalance($txn);
-        $this->balanceRepo->updateBalance($nodalBalance);
+        $this->repo->balance->updateBalance($nodalBalance);
 
         $txn->setEscrowBalance($nodalBalance->getBalance());
 
@@ -402,7 +430,7 @@ class Core extends Base\Core
             return $this->nodalBalance;
         }
 
-        $nodalBalance = $this->balanceRepo->getNodalBalanceLockForUpdate($channel);
+        $nodalBalance = $this->repo->balance->getNodalBalanceLockForUpdate($channel);
 
         $this->nodalBalance = $nodalBalance;
 
@@ -416,7 +444,7 @@ class Core extends Base\Core
             return $this->merchantBalance;
         }
 
-        $merchantBalance = $this->balanceRepo->getBalanceLockForUpdate($merchant->getId());
+        $merchantBalance = $this->repo->balance->getBalanceLockForUpdate($merchant->getId());
 
         $this->merchantBalance = $merchantBalance;
 

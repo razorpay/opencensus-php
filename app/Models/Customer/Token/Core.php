@@ -6,7 +6,7 @@ use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Customer;
 use RZP\Models\Terminal;
-use RZP\Models\Customer\App;
+use RZP\Models\Customer\AppToken;
 use RZP\Models\Customer\Token;
 use RZP\Models\Merchant\Account;
 use RZP\Error\ErrorCode;
@@ -61,12 +61,8 @@ class Core extends Base\Core
 
     protected function validateExistingToken($token)
     {
-        $params = array(
-            Token\Entity::METHOD      => $token->getMethod(),
-            Token\Entity::CUSTOMER_ID => $token->customer->getId());
-
         $existingTokens = $this->repo->token->getByMethodAndCustomerId(
-                                $token->getMethod(), $token->customer->getId());
+                                $token->getMethod(), $token->customer);
 
         $func = 'validateExistingToken'.$token->getMethod();
 

@@ -111,7 +111,7 @@ class Entity extends Base\PublicEntity
         self::RECEIPT_EMAIL_ENABLED => true,
         self::HOLD_FUNDS            => false,
         self::SETTLEMENT_SCHEDULE   => 3,
-        self::FEATURES              => null,
+        self::FEATURES              => Features::CARD_SAVING,
         self::FEE_BEARER            => FeeBearer::PLATFORM,
         self::BRAND_COLOR           => null,
         self::RISK_RATING           => 3,
@@ -294,7 +294,8 @@ class Entity extends Base\PublicEntity
     {
         $amount = $this->attributes[self::MAX_PAYMENT_AMOUNT];
 
-        if ($amount === null)
+        if (($amount === null) or
+            ($amount === '0'))
         {
             $amount = self::MAX_PAYMENT_AMOUNT_DEFAULT;
         }
@@ -466,7 +467,7 @@ class Entity extends Base\PublicEntity
     {
         $features = $this->attributes[self::FEATURES];
 
-        if ($features === null)
+        if (empty($features))
         {
             return [];
         }

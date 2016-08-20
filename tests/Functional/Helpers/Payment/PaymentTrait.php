@@ -25,6 +25,8 @@ trait PaymentTrait
     use PaymentMobikwikTrait;
     use PaymentSbiepayTrait;
     use PaymentCybersourceTrait;
+    use PaymentEbsTrait;
+    use PaymentCreationTrait;
 
     use RequestResponseFlowTrait
     {
@@ -289,6 +291,24 @@ trait PaymentTrait
         return $this->doAuthPayment($payment);
     }
 
+    protected function doAuthPaymentViaAjaxRoute($payment)
+    {
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $request = [
+            'content' => $payment,
+            'url' => '/payments/create/ajax',
+            'method' => 'post'
+        ];
+
+        $this->ba->publicAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function doAuthPaymentViaCheckoutRoute($payment)
     {
         if ($payment === null)
@@ -333,6 +353,32 @@ trait PaymentTrait
         $content = $this->makeRequestAndGetContent($request);
 
         return $content;
+    }
+
+    protected function redirectPayment($id)
+    {
+        $request = [
+            'method'    => 'POST',
+            'url'       => '/payments/'.$id.'/redirect',
+            'content'   => []
+        ];
+
+        $this->ba->publicAuth();
+
+        $response = $this->sendRequest($request);
+
+        $content = $response->getContent();
+
+        $marker = '// Callback data //';
+
+        if (strpos($content, $marker) !== false)
+        {
+            $content = $this->getPaymentJsonFromCallback($content);
+
+            $response->setContent($content);
+        }
+
+        return $this->getJsonContentFromResponse($response);
     }
 
     protected function getOtp()
@@ -614,6 +660,30 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
+    protected function addCredits(array $input = array(), $mid = '10000000000000')
+    {
+        $request = array(
+            'url' => '/merchants/'.$mid.'/credits_log',
+            'method' => 'POST',
+            'content' => $input);
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function editCredits($creditsId, array $input = array(), $mid = '10000000000000')
+    {
+        $request = array(
+            'url' => '/merchants/'.$mid.'/credits/'.$creditsId,
+            'method' => 'PUT',
+            'content' => $input);
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function editWebhook($wid, $input)
     {
         $request = array(
@@ -648,6 +718,11 @@ trait PaymentTrait
         $this->ba->proxyAuth();
 
         return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function fetchBalance($mid = '10000000000000')
+    {
+        return $this->getEntityById('balance', $mid, true);
     }
 
     protected function fetchInvoice(array $input)
@@ -828,71 +903,6 @@ trait PaymentTrait
         return $payment;
     }
 
-    protected function submitPaymentCallbackForm($form)
-    {
-        //
-        // third request
-        // submit callback form
-        //
-
-        $uri = $form->getUri();
-        $ix = strpos($uri, 'v1');
-
-        $uri = substr($uri, $ix+2);
-
-        $request['method'] = 'POST';
-        $request['content'] = $form->getValues();
-
-        $request['url'] = $uri;
-
-        return $this->submitPaymentCallbackRequest($request);
-    }
-
-    protected function submitPaymentCallbackRedirect($url)
-    {
-        $request['method'] = 'GET';
-        $request['url'] = $url;
-
-        return $this->submitPaymentCallbackRequest($request);
-    }
-
-    protected function submitPaymentCallbackData($url, $method, $values)
-    {
-        $request['method'] = 'POST';
-        $request['url'] = $url;
-        $request['content'] = $values;
-
-        return $this->submitPaymentCallbackRequest($request);
-    }
-
-    protected function submitPaymentCallbackRequest($request)
-    {
-        $this->ba->publicCallbackAuth();
-
-        $response = $this->makeRequestParent($request);
-
-        $content = $response->getContent();
-
-        if ($this->isResponseInstanceType('http', $response))
-        {
-            $formData = $this->getSecondFormDataFromResponse($content, 'http://localhost');
-
-            if ((isset($formData['type'])) and
-                ($formData['type'] === 'return'))
-            {
-                return $this->processMerchantReturnCallbackForm($response);
-            }
-        }
-
-        $this->ba->publicAuth();
-
-        $content = $this->getPaymentJsonFromCallback($content);
-
-        $response->setContent($content);
-
-        return $response;
-    }
-
     protected function sendRequest($request, &$callback = null)
     {
         $this->checkAndSetUrl($request);
@@ -907,161 +917,6 @@ trait PaymentTrait
         }
 
         return $response;
-    }
-
-    protected function isPaymentCreationUrl($url)
-    {
-        $urls = array(
-            '/payments/create/jsonp',
-            '/payments/create/checkout',
-            '/payments');
-
-        return in_array($url, $urls);
-    }
-
-    protected function isOtpCallbackUrl($uri)
-    {
-        $pattern = '/payments\/pay_[\w]+\/otp_submit\/[\w]+/';
-
-        return (preg_match($pattern, $uri) === 1);
-    }
-
-    protected function handlePaymentCreationFlow($response, $request, &$callback = null)
-    {
-        $content = $response->getContent();
-
-        $gateway = null;
-
-        if ($request['url'] === '/payments/create/checkout')
-        {
-            $this->assertTrue($this->isResponseInstanceType('http', $response));
-            $this->assertEquals($response->headers->get('content-type'), 'text/html; charset=UTF-8');
-
-            $marker = '// Callback data //';
-            if (strpos($content, $marker) !== false)
-            {
-                $content = $this->getPaymentJsonFromCallback($content);
-
-                $response->setContent($content);
-
-                return $response;
-            }
-        }
-
-        if ($callback)
-        {
-            // Should be the jsonp payment creation url
-            $this->assertEquals($request['url'], '/payments/create/jsonp');
-
-            $content = $this->getJsonContentFromResponse($response, $callback);
-
-            // For no 2-auth payments, it could be a direct json response.
-            if (isset($content['gateway']) === false)
-            {
-                return $response;
-            }
-
-            $gateway = $content['gateway'];
-
-            if (isset($content['type']) === 'return')
-            {
-                // @note: This case isn't happening right now but it can in future
-                $request = $content['request'];
-
-                return $this->makeRequestParent($request);
-            }
-        }
-        else
-        {
-            // Has to be either redirect or a html form post.o
-            // First check for normal html form post.
-            $ret = ((json_decode($content) === null) and
-                    ($this->isResponseInstanceType('http', $response)) and
-                    ($response->headers->get('content-type') === 'text/html; charset=UTF-8') and
-                    ($response->getStatusCode() === 200));
-
-            if ($ret === false)
-            {
-                // Now check for redirect
-                $ret = (($this->isResponseInstanceType('redirect', $response)) and
-                        ($response->getStatusCode() === 302));
-
-                if ($ret === true)
-                {
-                    $gateway = $response->headers->get('X-gateway');
-                }
-                else
-                {
-                    return $response;
-                }
-            }
-            else
-            {
-                $gateway = $response->headers->get('X-gateway');
-
-                //
-                // When doing form posts relevant here, we put in a
-                // second form which is not submitted but it contains gateway
-                // field in encrypted form and 'type' field with value as 'first'
-                // or 'return'. Otherwise, don't take an action here.
-                //
-                $content = $this->getSecondFormDataFromResponse($content, 'http://localhost');
-
-                if ((isset($content['type'])) and
-                    ($content['type'] === 'first'))
-                {
-                    $gateway = $content['gateway'];
-                }
-                else if ($content['type'] === 'return')
-                {
-                    return $this->processMerchantReturnCallbackForm($response);
-                }
-                else if ($content['type'] === 'otp')
-                {
-                    $gateway = $content['gateway'];
-                }
-            }
-        }
-
-        return $this->runPaymentCallbackFlowForGateway($response, $gateway, $callback);
-    }
-
-    protected function runPaymentCallbackFlowForGateway($response,  $gateway, &$callback = null)
-    {
-        $gateway = $this->decryptGatewayText($gateway);
-
-        $func = $gateway;
-
-        if (strpos($gateway, 'netbanking') !== false)
-            $func = 'netbanking';
-
-        $func = studly_case($func);
-
-        $func = 'runPaymentCallbackFlow'.$func;
-
-        return $this->$func($response, $callback, $gateway);
-    }
-
-    protected function processMerchantReturnCallbackForm($response)
-    {
-        $content = $response->getContent();
-
-        $content = $this->getSecondFormDataFromResponse($content, 'http://localhost');
-
-        if ($content['type'] === 'return')
-        {
-            $this->merchantCallbackFlow = true;
-
-            $request = $this->getFormRequestFromResponse($response->getContent(), 'http://localhost');
-
-            $this->assertEquals($request['url'], $this->getLocalMerchantCallbackUrl());
-
-            $response = $this->makeRequestParent($request);
-
-            $this->assertResponse('json', $response);
-
-            return $response;
-        }
     }
 
     protected function decryptGatewayText($gateway)
@@ -1115,6 +970,19 @@ trait PaymentTrait
         list($url, $method, $content) = $this->getFormDataFromResponse($content, $url);
 
         return compact('url', 'method', 'content');
+    }
+
+    protected function getFormDataFromJsonResponse(\Illuminate\Http\JsonResponse $response)
+    {
+        $data = $response->getData(true);
+        $request = $data['request'];
+
+        $url = $request['url'];
+        $method = $request['method'];
+
+        $values = isset($request['content']) ? $request['content'] : [];
+
+        return [$url, $method, $values];
     }
 
     protected function getFormDataFromResponse($content, $url)
@@ -1197,6 +1065,10 @@ trait PaymentTrait
                 $values = $request['content'];
             }
         }
+        else if ($this->isResponseInstanceType($response, 'json'))
+        {
+            list($url, $method, $values) = $this->getFormDataFromJsonResponse($response);
+        }
         else
         {
             if ($response->getStatusCode() === 302)
@@ -1212,31 +1084,6 @@ trait PaymentTrait
         }
 
         return array($url, $method, $values);
-    }
-
-    protected function makeFirstGatewayPaymentMockRequest($url, $method = 'get', $content = array())
-    {
-        $request = array(
-           'url' => $url,
-           'method' => strtoupper($method),
-           'content' => $content);
-
-        $response = $this->makeRequestParent($request);
-
-        $statusCode = (int) $response->getStatusCode();
-
-
-        if ($statusCode === 302)
-        {
-            return $response->getTargetUrl();
-        }
-        else if ($statusCode === 200)
-        {
-            // Probably a form here.
-            // Return url, method, content from that.
-
-            return $this->getFormRequestFromResponse($response->getContent(), $url);
-        }
     }
 
     public function getLocalMerchantCallbackUrl()
@@ -1256,13 +1103,50 @@ trait PaymentTrait
     }
 
     /**
+     * Get Otp Submit Url
+     */
+    public function getOtpSubmitUrl($payment)
+    {
+        $secret = \App::make('config')->get('app.key');
+
+        $hash = hash_hmac('sha1', $payment->getPublicId(), $secret);
+
+        $params = [
+            'id' => $payment->getPublicId(),
+            'hash' => $hash,
+            'key_id' => $this->ba->getKey()
+        ];
+
+        $url = \URL::route('payment_otp_submit', $params, false);
+        $url = 'http://localhost' . $url;
+
+        return $url;
+    }
+
+    /**
+     * Get Otp resend Url
+     */
+    public function getOtpResendUrl($payment)
+    {
+        $params = [
+            'id' => $payment->getPublicId(),
+            'key_id' => $this->ba->getKey()
+        ];
+
+        $url = \URL::route('payment_otp_resend', $params, false);
+        $url = 'http://localhost' . $url;
+
+        return $url;
+    }
+
+    /**
      * Checks the laravel class of $response,
      * whether it's json, http or redirect.
      * @param  string  $type
      * @param  mixed   $response
      * @return boolean
      */
-    protected function isResponseInstanceType($type = 'json', $response)
+    protected function isResponseInstanceType($response, $type = 'json')
     {
         $match = 'Response';
 
@@ -1278,7 +1162,7 @@ trait PaymentTrait
 
     protected function assertResponse($type, $response)
     {
-        $this->assertTrue($this->isResponseInstanceType($type, $response));
+        $this->assertTrue($this->isResponseInstanceType($response, $type));
     }
 
     protected function mockServerContentFunction($closure)
@@ -1289,8 +1173,6 @@ trait PaymentTrait
                        ->mock();
 
         $this->setMockServer($server);
-
-        return $server;
     }
 
     protected function mockServer()

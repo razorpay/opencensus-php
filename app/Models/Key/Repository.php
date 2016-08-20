@@ -16,9 +16,7 @@ class Repository extends Base\Repository
 
     public function getKeysForMerchant($merchantId, $expired = false)
     {
-        $repo = $this->repo;
-
-        $query = $repo::MerchantId($merchantId);
+        $query = $this->newQuery()->merchantId($merchantId);
 
         $query = ($expired === true) ?: $query->notExpired();
 
@@ -27,16 +25,13 @@ class Repository extends Base\Repository
 
     public function findNotExpired($keyId)
     {
-        $repo = $this->repo;
-
-        return $repo::notExpired()->find($keyId);
+        return $this->newQuery()->notExpired()->find($keyId);
     }
 
     public function findByMerchantIdAndKeyId($merchantId, $keyId)
     {
-        $repo = $this->repo;
-
-        return $repo::where(Entity::MERCHANT_ID, '=', $merchantId)
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
                     ->where(Entity::ID, '=', $keyId)
                     ->first();
     }

@@ -33,11 +33,17 @@ class Processor
 
     /**
      * Callback urls can be hit multiple times by customers.
-     * WIthin certain duration x minutes, we will return payment successfully
-     * processed when the url is hit mulitple times.
-     * After that duration
+     * WIthin certain duration x minutes, we will return payment
+     * success or failed when the url is hit again.
+     * After that duration, we will simply throw
+     * BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED payment_processed error.
      */
-    const CALLBACK_SUCCESS_DURATION = 20;
+    const CALLBACK_PROCESS_AGAIN_DURATION = 20;
+
+    /**
+     * If payment fails on gateway then we may retry it with a different terminal/gateway.
+     */
+    const MAX_RETRY_ATTEMPTS = 3;
 
     protected $merchant;
     protected $trace;
@@ -195,7 +201,7 @@ class Processor
 
     protected function getSignature($str)
     {
-        return \BasicAuth::sign($str);
+        return $this->app['basicauth']->sign($str);
     }
 
     protected function checkMerchantPermissions()
@@ -264,6 +270,19 @@ class Processor
 
             return $this->cancelPayment($payment, $input);
         });
+    }
+
+    public function redirect($id)
+    {
+        $payment = $this->retrieve($id);
+
+        if ($payment->isCreated() === false)
+        {
+            return $this->processPaymentCallbackSecondTime($payment);
+        }
+
+        throw new Exception\RuntimeException(
+                'Should not have been hit.');
     }
 
     public function callGatewayFunctionCaptureViaQueue($data, $payment)

@@ -41,11 +41,12 @@ class Base
         'terminal'      => \RZP\Models\Terminal\Entity::class,
         'emi_plan'      => \RZP\Models\Emi\Entity::class,
         'axis_migs'     => \RZP\Gateway\AxisMigs\Entity::class,
-        'app_token'     => \RZP\Models\Customer\App\Entity::class,
+        'app_token'     => \RZP\Models\Customer\AppToken\Entity::class,
         'adjustment'    => \RZP\Models\Adjustment\Entity::class,
         'settlement'    => \RZP\Models\Settlement\Entity::class,
         'transaction'   => \RZP\Models\Transaction\Entity::class,
         'bank_account'  => \RZP\Models\Merchant\BankAccount\Entity::class,
+        'credits'       => \RZP\Models\Merchant\Credits\Entity::class,
     );
 
     protected static $liveAndTest = array(

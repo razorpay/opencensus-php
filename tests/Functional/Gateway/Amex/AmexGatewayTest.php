@@ -25,6 +25,8 @@ class AmexGatewayTest extends TestCase
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'amex');
 
+        $this->fixtures->create('merchant:bank_account', ['merchant_id' => '10000000000000']);
+
         $this->payment = $this->getDefaultPaymentArray();
         $this->payment['card']['number'] = '341111111111111';
         $this->payment['card']['cvv'] = '8888';
@@ -55,7 +57,6 @@ class AmexGatewayTest extends TestCase
         $this->assertArraySelectiveEquals(
             $this->testData['testPaymentAmexEntity'], $payment);
     }
-
 
     public function testPaymentRefund()
     {
@@ -119,6 +120,21 @@ class AmexGatewayTest extends TestCase
     public function testFailureWhen3DSFailsForDomesticMerchant()
     {
         $this->fixtures->merchant->disableInternational();
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function()
+        {
+            $this->payment['card']['number'] = '345678000000007';
+            $this->doAuthPayment($this->payment);
+        });
+    }
+
+    public function testFailureWhen3DSFailsForRiskyMerchant()
+    {
+        $this->fixtures->merchant->enableInternational();
+
+        $this->fixtures->merchant->enableRisky();
+
         $testData = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow($testData, function()

@@ -8,13 +8,11 @@ use RZP\Constants\Mode;
 use Mail;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
-use RZP\Services\SlackPoster;
 
 class Notify
 {
-    use SlackPoster;
-
     const AUTHORIZED = 'authorized';
+    const CARD_SAVED = 'card_saved';
     const CAPTURED   = 'captured';
     const REFUNDED   = 'refunded';
     const FAILED_TO_AUTHORIZED = 'failed_to_authorized';
@@ -86,6 +84,12 @@ class Notify
                 ],
             ],
         ],
+        self::CARD_SAVED    => [
+            'customer'  => [
+                'from' => 'care',
+                'view' => 'emails.payment.cardsaving',
+            ]
+        ]
     ];
 
     protected $payment;
@@ -249,7 +253,7 @@ class Notify
                 'color'     => $this->getSlackPostColor(),
             ];
 
-            $this->slackPost($slackMessages[$event], $slackData, $settings);
+            $this->app['slack']->queue($slackMessages[$event], $slackData, $settings);
         }
     }
 
@@ -362,6 +366,11 @@ class Notify
         else
         {
             $subject = "$action successful for {$this->template['payment']['amount']}";
+        }
+
+        if ($event === self::CARD_SAVED)
+        {
+            $subject = "Card successfully saved with Razorpay";
         }
 
         // All mails that we send out to the merchant follow the same pattern:
@@ -515,6 +524,20 @@ class Notify
                 'risk'      =>  $this->payment->merchant->getRiskRating()
             ]
         ];
+
+        if ($this->payment->card !== null)
+        {
+            $card = $this->payment->card;
+
+            $expiryMonth = str_pad($card->getExpiryMonth(), 2, "0", STR_PAD_LEFT);
+
+            $data['card'] = [
+                'number'    => '**** **** **** ' . $card->getLast4(),
+                'expiry'    => $expiryMonth . '/' . $card->getExpiryYear(),
+                'network'   => $card->getNetworkCode(),
+                'color'     => $card->getNetworkColorCode(),
+            ];
+        }
 
         if ($this->refund)
         {

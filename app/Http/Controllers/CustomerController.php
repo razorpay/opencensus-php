@@ -89,7 +89,9 @@ class CustomerController extends Controller
 
     public function fetchGlobalCustomerStatus($contact)
     {
-        $status = (new Customer\Service)->fetchGlobalCustomerStatus($contact, true);
+        $input = Request::all();
+
+        $status = (new Customer\Service)->fetchGlobalCustomerStatus($contact, $input, true);
 
         return ApiResponse::json($status);
     }
@@ -105,7 +107,7 @@ class CustomerController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Customer\App\Service)->deleteAppTokensForGlobalCustomer($input);
+        $data = (new Customer\AppToken\Service)->deleteAppTokensForGlobalCustomer($input);
 
         return ApiResponse::json($data);
     }

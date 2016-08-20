@@ -7,6 +7,7 @@ use RZP\Exception\RecoverableException;
 use RZP\Models\Payment;
 use RZP\Models\Card;
 use Request;
+use View;
 
 class PaymentController extends Controller
 {
@@ -91,6 +92,8 @@ class PaymentController extends Controller
 
     /**
      * Captures an authorized payment
+     *
+     * @param string $id Payment ID to capture
      */
     public function postCapture($id)
     {

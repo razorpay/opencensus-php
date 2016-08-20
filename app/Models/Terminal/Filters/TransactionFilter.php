@@ -33,20 +33,13 @@ class TransactionFilter extends Terminal\Filter
         switch ($method)
         {
             case Method::CARD:
-                return (($terminal->isCardEnabled()) and ($terminal->isEmiEnabled() === false)) ;
-                break;
+                return (($terminal->isCardEnabled()) and ($terminal->isEmiEnabled() === false));
 
             case Method::NETBANKING:
                 return $terminal->isNetbankingEnabled();
-                break;
 
             case Method::EMI:
-                $bank = $input['payment']->getBank();
-
-                $emiDuration = $input['payment']->emiPlan->getDuration();
-
-                return $terminal->isValidForEmiDurationAndBank($bank, $emiDuration);
-                break;
+                return $this->isValidEmiTerminal($terminal, $input);
 
             // Pick the right terminal only
             case Method::WALLET:
@@ -57,7 +50,7 @@ class TransactionFilter extends Terminal\Filter
                 return ($gateway === $terminal->getGateway());
 
             default:
-                break;
+                throw new Exception\LogicException('Unknown payment method passed.', null, ['method' => $method]);
         }
     }
 
@@ -132,8 +125,7 @@ class TransactionFilter extends Terminal\Filter
         {
             $network = $input['payment']->card->getNetworkCode();
 
-            // For Maes card, support only enabled for shared terminal
-            // on live mode
+            // Only shared terminals support Maestro on Live mode.
             if (($network === Network::MAES) and
                 ($input['mode'] === Mode::LIVE))
             {
@@ -142,5 +134,34 @@ class TransactionFilter extends Terminal\Filter
         }
 
         return true;
+    }
+
+    protected function isValidEmiTerminal($terminal, $input)
+    {
+        $bank = $input['payment']->getBank();
+
+        // check if banks emi transactions can be processed from any card terminal
+        if ((empty($bank) === false) and
+            (in_array($bank, Gateway::$emiBanksUsingCardTerminals)))
+        {
+            return (($terminal->isCardEnabled()) and ($terminal->isEmiEnabled() === false));
+        }
+
+        // validate terminal using the gateway and emi duration
+        $network = $input['payment']->card->getNetworkCode();
+
+        if ($network === Network::AMEX)
+        {
+            $gateway = Gateway::AMEX;
+        }
+        else
+        {
+            $gateway = Gateway::$emiBankToGatewayMap[$bank];
+        }
+
+        $emiDuration = $input['payment']->emiPlan->getDuration();
+
+        return $terminal->isValidEmiTerminal($gateway, $emiDuration);
+
     }
 }

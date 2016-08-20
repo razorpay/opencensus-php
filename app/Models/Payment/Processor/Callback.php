@@ -57,20 +57,7 @@ trait Callback
 
         if ($payment->isCreated() === false)
         {
-            $diff = time() - $payment->getCreatedAt();
-
-            // If it was authorized recently then send back authorized again.
-            if (($payment->isAuthorized()) and
-                ($diff < self::CALLBACK_SUCCESS_DURATION * 60))
-            {
-                return $this->postPaymentAuthorizeProcessing($payment);
-            }
-
-            // If it failed recently, then return the failure directly.
-            $this->checkForRecentFailedPayment($payment);
-
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
+            return $this->processPaymentCallbackSecondTime($payment);
         }
 
         $this->processPaymentCallback($payment, $gatewayInput);
@@ -82,6 +69,31 @@ trait Callback
         }
 
         return $this->postPaymentAuthorizeProcessing($payment);
+    }
+
+    /**
+     * This means the payment has already been processed but
+     * we are hitting callabck again. This could be due to
+     * browser refresh by the customer or s2s callback notification being
+     * delivered by the gateway before browser hits the callback route etc.
+     */
+    protected function processPaymentCallbackSecondTime($payment)
+    {
+        $diff = time() - $payment->getCreatedAt();
+
+        // If it was authorized recently then send back authorized again.
+        if (($payment->isAuthorized()) and
+            ($diff < self::CALLBACK_PROCESS_AGAIN_DURATION * 60))
+        {
+            return $this->postPaymentAuthorizeProcessing($payment);
+        }
+
+        // If it failed recently, then throw relevant exception
+        // directly for the failure.
+        $this->checkForRecentFailedPayment($payment);
+
+        throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
     }
 
     public function s2sCallback($payment, array $gatewayInput)
@@ -164,6 +176,18 @@ trait Callback
         return $data;
     }
 
+    protected function checkForRecentFailedPayment($payment)
+    {
+        // Difference should be less than 30 minutes
+        $diff = time() - $payment->getUpdatedAt();
+
+        if (($payment->isFailed()) and
+            ($diff < self::CALLBACK_PROCESS_AGAIN_DURATION * 60))
+        {
+            $this->rethrowFailedPaymentErrorException($payment);
+        }
+    }
+
     protected function postPaymentOtpCallbackProcessing($input, $data)
     {
         $payment = $this->payment;
@@ -191,13 +215,16 @@ trait Callback
             $input['customer'] = $customer;
 
             $payment->globalCustomer()->associate($customer);
-            $this->repo->saveOrFail($payment);
         }
 
         if (isset($data['token']) === true)
         {
-            $this->createOrUpdateToken($input, $data);
+            $token = $this->createOrUpdateToken($input, $data);
+
+            $payment->setGlobalToken($token->getToken());
         }
+
+        $this->repo->saveOrFail($payment);
     }
 
     protected function processPaymentCallbackException($e)

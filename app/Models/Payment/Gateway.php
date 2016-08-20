@@ -18,8 +18,10 @@ class Gateway
     const AXIS_GENIUS       = 'axis_genius';
     const AXIS_MIGS         = 'axis_migs';
     const BILLDESK          = 'billdesk';
+    const EBS               = 'ebs';
     const HDFC              = 'hdfc';
     const KOTAK             = 'kotak';
+    const AXIS              = 'axis';
     const MOBIKWIK          = 'mobikwik';
     const PAYTM             = 'paytm';
     const SBIEPAY           = 'sbiepay';
@@ -50,6 +52,7 @@ class Gateway
         self::AXIS_GENIUS       => Settlement\Channel::KOTAK,
         self::AXIS_MIGS         => Settlement\Channel::KOTAK,
         self::BILLDESK          => Settlement\Channel::KOTAK,
+        self::EBS               => Settlement\Channel::KOTAK,
         self::HDFC              => Settlement\Channel::KOTAK,
         self::KOTAK             => Settlement\Channel::KOTAK,
         self::MOBIKWIK          => Settlement\Channel::KOTAK,
@@ -84,6 +87,7 @@ class Gateway
         Method::NETBANKING => array(
             self::PAYTM,
             self::BILLDESK,
+            self::EBS,
             self::NETBANKING_HDFC,
             self::NETBANKING_KOTAK,
             self::SBIEPAY,
@@ -97,9 +101,8 @@ class Gateway
         ),
 
         Method::EMI => array(
+            self::AMEX,
             self::HDFC,
-            self::KOTAK,
-            self::AXIS_MIGS,
         ),
     );
 
@@ -177,11 +180,13 @@ class Gateway
     public static $verifyEnabled = array(
         self::AXIS_MIGS,
         self::BILLDESK,
+        self::EBS,
         self::MOBIKWIK,
         self::PAYTM,
         self::HDFC,
         self::AMEX,
         self::NETBANKING_HDFC,
+        self::NETBANKING_KOTAK,
         self::WALLET_PAYZAPP,
     );
 
@@ -304,6 +309,7 @@ class Gateway
      */
     public static $netbankingGateways = array(
         Gateway::BILLDESK,
+        Gateway::EBS,
         Gateway::SBIEPAY,
         Gateway::PAYTM,
         Gateway::ATOM);
@@ -314,7 +320,8 @@ class Gateway
      * @var array
      */
     public static $directNetbankingGateways = array(
-        Gateway::BILLDESK);
+        Gateway::BILLDESK,
+        Gateway::EBS);
 
     /**
      * Gateways which support netbanking in test mode
@@ -329,9 +336,9 @@ class Gateway
         Gateway::ATOM);
 
     public static $emiBanks = array(
-        self::HDFC      => IFSC::HDFC,
-        self::KOTAK     => IFSC::KKBK,
-        self::AXIS_MIGS => IFSC::UTIB,
+        IFSC::HDFC,
+        IFSC::KKBK,
+        IFSC::UTIB,
     );
 
     public static $emiBanksUsingCardTerminals = array(
@@ -341,12 +348,11 @@ class Gateway
 
     public static $emiFileBanks = array(
         self::KOTAK     => IFSC::KKBK,
-        self::AXIS_MIGS => IFSC::UTIB,
+        self::AXIS      => IFSC::UTIB,
     );
 
     public static $emiBankToGatewayMap = array(
         IFSC::HDFC      =>  Gateway::HDFC,
-        IFSC::UTIB      =>  Gateway::AXIS_MIGS
     );
 
     public static function isNetbankingBankDirectlySupported($bank)
@@ -498,7 +504,7 @@ class Gateway
         return $gateways;
     }
 
-    public static function getGatewaysPriority($method, $mode = 'live')
+    public static function getGatewaysPriority($method, $mode = Mode::LIVE)
     {
         $gateways = [];
 
@@ -511,6 +517,7 @@ class Gateway
                 {
                     $gateways = array_merge($gateways, self::$directCardGatewaysInTest);
                 }
+
                 break;
 
             case Method::NETBANKING:
@@ -522,6 +529,7 @@ class Gateway
                 }
 
                 array_unshift($gateways, 'direct');
+
                 break;
 
             default:

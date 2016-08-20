@@ -69,11 +69,19 @@ class RepositoryManager extends \Illuminate\Support\Manager
         $repo->pushOrFail($entity);
     }
 
+    public function saveOrFailCollection($collection)
+    {
+        foreach ($collection->all() as $entity)
+        {
+            $this->saveOrFail($entity);
+        }
+    }
+
     public function reload(& $entity)
     {
-        $repo = $this->repo;
+        $repo = $this->getRepositoryClassFromObject($entity);
 
-        $reloadedEntity = $repo::findOrFail($entity->getKey());
+        $reloadedEntity = $repo->findOrFail($entity->getKey());
 
         $attributes = $reloadedEntity->getAttributes();
 

@@ -47,6 +47,12 @@ class CreateMerchantBanks extends Migration {
             $table->boolean(Methods::EMI)
                   ->default(0);
 
+            $table->boolean(Methods::CREDIT_CARD)
+                  ->default(1);
+
+            $table->boolean(Methods::DEBIT_CARD)
+                  ->default(1);
+
             $table->integer(Methods::CREATED_AT);
 
             $table->integer(Methods::UPDATED_AT);

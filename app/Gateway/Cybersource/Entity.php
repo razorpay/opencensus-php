@@ -64,6 +64,11 @@ class Entity extends Base\Entity
         self::COLLECTION_INDICATOR,
     );
 
+    protected $casts = [
+        self::REASON_CODE => 'int',
+        self::AMOUNT      => 'int'
+    ];
+
     protected $table = Constants\Table::CYBERSOURCE;
 
     protected $primaryKey = self::ID;
@@ -71,8 +76,6 @@ class Entity extends Base\Entity
     protected $entity = Constants\Table::CYBERSOURCE;
 
     public $incrementing = true;
-
-    protected $guarded = array();
 
     public function payment()
     {
@@ -114,7 +117,7 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::CAVV);
     }
 
-    public function getAuthData()
+    public function getAuthCode()
     {
         return $this->getAttribute(self::AUTH_DATA);
     }
@@ -141,7 +144,7 @@ class Entity extends Base\Entity
 
     public function getReasonCode()
     {
-        return (int) $this->getAttribute(self::REASON_CODE);
+        return $this->getAttribute(self::REASON_CODE);
     }
 
     public function setStatus($status)
@@ -152,13 +155,5 @@ class Entity extends Base\Entity
     public function setAction($action)
     {
         $this->setAttribute(self::ACTION, $action);
-    }
-
-    /**
-     * Accessors
-     */
-    protected function getAmountAttribute()
-    {
-        return (int) $this->attributes[self::AMOUNT];
     }
 }

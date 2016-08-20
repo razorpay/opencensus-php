@@ -888,6 +888,57 @@ return [
         ],
         'response' => [
             'content' => [
+                'customer' => [
+                    'saved' => true,
+                    'contact' => '1234567890',
+                    'email' => 'test@razorpay.com',
+                ]
+            ],
+        ],
+    ],
+
+    'testGetCheckoutRouteWithAndroidMetadata' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'contact' => '1234567890',
+                'device_token' => '1000custdevice',
+                '_' => [
+                    'library' => 'checkoutjs',
+                    'platform' => 'android',
+                    'version' => '1.0.0',
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testGetCheckoutRouteWithAndroidMetadataNoSession' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'contact' => '1234567890',
+                'device_token' => '1000custdevice',
+                '_' => [
+                    'library' => 'checkoutjs',
+                    'platform' => 'android',
+                    'version' => '1.0.0',
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'customer' => [
+                    'saved' => true,
+                    'contact' => '1234567890',
+                    'email' => 'test@razorpay.com',
+                ]
+
             ],
         ],
     ],
