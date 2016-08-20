@@ -5,7 +5,7 @@
   </h1>
 </div>
 <div class="wrapper-md" ng-controller="TeamManagementCtrl" ng-init="getTeamMembers()">
-  <div class="panel panel-default col-sm-8 col-sm-offset-2" >
+  <div class="panel panel-default invites-table col-sm-8 col-sm-offset-2" >
     <div class="panel-heading m-t m-b">
       Invite users to your Organization Team
     </div>
@@ -15,10 +15,10 @@
       </div>
       <div class="row">
         <div class="m-b col-sm-8">
-          <input type="text" class="form-control" name="description" ng-model="team.email" placeholder="Email address of the user" tooltip-placement="right" tooltip="Email Address" required>
+          <input type="text" class="form-control" id="description" name="description" ng-model="team.email" placeholder="Email address of the user" tooltip-placement="right" tooltip="Email Address" required>
         </div>
         <div class="m-b col-sm-4">
-          <select class="form-control" ng-model="team.role" tooltip-placement="right" tooltip="User Role" required ng-options="role.value as role.name for role in roleOptions">
+          <select class="form-control" name="role" ng-model="team.role" tooltip-placement="right" tooltip="User Role" required ng-options="role.value as role.name for role in roleOptions">
           </select>
         </div>
       </div>

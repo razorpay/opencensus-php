@@ -218,6 +218,21 @@ trait BrowserHelper
         }, 20000);
 	}
 
+	public function waitUntilAbsentById($id)
+	{
+		$this->waitUntil(function(){
+            try
+            {
+                $this->assertFalse($this->displayedById($id));
+            }
+            catch(\Exception $e)
+            {
+
+            }
+            return true;
+        }, 20000);
+	}
+
 	public function selectByNameAndLabel($name, $option)
 	{
 		$this->select($this->byName($name))->selectOptionByLabel($option);
