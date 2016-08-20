@@ -567,9 +567,9 @@ class Gateway extends Base\Gateway
             $gatewayRefundId = $content[ResponseFields::TRANSACTION_ID];
         }
 
-        $response_code = isset($content[ResponseFields::ERROR_CODE]) ? $content[ResponseFields::ERROR_CODE] : null;
+        $responseCode = isset($content[ResponseFields::ERROR_CODE]) ? $content[ResponseFields::ERROR_CODE] : null;
 
-        $error_message = isset($content[ResponseFields::MESSAGE]) ? $content[ResponseFields::MESSAGE] : null;
+        $errorMessage = isset($content[ResponseFields::MESSAGE]) ? $content[ResponseFields::MESSAGE] : null;
 
         $refundAttributes = array(
             Entity::PAYMENT_ID              => $input['payment']['id'],
@@ -581,9 +581,9 @@ class Gateway extends Base\Gateway
             Entity::CONTACT                 => $input['payment']['contact'],
             Entity::GATEWAY_REFUND_ID       => $gatewayRefundId,
             Entity::REFUND_ID               => $input['refund']['id'],
-            Entity::RESPONSE_CODE           => $response_code,
+            Entity::RESPONSE_CODE           => $responseCode,
             Entity::STATUS_CODE             => $content[ResponseFields::STATUS],
-            Entity::ERROR_MESSAGE           => $error_message,
+            Entity::ERROR_MESSAGE           => $errorMessage,
         );
 
         return $refundAttributes;
