@@ -40,6 +40,7 @@
             <th>Fees</th>
             <th>Service Tax</th>
             <th>Status</th>
+            <th data-sort-ignore="true">&nbsp;</th>
           </tr>
         </thead>
         <tbody>
@@ -53,6 +54,9 @@
               <span class="label text-base" title="{{row.status}}" ng-class="getStatusClass(row.status)">
                 {{row.status | titlecase}}
               </span>
+            </td>
+            <td>
+              <a href="javascript:void(0);" class="label text-base bg-info" ng-click="showSettlementBreakup(row.id)">Breakup</a>
             </td>
           </tr>
           <tr ng-show="entity.count === 0">
@@ -83,3 +87,34 @@
     </footer>
   </div>
 </div>
+
+<script type="text/ng-template" id="settlementBreakupModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Breakup for <strong>{{ '#' + settlement_id }}</strong></h3>
+  </div>
+
+  <div class="modal-body new-key-modal">
+    <table class="table table-striped b-t b-light">
+      <thead>
+        <tr>
+          <th>Component</th>
+          <th>Amount</th>
+          <th>Count</th>
+          <th>Type</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="row in breakupDetails">
+          <td>{{ row.component | titlecase }}</td>
+          <td>{{ row.amount/100 | rupee:"INR " }}</td>
+          <td>{{ row.count }}</td>
+          <td>{{ row.type | titlecase }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-default" ng-click="cancel()">Close</button>
+  </div>
+</script>
