@@ -31,7 +31,7 @@ class Gateway extends Atom\Gateway
         $parts = parse_url($data['url']);
 
         $baseUrl = \RZP\Http\Route::getUrlWithPublicAuth('mockatom_choose_org');
-        $newRedirectUrl = $baseUrl . '&' .$parts['query'];
+        $newRedirectUrl = $baseUrl . '&' . $parts['query'];
 
         // Put the new redirect url back in!
         $data['url'] = $newRedirectUrl;

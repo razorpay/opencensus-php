@@ -14,6 +14,8 @@ class Server
 
     protected $validator;
 
+    protected $mockRequest;
+
     /**
      * Namespace of the current gateway server
      * @var string
@@ -219,7 +221,7 @@ class Server
 
         foreach ($request['content'] as $key => $value)
         {
-            $content .= $key . '<input type="text" name="'.$key.'" value="'.$value.'"><br />';
+            $content .= $key . '<input type="text" name="'.$key.'" value="'.htmlspecialchars($value).'"><br />';
         }
 
         $content .= '
