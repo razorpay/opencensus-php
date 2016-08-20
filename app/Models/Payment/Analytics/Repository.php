@@ -18,6 +18,7 @@ class Repository extends Base\Repository
                     ->where(Entity::CHECKOUT_ID, '=', $checkoutId)
                     ->where(Entity::CREATED_AT, '>=', $timestamp)
                     ->orderBy(Entity::CREATED_AT, 'desc')
+                    ->groupBy(Entity::PAYMENT_ID)
                     ->get();
     }
 
