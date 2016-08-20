@@ -894,6 +894,14 @@ trait PaymentTrait
         return $payment;
     }
 
+    protected function getNetbankingPaymentWithBankArray($bank)
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment['bank']   = $bank;
+
+        return $payment;
+    }
+
     protected function getDefaultWalletPaymentArray($wallet = 'mobikwik')
     {
         $payment = $this->getDefaultPaymentArray();

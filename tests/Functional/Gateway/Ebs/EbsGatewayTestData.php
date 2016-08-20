@@ -13,7 +13,7 @@ return [
         'amount_refunded'           => 0,
         'currency'                  => 'INR',
         'description'               => 'random description',
-        'bank'                      => 'ICIC',
+        'bank'                      => 'KKBK',
         'error_code'                => null,
         'error_description'         => null,
         'email'                     => 'a@b.com',
