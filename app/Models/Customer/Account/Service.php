@@ -220,6 +220,8 @@ class Service extends Base\Service
 
     public function fetchPaymentsForGlobalCustomer($input)
     {
+        Customer\Validator::validateFetchCustomerPaymentsInput($input);
+
         $skip = 0;
 
         if (empty($input['skip']) === false)
