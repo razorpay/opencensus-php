@@ -69,10 +69,12 @@ class Gateway extends Base\Gateway
 
         if ($content[ResponseFields::STATUS] !== ResponseFields::REFUND_SUCCESS_STATUS)
         {
+            $message = isset($content[ResponseFields::MESSAGE]) ? $content[ResponseFields::MESSAGE] : null;
+
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_REFUND_FAILED,
                 $content[ResponseFields::STATUS],
-                $content[ResponseFields::MESSAGE]);
+                $message);
         }
     }
 
@@ -199,10 +201,12 @@ class Gateway extends Base\Gateway
 
         if ($content[ResponseFields::STATUS] !== Status::SUCCESS)
         {
+            $message = isset($content[ResponseFields::MESSAGE]) ? $content[ResponseFields::MESSAGE] : null;
+
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
                 $content[ResponseFields::STATUS],
-                $content[ResponseFields::MESSAGE]);
+                $message);
         }
     }
 
