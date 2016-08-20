@@ -13,6 +13,7 @@ use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Wallet\Base\Action;
 use RZP\Gateway\Wallet\Base\Entity;
+use RZP\Http\Route;
 use RZP\Models\Payment\Status as PaymentStatus;
 use RZP\Constants\HashAlgo;
 use Carbon\Carbon;
@@ -158,7 +159,13 @@ class Gateway extends Base\Gateway
 
     protected function callbackRedirectFlow($input)
     {
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $input['gateway']);
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            [
+                'request' => $input['gateway'],
+                'gateway' => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+            ]);
 
         $this->verifySecureHash($input['gateway']);
 
@@ -168,14 +175,6 @@ class Gateway extends Base\Gateway
         $gatewayPaymentAttrs = $this->getCreateWalletAttributes($input);
 
         $this->createGatewayPaymentEntity($gatewayPaymentAttrs);
-
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_CALLBACK,
-            [
-                'request' => $input['gateway'],
-                'gateway' => $this->gateway,
-                'payment_id' => $input['payment']['id'],
-            ]);
 
         $this->verifyPaymentCallbackResponse($input);
     }
@@ -198,12 +197,12 @@ class Gateway extends Base\Gateway
     {
         $content = $input['gateway'];
 
-        if ($content['status'] !== Status::SUCCESS)
+        if ($content[ResponseFields::STATUS] !== Status::SUCCESS)
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-                $content['status'],
-                $content['message']);
+                $content[ResponseFields::STATUS],
+                $content[ResponseFields::MESSAGE]);
         }
     }
 
@@ -255,7 +254,10 @@ class Gateway extends Base\Gateway
             'url'     => $url. '?' . $query,
         ];
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+        unset($content[RequestFields::HASH]);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST,
+            ['request' => $request, 'content' => $content]);
 
         return $request;
     }
@@ -267,6 +269,9 @@ class Gateway extends Base\Gateway
         $udf = [RequestFields::MERCHANT_DISPLAY_NAME => $input['merchant']->getBillingLabelElseName()];
         $udf = json_encode($udf);
 
+        $notificationUrl = Route::getUrlWithPublicAuth('gateway_payment_callback_post',
+                                                ['gateway' => 'wallet_olamoney']);
+
         $content = array(
             RequestFields::COMMAND          => Command::DEBIT,
             RequestFields::ACCESS_TOKEN     => $this->getAccessToken($input['terminal']),
@@ -274,7 +279,7 @@ class Gateway extends Base\Gateway
             RequestFields::COMMENTS         => 'Razorpay_payment',
             RequestFields::UDF              => $udf,
             RequestFields::RETURN_URL       => $input['callbackUrl'],
-            RequestFields::NOTIFICATION_URL => 'http://sandbox.olamoney.in/olamoney/dummy_return',
+            RequestFields::NOTIFICATION_URL => $notificationUrl,
             RequestFields::AMOUNT           => $amount,
             RequestFields::CURRENCY         => $input['payment']['currency'],
             RequestFields::COUPON_CODE      => 'NA',
@@ -555,11 +560,11 @@ class Gateway extends Base\Gateway
 
     protected function getRefundEntityAttributesFromRefundResponse($content, $input)
     {
-        $gateway_refund_id = null;
+        $gatewayRefundId = null;
 
         if (isset($content[ResponseFields::TRANSACTION_ID]) === true)
         {
-            $gateway_refund_id = $content[ResponseFields::TRANSACTION_ID];
+            $gatewayRefundId = $content[ResponseFields::TRANSACTION_ID];
         }
 
         $response_code = isset($content[ResponseFields::ERROR_CODE]) ? $content[ResponseFields::ERROR_CODE] : null;
@@ -574,7 +579,7 @@ class Gateway extends Base\Gateway
             Entity::WALLET                  => $input['payment']['wallet'],
             Entity::EMAIL                   => $input['payment']['email'],
             Entity::CONTACT                 => $input['payment']['contact'],
-            Entity::GATEWAY_REFUND_ID       => $gateway_refund_id,
+            Entity::GATEWAY_REFUND_ID       => $gatewayRefundId,
             Entity::REFUND_ID               => $input['refund']['id'],
             Entity::RESPONSE_CODE           => $response_code,
             Entity::STATUS_CODE             => $content[ResponseFields::STATUS],
