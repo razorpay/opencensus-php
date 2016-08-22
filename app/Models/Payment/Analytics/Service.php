@@ -93,6 +93,8 @@ class Service extends Base\Service
         $oldPayments = $this->repo->payment_analytics
                                     ->getRecentMerchantPaymentsForCheckoutId($checkoutId);
 
+        $oldPayments = $oldPayments->groupBy(Entity::PAYMENT_ID);
+
         $count = $oldPayments->count();
 
         if (($count > 0) and
