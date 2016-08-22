@@ -37,20 +37,6 @@ class TerminalSelectionTest extends TestCase
         $this->assertEquals('10BillDirTrmnl', $payment['terminal_id']);
     }
 
-    public function testChooseEbsGatewayFromSharedTerminals()
-    {
-        $this->fixtures->create('terminal:multiple_netbanking_terminals');
-
-        // Create all shared terminals
-        $payment = $this->getDefaultNetbankingPaymentArray('LAVB');
-        $payment = $this->doAuthAndCapturePayment($payment);
-
-        // ICIC should be served with billdesk under these conditions
-        $payment = $this->getLastEntity('payment', true);
-        $this->assertEquals('ebs', $payment['gateway']);
-        $this->assertEquals('100000EbsTrmnl', $payment['terminal_id']);
-    }
-
     public function testChooseTerminalWithCategory()
     {
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
