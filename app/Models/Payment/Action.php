@@ -6,19 +6,20 @@ use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Models\Payment;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 
 class Action
 {
-    const AUTHORIZE     = 'authorize';
-    const CALLBACK      = 'callback';
-    const CAPTURE       = 'capture';
-    const REFUND        = 'refund';
-    const TOPUP         = 'topup';
-    const DEBIT         = 'debit';
-    const VERIFY        = 'verify';
-    const VERIFY_REFUND = 'verify_refund';
+    const AUTHORIZE         = 'authorize';
+    const CALLBACK          = 'callback';
+    const CAPTURE           = 'capture';
+    const REFUND            = 'refund';
+    const TOPUP             = 'topup';
+    const DEBIT             = 'debit';
+    const VERIFY            = 'verify';
+    const VERIFY_REFUND     = 'verify_refund';
+    const VERIFY_CAPTURE    = 'verify_capture';
 
     protected $merchant;
 
