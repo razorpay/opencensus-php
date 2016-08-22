@@ -9,9 +9,11 @@ use Mockery;
 use Requests;
 use Symfony\Component\DomCrawler\Crawler;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\EntityActionTrait;
 
 trait PaymentTrait
 {
+    use EntityActionTrait;
     use PaymentAmexTrait;
     use PaymentAtomTrait;
     use PaymentAxisGeniusTrait;
@@ -594,160 +596,6 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function deleteTerminal($mid, $tid)
-    {
-        $request = array(
-            'url' => '/merchants/'.$mid.'/terminals/'.$tid,
-            'method' => 'delete');
-
-        $this->ba->appAuth();
-
-        return $this->makeRequestAndGetContent($request);
-    }
-
-    protected function deleteTerminal2($tid)
-    {
-        $request = array(
-            'url' => '/terminals/'.$tid,
-            'method' => 'delete');
-
-        $this->ba->appAuth();
-
-        return $this->makeRequestAndGetContent($request);
-    }
-
-    protected function restoreTerminal($tid)
-    {
-        $request = array(
-            'url' => '/terminals/'.$tid.'/restore',
-            'method' => 'put');
-
-        $this->ba->appAuth();
-
-        return $this->makeRequestAndGetContent($request);
-    }
-
-
-    protected function editTerminal($tid, $input)
-    {
-        $request = array(
-            'url' => '/terminals/'.$tid,
-            'method' => 'put',
-            'content' => $input);
-
-        $this->ba->appAuth();
-
-        return $this->makeRequestAndGetContent($request);
-    }
-
-    protected function createWebhook(array $input = array())
-    {
-        $defaultInput = array(
-            'url' => 'http://localhost/v1/dummy/route',
-            'events' => [
-                'payment.authorized' => '1',
-            ]);
-
-        $input = array_merge($defaultInput, $input);
-
-        $request = array(
-            'url' => '/webhooks',
-            'method' => 'post',
-            'content' => $input);
-
-        $this->ba->proxyAuth();
-
-        return $this->makeRequestAndGetContent($request);
-    }
-
-    protected function addCredits(array $input = array(), $mid = '10000000000000')
-    {
-        $request = array(
-            'url' => '/merchants/'.$mid.'/credits_log',
-            'method' => 'POST',
-            'content' => $input);
-
-        $this->ba->appAuth();
-
-        return $this->makeRequestAndGetContent($request);
-    }
-
-    protected function editCredits($creditsId, array $input = array(), $mid = '10000000000000')
-    {
-        $request = array(
-            'url' => '/merchants/'.$mid.'/credits/'.$creditsId,
-            'method' => 'PUT',
-            'content' => $input);
-
-        $this->ba->appAuth();
-
-        return $this->makeRequestAndGetContent($request);
-    }
-
-    protected function editWebhook($wid, $input)
-    {
-        $request = array(
-            'url' => '/webhooks/'.$wid,
-            'method' => 'put',
-            'content' => $input);
-
-        $this->ba->proxyAuth();
-
-        return $this->makeRequestAndGetContent($request);
-    }
-
-    protected function merchantEditCredits($id, $credits)
-    {
-        $request = array(
-            'url' => '/merchants/'.$id.'/credits',
-            'method' => 'post',
-            'content' => ['credits' => $credits]);
-
-        $this->ba->appAuth();
-
-        return $this->makeRequestAndGetContent($request);
-    }
-
-    protected function merchantAssignPricingPlan($planId, $id = '10000000000000')
-    {
-        $request = array(
-            'url' => '/merchants/'.$id.'/pricing',
-            'method' => 'POST',
-            'content' => ['pricing_plan_id' => $planId]);
-
-        return $this->makeRequestAndGetContent($request);
-    }
-
-    protected function fetchReport($entity, $content, $id = '10000000000000')
-    {
-        $request = array(
-            'url' => '/reports/'.$entity,
-            'method' => 'get',
-            'content' => $content);
-
-        $this->ba->proxyAuth();
-
-        return $this->makeRequestAndGetContent($request);
-    }
-
-    protected function fetchBalance($mid = '10000000000000')
-    {
-        return $this->getEntityById('balance', $mid, true);
-    }
-
-    protected function fetchInvoice(array $input)
-    {
-        $request = [
-            'url'       => '/reports/invoice',
-            'method'    => 'GET',
-            'content'   => $input
-        ];
-
-        $this->ba->proxyAuth();
-
-        return $this->makeRequestAndGetContent($request);
-    }
-
     protected function getAndMatchPayment($id, $paymentResponse = array())
     {
         $testData['request']['url'] = '/payments/'.$id;
@@ -794,29 +642,6 @@ trait PaymentTrait
         $payment['terminal_id'] = '1n25f6uN5S1Z5a';
 
         return $payment;
-    }
-
-    protected function getPaymentMethods()
-    {
-        $request = [
-            'url' => '/methods',
-            'method' => 'get',
-        ];
-
-        return $this->makeRequestAndGetContent($request);
-    }
-
-    protected function setPaymentMethods($methods, $merchantId = '10000000000000')
-    {
-        $this->ba->appAuth();
-
-        $request = [
-            'url' => '/merchants/'.$merchantId.'/methods',
-            'method' => 'put',
-            'methods' => json_encode($methods)
-        ];
-
-        return $this->makeRequestAndGetContent($request);
     }
 
     protected function getDefaultPaymentArray()
