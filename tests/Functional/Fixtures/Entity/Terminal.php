@@ -513,20 +513,34 @@ class Terminal extends Base
 
     public function createSharedAmexTerminal(array $attributes = array())
     {
+        $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
         $termId = \RZP\Models\Terminal\Shared::AMEX_RAZORPAY_TERMINAL;
 
         $defaultValues = array(
             'id'                        => $termId,
-            'merchant_id'               => '1MercShareTerm',
+            'merchant_id'               => $merchantId,
             'gateway'                   => 'amex',
             'card'                      => 1,
             'gateway_merchant_id'       => 'razorpay amex',
             'gateway_terminal_id'       => 'nodal account amex',
             'gateway_terminal_password' => 'razorpay_password',
+            'shared'                    => 1,
         );
 
         $attributes = array_merge($defaultValues, $attributes);
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
+
+    public function createSharedAmexCategoryTerminals()
+    {
+        // Create education terminal
+        $attributes = ['id' => 'ShAmexEduTrmnl', 'terminal_category' => 'education'];
+        $this->createSharedAmexTerminal($attributes);
+
+        // Create education services terminal
+        $attributes = ['id' => 'ShAmEduSrvTmnl', 'terminal_category' => 'education_services'];
+        $this->createSharedAmexTerminal($attributes);
+    }
+
 }

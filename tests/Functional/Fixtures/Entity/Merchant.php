@@ -251,6 +251,11 @@ class Merchant extends Base
         return $this->edit($id, ['category' => $category]);
     }
 
+    public function setTerminalCategories($categories, $id='10000000000000')
+    {
+        return $this->edit($id, ['terminal_categories' => json_encode($categories)]);
+    }
+
     public function enableTPV($id = '10000000000000')
     {
         return $this->edit($id, ['category' => 9999]);

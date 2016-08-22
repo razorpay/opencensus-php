@@ -69,6 +69,7 @@ class Entity extends Base\PublicEntity
         self::SETTLEMENT_SCHEDULE,
         self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
+        self::TERMINAL_CATEGORIES,
     );
 
     // Requires PHP 5.6
@@ -118,6 +119,7 @@ class Entity extends Base\PublicEntity
         self::RISK_RATING           => 3,
         self::LOGO_URL              => null,
         self::MAX_PAYMENT_AMOUNT    => null,
+        self::TERMINAL_CATEGORIES   => null,
     );
 
     protected $publicSetters = array(
@@ -262,6 +264,34 @@ class Entity extends Base\PublicEntity
     public function setLogoUrl($logoUrl)
     {
         $this->setAttribute(self::LOGO_URL, $logoUrl);
+    }
+
+    public function setTerminalCategories($categories)
+    {
+        $this->setAttribute(self::TERMINAL_CATEGORIES, $categories);
+    }
+
+    protected function setTerminalCategoriesAttributes($categories)
+    {
+        $terminalCategories = $this->getTerminalCategoriesAttribute();
+
+        $terminalCategories = array_merge($terminalCategories, $categories);
+
+        $this->attributes[self::TERMINAL_CATEGORIES] = json_encode($terminalCategories);
+    }
+
+    public function getTerminalCategories()
+    {
+        return $this->getAttribute(self::TERMINAL_CATEGORIES);
+    }
+
+    protected function getTerminalCategoriesAttribute()
+    {
+        $terminalCategories = $this->attributes[self::TERMINAL_CATEGORIES];
+
+        $terminalCategories = json_decode($terminalCategories, true);
+
+        return is_null($terminalCategories) ? [] : $terminalCategories;
     }
 
     public function getBillingLabelElseName()
@@ -635,17 +665,31 @@ class Entity extends Base\PublicEntity
 
         $terminalCategory = null;
 
-        if (isset($terminalCategories[$method]))
+        $methodName = $this->getCategoryNameForMethod($method);
+
+        $gatewayName = $this->getCategoryNameForGateway($gateway);
+
+        if (isset($terminalCategories[$methodName]))
         {
-            $terminalCategory = $terminalCategories[$method];
+            $terminalCategory = $terminalCategories[$methodName];
         }
 
-        if (isset($terminalCategories[$gateway]))
+        if (isset($terminalCategories[$gatewayName]))
         {
-            $terminalCategory = $terminalCategories[$gateway];
+            $terminalCategory = $terminalCategories[$gatewayName];
         }
 
         return $terminalCategory;
+    }
+
+    protected function getCategoryNameForMethod($method)
+    {
+        return 'method_'.$method;
+    }
+
+    protected function getCategoryNameForGateway($gateway)
+    {
+        return 'gateway_'.$gateway;
     }
 
     public function isShared()

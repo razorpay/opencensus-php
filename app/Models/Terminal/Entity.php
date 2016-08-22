@@ -399,4 +399,14 @@ class Entity extends Base\PublicEntity
 
         return false;
     }
+
+    public function getTerminalCategory()
+    {
+        return $this->getAttribute(self::TERMINAL_CATEGORY);
+    }
+
+    public function setTerminalCategory($category)
+    {
+        $this->setAttribute(self::TERMINAL_CATEGORY, $category);
+    }
 }

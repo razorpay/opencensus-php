@@ -132,4 +132,20 @@ class TerminalSelectionTest extends TestCase
         $this->fixtures->merchant->disableRisky();
     }
 
+    public function testTerminalCategoryChoice()
+    {
+        $this->fixtures->merchant->setTerminalCategories(['method_card' => 'education', 'gateway_amex' => 'education_services']);
+        $this->fixtures->merchant->enableMethod('10000000000000', 'amex');
+        $this->fixtures->create('terminal:all_shared_terminals');
+        $this->fixtures->create('terminal:shared_amex_terminal');
+        $this->fixtures->create('terminal:shared_amex_category_terminals');
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '341111111111111';
+        $payment['card']['cvv'] = '8888';
+
+        $content = $this->doAuthAndCapturePayment($payment);
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('ShAmEduSrvTmnl', $payment['terminal_id']);
+    }
 }
