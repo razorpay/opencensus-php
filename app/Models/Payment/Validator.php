@@ -8,6 +8,7 @@ use Lib\PhoneBook;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Models\Payment\Processor\Wallet;
 
 class Validator extends Base\Validator
 {
@@ -17,7 +18,7 @@ class Validator extends Base\Validator
         'method'                  =>  'in:card,netbanking,wallet,emi',
         'card'                    =>  'sometimes',
         'bank'                    =>  'required_if:method,netbanking',
-        'wallet'                  =>  'required_if:method,wallet|in:paytm,mobikwik,payzapp,payumoney',
+        'wallet'                  =>  'sometimes',
         'emi_duration'            =>  'required_if:method,emi|integer|in:3,6,9,12,18,24',
         'description'             =>  'sometimes',
         'email'                   =>  'required|email',
@@ -51,7 +52,30 @@ class Validator extends Base\Validator
         'currency',
         'description',
         'fee',
-        'contact');
+        'contact',
+        'wallet');
+
+    protected function validateWallet($input)
+    {
+        if ($input['method'] !== Payment\Method::WALLET)
+        {
+            return true;
+        }
+
+        if (isset($input['wallet']) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_PROVIDED);
+        }
+
+        if (Wallet::exists($input['wallet']) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_SUPPORTED);
+        }
+
+        return true;
+    }
 
     protected function validateCardKey($input)
     {
