@@ -136,6 +136,14 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testEditMerchantEnableInternationalFail()
+    {
+        $this->fixtures->create('pricing:standard_plan');
+        $this->fixtures->merchant->editPricingPlanId('1A0Fkd38fGZPVC');
+
+        $this->startTest();
+    }
+
     public function testEditTransactionEmailWithCsv()
     {
         $this->createMerchant();
