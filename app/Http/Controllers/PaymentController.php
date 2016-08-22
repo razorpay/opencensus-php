@@ -3,9 +3,9 @@
 namespace RZP\Http\Controllers;
 
 use RZP\Http\ApiResponse;
-use RZP\Exception\RecoverableException;
 use RZP\Models\Payment;
 use RZP\Models\Card;
+use RZP\Trace\TraceCode;
 use Request;
 use View;
 
@@ -16,6 +16,8 @@ class PaymentController extends Controller
 
     public function __construct()
     {
+        parent::__construct();
+        
         $this->payment = new Payment\Service();
         $this->refund = new Payment\Refund\Service();
     }
@@ -262,7 +264,7 @@ class PaymentController extends Controller
         $input = Request::all();
 
         $this->app['trace']->info(
-            \Trace\TraceCode::PAYMENT_WEBHOOK,
+            TraceCode::PAYMENT_WEBHOOK,
             $input);
     }
 
@@ -279,6 +281,13 @@ class PaymentController extends Controller
     {
         $data = $this->refund->verify($id);
 
+        return ApiResponse::json($data);
+    }
+    
+    public function getCaptureVerify($id)
+    {
+        $data = $this->payment->verifyCapture($id);
+        
         return ApiResponse::json($data);
     }
 }

@@ -37,6 +37,8 @@ class Repository extends Base\Repository
     public function persistAfterEnroll($request, $response)
     {
         $result = $response['enroll_result'];
+        
+        $status = null;
 
         if ($result === Payment\Result::ENROLLED)
         {
@@ -306,10 +308,10 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
-    public function retrieveByPaymentIdAndStatus($id, $status)
+    public function retrieveByPaymentIdAndStatusOrFail($paymentId, $status)
     {
         return $this->newQuery()
-                    ->where('payment_id', '=', $id)
+                    ->where('payment_id', '=', $paymentId)
                     ->where('status', '=', $status)
                     ->firstOrFail();
     }
