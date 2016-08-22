@@ -1123,7 +1123,7 @@ class Service extends Base\Service
 
         list(, $data) = $this->fetchMerchantAndActivationDetails($id);
 
-        $file = HdfcTidExcel::generateExcel($data);
+        $file = Hdfc\HdfcTidExcel::generateExcel($data);
 
         $this->logActionToSlack($id, Actions::HDFC_EXCEL);
 
