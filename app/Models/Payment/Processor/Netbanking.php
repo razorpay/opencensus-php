@@ -234,7 +234,6 @@ class Netbanking
         IFSC::JAKA,
         IFSC::KARB,
         IFSC::KKBK,
-        IFSC::LAVB,
         IFSC::MAHB,
         IFSC::ORBC,
         IFSC::PSIB,
@@ -245,6 +244,7 @@ class Netbanking
         IFSC::VYSA,
         IFSC::VIJB,
         IFSC::YESB,
+        Netbanking::LAVB_R,
         Netbanking::PUNB_R,
         /*
         IFSC::BKID,

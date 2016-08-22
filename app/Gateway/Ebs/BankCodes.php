@@ -25,7 +25,6 @@ class BankCodes
         IFSC::JAKA => '1015',
         IFSC::KARB => '1133',
         IFSC::KKBK => '1148',
-        IFSC::LAVB => '1433',
         IFSC::ORBC => '1154',
         IFSC::PSIB => '1421',
         IFSC::SRCB => '1227',
@@ -34,6 +33,7 @@ class BankCodes
         IFSC::UTBI => '1212',
         IFSC::VIJB => '1379',
         IFSC::YESB => '1146',
+        Netbanking::LAVB_R => '1433',
         Netbanking::PUNB_R => '1381',
         /*
         IFSC::UTIB => '1004',
