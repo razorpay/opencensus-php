@@ -1045,7 +1045,7 @@ trait Authorize
         }
         catch (\Exception $e)
         {
-            s($e);
+            s($e->getMessage());
             $this->trace->traceException($e);
 
             return;
