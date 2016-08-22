@@ -143,9 +143,10 @@ app.controller('UserCtrl', [
               });
             }
 
-            if(Smooch.ready){
+            if (Smooch._rzpReady) {
               sk_user();
-            } else {
+            }
+            else {
               Smooch.on('ready', function() {
                 sk_user();
               });
