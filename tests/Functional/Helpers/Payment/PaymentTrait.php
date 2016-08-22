@@ -886,10 +886,15 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function getDefaultNetbankingPaymentArray()
+    protected function getDefaultNetbankingPaymentArray($bank = null)
     {
         $payment = $this->getDefaultPaymentArray();
         $payment['method'] = 'netbanking';
+
+        if ($bank !== null)
+        {
+            $payment['bank'] = $bank;
+        }
 
         return $payment;
     }
