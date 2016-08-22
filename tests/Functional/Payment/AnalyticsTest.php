@@ -7,7 +7,7 @@ use RZP\Models\Base\UniqueIdEntity;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
-class PaymentAnalyticsTest extends TestCase
+class AnalyticsTest extends TestCase
 {
     use PaymentTrait;
 
