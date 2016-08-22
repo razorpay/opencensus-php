@@ -41,7 +41,9 @@ trait FileHandlerTrait
 
             $metadata = $this->getH2HMetadata();
 
-            $url = $this->saveToAws($name, $fullpath, 'text/plain', $bucket, $metadata);
+            $key = 'kotak/outgoing/' . $name;
+
+            $url = $this->saveToAws($key, $fullpath, 'text/plain', $bucket, $metadata);
 
             // This will be local file path if aws is mocked
             return $url;
