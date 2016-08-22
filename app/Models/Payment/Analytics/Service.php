@@ -39,13 +39,6 @@ class Service extends Base\Service
         return $audits->toArrayPublic();
     }
 
-    public function getAuditsForTerminalBetween($from, $to, $id)
-    {
-        $audits = $this->repo->payment_analytics->findBetweenTimestampsForTerminal($from, $to, $id);
-
-        return $audits->toArrayPublic();
-    }
-
     public function recordPaymentRequestData($rawData, array & $log)
     {
         if (isset($rawData['input']))

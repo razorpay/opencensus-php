@@ -34,29 +34,4 @@ class Repository extends Base\Repository
 
         return $results->get();
     }
-
-    public function findForTerminal($id)
-    {
-        $repo = $this->repo;
-
-        return $repo->where(Entity::TERMINAL_ID, '=', $id)
-                    ->get();
-    }
-
-    public function findBetweenTimestampsForTerminal($from, $to, $terminal_id, $payment_id = null)
-    {
-        $repo = $this->repo->payment_analytics;
-
-        $results = $repo::withTrashed()
-                        ->where(Entity::TERMINAL_ID, '=', $terminal_id)
-                        ->where(Entity::TIMESTAMP, '>=', $from)
-                        ->where(Entity::TIMESTAMP, '<=', $to);
-
-        if($payment_id !== null)
-        {
-            $results = $results->where(Entity::PAYMENT_ID, '=', $payment_id);
-        }
-
-        return $results->get();
-    }
 }
