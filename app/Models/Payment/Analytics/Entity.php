@@ -73,7 +73,8 @@ class Entity extends Base\PublicEntity
     );
 
     protected $defaults = array(
-        self::LIBRARY     => Metadata::LIBRARY_VALUES[Metadata::DIRECT],
+        self::LIBRARY   => Metadata::DIRECT,
+        self::PLATFORM  => Metadata::SERVER,
     );
 
     protected $table = \RZP\Constants\Table::PAYMENT_ANALYTICS;
@@ -188,9 +189,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CHECKOUT_ID, $checkoutId);
     }
 
-    public function setLibrary($library)
+    public function setLibraryAttribute($library)
     {
-        $this->setAttribute(self::LIBRARY, Metadata::getValueForLibrary($library));
+        $this->attributes[self::LIBRARY] = Metadata::getValueForLibrary($library);
     }
 
     public function setBrowserAttribute($browser)
