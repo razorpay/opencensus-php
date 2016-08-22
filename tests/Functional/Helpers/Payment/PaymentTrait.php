@@ -886,11 +886,15 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function getDefaultNetbankingPaymentArray($bank = 'ICIC')
+    protected function getDefaultNetbankingPaymentArray($bank = null)
     {
         $payment = $this->getDefaultPaymentArray();
         $payment['method'] = 'netbanking';
-        $payment['bank']   = $bank;
+
+        if (empty($payment['bank']) === false)
+        {
+            $payment['bank'] = $bank;
+        }
 
         return $payment;
     }
