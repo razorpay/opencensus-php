@@ -4,6 +4,7 @@ namespace RZP\Gateway\Wallet\Base;
 
 use RZP\Gateway\Base;
 use RZP\Gateway\Wallet;
+use Lib\PhoneBook;
 
 class Gateway extends Base\Gateway
 {
@@ -81,5 +82,13 @@ class Gateway extends Base\Gateway
     protected function getRepo()
     {
         return new Repository();
+    }
+
+    protected function getFormattedContact($contact)
+    {
+        // Constructor does the basic validation
+        $phoneBook = new PhoneBook($contact, true);
+
+        return $phoneBook->format(PhoneBook::DOMESTIC);
     }
 }

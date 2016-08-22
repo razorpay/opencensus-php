@@ -2,24 +2,22 @@
 
 namespace RZP\Gateway\Ebs;
 
+use RZP\Exception;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Payment\Processor\Netbanking;
 
 class BankCodes
 {
+    // Commenting Banks which need approval for activating
     public static $bankCodeMap = [
         IFSC::ANDB => '1378',
-        IFSC::UTIB => '1004',
-        IFSC::BKID => '1214',
         IFSC::MAHB => '1229',
         IFSC::CNRB => '1224',
         IFSC::CSBK => '1272',
         IFSC::CBIN => '1147',
-        IFSC::CIUB => '1215',
         IFSC::CORP => '1135',
         IFSC::DLXB => '1273',
         IFSC::FDRL => '1029',
-        IFSC::HDFC => '1007',
-        IFSC::ICIC => '1016',
         IFSC::IDIB => '1143',
         IFSC::IOBA => '1213',
         IFSC::VYSA => '1210',
@@ -28,17 +26,24 @@ class BankCodes
         IFSC::KKBK => '1148',
         IFSC::ORBC => '1154',
         IFSC::SRCB => '1227',
+        IFSC::UBIN => '1216',
+        IFSC::UTBI => '1212',
+        IFSC::VIJB => '1379',
+        IFSC::YESB => '1146',
+        Netbanking::PUNB_R => '1381',
+        /*
+        IFSC::UTIB => '1004',
+        IFSC::BKID => '1214',
+        IFSC::CIUB => '1215',
+        IFSC::HDFC => '1007',
+        IFSC::ICIC => '1016',
         IFSC::SBBJ => '1033',
         IFSC::SBHY => '1034',
         IFSC::SBIN => '1032',
         IFSC::SBMY => '1038',
         IFSC::STBP => '1035',
         IFSC::SBTR => '1039',
-        IFSC::UBIN => '1216',
-        IFSC::UTBI => '1212',
-        IFSC::VIJB => '1379',
-        IFSC::YESB => '1146',
-        IFSC::PUNB => '1381',
+        */
     ];
 
     public static function getMappedCode($bankCode)

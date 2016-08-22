@@ -328,7 +328,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT_REFUNDED, $amount);
     }
 
-    public function setGateway($gateway)
+    /**
+     * This should be kept as protected so the gateway is only
+     * set via associateTerminal function
+     */
+    protected function setGateway($gateway)
     {
         $this->setAttribute(self::GATEWAY, $gateway);
     }
@@ -843,6 +847,11 @@ class Entity extends Base\PublicEntity
         return (bool) $this->getAttribute(self::SAVE);
     }
 
+    public function getGlobalToken()
+    {
+        return $this->getAttribute(self::GLOBAL_TOKEN);
+    }
+
     public function getCardId()
     {
         return $this->getAttribute(self::CARD_ID);
@@ -866,10 +875,6 @@ class Entity extends Base\PublicEntity
     public function getMethodWithDetail()
     {
         $method = Method::formatted($this->getMethod());
-        $walletNames = [
-            'paytm' =>  'PayTM',
-            'mobikwik' =>  'Mobikwik'
-        ];
 
         switch($this->getMethod())
         {
@@ -947,7 +952,7 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function setTerminal($terminal)
+    public function associateTerminal($terminal)
     {
         if ($terminal === null)
         {

@@ -5,7 +5,7 @@ namespace RZP\Exception;
 use RZP\Error\Error;
 use RZP\Error\ErrorCode;
 
-class GatewayTimeoutException extends RecoverableException
+class GatewayTimeoutException extends GatewayRequestException
 {
     public function __construct($curlErrorMessage, \Exception $previous = null, $safeRetry = false)
     {
@@ -18,6 +18,5 @@ class GatewayTimeoutException extends RecoverableException
         $this->safeRetry = $safeRetry;
 
         // parent::__construct($curlErrorMessage, $code, $previous);
-
     }
 }

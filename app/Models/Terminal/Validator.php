@@ -126,6 +126,12 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACCESS_CODE         => 'required|string',
     );
 
+    protected static $walletOlamoneyTerminalRules = array(
+        Entity::GATEWAY                     => 'required|in:wallet_olamoney',
+        Entity::GATEWAY_SECURE_SECRET       => 'required|string',
+        Entity::GATEWAY_ACCESS_CODE         => 'required|string',
+    );
+
     protected function validateGateway($input)
     {
         if (Payment\Gateway::isValidGateway($input['gateway']) === false)

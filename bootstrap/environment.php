@@ -9,24 +9,60 @@
 use Dotenv\Dotenv;
 use Dotenv\Exception\InvalidPathException;
 
-$app->useEnvironmentPath(__DIR__.'/../environment');
+$envDir = __DIR__.'/../environment';
+$app->useEnvironmentPath($envDir);
 
-$app->detectEnvironment(function() use ($app) {
-    $env = 'production';
+//
+// By default we assume environment is prod.
+// During testing, laravel sets APP_ENV to 'testing'
+// Otherwise, we get the environement from the file
+// environment/env.php
+//
 
-    if (env('APP_ENV') === 'testing')
+$env = 'production';
+
+if (env('APP_ENV') === 'testing')
+{
+    $env = 'testing';
+}
+else if (file_exists($file = __DIR__ . '/../environment/env.php'))
+{
+    $env = require $file;
+}
+
+putenv("APP_ENV=$env");
+
+$file = $app->environmentFile();
+
+$cascadingEnvFile = '.env.' . $env;
+
+//
+// Environment variable files are loaded in the order
+// * Vault env file
+// * Cascaded environment based env file
+// * Default env file
+//
+// Note that of the above 3, first two are committed in git
+// while last one comes into the folder when baking amis via brahma
+//
+
+if (! function_exists('read_env_file'))
+{
+    function read_env_file($envDir, $fileName)
     {
-        $env = 'testing';
-    }
-    else if (file_exists($file = __DIR__ . '/../environment/env.php'))
-    {
-        $env = require $file;
-    }
+        $file = $envDir . '/' . $fileName;
 
-    $file = $app->environmentFile().($env==='production'?'':'.'.$env);
+        if (file_exists($file) === false)
+        {
+            return;
+        }
 
-    if (file_exists($app->environmentPath().'/'.$file))
-    {
-        $app->loadEnvironmentFrom($file);
+        $dotenv = new Dotenv($envDir, $fileName);
+
+        $dotenv->load();
     }
-});
+}
+
+read_env_file($envDir, '.env.vault');
+read_env_file($envDir, $cascadingEnvFile);
+read_env_file($envDir, '.env.defaults');

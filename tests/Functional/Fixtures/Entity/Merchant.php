@@ -256,6 +256,11 @@ class Merchant extends Base
         return $this->edit($id, ['terminal_categories' => json_encode($categories)]);
     }
 
+    public function editPricingPlanId($planId, $id = '10000000000000')
+    {
+        return $this->edit($id, ['pricing_plan_id' => $planId]);
+    }
+
     public function enableTPV($id = '10000000000000')
     {
         return $this->edit($id, ['category' => 9999]);
