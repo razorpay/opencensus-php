@@ -150,16 +150,9 @@ class Entity extends Base\PublicEntity
         return $this->attributes[self::DEVICE];
     }
 
-    public function getPlatformAttribute()
+    public function getPlatform()
     {
         $platform = $this->attributes[self::PLATFORM];
-
-        if ($platform === null)
-        {
-            return $platform;
-        }
-
-        return  Metadata::getStringForPlatformValue($this->attributes[self::PLATFORM]);
     }
 
     public function getIp()

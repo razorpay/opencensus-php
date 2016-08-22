@@ -36,6 +36,7 @@ class AnalyticsTest extends TestCase
         $paymentAnalytic = $this->getLastEntity(Table::PAYMENT_ANALYTICS, true);
 
         $this->assertEquals($checkoutId, $paymentAnalytic[AnalyticsEntity::CHECKOUT_ID]);
+
         $this->assertEquals(1, $paymentAnalytic[AnalyticsEntity::ATTEMPTS]);
 
         // ------------------------------------------------------------------ //
@@ -47,6 +48,7 @@ class AnalyticsTest extends TestCase
         $paymentAnalytic = $this->getLastEntity(Table::PAYMENT_ANALYTICS, true);
 
         $this->assertEquals($checkoutId, $paymentAnalytic[AnalyticsEntity::CHECKOUT_ID]);
+
         $this->assertEquals(2, $paymentAnalytic[AnalyticsEntity::ATTEMPTS]);
     }
 
@@ -62,7 +64,7 @@ class AnalyticsTest extends TestCase
         $payment = $this->doAuthPayment($payment, $requestServer);
 
         $paymentAnalytic = $this->getLastEntity(Table::PAYMENT_ANALYTICS, true);
-        // s($paymentAnalytic);
+
         $this->assertTestResponse($paymentAnalytic, 'testPaymentAnalytics');
     }
 }
