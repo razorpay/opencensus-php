@@ -881,7 +881,6 @@ app.controller('MerchantDetailCtrl', [
     // This lets us display methods that are not returned
     // by the API as false
     var forcedMethods = [
-      'paytm',
       'mobikwik',
       'payzapp',
       'payumoney',
