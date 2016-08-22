@@ -28,6 +28,7 @@ class Terminal extends Base
         $this->createSharedAtomNetbankingTerminal();
         $this->createSharedBilldeskTerminal();
         $this->createSharedNetbankingKotakTerminal();
+        $this->createSharedEbsTerminal();
     }
 
     public function createMultipleCategoryTerminals()
@@ -298,6 +299,21 @@ class Terminal extends Base
         return parent::create($attributes);
     }
 
+
+    public function createDirectBilldeskTerminal(array $attributes = array())
+    {
+        $attributes = array(
+            'id'                    => '10BillDirTrmnl',
+            'merchant_id'           => '10000000000000',
+            'gateway'               => 'billdesk',
+            'gateway_merchant_id'   => 'abcd',
+            'card'                  => 0,
+            'netbanking'            => 1,
+            'shared'                => 0,
+        );
+
+        return parent::create($attributes);
+    }
     public function createSharedBilldeskTerminal(array $attributes = array())
     {
         $termId = \RZP\Models\Terminal\Shared::BILLDESK_RAZORPAY_TERMINAL;
