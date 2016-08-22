@@ -217,6 +217,7 @@ class Service extends Base\Service
      * we create a transaction for the payment.
      *
      * @param $paymentId
+     * @return array
      */
     public function verifyCapture($paymentId)
     {

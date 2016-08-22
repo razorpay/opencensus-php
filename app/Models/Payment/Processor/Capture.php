@@ -96,8 +96,8 @@ trait Capture
      * We cannot create a transaction by capturing it because, the merchant may not actually want to capture
      * this payment anymore. Hence, we just create a transaction and leave it at that.
      *
-     * DISCLAIMER: This would also mean that the capture would fail later if a merchant tries to capture
-     * it after we run verifyCapture and create a transaction for this payment without capturing the payment.
+     * If the merchant wants to capture the payment later, he can capture it and the process would
+     * be like how it is for not AuthAndCapture supported gateways. [THIS NEEDS TO BE CHECKED].
      *
      * @param $payment
      * @return array
@@ -264,7 +264,12 @@ trait Capture
 
         $this->repo->transaction(function() use ($payment)
         {
-            $this->($payment);
+            $txnCore = new Transaction\Core;
+
+            $txn = $txnCore->createFromPaymentAuthorized($payment);
+
+            $this->repo->saveOrFail($txn);
+            $this->repo->saveOrFail($payment);
 
             $this->tracePaymentInfo(TraceCode::TRANSACTION_CREATED_IN_VERIFY_CAPTURE);
         });
@@ -307,27 +312,6 @@ trait Capture
         $payment->setStatus(Payment\Status::CAPTURED);
 
         $payment->setCaptureTimestamp();
-    }
-
-    /**
-     * DISCLAIMER: We are not setting the service tax and fees on the payment entity
-     * because their reconciliation will show inconsistency. Since the capture has been failed
-     * for the merchant, their payment report should not be having any api fees or service tax
-     * for this particular payment.
-     * BUT, if we actually have a transaction for these, we will
-     * end up settling this for the merchant and again the merchant's reconciliation will get
-     * messed up and will be inconsistent. Even though the merchant actually did not get the money,
-     * we would have charged him commission.
-     *
-     * @param Payment\Entity $payment
-     */
-    protected function createTransactionWithoutCapture(Payment\Entity $payment)
-    {
-        $txnCore = new Transaction\Core;
-
-        $txn = $txnCore->createFromPaymentNotCaptured($payment);
-        
-        $this->repo->saveOrFail($txn);
     }
 
     protected function createTransactionFromCapturedPayment(Payment\Entity $payment)

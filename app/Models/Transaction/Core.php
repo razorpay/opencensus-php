@@ -90,33 +90,6 @@ class Core extends Base\Core
         return $txn;
     }
 
-    /**
-     * DISCLAIMER: Not updating free credits and not setting the SETTLED_AT also because
-     * this wouldn't have been actually settled. Even if it's in the future, we should
-     * not be actually settling it.
-     *
-     * @param Payment\Entity $payment
-     * @return Entity
-     */
-    public function createFromPaymentNotCaptured(Payment\Entity $payment)
-    {
-        $txn = $this->txnCreationFromPaymentOperation($payment);
-
-        $this->trace->info(
-            TraceCode::PAYMENT_NOT_CAPTURED_CREATE_TRANSACTION,
-            [
-                'payment_id'        => $payment->getId(),
-                'transaction_id'    => $txn->getid(),
-            ]
-        );
-
-        $settledAt = $this->getSettledAtTimestamp($payment);
-
-        $txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);
-
-        return $txn;
-    }
-
     protected function txnCreationFromPaymentOperation($payment)
     {
         $txn = new Transaction\Entity;
