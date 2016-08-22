@@ -708,6 +708,16 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
+    protected function merchantAssignPricingPlan($planId, $id = '10000000000000')
+    {
+        $request = array(
+            'url' => '/merchants/'.$id.'/pricing',
+            'method' => 'POST',
+            'content' => ['pricing_plan_id' => $planId]);
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function fetchReport($entity, $content, $id = '10000000000000')
     {
         $request = array(
