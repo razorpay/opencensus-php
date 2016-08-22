@@ -74,6 +74,8 @@ trait Refund
 
         $this->setPaymentAndRefundInfo($refund, $payment);
 
+        // Currently doing it for only HDFC. In case when other gateways start
+        // getting similar issues, we will start supporting for them too.
         assert ($payment->getGateway() === Payment\Gateway::HDFC);
 
         $data = array(
@@ -97,7 +99,8 @@ trait Refund
         {
             $this->recordRefund();
 
-            $this->sendRefundNotification($payment, $refund);
+            // TODO: Should we comment this out or let the notification go to the customer and merchant?
+            //$this->sendRefundNotification($payment, $refund);
 
             $msg = 'Refund verification failed and Refund performed.';
         }
@@ -203,7 +206,7 @@ trait Refund
         {
             $verifyRefundResult = $this->callGatewayFunction(Payment\Action::VERIFY_REFUND, $data);
         }
-        catch(BaseException $e)
+        catch(\Exception $e)
         {
             $this->tracePaymentFailed(
                     $e->getError(),
@@ -243,8 +246,8 @@ trait Refund
 
             $this->updatePaymentRefunded();
 
-            $this->payment->saveOrFail();
-            $this->refund->saveOrFail();
+            $this->repo->saveOrFail($this->payment);
+            $this->repo->saveOrFail($this->refund);
         });
     }
 

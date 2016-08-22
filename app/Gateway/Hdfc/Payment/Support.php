@@ -31,7 +31,7 @@ trait Support
             return;
         }
 
-        $this->retrievePreviousGatewayTransaction($input, $type);
+        $this->model = $this->retrievePreviousGatewayTransaction($input, $type);
 
         $result = $this->model['result'];
 
@@ -124,12 +124,12 @@ trait Support
 
             // Ideally, the action should never be authorize here, since it'a captured record.
             // This is a bug and should be fixed separately.
-            if ($capturedGatewayEntity->getAction() !== Action::AUTHORIZE)
+            if ($capturedGatewayEntity->getAction() === Action::AUTHORIZE)
             {
-                return true;
+                return false;
             }
-            
-            return false;
+
+            return true;
         }
         catch (\Exception $ex)
         {
@@ -414,6 +414,9 @@ trait Support
 
             $gatewayStatus = $entity->getStatus();
 
+            // When the count is one, it is possible that the action is purchase.
+            // For purchase transactions, the status will always be captured.
+            // Hence, count=1 is valid situation for refund for these kind of transactions.
             if (($gatewayAction === Action::PURCHASE) and
                 ($gatewayStatus === Payment\Status::CAPTURED))
             {
@@ -436,9 +439,11 @@ trait Support
         }
         else
         {
-            foreach ($gatewayEntities->all() as $entity)
+            foreach ($gatewayEntities->all() as $gatewayEntity)
             {
-                if ($entity->getStatus() === Payment\Status::REFUNDED)
+                // Refunded record will be created only if an actual refund has taken place.
+                // Hence, if already refunded, we don't need to run the refund again.
+                if ($gatewayEntity->getStatus() === Payment\Status::REFUNDED)
                 {
                     return false;
                 }
@@ -450,8 +455,8 @@ trait Support
 
     protected function assertPaymentRefundedWithoutCapture($input)
     {
-        assert($input['payment']['status'] === PaymentModel\Status::REFUNDED);
+        assert($input['payment'][PaymentModel\Entity::STATUS] === PaymentModel\Status::REFUNDED);
 
-        assert($input['payment']['captured'] === false);
+        assert($input['payment'][PaymentModel\Entity::CAPTURED] === false);
     }
 }

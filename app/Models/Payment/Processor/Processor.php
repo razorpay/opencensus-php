@@ -56,6 +56,7 @@ class Processor
     protected $app;
     protected $request;
     protected $methods;
+    protected $refund;
 
     protected $verifyRefundStatus;
 

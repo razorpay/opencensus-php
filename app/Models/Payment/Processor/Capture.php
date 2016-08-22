@@ -125,15 +125,16 @@ trait Capture
 
         $verify = $this->callGatewayForVerifyCapture($data);
 
-        if ($verify === false)
+        // Here, verify=true means that the payment is captured on the gateway side.
+        if ($verify === true)
         {
             $this->recordTransactionForFailedApiCapture();
 
-            $msg = 'Capture verification failed and transaction created';
+            $msg = 'Has been captured on gateway and hence creating a transaction in api.';
         }
-        else if ($verify === true)
+        else if ($verify === false)
         {
-            $msg = 'Capture verified successfully. The status of capture is the same on gateway and api.';
+            $msg = 'Has not been captured on gateway. Not doing anything on the api side.';
         }
         else
         {
@@ -264,6 +265,9 @@ trait Capture
         {
             $txnCore = new Transaction\Core;
 
+            // This could be actually misleading.
+            // We are creating a transaction even if the payment
+            // is in refunded state.
             $txn = $txnCore->createFromPaymentAuthorized($payment);
 
             $this->repo->saveOrFail($txn);
