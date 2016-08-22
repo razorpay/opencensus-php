@@ -299,7 +299,7 @@ trait Authorize
 
         $this->repo->saveOrFail($payment);
 
-        $this->trace(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
+        $this->tracePaymentInfo(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
 
         //
         // Call gateway input
@@ -1324,7 +1324,7 @@ trait Authorize
             // set the order to be paid
             $this->updateAuthorizedOrderStatus($payment);
 
-            $this->trace(TraceCode::PAYMENT_AUTH_SUCCESS);
+            $this->tracePaymentInfo(TraceCode::PAYMENT_AUTH_SUCCESS);
         });
     }
 

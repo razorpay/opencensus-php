@@ -211,6 +211,26 @@ class Service extends Base\Service
         return $payment->toArrayPublic();
     }
 
+
+    /**
+     * If a payment has been captured on gateway but not on the api side,
+     * we create a transaction for the payment.
+     *
+     * @param $paymentId
+     */
+    public function verifyCapture($paymentId)
+    {
+        $payment = $this->repo->payment->findOrFail($paymentId);
+
+        $merchantId = $payment->getMerchantId();
+
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $data = $this->processor($merchant)->verifyCapture($payment);
+
+        return $data;
+    }
+
     /**
      * After card enroll, bank redirects to us
      * and we send it to gateway for further

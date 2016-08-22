@@ -88,6 +88,82 @@ trait Capture
     }
 
     /**
+     * We check if the capture status on the gateway is successful and on the api, it's not captured.
+     * If it's successful on the gateway side, we create a transaction on the api side.
+     * This does not follow the convention where all authAndCapture supported gateways should have
+     * the payment in captured state for a transaction to be created. But, these are edge cases where capture
+     * succeeded on gateway and failed on api side due to some reason. This should ideally never happen.
+     * We cannot create a transaction by capturing it because, the merchant may not actually want to capture
+     * this payment anymore. Hence, we just create a transaction and leave it at that.
+     *
+     * DISCLAIMER: This would also mean that the capture would fail later if a merchant tries to capture
+     * it after we run verifyCapture and create a transaction for this payment without capturing the payment.
+     *
+     * @param $payment
+     * @return array
+     */
+    public function verifyCapture($payment)
+    {
+        $this->setPayment($payment);
+
+        // If it has already been captured, we would have a transaction for it.
+        assert ($payment->hasBeenCaptured() === false);
+
+        // If the transaction is already present for this, we should not be running verifyCapture at all.
+        assert ($payment->getTransactionId() === null);
+
+        // The payment should be in authorized or refunded state only.
+        assert ($payment->isStatusCreatedOrFailed() === false);
+
+        // Currently going to do this only for HDFC. If we find issues with other gateways too,
+        // we will add the support for them.
+        assert ($payment->getGateway() === Payment\Gateway::HDFC);
+
+        $data = [
+            'payment'   => $payment->toArray(),
+        ];
+
+        $verify = $this->callGatewayForVerifyCapture($data);
+
+        if ($verify === false)
+        {
+            $this->recordTransactionForFailedApiCapture();
+
+            $msg = 'Capture verification failed and transaction created';
+        }
+        else if ($verify === true)
+        {
+            $msg = 'Capture verified successfully. The status of capture is the same on gateway and api.';
+        }
+        else
+        {
+            $msg = 'Could not perform verify capture.';
+        }
+
+        return ['verify_capture' => $msg];
+    }
+
+    protected function callGatewayForVerifyCapture($data)
+    {
+        $verifyCaptureResult = null;
+
+        try
+        {
+            $verifyCaptureResult = $this->callGatewayFunction(Payment\Action::VERIFY_CAPTURE, $data);
+        }
+        catch(Exception\BaseException $e)
+        {
+            $this->tracePaymentFailed(
+                $e->getError(),
+                TraceCode::PAYMENT_VERIFY_CAPTURE_FAILURE);
+
+            throw $e;
+        }
+
+        return $verifyCaptureResult;
+    }
+
+    /**
      * Captures the payment.
      *
      * @param  Payment\Entity   $payment
@@ -182,6 +258,18 @@ trait Capture
         }
     }
 
+    protected function recordTransactionForFailedApiCapture()
+    {
+        $payment = $this->payment;
+
+        $this->repo->transaction(function() use ($payment)
+        {
+            $this->($payment);
+
+            $this->tracePaymentInfo(TraceCode::TRANSACTION_CREATED_IN_VERIFY_CAPTURE);
+        });
+    }
+
     protected function recordCapture()
     {
         $payment = $this->payment;
@@ -202,7 +290,7 @@ trait Capture
 
             $this->updatePaidOrderStatus($payment);
 
-            $this->trace(TraceCode::PAYMENT_CAPTURE_SUCCESS);
+            $this->tracePaymentInfo(TraceCode::PAYMENT_CAPTURE_SUCCESS);
         });
 
         //
@@ -219,6 +307,27 @@ trait Capture
         $payment->setStatus(Payment\Status::CAPTURED);
 
         $payment->setCaptureTimestamp();
+    }
+
+    /**
+     * DISCLAIMER: We are not setting the service tax and fees on the payment entity
+     * because their reconciliation will show inconsistency. Since the capture has been failed
+     * for the merchant, their payment report should not be having any api fees or service tax
+     * for this particular payment.
+     * BUT, if we actually have a transaction for these, we will
+     * end up settling this for the merchant and again the merchant's reconciliation will get
+     * messed up and will be inconsistent. Even though the merchant actually did not get the money,
+     * we would have charged him commission.
+     *
+     * @param Payment\Entity $payment
+     */
+    protected function createTransactionWithoutCapture(Payment\Entity $payment)
+    {
+        $txnCore = new Transaction\Core;
+
+        $txn = $txnCore->createFromPaymentNotCaptured($payment);
+        
+        $this->repo->saveOrFail($txn);
     }
 
     protected function createTransactionFromCapturedPayment(Payment\Entity $payment)
@@ -244,8 +353,8 @@ trait Capture
             $payment->setFee($txn->getFee());
         }
 
-        $txn->saveOrFail();
-        $payment->saveOrFail();
+        $this->repo->saveOrFail($txn);
+        $this->repo->saveOrFail($payment);
     }
 
     protected function verifyOrderUnpaid($payment)

@@ -81,8 +81,6 @@ trait Refund
             'refund'    => $refund->toArray(),
             'amount'    => $refund->getAmount());
 
-        $method = $refund->payment->getMethod();
-
         if ($payment->isMethodCardOrEmi())
         {
             $data['card'] = $refund->payment->card->toArray();
@@ -262,7 +260,7 @@ trait Refund
             $this->payment->refundAmount($this->refund->getAmount());
         }
 
-        $this->trace(TraceCode::PAYMENT_REFUND_SUCCESS);
+        $this->tracePaymentInfo(TraceCode::PAYMENT_REFUND_SUCCESS);
     }
 
     protected function validateMerchantBalance($refund)
