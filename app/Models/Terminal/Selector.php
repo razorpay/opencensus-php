@@ -29,7 +29,6 @@ class Selector
 
     /**
      * Very important that the sorting order is maintained
-     * ExclusivitySorter should be at end, for giving preferrence to direct terminals
      * @var array
      */
     protected static $sorters = [
