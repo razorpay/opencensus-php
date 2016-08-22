@@ -891,7 +891,7 @@ trait PaymentTrait
         $payment = $this->getDefaultPaymentArray();
         $payment['method'] = 'netbanking';
 
-        if (empty($payment['bank']) === false)
+        if ($bank !== null)
         {
             $payment['bank'] = $bank;
         }
