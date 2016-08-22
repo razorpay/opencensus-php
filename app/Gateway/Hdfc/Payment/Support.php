@@ -105,13 +105,36 @@ trait Support
         }
         else
         {
-            $this->model = $this->repo->retrieveByPaymentIdAndStatus(
+            $this->model = $this->repo->retrieveByPaymentIdAndStatusOrFail(
                                             $input['payment']['id'], $status);
         }
 
         $this->id = $input['payment']['id'];
 
         return $this->model;
+    }
+
+    protected function isCapturedSuccessfully($paymentId)
+    {
+        try
+        {
+            // Currently, not checking for GW00176 (retrieveCapturedOrAcceptedCaptureError).
+            // We should add this later in case we get more issues.
+            $capturedGatewayEntity = $this->repo->retrieveByPaymentIdAndStatusOrFail($paymentId, Status::CAPTURED);
+
+            // Ideally, the action should never be authorize here, since it'a captured record.
+            // This is a bug and should be fixed separately.
+            if ($capturedGatewayEntity->getAction() !== Action::AUTHORIZE)
+            {
+                return true;
+            }
+            
+            return false;
+        }
+        catch (\Exception $ex)
+        {
+            return false;
+        }
     }
 
     protected function isSupportPaymentSuccess()

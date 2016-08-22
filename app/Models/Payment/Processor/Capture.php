@@ -145,8 +145,6 @@ trait Capture
 
     protected function callGatewayForVerifyCapture($data)
     {
-        $verifyCaptureResult = null;
-
         try
         {
             $verifyCaptureResult = $this->callGatewayFunction(Payment\Action::VERIFY_CAPTURE, $data);
