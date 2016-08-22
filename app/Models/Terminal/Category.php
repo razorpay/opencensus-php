@@ -4,6 +4,7 @@ namespace RZP\Models\Terminal;
 
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Payment;
 
 class Category
 {
@@ -59,37 +60,43 @@ class Category
         return $category;
     }
 
-    public static function isCategoryValidForMethodAndGateway($category, $method, $gateway)
+    public static function isCategoryValidForGateway($category, $gateway)
     {
-        $methodMap = self::getMethodCategoriesMap($method);
+        $methods = Method::getAllPaymentMethods();
 
-        $gatewayMap = self::getGatewayCategoriesName($gateway);
+        $flag = false;
 
-        return ((in_array($category, $methodMap)) or
-                (in_array($category, $gatewayMap)));
-    }
-
-    protected static function getMethodCategoriesMap($method)
-    {
-        $map = 'METHOD_'.strtoupper($method);
-
-        if (isset(self::$map))
+        foreach($methods as $method)
         {
-            return self::$map;
+            $methodMap = strtoupper('method_'.$method);
+
+            if ((Gateway::isMethodSupported($method, $gateway)) and
+                (self::isCategoryValidForName($category, $methodMap)))
+            {
+                $flag = true;
+                break;
+            }
         }
 
-        return [];
-    }
-
-    protected static function getGatewayCategoriesName($gateway)
-    {
-        $map = 'GATEWAY_'.strtoupper($gateway);
-
-        if (isset(self::$map))
+        if ($flag === false)
         {
-            return self::$map;
+            $gatewayMap = strtoupper('gateway_'.$gateway);
+
+            $flag = self::isCategoryValidForName($category, $gatewayMap);
         }
 
-        return [];
+        return $flag;
+    }
+
+    public static function isCategoryValidForName($category, $name)
+    {
+        $name = strtoupper($name);
+
+        if (isset(self::$$name) === false)
+        {
+            return false;
+        }
+
+        return in_array($category, self::$$name);
     }
 }

@@ -28,6 +28,7 @@ class Validator extends Base\Validator
         Entity::SHARED                      => 'sometimes|boolean',
         Entity::GATEWAY_ACQUIRER            => 'sometimes|string',
         Entity::STATUS                      => 'sometimes|enum',
+        Entity::TERMINAL_CATEGORY           => 'sometimes',
     );
 
     protected static $editTerminalGateways = array(
@@ -36,7 +37,7 @@ class Validator extends Base\Validator
     );
 
     protected static $createValidators = array(
-        Entity::GATEWAY, Entity::EMI);
+        Entity::GATEWAY, Entity::EMI, Entity::TERMINAL_CATEGORY);
 
     protected static $hdfcTerminalRules = array(
         Entity::GATEWAY                     => 'required|in:hdfc',
@@ -146,7 +147,8 @@ class Validator extends Base\Validator
             $input['shared'],
             $input['netbanking'],
             $input['merchant_id'],
-            $input['category']);
+            $input['category'],
+            $input['terminal_category']);
 
         $op = $input['gateway'] . '_terminal';
 
@@ -200,6 +202,25 @@ class Validator extends Base\Validator
                 $this->matchGatewayForNewTerminal($this->entity, $existing);
             }
         }
+    }
+
+    public function validateTerminalCategory($input)
+    {
+        if (empty($input[Entity::TERMINAL_CATEGORY]) === true)
+        {
+            return ;
+        }
+
+        $gateway  = $input[Entity::GATEWAY];
+        $category = $input[Entity::TERMINAL_CATEGORY];
+
+        if (Category::isCategoryValidForGateway($category, $gateway) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Category provided invalid for gateway',
+                Entity::TERMINAL_CATEGORY
+                );
+            }
     }
 
     protected function matchGatewayForNewTerminal($new, $existing)

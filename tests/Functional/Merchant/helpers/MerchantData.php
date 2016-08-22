@@ -965,4 +965,41 @@ return [
             ],
         ],
     ],
+
+    'testAddTerminalCategories' => [
+        'request' => [
+            'content' => [
+                'terminal_categories' => json_encode(['gateway_amex' => 'education']),
+            ],
+            'url' => '/merchants/1X4hRFHFx4UiXt',
+            'method' => 'put',
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+
+    'testAddInvalidTerminalCategories' => [
+        'request' => [
+            'content' => [
+                'terminal_categories' => json_encode(['gateway_hdfc'=>'education']),
+            ],
+            'url' => '/merchants/1X4hRFHFx4UiXt',
+            'method' => 'put',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Category : education invalid for gateway_hdfc',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];

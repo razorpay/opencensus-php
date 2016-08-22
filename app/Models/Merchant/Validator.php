@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Terminal;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 
@@ -65,6 +66,7 @@ class Validator extends Base\Validator
     protected static $editValidators = [
         'csv_email',
         'features',
+        'terminal_categories',
     ];
 
     public function validateLogo($imageDetails)
@@ -111,6 +113,26 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateTerminalCategories($input)
+    {
+        if (empty($input[Entity::TERMINAL_CATEGORIES]) === true)
+        {
+            return ;
+        }
+
+        $terminalCategories = json_decode($input[Entity::TERMINAL_CATEGORIES], true);
+
+        foreach ($terminalCategories as $name => $category)
+        {
+            if (Terminal\Category::isCategoryValidForName($category, $name) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Category : '.$category.' invalid for '.$name,
+                    Entity::TERMINAL_CATEGORIES
+                );
+            }
+        }
+    }
     protected function validateCsvEmail($input)
     {
         if (isset($input[Entity::TRANSACTION_REPORT_EMAIL]) === false)
