@@ -38,6 +38,9 @@ class CreateMerchantBanks extends Migration {
             $table->boolean(Methods::MOBIKWIK)
                   ->default(0);
 
+            $table->boolean(Methods::OLAMONEY)
+                  ->default(0);
+
             $table->boolean(Methods::PAYZAPP)
                   ->default(0);
 

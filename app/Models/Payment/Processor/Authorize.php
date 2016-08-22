@@ -836,6 +836,8 @@ trait Authorize
 
         $this->eventPaymentAuthorized();
 
+        $this->notifyIfCardSaved();
+
         $this->notifyAuthorized($wasFailed);
     }
 
@@ -915,6 +917,22 @@ trait Authorize
         }
 
         $notifier->trigger($trigger);
+    }
+
+    protected function notifyIfCardSaved()
+    {
+        $payment = $this->payment;
+
+        if (($payment->isMethod(Payment\Method::CARD)) and
+            ($payment->getSave() === true) and
+            ($payment->getGlobalToken() !== null))
+        {
+            $notifier = new Notify($this->payment);
+
+            $trigger = Notify::CARD_SAVED;
+
+            $notifier->trigger($trigger);
+        }
     }
 
     protected function eventPaymentAuthorized()

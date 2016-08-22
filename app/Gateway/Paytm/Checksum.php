@@ -2,6 +2,8 @@
 
 namespace RZP\Gateway\Paytm;
 
+use RZP\Constants\HashAlgo;
+
 class Checksum
 {
     public static function encrypt_e($input, $ky)
@@ -93,7 +95,7 @@ class Checksum
         $str = self::getArray2Str($arrayList);
         $salt = self::generateSalt_e(4);
         $finalString = $str . "|" . $salt;
-        $hash = hash("sha256", $finalString);
+        $hash = hash(HashAlgo::SHA256, $finalString);
         $hashString = $hash . $salt;
         $checksum = self::encrypt_e($hashString, $key);
         return $checksum;
@@ -109,7 +111,7 @@ class Checksum
 
         $finalString = $str . "|" . $salt;
 
-        $website_hash = hash("sha256", $finalString);
+        $website_hash = hash(HashAlgo::SHA256, $finalString);
         $website_hash .= $salt;
 
         $validFlag = "FALSE";
