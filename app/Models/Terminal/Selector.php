@@ -33,10 +33,10 @@ class Selector
      * @var array
      */
     protected static $sorters = [
+        Sorters\ExclusivitySorter::class,
         Sorters\CardSorter::class,
         Sorters\NetbankingSorter::class,
         Sorters\MerchantSorter::class,
-        Sorters\ExclusivitySorter::class,
     ];
 
     public function __construct(Payment\Entity $payment, $mode)
