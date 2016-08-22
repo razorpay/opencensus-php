@@ -15,8 +15,7 @@ class AnalyticsTest extends TestCase
 
     public function setUp()
     {
-        // $this->testDataFilePath = __DIR__.'/helpers/authorize.php';
-        $this->testDataFilePath = __DIR__ . '/AnalyticsTestData.php';
+        $this->testDataFilePath = __DIR__.'/AnalyticsTestData.php';
 
         parent::setUp();
 
@@ -63,9 +62,7 @@ class AnalyticsTest extends TestCase
         $payment = $this->doAuthPayment($payment, $requestServer);
 
         $paymentAnalytic = $this->getLastEntity(Table::PAYMENT_ANALYTICS, true);
-
+        // s($paymentAnalytic);
         $this->assertTestResponse($paymentAnalytic, 'testPaymentAnalytics');
-
-        $this->assertNotNull($paymentAnalytic[AnalyticsEntity::IP]);
     }
 }

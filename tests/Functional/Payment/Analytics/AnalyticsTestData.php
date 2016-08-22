@@ -8,7 +8,7 @@ return [
         'browser' => 1,
         'os' => 5,
         'device' => 1,
-        // 'library' => 3,
-        // 'platform' => 4,
+        'library' => 3,
+        'platform' => 4,
     ],
 ];
