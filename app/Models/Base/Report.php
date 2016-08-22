@@ -108,7 +108,21 @@ class Report extends Service
                 'time_taken'    => $timeTaken
             ]);
 
-        return $entities->toArrayReport();
+        $data = $entities->toArrayReport();
+
+        $timeTaken = time() - $begin;
+
+        $this->trace->debug(
+            TraceCode::MERCHANT_REPORT_GENERATION,
+            [
+                'entity'        => $entity,
+                'from'          => $from,
+                'to'            => $to,
+                'merchantId'    => $merchantId,
+                'time_taken'    => $timeTaken
+            ]);
+
+        return $data;
     }
 
     public function getInvoice($input)
