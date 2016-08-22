@@ -79,8 +79,6 @@ class Entity extends Base\PublicEntity
 
     protected $table = \RZP\Constants\Table::PAYMENT_ANALYTICS;
 
-    protected $generateIdOnCreate = true;
-
     protected $entity = 'payment_analytics';
 
     protected static $sign = '';

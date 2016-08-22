@@ -27,8 +27,7 @@ class CreatePaymentAnalytics extends Migration
             $table->char(Analytics::CHECKOUT_ID, Analytics::ID_LENGTH)
                   ->nullable();
 
-            $table->char(Analytics::TERMINAL_ID, Analytics::ID_LENGTH)
-                ->nullable();
+            $table->char(Analytics::TERMINAL_ID, Analytics::ID_LENGTH);
 
             $table->boolean(Analytics::TERMINAL_STATUS)
                 ->default(1);
@@ -46,7 +45,7 @@ class CreatePaymentAnalytics extends Migration
                 ->default(0);
 
             $table->smallInteger(Analytics::ATTEMPTS)
-                  ->nullable();
+              ->nullable();
 
             $table->tinyInteger(Analytics::LIBRARY);
 
@@ -76,19 +75,17 @@ class CreatePaymentAnalytics extends Migration
 
             $table->integer(Analytics::UPDATED_AT);
 
+            $table->foreign(Analytics::TERMINAL_ID)
+                ->references(Terminal\Entity::ID)
+                ->on(Table::TERMINAL)
+                ->on_delete('restrict');
+
             $table->foreign(Analytics::PAYMENT_ID)
                 ->references(Payment\Entity::ID)
                 ->on(Table::PAYMENT)
                 ->on_delete('restrict');
 
-            $table->foreign(Analytics::TERMINAL_ID)
-                  ->references(Terminal\Entity::ID)
-                  ->on(Table::TERMINAL)
-                  ->on_delete('restrict');
-
             $table->index(Analytics::CHECKOUT_ID);
-
-            $table->index(Analytics::TERMINAL_ID);
 
             $table->index(Analytics::CREATED_AT);
         });
