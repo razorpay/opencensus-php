@@ -3,10 +3,11 @@
 namespace RZP\Tests\Functional\Payment;
 
 use RZP\Constants\Table;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
-class CheckoutTest extends TestCase
+class PaymentAnalyticsTest extends TestCase
 {
     use PaymentTrait;
 
@@ -21,11 +22,11 @@ class CheckoutTest extends TestCase
         $this->payment = $this->getDefaultPaymentArray();
     }
 
-    public function testCheckoutId()
+    public function testAttempts()
     {
         $payment = $this->getDefaultPaymentArray();
 
-        $checkoutId = \RZP\Models\Base\UniqueIdEntity::generateUniqueIdWithCheckDigit();
+        $checkoutId = UniqueIdEntity::generateUniqueIdWithCheckDigit();
 
         $payment['_']['checkout_id'] = $checkoutId;
 

@@ -21,7 +21,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function findForPayment($payment_id, $id=null)
+    public function findForPayment($payment_id, $id = null)
     {
         $repo = $this->repo;
 
@@ -43,7 +43,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function findBetweenTimestampsForTerminal($from, $to, $terminal_id, $payment_id=null)
+    public function findBetweenTimestampsForTerminal($from, $to, $terminal_id, $payment_id = null)
     {
         $repo = $this->repo->payment_analytics;
 

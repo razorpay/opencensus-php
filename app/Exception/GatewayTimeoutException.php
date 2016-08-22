@@ -18,6 +18,5 @@ class GatewayTimeoutException extends GatewayRequestException
         $this->safeRetry = $safeRetry;
 
         // parent::__construct($curlErrorMessage, $code, $previous);
-
     }
 }
