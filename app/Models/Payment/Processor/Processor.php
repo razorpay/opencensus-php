@@ -553,8 +553,6 @@ class Processor
 
     protected function retrieveToken($input)
     {
-        // TODO: Get this change verified by Sunny.
-        
         $token = (new Customer\Token\Repository)
                         ->getByWalletTerminalAndCustomerId(
                             $input['payment']['wallet'],

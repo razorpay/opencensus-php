@@ -122,14 +122,16 @@ trait Support
             // We should add this later in case we get more issues.
             $capturedGatewayEntity = $this->repo->retrieveByPaymentIdAndStatusOrFail($paymentId, Status::CAPTURED);
 
-            // Ideally, the action should never be authorize here, since it'a captured record.
-            // This is a bug and should be fixed separately.
-            if ($capturedGatewayEntity->getAction() === Action::AUTHORIZE)
+            // Ideally, the action should always be either Purchase or Capture only here, since
+            // it's a captured record.
+            // If the action is anything else, it is a bug and should be fixed separately.
+            if (($capturedGatewayEntity->getAction() === Action::PURCHASE) or
+                ($capturedGatewayEntity->getAction() === Action::CAPTURE))
             {
-                return false;
+                return true;
             }
 
-            return true;
+            return false;
         }
         catch (\Exception $ex)
         {

@@ -616,12 +616,7 @@ class Entity extends Base\PublicEntity
     {
         return ($this->getAttribute(self::STATUS) === Status::CAPTURED);
     }
-    
-    public function isRefunded()
-    {
-        return ($this->getAttribute(self::STATUS) === Status::REFUNDED);
-    }
-    
+
     public function isPartiallyOrFullyRefunded()
     {
         return ! ($this->getAttribute(self::REFUND_STATUS) === Refund\Status::NULL);

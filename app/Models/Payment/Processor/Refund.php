@@ -99,7 +99,14 @@ trait Refund
         {
             $this->recordRefund();
 
-            // TODO: Should we comment this out or let the notification go to the customer and merchant?
+            $this->trace->info(
+                TraceCode::VERIFY_REFUND_TRANSACTION_CREATED,
+                [
+                    'payment_id'    => $payment->getId(),
+                    'refund_id'     => $refund->getId(),
+                ]
+            );
+
             //$this->sendRefundNotification($payment, $refund);
 
             $msg = 'Refund verification failed and Refund performed.';
@@ -206,7 +213,7 @@ trait Refund
         {
             $verifyRefundResult = $this->callGatewayFunction(Payment\Action::VERIFY_REFUND, $data);
         }
-        catch(\Exception $e)
+        catch(Exception\BaseException $e)
         {
             $this->tracePaymentFailed(
                     $e->getError(),

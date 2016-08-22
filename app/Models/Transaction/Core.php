@@ -236,6 +236,8 @@ class Core extends Base\Core
     {
         $payment = $refund->payment;
 
+        assert ($payment->transaction !== null);
+
         $settledAt = 1;
 
         $txnData = array(
@@ -268,21 +270,26 @@ class Core extends Base\Core
 
         $txn->sourceAssociate($refund);
         $txn->merchant()->associate($refund->merchant);
-        
+
         $paymentStatus = $payment->getStatus();
-        
+
         switch($paymentStatus)
         {
             case Payment\Status::AUTHORIZED:
                 // When refunding authorized payments, we do not charge merchants
                 $this->updateNodalBalance($txn);
+
                 break;
             case Payment\Status::CAPTURED:
                 $this->updateBalances($txn);
+
                 break;
             case Payment\Status::REFUNDED:
-                // Exceptional case where we have to perform a refund. That is acceptable.
-                assert($payment->getGateway() === Payment\Gateway::HDFC);
+                // This is a rare case and is here just to fix bugs.
+                assert ($payment->getGateway() === Payment\Gateway::HDFC);
+
+                $this->updateNodalBalance($txn);
+
                 break;
             default:
                 throw new Exception\LogicException('Should not have reached here');

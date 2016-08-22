@@ -57,6 +57,8 @@ class TraceCode
     const TRANSACTION_CREATED_IN_VERIFY_CAPTURE     = 'TRANSACTION_CREATED_IN_VERIFY_CAPTURE';
     const TRANSACTION_FREE_CREDITS                  = 'TRANSACTION_FREE_CREDITS';
     const PAYMENT_NOT_CAPTURED_CREATE_TRANSACTION   = 'PAYMENT_NOT_CAPTURED_CREATE_TRANSACTION';
+    const VERIFY_CAPTURE_RESPONSE                   = 'VERIFY_CAPTURE_RESPONSE';
+    const VERIFY_REFUND_TRANSACTION_CREATED         = 'VERIFY_REFUND_TRANSACTION_CREATED';
 
     const TERMINAL_SELECTION                        = 'TERMINAL_SELECTION';
     const TERMINAL_SELECTION_MISMATCH               = 'TERMINAL_SELECTION_MISMATCH';
@@ -251,6 +253,8 @@ class TraceCode
         self::PAYMENT_TRANSACTION_OLD                   => 'Updating/Creating transaction of an old payment',
         self::TRANSACTION_FREE_CREDITS                  => 'Using free credits for the payment',
         self::PAYMENT_VERIFY_CAPTURE_FAILURE            => 'Issue while performing verify for capture',
+        self::VERIFY_CAPTURE_RESPONSE                   => 'Response received on verify capture',
+        self::VERIFY_REFUND_TRANSACTION_CREATED         => 'Refund transaction created in verify refund',
 
         self::BAD_REQUEST_INVALID_API_KEY               => 'The api key provided is invalid',
 

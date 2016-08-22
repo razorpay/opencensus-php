@@ -228,6 +228,14 @@ class Service extends Base\Service
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
         $data = $this->processor($merchant)->verifyCapture($payment);
+        
+        $this->trace->info(
+            TraceCode::VERIFY_CAPTURE_RESPONSE,
+            [
+                'payment_id'    => $paymentId,
+                'data'          => $data
+            ]
+        );
 
         return $data;
     }
