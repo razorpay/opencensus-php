@@ -19,6 +19,8 @@ class DailyReport extends Base\Core
      */
     function __construct($id)
     {
+        parent::__construct();
+
         $this->merchantId = $id;
 
         // 00:00 Yesterday
@@ -31,8 +33,6 @@ class DailyReport extends Base\Core
         $this->date = Carbon::yesterday("Asia/Kolkata")->format('jS F Y');
 
         $this->data = $this->fetchDailyDetails();
-
-        parent::__construct();
     }
 
     /**
