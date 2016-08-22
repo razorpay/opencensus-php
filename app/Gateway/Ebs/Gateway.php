@@ -52,7 +52,7 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $this->getRepo()->findByPaymentIdAndAction(
             $input['payment']['id'], Action::AUTHORIZE);
 
-        assert(($gatewayPayment[Entity::ERROR_CODE] === NULL) or
+        assert(($gatewayPayment[Entity::ERROR_CODE] === null) or
                ($gatewayPayment[Entity::ERROR_CODE] === '0'));
     }
 

@@ -29,14 +29,13 @@ class Selector
 
     /**
      * Very important that the sorting order is maintained
-     * ExclusivitySorter should be at end, for giving preferrence to direct terminals
      * @var array
      */
     protected static $sorters = [
+        Sorters\ExclusivitySorter::class,
         Sorters\CardSorter::class,
         Sorters\NetbankingSorter::class,
         Sorters\MerchantSorter::class,
-        Sorters\ExclusivitySorter::class,
     ];
 
     public function __construct(Payment\Entity $payment, $mode)

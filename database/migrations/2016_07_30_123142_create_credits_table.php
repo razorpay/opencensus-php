@@ -48,7 +48,7 @@ class CreateCreditsTable extends Migration
      */
     public function down()
     {
-        Schema::drop(Table::CREDITS, function (Blueprint $table)
+        Schema::table(Table::CREDITS, function (Blueprint $table)
         {
             $table->dropForeign(
                 Table::CREDITS.'_'.Credits::MERCHANT_ID.'_foreign');
