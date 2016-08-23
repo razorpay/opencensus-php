@@ -32,7 +32,7 @@ trait Support
             return;
         }
 
-        $this->retrievePreviousGatewayTransaction($input, $type);
+        $this->model = $this->retrievePreviousGatewayTransaction($input, $type);
 
         $result = $this->model['result'];
 
@@ -106,13 +106,38 @@ trait Support
         }
         else
         {
-            $this->model = $this->repo->retrieveByPaymentIdAndStatus(
+            $this->model = $this->repo->retrieveByPaymentIdAndStatusOrFail(
                                             $input['payment']['id'], $status);
         }
 
         $this->id = $input['payment']['id'];
 
         return $this->model;
+    }
+
+    protected function isCapturedSuccessfully($paymentId)
+    {
+        try
+        {
+            // Currently, not checking for GW00176 (retrieveCapturedOrAcceptedCaptureError).
+            // We should add this later in case we get more issues.
+            $capturedGatewayEntity = $this->repo->retrieveByPaymentIdAndStatusOrFail($paymentId, Status::CAPTURED);
+
+            // Ideally, the action should always be either Purchase or Capture only here, since
+            // it's a captured record.
+            // If the action is anything else, it is a bug and should be fixed separately.
+            if (($capturedGatewayEntity->getAction() === Action::PURCHASE) or
+                ($capturedGatewayEntity->getAction() === Action::CAPTURE))
+            {
+                return true;
+            }
+
+            return false;
+        }
+        catch (\Exception $ex)
+        {
+            return false;
+        }
     }
 
     protected function isSupportPaymentSuccess()
@@ -413,6 +438,9 @@ trait Support
 
             $gatewayStatus = $entity->getStatus();
 
+            // When the count is one, it is possible that the action is purchase.
+            // For purchase transactions, the status will always be captured.
+            // Hence, count=1 is valid situation for refund for these kind of transactions.
             if (($gatewayAction === Action::PURCHASE) and
                 ($gatewayStatus === Payment\Status::CAPTURED))
             {
@@ -435,9 +463,11 @@ trait Support
         }
         else
         {
-            foreach ($gatewayEntities->all() as $entity)
+            foreach ($gatewayEntities->all() as $gatewayEntity)
             {
-                if ($entity->getStatus() === Payment\Status::REFUNDED)
+                // Refunded record will be created only if an actual refund has taken place.
+                // Hence, if already refunded, we don't need to run the refund again.
+                if ($gatewayEntity->getStatus() === Payment\Status::REFUNDED)
                 {
                     return false;
                 }
@@ -449,8 +479,8 @@ trait Support
 
     protected function assertPaymentRefundedWithoutCapture($input)
     {
-        assert($input['payment']['status'] === PaymentModel\Status::REFUNDED);
+        assert($input['payment'][PaymentModel\Entity::STATUS] === PaymentModel\Status::REFUNDED);
 
-        assert($input['payment']['captured'] === false);
+        assert($input['payment'][PaymentModel\Entity::CAPTURED] === false);
     }
 }

@@ -74,14 +74,14 @@ trait Refund
 
         $this->setPaymentAndRefundInfo($refund, $payment);
 
+        // Currently doing it for only HDFC. In case when other gateways start
+        // getting similar issues, we will start supporting for them too.
         assert ($payment->getGateway() === Payment\Gateway::HDFC);
 
         $data = array(
             'payment'   => $payment->toArray(),
             'refund'    => $refund->toArray(),
             'amount'    => $refund->getAmount());
-
-        $method = $refund->payment->getMethod();
 
         if ($payment->isMethodCardOrEmi())
         {
@@ -97,9 +97,17 @@ trait Refund
 
         if ($verify === false)
         {
-            $this->recordRefund();
+            $this->recordRefund(true);
 
-            $this->sendRefundNotification($payment, $refund);
+            $this->trace->info(
+                TraceCode::VERIFY_REFUND_TRANSACTION_CREATED,
+                [
+                    'payment_id'    => $payment->getId(),
+                    'refund_id'     => $refund->getId(),
+                ]
+            );
+
+            //$this->sendRefundNotification($payment, $refund);
 
             $msg = 'Refund verification failed and Refund performed.';
         }
@@ -205,7 +213,7 @@ trait Refund
         {
             $verifyRefundResult = $this->callGatewayFunction(Payment\Action::VERIFY_REFUND, $data);
         }
-        catch(BaseException $e)
+        catch(Exception\BaseException $e)
         {
             $this->tracePaymentFailed(
                     $e->getError(),
@@ -233,20 +241,20 @@ trait Refund
         }
     }
 
-    protected function recordRefund()
+    protected function recordRefund($forceRefundTransaction = false)
     {
-        $this->repo->transaction(function()
+        $this->repo->transaction(function() use ($forceRefundTransaction)
         {
             $payment = $this->payment;
 
             $this->paymentRepo->lockForUpdate($payment->getKey());
 
-            $this->createTransactionForRefund($this->refund, $payment);
+            $this->createTransactionForRefund($this->refund, $payment, $forceRefundTransaction);
 
             $this->updatePaymentRefunded();
 
-            $this->payment->saveOrFail();
-            $this->refund->saveOrFail();
+            $this->repo->saveOrFail($this->payment);
+            $this->repo->saveOrFail($this->refund);
         });
     }
 
@@ -262,7 +270,7 @@ trait Refund
             $this->payment->refundAmount($this->refund->getAmount());
         }
 
-        $this->trace(TraceCode::PAYMENT_REFUND_SUCCESS);
+        $this->tracePaymentInfo(TraceCode::PAYMENT_REFUND_SUCCESS);
     }
 
     protected function validateMerchantBalance($refund)
@@ -286,7 +294,17 @@ trait Refund
         }
     }
 
-    public function createTransactionForRefund($refund, $payment)
+    /**
+     * @param Payment\Refund\Entity $refund
+     * @param Payment\Entity $payment
+     * @param bool $forceRefundTransaction This param is used for when we don't want to check for captured payment
+     *                                      for authAndCapture supported gateways before creating a refund transaction
+     *
+     * @return null|Transaction\Entity
+     * @throws Exception\LogicException
+     */
+    public function createTransactionForRefund(
+        Payment\Refund\Entity $refund, Payment\Entity $payment, $forceRefundTransaction = false)
     {
         $gateway = $payment->getGateway();
 
@@ -314,7 +332,8 @@ trait Refund
         $supportsAuthAndCapture = Payment\Gateway::supportsAuthAndCapture($gateway, $networkCode);
 
         if ((($supportsAuthAndCapture === true) and ($payment->getCaptureTimestamp() !== null)) or
-            ($supportsAuthAndCapture === false))
+            ($supportsAuthAndCapture === false) or
+            ($forceRefundTransaction === true))
         {
             if ($payment->transaction === null)
             {
