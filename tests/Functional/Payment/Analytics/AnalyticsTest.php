@@ -118,4 +118,29 @@ class AnalyticsTest extends TestCase
 
         $this->assertTestResponse($paymentAnalytic, 'testPaymentAnalyticsOtp');
     }
+
+    public function testDataForUserAgentAnomaly()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $requestServer = [
+                            'HTTP_USER_AGENT'   => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
+                        ];
+
+        $payment['_'][AnalyticsEntity::BROWSER] = 'safari';
+
+        $payment['_'][AnalyticsEntity::PLATFORM_VERSION] = '537.36';
+
+        $payment['_'][AnalyticsEntity::OS] = 'ios';
+
+        $payment['_'][AnalyticsEntity::OS_VERSION] = '11.0';
+
+        $payment['_'][AnalyticsEntity::DEVICE] = 'mobile';
+
+        $payment = $this->doAuthPayment($payment, $requestServer);
+
+        $paymentAnalytic = $this->getLastEntity(Table::PAYMENT_ANALYTICS, true);
+
+        $this->assertTestResponse($paymentAnalytic, 'testDataForUserAgentAnomaly');
+    }
 }

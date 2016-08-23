@@ -94,7 +94,7 @@ class Service extends Base\Service
         $anomalies = [];
 
         // Give preference to value passed from frontend over that parsed from user-agent
-        if (isset($metadata[Entity::BROWSER]))
+        if (isset($metadata[Entity::BROWSER]) and isset($log[Entity::BROWSER]))
         {
             // log if  frontend value is different from user-agent value
             $this->collectMismatch($log[Entity::BROWSER], $metadata[Entity::BROWSER], Entity::BROWSER, $anomalies);
@@ -102,21 +102,21 @@ class Service extends Base\Service
             $log[Entity::BROWSER] = $metadata[Entity::BROWSER];
         }
 
-        if (isset($metadata[Entity::OS]))
+        if (isset($metadata[Entity::OS]) and isset($log[Entity::OS]))
         {
             $this->collectMismatch($log[Entity::OS], $metadata[Entity::OS], Entity::OS, $anomalies);
 
             $log[Entity::OS] = $metadata[Entity::OS];
         }
 
-        if (isset($metadata[Entity::OS_VERSION]))
+        if (isset($metadata[Entity::OS_VERSION]) and isset($log[Entity::OS_VERSION]))
         {
             $this->collectMismatch($log[Entity::OS_VERSION], $metadata[Entity::OS_VERSION], Entity::OS_VERSION, $anomalies);
 
             $log[Entity::OS_VERSION] = $metadata[Entity::OS_VERSION];
         }
 
-        if (isset($metadata[Entity::DEVICE]))
+        if (isset($metadata[Entity::DEVICE]) and isset($log[Entity::DEVICE]))
         {
             $this->collectMismatch($log[Entity::DEVICE], $metadata[Entity::DEVICE], Entity::DEVICE, $anomalies);
 
@@ -129,8 +129,13 @@ class Service extends Base\Service
         }
     }
 
-    protected function collectMismatch(string $valueFromFrontend, string $valueFromUserAgent,
-                                        string $dataPoint, array & $anomalies)
+    /**
+     * @param string $davalueFromFrontend
+     * @param string $valueFromUserAgent
+     * @param string $dataPoint
+     */
+    protected function collectMismatch($valueFromFrontend, $valueFromUserAgent,
+                                        $dataPoint, array & $anomalies)
     {
         if (isset($valueFromFrontend) and
             isset($valueFromUserAgent) and
@@ -179,7 +184,14 @@ class Service extends Base\Service
 
         $log[Entity::BROWSER] = $uAgent->browser();
 
+        if (isset($log[Entity::BROWSER]))
+        {
+            $log[Entity::PLATFORM_VERSION] = $uAgent->version($uAgent->browser());
+        }
+
         $log[Entity::OS] = $uAgent->platform();
+
+        $log[Entity::OS_VERSION] = $uAgent->version($uAgent->platform());
 
         $log[Entity::DEVICE] = $this->getDeviceValue($uAgent);
 

@@ -30,4 +30,12 @@ return [
         'integration_version' => '3.1.2',
     ],
 
+    'testDataForUserAgentAnomaly' => [
+        'user_agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
+        'browser' => 4,
+        'platform_version' => '537.36',
+        'os' => 5,
+        'os_version' => '11.0',
+        'device' => 3,
+    ],
 ];
