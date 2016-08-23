@@ -9,6 +9,7 @@ use RZP\Http\Route;
 use RZP\Models\Card;
 use RZP\Models\Order;
 use RZP\Models\Payment;
+use RZP\Models\Pricing;
 use RZP\Constants\Mode;
 use RZP\Models\Card\IIN;
 use RZP\Models\Merchant;
@@ -51,6 +52,8 @@ trait Authorize
         // $gatewayInput is being passed by reference.
         // Adds callback url, payment and card info to $gatewayInput
         $this->prePaymentAuthorizeProcessing($payment, $input, $gatewayInput);
+
+        $this->verifyFeesLessThanAmount($payment);
 
         $this->getTerminalsForPayment($payment);
 
@@ -160,6 +163,17 @@ trait Authorize
             TraceCode::PAYMENT_AUTH_FAILURE);
 
         throw $e;
+    }
+
+    protected function verifyFeesLessThanAmount($payment)
+    {
+        list($fee, $serviceTax, $ruleKey) = (new Pricing\Fee)->calculateMerchantFees($payment);
+
+        if ($payment->getAmount() < $fee)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Amount is less than fees.');
+        }
     }
 
     protected function processAuthResponse($request, $payment)
