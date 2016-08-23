@@ -101,7 +101,7 @@ trait Support
 
         if ($status === Status::CAPTURED)
         {
-            $this->model = $this->repo->retrieveCapturedOrAcceptedCaptureError(
+            $this->model = $this->repo->retrieveCapturedOrAcceptedCaptureErrorOrFail(
                                             $input['payment']['id']);
         }
         else
@@ -364,11 +364,11 @@ trait Support
     {
         assert ($type === 'refund');
 
-        $id = $input['payment']['id'];
+        $paymentId = $input['payment']['id'];
 
         // Gets the first gateway entity matching the action
         // authorize or purchase
-        $gatewayEntity = $this->repo->findByPaymentIdToVerify($id);
+        $gatewayEntity = $this->repo->findByPaymentIdToVerify($paymentId);
 
         $gatewayAction = (int) $gatewayEntity->getAction();
 
@@ -380,29 +380,15 @@ trait Support
         if (($gatewayAction === Action::AUTHORIZE) and
             ($gatewayStatus === Payment\Status::AUTHORIZED))
         {
-            // Check if there exists a captured one as well
-            $capturedEntity = $this->repo->findByPaymentIdAndStatus($id, Status::CAPTURED);
+            // Check if a captured entity is also present. If yes, refund is required on the gateway.
+            $capturedEntity = $this->repo->retrieveCapturedOrAcceptedCaptureError($paymentId);
 
-            $count = $capturedEntity->count();
-
-            if ($count === 0)
+            if ($capturedEntity !== null)
             {
-                // No captured entity found. Let's try to find capture_failed entities
-                $captureFailedEntities = $this->repo->findByPaymentIdAndStatus($id, Status::CAPTURE_FAILED);
-
-                foreach ($captureFailedEntities as $captureFailedEntity)
-                {
-                    if ($captureFailedEntity->getErrorCode() === Hdfc\ErrorCode::GW00176)
-                    {
-                        return false;
-                    }
-                }
-
-                return true;
+                return false;
             }
 
-            return false;
-
+            return true;
         }
         else if (($gatewayAction === Action::PURCHASE) and
                  ($gatewayStatus === Payment\Status::CAPTURED))
