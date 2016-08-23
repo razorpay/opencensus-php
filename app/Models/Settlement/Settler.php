@@ -375,10 +375,19 @@ class Settler
         $dailySettlement->saveOrFail();
     }
 
+    /**
+     * Settlement is done only if funds are not on hold and bank account change
+     * is not recent as we need some time till beneficiary is updated in kotak
+     */
     protected function shouldSettle(Transaction\Entity $txn, $channel, $merchant)
     {
+        $today = Carbon::today('Asia/Kolkata');
+
+        $lastWorkingDay = Holidays::getPreviousWorkingDay($today);
+
         return (($txn->getChannel() === $channel) and
-                ($merchant->holdFunds() === false));
+                ($merchant->holdFunds() === false) and
+                ($merchant->bankAccount->getCreatedTimestamp() < $lastWorkingDay->timestamp));
     }
 
     protected function createSettlementFile($settlements, $txns)
