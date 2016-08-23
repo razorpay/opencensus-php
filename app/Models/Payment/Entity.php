@@ -388,7 +388,7 @@ class Entity extends Base\PublicEntity
     {
         $this->setAttribute(self::VERIFIED, $verified);
     }
-    
+
     public function setGatewayCaptured($gatewayCaptured)
     {
         $this->setAttribute(self::GATEWAY_CAPTURED, $gatewayCaptured);
@@ -548,19 +548,19 @@ class Entity extends Base\PublicEntity
 
         return $verified;
     }
-    
+
     protected function getGatewayCapturedAttribute()
     {
         $gatewayCaptured = $this->attributes[self::GATEWAY_CAPTURED];
-        
+
         // If the attribute is null (which is the default value), it means that
         // it has not been captured on gateway. If it is captured on gateway,
         // the attribute would be updated.
         if ($gatewayCaptured === null)
         {
-             return false;
+             return null;
         }
-        
+
         return $gatewayCaptured;
     }
 

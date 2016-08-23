@@ -54,7 +54,7 @@ trait Authorize
 
         $this->getTerminalsForPayment($payment);
 
-        return  $this->authorizeAcrossTerminals($gatewayInput, $payment, $input);
+        return $this->authorizeAcrossTerminals($gatewayInput, $payment, $input);
 
     }
 
@@ -1312,6 +1312,8 @@ trait Authorize
             //
             if ($this->isGatewayActuallyAuthorizingPayment($payment) === false)
             {
+                $payment->setGatewayCaptured(true);
+
                 // Also sets the transaction association with the payment.
                 $txn = (new Transaction\Core)->createFromPaymentAuthorized($payment);
 
@@ -1341,12 +1343,7 @@ trait Authorize
             $networkCode = $paymentCard->getNetworkCode();
         }
 
-        if (Payment\Gateway::supportsAuthAndCapture($gateway, $networkCode) === false)
-        {
-            return false;
-        }
-
-        return true;
+        return Payment\Gateway::supportsAuthAndCapture($gateway, $networkCode);
     }
 
     protected function getEncryptedGatewayText($gateway)

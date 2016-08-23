@@ -124,7 +124,8 @@ class CreatePayments  extends Migration
             $table->tinyInteger(Payment::VERIFIED)
                   ->nullable();
             
-            $table->tinyInteger(Payment::GATEWAY_CAPTURED);
+            $table->boolean(Payment::GATEWAY_CAPTURED)
+                  ->nullable();
 
             $table->text(Payment::CALLBACK_URL)
                   ->nullable();
