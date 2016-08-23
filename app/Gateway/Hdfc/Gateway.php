@@ -378,6 +378,24 @@ class Gateway extends Base\Gateway
             return true;
         }
     }
+    
+    public function manualGatewayRefund(array $input)
+    {
+        $canManualRefund = $this->canForceRefund($input);
+        
+        if ($canManualRefund)
+        {
+            $this->refund($input);
+            
+            // Successfully refunded on the gateway
+            return true;
+        }
+        else
+        {
+            // Did not refund on the gateway side
+            return false;
+        }
+    }
 
     public function verifyCapture(array $input)
     {
