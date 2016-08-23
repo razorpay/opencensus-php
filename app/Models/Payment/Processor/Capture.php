@@ -210,6 +210,10 @@ trait Capture
                 $this->callGatewayFunction(Payment\Action::CAPTURE, $data);
 
                 $this->payment->setGatewayCaptured(true);
+
+                // Saving this here itself because recordCapture will perform other actions too,
+                // in a transaction, which could fail and end up rolling back.
+                $this->repo->saveOrFail($this->payment);
             }
             catch (Exception\GatewayTimeoutException $ex)
             {
