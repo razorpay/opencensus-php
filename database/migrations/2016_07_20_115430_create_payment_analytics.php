@@ -45,9 +45,13 @@ class CreatePaymentAnalytics extends Migration
                 ->default(0);
 
             $table->smallInteger(Analytics::ATTEMPTS)
-              ->nullable();
+                  ->nullable();
 
-            $table->tinyInteger(Analytics::LIBRARY);
+            $table->tinyInteger(Analytics::LIBRARY)
+                  ->nullable();
+
+            $table->char(Analytics::LIBRARY_VERSION)
+                  ->nullable();
 
             $table->tinyInteger(Analytics::BROWSER)
                   ->nullable();
@@ -55,10 +59,22 @@ class CreatePaymentAnalytics extends Migration
             $table->tinyInteger(Analytics::OS)
                   ->nullable();
 
+            $table->char(Analytics::OS_VERSION)
+                  ->nullable();
+
             $table->tinyInteger(Analytics::DEVICE)
                   ->nullable();
 
             $table->tinyInteger(Analytics::PLATFORM)
+                  ->nullable();
+
+            $table->char(Analytics::PLATFORM_VERSION)
+                  ->nullable();
+
+            $table->tinyInteger(Analytics::INTEGRATION)
+                  ->nullable();
+
+            $table->char(Analytics::INTEGRATION_VERSION)
                   ->nullable();
 
             // http://stackoverflow.com/questions/1076714/max-length-for-client-ip-address

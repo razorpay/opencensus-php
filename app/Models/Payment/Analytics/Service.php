@@ -11,6 +11,15 @@ use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
+    protected $uAgent;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->uAgent = $this->app['agent'];
+    }
+
     public function createAuditLog($input)
     {
         $action = (new Analytics\Core)->create($input);
@@ -41,39 +50,97 @@ class Service extends Base\Service
 
     public function recordPaymentRequestData($rawData, array & $log)
     {
-        if (isset($rawData['input']))
+        // get data from request
+        $this->setHttpRequestData($log);
+
+        // get data from frontend
+        if (isset($rawData['input']) === false)
         {
-            $input = $rawData['input'];
-
-            $metadata = isset($input['_']) ? $input['_'] : [];
-
-            $this->trace->info(
-                TraceCode::PAYMENT_METADATA,
-                ['metadata' => $metadata, 'payment_id' => $rawData['payment_id']]);
-
-            // set checkout_id
-            if (isset($metadata[Entity::CHECKOUT_ID]))
-            {
-                $log[Entity::CHECKOUT_ID] = $metadata[Entity::CHECKOUT_ID];
-
-                // set attempts
-                $log[Entity::ATTEMPTS] = $this->calculatePaymentAttempts($metadata[Entity::CHECKOUT_ID]);
-            }
-
-            // set library
-            if (isset($metadata[Entity::LIBRARY]))
-            {
-                $log[Entity::LIBRARY] = $metadata[Entity::LIBRARY];
-            }
-
-            // set platform
-            if (isset($metadata[Entity::PLATFORM]))
-            {
-                $log[Entity::PLATFORM] = $metadata[Entity::PLATFORM];
-            }
+            return;
         }
 
-        $this->setHttpRequestData($log);
+        $input = $rawData['input'];
+
+        if (isset($input['_']) === false)
+        {
+            return;
+        }
+
+        $metadata = $input['_'];
+
+        $this->trace->info(
+            TraceCode::PAYMENT_METADATA,
+            ['metadata' => $metadata, 'payment_id' => $rawData['payment_id']]);
+
+        if (isset($metadata[Entity::CHECKOUT_ID]))
+        {
+            $log[Entity::CHECKOUT_ID] = $metadata[Entity::CHECKOUT_ID];
+
+            $log[Entity::ATTEMPTS] = $this->calculatePaymentAttempts($metadata[Entity::CHECKOUT_ID]);
+        }
+
+        $log[Entity::LIBRARY] = isset($metadata[Entity::LIBRARY]) ? $metadata[Entity::LIBRARY] : null;
+
+        $log[Entity::LIBRARY_VERSION] = isset($metadata[Entity::LIBRARY_VERSION]) ? $metadata[Entity::LIBRARY_VERSION] : null;
+
+        $log[Entity::PLATFORM] = isset($metadata[Entity::PLATFORM]) ? $metadata[Entity::PLATFORM] : null;
+
+        $log[Entity::PLATFORM_VERSION] = isset($metadata[Entity::PLATFORM_VERSION]) ? $metadata[Entity::PLATFORM_VERSION] : null;
+
+        $log[Entity::INTEGRATION] = isset($metadata[Entity::INTEGRATION]) ? $metadata[Entity::INTEGRATION] : null;
+
+        $log[Entity::INTEGRATION_VERSION] = isset($metadata[Entity::INTEGRATION_VERSION]) ? $metadata[Entity::INTEGRATION_VERSION] : null;
+
+        $anomalies = [];
+
+        // Give preference to value passed from frontend over that parsed from user-agent
+        if (isset($metadata[Entity::BROWSER]))
+        {
+            // log if  frontend value is different from user-agent value
+            $this->collectMismatch($log[Entity::BROWSER], $metadata[Entity::BROWSER], Entity::BROWSER, $anomalies);
+
+            $log[Entity::BROWSER] = $metadata[Entity::BROWSER];
+        }
+
+        if (isset($metadata[Entity::OS]))
+        {
+            $this->collectMismatch($log[Entity::OS], $metadata[Entity::OS], Entity::OS, $anomalies);
+
+            $log[Entity::OS] = $metadata[Entity::OS];
+        }
+
+        if (isset($metadata[Entity::OS_VERSION]))
+        {
+            $this->collectMismatch($log[Entity::OS_VERSION], $metadata[Entity::OS_VERSION], Entity::OS_VERSION, $anomalies);
+
+            $log[Entity::OS_VERSION] = $metadata[Entity::OS_VERSION];
+        }
+
+        if (isset($metadata[Entity::DEVICE]))
+        {
+            $this->collectMismatch($log[Entity::DEVICE], $metadata[Entity::DEVICE], Entity::DEVICE, $anomalies);
+
+            $log[Entity::DEVICE] = $metadata[Entity::DEVICE];
+        }
+
+        if (empty($anomalies) === false)
+        {
+            $this->trace->info(TraceCode::PAYMENT_USER_AGENT_ANOMALY, $anomalies);
+        }
+    }
+
+    protected function collectMismatch(string $valueFromFrontend, string $valueFromUserAgent,
+                                        string $dataPoint, array & $anomalies)
+    {
+        if (isset($valueFromFrontend) and
+            isset($valueFromUserAgent) and
+            strcasecmp($valueFromFrontend, $valueFromUserAgent) !== 0)
+        {
+             $anomalies[$dataPoint] = [
+                                        'valueFromFrontend' => $valueFromFrontend,
+                                        'valueFromUserAgent' => $valueFromUserAgent
+                                      ];
+        }
     }
 
     protected function calculatePaymentAttempts($checkoutId)
@@ -108,36 +175,24 @@ class Service extends Base\Service
     protected function setHttpRequestData(array & $log)
     {
         // get user-agent service
-        $app = \App::getFacadeRoot();
+        $uAgent = $this->uAgent;
 
-        $uAgent = $app['agent'];
-
-        // set browser
         $log[Entity::BROWSER] = $uAgent->browser();
 
-        // set os
         $log[Entity::OS] = $uAgent->platform();
 
-        // set device
-        $device = $this->getDeviceValue($uAgent);
-
-        $log[Entity::DEVICE] = $device;
+        $log[Entity::DEVICE] = $this->getDeviceValue($uAgent);
 
         // get the HTTP request
-        $request = $app['request'];
+        $request = $this->app['request'];
 
-        // set ip
-        $ip = $request->ip();
+        $log[Entity::IP] = $request->ip();
 
-        $log[Entity::IP] = $ip;
-
-        // set referer
         if ($request->header(HttpRequestHeader::REFERER) !== null)
         {
             $log[Entity::REFERER] = $request->header(HttpRequestHeader::REFERER);
         }
 
-        // set user-agent
         if ($request->header(HttpRequestHeader::USER_AGENT) !== null)
         {
             $log[Entity::USER_AGENT] = $request->header(HttpRequestHeader::USER_AGENT);

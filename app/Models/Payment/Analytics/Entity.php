@@ -13,10 +13,15 @@ class Entity extends Base\PublicEntity
     const CHECKOUT_ID                   = 'checkout_id';
     const ATTEMPTS                      = 'attempts';
     const LIBRARY                       = 'library';
+    const LIBRARY_VERSION               = 'library_version';
     const BROWSER                       = 'browser';
     const OS                            = 'os';
+    const OS_VERSION                    = 'os_version';
     const DEVICE                        = 'device';
     const PLATFORM                      = 'platform';
+    const PLATFORM_VERSION              = 'platform_version';
+    const INTEGRATION                   = 'integration';
+    const INTEGRATION_VERSION           = 'integration_version';
     const IP                            = 'ip';
     const REFERER                       = 'referer';
     const USER_AGENT                    = 'user_agent';
@@ -34,11 +39,16 @@ class Entity extends Base\PublicEntity
         self::CHECKOUT_ID,
         self::ATTEMPTS,
         self::LIBRARY,
+        self::LIBRARY_VERSION,
         self::BROWSER,
         self::OS,
+        self::OS_VERSION,
         self::DEVICE,
         self::PLATFORM,
+        self::PLATFORM_VERSION,
         self::IP,
+        self::INTEGRATION,
+        self::INTEGRATION_VERSION,
         self::REFERER,
         self::USER_AGENT,
         self::TERMINAL_ID,
@@ -56,11 +66,16 @@ class Entity extends Base\PublicEntity
         self::TERMINAL_ID,
         self::ATTEMPTS,
         self::LIBRARY,
+        self::LIBRARY_VERSION,
         self::BROWSER,
         self::OS,
+        self::OS_VERSION,
         self::DEVICE,
         self::PLATFORM,
+        self::PLATFORM_VERSION,
         self::IP,
+        self::INTEGRATION,
+        self::INTEGRATION_VERSION,
         self::REFERER,
         self::USER_AGENT,
         self::TERMINAL_STATUS,
@@ -70,11 +85,6 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_TYPE,
         self::CREATED_AT,
         self::UPDATED_AT
-    );
-
-    protected $defaults = array(
-        self::LIBRARY   => Metadata::DIRECT,
-        self::PLATFORM  => Metadata::SERVER,
     );
 
     protected $table = \RZP\Constants\Table::PAYMENT_ANALYTICS;
@@ -135,6 +145,11 @@ class Entity extends Base\PublicEntity
         return $this->attributes[self::LIBRARY];
     }
 
+    public function getLibraryVersion()
+    {
+        return $this->attributes[self::LIBRARY_VERSION];
+    }
+
     public function getBrowser()
     {
         return $this->attributes[self::BROWSER];
@@ -145,6 +160,11 @@ class Entity extends Base\PublicEntity
         return $this->attributes[self::OS];
     }
 
+    public function getOsVersion()
+    {
+        return $this->attributes[self::OS_VERSION];
+    }
+
     public function getDevice()
     {
         return $this->attributes[self::DEVICE];
@@ -152,7 +172,12 @@ class Entity extends Base\PublicEntity
 
     public function getPlatform()
     {
-        $platform = $this->attributes[self::PLATFORM];
+        return $this->attributes[self::PLATFORM];
+    }
+
+    public function getPlatformVersion()
+    {
+        return $this->attributes[self::PLATFORM_VERSION];
     }
 
     public function getIp()
@@ -165,14 +190,19 @@ class Entity extends Base\PublicEntity
         return $this->attributes[self::REFERER];
     }
 
+    public function getIntegration()
+    {
+        return $this->attributes[self::INTEGRATION];
+    }
+
+    public function getIntegrationVersion()
+    {
+        return $this->attributes[self::INTEGRATION_VERSION];
+    }
+
     public function setAttempts($attempts)
     {
         $this->setAttribute(self::ATTEMPTS, $attempts);
-    }
-
-    public function setPlatformAttribute($platform)
-    {
-        $this->attributes[self::PLATFORM] = Metadata::getValueForPlatform($platform);
     }
 
     public function setCheckoutId($checkoutId)
@@ -180,9 +210,24 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CHECKOUT_ID, $checkoutId);
     }
 
+    public function setPlatformAttribute($platform)
+    {
+        $this->attributes[self::PLATFORM] = Metadata::getValueForPlatform($platform);
+    }
+
+    public function setPlatformVersion($platformVersion)
+    {
+        $this->setAttribute(self::PLATFORM_VERSION, $platformVersion);
+    }
+
     public function setLibraryAttribute($library)
     {
         $this->attributes[self::LIBRARY] = Metadata::getValueForLibrary($library);
+    }
+
+    public function setLibraryVersion($libraryVersion)
+    {
+        $this->setAttribute(self::LIBRARY_VERSION, $libraryVersion);
     }
 
     public function setBrowserAttribute($browser)
@@ -193,6 +238,21 @@ class Entity extends Base\PublicEntity
     public function setOsAttribute($os)
     {
         $this->attributes[self::OS] = Metadata::getValueForOs($os);
+    }
+
+    public function setOsVersion($osVersion)
+    {
+        $this->setAttribute(self::OS_VERSION, $osVersion);
+    }
+
+    public function setIntegrationAttribute($integration)
+    {
+        $this->attributes[self::INTEGRATION] = Metadata::getValueForIntegration($integration);
+    }
+
+    public function setIntegrationVersion($integrationVersion)
+    {
+        $this->setAttribute(self::INTEGRATION_VERSION, $integrationVersion);
     }
 
     public function setDeviceAttribute($device)

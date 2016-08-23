@@ -195,6 +195,7 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_BROWSER                                           = 'The payment request has invalid browser';
     const BAD_REQUEST_INVALID_OS                                                = 'The payment request has invalid operating system';
     const BAD_REQUEST_INVALID_DEVICE                                            = 'The payment request has invalid device';
+    const BAD_REQUEST_INVALID_INTEGRATION                                       = 'The payment required has invalid integration';
     const BAD_REQUEST_PAYMENT_ALREADY_REFUND_INITIATED                          = 'Refund already initiated';
     const BAD_REQUEST_PAYMENT_PROBLEM_IN_UPDATING                               = 'Problem in updating payment';
 

@@ -19,13 +19,18 @@ class Validator extends Base\Validator
         Entity::CHECKOUT_ID             => 'sometimes|alpha_num|size:14',
         Entity::ATTEMPTS                => 'sometimes|integer|min:0',
         Entity::LIBRARY                 => 'sometimes',
+        Entity::LIBRARY_VERSION         => 'sometimes',
         Entity::PLATFORM                => 'sometimes',
+        Entity::PLATFORM_VERSION        => 'sometimes',
         Entity::BROWSER                 => 'sometimes',
         Entity::OS                      => 'sometimes',
+        Entity::OS_VERSION              => 'sometimes',
         Entity::DEVICE                  => 'sometimes',
         Entity::REFERER                 => 'sometimes|url',
         Entity::USER_AGENT              => 'sometimes|string',
         Entity::IP                      => 'sometimes|ip',
+        Entity::INTEGRATION             => 'sometimes',
+        Entity::INTEGRATION_VERSION     => 'sometimes'
      );
 
     protected static $createValidators = array(
@@ -35,7 +40,24 @@ class Validator extends Base\Validator
         'browser',
         'os',
         'device',
+        'integration',
     );
+
+    protected function validateIntegration($metadata)
+    {
+        if (isset($metadata[Entity::INTEGRATION]))
+        {
+            if (Metadata::validateIntegration($metadata[Entity::INTEGRATION]) !== true)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_INTEGRATION);
+            }
+
+            return true;
+        }
+
+        return true;
+    }
 
     protected function validateDevice($metadata)
     {

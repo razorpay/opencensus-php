@@ -43,12 +43,12 @@ class Metadata
     );
 
     // Library values
-    const CHECKOUT      = 'checkout';
+    const CHECKOUTJS    = 'checkoutjs';
     const RAZORPAYJS    = 'razorpayjs';
     const DIRECT        = 'direct';
 
     const LIBRARY_VALUES = array(
-        self::CHECKOUT      => 1,
+        self::CHECKOUTJS    => 1,
         self::RAZORPAYJS    => 2,
         self::DIRECT        => 3,
     );
@@ -71,6 +71,50 @@ class Metadata
         self::OPERA           => 6,
         self::EDGE            => 7,
     );
+
+    // Integration values
+
+    const WOO_COMMERCE  = 'woo_commerce';
+    const MAGENTO       = 'magento';
+    const CS_CART       = 'ca_cart';
+    const OPEN_CART     = 'open_cart';
+    const SHOPIFY       = 'shopify';
+    const WHMCS         = 'whmcs';
+    const ARASTTA       = 'arastta';
+    const PRESTASHOP    = 'prestashop';
+
+    const INTEGRATION_VALUES = array(
+        self::WOO_COMMERCE  => 1,
+        self::MAGENTO       => 2,
+        self::CS_CART       => 3,
+        self::OPEN_CART     => 4,
+        self::SHOPIFY       => 5,
+        self::WHMCS         => 6,
+        self::ARASTTA       => 7,
+        self::PRESTASHOP    => 8,
+    );
+
+    public static function validateIntegration($integration)
+    {
+        if (!$integration)
+        {
+            return true;
+        }
+
+        return array_key_exists(strtolower($integration), self::INTEGRATION_VALUES);
+    }
+
+    public static function getValueForIntegration($integration)
+    {
+        return (!$integration) ? null : self::INTEGRATION_VALUES[strtolower($integration)];
+    }
+
+    public static function getStringForIntegrationValue($value)
+    {
+        $values = array_flip(self::INTEGRATION_VALUES);
+
+        return $values[strtolower($value)];
+    }
 
     public static function validatePlatform($platform)
     {

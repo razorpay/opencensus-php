@@ -30,9 +30,10 @@ class AnalyticsTest extends TestCase
 
         $checkoutId = UniqueIdEntity::generateUniqueIdWithCheckDigit();
 
-        $payment['_']['checkout_id'] = $checkoutId;
+        $payment['_'][AnalyticsEntity::CHECKOUT_ID] = $checkoutId;
 
         $payment = $this->doAuthPayment($payment);
+
         $paymentAnalytic = $this->getLastEntity(Table::PAYMENT_ANALYTICS, true);
 
         $this->assertEquals($checkoutId, $paymentAnalytic[AnalyticsEntity::CHECKOUT_ID]);
@@ -42,7 +43,7 @@ class AnalyticsTest extends TestCase
         // ------------------------------------------------------------------ //
 
         $payment = $this->getDefaultPaymentArray();
-        $payment['_']['checkout_id'] = $checkoutId;
+        $payment['_'][AnalyticsEntity::CHECKOUT_ID] = $checkoutId;
 
         $payment = $this->doAuthPayment($payment);
         $paymentAnalytic = $this->getLastEntity(Table::PAYMENT_ANALYTICS, true);
@@ -60,6 +61,18 @@ class AnalyticsTest extends TestCase
                             'HTTP_USER_AGENT'   => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
                             'HTTP_REFERER'      => 'https://razorpay.com/demo'
                         ];
+
+        $payment['_'][AnalyticsEntity::LIBRARY] = 'checkoutjs';
+
+        $payment['_'][AnalyticsEntity::LIBRARY_VERSION] = '3846fgjb';
+
+        $payment['_'][AnalyticsEntity::PLATFORM] = 'browser';
+
+        $payment['_'][AnalyticsEntity::PLATFORM_VERSION] = '52.0.2743.116';
+
+        $payment['_'][AnalyticsEntity::INTEGRATION] = 'woo_commerce';
+
+        $payment['_'][AnalyticsEntity::INTEGRATION_VERSION] = '0.1.2';
 
         $payment = $this->doAuthPayment($payment, $requestServer);
 
@@ -87,10 +100,22 @@ class AnalyticsTest extends TestCase
                             'HTTP_REFERER'      => 'https://razorpay.com/demo'
                         ];
 
+        $payment['_'][AnalyticsEntity::LIBRARY] = 'checkoutjs';
+
+        $payment['_'][AnalyticsEntity::LIBRARY_VERSION] = '3846fgjb';
+
+        $payment['_'][AnalyticsEntity::PLATFORM] = 'mobile_sdk';
+
+        $payment['_'][AnalyticsEntity::PLATFORM_VERSION] = '0.4.12';
+
+        $payment['_'][AnalyticsEntity::INTEGRATION] = 'magento';
+
+        $payment['_'][AnalyticsEntity::INTEGRATION_VERSION] = '3.1.2';
+
         $payment = $this->doAuthPayment($payment, $requestServer);
 
         $paymentAnalytic = $this->getLastEntity(Table::PAYMENT_ANALYTICS, true);
 
-        $this->assertTestResponse($paymentAnalytic, 'testPaymentAnalytics');
+        $this->assertTestResponse($paymentAnalytic, 'testPaymentAnalyticsOtp');
     }
 }
