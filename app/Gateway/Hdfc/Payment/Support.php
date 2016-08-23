@@ -181,7 +181,7 @@ trait Support
         if (($this->action === Base\Action::CAPTURE) and
             ($error['code'] === Hdfc\ErrorCode::GW00176) and
             ($input['payment']['status'] === 'authorized') and
-            ($input['payment']['amount_authorized'] === (int)$input['amount']))
+            ($input['payment']['amount_authorized'] === (int) $input['amount']))
         {
             $this->trace->error(
                 TraceCode::PAYMENT_CAPTURE_FORCED,
@@ -391,7 +391,7 @@ trait Support
             return true;
         }
         else if (($gatewayAction === Action::PURCHASE) and
-            ($gatewayStatus === Payment\Status::CAPTURED))
+                 ($gatewayStatus === Payment\Status::CAPTURED))
         {
             return false;
         }

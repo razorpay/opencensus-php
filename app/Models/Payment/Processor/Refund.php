@@ -309,7 +309,7 @@ trait Refund
         {
             $this->callGatewayFunction(Payment\Action::REFUND, $data);
         }
-        catch(Exception\BaseException $e)
+        catch (Exception\BaseException $e)
         {
             $this->tracePaymentFailed(
                     $e->getError(),
