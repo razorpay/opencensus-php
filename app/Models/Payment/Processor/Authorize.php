@@ -167,7 +167,17 @@ trait Authorize
 
     protected function verifyFeesLessThanAmount($payment)
     {
-        list($fee, $serviceTax, $ruleKey) = (new Pricing\Fee)->calculateMerchantFees($payment);
+        $fee = 0;
+
+        // Ignore the pricing rule not found exception for authorization.
+        try
+        {
+            list($fee, $serviceTax, $ruleKey) = (new Pricing\Fee)->calculateMerchantFees($payment);
+        }
+        catch (\Exception $ex)
+        {
+            ;
+        }
 
         if ($payment->getAmount() < $fee)
         {
