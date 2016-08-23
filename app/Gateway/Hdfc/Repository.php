@@ -311,21 +311,14 @@ class Repository extends Base\Repository
 
     public function retrieveCapturedOrAcceptedCaptureError($paymentId)
     {
-        $payment = $this->newQuery()
-            ->where('payment_id', '=', $paymentId)
-            ->where('status', '=', Payment\Status::CAPTURED)
-            ->first();
-
-        if ($payment !== null)
+        try
         {
-            return $payment;
+            return $this->retrieveCapturedOrAcceptedCaptureErrorOrFail($paymentId);
         }
-
-        return $this->newQuery()
-            ->where('payment_id', '=', $paymentId)
-            ->where('status', '=', Payment\Status::CAPTURE_FAILED)
-            ->where('error_code', '=', ErrorCode::GW00176)
-            ->first();
+        catch(\Exception $ex)
+        {
+            return null;
+        }
     }
 
     public function retrieveByPaymentIdAndStatusOrFail($paymentId, $status)
