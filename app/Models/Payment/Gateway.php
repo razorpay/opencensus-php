@@ -22,6 +22,7 @@ class Gateway
     const HDFC              = 'hdfc';
     const KOTAK             = 'kotak';
     const AXIS              = 'axis';
+    const INDUSIND          = 'indusind';
     const MOBIKWIK          = 'mobikwik';
     const PAYTM             = 'paytm';
     const SBIEPAY           = 'sbiepay';
@@ -354,6 +355,7 @@ class Gateway
     public static $emiFileBanks = array(
         self::KOTAK     => IFSC::KKBK,
         self::AXIS      => IFSC::UTIB,
+        self::INDUSIND  => IFSC::INDB,
     );
 
     public static $emiBankToGatewayMap = array(
