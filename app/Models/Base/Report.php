@@ -310,6 +310,6 @@ class Report extends Service
     protected function increaseAllowedSystemLimits()
     {
         ini_set('memory_limit', '1024M');
-        set_time_limit(301);
+        set_time_limit(501);
     }
 }
