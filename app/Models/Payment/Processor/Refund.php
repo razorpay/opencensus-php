@@ -158,15 +158,15 @@ trait Refund
         // Here, $manualGatewayRefundResult=true means that the payment is refunded on the gateway side.
         if ($manualGatewayRefundResult === true)
         {
-            $msg = 'Has been captured on gateway and hence creating a transaction in api.';
+            $msg = 'Successfully created a refund on gateway';
         }
         else if ($manualGatewayRefundResult === false)
         {
-            $msg = 'Has not been captured on gateway. Not doing anything on the api side.';
+            $msg = 'DID NOT CREATE A REFUND ON GATEWAY. ISSUE!';
         }
         else
         {
-            $msg = 'Could not perform verify capture.';
+            $msg = 'THIS IS UNEXPECTED!';
         }
 
         return [
