@@ -1,7 +1,9 @@
 <?php namespace App\Http\Middleware;
 
+use Auth;
 use Closure;
 use Illuminate\Contracts\Auth\Guard;
+use Razorpay\Api\Request as ApiRequest;
 
 class Authenticate {
 
@@ -43,6 +45,9 @@ class Authenticate {
 				return redirect()->guest('auth/login');
 			}
 		}
+
+        $user = Auth::guard('user')->user();
+        ApiRequest::addHeader('X-Dashboard-Merchant', $user->email);
 
 		return $next($request);
 	}
