@@ -45,6 +45,10 @@ class Processor
      */
     const MAX_RETRY_ATTEMPTS = 3;
 
+    // Make sure that this is below 900 (seconds) because SQS doesn't support
+    // delay over 15 minutes.
+    const CAPTURE_QUEUE_DELAY = 180;
+
     protected $merchant;
     protected $trace;
     protected $payment;
@@ -291,6 +295,10 @@ class Processor
         $this->payment = $payment;
 
         $this->callGatewayFunction(Payment\Action::CAPTURE, $data);
+        
+        $payment->setGatewayCaptured(true);
+        
+        $this->repo->saveOrFail($payment);
     }
 
     protected function cancelPayment($payment)

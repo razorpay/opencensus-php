@@ -105,6 +105,7 @@ class Capture
                     'message'      => 'Deleting the job after configured number of tries. Still unsuccessful.'
                 ]
             );
+
             $this->job->delete();
         }
         else

@@ -56,6 +56,7 @@ class Entity extends Base\PublicEntity
     const TERMINAL_ID           = 'terminal_id';
     const SIGNED                = 'signed';
     const VERIFIED              = 'verified';
+    const GATEWAY_CAPTURED      = 'gateway_captured';
     const CALLBACK_URL          = 'callback_url';
     const SERVICE_TAX           = 'service_tax';
     const OTP_ATTEMPTS          = 'otp_attempts';
@@ -134,6 +135,7 @@ class Entity extends Base\PublicEntity
         self::ORDER_ID,
         self::SIGNED,
         self::VERIFIED,
+        self::GATEWAY_CAPTURED,
         self::CALLBACK_URL,
         self::SAVE,
         self::FEE,
@@ -189,6 +191,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_REFUNDED   => 0,
         self::SIGNED            => 0,
         self::VERIFIED          => null,
+        self::GATEWAY_CAPTURED  => null,
         self::CAPTURED_AT       => null,
         self::AUTO_CAPTURED     => 0,
         self::SAVE              => false,
@@ -385,6 +388,11 @@ class Entity extends Base\PublicEntity
     {
         $this->setAttribute(self::VERIFIED, $verified);
     }
+    
+    public function setGatewayCaptured($gatewayCaptured)
+    {
+        $this->setAttribute(self::GATEWAY_CAPTURED, $gatewayCaptured);
+    }
 
     public function setServiceTax($serviceTax)
     {
@@ -539,6 +547,21 @@ class Entity extends Base\PublicEntity
         }
 
         return $verified;
+    }
+    
+    protected function getGatewayCapturedAttribute()
+    {
+        $gatewayCaptured = $this->attributes[self::GATEWAY_CAPTURED];
+        
+        // If the attribute is null (which is the default value), it means that
+        // it has not been captured on gateway. If it is captured on gateway,
+        // the attribute would be updated.
+        if ($gatewayCaptured === null)
+        {
+             return false;
+        }
+        
+        return $gatewayCaptured;
     }
 
     protected function getCapturedAttribute()

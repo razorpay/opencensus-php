@@ -123,6 +123,8 @@ class CreatePayments  extends Migration
 
             $table->tinyInteger(Payment::VERIFIED)
                   ->nullable();
+            
+            $table->tinyInteger(Payment::GATEWAY_CAPTURED);
 
             $table->text(Payment::CALLBACK_URL)
                   ->nullable();
@@ -156,6 +158,7 @@ class CreatePayments  extends Migration
             $table->index(Payment::CREATED_AT);
             $table->index(Payment::AUTO_CAPTURED);
             $table->index(Payment::VERIFIED);
+            $table->index(Payment::GATEWAY_CAPTURED);
             $table->index(Payment::AUTHORIZED_AT);
             $table->index(Payment::EMAIL);
             $table->index(Payment::BANK);
