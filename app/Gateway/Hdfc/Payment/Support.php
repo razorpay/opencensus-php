@@ -27,8 +27,7 @@ trait Support
     protected function supportPayment($input, $type)
     {
         if (($type === 'refund') and
-            ($this->isRefundNotRequiredOnGateway($input, $type))
-        )
+            ($this->isRefundNotRequiredOnGateway($input, $type)))
         {
             return;
         }
@@ -43,8 +42,7 @@ trait Support
         // For purchase txn, simply return back from here.
         //
         if (($result === Result::CAPTURED) and
-            ($type === 'capture')
-        )
+            ($type === 'capture'))
         {
             if (in_array($input['card']['network_code'], $this->purchase))
             {
@@ -104,12 +102,12 @@ trait Support
         if ($status === Status::CAPTURED)
         {
             $this->model = $this->repo->retrieveCapturedOrAcceptedCaptureErrorOrFail(
-                $input['payment']['id']);
+                                            $input['payment']['id']);
         }
         else
         {
             $this->model = $this->repo->retrieveByPaymentIdAndStatusOrFail(
-                $input['payment']['id'], $status);
+                                            $input['payment']['id'], $status);
         }
 
         $this->id = $input['payment']['id'];
@@ -129,8 +127,7 @@ trait Support
             // it's a captured record.
             // If the action is anything else, it is a bug and should be fixed separately.
             if (($capturedGatewayEntity->getAction() === Action::PURCHASE) or
-                ($capturedGatewayEntity->getAction() === Action::CAPTURE)
-            )
+                ($capturedGatewayEntity->getAction() === Action::CAPTURE))
             {
                 return true;
             }
@@ -150,7 +147,7 @@ trait Support
             return false;
         }
 
-        $response = &$this->supportPaymentResponse;
+        $response = & $this->supportPaymentResponse;
 
         Result::modifySpecificResultValueIfRequired($response['data']['result']);
 
@@ -174,7 +171,7 @@ trait Support
 
     protected function isAnAcceptedError()
     {
-        assert($this->error === true);
+        assert ($this->error === true);
 
         $response = $this->supportPaymentResponse;
 
@@ -184,8 +181,7 @@ trait Support
         if (($this->action === Base\Action::CAPTURE) and
             ($error['code'] === Hdfc\ErrorCode::GW00176) and
             ($input['payment']['status'] === 'authorized') and
-            ($input['payment']['amount_authorized'] === (int)$input['amount'])
-        )
+            ($input['payment']['amount_authorized'] === (int)$input['amount']))
         {
             $this->trace->error(
                 TraceCode::PAYMENT_CAPTURE_FORCED,
@@ -202,7 +198,7 @@ trait Support
     protected function setSupportPaymentType($type)
     {
         assert(($type === 'capture') or
-            ($type === 'refund'));
+               ($type === 'refund'));
 
         $this->supportPaymentRequest['type'] = $type;
 
@@ -222,7 +218,7 @@ trait Support
 
         $this->supportPaymentRequest['url'] = Hdfc\Urls::SUPPORT_PAYMENT_URL;
 
-        $data = &$this->supportPaymentRequest['data'];
+        $data = & $this->supportPaymentRequest['data'];
         $data = [];
 
         $type = $this->supportPaymentRequest['type'];
@@ -303,9 +299,9 @@ trait Support
      */
     protected function validateSupportPaymentTrackId()
     {
-        $trackid = $this->supportPaymentResponse['data']['trackid'];
+        $trackId = $this->supportPaymentResponse['data']['trackid'];
 
-        if ($trackid !== $this->supportPaymentRequest['data']['trackid'])
+        if ($trackId !== $this->supportPaymentRequest['data']['trackid'])
         {
             throw new Exception\InvalidArgumentException(
                 'Gateway Exception: Track id do not match');
@@ -332,12 +328,12 @@ trait Support
                 $this->supportPaymentResponse);
 
             $this->model = $this->repo->persistAfterSupportPaymentError(
-                $this->supportPaymentRequest['data'],
-                $this->supportPaymentResponse['data'],
-                $this->supportPaymentResponse['error'],
-                $type,
-                $paymentId,
-                $refundId);
+                                $this->supportPaymentRequest['data'],
+                                $this->supportPaymentResponse['data'],
+                                $this->supportPaymentResponse['error'],
+                                $type,
+                                $paymentId,
+                                $refundId);
         }
         else
         {
@@ -347,10 +343,10 @@ trait Support
                 $this->supportPaymentResponse);
 
             $this->model = $this->repo->persistAfterSupportPayment(
-                $this->supportPaymentRequest['data'],
-                $this->supportPaymentResponse['data'],
-                $paymentId,
-                $refundId);
+                                $this->supportPaymentRequest['data'],
+                                $this->supportPaymentResponse['data'],
+                                $paymentId,
+                                $refundId);
         }
     }
 
@@ -366,7 +362,7 @@ trait Support
      */
     protected function isRefundNotRequiredOnGateway($input, $type)
     {
-        assert($type === 'refund');
+        assert ($type === 'refund');
 
         $paymentId = $input['payment']['id'];
 
@@ -374,7 +370,7 @@ trait Support
         // authorize or purchase
         $gatewayEntity = $this->repo->findByPaymentIdToVerify($paymentId);
 
-        $gatewayAction = (int)$gatewayEntity->getAction();
+        $gatewayAction = (int) $gatewayEntity->getAction();
 
         $gatewayStatus = $gatewayEntity->getStatus();
 
@@ -382,8 +378,7 @@ trait Support
         // either the action : purchase and status : captured
         // or the action : authorize and status : authorized
         if (($gatewayAction === Action::AUTHORIZE) and
-            ($gatewayStatus === Payment\Status::AUTHORIZED)
-        )
+            ($gatewayStatus === Payment\Status::AUTHORIZED))
         {
             // Check if a captured entity is also present. If yes, refund is required on the gateway.
             $capturedEntity = $this->repo->retrieveCapturedOrAcceptedCaptureError($paymentId);
@@ -396,8 +391,7 @@ trait Support
             return true;
         }
         else if (($gatewayAction === Action::PURCHASE) and
-            ($gatewayStatus === Payment\Status::CAPTURED)
-        )
+            ($gatewayStatus === Payment\Status::CAPTURED))
         {
             return false;
         }
