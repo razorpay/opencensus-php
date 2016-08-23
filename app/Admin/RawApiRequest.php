@@ -35,6 +35,9 @@ class RawApiRequest
      */
     function __construct($input, $path)
     {
+        // Increase the time limit
+        set_time_limit(600);
+
         // Create the guzzle client
         $this->client = new Guzzle([
             'base_url' => Config::get('api.url'),
