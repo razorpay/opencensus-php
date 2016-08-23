@@ -428,7 +428,7 @@ final class Route
         'credits_create',
         'credits_edit',
         'credits_delete',
-        'manual_gateway_refund',
+        'refund_gateway_manual',
     );
 
     public static $proxy = array(
