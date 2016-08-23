@@ -97,7 +97,7 @@ trait Refund
 
         if ($verify === false)
         {
-            $this->recordRefund();
+            $this->recordRefund(true);
 
             $this->trace->info(
                 TraceCode::VERIFY_REFUND_TRANSACTION_CREATED,
@@ -241,15 +241,15 @@ trait Refund
         }
     }
 
-    protected function recordRefund()
+    protected function recordRefund($forceRefundTransaction = false)
     {
-        $this->repo->transaction(function()
+        $this->repo->transaction(function() use ($forceRefundTransaction)
         {
             $payment = $this->payment;
 
             $this->paymentRepo->lockForUpdate($payment->getKey());
 
-            $this->createTransactionForRefund($this->refund, $payment);
+            $this->createTransactionForRefund($this->refund, $payment, $forceRefundTransaction);
 
             $this->updatePaymentRefunded();
 
@@ -294,7 +294,17 @@ trait Refund
         }
     }
 
-    public function createTransactionForRefund($refund, $payment)
+    /**
+     * @param Payment\Refund\Entity $refund
+     * @param Payment\Entity $payment
+     * @param bool $forceRefundTransaction This param is used for when we don't want to check for captured payment
+     *                                      for authAndCapture supported gateways before creating a refund transaction
+     *
+     * @return null|Transaction\Entity
+     * @throws Exception\LogicException
+     */
+    public function createTransactionForRefund(
+        Payment\Refund\Entity $refund, Payment\Entity $payment, $forceRefundTransaction = false)
     {
         $gateway = $payment->getGateway();
 
@@ -322,7 +332,8 @@ trait Refund
         $supportsAuthAndCapture = Payment\Gateway::supportsAuthAndCapture($gateway, $networkCode);
 
         if ((($supportsAuthAndCapture === true) and ($payment->getCaptureTimestamp() !== null)) or
-            ($supportsAuthAndCapture === false))
+            ($supportsAuthAndCapture === false) or
+            ($forceRefundTransaction === true))
         {
             if ($payment->transaction === null)
             {
