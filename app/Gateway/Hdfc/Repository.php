@@ -386,6 +386,13 @@ class Repository extends Base\Repository
                     ->where('payment_id', '=', $id)
                     ->get();
     }
+    
+    public function findByRefundId($refundId)
+    {
+        return $this->newQuery()
+                    ->where('refund_id', '=', $refundId)
+                    ->get();
+    }
 
     public function findByPaymentIdAndStatus($id, $status)
     {

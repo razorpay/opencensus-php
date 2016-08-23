@@ -521,7 +521,7 @@ trait PaymentTrait
         $content = array();
 
         $request = array(
-            'method' => 'GET',
+            'method' => 'POST',
             'url' => '/refunds/'.$id.'/verify',
             'content' => $content);
 

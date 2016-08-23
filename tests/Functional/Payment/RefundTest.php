@@ -197,7 +197,6 @@ class RefundTest extends TestCase
     public function testVerifyRefund()
     {
         // Case 1
-
         $payment = $this->defaultAuthPayment();
 
         $payment = $this->capturePayment($payment['id'], $payment['amount']);

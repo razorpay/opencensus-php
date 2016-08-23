@@ -241,6 +241,33 @@ class Service extends Base\Service
     }
 
     /**
+     * USE WITH EXTREME CAUTION
+     * This calls the gateway for refund and does nothing on the api side.
+     *
+     * @param $refundId
+     * @return array
+     */
+    public function manualGatewayRefund($refundId)
+    {
+        $refund = $this->repo->refund->findOrFail($refundId);
+        $merchantId = $refund->getMerchantId();
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+        
+        $data = $this->processor($merchant)->manualGatewayRefund($refund);
+        
+        $this->trace->info(
+            TraceCode::MANUAL_GATEWAY_REFUND_RESPONSE,
+            [
+                'refund_id'     => $refundId,
+                'payment_id'    => $refund->getPaymentId(),
+                'data'          => $data
+            ]
+        );
+        
+        return $data;
+    }
+
+    /**
      * After card enroll, bank redirects to us
      * and we send it to gateway for further
      * processing (auth).
