@@ -385,9 +385,17 @@ class Settler
 
         $lastWorkingDay = Holidays::getPreviousWorkingDay($today);
 
-        return (($txn->getChannel() === $channel) and
-                ($merchant->holdFunds() === false) and
-                ($merchant->bankAccount->getCreatedTimestamp() < $lastWorkingDay->timestamp));
+        $shouldSettle = (($txn->getChannel() === $channel) and
+                         ($merchant->holdFunds() === false));
+
+
+        if (($this->mode !== Mode::TEST) and
+            ($merchant->bankAccount->getCreatedTimestamp() > $lastWorkingDay->timestamp))
+        {
+            $shouldSettle = false;
+        }
+
+        return $shouldSettle;
     }
 
     protected function createSettlementFile($settlements, $txns)
