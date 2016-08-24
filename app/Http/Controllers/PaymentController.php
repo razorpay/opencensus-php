@@ -279,8 +279,7 @@ class PaymentController extends Controller
 
     public function postRefundVerify($ids)
     {
-        $data = $this->refund->veri
-        fy($ids);
+        $data = $this->refund->verify($ids);
 
         return ApiResponse::json($data);
     }
