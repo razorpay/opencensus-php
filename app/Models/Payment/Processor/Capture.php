@@ -175,8 +175,7 @@ trait Capture
             'payment' => $payment->toArray(),
             'amount' => $amount);
 
-        if (($payment->getMethod() === Payment\Method::CARD) or
-            ($payment->getMethod() === Payment\Method::EMI))
+        if ($payment->isMethodCardOrEmi())
         {
             $data['card'] = $payment->card->toArray();
         }

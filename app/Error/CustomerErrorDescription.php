@@ -32,6 +32,7 @@ class CustomerErrorDescription
     const BAD_REQUEST_PAYMENT_WALLET_ACCOUNT_INVALID_CREDENTIALS                = 'No wallet account found for this mobile and email ID';
     const BAD_REQUEST_PAYMENT_WALLET_NO_USER_WITH_CELL                          = 'No wallet account found for this mobile number';
     const BAD_REQUEST_PAYMENT_WALLET_AUTHENTICATION_FAILED                      = 'Authentication failed for the wallet account. Please retry.';
+    const BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT                          = 'Payment failed. Please contact site admin';
 
     const BAD_REQUEST_PAYMENT_DECLINED_BY_CLICKING_CANCEL                       = 'Payment cancelled due to clicking the cancel button on 3dSecure page';
 }

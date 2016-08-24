@@ -31,7 +31,6 @@ use RZP\Gateway\Base;
 use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Payment;
 use RZP\Models\Card;
-use RZP\Models\Payment\Entity;
 use RZP\Trace\TraceCode;
 use App;
 
@@ -379,9 +378,27 @@ class Gateway extends Base\Gateway
         }
     }
 
+    public function manualGatewayRefund(array $input)
+    {
+        $canManualRefund = $this->canForceRefund($input);
+
+        if ($canManualRefund)
+        {
+            $this->refund($input);
+
+            // Successfully refunded on the gateway
+            return true;
+        }
+        else
+        {
+            // Did not refund on the gateway side
+            return false;
+        }
+    }
+
     public function verifyCapture(array $input)
     {
-        $paymentId = $input['payment'][Entity::ID];
+        $paymentId = $input['payment']['id'];
 
         return $this->isCapturedSuccessfully($paymentId);
     }

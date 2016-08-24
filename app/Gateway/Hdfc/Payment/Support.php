@@ -17,16 +17,17 @@ trait Support
      * Forms the crux of doing support
      * payments (capture and refund).
      *
-     * @param  array    $input array containing payment
+     * @param  array $input array containing payment
      *                         and card details
-     * @param  string   $type  should be either 'capture'
+     * @param  string $type should be either 'capture'
      *                         or 'refund'
      * @return array
      * @throws Exception\LogicException
      */
     protected function supportPayment($input, $type)
     {
-        if ($this->isRefundingAuthorizedPayment($input, $type))
+        if (($type === 'refund') and
+            ($this->isRefundNotRequiredOnGateway($input, $type)))
         {
             return;
         }
@@ -100,7 +101,7 @@ trait Support
 
         if ($status === Status::CAPTURED)
         {
-            $this->model = $this->repo->retrieveCapturedOrAcceptedCaptureError(
+            $this->model = $this->repo->retrieveCapturedOrAcceptedCaptureErrorOrFail(
                                             $input['payment']['id']);
         }
         else
@@ -217,19 +218,19 @@ trait Support
 
         $this->supportPaymentRequest['url'] = Hdfc\Urls::SUPPORT_PAYMENT_URL;
 
-        $data = &$this->supportPaymentRequest['data'];
+        $data = & $this->supportPaymentRequest['data'];
         $data = [];
 
         $type = $this->supportPaymentRequest['type'];
 
-        $action = constant(Action::class.'::'.strtoupper($type));
+        $action = constant(Action::class . '::' . strtoupper($type));
 
         $data['action'] = $action;
 
         //
         // Convert amount from integer to decimal
         //
-        $data['amt'] = $input['amount']/100;
+        $data['amt'] = $input['amount'] / 100;
 
         $data['member'] = $card['name'];
 
@@ -298,9 +299,9 @@ trait Support
      */
     protected function validateSupportPaymentTrackId()
     {
-        $trackid = $this->supportPaymentResponse['data']['trackid'];
+        $trackId = $this->supportPaymentResponse['data']['trackid'];
 
-        if ($trackid !== $this->supportPaymentRequest['data']['trackid'])
+        if ($trackId !== $this->supportPaymentRequest['data']['trackid'])
         {
             throw new Exception\InvalidArgumentException(
                 'Gateway Exception: Track id do not match');
@@ -342,53 +343,98 @@ trait Support
                 $this->supportPaymentResponse);
 
             $this->model = $this->repo->persistAfterSupportPayment(
-                    $this->supportPaymentRequest['data'],
-                    $this->supportPaymentResponse['data'],
-                    $paymentId,
-                    $refundId);
+                                $this->supportPaymentRequest['data'],
+                                $this->supportPaymentResponse['data'],
+                                $paymentId,
+                                $refundId);
         }
     }
 
-    protected function isRefundingAuthorizedPayment($input, $type)
+    /**
+     * When refund request comes to gateway, it's not necessary that
+     * we always call gateway refund. For cases like a card authorization on hdfc
+     * mastercard or visa etc., since we did not capture a transaction,
+     * there is no reason to call refund here.
+     *
+     * Also, we call refund on gateway when a payment has been captured on mastercard, visa.
+     * But sometime capture times out. So in those cases, we need to check for those status
+     * and still proceed with refund.
+     */
+    protected function isRefundNotRequiredOnGateway($input, $type)
     {
-        if ($type === 'refund')
+        assert ($type === 'refund');
+
+        $paymentId = $input['payment']['id'];
+
+        // Gets the first gateway entity matching the action
+        // authorize or purchase
+        $gatewayEntity = $this->repo->findByPaymentIdToVerify($paymentId);
+
+        $gatewayAction = (int) $gatewayEntity->getAction();
+
+        $gatewayStatus = $gatewayEntity->getStatus();
+
+        // Now this is the first payment,
+        // either the action : purchase and status : captured
+        // or the action : authorize and status : authorized
+        if (($gatewayAction === Action::AUTHORIZE) and
+            ($gatewayStatus === Payment\Status::AUTHORIZED))
         {
-            $id = $input['payment']['id'];
+            // Check if a captured entity is also present. If yes, refund is required on the gateway.
+            $capturedEntity = $this->repo->retrieveCapturedOrAcceptedCaptureError($paymentId);
 
-            $gatewayEntity = $this->repo->findByPaymentIdToVerify($id);
-
-            $gatewayAction = (int) $gatewayEntity->getAction();
-
-            $gatewayStatus = $gatewayEntity->getStatus();
-
-            // Now this is the first payment,
-            // either the action : purchase and status : captured
-            // or the action : authorize and status : authorized
-            if (($gatewayAction === Action::AUTHORIZE) and
-                ($gatewayStatus === Payment\Status::AUTHORIZED))
-            {
-                // Check if there exists a captured one as well
-                $capturedEntity = $this->repo->findByPaymentIdAndStatus($id, Payment\Status::CAPTURED);
-
-                $count = $capturedEntity->count();
-
-                if ($count === 0)
-                {
-                    return true;
-                }
-
-                return false;
-
-            }
-            else if (($gatewayAction === Action::PURCHASE) and
-                     ($gatewayStatus === Payment\Status::CAPTURED))
+            if ($capturedEntity !== null)
             {
                 return false;
             }
 
+            return true;
+        }
+        else if (($gatewayAction === Action::PURCHASE) and
+                 ($gatewayStatus === Payment\Status::CAPTURED))
+        {
+            return false;
         }
 
         return false;
+    }
+
+    protected function canForceRefund($input)
+    {
+        if ($this->isRefundRequired($input) === false)
+        {
+            return false;
+        }
+
+        $paymentId = $input['payment'][PaymentModel\Entity::ID];
+        $refundId = $input['refund'][PaymentModel\Refund\Entity::ID];
+
+        $gatewayPaymentEntities = $this->repo->findByPaymentId($paymentId);
+
+        // There should be at least one authorized entity and exactly one refund entity.
+        // In purchase transactions, there will be two entities. In others, there will be 3.
+        if ($gatewayPaymentEntities->count() < 2)
+        {
+            return false;
+        }
+
+        $gatewayRefundEntities = $this->repo->findByRefundId($refundId);
+
+        // There should be only one gateway entity for refund.
+        // This one gateway entity should have the result as DENIED_BY_RISK and
+        // status as refunded.
+        if (($gatewayRefundEntities->count() > 1) or
+            ($gatewayRefundEntities[0]->getResult() !== Result::DENIED_BY_RISK) or
+            ($gatewayRefundEntities[0]->getStatus() !== Status::REFUNDED))
+        {
+            return false;
+        }
+
+        // The transaction id for the refund should be present. Otherwise, it means that
+        // the refund should come via normal flow and not via manualGatewayRefund.
+        assert ($input['refund'][PaymentModel\Refund\Entity::TRANSACTION_ID] !== null);
+
+        return true;
     }
 
     protected function isRefundRequired($input)
@@ -445,7 +491,12 @@ trait Support
             {
                 // Refunded record will be created only if an actual refund has taken place.
                 // Hence, if already refunded, we don't need to run the refund again.
-                if ($gatewayEntity->getStatus() === Payment\Status::REFUNDED)
+
+                // But, if the result is denied_by_risk, mark it as refund is required. This is because
+                // there was a bug earlier where we had marked them as successfully refunded even though
+                // they were not refunded. The bug is now fixed.
+                if (($gatewayEntity->getStatus() === Payment\Status::REFUNDED) and
+                    ($gatewayEntity->getResult() !== Result::DENIED_BY_RISK))
                 {
                     return false;
                 }

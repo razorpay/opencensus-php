@@ -17,7 +17,7 @@ class PaymentController extends Controller
     public function __construct()
     {
         parent::__construct();
-        
+
         $this->payment = new Payment\Service();
         $this->refund = new Payment\Refund\Service();
     }
@@ -277,17 +277,24 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getRefundVerify($id)
+    public function postRefundVerify($id)
     {
         $data = $this->refund->verify($id);
 
         return ApiResponse::json($data);
     }
-    
-    public function getCaptureVerify($id)
+
+    public function postCaptureVerify($id)
     {
         $data = $this->payment->verifyCapture($id);
-        
+
+        return ApiResponse::json($data);
+    }
+
+    public function postManualGatewayRefund($refundId)
+    {
+        $data = $this->payment->manualGatewayRefund($refundId);
+
         return ApiResponse::json($data);
     }
 }

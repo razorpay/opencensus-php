@@ -139,6 +139,10 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::IFSC_CODE);
     }
 
+    public function getCreatedTimestamp()
+    {
+        return $this->getAttribute(self::CREATED_AT);
+    }
 
     protected function setIfscCodeAttribute($code)
     {
