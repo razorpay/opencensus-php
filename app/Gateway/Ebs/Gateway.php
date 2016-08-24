@@ -43,7 +43,7 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentRequest($request, $input);
 
-        $request = $this->makeRequestAndGetRedirectUrl($request);
+        $request = $this->makeRequestAndGetBankUrl($request);
 
         return $request;
     }
@@ -172,7 +172,7 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function parseRequestAndGetCrwalRequest($response)
+    protected function parseRequestAndGetCrawlRequest($response)
     {
         $crawler = new Crawler($response->body, $request['url']);
 
@@ -182,43 +182,63 @@ class Gateway extends Base\Gateway
         {
             throw new Exception\GatewayTimeoutException('Gateway Timed Out', true);
         }
+
         $form = $formCrawler->form();
+
         $method = $form->getMethod();
+
         $request = array(
             'url' => $form->getUri(),
             'method' => strtolower($method),
             'content' => $form->getValues(),
         );
-        $request['headers']['Origin'] = 'http://api.razorpay.com';
-        $request['options']['follow_redirects'] = false;
 
+        $request = $this->setRequestHeaderAndOption($request);
+
+        return $request;
     }
 
-    protected function makeRequestAndGetRedirectUrl($request)
+    protected function setRequestHeaderAndOption($request)
     {
         $request['options']['follow_redirects'] = false;
+
         $request['headers']['Origin'] = 'http://api.razorpay.com';
 
+        return $request;
+    }
+
+    protected function makeRequestAndGetBankUrl($request)
+    {
+        $request = $this->setRequestHeaderAndOption($request);
+
+        // Get Reponse for 302 redirect, cookies are also needed for request
         $response = $this->sendGatewayRequest($request);
 
         $redirectRequest = $this->parseRequestAndGetRedirectRequest($response);
 
+        // Get Response for EBS welcome page
         $response = $this->sendGatewayRequest($redirectRequest);
 
-        $crawlRequest = $this->parseRequestAndGetCrwalRequest($response, $redirectRequest);
-
+        $crawlRequest = $this->parseRequestAndGetCrawlRequest($response, $redirectRequest);
+        // Get Response for EBS redirection page
         $response = $this->sendGatewayRequest($crawlRequest);
 
+        //
+        // If location is set, then we should redirect to Bank page
+        // Else we should crawl the page to get form post
+        //
         $loc = $response->headers->getValues('location');
 
         if (isset($loc) === true)
         {
-            return $this->parseRequestAndGetRedirectRequest($response);
+            $request = $this->parseRequestAndGetRedirectRequest($response);
         }
         else
         {
-            return $this->parseRequestAndGetCrwalRequest($response, $crawlRequest);
+            $request = $this->parseRequestAndGetCrawlRequest($response, $crawlRequest);
         }
+
+        return $request;
     }
 
     protected function sendRefundGatewayRequest($gatewayPayment, $input)
@@ -680,8 +700,8 @@ class Gateway extends Base\Gateway
             $attributes[Entity::IS_FLAGGED] = true;
         }
 
-        if ((isset($response[Resp::API_TRANSACTION_TYPE]) === false) or
-            ($response[Resp::API_TRANSACTION_TYPE] !== 'Refunded'))
+        if ((isset($response[Resp::STATUS]) === false) or
+            ($response[Resp::STATUS] !== 'Processing'))
         {
             $attributes[Entity::ERROR_CODE]        = $response[Resp::ERROR_CODE];
             $attributes[Entity::ERROR_DESCRIPTION] = $response[Resp::ERROR];
