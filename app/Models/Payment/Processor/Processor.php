@@ -77,8 +77,6 @@ class Processor
 
         $this->orderRepo = $this->repo->order;
 
-        $this->paymentAnalyticRepo = $this->repo->payment_analytics;
-
         $this->request = $this->app['request'];
 
         // Only used in hdfc verify refund flow

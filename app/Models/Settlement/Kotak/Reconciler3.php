@@ -28,7 +28,8 @@ class Reconciler3
         'UTR number',
         'Reject Reason',
         'DateTime',
-        'Int.ref no.');
+        'Int.ref no.',
+        'Dummy');
 
     /**
      * All payments in the current mpr
@@ -182,7 +183,7 @@ class Reconciler3
 
     protected function loadSettlementAndRelations($row)
     {
-        $setlId = $row['Payment Ref No'];
+        $setlId = $row['Payment_Ref_No.'];
         $setlId = str_replace(' ', '_', $setlId);
 
         if ($setlId === '')

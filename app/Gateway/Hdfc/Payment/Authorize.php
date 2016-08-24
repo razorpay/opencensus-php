@@ -106,7 +106,7 @@ trait Authorize
         $this->verifyAuthResponse($this->authEnrolledResponse);
     }
 
-    protected function verifyAuthResponse($auth)
+    protected function verifyAuthResponse(array & $auth)
     {
         $this->isAuthSuccess($auth);
 
@@ -305,7 +305,7 @@ trait Authorize
         {
             $this->repo->persistAfterAuthEnrolledError(
                 $this->model,
-                $this->authEnrolledResponse);
+                $authEnrolledResponse);
         }
         else
         {
