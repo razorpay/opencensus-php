@@ -386,11 +386,12 @@ class Repository extends Base\Repository
                     ->where('payment_id', '=', $id)
                     ->get();
     }
-    
-    public function findByRefundId($refundId)
+
+    public function findByRefundIdOrderedById($refundId, $direction = 'desc')
     {
         return $this->newQuery()
                     ->where('refund_id', '=', $refundId)
+                    ->orderBy('id', $direction)
                     ->get();
     }
 

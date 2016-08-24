@@ -457,18 +457,34 @@ trait Support
     {
         $response = true;
 
-        $gatewayRefundEntities = $this->repo->findByRefundId($refundId);
+        $gatewayRefundEntities = $this->repo->findByRefundIdOrderedById($refundId);
 
-        // There should be only one gateway entity for refund.
-        // This one gateway entity should have the result as DENIED_BY_RISK and
-        // status as refunded.
+        // If there is only one refund entity and we are running manual refund, this should
+        // be in refunded state with error code denied by risk (because of a previous bug in the code).
+        // If there are multiple refund entities, it means that it was denied by risk multiple times
+        // by the gateway. Since the bug has been fixed, the status should be refund_failed.
+        // If the above conditions don't match, it means we are doing manual refund on something that
+        // we should not.
+        //
+        // This is with the assumption that multiple attempts for the refund were not made during
+        // the bug period (where status is refunded and error code is denied by risk)
         if ($gatewayRefundEntities->count() !== 0)
         {
-            if (($gatewayRefundEntities->count() > 1) or
-                ($gatewayRefundEntities[0]->getResult() !== Result::DENIED_BY_RISK) or
-                ($gatewayRefundEntities[0]->getStatus() !== Status::REFUNDED))
+            if ($gatewayRefundEntities->count() === 1)
             {
-                $response = false;
+                if (($gatewayRefundEntities[0]->getResult() !== Result::DENIED_BY_RISK) or
+                    ($gatewayRefundEntities[0]->getStatus() !== Status::REFUNDED))
+                {
+                    $response = false;
+                }
+            }
+            else
+            {
+                if (($gatewayRefundEntities[0]->getResult() !== Result::DENIED_BY_RISK) or
+                    ($gatewayRefundEntities[0]->getStatus() !== Status::REFUND_FAILED))
+                {
+                    $response = false;
+                }
             }
         }
 
