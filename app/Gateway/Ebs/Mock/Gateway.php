@@ -16,4 +16,9 @@ class Gateway extends Ebs\Gateway
     {
         return $this->authorizeMock($input);
     }
+
+    public function makeRequestAndGetBankUrl($request)
+    {
+        return $request;
+    }
 }
