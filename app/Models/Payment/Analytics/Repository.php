@@ -21,6 +21,14 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function findForTerminal($id)
+    {
+        $repo = $this->repo;
+
+        return $repo->where(Entity::TERMINAL_ID, '=', $id)
+                    ->get();
+    }
+
     public function findForPayment($paymentId, $id = null)
     {
         $repo = $this->repo;

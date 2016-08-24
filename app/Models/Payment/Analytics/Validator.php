@@ -50,7 +50,7 @@ class Validator extends Base\Validator
             if (Metadata::validateIntegration($metadata[Entity::INTEGRATION]) !== true)
             {
                 throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_INVALID_INTEGRATION);
+                    ErrorCode::BAD_REQUEST_INVALID_INTEGRATION, [Entity::INTEGRATION => $metadata[Entity::INTEGRATION]]);
             }
 
             return true;
@@ -66,7 +66,7 @@ class Validator extends Base\Validator
             if (Metadata::validateDevice($metadata[Entity::DEVICE]) !== true)
             {
                 throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_INVALID_DEVICE);
+                    ErrorCode::BAD_REQUEST_INVALID_DEVICE, [Entity::DEVICE => $metadata[Entity::DEVICE]]);
             }
 
             return true;
@@ -82,7 +82,7 @@ class Validator extends Base\Validator
             if (Metadata::validateOs($metadata[Entity::OS]) !== true)
             {
                 throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_INVALID_OS, ['$metadata' => $metadata]);
+                    ErrorCode::BAD_REQUEST_INVALID_OS, [Entity::OS => $metadata[Entity::OS]]);
             }
 
             return true;
@@ -98,7 +98,7 @@ class Validator extends Base\Validator
             if (Metadata::validateBrowser($metadata[Entity::BROWSER]) !== true)
             {
                 throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_INVALID_BROWSER);
+                    ErrorCode::BAD_REQUEST_INVALID_BROWSER, [Entity::BROWSER => $metadata[Entity::BROWSER]]);
             }
 
             return true;
@@ -114,7 +114,7 @@ class Validator extends Base\Validator
             if (Metadata::validateLibrary($metadata[Entity::LIBRARY]) !== true)
             {
                 throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_INVALID_LIBRARY);
+                    ErrorCode::BAD_REQUEST_INVALID_LIBRARY, [Entity::LIBRARY => $metadata[Entity::LIBRARY]]);
             }
 
             return true;
@@ -130,7 +130,7 @@ class Validator extends Base\Validator
             if (Metadata::validatePlatform($metadata[Entity::PLATFORM]) !== true)
             {
                 throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_INVALID_PLATFORM);
+                    ErrorCode::BAD_REQUEST_INVALID_PLATFORM, [Entity::PLATFORM => $metadata[Entity::PLATFORM]]);
             }
 
             return true;
@@ -146,7 +146,7 @@ class Validator extends Base\Validator
             if (Entity::validateCheckDigit($metadata[Entity::CHECKOUT_ID]) !== true)
             {
                 throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_INVALID_CHECKOUT_ID);
+                    ErrorCode::BAD_REQUEST_INVALID_CHECKOUT_ID, [Entity::CHECKOUT_ID => $metadata[Entity::CHECKOUT_ID]]);
             }
 
             return true;
