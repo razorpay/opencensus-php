@@ -1056,14 +1056,16 @@ trait Authorize
 
             $pAnalyticsService->recordPaymentRequestData($rawData, $log);
 
-            // create log
+            // Create log
             $pAnalyticsService->createAuditLog($log);
         }
         catch (\Exception $e)
         {
-            $this->trace->traceException($e);
+            $this->trace->error(
+                TraceCode::PAYMENT_ANALYTICS_SAVE_FAILED,
+                ['raw_data' => $rawData]);
 
-            return;
+            $this->trace->traceException($e);
         }
     }
 
