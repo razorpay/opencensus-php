@@ -287,6 +287,14 @@ trait Refund
     protected function callGatewayForManualRefund($data)
     {
         $manualGatewayRefundResult = null;
+        
+        $this->trace->info(
+            TraceCode::MANUAL_GATEWAY_REFUND_INITIATED,
+            [
+                'payment_id'    => $data['payment']['id'],
+                'refund_id'     => $data['refund']['id'],
+            ]
+        );
 
         try
         {

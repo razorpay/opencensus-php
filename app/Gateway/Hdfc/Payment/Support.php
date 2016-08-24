@@ -418,14 +418,9 @@ trait Support
             return false;
         }
 
-        $gatewayRefundEntities = $this->repo->findByRefundId($refundId);
+        $hasValidRefundOrCaptureEntityForAllowingRefund = $this->hasValidRefundOrCaptureEntityForAllowingRefund($refundId);
 
-        // There should be only one gateway entity for refund.
-        // This one gateway entity should have the result as DENIED_BY_RISK and
-        // status as refunded.
-        if (($gatewayRefundEntities->count() > 1) or
-            ($gatewayRefundEntities[0]->getResult() !== Result::DENIED_BY_RISK) or
-            ($gatewayRefundEntities[0]->getStatus() !== Status::REFUNDED))
+        if ($hasValidRefundOrCaptureEntityForAllowingRefund === false)
         {
             return false;
         }
@@ -437,7 +432,40 @@ trait Support
         return true;
     }
 
-    protected function isRefundRequired($input)
+    protected function hasValidRefundOrCaptureEntityForAllowingRefund($refundId)
+    {
+        $response = true;
+
+        $gatewayRefundEntities = $this->repo->findByRefundId($refundId);
+
+        // There should be only one gateway entity for refund.
+        // This one gateway entity should have the result as DENIED_BY_RISK and
+        // status as refunded.
+        if (($gatewayRefundEntities->count() > 1) or
+            ($gatewayRefundEntities[0]->getResult() !== Result::DENIED_BY_RISK) or
+            ($gatewayRefundEntities[0]->getStatus() !== Status::REFUNDED))
+        {
+            $response = false;
+        }
+
+        // But, manual gateway refund can be done even if there's a captured entity or
+        // a captured failed entity with GW00176 error code.
+        // THIS CONDITION IS DANGEROUS BECAUSE it allows a gateway refund on a captured entity.
+        // HENCE THIS MUST BE USED WITH CAUTION. Proper checks MUST BE PERFORMED before calling this function.
+        if ($response === false)
+        {
+            $gatewayCapturedEntities = $this->repo->retrieveCapturedOrAcceptedCaptureError();
+
+            if ($gatewayCapturedEntities->count() > 0)
+            {
+                return true;
+            }
+        }
+
+        return $response;
+    }
+
+    protected function isRefundRequired(array $input)
     {
         $id = $input['payment']['id'];
 
@@ -451,59 +479,84 @@ trait Support
 
         if ($count === 1)
         {
-            // If there is only one entity, implies the transaction
-            // for capture never happened. Adding a check on payment for the
-            // same.
-            $this->assertPaymentRefundedWithoutCapture($input);
-
-            $entity = $gatewayEntities->first();
-
-            $gatewayAction = (int) $entity->getAction();
-
-            $gatewayStatus = $entity->getStatus();
-
-            // When the count is one, it is possible that the action is purchase.
-            // For purchase transactions, the status will always be captured.
-            // Hence, count=1 is valid situation for refund for these kind of transactions.
-            if (($gatewayAction === Action::PURCHASE) and
-                ($gatewayStatus === Payment\Status::CAPTURED))
-            {
-                    return true;
-            }
-            else if (($entity->getAction() === Action::AUTHORIZE) and
-                     ($entity->getStatus() === Payment\Status::AUTHORIZED))
-            {
-                    return false;
-            }
-            else
-            {
-                //should not reach here
-                throw new Exception\LogicException(
-                    'Only available entity for hdfc gateway payment is in an'.
-                    'unacceptable state.',
-                    null,
-                    $input);
-            }
+            $response = $this->isRefundRequiredWhenOneGatewayEntity($input, $gatewayEntities);
         }
         else
         {
-            foreach ($gatewayEntities->all() as $gatewayEntity)
-            {
-                // Refunded record will be created only if an actual refund has taken place.
-                // Hence, if already refunded, we don't need to run the refund again.
-
-                // But, if the result is denied_by_risk, mark it as refund is required. This is because
-                // there was a bug earlier where we had marked them as successfully refunded even though
-                // they were not refunded. The bug is now fixed.
-                if (($gatewayEntity->getStatus() === Payment\Status::REFUNDED) and
-                    ($gatewayEntity->getResult() !== Result::DENIED_BY_RISK))
-                {
-                    return false;
-                }
-            }
-
-            return true;
+            $response = $this->isRefundRequiredWhenMultipleGatewayEntities($gatewayEntities);
         }
+
+        $this->trace->info(
+            TraceCode::REFUND_GATEWAY_REQUIRED,
+            [
+                'payment_id'            => $input['payment'][PaymentModel\Entity::ID],
+                'refund_id'             => $input['refund'][PaymentModel\Refund\Entity::ID],
+                'is_refund_required'    => $response
+            ]
+        );
+
+        return $response;
+    }
+
+    protected function isRefundRequiredWhenMultipleGatewayEntities($gatewayEntities)
+    {
+        $response = true;
+
+        foreach ($gatewayEntities->all() as $gatewayEntity)
+        {
+            // Refunded record will be created only if an actual refund has taken place.
+            // Hence, if already refunded, we don't need to run the refund again.
+
+            // But, if the result is denied_by_risk, mark it as refund is required. This is because
+            // there was a bug earlier where we had marked them as successfully refunded even though
+            // they were not refunded. The bug is now fixed.
+            if (($gatewayEntity->getStatus() === Payment\Status::REFUNDED) and
+                ($gatewayEntity->getResult() !== Result::DENIED_BY_RISK))
+            {
+                $response = false;
+            }
+        }
+
+        return $response;
+    }
+
+    protected function isRefundRequiredWhenOneGatewayEntity(array $input, $gatewayEntities)
+    {
+        // If there is only one entity, implies the transaction
+        // for capture never happened. Adding a check on payment for the
+        // same.
+        $this->assertPaymentRefundedWithoutCapture($input);
+
+        $entity = $gatewayEntities->first();
+
+        $gatewayAction = (int) $entity->getAction();
+
+        $gatewayStatus = $entity->getStatus();
+
+        // When the count is one, it is possible that the action is purchase.
+        // For purchase transactions, the status will always be captured.
+        // Hence, count=1 is valid situation for refund for these kind of transactions.
+        if (($gatewayAction === Action::PURCHASE) and
+            ($gatewayStatus === Payment\Status::CAPTURED))
+        {
+            $response = true;
+        }
+        else if (($entity->getAction() === Action::AUTHORIZE) and
+            ($entity->getStatus() === Payment\Status::AUTHORIZED))
+        {
+            $response = false;
+        }
+        else
+        {
+            //should not reach here
+            throw new Exception\LogicException(
+                'Only available entity for hdfc gateway payment is in an'.
+                'unacceptable state.',
+                null,
+                $input);
+        }
+
+        return $response;
     }
 
     protected function assertPaymentRefundedWithoutCapture($input)

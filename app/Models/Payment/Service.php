@@ -283,6 +283,11 @@ class Service extends Base\Service
             );
         }
 
+        $this->trace->info(
+            TraceCode::MANUAL_GATEWAY_ALL_REFUNDS_RESPONSE,
+            $data
+        );
+
         return $data;
     }
 
