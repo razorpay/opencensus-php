@@ -470,7 +470,7 @@ trait FileHandlerTrait
         $data = array();
         $headings = $this->getHeadings();
 
-        foreach ($rows as $row)
+        foreach ($rows as $ix => $row)
         {
             // Ending row may be just empty.
             if ($row === '')
@@ -479,6 +479,13 @@ trait FileHandlerTrait
             }
 
             $values = explode('~', $row);
+
+            if (count($headings) !== count($values))
+            {
+                throw new Exception\RuntimeException(
+                    'Count of array elements for combine not equal. Heading count: ' .
+                    count($headings), ' Value count: ' . count($values) . ' Row: ' . $ix);
+            }
 
             $values = array_combine($headings, $values);
             $data[] = $values;
