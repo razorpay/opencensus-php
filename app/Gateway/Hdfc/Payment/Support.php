@@ -507,7 +507,7 @@ trait Support
         }
         else
         {
-            $response = $this->isRefundRequiredWhenMultipleGatewayEntities($gatewayEntities);
+            $response = $this->isRefundRequiredWhenMultipleGatewayEntities($gatewayEntities, $input['refund']['id']);
         }
 
         $this->trace->info(
@@ -522,7 +522,7 @@ trait Support
         return $response;
     }
 
-    protected function isRefundRequiredWhenMultipleGatewayEntities($gatewayEntities)
+    protected function isRefundRequiredWhenMultipleGatewayEntities($gatewayEntities, $refundId)
     {
         $response = true;
 
@@ -531,13 +531,16 @@ trait Support
             // Refunded record will be created only if an actual refund has taken place.
             // Hence, if already refunded, we don't need to run the refund again.
 
-            // But, if the result is denied_by_risk, mark it as refund is required. This is because
-            // there was a bug earlier where we had marked them as successfully refunded even though
-            // they were not refunded. The bug is now fixed.
+            // Even if it does have, the result should be DENIED_BY_RISK.
+            // This is because there was a bug earlier where we had marked them as successfully
+            // refunded even though they were not refunded. The bug is now fixed.
             if (($gatewayEntity->getStatus() === Payment\Status::REFUNDED) and
-                ($gatewayEntity->getResult() !== Result::DENIED_BY_RISK))
+                ($gatewayEntity->getRefundId() === $refundId))
             {
-                $response = false;
+                if ($gatewayEntity->getResult() !== Result::DENIED_BY_RISK)
+                {
+                    $response = false;
+                }
             }
         }
 
