@@ -203,6 +203,7 @@ app.controller('EntitiesCtrl', [
         auth: ['Auth Code'],
         gateway_transaction_id: ['Gateway Transaction Id'],
         payment_id: ['Payment Id'],
+        refund_id: ['Refund Id'],
         received: booleanList,
         ref: ['Reference']
       },
