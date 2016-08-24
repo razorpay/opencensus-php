@@ -108,9 +108,6 @@ class HdfcGatewayAuthTest extends TestCase
         // succeed wih another terminal and assert so.
         $this->fixtures->create('terminal:shared_axis_terminal');
 
-        // terminal rotator does not work for international merchants
-        $this->fixtures->merchant->disableInternational();
-
         $defaultPayment = $this->getDefaultPaymentArray();
 
         $defaultPayment['card']['number'] = '4012001036275556';
