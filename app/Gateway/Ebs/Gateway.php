@@ -15,6 +15,7 @@ use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Ebs\RequestConstants as Req;
 use RZP\Gateway\Ebs\ResponseConstants as Resp;
+use Symfony\Component\DomCrawler\Crawler;
 
 class Gateway extends Base\Gateway
 {
@@ -41,6 +42,8 @@ class Gateway extends Base\Gateway
         $request = $this->getStandardRequestArray($content);
 
         $this->traceGatewayPaymentRequest($request, $input);
+
+        $request = $this->makeRequestAndGetRedirectUrl($request);
 
         return $request;
     }
@@ -145,6 +148,77 @@ class Gateway extends Base\Gateway
         $verify = new Base\Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
+    }
+
+    protected function parseRequestAndGetRedirectRequest($response)
+    {
+        $headers = $response->headers;
+        $rawCookies = $headers->getValues('set-cookie');
+        $cookies = [];
+        foreach($rawCookies as $cook)
+        {
+            $val = explode(' ', $cook);
+            $val2 = explode('=', $val[0]);
+            $cookies[$val2[0]] = rtrim($val2[1], ';');
+        }
+        $request = array(
+            'url'       => $headers->getValues('location')[0],
+            'method'    => 'get',
+            'content'   => '',
+        );
+
+        $request['options']['cookies'] = $cookies;
+
+        return $request;
+    }
+
+    protected function parseRequestAndGetCrwalRequest($response)
+    {
+        $crawler = new Crawler($response->body, $request['url']);
+
+        $formCrawler = $crawler->filter('form');
+
+        if ($formCrawler->count() === 0)
+        {
+            throw new Exception\GatewayTimeoutException('Gateway Timed Out', true);
+        }
+        $form = $formCrawler->form();
+        $method = $form->getMethod();
+        $request = array(
+            'url' => $form->getUri(),
+            'method' => strtolower($method),
+            'content' => $form->getValues(),
+        );
+        $request['headers']['Origin'] = 'http://api.razorpay.com';
+        $request['options']['follow_redirects'] = false;
+
+    }
+
+    protected function makeRequestAndGetRedirectUrl($request)
+    {
+        $request['options']['follow_redirects'] = false;
+        $request['headers']['Origin'] = 'http://api.razorpay.com';
+
+        $response = $this->sendGatewayRequest($request);
+
+        $redirectRequest = $this->parseRequestAndGetRedirectRequest($response);
+
+        $response = $this->sendGatewayRequest($redirectRequest);
+
+        $crawlRequest = $this->parseRequestAndGetCrwalRequest($response, $redirectRequest);
+
+        $response = $this->sendGatewayRequest($crawlRequest);
+
+        $loc = $response->headers->getValues('location');
+
+        if (isset($loc) === true)
+        {
+            return $this->parseRequestAndGetRedirectRequest($response);
+        }
+        else
+        {
+            return $this->parseRequestAndGetCrwalRequest($response, $crawlRequest);
+        }
     }
 
     protected function sendRefundGatewayRequest($gatewayPayment, $input)
@@ -606,8 +680,8 @@ class Gateway extends Base\Gateway
             $attributes[Entity::IS_FLAGGED] = true;
         }
 
-        if ((isset($response[Resp::RESPONSE]) === false) or
-            ($response[Resp::RESPONSE] !== Status::API_SUCCESS))
+        if ((isset($response[Resp::API_TRANSACTION_TYPE]) === false) or
+            ($response[Resp::API_TRANSACTION_TYPE] !== 'Refunded'))
         {
             $attributes[Entity::ERROR_CODE]        = $response[Resp::ERROR_CODE];
             $attributes[Entity::ERROR_DESCRIPTION] = $response[Resp::ERROR];
