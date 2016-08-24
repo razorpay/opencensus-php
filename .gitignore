@@ -9,6 +9,10 @@ environment/.env
 environment/.env.dev
 environment/.env.testing
 environment/env.php
+!environment/.env.defaults
+!environment/.env.production
+!environment/.env.beta
+!environment/.env.alpha
 generated/
 grunt.json
 node_modules/

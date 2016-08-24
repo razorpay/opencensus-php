@@ -9,3 +9,7 @@ Thumbs.db
 /storage/selenium.png
 /config/dev/*
 /storage/logs/*
+/environment/.env
+/environment/.env.vault
+/environment/.env.wercker
+/environment/.env.testing
