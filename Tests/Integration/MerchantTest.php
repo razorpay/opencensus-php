@@ -268,12 +268,7 @@ class MerchantTest extends TestCase
         $this->waitAndClickByClassName('roll_key');
         // De-activation choose screen
         $this->assertTrue($this->displayedByClassName('roll-key-modal'));
-        $this->waitAndClickByClassName('modal-ok');
-        $this->waitUntilAbsentByClassName('roll-key-modal');
-
-        // This modal shows the key itself
-        $this->assertTrue($this->displayedByClassName('new-key-modal'));
-        $this->waitUntilContainsByCss('body', 'New Key'); // Part of the modal
+        $this->waitAndClickByClassName('btn-roll-key-ok');
     }
 
     /**

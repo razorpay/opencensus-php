@@ -40,7 +40,11 @@ if (screen && screen.width > 480) {
       return;
     }
 
-    Smooch.init({appToken: '02o6kuyoscqkwiqr3ld3lbehw'});
+    Smooch
+        .init({appToken: '02o6kuyoscqkwiqr3ld3lbehw'})
+        .then(function () {
+            Smooch._rzpReady = true; // custom prop
+        });
 
     Smooch.on('ready', function(){
       // Show the `email` & `phone` when there are no conversation
