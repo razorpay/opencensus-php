@@ -411,11 +411,31 @@ trait Support
 
         $gatewayPaymentEntities = $this->repo->findByPaymentId($paymentId);
 
-        // There should be at least one authorized entity and exactly one refund entity.
-        // In purchase transactions, there will be two entities. In others, there will be 3.
+        //
+        // There should be at least one authorized entity and one refund/capture entity.
+        // In purchase transactions, there will be only one or two entities (capture, refund).
+        // In others, there will be 2 or 3 (authorize, capture, refund).
+        //
+        // We allow refunds for only captured entities too if there is a refund transaction present
+        // on the api side.
+        //
         if ($gatewayPaymentEntities->count() < 2)
         {
-            return false;
+            if ($gatewayPaymentEntities->count() === 0)
+            {
+                return false;
+            }
+
+            if ($gatewayPaymentEntities->count() === 1)
+            {
+                // If there is only one entity, it must be a purchase transaction.
+                if (($gatewayPaymentEntities[0]->getStatus() !== Status::CAPTURED) or
+                    ($gatewayPaymentEntities[0]->getAction() !== Action::PURCHASE) or
+                    ($gatewayPaymentEntities[0]->getResult() !== Result::CAPTURED))
+                {
+                    return false;
+                }
+            }
         }
 
         $hasValidRefundOrCaptureEntityForAllowingRefund = $this->hasValidRefundOrCaptureEntityForAllowingRefund(

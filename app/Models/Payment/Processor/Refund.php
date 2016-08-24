@@ -143,7 +143,6 @@ trait Refund
                 (in_array($payment->card->getNetworkCode(),
                     [Card\Network::MAES, Card\Network::RUPAY, Card\Network::DICL]) === true));
 
-        
         $data = array(
             'payment'   => $payment->toArray(),
             'refund'    => $refund->toArray(),
