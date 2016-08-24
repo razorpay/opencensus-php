@@ -238,39 +238,6 @@ class AdminTest extends TestCase
         $this->setValueByName('settlement_schedule', '5');
         $this->clickByClassName('modal-ok');
         $this->waitUntilAbsentByClassName('alert-danger');
-
-        // Activate Merchant
-        $this->execScript('$(".activate-merchant").click()');
-        $this->waitUntilDisplayedByClassName('confirm-ok');
-        $this->clickByClassName('confirm-ok');
-        $this->waitUntilAbsentByClassName('confirm-modal');
-        $this->waitUntilAbsentByClassName('alert-danger');
-        $this->waitUntilContainsByCss('body', 'Merchant Activated successfully');
-
-
-        $this->execScript('location.reload()');
-
-        $this->waitUntilContainsByCss('body', 'Disable Live Transactions');
-        $this->execScript('$(".disable-live-transactions").click()');
-        $this->waitUntilDisplayedByClassName('confirm-ok');
-        $this->clickByClassName('confirm-ok');
-        $this->waitUntilAbsentByClassName('confirm-modal');
-        $this->waitUntilAbsentByClassName('alert-danger');
-        $this->waitUntilContainsByCss('body', 'Live transactions for merchant disabled successfully');
-
-        $this->execScript('$(".enable-live-transactions").click()');
-        $this->waitUntilAbsentByClassName('alert-danger');
-        $this->waitUntilContainsByCss('body', 'Live transactions for merchant enabled successfully');
-
-        $this->execScript('$(".btn-enable-international").click()');
-        $this->waitUntilContainsByCss('body', 'Merchant International enabled');
-
-        $this->execScript('$(".btn-disable-international").click()');
-        $this->waitUntilContainsByCss('body', 'Merchant International disabled');
-
-        // See Merchant Activation Details
-        $this->execScript('$(".see-activation-form").click()');
-        $this->waitUntilDisplayedByClassName('activation-wrapper');
     }
 
     /**

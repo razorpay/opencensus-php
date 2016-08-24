@@ -284,10 +284,10 @@
           <span class="pull-right" tooltip="{{merchant.details.methods.amex == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.amex == true, 'fa-times text-danger':merchant.details.methods.amex == false}"></i></span>
           Amex
         </a>
-        <a href class="list-group-item">
+        <!-- <a href class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.methods.paytm == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.paytm == true, 'fa-times text-danger':merchant.details.methods.paytm == false}"></i></span>
           Paytm
-        </a>
+        </a> -->
         <a href class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.methods.payzapp == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.payzapp == true, 'fa-times text-danger':merchant.details.methods.payzapp == false}"></i></span>
           Payzapp
@@ -459,9 +459,9 @@
     <h3 class="modal-title">Activate/Deactivate Merchant Payment Methods</h3>
   </div>
   <div class="modal-body methods-modal">
-  <span class="text-danger" ng-show="methods.paytm && (methods.mobikwik || methods.payzapp || methods.payumoney || methods.olamoney)">
+  <!-- <span class="text-danger" ng-show="methods.paytm && (methods.mobikwik || methods.payzapp || methods.payumoney || methods.olamoney)">
     Warning: You shouldn&apos;t enable both PayTM with any other wallet
-  </span>
+  </span> -->
   <form class="form-horizontal">
     <div class="form-group" >
       <div class="row" ng-repeat="(method, value) in methods">
@@ -504,7 +504,7 @@
              <option value="axis_migs">Axis MIGS</option>
              <option value="axis_genius">Axis Genius</option>
              <option value="ezeclick">Ezeclick</option>
-             <option value="paytm">Paytm</option>
+             <!-- <option value="paytm">Paytm</option> -->
              <option value="wallet_payzapp">Payzapp</option>
              <option value="wallet_payumoney">Payumoney</option>
              <option value="wallet_olamoney">Olamoney</option>
