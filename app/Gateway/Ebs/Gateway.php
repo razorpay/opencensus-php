@@ -168,16 +168,16 @@ class Gateway extends Base\Gateway
         );
 
         $request['options']['cookies'] = $cookies;
+        $request = $this->setRequestHeaderAndOption($request);
 
         return $request;
     }
 
-    protected function parseRequestAndGetCrawlRequest($response)
+    protected function parseRequestAndGetCrawlRequest($response, $request)
     {
         $crawler = new Crawler($response->body, $request['url']);
 
         $formCrawler = $crawler->filter('form');
-
         if ($formCrawler->count() === 0)
         {
             throw new Exception\GatewayTimeoutException('Gateway Timed Out', true);
@@ -202,7 +202,7 @@ class Gateway extends Base\Gateway
     {
         $request['options']['follow_redirects'] = false;
 
-        $request['headers']['Origin'] = 'http://api.razorpay.com';
+        $request['headers']['Referer'] = 'http://api.razorpay.com/v1/payments';
 
         return $request;
     }
