@@ -418,7 +418,8 @@ trait Support
             return false;
         }
 
-        $hasValidRefundOrCaptureEntityForAllowingRefund = $this->hasValidRefundOrCaptureEntityForAllowingRefund($refundId);
+        $hasValidRefundOrCaptureEntityForAllowingRefund = $this->hasValidRefundOrCaptureEntityForAllowingRefund(
+                                                                            $refundId, $paymentId);
 
         if ($hasValidRefundOrCaptureEntityForAllowingRefund === false)
         {
@@ -432,7 +433,7 @@ trait Support
         return true;
     }
 
-    protected function hasValidRefundOrCaptureEntityForAllowingRefund($refundId)
+    protected function hasValidRefundOrCaptureEntityForAllowingRefund($refundId, $paymentId)
     {
         $response = true;
 
@@ -454,7 +455,7 @@ trait Support
         // HENCE THIS MUST BE USED WITH CAUTION. Proper checks MUST BE PERFORMED before calling this function.
         if ($response === false)
         {
-            $gatewayCapturedEntities = $this->repo->retrieveCapturedOrAcceptedCaptureError();
+            $gatewayCapturedEntities = $this->repo->retrieveCapturedOrAcceptedCaptureError($paymentId);
 
             if ($gatewayCapturedEntities->count() > 0)
             {
