@@ -37,26 +37,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Token\Entity::CUSTOMER_ID, '=', $id)
                     ->where(Token\Entity::TOKEN, '=', $token)
-                    ->where(Token\Entity::RECURRING, '=', false)
                     ->first();
-    }
-
-    public function getRecurringByTokenAndCustomerIdOrFail($token, $id)
-    {
-        $repo = $this->repo;
-
-        $token = $repo::where(Token\Entity::CUSTOMER_ID, '=', $id)
-                    ->where(Token\Entity::TOKEN, '=', $token)
-                    ->where(Token\Entity::RECURRING, '=', true)
-                    ->first();
-
-        if ($token === null)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_INVALID_TOKEN, 'token');
-        }
-
-        return $token;
     }
 
     public function getByWalletTerminalAndCustomerId($wallet, $terminal, $customer)

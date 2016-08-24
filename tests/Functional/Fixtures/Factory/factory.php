@@ -256,7 +256,9 @@ $factory(\RZP\Models\Customer\Token\Entity::class, [
     'wallet' => 'paytm',
     'method' => 'wallet',
     'bank'   => null,
-    'card_id' => null
+    'card_id' => null,
+    'recurring' => false,
+    'authenticated' => false,
 ]);
 
 $factory(\RZP\Models\Customer\AppToken\Entity::class, [

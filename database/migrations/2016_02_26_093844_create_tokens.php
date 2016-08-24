@@ -54,10 +54,10 @@ class CreateTokens extends Migration {
                   ->nullable();
 
             $table->boolean(Token::RECURRING)
-                  ->default(false);
+                  ->default(0);
 
             $table->boolean(Token::AUTHENTICATED)
-                  ->default(false);
+                  ->default(0);
 
             $table->integer(Token::EXPIRED_AT)
                   ->nullable();

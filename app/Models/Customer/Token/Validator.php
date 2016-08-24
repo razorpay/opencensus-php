@@ -4,6 +4,7 @@ namespace RZP\Models\Customer\Token;
 
 use RZP\Models\Bank;
 use RZP\Models\Base;
+use RZP\Models\Card;
 use RZP\Exception;
 
 class Validator extends Base\Validator
@@ -21,7 +22,7 @@ class Validator extends Base\Validator
     );
 
     protected static $createValidators = array(
-        Entity::BANK
+        Entity::BANK,
     );
 
     protected static function validateBank($input)

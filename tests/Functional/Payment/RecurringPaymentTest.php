@@ -26,6 +26,8 @@ class RecurringPaymentTest extends TestCase
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
+        $this->fixtures->merchant->editFeatures('recurring');
+
         $this->mockTokenex();
     }
 
@@ -74,14 +76,9 @@ class RecurringPaymentTest extends TestCase
         $this->runRequestResponseFlow($data, function() use ($payment) {
             $this->doAuthPayment($payment);
         });
-
-        $tokenEntity = $this->getLastEntity('token', true);
-
-        $this->assertEquals(true, $tokenEntity['recurring']);
-        $this->assertEquals(false, $tokenEntity['authenticated']);
     }
 
-    public function testRecurringPaymentUsingSavedCardToken()
+    public function testRecurringPaymentUsingSavedCardTokenNotRecurring()
     {
         $this->ba->publicAuth();
 

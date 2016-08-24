@@ -312,7 +312,6 @@ final class Route
         'customer_create',
         'customer_update',
         'customer_get',
-        'customer_create_token',
         'customer_delete_token',
         'customer_fetch_token',
         'customer_fetch_tokens',

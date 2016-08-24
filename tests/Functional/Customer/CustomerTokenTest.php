@@ -24,7 +24,7 @@ class CustomerTokenTest extends TestCase
 
     public function testAddCustomerTokenCard()
     {
-        $this->ba->privateAuth();
+        $this->ba->proxyAuth();
 
         $this->mockTokenex();
 

@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use Lib\PhoneBook;
 use RZP\Models\Base;
+use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\Processor\Wallet;
@@ -32,7 +33,7 @@ class Validator extends Base\Validator
         'app_token'               =>  'sometimes',
         'token'                   =>  'sometimes',
         'save'                    =>  'sometimes|in:0,1',
-        'recurring'               =>  'sometimes_if:method,card|boolean',
+        'recurring'               =>  'sometimes_if:method,card|in:0,1',
         'fee'                     =>  'sometimes|integer|max:50000000',
         'service_tax'             =>  'sometimes|integer|max:50000000',
         '_'                       =>  'sometimes');

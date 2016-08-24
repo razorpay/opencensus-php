@@ -374,6 +374,11 @@ class Entity extends Base\PublicEntity
         return ($network === Card\Network::$fullName[Card\Network::AMEX]);
     }
 
+    public function isRecurringSupported()
+    {
+        return ($this->getType() === Card\Type::CREDIT);
+    }
+
     protected function getTokenRelevantAttributes()
     {
         $emi = $this->getAttribute(self::EMI);

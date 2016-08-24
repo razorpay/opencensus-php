@@ -206,6 +206,7 @@ class Entity extends Base\PublicEntity
         self::OTP_COUNT         => null,
         self::EMI_PLAN_ID       => null,
         self::LATE_AUTHORIZED   => null,
+        self::RECURRING         => false,
     );
 
     protected $amounts = array(
@@ -217,7 +218,15 @@ class Entity extends Base\PublicEntity
     );
 
     protected $casts = [
-        self::RECURRING => 'boolean'
+        self::RECURRING         => 'bool',
+        self::AMOUNT_AUTHORIZED => 'int',
+        self::AMOUNT_REFUNDED   => 'int',
+        self::AUTO_CAPTURED     => 'bool',
+        self::SIGNED            => 'bool',
+        self::AMOUNT            => 'int',
+        self::FEE               => 'int',
+        self::SERVICE_TAX       => 'int',
+        self::SAVE              => 'bool',
     ];
 
 // --------------------- Generators --------------------------------------------
@@ -520,11 +529,6 @@ class Entity extends Base\PublicEntity
 
 // ----------------------- Accessor --------------------------------------------
 
-    protected function getAmountAttribute()
-    {
-        return (int) $this->attributes[self::AMOUNT];
-    }
-
     // TODO: Return a phonebook instance (like carbon) instead of string
     protected function getContactAttribute()
     {
@@ -535,25 +539,6 @@ class Entity extends Base\PublicEntity
         return (string) $phoneBook;
     }
 
-    protected function getAmountAuthorizedAttribute()
-    {
-        return (int) $this->attributes[self::AMOUNT_AUTHORIZED];
-    }
-
-    protected function getAmountRefundedAttribute()
-    {
-        return (int) $this->attributes[self::AMOUNT_REFUNDED];
-    }
-
-    protected function getAutoCapturedAttribute()
-    {
-        return (bool) $this->attributes[self::AUTO_CAPTURED];
-    }
-
-    protected function getSignedAttribute()
-    {
-        return (bool) $this->attributes[self::SIGNED];
-    }
 
     protected function getVerifiedAttribute()
     {
@@ -570,26 +555,6 @@ class Entity extends Base\PublicEntity
     protected function getCapturedAttribute()
     {
         return ($this->attributes[self::CAPTURED_AT] !== null);
-    }
-
-    protected function getFeeAttribute()
-    {
-        return (int) $this->attributes[self::FEE];
-    }
-
-    protected function getServiceTaxAttribute()
-    {
-        return (int) $this->attributes[self::SERVICE_TAX];
-    }
-
-    protected function getEmiPlanIdAttribute()
-    {
-        return $this->attributes[self::EMI_PLAN_ID];
-    }
-
-    protected function getSaveAttribute()
-    {
-        return (bool) $this->attributes[self::SAVE];
     }
 
     protected function getOtpAttemptsAttribute()
@@ -712,7 +677,7 @@ class Entity extends Base\PublicEntity
 
     public function isSigned()
     {
-        return ((bool)$this->getAttribute(self::SIGNED) === true);
+        return ($this->getAttribute(self::SIGNED) === true);
     }
 
     public function isInternational()
@@ -729,17 +694,17 @@ class Entity extends Base\PublicEntity
 
     public function getAmount()
     {
-        return (int) $this->getAttribute(self::AMOUNT);
+        return $this->getAttribute(self::AMOUNT);
     }
 
     public function getAmountRefunded()
     {
-        return (int) $this->getAttribute(self::AMOUNT_REFUNDED);
+        return $this->getAttribute(self::AMOUNT_REFUNDED);
     }
 
     public function getAmountUnrefunded()
     {
-        return (int) $this->getAmount() - $this->getAmountRefunded();
+        return $this->getAmount() - $this->getAmountRefunded();
     }
 
     public function getCurrency()
@@ -870,7 +835,7 @@ class Entity extends Base\PublicEntity
 
     public function getSave()
     {
-        return (bool) $this->getAttribute(self::SAVE);
+        return $this->getAttribute(self::SAVE);
     }
 
     public function getGlobalToken()
@@ -996,7 +961,6 @@ class Entity extends Base\PublicEntity
 
         $this->setGateway($terminal->getGateway());
     }
-
 
 // ----------------------- Getters Ends-----------------------------------------
 

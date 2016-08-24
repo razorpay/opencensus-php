@@ -74,6 +74,7 @@ class Entity extends Base\PublicEntity
         self::WALLET,
         self::METHOD,
         self::CARD,
+        self::RECURRING,
     );
 
     protected $defaults = array(
@@ -89,11 +90,12 @@ class Entity extends Base\PublicEntity
     protected $publicSetters = array(
         self::ID,
         self::ENTITY,
-        self::CARD);
+        self::CARD,
+        self::RECURRING);
 
     protected $casts = array(
-        self::RECURRING     => 'boolean',
-        self::AUTHENTICATED => 'boolean'
+        self::RECURRING     => 'bool',
+        self::AUTHENTICATED => 'bool'
     );
 
     protected static $generators = array(
@@ -187,6 +189,14 @@ class Entity extends Base\PublicEntity
         if ($this->card !== null)
         {
             $array[self::CARD] = $this->card->toArrayToken();
+        }
+    }
+
+    protected function setPublicRecurringAttribute(array & $array)
+    {
+        if ($this->isRecurring() === true)
+        {
+            $array[self::RECURRING] = true;
         }
     }
 
