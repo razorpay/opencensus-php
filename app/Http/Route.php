@@ -56,7 +56,8 @@ final class Route
         'refund_fetch_multiple'                   => ['get',      'refunds',                                  'PaymentController@getRefunds'                                      ],
         'refund_netbanking_generate_excel'        => ['post',     'refunds/netbanking/excel',                 'PaymentController@generateNetbankingRefunds'                       ],
         'refund_generate_excel'                   => ['post',     'refunds/excel',                            'PaymentController@generateRefunds'                                 ],
-        'refund_verify'                           => ['get',      'refunds/{id}/verify',                      'PaymentController@getRefundVerify'                                 ],
+        'refund_verify'                           => ['post',     'refunds/{id}/verify',                      'PaymentController@postRefundVerify'                                ],
+        'payment_capture_verify'                  => ['post',     'payments/{id}/verify/capture',             'PaymentController@postCaptureVerify'                               ],
         'card_fetch_by_id'                        => ['get',      'cards/{id}',                               'PaymentController@getCard'                                         ],
         'card_fetch_multiple'                     => ['get',      'cards',                                    'PaymentController@getCards'                                        ],
         'iin_fetch_by_iin'                        => ['get',      'iins/{id}',                                'CardController@getIin'                                             ],
@@ -237,6 +238,7 @@ final class Route
         'otp_verify'                              => ['post',     'otp/verify',                               'CustomerController@verifyOtp'                                      ],
         'sms_callback'                            => ['post',     'sms/{id}/callback',                        'CustomerController@updateSmsStatus'                                ],
         'es_migrate_entity'                       => ['post',     'es/migrate/{entityName}',                  'EsController@migrateEntity'                                        ],
+        'refund_gateway_manual'                   => ['post',     'refunds/{id}/gateway',                     'PaymentController@postManualGatewayRefund'                         ],
     );
 
     public static $public = array(
@@ -419,12 +421,14 @@ final class Route
         'emi_generate_excel',
         'order_update',
         'refund_verify',
+        'payment_capture_verify',
         'es_migrate_entity',
         'dummy_critical_error',
         'reconciliate',
         'credits_create',
         'credits_edit',
         'credits_delete',
+        'refund_gateway_manual',
     );
 
     public static $proxy = array(

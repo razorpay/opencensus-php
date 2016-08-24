@@ -388,7 +388,9 @@ class Gateway extends Base\Gateway
 
         if ($formCrawler->count() === 0)
         {
-            throw new Exception\GatewayTimeoutException('Gateway Timed Out', true);
+            $this->trace->info(TraceCode::GATEWAY_PAYMENT_ERROR, ['response' => $response->body]);
+
+            throw new Exception\GatewayTimeoutException('Gateway Timed Out', null, true);
         }
 
         $form = $formCrawler->form();
