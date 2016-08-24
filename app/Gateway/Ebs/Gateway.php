@@ -152,22 +152,21 @@ class Gateway extends Base\Gateway
 
     protected function parseRequestAndGetRedirectRequest($response)
     {
-        $headers = $response->headers;
-        $rawCookies = $headers->getValues('set-cookie');
         $cookies = [];
-        foreach($rawCookies as $cook)
+
+        foreach($response->cookies->getIterator() as $cookie)
         {
-            $val = explode(' ', $cook);
-            $val2 = explode('=', $val[0]);
-            $cookies[$val2[0]] = rtrim($val2[1], ';');
+            $cookies[$cookie->name] = $cookie->value;
         }
+
         $request = array(
-            'url'       => $headers->getValues('location')[0],
+            'url'       => $response->headers->getValues('location')[0],
             'method'    => 'get',
             'content'   => '',
         );
 
         $request['options']['cookies'] = $cookies;
+
         $request = $this->setRequestHeaderAndOption($request);
 
         return $request;
