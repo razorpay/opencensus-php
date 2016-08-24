@@ -411,11 +411,31 @@ trait Support
 
         $gatewayPaymentEntities = $this->repo->findByPaymentId($paymentId);
 
-        // There should be at least one authorized entity and exactly one refund entity.
-        // In purchase transactions, there will be two entities. In others, there will be 3.
+        //
+        // There should be at least one authorized entity and one refund/capture entity.
+        // In purchase transactions, there will be only one or two entities (capture, refund).
+        // In others, there will be 2 or 3 (authorize, capture, refund).
+        //
+        // We allow refunds for only captured entities too if there is a refund transaction present
+        // on the api side.
+        //
         if ($gatewayPaymentEntities->count() < 2)
         {
-            return false;
+            if ($gatewayPaymentEntities->count() === 0)
+            {
+                return false;
+            }
+
+            if ($gatewayPaymentEntities->count() === 1)
+            {
+                // If there is only one entity, it must be a purchase transaction.
+                if (($gatewayPaymentEntities[0]->getStatus() !== Status::CAPTURED) or
+                    ($gatewayPaymentEntities[0]->getAction() !== Action::PURCHASE) or
+                    ($gatewayPaymentEntities[0]->getResult() !== Result::CAPTURED))
+                {
+                    return false;
+                }
+            }
         }
 
         $hasValidRefundOrCaptureEntityForAllowingRefund = $this->hasValidRefundOrCaptureEntityForAllowingRefund(
@@ -487,7 +507,7 @@ trait Support
         }
         else
         {
-            $response = $this->isRefundRequiredWhenMultipleGatewayEntities($gatewayEntities);
+            $response = $this->isRefundRequiredWhenMultipleGatewayEntities($gatewayEntities, $input['refund']['id']);
         }
 
         $this->trace->info(
@@ -502,7 +522,7 @@ trait Support
         return $response;
     }
 
-    protected function isRefundRequiredWhenMultipleGatewayEntities($gatewayEntities)
+    protected function isRefundRequiredWhenMultipleGatewayEntities($gatewayEntities, $refundId)
     {
         $response = true;
 
@@ -511,13 +531,16 @@ trait Support
             // Refunded record will be created only if an actual refund has taken place.
             // Hence, if already refunded, we don't need to run the refund again.
 
-            // But, if the result is denied_by_risk, mark it as refund is required. This is because
-            // there was a bug earlier where we had marked them as successfully refunded even though
-            // they were not refunded. The bug is now fixed.
+            // Even if it does have, the result should be DENIED_BY_RISK.
+            // This is because there was a bug earlier where we had marked them as successfully
+            // refunded even though they were not refunded. The bug is now fixed.
             if (($gatewayEntity->getStatus() === Payment\Status::REFUNDED) and
-                ($gatewayEntity->getResult() !== Result::DENIED_BY_RISK))
+                ($gatewayEntity->getRefundId() === $refundId))
             {
-                $response = false;
+                if ($gatewayEntity->getResult() !== Result::DENIED_BY_RISK)
+                {
+                    $response = false;
+                }
             }
         }
 
