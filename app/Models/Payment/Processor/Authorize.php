@@ -1320,11 +1320,9 @@ trait Authorize
 
     protected function verifyRecurringEnabled($payment, $input)
     {
-        $merchantMethods = $this->methods;
-
         if ($payment->isRecurring() === true)
         {
-            if ($merchantMethods->isRecurringEnabled() === false)
+            if ($payment->merchant->isFeatureEnabled(Merchant\Features::RECURRING) === false)
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_RECURRING_NOT_ENABLED_FOR_MERCHANT);

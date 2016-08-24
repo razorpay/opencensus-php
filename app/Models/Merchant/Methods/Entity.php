@@ -18,7 +18,6 @@ class Entity extends Base\PublicEntity
     const PAYZAPP           = 'payzapp';
     const PAYUMONEY         = 'payumoney';
     const EMI               = 'emi';
-    const RECURRING         = 'recurring';
     const DEBIT_CARD        = 'debit_card';
     const CREDIT_CARD       = 'credit_card';
 
@@ -74,14 +73,9 @@ class Entity extends Base\PublicEntity
         self::OLAMONEY      => false,
         self::BANKS         => [],
         self::EMI           => false,
-        self::RECURRING     => false,
         self::NETBANKING    => true,
         self::CREDIT_CARD   => true,
         self::DEBIT_CARD    => true,
-    );
-
-    protected $casts = array(
-        self::RECURRING     => 'boolean'
     );
 
     protected $wallets = array(
@@ -90,6 +84,20 @@ class Entity extends Base\PublicEntity
         self::PAYZAPP,
         self::PAYUMONEY,
         self::OLAMONEY,
+    );
+
+    protected $casts = array(
+        self::AMEX        => 'bool',
+        self::PAYTM       => 'bool',
+        self::CARD        => 'bool',
+        self::CREDIT_CARD => 'bool',
+        self::DEBIT_CARD  => 'bool',
+        self::NETBANKING  => 'bool',
+        self::MOBIKWIK    => 'bool',
+        self::OLAMONEY    => 'bool',
+        self::PAYZAPP     => 'bool',
+        self::PAYUMONEY   => 'bool',
+        self::EMI         => 'bool',
     );
 
     public function setMethods(array $input = array())
@@ -104,22 +112,22 @@ class Entity extends Base\PublicEntity
 
     public function isCardEnabled()
     {
-        return $this->getCardAttribute();
+        return $this->getAttribute(self::CARD);
     }
 
     public function isDebitCardEnabled()
     {
-        return $this->getDebitCardAttribute();
+        return $this->getAttribute(self::DEBIT_CARD);
     }
 
     public function isCreditCardEnabled()
     {
-        return $this->getCreditCardAttribute();
+        return $this->getAttribute(self::CREDIT_CARD);
     }
 
     public function isNetbankingEnabled()
     {
-        return $this->getNetbankingAttribute();
+        return $this->getAttribute(self::NETBANKING);
     }
 
     public function isWalletEnabled($wallet = null)
@@ -147,42 +155,37 @@ class Entity extends Base\PublicEntity
 
     public function isAmexEnabled()
     {
-        return $this->getAmexAttribute();
+        return $this->getAttribute(self::AMEX);
     }
 
     public function isPaytmEnabled()
     {
-        return $this->getPaytmAttribute();
+        return $this->getAttribute(self::PAYTM);
     }
 
     public function isPayzappEnabled()
     {
-        return $this->getPayzappAttribute();
+        return $this->getAttribute(self::PAYZAPP);
     }
 
     public function isOlamoneyEnabled()
     {
-        return $this->getOlamoneyAttribute();
+        return $this->getAttribute(self::OLAMONEY);
     }
 
     public function isPayumoneyEnabled()
     {
-        return $this->getPayumoneyAttribute();
+        return $this->getAttribute(self::PAYUMONEY);
     }
 
     public function isMobikwikEnabled()
     {
-        return $this->getMobikwikAttribute();
+        return $this->getAttribute(self::MOBIKWIK);
     }
 
     public function isEmiEnabled()
     {
-        return $this->getEmiAttribute();
-    }
-
-    public function isRecurringEnabled()
-    {
-        return $this->getRecurring();
+        return $this->getAttribute(self::EMI);
     }
 
     public function isMethodEnabled($method)
@@ -242,11 +245,6 @@ class Entity extends Base\PublicEntity
     public function getEmi()
     {
         return $this->getAttribute(self::EMI);
-    }
-
-    public function getRecurring()
-    {
-        return $this->getAttribute(self::RECURRING);
     }
 
     public function setWallets($wallets)
@@ -340,71 +338,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::EMI, $emi);
     }
 
-    public function setRecurring($recurring)
-    {
-        assert($this->isCardEnabled(), "Cannot enable recurring without Card method");
-
-        $this->setAttribute(self::RECURRING, $recurring);
-    }
-
-    protected function getAmexAttribute()
-    {
-        return (bool) $this->attributes[self::AMEX];
-    }
-
-    protected function getPaytmAttribute()
-    {
-        return (bool) $this->attributes[self::PAYTM];
-    }
-
-    protected function getCardAttribute()
-    {
-        return (bool) $this->attributes[self::CARD];
-    }
-
-    protected function getCreditCardAttribute()
-    {
-        return (bool) $this->attributes[self::CREDIT_CARD];
-    }
-
-    protected function getDebitCardAttribute()
-    {
-        return (bool) $this->attributes[self::DEBIT_CARD];
-    }
-
-    protected function getNetbankingAttribute()
-    {
-        return (bool) $this->attributes[self::NETBANKING];
-    }
-
-    protected function getMobikwikAttribute()
-    {
-        return (bool) $this->attributes[self::MOBIKWIK];
-    }
-
-    protected function getOlamoneyAttribute()
-    {
-        return (bool) $this->attributes[self::OLAMONEY];
-    }
-
-    protected function getPayzappAttribute()
-    {
-        return (bool) $this->attributes[self::PAYZAPP];
-    }
-
-    protected function getPayumoneyAttribute()
-    {
-        return (bool) $this->attributes[self::PAYUMONEY];
-    }
-
     protected function getBanksAttribute()
     {
         return json_decode($this->attributes[self::BANKS], true);
-    }
-
-    protected function getEmiAttribute()
-    {
-        return (bool) $this->attributes[self::EMI];
     }
 
     protected function setBanksAttribute(array $banks)
@@ -437,19 +373,14 @@ class Entity extends Base\PublicEntity
     {
         return array(
             self::CARD,
-            self::NETBANKING,
+            self::EMI,
             self::AMEX,
+            self::NETBANKING,
             self::PAYTM,
             self::MOBIKWIK,
             self::PAYZAPP,
             self::PAYUMONEY,
-<<<<<<< 3e886c79619a554a9e53ca360803c63fb8e5d50c
             self::OLAMONEY,
-            self::EMI
-=======
-            self::EMI,
-            self::RECURRING
->>>>>>> [recurring] Add recurring method to merchant methods
         );
     }
 }

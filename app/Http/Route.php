@@ -421,7 +421,6 @@ final class Route
         'get_emi_plan_by_id',
         'emi_generate_excel',
         'order_update',
-        'customer_delete',
         'customer_update_token',
         'refund_verify',
         'payment_capture_verify',

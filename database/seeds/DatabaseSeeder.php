@@ -212,7 +212,6 @@ class DatabaseSeeder extends Seeder
                     'payumoney'     => '1',
                     'card'          => '1',
                     'emi'           => '1',
-                    'recurring'     => '1',
                     'created_at'    =>  time(),
                     'updated_at'    =>  time()
                 )

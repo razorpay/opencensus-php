@@ -150,12 +150,12 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::GATEWAY_TOKEN2);
     }
 
-    public function getRecurring()
+    public function isRecurring()
     {
         return $this->getAttribute(self::RECURRING);
     }
 
-    public function getAuthenticated()
+    public function isAuthenticated()
     {
         return $this->getAttribute(self::AUTHENTICATED);
     }
@@ -180,16 +180,6 @@ class Entity extends Base\PublicEntity
         }
 
         return ($expiredAt <= time());
-    }
-
-    public function isRecurring()
-    {
-        return $this->getRecurring();
-    }
-
-    public function isAuthenticated()
-    {
-        return $this->getAuthenticated();
     }
 
     protected function setPublicCardAttribute(array & $array)

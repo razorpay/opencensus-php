@@ -13,6 +13,7 @@ class Features
     const S2SWALLET     = 's2swallet';
     const SETL_REPORT   = 'setl_report';
     const CARD_SAVING   = 'cardsaving';
+    const RECURRING     = 'recurring';
 
     const DELIMITER     = ',';
 

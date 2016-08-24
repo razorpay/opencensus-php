@@ -201,16 +201,6 @@ class Merchant extends Base
         return $this->fixtures->edit('methods', $id, ['emi' => false]);
     }
 
-    public function enableRecurring($id = '10000000000000')
-    {
-        return $this->fixtures->edit('methods', $id, ['recurring' => true]);
-    }
-
-    public function disableRecurring($id = '10000000000000')
-    {
-        return $this->fixtures->edit('methods', $id, ['recurring' => false]);
-    }
-
     public function enableMobikwik($id = '10000000000000')
     {
         return $this->fixtures->edit('methods', $id, ['mobikwik' => true]);

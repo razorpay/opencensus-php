@@ -26,8 +26,6 @@ class RecurringPaymentTest extends TestCase
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
-        $this->fixtures->merchant->enableRecurring();
-
         $this->mockTokenex();
     }
 
