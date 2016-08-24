@@ -337,9 +337,14 @@ class Processor
 
         $payment->setError($code, $desc, $internalCode);
 
-        $payment->saveOrFail();
+        $this->repo->saveOrFail($payment);
 
         $this->tracePaymentFailed($error, $traceCode);
+    }
+
+    protected function eventPaymentFailed()
+    {
+        $this->app['events']->fire('api.payment.failed', array($this->payment));
     }
 
     protected function setPaymentError($error)
@@ -350,7 +355,7 @@ class Processor
 
         $payment->setInternalErrorCode($internalCode);
 
-        $payment->saveOrFail();
+        $this->repo->saveOrFail($payment);
     }
 
     /**

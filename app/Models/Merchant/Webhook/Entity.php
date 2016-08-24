@@ -147,7 +147,7 @@ class Entity extends Base\PublicEntity
 
         $events = Event::getEnabledEvents($events);
 
-        $names = Event::getAllEventNames();
+        $names = Event::getLaunchedEventNames();
 
         $eventsArray = [];
 

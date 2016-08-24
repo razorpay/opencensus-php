@@ -10,7 +10,6 @@ use RZP\Models\Event;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 
-
 class ApiEventSubscriber
 {
     /* Used to push jobs to queues */
@@ -78,11 +77,21 @@ class ApiEventSubscriber
 
     protected function onPaymentAuthorized($payment)
     {
+        $this->prepareAndDispatchPaymentWebhook($payment);
+    }
+
+    protected function onPaymentFailed($payment)
+    {
+        $this->prepareAndDispatchPaymentWebhook($payment);
+    }
+
+    protected function prepareAndDispatchPaymentWebhook($payment)
+    {
         $webhook = $payment->merchant->webhook;
 
         $eventFired = $this->event;
 
-        if ($this->fireWebhookForEvent($webhook, $eventFired) === false)
+        if ($this->isWebhookEnabledForEvent($webhook, $eventFired) === false)
         {
             return;
         }
@@ -90,7 +99,7 @@ class ApiEventSubscriber
         $attributes = array(
             Event\Entity::EVENT       => $eventFired,
             Event\Entity::CONTAINS    => Event\Contains::getEntityNamesForEvent($eventFired),
-            Event\Entity::CREATED_AT  => $payment->getAuthorizeTimestamp(),
+            Event\Entity::CREATED_AT  => $payment->getUpdatedAt(),
         );
 
         $event = new Event\Entity($attributes);
@@ -113,7 +122,7 @@ class ApiEventSubscriber
         $this->dispatch(new Webhook($data));
     }
 
-    protected function fireWebhookForEvent($webhook, $event)
+    protected function isWebhookEnabledForEvent($webhook, $event)
     {
         return (($webhook !== null) and
                 ($webhook->isActive()) and
