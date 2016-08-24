@@ -35,7 +35,7 @@ class Service extends Base\Service
      */
     public function process(array $input)
     {
-        return $this->processor()->process($input);
+        return $this->getNewProcessor()->process($input);
     }
 
     /**
@@ -47,12 +47,12 @@ class Service extends Base\Service
         $input['_']['source']   = 's2s';
         $input['method']        = 'wallet';
 
-        return $this->processor()->process($input);
+        return $this->getNewProcessor()->process($input);
     }
 
     public function processAndReturnFees(array & $input)
     {
-        return $this->processor()->processAndReturnFees($input);
+        return $this->getNewProcessor()->processAndReturnFees($input);
     }
 
     /**
@@ -65,7 +65,7 @@ class Service extends Base\Service
      */
     public function otpResend($id, $input)
     {
-        return $this->processor()->otpResend($id, $input);
+        return $this->getNewProcessor()->otpResend($id, $input);
     }
 
     /*
@@ -78,7 +78,7 @@ class Service extends Base\Service
      */
     public function topup($id, $input)
     {
-        $data = $this->processor()->topup($id, $input);
+        $data = $this->getNewProcessor()->topup($id, $input);
 
         return $data;
     }
@@ -92,7 +92,7 @@ class Service extends Base\Service
      */
     public function refund($id, $input)
     {
-        $refund = $this->processor()->refundCapturedPayment($id, $input);
+        $refund = $this->getNewProcessor()->refundCapturedPayment($id, $input);
 
         return $refund->toArrayPublic();
     }
@@ -106,7 +106,7 @@ class Service extends Base\Service
      */
     public function refundAuthorized($id, $input)
     {
-        $refund = $this->processor()->refundAuthorizedPayment($id, $input);
+        $refund = $this->getNewProcessor()->refundAuthorizedPayment($id, $input);
 
         return $refund->toArrayPublic();
     }
@@ -119,21 +119,21 @@ class Service extends Base\Service
 
         $merchant = (new Merchant\Repository)->findOrFail($merchantId);
 
-        $data = $this->processor($merchant)->verify($payment);
+        $data = $this->getNewProcessor($merchant)->verify($payment);
 
         return $data;
     }
 
     public function cancel($id, $input)
     {
-        $status = $this->processor()->cancel($id, $input);
+        $status = $this->getNewProcessor()->cancel($id, $input);
 
         return ['status' => $status];
     }
 
     public function redirect($id)
     {
-        return $this->processor()->redirect($id);
+        return $this->getNewProcessor()->redirect($id);
     }
 
     public function forceAuthorizeFailed($id, $input)
@@ -142,7 +142,7 @@ class Service extends Base\Service
 
         $merchant = (new Merchant\Repository)->findOrFail($payment->getMerchantId());
 
-        $data = $this->processor($merchant)
+        $data = $this->getNewProcessor($merchant)
                      ->forceAuthorizeFailedPayment($payment, $input);
 
         return $data;
@@ -156,7 +156,7 @@ class Service extends Base\Service
 
         $merchant = (new Merchant\Repository)->findOrFail($merchantId);
 
-        $data = $this->processor($merchant)->authorizeFailedPayment($payment);
+        $data = $this->getNewProcessor($merchant)->authorizeFailedPayment($payment);
 
         return $data;
     }
@@ -206,7 +206,7 @@ class Service extends Base\Service
      */
     public function capture($id, $input)
     {
-        $payment = $this->processor()->capture($id, $input);
+        $payment = $this->getNewProcessor()->capture($id, $input);
 
         return $payment->toArrayPublic();
     }
@@ -227,8 +227,8 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-        $data = $this->processor($merchant)->verifyCapture($payment);
-        
+        $data = $this->getNewProcessor($merchant)->verifyCapture($payment);
+
         $this->trace->info(
             TraceCode::VERIFY_CAPTURE_RESPONSE,
             [
@@ -247,23 +247,42 @@ class Service extends Base\Service
      * @param $refundId
      * @return array
      */
-    public function manualGatewayRefund($refundId)
+    public function manualGatewayRefund($refundIds)
     {
-        $refund = $this->repo->refund->findOrFail($refundId);
-        $merchantId = $refund->getMerchantId();
-        $merchant = $this->repo->merchant->findOrFail($merchantId);
-        
-        $data = $this->processor($merchant)->manualGatewayRefund($refund);
-        
-        $this->trace->info(
-            TraceCode::MANUAL_GATEWAY_REFUND_RESPONSE,
-            [
-                'refund_id'     => $refundId,
-                'payment_id'    => $refund->getPaymentId(),
-                'data'          => $data
-            ]
-        );
-        
+        $refundIds = explode(',', $refundIds);
+
+        $data = [];
+
+        foreach ($refundIds as $refundId)
+        {
+
+            $refund = $this->repo->refund->findOrFail($refundId);
+            $merchantId = $refund->getMerchantId();
+            $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+            try
+            {
+                $data[] = $this->getNewProcessor($merchant)->manualGatewayRefund($refund);
+            }
+            catch(\Exception $ex)
+            {
+                $data[] = [
+                    'refund_id'     => $refundId,
+                    'payment_id'    => $refund->getPaymentId(),
+                    'error_message' => $ex->getMessage(),
+                ];
+            }
+
+            $this->trace->info(
+                TraceCode::MANUAL_GATEWAY_REFUND_RESPONSE,
+                [
+                    'refund_id'  => $refundId,
+                    'payment_id' => $refund->getPaymentId(),
+                    'data'       => $data
+                ]
+            );
+        }
+
         return $data;
     }
 
@@ -281,7 +300,7 @@ class Service extends Base\Service
      */
     public function callback($id, $hash, array $input)
     {
-        return $this->processor()->callback($id, $hash, $input);
+        return $this->getNewProcessor()->callback($id, $hash, $input);
     }
 
     public function s2sCallback($id, $input)
@@ -292,7 +311,7 @@ class Service extends Base\Service
 
         $merchant = $payment->merchant;
 
-        return $this->processor($merchant)->s2sCallback($payment, $input);
+        return $this->getNewProcessor($merchant)->s2sCallback($payment, $input);
     }
 
     public function fetchMultiple(array $input)
@@ -381,7 +400,7 @@ class Service extends Base\Service
 
                 $merchant = $payment->merchant;
 
-                $refund = $this->processor($merchant)
+                $refund = $this->getNewProcessor($merchant)
                                ->refundAuthorizedPayment(
                                     $payment->getPublicId(), []);
 
@@ -515,7 +534,7 @@ class Service extends Base\Service
         {
             $this->merchant = $payment->merchant;
 
-            $res = $this->processor()->autoCapturePayment($payment);
+            $res = $this->getNewProcessor()->autoCapturePayment($payment);
 
             if ($res)
             {
@@ -671,7 +690,7 @@ class Service extends Base\Service
             });
     }
 
-    protected function processor(Merchant\Entity $merchant = null)
+    protected function getNewProcessor(Merchant\Entity $merchant = null)
     {
         if ($merchant === null)
         {
