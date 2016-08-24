@@ -442,24 +442,27 @@ trait Support
         // There should be only one gateway entity for refund.
         // This one gateway entity should have the result as DENIED_BY_RISK and
         // status as refunded.
-        if (($gatewayRefundEntities->count() > 1) or
-            ($gatewayRefundEntities[0]->getResult() !== Result::DENIED_BY_RISK) or
-            ($gatewayRefundEntities[0]->getStatus() !== Status::REFUNDED))
+        if ($gatewayRefundEntities->count() !== 0)
         {
-            $response = false;
+            if (($gatewayRefundEntities->count() > 1) or
+                ($gatewayRefundEntities[0]->getResult() !== Result::DENIED_BY_RISK) or
+                ($gatewayRefundEntities[0]->getStatus() !== Status::REFUNDED))
+            {
+                $response = false;
+            }
         }
 
         // But, manual gateway refund can be done even if there's a captured entity or
         // a captured failed entity with GW00176 error code.
         // THIS CONDITION IS DANGEROUS BECAUSE it allows a gateway refund on a captured entity.
         // HENCE THIS MUST BE USED WITH CAUTION. Proper checks MUST BE PERFORMED before calling this function.
-        if ($response === false)
+        if (($gatewayRefundEntities->count() === 0) or ($response === false))
         {
             $gatewayCapturedEntities = $this->repo->retrieveCapturedOrAcceptedCaptureError($paymentId);
 
-            if ($gatewayCapturedEntities->count() > 0)
+            if ($gatewayCapturedEntities->count() === 0)
             {
-                return true;
+                $response = false;
             }
         }
 
