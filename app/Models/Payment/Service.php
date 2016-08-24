@@ -254,22 +254,23 @@ class Service extends Base\Service
 
         foreach ($refundIds as $refundId)
         {
-
             $refund = $this->repo->refund->findOrFail($refundId);
             $merchantId = $refund->getMerchantId();
             $merchant = $this->repo->merchant->findOrFail($merchantId);
 
             try
             {
-                $data[] = $this->getNewProcessor($merchant)->manualGatewayRefund($refund);
+                $response = $this->getNewProcessor($merchant)->manualGatewayRefund($refund);
             }
             catch(\Exception $ex)
             {
-                $data[] = [
+                $response = [
                     'refund_id'     => $refundId,
                     'payment_id'    => $refund->getPaymentId(),
                     'error_message' => $ex->getMessage(),
                 ];
+
+                $this->trace->traceException($ex);
             }
 
             $this->trace->info(
@@ -277,10 +278,17 @@ class Service extends Base\Service
                 [
                     'refund_id'  => $refundId,
                     'payment_id' => $refund->getPaymentId(),
-                    'data'       => $data
+                    'response'   => $response
                 ]
             );
+
+            $data[] = $response;
         }
+
+        $this->trace->info(
+            TraceCode::MANUAL_GATEWAY_ALL_REFUNDS_RESPONSE,
+            $data
+        );
 
         return $data;
     }
