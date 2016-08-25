@@ -24,7 +24,7 @@ class ResponseMap
     {
         if (array_key_exists($code, self::CODES))
         {
-            return CODES[$code];
+            return self::CODES[$code];
         }
 
         // All other codes are considered this

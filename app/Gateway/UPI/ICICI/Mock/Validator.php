@@ -8,7 +8,7 @@ use RZP\Gateway\Wallet\Olamoney;
 class Validator extends Base\Validator
 {
     protected static $authRules = array(
-        'merchantId'        =>  'digits:10',
+        'merchantId'        =>  'numeric|max:9999999999',
         'merchantName'      =>  'alpha_num|max:50',
         'subMerchantId'     =>  'sometimes|alpha_num|max:10',
         'subMerchantName'   =>  'sometimes|alpha_num|max:50',

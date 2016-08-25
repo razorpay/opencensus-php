@@ -11,28 +11,19 @@ class Gateway extends Base\Gateway
 {
     protected $gateway = 'upi_icici';
 
-    public function __construct()
-    {
-        /**
-         * See http://phpseclib.sourceforge.net/rsa/examples.html
-         *
-         * We need to run in PCKS 1.5 mode
-         */
-        define('CRYPT_RSA_PKCS15_COMPAT', true);
-        $this->rsa = new RSA();
-        $this->rsa->setEncryptionMode(RSA::ENCRYPTION_PKCS1);
-        $this->rsa->loadKey($this->getPublicKey());
-    }
-
     // TODO: Implement using vault
     protected function getPublicKey()
     {
+        $key = $this->config['public_key'];
+        return str_replace('\n', "\n", $key);
     }
 
     public function authorize(array $input)
     {
         $this->input = $input;
+
         $this->action = Action::AUTHORIZE;
+
         $request =  $this->getAuthorizeRequestContent($input);
 
         // TODO: Create the gateway entity here
@@ -90,7 +81,16 @@ class Gateway extends Base\Gateway
      */
     protected function encrypt($data)
     {
-        return $this->rsa->encrypt($data);
+        /**
+         * See http://phpseclib.sourceforge.net/rsa/examples.html
+         *
+         * We need to run in PCKS 1.5 mode
+         */
+        define('CRYPT_RSA_PKCS15_COMPAT', true);
+        $rsa = new RSA();
+        $rsa->setEncryptionMode(RSA::ENCRYPTION_PKCS1);
+        $rsa->loadKey($this->getPublicKey());
+        return $rsa->encrypt($data);
     }
 
     protected function getAuthorizeRequestContent($input)
@@ -121,8 +121,6 @@ class Gateway extends Base\Gateway
         $json = json_encode($data, JSON_PRETTY_PRINT);
         $body = base64_encode($this->encrypt($json));
 
-        // getUrl relies on $this->action, ensure that
-        // it is set
         return [
             'url'       =>  $this->getUrl(),
             'content'   =>  $body,

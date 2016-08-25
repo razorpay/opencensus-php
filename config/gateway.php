@@ -120,7 +120,8 @@ return array(
     ),
 
     'upi_icici' =>  array(
-        'test_merchant_id'  => $_ENV['UPI_ICICI_GATEWAY_MERCHANT_ID'],
+        'test_merchant_id'  => env('UPI_ICICI_GATEWAY_MERCHANT_ID'),
+        'public_key'        => env('UPI_ICICI_PUBLIC_KEY'),
     ),
 
     'wallet_payzapp' => array(
