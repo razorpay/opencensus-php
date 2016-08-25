@@ -12,6 +12,7 @@ use RZP\Trace\TraceCode;
 class Notify
 {
     const AUTHORIZED = 'authorized';
+    const CARD_SAVED = 'card_saved';
     const CAPTURED   = 'captured';
     const REFUNDED   = 'refunded';
     const FAILED_TO_AUTHORIZED = 'failed_to_authorized';
@@ -83,6 +84,12 @@ class Notify
                 ],
             ],
         ],
+        self::CARD_SAVED    => [
+            'customer'  => [
+                'from' => 'care',
+                'view' => 'emails.payment.cardsaving',
+            ]
+        ]
     ];
 
     protected $payment;
@@ -361,6 +368,11 @@ class Notify
             $subject = "$action successful for {$this->template['payment']['amount']}";
         }
 
+        if ($event === self::CARD_SAVED)
+        {
+            $subject = "Card successfully saved with Razorpay";
+        }
+
         // All mails that we send out to the merchant follow the same pattern:
         // Razorpay | X action taken for Y
         // Y is usually the merchant name/billing label
@@ -512,6 +524,20 @@ class Notify
                 'risk'      =>  $this->payment->merchant->getRiskRating()
             ]
         ];
+
+        if ($this->payment->card !== null)
+        {
+            $card = $this->payment->card;
+
+            $expiryMonth = str_pad($card->getExpiryMonth(), 2, "0", STR_PAD_LEFT);
+
+            $data['card'] = [
+                'number'    => '**** **** **** ' . $card->getLast4(),
+                'expiry'    => $expiryMonth . '/' . $card->getExpiryYear(),
+                'network'   => $card->getNetworkCode(),
+                'color'     => $card->getNetworkColorCode(),
+            ];
+        }
 
         if ($this->refund)
         {

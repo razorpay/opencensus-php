@@ -304,4 +304,38 @@ return [
         ],
         'jsonp' => true
     ],
+
+    'testAuthNotEnrolledDeniedByRisk' => [
+        'action' => 4,
+        'received' => true,
+        'amount' => '500',
+        'enroll_result' => '2',
+        'status' => 'auth_not_enroll_failed',
+        'result' => 'DENIED BY RISK',
+        'eci' => '6',
+        'auth' => null,
+        'ref' => null,
+        'avr' => null,
+        'postdate' => null,
+        'error_code' => 'RP00005',
+        'error_text' => 'Denied by risk. Response result code is "DENIED BY RISK"',
+        'entity' => 'hdfc',
+    ],
+
+    'testAuthEnrolledDeniedByRisk' => [
+        'action' => 4,
+        'received' => true,
+        'amount' => '500',
+        'enroll_result' => '1',
+        'status' => 'auth_enroll_failed',
+        'result' => 'DENIED BY RISK',
+        'eci' => null,
+        'auth' => null,
+        'ref' => null,
+        'avr' => null,
+        'postdate' => null,
+        'error_code' => 'RP00005',
+        'error_text' => 'Denied by risk. Response result code is "DENIED BY RISK"',
+        'entity' => 'hdfc',
+    ],
 ];

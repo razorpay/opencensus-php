@@ -102,7 +102,8 @@ class AxisGatewayTest extends TestCase
         $payment['card']['number'] = '5081597022059105';
 
         $this->fixtures->on('live')->create('terminal:disable_default_hdfc_terminal');
-        $this->fixtures->merchant->activate();
+        $this->fixtures->merchant->edit('10000000000000', ['activated' => 1, 'live' => 1, 'pricing_plan_id' => '1hDYlICobzOCYt']);
+        // $merchant = $this->fixtures->merchant->activate();
 
         $data = $this->testData[__FUNCTION__];
 

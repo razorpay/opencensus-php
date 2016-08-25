@@ -71,6 +71,11 @@ class Entity extends Base\Entity
         return $this->getAttribute('status');
     }
 
+    public function getErrorCode()
+    {
+        return $this->getAttribute('error_code');
+    }
+
     public function getResult()
     {
         return $this->getAttribute('result');

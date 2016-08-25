@@ -2,11 +2,10 @@
 
 namespace RZP\Gateway\Hdfc\Mock;
 
-use Carbon\Carbon;
+use App;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Gateway\Hdfc;
-use RZP\Gateway\Hdfc\Action;
 use ReflectionClass;
 
 class Gateway extends Hdfc\Gateway
@@ -14,6 +13,8 @@ class Gateway extends Hdfc\Gateway
     use Base\Mock\GatewayTrait;
 
     protected $server;
+
+    protected $mockHdfcServer;
 
     public function __construct()
     {
@@ -116,15 +117,15 @@ class Gateway extends Hdfc\Gateway
         if ((isset($this->enrollRequest['data']['card'])) and
             ($this->enrollRequest['data']['card'] === '4012001036275556'))
         {
-            throw new \Requests_Exception(
+            throw new Exception\GatewayTimeoutException(
                 'cURL error 28: Operation timed out after ' .
-                '10 ' . static::TIMEOUT . '001 milliseconds with 0 bytes received', 'curlerror');
+                '10 ' . static::TIMEOUT . '001 milliseconds with 0 bytes received');
         }
     }
 
     protected function getServer()
     {
-        $app = \App::getFacadeRoot();
+        $app = App::getFacadeRoot();
 
         return $app['gateway']->server('hdfc');
     }

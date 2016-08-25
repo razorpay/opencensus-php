@@ -197,7 +197,6 @@ class RefundTest extends TestCase
     public function testVerifyRefund()
     {
         // Case 1
-
         $payment = $this->defaultAuthPayment();
 
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
@@ -206,7 +205,7 @@ class RefundTest extends TestCase
 
         $response = $this->verifyRefund($refund2['id']);
 
-        $this->assertEquals('Refund verified successfully.', $response['verify_refund']);
+        $this->assertEquals('Refund verified successfully.', $response[0]['verify_refund']);
     }
 
     public function testVerifyBuggyRefund()

@@ -6,11 +6,12 @@ use Config;
 use Carbon\Carbon;
 use RZP\Exception;
 use Mail;
-use RZP\Trace\TraceCode;
+use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Settlement;
+use RZP\Trace\TraceCode;
 
-class DailyReport
+class DailyReport extends Base\Core
 {
     /**
      * Generates a new daily report
@@ -18,6 +19,8 @@ class DailyReport
      */
     function __construct($id)
     {
+        parent::__construct();
+
         $this->merchantId = $id;
 
         // 00:00 Yesterday
@@ -30,8 +33,6 @@ class DailyReport
         $this->date = Carbon::yesterday("Asia/Kolkata")->format('jS F Y');
 
         $this->data = $this->fetchDailyDetails();
-
-        $this->trace = \Trace::getFacadeRoot();
     }
 
     /**
@@ -102,7 +103,7 @@ class DailyReport
      */
     protected function getAuthorizedPayments()
     {
-        $authorizedCollection = (new Payment\Repository)->fetch(
+        $authorizedCollection = $this->repo->payment->fetch(
             ['status'    => 'authorized'],
             $this->merchantId);
 
@@ -111,7 +112,7 @@ class DailyReport
 
     protected function getCapturedPayments()
     {
-        $capturedCollection = (new Payment\Repository)
+        $capturedCollection = $this->repo->payment
             ->fetchCapturedBetweenTimestamp(
                 $this->timeLowerLimit,
                 $this->timeUpperLimit,
@@ -164,7 +165,7 @@ class DailyReport
      */
     protected function getSettlement()
     {
-        $settlements = (new Settlement\Repository)->fetch([
+        $settlements = $this->repo->settlement->fetch([
             'from' => $this->timeLowerLimit,
             'to' => $this->timeUpperLimit
         ], $this->merchantId);
@@ -192,7 +193,7 @@ class DailyReport
 
     protected function getRefunds()
     {
-        $refunds = (new Payment\Refund\Repository)->fetch([
+        $refunds = $this->repo->refund->fetch([
             'from' => $this->timeLowerLimit,
             'to' => $this->timeUpperLimit
         ], $this->merchantId);
@@ -205,7 +206,7 @@ class DailyReport
 
     protected function fetchDailyDetails()
     {
-        $merchant = (new Repository)->findOrFailPublic($this->merchantId);
+        $merchant = $this->repo->merchant->findOrFailPublic($this->merchantId);
 
         $data = [
             'captured'       => $this->getCapturedPayments(),

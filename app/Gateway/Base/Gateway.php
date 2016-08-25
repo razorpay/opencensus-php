@@ -288,7 +288,6 @@ class Gateway
         catch (\Requests_Exception $e)
         {
             $this->exception = $e;
-
             //
             // Some error occurred.
             // Check that whether the gateway response timed out.
@@ -300,7 +299,7 @@ class Gateway
             }
             else
             {
-                throw $e;
+                throw new Exception\GatewayRequestException($e->getMessage(), $e);
             }
         }
 

@@ -52,7 +52,7 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $this->getRepo()->findByPaymentIdAndAction(
             $input['payment']['id'], Action::AUTHORIZE);
 
-        assert(($gatewayPayment[Entity::ERROR_CODE] === NULL) or
+        assert(($gatewayPayment[Entity::ERROR_CODE] === null) or
                ($gatewayPayment[Entity::ERROR_CODE] === '0'));
     }
 
@@ -389,15 +389,16 @@ class Gateway extends Base\Gateway
 
     protected function getPaymentVerifyRequestContent($input, $payment)
     {
-        $content = array(
+        $content = [
             Req::API_ACTION         => 'status',
-            Req::API_ACCOUNT_ID     => $this->getAccountId($input['terminal']),
-            Req::API_SECRET_KEY     => $this->getSecretKey($input['terminal']),
             Req::API_PAYMENT_ID     => $payment[Entity::GATEWAY_PAYMENT_ID],
             req::API_TRANSACTION_ID => $payment[Entity::TRANSACTION_ID],
-        );
+        ];
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST, $content);
+
+        $content[Req::API_ACCOUNT_ID] = $this->getAccountId($input['terminal']);
+        $content[Req::API_SECRET_KEY] = $this->getSecretKey($input['terminal']);
 
         return $content;
     }
@@ -406,15 +407,16 @@ class Gateway extends Base\Gateway
     {
         $refundAmount = $input['refund']['amount']/100;
 
-        $content = array(
+        $content = [
             Req::API_ACTION         => 'refund',
-            Req::API_ACCOUNT_ID     => $this->getAccountId($input['terminal']),
-            Req::API_SECRET_KEY     => $this->getSecretKey($input['terminal']),
             Req::API_AMOUNT         => $refundAmount,
             Req::API_PAYMENT_ID     => $gatewayPayment[Entity::GATEWAY_PAYMENT_ID],
-        );
+        ];
 
         $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST, $content);
+
+        $content[Req::API_ACCOUNT_ID] = $this->getAccountId($input['terminal']);
+        $content[Req::API_SECRET_KEY] = $this->getSecretKey($input['terminal']);
 
         return $content;
     }
@@ -634,7 +636,17 @@ class Gateway extends Base\Gateway
 
     protected function getStringToHash($content, $glue = '|')
     {
-        return implode($glue, $content);
+        $hashArray = [];
+
+        foreach($content as $key => $value)
+        {
+            if (strlen($value) > 0)
+            {
+                $hashArray[] = $value;
+            }
+        }
+
+        return implode($glue, $hashArray);
     }
 
     protected function getHashOfString($str)

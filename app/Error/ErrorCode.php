@@ -22,6 +22,7 @@ class ErrorCode
      * are added in future
      */
     const GATEWAY_ERROR_FATAL_ERROR                                                 = 'GATEWAY_ERROR_FATAL_ERROR';
+    const GATEWAY_ERROR_REQUEST_ERROR                                               = 'GATEWAY_ERROR_REQUEST_ERROR';
 
     const GATEWAY_ERROR_REQUEST_TIMEOUT                                             = 'GATEWAY_ERROR_REQUEST_TIMEOUT';
     const GATEWAY_ERROR_DENIED_BY_RISK                                              = 'GATEWAY_ERROR_DENIED_BY_RISK';
@@ -145,6 +146,8 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_BLOCKED_BY_BANK_DUE_TO_RISK_CHECKS_FAILURE            = 'BAD_REQUEST_PAYMENT_BLOCKED_BY_BANK_DUE_TO_RISK_CHECKS_FAILURE';
     const BAD_REQUEST_PAYMENT_TIMED_OUT                                             = 'BAD_REQUEST_PAYMENT_TIMED_OUT';
     const BAD_REQUEST_PAYMENT_BANK_NOT_ENABLED_FOR_MERCHANT                         = 'BAD_REQUEST_PAYMENT_BANK_NOT_ENABLED_FOR_MERCHANT';
+    const BAD_REQUEST_PAYMENT_WALLET_NOT_SUPPORTED                                  = 'BAD_REQUEST_PAYMENT_WALLET_NOT_SUPPORTED';
+    const BAD_REQUEST_PAYMENT_WALLET_NOT_PROVIDED                                   = 'BAD_REQUEST_PAYMENT_WALLET_NOT_PROVIDED';
     const BAD_REQUEST_PAYMENT_WALLET_NOT_ENALBED_FOR_MERCHANT                       = 'BAD_REQUEST_PAYMENT_WALLET_NOT_ENALBED_FOR_MERCHANT';
     const BAD_REQUEST_PAYMENT_CARD_NOT_ENALBED_FOR_MERCHANT                         = 'BAD_REQUEST_PAYMENT_CARD_NOT_ENALBED_FOR_MERCHANT';
     const BAD_REQUEST_PAYMENT_EMI_NOT_ENALBED_FOR_MERCHANT                          = 'BAD_REQUEST_PAYMENT_EMI_NOT_ENALBED_FOR_MERCHANT';
@@ -193,6 +196,7 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_MISSING_DATA                                          = 'BAD_REQUEST_PAYMENT_MISSING_DATA';
     const BAD_REQUEST_PAYMENT_PARTIAL_AMOUNT_APPROVED                               = 'BAD_REQUEST_PAYMENT_PARTIAL_AMOUNT_APPROVED';
     const BAD_REQUEST_PAYMENT_PROBLEM_IN_UPDATING                                   = 'BAD_REQUEST_PAYMENT_PROBLEM_IN_UPDATING';
+    const BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT                              = 'BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT';
 
     const BAD_REQUEST_CARD_AVS_FAILED                                               = 'BAD_REQUEST_CARD_AVS_FAILED';
     const BAD_REQUEST_CARD_STOLEN_OR_LOST                                           = 'BAD_REQUEST_CARD_STOLEN_OR_LOST';

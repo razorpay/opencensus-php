@@ -18,6 +18,7 @@ use RZP\Models\Payment\Core;
 use Carbon\Carbon;
 use View;
 use Lib\PhoneBook;
+use RZP\Constants\HashAlgo;
 
 class Gateway extends Base\Gateway
 {
@@ -776,7 +777,7 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $hash =  base64_encode(hash('sha256', $str, true));
+            $hash =  base64_encode(hash(HashAlgo::SHA256, $str, true));
         }
 
         return $hash;
