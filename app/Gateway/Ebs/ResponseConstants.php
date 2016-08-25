@@ -28,6 +28,7 @@ class ResponseConstants
     const CURRENCY              = 'currency';
     const SECURE_HASH           = 'SecureHash';
     const RESPONSE              = 'response';
+    const STATUS                = 'status';
 
     //
     // EBS API response Fields
