@@ -67,7 +67,7 @@ class Validator extends Base\Validator
     protected static $editValidators = [
         'csv_email',
         'features',
-        'method_netbanking',
+        'terminal_categories',
     ];
 
     public function validateLogo($imageDetails)
@@ -114,7 +114,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateMethodNetbanking($input)
+    public function validateTerminalCategories($input)
     {
         $categoryColumns = (new Merchant\Entity)->getCategoryColumns();
 
