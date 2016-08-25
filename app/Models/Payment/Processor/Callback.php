@@ -150,7 +150,7 @@ trait Callback
             $this->processPaymentCallbackException($e);
         }
 
-        $this->authenticateTokenIfRecurring();
+        $this->updateTokenOnAuthorized();
 
         $this->updateAndNotifyPaymentAuthorized();
     }

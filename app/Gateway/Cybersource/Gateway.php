@@ -87,9 +87,7 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        if ((isset($input['token']) === true) and
-            ($input['token']->isRecurring() === true) and
-            ($input['token']->isAuthenticated() === true))
+        if ($this->isRecurringPaymentRequest($input) === true)
         {
             return $this->recurring($input);
         }
@@ -179,6 +177,17 @@ class Gateway extends Base\Gateway
         {
             $this->handleSoapFault($exception, "Refund request failed");
         }
+    }
+
+    protected function isRecurringPaymentRequest($input)
+    {
+        if (($input['payment']['recurring'] === true) and
+            ($input['token']->isRecurring() === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function authorizeRecurring($input)

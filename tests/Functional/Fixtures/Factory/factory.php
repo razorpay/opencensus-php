@@ -258,7 +258,6 @@ $factory(\RZP\Models\Customer\Token\Entity::class, [
     'bank'   => null,
     'card_id' => null,
     'recurring' => false,
-    'authenticated' => false,
 ]);
 
 $factory(\RZP\Models\Customer\AppToken\Entity::class, [

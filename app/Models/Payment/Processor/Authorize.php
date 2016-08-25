@@ -712,8 +712,6 @@ trait Authorize
             $saveMethodInput['method'] = Payment\Method::CARD;
 
             $saveMethodInput['card_id'] = $savedCardId;
-
-            $saveMethodInput['recurring'] = $payment->isRecurring();
         }
         else if ($payment->isMethod(Payment\Method::NETBANKING))
         {
@@ -860,16 +858,19 @@ trait Authorize
         return $data;
     }
 
-    protected function authenticateTokenIfRecurring()
+    protected function updateTokenOnAuthorized()
     {
-        $token = $this->payment->token()->first();
-
-        if (($token !== null) and
-            ($token->isRecurring() === true))
+        if ($this->payment->isMethodCardOrEmi())
         {
-            $token->setAuthenticated(true);
+            $token = $this->payment->token()->first();
 
-            $this->repo->saveOrFail($token);
+            if (($this->payment->isRecurring() == true) and
+                ($token->isRecurring() === false))
+            {
+                $token->setRecurring(true);
+
+                $this->repo->saveOrFail($token);
+            }
         }
     }
 

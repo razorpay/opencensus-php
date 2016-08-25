@@ -21,7 +21,6 @@ class Entity extends Base\PublicEntity
     const GATEWAY_TOKEN         = 'gateway_token';
     const GATEWAY_TOKEN2        = 'gateway_token2';
     const RECURRING             = 'recurring';
-    const AUTHENTICATED         = 'authenticated';
     const EXPIRED_AT            = 'expired_at';
     const CREATED_AT            = 'created_at';
     const UPDATED_AT            = 'updated_at';
@@ -44,7 +43,6 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_TOKEN,
         self::GATEWAY_TOKEN2,
         self::RECURRING,
-        self::AUTHENTICATED,
         self::EXPIRED_AT,
     );
 
@@ -62,7 +60,6 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_TOKEN,
         self::GATEWAY_TOKEN2,
         self::RECURRING,
-        self::AUTHENTICATED,
         self::EXPIRED_AT,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -83,7 +80,6 @@ class Entity extends Base\PublicEntity
         self::CARD_ID        => null,
         self::GATEWAY_TOKEN2 => null,
         self::RECURRING      => false,
-        self::AUTHENTICATED  => false,
         self::EXPIRED_AT     => null
     );
 
@@ -95,7 +91,6 @@ class Entity extends Base\PublicEntity
 
     protected $casts = array(
         self::RECURRING     => 'bool',
-        self::AUTHENTICATED => 'bool'
     );
 
     protected static $generators = array(
@@ -157,19 +152,14 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::RECURRING);
     }
 
-    public function isAuthenticated()
-    {
-        return $this->getAttribute(self::AUTHENTICATED);
-    }
-
     public function getExpiredAt()
     {
         return $this->getAttribute(self::EXPIRED_AT);
     }
 
-    public function setAuthenticated($authenticated)
+    public function setRecurring($recurring)
     {
-        $this->setAttribute(self::AUTHENTICATED, $authenticated);
+        $this->setAttribute(self::RECURRING, $recurring);
     }
 
     public function isExpired()
@@ -197,6 +187,10 @@ class Entity extends Base\PublicEntity
         if ($this->isRecurring() === true)
         {
             $array[self::RECURRING] = true;
+        }
+        else
+        {
+            unset($array[self::RECURRING]);
         }
     }
 

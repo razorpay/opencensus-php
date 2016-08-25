@@ -15,7 +15,6 @@ class Validator extends Base\Validator
         Entity::BANK            => 'required_only_if:method,netbanking',
         Entity::WALLET          => 'required_only_if:method,wallet|in:paytm,mobikwik,payzapp,payumoney,olamoney',
         Entity::RECURRING       => 'sometimes|boolean',
-        Entity::AUTHENTICATED   => 'sometimes|boolean',
         Entity::GATEWAY_TOKEN   => 'sometimes|string',
         Entity::GATEWAY_TOKEN2  => 'sometimes|string',
         Entity::EXPIRED_AT      => 'sometimes|integer',
