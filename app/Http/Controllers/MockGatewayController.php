@@ -249,7 +249,7 @@ class MockGatewayController extends Controller
         return $server->authorize($input);
     }
 
-    public function postWalletPayment($wallet, $paymentId = null)
+    public function walletPayment($wallet, $paymentId = null)
     {
         $input = Request::all();
 

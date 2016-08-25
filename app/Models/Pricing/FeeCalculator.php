@@ -230,7 +230,12 @@ class FeeCalculator
             throw new Exception\LogicException(
                 'Invalid rule count: 0, Payment Id: ' . $payment->getId(),
                 ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT,
-                ['intl' => $international, 'cardType' => $cardType, 'network' => $network]);
+                [
+                    'intl' => $international,
+                    'card_type' => $cardType,
+                    'network' => $network,
+                    'merchant_id' => $payment->getMerchantId()
+                ]);
         }
 
         $amount = $payment->getAmount();

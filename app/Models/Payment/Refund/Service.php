@@ -189,17 +189,24 @@ class Service extends Base\Service
         return $refunds->toArrayPublic();
     }
 
-    public function verify($id)
+    public function verify($ids)
     {
-        Refund\Entity::verifyIdAndStripSign($id);
+        $refundIds = explode(',', $ids);
 
-        $refund = $this->repo->refund->findOrFail($id);
+        $data = [];
 
-        $merchantId = $refund->getMerchantId();
+        foreach ($refundIds as $refundId)
+        {
+            Refund\Entity::verifyIdAndStripSign($refundId);
 
-        $merchant = $this->repo->merchant->findOrFail($merchantId);
+            $refund = $this->repo->refund->findOrFail($refundId);
 
-        $data = $this->processor($merchant)->verifyRefund($refund);
+            $merchantId = $refund->getMerchantId();
+
+            $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+            $data[] = $this->processor($merchant)->verifyRefund($refund);
+        }
 
         return $data;
     }

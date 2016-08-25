@@ -847,6 +847,11 @@ class Entity extends Base\PublicEntity
         return (bool) $this->getAttribute(self::SAVE);
     }
 
+    public function getGlobalToken()
+    {
+        return $this->getAttribute(self::GLOBAL_TOKEN);
+    }
+
     public function getCardId()
     {
         return $this->getAttribute(self::CARD_ID);
@@ -870,10 +875,6 @@ class Entity extends Base\PublicEntity
     public function getMethodWithDetail()
     {
         $method = Method::formatted($this->getMethod());
-        $walletNames = [
-            'paytm' =>  'PayTM',
-            'mobikwik' =>  'Mobikwik'
-        ];
 
         switch($this->getMethod())
         {

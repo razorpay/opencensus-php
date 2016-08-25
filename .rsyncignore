@@ -1,7 +1,11 @@
-/environment/.env*
+/environment/.env
+/environment/.env.vault
+/environment/.env.wercker
+/environment/.env.testing
 /environment/env.php
 /storage/framework/cache/*
 /storage/framework/views/*
+/storage/framework/sessions/*
 /storage/logs/*
 /.git/*
 /report
