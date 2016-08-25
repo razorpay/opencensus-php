@@ -31,6 +31,26 @@ class RecurringPaymentTest extends TestCase
         $this->mockTokenex();
     }
 
+    public function testRecurringPaymentCreateFeatureDisabled()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = 500000;
+        $payment['recurring'] = true;
+        $payment['customer_id'] = 'cust_100000customer';
+        $payment['card']['number'] = '4012001038443335';
+
+        $this->fixtures->merchant->editFeatures('');
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testRecurringPaymentCreate()
     {
         $this->ba->publicAuth();
@@ -60,7 +80,7 @@ class RecurringPaymentTest extends TestCase
         $paymentEntity = $this->getLastEntity('payment', true);
     }
 
-    public function testRecurringPaymentFailed()
+    public function testRecurringPaymentFailedCardNotSupported()
     {
         $this->ba->publicAuth();
 
@@ -94,5 +114,22 @@ class RecurringPaymentTest extends TestCase
         $this->runRequestResponseFlow($data, function() use ($payment) {
             $this->doAuthPayment($payment);
         });
+    }
+
+    public function testRecurringPaymentUsingSavedCardTokenRecurring()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = 500000;
+        $payment['recurring'] = true;
+        $payment['token'] = '10000cardtoken';
+        $payment['customer_id'] = 'cust_100000customer';
+
+        $this->fixtures->base->editEntity('card', '100000000lcard', ["type" => 'credit']);
+        $this->fixtures->base->editEntity('token', '100000custcard', ["recurring" => true]);
+
+        $content = $this->doAuthAndCapturePayment($payment);
     }
 }
