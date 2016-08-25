@@ -4,6 +4,7 @@ namespace RZP\Gateway\UPI\ICICI;
 
 use RZP\Gateway\Base;
 use phpseclib\Crypt\RSA;
+use Requests_Response;
 
 class Gateway extends Base\Gateway
 {
@@ -22,7 +23,7 @@ class Gateway extends Base\Gateway
         $this->rsa->loadKey($this->getPublicKey());
     }
 
-    // Unimplemented as of now
+    // TODO: Implement using vault
     protected function getPublicKey()
     {
     }
@@ -33,7 +34,27 @@ class Gateway extends Base\Gateway
         $this->action = Action::AUTHORIZE;
         $request =  $this->getAuthorizeRequestContent($input);
 
-        $this->sendGatewayRequest($request);
+        // TODO: Create the gateway entity here
+        $response = $this->sendGatewayRequest($request);
+
+        $status = $this->getStatusCode($response);
+
+        if (!ResponseMap::isInitiated($status))
+        {
+            $errorCode = ResponseMap::getApiErrorCode($status);
+
+            throw new Exception\GatewayErrorException(
+                $errorCode,
+                $content['status'],
+                $content['message']);
+        }
+    }
+
+    protected function getStatusCode(Requests_Response $response)
+    {
+        $json = json_decode($response->body, true);
+
+        $status = isset($json['response']) ? $json['response'] : '9999';
     }
 
     protected function formatAmount($amount)

@@ -18,7 +18,7 @@ class Server extends Base\Mock\Server
 
     protected function getPrivateKey()
     {
-        return file_get_contents(__DIR__ . '/keys/upi-mock-2.key');
+        return file_get_contents(__DIR__ . '/keys/mockserver.key');
     }
 
     public function authorize($input)

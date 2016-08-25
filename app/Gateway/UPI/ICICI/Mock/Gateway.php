@@ -23,7 +23,7 @@ class Gateway extends ICICI\Gateway
      */
     protected function getPublicKey()
     {
-        return file_get_contents(__DIR__ . '/keys/upi-mock-2.pub');
+        return file_get_contents(__DIR__ . '/keys/mockserver.pub');
     }
 
     protected function getUrl($type = null)
