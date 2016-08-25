@@ -9,6 +9,7 @@ use RZP\Http\Route;
 use RZP\Models\Card;
 use RZP\Models\Order;
 use RZP\Models\Payment;
+use RZP\Models\Pricing;
 use RZP\Constants\Mode;
 use RZP\Models\Card\IIN;
 use RZP\Models\Merchant;
@@ -51,6 +52,8 @@ trait Authorize
         // $gatewayInput is being passed by reference.
         // Adds callback url, payment and card info to $gatewayInput
         $this->prePaymentAuthorizeProcessing($payment, $input, $gatewayInput);
+
+        $this->verifyFeesLessThanAmount($payment);
 
         $this->getTerminalsForPayment($payment);
 
@@ -160,6 +163,19 @@ trait Authorize
             TraceCode::PAYMENT_AUTH_FAILURE);
 
         throw $e;
+    }
+
+    protected function verifyFeesLessThanAmount($payment)
+    {
+        // Ignore the pricing rule not found exception for authorization.
+        list($fee, $serviceTax, $ruleKey) = (new Pricing\Fee)->calculateMerchantFees($payment);
+
+        if ($payment->getAmount() < $fee)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT,
+                Payment\Entity::AMOUNT);
+        }
     }
 
     protected function processAuthResponse($request, $payment)
@@ -299,7 +315,7 @@ trait Authorize
 
         $this->repo->saveOrFail($payment);
 
-        $this->trace(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
+        $this->tracePaymentInfo(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
 
         //
         // Call gateway input
@@ -1324,7 +1340,7 @@ trait Authorize
             // set the order to be paid
             $this->updateAuthorizedOrderStatus($payment);
 
-            $this->trace(TraceCode::PAYMENT_AUTH_SUCCESS);
+            $this->tracePaymentInfo(TraceCode::PAYMENT_AUTH_SUCCESS);
         });
     }
 

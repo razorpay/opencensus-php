@@ -142,7 +142,6 @@ class PricingTest extends TestCase
 
     public function testMerchantAssignPricingPlanWithInternational()
     {
-
         $id = $this->createPricingPlan()['id'];
 
         // Test with the default pricing plan with netbanking
@@ -349,12 +348,7 @@ class PricingTest extends TestCase
 
         $this->setDefaultMerchantMethods();
 
-        $request = array(
-            'url' => '/merchants/10000000000000/pricing',
-            'method' => 'POST',
-            'content' => ['pricing_plan_id' => $id]);
-
-        return $this->makeRequestAndGetContent($request);
+        return $this->merchantAssignPricingPlan($id, '10000000000000');
     }
 
     protected function createPricingPlan()

@@ -56,6 +56,7 @@ class Processor
     protected $app;
     protected $request;
     protected $methods;
+    protected $refund;
 
     protected $verifyRefundStatus;
 
@@ -315,7 +316,7 @@ class Processor
         return Payment\Status::FAILED;
     }
 
-    protected function trace($traceCode, $level = Trace::INFO)
+    protected function tracePaymentInfo($traceCode, $level = Trace::INFO)
     {
         $data = $this->payment->toArrayTraceRelevant();
 
@@ -552,13 +553,13 @@ class Processor
 
     protected function retrieveToken($input)
     {
-        $this->token = (new Customer\Token\Repository)
+        $token = (new Customer\Token\Repository)
                         ->getByWalletTerminalAndCustomerId(
                             $input['payment']['wallet'],
                             $input['payment']['terminal_id'],
                             $input['customer']->getId());
 
-        return $this->token;
+        return $token;
     }
 
     protected function retrieve($id)

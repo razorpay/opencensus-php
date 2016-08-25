@@ -40,7 +40,7 @@ class Validator extends Base\Validator
 
     protected static $hdfcTerminalRules = array(
         Entity::GATEWAY                     => 'required|in:hdfc',
-        Entity::GATEWAY_MERCHANT_ID         => 'required|integer|digits:5',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|integer|digits_between:5,8',
         Entity::GATEWAY_TERMINAL_ID         => 'required|integer|digits:8',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string|max:15',
         Entity::EMI                         => 'sometimes|boolean',
@@ -122,6 +122,12 @@ class Validator extends Base\Validator
         Entity::GATEWAY                     => 'required|in:wallet_payumoney',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
         Entity::GATEWAY_MERCHANT_ID2        => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET       => 'required|string',
+        Entity::GATEWAY_ACCESS_CODE         => 'required|string',
+    );
+
+    protected static $walletOlamoneyTerminalRules = array(
+        Entity::GATEWAY                     => 'required|in:wallet_olamoney',
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
         Entity::GATEWAY_ACCESS_CODE         => 'required|string',
     );

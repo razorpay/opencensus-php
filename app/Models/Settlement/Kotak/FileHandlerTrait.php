@@ -41,7 +41,9 @@ trait FileHandlerTrait
 
             $metadata = $this->getH2HMetadata();
 
-            $url = $this->saveToAws($name, $fullpath, 'text/plain', $bucket, $metadata);
+            $key = 'kotak/outgoing/' . $name;
+
+            $url = $this->saveToAws($key, $fullpath, 'text/plain', $bucket, $metadata);
 
             // This will be local file path if aws is mocked
             return $url;
@@ -468,7 +470,7 @@ trait FileHandlerTrait
         $data = array();
         $headings = $this->getHeadings();
 
-        foreach ($rows as $row)
+        foreach ($rows as $ix => $row)
         {
             // Ending row may be just empty.
             if ($row === '')
@@ -477,6 +479,13 @@ trait FileHandlerTrait
             }
 
             $values = explode('~', $row);
+
+            if (count($headings) !== count($values))
+            {
+                throw new Exception\RuntimeException(
+                    'Count of array elements for combine not equal. Heading count: ' .
+                    count($headings). ' Value count: ' . count($values) . ' Row: ' . $ix);
+            }
 
             $values = array_combine($headings, $values);
             $data[] = $values;
@@ -503,9 +512,7 @@ trait FileHandlerTrait
             $filePath = $file->getRealPath();
         }
 
-        $file = fopen($filePath, 'r');
-        $txt = fread($file, filesize($filePath));
-        $lines = explode("\r\n", $txt);
+        $lines = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 
         return $lines;
     }
