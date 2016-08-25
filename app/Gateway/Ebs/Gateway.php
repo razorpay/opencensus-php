@@ -165,8 +165,16 @@ class Gateway extends Base\Gateway
             $cookies[$cookie->name] = $cookie->value;
         }
 
+        $location = $response->headers->getValues('location')[0];
+
+        if ($location === null)
+        {
+            throw new Exception\GatewayTimeoutException('Gateway Timed Out', null, true);
+        }
+
+
         $request = array(
-            'url'       => $response->headers->getValues('location')[0],
+            'url'       => $location,
             'method'    => 'get',
             'content'   => '',
         );
