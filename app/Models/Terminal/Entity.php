@@ -342,6 +342,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::NETBANKING);
     }
 
+    public function isUPITerminal()
+    {
+        return (substr($this->gateway, 0, 3) === 'upi');
+    }
+
     public function isEmiEnabled()
     {
         return (bool) $this->getAttribute(self::EMI);

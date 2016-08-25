@@ -1,8 +1,8 @@
 <?php
 
-namespace Gateway\UPI\ICICI;
+namespace RZP\Gateway\UPI\ICICI;
 
-use Gateway\Base;
+use RZP\Gateway\Base;
 use Crypt_RSA;
 
 class Gateway extends Base\Gateway

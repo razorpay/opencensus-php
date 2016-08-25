@@ -568,7 +568,7 @@ class Terminal extends Base
 
     public function createSharedUPITerminal(array $attributes)
     {
-        $termId = \Models\Terminal\Shared::UPI_ICICI_RAZORPAY_TERMINAL;
+        $termId = Shared::UPI_ICICI_RAZORPAY_TERMINAL;
 
         $defaultValues = array(
             'id'                        => $termId,
