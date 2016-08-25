@@ -43,7 +43,13 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentRequest($request, $input);
 
-        $request = $this->makeRequestAndGetBankUrl($request);
+        if ($input['merchant']['id'] === '4izmfM9TFCAgFN')
+        {
+            if ($input['payment']['method'] === Payment\Method::NETBANKING)
+            {
+                $request = $this->makeRequestAndGetBankUrl($request);
+            }
+        }
 
         return $request;
     }
@@ -177,9 +183,10 @@ class Gateway extends Base\Gateway
         $crawler = new Crawler($response->body, $request['url']);
 
         $formCrawler = $crawler->filter('form');
+
         if ($formCrawler->count() === 0)
         {
-            throw new Exception\GatewayTimeoutException('Gateway Timed Out', true);
+            throw new Exception\GatewayTimeoutException('Gateway Timed Out');
         }
 
         $form = $formCrawler->form();
