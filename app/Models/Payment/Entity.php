@@ -2,10 +2,9 @@
 
 namespace RZP\Models\Payment;
 
+use Carbon\Carbon;
 use Lib\PhoneBook;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Models\Bank\Name as BankNames;
 use RZP\Models\Base;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Card;
@@ -62,6 +61,7 @@ class Entity extends Base\PublicEntity
     const OTP_COUNT             = 'otp_count';
     const FEE                   = 'fee';
     const SAVE                  = 'save';
+    const LATE_AUTHORIZED       = 'late_authorized';
 
     const CURRENCY_LENGTH       = 3;
 
@@ -140,6 +140,7 @@ class Entity extends Base\PublicEntity
         self::SERVICE_TAX,
         self::OTP_ATTEMPTS,
         self::OTP_COUNT,
+        self::LATE_AUTHORIZED,
         self::CREATED_AT,
         self::UPDATED_AT);
 
@@ -197,6 +198,7 @@ class Entity extends Base\PublicEntity
         self::OTP_ATTEMPTS      => null,
         self::OTP_COUNT         => null,
         self::EMI_PLAN_ID       => null,
+        self::LATE_AUTHORIZED   => null,
     );
 
     protected $amounts = array(
@@ -213,10 +215,13 @@ class Entity extends Base\PublicEntity
 
 // --------------------- Modifiers ---------------------------------------------
 
+    // TODO: This function doesn't seem to be doing anything at all. Can I remove it?
     protected function modifyContact(& $input)
     {
         if (isset($input['contact']) === false)
+        {
             return;
+        }
 
         $contact = & $input['contact'];
 
@@ -455,6 +460,11 @@ class Entity extends Base\PublicEntity
         $count = $this->getOtpCountAttribute() + 1;
 
         $this->setOtpCount($count);
+    }
+
+    public function setLateAuthorized($lateAuthorized)
+    {
+        $this->setAttribute(self::LATE_AUTHORIZED, $lateAuthorized);
     }
 
 // ----------------------- Setters Ends-----------------------------------------
@@ -829,7 +839,7 @@ class Entity extends Base\PublicEntity
 
     public function getDaysSinceAuthorized()
     {
-        $now = time();
+        $now = Carbon::now('Asia/Kolkata')->timestamp;
 
         $at = $this->getAuthorizeTimestamp();
         $diff = $now - $at;
