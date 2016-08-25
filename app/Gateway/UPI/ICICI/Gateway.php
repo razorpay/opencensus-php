@@ -5,6 +5,7 @@ namespace RZP\Gateway\UPI\ICICI;
 use RZP\Gateway\Base;
 use phpseclib\Crypt\RSA;
 use Requests_Response;
+use RZP\Exception\GatewayErrorException;
 
 class Gateway extends Base\Gateway
 {
@@ -43,10 +44,10 @@ class Gateway extends Base\Gateway
         {
             $errorCode = ResponseMap::getApiErrorCode($status);
 
-            throw new Exception\GatewayErrorException(
+            throw new GatewayErrorException(
                 $errorCode,
-                $content['status'],
-                $content['message']);
+                $status,
+                ResponseMap::getResponseMessage($status));
         }
     }
 
@@ -54,7 +55,7 @@ class Gateway extends Base\Gateway
     {
         $json = json_decode($response->body, true);
 
-        $status = isset($json['response']) ? $json['response'] : '9999';
+        return isset($json['response']) ? $json['response'] : '9999';
     }
 
     protected function formatAmount($amount)

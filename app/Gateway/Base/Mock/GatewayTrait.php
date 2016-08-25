@@ -10,7 +10,10 @@ trait GatewayTrait
     {
         $request = parent::authorize($input);
 
-        $this->putMockPaymentGatewayUrl($request);
+        if ($request)
+        {
+            $this->putMockPaymentGatewayUrl($request);
+        }
 
         return $request;
     }
