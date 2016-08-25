@@ -196,12 +196,6 @@ class Selector
             $terminalsSelected = array($terminalsSelected);
         }
 
-        // restrict international merchants from using terminal rotation to prevent fraud
-        if ($this->merchant->isInternational() === true)
-        {
-            return array($terminalsSelected[0]);
-        }
-
         return $terminalsSelected;
 
     }

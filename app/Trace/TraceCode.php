@@ -60,7 +60,10 @@ class TraceCode
     const VERIFY_CAPTURE_RESPONSE                   = 'VERIFY_CAPTURE_RESPONSE';
     const VERIFY_REFUND_TRANSACTION_CREATED         = 'VERIFY_REFUND_TRANSACTION_CREATED';
     const MANUAL_GATEWAY_REFUND_RESPONSE            = 'MANUAL_GATEWAY_REFUND_RESPONSE';
+    const MANUAL_GATEWAY_ALL_REFUNDS_RESPONSE       = 'MANUAL_GATEWAY_ALL_REFUNDS_RESPONSE';
     const MANUAL_GATEWAY_REFUND_FAILURE             = 'MANUAL_GATEWAY_REFUND_FAILURE';
+    const MANUAL_GATEWAY_REFUND_INITIATED           = 'MANUAL_GATEWAY_REFUND_INITIATED';
+    const REFUND_GATEWAY_REQUIRED                   = 'REFUND_GATEWAY_REQUIRED';
 
     const TERMINAL_SELECTION                        = 'TERMINAL_SELECTION';
     const TERMINAL_SELECTION_MISMATCH               = 'TERMINAL_SELECTION_MISMATCH';
@@ -257,8 +260,11 @@ class TraceCode
         self::PAYMENT_VERIFY_CAPTURE_FAILURE            => 'Issue while performing verify for capture',
         self::VERIFY_CAPTURE_RESPONSE                   => 'Response received on verify capture',
         self::VERIFY_REFUND_TRANSACTION_CREATED         => 'Refund transaction created in verify refund',
-        self::MANUAL_GATEWAY_REFUND_RESPONSE            => 'Response received on manual gateway refund', 
+        self::MANUAL_GATEWAY_REFUND_RESPONSE            => 'Response received on manual gateway refund',
+        self::MANUAL_GATEWAY_ALL_REFUNDS_RESPONSE       => 'Response received for all refunds on manual gateway refund',
         self::MANUAL_GATEWAY_REFUND_FAILURE             => 'Failed while trying to refund from gateway',
+        self::MANUAL_GATEWAY_REFUND_INITIATED           => 'Manual gateway refund has been initiated for this refund id',
+        self::REFUND_GATEWAY_REQUIRED                   => 'Traces whether the gateway refund is required or not',
 
         self::BAD_REQUEST_INVALID_API_KEY               => 'The api key provided is invalid',
 
