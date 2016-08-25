@@ -602,9 +602,8 @@ class Gateway extends Base\Gateway
         {
             $attributes[Entity::IS_FLAGGED] = true;
         }
-
-        if ((isset($response[Resp::RESPONSE]) === false) or
-            ($response[Resp::RESPONSE] !== Status::API_SUCCESS))
+        if ((isset($response[Resp::STATUS]) === false) or
+            ($response[Resp::STATUS] !== Status::API_PROCESSING))
         {
             $attributes[Entity::ERROR_CODE]        = $response[Resp::ERROR_CODE];
             $attributes[Entity::ERROR_DESCRIPTION] = $response[Resp::ERROR];
