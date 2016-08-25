@@ -253,7 +253,7 @@ class Merchant extends Base
 
     public function setTerminalCategories($categories, $id='10000000000000')
     {
-        return $this->edit($id, ['terminal_categories' => json_encode($categories)]);
+        return $this->edit($id, $categories);
     }
 
     public function editPricingPlanId($planId, $id = '10000000000000')

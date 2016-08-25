@@ -969,7 +969,7 @@ return [
     'testAddTerminalCategories' => [
         'request' => [
             'content' => [
-                'terminal_categories' => json_encode(['gateway_amex' => 'education']),
+                'gateway_amex' => 'education'
             ],
             'url' => '/merchants/1X4hRFHFx4UiXt',
             'method' => 'put',
@@ -983,7 +983,7 @@ return [
     'testAddInvalidTerminalCategories' => [
         'request' => [
             'content' => [
-                'terminal_categories' => json_encode(['gateway_hdfc'=>'education']),
+                'gateway_amex'=>'education2'
             ],
             'url' => '/merchants/1X4hRFHFx4UiXt',
             'method' => 'put',
@@ -992,7 +992,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Category : education invalid for gateway_hdfc',
+                    'description' => 'Category : education2 invalid for gateway_amex',
                 ],
             ],
             'status_code' => 400,

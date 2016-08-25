@@ -32,7 +32,15 @@ class Entity extends Base\PublicEntity
     const LOGO_URL                  = 'logo_url';
     const AWS_LOGO_URL              = 'aws_logo_url';
     const MAX_PAYMENT_AMOUNT        = 'max_payment_amount';
-    const TERMINAL_CATEGORIES       = 'terminal_categories';
+
+    /**
+     * Category for particular methods or gateways
+     */
+    const METHOD_CARD               = 'method_card';
+    const METHOD_NETBANKING         = 'method_netbanking';
+    const METHOD_WALLET             = 'method_wallet';
+    const METHOD_EMI                = 'method_emi';
+    const GATEWAY_AMEX              = 'gateway_amex';
 
     /**
      * Refers to methods relation and not a property;
@@ -69,7 +77,8 @@ class Entity extends Base\PublicEntity
         self::SETTLEMENT_SCHEDULE,
         self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
-        self::TERMINAL_CATEGORIES,
+        self::METHOD_NETBANKING,
+        self::GATEWAY_AMEX,
     );
 
     // Requires PHP 5.6
@@ -119,7 +128,8 @@ class Entity extends Base\PublicEntity
         self::RISK_RATING           => 3,
         self::LOGO_URL              => null,
         self::MAX_PAYMENT_AMOUNT    => null,
-        self::TERMINAL_CATEGORIES   => null,
+        self::METHOD_NETBANKING     => null,
+        self::GATEWAY_AMEX          => null,
     );
 
     protected $publicSetters = array(
@@ -266,32 +276,36 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::LOGO_URL, $logoUrl);
     }
 
-    public function setTerminalCategories($categories)
+    public function getCategoryColumns()
     {
-        $this->setAttribute(self::TERMINAL_CATEGORIES, $categories);
+        return [
+                //self::METHOD_CARD,
+                self::METHOD_NETBANKING,
+                //self::METHOD_WALLET,
+                //self::METHOD_EMI,
+                self::GATEWAY_AMEX];
     }
 
-    protected function setTerminalCategoriesAttributes($categories)
+    public function setTerminalCategory($categoryColumn, $category)
     {
-        $terminalCategories = $this->getTerminalCategoriesAttribute();
+        $categoryColumns = $this->getCategoryColumns();
 
-        $terminalCategories = array_merge($terminalCategories, $categories);
-
-        $this->attributes[self::TERMINAL_CATEGORIES] = json_encode($terminalCategories);
+        if (in_array($categoryColumn, $categoryColumns))
+        {
+            $this->attributes[$categoryColumn] = (empty($categoryColumn) === false) ? $categoryColumn : null;
+        }
     }
 
     public function getTerminalCategories()
     {
-        return $this->getAttribute(self::TERMINAL_CATEGORIES);
-    }
+        $categoryColumns = $this->getCategoryColumns();
 
-    protected function getTerminalCategoriesAttribute()
-    {
-        $terminalCategories = $this->attributes[self::TERMINAL_CATEGORIES];
+        foreach ($categoryColumns as $categoryColumn)
+        {
+            $terminalCategories[$categoryColumn] = (empty($this->attributes[$categoryColumn]) === false) ? $categoryColumn : null;
+        }
 
-        $terminalCategories = json_decode($terminalCategories, true);
-
-        return is_null($terminalCategories) ? [] : $terminalCategories;
+        return $terminalCategories;
     }
 
     public function getBillingLabelElseName()
@@ -661,33 +675,57 @@ class Entity extends Base\PublicEntity
 
     public function getCategoryForMethodAndGateway($method, $gateway)
     {
-        $terminalCategories = $this->getTerminalCategories();
-
         $terminalCategory = null;
 
-        $methodName = $this->getCategoryNameForMethod($method);
+        $methodCategory = $this->getCategoryForMethod($method);
 
-        $gatewayName = $this->getCategoryNameForGateway($gateway);
+        $gatewayCategory = $this->getCategoryForGateway($gateway);
 
-        if (isset($terminalCategories[$methodName]))
+        if (empty($methodCategory) === false)
         {
-            $terminalCategory = $terminalCategories[$methodName];
+            $terminalCategory = $methodCategory;
         }
 
-        if (isset($terminalCategories[$gatewayName]))
+        if (empty($gatewayCategory) === false)
         {
-            $terminalCategory = $terminalCategories[$gatewayName];
+            $terminalCategory = $gatewayCategory;
         }
 
         return $terminalCategory;
     }
 
-    protected function getCategoryNameForMethod($method)
+    public function getCategoryForMethod($method)
+    {
+        $methodColumn = $this->getColumnNameForMethod($method);
+
+        return $this->getCategoryFromColumn($methodColumn);
+    }
+
+    public function getCategoryForGateway($gateway)
+    {
+        $gatewayColumn = $this->getColumnNameForGateway($gateway);
+
+        return $this->getCategoryFromColumn($gatewayColumn);
+    }
+
+    protected function getCategoryFromColumn($column)
+    {
+        $categoryColumns = $this->getCategoryColumns();
+
+        if (in_array($column, $categoryColumns))
+        {
+            return $this->getAttribute($column);
+        }
+
+       return null;
+    }
+
+    protected function getColumnNameForMethod($method)
     {
         return 'method_'.$method;
     }
 
-    protected function getCategoryNameForGateway($gateway)
+    protected function getColumnNameForGateway($gateway)
     {
         return 'gateway_'.$gateway;
     }

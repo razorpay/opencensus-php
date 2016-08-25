@@ -38,7 +38,8 @@ class Validator extends Base\Validator
         Entity::RISK_RATING                 => 'sometimes|min:0|max:5',
         Entity::FEE_BEARER                  => 'sometimes|in:customer,platform',
         Entity::MAX_PAYMENT_AMOUNT          => 'sometimes|integer',
-        Entity::TERMINAL_CATEGORIES         => 'sometimes',
+        Entity::METHOD_NETBANKING           => 'sometimes',
+        Entity::GATEWAY_AMEX                => 'sometimes',
     );
 
     protected static $uniqueEmailRules = array(
@@ -66,7 +67,7 @@ class Validator extends Base\Validator
     protected static $editValidators = [
         'csv_email',
         'features',
-        'terminal_categories',
+        'method_netbanking',
     ];
 
     public function validateLogo($imageDetails)
@@ -113,26 +114,29 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateTerminalCategories($input)
+    public function validateMethodNetbanking($input)
     {
-        if (empty($input[Entity::TERMINAL_CATEGORIES]) === true)
-        {
-            return ;
-        }
+        $categoryColumns = (new Merchant\Entity)->getCategoryColumns();
 
-        $terminalCategories = json_decode($input[Entity::TERMINAL_CATEGORIES], true);
-
-        foreach ($terminalCategories as $name => $category)
+        foreach ($categoryColumns as $categoryColumn)
         {
-            if (Terminal\Category::isCategoryValidForName($category, $name) === false)
+            if (empty($input[$categoryColumn]) === true)
+            {
+                continue;
+            }
+
+            $category = $input[$categoryColumn];
+
+            if (Terminal\Category::isCategoryValidForName($category, $categoryColumn) === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    'Category : '.$category.' invalid for '.$name,
-                    Entity::TERMINAL_CATEGORIES
+                    'Category : '.$category.' invalid for '.$categoryColumn,
+                    $categoryColumn
                 );
             }
         }
     }
+
     protected function validateCsvEmail($input)
     {
         if (isset($input[Entity::TRANSACTION_REPORT_EMAIL]) === false)
