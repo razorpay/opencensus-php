@@ -1063,7 +1063,6 @@ trait PaymentTrait
                                 $response['Value'] = base64_decode($input['Token']);
                                 break;
 
-
                             case 'REST/ValidateToken':
                                 $response['Valid'] = true;
                                 break;
