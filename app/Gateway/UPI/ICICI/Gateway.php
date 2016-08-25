@@ -6,15 +6,21 @@ use RZP\Gateway\Base;
 use phpseclib\Crypt\RSA;
 use Requests_Response;
 use RZP\Exception\GatewayErrorException;
+use Trace;
 
 class Gateway extends Base\Gateway
 {
     protected $gateway = 'upi_icici';
 
-    // TODO: Implement using vault
     protected function getPublicKey()
     {
         $key = $this->config['public_key'];
+        return str_replace('\n', "\n", $key);
+    }
+
+    protected function getPrivateKey()
+    {
+        $key = $this->config['private_key'];
         return str_replace('\n', "\n", $key);
     }
 
@@ -26,8 +32,14 @@ class Gateway extends Base\Gateway
 
         $request =  $this->getAuthorizeRequestContent($input);
 
+        Trace::debug('MISC_TRACE_CODE', $request);
+
         // TODO: Create the gateway entity here
         $response = $this->sendGatewayRequest($request);
+
+        $response = $this->parseGatewayResponse($response);
+
+        Trace::debug('MISC_TRACE_CODE', ['body' =>$response->body]);
 
         $status = $this->getStatusCode($response);
 
@@ -40,6 +52,24 @@ class Gateway extends Base\Gateway
                 $status,
                 ResponseMap::getResponseMessage($status));
         }
+    }
+
+    /**
+     * [parseGatewayResponse description]
+     * @param  Requests_Response $response
+     * @return array response as associative array
+     */
+    protected function parseGatewayResponse(Requests_Response $response)
+    {
+        $res = preg_replace('/\s/', '', $response->body);
+        $res = base64_decode($res, true);
+        $res = $this->decrypt($res);
+        return json_decode($res, true);
+    }
+
+    protected function decryptResponse()
+    {
+
     }
 
     protected function getStatusCode(Requests_Response $response)
@@ -81,16 +111,39 @@ class Gateway extends Base\Gateway
      */
     protected function encrypt($data)
     {
-        /**
-         * See http://phpseclib.sourceforge.net/rsa/examples.html
-         *
-         * We need to run in PCKS 1.5 mode
-         */
-        define('CRYPT_RSA_PKCS15_COMPAT', true);
-        $rsa = new RSA();
-        $rsa->setEncryptionMode(RSA::ENCRYPTION_PKCS1);
+        $rsa = $this->getRSAInstance();
+
         $rsa->loadKey($this->getPublicKey());
+
         return $rsa->encrypt($data);
+    }
+
+    /**
+     * Decrypts responses from the ICICI API
+     * @param  string $data
+     * @return string
+     */
+    protected function decrypt($data)
+    {
+        $rsa = $this->getRSAInstance();
+
+        $rsa->loadKey($this->getPrivateKey());
+
+        return $rsa->decrypt($data);
+    }
+
+    protected function getRSAInstance()
+    {
+        if (!defined('CRYPT_RSA_PKCS15_COMPAT'))
+        {
+            define('CRYPT_RSA_PKCS15_COMPAT', true);
+        }
+
+        $rsa = new RSA();
+
+        $rsa->setEncryptionMode(RSA::ENCRYPTION_PKCS1);
+
+        return $rsa;
     }
 
     protected function getAuthorizeRequestContent($input)
@@ -101,16 +154,16 @@ class Gateway extends Base\Gateway
             // Amount and note are lowercase
             // despite being uppercase in docs
             "amount"        =>  $this->formatAmount($payment['amount']),
-            "billNumber"    =>  "sdf234234",
-            "collectByDate" =>  "15/12/2016 11:01 AM",
+            "collectByDate" =>  "30/08/2016 11:01 AM",
+            "billNumber"    =>  "1234",
             "merchantId"    =>  $this->getMerchantId(),
-            "merchantName"  =>  $input['merchant']['billing_label'],
+            // "merchantName"  =>  null,//$input['merchant']['billing_label'],
             "merchantTranId"=>  $payment['id'],
             "note"          =>  "collect-pay-request",
             // TODO: talk to icici and ask what all is allowed here
-            "payerVa"       =>  "testing1@imobile",
+            "payerVa"       =>  "test354@imobile",
             "subMerchantId" =>  "1234",//$input['merchant']['id'],
-            "subMerchantName"=> $input['merchant']['name'],
+            "terminalId"    =>  "1234",
         ];
 
         return $this->makeRequest($data);
@@ -118,7 +171,8 @@ class Gateway extends Base\Gateway
 
     protected function makeRequest($data)
     {
-        $json = json_encode($data, JSON_PRETTY_PRINT);
+        $json = json_encode($data);
+        Trace::debug('MISC_TRACE_CODE', ['json'=>$json]);
         $body = base64_encode($this->encrypt($json));
 
         return [

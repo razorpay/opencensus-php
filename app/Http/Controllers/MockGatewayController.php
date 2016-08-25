@@ -262,7 +262,7 @@ class MockGatewayController extends Controller
 
     public function postUPIPayment($bank)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $driver = 'upi_' . $bank;
 
