@@ -200,7 +200,8 @@ class Gateway extends Base\Gateway
             {
                 $gatewayStatus = true;
             }
-            else if ($content[Resp::API_TRANSACTION_TYPE] === Status::API_AUTHORIZE_FAILED)
+            else if (($content[Resp::API_TRANSACTION_TYPE] === Status::API_AUTHORIZE_FAILED) or
+                     ($content[Resp::API_TRANSACTION_TYPE] === Status::API_AUTHORIZE_INCOMPLETE))
             {
                 $gatewayStatus = false;
             }
@@ -304,10 +305,7 @@ class Gateway extends Base\Gateway
     {
         $input = $verify->input;
 
-        $payment = $this->getRepo()->findByPaymentIdAndAction(
-            $input['payment']['id'], Action::AUTHORIZE);
-
-        $content = $this->getPaymentVerifyRequestContent($input, $payment);
+        $content = $this->getPaymentVerifyRequestContent($input);
 
         $request = $this->getStandardRequestArray($content);
 
@@ -376,12 +374,11 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected function getPaymentVerifyRequestContent($input, $payment)
+    protected function getPaymentVerifyRequestContent($input)
     {
         $content = [
-            Req::API_ACTION         => 'status',
-            Req::API_PAYMENT_ID     => $payment[Entity::GATEWAY_PAYMENT_ID],
-            req::API_TRANSACTION_ID => $payment[Entity::TRANSACTION_ID],
+            Req::API_ACTION         => 'statusByRef',
+            Req::API_REFERENCE_NO   => $input['payment']['id'],
         ];
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST, $content);
