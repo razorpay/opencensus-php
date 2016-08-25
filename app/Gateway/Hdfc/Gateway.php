@@ -741,7 +741,6 @@ class Gateway extends Base\Gateway
 
                 break;
         }
-
         if ($this->getTwoFaStatus($gatewayErrorCode) === TwoFaStatus::FAILED)
         {
             $exception->markTwoFaError();
