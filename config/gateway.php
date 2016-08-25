@@ -46,7 +46,7 @@ return array(
     'mock_ebs'              => env('EBS_MOCK'),
     'mock_sbiepay'          => false,
     'mock_wallet_olamoney'  => env('OLAMONEY_MOCK'),
-    'mock_upi_icici'        => false,
+    'mock_upi_icici'        => env('UPI_ICICI_MOCK'),
     'mock_wallet_payzapp'   => env('PAYZAPP_MOCK'),
     'mock_wallet_payumoney' => env('PAYUMONEY_MOCK'),
 
