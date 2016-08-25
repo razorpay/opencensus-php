@@ -241,60 +241,6 @@ class Service extends Base\Service
     }
 
     /**
-     * USE WITH EXTREME CAUTION
-     * This calls the gateway for refund and does nothing on the api side.
-     *
-     * @param $refundId
-     * @return array
-     */
-    public function manualGatewayRefund($refundIds)
-    {
-        $refundIds = explode(',', $refundIds);
-
-        $data = [];
-
-        foreach ($refundIds as $refundId)
-        {
-            $refund = $this->repo->refund->findOrFail($refundId);
-            $merchantId = $refund->getMerchantId();
-            $merchant = $this->repo->merchant->findOrFail($merchantId);
-
-            try
-            {
-                $response = $this->getNewProcessor($merchant)->manualGatewayRefund($refund);
-            }
-            catch(\Exception $ex)
-            {
-                $response = [
-                    'refund_id'     => $refundId,
-                    'payment_id'    => $refund->getPaymentId(),
-                    'error_message' => $ex->getMessage(),
-                ];
-
-                $this->trace->traceException($ex);
-            }
-
-            $this->trace->info(
-                TraceCode::MANUAL_GATEWAY_REFUND_RESPONSE,
-                [
-                    'refund_id'  => $refundId,
-                    'payment_id' => $refund->getPaymentId(),
-                    'response'   => $response
-                ]
-            );
-
-            $data[] = $response;
-        }
-
-        $this->trace->info(
-            TraceCode::MANUAL_GATEWAY_ALL_REFUNDS_RESPONSE,
-            $data
-        );
-
-        return $data;
-    }
-
-    /**
      * After card enroll, bank redirects to us
      * and we send it to gateway for further
      * processing (auth).
@@ -379,6 +325,57 @@ class Service extends Base\Service
         }
 
         return [];
+    }
+
+    /**
+     * If there are multiple authorized payments for a single order,
+     * and if at least one of them has a captured payment,
+     * we refund all the other payments immediately.
+     */
+    public function refundMultipleAuthorizedPaymentsForOrders()
+    {
+        // We get all the orders which have multiple authorized payments.
+        $orders = $this->repo->order->getOrdersWithMultipleAuthorizedPayments();
+
+        foreach ($orders as $order)
+        {
+            $payments = $order->payments;
+
+            // Check if there are any captured payments.
+            $capturedPayments = $payments->filter(function ($item)
+            {
+                return $item->hasBeenCaptured();
+            })->values();
+
+            // If there is a captured payment
+            if ($capturedPayments->count() !== 0)
+            {
+                if ($capturedPayments->count() > 1)
+                {
+                    // TODO: Throw an error. There cannot be more than one
+                    // captured payment for an order.
+                }
+
+                // Get all payments which are in authorized state currently
+                $authorizedPayments = $payments->filter(function ($item)
+                {
+                    return $item->isAuthorized();
+                })->values();
+
+                foreach ($authorizedPayments as $authorizedPayment)
+                {
+                    $merchant = $authorizedPayment->merchant;
+
+                    $refund = $this->getNewProcessor($merchant)
+                                   ->refundAuthorizedPayment($authorizedPayment->getPublicId(), []);
+                }
+            }
+            else
+            {
+                // Currently, we are not going to do anything.
+            }
+
+        }
     }
 
     public function refundOldAuthorizedPayments()

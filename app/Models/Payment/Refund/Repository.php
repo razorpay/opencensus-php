@@ -57,7 +57,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function findBetweenTimesampsForGateway($from, $to, $gateway)
+    public function findBetweenTimestampsForGateway($from, $to, $gateway)
     {
         return $this->newQuery()
                     ->join('payments', 'refunds.payment_id', '=', 'payments.id')

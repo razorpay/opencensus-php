@@ -143,6 +143,39 @@ class RefundTest extends TestCase
         $this->assertEquals(2, $content['authorized']);
     }
 
+    public function testRefundOfMultipleAuthorizedPaymentsForOrder()
+    {
+        $orders = $this->fixtures->times(2)->create('order');
+
+        $createdOrders = array_reverse($orders);
+        $ordersCollection = new \RZP\Models\Base\PublicCollection($createdOrders);
+        //$ordersArray = $ordersCollection->toArrayPublic();
+
+        $orderIds = $ordersCollection->getIds();
+
+        $paymentOne = $this->fixtures->create(
+            'payment:authorized',
+            ['order_id' => $orderIds[0]]
+        );
+
+        $paymentTwo = $this->fixtures->create(
+            'payment:authorized',
+            ['order_id' => $orderIds[0]]
+        );
+
+        $paymentThree = $this->fixtures->create(
+            'payment:authorized',
+            ['order_id' => $orderIds[1]]
+        );
+
+        $paymentFour = $this->fixtures->create(
+            'payment:authorized',
+            ['order_id' => $orderIds[1]]
+        );
+
+        $content = $this->refundMultipleAuthorizedPaymentsForOrders();
+    }
+
     public function testRefundCalledOnPurchaseWithoutCapture()
     {
         $authorizedAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp;

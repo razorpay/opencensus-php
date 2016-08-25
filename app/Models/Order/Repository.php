@@ -2,7 +2,11 @@
 
 namespace RZP\Models\Order;
 
+use DB;
+
+use RZP\Constants\Table;
 use RZP\Models\Base;
+use RZP\Models\Payment;
 
 class Repository extends Base\Repository
 {
@@ -32,5 +36,31 @@ class Repository extends Base\Repository
         }
 
         return $order;
+    }
+
+    public function getOrdersWithMultipleAuthorizedPayments()
+    {
+        // select count(*)
+        // from orders join payments on payments.order_id = orders.id
+        // where payments.status='authorized'
+        // group by order_id
+        // having cont(*) > 1;
+
+        $paymentOrderId = Payment\Entity::getAttributeWithTableName(Payment\Entity::ORDER_ID);
+        $paymentStatus = Payment\Entity::getAttributeWithTableName(Payment\Entity::STATUS);
+        $orderId = Entity::getAttributeWithTableName(Entity::ID);
+
+        $results = $this->newQuery()
+            ->join(
+                Table::PAYMENT,
+                $paymentOrderId, '=', $orderId)
+            ->select(DB::raw('count(*), ' . $orderId))
+            ->where($paymentStatus, '=', Payment\Status::AUTHORIZED)
+            ->groupBy($orderId)
+            ->havingRaw('count(*) > 1')
+            ->with('payments')
+            ->get();
+
+        return $results;
     }
 }

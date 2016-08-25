@@ -559,6 +559,21 @@ trait PaymentTrait
 
         return $data;
     }
+    
+    protected function refundMultipleAuthorizedPaymentsForOrders()
+    {
+        $this->ba->appAuth();
+        
+        $request = array(
+            'method'    => 'POST',
+            'url'       => '/payments/orders/refund',
+            'content'   => []
+        );
+        
+        $data = $this->makeRequestAndGetContent($request);
+        
+        return $data;
+    }
 
     protected function authorizeFailedPayment($id)
     {

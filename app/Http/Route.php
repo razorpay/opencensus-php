@@ -51,7 +51,7 @@ final class Route
         'payment_auto_capture_email'              => ['get',      'payments/autocapture/email',               'PaymentController@getAutoCaptureEmail'                             ],
         'payment_verify_multiple'                 => ['get',      'payments/verify/{filter}',                 'PaymentController@getVerifyPayments'                               ],
         'payment_capture_reminder'                => ['get',      'payments/all/reminder',                    'PaymentController@sendReminderMailForAuthorizedPayments'           ],
-        'payment_refund_authorized'               => ['post',     'payments/refund/authorized',               'PaymentController@postRefundOldAUthorizedPayments'                 ],
+        'payment_refund_authorized'               => ['post',     'payments/refund/authorized',               'PaymentController@postRefundOldAuthorizedPayments'                 ],
         'refund_fetch_by_id'                      => ['get',      'refunds/{id}',                             'PaymentController@getRefund'                                       ],
         'refund_fetch_multiple'                   => ['get',      'refunds',                                  'PaymentController@getRefunds'                                      ],
         'refund_netbanking_generate_excel'        => ['post',     'refunds/netbanking/excel',                 'PaymentController@generateNetbankingRefunds'                       ],
@@ -239,6 +239,7 @@ final class Route
         'sms_callback'                            => ['post',     'sms/{id}/callback',                        'CustomerController@updateSmsStatus'                                ],
         'es_migrate_entity'                       => ['post',     'es/migrate/{entityName}',                  'EsController@migrateEntity'                                        ],
         'refund_gateway_manual'                   => ['post',     'refunds/{ids}/gateway',                    'PaymentController@postManualGatewayRefund'                         ],
+        'order_refund_multiple_authorized'        => ['post',     'payments/orders/refund',                   'PaymentController@postRefundMultipleAuthorizedPaymentsForOrders'   ],
     );
 
     public static $public = array(
@@ -429,6 +430,7 @@ final class Route
         'credits_edit',
         'credits_delete',
         'refund_gateway_manual',
+        'order_refund_multiple_authorized',
     );
 
     public static $proxy = array(
@@ -511,6 +513,7 @@ final class Route
             'emi_generate_excel',
             'es_migrate_entity',
             'setl_post_details_old',
+            'order_refund_multiple_authorized',
         ),
 
         'mailgun' => array(
