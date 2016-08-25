@@ -186,7 +186,7 @@ class Gateway extends Base\Gateway
 
         if ($formCrawler->count() === 0)
         {
-            throw new Exception\GatewayTimeoutException('Gateway Timed Out');
+            throw new Exception\GatewayTimeoutException('Gateway Timed Out', null, true);
         }
 
         $form = $formCrawler->form();
