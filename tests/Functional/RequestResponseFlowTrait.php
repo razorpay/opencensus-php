@@ -97,7 +97,7 @@ trait RequestResponseFlowTrait
 
     public function processAndAssertException($actual, $expected)
     {
-        $class = (isset($expected['class'])) ? $expected['class'] : 'RZP\Exceptions\RecoverableException';
+        $class = (isset($expected['class'])) ? $expected['class'] : 'RZP\Exception\RecoverableException';
 
         $this->assertExceptionClass($actual, $class);
 
