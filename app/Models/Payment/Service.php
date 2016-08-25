@@ -350,7 +350,7 @@ class Service extends Base\Service
 
             if ($payment->isMethodCardOrEmi() === false)
             {
-                return;
+                return [];
             }
 
             $card = $payment->card;

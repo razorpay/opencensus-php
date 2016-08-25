@@ -34,9 +34,9 @@ class Notify
 
     /**
      * When are receipt emails sent to the customer
-     * @var Array
+     * @var array
      */
-    protected static $receptEmails = [
+    protected static $receiptEmails = [
         self::AUTHORIZED,
         self::FAILED_TO_AUTHORIZED
     ];
@@ -246,7 +246,7 @@ class Notify
         // You can control slack posts via SLACK_ENABLE
 
         if ((array_key_exists($event, $slackMessages)) and
-            ($this->isSlackEnabled($event)))
+            ($this->isSlackEnabled()))
         {
             $settings = [
                 'channel'   => $this->getSlackChannel(),
@@ -646,7 +646,7 @@ class Notify
             return false;
         }
 
-        return in_array($event, self::$receptEmails);
+        return in_array($event, self::$receiptEmails);
     }
 
     /**
@@ -665,16 +665,15 @@ class Notify
             return false;
         }
 
-        return $this->isEnabled($event);
+        return $this->isEnabled();
 
     }
 
     /**
      * Whether to send notifications or not
-     * @param  string  $event Event trigger
      * @return boolean
      */
-    protected function isEnabled($event)
+    protected function isEnabled()
     {
         // We only send notifications if Mode is not TEST
         // or if the env=dev or env=testing
@@ -694,11 +693,10 @@ class Notify
 
     /**
      * Whether to send slack notifications
-     * @param  string $event Event trigger
      * @return boolean
      */
-    protected function isSlackEnabled($event)
+    protected function isSlackEnabled()
     {
-        return $this->isEnabled($event);
+        return $this->isEnabled();
     }
 }
