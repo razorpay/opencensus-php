@@ -3,8 +3,8 @@
 namespace RZP\Tests\Functional;
 
 use Closure;
-use RZP\Exception\BaseException;
 use Requests;
+use RZP\Exception;
 use RZP\Tests\Functional\Helpers\EntityFetchTrait;
 
 trait RequestResponseFlowTrait
@@ -29,7 +29,7 @@ trait RequestResponseFlowTrait
                 $response = $this->sendRequest($data['request']);
             }
         }
-        catch (BaseException $e)
+        catch (Exception\BaseException $e)
         {
             $this->checkException($e, $data);
 
@@ -97,7 +97,7 @@ trait RequestResponseFlowTrait
 
     public function processAndAssertException($actual, $expected)
     {
-        $class = (isset($expected['class'])) ? $expected['class'] : 'RZP\Exception\RecoverableException';
+        $class = (isset($expected['class'])) ? $expected['class'] : Exception\RecoverableException::class;
 
         $this->assertExceptionClass($actual, $class);
 
