@@ -38,7 +38,7 @@ class Repository extends Base\Repository
         return $order;
     }
 
-    public function getOrdersWithMultipleAuthorizedPayments()
+    public function getOrdersWithMultipleAuthorizedOrCapturedPayments()
     {
         // select count(*)
         // from orders join payments on payments.order_id = orders.id
@@ -49,6 +49,7 @@ class Repository extends Base\Repository
         $paymentOrderId = Payment\Entity::getAttributeWithTableName(Payment\Entity::ORDER_ID);
         $paymentStatus = Payment\Entity::getAttributeWithTableName(Payment\Entity::STATUS);
         $orderId = Entity::getAttributeWithTableName(Entity::ID);
+        $paymentStatusArray = [Payment\Status::AUTHORIZED, Payment\Status::CAPTURED];
 
         $results = $this->newQuery()
             ->join(
@@ -56,6 +57,7 @@ class Repository extends Base\Repository
                 $paymentOrderId, '=', $orderId)
             ->select(DB::raw('count(*), ' . $orderId))
             ->where($paymentStatus, '=', Payment\Status::AUTHORIZED)
+            ->whereIn($paymentStatus, $paymentStatusArray)
             ->groupBy($orderId)
             ->havingRaw('count(*) > 1')
             ->with('payments')
