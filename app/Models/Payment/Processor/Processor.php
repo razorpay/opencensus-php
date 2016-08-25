@@ -340,6 +340,8 @@ class Processor
         $this->repo->saveOrFail($payment);
 
         $this->tracePaymentFailed($error, $traceCode);
+
+        $this->eventPaymentFailed();
     }
 
     protected function eventPaymentFailed()
