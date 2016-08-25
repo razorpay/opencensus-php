@@ -66,6 +66,8 @@ class Entity extends Base\PublicEntity
     );
 
     protected $public = array(
+        self::ID,
+        self::ENTITY,
         self::TOKEN,
         self::BANK,
         self::WALLET,
