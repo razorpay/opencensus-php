@@ -1,8 +1,8 @@
 <?php
 
-namespace Gateway\UPI\ICICI;
+namespace RZP\Gateway\UPI\ICICI;
 
-use Gateway\Base;
+use RZP\Gateway\Base;
 
 class Action extends Base\Action
 {

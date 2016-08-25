@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\UPI\ICICI;
+namespace RZP\Gateway\UPI\ICICI;
 
 class Url
 {

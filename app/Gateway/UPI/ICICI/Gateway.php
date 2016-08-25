@@ -3,7 +3,7 @@
 namespace RZP\Gateway\UPI\ICICI;
 
 use RZP\Gateway\Base;
-use Crypt_RSA;
+use phpseclib\Crypt\RSA;
 
 class Gateway extends Base\Gateway
 {
@@ -34,8 +34,8 @@ EOT;
          * We need to run in PCKS 1.5 mode
          */
         define('CRYPT_RSA_PKCS15_COMPAT', true);
-        $this->rsa = @new Crypt_RSA();
-        $this->rsa->setEncryptionMode(CRYPT_RSA_ENCRYPTION_PKCS1);
+        $this->rsa = new RSA();
+        $this->rsa->setEncryptionMode(RSA::ENCRYPTION_PKCS1);
         $this->rsa->loadKey(self::PUBLIC_KEY);
     }
 
