@@ -52,9 +52,9 @@ trait Capture
 
         (new Payment\Validator)->captureValidate($payment, $input);
 
-        $this->failIfMutexIsSet($payment, 'capture');
+        $this->failIfMutexIsSet($payment, Payment\Action::CAPTURE);
 
-        $this->setActionMutex($payment, 'capture');
+        $this->setActionMutex($payment, Payment\Action::CAPTURE);
 
         return $this->capturePayment($payment, $input['amount']);
     }
@@ -276,7 +276,7 @@ trait Capture
         }
         finally
         {
-            $this->resetActionMutex($this->payment, 'capture');
+            $this->resetActionMutex($this->payment, Payment\Action::CAPTURE);
         }
     }
 
