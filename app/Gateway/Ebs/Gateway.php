@@ -160,7 +160,7 @@ class Gateway extends Base\Gateway
     {
         $cookies = [];
 
-        foreach($response->cookies->getIterator() as $cookie)
+        foreach ($response->cookies->getIterator() as $cookie)
         {
             $cookies[$cookie->name] = $cookie->value;
         }
@@ -171,7 +171,6 @@ class Gateway extends Base\Gateway
         {
             throw new Exception\GatewayTimeoutException('Gateway Timed Out', null, true);
         }
-
 
         $request = array(
             'url'       => $location,
@@ -221,21 +220,35 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
+    protected function sendFirstGatewayRequestForEbsAuthorize($request)
+    {
+        return $this->sendGatewayRequest($request);
+    }
+
+    protected function sendSecondGatewayRequestForEbsAuthorize($request)
+    {
+        return $this->sendGatewayRequest($request);
+    }
+
+    protected function sendThirdGatewayRequestForEbsAuthorize($request)
+    {
+        return $this->sendGatewayRequest($request);
+    }
+
     protected function makeRequestAndGetBankUrl($request)
     {
         $request = $this->setRequestHeaderAndOption($request);
 
         // Get Reponse for 302 redirect, cookies are also needed for request
-        $response = $this->sendGatewayRequest($request);
+        $response = $this->sendFirstGatewayRequestForEbsAuthorize($request);
 
         $redirectRequest = $this->parseRequestAndGetRedirectRequest($response);
-
         // Get Response for EBS welcome page
-        $response = $this->sendGatewayRequest($redirectRequest);
+        $response = $this->sendSecondGatewayRequestForEbsAuthorize($redirectRequest);
 
         $crawlRequest = $this->parseRequestAndGetCrawlRequest($response, $redirectRequest);
         // Get Response for EBS redirection page
-        $response = $this->sendGatewayRequest($crawlRequest);
+        $response = $this->sendThirdGatewayRequestForEbsAuthorize($crawlRequest);
 
         //
         // If location is set, then we should redirect to Bank page
@@ -735,7 +748,7 @@ class Gateway extends Base\Gateway
     {
         $hashArray = [];
 
-        foreach($content as $key => $value)
+        foreach ($content as $key => $value)
         {
             if (strlen($value) > 0)
             {

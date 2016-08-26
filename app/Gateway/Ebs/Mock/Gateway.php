@@ -7,6 +7,9 @@ use RZP\Error\ErrorCode;
 use RZP\Gateway\Base;
 use RZP\Gateway\Ebs;
 use Requests_Response;
+use Requests_Cookie;
+use Requests_Cookie_Jar;
+use Requests_Response_Headers;
 
 class Gateway extends Ebs\Gateway
 {
@@ -17,8 +20,106 @@ class Gateway extends Ebs\Gateway
         return $this->authorizeMock($input);
     }
 
-    public function makeRequestAndGetBankUrl($request)
+    public function sendFirstGatewayRequestForEbsAuthorize($request)
     {
-        return $request;
+        $this->content = $request['content'];
+
+        $cookie = [
+            'PGSID' => 'value1',
+            'PIDs'  => 'value2',
+            'sid'   => 'value3',
+        ];
+
+        $header = ['location'=> 'https://test.razorpay.com'];
+
+        $response = $this->createResponse('302', false);
+
+        $response = $this->setCookie($response, $cookie);
+        $response = $this->setBody($response, '');
+        $response = $this->setHeader($response, $header);
+
+        return $response;
+    }
+
+    public function sendSecondGatewayRequestForEbsAuthorize($request)
+    {
+        $header = ['location'=> 'https://test.razorpay.com'];
+
+        $response = $this->createResponse();
+
+        $response = $this->setBody($response, $this->getText());
+        $response = $this->setHeader($response, $header);
+
+        return $response;
+    }
+
+    public function sendThirdGatewayRequestForEbsAuthorize($request)
+    {
+        $response = $this->createResponse();
+
+        $response = $this->setBody($response, $this->getText($this->content));
+
+        return $response;
+    }
+
+    protected function setHeader($response, $headerValue)
+    {
+        $header = new Requests_Response_Headers();
+
+        foreach ($headerValue as $key => $value)
+        {
+            $header->offsetSet($key, $value);
+        }
+
+        $response->headers = $header;
+
+        return $response;
+    }
+
+    protected function setCookie($response, $cookieValue)
+    {
+        $cookie = [];
+
+        foreach ($cookieValue as $key => $value)
+        {
+            $cookie[] = new Requests_Cookie($key, $value);
+        }
+
+        $cookies = new Requests_Cookie_Jar($cookie);
+
+        $response->cookies = $cookies;
+
+        return $response;
+    }
+
+    protected function setBody($response, $body)
+    {
+        $response->body = $body;
+
+        return $response;
+    }
+
+    protected function createResponse($statusCode = 200, $success = true)
+    {
+        $response = new Requests_Response();
+
+        $response->status_code = $statusCode;
+        $response->success = $success;
+
+        return $response;
+    }
+
+    protected function getText($content = [])
+    {
+        $txt = '<form method="POST" name="payment" action = "https://test.razorpay.com">';
+
+        foreach ($content as $key => $value)
+        {
+            $txt .= '<input type="hidden" name="' . $key. '" value="' . $value . '">';
+        }
+
+        $txt .= '</form>';
+
+        return $txt;
     }
 }
