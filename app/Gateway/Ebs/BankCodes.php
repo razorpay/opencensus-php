@@ -14,13 +14,11 @@ class BankCodes
         IFSC::MAHB => '1229',
         IFSC::CNRB => '1224',
         IFSC::CSBK => '1272',
-
         IFSC::CBIN => '1147',
         IFSC::CORP => '1135',
         IFSC::DLXB => '1273',
         IFSC::FDRL => '1029',
         IFSC::IDIB => '1143',
-
         IFSC::IOBA => '1213',
         IFSC::INDB => '1431',
 //      IFSC::VYSA => '1210',
