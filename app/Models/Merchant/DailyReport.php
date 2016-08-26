@@ -239,6 +239,6 @@ class DailyReport extends Base\Core
     protected function increaseAllowedSystemLimits()
     {
         ini_set('memory_limit', '1024M');
-        set_time_limit(501);
+        set_time_limit(3000);
     }
 }

@@ -69,7 +69,7 @@ $factory(\RZP\Models\Card\Entity::class, [
     'length'            => '16',
     'issuer'            => 'hdfc',
     'international'     => false,
-    'vault_token'       => '1a2b3c4b5e',
+    'vault_token'       => 'NDExMTExMTExMTExMTExMQ==',
     'vault'             => 'tokenex',
     'trivia'            => '',
 ]);
