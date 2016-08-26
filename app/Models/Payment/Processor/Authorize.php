@@ -562,9 +562,10 @@ trait Authorize
             ]);
 
         // Token should definitely exist in database.
-        $token = $this->repo->token->getByTokenAndCustomerId(
-            $input[Payment\Entity::TOKEN],
-            $customer->getId());
+
+        $tokenId = $input[Payment\Entity::TOKEN];
+
+        $token = (new Token\Core)->getByTokenAndCustomer($tokenId, $customer);
 
         if ($payment->isMethodCardOrEmi())
         {
@@ -589,9 +590,9 @@ trait Authorize
             ]);
 
         // Token should definitely exist in database.
-        $token = $this->repo->token->getByTokenAndCustomerId(
-            $input[Payment\Entity::TOKEN],
-            $customer->getId());
+        $tokenId = $input[Payment\Entity::TOKEN];
+
+        $token = (new Token\Core)->getByTokenAndCustomer($tokenId, $customer);
 
         if ($payment->isMethodCardOrEmi())
         {
@@ -958,9 +959,9 @@ trait Authorize
         if ($wasFailed)
         {
             $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
-            
+
             // If a payment has been authorized 15 minutes after the creation, we do not send a notification.
-            
+
             if (($this->payment->getCreatedAt() - $currentTime) > self::FAILED_TO_AUTHORIZED_NOTIFY_DURATION)
             {
                 return;

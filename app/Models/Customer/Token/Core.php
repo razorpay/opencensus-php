@@ -87,6 +87,26 @@ class Core extends Base\Core
         return $tokens;
     }
 
+    /**
+     * Get the token entity for local/global customer. $id can be token or
+     * token id for now.
+     */
+    public function getByTokenAndCustomer($id, $customer)
+    {
+        $token = $this->repo->token->getByTokenAndCustomerId($id, $customer->getId());
+
+        if ($token === null)
+        {
+            Token\Entity::verifyIdAndStripSign($id);
+
+            $token = $this->repo->token->findByIdAndMerchantId($id, $customer->merchant->getId());
+
+            assert($token->customer->getId() === $customer->getId());
+        }
+
+        return $token;
+    }
+
     protected function validateExistingToken($token)
     {
         $existingTokens = $this->repo->token->getByMethodAndCustomerId(
