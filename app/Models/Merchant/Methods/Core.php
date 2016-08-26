@@ -119,6 +119,7 @@ class Core extends Base\Core
         $methods->setAmex(true);
         $methods->setMobikwik(true);
         $methods->setPayzapp(true);
+        $methods->setPayumoney($true);
 
         $this->setAllPaymentBanks($methods);
 
