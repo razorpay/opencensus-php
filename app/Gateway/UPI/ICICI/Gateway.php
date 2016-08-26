@@ -4,13 +4,29 @@ namespace RZP\Gateway\UPI\ICICI;
 
 use RZP\Gateway\Base;
 use phpseclib\Crypt\RSA;
+use Request;
 use Requests_Response;
+use RZP\Trace\TraceCode;
 use RZP\Exception\GatewayErrorException;
+use RZP\Gateway\UPI\Base\Entity;
 use Trace;
 
 class Gateway extends Base\Gateway
 {
     protected $gateway = 'upi_icici';
+
+    const BANK = 'icici';
+
+    protected $map = array(
+        Entity::VPA                     => Entity::VPA,
+        Entity::CONTACT                 => Entity::CONTACT,
+        ResponseFields::PAYER_VA        => Entity::VPA,
+        ResponseFields::PAYER_NAME      => Entity::NAME,
+        ResponseFields::RESPONSE        => Entity::STATUS_CODE,
+        ResponseFields::PAYER_AMOUNT    => Entity::AMOUNT,
+        Entity::RECEIVED                => Entity::RECEIVED,
+        ResponseFields::BANK_RRN        => Entity::GATEWAY_PAYMENT_ID,
+    );
 
     protected function getPublicKey()
     {
@@ -24,22 +40,30 @@ class Gateway extends Base\Gateway
         return str_replace('\n', "\n", $key);
     }
 
+    /**
+     * Authorizes a payment using UPI Gateway
+     * @param  array  $input
+     * @return null
+     */
     public function authorize(array $input)
     {
         $this->input = $input;
 
         $this->action = Action::AUTHORIZE;
 
+        $attributes = $this->getGatewayEntityAttributes($input);
+
+        $payment = $this->createGatewayPaymentEntity($attributes);
+
         $request =  $this->getAuthorizeRequestContent($input);
 
-        Trace::debug('MISC_TRACE_CODE', $request);
-
-        // TODO: Create the gateway entity here
         $response = $this->sendGatewayRequest($request);
 
         $response = $this->parseGatewayResponse($response);
 
-        Trace::debug('MISC_TRACE_CODE', $response);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $response);
+
+        $this->updateGatewayPaymentResponse($payment, $response);
 
         $status = $this->getStatusCode($response);
 
@@ -52,6 +76,20 @@ class Gateway extends Base\Gateway
                 $status,
                 ResponseMap::getResponseMessage($status));
         }
+    }
+
+    protected function getGatewayEntityAttributes(array $input)
+    {
+        /**
+         * TODO: Find a better alternative to using Request here.
+         * $input contains payment->arr, gateway, terminal, merchant
+         * But no nice way to pass VPA via any of these
+         */
+
+        return [
+            Entity::VPA         =>  Request::get(Entity::VPA),
+            Entity::CONTACT     =>  $input['payment'][Entity::CONTACT],
+        ];
     }
 
     /**
@@ -166,6 +204,9 @@ class Gateway extends Base\Gateway
             "terminalId"    =>  "1234",
         ];
 
+        // We trace it here, because it gets encrypted later
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $data);
+
         return $this->makeRequest($data);
     }
 
@@ -180,5 +221,42 @@ class Gateway extends Base\Gateway
             'content'   =>  $body,
             'method'    =>  'post',
         ];
+    }
+
+    protected function getNewGatewayPaymentEntity()
+    {
+        return new \RZP\Gateway\UPI\Base\Entity;
+    }
+
+    protected function createGatewayPaymentEntity(array $attributes)
+    {
+        $attr = $this->getMappedAttributes($attributes);
+
+        $payment = $this->getNewGatewayPaymentEntity();
+
+        $payment->setPaymentId($this->input['payment']['id']);
+
+        $payment->setAmount($this->input['payment']['amount']);
+
+        $payment->setAction($this->action);
+
+        $payment->setBank(self::BANK);
+
+        $payment->fill($attributes);
+
+        $payment->saveOrFail();
+
+        $this->model = $payment;
+
+        return $payment;
+    }
+
+    protected function updateGatewayPaymentResponse($payment, array $response)
+    {
+        $attr = $this->getMappedAttributes($response);
+
+        $payment->fill($attr);
+
+        $payment->save();
     }
 }

@@ -16,6 +16,7 @@ class Validator extends Base\Validator
         'amount'                  =>  'required|integer|max:50000000',
         'currency'                =>  'required|size:3',
         'method'                  =>  'in:card,netbanking,wallet,emi,upi',
+        'vpa'                     =>  'required_if:method,upi',
         'card'                    =>  'sometimes',
         'bank'                    =>  'required_if:method,netbanking',
         'wallet'                  =>  'sometimes',
