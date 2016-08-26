@@ -29,14 +29,14 @@ class Server extends Base\Mock\Server
         $this->validateAuthorizeInput($input);
 
         $content = array(
-            "response"          =>  "92",
-            "merchantId"        =>  $input['merchantId'],
-            "subMerchantId"     =>  isset($input['subMerchantId']) ? $input['subMerchantId'] : null,
-            "terminalId"        =>  isset($input['terminalId']) ? $input['terminalId'] : null,
-            "success"           =>  "true",
-            "message"           =>  "Transaction initiated",
-            "merchantTranId"    =>  $input['merchantTranId'],
-            "BankRRN"           =>  "1234567",
+            'response'          =>  '92',
+            'merchantId'        =>  $input['merchantId'],
+            'subMerchantId'     =>  isset($input['subMerchantId']) ? $input['subMerchantId'] : null,
+            'terminalId'        =>  isset($input['terminalId']) ? $input['terminalId'] : null,
+            'success'           =>  'true',
+            'message'           =>  'Transaction initiated',
+            'merchantTranId'    =>  $input['merchantTranId'],
+            'BankRRN'           =>  '1234567',
         );
 
         return $this->makeResponse($content);
@@ -44,6 +44,8 @@ class Server extends Base\Mock\Server
 
     protected function makeResponse($data)
     {
+        $json = json_encode($data);
+        $
         $response = \Response::json($data);
 
         $response->headers->set('Content-Type', 'text/html; charset=UTF-8');

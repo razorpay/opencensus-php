@@ -480,6 +480,11 @@ trait Authorize
 
             $this->setBankAndEmiPlanDetails($payment, $cardNumber, $emiDuration);
         }
+
+        if ($payment->isUpi())
+        {
+            $gatewayInput['vpa'] = $input['vpa'];
+        }
     }
 
     protected function preProcessPaymentWithoutSaving($payment, & $input, array & $gatewayInput)

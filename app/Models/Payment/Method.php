@@ -33,5 +33,4 @@ class Method
             self::UPI
         );
     }
-
 }

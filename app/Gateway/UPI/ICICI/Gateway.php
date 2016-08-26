@@ -20,7 +20,7 @@ class Gateway extends Base\Gateway
     protected $map = array(
         Entity::VPA                     => Entity::VPA,
         Entity::CONTACT                 => Entity::CONTACT,
-        ResponseFields::PAYER_VA        => Entity::VPA,
+        // ResponseFields::PAYER_VA        => Entity::VPA,
         ResponseFields::PAYER_NAME      => Entity::NAME,
         ResponseFields::RESPONSE        => Entity::STATUS_CODE,
         ResponseFields::PAYER_AMOUNT    => Entity::AMOUNT,
@@ -55,7 +55,9 @@ class Gateway extends Base\Gateway
 
         $payment = $this->createGatewayPaymentEntity($attributes);
 
-        $request =  $this->getAuthorizeRequestContent($input);
+        $content =  $this->getAuthorizeRequestContent($input);
+
+        $request = $this->getStandardRequestArray($content);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -67,7 +69,7 @@ class Gateway extends Base\Gateway
 
         $status = $this->getStatusCode($response);
 
-        if (!ResponseMap::isInitiated($status))
+        if (ResponseMap::isInitiated($status) === false)
         {
             $errorCode = ResponseMap::getApiErrorCode($status);
 
@@ -80,20 +82,13 @@ class Gateway extends Base\Gateway
 
     protected function getGatewayEntityAttributes(array $input)
     {
-        /**
-         * TODO: Find a better alternative to using Request here.
-         * $input contains payment->arr, gateway, terminal, merchant
-         * But no nice way to pass VPA via any of these
-         */
-
         return [
-            Entity::VPA         =>  Request::get(Entity::VPA),
+            Entity::VPA         =>  $input['vpa'],
             Entity::CONTACT     =>  $input['payment'][Entity::CONTACT],
         ];
     }
 
     /**
-     * [parseGatewayResponse description]
      * @param  Requests_Response $response
      * @return array response as associative array
      */
@@ -171,7 +166,7 @@ class Gateway extends Base\Gateway
 
     protected function getRSAInstance()
     {
-        if (!defined('CRYPT_RSA_PKCS15_COMPAT'))
+        if (defined('CRYPT_RSA_PKCS15_COMPAT') === false)
         {
             define('CRYPT_RSA_PKCS15_COMPAT', true);
         }
@@ -190,37 +185,28 @@ class Gateway extends Base\Gateway
         $data = [
             // Amount and note are lowercase
             // despite being uppercase in docs
-            'amount'        =>  $this->formatAmount($payment['amount']),
-            'collectByDate' =>  '30/08/2016 11:01 AM',
-            'billNumber'    =>  '1234',
-            'merchantId'    =>  $this->getMerchantId(),
+            'amount'            =>  $this->formatAmount($payment['amount']),
+            'collectByDate'     =>  '30/08/2016 11:01 AM',
+            'billNumber'        =>  '1234',
+            'merchantId'        =>  $this->getMerchantId(),
             // 'merchantName'  =>  null,//$input['merchant']['billing_label'],
-            'merchantTranId'=>  $payment['id'],
-            'note'          =>  'collect-pay-request',
+            'merchantTranId'    =>  $payment['id'],
+            'note'              =>  'collect-pay-request',
             // TODO: talk to icici and ask what all is allowed here
-            'payerVa'       =>  'test354@imobile',
-            'subMerchantId' =>  '1234',//$input['merchant']['id'],
+            'payerVa'           =>  'test354@imobile',
+            'subMerchantId'     =>  '1234',//$input['merchant']['id'],
             'subMerchantName'   =>  $input['merchant']->getBillingLabel(),
-            'terminalId'    =>  '1234',
+            'terminalId'        =>  '1234',
         ];
 
         // We trace it here, because it gets encrypted later
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $data);
 
-        return $this->makeRequest($data);
-    }
-
-    protected function makeRequest($data)
-    {
         $json = json_encode($data);
-        Trace::debug('MISC_TRACE_CODE', ['json'=>$json]);
-        $body = base64_encode($this->encrypt($json));
 
-        return [
-            'url'       =>  $this->getUrl(),
-            'content'   =>  $body,
-            'method'    =>  'post',
-        ];
+        $content = base64_encode($this->encrypt($json));
+
+        return $content;
     }
 
     protected function getNewGatewayPaymentEntity()
