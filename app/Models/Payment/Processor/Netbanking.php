@@ -135,6 +135,7 @@ class Netbanking
         IFSC::SBMY,
         IFSC::STBP,
         IFSC::SBTR,
+        IFSC::DBSS,
     );
 
     protected static $sbiepay = array(
