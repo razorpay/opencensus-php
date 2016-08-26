@@ -39,7 +39,7 @@ class Gateway extends Base\Gateway
 
         $response = $this->parseGatewayResponse($response);
 
-        Trace::debug('MISC_TRACE_CODE', ['body' =>$response->body]);
+        Trace::debug('MISC_TRACE_CODE', $response);
 
         $status = $this->getStatusCode($response);
 
@@ -64,19 +64,18 @@ class Gateway extends Base\Gateway
         $res = preg_replace('/\s/', '', $response->body);
         $res = base64_decode($res, true);
         $res = $this->decrypt($res);
+
         return json_decode($res, true);
     }
 
-    protected function decryptResponse()
+    /**
+     * Returns the status code from the gateway response
+     * @param  array  $response Gateway Response Array
+     * @return String Response Code (integer, but casted as string)
+     */
+    protected function getStatusCode(array $response)
     {
-
-    }
-
-    protected function getStatusCode(Requests_Response $response)
-    {
-        $json = json_decode($response->body, true);
-
-        return isset($json['response']) ? $json['response'] : '9999';
+        return isset($response['response']) ? $response['response'] : '9999';
     }
 
     protected function formatAmount($amount)
@@ -163,6 +162,7 @@ class Gateway extends Base\Gateway
             // TODO: talk to icici and ask what all is allowed here
             "payerVa"       =>  "test354@imobile",
             "subMerchantId" =>  "1234",//$input['merchant']['id'],
+            "subMerchantName"   =>  $input['merchant']->getBillingLabel(),
             "terminalId"    =>  "1234",
         ];
 
