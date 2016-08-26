@@ -27,7 +27,7 @@ class BankCodes
         IFSC::KKBK => '1148',
         IFSC::ORBC => '1154',
         IFSC::PSIB => '1421',
-//      IFSC::SRCB => '1227',
+        IFSC::SRCB => '1380',
         IFSC::UCBA => '1383',
         IFSC::UBIN => '1216',
         IFSC::UTBI => '1212',
