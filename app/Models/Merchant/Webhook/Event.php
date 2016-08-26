@@ -111,7 +111,7 @@ class Event
     {
         $event = strtoupper(str_replace('.', '_', $event));
 
-        return (defined(__CLASS__.'::'.$event));
+        return (defined(__CLASS__ . '::' . $event));
     }
 
     public static function getBitPosition($event)

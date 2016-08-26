@@ -495,7 +495,7 @@ class Service extends Base\Service
 
         $payments = $this->repo->payment->fetchOldCreatedPaymentsForTimeout($timestamp);
 
-        // // Timeout all the pending payments, changing the error to timeout
+        // Timeout all the pending payments, changing the error to timeout
         // $count = (new Payment\Repository)->timeoutOldPayments($timestamp);
 
         // Timeout old payment while retaining the error, if set
