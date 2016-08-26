@@ -57,6 +57,10 @@ class Gateway extends Ebs\Gateway
 
     public function sendThirdGatewayRequestForEbsAuthorize($request)
     {
+        // For Union Bank of India, and Kotak and some banks
+        // Redirection is done via 302 Page
+        // For YES Bank and other banks
+        // Redirection is done uisng Form post
         if ($this->content['payment_option'] === BankCodes::getMappedCode(IFSC::UBIN))
         {
             $header = ['location'=> 'https://test.razorpay.com'];
@@ -136,6 +140,9 @@ class Gateway extends Ebs\Gateway
         return $txt;
     }
 
+    /*
+     * Mocking this Function as mocked server need the requets to be POST,
+    */
     public function getRequest($location, $method, $body)
     {
         $request = [

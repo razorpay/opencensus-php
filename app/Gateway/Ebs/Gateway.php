@@ -43,11 +43,12 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentRequest($request, $input);
 
+        //TODO:: To be removed after it is tested on production
         if ($input['merchant']['id'] === '4izmfM9TFCAgFN')
         {
             if ($input['payment']['method'] === Payment\Method::NETBANKING)
             {
-                $request = $this->makeRequestAndGetBankUrl($request);
+                $request = $this->makeRequestAndGetBankUrl($request, $input);
             }
         }
 
@@ -239,26 +240,58 @@ class Gateway extends Base\Gateway
         return $this->sendGatewayRequest($request);
     }
 
-    protected function makeRequestAndGetBankUrl($request)
+    protected function makeRequestAndGetBankUrl($request, $input)
     {
         $this->setRequestHeaderAndOption($request);
 
         // This is the first redirect (302). We receive headers and cookies in this response
         // which needs to be sent to the second redirect request.
         $response302 = $this->sendFirstGatewayRequestForEbsAuthorize($request);
-
-        $secondRedirectRequest = $this->getRequestFromResponse302($response302);
+        try
+        {
+            $secondRedirectRequest = $this->getRequestFromResponse302($response302);
+        }
+        catch (Exception\GatewayTimeoutException $e)
+        {
+            $this->trace->warning(
+                TraceCode::GATEWAY_REQUEST_TIMEOUT,
+                ['payment_id' => $input['payment'][Payment\Entity::ID],
+                 'message'    => 'Payment Authorization failed after first Authorization Request']);
+            throw $e;
+        }
 
         // This is the second redirect (form post). The response of this is passed on to the third redirect request.
         $secondRedirectResponse = $this->sendSecondGatewayRequestForEbsAuthorize($secondRedirectRequest);
 
-        $lastRedirectRequest = $this->getRequestFromFormPostResponse($secondRedirectRequest, $secondRedirectResponse);
+        try
+        {
+            $lastRedirectRequest = $this->getRequestFromFormPostResponse($secondRedirectRequest, $secondRedirectResponse);
+        }
+        catch (Exception\GatewayTimeoutException $e)
+        {
+            $this->trace->warning(
+                TraceCode::GATEWAY_REQUEST_TIMEOUT,
+                ['payment_id' => $input['payment'][Payment\Entity::ID],
+                 'message'    => 'Payment Authorization failed after second Authorization Request']);
+            throw $e;
+        }
 
         // Makes the last redirect request before the request to bank's ACS url is made by the checkout.
         $lastRedirectResponse = $this->sendThirdGatewayRequestForEbsAuthorize($lastRedirectRequest);
 
-        $authorizeRequest = $this->getAuthorizeRequestFromLastRedirectResponse(
-            $lastRedirectRequest, $lastRedirectResponse);
+        try
+        {
+            $authorizeRequest = $this->getAuthorizeRequestFromLastRedirectResponse(
+                $lastRedirectRequest, $lastRedirectResponse);
+        }
+        catch (Exception\GatewayTimeoutException $e)
+        {
+            $this->trace->warning(
+                TraceCode::GATEWAY_REQUEST_TIMEOUT,
+                ['payment_id' => $input['payment'][Payment\Entity::ID],
+                 'message'    => 'Payment Authorization failed after third Authorization Request']);
+            throw $e;
+        }
 
         return $authorizeRequest;
     }
