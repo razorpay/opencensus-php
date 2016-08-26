@@ -172,11 +172,11 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayTimeoutException('Gateway Timed Out', null, true);
         }
 
-        $request = array(
+        $request = [
             'url'       => $location,
             'method'    => 'get',
             'content'   => '',
-        );
+        ];
 
         $request['options']['cookies'] = $cookies;
 
@@ -200,11 +200,11 @@ class Gateway extends Base\Gateway
 
         $method = $form->getMethod();
 
-        $request = array(
+        $request = [
             'url' => $form->getUri(),
             'method' => strtolower($method),
             'content' => $form->getValues(),
-        );
+        ];
 
         $request = $this->setRequestHeaderAndOption($request);
 
@@ -412,12 +412,12 @@ class Gateway extends Base\Gateway
             $isFlagged = true;
         }
 
-        $content = array(
+        $content = [
             Entity::RECEIVED            => true,
             Entity::IS_FLAGGED          => $isFlagged,
             Entity::TRANSACTION_ID      => $content[Resp::API_TRANSACTION_ID],
             Entity::GATEWAY_PAYMENT_ID  => $content[Resp::API_REFERENCE_ID],
-        );
+        ];
 
         return $content;
     }
@@ -565,7 +565,7 @@ class Gateway extends Base\Gateway
 
     protected function getDefaultRequestContent()
     {
-        $content = array(
+        $content = [
             Req::NAME          => 'Razorpay',
             Req::ADDRESS       => 'Razorpay',
             Req::CITY          => 'Bangalore',
@@ -575,7 +575,7 @@ class Gateway extends Base\Gateway
             Req::EMAIL         => 'helpdesk@razorpay.com',
             Req::DESCRIPTION   => 'NA',
             Req::CURRENCY      => 'INR',
-        );
+        ];
 
         return $content;
     }
@@ -586,14 +586,14 @@ class Gateway extends Base\Gateway
 
         $defaultContent = $this->getDefaultRequestContent();
 
-        $content = array(
+        $content = [
             Req::ACCOUNT_ID    => $this->getAccountId($input['terminal']),
             Req::REFERENCE_NO  => $input['payment'][Payment\Entity::ID],
             Req::AMOUNT        => $amount,
             Req::CALLBACK      => $input['callbackUrl'],
             Req::MODE          => strtoupper($this->mode),
             Req::PAYMENT_MODE  => $this->getPaymentMode($input),
-        );
+        ];
 
         $content = array_merge($content, $defaultContent);
 
@@ -666,10 +666,11 @@ class Gateway extends Base\Gateway
 
     protected function getUrlDomain()
     {
-        $apiDomainActionList = array(
+        $apiDomainActionList = [
             Action::CAPTURE,
             Action::REFUND,
-            Action::VERIFY);
+            Action::VERIFY
+        ];
 
         if (in_array($this->action, $apiDomainActionList))
         {
@@ -697,8 +698,7 @@ class Gateway extends Base\Gateway
 
     protected function getAuthorizeAttributesForPaymentEntity($content)
     {
-        $attributes = array();
-        $attributes[Entity::AMOUNT]     = $content[Req::AMOUNT];
+        $attributes = [Entity::AMOUNT => $content[Req::AMOUNT]];
 
         return $attributes;
     }
