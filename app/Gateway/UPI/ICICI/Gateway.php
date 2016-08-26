@@ -31,13 +31,13 @@ class Gateway extends Base\Gateway
     protected function getPublicKey()
     {
         $key = $this->config['public_key'];
-        return str_replace('\n', "\n", $key);
+        return str_replace('\n', '\n', $key);
     }
 
     protected function getPrivateKey()
     {
         $key = $this->config['private_key'];
-        return str_replace('\n', "\n", $key);
+        return str_replace('\n', '\n', $key);
     }
 
     /**
@@ -134,10 +134,10 @@ class Gateway extends Base\Gateway
     protected function statusData()
     {
         return [
-            "merchantId"        =>  "merchantId",
-            "subMerchantId"     =>  "12234",
-            "terminalId"        =>  "2342342",
-            "merchantTranId"    =>  "612413726581"
+            'merchantId'        =>  'merchantId',
+            'subMerchantId'     =>  '12234',
+            'terminalId'        =>  '2342342',
+            'merchantTranId'    =>  '612413726581'
         ];
     }
 
@@ -190,18 +190,18 @@ class Gateway extends Base\Gateway
         $data = [
             // Amount and note are lowercase
             // despite being uppercase in docs
-            "amount"        =>  $this->formatAmount($payment['amount']),
-            "collectByDate" =>  "30/08/2016 11:01 AM",
-            "billNumber"    =>  "1234",
-            "merchantId"    =>  $this->getMerchantId(),
-            // "merchantName"  =>  null,//$input['merchant']['billing_label'],
-            "merchantTranId"=>  $payment['id'],
-            "note"          =>  "collect-pay-request",
+            'amount'        =>  $this->formatAmount($payment['amount']),
+            'collectByDate' =>  '30/08/2016 11:01 AM',
+            'billNumber'    =>  '1234',
+            'merchantId'    =>  $this->getMerchantId(),
+            // 'merchantName'  =>  null,//$input['merchant']['billing_label'],
+            'merchantTranId'=>  $payment['id'],
+            'note'          =>  'collect-pay-request',
             // TODO: talk to icici and ask what all is allowed here
-            "payerVa"       =>  "test354@imobile",
-            "subMerchantId" =>  "1234",//$input['merchant']['id'],
-            "subMerchantName"   =>  $input['merchant']->getBillingLabel(),
-            "terminalId"    =>  "1234",
+            'payerVa'       =>  'test354@imobile',
+            'subMerchantId' =>  '1234',//$input['merchant']['id'],
+            'subMerchantName'   =>  $input['merchant']->getBillingLabel(),
+            'terminalId'    =>  '1234',
         ];
 
         // We trace it here, because it gets encrypted later
