@@ -145,15 +145,15 @@ class Entity extends Base\PublicEntity
     {
         $events = $this->attributes[self::EVENTS];
 
-        $events = Event::getEnabledEvents($events);
+        $enabledEvents = Event::getEnabledEvents($events);
 
-        $names = Event::getAllEventNames();
+        $names = Event::getLaunchedEventNames();
 
         $eventsArray = [];
 
         foreach ($names as $name)
         {
-            $eventsArray[$name] = in_array($name, $events);
+            $eventsArray[$name] = in_array($name, $enabledEvents);
         }
 
         return $eventsArray;
