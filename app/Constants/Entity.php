@@ -92,8 +92,8 @@ class Entity
         self::NETBANKING            => \RZP\Gateway\Netbanking\Base::class,
         self::AXIS_GENIUS           => \RZP\Gateway\AxisGenius::class,
         self::CYBERSOURCE           => \RZP\Gateway\Cybersource::class,
+        self::UPI_ICICI             => \RZP\Gateway\UPI\ICICI::class,
         self::BANK_ACCOUNT          => \RZP\Models\Merchant\BankAccount::class,
-        self::UPI_ICICI             => Gateway\UPI\ICICI::class,
         self::WALLET_PAYZAPP        => \RZP\Gateway\Wallet\Payzapp::class,
         self::NETBANKING_HDFC       => \RZP\Gateway\Netbanking\Hdfc::class,
         self::DAILY_SETTLEMENT      => \RZP\Models\Settlement\Daily::class,
@@ -107,7 +107,7 @@ class Entity
     );
 
     protected static $repository = array(
-        self::UPI_ICICI         => Gateway\Wallet\Base::class,
+        self::UPI_ICICI         => \RZP\Gateway\UPI\Base::class,
         self::WALLET_PAYUMONEY  => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_PAYZAPP    => \RZP\Gateway\Wallet\Base::class,
         self::NETBANKING_HDFC   => \RZP\Gateway\Netbanking\Base::class,

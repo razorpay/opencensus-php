@@ -81,8 +81,13 @@ class GatewayController extends Controller
                 $data = $this->processS2SCallback($input, $gateway);
                 break;
 
+            // We gave the first URL to ICICI for testing
             case 'upi':
+            case 'upi_icici':
+                $gateway = 'upi_icici':
                 $trace = $this->app['trace'];
+
+                // $data = $this->processS2SCallback()
 
                 // check mode before search
                 $trace->info(

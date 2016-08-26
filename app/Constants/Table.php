@@ -38,6 +38,7 @@ class Table
     const BILLDESK              = 'billdesk';
     const MOBIKWIK              = 'mobikwik';
     const NETBANKING            = 'netbanking';
+    const UPI                   = 'upi';
     const WALLET                = 'wallet';
 
     // Sessions table
