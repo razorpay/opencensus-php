@@ -33,6 +33,8 @@ class DailyReport extends Base\Core
         $this->date = Carbon::yesterday("Asia/Kolkata")->format('jS F Y');
 
         $this->data = $this->fetchDailyDetails();
+
+        $this->increaseAllowedSystemLimits();
     }
 
     /**
@@ -232,5 +234,11 @@ class DailyReport extends Base\Core
                 ($data['authorized']['payments']['count'] === 0) and
                 ($data['refunds']['refunds']['count'] === 0) and
                 ($data['settlement'] === null));
+    }
+
+    protected function increaseAllowedSystemLimits()
+    {
+        ini_set('memory_limit', '1024M');
+        set_time_limit(3000);
     }
 }
