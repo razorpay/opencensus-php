@@ -28,16 +28,29 @@ class Gateway extends Base\Gateway
         ResponseFields::BANK_RRN        => Entity::GATEWAY_PAYMENT_ID,
     );
 
+    /**
+     * In both getPublicKey and getPrivateKey,
+     * we are converting literal '\n' (single quotes)
+     * to actual newlines (double quotes "\n").
+     *
+     * This is because we store them in environment, which
+     * uses literal \n
+     * @return string public key
+     */
     protected function getPublicKey()
     {
         $key = $this->config['public_key'];
-        return str_replace('\n', '\n', $key);
+        return str_replace('\n', "\n", $key);
     }
 
+    /**
+     * @see getPublicKey
+     * @return string Private Key
+     */
     protected function getPrivateKey()
     {
         $key = $this->config['private_key'];
-        return str_replace('\n', '\n', $key);
+        return str_replace('\n', "\n", $key);
     }
 
     /**
@@ -202,12 +215,16 @@ class Gateway extends Base\Gateway
             'terminalId'        =>  '1234',
         ];
 
+
         // We trace it here, because it gets encrypted later
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $data);
 
         $json = json_encode($data);
 
-        $content = base64_encode($this->encrypt($json));
+        $data = $this->encrypt($json);
+        assert($data !== false);
+
+        $content = base64_encode($data);
 
         return $content;
     }
