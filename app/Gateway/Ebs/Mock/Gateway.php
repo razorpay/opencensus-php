@@ -5,7 +5,9 @@ namespace RZP\Gateway\Ebs\Mock;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Base;
+use RZP\Models\Bank\IFSC;
 use RZP\Gateway\Ebs;
+use RZP\Gateway\Ebs\BankCodes;
 use Requests_Response;
 use Requests_Cookie;
 use Requests_Cookie_Jar;
@@ -55,7 +57,18 @@ class Gateway extends Ebs\Gateway
 
     public function sendThirdGatewayRequestForEbsAuthorize($request)
     {
-        $response = $this->createResponse();
+        if ($this->content['payment_option'] === BankCodes::getMappedCode(IFSC::UBIN))
+        {
+            $header = ['location'=> 'https://test.razorpay.com'];
+
+            $response = $this->createResponse('302', false);
+
+            $response = $this->setHeader($response, $header);
+        }
+        else
+        {
+            $response = $this->createResponse();
+        }
 
         $response = $this->setBody($response, $this->getText($this->content));
 
@@ -121,5 +134,16 @@ class Gateway extends Ebs\Gateway
         $txt .= '</form>';
 
         return $txt;
+    }
+
+    public function getRequest($location, $method, $body)
+    {
+        $request = [
+            'url' => $location,
+            'method' => 'post',
+            'content' => $this->content,
+        ];
+
+        return $request;
     }
 }

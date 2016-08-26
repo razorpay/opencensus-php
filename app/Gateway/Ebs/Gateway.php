@@ -156,6 +156,16 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
+    protected function getRequest($location, $method, $content)
+    {
+        $request = [
+            'url'       => $location,
+            'method'    => $method,
+            'content'   => $content,
+        ];
+
+        return $request;
+    }
     protected function getRequestFromResponse302($response)
     {
         $cookies = [];
@@ -172,11 +182,7 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayTimeoutException('Gateway Timed Out', null, true);
         }
 
-        $request = [
-            'url'       => $location,
-            'method'    => 'get',
-            'content'   => '',
-        ];
+        $request = $this->getRequest($location, 'get', '');
 
         $request['options']['cookies'] = $cookies;
 
@@ -263,7 +269,7 @@ class Gateway extends Base\Gateway
         // If location is set, then we should redirect to Bank page
         // Else we should crawl the page to get form post
         //
-        $loc = $request->headers->getValues('location');
+        $loc = $response->headers->getValues('location');
 
         if (empty($loc) === false)
         {

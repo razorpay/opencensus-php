@@ -50,6 +50,32 @@ class EbsGatewayTest extends TestCase
             $this->testData['testPaymentEbsEntity'], $payment);
     }
 
+    public function testPaymentForBankWith302Redirect()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray('UBIN');
+        $payment = $this->doAuthPayment($payment);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertArraySelectiveEquals(
+            $this->testData['testTransactionAfterAuthorize'], $txn);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('txn_'.$payment['transaction_id'], $txn['id']);
+    }
+
+    public function testPaymentForBankWithFormRedirect()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray('YESB');
+        $payment = $this->doAuthPayment($payment);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertArraySelectiveEquals(
+            $this->testData['testTransactionAfterAuthorize'], $txn);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('txn_'.$payment['transaction_id'], $txn['id']);
+    }
+
     public function testHackedPayment()
     {
         $this->getHackedResponse();
