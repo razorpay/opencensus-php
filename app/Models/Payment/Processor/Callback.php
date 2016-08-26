@@ -59,7 +59,6 @@ trait Callback
         // Kinda weird! And it's always null.
         //
         unset($gatewayInput['csrf']);
-
         $this->verifyHash($hash, $payment->getPublicId());
 
         if ($payment->isCreated() === false)

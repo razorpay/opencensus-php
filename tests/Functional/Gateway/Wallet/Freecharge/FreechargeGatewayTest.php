@@ -239,7 +239,7 @@ class FreechargeGatewayTest extends TestCase
             $content = [
                 'status'        => 'COMPLETED',
                 'walletBalance' => '1234',
-                'metadata'      => 'asd',
+                'metadata'      => 'dummy',
                 'key_id'        => $this->ba->getKey(),
             ];
             $content['checksum'] = $this->sortKeysAndGenerateHash($content);
@@ -509,7 +509,7 @@ class FreechargeGatewayTest extends TestCase
         // Sort all keys and arrange <K-V> pair in alphabetical order
        ksort($response);
 
-       $secretKey = $this->app->config['test_hash_secret'];
+       $secretKey = $this->app->config['gateway']['wallet_freecharge']['test_hash_secret'];
 
        $hashString = json_encode($response).$secretKey;
 

@@ -1262,7 +1262,7 @@ trait Authorize
     {
         // OtpResend API is used for freecharge
         // In most gateways, otpResend is similar to otpGenerate.
-        if($payment->getOtpAttempts() > 0 && $payment['wallet'] === Wallet::FREECHARGE)
+        if ($payment->getOtpCount() > 0 && $payment['wallet'] === Wallet::FREECHARGE)
         {
             return $this->callGatewayOtpResend($gatewayInput, $payment);
         }

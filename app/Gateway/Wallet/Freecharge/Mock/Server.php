@@ -126,8 +126,8 @@ class Server extends Base\Mock\Server
         if ($input['otp'] === Otp::EXPIRED)
         {
             $response = array(
-                'errorMessage'  => Freecharge\ResponseCode::getResponseMessage('EU13'),
-                'errorCode'     => 'EU13',
+                'errorMessage'  => Freecharge\ResponseCode::getResponseMessage('E701'),
+                'errorCode'     => 'E701',
             );
             $response = $this->makeResponse($response);
             $response->setStatusCode(202);
@@ -137,8 +137,8 @@ class Server extends Base\Mock\Server
         if ($input['otp'] === Otp::INCORRECT)
         {
             $response = array(
-                'errorMessage'  => Freecharge\ResponseCode::getResponseMessage('EU010'),
-                'errorCode'     => 'EU010',
+                'errorMessage'  => Freecharge\ResponseCode::getResponseMessage('E702'),
+                'errorCode'     => 'E702',
             );
             $response = $this->makeResponse($response);
             $response->setStatusCode(202);
@@ -165,7 +165,7 @@ class Server extends Base\Mock\Server
 
         $response = array(
             'status'        => 'COMPLETED',
-            'metadata'      => '',
+            'metadata'      => 'dummy',
             'walletBalance' => '1232',
         );
 
@@ -183,8 +183,8 @@ class Server extends Base\Mock\Server
             $response = array(
                 'txnId'         => $this->getTxnId(),
                 'merchantTxnId' => $this->getMerchantTxnId(),
-                'Amount'        => '123',
-                'Status'        => 'COMPLETED',
+                'amount'        => '123',
+                'status'        => 'COMPLETED',
                 'errorCode'     => null,
                 'errorMessage'  => null,
             );
@@ -229,13 +229,20 @@ class Server extends Base\Mock\Server
 
     protected function sortKeysAndGenerateHash(array $response)
     {
-       ksort($response);
+        foreach ($response as $key => $value)
+        {
+            if($value === null || $value === "")
+            {
+                unset($response[$key]);
+            }
+        }
+        ksort($response);
 
-       $secretKey = $this->app->config['test_hash_secret'];
+        $secretKey = $this->app->config['gateway']['wallet_freecharge']['test_hash_secret'];
 
-       $hashString = json_encode($response).$secretKey;
+        $hashString = json_encode($response).$secretKey;
 
-       return hash('sha256', $hashString);
+        return hash('sha256', $hashString);
     }
 
     /*

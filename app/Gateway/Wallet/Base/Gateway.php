@@ -42,7 +42,7 @@ class Gateway extends Base\Gateway
 
         $wallet->fill($attr);
 
-        $wallet->saveOrFail();
+        $this->repo->saveOrFail($wallet);
 
         return $wallet;
     }

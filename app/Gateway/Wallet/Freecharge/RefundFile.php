@@ -36,13 +36,13 @@ class RefundFile extends Base\RefundFile
         $fullpath = $this->getExcelFullFilePath();
 
         $data['file'] = $fullpath;
-        $data['body'] = 'Please find attached refunds information for PayUMoney';
+        $data['body'] = 'Please find attached refunds information for Freecharge';
 
         $this->mail->queue('emails.message', $data, function ($message) use ($data)
         {
             $emails = ['settlements@razorpay.com'];
 
-            $message->from('refunds@razorpay.com', 'Wallet Payumoney refunds');
+            $message->from('refunds@razorpay.com', 'Wallet Freecharge refunds');
 
             $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
 

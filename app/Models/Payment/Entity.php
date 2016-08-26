@@ -617,6 +617,11 @@ class Entity extends Base\PublicEntity
         return $count;
     }
 
+    public function getOtpCount()
+    {
+        return $this->getAttribute(self::OTP_COUNT);
+    }
+
     public function getMetadata()
     {
         return $this->metadata;

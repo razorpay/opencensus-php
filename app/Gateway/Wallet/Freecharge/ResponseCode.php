@@ -6,6 +6,8 @@ use RZP\Gateway\Wallet\Base;
 
 class ResponseCode extends Base\ResponseCode
 {
+    const SUCCESS_CODE = 'E000';
+
     public static $codes = [
         'E001'      => 'Invalid merchant Id',
         'E002'      => 'Merchant not allowed for transaction',
@@ -50,6 +52,8 @@ class ResponseCode extends Base\ResponseCode
         'E627'      => 'Same idempotency Id For Different Refund Request',
         'E628'      => 'Transaction amount must be greater than 1',
         'E629'      => 'Refund Amount Exceeding Transaction Amount',
+        'E701'      => 'Invalid OTP id',
+        'E702'      => 'Invalid OTP',
         // UI Status Codes
         'EU001'     => 'Issue occurred while processing. Please contact customer support.',
         'EU002'     => 'User does not exist',
