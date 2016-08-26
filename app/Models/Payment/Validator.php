@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Payment;
 
-use Cache;
+use App;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use Lib\PhoneBook;
@@ -309,12 +309,14 @@ class Validator extends Base\Validator
 
     protected function failIfCaptureInProgress($payment)
     {
+        $app = App::getFacadeRoot();
+
         $key = $payment->getId() . '_captureInProgress';
 
         //
         // Don't continue if capture is in progress
         //
-        if (Cache::get($key) === true)
+        if ($app['cache']->get($key) === true)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_DUPLICATE_CAPTURE_REQUEST);

@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Payment\Processor;
 
-use Cache;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Order;
@@ -402,7 +401,7 @@ trait Capture
         {
             $key = $payment->getId() . '_captureInProgress';
 
-            Cache::forever($key, true);
+            $this->app['cache']->put($key, true, 1);
         }
     }
 
@@ -412,7 +411,7 @@ trait Capture
         {
             $key = $payment->getId() . '_captureInProgress';
 
-            Cache::forget($key);
+            $this->app['cache']->forget($key);
         }
     }
 }
