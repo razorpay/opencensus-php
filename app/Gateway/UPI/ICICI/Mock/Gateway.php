@@ -26,6 +26,14 @@ class Gateway extends ICICI\Gateway
         return file_get_contents(__DIR__ . '/keys/mockserver.pub');
     }
 
+    /**
+     * This is the privateKey for the Gateway Client
+     */
+    protected function getPrivateKey()
+    {
+        return file_get_contents(__DIR__ . '/keys/mockclient.key');
+    }
+
     protected function getUrl($type = null)
     {
         $url = parent::getUrl();

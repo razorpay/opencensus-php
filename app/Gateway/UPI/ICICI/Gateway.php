@@ -35,6 +35,8 @@ class Gateway extends Base\Gateway
      *
      * This is because we store them in environment, which
      * uses literal \n
+     *
+     * This is the public key used to encrypt requests
      * @return string public key
      */
     protected function getPublicKey()
@@ -44,6 +46,9 @@ class Gateway extends Base\Gateway
     }
 
     /**
+     * This is the private key used for
+     * decrypting responses we get from the
+     * gateway server
      * @see getPublicKey
      * @return string Private Key
      */

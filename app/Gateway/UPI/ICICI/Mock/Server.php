@@ -11,14 +11,30 @@ use Models\Payment;
 
 class Server extends Base\Mock\Server
 {
+
     public function __construct()
     {
-        $this->privateKey = $this->getPrivateKey();
+        if (defined('CRYPT_RSA_PKCS15_COMPAT') === false)
+        {
+            define('CRYPT_RSA_PKCS15_COMPAT', true);
+        }
     }
 
+    /**
+     * Private Key of the mock server
+     */
     protected function getPrivateKey()
     {
         return file_get_contents(__DIR__ . '/keys/mockserver.key');
+    }
+
+    /**
+     * Public key of the client that is connecting
+     * to us, in this case, the Mock Gateway
+     */
+    protected function getPublicKey()
+    {
+        return file_get_contents(__DIR__ . '/keys/mockclient.pub');
     }
 
     public function authorize($input)
@@ -45,7 +61,14 @@ class Server extends Base\Mock\Server
     protected function makeResponse($data)
     {
         $json = json_encode($data);
-        $response = \Response::make($json);
+
+        $res = $this->encrypt($json);
+
+        assert($res !== false);
+
+        $content = base64_encode($res);
+
+        $response = response($content);
 
         $response->headers->set('Content-Type', 'text/html; charset=UTF-8');
         $response->headers->set('Content-Language', 'en-US');
@@ -56,7 +79,6 @@ class Server extends Base\Mock\Server
 
     protected function parseInput($input)
     {
-        file_put_contents('/tmp/req.txt', $input);
         $input = base64_decode($input);
         $input = $this->decrypt($input);
         return json_decode($input, true);
@@ -64,10 +86,38 @@ class Server extends Base\Mock\Server
 
     protected function decrypt($ciphertext)
     {
+        $rsa = $this->getRSAInstance('req');
+        return  $rsa->decrypt($ciphertext);
+    }
+
+    protected function encrypt($plaintext)
+    {
+        $rsa = $this->getRSAInstance('res');
+        return $rsa->encrypt($plaintext);
+    }
+
+    protected function getRSAInstance($mode)
+    {
         $rsa = new RSA();
-        $rsa->setPrivateKey($this->privateKey);
+
+        switch ($mode)
+        {
+
+            // Inbound request, decrypt
+            case 'req':
+
+                $rsa->setPrivateKey($this->getPrivateKey());
+                break;
+
+            // Response, encrypt
+            case 'res':
+
+                $rsa->loadKey($this->getPublicKey());
+                break;
+        }
+
         $rsa->setEncryptionMode(RSA::ENCRYPTION_PKCS1);
 
-        return $rsa->decrypt($ciphertext);
+        return $rsa;
     }
 }
