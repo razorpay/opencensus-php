@@ -2,13 +2,14 @@
 
 namespace RZP\Gateway\UPI\ICICI;
 
-use RZP\Gateway\UPI\Base;
+use Carbon\Carbon;
 use phpseclib\Crypt\RSA;
 use Request;
 use Requests_Response;
-use RZP\Trace\TraceCode;
-use RZP\Exception\GatewayErrorException;
+use RZP\Gateway\UPI\Base;
 use RZP\Gateway\UPI\Base\Entity;
+use RZP\Exception\GatewayErrorException;
+use RZP\Trace\TraceCode;
 
 class Gateway extends Base\Gateway
 {
@@ -181,19 +182,22 @@ class Gateway extends Base\Gateway
     {
         $payment = $input['payment'];
 
+        $collectByTimestamp = time() + 15 * 60;
+        $collect = Carbon::now('Asia/Kolkata')->addMinutes(15)->format('d/m/y h:i a');
+
         $data = [
             // Amount and note are lowercase
             // despite being uppercase in docs
             'amount'            =>  $this->formatAmount($payment['amount']),
-            'collectByDate'     =>  '30/08/2016 11:01 AM',
+            'collectByDate'     =>  $collect,
             'billNumber'        =>  '1234',
             'merchantId'        =>  $this->getMerchantId(),
             // 'merchantName'  =>  null,//$input['merchant']['billing_label'],
             'merchantTranId'    =>  $payment['id'],
             'note'              =>  'collect-pay-request',
             // TODO: talk to icici and ask what all is allowed here
-            'payerVa'           =>  'test354@imobile',
-            'subMerchantId'     =>  '1234',//$input['merchant']['id'],
+            'payerVa'           =>  $input['vpa'],
+            'subMerchantId'     =>  substr($input['merchant']['id'], 0, 10),
             'subMerchantName'   =>  $input['merchant']->getBillingLabel(),
             'terminalId'        =>  '1234',
         ];
