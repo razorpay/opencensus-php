@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use Cache;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Order;
@@ -51,6 +52,8 @@ trait Capture
         }
 
         (new Payment\Validator)->captureValidate($payment, $input);
+
+        $this->setCaptureInProgress($payment);
 
         return $this->capturePayment($payment, $input['amount']);
     }
@@ -221,6 +224,9 @@ trait Capture
 
                 $this->trace->traceException($ex);
 
+                // We are currently doing capture queue for HDFC
+                assert($this->payment->getGateway() === Payment\Gateway::HDFC);
+
                 $data['mode'] = $this->mode;
 
                 $this->trace->info(
@@ -261,6 +267,10 @@ trait Capture
                     TraceCode::PAYMENT_CAPTURE_FAILURE);
 
             throw $ex;
+        }
+        finally
+        {
+            $this->resetCaptureInProgress($this->payment);
         }
     }
 
@@ -383,6 +393,26 @@ trait Capture
             $order->setStatus(Order\Status::PAID);
 
             $this->repo->saveOrFail($order);
+        }
+    }
+
+    protected function setCaptureInProgress($payment)
+    {
+        if ($payment->isMethodCardOrEmi())
+        {
+            $key = $payment->getId() . '_captureInProgress';
+
+            Cache::forever($key, true);
+        }
+    }
+
+    protected function resetCaptureInProgress($payment)
+    {
+        if ($payment->isMethodCardOrEmi())
+        {
+            $key = $payment->getId() . '_captureInProgress';
+
+            Cache::forget($key);
         }
     }
 }

@@ -2,10 +2,12 @@
 
 namespace RZP\Tests\Functional\Payment;
 
+use Cache;
 use Carbon\Carbon;
 use Mockery;
 use Dashboard\Payment;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 /**
@@ -59,6 +61,28 @@ class CaptureTest extends TestCase
         $this->payment = $payment;
 
         $this->startTest();
+    }
+
+    public function testDuplicateCaptureRequest()
+    {
+        $payment = $this->defaultAuthPayment();
+
+        $id = $payment['id'];
+        $id = PaymentEntity::stripSignWithoutValidation($id);
+
+        $key = $id . '_captureInProgress';
+
+        Cache::shouldReceive('get')
+                    ->once()
+                    ->with($key)
+                    ->andReturn(true);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->capturePayment($payment['id'], $payment['amount']);
+        });
     }
 
     public function testCaptureWithDifferentAmount()
