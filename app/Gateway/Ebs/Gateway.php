@@ -156,11 +156,11 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
-    protected function parseRequestAndGetRedirectRequest($response)
+    protected function getRequestFromResponse302($response)
     {
         $cookies = [];
 
-        foreach ($response->cookies->getIterator() as $cookie)
+        foreach ($response->cookies as $cookie)
         {
             $cookies[$cookie->name] = $cookie->value;
         }
@@ -180,12 +180,12 @@ class Gateway extends Base\Gateway
 
         $request['options']['cookies'] = $cookies;
 
-        $request = $this->setRequestHeaderAndOption($request);
+        $this->setRequestHeaderAndOption($request);
 
         return $request;
     }
 
-    protected function parseRequestAndGetCrawlRequest($response, $request)
+    protected function getRequestFromFormPostResponse($request, $response)
     {
         $crawler = new Crawler($response->body, $request['url']);
 
@@ -206,18 +206,16 @@ class Gateway extends Base\Gateway
             'content' => $form->getValues(),
         ];
 
-        $request = $this->setRequestHeaderAndOption($request);
+        $this->setRequestHeaderAndOption($request);
 
         return $request;
     }
 
-    protected function setRequestHeaderAndOption($request)
+    protected function setRequestHeaderAndOption(& $request)
     {
         $request['options']['follow_redirects'] = false;
 
-        $request['headers']['Referer'] = 'http://api.razorpay.com/v1/payments';
-
-        return $request;
+        $request['headers']['Referer'] = 'https://api.razorpay.com/v1/payments';
     }
 
     protected function sendFirstGatewayRequestForEbsAuthorize($request)
@@ -237,35 +235,46 @@ class Gateway extends Base\Gateway
 
     protected function makeRequestAndGetBankUrl($request)
     {
-        $request = $this->setRequestHeaderAndOption($request);
+        $this->setRequestHeaderAndOption($request);
 
-        // Get Reponse for 302 redirect, cookies are also needed for request
-        $response = $this->sendFirstGatewayRequestForEbsAuthorize($request);
+        // This is the first redirect (302). We receive headers and cookies in this response
+        // which needs to be sent to the second redirect request.
+        $response302 = $this->sendFirstGatewayRequestForEbsAuthorize($request);
 
-        $redirectRequest = $this->parseRequestAndGetRedirectRequest($response);
-        // Get Response for EBS welcome page
-        $response = $this->sendSecondGatewayRequestForEbsAuthorize($redirectRequest);
+        $secondRedirectRequest = $this->getRequestFromResponse302($response302);
 
-        $crawlRequest = $this->parseRequestAndGetCrawlRequest($response, $redirectRequest);
-        // Get Response for EBS redirection page
-        $response = $this->sendThirdGatewayRequestForEbsAuthorize($crawlRequest);
+        // This is the second redirect (form post). The response of this is passed on to the third redirect request.
+        $secondRedirectResponse = $this->sendSecondGatewayRequestForEbsAuthorize($secondRedirectRequest);
 
+        $lastRedirectRequest = $this->getRequestFromFormPostResponse($secondRedirectRequest, $secondRedirectResponse);
+
+        // Makes the last redirect request before the request to bank's ACS url is made by the checkout.
+        $lastRedirectResponse = $this->sendThirdGatewayRequestForEbsAuthorize($lastRedirectRequest);
+
+        $authorizeRequest = $this->getAuthorizeRequestFromLastRedirectResponse(
+            $lastRedirectRequest, $lastRedirectResponse);
+
+        return $authorizeRequest;
+    }
+
+    protected function getAuthorizeRequestFromLastRedirectResponse($request, $response)
+    {
         //
         // If location is set, then we should redirect to Bank page
         // Else we should crawl the page to get form post
         //
-        $loc = $response->headers->getValues('location');
+        $loc = $request->headers->getValues('location');
 
-        if (isset($loc) === true)
+        if (empty($loc) === false)
         {
-            $request = $this->parseRequestAndGetRedirectRequest($response);
+            $authorizeRequest = $this->getRequestFromResponse302($response);
         }
         else
         {
-            $request = $this->parseRequestAndGetCrawlRequest($response, $crawlRequest);
+            $authorizeRequest = $this->getRequestFromFormPostResponse($request, $response);
         }
 
-        return $request;
+        return $authorizeRequest;
     }
 
     protected function sendRefundGatewayRequest($gatewayPayment, $input)
