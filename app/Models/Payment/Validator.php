@@ -261,8 +261,6 @@ class Validator extends Base\Validator
         $this->validateInput('capture', $input);
 
         $this->captureAmountValidate($payment, $input);
-
-        $this->failIfCaptureInProgress($payment);
     }
 
     public function cancelValidate($payment)
@@ -304,22 +302,6 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_CAPTURED);
-        }
-    }
-
-    protected function failIfCaptureInProgress($payment)
-    {
-        $app = App::getFacadeRoot();
-
-        $key = $payment->getId() . '_captureInProgress';
-
-        //
-        // Don't continue if capture is in progress
-        //
-        if ($app['cache']->get($key) === true)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_DUPLICATE_CAPTURE_REQUEST);
         }
     }
 

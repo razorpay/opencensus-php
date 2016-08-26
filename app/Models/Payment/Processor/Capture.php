@@ -52,7 +52,9 @@ trait Capture
 
         (new Payment\Validator)->captureValidate($payment, $input);
 
-        $this->setCaptureInProgress($payment);
+        $this->failIfMutexIsSet($payment, 'capture');
+
+        $this->setActionMutex($payment, 'capture');
 
         return $this->capturePayment($payment, $input['amount']);
     }
@@ -223,7 +225,12 @@ trait Capture
 
                 $this->trace->traceException($ex);
 
-                // We are currently doing capture queue for HDFC
+                //
+                // We are currently doing capture queue for HDFC, as we don't want to mark
+                // the captured payment on gateway as failed on API
+                // Note: Capture shouldn't be done again for Cybersource
+                // as cybersource settles the amount from CH account again
+                //
                 assert($this->payment->getGateway() === Payment\Gateway::HDFC);
 
                 $data['mode'] = $this->mode;
@@ -269,7 +276,7 @@ trait Capture
         }
         finally
         {
-            $this->resetCaptureInProgress($this->payment);
+            $this->resetActionMutex($this->payment, 'capture');
         }
     }
 
@@ -392,26 +399,6 @@ trait Capture
             $order->setStatus(Order\Status::PAID);
 
             $this->repo->saveOrFail($order);
-        }
-    }
-
-    protected function setCaptureInProgress($payment)
-    {
-        if ($payment->isMethodCardOrEmi())
-        {
-            $key = $payment->getId() . '_captureInProgress';
-
-            $this->app['cache']->put($key, true, 1);
-        }
-    }
-
-    protected function resetCaptureInProgress($payment)
-    {
-        if ($payment->isMethodCardOrEmi())
-        {
-            $key = $payment->getId() . '_captureInProgress';
-
-            $this->app['cache']->forget($key);
         }
     }
 }
