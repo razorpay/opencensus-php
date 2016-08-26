@@ -725,7 +725,7 @@ class Gateway extends Base\Gateway
         }
 
         if ((isset($response[Resp::STATUS]) === false) or
-            ($response[Resp::STATUS] !== 'Processing'))
+            ($response[Resp::STATUS] !== Status::API_PROCESSING))
         {
             $attributes[Entity::ERROR_CODE]        = $response[Resp::ERROR_CODE];
             $attributes[Entity::ERROR_DESCRIPTION] = $response[Resp::ERROR];
