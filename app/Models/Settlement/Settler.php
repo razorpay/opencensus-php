@@ -19,12 +19,6 @@ use RZP\Trace\TraceCode;
 
 class Settler
 {
-    protected $setlRepo;
-
-    protected $txnRepo;
-
-    protected $merchantRepo;
-
     protected $settlements;
 
     protected $input;
@@ -45,8 +39,7 @@ class Settler
         $this->mode = $app['rzp.mode'];
         $this->env = $app['env'];
         $this->trace = $app['trace'];
-
-        $this->initRepos();
+        $this->repo = $app['repo'];
     }
 
     public function settleForParticularMerchant($input, $merchant, $channel = null)
@@ -141,7 +134,7 @@ class Settler
 
     protected function settleForKotak($txns)
     {
-        $this->setlRepo->beginTransaction();
+        $this->repo->beginTransaction();
 
         $data['channel'] = 'kotak';
 
@@ -172,11 +165,11 @@ class Settler
                 $data['message'] = 'No settlements found!';
             }
 
-            $this->setlRepo->commit();
+            $this->repo->commit();
         }
         catch (\Exception $e)
         {
-            $this->setlRepo->rollback();
+            $this->repo->rollback();
 
             $this->settlementFailure('kotak', $e);
         }
@@ -188,17 +181,17 @@ class Settler
 
     protected function settleForAtom($txns)
     {
-        $this->setlRepo->beginTransaction();
+        $this->repo->beginTransaction();
 
         try
         {
             list($settlements, $txns, $amounts) = $this->process($txns, Channel::ATOM);
 
-            $this->setlRepo->commit();
+            $this->repo->commit();
         }
         catch (\Exception $e)
         {
-            $this->setlRepo->rollback();
+            $this->repo->rollback();
 
             $this->settlementFailure('atom', $e);
         }
@@ -243,7 +236,7 @@ class Settler
     {
         list($settlements, $txnsSettled, $amounts) = $this->createSettlements($txns, $channel);
 
-        $this->txnRepo->settled($txnsSettled, self::$settlementTimestamp);
+        $this->repo->transaction->settled($txnsSettled, self::$settlementTimestamp);
 
         return array($settlements, $txnsSettled, $amounts);
     }
@@ -273,7 +266,7 @@ class Settler
 
             // Get merchant
             $merchantId = $txns[$i]->getMerchantId();
-            $merchant = $this->merchantRepo->findOrFail($merchantId);
+            $merchant = $this->repo->merchant->findOrFail($merchantId);
 
             while (($i < $count) and
                    ($txns[$i]->getMerchantId() === $merchantId))
@@ -320,7 +313,7 @@ class Settler
                 continue;
             }
 
-            $setl = (new Settlement\Merchant($merchant, $channel))->settle(
+            $setl = (new Settlement\Merchant($merchant, $channel, $this->repo))->settle(
                                         $setlTxns,
                                         $setlAmount,
                                         $setlFee,
@@ -382,15 +375,34 @@ class Settler
         $dailySettlement->saveOrFail();
     }
 
+    /**
+     * Settlement is done only if funds are not on hold and bank account change
+     * is not recent as we need some time till beneficiary is updated in kotak
+     */
     protected function shouldSettle(Transaction\Entity $txn, $channel, $merchant)
     {
-        return (($txn->getChannel() === $channel) and
-                ($merchant->holdFunds() === false));
+        $today = Carbon::today('Asia/Kolkata');
+
+        $lastWorkingDay = Holidays::getPreviousWorkingDay($today);
+
+        $shouldSettle = (($txn->getChannel() === $channel) and
+                         ($merchant->holdFunds() === false));
+
+
+        if (($this->mode !== Mode::TEST) and
+            ($merchant->bankAccount->getCreatedTimestamp() > $lastWorkingDay->timestamp))
+        {
+            $shouldSettle = false;
+        }
+
+        return $shouldSettle;
     }
 
     protected function createSettlementFile($settlements, $txns)
     {
         $urls = (new Kotak\NodalAccount)->generateSettlementFile($settlements, $txns);
+
+        $urls1 = (new Kotak\NodalAccount)->generateSettlementFile2($settlements, $txns);
 
         $this->trace->info(TraceCode::SETTLEMENT_FILE_GENERATED_KOTAK);
 
@@ -404,7 +416,7 @@ class Settler
             throw new Exception\LogicException('Not valid channel: ' . $channel);
         }
 
-        $feeAccount = $this->merchantRepo->findOrFail(Merchant\Account::API_FEE_ACCOUNT);
+        $feeAccount = $this->repo->merchant->findOrFail(Merchant\Account::API_FEE_ACCOUNT);
 
         list($setl, $adjTxn) = (new Settlement\Merchant($feeAccount, $channel))->collectApiFees($apiFee);
 
@@ -423,7 +435,7 @@ class Settler
             $ts = $input['testSettleTimeStamp'];
         }
 
-        $txns = $this->txnRepo->fetchUnsettledTransactions($ts);
+        $txns = $this->repo->transaction->fetchUnsettledTransactions($ts);
 
         return $txns;
     }
@@ -438,17 +450,9 @@ class Settler
             $ts = $input['testSettleTimeStamp'];
         }
 
-        $txns = $this->txnRepo->fetchUnsettledTransactionsForMerchant($ts, $merchant);
+        $txns = $this->repo->transaction->fetchUnsettledTransactionsForMerchant($ts, $merchant);
 
         return $txns;
-    }
-
-    protected function initRepos()
-    {
-        $this->setlRepo = new Settlement\Repository;
-        $this->txnRepo = new Transaction\Repository;
-        $this->merchantRepo = new Merchant\Repository;
-        $this->dailySetlRepo = new Settlement\Daily\Repository;
     }
 
     protected function initSettlementTimestamp($input)
@@ -482,7 +486,7 @@ class Settler
 
         $overwrite = $this->isInputValue($input, 'overwrite', '1');
 
-        $dailySettlement = $this->dailySetlRepo->getSettlementForToday('kotak');
+        $dailySettlement = $this->repo->daily_settlement->getSettlementForToday('kotak');
 
         if ($dailySettlement !== null)
         {

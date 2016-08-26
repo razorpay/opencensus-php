@@ -136,6 +136,16 @@ class Merchant extends Base
         return $this->edit($id, ['hold_funds' => $hold]);
     }
 
+    public function enableRisky($id = '10000000000000')
+    {
+        return $this->edit($id, ['risk_rating' => 4]);
+    }
+
+    public function disableRisky($id = '10000000000000')
+    {
+        return $this->edit($id, ['risk_rating' => 3]);
+    }
+
     public function enableMethod($id = '10000000000000', $method)
     {
         return $this->fixtures->edit('methods', $id, [$method => true]);
@@ -239,6 +249,11 @@ class Merchant extends Base
     public function setCategory($category, $id = '10000000000000')
     {
         return $this->edit($id, ['category' => $category]);
+    }
+
+    public function editPricingPlanId($planId, $id = '10000000000000')
+    {
+        return $this->edit($id, ['pricing_plan_id' => $planId]);
     }
 
     public function enableTPV($id = '10000000000000')

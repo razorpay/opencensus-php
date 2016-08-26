@@ -6,6 +6,7 @@ use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use Requests;
+use RZP\Models\Payment\Status;
 use Symfony\Component\DomCrawler\Crawler;
 use RZP\Trace\TraceCode;
 use App;
@@ -170,7 +171,7 @@ class Gateway
         $this->input = $input;
         $this->action = Action::CAPTURE;
 
-        if ($input['payment']['status'] !== 'authorized')
+        if ($input['payment']['status'] !== Status::AUTHORIZED)
         {
             throw new Exception\RuntimeException(
                 'Payment status should be authorized',
@@ -287,7 +288,6 @@ class Gateway
         catch (\Requests_Exception $e)
         {
             $this->exception = $e;
-
             //
             // Some error occurred.
             // Check that whether the gateway response timed out.
@@ -299,7 +299,7 @@ class Gateway
             }
             else
             {
-                throw $e;
+                throw new Exception\GatewayRequestException($e->getMessage(), $e);
             }
         }
 
@@ -513,7 +513,17 @@ class Gateway
     {
         $crawler = new Crawler($form, $url);
 
-        $form = $crawler->filter('form')->form();
+        $formCrawler = $crawler->filter('form');
+
+        if ($formCrawler->count() === 0)
+        {
+            // This happens because hdfc nb gateway is down.
+            // We will need to verify the request later.
+            throw new Exception\GatewayTimeoutException(
+                'Payment verify request to Hdfc nb gateway timed out');
+        }
+
+        $form = $formCrawler->form();
 
         $content = $form->getValues();
 
@@ -562,9 +572,9 @@ class Gateway
     protected function getStandardRequestArray($content = [], $method = 'post')
     {
         $request = array(
-            'url' => $this->getUrl(),
-            'method' => $method,
-            'content' => $content,
+            'url'       => $this->getUrl(),
+            'method'    => $method,
+            'content'   => $content,
         );
 
         return $request;

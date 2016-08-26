@@ -12,11 +12,14 @@ class Entity extends Base\PublicEntity
     const NETBANKING        = 'netbanking';
     const AMEX              = 'amex';
     const BANKS             = 'banks';
-    const PAYTM             = 'paytm';
     const MOBIKWIK          = 'mobikwik';
+    const OLAMONEY          = 'olamoney';
+    const PAYTM             = 'paytm';
     const PAYZAPP           = 'payzapp';
     const PAYUMONEY         = 'payumoney';
     const EMI               = 'emi';
+    const DEBIT_CARD        = 'debit_card';
+    const CREDIT_CARD       = 'credit_card';
 
     const METHODS           = 'methods';
 
@@ -37,6 +40,7 @@ class Entity extends Base\PublicEntity
         self::PAYZAPP,
         self::PAYUMONEY,
         self::MOBIKWIK,
+        self::OLAMONEY,
         self::EMI,
         self::NETBANKING,
     );
@@ -50,6 +54,7 @@ class Entity extends Base\PublicEntity
         self::PAYZAPP,
         self::PAYUMONEY,
         self::MOBIKWIK,
+        self::OLAMONEY,
         self::EMI,
         self::NETBANKING,
     );
@@ -59,15 +64,18 @@ class Entity extends Base\PublicEntity
         self::METHODS);
 
     protected $defaults = array(
-        self::CARD       => false,
-        self::AMEX       => false,
-        self::PAYTM      => false,
-        self::MOBIKWIK   => false,
-        self::PAYZAPP    => false,
-        self::PAYUMONEY  => false,
-        self::BANKS      => [],
-        self::EMI        => false,
-        self::NETBANKING => true,
+        self::CARD          => false,
+        self::AMEX          => false,
+        self::PAYTM         => false,
+        self::MOBIKWIK      => false,
+        self::PAYZAPP       => false,
+        self::PAYUMONEY     => false,
+        self::OLAMONEY      => false,
+        self::BANKS         => [],
+        self::EMI           => false,
+        self::NETBANKING    => true,
+        self::CREDIT_CARD   => true,
+        self::DEBIT_CARD    => true,
     );
 
     protected $wallets = array(
@@ -75,6 +83,7 @@ class Entity extends Base\PublicEntity
         self::PAYTM,
         self::PAYZAPP,
         self::PAYUMONEY,
+        self::OLAMONEY,
     );
 
     public function setMethods(array $input = array())
@@ -90,6 +99,16 @@ class Entity extends Base\PublicEntity
     public function isCardEnabled()
     {
         return $this->getCardAttribute();
+    }
+
+    public function isDebitCardEnabled()
+    {
+        return $this->getDebitCardAttribute();
+    }
+
+    public function isCreditCardEnabled()
+    {
+        return $this->getCreditCardAttribute();
     }
 
     public function isNetbankingEnabled()
@@ -133,6 +152,11 @@ class Entity extends Base\PublicEntity
     public function isPayzappEnabled()
     {
         return $this->getPayzappAttribute();
+    }
+
+    public function isOlamoneyEnabled()
+    {
+        return $this->getOlamoneyAttribute();
     }
 
     public function isPayumoneyEnabled()
@@ -199,6 +223,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PAYUMONEY);
     }
 
+    public function getOlamoney()
+    {
+        return $this->getAttribute(self::OLAMONEY);
+    }
+
     public function getEMi()
     {
         return $this->getAttribute(self::EMI);
@@ -263,9 +292,24 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::PAYUMONEY, $value);
     }
 
+    public function setOlamoney($value)
+    {
+        $this->setAttribute(self::OLAMONEY, $value);
+    }
+
     public function setCard($card)
     {
         $this->setAttribute(self::CARD, $card);
+    }
+
+    public function setCreditCard($card)
+    {
+        $this->setAttribute(self::CREDIT_CARD, $card);
+    }
+
+    public function setDebitCard($card)
+    {
+        $this->setAttribute(self::DEBIT_CARD, $card);
     }
 
     public function setNetbanking($netbanking)
@@ -280,52 +324,67 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::EMI, $emi);
     }
 
-    public function getAmexAttribute()
+    protected function getAmexAttribute()
     {
         return (bool) $this->attributes[self::AMEX];
     }
 
-    public function getPaytmAttribute()
+    protected function getPaytmAttribute()
     {
         return (bool) $this->attributes[self::PAYTM];
     }
 
-    public function getCardAttribute()
+    protected function getCardAttribute()
     {
         return (bool) $this->attributes[self::CARD];
     }
 
-    public function getNetbankingAttribute()
+    protected function getCreditCardAttribute()
+    {
+        return (bool) $this->attributes[self::CREDIT_CARD];
+    }
+
+    protected function getDebitCardAttribute()
+    {
+        return (bool) $this->attributes[self::DEBIT_CARD];
+    }
+
+    protected function getNetbankingAttribute()
     {
         return (bool) $this->attributes[self::NETBANKING];
     }
 
-    public function getMobikwikAttribute()
+    protected function getMobikwikAttribute()
     {
         return (bool) $this->attributes[self::MOBIKWIK];
     }
 
-    public function getPayzappAttribute()
+    protected function getOlamoneyAttribute()
+    {
+        return (bool) $this->attributes[self::OLAMONEY];
+    }
+
+    protected function getPayzappAttribute()
     {
         return (bool) $this->attributes[self::PAYZAPP];
     }
 
-    public function getPayumoneyAttribute()
+    protected function getPayumoneyAttribute()
     {
         return (bool) $this->attributes[self::PAYUMONEY];
     }
 
-    public function getBanksAttribute()
+    protected function getBanksAttribute()
     {
         return json_decode($this->attributes[self::BANKS], true);
     }
 
-    public function getEmiAttribute()
+    protected function getEmiAttribute()
     {
         return (bool) $this->attributes[self::EMI];
     }
 
-    public function setBanksAttribute(array $banks)
+    protected function setBanksAttribute(array $banks)
     {
         $this->attributes[self::BANKS] = json_encode($banks);
     }
@@ -361,6 +420,7 @@ class Entity extends Base\PublicEntity
             self::MOBIKWIK,
             self::PAYZAPP,
             self::PAYUMONEY,
+            self::OLAMONEY,
             self::EMI
         );
     }

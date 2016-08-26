@@ -5,6 +5,7 @@ namespace RZP\Gateway\AxisMigs;
 use RZP\Constants\Mode;
 use RZP\Error;
 use RZP\Exception;
+use RZP\Models\Payment\Processor\Notify;
 use RZP\Gateway\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\VerifyResult;
@@ -26,6 +27,8 @@ class Gateway extends Base\Gateway
         parent::authorize($input);
 
         $content = $this->getPaymentAuthorizeRequestContent($input);
+
+        $this->addSubMerchantDetails($content, $input);
 
         $content['vpc_SecureHash'] = $this->generateHash($content);
 
@@ -423,6 +426,11 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
+    protected function addSubMerchantDetails(array & $content, array $input)
+    {
+        ;
+    }
+
     protected function getPaymentCaptureRequestContent($input, $payment)
     {
         $content = array(
@@ -616,10 +624,20 @@ class Gateway extends Base\Gateway
             // then we need to block the transaction on the international card.
             //
 
-            if (($input['merchant']['international'] === false) and
-                (ThreeDSecureStatus::is3DSecureSuccess($threeDSstatus)) === false)
+            if (ThreeDSecureStatus::is3DSecureSuccess($threeDSstatus) === false)
             {
-                $apiErrorCode = Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED;
+                if ($input['merchant']['international'] === false)
+                {
+                    $apiErrorCode = Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED;
+                }
+                else if($input['merchant']['risk_rating'] > Notify::MIN_HIGH_RISK_RATING)
+                {
+                    $apiErrorCode = Error\ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK;
+                }
+                else
+                {
+                    return; // payment succeeds
+                }
             }
             else
             {

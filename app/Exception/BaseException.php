@@ -20,8 +20,8 @@ class BaseException extends Exception
      * @param Exception $previous
      */
     public function __construct(
-        /* string */ $message,
-        /* string */ $code = '',
+        $message,
+        $code = '',
         \Exception $previous = null)
     {
         parent::__construct($message, 0, $previous);

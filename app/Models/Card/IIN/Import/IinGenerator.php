@@ -3,6 +3,7 @@
 namespace RZP\Models\Card\IIN\Import;
 
 use Excel;
+use RZP\Exception;
 
 /**
  * This class generates the testing xml file from the input array.

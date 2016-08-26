@@ -49,7 +49,7 @@ class TerminalPicker
         $this->app = \App::getFacadeRoot();
     }
 
-    public function selectTerminal($payment, $mode)
+    public function selectTerminal($payment, $mode, $options = [])
     {
         $this->payment = $payment;
         $this->merchant = $payment->merchant;
@@ -73,9 +73,10 @@ class TerminalPicker
                 ['payment' => $payment->toArrayAdmin()]);
         }
 
-        // $payment->terminal()->associate($terminal);
-
-        // $payment->setGateway($terminal->getGateway());
+        if (isset($options['chance']))
+        {
+            $terminal = (new Terminal\Binning)->pick($terminal, $options['chance'], ['payment' => $payment]);
+        }
 
         return $terminal;
     }
@@ -393,6 +394,8 @@ class TerminalPicker
         {
             return $this->terminal;
         }
+
+        return null;
     }
 
     protected function getTerminalsKeyedByGateway($merchantTerminals)

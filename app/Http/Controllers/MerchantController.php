@@ -5,6 +5,7 @@ namespace RZP\Http\Controllers;
 use RZP\Constants\Mode;
 use RZP\Http\ApiResponse;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Credits;
 use RZP\Models\Terminal;
 use RZP\Models\Key;
 use Request;
@@ -463,18 +464,11 @@ class MerchantController extends Controller
 
         $data = [];
 
-        $font = 'lato2';
-
         if (in_array($context, array_keys($urlMap)))
         {
             $url = $urlMap[$context];
-
-            {
-                $framejs = '/v1/checkout-frame-new.js';
-                $css = '/v1/css/checkout-new.css';
-                $font = 'lato3';
-            }
         }
+
         else if (isset($input['checkout']))
         {
             $url = $input['checkout'];
@@ -483,7 +477,7 @@ class MerchantController extends Controller
         $data['checkout'] = $url;
         $data['framejs'] = $url . $framejs;
         $data['css'] = $url . $css;
-        $data['font'] = 'https://cdn.razorpay.com/' . $font;
+        $data['font'] = 'https://cdn.razorpay.com/lato3';
 
         return $data;
     }
@@ -560,4 +554,49 @@ class MerchantController extends Controller
 
         return ApiResponse::json($data);
     }
+
+// --------------------- Credits API Handlers -----------------------------------------
+
+    public function postCreateCreditsLog(Credits\Service $service, $id)
+    {
+        $input = Request::all();
+
+        $data = $service->grantCreditsForMerchant($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getCreditsLog(Credits\Service $service, $mid, $id)
+    {
+        $data = $service->fetchCreditsLog($mid, $id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function putCreditsLog(Credits\Service $service, $mid, $id)
+    {
+        $input = Request::all();
+
+        $data = $service->updateCreditsLog($mid, $id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getCreditsLogs(Credits\Service $service)
+    {
+        $input = Request::all();
+
+        $data = $service->fetchMultiple($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function deleteCreditsLog(Credits\Service $service, $mid, $id)
+    {
+        $data = $service->deleteCreditsLog($mid, $id);
+
+        return ApiResponse::json($data);
+    }
+
+// --------------------- End Credits API Handlers -----------------------------------------
 }

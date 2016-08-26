@@ -23,12 +23,16 @@ class Validator extends Base\Validator
         Entity::PAYTM       => 'sometimes|boolean',
         Entity::PAYZAPP     => 'sometimes|boolean',
         Entity::PAYUMONEY   => 'sometimes|boolean',
+        Entity::OLAMONEY    => 'sometimes|boolean',
         Entity::MOBIKWIK    => 'sometimes|boolean',
         Entity::EMI         => 'sometimes|boolean',
+        Entity::CREDIT_CARD => 'sometimes_if:card,1|required_with:debit_card|boolean',
+        Entity::DEBIT_CARD  => 'sometimes_if:card,1|required_with:credit_card|boolean',
     );
 
     protected static $setMethodsValidators = array(
-        'methodBanks');
+        'methodBanks',
+        'card');
 
     protected function validateMethodBanks(array $input)
     {
@@ -38,6 +42,18 @@ class Validator extends Base\Validator
         }
 
         $this->validateBanks($input);
+    }
+
+    protected function validateCard(array $input)
+    {
+        if ((isset($input[Entity::CREDIT_CARD])) and
+            (isset($input[Entity::DEBIT_CARD])) and
+            ($input[Entity::CREDIT_CARD] === '0') and
+            ($input[Entity::DEBIT_CARD]) === '0')
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Both debit card and credit card cannot be disabled if card is enabled.');
+        }
     }
 
     protected function validateBanks(array $input)

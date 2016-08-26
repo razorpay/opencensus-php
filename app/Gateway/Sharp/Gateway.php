@@ -66,7 +66,7 @@ class Gateway extends Base\Gateway
             ($input['card']['iin'] === '501010') and
             ($input['card']['last4'] === '1015'))
         {
-            throw new Exception\BadRequestException(
+            throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE);
         }
 

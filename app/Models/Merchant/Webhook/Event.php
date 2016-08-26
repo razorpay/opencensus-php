@@ -12,22 +12,41 @@ use RZP\Exception;
  */
 class Event
 {
-    const PAYMENT_AUTHORIZED = 'payment.authorized';
+    const PAYMENT_AUTHORIZED        = 'payment.authorized';
+    const PAYMENT_FAILED            = 'payment.failed';
 
     protected static $events = array(
         self::PAYMENT_AUTHORIZED,
+        self::PAYMENT_FAILED,
     );
 
     protected static $bitMap = array(
-        self::PAYMENT_AUTHORIZED => 0x1,
+        self::PAYMENT_AUTHORIZED    => 0x1,
+        self::PAYMENT_FAILED        => 0x2,
     );
 
+    /**
+     * Events which are present in the system and
+     * can be enabled/disabled.
+     * @var array
+     */
     protected static $names = array(
         self::PAYMENT_AUTHORIZED,
+        self::PAYMENT_FAILED,
     );
 
     protected static $bitPosition = array(
-        self::PAYMENT_AUTHORIZED => 0,
+        self::PAYMENT_AUTHORIZED    => 1,
+        self::PAYMENT_FAILED        => 2,
+    );
+
+    /**
+     * These are events which will displayed to merchants
+     * for enabling/disabling.
+     * @var array
+     */
+    protected static $launchedEvents = array(
+        self::PAYMENT_AUTHORIZED,
     );
 
     /**
@@ -47,7 +66,7 @@ class Event
             $value = ($value === '1') ? 1 : 0;
 
             // Sets the bit value for the current event.
-            $hex ^= ((-1 * $value) ^ $hex) & (1 << $pos);
+            $hex ^= ((-1 * $value) ^ $hex) & (1 << ($pos - 1));
         }
 
         return $hex;
@@ -58,6 +77,11 @@ class Event
         return self::$names;
     }
 
+    public static function getLaunchedEventNames()
+    {
+        return self::$launchedEvents;
+    }
+
     public static function getEnabledEvents($hex)
     {
         $events = array();
@@ -65,7 +89,7 @@ class Event
         foreach (self::$events as $event)
         {
             $pos = self::$bitPosition[$event];
-            $value = ($hex >> $pos) & 1;
+            $value = ($hex >> ($pos - 1)) & 1;
 
             if ($value)
             {
@@ -80,14 +104,14 @@ class Event
     {
         $pos = self::getBitPosition($event);
 
-        return ($hexEvent >> $pos) & 1;
+        return ($hexEvent >> ($pos - 1)) & 1;
     }
 
     public static function validateEventName($event)
     {
         $event = strtoupper(str_replace('.', '_', $event));
 
-        return (defined(__CLASS__.'::'.$event));
+        return (defined(__CLASS__ . '::' . $event));
     }
 
     public static function getBitPosition($event)

@@ -4,6 +4,7 @@ namespace RZP\Models\Customer\Token;
 
 use RZP\Models\Base;
 use RZP\Models\Customer;
+use RZP\Models\Customer\AppToken;
 use RZP\Models\Customer\Token;
 use RZP\Models\Merchant\Account;
 use RZP\Exception;
@@ -20,7 +21,7 @@ class Service extends Base\Service
     {
         Customer\Entity::verifyIdAndStripSign($id);
 
-        $customer = $this->repo->customer->findOrFailPublic($id);
+        $customer = $this->repo->customer->findByIdAndMerchantId($id, $this->merchant->getId());
 
         $token = (new Token\Core)->create($customer, $input);
 
@@ -86,13 +87,20 @@ class Service extends Base\Service
      * @param  string app_token
      * @return entity tokens
      */
-    public function fetchTokensForGlobalCustomer($appToken)
+    public function fetchTokensForGlobalCustomer()
     {
-        Customer\App\Entity::verifyIdAndStripSign($appToken);
+        $appToken = AppToken\SessionHelper::getAppTokenFromSession($this->mode);
 
-        $app = (new Customer\App\Core)->getAppByAppToken($appToken, $this->merchant);
+        $tokens = new Base\PublicCollection;
 
-        $tokens = (new Customer\Token\Core)->fetchTokensByCustomer($app->customer);
+        if ($appToken !== null)
+        {
+            AppToken\Entity::verifyIdAndStripSign($appToken);
+
+            $app = (new AppToken\Core)->getAppByAppToken($appToken, $this->merchant);
+
+            $tokens = (new Customer\Token\Core)->fetchTokensByCustomer($app->customer);
+        }
 
         return $tokens->toArrayPublic();
     }
@@ -112,13 +120,18 @@ class Service extends Base\Service
     /**
      * Deletes token associated with a card for a global customer
      */
-    public function deleteTokenForGlobalCustomer($appToken, $token)
+    public function deleteTokenForGlobalCustomer($token)
     {
-        Customer\App\Entity::verifyIdAndStripSign($appToken);
+        $appToken = AppToken\SessionHelper::getAppTokenFromSession($this->mode);
 
-        $app = (new Customer\App\Core)->getAppByAppToken($appToken, $this->merchant);
+        if ($appToken !== null)
+        {
+            AppToken\Entity::verifyIdAndStripSign($appToken);
 
-        return $this->deleteTokenForCustomer($token, $app->customer);
+            $app = (new AppToken\Core)->getAppByAppToken($appToken, $this->merchant);
+
+            return $this->deleteTokenForCustomer($token, $app->customer);
+        }
     }
 
     protected function deleteTokenForCustomer($token, $customer)

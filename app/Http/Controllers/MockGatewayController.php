@@ -161,6 +161,15 @@ class MockGatewayController extends Controller
         return $server->authorize($input);
     }
 
+    public function postEbsPayment()
+    {
+        $input = Request::all();
+
+        $server = $this->gateway->server('ebs');
+
+        return $server->authorize($input);
+    }
+
     public function postAmexPayment()
     {
         $input = Request::all();
@@ -240,7 +249,7 @@ class MockGatewayController extends Controller
         return $server->authorize($input);
     }
 
-    public function postWalletPayment($wallet, $paymentId = null)
+    public function walletPayment($wallet, $paymentId = null)
     {
         $input = Request::all();
 

@@ -4,6 +4,7 @@ namespace RZP\Gateway\Hdfc;
 
 use RZP\Error;
 use RZP\Gateway\Hdfc;
+use RZP\Gateway\Hdfc\Payment\Result;
 
 class ErrorCode
 {
@@ -102,6 +103,7 @@ class ErrorCode
     const PY20001   = 'PY20001';
     const PY20002   = 'PY20002';
     const PY20006   = 'PY20006';
+    const PY20085   = 'PY20085';
 
     //
     // The error codes starting with 'RP' are our custom ones
@@ -166,7 +168,7 @@ class ErrorCode
 
     /**
      * When enroll response result code is
-     * AUTH ERROR
+     * CANCELLED
      */
     const RP00011   = 'RP00011';
 
@@ -175,6 +177,16 @@ class ErrorCode
      * NOT SUPPORTED
      */
     const RP00012   = 'RP00012';
+
+    public static $resultToErrorCodeMap = array(
+        Result::HOST_TIMEOUT        => self::RP00004,
+        Result::DENIED_BY_RISK      => self::RP00005,
+        Result::NOT_APPROVED        => self::RP00006,
+        Result::NOT_CAPTURED        => self::RP00007,
+        Result::AUTH_ERROR          => self::RP00010,
+        Result::CANCELED            => self::RP00011,
+        Result::NOT_SUPPORTED       => self::RP00012,
+    );
 
     public static $errorMessages = array(
         Hdfc\ErrorCode::FSS0001   => 'Authentication Not Available',
@@ -241,6 +253,7 @@ class ErrorCode
         Hdfc\ErrorCode::PY20006   => 'Invalid Brand',
         Hdfc\ErrorCode::PY20001   => 'Invalid Action Type',
         Hdfc\ErrorCode::PY20002   => 'Invalid amount',
+        Hdfc\ErrorCode::PY20085   => 'Payment failed',
 
         Hdfc\ErrorCode::CM90000   => 'Database error',
         Hdfc\ErrorCode::CM90001   => 'Database configuration error',
@@ -317,6 +330,7 @@ class ErrorCode
         Hdfc\ErrorCode::PY20006   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_BRAND,
         Hdfc\ErrorCode::PY20001   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_ACTION,
         Hdfc\ErrorCode::PY20002   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_AMOUNT,
+        Hdfc\ErrorCode::PY20085   => Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
 
         Hdfc\ErrorCode::CM90000   => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
         Hdfc\ErrorCode::CM90001   => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
@@ -340,4 +354,16 @@ class ErrorCode
     );
 
     public static $invalidErrorCode = Hdfc\ErrorCode::RP00001;
+
+    public static $invalidResultErrorCode = self::RP00002;
+
+    public static function getErrorCodeForResult($result)
+    {
+        if (isset(self::$resultToErrorCodeMap[$result]))
+        {
+            return self::$resultToErrorCodeMap[$result];
+        }
+
+        return self::$invalidResultErrorCode;
+    }
 }

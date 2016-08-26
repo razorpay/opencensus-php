@@ -11,6 +11,7 @@ class Entity extends Base\PublicEntity
 
     const ID                    = 'id';
     const BANK                  = 'bank';
+    const NETWORK               = 'network';
     const RATE                  = 'rate';
     const DURATION              = 'duration';
     const METHODS               = 'methods';
@@ -21,7 +22,7 @@ class Entity extends Base\PublicEntity
 
     protected static $sign      = '';
 
-    protected $entity           = 'emi';
+    protected $entity           = 'emi_plan';
 
     protected $table            = \RZP\Constants\Table::EMI_PLAN;
 
@@ -30,6 +31,7 @@ class Entity extends Base\PublicEntity
     protected $fillable = array(
         self::ID,
         self::BANK,
+        self::NETWORK,
         self::RATE,
         self::DURATION,
         self::METHODS,
@@ -38,6 +40,7 @@ class Entity extends Base\PublicEntity
     protected $visible = array(
         self::ID,
         self::BANK,
+        self::NETWORK,
         self::RATE,
         self::DURATION,
         self::METHODS,
@@ -52,6 +55,14 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = array(
         self::MIN_AMOUNT => 300000,
+        self::BANK       => null,
+        self::NETWORK    => null,
+    );
+
+    protected $casts = array(
+        self::RATE          => 'int',
+        self::MIN_AMOUNT    => 'int',
+        self::DURATION      => 'int',
     );
 
     protected $guarded = array(self::ID);
@@ -71,6 +82,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BANK);
     }
 
+    public function getNetwork()
+    {
+        return $this->getAttribute(self::NETWORK);
+    }
+
     public function getMethods()
     {
         return $this->getAttribute(self::METHODS);
@@ -81,28 +97,13 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MIN_AMOUNT);
     }
 
-    public function getRateAttribute()
-    {
-        return (integer)$this->attributes[self::RATE];
-    }
-
-    public function getDurationAttribute()
-    {
-        return (integer)$this->attributes[self::DURATION];
-    }
-
-    public function getBankAttribute()
+    protected function getBankAttribute()
     {
        return $this->attributes[self::BANK];
     }
 
-    public function getMethodsAttribute()
+    protected function getMethodsAttribute()
     {
        return $this->attributes[self::METHODS];
-    }
-
-    public function getMinAmountAttribute()
-    {
-        return (integer)$this->attributes[self::MIN_AMOUNT];
     }
 }

@@ -139,6 +139,10 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::IFSC_CODE);
     }
 
+    public function getCreatedTimestamp()
+    {
+        return $this->getAttribute(self::CREATED_AT);
+    }
 
     protected function setIfscCodeAttribute($code)
     {
@@ -194,15 +198,11 @@ class Entity extends Base\PublicEntity
     {
         $id = $this->getAttribute(self::ID);
 
-        $strParts = str_split($id, 7);
+        $first7 = substr($id, 0, 7);
 
-        $last7Parts = str_split($strParts[1], 4);
+        $last3 = substr($id, -3);
 
-        $first7 = $strParts[0];
-
-        $last3 = $last7Parts[1];
-
-        $beneficiaryCode = $first7."".$last3;
+        $beneficiaryCode = $first7 . $last3;
 
         assert(strlen($beneficiaryCode) === 10);
 

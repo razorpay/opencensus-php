@@ -72,7 +72,7 @@ trait Enroll
         {
             $this->persistAfterEnroll();
 
-            $this->throwException($this->enrollResponse['error']);
+            $this->throwException($this->enrollResponse['error'], true);
         }
 
         //
@@ -289,6 +289,7 @@ trait Enroll
      * See eci field definition for more info.
      *
      * @return void
+     * @throws Exception\LogicException
      */
     protected function checkAndSetEci()
     {
@@ -358,7 +359,7 @@ trait Enroll
      * consider enroll as failed and set an error
      * message to that effect
      *
-     * @return void
+     * @return bool
      */
     protected function isEnrollSuccess()
     {

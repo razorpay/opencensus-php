@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use Mockery;
+use RZP\Jobs\WebHook;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Merchant\Webhook\Inferno;
@@ -74,7 +75,7 @@ class WebhookTest extends TestCase
         $inferno->shouldReceive('fire')
                 ->once()
                 ->with(
-                    Mockery::type('Illuminate\Queue\Jobs\Job'),
+                    Mockery::type('RZP\Jobs\WebHook'),
                     Mockery::on(function ($data) use ($testData)
                         {
                             $data['event'] = json_decode($data['event'], true);

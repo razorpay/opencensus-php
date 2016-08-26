@@ -19,17 +19,8 @@ use RZP\Error\ErrorCode;
 
 use RZP\Trace\TraceCode;
 
-class Activate
+class Activate extends Base\Core
 {
-    public function __construct($app)
-    {
-        $this->app = $app;
-
-        $this->repo = new Merchant\Repository;
-
-        $this->trace = $app['trace'];
-    }
-
     public function activate($merchant)
     {
         if ($merchant->isActivated())
@@ -38,7 +29,7 @@ class Activate
                 ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED);
         }
 
-        $plan = $this->repo->getPricingPlanOrFailPublic($merchant);
+        $plan = $this->repo->merchant->getPricingPlanOrFailPublic($merchant);
 
         //
         // Ensure that all payment methods enabled for the merchant
@@ -54,7 +45,7 @@ class Activate
         //         ErrorCode::BAD_REQUEST_MERCHANT_NO_TERMINAL_ASSIGNED);
         // }
 
-        $ba = (new BankAccount\Repository)->getBankAccount($merchant);
+        $ba = $this->repo->bank_account->getBankAccount($merchant);
 
         if ($ba === null)
         {

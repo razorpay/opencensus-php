@@ -9,11 +9,13 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Models\Merchant;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
 class MerchantTest extends TestCase
 {
     use PaymentTrait;
     use SettlementTrait;
+    use InteractsWithSession;
 
     public function setUp()
     {
@@ -130,6 +132,14 @@ class MerchantTest extends TestCase
     public function testEditMerchant()
     {
         $this->createMerchant();
+
+        $this->startTest();
+    }
+
+    public function testEditMerchantEnableInternationalFail()
+    {
+        $this->fixtures->create('pricing:standard_plan');
+        $this->fixtures->merchant->editPricingPlanId('1A0Fkd38fGZPVC');
 
         $this->startTest();
     }
@@ -458,8 +468,28 @@ class MerchantTest extends TestCase
         $this->fixtures->merchant->activate('10000000000000');
 
         $response = $this->startTest();
+    }
 
-        $this->assertNotNull($response['customer']['app_token']);
+    public function testGetCheckoutRouteWithAndroidMetadata()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->editFeatures('cardsaving');
+
+        $this->session(['test_app_token' => '1000001custapp']);
+
+        $response = $this->startTest();
+
+        $this->assertEquals(isset($response['options']['customer']), false);
+    }
+
+    public function testGetCheckoutRouteWithAndroidMetadataNoSession()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->editFeatures('cardsaving');
+
+        $response = $this->startTest();
     }
 
     public function testGetCheckoutRouteWithSavedGlobal()
@@ -579,8 +609,9 @@ class MerchantTest extends TestCase
 
     protected function createMerchant()
     {
+        $id = '1X4hRFHFx4UiXt';
         $merchant = array(
-            'id'    => '1X4hRFHFx4UiXt',
+            'id'    => $id,
             'name'  => 'Tester 2',
             'email' => 'liveandtest@localhost.com'
         );
@@ -592,6 +623,8 @@ class MerchantTest extends TestCase
         );
 
         $content = $this->makeRequestAndGetContent($request);
+
+        $this->merchantAssignPricingPlan('1hDYlICobzOCYt', $id);
 
         $this->assertArraySelectiveEquals($merchant, $content);
 

@@ -106,7 +106,7 @@ trait Authorize
         $this->verifyAuthResponse($this->authEnrolledResponse);
     }
 
-    protected function verifyAuthResponse($auth)
+    protected function verifyAuthResponse(array & $auth)
     {
         $this->isAuthSuccess($auth);
 
@@ -155,9 +155,20 @@ trait Authorize
             return false;
         }
 
-        $result = &$authResponse['data']['result'];
-
+        $result = '';
         $errorCode = null;
+
+        if (isset($authResponse['data']['result']) === true)
+        {
+            Result::modifySpecificResultValueIfRequired($authResponse['data']['result']);
+
+            $result = $authResponse['data']['result'];
+        }
+        else if (isset($authResponse['data']['Error']) === true)
+        {
+            // This caps 'Error' only comes in case of Rupay
+            $result = $authResponse['data']['Error'];
+        }
 
         //
         // Check enroll result code.
@@ -192,6 +203,10 @@ trait Authorize
 
             case Payment\Result::CANCELED:
                 $errorCode = Hdfc\ErrorCode::RP00011;
+                break;
+
+            case Hdfc\ErrorCode::PY20085:
+                $errorCode = Hdfc\ErrorCode::PY20085;
                 break;
 
             default:
@@ -274,7 +289,7 @@ trait Authorize
         {
             $this->repo->persistAfterAuthNotEnrolledError(
                 $this->model,
-                $this->authNotEnrolledResponse['error']);
+                $this->authNotEnrolledResponse);
         }
         else
         {
@@ -290,7 +305,7 @@ trait Authorize
         {
             $this->repo->persistAfterAuthEnrolledError(
                 $this->model,
-                $authEnrolledResponse['error']);
+                $authEnrolledResponse);
         }
         else
         {

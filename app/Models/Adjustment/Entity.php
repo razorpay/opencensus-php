@@ -59,7 +59,7 @@ class Entity extends Base\PublicEntity
         return (int) $this->getAttribute(self::AMOUNT);
     }
 
-    public function getAmountAttribute()
+    protected function getAmountAttribute()
     {
         return (int) $this->attributes[self::AMOUNT];
     }

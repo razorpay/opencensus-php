@@ -7,6 +7,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Base;
 use RZP\Models\Transaction;
 use RZP\Models\Settlement;
+use RZP\Exception;
 
 class Repository extends Base\Repository
 {
@@ -115,9 +116,8 @@ class Repository extends Base\Repository
 
     public function fetchTransactionsForAuthorizedRefundedPayments()
     {
-        $repo = $this->repo;
-
-        $txns = $repo::where(Transaction\Entity::TYPE, '=', Type::REFUND)
+        $txns = $this->newQuery()
+                     ->where(Transaction\Entity::TYPE, '=', Type::REFUND)
                      ->where(Transaction\Entity::SETTLED, '=', 1)
                      ->whereNull(Transaction\Entity::BALANCE)
                      ->get();
@@ -145,8 +145,6 @@ class Repository extends Base\Repository
 
     public function settled($txns, $settledAt)
     {
-        $repo = $this->repo;
-
         if ($txns->count() === 0)
         {
             return;
@@ -158,7 +156,8 @@ class Repository extends Base\Repository
             Transaction\Entity::SETTLED_AT  => $settledAt,
             Transaction\Entity::SETTLED     => true);
 
-        $count = $repo::whereIn(Transaction\Entity::ID, $ids)
+        $count = $this->newQuery()
+                      ->whereIn(Transaction\Entity::ID, $ids)
                       ->update($values);
 
         $expected = count($ids);
@@ -175,8 +174,6 @@ class Repository extends Base\Repository
 
     public function updateSettlementId($txns, $settlementId)
     {
-        $repo = $this->repo;
-
         if ($txns->count() === 0)
         {
             return;
@@ -186,7 +183,8 @@ class Repository extends Base\Repository
 
         $values = [Transaction\Entity::SETTLEMENT_ID  => $settlementId];
 
-        $count = $repo::whereIn(Transaction\Entity::ID, $ids)
+        $count = $this->newQuery()
+                      ->whereIn(Transaction\Entity::ID, $ids)
                       ->update($values);
 
         $expected = count($ids);
@@ -203,9 +201,8 @@ class Repository extends Base\Repository
 
     public function findByEntityId($entityId, $fail = false)
     {
-        $repo = $this->repo;
-
-        $txn = $repo::where(Transaction\Entity::ENTITY_ID, '=', $entityId)
+        $txn = $this->newQuery()
+                    ->where(Transaction\Entity::ENTITY_ID, '=', $entityId)
                     ->first();
 
         if (($txn === null) and
@@ -220,9 +217,8 @@ class Repository extends Base\Repository
 
     public function fetchBySettlementId($setlId)
     {
-        $repo = $this->repo;
-
-        return $repo::where(Transaction\Entity::SETTLEMENT_ID, '=', $setlId)
+        return $this->newQuery()
+                    ->where(Transaction\Entity::SETTLEMENT_ID, '=', $setlId)
                     ->get();
     }
 

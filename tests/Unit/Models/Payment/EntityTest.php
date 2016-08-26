@@ -11,7 +11,7 @@ class EntityTest extends TestCase
 
         $this->payment = new \RZP\Models\Payment\Entity;
 
-        $this->payment->setNotesAttribute([
+        $this->payment->setNotes([
             'order_link'    =>  'https://github.com',
             'merchant_order_id' =>  '1235'
         ]);
@@ -25,7 +25,7 @@ class EntityTest extends TestCase
     function testGetOrderIdForOpenCart()
     {
         $payment = $this->payment;
-        $payment->setNotesAttribute([
+        $payment->setNotes([
             'opencart_order_id' => 'opencart_123'
         ]);
         $this->assertEquals('opencart_123', $payment->getOrderId());
@@ -34,7 +34,7 @@ class EntityTest extends TestCase
     function getGetOrderIdForMagento()
     {
         $payment = $this->payment;
-        $payment->setNotesAttribute([
+        $payment->setNotes([
             'magento_order_id' => 'magento_123'
         ]);
         $this->assertEquals('magento_123', $payment->getOrderId());
@@ -43,7 +43,7 @@ class EntityTest extends TestCase
     function testGetOrderIdForPrestashop()
     {
         $payment = $this->payment;
-        $payment->setNotesAttribute([
+        $payment->setNotes([
             'prestashop_order_id' => 'prestashop_123'
         ]);
         $this->assertEquals('prestashop_123', $payment->getOrderId());
@@ -53,7 +53,7 @@ class EntityTest extends TestCase
     {
 
         $payment = $this->payment;
-        $payment->setNotesAttribute([
+        $payment->setNotes([
             'cs_order_id' => 'cascart_123'
         ]);
         $this->assertEquals('cascart_123', $payment->getOrderId());
@@ -63,7 +63,7 @@ class EntityTest extends TestCase
     {
 
         $payment = $this->payment;
-        $payment->setNotesAttribute([
+        $payment->setNotes([
             'woocommerce_order_id' => 'wc_123'
         ]);
         $this->assertEquals('wc_123', $payment->getOrderId());

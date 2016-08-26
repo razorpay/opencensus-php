@@ -10,7 +10,7 @@ use RZP\Error\ErrorCode;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        'amount'        => 'sometimes|integer|min:1',
+        'amount'        => 'sometimes|integer|min:100',
         'notes'         => 'sometimes|notes'
     );
 
@@ -27,7 +27,7 @@ class Validator extends Base\Validator
         $this->payment = $payment;
     }
 
-    protected function validatePaymentStatus($input)
+    protected function validatePaymentStatus()
     {
         if (($this->payment->isCaptured() === false) and
             ($this->payment->isAuthorized() === false))
@@ -37,7 +37,7 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validatePaymentRefundStatus($input)
+    protected function validatePaymentRefundStatus()
     {
         if ($this->payment->isFullyRefunded())
         {

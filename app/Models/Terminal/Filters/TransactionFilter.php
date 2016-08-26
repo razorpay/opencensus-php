@@ -9,8 +9,10 @@ use RZP\Error\ErrorCode;
 
 use RZP\Models\Terminal;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Card\Network;
 use RZP\Models\Payment\Method;
 use RZP\Models\Emi\Repository;
+use RZP\Models\Terminal\Shared;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Processor\Netbanking;
 
@@ -21,6 +23,7 @@ class TransactionFilter extends Terminal\Filter
         'network',
         'international',
         'bank',
+        'maestro',
     ];
 
     public function methodFilter($terminal, $input)
@@ -30,20 +33,13 @@ class TransactionFilter extends Terminal\Filter
         switch ($method)
         {
             case Method::CARD:
-                return (($terminal->isCardEnabled()) and ($terminal->isEmiEnabled() === false)) ;
-                break;
+                return (($terminal->isCardEnabled()) and ($terminal->isEmiEnabled() === false));
 
             case Method::NETBANKING:
                 return $terminal->isNetbankingEnabled();
-                break;
 
             case Method::EMI:
-                $bank = $input['payment']->getBank();
-
-                $emiDuration = $input['payment']->emiPlan->getDuration();
-
-                return $terminal->isValidForEmiDurationAndBank($bank, $emiDuration);
-                break;
+                return $this->isValidEmiTerminal($terminal, $input);
 
             // Pick the right terminal only
             case Method::WALLET:
@@ -54,27 +50,18 @@ class TransactionFilter extends Terminal\Filter
                 return ($gateway === $terminal->getGateway());
 
             default:
-                break;
+                throw new Exception\LogicException('Unknown payment method passed.', null, ['method' => $method]);
         }
     }
 
     // Applicable only for card and emi
     public function networkFilter($terminal, $input)
     {
-        $method = $input['payment']->getMethod();
-
-        switch ($method)
+        if ($input['payment']->isMethodCardOrEmi())
         {
-            // Network Filtration has to work similarly for card and emi
-            case Method::CARD:
-            case Method::EMI:
-                $network = $input['payment']->card->getNetworkCode();
+            $network = $input['payment']->card->getNetworkCode();
 
-                return Gateway::isCardNetworkSupported($network, $terminal->getGateway());
-                break;
-
-            default:
-                break;
+            return Gateway::isCardNetworkSupported($network, $terminal->getGateway());
         }
 
         return true;
@@ -82,9 +69,7 @@ class TransactionFilter extends Terminal\Filter
 
     public function internationalFilter($terminal, $input)
     {
-        $method = $input['payment']->getMethod();
-
-        if ($method !== Method::CARD)
+        if ($input['payment']->isMethodCardOrEmi() === false)
         {
             return true;
         }
@@ -120,24 +105,63 @@ class TransactionFilter extends Terminal\Filter
 
     public function bankFilter($terminal, $input)
     {
-        $method = $input['payment']->getMethod();
-
-        switch ($method)
+        if ($input['payment']->isNetbanking())
         {
-            case Method::NETBANKING:
-                $bank = $input['payment']->getBank();
+            $bank = $input['payment']->getBank();
 
-                $terminalGateway = $terminal->getGateway();
+            $terminalGateway = $terminal->getGateway();
 
-                $gateways = Gateway::getGatewaysForNetbankingBank($bank);
+            $gateways = Gateway::getGatewaysForNetbankingBank($bank);
 
-                return in_array($terminalGateway, $gateways);
-                break;
-
-            default:
-                break;
+            return in_array($terminalGateway, $gateways);
         }
 
         return true;
+    }
+
+    public function maestroFilter($terminal, $input)
+    {
+        if ($input['payment']->isMethodCardOrEmi())
+        {
+            $network = $input['payment']->card->getNetworkCode();
+
+            // Only shared terminals support Maestro on Live mode.
+            if (($network === Network::MAES) and
+                ($input['mode'] === Mode::LIVE))
+            {
+                return Shared::isSharedTerminal($terminal);
+            }
+        }
+
+        return true;
+    }
+
+    protected function isValidEmiTerminal($terminal, $input)
+    {
+        $bank = $input['payment']->getBank();
+
+        // check if banks emi transactions can be processed from any card terminal
+        if ((empty($bank) === false) and
+            (in_array($bank, Gateway::$emiBanksUsingCardTerminals)))
+        {
+            return (($terminal->isCardEnabled()) and ($terminal->isEmiEnabled() === false));
+        }
+
+        // validate terminal using the gateway and emi duration
+        $network = $input['payment']->card->getNetworkCode();
+
+        if ($network === Network::AMEX)
+        {
+            $gateway = Gateway::AMEX;
+        }
+        else
+        {
+            $gateway = Gateway::$emiBankToGatewayMap[$bank];
+        }
+
+        $emiDuration = $input['payment']->emiPlan->getDuration();
+
+        return $terminal->isValidEmiTerminal($gateway, $emiDuration);
+
     }
 }

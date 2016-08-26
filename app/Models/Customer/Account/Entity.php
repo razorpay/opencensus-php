@@ -45,7 +45,11 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::ACTIVE,
         self::CONTACT,
+        self::NOTES,
         self::MERCHANT_ID,
+        self::CREATED_AT,
+        self::UPDATED_AT,
+        self::DELETED_AT,
     );
 
     protected $public = array(
@@ -92,12 +96,12 @@ class Entity extends Base\PublicEntity
         return (bool)$this->getAttribute(self::ACTIVE);
     }
 
-    public function getActiveAttribute()
+    protected function getActiveAttribute()
     {
         return (bool)$this->attributes[self::ACTIVE];
     }
 
-    public function setEmailAttribute($email)
+    protected function setEmailAttribute($email)
     {
         // Multi-byte function to handle unicode
         $this->attributes[self::EMAIL] = mb_strtolower($email);

@@ -100,7 +100,7 @@ class DataCleaner
         foreach ($dbRecords as $entity)
         {
 
-            $iin = (string) $entity->getIinAttribute();
+            $iin = (string) $entity->getIin();
 
             $this->dbConflicts[$iin] = array(
                                 'db_entry'   => $entity->toArray(),

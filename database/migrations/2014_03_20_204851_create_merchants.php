@@ -81,6 +81,9 @@ class CreateMerchants extends Migration
             $table->boolean(Merchant::RECEIPT_EMAIL_ENABLED)
                   ->default(1);
 
+            $table->integer(Merchant::MAX_PAYMENT_AMOUNT)
+                  ->nullable();
+
             $table->integer(Merchant::CREATED_AT);
             $table->integer(Merchant::UPDATED_AT);
 

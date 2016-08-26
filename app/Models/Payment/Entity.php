@@ -2,10 +2,9 @@
 
 namespace RZP\Models\Payment;
 
+use Carbon\Carbon;
 use Lib\PhoneBook;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Models\Bank\Name as BankNames;
 use RZP\Models\Base;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Card;
@@ -62,6 +61,7 @@ class Entity extends Base\PublicEntity
     const OTP_COUNT             = 'otp_count';
     const FEE                   = 'fee';
     const SAVE                  = 'save';
+    const LATE_AUTHORIZED       = 'late_authorized';
 
     const CURRENCY_LENGTH       = 3;
 
@@ -140,6 +140,7 @@ class Entity extends Base\PublicEntity
         self::SERVICE_TAX,
         self::OTP_ATTEMPTS,
         self::OTP_COUNT,
+        self::LATE_AUTHORIZED,
         self::CREATED_AT,
         self::UPDATED_AT);
 
@@ -197,6 +198,7 @@ class Entity extends Base\PublicEntity
         self::OTP_ATTEMPTS      => null,
         self::OTP_COUNT         => null,
         self::EMI_PLAN_ID       => null,
+        self::LATE_AUTHORIZED   => null,
     );
 
     protected $amounts = array(
@@ -213,10 +215,13 @@ class Entity extends Base\PublicEntity
 
 // --------------------- Modifiers ---------------------------------------------
 
+    // TODO: This function doesn't seem to be doing anything at all. Can I remove it?
     protected function modifyContact(& $input)
     {
         if (isset($input['contact']) === false)
+        {
             return;
+        }
 
         $contact = & $input['contact'];
 
@@ -328,7 +333,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT_REFUNDED, $amount);
     }
 
-    public function setGateway($gateway)
+    /**
+     * This should be kept as protected so the gateway is only
+     * set via associateTerminal function
+     */
+    protected function setGateway($gateway)
     {
         $this->setAttribute(self::GATEWAY, $gateway);
     }
@@ -434,6 +443,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::GLOBAL_TOKEN, $globalToken);
     }
 
+    public function setSave($save)
+    {
+        $this->setAttribute(self::SAVE, $save);
+    }
+
     public function incrementOtpAttempts()
     {
         $attempts = $this->getOtpAttemptsAttribute() + 1;
@@ -448,16 +462,21 @@ class Entity extends Base\PublicEntity
         $this->setOtpCount($count);
     }
 
+    public function setLateAuthorized($lateAuthorized)
+    {
+        $this->setAttribute(self::LATE_AUTHORIZED, $lateAuthorized);
+    }
+
 // ----------------------- Setters Ends-----------------------------------------
 
 // ----------------------- Mutator ---------------------------------------------
 
-    public function setAmountAttribute($amount)
+    protected function setAmountAttribute($amount)
     {
         $this->attributes[self::AMOUNT] = (int) $amount;
     }
 
-    public function setContactAttribute($contact)
+    protected function setContactAttribute($contact)
     {
         $number = new PhoneBook($contact, true);
 
@@ -485,13 +504,13 @@ class Entity extends Base\PublicEntity
 
 // ----------------------- Accessor --------------------------------------------
 
-    public function getAmountAttribute()
+    protected function getAmountAttribute()
     {
         return (int) $this->attributes[self::AMOUNT];
     }
 
     // TODO: Return a phonebook instance (like carbon) instead of string
-    public function getContactAttribute()
+    protected function getContactAttribute()
     {
         $contact = $this->attributes[self::CONTACT];
 
@@ -500,27 +519,27 @@ class Entity extends Base\PublicEntity
         return (string) $phoneBook;
     }
 
-    public function getAmountAuthorizedAttribute()
+    protected function getAmountAuthorizedAttribute()
     {
         return (int) $this->attributes[self::AMOUNT_AUTHORIZED];
     }
 
-    public function getAmountRefundedAttribute()
+    protected function getAmountRefundedAttribute()
     {
         return (int) $this->attributes[self::AMOUNT_REFUNDED];
     }
 
-    public function getAutoCapturedAttribute()
+    protected function getAutoCapturedAttribute()
     {
         return (bool) $this->attributes[self::AUTO_CAPTURED];
     }
 
-    public function getSignedAttribute()
+    protected function getSignedAttribute()
     {
         return (bool) $this->attributes[self::SIGNED];
     }
 
-    public function getVerifiedAttribute()
+    protected function getVerifiedAttribute()
     {
         $verified = $this->attributes[self::VERIFIED];
 
@@ -532,32 +551,32 @@ class Entity extends Base\PublicEntity
         return $verified;
     }
 
-    public function getCapturedAttribute()
+    protected function getCapturedAttribute()
     {
         return ($this->attributes[self::CAPTURED_AT] !== null);
     }
 
-    public function getFeeAttribute()
+    protected function getFeeAttribute()
     {
         return (int) $this->attributes[self::FEE];
     }
 
-    public function getServiceTaxAttribute()
+    protected function getServiceTaxAttribute()
     {
         return (int) $this->attributes[self::SERVICE_TAX];
     }
 
-    public function getEmiPlanIdAttribute()
+    protected function getEmiPlanIdAttribute()
     {
         return $this->attributes[self::EMI_PLAN_ID];
     }
 
-    public function getSaveAttribute()
+    protected function getSaveAttribute()
     {
         return (bool) $this->attributes[self::SAVE];
     }
 
-    public function getOtpAttemptsAttribute()
+    protected function getOtpAttemptsAttribute()
     {
         $attempts = $this->attributes[self::OTP_ATTEMPTS];
 
@@ -569,7 +588,7 @@ class Entity extends Base\PublicEntity
         return $attempts;
     }
 
-    public function getOtpCountAttribute()
+    protected function getOtpCountAttribute()
     {
         $count = $this->attributes[self::OTP_COUNT];
 
@@ -820,7 +839,7 @@ class Entity extends Base\PublicEntity
 
     public function getDaysSinceAuthorized()
     {
-        $now = time();
+        $now = Carbon::now('Asia/Kolkata')->timestamp;
 
         $at = $this->getAuthorizeTimestamp();
         $diff = $now - $at;
@@ -836,6 +855,11 @@ class Entity extends Base\PublicEntity
     public function getSave()
     {
         return (bool) $this->getAttribute(self::SAVE);
+    }
+
+    public function getGlobalToken()
+    {
+        return $this->getAttribute(self::GLOBAL_TOKEN);
     }
 
     public function getCardId()
@@ -861,10 +885,6 @@ class Entity extends Base\PublicEntity
     public function getMethodWithDetail()
     {
         $method = Method::formatted($this->getMethod());
-        $walletNames = [
-            'paytm' =>  'PayTM',
-            'mobikwik' =>  'Mobikwik'
-        ];
 
         switch($this->getMethod())
         {
@@ -940,6 +960,20 @@ class Entity extends Base\PublicEntity
             $array[self::CARD_ID] =
                 Card\Entity::getIdPrefix() . $this->getAttribute(self::CARD_ID);
         }
+    }
+
+    public function associateTerminal($terminal)
+    {
+        if ($terminal === null)
+        {
+            throw new Exception\RuntimeException(
+                'Terminal should not be null',
+                ['payment' => $this->toArrayAdmin()]);
+        }
+
+        $this->terminal()->associate($terminal);
+
+        $this->setGateway($terminal->getGateway());
     }
 
 
@@ -1046,7 +1080,7 @@ class Entity extends Base\PublicEntity
 
     public function app()
     {
-        return $this->belongsTo('RZP\Models\Customer\App\Entity', self::APP_TOKEN);
+        return $this->belongsTo('RZP\Models\Customer\AppToken\Entity', self::APP_TOKEN);
     }
 
     public function emiPlan()
@@ -1081,7 +1115,7 @@ class Entity extends Base\PublicEntity
         else
         {
             throw new Exception\LogicException(
-                'Refund amount should be less than or equal to amount unrefunded');
+                'Refund amount should be less than or equal to amount not refunded yet');
         }
 
         $amountRefunded = $this->getAmountRefunded() + $amount;

@@ -19,7 +19,7 @@ class Inferno
     protected $mode;
 
     protected $errorMessage;
-    
+
     protected $event;
 
     const HASH_ALGO = 'sha256';
@@ -40,7 +40,7 @@ class Inferno
      * We keep it internally as 7 seconds
      * but publicly we only say it's 5 seconds.
      */
-    const WEBHOOK_TIMEOUT = 7;
+    const WEBHOOK_TIMEOUT = 20;
 
     public function __construct()
     {
@@ -62,7 +62,7 @@ class Inferno
         $this->mode = $data['mode'];
 
         $this->event = $data['event'];
-        
+
         $webhook = $this->getWebhook($data);
 
         if ($webhook->isActive() === false)
@@ -192,7 +192,10 @@ class Inferno
 
         $this->trace->info(
             TraceCode::WEBHOOK_FIRING,
-            $request);
+            [
+                'webhook_id' => $webhook->getId(),
+                'request'    => $request
+            ]);
 
         try
         {
@@ -207,7 +210,9 @@ class Inferno
             //
             if (\RZP\Gateway\Utility::checkTimeout($e))
             {
-                $this->errorMessage = 'Webhook request timed out. We keep the timeout duration as 5 seconds. We will only retry 3 times before deactivating webhook.';
+                $this->errorMessage = 'Webhook request timed out. We keep the timeout duration as ' .
+                    round(self::WEBHOOK_TIMEOUT * 0.75) .
+                    ' seconds. We will only retry 3 times before deactivating webhook.';
             }
             else if ($this->isKnownRequestsException($e))
             {
@@ -260,7 +265,7 @@ class Inferno
     {
         $secret = $webhook->getSecret();
 
-        $hmac = $this->generateHMAC($event, $secret);
+        $hmac = static::generateHMAC($event, $secret);
 
         $headers = $this->getRequestHeaders($hmac);
 

@@ -18,4 +18,5 @@ class Status
     const CAPTURE_FAILED            = 'capture_failed';
     const CREATED                   = 'created';
     const REFUNDED                  = 'refunded';
+    const REFUND_FAILED             = 'refund_failed';
 }

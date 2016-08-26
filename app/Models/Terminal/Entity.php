@@ -37,6 +37,10 @@ class Entity extends Base\PublicEntity
 
     const MAX_TERMINALS_COUNT           = 25;
 
+    const STATUS                        = 'status';
+
+    //const PRIORITY                      = 'priority';
+
     protected $fillable = array(
         self::MERCHANT_ID,
         self::GATEWAY,
@@ -265,12 +269,12 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SHARED);
     }
 
-    public function getUsedCountAttribute()
+    protected function getUsedCountAttribute()
     {
         return (int) $this->attributes[self::USED_COUNT];
     }
 
-    public function getCategoryAttribute()
+    protected function getCategoryAttribute()
     {
         $category = $this->attributes[self::CATEGORY];
 
@@ -287,7 +291,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::EMI_DURATION);
     }
 
-    public function getEmiDurationAttribute()
+    protected function getEmiDurationAttribute()
     {
         $emiDuration = $this->attributes[self::EMI_DURATION];
 
@@ -296,9 +300,10 @@ class Entity extends Base\PublicEntity
             $emiDuration = (int) $emiDuration;
         }
 
-        return $emiDuration;    }
+        return $emiDuration;
+    }
 
-    public function getCardAttribute()
+    protected function getCardAttribute()
     {
         return (bool) $this->attributes[self::CARD];
     }
@@ -308,7 +313,7 @@ class Entity extends Base\PublicEntity
         return (bool) $this->attributes[self::NETBANKING];
     }
 
-    public function getSharedAttribute()
+    protected function getSharedAttribute()
     {
         return (bool) $this->attributes[self::SHARED];
     }
@@ -381,35 +386,15 @@ class Entity extends Base\PublicEntity
         return false;
     }
 
-    public function isValidForEmiDurationAndBank($bank, $emiDuration)
+    public function isValidEmiTerminal($gateway, $emiDuration)
     {
-        $cardTerminalBanks = Payment\Gateway::$emiBanksUsingCardTerminals;
-
-        // For banks of the first type
-        // just use a plain old card terminal
-        if (in_array($bank, $cardTerminalBanks))
+        if (($this->isEmiEnabled()) and
+            ($this->getGateway() === $gateway) and
+            ($this->getEmiDuration() === $emiDuration))
         {
-            // for Kotak, process as normal card transaction and mail for emi
-            return (($this->isCardEnabled()) and ($this->isEmiEnabled() === false)) ;
+            return true;
         }
-        // For the other emi banks, this has to be an emi terminal
-        // of the right gateway and the right duration
-        else if ($this->isEmiEnabled())
-        {
-            $emiBankGateway = Payment\Gateway::$emiBankToGatewayMap[$bank];
 
-            $terminalGateway = $this->getGateway();
-
-            // The HDFC case currently where the payment has
-            // to be routed through the corresponding duration
-            // terminal and the corresponding
-            return (($terminalGateway === $emiBankGateway) and
-                    ($emiDuration === $this->getEmiDuration()));
-        }
-        // if emi is not enabled at all, then definitely not an emi terminal
-        else
-        {
-            return false;
-        }
+        return false;
     }
 }

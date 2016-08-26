@@ -65,12 +65,12 @@ class Core extends Base\Core
         return $customer;
     }
 
-    public function sendOtp($input)
+    public function sendOtp($input, $merchant)
     {
         $input[Entity::CONTACT] = Customer\Validator::validateAndParseContact(
             $input[Entity::CONTACT]);
 
-        $data = (new Customer\Raven)->sendOtp($input);
+        $data = (new Customer\Raven)->sendOtp($input, $merchant);
 
         return $data;
     }
@@ -90,7 +90,7 @@ class Core extends Base\Core
         $customer = $this->getOrCreateGlobalCustomer($input);
 
         // Create app token for customer
-        $appToken = $this->createCustomerAppToken($customer, $input);
+        $appToken = $this->createCustomerAppToken($customer, $input, $merchant);
 
         // Fetch existing tokens for global customer
         $tokens = (new Customer\Token\Core)->fetchTokensByCustomer($customer);
@@ -115,36 +115,37 @@ class Core extends Base\Core
         return $response;
     }
 
-    protected function createCustomerAppToken($customer, $input)
+    protected function createCustomerAppToken($customer, $input, $merchant)
     {
         // Currently all app_tokens will be generated for common rzp merchant
         $appMerchant = $customer->merchant->getId();
 
-        // @todo: switch to merchant for newer sdk based on query params
-
-        $custAppInput = array(
-            App\Entity::CUSTOMER_ID => $customer->getId(),
-            App\Entity::MERCHANT_ID => $appMerchant);
-
-        if (isset($input[App\Entity::DEVICE_TOKEN]))
+        if (Base\Utility::isUpdatedAndroidSdk($input))
         {
-            $custAppInput[App\Entity::DEVICE_TOKEN] = $input[App\Entity::DEVICE_TOKEN];
+            $appMerchant = $merchant->getId();
         }
 
-        $app = (new App\Core)->create($custAppInput);
+        $custAppInput = array(
+            AppToken\Entity::CUSTOMER_ID => $customer->getId(),
+            AppToken\Entity::MERCHANT_ID => $appMerchant);
+
+        if (isset($input[AppToken\Entity::DEVICE_TOKEN]))
+        {
+            $custAppInput[AppToken\Entity::DEVICE_TOKEN] = $input[AppToken\Entity::DEVICE_TOKEN];
+        }
+
+        $app = (new AppToken\Core)->create($custAppInput);
 
         return $app;
     }
 
     protected function verifyRavenOtp($input, $merchant)
     {
-        $input['context'] = $merchant->getId();
-
-        $input['source'] = 'api';
-
         try
         {
-            (new Customer\Raven)->verifyOtp($input);
+            $input['merchant_id'] = $merchant->getId();
+
+            (new Customer\Raven)->verifyOtp($input, $merchant);
         }
         catch (\Exception $e)
         {
@@ -177,6 +178,8 @@ class Core extends Base\Core
                 Customer\Entity::EMAIL => $email
             ];
 
+
+
             $customer = $this->createGlobalCustomer($custCreateInput);
         }
 
@@ -188,20 +191,20 @@ class Core extends Base\Core
         $customerId = null;
         $merchantId = null;
         $customer = null;
-        $customerApp = null;
+        $appToken = null;
         $appToken = null;
 
         if (empty($input[Payment\Entity::APP_TOKEN]) === false)
         {
             $appToken = $input[Payment\Entity::APP_TOKEN];
 
-            Customer\App\Entity::verifyIdAndStripSign($appToken);
+            Customer\AppToken\Entity::verifyIdAndStripSign($appToken);
 
-            $customerApp = (new Customer\App\Core)->getAppByAppToken(
+            $appToken = (new Customer\AppToken\Core)->getAppByAppToken(
                 $appToken,
                 $merchant);
 
-            $customerId = $customerApp->getCustomerId();
+            $customerId = $appToken->getCustomerId();
 
             $merchantId = Account::SHARED_ACCOUNT;
         }
@@ -226,10 +229,10 @@ class Core extends Base\Core
                 'app_token'   => $appToken,
             ]);
 
-        return array($customer, $customerApp);
+        return array($customer, $appToken);
     }
 
-    protected function putAppTokenInSession($appToken)
+    public function putAppTokenInSession($appToken)
     {
         // setup session params
         // as device token is public, only app_token is sufficient

@@ -8,6 +8,7 @@ use RZP\Services\TokenEx;
 use RZP\Models\Card;
 use RZP\Models\Emi\Service;
 use RZP\Models\Emi\Banks\Base;
+use RZP\Gateway\Base\Action;
 
 class EmiFile extends Base\EmiFile
 {
@@ -30,7 +31,8 @@ class EmiFile extends Base\EmiFile
     {
         $txt = $this->getEmiData($input);
 
-        $urlExcel = $this->writeToExcelFile($txt, $this->getFileToWriteNameWithoutExt());
+        // Axis wants the file to be in CSV format, but named with a .txt extension
+        $urlExcel = $this->writeToCsvFile($txt, $this->getFileToWriteNameWithoutExt(), $this->getTextFullFilePath());
 
         $this->sendAxisEmiFile();
 
@@ -41,14 +43,16 @@ class EmiFile extends Base\EmiFile
     {
         $this->fetchAndSendPassword();
 
-        $zipFile = $this->getZippedFile();
+        $fullPath = $this->getTextFullFilePath();
+
+        $zipFile = $this->getZippedFile($fullPath);
 
         $data['file'] = $zipFile;
-        $data['body'] = 'Please forward the Axis Emi file to axis';
+        $data['body'] = 'Please process the attached EMI file';
 
         $this->mail->queue('emails.message', $data, function ($message) use ($data)
         {
-            $emails = ['settlements@razorpay.com'];
+            $emails = ['axiscards.emi@razorpay.com', 'settlements@razorpay.com'];
 
             $message->from('emifiles@razorpay.com', 'Axis Emi File');
 
@@ -68,17 +72,15 @@ class EmiFile extends Base\EmiFile
 
         foreach ($input as $emiPayment)
         {
-            $date = Carbon::createFromTimestamp($emiPayment->getCaptureTimestamp(), 'Asia/Kolkata')->format('d-M-Y');
-
             $emiTenure = (new Service)->fetch($emiPayment->getEmiPlanId())['duration'];
 
             $data[] = array(
                 'Card Number'                  => $this->getCardNumber($emiPayment->card),
                 'Transaction Amount'           => $emiPayment->getAmount()/100,
-                'Transaction Date'             => $date,
-                'Settlement Date'              => $date,
+                'Transaction Date'             => $this->formattedDateFromTimestamp($emiPayment->getCaptureTimestamp()),
+                'Settlement Date'              => $this->formattedDateFromTimestamp($emiPayment->transaction->getSettledAt()),
                 'Authorisation Id'             => $this->getAuthCode($emiPayment),
-                'Merchant Name'                => $emiPayment->merchant->getName(),
+                'Merchant Name'                => 'Razorpay Payments',
                 'MCC (Merchant Category Code)' => $emiPayment->merchant->getCategory(), // Non Mandatory,
                 'Tenure'                       => $emiTenure,
                 'Source'                       => 'Razorpay',
@@ -89,22 +91,9 @@ class EmiFile extends Base\EmiFile
         return $data;
     }
 
-    protected function getAuthCode($payment)
+    private function formattedDateFromTimestamp($timestamp)
     {
-        $gateway = ucfirst($payment->gateway);
-
-        $entity = 'RZP\Gateway\\'.$gateway.'\\Entity';
-
-        $repo = 'RZP\Gateway\\'.$gateway.'\\Repository';
-
-        if (defined($repo))
-        {
-            $attributes = $repo->findByPaymentId($payment->id);
-
-            return (new $entity)->build($attributes)->getAuthCode();
-        }
-
-        return '000000';
+        return Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata')->format('d-M-Y');
     }
 
     protected function sendEmiPassword()

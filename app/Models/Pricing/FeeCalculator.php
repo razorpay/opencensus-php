@@ -3,12 +3,12 @@
 namespace RZP\Models\Pricing;
 
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Models\Merchant;
 use RZP\Exception;
-use RZP\Services\SlackPoster;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
@@ -103,7 +103,7 @@ class FeeCalculator
         if ($rule === null)
         {
             throw new Exception\LogicException(
-                'No appropriate pricing rule found', ['payment' => $payment->toArray()]);
+                'No appropriate pricing rule found', null, ['payment' => $payment->toArray()]);
         }
 
         return $rule;
@@ -229,7 +229,13 @@ class FeeCalculator
         {
             throw new Exception\LogicException(
                 'Invalid rule count: 0, Payment Id: ' . $payment->getId(),
-                ['intl' => $international, 'cardType' => $cardType, 'network' => $network]);
+                ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT,
+                [
+                    'intl' => $international,
+                    'card_type' => $cardType,
+                    'network' => $network,
+                    'merchant_id' => $payment->getMerchantId()
+                ]);
         }
 
         $amount = $payment->getAmount();
@@ -400,7 +406,7 @@ class FeeCalculator
             /*
             $slackArray = ['id' => $payment->card->getDashboardEntityLinkForSlack() ];
 
-            $this->slackPost(
+            $this->app['slack']->queue(
                 'Unknown card type found',
                 $slackArray,
                 ['channel' => '#tech_logs']);

@@ -17,6 +17,7 @@ class MerchantFilter extends Terminal\Filter
 {
     protected $properties = [
         'tpv',
+        'risk',
     ];
 
     /**
@@ -26,22 +27,46 @@ class MerchantFilter extends Terminal\Filter
      * TPV required merchants, and non TPV terminals for non
      * TPV merchants.
      *
+     * @param Terminal\Entity $terminal
+     * @param array $input
      * @return bool
      */
-    public function tpvFilter($terminal, $input)
+    public function tpvFilter(Terminal\Entity $terminal, array $input)
     {
-        $method = $input['payment']->getMethod();
-
-        if ($method !== Method::NETBANKING)
+        if ($input['payment']->isNetbanking())
         {
-            return true;
+            if ($input['merchant']->isTPVRequired())
+            {
+                return ($terminal->isTPVTerminal() === true);
+            }
+
+            return ($terminal->isTPVTerminal() === false);
         }
 
-        if ($input['merchant']->isTPVRequired())
+        return true;
+    }
+
+
+    /**
+     * For merchants with a risk rating above 4 and card use only axis_migs
+     * terminals if the card used is supported
+     */
+    public function riskFilter($terminal, $input)
+    {
+        if ($input['payment']->isMethodCardOrEmi())
         {
-            return ($terminal->isTPVTerminal() === true);
+            if ($input['merchant']->getRiskRating() >= 4)
+            {
+                $network = $input['payment']->card->getNetworkCode();
+
+                if (Gateway::isCardNetworkSupported($network, Gateway::AXIS_MIGS))
+                {
+                    return ($terminal->getGateway() === Gateway::AXIS_MIGS);
+                }
+            }
         }
 
-        return ($terminal->isTPVTerminal() === false);
+        // Else allow - By default allow all transactions
+        return true;
     }
 }

@@ -21,9 +21,8 @@ class Repository extends Base\Repository
 
     public function findByGatewayRefundId($gatewayRefundId)
     {
-        $repo = $this->repo;
-
-        return $repo::where('refundId', '=', $gatewayRefundId)
+        return $this->newQuery()
+                    ->where('refundId', '=', $gatewayRefundId)
                     ->firstOrFail();
     }
 }

@@ -4,29 +4,43 @@ namespace RZP\Models\Terminal;
 
 use App;
 use RZP\Constants\Mode;
+use RZP\Models\Card\Network;
 use RZP\Models\Payment;
 
 use RZP\Trace;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Terminal;
 
 class Selector
 {
+    protected $mode;
+    protected $payment;
+    protected $repo;
+    protected $trace;
+    protected $merchant;
+    protected $input;
+
     protected static $filters = [
         Filters\TransactionFilter::class,
         Filters\MerchantFilter::class,
+        Filters\MiscFilter::class,
     ];
 
+    /**
+     * Very important that the sorting order is maintained
+     * @var array
+     */
     protected static $sorters = [
+        Sorters\ExclusivitySorter::class,
         Sorters\CardSorter::class,
         Sorters\NetbankingSorter::class,
         Sorters\MerchantSorter::class,
     ];
 
-    public function setup($payment, $mode)
+    public function __construct(Payment\Entity $payment, $mode)
     {
-        $app = \App::getFacadeRoot();
+        $app = App::getFacadeRoot();
 
         $this->mode = $mode;
 
@@ -49,7 +63,7 @@ class Selector
     {
         // Fetch terminals for both the current merchant and the shared Merchant
         $merchantTerminals = $this->repo->getTerminalsForMerchantAndSharedMerchant(
-                                            $this->merchant->getId());
+            $this->merchant->getId());
 
         // Fetch Shared Terminals
         $sharedTerminals = $this->repo->getAllSharedTerminals();
@@ -59,79 +73,96 @@ class Selector
         return $merchantTerminals;
     }
 
-    public function select($payment, $mode, $verbose = false)
+    public function select(Options $options = null, $verbose = false)
     {
-        $this->setup($payment, $mode);
-
         $terminals = $this->getTerminals();
 
-        // Trace available terminals before selection
         $this->traceTerminals($terminals, 'Terminals fetched from db', $verbose);
 
-        // Terminals first filtered
-        // Terminals that result in failure due to gateway are recorded and
-        // removed in the next attempt
-        $filteredTerminals = $terminals;
+        //
+        // Initially, the terminals are run through a filter class, which removes
+        // the terminals which do not match the filters. For further iterations, the
+        // filtered list of terminals is used to further filter upon using the other
+        // filter classes.
+        //
+        $filteredTerminals = $terminals->all();
 
         foreach (self::$filters as $filter)
         {
             $filteredTerminals = (new $filter)->filter($filteredTerminals, $this->input, $verbose);
-            $this->traceTerminals($filteredTerminals, 'Terminals after '.$filter, $verbose);
+            $this->traceTerminals($filteredTerminals, 'Terminals after ' . $filter, $verbose);
         }
 
-        // Trace available terminals after filtration
         $this->traceTerminals($filteredTerminals, 'Terminals after filtration', $verbose);
 
-        // Terminals next sorted
+        //
+        // Sorting is done on the final list of filtered terminals.
+        // The sorting is run for each of the sorting classes.
+        //
         $sortedTerminals = $filteredTerminals;
 
         foreach (self::$sorters as $sorter)
         {
             $sortedTerminals = (new $sorter)->sort($sortedTerminals, $this->input, $verbose);
-            $this->traceTerminals($sortedTerminals, 'Terminals after '.$sorter, $verbose);
+            $this->traceTerminals($sortedTerminals, 'Terminals after ' . $sorter, $verbose);
         }
 
-        // Trace available terminals after filtration
         $this->traceTerminals($sortedTerminals, 'Terminals after sorting', $verbose);
 
         $terminal = null;
 
-        if ((empty($sortedTerminals)) and ($this->mode === Mode::TEST))
+        if (empty($sortedTerminals) === true)
         {
-            $terminal = $this->repo->find(Shared::SHARP_RAZORPAY_TERMINAL);
+            if ($this->mode === Mode::TEST)
+            {
+                // The current list of terminals which were retrieved earlier does
+                // not contain the sharp terminal and hence, making a call to DB.
+                $terminal = $this->repo->find(Shared::SHARP_RAZORPAY_TERMINAL);
+
+                $sortedTerminals = array($terminal);
+            }
+            else
+            {
+                throw new Exception\RuntimeException(
+                    'No terminal found.',
+                    ['payment' => $this->payment->toArrayAdmin()]);
+            }
         }
-        else if (isset($sortedTerminals[0]))
+        // if binning is enabled, make the binned terminal the top most one
+        // add other terminals in case of failing binned terminal
+        if ($options and $options->getChance() > 0)
         {
-            $terminal = $sortedTerminals[0];
+            $terminal = (new Binning)->select($sortedTerminals[0], $options->getChance(), $this->input, $terminals);
+
+            array_unshift($sortedTerminals, $terminal);
+
+            $sortedTerminals = array_unique($sortedTerminals, SORT_REGULAR);
+
+            // array unique removes index. We need to renumber it.
+            $sortedTerminals = array_values($sortedTerminals);
         }
 
-        $this->checkForCustomExceptions($terminal);
+        $terminal = $sortedTerminals[0];
 
-        // When the terminal selector has to activated.
-        // uncomment the following code
-        $this->setTerminalForPayment($payment, $terminal);
+        $this->payment->associateTerminal($terminal);
+
+        // hack to return multiple terminals if needed.
+        if ($options and $options->getMultiple() === true)
+        {
+            return $sortedTerminals;
+        }
 
         return $terminal;
     }
 
-    protected function setTerminalForPayment($payment, $terminal = null)
-    {
-        if ($terminal === null)
-        {
-            throw new Exception\RuntimeException(
-                'Terminal should not be null',
-                ['payment' => $payment->toArrayAdmin()]);
-        }
-
-        $payment->terminal()->associate($terminal);
-
-        $payment->setGateway($terminal->getGateway());
-    }
-
     protected function traceTerminals($terminals, $msg, $verbose = false)
     {
-        if (($verbose) and
-            ($terminals))
+        if ($this->merchant->getId() === '4izmfM9TFCAgFN')
+        {
+            $verbose = true;
+        }
+
+        if (($verbose === true) and (empty($terminals) === false))
         {
             $terminalIds = [];
 
@@ -146,29 +177,26 @@ class Selector
         }
     }
 
-    /**
-     * Custom exceptions that are to be only thrown if no terminal is available,
-     * in live mode on cards.
-     *
-     * @param terminal $terminal Chosen terminal
-     * @return void throw custom exception
-     */
-    protected function checkForCustomExceptions($terminal)
-    {
-        if (($terminal === null) and
-            ($this->input['mode'] === Mode::LIVE) and
-            ($this->input['payment']->getMethod() === Payment\Method::CARD))
-        {
-            $network = $this->input['payment']->card->getNetworkCode();
-            // Check for partially supported networks on live
-            $networks = Payment\Gateway::$partiallySupportedCardNetworks;
 
-            if (in_array($network, $networks))
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
-            }
+    /**
+     * Methods selects a list of terminals for payment. We are
+     * selecting a list here since, we want to iterate through
+     * a bunch of terminals, in case the terminal fails
+     * @return Entity
+     */
+    public function selectTerminals()
+    {
+        $options = new Terminal\Options();
+
+        $terminalsSelected = $this->select($options);
+
+        if ($options->getMultiple() === false)
+        {
+            // make this into an array, since the caller expects an array
+            $terminalsSelected = array($terminalsSelected);
         }
+
+        return $terminalsSelected;
 
     }
 }

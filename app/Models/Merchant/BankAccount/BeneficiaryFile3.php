@@ -51,6 +51,22 @@ class BeneficiaryFile3
     {
         $list = (new BankAccount\Repository)->getAllOrderedByCreatedAt();
 
+        $result = $this->createBenefeciaryFile($list);
+
+        return $result;
+    }
+
+    public function generateBetweenTimestamps($from, $to)
+    {
+        $list = (new BankAccount\Repository)->getBankAccountsBetweenTimestamp($from, $to);
+
+        $result = $this->createBenefeciaryFile($list);
+
+        return $result;
+    }
+
+    protected function createBenefeciaryFile($list)
+    {
         $data = array();
 
         foreach ($list as $ba)

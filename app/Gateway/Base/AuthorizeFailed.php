@@ -27,6 +27,7 @@ trait AuthorizeFailed
             throw new Exception\LogicException(
                 'When converting failed payment to authorized, payment verification ' .
                 'should have failed but instead it did not',
+                null,
                 $input);
         }
 
@@ -49,6 +50,7 @@ trait AuthorizeFailed
         {
             throw new Exception\LogicException(
                 'Should not have reached here',
+                null,
                 ['payment' => $verify->input['payment']]);
         }
 

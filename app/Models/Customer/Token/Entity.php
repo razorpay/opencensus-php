@@ -154,7 +154,7 @@ class Entity extends Base\PublicEntity
         return ($expiredAt <= time());
     }
 
-    public function setPublicCardAttribute(array & $array)
+    protected function setPublicCardAttribute(array & $array)
     {
         if ($this->card !== null)
         {
@@ -164,7 +164,17 @@ class Entity extends Base\PublicEntity
 
     protected function generateToken($input)
     {
-        $token = substr(str_shuffle("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, 14);
+        $rand = '';
+
+        for ($i = 0; $i < 3; $i++)
+        {
+            $dec = hexdec(bin2hex(openssl_random_pseudo_bytes(5)));
+
+            // Convert the random decimal generated to base 62
+            $rand .= self::base62($dec);
+        }
+
+        $token = substr($rand, 0, 14);
 
         $this->setAttribute(self::TOKEN, $token);
     }

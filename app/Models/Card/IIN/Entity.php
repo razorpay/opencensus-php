@@ -91,7 +91,7 @@ class Entity extends Base\PublicEntity
         Card\Type::checkType($type);
         $this->setAttribute(self::TYPE, $type);
     }
-    
+
     public function setCountry($countryCode)
     {
         $this->setAttribute(self::COUNTRY, $countryCode);
@@ -106,18 +106,28 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::NETWORK);
     }
-    
+
+    public function getNetworkCode()
+    {
+        return $this->getNetworkCodeAttribute();
+    }
+
+    protected function getNetworkCodeAttribute()
+    {
+        return Card\Network::getCode($this->getNetwork());
+    }
+
     public function getTrivia()
     {
         return $this->getAttribute(self::TRIVIA);
     }
-    
+
     public function setTrivia($trivia)
     {
         $this->setAttribute(self::TRIVIA, $trivia);
     }
 
-    public function getIinAttribute()
+    protected function getIinAttribute()
     {
         return (int) $this->attributes[self::IIN];
     }
@@ -126,7 +136,7 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::ISSUER);
     }
-    
+
     public function setIssuer($issuer)
     {
         $this->setAttribute(self::ISSUER, $issuer);
@@ -147,12 +157,12 @@ class Entity extends Base\PublicEntity
         return (bool) $this->attributes[self::OTP_READ];
     }
 
-    public function getIssuerAttribute()
+    protected function getIssuerAttribute()
     {
         return $this->attributes[self::ISSUER];
     }
 
-    public function getInternationalAttribute()
+    protected function getInternationalAttribute()
     {
         $country = $this->getCountry();
 

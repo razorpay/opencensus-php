@@ -69,7 +69,7 @@ $factory(\RZP\Models\Card\Entity::class, [
     'length'            => '16',
     'issuer'            => 'hdfc',
     'international'     => false,
-    'vault_token'       => '1a2b3c4b5e',
+    'vault_token'       => 'NDExMTExMTExMTExMTExMQ==',
     'vault'             => 'tokenex',
     'trivia'            => '',
 ]);
@@ -259,9 +259,16 @@ $factory(\RZP\Models\Customer\Token\Entity::class, [
     'card_id' => null
 ]);
 
-$factory(\RZP\Models\Customer\App\Entity::class, [
+$factory(\RZP\Models\Customer\AppToken\Entity::class, [
     'id' => $faker->uniqueid,
     'customer_id'  => '10000gcustomer',
     'device_token' => 'test',
     'merchant_id'  => '10000000000000'
+]);
+
+$factory(\RZP\Models\Merchant\Credits\Entity::class, [
+    'id'            => $faker->uniqueid,
+    'merchant_id'   => '10000000000000',
+    'value'         => 150,
+    'campaign'      => 'silent-ads',
 ]);

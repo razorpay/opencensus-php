@@ -116,6 +116,8 @@ class Entity extends Base\PublicEntity
         self::INTERNATIONAL     => null,
         self::EMI               => false,
         self::GLOBAL_CARD_ID    => null,
+        self::VAULT             => null,
+        self::VAULT_TOKEN       => null,
     );
 
     public function merchant()
@@ -201,7 +203,12 @@ class Entity extends Base\PublicEntity
         return $this->getNetworkCodeAttribute();
     }
 
-    public function getNetworkCodeAttribute()
+    public function getNetworkColorCode()
+    {
+        return Card\Network::getColorCode($this->getNetworkCode());
+    }
+
+    protected function getNetworkCodeAttribute()
     {
         return Card\Network::getCode($this->getNetwork());
     }
@@ -281,7 +288,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::TRIVIA, $trivia);
     }
 
-    public function setPublicEmiAttribute(array & $array)
+    protected function setPublicEmiAttribute(array & $array)
     {
         $array[self::ISSUER] = null;
         $array[self::EMI] = $this->getEmi();
@@ -311,17 +318,17 @@ class Entity extends Base\PublicEntity
         return (bool) $this->getAttribute(self::EMI);
     }
 
-    public function getExpiryMonthAttribute()
+    protected function getExpiryMonthAttribute()
     {
         return (int) $this->getAttributeFromArray(self::EXPIRY_MONTH);
     }
 
-    public function getExpiryYearAttribute()
+    protected function getExpiryYearAttribute()
     {
         return (int) $this->getAttributeFromArray(self::EXPIRY_YEAR);
     }
 
-    public function getInternationalAttribute()
+    protected function getInternationalAttribute()
     {
         $intl = $this->attributes[self::INTERNATIONAL];
 
@@ -333,7 +340,7 @@ class Entity extends Base\PublicEntity
         return (bool) $this->attributes[self::INTERNATIONAL];
     }
 
-    public function getEmiAttribute()
+    protected function getEmiAttribute()
     {
         return (bool) $this->attributes[self::EMI];;
     }
@@ -367,7 +374,7 @@ class Entity extends Base\PublicEntity
         return ($network === Card\Network::$fullName[Card\Network::AMEX]);
     }
 
-    public function getTokenRelevantAttributes()
+    protected function getTokenRelevantAttributes()
     {
         $emi = $this->getAttribute(self::EMI);
 

@@ -290,26 +290,9 @@ class Gateway extends Base\Gateway
 
         $url = null;
 
-        try
-        {
-            $values = $this->getFormValues($response->body, $request['url']);
+        $values = $this->getFormValues($response->body, $request['url']);
 
-            $url = $values['REDIRECTURL'];
-        }
-        catch (\InvalidArgumentException $e)
-        {
-            $msg = $e->getMessage();
-
-            if ($msg === 'The current node list is empty')
-            {
-                // This happens because hdfc nb gateway is down.
-                // We will need to verify the request later.
-                throw new Exception\GatewayTimeoutException(
-                    'Payment verify request to Hdfc nb gateway timed out');
-            }
-
-            throw $e;
-        }
+        $url = $values['REDIRECTURL'];
 
         $content = [];
         $parts = parse_url($url);

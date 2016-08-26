@@ -23,6 +23,19 @@ class TerminalSelectionTest extends TestCase
         $this->assertEquals('billdesk', $payment['gateway']);
         $this->assertEquals('1000BdeskTrmnl', $payment['terminal_id']);
     }
+    public function testChooseGatewayWithDirectTerminals()
+    {
+        $this->fixtures->create('terminal:multiple_netbanking_terminals');
+        $this->fixtures->create('terminal:direct_billdesk_terminal');
+        // Create all shared terminals
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        // ICIC should be served with Direct billdesk Terminal
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('billdesk', $payment['gateway']);
+        $this->assertEquals('10BillDirTrmnl', $payment['terminal_id']);
+    }
 
     public function testChooseTerminalWithCategory()
     {
@@ -116,6 +129,20 @@ class TerminalSelectionTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('1000HdfcShared', $payment['terminal_id']);
         $this->fixtures->merchant->disableEmi();
+    }
+
+    public function testTerminalChoiceOnRiskyMerchant()
+    {
+        $this->fixtures->merchant->enableRisky();
+        $this->fixtures->create('terminal:all_shared_terminals');
+
+        $payment = $this->getDefaultPaymentArray();
+        $content = $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('1000AxisMigsTl', $payment['terminal_id']);
+
+        $this->fixtures->merchant->disableRisky();
     }
 
 }

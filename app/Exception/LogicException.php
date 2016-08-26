@@ -9,16 +9,19 @@ class LogicException extends ServerErrorException
 {
     public function __construct(
         $message = null,
-        $data = null,
-        \Exception $previous = null)
+        $code = null,
+        $data = null)
     {
-        $code = ErrorCode::SERVER_ERROR_LOGICAL_ERROR;
-
         if ($message === null)
         {
             $message = 'Logical error occurred';
         }
 
-        parent::__construct($message, $code, $data, $previous);
+        if ($code === null)
+        {
+            $code = ErrorCode::SERVER_ERROR_LOGICAL_ERROR;
+        }
+
+        parent::__construct($message, $code, $data);
     }
 }

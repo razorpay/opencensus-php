@@ -70,6 +70,10 @@ class CreateCybersourceGateway extends Migration
             $table->index(Cybersource::CREATED_AT);
 
             $table->index(Cybersource::REFUND_ID);
+
+            $table->index(Cybersource::REF);
+
+            $table->index(Cybersource::CAPTURE_REF);
         });
     }
 

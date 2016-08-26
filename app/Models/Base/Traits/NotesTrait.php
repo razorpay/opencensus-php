@@ -4,6 +4,7 @@ namespace RZP\Models\Base\Traits;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Base\Notes;
 
 trait NotesTrait
 {
@@ -11,7 +12,7 @@ trait NotesTrait
 	 * Setter
 	 **************************************************************
 	 */
-	public function setNotesAttribute($notes)
+	protected function setNotesAttribute($notes)
     {
         if ($notes === '')
         {
@@ -24,8 +25,13 @@ trait NotesTrait
         {
             $notes = [];
         }
+        $notesObj = new Notes($notes);
+        $this->attributes[self::NOTES] = $notesObj->toJson();
+    }
 
-        $this->attributes[self::NOTES] = utf8_json_encode($notes);
+    public function setNotes(array $notes)
+    {
+        $this->setAttribute(self::NOTES, $notes);
     }
 
     /**************************************************************
@@ -34,25 +40,35 @@ trait NotesTrait
      */
 
     /**
-     * Makes sure that getNotes always returns an array
+     * Makes sure that getNotes always returns an object
      */
-    public function getNotesAttribute($notes)
+    protected function getNotesAttribute($notes)
     {
         $notesArray = json_decode($notes, true);
 
         if ($notesArray === '')
         {
-            return [];
+            return new Notes();
         }
 
-        return $notesArray;
+        return new Notes($notesArray);
     }
 
+    /**
+     * Returns notes object
+     *
+     *  @ \RZP\Models\Payment\Notes;
+     */
     public function getNotes()
     {
         return $this->getAttribute(self::NOTES);
     }
 
+    /**
+     * Returns notes object as json
+     *
+     *  @return string;
+     */
     public function getNotesJson()
     {
         return $this->attributes[self::NOTES];

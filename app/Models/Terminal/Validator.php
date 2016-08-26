@@ -27,6 +27,7 @@ class Validator extends Base\Validator
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
         Entity::SHARED                      => 'sometimes|boolean',
         Entity::GATEWAY_ACQUIRER            => 'sometimes|string',
+        Entity::STATUS                      => 'sometimes|enum',
     );
 
     protected static $editTerminalGateways = array(
@@ -39,7 +40,7 @@ class Validator extends Base\Validator
 
     protected static $hdfcTerminalRules = array(
         Entity::GATEWAY                     => 'required|in:hdfc',
-        Entity::GATEWAY_MERCHANT_ID         => 'required|integer|digits:5',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|integer|digits_between:5,8',
         Entity::GATEWAY_TERMINAL_ID         => 'required|integer|digits:8',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string|max:15',
         Entity::EMI                         => 'sometimes|boolean',
@@ -50,6 +51,12 @@ class Validator extends Base\Validator
     protected static $billdeskTerminalRules = array(
         Entity::GATEWAY                     => 'required|in:billdesk',
         Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|min:2'
+    );
+
+    protected static $ebsTerminalRules = array(
+        Entity::GATEWAY                     => 'required|in:ebs',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|max:5',
+        Entity::GATEWAY_SECURE_SECRET       => 'required|alpha_num|max:32',
     );
 
     protected static $axisGeniusTerminalRules = array(
@@ -66,6 +73,8 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACCESS_CODE         => 'required|alpha_num|size:8',
         Entity::GATEWAY_TERMINAL_ID         => 'required',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'required',
+        Entity::EMI                         => 'sometimes|boolean',
+        Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12',
     );
 
     protected static $axisMigsTerminalRules = array(
@@ -81,6 +90,8 @@ class Validator extends Base\Validator
         Entity::GATEWAY                     => 'required|in:cybersource',
         Entity::GATEWAY_TERMINAL_ID         => 'required|string|size:13',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string|min:50',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string|max:20',
+        Entity::GATEWAY_SECURE_SECRET       => 'required|string',
         Entity::GATEWAY_ACQUIRER            => 'required|string',
     );
 
@@ -111,6 +122,12 @@ class Validator extends Base\Validator
         Entity::GATEWAY                     => 'required|in:wallet_payumoney',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
         Entity::GATEWAY_MERCHANT_ID2        => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET       => 'required|string',
+        Entity::GATEWAY_ACCESS_CODE         => 'required|string',
+    );
+
+    protected static $walletOlamoneyTerminalRules = array(
+        Entity::GATEWAY                     => 'required|in:wallet_olamoney',
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
         Entity::GATEWAY_ACCESS_CODE         => 'required|string',
     );

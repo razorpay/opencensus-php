@@ -96,6 +96,56 @@ return [
         ],
     ],
 
+    'testCreditCardAuthNotApproved' => [
+        'request' => [
+            'content' => [
+                'card' => [
+                    // This IIN is of a credit card, to ensure that the enroll
+                    // response is auth_not_enrolled.
+                    'number' => '4628481036290001',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payment declined',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_GATEWAY,
+            'gateway_error_code' => Hdfc\ErrorCode::RP00006,
+        ],
+    ],
+
+    'testDebitCardAuthNotApproved' => [
+        'request' => [
+            'content' => [
+                'card' => [
+                    'number' => '4012001037141112'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payment declined',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_GATEWAY,
+            'gateway_error_code' => Hdfc\ErrorCode::RP00006,
+        ],
+    ],
+
     'testSignatureFailure1' => [
         'request' => [
             'content' => [
@@ -163,7 +213,7 @@ return [
         ],
         'exception' => [
             'class' => 'RZP\Exception\GatewayErrorException',
-            'internal_error_code' => ErrorCode::GATEWAY_ERROR_PARES_NOT_SUCCESFUL,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_PARES_NOT_SUCCESSFUL,
             'gateway_error_code'  => Hdfc\ErrorCode::GV00004,
         ],
     ],
@@ -252,5 +302,39 @@ return [
             ]
         ],
         'jsonp' => true
+    ],
+
+    'testAuthNotEnrolledDeniedByRisk' => [
+        'action' => 4,
+        'received' => true,
+        'amount' => '500',
+        'enroll_result' => '2',
+        'status' => 'auth_not_enroll_failed',
+        'result' => 'DENIED BY RISK',
+        'eci' => '6',
+        'auth' => null,
+        'ref' => null,
+        'avr' => null,
+        'postdate' => null,
+        'error_code' => 'RP00005',
+        'error_text' => 'Denied by risk. Response result code is "DENIED BY RISK"',
+        'entity' => 'hdfc',
+    ],
+
+    'testAuthEnrolledDeniedByRisk' => [
+        'action' => 4,
+        'received' => true,
+        'amount' => '500',
+        'enroll_result' => '1',
+        'status' => 'auth_enroll_failed',
+        'result' => 'DENIED BY RISK',
+        'eci' => null,
+        'auth' => null,
+        'ref' => null,
+        'avr' => null,
+        'postdate' => null,
+        'error_code' => 'RP00005',
+        'error_text' => 'Denied by risk. Response result code is "DENIED BY RISK"',
+        'entity' => 'hdfc',
     ],
 ];

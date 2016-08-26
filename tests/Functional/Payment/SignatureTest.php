@@ -26,7 +26,7 @@ class SignatureTest extends TestCase
     public function testValidSignature()
     {
         $payment = $this->payment;
-        $payment['card']['number'] = '4012001037141112';
+        $payment['card']['number'] = '4012001037167778';
 
         $payment['signature'] = $this->signPayment($payment, 'TheKeySecretForTests');
 
@@ -48,7 +48,7 @@ class SignatureTest extends TestCase
     public function testInvalidMerchantOrderId()
     {
         $payment = $this->payment;
-        $payment['card']['number'] = '4012001037141112';
+        $payment['card']['number'] = '4012001037167778';
 
         $payment['signature'] = $this->signPayment($payment, 'TheKeySecretForTests');
 

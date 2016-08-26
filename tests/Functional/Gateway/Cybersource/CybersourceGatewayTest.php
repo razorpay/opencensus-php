@@ -35,6 +35,11 @@ class CybersourceGatewayTest extends TestCase
 
         $payment = $this->doAuthPayment($payment);
 
+        $cybersourceAuth = $this->getLastEntity('cybersource', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testCybersourceAuthEntity'], $cybersourceAuth);
+
         $payment = $this->capturePayment($payment['razorpay_payment_id'], $amount);
 
         $txn = $this->getLastEntity('transaction', true);
@@ -45,10 +50,10 @@ class CybersourceGatewayTest extends TestCase
 
         $this->assertTestResponse($payment);
 
-        $payment = $this->getLastEntity('cybersource', true);
+        $cybersourceCapture = $this->getLastEntity('cybersource', true);
 
         $this->assertArraySelectiveEquals(
-            $this->testData['testPaymentCybersourceEntity'], $payment);
+            $this->testData['testCybersourceCaptureEntity'], $cybersourceCapture);
     }
 
     public function testFailedAuthPayment()
@@ -67,6 +72,18 @@ class CybersourceGatewayTest extends TestCase
     {
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '4000400000000004';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testGatewayTimeoutError()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '41476700000006';
 
         $data = $this->testData[__FUNCTION__];
 
@@ -102,6 +119,18 @@ class CybersourceGatewayTest extends TestCase
             $this->testData['testNotEnrolledCSEntity'], $payment);
     }
 
+    public function testAuthenticationFailurePayment()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4111460212312338';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            return $this->doAuthPayment($payment);
+        });
+    }
+
     public function testPaymentRefund()
     {
         $payment = $this->doAuthAndCapturePayment();
@@ -129,5 +158,72 @@ class CybersourceGatewayTest extends TestCase
         $this->assertSame($response['razorpay_payment_id'], $refund['payment_id']);
         $this->assertArraySelectiveEquals(
             $this->testData['testAuthPaymentRefund'], $refund);
+    }
+
+    public function testVerifyPayment()
+    {
+        $payment = $this->doAuthAndCapturePayment();
+
+        $verifyResponse = $this->verifyPayment($payment['id']);
+
+        $this->assertSame($verifyResponse['payment']['verified'], 1);
+        $this->assertSame($verifyResponse['gateway']['gatewayPayment']['status'], 'authorized');
+    }
+
+    public function testVerifyCapturedPayment()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $authPayment = $this->doAuthPayment($payment);
+
+        $this->payment = $this->verifyPayment($authPayment['razorpay_payment_id']);
+
+        $this->assertSame($this->payment['payment']['verified'], 1);
+    }
+
+    public function testAuthorizeFailedPayment()
+    {
+        $this->failAuthorizePayment();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $cybersource = $this->getLastEntity('cybersource', true);
+
+        $this->assertEquals('4661454138166750401025', $cybersource['ref']);
+
+        $this->resetMockServer();
+
+        $this->authorizeFailedPayment($payment['id']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['status'], 'authorized');
+
+        $cybersource = $this->getLastEntity('cybersource', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testAuthorizeFailedPayment'], $cybersource);
+    }
+
+    protected function failAuthorizePayment(array $replace = array())
+    {
+        $server = $this->mockServer()
+                        ->shouldReceive('content')
+                        ->andReturnUsing(function (& $content) use ($replace)
+                        {
+                            foreach ($replace as $key => $value)
+                            {
+                                $content[$key] = $value;
+                            }
+
+                            $content['reasonCode'] = '151';
+                        })->mock();
+
+        $this->setMockServer($server);
+
+        $this->makeRequestAndCatchException(function ()
+        {
+            $content = $this->doAuthPayment();
+        });
     }
 }

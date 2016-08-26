@@ -11,9 +11,11 @@ class BadRequestException extends RecoverableException
     public function __construct(
         $code = 0,
         $field = null,
-        \Exception $previous = null)
+        $data = null)
     {
-        $this->error = new Error($code, null, $field);
+        $this->error = new Error($code, null, $field, $data);
+
+        $this->data = $data;
 
         $message = $this->error->getDescription();
 

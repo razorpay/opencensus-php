@@ -30,7 +30,8 @@ trait OtpResend
         }
 
         throw new LogicException(
-            'Gateway doesn\'t support OTP resend',
+            'Gateway does not support OTP resend',
+            null,
             ['payment_id' => $id]);
     }
 

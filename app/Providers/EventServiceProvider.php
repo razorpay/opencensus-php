@@ -11,14 +11,13 @@ use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvi
 class EventServiceProvider extends ServiceProvider
 {
     /**
-     * The event listener mappings for the application.
+     * The event subscriber mappings for the application.
+     * TODO: Replace api.* with specific event subscribers
      *
      * @var array
      */
-    protected $listen = [
-        'api.*' => [
-            'RZP\Models\Event\ApiEventSubscriber@onEvent',
-        ],
+    protected $subscribe = [
+        'RZP\Listeners\ApiEventSubscriber',
     ];
 
     /**

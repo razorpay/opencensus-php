@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Hdfc;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 
@@ -102,32 +103,6 @@ class HdfcGatewayTest extends TestCase
         $this->assertNull($txn);
     }
 
-    /**
-     * Tests that a capture succeeds on gateway but fails on our end.
-     * Then on next verify, it succeeds.
-     * Finally, when refunding, it should succeed.
-     * @return [type] [description]
-     */
-    public function testForcedCapture()
-    {
-        $payment = $this->doAuthPayment();
-        $payment = $this->getLastEntity('payment', true);
-
-        $payment = $this->captureErrorReturnGW00176();
-        $payment = $this->getLastEntity('payment', true);
-        $payment = $this->capturePayment($payment['id'], $payment['amount']);
-        $this->assertEquals($payment['status'], 'captured');
-
-        $hdfcPayment = $this->getLastEntity('hdfc', true);
-        $this->assertEquals($hdfcPayment['error_code'], 'GW00176');
-
-        $this->resetGatewayDriver();
-        $this->resetMockServer();
-
-        $refund = $this->refundPayment($payment['id'], $payment['amount']);
-        $this->assertEquals($refund['entity'], 'refund');
-    }
-
     public function testPaymentVerify()
     {
         $payment = $this->doAuthPayment();
@@ -142,7 +117,7 @@ class HdfcGatewayTest extends TestCase
                 'content' => [
                     'error' => [
                         'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                        'description' => 'The payment failed most possibly due to an invalid card number',
+                        'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_CARD_NUMBER_POSSIBLY_INVALID,
                     ],
                 ],
                 'status_code' => 400,
@@ -180,17 +155,51 @@ class HdfcGatewayTest extends TestCase
         $payment = $this->getLastEntity('hdfc', true);
     }
 
+    public function testRefundDeniedByRisk()
+    {
+        $payment = $this->doAuthAndCapturePayment();
+
+        $this->hdfcPaymentFailedDueToDeniedByRisk();
+
+        $this->makeRequestAndCatchException(
+            function () use ($payment)
+            {
+                $this->refundPayment($payment['id']);
+            });
+
+        $hdfc = $this->getLastEntity('hdfc', true);
+        $this->assertTestResponse($hdfc);
+
+        $payment = $this->getLastPayment();
+        $this->assertEquals($payment['status'], 'captured');
+    }
+
+    public function testPaymentFailWithFailureResultCode()
+    {
+        $this->hdfcPaymentMockResultCode('FAILURE(DENIED BY RISK)', 'authorize');
+
+        $this->makeRequestAndCatchException(
+            function ()
+            {
+                $payment = $this->doAuthPayment();
+            });
+
+        $hdfc = $this->getLastEntity('hdfc', true);
+
+        $this->assertEquals($hdfc['result'], 'DENIED BY RISK');
+    }
+
     protected function timeoutHdfcAuthorizePayment()
     {
-        $server = $this->mockServerContentFunction(function (& $content, $action)
-                        {
-                            if ($action === 'authorize')
-                            {
-                                throw new Exception\GatewayTimeoutException('Timed out');
-                            }
+        $this->mockServerContentFunction(function (& $content, $action)
+        {
+            if ($action === 'authorize')
+            {
+                throw new Exception\GatewayTimeoutException('Timed out');
+            }
 
-                            return $content;
-                        });
+            return $content;
+        });
 
         $this->makeRequestAndCatchException(
             function ()
@@ -201,24 +210,24 @@ class HdfcGatewayTest extends TestCase
 
     protected function succeedPaymentVerify()
     {
-        $server = $this->mockServerContentFunction(function (& $content)
-                        {
-                            $content['RESPCODE'] = '0';
-                            $content['RESPMSG'] = 'Transaction succeeded';
-                            $content['STATUS'] = 'TXN_SUCCESS';
+        $this->mockServerContentFunction(function (& $content)
+        {
+            $content['RESPCODE'] = '0';
+            $content['RESPMSG'] = 'Transaction succeeded';
+            $content['STATUS'] = 'TXN_SUCCESS';
 
-                            return $content;
-                        });
+            return $content;
+        });
     }
 
     protected function authErrorOnRupayPayment()
     {
-        $server = $this->mockServerContentFunction(function (& $content)
-                        {
-                            $content['amt'] = '1.0';
-                            $content['result'] = 'AUTH ERROR';
-                            unset($content['PAReq'], $content['eci']);
-                            return $content;
-                        });
+        $this->mockServerContentFunction(function (& $content)
+        {
+            $content['amt'] = '1.0';
+            $content['result'] = 'AUTH ERROR';
+            unset($content['PAReq'], $content['eci']);
+            return $content;
+        });
     }
 }

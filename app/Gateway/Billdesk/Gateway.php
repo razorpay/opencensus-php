@@ -383,7 +383,16 @@ class Gateway extends Base\Gateway
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, [$response->body]);
 
         $crawler = new Crawler($response->body, $request['url']);
-        $form = $crawler->filter('form')->form();
+
+        $formCrawler = $crawler->filter('form');
+
+        if ($formCrawler->count() === 0)
+        {
+            throw new Exception\GatewayTimeoutException('Gateway Timed Out', null, true);
+        }
+
+        $form = $formCrawler->form();
+
         $method = $form->getMethod();
 
         $request = array(
@@ -435,8 +444,6 @@ class Gateway extends Base\Gateway
                 '',
                 'Wrong status code: ' . $response->status_code);
         }
-
-        $content = $response->body;
 
         $content = $this->getContentAfterChecksumVerification($response->body);
 

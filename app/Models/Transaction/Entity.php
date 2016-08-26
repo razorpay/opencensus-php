@@ -211,17 +211,17 @@ class Entity extends Base\PublicEntity
 
 /* ----------------------------- Accessors -----------------------------------*/
 
-    public function getAmountAttribute()
+    protected function getAmountAttribute()
     {
         return (int) $this->attributes[self::AMOUNT];
     }
 
-    public function getFeeAttribute()
+    protected function getFeeAttribute()
     {
         return (int) $this->attributes[self::FEE];
     }
 
-    public function getApiFeeAttribute()
+    protected function getApiFeeAttribute()
     {
         return (int) $this->attributes[self::API_FEE];
     }
@@ -236,32 +236,32 @@ class Entity extends Base\PublicEntity
         return (int) $this->attributes[self::GATEWAY_SERVICE_TAX];
     }
 
-    public function getDebitAttribute()
+    protected function getDebitAttribute()
     {
         return (int) $this->attributes[self::DEBIT];
     }
 
-    public function getCreditAttribute()
+    protected function getCreditAttribute()
     {
         return (int) $this->attributes[self::CREDIT];
     }
 
-    public function getBalanceAttribute()
+    protected function getBalanceAttribute()
     {
         return (int) $this->attributes[self::BALANCE];
     }
 
-    public function getEscrowBalanceAttribute()
+    protected function getEscrowBalanceAttribute()
     {
         return (int) $this->attributes[self::ESCROW_BALANCE];
     }
 
-    public function getSettledAttribute()
+    protected function getSettledAttribute()
     {
         return (bool) $this->attributes[self::SETTLED];
     }
 
-    public function getSettledAtAttribute()
+    protected function getSettledAtAttribute()
     {
         $settledAt = $this->attributes[self::SETTLED_AT];
 
@@ -273,12 +273,12 @@ class Entity extends Base\PublicEntity
         return (int) $settledAt;
     }
 
-    public function getGratisAttribute()
+    protected function getGratisAttribute()
     {
         return (bool) $this->attributes[self::GRATIS];
     }
 
-    public function getServiceTaxAttribute()
+    protected function getServiceTaxAttribute()
     {
         return (int) $this->attributes[self::SERVICE_TAX];
     }
