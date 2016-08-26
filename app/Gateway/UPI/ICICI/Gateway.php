@@ -201,7 +201,7 @@ class Gateway extends Base\Gateway
         $payment = $input['payment'];
 
         $collectByTimestamp = time() + 15 * 60;
-        $collect = Carbon::now('Asia/Kolkata')->addMinutes(15)->format('d/m/y h:i a');
+        $collect = Carbon::now('Asia/Kolkata')->addMinutes(15)->format('d/m/Y h:i A');
 
         $data = [
             // Amount and note are lowercase
