@@ -45,8 +45,7 @@ class Server extends Base\Mock\Server
     protected function makeResponse($data)
     {
         $json = json_encode($data);
-        $
-        $response = \Response::json($data);
+        $response = \Response::make($json);
 
         $response->headers->set('Content-Type', 'text/html; charset=UTF-8');
         $response->headers->set('Content-Language', 'en-US');

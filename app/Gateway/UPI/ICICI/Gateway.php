@@ -2,14 +2,13 @@
 
 namespace RZP\Gateway\UPI\ICICI;
 
-use RZP\Gateway\Base;
+use RZP\Gateway\UPI\Base;
 use phpseclib\Crypt\RSA;
 use Request;
 use Requests_Response;
 use RZP\Trace\TraceCode;
 use RZP\Exception\GatewayErrorException;
 use RZP\Gateway\UPI\Base\Entity;
-use Trace;
 
 class Gateway extends Base\Gateway
 {
@@ -207,34 +206,6 @@ class Gateway extends Base\Gateway
         $content = base64_encode($this->encrypt($json));
 
         return $content;
-    }
-
-    protected function getNewGatewayPaymentEntity()
-    {
-        return new \RZP\Gateway\UPI\Base\Entity;
-    }
-
-    protected function createGatewayPaymentEntity(array $attributes)
-    {
-        $attr = $this->getMappedAttributes($attributes);
-
-        $payment = $this->getNewGatewayPaymentEntity();
-
-        $payment->setPaymentId($this->input['payment']['id']);
-
-        $payment->setAmount($this->input['payment']['amount']);
-
-        $payment->setAction($this->action);
-
-        $payment->setBank(self::BANK);
-
-        $payment->fill($attributes);
-
-        $payment->saveOrFail();
-
-        $this->model = $payment;
-
-        return $payment;
     }
 
     protected function updateGatewayPaymentResponse($payment, array $response)
