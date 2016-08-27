@@ -60,6 +60,7 @@ class BankCodes
         IFSC::SCBL => 'SCB',
         IFSC::STBP => 'SBP',
         IFSC::SBTR => 'SBT',
+        IFSC::DBSS => 'DBS',
         Netbanking::BARB_C => 'BBC',
         Netbanking::BARB_R => 'BBR',
         Netbanking::PUNB_C => 'CPN',
