@@ -50,7 +50,7 @@ class Name
         IFSC::BKDN => 'Dena Bank',
         IFSC::DICG => 'Deposit Insurance and Credit Guarantee Corporation',
         IFSC::DEUT => 'Deutsche Bank',
-        IFSC::DBSS => 'Development Bank of Singapore',
+        IFSC::DBSS => 'DBS Bank',
         IFSC::DCBL => 'Development Credit Bank',
         IFSC::DLXB => 'Dhanalakshmi Bank',
         IFSC::DNSB => 'Dombivli Nagari Sahakari Bank Ltd',
