@@ -761,7 +761,7 @@ trait Authorize
                 break;
 
             case Payment\Method::EMI:
-                $this->verifyEmiEnabled($input);
+                $this->verifyEmiEnabled($payment);
                 break;
 
             default:
@@ -1285,7 +1285,7 @@ trait Authorize
         }
     }
 
-    protected function verifyEmiEnabled($input)
+    protected function verifyEmiEnabled($payment)
     {
         $merchantMethods = $this->methods;
 
@@ -1296,7 +1296,7 @@ trait Authorize
                 ErrorCode::BAD_REQUEST_PAYMENT_EMI_NOT_ENALBED_FOR_MERCHANT);
         }
 
-        $this->checkAndValidateAmexIfNotEnabled($merchantMethods, $input['card']);
+        $this->checkAndValidateAmexIfNotEnabled($merchantMethods, $payment->card);
     }
 
     protected function verifyCardEnabledInLive($payment)
