@@ -54,8 +54,6 @@ trait Authorize
         // Adds callback url, payment and card info to $gatewayInput
         $this->prePaymentAuthorizeProcessing($payment, $input, $gatewayInput);
 
-        $this->verifyFeesLessThanAmount($payment);
-
         $this->getTerminalsForPayment($payment);
 
         return  $this->authorizeAcrossTerminals($gatewayInput, $payment, $input);
@@ -87,7 +85,7 @@ trait Authorize
 
             $payment->associateTerminal($currentTerminal);
 
-            $this->runGatewaySpecificPreProcessing($payment, $terminalGatewayInput);
+            $this->runPostGatewaySelectionPreProcessing($payment, $terminalGatewayInput);
 
             if ($this->canRunOtpPaymentFlow($payment, $input))
             {
@@ -311,12 +309,17 @@ trait Authorize
         return $gatewayInput;
     }
 
-    protected function runGatewaySpecificPreProcessing($payment, array & $gatewayInput)
+    protected function runPostGatewaySelectionPreProcessing($payment, array & $gatewayInput)
     {
         // International card validation happens here because we want to save the failure.
         // For payment creation, gateway is compulsory field which is only finalized in
         // previous step.
         $this->validateInternationalAllowed($payment);
+
+        // Fees validation can only happen after international validation has gone through
+        // otherwise can cause issues with international pricing rule being not available when
+        // international is not enabled.
+        $this->verifyFeesLessThanAmount($payment);
 
         $this->repo->saveOrFail($payment);
 
@@ -758,7 +761,7 @@ trait Authorize
                 break;
 
             case Payment\Method::EMI:
-                $this->verifyEmiEnabled();
+                $this->verifyEmiEnabled($input);
                 break;
 
             default:
@@ -1282,7 +1285,7 @@ trait Authorize
         }
     }
 
-    protected function verifyEmiEnabled()
+    protected function verifyEmiEnabled($input)
     {
         $merchantMethods = $this->methods;
 
@@ -1292,6 +1295,8 @@ trait Authorize
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_EMI_NOT_ENALBED_FOR_MERCHANT);
         }
+
+        $this->checkAndValidateAmexIfNotEnabled($merchantMethods, $input['card']);
     }
 
     protected function verifyCardEnabledInLive($payment)
