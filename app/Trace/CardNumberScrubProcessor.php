@@ -33,29 +33,39 @@ class CardNumberScrubProcessor extends \Monolog\Processor\WebProcessor
 
     /**
      * @param  array $record
+     * @throws RZP\Exception\CardNumberTraceException
      * @return array
      */
     public function __invoke(array $record)
     {
         $data = $record['context'];
 
-        array_walk_recursive($data, function(&$item, $key)
+        $scrubbed = false;
+
+        array_walk_recursive($data, function(& $item) use (& $scrubbed)
         {
-            if (preg_match(self::CARD_REGEX, $item) === 1)
+            if (is_string($item))
             {
-                $item = 'CREDIT_CARD_SCRUBBED';
+                if (preg_match(self::CARD_REGEX, $item) === 1)
+                {
+                    $item = 'CREDIT_CARD_SCRUBBED';
+
+                    $scrubbed = true;
+                }
             }
         });
 
-        $record['context'] = $data;
-
-        if ($debug)
+        if ($scrubbed)
         {
-            throw new Exception\RuntimeException(
-                'Card number getting logged');
+            $this->trace->error(TraceCode::CARD_NUMBER_SCRUBBED);
+
+            if ($this->debug)
+            {
+                throw new Exception\CardNumberTraceException;
+            }
         }
 
-        $this->trace->error(TraceCode::CARD_NUMBER_SCRUBBED);
+        $record['context'] = $data;
 
         return $record;
     }
