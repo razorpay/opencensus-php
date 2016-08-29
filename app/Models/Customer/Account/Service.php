@@ -6,6 +6,7 @@ use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Merchant\BankAccount;
 use RZP\Models\Payment;
 
 class Service extends Base\Service
@@ -95,6 +96,28 @@ class Service extends Base\Service
             return [];
 
         return $customer->toArrayPublic();
+    }
+
+    public function addBankAccount($id, $input)
+    {
+        Customer\Entity::verifyIdAndStripSign($id);
+
+        $customer = $this->repo->customer->findByIdAndMerchantId($id, $this->merchant->getId());
+
+        $ba = (new BankAccount\Core)->addOrUpdateBankAccountForCustomer($input, $customer);
+
+        return $ba->toArrayPublic();
+    }
+
+    public function getBankAccounts($id)
+    {
+        Customer\Entity::verifyIdAndStripSign($id);
+
+        $customer = $this->repo->customer->findByIdAndMerchantId($id, $this->merchant->getId());
+
+        $accounts = $this->repo->bank_account->getBankAccountsForCustomer($customer);
+
+        return $accounts->toArrayPublic();
     }
 
     /**

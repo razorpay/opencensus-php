@@ -291,7 +291,7 @@ class Repository extends Base\Repository
 
     protected function addQueryParamOrderId($query, $params)
     {
-        $order_id = (new Order\Entity)->verifyIdAndStripSign($params[Entity::ORDER_ID]);
+        $order_id = (new Order\Entity)->verifyIdAndSilentlyStripSign($params[Entity::ORDER_ID]);
 
         $query->where(Entity::ORDER_ID, '=', $order_id);
     }

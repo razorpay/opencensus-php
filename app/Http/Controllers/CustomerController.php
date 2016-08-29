@@ -121,6 +121,22 @@ class CustomerController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postBankAccount($id)
+    {
+        $input = Request::all();
+
+        $data = (new Customer\Service)->addBankAccount($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getBankAccounts($id)
+    {
+        $data = (new Customer\Service)->getBankAccounts($id);
+
+        return ApiResponse::json($data);
+    }
+
     public function postOtp()
     {
         $input = Request::all();

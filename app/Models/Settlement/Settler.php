@@ -391,7 +391,7 @@ class Settler
 
 
         if (($this->mode !== Mode::TEST) and
-            ($merchant->bankAccount->getCreatedTimestamp() > $lastWorkingDay->timestamp))
+            ($merchant->bankAccount->getCreatedAt() > $lastWorkingDay->timestamp))
         {
             $shouldSettle = false;
         }
