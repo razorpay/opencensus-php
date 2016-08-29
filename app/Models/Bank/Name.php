@@ -64,6 +64,7 @@ class Name
         IFSC::ICIC => 'ICICI Bank',
         IFSC::IBKL => 'IDBI Bank',
         IFSC::IDIB => 'Indian Bank',
+        IFSC::IDFB => 'IDFC Bank',
         IFSC::IOBA => 'Indian Overseas Bank',
         IFSC::INDB => 'IndusInd Bank',
         IFSC::ICBK => 'Industrial and Commercial Bank of China Ltd',

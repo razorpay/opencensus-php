@@ -307,7 +307,8 @@ class Settler
                 $i++;
             }
 
-            if ($setlAmount <= 0)
+            //settle only if settlement amount is more than INR 1
+            if ($setlAmount <= 100)
             {
                 $setlAmount = 0;
                 continue;
@@ -390,7 +391,7 @@ class Settler
 
 
         if (($this->mode !== Mode::TEST) and
-            ($merchant->bankAccount->getCreatedTimestamp() > $lastWorkingDay->timestamp))
+            ($merchant->bankAccount->getCreatedAt() > $lastWorkingDay->timestamp))
         {
             $shouldSettle = false;
         }
