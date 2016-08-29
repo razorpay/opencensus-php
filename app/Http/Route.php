@@ -235,6 +235,7 @@ final class Route
         'customer_logout_global'                  => ['delete',   'apps/logout',                              'CustomerController@logoutCustomer'                                 ],
         'app_delete_token'                        => ['delete',   'apps/tokens/{token}',                      'CustomerController@deleteTokenForGlobalCustomer'                   ],
         'app_fetch_tokens'                        => ['get',      'apps/tokens',                              'CustomerController@fetchTokensForGlobalCustomer'                   ],
+        'app_fetch_payments'                      => ['post',     'apps/payments',                            'CustomerController@fetchPaymentsForGlobalCustomer'                 ],
         'device_verify_token'                     => ['post',     'devices/{deviceToken}/verify',             'CustomerController@validateDeviceToken'                            ],
         'otp_post'                                => ['post',     'otp/create',                               'CustomerController@postOtp'                                        ],
         'otp_verify'                              => ['post',     'otp/verify',                               'CustomerController@verifyOtp'                                      ],
@@ -284,6 +285,7 @@ final class Route
         'get_emi_plans',
         'customer_get_saved_status',
         'app_delete_token',
+        'app_fetch_payments',
         'customer_logout_global',
         'otp_post',
         'otp_verify'

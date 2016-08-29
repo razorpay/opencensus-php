@@ -87,6 +87,15 @@ class CustomerController extends Controller
         return ApiResponse::json($tokens);
     }
 
+    public function fetchPaymentsForGlobalCustomer()
+    {
+        $input = Request::all();
+
+        $payments = (new Customer\Service)->fetchPaymentsForGlobalCustomer($input);
+
+        return ApiResponse::json($payments);
+    }
+
     public function fetchGlobalCustomerStatus($contact)
     {
         $input = Request::all();

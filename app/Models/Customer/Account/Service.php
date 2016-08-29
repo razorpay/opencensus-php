@@ -7,6 +7,7 @@ use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\BankAccount;
+use RZP\Models\Payment;
 
 class Service extends Base\Service
 {
@@ -238,6 +239,50 @@ class Service extends Base\Service
         $data = (new Customer\Raven)->updateSmsStatus($id, $input);
 
         return $data;
+    }
+
+    public function fetchPaymentsForGlobalCustomer($input)
+    {
+        Customer\Validator::validateFetchCustomerPaymentsInput($input);
+
+        $skip = 0;
+
+        if (empty($input['skip']) === false)
+        {
+            $skip = $input['skip'];
+        }
+
+        $appTokenId = AppToken\SessionHelper::getAppTokenFromSession($this->mode);
+
+        $payments = new Base\PublicCollection;
+
+        if ($appTokenId !== null)
+        {
+            AppToken\Entity::verifyIdAndStripSign($appTokenId);
+
+            $appToken = (new AppToken\Core)->getAppByAppToken($appTokenId, $this->merchant);
+
+            $payments = $this->repo->payment->fetchPaymentsForCustomerMethod(
+                $appToken->customer,
+                Payment\Method::CARD,
+                $skip);
+        }
+
+        $collection = new Base\PublicCollection;
+
+        foreach ($payments as $payment)
+        {
+            $info = array(
+                'merchant'  => $payment->merchant->getBillingLabelElseName(),
+                'card'      => $payment->card->getLast4(),
+                'amount'    => $payment->getAmount(),
+                'time'      => $payment->getCaptureTimestamp(),
+                'id'        => $payment->getPublicId());
+
+            $collection->push($info);
+        }
+
+        return $collection->toArrayWithItems();
     }
 }
 
