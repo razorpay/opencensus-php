@@ -76,8 +76,6 @@ class TraceWriter extends Logger
 
         $this->pushProcessor(new TraceCodeProcessor);
 
-        $this->pushProcessor(new CCProcessor);
-
         if (($this->debug) or
             ($this->config['introspection']) or
             ($this->contextEnv === 'beta'))
@@ -90,6 +88,13 @@ class TraceWriter extends Logger
         $this->pushProcessor(new CloudInstanceDataProcessor);
 
         $this->pushProcessor(new EnvProcessor);
+
+        if ($this->debug)
+        {
+            $processor = new CardNumberScrubProcessor($this, $this->debug);
+
+            $this->pushProcessor($processor);
+        }
     }
 
     protected function pushIntrospectionProcessor()
