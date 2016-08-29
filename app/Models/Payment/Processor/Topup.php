@@ -73,6 +73,7 @@ trait Topup
         //
         if (($gateway !== Payment\Gateway::SHARP) and
             ($payment->getWallet() !== Wallet::MOBIKWIK) and
+            ($payment->getWallet() !== Wallet::OLAMONEY) and
             ($payment->globalCustomer === null))
         {
             throw new Exception\LogicException(

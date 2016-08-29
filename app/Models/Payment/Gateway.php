@@ -39,12 +39,14 @@ class Gateway
     const POWER_WALLETS = array(
         Wallet::MOBIKWIK,
         Wallet::PAYUMONEY,
+        Wallet::OLAMONEY,
     );
 
     const TOPUP_GATEWAYS = array(
         self::MOBIKWIK,
         self::WALLET_PAYUMONEY,
         self::SHARP,
+        self::WALLET_OLAMONEY,
     );
 
     public static $channels = array(

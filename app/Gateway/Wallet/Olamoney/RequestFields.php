@@ -23,5 +23,8 @@ class RequestFields
     const HASH                  = 'hash';
     const BILL                  = 'bill';
     const PHONE                 = 'phone';
+    const EMAIL                 = 'email';
+    const USER_ACCESS_TOKEN     = 'userAccessToken';
     const MERCHANT_DISPLAY_NAME = 'merchantDisplayName';
+    const MERCHANT_REFERENCE_ID = 'merchantReferenceId';
 }
