@@ -2,6 +2,7 @@
 
 namespace RZP\Jobs;
 
+use App;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -30,7 +31,7 @@ class WebHook extends Job implements SelfHandling, ShouldQueue
      */
     public function handle()
     {
-        $app = \App::getFacadeRoot();
+        $app = App::getFacadeRoot();
 
         $app['webhook.inferno']->fire($this, $this->data);
     }
