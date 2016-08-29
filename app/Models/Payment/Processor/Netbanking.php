@@ -72,6 +72,8 @@ class Netbanking
         IFSC::DCBL,
         IFSC::DEUT,
         IFSC::DLXB,
+        IFSC::DBSS,
+        IFSC::IDFB,
         IFSC::FDRL,
         IFSC::IBKL,
         IFSC::ICIC,
@@ -135,7 +137,6 @@ class Netbanking
         IFSC::SBMY,
         IFSC::STBP,
         IFSC::SBTR,
-        IFSC::DBSS,
     );
 
     protected static $sbiepay = array(
