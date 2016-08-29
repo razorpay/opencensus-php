@@ -215,23 +215,33 @@ class Gateway extends Base\Gateway
             'note'              =>  'collect-pay-request',
             // TODO: talk to icici and ask what all is allowed here
             'payerVa'           =>  $input['vpa'],
-            'subMerchantId'     =>  substr($input['merchant']['id'], 0, 10),
+            'subMerchantId'     =>  $this->getSubMerchantId($input),
             'subMerchantName'   =>  $input['merchant']->getBillingLabel(),
             'terminalId'        =>  '1234',
         ];
 
-
         // We trace it here, because it gets encrypted later
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $data);
 
+        return $this->transformRequestArrayToContent($data);
+    }
+
+    /**
+     * Formats a request content array to a proper string
+     * that is sent to the server in POST body
+     * @param  array  $data request array
+     * @return string post body
+     */
+    protected function transformRequestArrayToContent(array $data)
+    {
         $json = json_encode($data);
 
         $data = $this->encrypt($json);
+
+        // RSA::encrypt returns false if encryption false
         assert($data !== false);
 
-        $content = base64_encode($data);
-
-        return $content;
+        return base64_encode($data);
     }
 
     protected function updateGatewayPaymentResponse($payment, array $response)
@@ -241,5 +251,65 @@ class Gateway extends Base\Gateway
         $payment->fill($attr);
 
         $payment->save();
+    }
+
+    public function verify(array $input)
+    {
+        parent::verify($input);
+
+        $verify = new \RZP\Gateway\Base\Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
+    }
+
+    protected function sendPaymentVerifyRequest($verify)
+    {
+        $content = $this->getPaymentVerifyRequestContent($verify);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $response = $this->sendGatewayRequest($request);
+
+        sd($response);
+
+        $response = $this->parseGatewayResponse($response);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            $response);
+
+        $verify->verifyResponse = $this->response;
+        $verify->verifyResponseBody = $this->response->body;
+        $verify->verifyResponseContent = $response;
+
+        return $response;
+    }
+
+    protected function getPaymentVerifyRequestContent($verify)
+    {
+        $data = [
+            'merchantId'        =>  $this->getMerchantId(),
+            'merchantTranId'    =>  $verify->input['payment']['id'],
+            'subMerchantId'     =>  $this->getSubMerchantId($verify->input),
+            'terminalId'        =>  '1234',
+        ];
+
+        sd($data);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            $data);
+
+        return $this->transformRequestArrayToContent($data);
+    }
+
+    /**
+     * subMerchantId is limited to 10 characters
+     * so we send the first 10 characters
+     * @return string
+     */
+    protected function getSubMerchantId(array $input)
+    {
+        return substr($input['merchant']['id'], 0, 10);
     }
 }
