@@ -52,10 +52,11 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getBankAccountsBetweenTimestamp($from, $to)
+    public function getMerchantBankAccountsBetweenTimestamp($from, $to)
     {
         return $this->newQuery()
                     ->whereBetween(BankAccount\Entity::CREATED_AT, array($from, $to))
+                    ->where(Entity::TYPE, '=', Type::MERCHANT)
                     ->orderBy(BankAccount\Entity::CREATED_AT)
                     ->get();
     }
@@ -75,6 +76,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->whereBetween(BankAccount\Entity::CREATED_AT, array($from, $to))
+                    ->where(Entity::TYPE, '=', Type::MERCHANT)
                     ->count();
     }
 
