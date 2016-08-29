@@ -87,6 +87,14 @@ class Validator extends Base\Validator
             return;
         }
 
+        if ((isset($input['recurring']) === true) and
+            ($input['recurring'] === '1') and
+            (isset($input['token']) === true) and
+            ($input['token'] !== null))
+        {
+            return;
+        }
+
         if ((array_key_exists('card', $input) === false) or
             ($input['card'] === null))
         {

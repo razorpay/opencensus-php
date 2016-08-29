@@ -108,6 +108,7 @@ class RecurringPaymentTest extends TestCase
         $payment['recurring'] = true;
         $payment['token'] = '10000cardtoken';
         $payment['customer_id'] = 'cust_100000customer';
+        unset($payment['card']);
 
         $data = $this->testData[__FUNCTION__];
 
@@ -126,6 +127,7 @@ class RecurringPaymentTest extends TestCase
         $payment['recurring'] = true;
         $payment['token'] = '10000cardtoken';
         $payment['customer_id'] = 'cust_100000customer';
+        unset($payment['card']);
 
         $this->fixtures->base->editEntity('card', '100000000lcard', ["type" => 'credit']);
         $this->fixtures->base->editEntity('token', '100000custcard', ["recurring" => true]);

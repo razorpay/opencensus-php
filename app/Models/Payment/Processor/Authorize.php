@@ -306,7 +306,7 @@ trait Authorize
 
         $this->verifyMerchantFeatures($payment);
 
-        $this->verifyPaymentMethodEnabled($payment, $input);
+        $this->verifyPaymentMethodEnabled($payment);
 
         return $gatewayInput;
     }
@@ -739,14 +739,14 @@ trait Authorize
         }
     }
 
-    protected function verifyPaymentMethodEnabled($payment, $input)
+    protected function verifyPaymentMethodEnabled($payment)
     {
         $paymentMethod = $payment->getMethod();
 
         switch ($paymentMethod)
         {
             case Payment\Method::CARD:
-                $this->verifyCardEnabledInLive($payment, $input);
+                $this->verifyCardEnabledInLive($payment);
                 break;
 
             case Payment\Method::NETBANKING:
@@ -1203,7 +1203,11 @@ trait Authorize
 
     }
 
-    protected function getCardArrayForSavedToken($token, $input)
+    /**
+     * creates gateway input using saved card token, this method is used for
+     * local card saving and we can associate the same card with the payment
+     */
+    protected function getCardArrayForSavedToken($token, & $input)
     {
         $card = $token->card;
 
@@ -1219,10 +1223,16 @@ trait Authorize
                  'cvv' => $cvv]);
     }
 
-    protected function createCardEntityFromSavedToken($token, $input)
+    /**
+     * creates gateway input using saved card token, this method is used for
+     * global card saving. we need to create a new card entity for merchant
+     * and associate with the payment
+     */
+    protected function createCardEntityFromSavedToken($token, & $input)
     {
         $cardNumber = Card\Tokenex::getCardNumber($token->card->getVaultToken());
-        $cvv = $input['card']['cvv'];
+
+        $cvv = isset($input['card']['cvv']) ? $input['card']['cvv'] : null;
 
         $savedCard = $token->card->toArray();
         $savedCard['number'] = $cardNumber;
@@ -1284,13 +1294,13 @@ trait Authorize
         }
     }
 
-    protected function verifyCardEnabledInLive($payment, $input)
+    protected function verifyCardEnabledInLive($payment)
     {
         $card = $payment->card;
 
         $merchantMethods = $this->methods;
 
-        $this->checkAndValidateAmexIfNotEnabled($merchantMethods, $input['card']);
+        $this->checkAndValidateAmexIfNotEnabled($merchantMethods, $card);
 
         // Only check enabled or not on live mode
         if ($this->mode === Mode::TEST)
@@ -1344,18 +1354,9 @@ trait Authorize
 
     protected function checkAndValidateAmexIfNotEnabled($methods, $card)
     {
-        if (isset($card['number']) === false)
-        {
-            return;
-        }
-
         $amex = $methods->getAmex();
 
-        $cardNumber = $card['number'];
-
-        $prefix = substr($cardNumber, 0, 2);
-
-        if ((($prefix === '34') or ($prefix === '37')) and
+        if (($card->getNetworkCode() == Card\Network::AMEX) and
             ($amex === false))
         {
             throw new Exception\BadRequestException(
