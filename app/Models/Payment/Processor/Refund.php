@@ -43,6 +43,10 @@ trait Refund
             $this->validateMerchantBalance($refund);
         }
 
+        $this->failIfMutexIsSet($payment, Payment\Action::REFUND);
+
+        $this->setActionMutex($payment, Payment\Action::REFUND);
+
         $this->refund = $refund;
 
         $data = array(
@@ -328,6 +332,10 @@ trait Refund
                     TraceCode::PAYMENT_REFUND_FAILURE);
 
             throw $e;
+        }
+        finally
+        {
+            $this->resetActionMutex($this->payment, Payment\Action::REFUND);
         }
     }
 

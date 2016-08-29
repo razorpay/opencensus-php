@@ -2,10 +2,12 @@
 
 namespace RZP\Tests\Functional\Payment;
 
-use Carbon\Carbon;
-use Mockery;
 use DB;
+use Cache;
+use Mockery;
+use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 /**
@@ -51,6 +53,29 @@ class RefundTest extends TestCase
         $this->assertEquals(substr($refund['id'], 0, 5), 'rfnd_');
 
         $this->assertGreaterThan(time() - 30, $refund['created_at']);
+    }
+
+    public function testDuplicateRefundRequest()
+    {
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $id = $payment['id'];
+        $id = PaymentEntity::stripSignWithoutValidation($id);
+
+        $key = $id . '_refundInProgress';
+
+        Cache::shouldReceive('get')
+                    ->once()
+                    ->with($key)
+                    ->andReturn(true);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->refundPayment($payment['id']);
+        });
     }
 
     public function testMultipleRefunds()
