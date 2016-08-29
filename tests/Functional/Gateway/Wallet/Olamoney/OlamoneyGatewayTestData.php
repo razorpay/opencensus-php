@@ -32,6 +32,117 @@ return [
         'otp_attempts'      => null
     ],
 
+    'testOtpRetryPayment'       => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
+                    'action'      => 'RETRY',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
+        ],
+    ],
+
+    'testOtpRetrySuccessPayment' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
+                    'action'      => 'RETRY'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
+        ],
+    ],
+
+    'otpRetryRequest' => [
+        'request'   => [
+            'method'    => 'POST',
+            'content'   => [
+                'type'  => 'otp',
+                'otp'   => '111111'
+            ]
+        ]
+    ],
+
+    'testPaymentWithOtpAttempts' => [
+        'merchant_id'       => '10000000000000',
+        'amount'            => 50000,
+        'method'            => 'wallet',
+        'status'            => 'captured',
+        'amount_authorized' => 50000,
+        'amount_refunded'   => 0,
+        'refund_status'     => null,
+        'currency'          => 'INR',
+        'description'       => 'random description',
+        'bank'              => null,
+        'wallet'            => 'olamoney',
+        'error_code'        => null,
+        'error_description' => null,
+        'email'             => 'a@b.com',
+        'contact'           => '+919918899029',
+        'notes'             => [
+            'merchant_order_id' => 'random order id',
+        ],
+        'gateway'           => 'wallet_olamoney',
+        'terminal_id'       => '1000OlamoneyTl',
+        'signed'            => false,
+        'verified'          => null,
+        'entity'            => 'payment',
+        'otp_attempts'      => 1
+    ],
+
+    'testOtpRetryExceededPayment' => [
+        'request'   => [
+            'method'    => 'POST',
+            'content'   => [
+                'type'  => 'otp',
+                'otp'   => '121212'
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED,
+        ],
+    ],
+
+    'testInsufficientBalancePayment' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE,
+                    'action'      => 'TOPUP'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE,
+        ],
+    ],
+
     'testPaymentWalletEntity' => [
         'action'                => 'authorize',
         'amount'                => 50000,

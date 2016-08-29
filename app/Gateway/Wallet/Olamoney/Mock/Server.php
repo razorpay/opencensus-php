@@ -5,6 +5,7 @@ namespace RZP\Gateway\Wallet\Olamoney\Mock;
 use RZP\Gateway\Base;
 use RZP\Exception;
 use RZP\Models\Payment;
+use RZP\Gateway\Wallet\Base\Otp;
 use RZP\Gateway\Wallet\Olamoney;
 use RZP\Gateway\Wallet\Olamoney\Command;
 use RZP\Gateway\Wallet\Olamoney\RequestFields;
@@ -45,6 +46,100 @@ class Server extends Base\Mock\Server
         );
 
         return $this->makePostResponse($request);
+    }
+
+    public function otpGenerate($input)
+    {
+        $this->validateActionInput($input, 'otpGenerate');
+
+        $responseContent = array(
+            ResponseFields::STATUS    => 'success',
+            ResponseFields::MESSAGE   => '',
+        );
+
+        return $this->makeResponse($responseContent);
+    }
+
+    public function otpSubmit($input)
+    {
+        $this->validateActionInput($input, 'otpSubmit');
+
+        $responseContent = array(
+            ResponseFields::STATUS          => 'success',
+            ResponseFields::MESSAGE         => '',
+            ResponseFields::ACCESS_TOKEN    => 'success_access_token',
+            ResponseFields::REFRESH_TOKEN   => 'success_refresh_token',
+        );
+
+        if( $input[RequestFields::OTP] === Otp::INCORRECT)
+        {
+            $responseContent = array(
+                ResponseFields::STATUS      => 'FAILED',
+                ResponseFields::MESSAGE     => 'Invalid OTP',
+            );
+        }
+
+        else if ($input[RequestFields::OTP] === Otp::INSUFFICIENT_BALANCE)
+        {
+            $responseContent = array(
+                ResponseFields::STATUS          => 'success',
+                ResponseFields::MESSAGE         => '',
+                ResponseFields::ACCESS_TOKEN    => 'insufficient_balance_access_token',
+                ResponseFields::REFRESH_TOKEN   => 'insufficient_balance_refresh_token',
+            );
+        }
+
+        else if ($input[RequestFields::OTP] === Otp::INSUFFICIENT_BALANCE)
+        {
+
+        }
+        return $this->makeResponse($responseContent);
+    }
+
+    public function getBalance($input)
+    {
+        $input = json_decode($input, true);
+
+        $this->validateActionInput($input, 'checkBalance');
+
+        $balance = 999999.00;
+
+        if ($input[RequestFields::USER_ACCESS_TOKEN] === 'insufficient_balance_access_token')
+        {
+            $balance = 0;
+        }
+
+        $responseContent = array(
+                ResponseFields::STATUS          => 'success',
+                ResponseFields::COMMENTS        => 'olaComments',
+                ResponseFields::AMOUNT          => $balance,
+                ResponseFields::BALANCE_TYPE    => 'olaBalanceType',
+        );
+
+        return $this->makeResponse($responseContent);
+    }
+
+    public function debitWallet($input)
+    {
+        $input = json_decode($input, true);
+
+        $this->validateActionInput($input, Command::DEBIT);
+
+        $udf = json_encode([RequestFields::MERCHANT_DISPLAY_NAME => 'test_merchant_display_name']);
+        $responseContent = array(
+            ResponseFields::TYPE                    => 'debit',
+            ResponseFields::STATUS                  => 'success',
+            ResponseFields::TRANSACTION_ID          => 'olaUniqTxnId',
+            ResponseFields::MERCHANT_BILL_ID        => 'test_payment_id',
+            ResponseFields::AMOUNT                  => $input[RequestFields::AMOUNT],
+            ResponseFields::TIMESTAMP               => 1472476804,
+            ResponseFields::COMMENTS                => $input[RequestFields::COMMENTS],
+            ResponseFields::UDF                     => $udf,
+        );
+
+        $responseContent[ResponseFields::HASH] = '079e67f435c9278c6c658b5302e8b8be14030b8fe8d2078d23fee3a52274cb9bbc66d4ffc076193f1d817b5bbfbd4fc2abe0b33bac26eb22506a21785ea61990';
+
+        return $this->makeResponse($responseContent);
     }
 
     public function refund($input)

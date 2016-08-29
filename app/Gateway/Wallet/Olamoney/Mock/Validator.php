@@ -9,15 +9,44 @@ use RZP\Gateway\Wallet\Olamoney\ResponseFields;
 
 class Validator extends Base\Validator
 {
-    protected static $debitRules   = array(
-        'paymentId'                                            => 'required|alpha_num',
-        RequestFields::BILL                                    => 'required|array',
-        RequestFields::BILL . '.' . RequestFields::UNIQUE_ID   => 'required|alpha_num',
-        RequestFields::BILL . '.' . RequestFields::AMOUNT      => 'required|numeric',
-        RequestFields::BILL . '.' . RequestFields::COMMENTS    => 'sometimes|string',
-        RequestFields::BILL . '.' . RequestFields::UDF         => 'required|string',
-        RequestFields::PHONE                                   => 'required|integer'
+    protected static $otpGenerateRules = array(
+        RequestFields::PHONE    => 'required|string|size:10',
+        RequestFields::EMAIL    => 'required|email'
     );
+
+    protected static $otpSubmitRules = array(
+        RequestFields::PHONE    => 'required|string|size:10',
+        RequestFields::OTP      => 'required|string|size:6'
+    );
+
+    protected static $checkBalanceRules = array(
+        RequestFields::USER_ACCESS_TOKEN    => 'required|string',
+    );
+
+    protected static $debitRules = array(
+        RequestFields::ACCESS_TOKEN         => 'required|string',
+        RequestFields::COMMAND              => 'required|in:debit',
+        RequestFields::UNIQUE_ID            => 'required|string',
+        RequestFields::AMOUNT               => 'required|numeric',
+        RequestFields::UDF                  => 'required|string',
+        RequestFields::CURRENCY             => 'required|in:INR',
+        RequestFields::NOTIFICATION_URL     => 'required',
+        RequestFields::RETURN_URL           => 'required',
+        RequestFields::COMMENTS             => 'required|string',
+        RequestFields::COUPON_CODE          => 'required|string',
+        RequestFields::USER_ACCESS_TOKEN    => 'required|string',
+        RequestFields::HASH                 => 'required|string',
+    );
+
+    // protected static $debitRules   = array(
+    //     'paymentId'                                            => 'required|alpha_num',
+    //     RequestFields::BILL                                    => 'required|array',
+    //     RequestFields::BILL . '.' . RequestFields::UNIQUE_ID   => 'required|alpha_num',
+    //     RequestFields::BILL . '.' . RequestFields::AMOUNT      => 'required|numeric',
+    //     RequestFields::BILL . '.' . RequestFields::COMMENTS    => 'sometimes|string',
+    //     RequestFields::BILL . '.' . RequestFields::UDF         => 'required|string',
+    //     RequestFields::PHONE                                   => 'required|integer'
+    // );
 
     protected static $refundRules = array(
         RequestFields::ACCESS_TOKEN     => 'required|string',

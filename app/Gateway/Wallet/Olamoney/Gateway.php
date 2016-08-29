@@ -112,6 +112,15 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
+        // In 1 minute you can hit the RE-SEND-OTP API 4 times.
+        // From 5th time within that 1 minute, API will return 429 status code with no content.
+        // User can try again, from next minute.
+        if ($response->status_code === 429)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED);
+        }
+
         $content = $this->jsonToArray($response->body);
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
@@ -167,9 +176,9 @@ class Gateway extends Base\Gateway
 
             $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
 
-            if ($message === 'Invalid OTP')
+            if (isset($message))
             {
-                $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT;
+                $errorCode = ResponseCode::getApiErrorCode($message);
             }
 
             throw new Exception\GatewayErrorException(

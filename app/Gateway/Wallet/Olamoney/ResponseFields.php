@@ -20,6 +20,7 @@ class ResponseFields
     const IS_CASHBACK_SUCCESSFUL    = 'isCashbackSuccessful';
     const ACCESS_TOKEN              = 'accessToken';
     const REFRESH_TOKEN             = 'refreshToken';
+    const BALANCE_TYPE              = 'balanceType';
 
     const VERIFY_FAILED_STATUS      = [Status::INITIATED, Status::FAILED];
 

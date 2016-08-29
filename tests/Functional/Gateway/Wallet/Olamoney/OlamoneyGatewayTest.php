@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Wallet\Olamoney;
 use RZP\Exception;
 use RZP\Http\Route;
 use RZP\Models\Payment\Entity as PaymentEntity;
+use RZP\Gateway\Wallet\Base\Otp;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 
@@ -41,9 +42,135 @@ class OlamoneyGatewayTest extends TestCase
 
         $this->assertTestResponse($payment, 'testPayment');
 
+        $this->assertNotEmpty($payment['global_token']);
+
+        $this->assertNotEmpty($payment['global_customer_id']);
+
         $wallet = $this->getLastEntity('wallet', true);
 
         $this->assertTestResponse($wallet, 'testPaymentWalletEntity');
+    }
+
+    public function testOtpRetryPayment()
+    {
+        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->setOtp(Otp::INCORRECT);
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $this->assertNull($wallet);
+
+        $this->step = null;
+    }
+
+    public function testOtpRetrySuccessPayment()
+    {
+        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->setOtp(Otp::INCORRECT);
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('BAD_REQUEST_PAYMENT_OTP_INCORRECT', $payment['internal_error_code']);
+        $this->assertEquals(null, $payment['error_code']);
+
+        $this->setOtp(null);
+
+        $data = $this->testData['otpRetryRequest'];
+        $data['request']['url'] = $this->callbackUrl;
+
+        $authPayment = $this->makeRequestAndGetContent($data['request']);
+
+        $capturePayment = $this->capturePayment($authPayment['razorpay_payment_id'], $payment['amount']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertTestResponse($payment, 'testPaymentWithOtpAttempts');
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $this->assertTestResponse($wallet, 'testPaymentWalletEntity');
+    }
+
+    public function testOtpRetryExceededPayment()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->fixtures->create('payment', [
+                            'method'        => 'wallet',
+                            'wallet'        => self::WALLET,
+                            'gateway'       => 'wallet_olamoney',
+                            'otp_attempts'  => 3,
+                            'terminal_id'   => $this->sharedTerminal->id
+                        ]);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $url = $this->getOtpSubmitUrl($payment);
+
+        $data['request']['url'] = $url;
+
+        $this->runRequestResponseFlow($data);
+    }
+
+    public function testOtpResendPayment()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->fixtures->create('payment', [
+                            'method'        => 'wallet',
+                            'wallet'        => self::WALLET,
+                            'gateway'       => 'wallet_olamoney',
+                            'contact'       => '9111111111',
+                            'otp_attempts'  => 2,
+                            'otp_count'     => 1,
+                            'terminal_id'   => $this->sharedTerminal->id
+                        ]);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $url = $this->getOtpResendUrl($payment);
+
+        $data['request']['url'] = $url;
+
+        $this->runRequestResponseFlow($data);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertSame($payment['otp_attempts'], null);
+        $this->assertSame($payment['otp_count'], 2);
+    }
+
+    public function testInsufficientBalancePayment()
+    {
+        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+        $payment['amount'] = 100000;
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->setOtp(Otp::INSUFFICIENT_BALANCE);
+
+        $response = $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            return $this->doAuthPayment($payment);
+        });
+
+        return $response;
     }
 
     public function testVerifyPayment()
@@ -143,10 +270,10 @@ class OlamoneyGatewayTest extends TestCase
                 return $this->makeOtpCallback($url);
             }
 
-            $request = $this->makeFirstGatewayPaymentMockRequest($url, $method, $content);
+            // $request = $this->makeFirstGatewayPaymentMockRequest($url, $method, $content);
 
-            return $this->submitPaymentCallbackData($request['url'],
-                $request['method'], $request['content']);
+            // return $this->submitPaymentCallbackData($request['url'],
+            //     $request['method'], $request['content']);
         }
 
         return null;
