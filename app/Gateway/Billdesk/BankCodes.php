@@ -61,6 +61,7 @@ class BankCodes
         IFSC::STBP => 'SBP',
         IFSC::SBTR => 'SBT',
         IFSC::DBSS => 'DBS',
+        IFSC::IDFB => 'IDN',
         Netbanking::BARB_C => 'BBC',
         Netbanking::BARB_R => 'BBR',
         Netbanking::PUNB_C => 'CPN',
