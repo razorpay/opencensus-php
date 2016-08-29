@@ -9,6 +9,7 @@ class Customer extends Base
         $this->fixtures->create('customer:customers');
         $this->fixtures->create('customer:app_tokens');
         $this->fixtures->create('customer:tokens');
+        $this->fixtures->create('customer:bank_accounts');
     }
 
     protected $customers = array(
@@ -33,13 +34,7 @@ class Customer extends Base
         array(
             'customer_id'   => '10000gcustomer',
             'id'            => '1000000custapp',
-            'device_token'  => '1000custdevice',
-        ),
-        array(
-            'customer_id'   => '10000gcustomer',
-            'id'            => '1000001custapp',
-            'device_token'  => '1000custdevice',
-            'merchant_id'   => '100000Razorpay',
+            'device_token'  => '1000custdevice'
         ),
     );
 
@@ -83,6 +78,15 @@ class Customer extends Base
         ),
     );
 
+    protected $bankAccounts = array(
+        array(
+            'id'            => '1000000lcustba',
+            'merchant_id'   => '10000000000000',
+            'entity_id'     => '100000customer',
+            'type'          => 'customer'
+        ),
+    );
+
     public function createCustomers()
     {
         $customers = array();
@@ -117,5 +121,17 @@ class Customer extends Base
         }
 
         return $tokens;
+    }
+
+    public function createBankAccounts()
+    {
+        $bankAccounts = array();
+
+        foreach ($this->bankAccounts as $attributes)
+        {
+            $bankAccounts[] = $this->fixtures->create('bank_account', $attributes);
+        }
+
+        return $bankAccounts;
     }
 }

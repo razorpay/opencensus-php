@@ -72,6 +72,7 @@ class TraceCode
     const MERCHANT_EDIT                             = 'MERCHANT_EDIT';
     const CUSTOMER_EDIT                             = 'CUSTOMER_EDIT';
     const CUSTOMER_TOKEN_EDIT                       = 'CUSTOMER_TOKEN_EDIT';
+    const CARD_NUMBER_SCRUBBED                      = 'CARD_NUMBER_SCRUBBED';
 
     const TRANSACTION_REFUND_TRACE                  = 'TRANSACTION_REFUND_TRACE';
 

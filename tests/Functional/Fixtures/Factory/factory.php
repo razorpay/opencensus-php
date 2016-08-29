@@ -39,7 +39,9 @@ $factory(\RZP\Models\Merchant\Balance\Entity::class, [
 
 $factory(\RZP\Models\Merchant\BankAccount\Entity::class, [
     'id' => $faker->uniqueid,
-    'merchant_id' => $faker->uniqueid,
+    'merchant_id' => '10000000000000',
+    'entity_id'   => '10000000000000',
+    'type' => 'merchant',
     'ifsc_code' => 'RZPB0000000',
     'account_number' => 10010101011,
     'beneficiary_name' => 'random_name',
