@@ -34,8 +34,6 @@ class Gateway extends Base\Gateway
 
         $request = $this->getAuthRequestArray($content);
 
-        $this->traceGatewayPaymentRequest($request, $input);
-
         return $request;
     }
 

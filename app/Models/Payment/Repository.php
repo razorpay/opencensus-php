@@ -128,6 +128,14 @@ class Repository extends Base\Repository
                         );
     }
 
+    public function fetchOldCreatedPaymentsForTimeout($timestamp)
+    {
+        return $this->newQuery()
+                    ->status(Payment\Status::CREATED)
+                    ->where(Payment\Entity::CREATED_AT, '<=', $timestamp)
+                    ->get();
+    }
+
     public function getAuthorizedPaymentsBeforeTimestamp($timestamp)
     {
         return $this->newQuery()

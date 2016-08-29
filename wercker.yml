@@ -17,12 +17,6 @@ build:
           name: copy env file
           code: cp ./environment/.env.wercker ./environment/.env.testing
       - script:
-          name: copy environment.php
-          code: cp ./environment/env.sample.php ./environment/env.php
-      - script:
-          name: set environment/env.php 'env' -> 'testing'
-          code: sed -i 's/dev/testing/g' ./environment/env.php
-      - script:
           name: set composer to use github oauth token
           code: composer config -g github-oauth.github.com $github_token
       - add-ssh-key:

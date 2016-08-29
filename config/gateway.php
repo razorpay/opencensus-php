@@ -16,6 +16,7 @@ return array(
         'axis_migs',
         'billdesk',
         'cybersource',
+        'ebs',
         'hdfc',
         'kotak',
         'mobikwik',
@@ -24,6 +25,7 @@ return array(
         'netbanking_kotak',
         'sharp',
         'sbiepay',
+        'wallet_olamoney',
         'wallet_payzapp',
         'wallet_payumoney',
     ),
@@ -40,7 +42,9 @@ return array(
     'mock_netbanking_hdfc'  => env('NETBANKING_HDFC_MOCK'),
     'mock_netbanking_kotak' => env('NETBANKING_KOTAK_MOCK'),
     'mock_billdesk'         => env('BILLDESK_MOCK'),
+    'mock_ebs'              => env('EBS_MOCK'),
     'mock_sbiepay'          => false,
+    'mock_wallet_olamoney'  => env('OLAMONEY_MOCK'),
     'mock_wallet_payzapp'   => env('PAYZAPP_MOCK'),
     'mock_wallet_payumoney' => env('PAYUMONEY_MOCK'),
 
@@ -90,6 +94,11 @@ return array(
         'live_access_code_sec'  => env('BILLDESK_GATEWAY_SECURITIES_LIVE_ACCESS_CODE'),
     ),
 
+    'ebs' => array(
+        'test_merchant_id' => env('EBS_GATEWAY_TEST_MERCHANT_ID', 'random'),
+        'test_hash_secret' => env('EBS_GATEWAY_TEST_HASH_SECRET', 'secret'),
+    ),
+
     'kotak' => array(
         'test_hash_secret'  => env('KOTAK_GATEWAY_TEST_HASH_SECRET'),
         'test_merchant_id'  => env('KOTAK_GATEWAY_TEST_MERCHANT_ID'),
@@ -117,6 +126,12 @@ return array(
         'test_pg_merchant_id'       => env('PAYZAPP_WALLET_TEST_PG_MERCHANT_ID'),
         'test_pg_hash_key'          => env('PAYZAPP_WALLET_TEST_PG_HASH_KEY'),
         'live_pg_instance_id'       => env('PAYZAPP_WALLET_LIVE_PG_INSTANCE_ID'),
+    ),
+
+    'wallet_olamoney'  =>array(
+        'test_merchant_id'      => env('OLAMONEY_WALLET_TEST_MERCHANT_ID'),
+        'test_hash_secret'      => env('OLAMONEY_WALLET_TEST_HASH_SECRET'),
+        'test_access_code'      => env('OLAMONEY_WALLET_TEST_CLIENT_ID'),
     ),
 
     'wallet_payumoney' => array(

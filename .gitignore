@@ -3,6 +3,10 @@
 .env
 .env.*
 !.env.wercker
+!environment/.env.defaults
+!environment/.env.production
+!environment/.env.beta
+!environment/.env.alpha
 .DS_Store
 Thumbs.db
 /public/test/config.php

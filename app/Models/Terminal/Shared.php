@@ -12,11 +12,13 @@ class Shared
     const AXIS_GENIUS_RAZORPAY_TERMINAL     = '1000AxisGenius';
     const AXIS_MIGS_RAZORPAY_TERMINAL       = '1000AxisMigsTl';
     const BILLDESK_RAZORPAY_TERMINAL        = '1000BdeskTrmnl';
+    const EBS_RAZORPAY_TERMINAL             = '100000EbsTrmnl';
     const HDFC_RAZORPAY_TERMINAL            = '1000HdfcShared';
     const KOTAK_RAZORPAY_TERMINAL           = '1000KotakTrmnl';
     const MOBIKWIK_RAZORPAY_TERMINAL        = '1000MobiKwikTl';
     const NETBANKING_HDFC_TERMINAL          = '100NbHdfcTrmnl';
     const NETBANKING_KOTAK_TERMINAL         = '100NbKotakTmnl';
+    const OLAMONEY_RAZORPAY_TERMINAL        = '1000OlamoneyTl';
     const PAYTM_RAZORPAY_TERMINAL           = '1000PaytmTrmnl';
     const PAYZAPP_RAZORPAY_TERMINAL         = '100PayzappTmnl';
     const PAYUMONEY_RAZORPAY_TERMINAL       = '100PayumnyTmnl';
@@ -30,9 +32,11 @@ class Shared
         self::AXIS_MIGS_RAZORPAY_TERMINAL,
         self::AXIS_GENIUS_RAZORPAY_TERMINAL,
         self::BILLDESK_RAZORPAY_TERMINAL,
+        self::EBS_RAZORPAY_TERMINAL,
         self::HDFC_RAZORPAY_TERMINAL,
         self::KOTAK_RAZORPAY_TERMINAL,
         self::MOBIKWIK_RAZORPAY_TERMINAL,
+        self::OLAMONEY_RAZORPAY_TERMINAL,
         self::PAYTM_RAZORPAY_TERMINAL,
         self::NETBANKING_HDFC_TERMINAL,
         self::NETBANKING_KOTAK_TERMINAL,
@@ -52,12 +56,14 @@ class Shared
         self::AXIS_GENIUS_RAZORPAY_TERMINAL => Gateway::AXIS_GENIUS,
         self::AXIS_MIGS_RAZORPAY_TERMINAL   => Gateway::AXIS_MIGS,
         self::BILLDESK_RAZORPAY_TERMINAL    => Gateway::BILLDESK,
+        self::EBS_RAZORPAY_TERMINAL         => Gateway::EBS,
         self::CYBERSOURCE_HDFC_TERMINAL     => Gateway::CYBERSOURCE,
         self::HDFC_RAZORPAY_TERMINAL        => Gateway::HDFC,
         self::KOTAK_RAZORPAY_TERMINAL       => Gateway::KOTAK,
         self::MOBIKWIK_RAZORPAY_TERMINAL    => Gateway::MOBIKWIK,
         self::NETBANKING_HDFC_TERMINAL      => Gateway::NETBANKING_HDFC,
         self::NETBANKING_KOTAK_TERMINAL     => Gateway::NETBANKING_KOTAK,
+        self::OLAMONEY_RAZORPAY_TERMINAL    => Gateway::WALLET_OLAMONEY,
         self::PAYTM_RAZORPAY_TERMINAL       => Gateway::PAYTM,
         self::PAYZAPP_RAZORPAY_TERMINAL     => Gateway::WALLET_PAYZAPP,
         self::PAYUMONEY_RAZORPAY_TERMINAL   => Gateway::WALLET_PAYUMONEY,
