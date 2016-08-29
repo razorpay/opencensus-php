@@ -22,25 +22,12 @@ class Repository extends Base\Repository
         return $results->get();
     }
 
-    public function getAbsentGatewaysForTimestamp($timestamp = null)
+    public function getAbsentGatewaysForTimestamp($timestamp)
     {
-        if ($timestamp === null)
-        {
-            $timestamp = time();
-        }
-
         return $this->newQuery()
                     ->where(Absence\Entity::FROM, '<=', $timestamp)
                     ->where(Absence\Entity::TO, '>=', $timestamp)
                     ->get();
-    }
-
-
-    public function verifyGatewayExists($gateway)
-    {
-        return $this->newQuery()
-                        ->where(TerminalEntity::GATEWAY, '=', $gateway)
-                        ->exists();
     }
 
 }

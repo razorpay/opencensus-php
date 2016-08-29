@@ -9,11 +9,11 @@ use RZP\Exception;
 class Validator extends Base\Validator
 {
     protected static $createRules = array (
-        Entity::GATEWAY         => 'required|string',
+        Entity::GATEWAY         => 'required|string|max:255',
         Entity::FROM            => 'required|integer',
         Entity::TO              => 'sometimes|integer',
-        Entity::REASON          => 'sometimes|string',
-        Entity::BANK            => 'sometimes|string',
+        Entity::REASON          => 'sometimes|string|max:500',
+        Entity::BANK            => 'sometimes|string|max:255',
     );
 
     protected static $editRules = array(

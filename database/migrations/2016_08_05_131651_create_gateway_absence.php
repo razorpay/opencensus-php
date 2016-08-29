@@ -18,11 +18,11 @@ class CreateGatewayAbsence extends Migration
         Schema::create(Table::GATEWAYSTATUS_ABSENCE, function(Blueprint $table) {
             $table->engine = 'InnoDB';
 
-            $table->increments(DowntimeTrace::ID);
+            $table->char(DowntimeTrace::ID, DowntimeTrace::ID_LENGTH);
 
-            $table->string(DowntimeTrace::GATEWAY);
+            $table->string(DowntimeTrace::GATEWAY, 255);
 
-            $table->string(DowntimeTrace::BANK)
+            $table->string(DowntimeTrace::BANK, 255)
                     ->nullable();
 
             $table->integer(DowntimeTrace::FROM);
@@ -36,7 +36,7 @@ class CreateGatewayAbsence extends Migration
 
             $table->integer(DowntimeTrace::UPDATED_AT);
 
-            $table->text(DowntimeTrace::REASON)
+            $table->text(DowntimeTrace::REASON, 500)
                   ->nullable();
 
             $table->index(DowntimeTrace::GATEWAY);

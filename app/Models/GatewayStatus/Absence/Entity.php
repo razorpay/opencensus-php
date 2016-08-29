@@ -43,6 +43,8 @@ class Entity extends Base\PublicEntity
 
     protected static $delimiter = '';
 
+    protected $generateIdOnCreate = true;
+
     public function getGateway()
     {
         return $this->getAttributes(self::GATEWAY);

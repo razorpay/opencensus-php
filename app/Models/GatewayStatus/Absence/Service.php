@@ -4,6 +4,7 @@ namespace RZP\Models\GatewayStatus\Absence;
 
 use RZP\Models\Base;
 use RZP\Models\GatewayStatus\Absence;
+use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
@@ -39,12 +40,17 @@ class Service extends Base\Service
         }
         catch(\Exception $e)
         {
+            $this->trace->error(TraceCode::GATEWAY_ABSENCE, ['Delete Error' => $e->getMessage()]);
             throw $e;
         }
     }
 
     public function findAbsentGatewaysForTimestamp($timestamp)
     {
+        if ($timestamp === null)
+        {
+            $timestamp = time();
+        }
         $gateways = $this->repo->gateway_absence->getAbsentGatewaysForTimestamp($timestamp);
 
         return $gateways->toArrayPublic();
