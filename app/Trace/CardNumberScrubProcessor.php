@@ -22,13 +22,13 @@ class CardNumberScrubProcessor extends \Monolog\Processor\WebProcessor
 
     protected $trace;
 
-    protected $debug;
+    protected $env;
 
-    public function __construct($trace, $debug)
+    public function __construct($trace, $env)
     {
         $this->trace = $trace;
 
-        $this->debug = $debug;
+        $this->env = $env;
     }
 
     /**
@@ -48,7 +48,7 @@ class CardNumberScrubProcessor extends \Monolog\Processor\WebProcessor
             {
                 if (preg_match(self::CARD_REGEX, $item) === 1)
                 {
-                    $item = 'CREDIT_CARD_SCRUBBED';
+                    $item = 'CARD_NUMBER_SCRUBBED';
 
                     $scrubbed = true;
                 }
@@ -59,7 +59,7 @@ class CardNumberScrubProcessor extends \Monolog\Processor\WebProcessor
         {
             $this->trace->error(TraceCode::CARD_NUMBER_SCRUBBED);
 
-            if ($this->debug)
+            if ($this->env !== 'production')
             {
                 throw new Exception\CardNumberTraceException;
             }

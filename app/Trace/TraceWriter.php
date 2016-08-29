@@ -89,12 +89,9 @@ class TraceWriter extends Logger
 
         $this->pushProcessor(new EnvProcessor);
 
-        if ($this->debug)
-        {
-            $processor = new CardNumberScrubProcessor($this, $this->debug);
+        $processor = new CardNumberScrubProcessor($this, $this->app->environment());
 
-            $this->pushProcessor($processor);
-        }
+        $this->pushProcessor($processor);
     }
 
     protected function pushIntrospectionProcessor()
