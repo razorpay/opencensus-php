@@ -76,6 +76,8 @@ class TraceWriter extends Logger
 
         $this->pushProcessor(new TraceCodeProcessor);
 
+        $this->pushProcessor(new CCProcessor);
+
         if (($this->debug) or
             ($this->config['introspection']) or
             ($this->contextEnv === 'beta'))
