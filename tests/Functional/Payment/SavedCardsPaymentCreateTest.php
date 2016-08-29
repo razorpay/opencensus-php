@@ -276,7 +276,7 @@ class SavedCardPaymentCreateTest extends TestCase
         $this->assertEquals($payment1['card_id'], $payment2['card_id']);
     }
 
-        /**
+    /**
      * test card multiple payments with save card local, only one card should be saved
      */
     public function testCustomerFetchPayments()
@@ -297,6 +297,8 @@ class SavedCardPaymentCreateTest extends TestCase
         $payments = $this->makeRequestAndGetContent($request);
 
         $this->assertEquals(empty($payments), false);
+        $this->assertEquals($payments['entity'], 'collection');
+        $this->assertEquals($payments['count'], 1);
     }
 
     protected function mockSession()

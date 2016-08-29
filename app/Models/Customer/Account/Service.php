@@ -245,7 +245,7 @@ class Service extends Base\Service
                 $skip);
         }
 
-        $data = [];
+        $collection = new Base\PublicCollection;
 
         foreach ($payments as $payment)
         {
@@ -256,10 +256,10 @@ class Service extends Base\Service
                 'time'      => $payment->getCaptureTimestamp(),
                 'id'        => $payment->getPublicId());
 
-            $data[] = $info;
+            $collection->push($info);
         }
 
-        return $data;
+        return $collection->toArrayWithItems();
     }
 }
 
