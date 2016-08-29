@@ -3,8 +3,8 @@
 namespace RZP\Tests\Functional;
 
 use Closure;
-use RZP\Exception\BaseException;
 use Requests;
+use RZP\Exception;
 use RZP\Tests\Functional\Helpers\EntityFetchTrait;
 
 trait RequestResponseFlowTrait
@@ -29,7 +29,7 @@ trait RequestResponseFlowTrait
                 $response = $this->sendRequest($data['request']);
             }
         }
-        catch (BaseException $e)
+        catch (Exception\BaseException $e)
         {
             $this->checkException($e, $data);
 
@@ -72,7 +72,7 @@ trait RequestResponseFlowTrait
         return $content;
     }
 
-    protected function  checkStatusCodeIfJsonp(& $content, $statusCode = '200')
+    protected function checkStatusCodeIfJsonp(& $content, $statusCode = '200')
     {
         if ((isset($data['json']) === false) or
             ($data['jsonp'] === false))
@@ -97,7 +97,7 @@ trait RequestResponseFlowTrait
 
     public function processAndAssertException($actual, $expected)
     {
-        $class = (isset($expected['class'])) ? $expected['class'] : 'RZP\Exceptions\RecoverableException';
+        $class = (isset($expected['class'])) ? $expected['class'] : Exception\RecoverableException::class;
 
         $this->assertExceptionClass($actual, $class);
 
@@ -250,6 +250,7 @@ trait RequestResponseFlowTrait
         catch (\Exception $e)
         {
             ;
+            // throw $e;
         }
     }
 

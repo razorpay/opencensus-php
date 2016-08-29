@@ -6,9 +6,11 @@ use Cache;
 use Crypt;
 use Config;
 use Requests;
+use SoapFault;
 use RZP\Error;
 use RZP\Exception;
 use RZP\Constants;
+use RZP\Gateway\Utility;
 use RZP\Models\Card;
 use RZP\Trace\Trace;
 use RZP\Gateway\Base;
@@ -63,6 +65,8 @@ class Gateway extends Base\Gateway
     const TEST_WSDL_FILE              = 'cybstest.wsdl.xml';
     const LIVE_WSDL_FILE              = 'cybslive.wsdl.xml';
     const XID                         = 'xid';
+    //soap client timeout in seconds
+    const CONNECTION_TIMEOUT          = 60;
 
     protected $gateway = Constants\Table::CYBERSOURCE;
 
@@ -93,6 +97,8 @@ class Gateway extends Base\Gateway
         parent::callback($input);
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $input['gateway']);
+
+        $this->setCardNumberAndCvv($input);
 
         $gatewayPayment = $this->retrieveByPaymentId($input['payment']['id']);
         $gatewayPayment->fill([Entity::RECEIVED => true]);
@@ -137,8 +143,7 @@ class Gateway extends Base\Gateway
         }
         catch (SoapFault $exception)
         {
-            throw new Exception\RuntimeException(
-                'Capture request failed.', null, $exception);
+            $this->handleSoapFault($exception, "Capture request failed");
         }
     }
 
@@ -158,8 +163,7 @@ class Gateway extends Base\Gateway
         }
         catch (SoapFault $exception)
         {
-            throw new Exception\RuntimeException(
-                'Refund request failed.', null, $exception);
+            $this->handleSoapFault($exception, "Refund request failed");
         }
     }
 
@@ -237,7 +241,7 @@ class Gateway extends Base\Gateway
         return $verify->status;
     }
 
-    protected function verifyNonExistentCase($verify, $input)
+    protected function verifyNonExistentCase($verify)
     {
         $payment = $verify->payment;
         $input = $verify->input;
@@ -282,8 +286,18 @@ class Gateway extends Base\Gateway
         }
     }
 
+    protected function setCardNumberAndCvv(&$input)
+    {
+        $data = $this->getCardDetailsFromCache($input);
+
+        $input['card']['number'] = Card\Tokenex::getCardNumber($data['vault_token']);
+
+        $input['card']['cvv']    = Crypt::decrypt($data['cvv']);
+    }
+
     protected function enroll($input)
     {
+        //TODO: add timeout exception handling here
         $request = $this->getEnrollRequestObject($input);
 
         $this->traceGatewayRequest(TraceCode::GATEWAY_ENROLL_REQUEST, $request);
@@ -298,8 +312,7 @@ class Gateway extends Base\Gateway
         }
         catch (SoapFault $exception)
         {
-            throw new Exception\RuntimeException(
-                'Server error occurred', null, $exception);
+            $this->handleSoapFault($exception, "Enroll: Server Error occured", true);
         }
     }
 
@@ -321,8 +334,7 @@ class Gateway extends Base\Gateway
         }
         catch (SoapFault $exception)
         {
-            throw new Exception\RuntimeException(
-                'Validation request failed.', null, $exception);
+            $this->handleSoapFault($exception, "Post Auth Enroll: Validation Request Failed");
         }
     }
 
@@ -340,8 +352,7 @@ class Gateway extends Base\Gateway
         }
         catch (SoapFault $exception)
         {
-            throw new Exception\RuntimeException(
-                'Authorization failed.', null, $exception);
+            $this->handleSoapFault($exception, "Post Enroll Authorize: Authorization Failed");
         }
     }
 
@@ -359,8 +370,7 @@ class Gateway extends Base\Gateway
         }
         catch (SoapFault $exception)
         {
-            throw new Exception\RuntimeException(
-                'Authorization failed.', null, $exception);
+            $this->handleSoapFault($exception, "Post Not Enrolled Authorize: Authorization failed");
         }
     }
 
@@ -369,6 +379,8 @@ class Gateway extends Base\Gateway
         $gateway = $this->retrieveByPaymentId($input['payment']['id']);
 
         $this->trace->info(TraceCode::GATEWAY_VALIDATE_RESPONSE, $response);
+
+        $payAuthRep = $response[self::PAYER_AUTH_VALIDATE_REPLY];
 
         if ($response['reasonCode'] !== Result::SUCCESS)
         {
@@ -384,8 +396,6 @@ class Gateway extends Base\Gateway
 
             $this->throwException($response);
         }
-
-        $payAuthRep = $response[self::PAYER_AUTH_VALIDATE_REPLY];
 
         $attributes = array(
             Entity::COMMERCE_INDICATOR => $payAuthRep[self::COMMERCE_INDICATOR],
@@ -404,11 +414,51 @@ class Gateway extends Base\Gateway
                         ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
                 }
 
+                $eci = (int) $payAuthRep[self::ECI];
+
+                if (($eci === 7) or ($eci === 0))
+                {
+                    $message = 'ECI param value is invalid';
+
+                    if (isset($payAuthRep['authenticationStatusMessage']))
+                    {
+                        $message = $payAuthRep['authenticationStatusMessage'];
+                    }
+
+                    throw new Exception\GatewayErrorException(
+                        ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED,
+                        $response['reasonCode'],
+                        $message);
+                }
+
                 $attributes[Entity::ECI] = $payAuthRep[Entity::ECI];
                 $attributes[Entity::CAVV] = $payAuthRep[self::CAVV];
                 break;
 
             case Card\Network::MC:
+                if (isset($payAuthRep[self::UCAF_COLLECTION_INDICATOR]) === false)
+                {
+                    throw new Exception\GatewayErrorException(
+                        ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
+                }
+
+                $colInd = (int) $payAuthRep[self::UCAF_COLLECTION_INDICATOR];
+
+                if(($colInd === 0) or ($colInd === 7))
+                {
+                    $message = 'UCAF param value is invalid';
+
+                    if (isset($payAuthRep['authenticationStatusMessage']))
+                    {
+                        $message = $payAuthRep['authenticationStatusMessage'];
+                    }
+
+                    throw new Exception\GatewayErrorException(
+                        ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED,
+                        $response['reasonCode'],
+                        $message);
+                }
+
                 $attributes[Entity::AUTH_DATA] = $payAuthRep[self::UCAF_AUTHENTICATION_DATA];
                 $attributes[Entity::COLLECTION_INDICATOR] = $payAuthRep[self::UCAF_COLLECTION_INDICATOR];
                 break;
@@ -464,6 +514,11 @@ class Gateway extends Base\Gateway
                 Entity::STATUS      => Status::AUTHORIZE_FAILED,
                 Entity::REASON_CODE => $response['reasonCode']
             );
+
+            if (isset($response[self::REQUEST_ID]) === true)
+            {
+                $attributes[Entity::REF] = $response[self::REQUEST_ID];
+            }
 
             $gateway->fill($attributes);
 
@@ -566,7 +621,9 @@ class Gateway extends Base\Gateway
         $content[self::PAYER_AUTH_VALIDATE_SERVICE][self::SIGNED_PARES] = $input['gateway'][self::PA_RES];
 
         $this->setBillingInfo($content, $input);
-        $this->setCardInfoFromTokenex($content, $input);
+        $this->setCardInfo($content, $input);
+        // Unset cvv
+        unset($content['card']['cvNumber']);
 
         $request = $this->getStandardSoapRequest($content);
 
@@ -595,7 +652,7 @@ class Gateway extends Base\Gateway
                 break;
 
             case Card\Network::MC:
-                $content['ucaf'][self::AUTHENTICATION_DATA] = $gateway->getAuthData();
+                $content['ucaf'][self::AUTHENTICATION_DATA] = $gateway->getAuthCode();
                 $content['ucaf'][self::COLLECTION_INDICATOR] = $gateway->getCollectionIndicator();
                 break;
 
@@ -605,9 +662,7 @@ class Gateway extends Base\Gateway
         }
 
         $this->setBillingInfo($content, $input);
-        $this->setCardInfoFromTokenex($content, $input);
-        // We temporarily persist cvv
-        $content['card']['cvNumber'] = $this->getCardCvv($input);
+        $this->setCardInfo($content, $input);
 
         $request = $this->getStandardSoapRequest($content);
 
@@ -741,7 +796,9 @@ class Gateway extends Base\Gateway
 
     protected function getSoapClientObject($request)
     {
-        $soapClient = new CybersourceSoapClient($request['url'], $request['options']['auth']);
+        $soapClient = new CybersourceSoapClient($request['url'],
+                                                $request['options']['auth'],
+                                                $request['connect_options']);
 
         return $soapClient;
     }
@@ -793,22 +850,21 @@ class Gateway extends Base\Gateway
         ];
     }
 
-    protected function getCardCvv($input)
+    protected function getCardDetailsFromCache($input)
     {
-        $key = 'cybersource_' . $input['payment']['id'] . '_cvv';
+        $key = 'cybersource_' . $input['payment']['id'] . '_card_details';
 
-        $encryptedCvv = Cache::store($this->secureCache)->pull($key);
-
-        return Crypt::decrypt($encryptedCvv);
+        return Cache::store($this->secureCache)->pull($key);
     }
 
-    protected function setCardInfoFromTokenex(&$request, $input)
+    protected function setCardInfo(&$request, $input)
     {
-        $request['card']['accountNumber'] = Card\Tokenex::getCardNumber($input['card']['vault_token']);
-
-        $request['card']['expirationMonth'] = $input['card']['expiry_month'];
-
-        $request['card']['expirationYear'] = $input['card']['expiry_year'];
+        $request['card'] = [
+            'accountNumber'     => $input['card']['number'],
+            'expirationMonth'   => $input['card']['expiry_month'],
+            'expirationYear'    => $input['card']['expiry_year'],
+            'cvNumber'          => $input['card']['cvv'],
+        ];
     }
 
     protected function decideAuthStepAfterEnroll($enrollResponse, $input)
@@ -816,7 +872,7 @@ class Gateway extends Base\Gateway
         switch ($enrollResponse['reasonCode'])
         {
             case Result::ENROLLED:
-                $this->persistCvvTemporarily($input);
+                $this->persistCardDetailsTemporarily($input);
 
                 return $this->getFieldsForFormSubmitToBankACS($enrollResponse, $input);
 
@@ -830,12 +886,29 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function persistCvvTemporarily($input)
+    protected function persistCardDetailsTemporarily($input)
     {
-        $encryptedCvv = Crypt::encrypt($input['card']['cvv']);
-        $key = 'cybersource_' . $input['payment']['id'] . '_cvv';
+        $cvv = $input['card']['cvv'];
 
-        Cache::store($this->secureCache)->put($key, $encryptedCvv, 10);
+        $vaultToken = null;
+
+        if (empty($input['card']['vault_token']) === false)
+        {
+            $vaultToken = $input['card']['vault_token'];
+        }
+        else
+        {
+            $vaultToken = Card\Tokenex::getVaultToken($input['card']['number']);
+        }
+
+        $key = 'cybersource_' . $input['payment']['id'] . '_card_details';
+
+        $data = [
+            'cvv'         => Crypt::encrypt($cvv),
+            'vault_token' => $vaultToken
+        ];
+
+        Cache::store($this->secureCache)->put($key, $data, 10);
     }
 
     protected function getFieldsForFormSubmitToBankACS($enrollResponse, $input)
@@ -879,6 +952,12 @@ class Gateway extends Base\Gateway
                 break;
 
             case Card\Network::MC:
+                if (isset($payerAuth[self::UCAF_COLLECTION_INDICATOR]) === false)
+                {
+                    throw new Exception\GatewayErrorException(
+                        ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
+                }
+
                 $ucaf = (int) $payerAuth[self::UCAF_COLLECTION_INDICATOR];
 
                 if (($ucaf === 0) or ($ucaf === 7))
@@ -919,7 +998,11 @@ class Gateway extends Base\Gateway
             'content' => $content,
             'options' => [
                 'auth' => $this->getCredentials()
-            ]
+            ],
+            'connect_options' => [
+                'exception' => true,
+                'connection_timeout' => self::CONNECTION_TIMEOUT
+            ],
         ];
 
         return $request;
@@ -1041,31 +1124,6 @@ class Gateway extends Base\Gateway
         return [];
     }
 
-    /** Exceptions **/
-    protected function throwException($response)
-    {
-        if (isset($response['reasonCode']) === false)
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
-        }
-
-        $reasonCode = $response['reasonCode'];
-
-        $desc = ResponseCode::$reasonCodes[$reasonCode];
-
-        if (ResponseCode::isValidationError($reasonCode))
-        {
-            throw new Exception\BadRequestException(
-                ResponseCode::getMappedCode($reasonCode),
-                $reasonCode);
-        }
-
-        throw new Exception\GatewayErrorException(
-                ResponseCode::getMappedCode($reasonCode),
-                $reasonCode,
-                $desc);
-    }
 
     protected function getVerifyContentFromResponse($verify)
     {
@@ -1097,5 +1155,54 @@ class Gateway extends Base\Gateway
     protected function isSequentialArray($array)
     {
         return array_keys($array) === range(0, count($array) - 1);
+    }
+
+    // Exception handling
+
+    /**
+     * @param \SoapFault $sf
+     * @throws Exception\GatewayTimeoutException
+     * @throws Exception\RuntimeException
+     */
+    protected function handleSoapFault(SoapFault $sf, $errMsg, $safeRetry = false)
+    {
+        if (Utility::checkSoapTimeout($sf) === true)
+        {
+            throw new Exception\GatewayTimeoutException(
+                                $sf->getMessage(), $sf, $safeRetry);
+        }
+
+        throw new Exception\RuntimeException(
+            $errMsg, null, $sf);
+    }
+
+    /**
+     * @param $response
+     * @throws Exception\BadRequestException
+     * @throws Exception\GatewayErrorException
+     */
+    protected function throwException($response)
+    {
+        if (isset($response['reasonCode']) === false)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+        }
+
+        $reasonCode = $response['reasonCode'];
+
+        $desc = ResponseCode::$reasonCodes[$reasonCode];
+
+        if (ResponseCode::isValidationError($reasonCode))
+        {
+            throw new Exception\BadRequestException(
+                ResponseCode::getMappedCode($reasonCode),
+                $reasonCode);
+        }
+
+        throw new Exception\GatewayErrorException(
+            ResponseCode::getMappedCode($reasonCode),
+            $reasonCode,
+            $desc);
     }
 }

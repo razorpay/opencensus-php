@@ -9,12 +9,9 @@ use RZP\Models\Merchant;
 use RZP\Models\Pricing;
 use RZP\Models\Terminal;
 use RZP\Exception;
-use RZP\Services\SlackPoster;
 
 class Core extends Base\Core
 {
-    use SlackPoster;
-
     public function create($input)
     {
         $merchant = (new Merchant\Entity)->build($input);
@@ -76,6 +73,10 @@ class Core extends Base\Core
     public function edit($merchant, $input)
     {
         $merchant->edit($input);
+
+        $plan = $this->repo->pricing->getMerchantPricingPlan($merchant);
+
+        (new Methods\Core)->valdiateInternationalPricingForMerchant($merchant, $plan);
 
         $this->saveAndNotify($merchant);
 
@@ -177,7 +178,7 @@ class Core extends Base\Core
 
             $message .= ' ' . $merchant->getEntity() . ' edited by ' . $user;
 
-            $this->slackPost($message, $data, ['channel' => '#operations_log',
+            $this->app['slack']->queue($message, $data, ['channel' => '#operations_log',
                                                'username' => 'Jordan Belfort',
                                                'icon' => ':boom:']);
         }

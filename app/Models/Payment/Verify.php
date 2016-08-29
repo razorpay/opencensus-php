@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment;
 
+use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Merchant;
@@ -10,13 +11,10 @@ use RZP\Models\Transaction;
 use RZP\Exception;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use RZP\Services\SlackPoster;
 use App;
 
 class Verify
 {
-    use SlackPoster;
-
     const MIN_TIME_BEFORE_VERIFY = 120; // 2 minutes
 
     const SUCCESS       = 'success';
@@ -34,9 +32,14 @@ class Verify
         $app = App::getFacadeRoot();
 
         $this->mode = $mode;
+
         $this->trace = $trace;
+
         $this->core = new Payment\Core;
+
         $this->paymentRepo = $app['repo']->payment;
+
+        $this->app = $app;
     }
 
     public function verifyPaymentsWithFilter($filter)
@@ -59,7 +62,7 @@ class Verify
         }
         else
         {
-            ;
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_PARAMETERS, $filter);
         }
     }
 
@@ -168,7 +171,7 @@ class Verify
         {
             // Drop all false values (NULL, 0, "")
             $slackArray = array_filter($results);
-            $this->slackPost($message, $slackArray, ['channel' => '#tech_logs']);
+            $this->app['slack']->queue($message, $slackArray, ['channel' => '#tech_logs']);
         }
 
         return $results;

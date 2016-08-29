@@ -25,6 +25,14 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
+    public function findCapturedPaymentById($paymentId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::PAYMENT_ID, '=', $paymentId)
+                    ->where(Entity::ACTION, '=', Command::CAPTURE)
+                    ->firstOrFail();
+    }
+
     public function findByRrn($rrn)
     {
         return $this->newQuery()
@@ -42,9 +50,8 @@ class Repository extends Base\Repository
 
     public function findByPaymentIdAndCommand($paymentId, $command)
     {
-        $repo = $this->repo;
-
-        return $repo::where('payment_id', '=', $paymentId)
+        return $this->newQuery()
+                    ->where('payment_id', '=', $paymentId)
                     ->where('vpc_Command', '=', $command)
                     ->firstOrFail();
     }

@@ -27,19 +27,25 @@ class CreateEmiPlansTable extends Migration {
             $table->char(Emi\Entity::ID, 14)
                   ->primary();
 
-            $table->char(Emi\Entity::BANK, 4);
+            $table->char(Emi\Entity::BANK, 4)
+                  ->nullable();
+
+            $table->char(Emi\Entity::NETWORK, 5)
+                  ->nullable();
 
             $table->integer(Emi\Entity::RATE);
 
             $table->tinyInteger(Emi\Entity::DURATION);
 
             $table->string(Emi\Entity::METHODS)
-            	  ->nullable();
+            	    ->nullable();
 
             $table->integer(Emi\Entity::MIN_AMOUNT);
 
             $table->integer(Emi\Entity::CREATED_AT);
+
             $table->integer(Emi\Entity::UPDATED_AT);
+
             $table->integer(Emi\Entity::DELETED_AT)
                   ->nullable();
         });

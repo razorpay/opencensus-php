@@ -21,12 +21,11 @@ class Repository extends Base\Repository
 
     public function getPricingPlanById($id, $fail = false, $public = false)
     {
-        $repo = $this->repo;
-
-        $pricing = $repo::where(Pricing\Entity::PLAN_ID, '=', $id)
-                     ->orderBy(Pricing\Entity::PLAN_ID, 'desc')
-                     ->orderBy(Pricing\Entity::ID, 'desc')
-                     ->get();
+        $pricing = $this->newQuery()
+                        ->where(Pricing\Entity::PLAN_ID, '=', $id)
+                        ->orderBy(Pricing\Entity::PLAN_ID, 'desc')
+                        ->orderBy(Pricing\Entity::ID, 'desc')
+                        ->get();
 
         if (($pricing->count() === 0) and
             ($fail))
@@ -60,10 +59,9 @@ class Repository extends Base\Repository
 
     public function getPricingRulesForCard($id)
     {
-        $repo = $this->repo;
-
         // cannot use laravel's whereIn here because it doesn't give correct result with 'null'
-        return $repo::where(Pricing\Entity::PLAN_ID, '=', $id)
+        return $this->newQuery()
+                    ->planId($id)
                     ->where(Pricing\Entity::PAYMENT_METHOD, '=', Payment\Method::CARD)
                     ->orderBy(Pricing\Entity::ID, 'desc')
                     ->get();
@@ -71,37 +69,33 @@ class Repository extends Base\Repository
 
     public function getPricingRulesForMethod($pricingPlanId, $method)
     {
-        $repo = $this->repo;
-
-        return $repo::where(Pricing\Entity::PLAN_ID, '=', $pricingPlanId)
+        return $this->newQuery()
+                    ->planId($pricingPlanId)
                     ->where(Pricing\Entity::PAYMENT_METHOD, '=', $method)
                     ->get();
     }
 
     public function getZeroPricingPlanRuleForMethod($method)
     {
-        $repo = $this->repo;
-
-        return $repo::where(Pricing\Entity::PLAN_ID, '=', Pricing\Entity::ZERO_PRICING)
+        return $this->newQuery()
+                    ->planId(Pricing\Entity::ZERO_PRICING)
                     ->where(Pricing\Entity::PAYMENT_METHOD, '=', $method)
                     ->firstOrFail();
     }
 
     public function getPricingPlansOrderedByPlanId()
     {
-        $repo = $this->repo;
-
-        return $repo::orderBy(Pricing\Entity::PLAN_ID, 'desc')
+        return $this->newQuery()
+                    ->orderBy(Pricing\Entity::PLAN_ID, 'desc')
                     ->orderBy(Pricing\Entity::ID, 'desc')
                     ->get();
     }
 
     public function getMerchantPricingPlans()
     {
-        $repo = $this->repo;
-
         // For merchant pricing plans, gateway will not be specified
-        return $repo::whereNull(Pricing\Entity::GATEWAY)
+        return $this->newQuery()
+                    ->whereNull(Pricing\Entity::GATEWAY)
                     ->orderBy(Pricing\Entity::PLAN_ID, 'desc')
                     ->orderBy(Pricing\Entity::ID, 'desc')
                     ->get();
@@ -109,42 +103,36 @@ class Repository extends Base\Repository
 
     public function getGatewayPricingPlans()
     {
-        $repo = $this->repo;
-
-        return $repo::whereNotNull(Pricing\Entity::GATEWAY)
+        return $this->newQuery()
+                    ->whereNotNull(Pricing\Entity::GATEWAY)
                     ->orderBy(Pricing\Entity::ID, 'desc')->get();
     }
 
     public function getPricingPlanByName($name)
     {
-        $repo = $this->repo;
-
-        return $repo::where(Pricing\Entity::PLAN_NAME, '=', $name)
+        return $this->newQuery()
+                    ->where(Pricing\Entity::PLAN_NAME, '=', $name)
                     ->orderBy(Pricing\Entity::ID, 'desc')
                     ->get();
     }
 
     public function getPricingPlanRule($id)
     {
-        $repo = $this->repo;
-        $rule = $repo::findOrFailPublic($id);
-
-        return $rule;
+        return $this->newQuery()->findOrFailPublic($id);
     }
 
     public function deletePlanRule($planId, $ruleId)
     {
-        $repo = $this->repo;
-
-        $rule = $repo::where(Entity::PLAN_ID, '=', $planId)
+        $rule = $this->newQuery()
+                     ->planId($planId)
                      ->where(Entity::ID, '=', $ruleId)
-                     ->firstOrFail();
+                     ->firstOrFailPublic();
 
         $count = $rule->payments->count();
 
         if ($count === 0)
         {
-            return $rule->forceDelete();
+            return $this->forceDelete($rule);
         }
         else
         {
@@ -155,23 +143,20 @@ class Repository extends Base\Repository
 
     public function deletePlanRuleForce($planId, $ruleId)
     {
-        $repo = $this->repo;
-
-        $rule = $repo::where(Entity::PLAN_ID, '=', $planId)
+        $rule = $this->newQuery()
+                     ->planId($planId)
                      ->where(Entity::ID, '=', $ruleId)
-                     ->firstOrFail();
+                     ->firstOrFailPublic();
 
         $count = $rule->payments->count();
 
         if ($count === 0)
         {
-            return $rule->forceDelete();
+            return $this->forceDelete($rule);
         }
         else
         {
-            $rule->delete();
-
-            return true;
+            return $this->delete($rule);
         }
     }
 }

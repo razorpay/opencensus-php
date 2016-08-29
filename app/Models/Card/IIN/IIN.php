@@ -3,6 +3,8 @@
 namespace RZP\Models\Card\IIN;
 
 use RZP\Models\Bank;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 class IIN
 {
@@ -75,11 +77,24 @@ class IIN
         return true;
     }
 
+    public static function validateEmiAvailableForCard($iin, $cardNumber)
+    {
+        if (self::isEmiAvailableForCard($iin, $cardNumber) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_EMI_NOT_AVAILABLE_ON_CARD);
+        }
+    }
+
+    /**
+     * This checks for the special case of Axis Bank which works on first 8 digits
+     * of the card instea of the first 6.
+     */
     public static function isEmiAvailableForCard($iin, $cardNumber)
     {
-        $emi = $iin->isEmiAvailable() and self::isValidCardForBank($iin->getIssuer(), $cardNumber);
+        $emi = (($iin->isEmiAvailable()) and
+                (self::isValidCardForBank($iin->getIssuer(), $cardNumber)));
 
         return $emi;
     }
-
 }

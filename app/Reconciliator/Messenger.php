@@ -4,12 +4,9 @@ namespace RZP\Reconciliator;
 
 use App;
 use RZP\Trace\TraceCode;
-use RZP\Services\SlackPoster;
 
 class Messenger
 {
-    use SlackPoster;
-
     protected $app;
 
     public function __construct()
@@ -55,7 +52,7 @@ class Messenger
 
         $headline = 'Reconciliation alert';
 
-        $this->slackPost($headline, $data, $settings);
+        $this->app['slack']->queue($headline, $data, $settings);
     }
 
     public function getSlackSettings()

@@ -32,6 +32,14 @@ class Network
         self::VISA    => 'Visa',
         self::UNP     => 'Union Pay');
 
+    public static $colorCodes = array(
+        self::AMEX    => '#2584C3',
+        self::DICL    => '#6C89D9',
+        self::MAES    => '#25C395',
+        self::MC      => '#25BAC3',
+        self::RUPAY   => '#74C674',
+        self::VISA    => '#C15482',);
+
    public static $networks = array(
         self::AMEX,
         self::DICL,
@@ -120,13 +128,13 @@ class Network
 
     public static function isValidNetwork($network)
     {
-        return ((in_array($network, self::$networks)) or
-                (in_array($network, array_values(self::$fullName))));
+        return ((defined(get_class().'::'.$network)) or
+                (NetworkName::isValidNetworkFullName($network)));
     }
 
     public static function isValidNetworkName($network)
     {
-        return (array_search($network, self::$fullName) !== false);
+        return (NetworkName::isValidNetworkFullName($network));
     }
 
     public static function isUnsupportedNetwork($network)
@@ -146,9 +154,12 @@ class Network
 
     public static function getCode($fullName)
     {
-        $codes = array_flip(self::$fullName);
+        return NetworkName::$codes[$fullName];
+    }
 
-        return $codes[$fullName];
+    public static function getColorCode($networkCode)
+    {
+        return self::$colorCodes[$networkCode];
     }
 
     public static function getSupportedNetworksNamesMap()

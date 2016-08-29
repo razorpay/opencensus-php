@@ -19,9 +19,8 @@ class Repository extends Base\Repository
 
     public function getSettlementWithFeesAsNullOrZero()
     {
-        $repo = $this->repo;
-
-        return $repo::where(Entity::FEES, '=', '0')
+        return $this->newQuery()
+                    ->where(Entity::FEES, '=', '0')
                     ->orWhereNull(Entity::FEES)
                     ->get();
     }
@@ -29,10 +28,31 @@ class Repository extends Base\Repository
 
     public function getSettlementWithServiceTaxNullOrZero()
     {
-        $repo = $this->repo;
-
-        return $repo::where(Entity::SERVICE_TAX, '=', '0')
+        return $this->newQuery()
+                    ->where(Entity::SERVICE_TAX, '=', '0')
                     ->orWhereNull(Entity::SERVICE_TAX)
+                    ->get();
+    }
+
+    public function getFewSettlementsWithNoCorrespondingSettlementDetails()
+    {
+        $setlIds = $this->db->select(
+            'SELECT DISTINCT id FROM settlements
+                WHERE settlements.id NOT IN
+                    (SELECT DISTINCT settlements.id from settlements
+                        JOIN settlement_details on settlements.id = settlement_details.settlement_id)
+                LIMIT 20');
+
+        $setlIds = json_decode(json_encode($setlIds), true);
+
+        $setlIds2  = [];
+        foreach ($setlIds as $setlId)
+        {
+            $setlIds2[] = $setlId['id'];
+        }
+
+        return $this->newQuery()
+                    ->whereIn(Entity::ID, $setlIds2)
                     ->get();
     }
 }

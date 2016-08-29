@@ -240,6 +240,7 @@ class ApiResponse
             'payment_create_checkout',
             'payment_callback_with_key_post',
             'payment_callback_with_key_get',
+            'payment_redirect'
         );
 
         return (in_array($route, $callbackRoutes));
@@ -251,6 +252,7 @@ class ApiResponse
             'payment_create_checkout',
             'payment_callback_with_key_post',
             'payment_callback_with_key_get',
+            'payment_redirect'
         );
 
         return (in_array($route, $callbackRoutes));

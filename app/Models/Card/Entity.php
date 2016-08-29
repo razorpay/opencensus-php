@@ -116,6 +116,8 @@ class Entity extends Base\PublicEntity
         self::INTERNATIONAL     => null,
         self::EMI               => false,
         self::GLOBAL_CARD_ID    => null,
+        self::VAULT             => null,
+        self::VAULT_TOKEN       => null,
     );
 
     public function merchant()
@@ -199,6 +201,11 @@ class Entity extends Base\PublicEntity
     public function getNetworkCode()
     {
         return $this->getNetworkCodeAttribute();
+    }
+
+    public function getNetworkColorCode()
+    {
+        return Card\Network::getColorCode($this->getNetworkCode());
     }
 
     protected function getNetworkCodeAttribute()

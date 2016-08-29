@@ -219,6 +219,29 @@ return [
         ]
     ],
 
+    'testEditMerchantEnableInternationalFail' => [
+        'request' => [
+            'content' => [
+                'international' => '1',
+            ],
+            'url' => '/merchants/10000000000000',
+            'method' => 'put',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    // 'description' => PublicErrorDescription::BAD_REQUEST_KEY_OF_DEMO_ACCOUNT,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testEditTransactionEmailWithCsv' => [
         'request' => [
             'content' => [

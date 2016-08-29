@@ -39,9 +39,7 @@ class Repository extends Base\Repository
 
     public function getAllOrderedByCreatedAt()
     {
-        $repo = $this->repo;
-
-        return $repo::query()
+        return $this->newQuery()
                     ->orderBy(BankAccount\Entity::CREATED_AT)
                     ->get();
     }
@@ -50,6 +48,14 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where(BankAccount\Entity::TYPE, '=', BankAccount\Type::MERCHANT)
+                    ->orderBy(BankAccount\Entity::CREATED_AT)
+                    ->get();
+    }
+
+    public function getBankAccountsBetweenTimestamp($from, $to)
+    {
+        return $this->newQuery()
+                    ->whereBetween(BankAccount\Entity::CREATED_AT, array($from, $to))
                     ->orderBy(BankAccount\Entity::CREATED_AT)
                     ->get();
     }
@@ -63,6 +69,13 @@ class Repository extends Base\Repository
                     ->where(BankAccount\Entity::MERCHANT_ID, '=', $merchantId)
                     ->orderBy(BankAccount\Entity::CREATED_AT)
                     ->get();
+    }
+
+    public function getCountOfBankAccountsCreatedBetween($from, $to)
+    {
+        return $this->newQuery()
+                    ->whereBetween(BankAccount\Entity::CREATED_AT, array($from, $to))
+                    ->count();
     }
 
     protected function addQueryOrder($query)
@@ -80,12 +93,11 @@ class Repository extends Base\Repository
 
     public function bankAccountsWhereIdNullOrBlank()
     {
-        $repo = $this->repo;
-
-        return $repo::where(Entity::ID, '=', '')
-                                ->orWhereNull(BankAccount\Entity::ID)
-                                ->take(500)
-                                ->get();
+        return $this->query()
+                    ->where(Entity::ID, '=', '')
+                    ->orWhereNull(BankAccount\Entity::ID)
+                    ->take(500)
+                    ->get();
     }
 
     /**

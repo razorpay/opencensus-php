@@ -48,7 +48,7 @@ class EmiFile extends Base\EmiFile
         $zipFile = $this->getZippedFile($fullPath);
 
         $data['file'] = $zipFile;
-        $data['body'] = 'Please forward the Axis Emi file to axis';
+        $data['body'] = 'Please process the attached EMI file';
 
         $this->mail->queue('emails.message', $data, function ($message) use ($data)
         {
@@ -94,15 +94,6 @@ class EmiFile extends Base\EmiFile
     private function formattedDateFromTimestamp($timestamp)
     {
         return Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata')->format('d-M-Y');
-    }
-
-    protected function getAuthCode($payment)
-    {
-        $gateway = $payment->gateway;
-
-        $gateway = $this->repo->$gateway->findByPaymentIdAndAction($payment->id, Action::CAPTURE);
-
-        return $gateway->getAuthCode();
     }
 
     protected function sendEmiPassword()

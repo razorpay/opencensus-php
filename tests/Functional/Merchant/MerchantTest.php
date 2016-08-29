@@ -136,6 +136,14 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testEditMerchantEnableInternationalFail()
+    {
+        $this->fixtures->create('pricing:standard_plan');
+        $this->fixtures->merchant->editPricingPlanId('1A0Fkd38fGZPVC');
+
+        $this->startTest();
+    }
+
     public function testEditTransactionEmailWithCsv()
     {
         $this->createMerchant();
@@ -604,8 +612,9 @@ class MerchantTest extends TestCase
 
     protected function createMerchant()
     {
+        $id = '1X4hRFHFx4UiXt';
         $merchant = array(
-            'id'    => '1X4hRFHFx4UiXt',
+            'id'    => $id,
             'name'  => 'Tester 2',
             'email' => 'liveandtest@localhost.com'
         );
@@ -617,6 +626,8 @@ class MerchantTest extends TestCase
         );
 
         $content = $this->makeRequestAndGetContent($request);
+
+        $this->merchantAssignPricingPlan('1hDYlICobzOCYt', $id);
 
         $this->assertArraySelectiveEquals($merchant, $content);
 

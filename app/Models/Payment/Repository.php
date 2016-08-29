@@ -56,9 +56,8 @@ class Repository extends Base\Repository
 
     public function fetchCapturedForGatewayBetweenTimestamp($from, $to, $gateway)
     {
-        $repo = $this->repo;
-
-        return $repo::whereBetween(Payment\Entity::CAPTURED_AT, array($from, $to))
+        return $this->newQuery()
+                    ->whereBetween(Payment\Entity::CAPTURED_AT, array($from, $to))
                     ->status(Payment\Status::CAPTURED)
                     ->where(Payment\Entity::GATEWAY, '=', $gateway)
                     ->get();
@@ -66,9 +65,8 @@ class Repository extends Base\Repository
 
     public function fetchPaymentsWithStatus($from, $to, $gateway, $status)
     {
-        $repo = $this->repo;
-
-        return $repo::whereBetween(Payment\Entity::CREATED_AT, array($from, $to))
+        return $this->newQuery()
+                    ->whereBetween(Payment\Entity::AUTHORIZED_AT, array($from, $to))
                     ->whereIn('status', $status)
                     ->where(Payment\Entity::GATEWAY, '=', $gateway)
                     ->get();
@@ -83,18 +81,17 @@ class Repository extends Base\Repository
      */
     public function fetchCapturedBetweenTimestamp($from, $to, $merchantId)
     {
-        $repo = $this->repo;
-        return $repo::whereBetween(Entity::CAPTURED_AT, [$from, $to])
-            ->where(Entity::STATUS, '=', Status::CAPTURED)
-            ->where(Entity::MERCHANT_ID, '=', $merchantId)
-            ->get();
+        return $this->newQuery()
+                    ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
+                    ->where(Entity::STATUS, '=', Status::CAPTURED)
+                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->get();
     }
 
     public function fetchEmiPaymentsBetween($from, $to, $bank)
     {
-        $repo = $this->repo;
-
-        return $repo::whereBetween(Entity::UPDATED_AT, [$from, $to])
+        return $this->newQuery()
+                    ->whereBetween(Entity::UPDATED_AT, [$from, $to])
                     ->where(Entity::STATUS, '=', Status::CAPTURED)
                     ->where(Entity::BANK, '=', $bank)
                     ->where(Entity::METHOD, '=', Method::EMI)
@@ -104,34 +101,23 @@ class Repository extends Base\Repository
 
     public function fetchCreatedPaymentsWithInternalError($timestamp)
     {
-        $repo = $this->repo;
-
-        return $repo::status(Payment\Status::CREATED)
+        return $this->newQuery()
+                    ->status(Payment\Status::CREATED)
                     ->whereNotNull(Payment\Entity::INTERNAL_ERROR_CODE)
                     ->where(Payment\Entity::CREATED_AT, '<=', $timestamp)
                     ->get();
     }
 
-    public function countPaymentsForPricingRuleId($pricingRuleId)
-    {
-        $repo = $this->repo;
-
-        return $repo::where(Entity::PRICING_RULE_ID, '=', $pricingRuleId)
-                    ->count();
-    }
-
     public function lockForUpdate($id)
     {
-        $repo = $this->repo;
-
-        return $repo::lockForUpdate()->findOrFail($id);
+        return $this->newQuery()
+                    ->lockForUpdate()->findOrFail($id);
     }
 
     public function timeoutOldPayments($timestamp)
     {
-        $repo = $this->repo;
-
-        return $repo::status(Payment\Status::CREATED)
+        return $this->newQuery()
+                    ->status(Payment\Status::CREATED)
                     ->whereNull(Payment\Entity::INTERNAL_ERROR_CODE)
                     ->where(Payment\Entity::CREATED_AT, '<=', $timestamp)
                     ->update(
@@ -142,11 +128,18 @@ class Repository extends Base\Repository
                         );
     }
 
+    public function fetchOldCreatedPaymentsForTimeout($timestamp)
+    {
+        return $this->newQuery()
+                    ->status(Payment\Status::CREATED)
+                    ->where(Payment\Entity::CREATED_AT, '<=', $timestamp)
+                    ->get();
+    }
+
     public function getAuthorizedPaymentsBeforeTimestamp($timestamp)
     {
-        $repo = $this->repo;
-
-        return $repo::status(Payment\Status::AUTHORIZED)
+        return $this->newQuery()
+                    ->status(Payment\Status::AUTHORIZED)
                     ->where(Payment\Entity::CREATED_AT, '<=', $timestamp)
                     ->orderBy(Payment\Entity::MERCHANT_ID)
                     ->get();
@@ -154,9 +147,8 @@ class Repository extends Base\Repository
 
     public function getAuthorizedPaymentsBetweenTimestamps($timeLowerLimit, $timeUpperLimit)
     {
-        $repo = $this->repo;
-
-        return $repo::status(Payment\Status::AUTHORIZED)
+        return $this->newQuery()
+                    ->status(Payment\Status::AUTHORIZED)
                     ->where(Payment\Entity::CREATED_AT, '<=', $timeUpperLimit)
                     ->where(Payment\Entity::CREATED_AT, '>', $timeLowerLimit)
                     ->get();
@@ -164,9 +156,8 @@ class Repository extends Base\Repository
 
     public function getAutoCapturedPaymentsBetweenTimestamps($timeLowerLimit, $timeUpperLimit)
     {
-        $repo = $this->repo;
-
-        return $repo::status(Payment\Status::CAPTURED)
+        return $this->newQuery()
+                    ->status(Payment\Status::CAPTURED)
                     ->where(Payment\Entity::AUTO_CAPTURED, '=', true)
                     ->where(Payment\Entity::CAPTURED_AT, '<=', $timeUpperLimit)
                     ->where(Payment\Entity::CAPTURED_AT, '>', $timeLowerLimit)
@@ -177,9 +168,8 @@ class Repository extends Base\Repository
 
     public function get50PaymentsWithVerifyResult($result)
     {
-        $repo = $this->repo;
-
-        return $repo::where(Payment\Entity::VERIFIED, '=', $result)
+        return $this->newQuery()
+                    ->where(Payment\Entity::VERIFIED, '=', $result)
                     ->take(50)
                     ->get();
     }
@@ -198,11 +188,10 @@ class Repository extends Base\Repository
 
     public function getUnverifiedPayments($ts)
     {
-        $repo = $this->repo;
-
         $verifyEnabledGateways = Payment\Gateway::$verifyEnabled;
 
-        return $repo::whereNull(Payment\Entity::VERIFIED)
+        return $this->newQuery()
+                    ->whereNull(Payment\Entity::VERIFIED)
                     ->status(Payment\Status::FAILED)
                     ->whereIn(Payment\Entity::GATEWAY, $verifyEnabledGateways)
                     ->createdAtLessThan($ts)
@@ -212,9 +201,8 @@ class Repository extends Base\Repository
 
     public function getNonTaxComputedPayments()
     {
-        $repo = $this->repo;
-
-        return $repo::whereNotNull(Payment\Entity::CAPTURED_AT)
+        return $this->newQuery()
+                    ->whereNotNull(Payment\Entity::CAPTURED_AT)
                     ->whereNull(Payment\Entity::SERVICE_TAX)
                     ->take(500)
                     ->get();
@@ -286,7 +274,7 @@ class Repository extends Base\Repository
         }
         else
         {
-            $quere->whereNotNull(Entity::CAPTURED_AT);
+            $query->whereNotNull(Entity::CAPTURED_AT);
         }
     }
 
@@ -302,8 +290,6 @@ class Repository extends Base\Repository
         $joins = $query->getQuery()->joins;
 
         $joins = ($joins) ? $joins : [];
-
-        $joined = false;
 
         foreach ($joins as $join)
         {

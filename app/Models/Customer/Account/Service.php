@@ -176,9 +176,12 @@ class Service extends Base\Service
                     {
                         $data['tokens'] = $result['tokens'];
                     }
+
+                    $sendOtp = false;
                 }
             }
-            else if ($sendOtp === true)
+
+            if ($sendOtp === true)
             {
                 $this->sendOtp(['contact' => $contact]);
             }

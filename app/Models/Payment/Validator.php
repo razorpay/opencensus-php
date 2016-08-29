@@ -8,6 +8,7 @@ use Lib\PhoneBook;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Models\Payment\Processor\Wallet;
 
 class Validator extends Base\Validator
 {
@@ -17,7 +18,7 @@ class Validator extends Base\Validator
         'method'                  =>  'in:card,netbanking,wallet,emi',
         'card'                    =>  'sometimes',
         'bank'                    =>  'required_if:method,netbanking',
-        'wallet'                  =>  'required_if:method,wallet|in:paytm,mobikwik,payzapp,payumoney',
+        'wallet'                  =>  'sometimes',
         'emi_duration'            =>  'required_if:method,emi|integer|in:3,6,9,12,18,24',
         'description'             =>  'sometimes',
         'email'                   =>  'required|email',
@@ -51,7 +52,30 @@ class Validator extends Base\Validator
         'currency',
         'description',
         'fee',
-        'contact');
+        'contact',
+        'wallet');
+
+    protected function validateWallet($input)
+    {
+        if ($input['method'] !== Payment\Method::WALLET)
+        {
+            return true;
+        }
+
+        if (isset($input['wallet']) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_PROVIDED);
+        }
+
+        if (Wallet::exists($input['wallet']) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_SUPPORTED);
+        }
+
+        return true;
+    }
 
     protected function validateCardKey($input)
     {
@@ -86,8 +110,7 @@ class Validator extends Base\Validator
                 'amount');
         }
 
-        if (($input['method'] === Payment\Method::EMI) and
-            ($amount < 300000))
+        if (($input['method'] === Payment\Method::EMI) and ($amount < 300000))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT_FOR_EMI,
@@ -100,6 +123,16 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Amount exceeds maximum amount allowed.');
+        }
+    }
+
+    public function validateMinAmountWithEmiPlanAmount($emiPlan)
+    {
+        if ($this->entity->getAmount() < $emiPlan->getMinAmount())
+        {
+            // We need to do this check here because currently amex has a higher limit of 5k.
+            throw new Exception\BadRequestValidationFailureException(
+                'Minimum amount allowed for EMI payment on this card must be ' . $emiPlan->getMinAmount());
         }
     }
 
