@@ -626,6 +626,12 @@ class Service extends Base\Service
         ini_set('memory_limit', '1024M');
         set_time_limit(300);
 
+        // Trace to indicate start of mailing
+        $this->trace->info(
+            TraceCode::SETTLEMENT_DAILY_REPORT_MAILING,
+            array()
+        );
+
         $merchants = $this->repo->merchant->fetchAllLiveMerchants()
                                             ->select(Entity::ID)
                                             ->get();
