@@ -35,6 +35,8 @@ class Merchant extends Base
 
         $this->fixtures->on('test')->create('merchant:add_payment_banks', ['merchant_id' => '10000000000000']);
 
+        $this->fixtures->on('test')->create('merchant:bank_account');
+
         $this->fixtures->merchant->enableInternational();
     }
 
