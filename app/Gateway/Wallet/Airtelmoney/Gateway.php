@@ -171,4 +171,164 @@ class Gateway extends Base\Gateway
 
         return $request;
     }
+
+    public function verify(array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
+    }
+
+    public function sendPaymentVerifyRequest($verify)
+    {
+        $input = $verify->input;
+
+        $request = $this->getVerifyRequestArray($input);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            $request);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->response = $response;
+
+        $content = $this->jsonToArray($response->body);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            [
+                'content' => $content,
+                'gateway' => 'airtelmoney',
+                'payment_id' => $input['payment']['id'],
+            ]);
+
+        $verify->verifyResponse = $this->response;
+
+        $verify->verifyResponseBody = $this->response->body;
+
+        $verify->verifyResponseContent = $content;
+
+        return $content;
+    }
+
+    protected function getVerifyRequestArray($input)
+    {
+        $wallet = $this->getRepo()->fetchWalletByPaymentId($input['payment']['id']);
+        $content = [
+            'MID'        => $this->getMerchantId($input['terminal']),
+            'TXN_REF_NO' => $wallet['gateway_payment_id'],
+            'DATE'       => $this->getFormattedDate($wallet['reference2']),
+        ];
+        return $this->getStandardRequestArray($content);
+    }
+
+
+    protected function verifyPayment($verify)
+    {
+        $payment = $verify->payment;
+        $input = $verify->input;
+        $content = $verify->verifyResponseContent;
+
+        $verify->status = VerifyResult::STATUS_MATCH;
+
+        if ($content['STATUS'] !== Status::SUCCESS)
+        {
+            $verify->apiSuccess = false;
+        }
+        else
+        {
+            //TODO: Once you get the transaction success field in Inquiry API,
+            // change this.
+            if ($content['result'][0]['status'] !== 'success')
+            {
+                $verify->gatewaySuccess = false;
+
+                if (($payment === null) and
+                    (($input['payment']['status'] === 'failed') or
+                     ($input['payment']['status'] === 'created')))
+                {
+                    $verify->apiSuccess = false;
+                }
+                else if (($payment['received'] === false) and
+                         (($payment['status_code'] === null) or
+                          ($payment['status_code'] !== (string) Status::SUCCESS)))
+                {
+                    $verify->apiSuccess = false;
+                }
+                else if ($payment['status_code'] === (string) Status::SUCCESS)
+                {
+                    $verify->status = VerifyResult::STATUS_MISMATCH;
+                    $verify->apiSuccess = true;
+                }
+            }
+            else if ($content['result'][0]['status'] === "success")
+            {
+                $verify->gatewaySuccess = true;
+
+                if (($input['payment']['status'] !== 'created') and
+                    ($input['payment']['status'] !== 'failed'))
+                {
+                    $verify->apiSuccess = true;
+                }
+                else
+                {
+                    $verify->status = VerifyResult::STATUS_MISMATCH;
+                    $verify->apiSuccess = false;
+                }
+            }
+        }
+
+        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
+
+        $verify->payment = $this->saveVerifyContentIfNeeded($payment, $content);
+
+        return $verify->status;
+    }
+
+    protected function saveVerifyContentIfNeeded($payment, $content)
+    {
+        $this->action = Action::AUTHORIZE;
+
+        if (isset($content['STATUS']) and $content['STATUS'] === Status::VERIFY_SUCCESS)
+        {
+            $walletAttributes = $this->getWalletContentFromVerify($payment, $content);
+
+            if ($payment === null)
+            {
+                $payment = $this->createGatewayPaymentEntity($walletAttributes);
+            }
+            else if ($payment['received'] === false)
+            {
+                $payment->fill($walletAttributes);
+                $payment->saveOrFail();
+            }
+        }
+
+        $this->action = Action::VERIFY;
+
+        return $payment;
+    }
+
+    protected function getWalletContentFromVerify($payment, array $content)
+    {
+        $contentToSave = [
+            'MID'         => $this->getMerchantId($this->input['terminal']),
+            'CUST_EMAIL'  => $this->input['payment']['email'],
+            'CUST_MOBILE' => $this->getFormattedContact($this->input['payment']['contact']),
+            'STATUS'      => Status::TRANSACTION_SUCCESS,
+            'TXN_REF_NO'  => $content['paymentId'],
+            'received'    => true
+        ];
+
+        if (isset($payment['amount']) === false)
+        {
+            $contentToSave['amount'] = $this->input['payment']['amount'];
+        }
+
+        return $contentToSave;
+    }
+
 }
