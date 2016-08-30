@@ -169,6 +169,7 @@ class Gateway extends Base\Gateway
 
         return $request;
     }
+
     protected function getRequestFromResponse302($response)
     {
         $cookies = [];
@@ -224,7 +225,7 @@ class Gateway extends Base\Gateway
     {
         $request['options']['follow_redirects'] = false;
 
-        $request['headers']['Referer'] = 'https://api.razorpay.com/v1/payments';
+        $request['headers']['Referer'] = $this->config['url'];
     }
 
     protected function sendFirstGatewayRequestForEbsAuthorize($request)
@@ -246,43 +247,28 @@ class Gateway extends Base\Gateway
     {
         $this->setRequestHeaderAndOption($request);
 
-        // This is the first redirect (302). We receive headers and cookies in this response
-        // which needs to be sent to the second redirect request.
-        $response302 = $this->sendFirstGatewayRequestForEbsAuthorize($request);
         try
         {
+            $failureRequestNumber = 'first';
+
+            // This is the first redirect (302). We receive headers and cookies in this response
+            // which needs to be sent to the second redirect request.
+            $response302 = $this->sendFirstGatewayRequestForEbsAuthorize($request);
+
             $secondRedirectRequest = $this->getRequestFromResponse302($response302);
-        }
-        catch (Exception\GatewayTimeoutException $e)
-        {
-            $this->trace->warning(
-                TraceCode::GATEWAY_REQUEST_TIMEOUT,
-                ['payment_id' => $input['payment'][Payment\Entity::ID],
-                 'message'    => 'Payment Authorization failed after first Authorization Request']);
-            throw $e;
-        }
 
-        // This is the second redirect (form post). The response of this is passed on to the third redirect request.
-        $secondRedirectResponse = $this->sendSecondGatewayRequestForEbsAuthorize($secondRedirectRequest);
+            $failureRequestNumber = 'second';
 
-        try
-        {
+            // This is the second redirect (form post). The response of this is passed on to the third redirect request.
+            $secondRedirectResponse = $this->sendSecondGatewayRequestForEbsAuthorize($secondRedirectRequest);
+
             $lastRedirectRequest = $this->getRequestFromFormPostResponse($secondRedirectRequest, $secondRedirectResponse);
-        }
-        catch (Exception\GatewayTimeoutException $e)
-        {
-            $this->trace->warning(
-                TraceCode::GATEWAY_REQUEST_TIMEOUT,
-                ['payment_id' => $input['payment'][Payment\Entity::ID],
-                 'message'    => 'Payment Authorization failed after second Authorization Request']);
-            throw $e;
-        }
 
-        // Makes the last redirect request before the request to bank's ACS url is made by the checkout.
-        $lastRedirectResponse = $this->sendThirdGatewayRequestForEbsAuthorize($lastRedirectRequest);
+            $failureRequestNumber = 'third';
 
-        try
-        {
+            // Makes the last redirect request before the request to bank's ACS url is made by the checkout.
+            $lastRedirectResponse = $this->sendThirdGatewayRequestForEbsAuthorize($lastRedirectRequest);
+
             $authorizeRequest = $this->getAuthorizeRequestFromLastRedirectResponse(
                 $lastRedirectRequest, $lastRedirectResponse);
         }
@@ -291,7 +277,8 @@ class Gateway extends Base\Gateway
             $this->trace->warning(
                 TraceCode::GATEWAY_REQUEST_TIMEOUT,
                 ['payment_id' => $input['payment'][Payment\Entity::ID],
-                 'message'    => 'Payment Authorization failed after third Authorization Request']);
+                'message'    => 'Payment Authorization failed after '.$failureRequestNumber.' Authorization Request']);
+
             throw $e;
         }
 
