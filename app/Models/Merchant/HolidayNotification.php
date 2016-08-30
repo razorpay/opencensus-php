@@ -94,7 +94,7 @@ class HolidayNotification
                     // Adds logic to send only on specific days
                     $isMailToBeSent = $this->isMailToBeSent();
 
-                    if ($isMailToBeSent['bool'] === false)
+                    if ($isMailToBeSent['send'] === false)
                     {
                         return ['message' => $isMailToBeSent['message']];
                     }
@@ -123,35 +123,36 @@ class HolidayNotification
     /**
      * Adding more rules for when a mail is to be sent
      *
+     * 0) This check is only applicable for live mode
      * 1) Mails are to be sent only on a working day
      * 2) Mails are to be sent for series of holidays.
      */
     protected function isMailToBeSent()
     {
-        $today = Carbon::today('Asia\Kolkata');
+        $today = Carbon::today('Asia/Kolkata');
 
-        if ($this->mode === Mode::TEST)
+        if ($this->mode === Mode::LIVE)
         {
-            return ['bool' => true, 'message' => 'Test Mode. Mail to be sent.'];
+            // Mails not to sent on holidays
+            if (Holidays::isWorkingDay($today) === false)
+            {
+                return ['send' => false, 'message' => 'Not a working day today. Nothing to send.'];
+            }
+
+            // Get Next working day that is not a bank holiday
+            $ignoreBankHolidays = true;
+            $nextWorkingDay = Holidays::getNextWorkingDay($today, $ignoreBankHolidays);
+
+            // Ensure if that is a settlement holiday then send mail
+            if (Holidays::isSpecifiedBankHoliday($nextWorkingDay) === true)
+            {
+                return ['send' => true, 'message' => 'Next non `settlement holiday` working day is a bank holiday. Mail to be sent.'];
+            }
+
+            return ['send' => false, 'message' => 'Next non `settlement holiday` working day is not a bank holiday. Nothing to send.'];
         }
 
-        // Mails not to sent on holidays
-        if (Holidays::isWorkingDay($today) === false)
-        {
-            return ['bool' => false, 'message' => 'Not a working day today. Nothing to send.'];
-        }
-
-        // Get Next working day that is not a bank holiday
-        $ignoreBankHolidays = true;
-        $nextWorkingDay = Holidays::getNextWorkingDay($today, $ignoreBankHolidays);
-
-        // Ensure if that is a settlement holiday then send mail
-        if (Holidays::isSpecifiedBankHoliday($nextWorkingDay) === true)
-        {
-            return ['bool' => true, 'message' => 'Next non `settlement holiday` working day is a bank holiday. Mail to be sent.'];
-        }
-
-        return ['bool' => false, 'message' => 'Next non `settlement holiday` working day is not a bank holiday. Nothing to send.'];
+        return ['send' => true, 'message' => 'Test Mode. Mail to be sent.'];
     }
 
     protected function notifySettlementsChannel($holidays)
