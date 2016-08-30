@@ -50,7 +50,15 @@ trait Logger
 
         $data = $this->flatten($data);
 
-        $this->slackPost($text, $data, $channel);
+        $color = 'good';
+
+        if (isset($data['risk_rating']) and $data['risk_rating'] > 3)
+        {
+            // 4 is high, 5 is very high
+            $color = 'danger';
+        }
+
+        $this->slackPost($text, $data, $channel, '', $color);
     }
 
     protected function getChannel($action)
