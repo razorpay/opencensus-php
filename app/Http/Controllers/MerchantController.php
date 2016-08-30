@@ -221,7 +221,7 @@ class MerchantController extends Controller
 
         $data = (new Merchant\Service)->fetchMerchantBalance($id);
 
-        return AppResponse::jsonResponse([], $data[$mode]['balance']);
+        return AppResponse::jsonResponse([], $data[$mode]);
     }
 
     /**

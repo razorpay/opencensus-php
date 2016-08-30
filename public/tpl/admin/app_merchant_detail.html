@@ -47,12 +47,6 @@
         >
           Hold Merchant Funds <i class="pull-right fa fa-hand-stop-o"></i>
         </a>
-        <a href class="list-group-item"
-          ng-show="merchant.credits.live >= 0"
-          ng-click="openEditCredits(merchant.credits.live)"
-        >
-          Edit Free Credits <i class="pull-right fa fa-plus-square-o"></i>
-        </a>
         <a href class="list-group-item btn-enable-international" ng-show="merchant.details.international==false" ng-click="setInternational(1)">
           Enable International <i class="pull-right fa fa-globe"></i>
         </a>
@@ -143,6 +137,9 @@
         <a href class="list-group-item" ng-click="captureScreenshot()">
           Capture Screenshots <i class="pull-right fa fa-camera"></i>
         </a>
+        <a href class="list-group-item" ng-click="openCredits()">
+          Credits
+        </a>
       </div>
     </div>
   </div>
@@ -174,10 +171,6 @@
         <a href class="list-group-item" ng-show="merchant.details.activated == 1">
           <span class="pull-right">{{merchant.balance.live/100 | rupee }}</span>
           Balance (Live)
-        </a>
-        <a ng-show="merchant.credits.live >= 0" ng-click="openEditCredits(merchant.credits.live)" class="list-group-item">
-          <span class="pull-right">{{merchant.credits.live/100 | rupee }}</span>
-          Free Credits
         </a>
         <a href class="list-group-item">
           <span class="pull-right">{{merchant.details.name}}</span>
@@ -377,54 +370,104 @@
               </div>
             </div>
           </div>
-        <a href class="list-group-item" ng-init="isTerminalCollapsed = true">
-          <span class="pull-right">
-            <button class="btn btn-default btn-xs pull-right"  ng-click="isTerminalCollapsed = !isTerminalCollapsed"
-                    ng-show="merchant.terminals.items.length != 0">Show/Hide</button>
-            <span ng-hide="merchant.terminals.items.length != 0">
-              No terminal Assigned
+          <a href class="list-group-item" ng-init="isTerminalCollapsed = true">
+            <span class="pull-right">
+              <button class="btn btn-default btn-xs pull-right"  ng-click="isTerminalCollapsed = !isTerminalCollapsed"
+                      ng-show="merchant.terminals.items.length != 0">Show/Hide</button>
+              <span ng-hide="merchant.terminals.items.length != 0">
+                No terminal Assigned
+              </span>
             </span>
-          </span>
-          Terminal
-        </a>
-        <div collapse="isTerminalCollapsed" class="panel-body">
-          <div class="list-group-item">
-            <div class="m-t list-group-item">
-              <table class="table table-striped b-light horz-scroll">
-                <thead>
-                  <th>Terminal Id</th>
-                  <th>Mode</th>
-                  <th>Gateway</th>
-                  <th>Category</th>
-                  <th>Merchant Id</th>
-                  <th>Merchant Id 2</th>
-                  <th>Terminal Id</th>
-                  <th>Card Allowed</th>
-                  <th>Emi</th>
-                  <th>Emi Duration (Months)</th>
-                  <th>Shared</th>
-                  <th>Created At</th>
-                </thead>
-                <tbody>
-                <tr ng-repeat="terminal in merchant.terminals.items">
-                  <td>{{terminal.id}}</td>
-                  <td>{{terminal.mode}}</td>
-                  <td>{{terminal.gateway}}</td>
-                  <td>{{terminal.category}}</td>
-                  <td>{{terminal.gateway_merchant_id}}</td>
-                  <td>{{terminal.gateway_merchant_id2}}</td>
-                  <td>{{terminal.gateway_terminal_id}}</td>
-                  <td>{{terminal.card}}</td>
-                  <td>{{terminal.emi}}</td>
-                  <th>{{terminal.emi_duration}}</th>
-                  <th>{{terminal.shared}}</th>
-                  <td>{{terminal.created_at*1000 | date:'short'}}</td>
-                </tr>
-              </tbody>
-              </table>
+            Terminal
+          </a>
+          <div collapse="isTerminalCollapsed" class="panel-body">
+            <div class="list-group-item">
+              <div class="m-t list-group-item">
+                <table class="table table-striped b-light horz-scroll">
+                  <thead>
+                    <th>Terminal Id</th>
+                    <th>Mode</th>
+                    <th>Gateway</th>
+                    <th>Category</th>
+                    <th>Merchant Id</th>
+                    <th>Merchant Id 2</th>
+                    <th>Terminal Id</th>
+                    <th>Card Allowed</th>
+                    <th>Emi</th>
+                    <th>Emi Duration (Months)</th>
+                    <th>Shared</th>
+                    <th>Created At</th>
+                  </thead>
+                  <tbody>
+                  <tr ng-repeat="terminal in merchant.terminals.items">
+                    <td>{{terminal.id}}</td>
+                    <td>{{terminal.mode}}</td>
+                    <td>{{terminal.gateway}}</td>
+                    <td>{{terminal.category}}</td>
+                    <td>{{terminal.gateway_merchant_id}}</td>
+                    <td>{{terminal.gateway_merchant_id2}}</td>
+                    <td>{{terminal.gateway_terminal_id}}</td>
+                    <td>{{terminal.card}}</td>
+                    <td>{{terminal.emi}}</td>
+                    <th>{{terminal.emi_duration}}</th>
+                    <th>{{terminal.shared}}</th>
+                    <td>{{terminal.created_at*1000 | date:'short'}}</td>
+                  </tr>
+                </tbody>
+                </table>
+              </div>
             </div>
           </div>
-        </div>
+
+          <!-- Credits -->
+          <a href class="list-group-item" ng-init="isCreditsLogCollapsed = true">
+            <span class="pull-right">
+              <button class="btn btn-default btn-xs pull-right"  ng-click="isCreditsLogCollapsed = !isCreditsLogCollapsed"
+                      ng-show="merchant.creditsLog.items.length != 0">Show/Hide</button>
+              <span ng-hide="merchant.creditsLog.items.length != 0">
+                No credits Assigned
+              </span>
+            </span>
+            Credits
+          </a>
+          <div collapse="isCreditsLogCollapsed" class="panel-body">
+            <div class="form-group">
+              <div class="col-lg-12 pull-none">
+                <select class="form-control m-b" ng-model="merchant.creditsLogMode" ng-change="getCreditsLog(merchant.creditsLogMode)">
+                   <option value="test">Test</option>
+                   <option value="live" selected>Live</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="list-group-item">
+              <div class="m-t list-group-item">
+                <table class="table table-striped b-light horz-scroll">
+                  <thead>
+                    <th>Id</th>
+                    <th>Campaign</th>
+                    <th>Value</th>
+                    <th>Created At</th>
+                    <th>Delete</th>
+                  </thead>
+                  <tbody>
+                  <tr ng-repeat="credit in merchant.creditsLog.items">
+                    <td>{{credit.id}}</td>
+                    <td>{{credit.campaign}}</td>
+                    <td>{{credit.value/100 | rupee:"INR "}}</td>
+                    <td>{{credit.created_at*1000 | date:'short'}}</td>
+                    <td>
+                      <a href="javascript:void(0);" ng-click="deleteCredit(credit.id, $event)">
+                        <i class="pull-right fa fa-minus-circle"></i>
+                      </a>
+                    </td>
+                  </tr>
+                </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
       </div>
     </div>
   </div>
@@ -984,28 +1027,6 @@
       <button class="btn btn-primary modal-ok" ng-click="ok(comment)">OK</button>
   </div>
 </script>
-<script type="text/ng-template" id="editCreditsModalContent.html">
-  <div class="modal-header">
-    <h3 class="modal-title">Edit Free Credits</h3>
-  </div>
-  <div class="modal-body merchant-modal">
-    <form class="form-horizontal">
-      <div class="form-group">
-        <label class="col-lg-4 control-label">Free Credits:</label>
-        <div class="col-lg-6">
-          <input type="number" min="0" max="50000000"
-            class="form-control m-b" ng-model="credits" step="1000000"
-          >
-          {{credits/100|rupee}}
-        </div>
-      </div>
-    </form>
-  </div>
-  <div class="modal-footer">
-      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-      <button class="btn btn-primary modal-ok" ng-click="ok(credits)">OK</button>
-  </div>
-</script>
 <script type="text/ng-template" id="tagModalContent.html">
   <div class="modal-header">
     <h3 class="modal-title">Tag Merchant</h3>
@@ -1094,5 +1115,44 @@
   <div class="modal-footer">
     <button class="btn btn-default" ng-click="cancel()">Cancel</button>
     <button class="btn btn-primary modal-ok" ng-click="ok()">Print</button>
+  </div>
+</script>
+
+<script type="text/ng-template" id="openCredits.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Credits</h3>
+  </div>
+  <div class="modal-body merchant-modal">
+    <form class="form-horizontal" ng-init="credits={mode:'live', value:100}">
+
+      <div class="form-group">
+        <label class="col-lg-3 control-label">Mode:</label>
+        <div class="col-lg-9" >
+          <select class="form-control m-b" ng-model="credits.mode">
+             <option value="test">Test</option>
+             <option value="live" selected>Live</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="campaign" class="col-lg-3 control-label">Campaign:</label>
+        <div class="col-lg-9" >
+          <input type="text" class="form-control m-b" name="campaign" ng-model="credits.campaign">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="value" class="col-lg-3 control-label">Amount (INR):</label>
+        <div class="col-lg-9" >
+          <input type="number" class="form-control m-b" name="value" ng-model="credits.value" />
+          This will add a (positive) credit of (INR {{credits.value|rupee}}) to the merchant account
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(credits)">OK</button>
   </div>
 </script>
