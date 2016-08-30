@@ -230,6 +230,8 @@ class SettlementTest extends TestCase
     {
         $this->ba->appAuth();
 
+        $this->fixtures->merchant->createBankAccount();
+
         $payments = $this->createPaymentEntities();
 
         foreach ($payments as $payment)

@@ -97,13 +97,14 @@ class Merchant extends Base
         return $merchant;
     }
 
-    public function createBankAccount($attributes)
+    public function createBankAccount(array $attributes = array())
     {
         $name = random_alpha_string(10);
 
         $code = substr(strtoupper($name), 0, 4);
 
         $defaultValues = array(
+            'merchant_id' => '10000000000000',
             'beneficiary_name' => $name,
         );
 
