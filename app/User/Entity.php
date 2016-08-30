@@ -334,4 +334,9 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
         $currentMerchant = $user->getCurrentMerchantAttribute();
         return $currentMerchant->pivot->role;
     }
+
+    public static function getUserWithEmail($email)
+    {
+        return self::where('email', $email)->first();
+    }
 }

@@ -32,6 +32,7 @@ class Entity extends Base\Entity
     protected $appends = ['referrer', 'tags'];
 
     const ID_LENGTH = 14;
+    const EMAIL     = 'email';
 
     protected static $generators = array('id', 'confirm_token');
 
@@ -309,6 +310,12 @@ class Entity extends Base\Entity
         return $this->invitations()
                         ->where('email', $email)
                         ->exists();
+    }
+
+    public static function getMerchantFromEmail($email)
+    {
+        $data = Entity::whereEmail($email)->first();
+        return $data;
     }
 
     public static function getAggregations($data, $mode)

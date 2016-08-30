@@ -2,26 +2,28 @@
 
 namespace App\Admin;
 
-use Aws\Laravel\AwsFacade as AWS;
-use Illuminate\Support\Facades\App as App;
+use App\Admin;
+use App\Base;
+use App\Merchant;
+use App\MerchantDetails;
+use App\Trace\TraceCode;
+use App\Transaction;
+use App\User;
+
 use Auth;
-use Hash;
-use Carbon\Carbon;
 use Config;
-use Queue;
+use Hash;
 use Requests;
+use Queue;
 use Session;
 
-use App\Base;
-use App\Admin;
-use App\Merchant;
-use App\User;
-use App\MerchantDetails;
-use App\Transaction;
-use App\Trace\TraceCode;
-use Razorpay\Api\Request as ApiRequest;
-use Razorpay\Api\Errors\Error as ApiError;
+use Aws\Laravel\AwsFacade as AWS;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\App as App;
+
 use Razorpay\Api\Errors\BadRequestError as BadRequestError;
+use Razorpay\Api\Errors\Error as ApiError;
+use Razorpay\Api\Request as ApiRequest;
 
 class Service extends Base\Service
 {
@@ -511,6 +513,14 @@ class Service extends Base\Service
 
         try
         {
+            $existingMerchant = Merchant\Entity::getMerchantFromEmail($input[Merchant\Entity::EMAIL]);
+
+            if ($existingMerchant !== null)
+            {
+                $error[] = "Merchant already exists with this email id.";
+                return [$error, $data];
+            }
+
             $data = $this->api->merchant->fetch($id)->editEmail($input)->toArray();
 
             // Only when it is changed we update on the dashboard side as well
@@ -524,7 +534,7 @@ class Service extends Base\Service
             $error[] = $e->getMessage();
         }
 
-        return array($error, $data);
+        return [$error, $data];
     }
 
     public function postSetMerchantInternational($id, array $input)
