@@ -188,7 +188,7 @@ class Gateway extends Base\Gateway
             self::COMMENTS                  => '',
 
             self::DYNAMIC_MERCHANT_NAME     => 'Razorpay Payments',
-            self::LANGUAGE                  => Codes::ENGLISH_UK_LANG_CODE,
+            self::LANGUAGE                  => Codes::ENGLISH_UK_LANG_CODE_CONNECT,
         );
 
         return $content;
@@ -209,13 +209,88 @@ class Gateway extends Base\Gateway
             Entity::RECEIVED            => true,
             Entity::TDATE               => $input['gateway'][Entity::TDATE],
             Entity::APPROVAL_CODE       => $input['gateway'][Entity::APPROVAL_CODE],
-            Entity::REFNUMBER           => $input['gateway'][Entity::REFNUMBER],
             Entity::STATUS              => $input['gateway'][Entity::STATUS],
             Entity::TXNDATE_PROCESSED   => $input['gateway'][Entity::TXNDATE_PROCESSED],
         );
 
         $payment->fill($attributes);
         $payment->saveOrFail();
+    }
+
+    public function capture(array $input)
+    {
+        parent::capture($input);
+
+        $gatewayPayment = $this->getRepo()->retrieveCapturedByPaymentId($input['payment']['id']);
+
+        $this->trace->info(TraceCode::GATEWAY_CAPTURE_REQUEST, $input);
+
+        $request = $this->getCaptureRequestContentArray($input);
+
+        try
+        {
+            $response = $this->postSoapRequest($request);
+        }
+        catch (SoapFault $exception)
+        {
+            throw new Exception\RuntimeException(
+                'Capture request failed.', null, $exception);
+        }
+    }
+
+    protected function postSoapRequest($request)
+    {
+        $soapClient = $this->getSoapClientObject($request);
+
+        $content = json_decode(json_encode($request['content']));
+
+        $response = $soapClient->IPGApiOrderRequest($content);
+
+        return json_decode(json_encode($response), true);;
+    }
+
+    protected function getSoapClientObject($request)
+    {
+        $url = $this->getUrl('services');
+        $namespace = $this->getUrl('namespacer');
+        $soapClient = new FirstDataSoapClient($url, $namespace, $request['options']['auth']);
+
+        return $soapClient;
+    }
+
+    protected function getCaptureRequestContentArray($input)
+    {
+        $gatewayPayment = $this->getRepo()->retrieveByPaymentIdOrFail($input['payment']['id']);
+
+        $currency = $input['payment']['currency'];
+        $currencyCode = Mapping::$isoNumericCodes[$currency];
+        $orderId = $gatewayPayment['oid'];
+
+        $body['v1:CreditCardTxType']['v1:Type'] = Codes::TXNTYPE_POSTAUTH;
+        $body['v1:Payment']['v1:ChargeTotal'] = $input['payment']['amount'];
+        $body['v1:Payment']['v1:Currency'] = $currencyCode;
+        $body['v1:TransactionDetails']['v1:OrderId'] = $gatewayPayment['oid'];
+        $body['v1:ClientLocale']['v1:Language'] = Codes::ENGLISH_UK_LANG_CODE_API;
+
+        $content['v1:Transaction'] = $body;
+
+        $request = $this->getStandardSoapRequest($content);
+
+        return $request;
+    }
+
+    protected function getStandardSoapRequest($content = [], $method = 'post')
+    {
+        $request = [
+            'url'     => $this->getWsdlFile(),
+            'method'  => $method,
+            'content' => $content,
+            'options' => [
+                'auth' => $this->getCredentials()
+            ]
+        ];
+
+        return $request;
     }
 
     protected function verifyPaymentCallbackResponse($input)
@@ -260,6 +335,33 @@ class Gateway extends Base\Gateway
         }
 
         return $this->terminal['gateway_merchant_id'];
+    }
+
+    protected function getWsdlFile()
+    {
+        $file = __DIR__ . '/Wsdl/first_data.wsdl.xml';
+
+        return $file;
+    }
+
+    protected function getCredentials()
+    {
+        $terminal = $this->terminal;
+
+        $auth = array(
+            'username' => $terminal['gateway_terminal_id'],
+            'password' => $terminal['gateway_terminal_password']
+        );
+
+        if ($this->mode === Mode::TEST)
+        {
+            $auth = array(
+                'username' => $this->config['test_user_id'],
+                'password' => $this->config['test_password']
+            );
+        }
+
+        return $auth;
     }
 
     protected function getSharedSecret()

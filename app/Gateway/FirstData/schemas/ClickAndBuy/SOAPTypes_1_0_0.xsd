@@ -1,0 +1,1816 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:cab="http://api.clickandbuy.com/webservices/pay_1_0_0/" attributeFormDefault="qualified" elementFormDefault="qualified" targetNamespace="http://api.clickandbuy.com/webservices/pay_1_0_0/">
+  <xs:complexType name="AccountDetails">
+    <xs:annotation>
+      <xs:documentation>account details</xs:documentation>
+    </xs:annotation>
+    <xs:all>
+      <xs:element minOccurs="0" name="domesticAccount" type="cab:DomesticAccount">
+        <xs:annotation>
+          <xs:documentation>domestic account</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="internationalAccount" type="cab:InternationalAccount">
+        <xs:annotation>
+          <xs:documentation>international account</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+  </xs:complexType>
+  <xs:simpleType name="AccountHolder">
+    <xs:annotation>
+      <xs:documentation>account holder of a bank account</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="255"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="AccountIdentificationNumber">
+    <xs:annotation>
+      <xs:documentation>identification number (mandatory for some countries)</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="16"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="AccountLimit">
+    <xs:annotation>
+      <xs:documentation>account limit</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:decimal">
+      <xs:maxInclusive value="999999"/>
+      <xs:fractionDigits value="2"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="AccountNumber">
+    <xs:annotation>
+      <xs:documentation>account number</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="30"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="Address">
+    <xs:annotation>
+      <xs:documentation>address data</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element minOccurs="0" name="street" type="cab:Street">
+        <xs:annotation>
+          <xs:documentation>name of street, may include house number</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="houseNumber" type="cab:HouseNumber">
+        <xs:annotation>
+          <xs:documentation>house number</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="houseNumberSuffix" type="cab:HouseNumberSuffix">
+        <xs:annotation>
+          <xs:documentation>house number suffix (e.g. floor)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="zip" type="cab:Zip">
+        <xs:annotation>
+          <xs:documentation>zip code</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="city" type="cab:City">
+        <xs:annotation>
+          <xs:documentation>city of the registry court</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="country" type="cab:Country">
+        <xs:annotation>
+          <xs:documentation>ISO 3166-1 alpha-2 code of country</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="state" type="cab:State">
+        <xs:annotation>
+          <xs:documentation>state</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="addressSuffix" type="cab:AddressSuffix">
+        <xs:annotation>
+          <xs:documentation>address suffix (e.g. c/o)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="AddressSuffix">
+    <xs:annotation>
+      <xs:documentation>address suffix (e.g. c/o)</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="255"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Age">
+    <xs:annotation>
+      <xs:documentation>age</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:byte">
+      <xs:minInclusive value="0"/>
+      <xs:maxInclusive value="127"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Amount">
+    <xs:annotation>
+      <xs:documentation>amount</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:decimal">
+      <xs:maxInclusive value="9999999999999999"/>
+      <xs:fractionDigits value="3"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="BIC">
+    <xs:annotation>
+      <xs:documentation>Bank Identifier Code (BIC)</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="8"/>
+      <xs:maxLength value="11"/>
+      <xs:pattern value="[A-Za-z]{4}[A-Za-z]{2}[0-9A-Za-z]{2,5}"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="BankAccount">
+    <xs:annotation>
+      <xs:documentation>bank account</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element minOccurs="0" name="country" type="cab:Country">
+        <xs:annotation>
+          <xs:documentation>ISO 3166-1 alpha-3 code of country</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="bankName" type="cab:BankName">
+        <xs:annotation>
+          <xs:documentation>bank name</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="accountHolder" type="cab:AccountHolder">
+        <xs:annotation>
+          <xs:documentation>account holder name</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="bankAccountType" type="cab:BankAccountType">
+        <xs:annotation>
+          <xs:documentation>type of the bank account
+          DOMESTIC ... domestic bank account only
+          INTERNATIONAL ... internationbal bank account only
+          BOTH ... domestic and international bank account</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="limit" type="cab:AccountLimit">
+        <xs:annotation>
+          <xs:documentation>account limit</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="accountDetails" type="cab:AccountDetails">
+        <xs:annotation>
+          <xs:documentation>account details</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="BankAccountType">
+    <xs:annotation>
+      <xs:documentation>type of the bank account
+      DOMESTIC ... domestic bank account only
+      INTERNATIONAL ... internationbal bank account only
+      BOTH ... domestic and international bank account</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="DOMESTIC"/>
+      <xs:enumeration value="INTERNATIONAL"/>
+      <xs:enumeration value="BOTH"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="BankName">
+    <xs:annotation>
+      <xs:documentation>bank name</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="255"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="BankStatement">
+    <xs:annotation>
+      <xs:documentation/>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="255"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="BankZipCode">
+    <xs:annotation>
+      <xs:documentation>bank zip code</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="30"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Boolean">
+    <xs:annotation>
+      <xs:documentation>boolean flag</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:boolean"/>
+  </xs:simpleType>
+  <!-- xs:complexType name="Brand">
+    <xs:annotation>
+      <xs:documentation/>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="id" type="xs:long">
+        <xs:annotation>
+          <xs:documentation/>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="shortName" type="xs:string">
+        <xs:annotation>
+          <xs:documentation/>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="label" type="xs:string">
+        <xs:annotation>
+          <xs:documentation/>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType-->
+  <xs:simpleType name="CAVV_UCAF">
+    <xs:annotation>
+      <xs:documentation>Cardholder Authentification Varification Value (Visa) or Universal Cardholder Authentication Field (Mastercard)</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="CSC">
+    <xs:annotation>
+      <xs:documentation>Card Security Code (CVC, CVV, CID)</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="3"/>
+      <xs:maxLength value="4"/>
+      <xs:pattern value="\d{3,4}"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="CardHolder">
+    <xs:annotation>
+      <xs:documentation>card holder of a credit or debit card</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="255"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="City">
+    <xs:annotation>
+      <xs:documentation>city</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="100"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Comment">
+    <xs:annotation>
+      <xs:documentation>comment</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="255"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="Company">
+    <xs:annotation>
+      <xs:documentation>company</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="name" type="cab:CompanyName">
+        <xs:annotation>
+          <xs:documentation>name of the company</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="vatID" type="cab:VatID">
+        <xs:annotation>
+          <xs:documentation>value added tax ID</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="registry" type="cab:Registry">
+        <xs:annotation>
+          <xs:documentation>commercial registry data</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="address" type="cab:Address">
+        <xs:annotation>
+          <xs:documentation>address</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="CompanyName">
+    <xs:annotation>
+      <xs:documentation>name of a company</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="255"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="Consumer">
+    <xs:annotation>
+      <xs:documentation>end customer data (shopper's data)</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element minOccurs="0" name="salutation" type="cab:Salutation">
+        <xs:annotation>
+          <xs:documentation>salutation
+          MR ... Mister
+          MS ... Misses</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="title" type="cab:Title">
+        <xs:annotation>
+          <xs:documentation>Title</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="firstName" type="cab:FirstName">
+        <xs:annotation>
+          <xs:documentation>first name</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="lastName" type="cab:LastName">
+        <xs:annotation>
+          <xs:documentation>last name</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="maidenName" type="cab:LastName">
+        <xs:annotation>
+          <xs:documentation>maiden name</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="gender" type="cab:Gender">
+        <xs:annotation>
+          <xs:documentation>gender
+          UNKNOWN ... unknown
+          MALE ... male
+          FEMALE ... femal</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="dateOfBirth" type="cab:Date">
+        <xs:annotation>
+          <xs:documentation>date of birth</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="language" type="cab:Language">
+        <xs:annotation>
+          <xs:documentation>ISO 639-3 language code</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="address" type="cab:Address">
+        <xs:annotation>
+          <xs:documentation>address</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="ConsumerContext">
+    <xs:annotation>
+      <xs:documentation>the consumer's context (WEB, MOBILE, etc.)</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="100"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="ContactData">
+    <xs:annotation>
+      <xs:documentation>data of a contact person</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" name="element" type="cab:ContactDataElement">
+        <xs:annotation>
+          <xs:documentation>contact data element</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ContactDataElement">
+    <xs:annotation>
+      <xs:documentation>contact data element</xs:documentation>
+    </xs:annotation>
+    <xs:all>
+      <xs:element name="item" type="cab:ContactDataElementItem">
+        <xs:annotation>
+          <xs:documentation>contact data element item/name</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="value" type="cab:ContactDataElementValue">
+        <xs:annotation>
+          <xs:documentation>contact data element value</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="type" type="cab:ContactDataElementType">
+        <xs:annotation>
+          <xs:documentation>contact data element type</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="pattern" type="cab:ContactDataElementPattern">
+        <xs:annotation>
+          <xs:documentation>contact data element pattern</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+  </xs:complexType>
+  <xs:simpleType name="ContactDataElementItem">
+    <xs:annotation>
+      <xs:documentation>contact data element item/name</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="type"/>
+      <xs:enumeration value="department"/>
+      <xs:enumeration value="phone"/>
+      <xs:enumeration value="mobile"/>
+      <xs:enumeration value="fax"/>
+      <xs:enumeration value="ip"/>
+      <xs:enumeration value="email"/>
+      <xs:enumeration value="www"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="ContactDataElementPattern">
+    <xs:annotation>
+      <xs:documentation>contact data element pattern</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="ContactDataElementType">
+    <xs:annotation>
+      <xs:documentation>contact data element type</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="ContactType"/>
+      <xs:enumeration value="Department"/>
+      <xs:enumeration value="Phone"/>
+      <xs:enumeration value="IPAddress"/>
+      <xs:enumeration value="Email"/>
+      <xs:enumeration value="URL"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="ContactDataElementValue">
+    <xs:annotation>
+      <xs:documentation>contact data element value</xs:documentation>
+    </xs:annotation>
+    <xs:union memberTypes="cab:ContactType cab:Department cab:Phone cab:IPAddress cab:Email cab:URL"/>
+  </xs:simpleType>
+  <xs:simpleType name="ContactType">
+    <xs:annotation>
+      <xs:documentation>type of contact
+      PERSON ... person
+      LEGAL_ENTITY ... legal entity</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="PERSON"/>
+      <xs:enumeration value="LEGAL_ENTITY"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Count">
+    <xs:annotation>
+      <xs:documentation>count</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:int">
+      <xs:minInclusive value="0"/>
+      <xs:maxInclusive value="2147483647"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Country">
+    <xs:annotation>
+      <xs:documentation>ISO 3166-1 alpha-2 code of country</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="2"/>
+      <xs:maxLength value="2"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <!-- xs:complexType name="CreditCard">
+    <xs:annotation>
+      <xs:documentation>credit card</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element minOccurs="0" name="brand" type="cab:Brand">
+        <xs:annotation>
+          <xs:documentation>card brand</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="cardHolder" type="cab:CardHolder">
+        <xs:annotation>
+          <xs:documentation>card holder</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="dateOfBirth" type="cab:Date">
+        <xs:annotation>
+          <xs:documentation>cardholder's date of birth</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="cardNumber" type="cab:CreditCardNumber">
+        <xs:annotation>
+          <xs:documentation>card number</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="expiry" type="cab:Expiry">
+        <xs:annotation>
+          <xs:documentation>expiry date</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="CSC" type="cab:CSC">
+        <xs:annotation>
+          <xs:documentation>Card Security Code (CVC, CVV, CID)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType-->
+  <xs:simpleType name="CreditCardNumber">
+    <xs:annotation>
+      <xs:documentation>credit card number</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="13"/>
+      <xs:maxLength value="19"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Currency">
+    <xs:annotation>
+      <xs:documentation>ISO 4217 alpha-3 currency code</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="3"/>
+      <xs:maxLength value="3"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="CustomerTrustLevel">
+    <xs:annotation>
+      <xs:documentation>cutomer trust level
+      UNVERIFIED ... unverfied customer
+      VERIFIED ... verified customer
+      PREFERRED ... preferred customer</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="UNVERIFIED"/>
+      <xs:enumeration value="VERIFIED"/>
+      <xs:enumeration value="PREFERRED"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Date">
+    <xs:annotation>
+      <xs:documentation>date</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:date"/>
+  </xs:simpleType>
+  <xs:simpleType name="DateTime">
+    <xs:annotation>
+      <xs:documentation>date &amp; time</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:dateTime"/>
+  </xs:simpleType>
+  <!-- xs:complexType name="DebitCard">
+    <xs:annotation>
+      <xs:documentation>debit card</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element minOccurs="0" name="brand" type="cab:Brand">
+        <xs:annotation>
+          <xs:documentation>card brand</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="cardHolder" type="cab:CardHolder">
+        <xs:annotation>
+          <xs:documentation>card holder</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="dateOfBirth" type="cab:Date">
+        <xs:annotation>
+          <xs:documentation>cardholder's date of birth</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="cardNumber" type="cab:DebitCardNumber">
+        <xs:annotation>
+          <xs:documentation>card number</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="issueNumber" type="cab:IssueNumber">
+        <xs:annotation>
+          <xs:documentation>issuer number (mandatory for Switch, Solo, Maestro)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="CSC" type="cab:CSC">
+        <xs:annotation>
+          <xs:documentation>Card Security Code (CVC, CVV, CID)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="expiry" type="cab:ExpiryDate">
+        <xs:annotation>
+          <xs:documentation>expiry date</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="start" type="cab:StartDate">
+        <xs:annotation>
+          <xs:documentation>start date</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType-->
+  <xs:simpleType name="DebitCardNumber">
+    <xs:annotation>
+      <xs:documentation>debit card number</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="64"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Department">
+    <xs:annotation>
+      <xs:documentation>department of a company</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="100"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="Digest">
+    <xs:annotation>
+      <xs:documentation>message digest</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="hmac" type="cab:HMAC">
+        <xs:annotation>
+          <xs:documentation>the keyed-hashed message authentication code (hex)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="DigestElement">
+    <xs:annotation>
+      <xs:documentation>digest element(s) (XPath)</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:complexType name="DomesticAccount">
+    <xs:annotation>
+      <xs:documentation>domestic account</xs:documentation>
+    </xs:annotation>
+    <xs:all>
+      <xs:element name="accountNumber" type="cab:AccountNumber">
+        <xs:annotation>
+          <xs:documentation>account number</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="bankZipCode" type="cab:BankZipCode">
+        <xs:annotation>
+          <xs:documentation>bank zip code</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+  </xs:complexType>
+  <xs:simpleType name="ECI">
+    <xs:annotation>
+      <xs:documentation>Electronic Commerce Indicator</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:short">
+      <xs:minInclusive value="0"/>
+      <xs:maxInclusive value="32767"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="EWalletRedirect">
+    <xs:annotation>
+      <xs:documentation>eWallet reditection</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="walletURL" type="cab:URL">
+        <xs:annotation>
+          <xs:documentation>eWallet URL to redirect to</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="type" type="cab:RedirectType">
+        <xs:annotation>
+          <xs:documentation>redirect type (default/not given: POST)
+          POST ... POST
+          GET ... GET</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="parameter" type="cab:RedirectParameter">
+        <xs:annotation>
+          <xs:documentation>redirect parameter</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="Email">
+    <xs:annotation>
+      <xs:documentation>e-mail address</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="50"/>
+      <xs:pattern value="([-_.A-Za-z0-9]+)@([-_.A-Za-z0-9]+)\.[A-Za-z]{2,}"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="ErrorMessage">
+    <xs:annotation>
+      <xs:documentation>error message</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="255"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="ExpirationTime">
+    <xs:annotation>
+      <xs:documentation>expiration time in minutes</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:int">
+      <xs:minInclusive value="0"/>
+      <xs:maxInclusive value="2147483647"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="Expiry">
+    <xs:annotation>
+      <xs:documentation>expiry date</xs:documentation>
+    </xs:annotation>
+    <xs:all>
+      <xs:element name="month" type="cab:Month">
+        <xs:annotation>
+          <xs:documentation>expiry month
+          1 ... January
+          2 ... February
+          3 ... March
+          4 ... April
+          5 ... May
+          6 ... June
+          7 ... July
+          8 ... August
+          9 ... September
+          10 ... October
+          11 ... November
+          12 ... December</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="year" type="cab:Year">
+        <xs:annotation>
+          <xs:documentation>expiry year</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+  </xs:complexType>
+  <xs:simpleType name="ExpiryDate">
+    <xs:annotation>
+      <xs:documentation>expiry date</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:date"/>
+  </xs:simpleType>
+  <xs:simpleType name="ExternalID">
+    <xs:annotation>
+      <xs:documentation>a unique ID defined by the merchant</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="255"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="FirstName">
+    <xs:annotation>
+      <xs:documentation>first name</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="255"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Flag">
+    <xs:annotation>
+      <xs:documentation>boolean flag</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:boolean"/>
+  </xs:simpleType>
+  <xs:simpleType name="ForeignCurrencyExchangeDateTime">
+    <xs:annotation>
+      <xs:documentation>date and time of the exchange rate</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:dateTime"/>
+  </xs:simpleType>
+  <xs:simpleType name="ForeignCurrencyExchangeRate">
+    <xs:annotation>
+      <xs:documentation>rate of the foreign currency exchange</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:decimal">
+      <xs:maxInclusive value="99999999"/>
+      <xs:fractionDigits value="6"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="ForeignCurrencyExchangeSource">
+    <xs:annotation>
+      <xs:documentation>source of the exchange rate</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="255"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Fulfillment">
+    <xs:annotation>
+      <xs:documentation>fulfillment time
+      INSTANT ... instant
+      DELAYED ... delayed
+      RECURRING ... recurring</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="INSTANT"/>
+      <xs:enumeration value="DELAYED"/>
+      <xs:enumeration value="RECURRING"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Gender">
+    <xs:annotation>
+      <xs:documentation>gender
+      UNKNOWN ... unknown
+      MALE ... male
+      FEMALE ... femal</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="UNKNOWN"/>
+      <xs:enumeration value="MALE"/>
+      <xs:enumeration value="FEMALE"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="GermanAccountNumber">
+    <xs:annotation>
+      <xs:documentation>bank account number</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="8"/>
+      <xs:maxLength value="10"/>
+      <xs:pattern value="\d{8,10}"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="GermanBankZip">
+    <xs:annotation>
+      <xs:documentation>bank zip code</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="8"/>
+      <xs:maxLength value="8"/>
+      <xs:pattern value="\d{8}"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="HMAC">
+    <xs:annotation>
+      <xs:documentation>the keyed-hashed message authentication code (hex)</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[0-9a-fA-f]{40,}"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="HTMLElementID">
+    <xs:annotation>
+      <xs:documentation>ID of a Element field</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="255"/>
+      <xs:whiteSpace value="collapse"/>
+      <xs:pattern value="[A-Za-z][-A-Za-z0-9_.:]"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="HouseNumber">
+    <xs:annotation>
+      <xs:documentation>house number</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="50"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="HouseNumberSuffix">
+    <xs:annotation>
+      <xs:documentation>house number suffix (e.g. floor)</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="50"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="IBAN">
+    <xs:annotation>
+      <xs:documentation>International Bank Account Number (IBAN)</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="4"/>
+      <xs:maxLength value="34"/>
+      <xs:pattern value="[A-Za-z]{2}\d{2,32}"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="IPAddress">
+    <xs:annotation>
+      <xs:documentation>IP address</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="15"/>
+      <xs:pattern value="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="IdentificationDocument">
+    <xs:annotation>
+      <xs:documentation>identification document type
+      PASSPORT ... passport
+      ID_CARD ... identification card
+      DRIVERS_LICENSE ... driver's license
+      TAX_STATEMENT ... tax statement
+      POST_IDENT ... Post Ident</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="PASSPORT"/>
+      <xs:enumeration value="ID_CARD"/>
+      <xs:enumeration value="DRIVERS_LICENSE"/>
+      <xs:enumeration value="TAX_STATEMENT"/>
+      <xs:enumeration value="POST_IDENT"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Identifier">
+    <xs:annotation>
+      <xs:documentation>identifier (e.g. passport number)</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="50"/>
+      <xs:whiteSpace value="collapse"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="Identity">
+    <xs:annotation>
+      <xs:documentation>identification</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="documentType" type="cab:IdentificationDocument">
+        <xs:annotation>
+          <xs:documentation>identification document type
+          PASSPORT ... passport
+          ID_CARD ... identification card
+          DRIVERS_LICENSE ... driver's license
+          TAX_STATEMENT ... tax statement
+          POST_IDENT ... Post Ident</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="identifier" type="cab:Identifier">
+        <xs:annotation>
+          <xs:documentation>identifier (e.g. passport number)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="InternationalAccount">
+    <xs:annotation>
+      <xs:documentation>international account</xs:documentation>
+    </xs:annotation>
+    <xs:all>
+      <xs:element name="IBAN" type="cab:IBAN">
+        <xs:annotation>
+          <xs:documentation>International Bank Account Number</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="BIC" type="cab:BIC">
+        <xs:annotation>
+          <xs:documentation>Bank Identification Number</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+  </xs:complexType>
+  <xs:simpleType name="IssueNumber">
+    <xs:annotation>
+      <xs:documentation>issue number (mandatory for Switch, Solo, Maestro)</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="2"/>
+      <xs:pattern value="\d{1,2}"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Label">
+    <xs:annotation>
+      <xs:documentation>label of an element</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="50"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Language">
+    <xs:annotation>
+      <xs:documentation>ISO 639-2 language code</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="2"/>
+      <xs:maxLength value="2"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="LastName">
+    <xs:annotation>
+      <xs:documentation>last name</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="255"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="LegalEntity">
+    <xs:annotation>
+      <xs:documentation>legal entity (either a person or a company)</xs:documentation>
+    </xs:annotation>
+    <xs:choice>
+      <xs:element minOccurs="0" name="externalID" type="cab:ExternalID">
+        <xs:annotation>
+          <xs:documentation>external ID of the legal entity</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="consumer" type="cab:Consumer">
+        <xs:annotation>
+          <xs:documentation>end customer</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="company" type="cab:Company">
+        <xs:annotation>
+          <xs:documentation>company</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:choice>
+  </xs:complexType>
+  <xs:simpleType name="Login">
+    <xs:annotation>
+      <xs:documentation>user identifier as registered in system</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="50"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="MCC">
+    <xs:annotation>
+      <xs:documentation>Mechant Category Code</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:int">
+      <xs:minInclusive value="0"/>
+      <xs:maxInclusive value="10000"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="MandatorID">
+    <xs:annotation>
+      <xs:documentation>unique mandator ID</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="50"/>
+      <xs:whiteSpace value="collapse"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="MerchantID">
+    <xs:annotation>
+      <xs:documentation>unique merchant ID</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="50"/>
+      <xs:whiteSpace value="collapse"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="MerchantRiskClass">
+    <xs:annotation>
+      <xs:documentation>merchant specific transaction risk class
+      VERYLOW ... merchant risk class: very low
+      LOW ... merchant risk class: low
+      MEDIUM ... merchant risk class: medium
+      HIGH ... merchant risk class: high
+      VERYHIGH ... merchant risk class: very high</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="VERYLOW"/>
+      <xs:enumeration value="LOW"/>
+      <xs:enumeration value="MEDIUM"/>
+      <xs:enumeration value="HIGH"/>
+      <xs:enumeration value="VERYHIGH"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="MerchantUnit">
+    <xs:annotation>
+      <xs:documentation>merchant unit (shop, subsidiary, cash register, country etc.)</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="50"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Message">
+    <xs:annotation>
+      <xs:documentation>message</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:complexType name="MessageContext">
+    <xs:annotation>
+      <xs:documentation>Message Context root element</xs:documentation>
+    </xs:annotation>
+  </xs:complexType>
+  <xs:simpleType name="MessageSignatureValue">
+    <xs:annotation>
+      <xs:documentation>signature value</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:base64Binary"/>
+  </xs:simpleType>
+  <xs:complexType name="Money">
+    <xs:annotation>
+      <xs:documentation>amount and currency</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="amount" type="cab:Amount">
+        <xs:annotation>
+          <xs:documentation>the amount of the purchase</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="currency" type="cab:Currency">
+        <xs:annotation>
+          <xs:documentation>the currency of the purchase</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="Month">
+    <xs:annotation>
+      <xs:documentation>expiry month
+      1 ... January
+      2 ... February
+      3 ... March
+      4 ... April
+      5 ... May
+      6 ... June
+      7 ... July
+      8 ... August
+      9 ... September
+      10 ... October
+      11 ... November
+      12 ... December</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:unsignedByte">
+      <xs:enumeration value="1"/>
+      <xs:enumeration value="2"/>
+      <xs:enumeration value="3"/>
+      <xs:enumeration value="4"/>
+      <xs:enumeration value="5"/>
+      <xs:enumeration value="6"/>
+      <xs:enumeration value="7"/>
+      <xs:enumeration value="8"/>
+      <xs:enumeration value="9"/>
+      <xs:enumeration value="10"/>
+      <xs:enumeration value="11"/>
+      <xs:enumeration value="12"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Numeric">
+    <xs:annotation>
+      <xs:documentation>numeric string of any length</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:pattern value="\d+"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="OnlineTransferRedirect">
+    <xs:annotation>
+      <xs:documentation>online transfer system redirect</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="otURL" type="cab:URL">
+        <xs:annotation>
+          <xs:documentation>online transfer system URL to redirect to</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="type" type="cab:RedirectType">
+        <xs:annotation>
+          <xs:documentation>redirect type (default/not given: POST)
+          POST ... POST
+          GET ... GET</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="parameter" type="cab:RedirectParameter">
+        <xs:annotation>
+          <xs:documentation>redirect parameter</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="OrderDescription">
+    <xs:annotation>
+      <xs:documentation>order description (can be printed on the customer's bank or credit card  statement)</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="OrderID">
+    <xs:annotation>
+      <xs:documentation>order ID (generated by merchant; should be unique; uniqueness not checked!)</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="255"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="PAReq">
+    <xs:annotation>
+      <xs:documentation>payer authentication request (base64 encoded)</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="Password">
+    <xs:annotation>
+      <xs:documentation>user password as registered in system</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="50"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <!-- xs:complexType name="PaymentInstrument">
+    <xs:annotation>
+      <xs:documentation>payment instrument (card or account)</xs:documentation>
+    </xs:annotation>
+    <xs:choice>
+      <xs:element minOccurs="0" name="creditCard" type="cab:CreditCard">
+        <xs:annotation>
+          <xs:documentation>credit card</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="debitCard" type="cab:DebitCard">
+        <xs:annotation>
+          <xs:documentation>debit card</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="bankAccount" type="cab:BankAccount">
+        <xs:annotation>
+          <xs:documentation>bank account</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="targetBankAccount" type="cab:TargetBankAccount">
+        <xs:annotation>
+          <xs:documentation/>
+        </xs:annotation>
+      </xs:element>
+    </xs:choice>
+  </xs:complexType-->
+  <xs:simpleType name="PaymentMethodName">
+    <xs:annotation>
+      <xs:documentation>name of the available payment method
+      CREDIT_CARD ... credit card
+      DEBIT_CARD ... debit card
+      DIRECT_DEBIT ... direct debit
+      SOFORT ... sofortüberweisung
+      GIROPAY ... giropay
+      EPS ... EPS
+      IDEAL ... iDEAL
+      ADVANCED_PAYMENT ... advanced payment
+      ECARD ... eCard
+      WALLET ... eWallet
+      MOBILE ... mobile
+      INVOICE ... invoice</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="CREDIT_CARD"/>
+      <xs:enumeration value="DEBIT_CARD"/>
+      <xs:enumeration value="DIRECT_DEBIT"/>
+      <xs:enumeration value="SOFORT"/>
+      <xs:enumeration value="GIROPAY"/>
+      <xs:enumeration value="EPS"/>
+      <xs:enumeration value="IDEAL"/>
+      <xs:enumeration value="ADVANCED_PAYMENT"/>
+      <xs:enumeration value="ECARD"/>
+      <xs:enumeration value="WALLET"/>
+      <xs:enumeration value="MOBILE"/>
+      <xs:enumeration value="INVOICE"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="PaymentModel">
+    <xs:annotation>
+      <xs:documentation>the payment model
+      PREPAID ... pre-paid
+      NOWPAID ... now-paid
+      POSTPAID ... post-paid</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="PREPAID"/>
+      <xs:enumeration value="NOWPAID"/>
+      <xs:enumeration value="POSTPAID"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Percentage">
+    <xs:annotation>
+      <xs:documentation>percentage value</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:decimal">
+      <xs:maxInclusive value="999"/>
+      <xs:fractionDigits value="3"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Phone">
+    <xs:annotation>
+      <xs:documentation>phone number</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="20"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="PhoneAreaCode">
+    <xs:annotation>
+      <xs:documentation>phone area code</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="10"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="ProviderName">
+    <xs:annotation>
+      <xs:documentation>name of the provider</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="255"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Quantity">
+    <xs:annotation>
+      <xs:documentation>quantity of items</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:int">
+      <xs:minInclusive value="0"/>
+      <xs:maxInclusive value="2147483647"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="RecurringPaymentAuthorizationStatus">
+    <xs:annotation>
+      <xs:documentation>status of a recurring payment authorization
+      CREATED ... Indicates the recurring payment authorization has been created successfully, but is awaiting further action, such as consumer confirmation, expiration, or cancellation.
+      PENDING_VERIFICATION ... Indicates that the recurring payment authorization has been viewed at least once by the consumer, but the consumer has not yet logged in or registered successfully.
+      EXPIRED ... Indicates that the recurring payment authorization was idle too long, and has expired automatically.
+      ABORTED ... Indicates that the consumer has aborted or revoked the recurring payment authorization.
+      DECLINED ... Indicates that the ClickandBuy system has declined the recurring payment authorization.
+      CANCELLED ... Indicates that the merchant has cancelled the recurring payment authorization.
+      AUTHORIZED ... Indicates that the recurring payment authorization has been authorized, and can be used for issuing recurring payments using PayRequestRecurring.
+      EXHAUSTED ... Indicates that the recurring payment authorization has been exhausted, and cannot be used anymore.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="CREATED"/>
+      <xs:enumeration value="PENDING_VERIFICATION"/>
+      <xs:enumeration value="EXPIRED"/>
+      <xs:enumeration value="ABORTED"/>
+      <xs:enumeration value="DECLINED"/>
+      <xs:enumeration value="CANCELLED"/>
+      <xs:enumeration value="AUTHORIZED"/>
+      <xs:enumeration value="EXHAUSTED"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="RedirectParameter">
+    <xs:annotation>
+      <xs:documentation>redirect parameter</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="name" type="cab:RedirectParameterName">
+        <xs:annotation>
+          <xs:documentation>redirect parameter name</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="value" type="cab:RedirectParameterValue">
+        <xs:annotation>
+          <xs:documentation>redirect parameter value</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="RedirectParameterName">
+    <xs:annotation>
+      <xs:documentation>name of redirect parameter</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="255"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="RedirectParameterValue">
+    <xs:annotation>
+      <xs:documentation>value of redirect parameter</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="255"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="RedirectType">
+    <xs:annotation>
+      <xs:documentation>redirect type (default/not given: POST)
+      POST ... POST
+      GET ... GET</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="POST"/>
+      <xs:enumeration value="GET"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="ReferenceID">
+    <xs:annotation>
+      <xs:documentation>ID given by the merchant to attribute the transaction in the merchant's system</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="255"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="Registry">
+    <xs:annotation>
+      <xs:documentation>commercial registry data</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="registryID" type="cab:RegistryID">
+        <xs:annotation>
+          <xs:documentation>registry ID</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="zip" type="cab:Zip">
+        <xs:annotation>
+          <xs:documentation>zip code of the registry court</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="city" type="cab:City">
+        <xs:annotation>
+          <xs:documentation>city of the registry court</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="RegistryID">
+    <xs:annotation>
+      <xs:documentation>registry ID</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="20"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="RenderMode">
+    <xs:annotation>
+      <xs:documentation>render mode of the pre-selection list
+      HTML ... render HTML page
+      XML ... row XML data</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="HTML"/>
+      <xs:enumeration value="XML"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="RiskScore">
+    <xs:annotation>
+      <xs:documentation>risk score</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:int">
+      <xs:minInclusive value="0"/>
+      <xs:maxInclusive value="1000000"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="SHA1Hash">
+    <xs:annotation>
+      <xs:documentation>SHA1 hash (hexadecimal)</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="40"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Salutation">
+    <xs:annotation>
+      <xs:documentation>salutation
+      MR ... Mister
+      MS ... Misses</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="MR"/>
+      <xs:enumeration value="MS"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="SessionID">
+    <xs:annotation>
+      <xs:documentation>session ID of the merchant's shop</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="50"/>
+      <xs:whiteSpace value="collapse"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="SessionListItem">
+    <xs:annotation>
+      <xs:documentation/>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="id" type="xs:long">
+        <xs:annotation>
+          <xs:documentation/>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="listName" type="xs:string">
+        <xs:annotation>
+          <xs:documentation/>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="shortName" type="xs:string">
+        <xs:annotation>
+          <xs:documentation/>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="label" type="xs:string">
+        <xs:annotation>
+          <xs:documentation/>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="sequenceNumber" type="xs:integer">
+        <xs:annotation>
+          <xs:documentation/>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="StartDate">
+    <xs:annotation>
+      <xs:documentation>start date</xs:documentation>
+    </xs:annotation>
+    <xs:all>
+      <xs:element name="month" type="cab:Month">
+        <xs:annotation>
+          <xs:documentation>start month
+          1 ... January
+          2 ... February
+          3 ... March
+          4 ... April
+          5 ... May
+          6 ... June
+          7 ... July
+          8 ... August
+          9 ... September
+          10 ... October
+          11 ... November
+          12 ... December</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="year" type="cab:Year">
+        <xs:annotation>
+          <xs:documentation>start year</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+  </xs:complexType>
+  <xs:simpleType name="State">
+    <xs:annotation>
+      <xs:documentation>federal state</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="255"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Street">
+    <xs:annotation>
+      <xs:documentation>street</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="255"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="TargetBankAccount">
+    <xs:annotation>
+      <xs:documentation/>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element minOccurs="0" name="bankName" type="cab:BankName">
+        <xs:annotation>
+          <xs:documentation>bank name</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="accountHolder" type="cab:AccountHolder">
+        <xs:annotation>
+          <xs:documentation>account holder name</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="accountDetails" type="cab:AccountDetails">
+        <xs:annotation>
+          <xs:documentation>account details</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="TerminalID">
+    <xs:annotation>
+      <xs:documentation>terminal ID</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="1"/>
+      <xs:maxLength value="8"/>
+      <xs:pattern value="\d{1,8}"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Text">
+    <xs:annotation>
+      <xs:documentation>text string (arbitrary length)</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="ThreeDMerchantData">
+    <xs:annotation>
+      <xs:documentation>Verified by Visa/Mastercard SecureCode merchant data</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:complexType name="ThreeDRedirect">
+    <xs:annotation>
+      <xs:documentation>Verified by Visa/Mastercard SecureCode redirect</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="acsURL" type="cab:URL">
+        <xs:annotation>
+          <xs:documentation>access control server URL to redirect to</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="element" type="cab:ThreeDRedirectElement">
+        <xs:annotation>
+          <xs:documentation>redirect parameters</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ThreeDRedirectElement">
+    <xs:annotation>
+      <xs:documentation>redirect parameters</xs:documentation>
+    </xs:annotation>
+    <xs:all>
+      <xs:element name="item" type="cab:ThreeDRedirectElementItem">
+        <xs:annotation>
+          <xs:documentation>redirect paramter item/name</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="value" type="cab:ThreeDRedirectElementValue">
+        <xs:annotation>
+          <xs:documentation>redirect paramter value</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="type" type="cab:ThreeDRedirectElementType">
+        <xs:annotation>
+          <xs:documentation>redirect paramter type</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="pattern" type="cab:ThreeDRedirectElementPattern">
+        <xs:annotation>
+          <xs:documentation>redirect paramter pattern</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+  </xs:complexType>
+  <xs:simpleType name="ThreeDRedirectElementItem">
+    <xs:annotation>
+      <xs:documentation>redirect paramter item/name</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="TermURL"/>
+      <xs:enumeration value="PaReq"/>
+      <xs:enumeration value="MD"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="ThreeDRedirectElementPattern">
+    <xs:annotation>
+      <xs:documentation>redirect paramter pattern</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="ThreeDRedirectElementType">
+    <xs:annotation>
+      <xs:documentation>redirect paramter type</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="URL"/>
+      <xs:enumeration value="PAReq"/>
+      <xs:enumeration value="ThreeDMerchantData"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="ThreeDRedirectElementValue">
+    <xs:annotation>
+      <xs:documentation>redirect paramter value</xs:documentation>
+    </xs:annotation>
+    <xs:union memberTypes="cab:URL cab:PAReq cab:ThreeDMerchantData"/>
+  </xs:simpleType>
+  <xs:simpleType name="Time">
+    <xs:annotation>
+      <xs:documentation>time</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:time"/>
+  </xs:simpleType>
+  <xs:simpleType name="Timestamp">
+    <xs:annotation>
+      <xs:documentation>timestamp</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:dateTime"/>
+  </xs:simpleType>
+  <xs:simpleType name="Title">
+    <xs:annotation>
+      <xs:documentation>title of a person</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="60"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Token">
+    <xs:annotation>
+      <xs:documentation>string that represents some data (maybe time limited)</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="255"/>
+      <xs:whiteSpace value="collapse"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="TransactionRefNo">
+    <xs:annotation>
+      <xs:documentation>transaction reference number</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="255"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="URL">
+    <xs:annotation>
+      <xs:documentation>URL: web address (home page)</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:anyURI"/>
+  </xs:simpleType>
+  <xs:simpleType name="VUNumber">
+    <xs:annotation>
+      <xs:documentation>contract (VU) number</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="50"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="VatID">
+    <xs:annotation>
+      <xs:documentation>value added tax ID</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="20"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Version">
+    <xs:annotation>
+      <xs:documentation>identifier of the product version</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="10"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="XID">
+    <xs:annotation>
+      <xs:documentation>Verified by Visa/Mastercard SecureCode transaction ID</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="Year">
+    <xs:annotation>
+      <xs:documentation>year</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="4"/>
+      <xs:pattern value="[1-2]\d{3}"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Zip">
+    <xs:annotation>
+      <xs:documentation>zip code</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="30"/>
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>

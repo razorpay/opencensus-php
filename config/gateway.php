@@ -66,6 +66,8 @@ return array(
     'first_data' => array(
         'test_store_id'         => env('FIRST_DATA_TEST_STORE_ID'),
         'test_hash_secret'    	=> env('FIRST_DATA_TEST_HASH_SECRET'),
+        'test_user_id'          => env('FIRST_DATA_TEST_USER_ID'),
+        'test_password'         => env('FIRST_DATA_TEST_PASSWORD'),
     ),
 
     'amex' => array(

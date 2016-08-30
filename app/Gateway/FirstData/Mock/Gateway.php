@@ -15,4 +15,25 @@ class Gateway extends FirstData\Gateway
     {
         return $this->authorizeMock($input);
     }
+
+    protected function postRequest($request)
+    {
+    	sd("Hi");
+        // Redirect the request internally
+        $serverResponse = $this->callGatewayRequestInternally($request);
+
+        return $serverResponse;
+    }
+
+    protected function callGatewayRequestInternally($request)
+    {
+        ;
+    }
+
+    protected function getServer()
+    {
+        $app = App::getFacadeRoot();
+
+        return $app['gateway']->server($this->gateway);
+    }
 }

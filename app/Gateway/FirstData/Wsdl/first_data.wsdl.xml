@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:sch="http://ipg-online.com/ipgapi/schemas/ipgapi" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://ipg-online.com/ipgapi/schemas/ipgapi" targetNamespace="http://ipg-online.com/ipgapi/schemas/ipgapi">
+  <wsdl:types xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+    <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:a1="http://ipg-online.com/ipgapi/schemas/a1" xmlns:ipgapi="http://ipg-online.com/ipgapi/schemas/ipgapi" xmlns:v1="http://ipg-online.com/ipgapi/schemas/v1" elementFormDefault="qualified" targetNamespace="http://ipg-online.com/ipgapi/schemas/ipgapi">
+
+	<xs:import namespace="http://ipg-online.com/ipgapi/schemas/v1" schemaLocation="../schemas/v1.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+	<xs:import namespace="http://ipg-online.com/ipgapi/schemas/a1" schemaLocation="../schemas/a1.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+
+	<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+	<!-- Request - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+	<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+	<xs:element name="IPGApiOrderRequest" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+		<xs:complexType xmlns:xs="http://www.w3.org/2001/XMLSchema">
+			<xs:sequence xmlns:xs="http://www.w3.org/2001/XMLSchema">
+				<xs:choice xmlns:xs="http://www.w3.org/2001/XMLSchema">
+					<xs:element ref="v1:Transaction" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+					<xs:element ref="v1:SubsequentTransaction" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				</xs:choice>
+				<xs:element minOccurs="0" ref="v1:MerchantDetails" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="IPGApiActionRequest" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+		<xs:complexType xmlns:xs="http://www.w3.org/2001/XMLSchema">
+			<xs:choice xmlns:xs="http://www.w3.org/2001/XMLSchema">
+				<xs:element ref="a1:Action" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+			</xs:choice>
+		</xs:complexType>
+	</xs:element>
+
+	<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+	<!-- Response  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+	<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+	<!--
+	The values and sub values can be null, even if it is not explicitly marked.
+	You should not consider the answer to this XSD, otherwise you would get an error if we add a new field.
+	-->
+
+	<xs:element name="IPGApiOrderResponse" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+		<xs:complexType xmlns:xs="http://www.w3.org/2001/XMLSchema">
+			<xs:all xmlns:xs="http://www.w3.org/2001/XMLSchema">
+				<!-- for internal use only -->
+				<xs:element minOccurs="0" name="DebugInformation" type="xs:string" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+
+				<xs:element minOccurs="0" name="ApprovalCode" type="xs:string" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" name="AVSResponse" type="xs:string" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" name="Brand" type="xs:string" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" name="Country" type="xs:string" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" name="CommercialServiceProvider" type="xs:string" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" name="ErrorMessage" type="xs:string" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" name="OrderId" type="xs:string" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" name="IpgTransactionId" type="v1:PositiveNumeric14max" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" name="PayerSecurityLevel" type="xs:string" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" name="PaymentType" type="xs:string" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" name="ProcessorApprovalCode" type="xs:string" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" name="ProcessorReceiptNumber" type="xs:string" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" name="ProcessorCCVResponse" type="xs:string" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" name="ProcessorReferenceNumber" type="xs:string" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" name="ProcessorResponseCode" type="xs:string" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" name="ProcessorResponseMessage" type="xs:string" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" name="ProcessorTraceNumber" type="xs:string" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" name="ProcessorInstallmentFirstAmount" type="v1:AmountValueType" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" name="ProcessorInstallmentOtherAmount" type="v1:AmountValueType" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" name="ProcessorInstallmentIssuerFeeAmount" type="v1:AmountValueType" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" name="ProcessorInstallmentTaxesAmount" type="v1:AmountValueType" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" name="ProcessorInstallmentInsuranceAmount" type="v1:AmountValueType" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" name="ProcessorInstallmentOtherExpensesAmount" type="v1:AmountValueType" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" name="ProcessorInstallmentTotalAmount" type="v1:AmountValueType" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" name="ProcessorInstallmentRatePerYear" type="v1:AmountValueType" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" name="ProcessorVoucherRemainingAmount" type="v1:AmountValueType" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" name="ProcessorVoucherType" type="xs:string" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" name="ReferencedTDate" type="xs:string" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" name="TDate" type="xs:string" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" name="TDateFormatted" type="xs:string" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" name="TerminalID" type="xs:string" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" name="TransactionResult" type="xs:string" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" name="TransactionTime" type="xs:string" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" ref="ipgapi:EMVCardPresentResponse" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" ref="v1:MandateReference" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+			</xs:all>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="EMVCardPresentResponse" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+		<xs:complexType xmlns:xs="http://www.w3.org/2001/XMLSchema">
+			<xs:all xmlns:xs="http://www.w3.org/2001/XMLSchema">
+				<xs:element ref="ipgapi:EMVResponseData" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element ref="v1:TLVData" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+			</xs:all>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="EMVResponseData" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+		<xs:complexType xmlns:xs="http://www.w3.org/2001/XMLSchema">
+			<xs:all xmlns:xs="http://www.w3.org/2001/XMLSchema">
+				<xs:element minOccurs="0" name="AuthorizationIdentification-DF817E" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+					<xs:simpleType xmlns:xs="http://www.w3.org/2001/XMLSchema">
+						<xs:restriction base="xs:hexBinary" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+							<xs:minLength value="1" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+							<xs:maxLength value="8" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>
+				<xs:element minOccurs="0" name="AuthorizationParameter-DF817D" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+					<xs:simpleType xmlns:xs="http://www.w3.org/2001/XMLSchema">
+						<xs:restriction base="xs:hexBinary" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+							<xs:length value="8" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>
+				<xs:element minOccurs="0" name="IssuerAuthenticationData-91" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+					<xs:simpleType xmlns:xs="http://www.w3.org/2001/XMLSchema">
+						<xs:restriction base="xs:hexBinary" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+							<xs:minLength value="8" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+							<xs:maxLength value="16" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>
+				<xs:element minOccurs="0" name="IssuerScriptTemplate1-71" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+					<xs:simpleType xmlns:xs="http://www.w3.org/2001/XMLSchema">
+						<xs:restriction base="xs:hexBinary" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+							<xs:minLength value="9" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+							<xs:maxLength value="746" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>
+				<xs:element minOccurs="0" name="IssuerScriptTemplate2-72" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+					<xs:simpleType xmlns:xs="http://www.w3.org/2001/XMLSchema">
+						<xs:restriction base="xs:hexBinary" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+							<xs:minLength value="9" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+							<xs:maxLength value="746" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>
+				<xs:element minOccurs="0" name="IssuerAuthorizationResponseCode-8A" type="v1:IssuerAuthorizationResponseCode-8A" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" name="MessageControlField-DF4F" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+					<xs:simpleType xmlns:xs="http://www.w3.org/2001/XMLSchema">
+						<xs:restriction base="xs:string" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+							<xs:pattern value="[0-9]{2}" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>
+				<xs:element minOccurs="0" name="ReceiptNumber-DF8161" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+					<xs:simpleType xmlns:xs="http://www.w3.org/2001/XMLSchema">
+						<xs:restriction base="xs:int" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+							<xs:minInclusive value="0" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+							<xs:maxInclusive value="9999" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>
+				<xs:element minOccurs="0" name="SpecialDataBlock-DF817F" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+					<xs:simpleType xmlns:xs="http://www.w3.org/2001/XMLSchema">
+						<xs:restriction base="xs:hexBinary" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+					</xs:simpleType>
+				</xs:element>
+				<xs:element minOccurs="0" name="TraceNumber-DF8260" type="v1:TraceNumber-DF8260" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+			</xs:all>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:complexType name="ClearingDetails" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+		<xs:sequence xmlns:xs="http://www.w3.org/2001/XMLSchema">
+			<xs:element maxOccurs="unbounded" minOccurs="0" ref="ipgapi:ClearingElement" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+			<xs:element name="BatchTimeStamp" type="v1:StringDateTime" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="ClearingElement" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+		<xs:complexType xmlns:xs="http://www.w3.org/2001/XMLSchema">
+			<xs:sequence xmlns:xs="http://www.w3.org/2001/XMLSchema">
+				<xs:element name="Brand" type="xs:string" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element name="Value" type="xs:long" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element name="Count" type="xs:int" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="IPGApiActionResponse" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+		<xs:complexType xmlns:xs="http://www.w3.org/2001/XMLSchema">
+			<xs:sequence xmlns:xs="http://www.w3.org/2001/XMLSchema">
+				<xs:element name="successfully" type="xs:boolean" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" name="OrderId" type="xs:string" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" name="TransactionId" type="v1:PositiveNumeric14max" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element maxOccurs="unbounded" minOccurs="0" ref="a1:Error" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" name="ResultInfo" type="a1:ResultInfoType" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" ref="v1:Basket" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" ref="v1:Billing" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element maxOccurs="unbounded" minOccurs="0" ref="a1:Product" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element maxOccurs="unbounded" minOccurs="0" ref="a1:ProductStock" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" ref="v1:MandateReference" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" ref="v1:Shipping" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element maxOccurs="unbounded" minOccurs="0" ref="a1:TransactionValues" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" name="RecurringPaymentInformation" type="a1:RecurringPaymentValues" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element maxOccurs="unbounded" minOccurs="0" name="DataStorageItem" type="a1:DataStorageItem" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" name="ProcessorResponseCode" type="xs:string" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" name="ProcessorRequestMessage" type="xs:string" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" name="ProcessorResponseMessage" type="xs:string" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element maxOccurs="unbounded" minOccurs="0" name="OrderValues" type="a1:OrderValueType" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element maxOccurs="1" minOccurs="0" name="CardRateForDCC" type="a1:InquiryRateType" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element maxOccurs="1" minOccurs="0" name="MerchantRateForDynamicPricing" type="a1:InquiryRateType" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element maxOccurs="unbounded" minOccurs="0" name="CardInformation" type="a1:CardInformation" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+					<xs:annotation xmlns:xs="http://www.w3.org/2001/XMLSchema">
+						<xs:documentation xmlns:xs="http://www.w3.org/2001/XMLSchema">Sorted by the priority of the supported brands.</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element minOccurs="0" name="ClearingDetails" type="ipgapi:ClearingDetails" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+				<xs:element minOccurs="0" name="paymentUrl" type="xs:string" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>
+  </wsdl:types>
+  <wsdl:message name="IPGApiOrderResponse" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+    <wsdl:part element="tns:IPGApiOrderResponse" name="IPGApiOrderResponse" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"/>
+  </wsdl:message>
+  <wsdl:message name="IPGApiActionRequest" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+    <wsdl:part element="tns:IPGApiActionRequest" name="IPGApiActionRequest" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"/>
+  </wsdl:message>
+  <wsdl:message name="IPGApiOrderRequest" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+    <wsdl:part element="tns:IPGApiOrderRequest" name="IPGApiOrderRequest" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"/>
+  </wsdl:message>
+  <wsdl:message name="IPGApiActionResponse" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+    <wsdl:part element="tns:IPGApiActionResponse" name="IPGApiActionResponse" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"/>
+  </wsdl:message>
+  <wsdl:message name="EMVCardPresentResponse" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+    <wsdl:part element="tns:EMVCardPresentResponse" name="EMVCardPresentResponse" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"/>
+  </wsdl:message>
+  <wsdl:portType name="IPGApiOrder" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+    <wsdl:operation name="IPGApiOrder" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+      <wsdl:input message="tns:IPGApiOrderRequest" name="IPGApiOrderRequest" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"/>
+      <wsdl:output message="tns:IPGApiOrderResponse" name="IPGApiOrderResponse" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"/>
+    </wsdl:operation>
+    <wsdl:operation name="IPGApiAction" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+      <wsdl:input message="tns:IPGApiActionRequest" name="IPGApiActionRequest" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"/>
+      <wsdl:output message="tns:IPGApiActionResponse" name="IPGApiActionResponse" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"/>
+    </wsdl:operation>
+    <wsdl:operation name="EMVCardPresent" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+      <wsdl:output message="tns:EMVCardPresentResponse" name="EMVCardPresentResponse" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="IPGApiOrderSoap11" type="tns:IPGApiOrder" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+    <wsdl:operation name="IPGApiOrder" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+      <soap:operation soapAction="" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+      <wsdl:input name="IPGApiOrderRequest" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+        <soap:body use="literal" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+      </wsdl:input>
+      <wsdl:output name="IPGApiOrderResponse" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+        <soap:body use="literal" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="IPGApiAction" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+      <soap:operation soapAction="" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+      <wsdl:input name="IPGApiActionRequest" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+        <soap:body use="literal" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+      </wsdl:input>
+      <wsdl:output name="IPGApiActionResponse" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+        <soap:body use="literal" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="EMVCardPresent" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+      <soap:operation soapAction="" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+      <wsdl:output name="EMVCardPresentResponse" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+        <soap:body use="literal" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="IPGApiOrderService" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+    <wsdl:port binding="tns:IPGApiOrderSoap11" name="IPGApiOrderSoap11" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+      <soap:address location="https://test.ipg-online.com:443/ipgapi/services" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

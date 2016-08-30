@@ -1,0 +1,1370 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:cab="http://api.clickandbuy.com/webservices/pay_1_0_0/" attributeFormDefault="qualified" elementFormDefault="qualified" targetNamespace="http://api.clickandbuy.com/webservices/pay_1_0_0/">
+  <xs:include schemaLocation="./SOAPTypes_1_0_0.xsd"/>
+  <xs:complexType name="AddBatchItemDetails">
+    <xs:annotation>
+      <xs:documentation>structure for AddBatchItem details (upto 128 items can be specified)</xs:documentation>
+    </xs:annotation>
+    <xs:all>
+      <xs:element name="batchID" type="xs:long">
+        <xs:annotation>
+          <xs:documentation>batch ID</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="batchItemDetailsList" type="cab:BatchItemDetailsList">
+        <xs:annotation>
+          <xs:documentation>structure containing upto 128 batch item request details</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+  </xs:complexType>
+  <xs:complexType name="AddBatchItemProcessingDetails">
+    <xs:annotation>
+      <xs:documentation>the details of the batch item to add</xs:documentation>
+    </xs:annotation>
+    <xs:choice>
+      <xs:element name="payRequestDetails" type="cab:PayRequestDetails">
+        <xs:annotation>
+          <xs:documentation>structure with all PayRequest details</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="payRequestRecurringDetails" type="cab:PayRequestRecurringDetails">
+        <xs:annotation>
+          <xs:documentation>structure for PayRequestRecurring details</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="refundRequestDetails" type="cab:RefundRequestDetails">
+        <xs:annotation>
+          <xs:documentation>structure for RefundRequest details</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="creditRequestDetails" type="cab:CreditRequestDetails">
+        <xs:annotation>
+          <xs:documentation>structure with all CreditRequest details</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="cancelRequestDetails" type="cab:CancelRequestDetails">
+        <xs:annotation>
+          <xs:documentation>structure for CancelRequest details</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:choice>
+  </xs:complexType>
+  <xs:complexType name="AddBatchItem_Request">
+    <xs:annotation>
+      <xs:documentation>Add Batch Item_ Request root element</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="authentication" type="cab:Authentication">
+        <xs:annotation>
+          <xs:documentation>structure containing API call authentication</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="details" type="cab:AddBatchItemDetails">
+        <xs:annotation>
+          <xs:documentation>structure for AddBatchItem details (upto 128 items can be specified)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="AddBatchItem_Response">
+    <xs:annotation>
+      <xs:documentation>Add Batch Item_ Response root element</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="requestTrackingID" type="cab:RequestTrackingID">
+        <xs:annotation>
+          <xs:documentation>String containing an ID that uniquely identifies the given request</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="batch" type="cab:BatchIDStatus">
+        <xs:annotation>
+          <xs:documentation>structur containing the status of the batch</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="batchItemList" type="cab:BatchItemIDStatusList">
+        <xs:annotation>
+          <xs:documentation>structure containing upto 128 batch item status
+          CREATED ... Indicates the batch has been created successfully, but is awaiting further action, such as consumer confirmation, expiration, or cancellation.
+          CANCELLED ... Indicates that the merchant has cancelled the batch.
+          PENDING_EXECUTION ... Indicates that the batch is in the pipeline awaiting execution.
+          EXECUTING ... Indicates that the batch is currently executing.
+          EXECUTED ... Indicates that the batch has successfully been executed for all its items.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Authentication">
+    <xs:annotation>
+      <xs:documentation>structure containing API call authentication</xs:documentation>
+    </xs:annotation>
+    <xs:all>
+      <xs:element name="merchantID" type="xs:long">
+        <xs:annotation>
+          <xs:documentation>the merchant's unique ID</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="projectID" type="xs:long">
+        <xs:annotation>
+          <xs:documentation>a merchant unique project ID</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="token" type="cab:Token">
+        <xs:annotation>
+          <xs:documentation>unique token identifying the authentication data</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+  </xs:complexType>
+  <xs:complexType name="BatchIDStatus">
+    <xs:annotation>
+      <xs:documentation>structure containing the status of a given batch ID or extern batch ID</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="batchID" type="xs:long">
+        <xs:annotation>
+          <xs:documentation>batch ID</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="externalBatchID" type="cab:ExternalID">
+        <xs:annotation>
+          <xs:documentation>external batch ID</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="batchStatus" type="cab:BatchStatus">
+        <xs:annotation>
+          <xs:documentation>the status for the given batch ID or external batch ID
+          CREATED ... Indicates the batch has been created successfully, but is awaiting further action, such as consumer confirmation, expiration, or cancellation.
+          CANCELLED ... Indicates that the merchant has cancelled the batch.
+          PENDING_EXECUTION ... Indicates that the batch is in the pipeline awaiting execution.
+          EXECUTING ... Indicates that the batch is currently executing.
+          EXECUTED ... Indicates that the batch has successfully been executed for all its items.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="BatchItemDetails">
+    <xs:annotation>
+      <xs:documentation>structure containing a batch item request details</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element minOccurs="0" name="externalID" type="cab:ExternalID">
+        <xs:annotation>
+          <xs:documentation>a unique ID defined by the merchant</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="details" type="cab:AddBatchItemProcessingDetails">
+        <xs:annotation>
+          <xs:documentation>the details of the batch item to add</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="BatchItemDetailsList">
+    <xs:annotation>
+      <xs:documentation>structure containing upto 128 batch item request details</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="batchItemDetails" type="cab:BatchItemDetails">
+        <xs:annotation>
+          <xs:documentation>structure containing a batch item request details</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="BatchItemIDList">
+    <xs:annotation>
+      <xs:documentation>structure containing upto 128 batch item Ids</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="batchItemID" type="xs:long">
+        <xs:annotation>
+          <xs:documentation>batch item ID</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="BatchItemIDStatus">
+    <xs:annotation>
+      <xs:documentation>structure containing the status for a given batch item ID, or a structure containing error information regarding the given batch item id</xs:documentation>
+    </xs:annotation>
+    <xs:all>
+      <xs:element name="batchItemID" type="xs:long">
+        <xs:annotation>
+          <xs:documentation>batch item ID</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="externalID" type="cab:ExternalID">
+        <xs:annotation>
+          <xs:documentation>a unique ID defined by the merchant</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="batchItemStatus" type="cab:BatchItemStatus">
+        <xs:annotation>
+          <xs:documentation>text describing the status of a batch item
+          CREATED ... Indicates the batch item has been created successfully, but is awaiting further action, such as consumer confirmation, expiration, or cancellation.
+          CANCELLED ... Indicates that the merchant has cancelled the batch item.
+          SUCCESS ... Indicates that the batch item has completed successfully.
+          PENDING_EXECUTION ... Indicates that the batch item is in the pipeline awaiting execution.
+          EXECUTING ... Indicates that the batch item is currently executing.
+          ERROR ... Indicates that the batch item has been executed, but the  result was an error.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="resultTransactionID" type="xs:long">
+        <xs:annotation>
+          <xs:documentation>the ID of the transaction that has been created by this batch item</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="errorDetails" type="cab:ErrorDetails">
+        <xs:annotation>
+          <xs:documentation>structure with error details</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+  </xs:complexType>
+  <xs:complexType name="BatchItemIDStatusList">
+    <xs:annotation>
+      <xs:documentation>structure containing upto 128 batch item status</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" name="batchItem" type="cab:BatchItemIDStatus">
+        <xs:annotation>
+          <xs:documentation>structure containing the status for a given batch item ID, or a structure containing error information regarding the given batch item id</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="BatchItemStatus">
+    <xs:annotation>
+      <xs:documentation>text describing the status of a batch item
+      CREATED ... Indicates the batch item has been created successfully, but is awaiting further action, such as consumer confirmation, expiration, or cancellation.
+      CANCELLED ... Indicates that the merchant has cancelled the batch item.
+      SUCCESS ... Indicates that the batch item has completed successfully.
+      PENDING_EXECUTION ... Indicates that the batch item is in the pipeline awaiting execution.
+      EXECUTING ... Indicates that the batch item is currently executing.
+      ERROR ... Indicates that the batch item has been executed, but the  result was an error.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="CREATED"/>
+      <xs:enumeration value="CANCELLED"/>
+      <xs:enumeration value="SUCCESS"/>
+      <xs:enumeration value="PENDING_EXECUTION"/>
+      <xs:enumeration value="EXECUTING"/>
+      <xs:enumeration value="ERROR"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="BatchStatus">
+    <xs:annotation>
+      <xs:documentation>the status for the given batch ID or external batch ID
+      CREATED ... Indicates the batch has been created successfully, but is awaiting further action, such as consumer confirmation, expiration, or cancellation.
+      CANCELLED ... Indicates that the merchant has cancelled the batch.
+      PENDING_EXECUTION ... Indicates that the batch is in the pipeline awaiting execution.
+      EXECUTING ... Indicates that the batch is currently executing.
+      EXECUTED ... Indicates that the batch has successfully been executed for all its items.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="CREATED"/>
+      <xs:enumeration value="CANCELLED"/>
+      <xs:enumeration value="PENDING_EXECUTION"/>
+      <xs:enumeration value="EXECUTING"/>
+      <xs:enumeration value="EXECUTED"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="CancelBatchDetails">
+    <xs:annotation>
+      <xs:documentation>structure for CancelBatch details</xs:documentation>
+    </xs:annotation>
+    <xs:all>
+      <xs:element name="batchID" type="xs:long">
+        <xs:annotation>
+          <xs:documentation>batch ID</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+  </xs:complexType>
+  <xs:complexType name="CancelBatch_Request">
+    <xs:annotation>
+      <xs:documentation>Cancel Batch_ Request root element</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="authentication" type="cab:Authentication">
+        <xs:annotation>
+          <xs:documentation>structure containing API call authentication</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="details" type="cab:CancelBatchDetails">
+        <xs:annotation>
+          <xs:documentation>structure for CancelBatch details</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="CancelBatch_Response">
+    <xs:annotation>
+      <xs:documentation>Cancel Batch_ Response root element</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="requestTrackingID" type="cab:RequestTrackingID">
+        <xs:annotation>
+          <xs:documentation>String containing an ID that uniquely identifies the given request</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="batch" type="cab:BatchIDStatus">
+        <xs:annotation>
+          <xs:documentation>structur containing the status of the batch</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="CancelRequestDetails">
+    <xs:annotation>
+      <xs:documentation>structure for CancelRequest details</xs:documentation>
+    </xs:annotation>
+    <xs:all>
+      <xs:element name="transactionID" type="xs:long">
+        <xs:annotation>
+          <xs:documentation>unique transaction ID</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+  </xs:complexType>
+  <xs:complexType name="CancelRequest_Request">
+    <xs:annotation>
+      <xs:documentation>Cancel Request_ Request root element</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="authentication" type="cab:Authentication">
+        <xs:annotation>
+          <xs:documentation>structure containing API call authentication</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="details" type="cab:CancelRequestDetails">
+        <xs:annotation>
+          <xs:documentation>structure for CancelRequest details</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="CancelRequest_Response">
+    <xs:annotation>
+      <xs:documentation>Cancel Request_ Response root element</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="requestTrackingID" type="cab:RequestTrackingID">
+        <xs:annotation>
+          <xs:documentation>String containing an ID that uniquely identifies the given request</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="transaction" type="cab:TransactionIDStatus">
+        <xs:annotation>
+          <xs:documentation>status of the transaction</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="CreateBatchDetails">
+    <xs:annotation>
+      <xs:documentation>structure for CreateBatch details</xs:documentation>
+    </xs:annotation>
+    <xs:all>
+      <xs:element minOccurs="0" name="externalBatchID" type="cab:ExternalID">
+        <xs:annotation>
+          <xs:documentation>external ID for the batch</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+  </xs:complexType>
+  <xs:complexType name="CreateBatch_Request">
+    <xs:annotation>
+      <xs:documentation>Create Batch_ Request root element</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="authentication" type="cab:Authentication">
+        <xs:annotation>
+          <xs:documentation>structure containing API call authentication</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="details" type="cab:CreateBatchDetails">
+        <xs:annotation>
+          <xs:documentation>structure for CreateBatch details</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="CreateBatch_Response">
+    <xs:annotation>
+      <xs:documentation>Create Batch_ Response root element</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="requestTrackingID" type="cab:RequestTrackingID">
+        <xs:annotation>
+          <xs:documentation>String containing an ID that uniquely identifies the given request</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="batch" type="cab:BatchIDStatus">
+        <xs:annotation>
+          <xs:documentation>structur containing the status of the batch</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="CreditRequestDetails">
+    <xs:annotation>
+      <xs:documentation>structure for CreditRequest details</xs:documentation>
+    </xs:annotation>
+    <xs:all>
+      <xs:element name="amount" type="cab:Money">
+        <xs:annotation>
+          <xs:documentation>amount of the payment request</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="emailAddress" type="cab:Email">
+        <xs:annotation>
+          <xs:documentation>e-mail address</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="consumerLanguage" type="cab:Language">
+        <xs:annotation>
+          <xs:documentation>ISO 639-2 language code</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="orderDetails" type="cab:OrderDetails">
+        <xs:annotation>
+          <xs:documentation>details of the payment</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="externalID" type="cab:ExternalID">
+        <xs:annotation>
+          <xs:documentation>a unique ID defined by the merchant</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+  </xs:complexType>
+  <xs:complexType name="CreditRequest_Request">
+    <xs:annotation>
+      <xs:documentation>Credit Request_ Request root element</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="authentication" type="cab:Authentication">
+        <xs:annotation>
+          <xs:documentation>structure containing API call authentication</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="details" type="cab:CreditRequestDetails">
+        <xs:annotation>
+          <xs:documentation>structure for CreditRequest details</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="CreditRequest_Response">
+    <xs:annotation>
+      <xs:documentation>Credit Request_ Response root element</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="requestTrackingID" type="cab:RequestTrackingID">
+        <xs:annotation>
+          <xs:documentation>String containing an ID that uniquely identifies the given request</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="transaction" type="cab:TransactionIDStatus">
+        <xs:annotation>
+          <xs:documentation>status of the transaction</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="ErrorCode">
+    <xs:annotation>
+      <xs:documentation>error code
+      1 ... MalformedRequest.
+      Indicates that the API request was somehow malformed, e.g. is not valid XML.
+      2 ... AuthenticationFailed
+      Indicates that the credentials provided in the API are not valid or the API call is not enabled or the project is locked, etc.
+      3 ... InvalidRequest
+      Indicates that one or more parameters in the API call are invalid, e.g. an invalid currency code, a non-existend transaction-id, etc.
+      4 ... TechnicalError.
+      Indicates that the API had a temporary problem processing the request. Usually it can be retried at a later time.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:int">
+      <xs:enumeration value="1"/>
+      <xs:enumeration value="2"/>
+      <xs:enumeration value="3"/>
+      <xs:enumeration value="4"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="ErrorDetailCode">
+    <xs:annotation>
+      <xs:documentation>Detailed error code refining the error code that occurred.
+      Ranges from 0 to 49999 inclusive, the first digit referring to the main error code.
+      
+      0     - No additional detail could be provided
+      
+      10000 - Malformed request
+      
+      20000 - Authentication failed
+      
+      30000 - Invalid request
+      30001 - Provoked by API TestMode
+      30010 - Missing API key
+      30011 - Invalid API key
+      30012 - Missing Token
+      30013 - Invalid Token
+      30014 - API key not enabled
+      30015 - Call not allowed
+      30100 - Input validation errors
+      30101 - Missing transactionID
+      30102 - Invalid transactionID
+      30103 - Missing BatchID
+      30104 - Invalid BatchID
+      30105 - Missing BatchItemID
+      30106 - Invalid BatchItemID
+      30107 - Missing BatchItemDetails
+      30108 - Invalid BatchItemDetails
+      30109 - Missing MerchantID
+      30110 - Invalid MerchantID
+      30111 - Missing Amount
+      30112 - Invalid Amount
+      30113 - Missing EmailAddress
+      30114 - Invalid EmailAddress
+      30115 - Missing ExternalID
+      30116 - Invalid ExternalID
+      30117 - Duplicate ExternalID
+      30118 - Missing OrderDetails
+      30119 - Invalid OrderDetails
+      30120 - Missing OrderDetailItem
+      30121 - Invalid OrderDetailItem
+      30122 - Missing Address
+      30123 - Invalid Address
+      30124 - Missing AddressStreet
+      30125 - Invalid AddressStreet
+      30126 - Missing AddressHouseNumber
+      30127 - Invalid AddressHouseNumber
+      30128 - Missing AddressHouseNumberSuffix
+      30129 - Invalid AddressHouseNumberSuffix
+      30130 - Missing AddressSuffix
+      30131 - Invalid AddressSuffix
+      30132 - Missing AddressCity
+      30133 - Invalid AddressCity
+      30134 - Missing AddressCompany
+      30135 - Invalid AddressCompany
+      30136 - Missing AddressFirstName
+      30137 - Invalid AddressFirstName
+      30138 - Missing AddressLastName
+      30139 - Invalid AddressLastName
+      30140 - Missing AddressState
+      30141 - Invalid AddressState
+      30142 - Missing AddressTitle
+      30143 - Invalid AddressTitle
+      30144 - Missing AddressZipCode
+      30145 - Invalid AddressZipCode
+      30146 - Missing AddressCountry
+      30147 - Invalid AddressCountry
+      30148 - Missing Score
+      30149 - Invalid Score
+      30150 - Missing Expiration
+      30151 - Invalid Expiration
+      30152 - Missing URL
+      30153 - Invalid URL
+      30154 - Missing IPAddress
+      30155 - Invalid IPAddress
+      30156 - Missing RPA
+      30157 - Invalid RPA
+      30158 - Missing RPAText
+      30159 - Invalid RPAText
+      30160 - Missing RPAAmount
+      30161 - Invalid RPAAmount
+      30162 - Missing RPANumberLimit
+      30163 - Invalid RPANumberLimit
+      30164 - Missing RPADateLimit
+      30165 - Invalid RPADateLimit
+      30166 - Missing LanguageCode
+      30167 - Invalid LanguageCode
+      30168 - Missing RPAID
+      30169 - Invalid RPAID
+      30170 - Missing NationCode
+      30171 - Invalid NationCode
+      30200 - TooMany TransactionIDs
+      30201 - TooMany ExternalIDs
+      30202 - TooMany BatchItemIDs
+      30203 - TooMany BatchItemDetails
+      30204 - TooMany OrderDetails
+      31000 - PayTransaction: wrong state for action
+      32000 - RefundTransaction: wrong state for action
+      33000 - CreditTransaction: wrong state for action
+      33100 - Insufficient creditable emoney
+      33200 - Credit not allowed (e.g. due to a lock)
+      34000 - Batch: wrong batch state for action
+      
+      40000 - Technical error
+      40001 - Technical error provoked by API test-mode
+      40100 - Database error</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:unsignedInt">
+      <xs:minInclusive value="0"/>
+      <xs:maxInclusive value="99999"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="ErrorDetails">
+    <xs:annotation>
+      <xs:documentation>structure with error details</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element minOccurs="0" name="requestTrackingID" type="cab:RequestTrackingID">
+        <xs:annotation>
+          <xs:documentation>string containing an ID that uniquely identifies the given request</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="code" type="cab:ErrorCode">
+        <xs:annotation>
+          <xs:documentation>error code
+          1 ... MalformedRequest.
+          Indicates that the API request was somehow malformed, e.g. is not valid XML.
+          2 ... AuthenticationFailed
+          Indicates that the credentials provided in the API are not valid or the API call is not enabled or the project is locked, etc.
+          3 ... InvalidRequest
+          Indicates that one or more parameters in the API call are invalid, e.g. an invalid currency code, a non-existend transaction-id, etc.
+          4 ... TechnicalError.
+          Indicates that the API had a temporary problem processing the request. Usually it can be retried at a later time.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="detailCode" type="cab:ErrorDetailCode">
+        <xs:annotation>
+          <xs:documentation>error detail code</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="description" type="cab:Text">
+        <xs:annotation>
+          <xs:documentation>error description</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="retry" type="cab:Flag">
+        <xs:annotation>
+          <xs:documentation/>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ExecuteBatchDetails">
+    <xs:annotation>
+      <xs:documentation>structure for ExecuteBatch details</xs:documentation>
+    </xs:annotation>
+    <xs:all>
+      <xs:element name="batchID" type="xs:long">
+        <xs:annotation>
+          <xs:documentation>batch ID</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+  </xs:complexType>
+  <xs:complexType name="ExecuteBatch_Request">
+    <xs:annotation>
+      <xs:documentation>Execute Batch_ Request root element</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="authentication" type="cab:Authentication">
+        <xs:annotation>
+          <xs:documentation>structure containing API call authentication</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="details" type="cab:ExecuteBatchDetails">
+        <xs:annotation>
+          <xs:documentation>structure for ExecuteBatch details</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ExecuteBatch_Response">
+    <xs:annotation>
+      <xs:documentation>Execute Batch_ Response root element</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="requestTrackingID" type="cab:RequestTrackingID">
+        <xs:annotation>
+          <xs:documentation>String containing an ID that uniquely identifies the given request</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="batch" type="cab:BatchIDStatus">
+        <xs:annotation>
+          <xs:documentation>structur containing the status of the batch</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ExternalIDList">
+    <xs:annotation>
+      <xs:documentation>list of external ID's (upto 128 can be specified)</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" name="externalID" type="cab:ExternalID">
+        <xs:annotation>
+          <xs:documentation>a unique ID defined by the merchant</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="GetBatchStatusDetails">
+    <xs:annotation>
+      <xs:documentation>structure for GetBatchStatus details</xs:documentation>
+    </xs:annotation>
+    <xs:all>
+      <xs:element minOccurs="0" name="batchID" type="xs:long">
+        <xs:annotation>
+          <xs:documentation>batch ID</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="externalBatchID" type="cab:ExternalID">
+        <xs:annotation>
+          <xs:documentation>external batch ID</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="batchItemIDList" type="cab:BatchItemIDList">
+        <xs:annotation>
+          <xs:documentation>list of batch item Ids</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+  </xs:complexType>
+  <xs:complexType name="GetBatchStatus_Request">
+    <xs:annotation>
+      <xs:documentation>Get Batch Status_ Request root element</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="authentication" type="cab:Authentication">
+        <xs:annotation>
+          <xs:documentation>structure containing API call authentication</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="details" type="cab:GetBatchStatusDetails">
+        <xs:annotation>
+          <xs:documentation>structure for GetBatchStatus details</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="GetBatchStatus_Response">
+    <xs:annotation>
+      <xs:documentation>Get Batch Status_ Response root element</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="requestTrackingID" type="cab:RequestTrackingID">
+        <xs:annotation>
+          <xs:documentation>String containing an ID that uniquely identifies the given request</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="batch" type="cab:BatchIDStatus">
+        <xs:annotation>
+          <xs:documentation>structur containing the status of the batch</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="batchItemList" type="cab:BatchItemIDStatusList">
+        <xs:annotation>
+          <xs:documentation>structure containing upto 128 batch item status</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="NumberLimit">
+    <xs:annotation>
+      <xs:documentation>the maximum number of payments that can be done with the given recurring payment authorization</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:int">
+      <xs:minInclusive value="0"/>
+      <xs:maxInclusive value="2147483647"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="OrderDetailItem">
+    <xs:annotation>
+      <xs:documentation>details of a single order item</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="itemType" type="cab:OrderDetailItemType">
+        <xs:annotation>
+          <xs:documentation>Defines a type for an order detail item, which affects its rendering on the Checkout page.
+          TEXT ... A simple line of text is rendered. Other fields are ignored.
+          ITEM ... Table row with text, quantity, unit-price and total price is rendered.
+          SUBTOTAL ... Table row with text and total price is rendered in subtotal format.
+          VAT ... Table row with text and total price is rendered in VAT format.
+          TOTAL ... Table row with text and total price is rendered in total format.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="description" type="cab:OrderDetailText">
+        <xs:annotation>
+          <xs:documentation>text describing an order</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="quantity" type="cab:Quantity">
+        <xs:annotation>
+          <xs:documentation>quantity of items</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="unitPrice" type="cab:Money">
+        <xs:annotation>
+          <xs:documentation>price of a unit</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="totalPrice" type="cab:Money">
+        <xs:annotation>
+          <xs:documentation>total price</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="OrderDetailItemList">
+    <xs:annotation>
+      <xs:documentation>list of order items (at most 128 items)</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="item" type="cab:OrderDetailItem">
+        <xs:annotation>
+          <xs:documentation>details of a single order item</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="OrderDetailItemType">
+    <xs:annotation>
+      <xs:documentation>Defines a type for an order detail item, which affects its rendering on the Checkout page.
+      TEXT ... A simple line of text is rendered. Other fields are ignored.
+      ITEM ... Table row with text, quantity, unit-price and total price is rendered.
+      SUBTOTAL ... Table row with text and total price is rendered in subtotal format.
+      VAT ... Table row with text and total price is rendered in VAT format.
+      TOTAL ... Table row with text and total price is rendered in total format.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="TEXT"/>
+      <xs:enumeration value="ITEM"/>
+      <xs:enumeration value="SUBTOTAL"/>
+      <xs:enumeration value="VAT"/>
+      <xs:enumeration value="TOTAL"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="OrderDetailText">
+    <xs:annotation>
+      <xs:documentation>text describing an order</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="255"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="OrderDetails">
+    <xs:annotation>
+      <xs:documentation>structure defining the order detail, as text and/or an item-list</xs:documentation>
+    </xs:annotation>
+    <xs:all>
+      <xs:element minOccurs="0" name="text" type="cab:OrderDetailText">
+        <xs:annotation>
+          <xs:documentation>text description of the order</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="itemList" type="cab:OrderDetailItemList">
+        <xs:annotation>
+          <xs:documentation>list of order items (at most 128 items)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+  </xs:complexType>
+  <xs:complexType name="PayRequestDetails">
+    <xs:annotation>
+      <xs:documentation>structure for PayRequest details</xs:documentation>
+    </xs:annotation>
+    <xs:all>
+      <xs:element name="amount" type="cab:Money">
+        <xs:annotation>
+          <xs:documentation>amount of the payment request</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="orderDetails" type="cab:OrderDetails">
+        <xs:annotation>
+          <xs:documentation>details of the payment</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="billing" type="cab:LegalEntity">
+        <xs:annotation>
+          <xs:documentation>the legal entity to bill</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="shipping" type="cab:LegalEntity">
+        <xs:annotation>
+          <xs:documentation>the legal entity to ship to</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="basketRisk" type="cab:RiskScore">
+        <xs:annotation>
+          <xs:documentation>score describing the basket's risk</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="clientRisk" type="cab:RiskScore">
+        <xs:annotation>
+          <xs:documentation>score describing the client's risk</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="authExpiration" type="cab:ExpirationTime">
+        <xs:annotation>
+          <xs:documentation>expiration time for the authorization of the payment</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="confirmExpiration" type="cab:ExpirationTime">
+        <xs:annotation>
+          <xs:documentation>expiration time for the confirmation of the payment</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="successExpiration" type="cab:ExpirationTime">
+        <xs:annotation>
+          <xs:documentation>expiration time for the successful completion of the payment</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="successURL" type="cab:URL">
+        <xs:annotation>
+          <xs:documentation>URL to display if the payment was successful</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="failureURL" type="cab:URL">
+        <xs:annotation>
+          <xs:documentation>URL to display if the payment failed</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="createRecurring" type="cab:RecurringPaymentAuthorization">
+        <xs:annotation>
+          <xs:documentation>structure describing a recurring payment authorization</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="externalID" type="cab:ExternalID">
+        <xs:annotation>
+          <xs:documentation>a unique ID defined by the merchant</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="consumerIPAddress" type="cab:IPAddress">
+        <xs:annotation>
+          <xs:documentation>IP address of the consumer</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="consumerLanguage" type="cab:Language">
+        <xs:annotation>
+          <xs:documentation>ISO 639-2 language code</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="consumerCountry" type="cab:Country">
+        <xs:annotation>
+          <xs:documentation>ISO 3166-1 alpha-2 code of country</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+  </xs:complexType>
+  <xs:complexType name="PayRequestRecurringDetails">
+    <xs:annotation>
+      <xs:documentation>structure for PayRequestRecurring details</xs:documentation>
+    </xs:annotation>
+    <xs:all>
+      <xs:element name="amount" type="cab:Money">
+        <xs:annotation>
+          <xs:documentation>amount of the payment request</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="recurringPaymentAuthorizationID" type="xs:long">
+        <xs:annotation>
+          <xs:documentation>recurring payment authorization ID</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="orderDetails" type="cab:OrderDetails">
+        <xs:annotation>
+          <xs:documentation>details of the payment</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="billing" type="cab:LegalEntity">
+        <xs:annotation>
+          <xs:documentation>the legal entity to bill</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="shipping" type="cab:LegalEntity">
+        <xs:annotation>
+          <xs:documentation>the legal entity to ship to</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="basketRisk" type="cab:RiskScore">
+        <xs:annotation>
+          <xs:documentation>score describing the basket's risk</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="clientRisk" type="cab:RiskScore">
+        <xs:annotation>
+          <xs:documentation>score describing the client's risk</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="successExpiration" type="cab:ExpirationTime">
+        <xs:annotation>
+          <xs:documentation>expiration time for the successful completion of the payment</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="externalID" type="cab:ExternalID">
+        <xs:annotation>
+          <xs:documentation>a unique ID defined by the merchant</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+  </xs:complexType>
+  <xs:complexType name="PayRequestRecurring_Request">
+    <xs:annotation>
+      <xs:documentation>Pay Request Recurring_ Request root element</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="authentication" type="cab:Authentication">
+        <xs:annotation>
+          <xs:documentation>structure containing API call authentication</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="details" type="cab:PayRequestRecurringDetails">
+        <xs:annotation>
+          <xs:documentation>structure for PayRequestRecurring details</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="PayRequestRecurring_Response">
+    <xs:annotation>
+      <xs:documentation>Pay Request Recurring_ Response root element</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="requestTrackingID" type="cab:RequestTrackingID">
+        <xs:annotation>
+          <xs:documentation>String containing an ID that uniquely identifies the given request</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="transaction" type="cab:TransactionIDStatus">
+        <xs:annotation>
+          <xs:documentation>status of the transaction</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="PayRequest_Request">
+    <xs:annotation>
+      <xs:documentation>Pay Request_ Request root element</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="authentication" type="cab:Authentication">
+        <xs:annotation>
+          <xs:documentation>structure containing API call authentication</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="details" type="cab:PayRequestDetails">
+        <xs:annotation>
+          <xs:documentation>structure for PayRequest details</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="PayRequest_Response">
+    <xs:annotation>
+      <xs:documentation>Pay Request_ Response root element</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="requestTrackingID" type="cab:RequestTrackingID">
+        <xs:annotation>
+          <xs:documentation>String containing an ID that uniquely identifies the given request</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="transaction" type="cab:TransactionIDStatus">
+        <xs:annotation>
+          <xs:documentation>status of the transaction</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="RecurringPaymentAuthorization">
+    <xs:annotation>
+      <xs:documentation>structure describing a recurring payment authorization</xs:documentation>
+    </xs:annotation>
+    <xs:all>
+      <xs:element name="description" type="cab:Text">
+        <xs:annotation>
+          <xs:documentation>text describing the recurring payment authorization</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="numberLimit" type="cab:NumberLimit">
+        <xs:annotation>
+          <xs:documentation>the maximum number of payments that can be done with the given recurring payment authorization</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="amountLimit" type="cab:Money">
+        <xs:annotation>
+          <xs:documentation>the maximum amount for a recurring payment authorization</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="expireDate" type="cab:ExpiryDate">
+        <xs:annotation>
+          <xs:documentation>expiry date for the recurring payment authorization</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="revokableByConsumer" type="cab:Flag">
+        <xs:annotation>
+          <xs:documentation>flag that indicates if the customer can revoke the recurring payment authorization</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+  </xs:complexType>
+  <xs:complexType name="RecurringPaymentAuthorizationIDStatus">
+    <xs:annotation>
+      <xs:documentation/>
+    </xs:annotation>
+    <xs:all>
+      <xs:element name="recurringPaymentAuthorizationID" type="xs:long">
+        <xs:annotation>
+          <xs:documentation>recurring payment authorization ID</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="recurringPaymentAuthorizationStatus" type="cab:RecurringPaymentAuthorizationStatus">
+        <xs:annotation>
+          <xs:documentation>status ofthe recurring payment authorization</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+  </xs:complexType>
+  <xs:complexType name="RefundRequestDetails">
+    <xs:annotation>
+      <xs:documentation>structure for RefundRequest details</xs:documentation>
+    </xs:annotation>
+    <xs:all>
+      <xs:element name="amount" type="cab:Money">
+        <xs:annotation>
+          <xs:documentation>amount of the payment request</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="transactionID" type="xs:long">
+        <xs:annotation>
+          <xs:documentation>unique transaction ID</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="orderDetails" type="cab:OrderDetails">
+        <xs:annotation>
+          <xs:documentation>details of the payment</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="externalID" type="cab:ExternalID">
+        <xs:annotation>
+          <xs:documentation>a unique ID defined by the merchant</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+  </xs:complexType>
+  <xs:complexType name="RefundRequest_Request">
+    <xs:annotation>
+      <xs:documentation>Refund Request_ Request root element</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="authentication" type="cab:Authentication">
+        <xs:annotation>
+          <xs:documentation>structure containing API call authentication</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="details" type="cab:RefundRequestDetails">
+        <xs:annotation>
+          <xs:documentation>structure for RefundRequest details</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="RefundRequest_Response">
+    <xs:annotation>
+      <xs:documentation>Refund Request_ Response root element</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="requestTrackingID" type="cab:RequestTrackingID">
+        <xs:annotation>
+          <xs:documentation>String containing an ID that uniquely identifies the given request</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="transaction" type="cab:TransactionIDStatus">
+        <xs:annotation>
+          <xs:documentation>status of the transaction</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="RequestTrackingID">
+    <xs:annotation>
+      <xs:documentation>string containing an ID that uniquely identifies the given request</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
+      <xs:maxLength value="255"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="StatusRequestDetails">
+    <xs:annotation>
+      <xs:documentation>structure for StatusRequest details</xs:documentation>
+    </xs:annotation>
+    <xs:choice>
+      <xs:element minOccurs="0" name="transactionIDList" type="cab:TransactionIDList">
+        <xs:annotation>
+          <xs:documentation>list of transaction ID's (upto 128 can be specified)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="externalIDList" type="cab:ExternalIDList">
+        <xs:annotation>
+          <xs:documentation>list of external ID's (upto 128 can be specified)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:choice>
+  </xs:complexType>
+  <xs:complexType name="StatusRequest_Request">
+    <xs:annotation>
+      <xs:documentation>Status Request_ Request root element</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="authentication" type="cab:Authentication">
+        <xs:annotation>
+          <xs:documentation>structure containing API call authentication</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="details" type="cab:StatusRequestDetails">
+        <xs:annotation>
+          <xs:documentation>structure for StatusRequest details</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="StatusRequest_Response">
+    <xs:annotation>
+      <xs:documentation>Status Request_ Response root element</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="requestTrackingID" type="cab:RequestTrackingID">
+        <xs:annotation>
+          <xs:documentation>String containing an ID that uniquely identifies the given request</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="transactionList" type="cab:TransactionStatusList">
+        <xs:annotation>
+          <xs:documentation>list of transaction ID/status pairs</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="TransactionIDList">
+    <xs:annotation>
+      <xs:documentation>list of transaction ID's (upto 128 can be specified)</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" name="transactionID" type="xs:long">
+        <xs:annotation>
+          <xs:documentation>unique transaction ID</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="TransactionIDStatus">
+    <xs:annotation>
+      <xs:documentation>structure containing the status for a given transaction ID or external ID,  or a structure containing error-information about the given transaction ID.</xs:documentation>
+    </xs:annotation>
+    <xs:all>
+      <xs:element minOccurs="0" name="transactionID" type="xs:long">
+        <xs:annotation>
+          <xs:documentation>unique transaction ID</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="externalID" type="cab:ExternalID">
+        <xs:annotation>
+          <xs:documentation>a unique ID defined by the merchant</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="transactionStatus" type="cab:TransactionStatus">
+        <xs:annotation>
+          <xs:documentation>text describing the status of a transaction
+          CREATED ... Indicates the transaction has been created successfully, but is awaiting further action, such as consumer confirmation, expiration, or cancellation. Used for PayTransaction, CreditTransaction, RefundTransaction.
+          PENDING_VERIFICATION ... Indicates that the PayTransaction has been viewed at least once by the consumer, but the consumer has not yet logged in or registered successfully.  Used for PayTransaction.
+          EXPIRED ... Indicates that the transaction was idle too long, and has expired automatically. Used for PayTransaction, CreditTransaction, RefundTransaction.
+          ABORTED ... Indicates that the consumer has aborted the transaction. Used for PayTransaction, CreditTransaction.
+          DECLINED ... Indicates that the ClickandBuy system has declined the transaction. Used for PayTransaction, CreditTransaction, RefundTransaction.
+          CANCELLED ... Indicates that the merchant has cancelled the transaction. Used for PayTransaction, CreditTransaction, RefundTransaction.
+          IN_PROGRESS ... Indicates that the transaction is in progress of being completed, e.g. a PayTransaction is awaiting consumer money to be paid with. Used for PayTransaction, CreditTransaction, RefundTransaction.
+          SUCCESS ... Indicates that the transaction has completed successfully. Used for PayTransaction, CreditTransaction, RefundTransaction.
+          PAYMENT_PENDING ... Indicates that the PayTransaction was charged back, and is now awaiting new consumer money, or a bookout process. Used for PayTransaction.
+          BOOKED_OUT ... Indicates the consumer has been booked-out, and hence also the given PayTransaction.
+          BOOKED_IN ... Indicates the consumer has been booked-in, and hence also the given PayTransaction. Used for PayTransaction.
+          PAYMENT_GUARANTEE ... Indicates that ClickandBuy guarantees the PayTransaction , which from this moment cannot be charged back, or booked out anymore. Used for PayTransaction.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="transactionType" type="cab:TransactionType">
+        <xs:annotation>
+          <xs:documentation>the type of the transaction
+          PAY ... payment transaction
+          CREDIT ... credit transaction
+          REFUND ... refund transaction</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="errorDetails" type="cab:ErrorDetails">
+        <xs:annotation>
+          <xs:documentation>structure with error details</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="redirectURL" type="cab:URL">
+        <xs:annotation>
+          <xs:documentation>optional redirect URL</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="createdRecurringPaymentAuthorization" type="cab:RecurringPaymentAuthorizationIDStatus">
+        <xs:annotation>
+          <xs:documentation/>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+  </xs:complexType>
+  <xs:simpleType name="TransactionStatus">
+    <xs:annotation>
+      <xs:documentation>text describing the status of a transaction
+      CREATED ... Indicates the transaction has been created successfully, but is awaiting further action, such as consumer confirmation, expiration, or cancellation. Used for PayTransaction, CreditTransaction, RefundTransaction.
+      PENDING_VERIFICATION ... Indicates that the PayTransaction has been viewed at least once by the consumer, but the consumer has not yet logged in or registered successfully.  Used for PayTransaction.
+      EXPIRED ... Indicates that the transaction was idle too long, and has expired automatically. Used for PayTransaction, CreditTransaction, RefundTransaction.
+      ABORTED ... Indicates that the consumer has aborted the transaction. Used for PayTransaction, CreditTransaction.
+      DECLINED ... Indicates that the ClickandBuy system has declined the transaction. Used for PayTransaction, CreditTransaction, RefundTransaction.
+      CANCELLED ... Indicates that the merchant has cancelled the transaction. Used for PayTransaction, CreditTransaction, RefundTransaction.
+      IN_PROGRESS ... Indicates that the transaction is in progress of being completed, e.g. a PayTransaction is awaiting consumer money to be paid with. Used for PayTransaction, CreditTransaction, RefundTransaction.
+      SUCCESS ... Indicates that the transaction has completed successfully. Used for PayTransaction, CreditTransaction, RefundTransaction.
+      PAYMENT_PENDING ... Indicates that the PayTransaction was charged back, and is now awaiting new consumer money, or a bookout process. Used for PayTransaction.
+      BOOKED_OUT ... Indicates the consumer has been booked-out, and hence also the given PayTransaction.
+      BOOKED_IN ... Indicates the consumer has been booked-in, and hence also the given PayTransaction. Used for PayTransaction.
+      PAYMENT_GUARANTEE ... Indicates that ClickandBuy guarantees the PayTransaction , which from this moment cannot be charged back, or booked out anymore. Used for PayTransaction.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="CREATED"/>
+      <xs:enumeration value="PENDING_VERIFICATION"/>
+      <xs:enumeration value="EXPIRED"/>
+      <xs:enumeration value="ABORTED"/>
+      <xs:enumeration value="DECLINED"/>
+      <xs:enumeration value="CANCELLED"/>
+      <xs:enumeration value="IN_PROGRESS"/>
+      <xs:enumeration value="SUCCESS"/>
+      <xs:enumeration value="PAYMENT_PENDING"/>
+      <xs:enumeration value="BOOKED_OUT"/>
+      <xs:enumeration value="BOOKED_IN"/>
+      <xs:enumeration value="PAYMENT_GUARANTEE"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="TransactionStatusList">
+    <xs:annotation>
+      <xs:documentation>list of transaction ID/status pairs</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="transaction" type="cab:TransactionIDStatus">
+        <xs:annotation>
+          <xs:documentation>structure containing the status for a given transaction ID or external ID,  or a structure containing error-information about the given transaction ID.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="TransactionType">
+    <xs:annotation>
+      <xs:documentation>the type of the transaction
+      PAY ... payment transaction
+      CREDIT ... credit transaction
+      REFUND ... refund transaction</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="PAY"/>
+      <xs:enumeration value="CREDIT"/>
+      <xs:enumeration value="REFUND"/>
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>

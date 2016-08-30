@@ -21,14 +21,24 @@ class FirstDataGatewayTest extends TestCase
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $this->gateway = 'first_data';
+
+        $this->payment = $this->getDefaultPaymentArray();
     }
 
     public function testPayment()
     {
-        $payment = $this->getDefaultPaymentArray();
-        $payment = $this->doAuthPayment($payment);
+        $this->markTestSkippedForWercker();
+
+        $authResponse = $this->doAuthPayment($this->payment);
 
         $payment = $this->getLastEntity('payment', true);
-        $this->assertNotNull($payment);
+        $this->assertEquals($payment['transaction_id'], null);
+
+        $txn = $this->getEntities('transaction', [], true);
+        $this->assertEquals(0, $txn['count']);
+
+        $this->capturePayment($authResponse['razorpay_payment_id'], $payment['amount']);
+
+        $payment = $this->getLastEntity('payment', true);
     }
 }

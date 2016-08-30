@@ -81,7 +81,7 @@ class Validator extends Base\Validator
     protected function validateLanguage($input)
     {
         if ((isset($input['language']) === true) and
-            ($input['language'] !== FirstData\Codes::ENGLISH_UK_LANG_CODE))
+            ($input['language'] !== FirstData\Codes::ENGLISH_UK_LANG_CODE_CONNECT))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Unsupported language');
