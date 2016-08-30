@@ -96,107 +96,107 @@ class Entity extends Base\PublicEntity
 
     public function getPaymentId()
     {
-        return $this->getAttributes(self::PAYMENT_ID);
+        return $this->getAttribute(self::PAYMENT_ID);
     }
 
     public function getCheckoutId()
     {
-        return $this->attributes[self::CHECKOUT_ID];
+        return $this->getAttribute(self::CHECKOUT_ID);
     }
 
     public function getTerminalId()
     {
-        return $this->getAttributes(self::TERMINAL_ID);
+        return $this->getAttribute(self::TERMINAL_ID);
     }
 
     public function getTerminalStatus()
     {
-        return $this->getAttributes(self::TERMINAL_STATUS);
+        return $this->getAttribute(self::TERMINAL_STATUS);
     }
 
     public function getTerminalResponseTime()
     {
-        return $this->getAttributes(self::TERMINAL_RESPONSE_TIME);
+        return $this->getAttribute(self::TERMINAL_RESPONSE_TIME);
     }
 
     public function getAttempts()
     {
-        return $this->attributes[self::ATTEMPTS];
+        return $this->getAttribute(self::ATTEMPTS);
     }
 
     public function getTerminalStatusCode()
     {
-        return $this->getAttributes(self::TERMINAL_STATUS_CODE);
+        return $this->getAttribute(self::TERMINAL_STATUS_CODE);
     }
 
     public function getTerminalStatusMsg()
     {
-        return $this->getAttributes(self::TERMINAL_STATUS_MSG);
+        return $this->getAttribute(self::TERMINAL_STATUS_MSG);
     }
 
     public function getPaymentType()
     {
-        return $this->getAttributes(self::PAYMENT_TYPE);
+        return $this->getAttribute(self::PAYMENT_TYPE);
     }
 
     public function getLibrary()
     {
-        return $this->attributes[self::LIBRARY];
+        return $this->getAttribute(self::LIBRARY);
     }
 
     public function getLibraryVersion()
     {
-        return $this->attributes[self::LIBRARY_VERSION];
+        return $this->getAttribute(self::LIBRARY_VERSION);
     }
 
     public function getBrowser()
     {
-        return $this->attributes[self::BROWSER];
+        return $this->getAttribute(self::BROWSER);
     }
 
     public function getOs()
     {
-        return $this->attributes[self::OS];
+        return $this->getAttribute(self::OS);
     }
 
     public function getOsVersion()
     {
-        return $this->attributes[self::OS_VERSION];
+        return $this->getAttribute(self::OS_VERSION);
     }
 
     public function getDevice()
     {
-        return $this->attributes[self::DEVICE];
+        return $this->getAttribute(self::DEVICE);
     }
 
     public function getPlatform()
     {
-        return $this->attributes[self::PLATFORM];
+        return $this->getAttribute(self::PLATFORM);
     }
 
     public function getPlatformVersion()
     {
-        return $this->attributes[self::PLATFORM_VERSION];
+        return $this->getAttribute(self::PLATFORM_VERSION);
     }
 
     public function getIp()
     {
-        return $this->attributes[self::IP];
+        return $this->getAttribute(self::IP);
     }
 
     public function getReferer()
     {
-        return $this->attributes[self::REFERER];
+        return $this->getAttribute(self::REFERER);
     }
 
     public function getIntegration()
     {
-        return $this->attributes[self::INTEGRATION];
+        return $this->getAttribute(self::INTEGRATION);
     }
 
     public function getIntegrationVersion()
     {
-        return $this->attributes[self::INTEGRATION_VERSION];
+        return $this->getAttribute(self::INTEGRATION_VERSION);
     }
 
     public function setAttempts($attempts)

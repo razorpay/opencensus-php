@@ -22,8 +22,9 @@ class Service extends Base\Service
 
     public function createAuditLog($input)
     {
+        s($input);
         $action = (new Analytics\Core)->create($input);
-
+        sd($action->toArrayPublic());
         return $action->toArrayPublic();
     }
 
@@ -79,57 +80,47 @@ class Service extends Base\Service
             TraceCode::PAYMENT_METADATA,
             ['metadata' => $metadata, 'payment_id' => $rawData['payment_id']]);
 
+        $entities = [
+            Entity::CHECKOUT_ID,
+            Entity::LIBRARY,
+            Entity::LIBRARY_VERSION,
+            Entity::PLATFORM,
+            Entity::PLATFORM_VERSION,
+            Entity::INTEGRATION,
+            Entity::INTEGRATION_VERSION,
+        ];
+
+        // set analytics data
+        foreach ($entities as $entity) {
+            $log[$entity] = isset($metadata[$entity]) ? $metadata[$entity] : null;
+        }
+
         if (isset($metadata[Entity::CHECKOUT_ID]))
         {
-            $log[Entity::CHECKOUT_ID] = $metadata[Entity::CHECKOUT_ID];
-
             $log[Entity::ATTEMPTS] = $this->calculatePaymentAttempts($metadata[Entity::CHECKOUT_ID]);
         }
 
-        $log[Entity::LIBRARY] = isset($metadata[Entity::LIBRARY]) ? $metadata[Entity::LIBRARY] : null;
-
-        $log[Entity::LIBRARY_VERSION] = isset($metadata[Entity::LIBRARY_VERSION]) ? $metadata[Entity::LIBRARY_VERSION] : null;
-
-        $log[Entity::PLATFORM] = isset($metadata[Entity::PLATFORM]) ? $metadata[Entity::PLATFORM] : null;
-
-        $log[Entity::PLATFORM_VERSION] = isset($metadata[Entity::PLATFORM_VERSION]) ? $metadata[Entity::PLATFORM_VERSION] : null;
-
-        $log[Entity::INTEGRATION] = isset($metadata[Entity::INTEGRATION]) ? $metadata[Entity::INTEGRATION] : null;
-
-        $log[Entity::INTEGRATION_VERSION] = isset($metadata[Entity::INTEGRATION_VERSION]) ? $metadata[Entity::INTEGRATION_VERSION] : null;
-
         $anomalies = [];
 
+        $entities = [
+            Entity::BROWSER,
+            Entity::OS,
+            Entity::OS_VERSION,
+            Entity::DEVICE,
+        ];
+
         // Give preference to value passed from frontend over that parsed from user-agent
-        if (isset($metadata[Entity::BROWSER]) and isset($log[Entity::BROWSER]))
-        {
-            // log if  frontend value is different from user-agent value
-            $this->collectMismatch($log[Entity::BROWSER], $metadata[Entity::BROWSER], Entity::BROWSER, $anomalies);
+        foreach ($entities as $entity) {
+            if (isset($metadata[$entity]) and isset($log[$entity]))
+            {
+                // collect anomalies
+                $this->collectMismatch($log[$entity], $metadata[$entity], $entity, $anomalies);
 
-            $log[Entity::BROWSER] = $metadata[Entity::BROWSER];
+                $log[$entity] = $metadata[$entity];
+            }
         }
 
-        if (isset($metadata[Entity::OS]) and isset($log[Entity::OS]))
-        {
-            $this->collectMismatch($log[Entity::OS], $metadata[Entity::OS], Entity::OS, $anomalies);
-
-            $log[Entity::OS] = $metadata[Entity::OS];
-        }
-
-        if (isset($metadata[Entity::OS_VERSION]) and isset($log[Entity::OS_VERSION]))
-        {
-            $this->collectMismatch($log[Entity::OS_VERSION], $metadata[Entity::OS_VERSION], Entity::OS_VERSION, $anomalies);
-
-            $log[Entity::OS_VERSION] = $metadata[Entity::OS_VERSION];
-        }
-
-        if (isset($metadata[Entity::DEVICE]) and isset($log[Entity::DEVICE]))
-        {
-            $this->collectMismatch($log[Entity::DEVICE], $metadata[Entity::DEVICE], Entity::DEVICE, $anomalies);
-
-            $log[Entity::DEVICE] = $metadata[Entity::DEVICE];
-        }
-
+        // log anomalies
         if (empty($anomalies) === false)
         {
             $this->trace->info(TraceCode::PAYMENT_USER_AGENT_ANOMALY, $anomalies);
