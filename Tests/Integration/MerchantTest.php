@@ -15,6 +15,8 @@ use Facebook\WebDriver\JavascriptExecutor;
 
 class MerchantTest extends TestCase
 {
+    const TEAM_USER_EMAIL = 'testTeamUser@razorpay.com';
+
     protected static $migrated = false;
 
     protected static $setUp = false;
@@ -22,8 +24,6 @@ class MerchantTest extends TestCase
     protected static $user = null;
 
     protected static $merchant = null;
-
-    protected static $teamUser = null;
 
     public function setUp()
     {
@@ -134,9 +134,9 @@ class MerchantTest extends TestCase
 
     public function testAddTeamMember()
     {
-        self::$teamUser = $this->buildEntity('user', array(
+        $teamUser = $this->buildEntity('user', array(
             'id'    => Uuid::generate(),
-            'email' => static::generateMerchantEmail(),
+            'email' => self::TEAM_USER_EMAIL,
             'name'  => 'kdfksdfd'
         ));
         $this->clickByName('submit');
@@ -145,10 +145,10 @@ class MerchantTest extends TestCase
         $this->waitUntilDisplayedByClassName('invites-table');
         $this->waitUntilContainsByCss('body', 'Invite users to your Organization Team');
 
-        $this->setValueById('description', self::$teamUser->email);
+        $this->setValueById('description', $teamUser->email);
         $this->selectByNameAndLabel('role', 'Finance');
         $this->clickByXPath('button','text','Send Invitation');
-        $this->waitUntilContainsByCss('body', 'Invitation has been successfully sent to '.self::$teamUser->email);
+        $this->waitUntilContainsByCss('body', 'Invitation has been successfully sent to '.$teamUser->email);
     }
 
     public function testAcceptInvitation()
@@ -159,13 +159,7 @@ class MerchantTest extends TestCase
         $this->setValueByName('name', $name);
         $this->setValueByName('password', '12345xx');
         $this->setValueByName('password_confirmation', '12345xx');
-        $this->waitUntil(function() {
-            $this->execute(array(
-                'script' => '$(\'input[name="agree"]\').click()',
-                'args' => array()
-            ));
-            return true;
-        }, 20000);
+        $this->execScript('$(".agree").click()');
         $this->clickByXPath('button','text','Sign up');
         $this->waitUntilContainsByCss('body', 'Welcome to Razorpay');
     }
@@ -174,7 +168,7 @@ class MerchantTest extends TestCase
     {
         $this->url('#/access/signin');
         $this->waitUntilDisplayedByXPath('form','name','signin');
-        $this->setValueByName('email', self::$teamUser->email);
+        $this->setValueByName('email', self::TEAM_USER_EMAIL);
         $this->setValueByName('password', '12345xx');
         $this->clickByName('submit');
         $this->waitUntilDisplayedByClassName('navbar');

@@ -2,7 +2,6 @@
 
 use Auth;
 use Closure;
-use Auth;
 use Gate;
 use Illuminate\Contracts\Auth\Guard;
 use Razorpay\Api\Request as ApiRequest;
@@ -65,7 +64,7 @@ class Authenticate {
 		        }
 		        else
 		        {
-		            return response()->json(array('success' => false, 'errors' => ['Unauthorised']));
+		            return response('Unauthorized.', 401);
 		        }
 			}
 		}

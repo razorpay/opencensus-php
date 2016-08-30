@@ -29,9 +29,10 @@ class AuthServiceProvider extends ServiceProvider
 
         $userRoles = Config::get('user-roles');
 
-        foreach ($userRoles as $route => $roles) {
+        foreach ($userRoles as $route => $roles)
+        {
             $gate->define($route, function($user) {
-                return (in_array($user->getUserRoleWithCurrentMerchant(), $roles));
+                return (in_array($user->getUserRoleWithCurrentMerchant(), $roles, true));
             });
         }
     }

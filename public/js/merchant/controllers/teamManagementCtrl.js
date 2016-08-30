@@ -9,7 +9,7 @@ app.controller('TeamManagementCtrl', [
   function ($scope, $http, alertsFactory, user, uiLoad, transformRequestAsFormPost) {
     $scope.alerts = alertsFactory.getHandler();
 
-    $scope.roles = ['owner','manager','operations','finance'];
+    $scope.roles = ['owner', 'manager', 'operations', 'finance'];
 
     $scope.team = {};
 
