@@ -335,9 +335,9 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             [
-                'request' => $input['gateway'],
-                'gateway' => $this->gateway,
-                'payment_id' => $input['payment']['id'],
+                'request'       => $input['gateway'],
+                'gateway'       => $this->gateway,
+                'payment_id'    => $input['payment']['id'],
             ]);
 
         $this->verifySecureHash($input['gateway']);
@@ -345,7 +345,7 @@ class Gateway extends Base\Gateway
         //  Changing action to AUTHORIZE to keep the action consistent
         $this->action = Action::AUTHORIZE;
 
-        $gatewayPaymentAttrs = $this->getCreateWalletAttributes($input);
+        $gatewayPaymentAttrs = $this->getCreateWalletAttributes($input, $input['gateway']);
 
         $this->createGatewayPaymentEntity($gatewayPaymentAttrs);
 

@@ -129,15 +129,19 @@ class Server extends Base\Mock\Server
         $responseContent = array(
             ResponseFields::TYPE                    => 'debit',
             ResponseFields::STATUS                  => 'success',
+            ResponseFields::MERCHANT_BILL_ID        => $input[RequestFields::UNIQUE_ID],
             ResponseFields::TRANSACTION_ID          => 'olaUniqTxnId',
-            ResponseFields::MERCHANT_BILL_ID        => 'test_payment_id',
             ResponseFields::AMOUNT                  => $input[RequestFields::AMOUNT],
-            ResponseFields::TIMESTAMP               => 1472476804,
             ResponseFields::COMMENTS                => $input[RequestFields::COMMENTS],
-            ResponseFields::UDF                     => $udf,
+            ResponseFields::UDF                     => $input[RequestFields::UDF],
+            ResponseFields::IS_CASHBACK_ATTEMPTED   => 'NA',
+            ResponseFields::IS_CASHBACK_SUCCESSFUL  => 'NA',
+            ResponseFields::TIMESTAMP               => time(),
         );
 
-        $responseContent[ResponseFields::HASH] = '079e67f435c9278c6c658b5302e8b8be14030b8fe8d2078d23fee3a52274cb9bbc66d4ffc076193f1d817b5bbfbd4fc2abe0b33bac26eb22506a21785ea61990';
+        $responseContent[ResponseFields::HASH] = $this->generateHash($responseContent);
+
+        $this->content($responseContent);
 
         return $this->makeResponse($responseContent);
     }

@@ -143,6 +143,24 @@ return [
         ],
     ],
 
+    'testOtpResendPayment' => [
+        'request'   => [
+            'method'    => 'POST',
+            'content'   => [
+
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'type' => 'otp',
+                'request' => [
+                    'method' => 'post'
+                ],
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
     'testPaymentWalletEntity' => [
         'action'                => 'authorize',
         'amount'                => 50000,
