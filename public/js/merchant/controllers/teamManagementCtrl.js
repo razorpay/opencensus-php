@@ -9,14 +9,23 @@ app.controller('TeamManagementCtrl', [
   function ($scope, $http, alertsFactory, user, uiLoad, transformRequestAsFormPost) {
     $scope.alerts = alertsFactory.getHandler();
 
-    $scope.roles = ['owner','manager'];
+    $scope.roles = ['owner', 'manager', 'operations', 'finance'];
 
-    $scope.team = {
-      role: $scope.roles[1]
-    };
+    $scope.team = {};
+
+    $scope.roleOptions = [
+      { name: 'Manager', value: 'manager' },
+      { name: 'Operations', value: 'operations' },
+      { name: 'Finance', value: 'finance' }
+    ];
 
     user.identity(true).then(function(data) {
       $scope.merchant = data;
+      if (data.tags.indexOf('Roles') == -1) {
+        $scope.roleOptions = [
+          { name: 'Manager', value: 'manager' },
+        ];
+      }
     });
 
     $scope.getTeamMembers = function(){
@@ -32,11 +41,6 @@ app.controller('TeamManagementCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     }
-
-
-    user.identity(true).then(function(data) {
-      $scope.merchant = data;
-    });
 
     $scope.updateTeamMember = function (user){
       var request = $http({

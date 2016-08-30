@@ -208,8 +208,8 @@ class AdminTest extends TestCase
         $this->clickByClassName('modal-ok');
         $this->waitUntilDisplayedByClassName('confirm-modal');
         $this->clickByClassName('confirm-ok');
-        $this->waitUntilAbsentByClassName('pricing-modal', 30000);
-        $this->waitUntilAbsentByClassName('alert-danger');
+        $this->waitUntilAbsentByCss('.pricing-modal');
+        $this->waitUntilAbsentByCss('.alert-danger');
         $this->waitUntilContainsByCss('body', 'Plan Assigned successfully');
 
         // Assign Terminal
@@ -224,8 +224,8 @@ class AdminTest extends TestCase
         $this->clickByClassName('modal-ok');
         $this->waitUntilDisplayedByClassName('confirm-modal');
         $this->clickByClassName('confirm-ok');
-        $this->waitUntilAbsentByClassName('terminal-modal');
-        $this->waitUntilAbsentByClassName('alert-danger');
+        $this->waitUntilAbsentByCss('.terminal-modal');
+        $this->waitUntilAbsentByCss('.alert-danger');
         $this->waitUntilContainsByCss('body', 'Terminal Assigned successfully');
 
         // Edit Merchant Details
@@ -237,7 +237,7 @@ class AdminTest extends TestCase
         $this->setValueByName('transaction_report_email', 'test@razorpay.com, nemo@razorpay.com');
         $this->setValueByName('settlement_schedule', '5');
         $this->clickByClassName('modal-ok');
-        $this->waitUntilAbsentByClassName('alert-danger');
+        $this->waitUntilAbsentByCss('.alert-danger');
     }
 
     /**
@@ -355,7 +355,7 @@ class AdminTest extends TestCase
         $this->setValueByName('password', '1234567');
         $this->setValueByName('password_confirmation', '1234567');
         $this->clickByXPath('button','text','OK');
-        $this->waitUntilAbsentByClassName('new-admin-modal');
+        $this->waitUntilAbsentByCss('.new-admin-modal');
         $this->waitUntilContainsByCss('body', 'Admin created successfully');
 
         // Test Promote Admin
@@ -363,13 +363,13 @@ class AdminTest extends TestCase
         //$this->clickByClassName('btn-admin-promote');
         $this->waitUntilDisplayedByClassName('confirm-ok');
         $this->clickByClassName('confirm-ok');
-        $this->waitUntilAbsentByClassName('confirm-modal');
+        $this->waitUntilAbsentByCss('.confirm-modal');
         $this->waitUntilContainsByCss('body', 'Admin promoted successfully');
 
         $this->execScript('$("a[class=\"btn-admin-delete\"]").click()');
         $this->waitUntilDisplayedByClassName('confirm-ok');
         $this->clickByClassName('confirm-ok');
-        $this->waitUntilAbsentByClassName('confirm-modal');
+        $this->waitUntilAbsentByCss('.confirm-modal');
         $this->waitUntilContainsByCss('body', 'Admin deleted successfully');
     }
 
@@ -397,7 +397,7 @@ class AdminTest extends TestCase
         $this->setValueByName('password', '1234567');
         $this->setValueByName('password_confirmation', '1234567');
         $this->clickByClassName('modal-ok');
-        $this->waitUntilAbsentByClassName('change-pwd-modal');
+        $this->waitUntilAbsentByCss('.change-pwd-modal');
 
         $this->waitUntilContainsByCss('body', 'Password changed successfully');
     }

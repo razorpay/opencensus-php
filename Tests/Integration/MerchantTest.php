@@ -2,7 +2,9 @@
 namespace Tests\Integration;
 
 use App\Merchant;
+use App\Admin;
 use App\User;
+use App\Invitation;
 use Laracasts\TestDummy\Factory;
 use Models;
 use Selenium\Locator as l;
@@ -14,13 +16,29 @@ use Facebook\WebDriver\JavascriptExecutor;
 
 class MerchantTest extends TestCase
 {
-    protected $merchant;
+    const TEAM_USER_EMAIL = 'testTeamUser@razorpay.com';
 
     protected static $migrated = false;
+
+    protected static $setUp = false;
+
+    protected static $user = null;
+
+    protected static $merchant = null;
+
+    protected static $admin = null;
 
     public function setUp()
     {
         parent::setUp();
+
+        if (self::$setUp === true)
+        {
+            self::$merchant = Merchant\Entity::firstorfail();
+            self::$user = User\Entity::firstorfail();
+            self::$admin = Admin\Entity::firstorfail();
+            return;
+        }
 
         Factory::$factoriesPath = __DIR__.'/../factories/';
 
@@ -32,30 +50,34 @@ class MerchantTest extends TestCase
         }
 
         // Creates a new merchant if none exists in db otherwise uses that. This is necessary for persisting sessions between tests
+        $businessName = Util::random_alpha_string(10);
         try
         {
-            $this->merchant = Merchant\Entity::firstorfail();
-            $this->user = User\Entity::firstorfail();
+            self::$merchant = Merchant\Entity::firstorfail();
+            self::$user = User\Entity::firstorfail();
+            self::$admin = Admin\Entity::firstorfail();
         }
         catch(\Exception $e)
         {
-            $businessName = Util::random_alpha_string(10);
+            self::$merchant = $this->buildEntity('merchant', array(
+                'id'    => Uuid::generate(),
+                'email' => static::generateMerchantEmail(),
+                'name'  => $businessName
+            ));
+            self::$user = $this->buildEntity('user', array(
+                'id'    => Uuid::generate(),
+                'email' => static::generateMerchantEmail(),
+                'name'  => $businessName
+            ));
 
-            $this->merchant = $this->buildEntity('merchant', array(
-                'id'    => Uuid::generate(),
-                'email' => static::generateMerchantEmail(),
-                'name'  => $businessName
-            ));
-            $this->user = $this->buildEntity('user', array(
-                'id'    => Uuid::generate(),
-                'email' => static::generateMerchantEmail(),
-                'name'  => $businessName
-            ));
+            self::$admin = $this->createEntity('admin');
         }
 
         // Make sure that the merchant has webhook tagged
         // So the webhook button is visible
-        $this->merchant->tag('webhooks', 'team', 'orders');
+        self::$merchant->tag('webhooks', 'team', 'orders');
+
+        self::$setUp = true;
     }
 
     public function setUpPage()
@@ -64,7 +86,7 @@ class MerchantTest extends TestCase
 
         $this->url('#/access/signin');
         $this->waitUntilDisplayedByXPath('form','name','signin');
-        $this->setValueByName('email', $this->merchant->email);
+        $this->setValueByName('email', self::$merchant->email);
         $this->setValueByName('password', '123456xx');
     }
 
@@ -79,8 +101,8 @@ class MerchantTest extends TestCase
         $this->waitUntilDisplayedByXPath('form','name','signup');
         $this->execScript('$("input[name=\"agree\"]").click()');
         $this->setValueByName('business_name', $businessName);
-        $this->setValueByName('name', $this->merchant->name);
-        $this->setValueByName('email', $this->merchant->email);
+        $this->setValueByName('name', self::$merchant->name);
+        $this->setValueByName('email', self::$merchant->email);
         $this->setValueByName('contact_mobile', '9999999999');
         $this->setValueByName('password', '123456xx');
         $this->setValueByName('password_confirmation', '123456xx');
@@ -95,7 +117,7 @@ class MerchantTest extends TestCase
      */
     public function testUserConfirmation()
     {
-        $confirm_token = $this->user->confirm_token;
+        $confirm_token = self::$user->confirm_token;
         $this->url('#/access/confirm/'.$confirm_token);
         $this->waitUntilDisplayedByClassName('alert-success');
         $this->waitUntilContainsByCss('body', 'Confirmation successful');
@@ -106,11 +128,80 @@ class MerchantTest extends TestCase
      */
     public function testLogin()
     {
+        $this->url('#/access/signin');
+        $this->waitUntilDisplayedByXPath('form','name','signin');
+        $this->setValueByName('email', self::$merchant->email);
+        $this->setValueByName('password', '123456xx');
         $this->clickByName('submit');
         $this->waitUntilDisplayedByClassName('navbar');
         $this->waitUntilContainsByCss('body', 'Welcome to Razorpay');
         $this->waitUntilContainsByCss('body', 'Total Payments');
         $this->waitUntilContainsByCss('body', 'Successful Transactions');
+    }
+
+    public function testMerchantTaggingForRoles()
+    {
+        $this->url('admin#');
+        $this->setValueByName('username', self::$admin->username);
+        $this->setValueByName('password', '123456');
+        $this->submitByName('submit');
+        $this->clickByXPath('a','id','merchantsNav');
+        $this->execScript('$(".merchant_type").val("0").trigger("change")');
+        $this->execScript('$(".merchant_go").click()');
+        $this->assertTrue($this->displayedByClassName('merchants-table-body'));
+        $this->clickByXPath('a','text',self::$merchant->id);
+        $this->window($this->windowHandles()[1]);
+        $this->waitUntilDisplayedByClassName('merchant-wrapper');
+        $this->waitUntilContainsByCss('body', self::$merchant->id);
+        $this->waitUntilContainsByCss('body', 'Merchant Detail');
+        $this->keys(Keys::PAGEDOWN);
+        $this->clickByLinkText('Tag Merchant');
+        $this->setValueByName('merchant-tags', 'Roles');
+        $this->clickByClassName('modal-ok');
+        $this->waitUntilContainsByCss('body', 'Roles');
+    }
+
+    public function testAddTeamMember()
+    {
+        $teamUser = $this->buildEntity('user', array(
+            'id'    => Uuid::generate(),
+            'email' => self::TEAM_USER_EMAIL,
+            'name'  => 'kdfksdfd'
+        ));
+        $this->clickByName('submit');
+        $this->waitUntilDisplayedById('manageTeamNav');
+        $this->clickById('manageTeamNav');
+        $this->waitUntilDisplayedByClassName('invites-table');
+        $this->waitUntilContainsByCss('body', 'Invite users to your Organization Team');
+
+        $this->setValueById('description', $teamUser->email);
+        $this->selectByNameAndLabel('role', 'Finance');
+        $this->clickByXPath('button','text','Send Invitation');
+        $this->waitUntilContainsByCss('body', 'Invitation has been successfully sent to '.$teamUser->email);
+    }
+
+    public function testAcceptInvitation()
+    {
+        $invite = Invitation\Entity::firstorfail();
+        $this->url('#/access/signup?invitation='.$invite->token);
+        $name = Util::random_alpha_string(6);
+        $this->setValueByName('name', $name);
+        $this->setValueByName('password', '12345xx');
+        $this->setValueByName('password_confirmation', '12345xx');
+        $this->execScript('$(".agree").click()');
+        $this->clickByXPath('button','text','Sign up');
+        $this->waitUntilContainsByCss('body', 'Welcome to Razorpay');
+    }
+
+    public function testRestrictedAccessRole()
+    {
+        $this->url('#/access/signin');
+        $this->waitUntilDisplayedByXPath('form','name','signin');
+        $this->setValueByName('email', self::TEAM_USER_EMAIL);
+        $this->setValueByName('password', '12345xx');
+        $this->clickByName('submit');
+        $this->waitUntilDisplayedByClassName('navbar');
+        $this->waitUntilAbsentByCss('#manageTeamNav');
     }
 
     public function testWebhooks()
@@ -130,7 +221,7 @@ class MerchantTest extends TestCase
         // Check if display includes new webhook
         $this->setValueById('new_webhook_url', 'http://googleeee.com');
         $this->clickByClassName('modal-ok');
-        $this->waitUntilAbsentByClassName('new-webhook-modal');
+        $this->waitUntilAbsentByCss('.new-webhook-modal');
         $this->waitUntilContainsByCss('body', 'Webhook added');
         $this->waitUntilContainsByCss('body', 'http://googleeee.com');
     }
@@ -143,7 +234,7 @@ class MerchantTest extends TestCase
     {
         $this->url('#/access/signin');
         $this->waitUntilDisplayedByXPath('form', 'name', 'signin');
-        $this->setValueByName('email', $this->merchant->email);
+        $this->setValueByName('email', self::$merchant->email);
         $this->setValueByName('password', '123456xx');
         $this->clickByName('submit');
         $this->waitUntilDisplayedById('paymentsNav');
@@ -331,8 +422,8 @@ class MerchantTest extends TestCase
         $this->clickById('profileNav');
         $this->waitUntilDisplayedByClassName('profile-wrapper');
 
-        $this->waitUntilContainsByCss('body', ucfirst($this->merchant->name));
-        $this->waitUntilContainsByCss('body', $this->merchant->id);
+        $this->waitUntilContainsByCss('body', ucfirst(self::$merchant->name));
+        $this->waitUntilContainsByCss('body', self::$merchant->id);
 
         // Test Change Password
         $this->clickByClassName('btn-change-pwd');
@@ -341,13 +432,8 @@ class MerchantTest extends TestCase
         $this->setValueByName('password', '1234567xx');
         $this->setValueByName('password_confirmation', '1234567xx');
         $this->clickByClassName('modal-ok');
-        $this->waitUntilAbsentByClassName('change-pwd-modal');
+        $this->waitUntilAbsentByCss('.change-pwd-modal');
         $this->waitUntilContainsByCss('body', 'Password changed successfully.');
-    }
-
-    public function testInvitations()
-    {
-        //
     }
 
     /**
@@ -355,9 +441,7 @@ class MerchantTest extends TestCase
      */
     public function testLogout()
     {
-        $this->url('#/access/signin');
-        $this->waitUntilDisplayedByXPath('form','name','signin');
-        $this->setValueByName('email', $this->merchant->email);
+        $this->setValueByName('email', self::$merchant->email);
         $this->setValueByName('password', '1234567xx');
         $this->clickByName('submit');
         $this->waitUntilDisplayedByClassName('user-dropdown');
