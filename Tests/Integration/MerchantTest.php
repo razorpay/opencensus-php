@@ -2,6 +2,7 @@
 namespace Tests\Integration;
 
 use App\Merchant;
+use App\Admin;
 use App\User;
 use App\Invitation;
 use Laracasts\TestDummy\Factory;
@@ -25,6 +26,8 @@ class MerchantTest extends TestCase
 
     protected static $merchant = null;
 
+    protected static $admin = null;
+
     public function setUp()
     {
         parent::setUp();
@@ -33,6 +36,7 @@ class MerchantTest extends TestCase
         {
             self::$merchant = Merchant\Entity::firstorfail();
             self::$user = User\Entity::firstorfail();
+            self::$admin = Admin\Entity::firstorfail();
             return;
         }
 
@@ -51,6 +55,7 @@ class MerchantTest extends TestCase
         {
             self::$merchant = Merchant\Entity::firstorfail();
             self::$user = User\Entity::firstorfail();
+            self::$admin = Admin\Entity::firstorfail();
         }
         catch(\Exception $e)
         {
@@ -64,6 +69,8 @@ class MerchantTest extends TestCase
                 'email' => static::generateMerchantEmail(),
                 'name'  => $businessName
             ));
+
+            self::$admin = $this->createEntity('admin');
         }
 
         // Make sure that the merchant has webhook tagged
@@ -132,6 +139,28 @@ class MerchantTest extends TestCase
         $this->waitUntilContainsByCss('body', 'Successful Transactions');
     }
 
+    public function testMerchantTaggingForRoles()
+    {
+        $this->url('admin#');
+        $this->setValueByName('username', self::$admin->username);
+        $this->setValueByName('password', '123456');
+        $this->submitByName('submit');
+        $this->clickByXPath('a','id','merchantsNav');
+        $this->execScript('$(".merchant_type").val("0").trigger("change")');
+        $this->execScript('$(".merchant_go").click()');
+        $this->assertTrue($this->displayedByClassName('merchants-table-body'));
+        $this->clickByXPath('a','text',self::$merchant->id);
+        $this->window($this->windowHandles()[1]);
+        $this->waitUntilDisplayedByClassName('merchant-wrapper');
+        $this->waitUntilContainsByCss('body', self::$merchant->id);
+        $this->waitUntilContainsByCss('body', 'Merchant Detail');
+        $this->keys(Keys::PAGEDOWN);
+        $this->clickByLinkText('Tag Merchant');
+        $this->setValueByName('merchant-tags', 'Roles');
+        $this->clickByClassName('modal-ok');
+        $this->waitUntilContainsByCss('body', 'Roles');
+    }
+
     public function testAddTeamMember()
     {
         $teamUser = $this->buildEntity('user', array(
@@ -146,7 +175,7 @@ class MerchantTest extends TestCase
         $this->waitUntilContainsByCss('body', 'Invite users to your Organization Team');
 
         $this->setValueById('description', $teamUser->email);
-        $this->selectByNameAndLabel('role', 'Manager');
+        $this->selectByNameAndLabel('role', 'Finance');
         $this->clickByXPath('button','text','Send Invitation');
         $this->waitUntilContainsByCss('body', 'Invitation has been successfully sent to '.$teamUser->email);
     }
@@ -164,16 +193,16 @@ class MerchantTest extends TestCase
         $this->waitUntilContainsByCss('body', 'Welcome to Razorpay');
     }
 
-    // public function testRestrictedAccessRole()
-    // {
-    //     $this->url('#/access/signin');
-    //     $this->waitUntilDisplayedByXPath('form','name','signin');
-    //     $this->setValueByName('email', self::TEAM_USER_EMAIL);
-    //     $this->setValueByName('password', '12345xx');
-    //     $this->clickByName('submit');
-    //     $this->waitUntilDisplayedByClassName('navbar');
-    //     $this->waitUntilAbsentByCss('#manageTeamNav');
-    // }
+    public function testRestrictedAccessRole()
+    {
+        $this->url('#/access/signin');
+        $this->waitUntilDisplayedByXPath('form','name','signin');
+        $this->setValueByName('email', self::TEAM_USER_EMAIL);
+        $this->setValueByName('password', '12345xx');
+        $this->clickByName('submit');
+        $this->waitUntilDisplayedByClassName('navbar');
+        $this->waitUntilAbsentByCss('#manageTeamNav');
+    }
 
     public function testWebhooks()
     {
