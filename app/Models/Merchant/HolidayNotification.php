@@ -61,7 +61,6 @@ class HolidayNotification
     {
         list($msg, $holidays) = $this->getHolidayNotificationMsg($input);
 
-        $today = Carbon::today('Asia/Kolkata');
         $tomorrow = Carbon::tomorrow('Asia/Kolkata');
 
         if (empty($errors))
@@ -69,7 +68,8 @@ class HolidayNotification
             $mailer = new Newsletter(
                 $input['lists'],
                 'Notification of Bank Holiday',
-                $msg);
+                $msg,
+                'holiday_notification');
 
             // Handle based on action
             switch ($input['action'])
