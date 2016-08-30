@@ -22,6 +22,7 @@ class Gateway
     const HDFC              = 'hdfc';
     const KOTAK             = 'kotak';
     const AXIS              = 'axis';
+    const INDUS             = 'indus';
     const MOBIKWIK          = 'mobikwik';
     const PAYTM             = 'paytm';
     const SBIEPAY           = 'sbiepay';
@@ -344,16 +345,19 @@ class Gateway
         IFSC::HDFC,
         IFSC::KKBK,
         IFSC::UTIB,
+        IFSC::INDB,
     );
 
     public static $emiBanksUsingCardTerminals = array(
         IFSC::KKBK,
         IFSC::UTIB,
+        IFSC::INDB,
     );
 
     public static $emiFileBanks = array(
         self::KOTAK     => IFSC::KKBK,
         self::AXIS      => IFSC::UTIB,
+        self::INDUS     => IFSC::INDB,
     );
 
     public static $emiBankToGatewayMap = array(
