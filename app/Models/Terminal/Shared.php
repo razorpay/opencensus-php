@@ -18,6 +18,7 @@ class Shared
     const MOBIKWIK_RAZORPAY_TERMINAL        = '1000MobiKwikTl';
     const NETBANKING_HDFC_TERMINAL          = '100NbHdfcTrmnl';
     const NETBANKING_KOTAK_TERMINAL         = '100NbKotakTmnl';
+    const OLAMONEY_RAZORPAY_TERMINAL        = '1000OlamoneyTl';
     const PAYTM_RAZORPAY_TERMINAL           = '1000PaytmTrmnl';
     const PAYZAPP_RAZORPAY_TERMINAL         = '100PayzappTmnl';
     const PAYUMONEY_RAZORPAY_TERMINAL       = '100PayumnyTmnl';
@@ -36,6 +37,7 @@ class Shared
         self::HDFC_RAZORPAY_TERMINAL,
         self::KOTAK_RAZORPAY_TERMINAL,
         self::MOBIKWIK_RAZORPAY_TERMINAL,
+        self::OLAMONEY_RAZORPAY_TERMINAL,
         self::PAYTM_RAZORPAY_TERMINAL,
         self::NETBANKING_HDFC_TERMINAL,
         self::NETBANKING_KOTAK_TERMINAL,
@@ -63,6 +65,7 @@ class Shared
         self::MOBIKWIK_RAZORPAY_TERMINAL    => Gateway::MOBIKWIK,
         self::NETBANKING_HDFC_TERMINAL      => Gateway::NETBANKING_HDFC,
         self::NETBANKING_KOTAK_TERMINAL     => Gateway::NETBANKING_KOTAK,
+        self::OLAMONEY_RAZORPAY_TERMINAL    => Gateway::WALLET_OLAMONEY,
         self::PAYTM_RAZORPAY_TERMINAL       => Gateway::PAYTM,
         self::PAYZAPP_RAZORPAY_TERMINAL     => Gateway::WALLET_PAYZAPP,
         self::PAYUMONEY_RAZORPAY_TERMINAL   => Gateway::WALLET_PAYUMONEY,

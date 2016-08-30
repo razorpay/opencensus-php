@@ -28,6 +28,7 @@ class Gateway
     const SHARP             = 'sharp';
     const NETBANKING_HDFC   = 'netbanking_hdfc';
     const NETBANKING_KOTAK  = 'netbanking_kotak';
+    const WALLET_OLAMONEY   = 'wallet_olamoney';
     const WALLET_PAYZAPP    = 'wallet_payzapp';
     const WALLET_PAYUMONEY  = 'wallet_payumoney';
     const CYBERSOURCE       = 'cybersource';
@@ -38,7 +39,7 @@ class Gateway
 
     const POWER_WALLETS = array(
         Wallet::MOBIKWIK,
-        Wallet::PAYUMONEY
+        Wallet::PAYUMONEY,
     );
 
     const TOPUP_GATEWAYS = array(
@@ -64,6 +65,7 @@ class Gateway
         self::NETBANKING_KOTAK  => Settlement\Channel::KOTAK,
         self::WALLET_PAYZAPP    => Settlement\Channel::KOTAK,
         self::WALLET_PAYUMONEY  => Settlement\Channel::KOTAK,
+        self::WALLET_OLAMONEY   => Settlement\Channel::KOTAK,
         self::CYBERSOURCE       => Settlement\Channel::KOTAK,
         self::FIRST_DATA        => Settlement\Channel::KOTAK,
     );
@@ -99,6 +101,7 @@ class Gateway
         Method::WALLET => array(
             self::MOBIKWIK,
             self::PAYTM,
+            self::WALLET_OLAMONEY,
             self::WALLET_PAYZAPP,
             self::WALLET_PAYUMONEY,
         ),
@@ -177,6 +180,7 @@ class Gateway
     );
 
     public static $walletToGatewayMap = array(
+        Wallet::OLAMONEY    => Gateway::WALLET_OLAMONEY,
         Wallet::PAYTM       => Gateway::PAYTM,
         Wallet::MOBIKWIK    => Gateway::MOBIKWIK,
         Wallet::PAYZAPP     => Gateway::WALLET_PAYZAPP,
@@ -209,7 +213,8 @@ class Gateway
      * @var array
      */
     public static $s2sCallbackGateways = array(
-        Gateway::BILLDESK);
+        Gateway::BILLDESK,
+        Gateway::WALLET_OLAMONEY);
 
     /**
      * Card gateways which support international payments

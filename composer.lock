@@ -9,16 +9,16 @@
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.18.36",
+            "version": "3.19.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "48362bce008fa9c20a71dfa6a68aebac65a8ab1b"
+                "reference": "40d7696b738c1376d5c1d1462e113c2a5648156b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/48362bce008fa9c20a71dfa6a68aebac65a8ab1b",
-                "reference": "48362bce008fa9c20a71dfa6a68aebac65a8ab1b",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/40d7696b738c1376d5c1d1462e113c2a5648156b",
+                "reference": "40d7696b738c1376d5c1d1462e113c2a5648156b",
                 "shasum": ""
             },
             "require": {
@@ -85,7 +85,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2016-08-02 20:49:01"
+            "time": "2016-08-18 22:54:26"
         },
         {
             "name": "aws/aws-sdk-php-laravel",
@@ -462,21 +462,22 @@
         },
         {
             "name": "giggsey/libphonenumber-for-php",
-            "version": "7.4.5",
+            "version": "7.5.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/giggsey/libphonenumber-for-php.git",
-                "reference": "a138adeb07233059c2a8d3caea7b6a6bcbee6765"
+                "reference": "a03f2f7b9c832eed026995182c3a3100dc4d2938"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/a138adeb07233059c2a8d3caea7b6a6bcbee6765",
-                "reference": "a138adeb07233059c2a8d3caea7b6a6bcbee6765",
+                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/a03f2f7b9c832eed026995182c3a3100dc4d2938",
+                "reference": "a03f2f7b9c832eed026995182c3a3100dc4d2938",
                 "shasum": ""
             },
             "require": {
                 "ext-mbstring": "*",
-                "php": ">=5.3"
+                "giggsey/locale": "^1.0",
+                "php": ">=5.3.2"
             },
             "require-dev": {
                 "pear/pear-core-minimal": "^1.9",
@@ -486,9 +487,6 @@
                 "phpunit/phpunit": "~4.0",
                 "satooshi/php-coveralls": "~0.6",
                 "symfony/console": "^2.5"
-            },
-            "suggest": {
-                "ext-intl": "To use the geocoder and carrier mapping"
             },
             "type": "library",
             "extra": {
@@ -522,7 +520,53 @@
                 "phonenumber",
                 "validation"
             ],
-            "time": "2016-07-14 10:56:47"
+            "time": "2016-08-10 09:28:45"
+        },
+        {
+            "name": "giggsey/locale",
+            "version": "1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/giggsey/Locale.git",
+                "reference": "9087acaf8493472fcd129118017fd7e06be3d8fa"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/giggsey/Locale/zipball/9087acaf8493472fcd129118017fd7e06be3d8fa",
+                "reference": "9087acaf8493472fcd129118017fd7e06be3d8fa",
+                "shasum": ""
+            },
+            "require-dev": {
+                "pear/pear-core-minimal": "^1.9",
+                "pear/pear_exception": "^1.0",
+                "pear/versioncontrol_git": "dev-master",
+                "phing/phing": "~2.7",
+                "phpunit/phpunit": "^4.8|^5.0",
+                "satooshi/php-coveralls": "^1.0",
+                "symfony/console": "^2.8|^3.0",
+                "symfony/filesystem": "^2.8|^3.0",
+                "symfony/finder": "^2.8|^3.0",
+                "symfony/process": "^2.8|^3.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Giggsey\\Locale\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Joshua Gigg",
+                    "email": "giggsey@gmail.com",
+                    "homepage": "http://giggsey.com/"
+                }
+            ],
+            "description": "Locale functions required by libphonenumber-for-php",
+            "time": "2016-08-04 23:02:29"
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -976,16 +1020,16 @@
         },
         {
             "name": "laravel/framework",
-            "version": "5.2.41",
+            "version": "v5.2.44",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/framework.git",
-                "reference": "29ba2e310cfeb42ab6545bcd81ff4c2ec1f6b5c2"
+                "reference": "f24b7acfb494437ef00bdd062bed61eb21535546"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/framework/zipball/29ba2e310cfeb42ab6545bcd81ff4c2ec1f6b5c2",
-                "reference": "29ba2e310cfeb42ab6545bcd81ff4c2ec1f6b5c2",
+                "url": "https://api.github.com/repos/laravel/framework/zipball/f24b7acfb494437ef00bdd062bed61eb21535546",
+                "reference": "f24b7acfb494437ef00bdd062bed61eb21535546",
                 "shasum": ""
             },
             "require": {
@@ -1066,7 +1110,7 @@
                 "pusher/pusher-php-server": "Required to use the Pusher broadcast driver (~2.0).",
                 "symfony/css-selector": "Required to use some of the crawler integration testing tools (2.8.*|3.0.*).",
                 "symfony/dom-crawler": "Required to use most of the crawler integration testing tools (2.8.*|3.0.*).",
-                "symfony/psr-http-message-bridge": "Required to psr7 bridging features (0.2.*)."
+                "symfony/psr-http-message-bridge": "Required to use psr7 bridging features (0.2.*)."
             },
             "type": "library",
             "extra": {
@@ -1102,7 +1146,7 @@
                 "framework",
                 "laravel"
             ],
-            "time": "2016-07-20 13:13:06"
+            "time": "2016-08-23 13:03:29"
         },
         {
             "name": "laravelcollective/bus",
@@ -1151,16 +1195,16 @@
         },
         {
             "name": "league/flysystem",
-            "version": "1.0.26",
+            "version": "1.0.27",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thephpleague/flysystem.git",
-                "reference": "fb3b30dca320b36931ea878fea17ebe136fba1b0"
+                "reference": "50e2045ed70a7e75a5e30bc3662904f3b67af8a9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/flysystem/zipball/fb3b30dca320b36931ea878fea17ebe136fba1b0",
-                "reference": "fb3b30dca320b36931ea878fea17ebe136fba1b0",
+                "url": "https://api.github.com/repos/thephpleague/flysystem/zipball/50e2045ed70a7e75a5e30bc3662904f3b67af8a9",
+                "reference": "50e2045ed70a7e75a5e30bc3662904f3b67af8a9",
                 "shasum": ""
             },
             "require": {
@@ -1230,7 +1274,7 @@
                 "sftp",
                 "storage"
             ],
-            "time": "2016-08-03 09:49:11"
+            "time": "2016-08-10 08:55:11"
         },
         {
             "name": "maatwebsite/excel",
@@ -1301,16 +1345,16 @@
         },
         {
             "name": "mailgun/mailgun-php",
-            "version": "v2.1.1",
+            "version": "v2.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/mailgun/mailgun-php.git",
-                "reference": "88a3e96733cbcda181980a36d074901304ac8f14"
+                "reference": "54b7f851b8e0241d593897dc2d50906bf4a43995"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mailgun/mailgun-php/zipball/88a3e96733cbcda181980a36d074901304ac8f14",
-                "reference": "88a3e96733cbcda181980a36d074901304ac8f14",
+                "url": "https://api.github.com/repos/mailgun/mailgun-php/zipball/54b7f851b8e0241d593897dc2d50906bf4a43995",
+                "reference": "54b7f851b8e0241d593897dc2d50906bf4a43995",
                 "shasum": ""
             },
             "require": {
@@ -1327,7 +1371,6 @@
             "type": "library",
             "autoload": {
                 "psr-0": {
-                    "Mailgun\\Tests": "tests/",
                     "Mailgun": "src/"
                 }
             },
@@ -1342,7 +1385,7 @@
                 }
             ],
             "description": "The Mailgun SDK provides methods for all API functions.",
-            "time": "2016-07-21 08:54:55"
+            "time": "2016-08-10 16:58:18"
         },
         {
             "name": "maknz/slack",
@@ -1350,12 +1393,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/slack.git",
-                "reference": "df4191a436c96ca9607bf2f290624cc9f1ebd27d"
+                "reference": "b328389043b7a27b91ee77e89ae7365a41c8cbe3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/slack/zipball/df4191a436c96ca9607bf2f290624cc9f1ebd27d",
-                "reference": "df4191a436c96ca9607bf2f290624cc9f1ebd27d",
+                "url": "https://api.github.com/repos/razorpay/slack/zipball/b328389043b7a27b91ee77e89ae7365a41c8cbe3",
+                "reference": "b328389043b7a27b91ee77e89ae7365a41c8cbe3",
                 "shasum": ""
             },
             "require": {
@@ -1395,7 +1438,7 @@
                 "source": "https://github.com/razorpay/slack/tree/f/queue-with-retry",
                 "issues": "https://github.com/razorpay/slack/issues"
             },
-            "time": "2016-08-01 08:04:45"
+            "time": "2016-08-03 16:13:57"
         },
         {
             "name": "monolog/monolog",
@@ -2016,16 +2059,16 @@
         },
         {
             "name": "php-http/multipart-stream-builder",
-            "version": "0.1.0",
+            "version": "0.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-http/multipart-stream-builder.git",
-                "reference": "cd04192f1e8d3c19552783dda6f7aa6a72a89b23"
+                "reference": "c55a81001be18dd8ceae5291249a85c08d9be7a4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-http/multipart-stream-builder/zipball/cd04192f1e8d3c19552783dda6f7aa6a72a89b23",
-                "reference": "cd04192f1e8d3c19552783dda6f7aa6a72a89b23",
+                "url": "https://api.github.com/repos/php-http/multipart-stream-builder/zipball/c55a81001be18dd8ceae5291249a85c08d9be7a4",
+                "reference": "c55a81001be18dd8ceae5291249a85c08d9be7a4",
                 "shasum": ""
             },
             "require": {
@@ -2068,7 +2111,7 @@
                 "message",
                 "stream"
             ],
-            "time": "2016-07-19 12:20:48"
+            "time": "2016-08-10 07:59:29"
         },
         {
             "name": "php-http/promise",
@@ -2284,16 +2327,16 @@
         },
         {
             "name": "psr/http-message",
-            "version": "1.0",
+            "version": "1.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-fig/http-message.git",
-                "reference": "85d63699f0dbedb190bbd4b0d2b9dc707ea4c298"
+                "reference": "f6561bf28d520154e4b0ec72be95418abe6d9363"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-fig/http-message/zipball/85d63699f0dbedb190bbd4b0d2b9dc707ea4c298",
-                "reference": "85d63699f0dbedb190bbd4b0d2b9dc707ea4c298",
+                "url": "https://api.github.com/repos/php-fig/http-message/zipball/f6561bf28d520154e4b0ec72be95418abe6d9363",
+                "reference": "f6561bf28d520154e4b0ec72be95418abe6d9363",
                 "shasum": ""
             },
             "require": {
@@ -2321,6 +2364,7 @@
                 }
             ],
             "description": "Common interface for HTTP messages",
+            "homepage": "https://github.com/php-fig/http-message",
             "keywords": [
                 "http",
                 "http-message",
@@ -2329,7 +2373,7 @@
                 "request",
                 "response"
             ],
-            "time": "2015-05-04 20:22:00"
+            "time": "2016-08-06 14:39:51"
         },
         {
             "name": "psr/log",
@@ -2536,12 +2580,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/spine.git",
-                "reference": "87815366179a852bd090a4ab5d325a037fb4c6e5"
+                "reference": "a476f932846bfc707dc1415820814d49788b1c76"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/spine/zipball/87815366179a852bd090a4ab5d325a037fb4c6e5",
-                "reference": "87815366179a852bd090a4ab5d325a037fb4c6e5",
+                "url": "https://api.github.com/repos/razorpay/spine/zipball/a476f932846bfc707dc1415820814d49788b1c76",
+                "reference": "a476f932846bfc707dc1415820814d49788b1c76",
                 "shasum": ""
             },
             "require": {
@@ -2575,7 +2619,7 @@
                 "source": "https://github.com/razorpay/spine/tree/master",
                 "issues": "https://github.com/razorpay/spine/issues"
             },
-            "time": "2016-05-03 07:23:39"
+            "time": "2016-08-11 16:36:38"
         },
         {
             "name": "react/promise",
@@ -4073,16 +4117,16 @@
         },
         {
             "name": "orchestra/testbench",
-            "version": "v3.2.5",
+            "version": "v3.2.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/orchestral/testbench.git",
-                "reference": "69d215f736e1f7f497a71e69ef292271ba7a6be2"
+                "reference": "1f475dfe2731b180dba888ec9057b82485221186"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/orchestral/testbench/zipball/69d215f736e1f7f497a71e69ef292271ba7a6be2",
-                "reference": "69d215f736e1f7f497a71e69ef292271ba7a6be2",
+                "url": "https://api.github.com/repos/orchestral/testbench/zipball/1f475dfe2731b180dba888ec9057b82485221186",
+                "reference": "1f475dfe2731b180dba888ec9057b82485221186",
                 "shasum": ""
             },
             "require": {
@@ -4132,7 +4176,7 @@
                 "orchestral",
                 "testing"
             ],
-            "time": "2016-05-26 22:54:22"
+            "time": "2016-08-18 01:06:49"
         },
         {
             "name": "phpdocumentor/reflection-common",
@@ -4882,23 +4926,23 @@
         },
         {
             "name": "sebastian/environment",
-            "version": "1.3.7",
+            "version": "1.3.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/environment.git",
-                "reference": "4e8f0da10ac5802913afc151413bc8c53b6c2716"
+                "reference": "be2c607e43ce4c89ecd60e75c6a85c126e754aea"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/environment/zipball/4e8f0da10ac5802913afc151413bc8c53b6c2716",
-                "reference": "4e8f0da10ac5802913afc151413bc8c53b6c2716",
+                "url": "https://api.github.com/repos/sebastianbergmann/environment/zipball/be2c607e43ce4c89ecd60e75c6a85c126e754aea",
+                "reference": "be2c607e43ce4c89ecd60e75c6a85c126e754aea",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.3.3"
+                "php": "^5.3.3 || ^7.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "~4.4"
+                "phpunit/phpunit": "^4.8 || ^5.0"
             },
             "type": "library",
             "extra": {
@@ -4928,7 +4972,7 @@
                 "environment",
                 "hhvm"
             ],
-            "time": "2016-05-17 03:18:57"
+            "time": "2016-08-18 05:49:44"
         },
         {
             "name": "sebastian/exporter",
@@ -5243,28 +5287,29 @@
         },
         {
             "name": "webmozart/assert",
-            "version": "1.0.2",
+            "version": "1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/webmozart/assert.git",
-                "reference": "30eed06dd6bc88410a4ff7f77b6d22f3ce13dbde"
+                "reference": "bb2d123231c095735130cc8f6d31385a44c7b308"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/webmozart/assert/zipball/30eed06dd6bc88410a4ff7f77b6d22f3ce13dbde",
-                "reference": "30eed06dd6bc88410a4ff7f77b6d22f3ce13dbde",
+                "url": "https://api.github.com/repos/webmozart/assert/zipball/bb2d123231c095735130cc8f6d31385a44c7b308",
+                "reference": "bb2d123231c095735130cc8f6d31385a44c7b308",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.3.3"
+                "php": "^5.3.3|^7.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "^4.6"
+                "phpunit/phpunit": "^4.6",
+                "sebastian/version": "^1.0.1"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.0-dev"
+                    "dev-master": "1.2-dev"
                 }
             },
             "autoload": {
@@ -5288,7 +5333,7 @@
                 "check",
                 "validate"
             ],
-            "time": "2015-08-24 13:29:44"
+            "time": "2016-08-09 15:02:57"
         }
     ],
     "aliases": [],

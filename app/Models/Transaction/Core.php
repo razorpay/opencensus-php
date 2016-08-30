@@ -179,7 +179,7 @@ class Core extends Base\Core
 
     protected function checkIfOldPayment($payment)
     {
-        if (($payment->getCreatedTimestamp() < self::JULY_FIRST_EPOCH) and
+        if (($payment->getCreatedAt() < self::JULY_FIRST_EPOCH) and
             ($payment->transaction === null) and
             ($payment->isAuthorized() === true))
         {
@@ -187,7 +187,7 @@ class Core extends Base\Core
                 TraceCode::PAYMENT_TRANSACTION_OLD,
                 [
                     'payment_id' => $payment->getId(),
-                    'payment_created' => Carbon::createFromTimestamp($payment->getCreatedTimestamp())
+                    'payment_created' => Carbon::createFromTimestamp($payment->getCreatedAt())
                                                ->toDateTimeString()
                 ]
             );
@@ -236,6 +236,8 @@ class Core extends Base\Core
     {
         $payment = $refund->payment;
 
+        assert ($payment->transaction !== null);
+
         $settledAt = 1;
 
         $txnData = array(
@@ -269,28 +271,28 @@ class Core extends Base\Core
         $txn->sourceAssociate($refund);
         $txn->merchant()->associate($refund->merchant);
 
-        if ($payment->isAuthorized())
+        $paymentStatus = $payment->getStatus();
+
+        switch($paymentStatus)
         {
-            // When refunding authorized payments, we do not charge merchants
-            $this->updateNodalBalance($txn);
-        }
-        else if ($payment->isCaptured())
-        {
-            $this->updateBalances($txn);
-        }
-        else
-        {
-            // Exceptional case where we have to perform a refund.
-            // that is acceptable.
-            if (($payment->getGateway() === Payment\Gateway::HDFC) and
-                ($payment->getStatus() === Payment\Status::REFUNDED))
-            {
-                ;
-            }
-            else
-            {
+            case Payment\Status::AUTHORIZED:
+                // When refunding authorized payments, we do not charge merchants
+                $this->updateNodalBalance($txn);
+
+                break;
+            case Payment\Status::CAPTURED:
+                $this->updateBalances($txn);
+
+                break;
+            case Payment\Status::REFUNDED:
+                // This is a rare case and is here just to fix bugs.
+                assert ($payment->getGateway() === Payment\Gateway::HDFC);
+
+                $this->updateNodalBalance($txn);
+
+                break;
+            default:
                 throw new Exception\LogicException('Should not have reached here');
-            }
         }
 
         return $txn;
@@ -398,7 +400,7 @@ class Core extends Base\Core
         // These transactions are not using the free credits.
         if (($txn->getFee() !== 0) or
             ($txn->getCredit() !== $txn->getAmount()) or
-            ($payment->getCreatedTimestamp() < self::JULY_FIRST_EPOCH))
+            ($payment->getCreatedAt() < self::JULY_FIRST_EPOCH))
         {
             return;
         }

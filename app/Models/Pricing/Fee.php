@@ -61,7 +61,7 @@ class Fee
         // Set the authorized_at time if not set
         if (is_null($txnAuthTime) === True)
         {
-            $txnCreatedTime = $payment->getCreatedTimestamp();
+            $txnCreatedTime = $payment->getCreatedAt();
             $txnCapturedTime = $payment->getCaptureTimestamp();
 
             assert(is_null($txnCreatedTime) === FALSE);

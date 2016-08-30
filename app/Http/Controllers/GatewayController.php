@@ -18,11 +18,9 @@ class GatewayController extends Controller
         $this->callbackGateway('axis');
     }
 
-    protected function callbackBilldesk($input)
+    protected function processS2SCallback($input, $gateway)
     {
-        $msg = $input['msg'];
-
-        $gateway = $this->app['gateway']->gateway('billdesk');
+        $gateway = $this->app['gateway']->gateway($gateway);
 
         $paymentId = $gateway->getPaymentIdFromServerCallback($input);
 
@@ -79,7 +77,8 @@ class GatewayController extends Controller
         switch ($gateway)
         {
             case 'billdesk':
-                $data = $this->callbackBilldesk($input);
+            case 'wallet_olamoney':
+                $data = $this->processS2SCallback($input, $gateway);
                 break;
 
             case 'upi':
@@ -90,6 +89,8 @@ class GatewayController extends Controller
                     TraceCode::GATEWAY_PAYMENT_CALLBACK,
                     [
                         'input'     => $input,
+                        'body'      => Request::getContent(),
+                        'headers'   => Request::header(),
                         'gateway'   => 'upi_icici',
                     ]);
 

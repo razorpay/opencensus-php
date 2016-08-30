@@ -3,11 +3,11 @@
 namespace RZP\Models\Payment\Processor;
 
 use App;
-use RZP\Constants\Mode;
 use BasicAuth;
+use Request;
+
+use RZP\Constants\Mode;
 use RZP\Dashboard\Dashboard;
-use RZP\Http\Route;
-use RZP\Models\Gateway;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\BankAccount;
 use RZP\Models\Terminal;
@@ -16,7 +16,6 @@ use RZP\Models\Order;
 use RZP\Models\Pricing;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
-use Request;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer;
@@ -36,7 +35,7 @@ class Processor
      * WIthin certain duration x minutes, we will return payment
      * success or failed when the url is hit again.
      * After that duration, we will simply throw
-     * BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED payment_processed error.
+     * BAD_REQUEST_PAYMENT_ALREADY_PROCESSED payment_processed error.
      */
     const CALLBACK_PROCESS_AGAIN_DURATION = 20;
 
@@ -44,6 +43,12 @@ class Processor
      * If payment fails on gateway then we may retry it with a different terminal/gateway.
      */
     const MAX_RETRY_ATTEMPTS = 3;
+
+    /**
+     * If a payment gets converted to authorized from failed after 15 minutes of creation of payment,
+     * we do not send a notification to the customer.
+     */
+    const FAILED_TO_AUTHORIZED_NOTIFY_DURATION = 900;
 
     protected $merchant;
     protected $trace;
@@ -56,6 +61,7 @@ class Processor
     protected $app;
     protected $request;
     protected $methods;
+    protected $refund;
 
     protected $verifyRefundStatus;
 
@@ -315,7 +321,7 @@ class Processor
         return Payment\Status::FAILED;
     }
 
-    protected function trace($traceCode, $level = Trace::INFO)
+    protected function tracePaymentInfo($traceCode, $level = Trace::INFO)
     {
         $data = $this->payment->toArrayTraceRelevant();
 
@@ -336,9 +342,16 @@ class Processor
 
         $payment->setError($code, $desc, $internalCode);
 
-        $payment->saveOrFail();
+        $this->repo->saveOrFail($payment);
 
         $this->tracePaymentFailed($error, $traceCode);
+
+        $this->eventPaymentFailed();
+    }
+
+    protected function eventPaymentFailed()
+    {
+        $this->app['events']->fire('api.payment.failed', array($this->payment));
     }
 
     protected function setPaymentError($error)
@@ -349,7 +362,7 @@ class Processor
 
         $payment->setInternalErrorCode($internalCode);
 
-        $payment->saveOrFail();
+        $this->repo->saveOrFail($payment);
     }
 
     /**
@@ -552,13 +565,13 @@ class Processor
 
     protected function retrieveToken($input)
     {
-        $this->token = (new Customer\Token\Repository)
+        $token = (new Customer\Token\Repository)
                         ->getByWalletTerminalAndCustomerId(
                             $input['payment']['wallet'],
                             $input['payment']['terminal_id'],
                             $input['customer']->getId());
 
-        return $this->token;
+        return $token;
     }
 
     protected function retrieve($id)
