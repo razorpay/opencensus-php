@@ -61,6 +61,7 @@ class HolidayNotification
     {
         list($msg, $holidays) = $this->getHolidayNotificationMsg($input);
 
+        $today = Carbon::today('Asia/Kolkata');
         $tomorrow = Carbon::tomorrow('Asia/Kolkata');
 
         if (empty($errors))
@@ -90,11 +91,12 @@ class HolidayNotification
 
                 // Action to send the email to mailing list
                 case self::EMAIL:
-                    // For live mode, check if tomorrow is a holiday
-                    if (($this->mode === MODE::LIVE) and
-                        (Holidays::isSpecifiedBankHoliday($tomorrow) === false))
+                    // Adds logic to send only on specific days
+                    $isMailToBeSent = $this->isMailToBeSent();
+
+                    if ($isMailToBeSent['bool'] === false)
                     {
-                        return ['message' => 'Not a holiday tomorrow! Nothing to send.'];
+                        return ['message' => $isMailToBeSent['message']];
                     }
 
                     // Send a notification to slack
@@ -116,6 +118,40 @@ class HolidayNotification
             return $errors;
         }
 
+    }
+
+    /**
+     * Adding more rules for when a mail is to be sent
+     *
+     * 1) Mails are to be sent only on a working day
+     * 2) Mails are to be sent for series of holidays.
+     */
+    protected function isMailToBeSent()
+    {
+        $today = Carbon::today('Asia\Kolkata');
+
+        if ($this->mode === Mode::TEST)
+        {
+            return ['bool' => true, 'message' => 'Test Mode. Mail to be sent.'];
+        }
+
+        // Mails not to sent on holidays
+        if (Holidays::isWorkingDay($today) === false)
+        {
+            return ['bool' => false, 'message' => 'Not a working day today. Nothing to send.'];
+        }
+
+        // Get Next working day that is not a bank holiday
+        $ignoreBankHolidays = true;
+        $nextWorkingDay = Holidays::getNextWorkingDay($today, $ignoreBankHolidays);
+
+        // Ensure if that is a settlement holiday then send mail
+        if (Holidays::isSpecifiedBankHoliday($nextWorkingDay) === true)
+        {
+            return ['bool' => true, 'message' => 'Next non `settlement holiday` working day is a bank holiday. Mail to be sent.'];
+        }
+
+        return ['bool' => false, 'message' => 'Next non `settlement holiday` working day is not a bank holiday. Nothing to send.'];
     }
 
     protected function notifySettlementsChannel($holidays)

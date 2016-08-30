@@ -6,6 +6,9 @@ use Carbon\Carbon;
 
 class Holidays
 {
+
+    // Dont't add sundays or non working saturdays as part of this.
+    // These refer to settlement holidays only.
     public static $holidays = [
         2015 => [
             9 => [
