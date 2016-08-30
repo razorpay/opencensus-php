@@ -20,4 +20,22 @@ class Settlement extends Entity
 
         return $this->request('POST', $relativeUrl);
     }
+
+    public function getDetails($id)
+    {
+        $error = $response = null;
+
+        try
+        {
+            $relativeUrl = $this->getEntityUrl() . $id . '/details';
+
+            $response = $this->request('GET', $relativeUrl)->toArray();
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error = [ $e->getMessage() ];
+        }
+
+        return [ $error, $response ];
+    }
 }

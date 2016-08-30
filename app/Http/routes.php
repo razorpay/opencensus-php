@@ -39,6 +39,7 @@ Route::group(['middleware'  =>  'auth:user'], function()
 
     Route::get('/{mode}/settlements', 'TransactionController@getSettlements');
     Route::get('/{mode}/settlements/{id}', 'TransactionController@getSettlement');
+    Route::get('/{mode}/settlements/{id}/details', 'TransactionController@getSettlementDetails');
 
     Route::get('/{mode}/transactions', 'TransactionController@getTransactions');
     Route::get('/{mode}/transactions/{id}', 'TransactionController@getTransaction');

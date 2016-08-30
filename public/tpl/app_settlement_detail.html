@@ -40,6 +40,35 @@
           <span class="pull-right">{{entity.service_tax/100 | rupee}}</span>
           Service Tax
         </a>
+
+        <a href class="list-group-item" ng-init="isSettlementDetailsCollapsed = true">
+          <span class="pull-right">
+            <button class="btn btn-default btn-xs pull-right" ng-click="showSettlementDetails()">Show/Hide</button>
+          </span>
+          Breakup
+        </a>
+        <div collapse="isSettlementDetailsCollapsed" class="panel-body">
+          <table class="table table-striped b-t b-light">
+            <thead>
+              <tr>
+                <th>Component</th>
+                <th>Amount</th>
+                <th>Count</th>
+                <th>Type</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr ng-repeat="row in breakupDetails">
+                <td>{{ row.component | titlecase }}</td>
+                <td>{{ row.amount/100 | rupee:"INR " }}</td>
+                <td>{{ row.count }}</td>
+                <td>{{ row.type | titlecase }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
       </div>
     </div>
   </div>
