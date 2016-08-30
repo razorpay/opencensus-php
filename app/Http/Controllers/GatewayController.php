@@ -22,6 +22,11 @@ class GatewayController extends Controller
     {
         $gateway = $this->app['gateway']->gateway($gateway);
 
+        if (method_exists($gateway, 'parseS2SResponse'))
+        {
+            $input = $gateway->parseS2SResponse($input);
+        }
+
         $paymentId = $gateway->getPaymentIdFromServerCallback($input);
 
         $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
@@ -84,20 +89,22 @@ class GatewayController extends Controller
             // We gave the first URL to ICICI for testing
             case 'upi':
             case 'upi_icici':
-                $gateway = 'upi_icici':
+
                 $trace = $this->app['trace'];
+                $gateway = 'upi_icici';
 
-                // $data = $this->processS2SCallback()
+                $body = Request::getContent();
 
-                // check mode before search
                 $trace->info(
                     TraceCode::GATEWAY_PAYMENT_CALLBACK,
                     [
                         'input'     => $input,
-                        'body'      => Request::getContent(),
+                        'body'      => $body,
                         'headers'   => Request::header(),
                         'gateway'   => 'upi_icici',
                     ]);
+
+                $data = $this->processS2SCallback($body, $gateway);
 
                 break;
         }

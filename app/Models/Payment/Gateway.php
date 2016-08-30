@@ -208,6 +208,7 @@ class Gateway
      */
     public static $s2sCallbackGateways = array(
         Gateway::BILLDESK,
+        Gateway::UPI_ICICI,
         Gateway::WALLET_OLAMONEY);
 
     /**

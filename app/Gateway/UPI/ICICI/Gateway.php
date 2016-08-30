@@ -79,7 +79,7 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
-        $response = $this->parseGatewayResponse($response);
+        $response = $this->parseGatewayResponse($response->body);
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $response);
 
@@ -107,12 +107,12 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * @param  Requests_Response $response
+     * @param  string $response
      * @return array response as associative array
      */
-    protected function parseGatewayResponse(Requests_Response $response)
+    protected function parseGatewayResponse($response)
     {
-        $res = preg_replace('/\s/', '', $response->body);
+        $res = preg_replace('/\s/', '', $response);
         $res = base64_decode($res, true);
         $res = $this->decrypt($res);
 
@@ -238,7 +238,7 @@ class Gateway extends Base\Gateway
 
         $data = $this->encrypt($json);
 
-        // RSA::encrypt returns false if encryption false
+        // RSA::encrypt returns false if encryption failed
         assert($data !== false);
 
         return base64_encode($data);
@@ -270,9 +270,7 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
-        sd($response);
-
-        $response = $this->parseGatewayResponse($response);
+        $response = $this->parseGatewayResponse($response->body);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY,
@@ -311,5 +309,26 @@ class Gateway extends Base\Gateway
     protected function getSubMerchantId(array $input)
     {
         return substr($input['merchant']['id'], 0, 10);
+    }
+
+    /**
+     * Returns Payment Id
+     * @param  string $body Request Body
+     * @return string Payment Id
+     */
+    public function getPaymentIdFromServerCallback(array $response)
+    {
+        return $response[ResponseFields::MERCHANT_TRAN_ID];
+    }
+
+    /**
+     * Takes in S2S request as a body string
+     * and returns the parsed response as an array
+     * @param  String $body Request body
+     * @return array
+     */
+    public function parseS2SResponse($body)
+    {
+        return $this->parseGatewayResponse($body);
     }
 }
