@@ -249,7 +249,7 @@ class Gateway extends Base\Gateway
 
         try
         {
-            $RequestNumber = 'first';
+            $requestNumber = 'first';
 
             // This is the first redirect (302). We receive headers and cookies in this response
             // which needs to be sent to the second redirect request.
@@ -257,14 +257,14 @@ class Gateway extends Base\Gateway
 
             $secondRedirectRequest = $this->getRequestFromResponse302($response302);
 
-            $RequestNumber = 'second';
+            $requestNumber = 'second';
 
             // This is the second redirect (form post). The response of this is passed on to the third redirect request.
             $secondRedirectResponse = $this->sendSecondGatewayRequestForEbsAuthorize($secondRedirectRequest);
 
             $lastRedirectRequest = $this->getRequestFromFormPostResponse($secondRedirectRequest, $secondRedirectResponse);
 
-            $RequestNumber = 'third';
+            $requestNumber = 'third';
 
             // Makes the last redirect request before the request to bank's ACS url is made by the checkout.
             $lastRedirectResponse = $this->sendThirdGatewayRequestForEbsAuthorize($lastRedirectRequest);
@@ -277,7 +277,7 @@ class Gateway extends Base\Gateway
             $this->trace->warning(
                 TraceCode::GATEWAY_REQUEST_TIMEOUT,
                 ['payment_id' => $input['payment'][Payment\Entity::ID],
-                'message'    => 'Payment Authorization failed after '.$RequestNumber.' Authorization Request']);
+                'message'    => 'Payment Authorization failed after '.$requestNumber.' Authorization Request']);
 
             throw $e;
         }
