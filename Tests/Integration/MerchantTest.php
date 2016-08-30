@@ -172,7 +172,7 @@ class MerchantTest extends TestCase
         $this->setValueByName('password', '12345xx');
         $this->clickByName('submit');
         $this->waitUntilDisplayedByClassName('navbar');
-        $this->waitUntilAbsentById('manageTeamNav');
+        $this->waitUntilAbsentByCss('#manageTeamNav');
     }
 
     public function testWebhooks()
@@ -192,7 +192,7 @@ class MerchantTest extends TestCase
         // Check if display includes new webhook
         $this->setValueById('new_webhook_url', 'http://googleeee.com');
         $this->clickByClassName('modal-ok');
-        $this->waitUntilAbsentByClassName('new-webhook-modal');
+        $this->waitUntilAbsentByCss('.new-webhook-modal');
         $this->waitUntilContainsByCss('body', 'Webhook added');
         $this->waitUntilContainsByCss('body', 'http://googleeee.com');
     }
@@ -403,7 +403,7 @@ class MerchantTest extends TestCase
         $this->setValueByName('password', '1234567xx');
         $this->setValueByName('password_confirmation', '1234567xx');
         $this->clickByClassName('modal-ok');
-        $this->waitUntilAbsentByClassName('change-pwd-modal');
+        $this->waitUntilAbsentByCss('.change-pwd-modal');
         $this->waitUntilContainsByCss('body', 'Password changed successfully.');
     }
 

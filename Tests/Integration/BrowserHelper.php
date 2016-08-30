@@ -203,13 +203,13 @@ trait BrowserHelper
         }, 20000);
 	}
 
-	public function waitUntilAbsentByClassName($class, $time=20000)
+	public function waitUntilAbsentByCss($selector, $time=20000)
 	{
         // waitUntil runs till the inner method returns non-null
-		$this->waitUntil(function() use ($class){
+		$this->waitUntil(function() use ($selector){
             try
             {
-                $displayed = $this->displayedByClassName($class);
+                $displayed = $this->displayedByCss($selector);
                 if ($displayed === true)
                 {
                     return null;
@@ -233,21 +233,6 @@ trait BrowserHelper
 
             return true;
         }, $time);
-	}
-
-	public function waitUntilAbsentById($id)
-	{
-		$this->waitUntil(function(){
-            try
-            {
-                $this->assertFalse($this->displayedById($id));
-            }
-            catch(\Exception $e)
-            {
-
-            }
-            return true;
-        }, 20000);
 	}
 
 	public function selectByNameAndLabel($name, $option)
