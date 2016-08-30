@@ -233,7 +233,7 @@ class OlamoneyGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertEquals($payment['status'], 'failed');
+        $this->assertEquals('failed', $payment['status']);
     }
 
     protected function failOlamoneyAuthorizePayment()

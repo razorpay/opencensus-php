@@ -118,7 +118,7 @@ class Gateway extends Base\Gateway
         if ($response->status_code === 429)
         {
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED);
+                ErrorCode::BAD_REQUEST_PAYMENT_OTP_EXPIRED);
         }
 
         $content = $this->jsonToArray($response->body);
