@@ -21,6 +21,11 @@ app.controller('TeamManagementCtrl', [
 
     user.identity(true).then(function(data) {
       $scope.merchant = data;
+      if (data.tags.indexOf('Roles') == -1) {
+        $scope.roleOptions = [
+          { name: 'Manager', value: 'manager' },
+        ];
+      }
     });
 
     $scope.getTeamMembers = function(){
@@ -36,11 +41,6 @@ app.controller('TeamManagementCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     }
-
-
-    user.identity(true).then(function(data) {
-      $scope.merchant = data;
-    });
 
     $scope.updateTeamMember = function (user){
       var request = $http({
