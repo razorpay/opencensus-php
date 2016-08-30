@@ -32,7 +32,7 @@ class Gateway extends Ebs\Gateway
             'sid'   => 'value3',
         ];
 
-        $header = ['location'=> 'https://test.razorpay.com'];
+        $header = ['location'=> 'https://api.razorpay.com'];
 
         // For Central Bank of India Fail First Gateway Request
         if ($this->content['payment_option'] === BankCodes::getMappedCode(IFSC::CBIN))
@@ -51,7 +51,7 @@ class Gateway extends Ebs\Gateway
 
     public function sendSecondGatewayRequestForEbsAuthorize($request)
     {
-        $header = ['location'=> 'https://test.razorpay.com'];
+        $header = ['location'=> 'https://api.razorpay.com'];
 
         $response = $this->createResponse();
 
@@ -75,7 +75,7 @@ class Gateway extends Ebs\Gateway
         // Redirection is done uisng Form post
         if ($this->content['payment_option'] === BankCodes::getMappedCode(IFSC::UBIN))
         {
-            $header = ['location'=> 'https://test.razorpay.com'];
+            $header = ['location'=> 'https://api.razorpay.com'];
 
             $response = $this->createResponse('302', false);
 
@@ -146,7 +146,7 @@ class Gateway extends Ebs\Gateway
 
     protected function getText($content = [])
     {
-        $txt = '<form method="POST" name="payment" action = "https://test.razorpay.com">';
+        $txt = '<form method="POST" name="payment" action = "https://api.razorpay.com">';
 
         foreach ($content as $key => $value)
         {
