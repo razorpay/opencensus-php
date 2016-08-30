@@ -230,4 +230,70 @@ class Holidays
 
         return ($day->weekOfMonth % 2 !== 0);
     }
+
+    public static function getRandomWorkingDay($date, $ignoreBankHolidays = false)
+    {
+        return self::getNextWorkingDay($date, $ignoreBankHolidays);
+    }
+
+    /**
+     * Get next settlement holiday after the given day.
+     * The below is not an O(n^3) loop.
+     * It breaks at the first sight of return.
+     * And it is intended to skip most elements.
+     *
+     * @param Carbon\Carbon $date
+     * @return Carbon\Carbon $date
+     */
+    public static function getNextSettlementHoliday($date)
+    {
+        $year = $date->year;
+        $month = $date->month;
+        $day = $date->day;
+
+        foreach (self::$holidays as $holidayYear => $holidaysInYear)
+        {
+            // Compare only based on holidayYear.
+            $compareDate = self::getDateToCompareWith($holidayYear, $month, $day);
+
+            if ($compareDate->lt($date))
+            {
+                continue;
+            }
+
+            foreach ($holidaysInYear as $holidayMonth => $holidayInMonth)
+            {
+                // Compare only based on holidayYear and holidayMonth
+                $compareDate = self::getDateToCompareWith($holidayYear, $holidayMonth, $day);
+
+                if ($compareDate->lt($date))
+                {
+                    continue;
+                }
+
+                foreach ($holidayInMonth as $holidayDay => $holidayReason)
+                {
+                    // Compare based on holidayYear, holidayMonth and holidayDay
+                    $compareDate = self::getDateToCompareWith($holidayYear, $holidayMonth, $holidayDay);
+
+                    if ($compareDate->lt($date))
+                    {
+                        continue;
+                    }
+
+                    // Only the day the has a date with (holidayYear, holidayMonth and holidayDay)
+                    // greater than the current date will be returned.
+                    return $compareDate;
+                }
+            }
+        }
+    }
+
+    protected static function getDateToCompareWith($year, $month, $date)
+    {
+        return Carbon::now('Asia/Kolkata')->setDate($year, $month, $date)
+                                          ->hour(0)
+                                          ->minute(0)
+                                          ->second(0);
+    }
 }
