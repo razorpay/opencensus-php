@@ -198,7 +198,7 @@ trait Capture
     {
         $this->verifyOrderUnpaid($this->payment);
 
-        $paymentCopy = $this->payment->replicate();
+        $paymentCopy = clone $this->payment;
 
         try
         {
@@ -221,18 +221,15 @@ trait Capture
 
             $this->recordCapture();
         }
-        catch (Exception\BadRequestException $ex)
-        {
-            // For validation failures, we shouldn't mark capture as failed ever.
-            throw $ex;
-        }
-        catch (Exception\BadRequestValidationFailureException $ex)
-        {
-            // For validation failures, we shouldn't mark capture as failed ever.
-            throw $ex;
-        }
         catch (Exception\BaseException $ex)
         {
+            // For validation failures, we shouldn't mark capture as failed ever.
+            if (($ex instanceof Exception\BadRequestValidationFailureException) or
+                ($ex instanceof Exception\BadRequestException))
+            {
+                throw $ex;
+            }
+
             //
             // We need to use the old payment
             // because the recordCapture would have made some changes
