@@ -25,7 +25,7 @@ class Gateway extends Base\Gateway
 
     protected $gateway = 'wallet_olamoney';
 
-    protected $accessToken;
+    protected $topup = false;
 
     protected $walletAccessTokenExpiry = 28800; // 8 hours - 8 * 60 * 60
 
@@ -45,8 +45,6 @@ class Gateway extends Base\Gateway
         parent::authorize($input);
 
         $request = $this->getBillGeneratorRequest($input);
-
-        $this->traceGatewayPaymentRequest($request, $input);
 
         return $request;
     }
@@ -197,13 +195,14 @@ class Gateway extends Base\Gateway
         $content[RequestFields::USER_ACCESS_TOKEN] = $this->accessToken;
 
         $request = [
-            'url' => $this->getUrl(),
-            'method' => 'post',
-            'headers' => $this->getRequestHeaders(),
-            'content' => json_encode($content),
+            'url'       => $this->getUrl(),
+            'method'    => 'post',
+            'headers'   => $this->getRequestHeaders(),
         ];
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+
+        $request['content'] = json_encode($content);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -228,10 +227,10 @@ class Gateway extends Base\Gateway
         }
     }
 
-    public function topup($input)
-    {
-        return $this->authorize($input);
-    }
+    // public function topup($input)
+    // {
+    //     return $this->authorize($input);
+    // }
 
     public function debit(array $input)
     {
@@ -268,12 +267,13 @@ class Gateway extends Base\Gateway
         $content = $this->getDebitRequestAttributes($input);
         $content = json_encode($content);
 
-        $request = $this->getStandardRequestArray($content);
+        $request = $this->getStandardRequestArray();
 
         $request['headers'] = $this->getRequestHeaders();
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST,
-            ['request' => $request, 'content' => $content]);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+
+        $request['content'] = $content;
 
         return $request;
     }
@@ -289,45 +289,22 @@ class Gateway extends Base\Gateway
                                             ['gateway' => 'wallet_olamoney']);
 
         $content = array(
-            RequestFields::COMMAND          => Command::DEBIT,
-            RequestFields::ACCESS_TOKEN     => $this->getAccessToken($input['terminal']),
-            RequestFields::UNIQUE_ID        => $input['payment']['id'],
-            RequestFields::COMMENTS         => 'Razorpay_payment',
-            RequestFields::UDF              => $udf,
-            // RequestFields::RETURN_URL       => $input['callbackUrl'],
-            RequestFields::RETURN_URL       => 'NA',
-            RequestFields::NOTIFICATION_URL => $notificationUrl,
-            RequestFields::AMOUNT           => $amount,
-            RequestFields::CURRENCY         => $input['payment']['currency'],
-            RequestFields::COUPON_CODE      => 'NA',
+            RequestFields::COMMAND              => Command::DEBIT,
+            RequestFields::ACCESS_TOKEN         => $this->getAccessToken($input['terminal']),
+            RequestFields::UNIQUE_ID            => $input['payment']['id'],
+            RequestFields::COMMENTS             => 'Razorpay_payment',
+            RequestFields::UDF                  => $udf,
+            RequestFields::RETURN_URL           => 'NA',
+            RequestFields::NOTIFICATION_URL     => $notificationUrl,
+            RequestFields::AMOUNT               => $amount,
+            RequestFields::CURRENCY             => $input['payment']['currency'],
+            RequestFields::COUPON_CODE          => 'NA',
             RequestFields::USER_ACCESS_TOKEN    => $this->accessToken,
         );
 
         $content[RequestFields::HASH] = $this->getHashForDebit($content);
 
         return $content;
-    }
-
-    protected function getTopupRequestArray($input)
-    {
-        $content = $this->getTopUpAttributes($input);
-
-        $queryArray[RequestFields::BILL] = base64_encode(json_encode($content));
-
-        $query = http_build_query($queryArray);
-
-        $request = $this->getStandardRequestArray();
-
-        $request['method']  = 'get';
-
-        $request['url'] = $request['url']. '?' . $query;
-
-        unset($content[RequestFields::HASH]);
-
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST,
-            ['request' => $request, 'content' => $content]);
-
-        return $request;
     }
 
     protected function callbackRedirectFlow($input)
@@ -420,12 +397,8 @@ class Gateway extends Base\Gateway
         $request = [
             'method'  => 'get',
             'url'     => $this->getUrl(). '?' . $query,
+            'content' => [],
         ];
-
-        unset($content[RequestFields::HASH]);
-
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST,
-            ['request' => $request, 'content' => $content]);
 
         return $request;
     }
@@ -447,16 +420,16 @@ class Gateway extends Base\Gateway
         $udf = json_encode($udf);
 
         $content = array(
-            RequestFields::COMMAND          => Command::CREDIT,
-            RequestFields::ACCESS_TOKEN     => $this->getAccessToken($input['terminal']),
+            RequestFields::COMMAND                  => Command::CREDIT,
+            RequestFields::ACCESS_TOKEN             => $this->getAccessToken($input['terminal']),
             RequestFields::MERCHANT_REFERENCE_ID    => $input['payment']['id'],
-            RequestFields::COMMENTS         => 'Razorpay_payment',
-            RequestFields::UDF              => $udf,
-            RequestFields::RETURN_URL       => $input['callbackUrl'],
-            RequestFields::NOTIFICATION_URL => 'NA',
-            RequestFields::AMOUNT           => $amount,
-            RequestFields::USER_ACCESS_TOKEN     => $this->accessToken,
-            RequestFields::CURRENCY         => $input['payment']['currency'],
+            RequestFields::COMMENTS                 => 'Razorpay_payment',
+            RequestFields::UDF                      => $udf,
+            RequestFields::RETURN_URL               => $input['callbackUrl'],
+            RequestFields::NOTIFICATION_URL         => 'NA',
+            RequestFields::AMOUNT                   => $amount,
+            RequestFields::USER_ACCESS_TOKEN        => $this->accessToken,
+            RequestFields::CURRENCY                 => $input['payment']['currency'],
         );
 
         $content[RequestFields::HASH] = $this->getHashForBill($content);
@@ -484,37 +457,10 @@ class Gateway extends Base\Gateway
             'headers' => $this->getRequestHeaders(),
         ];
 
-        // $request['headers'] = $this->getRequestHeaders();
-
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
 
         return $request;
     }
-
-    // protected function getTopUpAttributes($input)
-    // {
-    //     $amount = (string) number_format($input['payment']['amount'] / 100, 2, '.', '');
-
-    //     $udf = [RequestFields::MERCHANT_DISPLAY_NAME => $input['merchant']->getBillingLabelElseName()];
-    //     $udf = json_encode($udf);
-
-    //     $content = array(
-    //         RequestFields::COMMAND          => Command::CREDIT,
-    //         RequestFields::ACCESS_TOKEN     => $this->getAccessToken($input['terminal']),
-    //         RequestFields::MERCHANT_REFERENCE_ID    => $input['payment']['id'],
-    //         RequestFields::COMMENTS         => 'Razorpay_payment',
-    //         RequestFields::UDF              => $udf,
-    //         RequestFields::RETURN_URL       => $input['callbackUrl'],
-    //         RequestFields::NOTIFICATION_URL => 'NA',
-    //         RequestFields::AMOUNT           => $amount,
-    //         RequestFields::USER_ACCESS_TOKEN     => $this->accessToken,
-    //         RequestFields::CURRENCY         => $input['payment']['currency'],
-    //     );
-
-    //     $content[RequestFields::HASH] = $this->getHashForTopUp($content);
-
-    //     return $content;
-    // }
 
     protected function getOtpSubmitRequestArray($input)
     {

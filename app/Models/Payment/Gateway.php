@@ -46,7 +46,6 @@ class Gateway
         self::MOBIKWIK,
         self::WALLET_PAYUMONEY,
         self::SHARP,
-        self::WALLET_OLAMONEY,
     );
 
     public static $channels = array(
