@@ -49,6 +49,7 @@ class Authenticate {
 		else
 		{
 			$user = Auth::guard('user')->user();
+			ApiRequest::addHeader('X-Dashboard-Merchant', $user->email);
 
 			if ($user)
 			{
