@@ -56,6 +56,15 @@ if (! function_exists('print_last_query'))
     }
 }
 
+if (! function_exists('enable_query_logs'))
+{
+    function enable_query_logs()
+    {
+        DB::connection('live')->enableQueryLog();
+        DB::connection('test')->enableQueryLog();
+    }
+}
+
 if (! function_exists('sddb'))
 {
     function sddb($limit = 0)
