@@ -34,6 +34,12 @@ class Gateway extends Ebs\Gateway
 
         $header = ['location'=> 'https://test.razorpay.com'];
 
+        // For Central Bank of India Fail First Gateway Request
+        if ($this->content['payment_option'] === BankCodes::getMappedCode(IFSC::CBIN))
+        {
+            $header = [];
+        }
+
         $response = $this->createResponse('302', false);
 
         $response = $this->setCookie($response, $cookie);
@@ -51,6 +57,12 @@ class Gateway extends Ebs\Gateway
 
         $response = $this->setBody($response, $this->getText());
         $response = $this->setHeader($response, $header);
+
+        // For Canara Bank Fail Second Gateway Request
+        if ($this->content['payment_option'] === BankCodes::getMappedCode(IFSC::CNRB))
+        {
+            $response = $this->setBody($response, '');
+        }
 
         return $response;
     }
@@ -75,6 +87,12 @@ class Gateway extends Ebs\Gateway
         }
 
         $response = $this->setBody($response, $this->getText($this->content));
+
+        // For Corporation Bank Fail Third Gatteway Request,
+        if ($this->content['payment_option'] === BankCodes::getMappedCode(IFSC::CORP))
+        {
+            $response = $this->setBody($response, '');
+        }
 
         return $response;
     }

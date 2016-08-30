@@ -76,6 +76,38 @@ class EbsGatewayTest extends TestCase
         $this->assertEquals('txn_'.$payment['transaction_id'], $txn['id']);
     }
 
+    public function testPaymentForFirstGatewayRequestFailure()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray('CBIN');
+
+        $data = $this->testData['testPaymentForFirstGatewayRequestFailure'];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $payment = $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testPaymentForSecondGatewayRequestFailure()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray('CNRB');
+        $data = $this->testData['testPaymentForSecondGatewayRequestFailure'];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $payment = $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testPaymentForThirdGatewayRequestFailure()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray('CORP');
+
+        $data = $this->testData['testPaymentForThirdGatewayRequestFailure'];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $payment = $this->doAuthPayment($payment);
+        });
+    }
+
     public function testHackedPayment()
     {
         $this->getHackedResponse();
