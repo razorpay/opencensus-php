@@ -44,7 +44,9 @@ class Gateway extends Base\Gateway
         $this->traceGatewayPaymentRequest($request, $input);
 
         //TODO:: To be removed after it is tested on production
-        if ($input['merchant']['id'] === '4izmfM9TFCAgFN')
+        // Second merchant id is for Test user running test cases
+        if (($input['merchant']['id'] === '4izmfM9TFCAgFN') or
+            ($input['merchant']['id'] === '10000000000000'))
         {
             if ($input['payment']['method'] === Payment\Method::NETBANKING)
             {
