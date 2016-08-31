@@ -192,7 +192,7 @@ trait Authorize
 
         $payment = $this->payment;
 
-        if ($payment->isSigned())
+        if ($this->shouldAutoCapture($payment) === true)
         {
             // If payment is signed, then we capture it in this step only.
             $payment = $this->capturePayment($payment, $payment->getAmount());
@@ -876,6 +876,12 @@ trait Authorize
             return $this->getReturnDataForSignedPayment($payment);
         }
 
+        if (($payment->order !== null) and
+            ($payment->order->getCapture() === true))
+        {
+            return $this->getReturnDataForAutoCaptureOrders($payment);
+        }
+
         if ($payment->getCallbackUrl())
         {
             return $this->getReturnRequestDataForMerchant($payment);
@@ -891,6 +897,23 @@ trait Authorize
             'amount'              => $payment->getAmount(),
             'currency'            => $payment->getCurrency(),
             'merchant_order_id'   => $payment->getNotes()['merchant_order_id'],
+        );
+
+        $sortedData = $data;
+        ksort($sortedData);
+
+        $str = implode('|', $sortedData);
+
+        $data['signature'] = $this->getSignature($str);
+
+        return $data;
+    }
+
+    protected function getReturnDataForAutoCaptureOrders($payment)
+    {
+        $data = array(
+            'razorpay_payment_id' => $payment->getPublicId(),
+            'razorpay_order_id'   => $payment->order->getPublicId()
         );
 
         $sortedData = $data;

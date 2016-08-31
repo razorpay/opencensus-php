@@ -14,6 +14,7 @@ class Validator extends Base\Validator
         Entity::AMOUNT         =>  'required|integer|max:50000000',
         Entity::CURRENCY       =>  'required|size:3|in:INR',
         Entity::RECEIPT        =>  'required|string|max:40',
+        Entity::CAPTURE        =>  'sometimes|boolean',
         Entity::CUSTOMER_ID    =>  'sometimes',
         Entity::NOTES          =>  'sometimes|notes',
         Entity::METHOD         =>  'sometimes|in:netbanking',

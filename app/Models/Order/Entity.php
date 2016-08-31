@@ -34,12 +34,13 @@ class Entity extends Base\PublicEntity
     // const VALID_TILL  = 'valid_till';
 
     // Auto capture if set
-    // const CAPTURE     = 'capture';
+    const CAPTURE     = 'capture';
 
     protected $fillable = array(
         self::AMOUNT,
         self::CURRENCY,
         self::RECEIPT,
+        self::CAPTURE,
         self::NOTES,
         self::METHOD,
         self::ACCOUNT_NUMBER,
@@ -53,6 +54,7 @@ class Entity extends Base\PublicEntity
     protected $defaults = array(
         self::ATTEMPTS          => 0,
         self::STATUS            => Status::CREATED,
+        self::CAPTURE           => 0,
         self::AUTHORIZED        => 0,
         self::NOTES             => [],
         self::METHOD            => null,
@@ -70,6 +72,13 @@ class Entity extends Base\PublicEntity
         self::ATTEMPTS,
         self::NOTES,
         self::CREATED_AT
+    );
+
+    protected $casts = array(
+        self::AMOUNT     => 'int',
+        self::CAPTURE    => 'bool',
+        self::AUTHORIZED => 'bool',
+        self::ATTEMPTS   => 'int'
     );
 
     protected $amounts = array(
@@ -118,27 +127,32 @@ class Entity extends Base\PublicEntity
 
     public function getAmount()
     {
-        return $this->getAmountAttribute();
+        return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getCapture()
+    {
+        return $this->getAttribute(self::CAPTURE);
     }
 
     public function getAccountNumber()
     {
-        return $this->attributes[self::ACCOUNT_NUMBER];
+        return $this->getAttribute(self::ACCOUNT_NUMBER);
     }
 
     public function getMethod()
     {
-        return $this->attributes[self::METHOD];
+        return $this->getAttribute(self::METHOD);
     }
 
     public function getAttempts()
     {
-        return $this->getAttemptsAttribute();
+        return $this->getAttribute(self::ATTEMPTS);
     }
 
     public function getBank()
     {
-        return $this->attributes[self::BANK];
+        return $this->getAttribute(self::BANK);
     }
 
     public function getMaskedAccountNumber()
@@ -155,24 +169,6 @@ class Entity extends Base\PublicEntity
     }
 
     /** End Setters And Getters */
-
-    /** Mutators */
-    protected function getAmountAttribute()
-    {
-        return (int) $this->attributes[self::AMOUNT];
-    }
-
-    protected function getAuthorizedAttribute()
-    {
-        return (bool) $this->attributes[self::AUTHORIZED];
-    }
-
-    protected function getAttemptsAttribute()
-    {
-        return (int) $this->attributes[self::ATTEMPTS];
-    }
-
-    /** End Mutators */
 
     /** Other Functions */
     public function incrementAttempts()

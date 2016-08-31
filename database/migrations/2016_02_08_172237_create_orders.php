@@ -39,6 +39,9 @@ class CreateOrders extends Migration {
 
             $table->string(Order::STATUS, 10);
 
+            $table->boolean(Order::CAPTURE)
+                  ->default(false);
+
             $table->string(Order::RECEIPT, 40);
 
             $table->text(Order::NOTES);

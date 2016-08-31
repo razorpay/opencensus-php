@@ -27,6 +27,26 @@ return [
             ],
         ],
     ],
+
+    'testCreateAutoCaptureOrder' => [
+        'request' => [
+            'content' => [
+                'amount'        => 50000,
+                'currency'      => 'INR',
+                'receipt'       => 'rcptid42',
+                'capture'       => true
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'        => 50000,
+                'currency'      => 'INR',
+                'receipt'       => 'rcptid42',
+            ],
+        ],
+    ],
     'testCreateTPVOrder' => [
         'request' => [
             'content' => [

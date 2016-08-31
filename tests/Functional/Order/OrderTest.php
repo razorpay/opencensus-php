@@ -36,6 +36,13 @@ class OrderTest extends TestCase
         return $order;
     }
 
+    public function testCreateAutoCaptureOrder()
+    {
+        $order = $this->startTest();
+
+        return $order;
+    }
+
     public function testCreateTPVOrder()
     {
         $order = $this->startTest();
@@ -103,6 +110,34 @@ class OrderTest extends TestCase
         {
             $this->doAuthPayment($payment1);
         });
+    }
+
+    public function testStatusAfterAutoCapturePayment()
+    {
+        $order = $this->testCreateAutoCaptureOrder();
+        $order = $this->getLastEntity('order');
+        $this->assertEquals($order['status'], 'created');
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order['id'];
+        $response = $this->doAuthPayment($payment);
+
+        $actualSignature = $response['signature'];
+
+        unset($response['signature']);
+
+        ksort($response);
+        $exceptedSignature = $this->getSignature($response, 'TheKeySecretForTests');
+
+        $this->assertEquals($actualSignature, $exceptedSignature);
+
+        $payment = $this->getLastEntity('payment');
+        $this->assertEquals($order['id'], $payment['order_id']);
+        $this->assertEquals('captured', $payment['status']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals($order['status'], 'paid');
+        $this->assertEquals($order['authorized'], true);
     }
 
     public function testOrderAndPaymentAmountMismatch()

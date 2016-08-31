@@ -664,6 +664,24 @@ class Processor
         return $ba;
     }
 
+    protected function shouldAutoCapture($payment)
+    {
+        // If payment is signed
+        if ($payment->isSigned() === true)
+        {
+            return true;
+        }
+
+        // If payment order was marked as auto capture
+        if (($payment->order !== null) and
+            ($payment->order->getCapture() === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     protected function createOrUpdateToken($input, $data)
     {
         $token = $this->retrieveToken($input);
