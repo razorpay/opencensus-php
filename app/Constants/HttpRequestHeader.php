@@ -15,4 +15,6 @@ class HttpRequestHeader
     const ACCESS_CONTROL_ALLOW_ORIGIN   = 'Access-Control-Allow-Origin';
     const X_FRAME_OPTIONS               = 'X-Frame-Options';
     const CONTENT_TYPE                  = 'content-type';
+    const X_RAZORPAY_SIGNATURE          = 'X-Razorpay-Signature';
+    const CORS                          = 'cors';
 }
