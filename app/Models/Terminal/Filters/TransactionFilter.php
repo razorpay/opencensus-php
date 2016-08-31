@@ -43,7 +43,7 @@ class TransactionFilter extends Terminal\Filter
 
             // Pick the right terminal only
             case Method::WALLET:
-                $wallet = $input['payment']->getWallet();
+                $wallet = strtolower($input['payment']->getWallet());
 
                 $gateway = Gateway::getGatewayForWallet($wallet);
 
