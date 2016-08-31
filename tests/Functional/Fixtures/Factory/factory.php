@@ -120,6 +120,7 @@ $factory(\RZP\Models\Pricing\Entity::class, [
     'id' => $faker->uniqueid,
     'plan_id' => '1ycviEdCgurrFI',
     'plan_name' => 'testFixturePlan',
+    'feature' => 'payment',
     'payment_method' => 'card',
     'payment_method_type' => 'credit',
     'payment_network' => 'VISA',
