@@ -384,7 +384,13 @@ class Gateway extends Base\Gateway
 
     public function checkBalance(array $input)
     {
-        $userBalance = $this->getUserWalletLimit($input);
+        list($userBalance, $walletLimit) = $this->getUserWalletLimit($input);
+
+        if ($input['payment']['amount'] > $walletLimit)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_WALLET_PER_PAYMENT_AMOUNT_CROSSED);
+        }
 
         if ($input['payment']['amount'] > $userBalance)
         {
@@ -408,10 +414,11 @@ class Gateway extends Base\Gateway
         if ($content['status'] === Status::SUCCESS and
             isset($content['result']['availableBalance']))
         {
-            return (int) ($content['result']['availableBalance'] * 100);
+            return [(int) ($content['result']['availableBalance'] * 100),
+                    (int) ($content['result']['maxLimit'] * 100)];
         }
 
-        return 0;
+        return [0, 100000];
     }
 
     protected function checkWalletTokenValidity($input)
