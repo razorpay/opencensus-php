@@ -142,7 +142,6 @@ trait Authorize
             }
             catch (Exception\BaseException $e)
             {
-                sd($e);
                 //
                 // An error occurred on gateway due to user or gateway.
                 // We need to record this and mark payment as failed.
