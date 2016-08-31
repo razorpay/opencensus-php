@@ -34,18 +34,20 @@ class Fee
         $this->repo = $repo;
     }
 
-    public function getZeroPricingPlanRule($payment)
+    public function getZeroPricingPlanRule($entity)
     {
-        $method = $payment->getMethod();
+        $feature = $entity->getEntity();
 
-        return $this->repo->getZeroPricingPlanRuleForMethod($method)->getId();
+        $method = $entity->getMethod();
+
+        return $this->repo->getZeroPricingPlanRuleForMethod($feature, $method)->getId();
     }
 
-    public function calculateMerchantFees($payment, $preCalculationOfFees = false)
+    public function calculateMerchantFees($entity, $preCalculationOfFees = false)
     {
-        $calculator = new FeeCalculator($payment, $this->repo);
+        $calculator = new FeeCalculator($entity, $this->repo);
 
-        $pricingPlanId = $this->getPricingPlanId($payment->merchant);
+        $pricingPlanId = $this->getPricingPlanId($entity->merchant);
 
         $pricing = $this->repo->getPricingPlanById($pricingPlanId);
 
