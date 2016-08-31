@@ -27,11 +27,10 @@ class CreatePricing extends Migration
 
             $table->string(Pricing::PLAN_NAME);
 
+            $table->string(Pricing::FEATURE, 20);
+
             $table->string(Pricing::GATEWAY)
                   ->nullable();
-
-            $table->string(Pricing::FEATURE, 20)
-                  ->default(Feature::PAYMENT);
 
             $table->string(Pricing::PAYMENT_METHOD);
 
