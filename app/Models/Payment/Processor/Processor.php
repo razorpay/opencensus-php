@@ -18,6 +18,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer;
+use RZP\Models\Base\Lock;
 
 class Processor
 {
@@ -688,6 +689,24 @@ class Processor
         }
 
         return false;
+    }
+
+    protected function failIfMutexIsSet($action)
+    {
+        //
+        // Don't continue if action is in progress
+        //
+        if ($action === Payment\Action::CAPTURE)
+        {
+            $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_DUPLICATE_CAPTURE_REQUEST;
+        }
+        else if ($action === Payment\Action::REFUND)
+        {
+            $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_DUPLICATE_REFUND_REQUEST;
+        }
+
+        throw new Exception\BadRequestException(
+            $errorCode);
     }
 
     protected function createOrUpdateToken($input, $data)

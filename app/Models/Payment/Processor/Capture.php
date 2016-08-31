@@ -9,6 +9,7 @@ use RZP\Models\Transaction;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Base\Lock;
 
 trait Capture
 {
@@ -52,9 +53,10 @@ trait Capture
 
         (new Payment\Validator)->captureValidate($payment, $input);
 
-        $this->failIfMutexIsSet($payment, Payment\Action::CAPTURE);
-
-        $this->setActionMutex($payment, Payment\Action::CAPTURE);
+        if (Lock::set($payment->getId()) === false)
+        {
+            $this->failIfMutexIsSet(Payment\Action::CAPTURE);
+        }
 
         return $this->capturePayment($payment, $input['amount']);
     }
@@ -276,7 +278,7 @@ trait Capture
         }
         finally
         {
-            $this->resetActionMutex($this->payment, Payment\Action::CAPTURE);
+            Lock::release($this->payment->getId());
         }
     }
 

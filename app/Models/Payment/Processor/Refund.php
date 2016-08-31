@@ -16,6 +16,7 @@ use Request;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Hdfc;
+use RZP\Models\Base\Lock;
 
 trait Refund
 {
@@ -43,9 +44,10 @@ trait Refund
             $this->validateMerchantBalance($refund);
         }
 
-        $this->failIfMutexIsSet($payment, Payment\Action::REFUND);
-
-        $this->setActionMutex($payment, Payment\Action::REFUND);
+        if (Lock::set($payment->getId()) === false)
+        {
+            $this->failIfMutexIsSet(Payment\Action::REFUND);
+        }
 
         $this->refund = $refund;
 
@@ -335,7 +337,7 @@ trait Refund
         }
         finally
         {
-            $this->resetActionMutex($this->payment, Payment\Action::REFUND);
+            Lock::release($this->payment->getId());
         }
     }
 

@@ -3,7 +3,7 @@
 namespace RZP\Tests\Functional\Payment;
 
 use DB;
-use Cache;
+use Redis;
 use Mockery;
 use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
@@ -60,15 +60,9 @@ class RefundTest extends TestCase
         $payment = $this->defaultAuthPayment();
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
-        $id = $payment['id'];
-        $id = PaymentEntity::stripSignWithoutValidation($id);
-
-        $key = $id . '_refundInProgress';
-
-        Cache::shouldReceive('get')
+        Redis::shouldReceive('set')
                     ->once()
-                    ->with($key)
-                    ->andReturn(true);
+                    ->andReturn('');
 
         $data = $this->testData[__FUNCTION__];
 

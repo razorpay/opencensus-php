@@ -2,7 +2,7 @@
 
 namespace RZP\Tests\Functional\Payment;
 
-use Cache;
+use Redis;
 use Carbon\Carbon;
 use Mockery;
 use Dashboard\Payment;
@@ -67,15 +67,9 @@ class CaptureTest extends TestCase
     {
         $payment = $this->defaultAuthPayment();
 
-        $id = $payment['id'];
-        $id = PaymentEntity::stripSignWithoutValidation($id);
-
-        $key = $id . '_captureInProgress';
-
-        Cache::shouldReceive('get')
-                    ->once()
-                    ->with($key)
-                    ->andReturn(true);
+        Redis::shouldReceive('set')
+            ->once()
+            ->andReturn('');
 
         $data = $this->testData[__FUNCTION__];
 
