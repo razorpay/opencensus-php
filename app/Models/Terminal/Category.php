@@ -152,10 +152,9 @@ class Category
 
     public static function getCategoryForMethodAndNetwork($method, $network, $category)
     {
-        $methodCategory = self::getCategoryForMethod($method, $category$);
+        $methodCategory = self::getCategoryForMethod($method, $category);
 
         $defaultMethodCategory = self::getDefaultForMethod($method);
-
 
         $networkCategory = self::getCategoryForNetwork($network, $category);
 
@@ -192,5 +191,31 @@ class Category
     protected static function getConstantName($type, $name)
     {
         return strtoupper($type.'_'.$name);
+    }
+
+    public static function isMerchantCategoryValid($category)
+    {
+        return in_array($category, self::$CATEGORIES_ALL);
+    }
+
+    public static function isTerminalCategoryValid($category, $method = null, $network = null)
+    {
+        // get the correct constant for the terminal
+        // get the values array and check in array
+        if(self::isConstantDefined('method', $method) === true)
+        {
+            $methodConstantName = self::getConstantName('method', $method);
+
+            $values = array_values(self::$$methodConstantName);
+        }
+
+        if(self::isConstantDefined('network', $network) === true)
+        {
+            $networkConstantName = self::getConstantName('network', $network);
+
+            $values = array_values(self::$$networkConstantName);
+        }
+
+        return in_array($category, $values);
     }
 }

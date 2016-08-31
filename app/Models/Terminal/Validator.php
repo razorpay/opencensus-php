@@ -5,6 +5,7 @@ namespace RZP\Models\Terminal;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base;
+use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 
@@ -211,16 +212,48 @@ class Validator extends Base\Validator
             return ;
         }
 
-        $gateway  = $input[Entity::GATEWAY];
         $category = $input[Entity::TERMINAL_CATEGORY];
 
-        if (Category::isCategoryValidForGateway($category, $gateway) === false)
+        $method = $this->getMethod();
+        $network = $this->getNetwork();
+
+        if (Category::isTerminalCategoryValid($category, $method, $network) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Category provided invalid for gateway',
                 Entity::TERMINAL_CATEGORY
                 );
             }
+    }
+
+    protected function getNetwork()
+    {
+        $network = null;
+
+        if ($this->getGateway() === Payment\Gateway::AMEX)
+        {
+            $network = Card\Network::AMEX;
+        }
+
+        return $network;
+    }
+
+    protected function getMethod()
+    {
+        if ($this->entity->isCardEnabled())
+        {
+            return Payment\Method::CARD;
+        }
+
+        if ($this->entity->isNetbankingEnabled())
+        {
+            return Payment\Method::NETBANKING;
+        }
+
+        if ($this->entity->isEmiEnabled())
+        {
+            return Payment\Method::EMI;
+        }
     }
 
     protected function matchGatewayForNewTerminal($new, $existing)

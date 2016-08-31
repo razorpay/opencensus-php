@@ -969,7 +969,7 @@ return [
     'testAddTerminalCategories' => [
         'request' => [
             'content' => [
-                'gateway_amex' => 'education'
+                'terminal_category' => 'education'
             ],
             'url' => '/merchants/1X4hRFHFx4UiXt',
             'method' => 'put',
@@ -983,7 +983,7 @@ return [
     'testAddInvalidTerminalCategories' => [
         'request' => [
             'content' => [
-                'gateway_amex'=>'education2'
+                'terminal_category'=>'education2'
             ],
             'url' => '/merchants/1X4hRFHFx4UiXt',
             'method' => 'put',
@@ -992,7 +992,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Category : education2 invalid for gateway_amex',
+                    'description' => 'Category : education2 invalid for merchant',
                 ],
             ],
             'status_code' => 400,
