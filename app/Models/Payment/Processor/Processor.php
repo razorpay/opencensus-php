@@ -191,9 +191,7 @@ class Processor
             'merchant_order_id' => $payment->getNotes()['merchant_order_id'],
         );
 
-        $str = implode('|', $data);
-
-        $signature = $this->getSignature($str);
+        $signature = $this->getSignature($data);
 
         // use hash_equals to prevent timing attacks
         if (! hash_equals($signature, $input['signature']))
@@ -205,8 +203,12 @@ class Processor
         return true;
     }
 
-    protected function getSignature($str)
+    protected function getSignature(array $data)
     {
+        ksort($data);
+
+        $str = implode('|', $data);
+
         return $this->app['basicauth']->sign($str);
     }
 

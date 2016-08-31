@@ -12,8 +12,12 @@ class Repository extends Base\Repository
 
     protected $appFetchParamRules = array(
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
-        Entity::STATUS 			=> 'sometimes|in:created,attempted,paid',
-        Entity::AUTHORIZED 		=> 'sometimes|in:0,1',
+        Entity::STATUS          => 'sometimes|in:created,attempted,paid',
+        Entity::AUTHORIZED      => 'sometimes|in:0,1',
+    );
+
+    protected $proxyFetchParamRules = array(
+        Entity::RECEIPT         => 'sometimes|string'
     );
 
     protected $entityFetchParamRules = array(

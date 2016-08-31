@@ -82,7 +82,9 @@ trait Callback
         $diff = time() - $payment->getCreatedAt();
 
         // If it was authorized recently then send back authorized again.
-        if (($payment->isAuthorized()) and
+        if ((($payment->isAuthorized() === true) or
+             (($payment->isCaptured() === true) and
+              ($payment->getAutoCaptured() === true))) and
             ($diff < self::CALLBACK_PROCESS_AGAIN_DURATION * 60))
         {
             return $this->postPaymentAuthorizeProcessing($payment);

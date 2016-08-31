@@ -71,6 +71,22 @@ class OrderTest extends TestCase
         $this->startTest();
     }
 
+    public function testRetrieveOrderWithReceipt()
+    {
+        $order = $this->fixtures->create('order');
+
+        $this->ba->proxyAuth();
+
+        $orders = $this->retrieveOrdersDefault();
+
+        //GIVEN
+        $receipt = $orders['items'][0]['receipt'];
+
+        $order = $this->retrieveOrdersDefault(['receipt' => $receipt]);
+
+        $this->assertEquals($receipt, $order['items'][0]['receipt']);
+    }
+
     public function testStatusAfterPayment()
     {
         $order = $this->testCreateOrder();
@@ -122,9 +138,9 @@ class OrderTest extends TestCase
         $payment['order_id'] = $order['id'];
         $response = $this->doAuthPayment($payment);
 
-        $actualSignature = $response['signature'];
+        $actualSignature = $response['razorpay_signature'];
 
-        unset($response['signature']);
+        unset($response['razorpay_signature']);
 
         ksort($response);
         $exceptedSignature = $this->getSignature($response, 'TheKeySecretForTests');
@@ -242,5 +258,16 @@ class OrderTest extends TestCase
         $preferences = $this->startTest($testData);
 
         $this->fixtures->merchant->disableTPV();
+    }
+
+    protected function retrieveOrdersDefault(array $content = [], $method = 'GET')
+    {
+        $request = array(
+            'method'  => $method,
+            'url'     => '/orders',
+            'content' => $content
+        );
+
+        return $this->makeRequestAndGetContent($request);
     }
 }

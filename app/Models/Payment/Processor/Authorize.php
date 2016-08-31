@@ -899,12 +899,7 @@ trait Authorize
             'merchant_order_id'   => $payment->getNotes()['merchant_order_id'],
         );
 
-        $sortedData = $data;
-        ksort($sortedData);
-
-        $str = implode('|', $sortedData);
-
-        $data['signature'] = $this->getSignature($str);
+        $data['signature'] = $this->getSignature($data);
 
         return $data;
     }
@@ -916,12 +911,7 @@ trait Authorize
             'razorpay_order_id'   => $payment->order->getPublicId()
         );
 
-        $sortedData = $data;
-        ksort($sortedData);
-
-        $str = implode('|', $sortedData);
-
-        $data['signature'] = $this->getSignature($str);
+        $data['razorpay_signature'] = $this->getSignature($data);
 
         return $data;
     }
