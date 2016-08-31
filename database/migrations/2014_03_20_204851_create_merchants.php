@@ -85,11 +85,7 @@ class CreateMerchants extends Migration
                   ->nullable();
 
             // Columns for Method and Gateway Based Categories
-            $table->string(Merchant::METHOD_NETBANKING)
-                  ->nullable()
-                  ->default(null);
-
-            $table->string(Merchant::GATEWAY_AMEX)
+            $table->string(Merchant::TERMINAL_CATEGORY)
                   ->nullable()
                   ->default(null);
 

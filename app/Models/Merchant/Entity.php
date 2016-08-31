@@ -36,11 +36,7 @@ class Entity extends Base\PublicEntity
     /**
      * Category for particular methods or gateways
      */
-    const METHOD_CARD               = 'method_card';
-    const METHOD_NETBANKING         = 'method_netbanking';
-    const METHOD_WALLET             = 'method_wallet';
-    const METHOD_EMI                = 'method_emi';
-    const GATEWAY_AMEX              = 'gateway_amex';
+    const TERMINAL_CATEGORY         = 'terminal_category';
 
     /**
      * Refers to methods relation and not a property;
