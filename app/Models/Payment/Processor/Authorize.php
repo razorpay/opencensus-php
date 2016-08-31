@@ -146,6 +146,10 @@ trait Authorize
                 // An error occurred on gateway due to user or gateway.
                 // We need to record this and mark payment as failed.
                 //
+                $rawData['terminal_data']['exception'] = $e;
+
+                $this->createAnalyticsLog($rawData);
+
                 $this->updatePaymentAuthFailedAndThrowException($e);
             }
         }
@@ -1076,7 +1080,7 @@ trait Authorize
             // Create log
             $pAnalyticsService->createAuditLog($log);
         }
-        catch (\Exception $e)
+        catch (Exception\BaseException $e)
         {
             $this->trace->error(
                 TraceCode::PAYMENT_ANALYTICS_SAVE_FAILED,
