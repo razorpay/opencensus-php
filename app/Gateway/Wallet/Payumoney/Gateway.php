@@ -417,9 +417,9 @@ class Gateway extends Base\Gateway
         if ($content['status'] === Status::SUCCESS and
             isset($content['result']['availableBalance']))
         {
-            $key = $this->getBalanceKey($input['payment']['email']);
+            $key = $this->getBalanceKeyForCache($input['payment']['email']);
 
-            Cache::put($key, $content['result'], 5);
+            Cache::put($key, $content['result'], self::PAYMENT_TTL);
 
             return [(int) ($content['result']['availableBalance'] * 100),
                     (int) ($content['result']['maxLimit'] * 100)];
@@ -428,7 +428,7 @@ class Gateway extends Base\Gateway
         return [0, 100000];
     }
 
-    protected function getBalanceKey($email)
+    protected function getBalanceKeyForCache($email)
     {
         return sprintf(self::BALANCE_KEY, $email);
     }
@@ -593,13 +593,14 @@ class Gateway extends Base\Gateway
     {
         $content = [];
 
-        $key = $this->getBalanceKey($input['payment']['email']);
+        $key = $this->getBalanceKeyForCache($input['payment']['email']);
 
         $userWalletLimit = Cache::get($key);
 
         if (isset($input['gateway']['amount']))
         {
-            if ($input['gateway']['amount'] > ($userWalletLimit['maxLimit'] * 100))
+            if ((isset($userWalletLimit) === true) and
+                ($input['gateway']['amount'] > ($userWalletLimit['maxLimit'] * 100)))
             {
                 throw new Exception\GatewayErrorException(
                     ErrorCode::BAD_REQUEST_PAYMENT_WALLET_PER_PAYMENT_AMOUNT_CROSSED);
