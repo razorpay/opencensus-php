@@ -3,28 +3,31 @@
 namespace RZP\Gateway\Wallet\Payumoney;
 
 use View;
+use Cache;
+use RZP\Error;
+use Carbon\Carbon;
+use RZP\Exception;
+use RZP\Trace\Trace;
 use RZP\Constants\Mode;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
-use RZP\Error;
 use RZP\Error\ErrorCode;
-use RZP\Exception;
+use RZP\Trace\TraceCode;
+use RZP\Constants\HashAlgo;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Wallet\Base;
-use RZP\Trace\Trace;
-use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Core;
-use Carbon\Carbon;
 use RZP\Models\Customer\Token;
 use RZP\Gateway\Base\VerifyResult;
-use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Wallet\Base\Action;
+use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Wallet\Payumoney\ResponseCodeMap;
-use RZP\Constants\HashAlgo;
 
 class Gateway extends Base\Gateway
 {
     use AuthorizeFailed;
+
+    const BALANCE_KEY = '%s_payumoney_balance';
 
     protected $gateway = 'wallet_payumoney';
 
@@ -384,15 +387,15 @@ class Gateway extends Base\Gateway
 
     public function checkBalance(array $input)
     {
-        list($userBalance, $walletLimit) = $this->getUserWalletLimit($input);
+        list($availableBalance, $walletLimit) = $this->getUserWalletLimit($input);
 
-        if ($input['payment']['amount'] > $walletLimit)
+        if (($input['payment']['amount'] - $availableBalance) > $walletLimit)
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_WALLET_PER_PAYMENT_AMOUNT_CROSSED);
         }
 
-        if ($input['payment']['amount'] > $userBalance)
+        if ($input['payment']['amount'] > $availableBalance)
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE);
@@ -414,11 +417,20 @@ class Gateway extends Base\Gateway
         if ($content['status'] === Status::SUCCESS and
             isset($content['result']['availableBalance']))
         {
+            $key = $this->getBalanceKey($input['payment']['email']);
+
+            Cache::put($key, $content['result'], 5);
+
             return [(int) ($content['result']['availableBalance'] * 100),
                     (int) ($content['result']['maxLimit'] * 100)];
         }
 
         return [0, 100000];
+    }
+
+    protected function getBalanceKey($email)
+    {
+        return sprintf(self::BALANCE_KEY, $email);
     }
 
     protected function checkWalletTokenValidity($input)
@@ -581,6 +593,25 @@ class Gateway extends Base\Gateway
     {
         $content = [];
 
+        $key = $this->getBalanceKey($input['payment']['email']);
+
+        $userWalletLimit = Cache::get($key);
+
+        if (isset($input['gateway']['amount']))
+        {
+            if ($input['gateway']['amount'] > ($userWalletLimit['maxLimit'] * 100))
+            {
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_WALLET_PER_PAYMENT_AMOUNT_CROSSED);
+            }
+
+            $content['totalAmount'] = $input['gateway']['amount'] / 100;
+        }
+        else
+        {
+            $amount = (($input['payment']['amount'] / 100) - $userWalletLimit['availableBalance']);
+        }
+
         $content = array(
             'key'           => $this->getMerchantId($input['terminal']),
             'txnDetails'    => json_encode(array(
@@ -588,14 +619,9 @@ class Gateway extends Base\Gateway
                 'surl'  => $input['callbackUrl'],
                 'furl'  => $input['callbackUrl'],
             )),
-            'totalAmount'   => $input['payment']['amount'] / 100,
+            'totalAmount'   => $amount,
             'client_id'     => $this->getClientId($input['terminal']),
         );
-
-        if (isset($input['gateway']['amount']))
-        {
-            $content['totalAmount'] = $input['gateway']['amount'] / 100;
-        }
 
         $content['hash'] = $this->getHashForTopupWallet($content);
 
