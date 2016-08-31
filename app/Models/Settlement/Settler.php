@@ -390,6 +390,8 @@ class Settler
                          ($merchant->holdFunds() === false));
 
 
+        assert ($merchant->bankAccount !== null);
+
         if (($this->mode !== Mode::TEST) and
             ($merchant->bankAccount->getCreatedAt() > $lastWorkingDay->timestamp))
         {

@@ -289,7 +289,7 @@ class SavedCardPaymentCreateTest extends TestCase
 
         $request = array(
             'url' => '/apps/payments',
-            'method' => 'post',
+            'method' => 'get',
             'content' => [
                 'skip'  => 1
             ]);

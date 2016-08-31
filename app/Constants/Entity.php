@@ -48,7 +48,6 @@ class Entity
 
     const ATOM                  = 'atom';
     const HDFC                  = 'hdfc';
-    const CYBERSOURCE           = 'cybersource';
     const FIRST_DATA            = 'first_data';
     const EBS                   = 'ebs';
     const AMEX                  = 'amex';
