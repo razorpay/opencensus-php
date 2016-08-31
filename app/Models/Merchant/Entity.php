@@ -663,7 +663,7 @@ class Entity extends Base\PublicEntity
     {
         $category = $this->getTerminalCategory();
 
-        return Terminal\Category::getCategoryForMethodAndNetwork($method, $network, $category);
+        return Category::getCategoryForMethodAndNetwork($method, $network, $category);
     }
 
     public function isShared()

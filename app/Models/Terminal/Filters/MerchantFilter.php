@@ -86,7 +86,7 @@ class MerchantFilter extends Terminal\Filter
         $network = $input['payment']->isMethodCardOrEmi() ? $input['payment']->card->getNetworkCode() : null;
 
         // Use Merchant specific for method or maybe overridden for gateway;
-        $merchantTerminalCategory = $input['merchant']->getCategoryForMethodAndNetwork($method, $network);
+        $merchantTerminalCategory = $input['merchant']->getTerminalCategoryForMethodAndNetwork($method, $network);
 
         $defaultCategory = Terminal\Category::getDefaultForMethodAndNetwork($method, $network);
 

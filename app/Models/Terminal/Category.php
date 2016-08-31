@@ -110,6 +110,21 @@ class Category
         return $category;
     }
 
+    public static function getDefaultForMethodAndNetwork($method, $network)
+    {
+        $category = null;
+
+        $category = self::getDefaultForMethod($method);
+
+        $networkCategory = self::getDefaultForNetwork($network);
+
+        if (empty($networkCategory) === false)
+        {
+            $category = $networkCategory;
+        }
+
+        return $category;
+    }
     public static function isCategoryValidFor($category, $name)
     {
         $name = strtoupper($name);
@@ -126,7 +141,8 @@ class Category
     {
         $returnCategory = null;
 
-        if (self::isConstantDefined('method', $method))
+        if ((self::isConstantDefined('method', $method)) and
+            (is_null($category) === false))
         {
             $name = self::getConstantName('method', $method);
 
@@ -140,7 +156,8 @@ class Category
     {
         $returnCategory = null;
 
-        if (self::isConstantDefined('network', $network))
+        if ((self::isConstantDefined('network', $network)) and
+            (is_null($category) === false))
         {
             $name = self::getConstantName('network', $network);
 
@@ -168,7 +185,7 @@ class Category
         }
 
         // Don't perform network override if the networkCategory is ''
-        if ((is_null($returnCategory) === true) && ($networkCategory !== ''))
+        if ((is_null($networkCategory) === false) && ($networkCategory !== ''))
         {
             $returnCategory = $networkCategory;
 
@@ -202,6 +219,8 @@ class Category
     {
         // get the correct constant for the terminal
         // get the values array and check in array
+        $values = [];
+
         if(self::isConstantDefined('method', $method) === true)
         {
             $methodConstantName = self::getConstantName('method', $method);

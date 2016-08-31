@@ -214,7 +214,8 @@ class Validator extends Base\Validator
 
         $category = $input[Entity::TERMINAL_CATEGORY];
 
-        $method = $this->getMethod();
+        $method = $this->getMethod($input);
+
         $network = $this->getNetwork();
 
         if (Category::isTerminalCategoryValid($category, $method, $network) === false)
@@ -230,7 +231,7 @@ class Validator extends Base\Validator
     {
         $network = null;
 
-        if ($this->getGateway() === Payment\Gateway::AMEX)
+        if ($this->entity->getGateway() === Payment\Gateway::AMEX)
         {
             $network = Card\Network::AMEX;
         }
@@ -238,19 +239,22 @@ class Validator extends Base\Validator
         return $network;
     }
 
-    protected function getMethod()
+    protected function getMethod($input)
     {
-        if ($this->entity->isCardEnabled())
+        if ((isset($input[Entity::CARD]) === true) and
+            (empty($input[Entity::CARD]) === false))
         {
             return Payment\Method::CARD;
         }
 
-        if ($this->entity->isNetbankingEnabled())
+        if ((isset($input[Entity::NETBANKING]) === true) and
+            (empty($input[Entity::NETBANKING]) === false))
         {
             return Payment\Method::NETBANKING;
         }
 
-        if ($this->entity->isEmiEnabled())
+        if ((isset($input[Entity::EMI]) === true) and
+            (empty($input[Entity::EMI]) === false))
         {
             return Payment\Method::EMI;
         }

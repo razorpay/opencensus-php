@@ -28,14 +28,16 @@ class MerchantSorter extends Terminal\Sorter
 
         $method = $input['payment']->getMethod();
 
+        $network = $input['payment']->isMethodCardOrEmi() ? $input['payment']->card->getNetworkCode() : null;
+
         // As the terminals are from the priority list
         // append to the terminal
         foreach ($terminals as $terminal)
         {
-            $gateway = $terminal->getGateway();
+            $merchantTerminalCategory = $input['merchant']->getTerminalCategoryForMethodAndNetwork($method, $network);
 
-            $merchantTerminalCategory = $input['merchant']->getCategoryForMethodAndGateway($method, $gateway);
-            $defaultCategory  = Terminal\Category::getDefaultForMethodAndGateway($method, $gateway);
+            $defaultCategory  = Terminal\Category::getDefaultForMethodAndNetwork($method, $network);
+
             $terminalCategory = $terminal->getTerminalCategory();
 
             if ($merchantTerminalCategory === $terminalCategory)
