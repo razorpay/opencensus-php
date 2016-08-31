@@ -113,9 +113,7 @@ trait Authorize
                 $request = $this->callGatewayAuthorize($terminalGatewayInput);
 
                 // record a successful payment here for the given terminal id
-                $end = microtime();
-
-                $rawData['terminal_data']['end'] = $end;
+                $rawData['terminal_data']['end'] = microtime();
 
                 $this->createAnalyticsLog($rawData);
 
@@ -125,6 +123,8 @@ trait Authorize
             {
                 // record a failed payment for given terminal and continue
                 $rawData['terminal_data']['exception'] = $e;
+
+                $rawData['terminal_data']['end'] = microtime();
 
                 $this->createAnalyticsLog($rawData);
 
@@ -147,6 +147,8 @@ trait Authorize
                 // We need to record this and mark payment as failed.
                 //
                 $rawData['terminal_data']['exception'] = $e;
+
+                $rawData['terminal_data']['end'] = microtime();
 
                 $this->createAnalyticsLog($rawData);
 
