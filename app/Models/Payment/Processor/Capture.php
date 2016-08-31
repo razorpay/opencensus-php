@@ -68,7 +68,7 @@ trait Capture
         $amount = $payment->getAmount();
 
         // set auto-capture 1
-        $payment->setAutoCaptureTrue();
+        $payment->setAutoCapturedTrue();
 
         try
         {
@@ -279,6 +279,8 @@ trait Capture
 
         $this->repo->transaction(function() use ($payment)
         {
+            $autoCaptured = $payment->getAutoCaptured();
+
             $this->lockForUpdateAndReload($payment);
 
             if ($payment->hasBeenCaptured() === true)
@@ -287,7 +289,7 @@ trait Capture
                     ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_CAPTURED);
             }
 
-            $this->updatePaymentCaptured($payment);
+            $this->updatePaymentCaptured($payment, $autoCaptured);
 
             $this->createTransactionFromCapturedPayment($payment);
 
@@ -305,11 +307,13 @@ trait Capture
         $notifier->trigger(Notify::CAPTURED);
     }
 
-    protected function updatePaymentCaptured($payment)
+    protected function updatePaymentCaptured($payment, $autoCaptured = false)
     {
         $payment->setStatus(Payment\Status::CAPTURED);
 
         $payment->setCaptureTimestamp();
+
+        $payment->setAutoCaptured($autoCaptured);
     }
 
     protected function createTransactionFromCapturedPayment(Payment\Entity $payment)

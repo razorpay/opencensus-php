@@ -131,6 +131,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::TERMINAL_ID,
         self::TRANSACTION_ID,
+        self::AUTO_CAPTURED,
         self::ORDER_ID,
         self::SIGNED,
         self::VERIFIED,
@@ -381,9 +382,14 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SIGNED, $signed);
     }
 
-    public function setAutoCaptureTrue()
+    public function setAutoCapturedTrue()
     {
         $this->setAttribute(self::AUTO_CAPTURED, true);
+    }
+
+    public function setAutoCaptured($autoCaptured)
+    {
+        $this->setAttribute(self::AUTO_CAPTURED, $autoCaptured);
     }
 
     public function setVerified($verified)
@@ -800,6 +806,11 @@ class Entity extends Base\PublicEntity
     public function getTransactionId()
     {
         return $this->getAttribute(self::TRANSACTION_ID);
+    }
+
+    public function getAutoCaptured()
+    {
+        return $this->getAttribute(self::AUTO_CAPTURED);
     }
 
     public function getErrorCode()

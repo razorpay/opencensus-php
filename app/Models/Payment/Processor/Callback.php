@@ -62,9 +62,9 @@ trait Callback
 
         $this->processPaymentCallback($payment, $gatewayInput);
 
-        if ($payment->isSigned())
+        if ($this->shouldAutoCapture($payment) === true)
         {
-            // If payment is signed, then we capture it in this step only.
+            // If payment is signed or capture was sent as true in order, then we capture it in this step only.
             $payment = $this->capturePayment($payment, $payment->getAmount());
         }
 
@@ -82,7 +82,9 @@ trait Callback
         $diff = time() - $payment->getCreatedAt();
 
         // If it was authorized recently then send back authorized again.
-        if (($payment->isAuthorized()) and
+        if ((($payment->isAuthorized() === true) or
+             (($payment->isCaptured() === true) and
+              ($payment->getAutoCaptured() === true))) and
             ($diff < self::CALLBACK_PROCESS_AGAIN_DURATION * 60))
         {
             return $this->postPaymentAuthorizeProcessing($payment);
