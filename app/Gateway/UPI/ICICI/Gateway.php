@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use phpseclib\Crypt\RSA;
 use Request;
 use Requests_Response;
+use RZP\Constants\Mode;
 use RZP\Gateway\UPI\Base;
 use RZP\Gateway\UPI\Base\Entity;
 use RZP\Exception\GatewayErrorException;
@@ -20,12 +21,12 @@ class Gateway extends Base\Gateway
     protected $map = array(
         Entity::VPA                     => Entity::VPA,
         Entity::CONTACT                 => Entity::CONTACT,
-        // ResponseFields::PAYER_VA        => Entity::VPA,
         ResponseFields::PAYER_NAME      => Entity::NAME,
         ResponseFields::RESPONSE        => Entity::STATUS_CODE,
         ResponseFields::PAYER_AMOUNT    => Entity::AMOUNT,
         Entity::RECEIVED                => Entity::RECEIVED,
         ResponseFields::BANK_RRN        => Entity::GATEWAY_PAYMENT_ID,
+        ResponseFields::MERCHANT_ID     => Entity::GATEWAY_MERCHANT_ID,
     );
 
     /**
@@ -98,11 +99,16 @@ class Gateway extends Base\Gateway
         }
     }
 
+    /**
+     * We only store the VPA because the rest of the fields
+     * are filled by the callback
+     * @param  array  $input
+     * @return Array
+     */
     protected function getGatewayEntityAttributes(array $input)
     {
         return [
             Entity::VPA         =>  $input['vpa'],
-            Entity::CONTACT     =>  $input['payment'][Entity::CONTACT],
         ];
     }
 
@@ -129,29 +135,31 @@ class Gateway extends Base\Gateway
         return isset($response['response']) ? $response['response'] : '9999';
     }
 
+    /**
+     * Formats amount to 2 decimal places
+     * @param  int $amount amount in paise (100)
+     * @return string amount formatted to 2 decimal places in INR (1.00)
+     */
     protected function formatAmount($amount)
     {
         return number_format($amount/100, 2);
     }
 
+    /**
+     * The Merchant ID doesn't change for different
+     * merchants since this is the master merchant Id
+     * @return string (numeric merchant id)
+     */
     protected function getMerchantId()
     {
-        // TODO: Decide between LIVE/TEST
-        return $this->config['test_merchant_id'];
-    }
-
-    /**
-     * Generates request object for the status call
-     * @return array
-     */
-    protected function statusData()
-    {
-        return [
-            'merchantId'        =>  'merchantId',
-            'subMerchantId'     =>  '12234',
-            'terminalId'        =>  '2342342',
-            'merchantTranId'    =>  '612413726581'
-        ];
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->config['test_merchant_id'];
+        }
+        else
+        {
+            return $this->config['live_merchant_id'];
+        }
     }
 
     /**
@@ -184,6 +192,11 @@ class Gateway extends Base\Gateway
 
     protected function getRSAInstance()
     {
+        /**
+         * We need to do this to use PCCS 1.5 instead of 1.7
+         * which is the default. This is because of what the
+         * bank uses on the other side.
+         */
         if (defined('CRYPT_RSA_PKCS15_COMPAT') === false)
         {
             define('CRYPT_RSA_PKCS15_COMPAT', true);
@@ -248,9 +261,12 @@ class Gateway extends Base\Gateway
     {
         $attr = $this->getMappedAttributes($response);
 
+        // To mark that we have received a response for this request
+        $attr[Entity::RECEIVED] = 1;
+
         $payment->fill($attr);
 
-        $payment->save();
+        $payment->saveOrFail();
     }
 
     public function verify(array $input)
@@ -291,8 +307,6 @@ class Gateway extends Base\Gateway
             'subMerchantId'     =>  $this->getSubMerchantId($verify->input),
             'terminalId'        =>  '1234',
         ];
-
-        sd($data);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY,

@@ -22,6 +22,8 @@ class Entity extends Base\Entity
 
     protected $table = Table::UPI;
 
+    public $incrementing = true;
+
     protected $entity = 'upi';
 
     protected $fields = array(

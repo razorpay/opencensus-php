@@ -13,6 +13,20 @@
 - Checkout notifies the merchant about the payment
 - Verify is a separate API call
 
+## UPI Entity
+
+- action: Uses `$this->action`
+- amount: Amount given to us via gateway response (2 decimal places)
+- bank: `icici`
+- contact: Filled by the bank response
+- name: Filled by the bank response
+- received: Filled as soon as we get a response
+- gateway_merchant_id: same as config->$mode-merchant-id
+- gateway_payment_id: Filled using the Receiver Registration Number (Bank RRN)
+- email: Filled using customer information from checkout
+- status_code: Response code from Bank
+- vpa: Filled when customer makes payment, asserted to be same when we get response
+
 ## Weirdness
 
 - Payment remains in `created`, not `authorized`, so flow is async
