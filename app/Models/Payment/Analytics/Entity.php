@@ -273,13 +273,4 @@ class Entity extends Base\PublicEntity
     {
         $this->attributes[self::REFERER] = $referer;
     }
-
-    public function buildLog($metadata)
-    {
-        $analyticVal = $this->getValidator();
-
-        $analyticVal->validateInput('metadata', $metadata);
-
-        $this->setPaymentAnalyticData($metadata);
-    }
 }

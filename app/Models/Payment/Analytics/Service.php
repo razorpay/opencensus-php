@@ -22,9 +22,8 @@ class Service extends Base\Service
 
     public function createAuditLog($input)
     {
-        s($input);
         $action = (new Analytics\Core)->create($input);
-        sd($action->toArrayPublic());
+
         return $action->toArrayPublic();
     }
 
