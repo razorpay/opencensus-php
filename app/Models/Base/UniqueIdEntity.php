@@ -228,7 +228,8 @@ class UniqueIdEntity extends Entity
 
     protected static function getNanotimeInteger()
     {
-        exec('date +%s%N', $nanotime, $status);
+        // exec('date +%s%N', $nanotime, $status);
+        exec('/usr/local/bin/gdate +%s%N', $nanotime, $status);
         return $nanotime[0];
     }
 
@@ -345,7 +346,7 @@ class UniqueIdEntity extends Entity
         {
             try
             {
-                $multiplier = ($flip++ % 2) ? 1 : 2;
+                $multiplier = (($flip++ % 2) == 0) ? 1 : 2;
 
                 $base62Digit = self::$baseValues[$number[$i]];
 
@@ -382,7 +383,7 @@ class UniqueIdEntity extends Entity
         {
             try
             {
-                $multiplier = ($flip++ % 2) ? 1 : 2;
+                $multiplier = (($flip++ % 2) == 0) ? 1 : 2;
 
                 $base62Digit = self::$baseValues[$number[$i]];
 
