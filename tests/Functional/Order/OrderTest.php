@@ -131,9 +131,10 @@ class OrderTest extends TestCase
 
         $this->assertEquals($actualSignature, $exceptedSignature);
 
-        $payment = $this->getLastEntity('payment');
+        $payment = $this->getLastEntity('payment', true);
         $this->assertEquals($order['id'], $payment['order_id']);
         $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(true, $payment['auto_captured']);
 
         $order = $this->getLastEntity('order', true);
         $this->assertEquals($order['status'], 'paid');

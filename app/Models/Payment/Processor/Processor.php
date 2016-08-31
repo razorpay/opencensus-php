@@ -674,7 +674,7 @@ class Processor
 
         // If payment order was marked as auto capture
         if (($payment->order !== null) and
-            ($payment->order->getCapture() === true))
+            ($payment->order->getPaymentCapture() === true))
         {
             return true;
         }

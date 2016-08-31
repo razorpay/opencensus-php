@@ -31,10 +31,10 @@ return [
     'testCreateAutoCaptureOrder' => [
         'request' => [
             'content' => [
-                'amount'        => 50000,
-                'currency'      => 'INR',
-                'receipt'       => 'rcptid42',
-                'capture'       => true
+                'amount'          => 50000,
+                'currency'        => 'INR',
+                'receipt'         => 'rcptid42',
+                'payment_capture' => true
             ],
             'method'    => 'POST',
             'url'       => '/orders',

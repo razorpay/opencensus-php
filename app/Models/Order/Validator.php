@@ -11,15 +11,15 @@ use RZP\Error\ErrorCode;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        Entity::AMOUNT         =>  'required|integer|max:50000000',
-        Entity::CURRENCY       =>  'required|size:3|in:INR',
-        Entity::RECEIPT        =>  'required|string|max:40',
-        Entity::CAPTURE        =>  'sometimes|boolean',
-        Entity::CUSTOMER_ID    =>  'sometimes',
-        Entity::NOTES          =>  'sometimes|notes',
-        Entity::METHOD         =>  'sometimes|in:netbanking',
-        Entity::ACCOUNT_NUMBER =>  'sometimes|string|max:50|min:5',
-        Entity::BANK           =>  'sometimes',
+        Entity::AMOUNT          =>  'required|integer|max:50000000',
+        Entity::CURRENCY        =>  'required|size:3|in:INR',
+        Entity::RECEIPT         =>  'required|string|max:40',
+        Entity::PAYMENT_CAPTURE =>  'sometimes|boolean',
+        Entity::CUSTOMER_ID     =>  'sometimes',
+        Entity::NOTES           =>  'sometimes|notes',
+        Entity::METHOD          =>  'sometimes|in:netbanking',
+        Entity::ACCOUNT_NUMBER  =>  'sometimes|string|max:50|min:5',
+        Entity::BANK            =>  'sometimes',
     );
 
     public function validateOrderNotPaid($order)

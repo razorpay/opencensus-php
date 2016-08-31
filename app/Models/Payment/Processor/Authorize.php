@@ -195,7 +195,7 @@ trait Authorize
         if ($this->shouldAutoCapture($payment) === true)
         {
             // If payment is signed, then we capture it in this step only.
-            $payment = $this->capturePayment($payment, $payment->getAmount());
+            $this->autoCapturePayment($payment);
         }
 
         return $this->postPaymentAuthorizeProcessing($payment);
@@ -877,7 +877,7 @@ trait Authorize
         }
 
         if (($payment->order !== null) and
-            ($payment->order->getCapture() === true))
+            ($payment->order->getPaymentCapture() === true))
         {
             return $this->getReturnDataForAutoCaptureOrders($payment);
         }
