@@ -653,6 +653,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::STATUS) === Status::FAILED);
     }
 
+    public function isLateAuthorized()
+    {
+        return ($this->getAttribute(self::LATE_AUTHORIZED) === true);
+    }
+
     protected function isStatus($status)
     {
         return ($this->getAttribute(self::STATUS) === $status);

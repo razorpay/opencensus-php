@@ -675,11 +675,7 @@ class Processor
 
     protected function shouldAutoCapture($payment)
     {
-        $days = self::AUTO_REFUND_TIME_PERIOD;
-        $date = Carbon::today('Asia/Kolkata');
-        $ts = $date->subDays($days)->timestamp;
-
-        if ($payment->getCreatedAt() < $ts)
+        if ($payment->isLateAuthorized() === true)
         {
             return false;
         }
