@@ -2,7 +2,11 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use App;
+use Crypt;
 use Mail;
+
+use Carbon\Carbon;
 use Lib\PhoneBook;
 use RZP\Models\Emi;
 use RZP\Http\Route;
@@ -29,9 +33,6 @@ use RZP\Trace\Trace;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 
-use App;
-use Crypt;
-
 trait Authorize
 {
     /**
@@ -52,8 +53,6 @@ trait Authorize
         // $gatewayInput is being passed by reference.
         // Adds callback url, payment and card info to $gatewayInput
         $this->prePaymentAuthorizeProcessing($payment, $input, $gatewayInput);
-
-        $this->verifyFeesLessThanAmount($payment);
 
         $this->getTerminalsForPayment($payment);
 
@@ -85,7 +84,7 @@ trait Authorize
 
             $payment->associateTerminal($currentTerminal);
 
-            $this->runGatewaySpecificPreProcessing($payment, $terminalGatewayInput);
+            $this->runPostGatewaySelectionPreProcessing($payment, $terminalGatewayInput);
 
             // data for analytics
             $rawData = [
@@ -311,9 +310,10 @@ trait Authorize
      * Selects a terminal, based on the gateway.
      * Validates if international is allowed or not.
      *
-     * @param RZP/Models/Payment/Entity $payment Payment entity that needs to be processed.
+     * @param RZP /Models/Payment/Entity $payment Payment entity that needs to be processed.
      * @param array $input Input data received from checkout/merchant.
      * @param array $gatewayInput Data that is required by gateway for the payment to be processed.
+     * @return array
      * @throws Exception\BadRequestException
      * @throws Exception\RuntimeException
      */
@@ -327,12 +327,17 @@ trait Authorize
         return $gatewayInput;
     }
 
-    protected function runGatewaySpecificPreProcessing($payment, array & $gatewayInput)
+    protected function runPostGatewaySelectionPreProcessing($payment, array & $gatewayInput)
     {
         // International card validation happens here because we want to save the failure.
         // For payment creation, gateway is compulsory field which is only finalized in
         // previous step.
         $this->validateInternationalAllowed($payment);
+
+        // Fees validation can only happen after international validation has gone through
+        // otherwise can cause issues with international pricing rule being not available when
+        // international is not enabled.
+        $this->verifyFeesLessThanAmount($payment);
 
         $this->repo->saveOrFail($payment);
 
@@ -745,7 +750,7 @@ trait Authorize
                 break;
 
             case Payment\Method::EMI:
-                $this->verifyEmiEnabled();
+                $this->verifyEmiEnabled($input);
                 break;
 
             default:
@@ -849,7 +854,7 @@ trait Authorize
     protected function updateAndNotifyPaymentAuthorized($wasFailed = false)
     {
         // Updates payment entity to authorized and adds a transaction.
-        $this->updatePaymentAuthorized();
+        $this->updatePaymentAuthorized($wasFailed);
 
         $this->eventPaymentAuthorized();
 
@@ -919,6 +924,9 @@ trait Authorize
         return $data;
     }
 
+    /**
+     * @param boolean $wasFailed If a payment is being converted from authorized to failed.
+     */
     protected function notifyAuthorized($wasFailed)
     {
         // Trigger notification events for authorization
@@ -926,6 +934,15 @@ trait Authorize
 
         if ($wasFailed)
         {
+            $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+
+            // If a payment has been authorized 15 minutes after the creation, we do not send a notification.
+
+            if (($this->payment->getCreatedAt() - $currentTime) > self::FAILED_TO_AUTHORIZED_NOTIFY_DURATION)
+            {
+                return;
+            }
+
             $trigger = Notify::FAILED_TO_AUTHORIZED;
         }
         else
@@ -1259,7 +1276,7 @@ trait Authorize
         }
     }
 
-    protected function verifyEmiEnabled()
+    protected function verifyEmiEnabled($input)
     {
         $merchantMethods = $this->methods;
 
@@ -1269,6 +1286,8 @@ trait Authorize
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_EMI_NOT_ENALBED_FOR_MERCHANT);
         }
+
+        $this->checkAndValidateAmexIfNotEnabled($merchantMethods, $input['card']);
     }
 
     protected function verifyCardEnabledInLive($payment, $input)
@@ -1347,11 +1366,11 @@ trait Authorize
         $this->repo->saveOrFail($this->payment);
     }
 
-    protected function updatePaymentAuthorized()
+    protected function updatePaymentAuthorized($wasFailed = false)
     {
         $payment = $this->payment;
 
-        $this->repo->transaction(function() use ($payment)
+        $this->repo->transaction(function() use ($payment, $wasFailed)
         {
             $this->lockForUpdateAndReload($payment);
 
@@ -1369,6 +1388,11 @@ trait Authorize
             $payment->setAuthorizeTimestamp();
 
             $payment->terminal->incrementUsedCount();
+
+            if ($wasFailed === true)
+            {
+                $payment->setLateAuthorized(true);
+            }
 
             $this->repo->saveOrFail($payment);
             $this->repo->saveOrFail($payment->terminal);

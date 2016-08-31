@@ -14,7 +14,6 @@ use RZP\Models\Payment;
 use RZP\Models\Card;
 use RZP\Models\Transaction;
 
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
@@ -35,7 +34,7 @@ class Service extends Base\Service
      */
     public function process(array $input)
     {
-        return $this->processor()->process($input);
+        return $this->getNewProcessor()->process($input);
     }
 
     /**
@@ -47,12 +46,12 @@ class Service extends Base\Service
         $input['_']['source']   = 's2s';
         $input['method']        = 'wallet';
 
-        return $this->processor()->process($input);
+        return $this->getNewProcessor()->process($input);
     }
 
     public function processAndReturnFees(array & $input)
     {
-        return $this->processor()->processAndReturnFees($input);
+        return $this->getNewProcessor()->processAndReturnFees($input);
     }
 
     /**
@@ -65,7 +64,7 @@ class Service extends Base\Service
      */
     public function otpResend($id, $input)
     {
-        return $this->processor()->otpResend($id, $input);
+        return $this->getNewProcessor()->otpResend($id, $input);
     }
 
     /*
@@ -78,7 +77,7 @@ class Service extends Base\Service
      */
     public function topup($id, $input)
     {
-        $data = $this->processor()->topup($id, $input);
+        $data = $this->getNewProcessor()->topup($id, $input);
 
         return $data;
     }
@@ -92,7 +91,7 @@ class Service extends Base\Service
      */
     public function refund($id, $input)
     {
-        $refund = $this->processor()->refundCapturedPayment($id, $input);
+        $refund = $this->getNewProcessor()->refundCapturedPayment($id, $input);
 
         return $refund->toArrayPublic();
     }
@@ -106,7 +105,7 @@ class Service extends Base\Service
      */
     public function refundAuthorized($id, $input)
     {
-        $refund = $this->processor()->refundAuthorizedPayment($id, $input);
+        $refund = $this->getNewProcessor()->refundAuthorizedPayment($id, $input);
 
         return $refund->toArrayPublic();
     }
@@ -119,21 +118,21 @@ class Service extends Base\Service
 
         $merchant = (new Merchant\Repository)->findOrFail($merchantId);
 
-        $data = $this->processor($merchant)->verify($payment);
+        $data = $this->getNewProcessor($merchant)->verify($payment);
 
         return $data;
     }
 
     public function cancel($id, $input)
     {
-        $status = $this->processor()->cancel($id, $input);
+        $status = $this->getNewProcessor()->cancel($id, $input);
 
         return ['status' => $status];
     }
 
     public function redirect($id)
     {
-        return $this->processor()->redirect($id);
+        return $this->getNewProcessor()->redirect($id);
     }
 
     public function forceAuthorizeFailed($id, $input)
@@ -142,7 +141,7 @@ class Service extends Base\Service
 
         $merchant = (new Merchant\Repository)->findOrFail($payment->getMerchantId());
 
-        $data = $this->processor($merchant)
+        $data = $this->getNewProcessor($merchant)
                      ->forceAuthorizeFailedPayment($payment, $input);
 
         return $data;
@@ -156,7 +155,7 @@ class Service extends Base\Service
 
         $merchant = (new Merchant\Repository)->findOrFail($merchantId);
 
-        $data = $this->processor($merchant)->authorizeFailedPayment($payment);
+        $data = $this->getNewProcessor($merchant)->authorizeFailedPayment($payment);
 
         return $data;
     }
@@ -206,7 +205,7 @@ class Service extends Base\Service
      */
     public function capture($id, $input)
     {
-        $payment = $this->processor()->capture($id, $input);
+        $payment = $this->getNewProcessor()->capture($id, $input);
 
         return $payment->toArrayPublic();
     }
@@ -227,8 +226,8 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-        $data = $this->processor($merchant)->verifyCapture($payment);
-        
+        $data = $this->getNewProcessor($merchant)->verifyCapture($payment);
+
         $this->trace->info(
             TraceCode::VERIFY_CAPTURE_RESPONSE,
             [
@@ -247,23 +246,50 @@ class Service extends Base\Service
      * @param $refundId
      * @return array
      */
-    public function manualGatewayRefund($refundId)
+    public function manualGatewayRefund($refundIds)
     {
-        $refund = $this->repo->refund->findOrFail($refundId);
-        $merchantId = $refund->getMerchantId();
-        $merchant = $this->repo->merchant->findOrFail($merchantId);
-        
-        $data = $this->processor($merchant)->manualGatewayRefund($refund);
-        
+        $refundIds = explode(',', $refundIds);
+
+        $data = [];
+
+        foreach ($refundIds as $refundId)
+        {
+            $refund = $this->repo->refund->findOrFail($refundId);
+            $merchantId = $refund->getMerchantId();
+            $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+            try
+            {
+                $response = $this->getNewProcessor($merchant)->manualGatewayRefund($refund);
+            }
+            catch(\Exception $ex)
+            {
+                $response = [
+                    'refund_id'     => $refundId,
+                    'payment_id'    => $refund->getPaymentId(),
+                    'error_message' => $ex->getMessage(),
+                ];
+
+                $this->trace->traceException($ex);
+            }
+
+            $this->trace->info(
+                TraceCode::MANUAL_GATEWAY_REFUND_RESPONSE,
+                [
+                    'refund_id'  => $refundId,
+                    'payment_id' => $refund->getPaymentId(),
+                    'response'   => $response
+                ]
+            );
+
+            $data[] = $response;
+        }
+
         $this->trace->info(
-            TraceCode::MANUAL_GATEWAY_REFUND_RESPONSE,
-            [
-                'refund_id'     => $refundId,
-                'payment_id'    => $refund->getPaymentId(),
-                'data'          => $data
-            ]
+            TraceCode::MANUAL_GATEWAY_ALL_REFUNDS_RESPONSE,
+            $data
         );
-        
+
         return $data;
     }
 
@@ -281,7 +307,7 @@ class Service extends Base\Service
      */
     public function callback($id, $hash, array $input)
     {
-        return $this->processor()->callback($id, $hash, $input);
+        return $this->getNewProcessor()->callback($id, $hash, $input);
     }
 
     public function s2sCallback($id, $input)
@@ -292,7 +318,7 @@ class Service extends Base\Service
 
         $merchant = $payment->merchant;
 
-        return $this->processor($merchant)->s2sCallback($payment, $input);
+        return $this->getNewProcessor($merchant)->s2sCallback($payment, $input);
     }
 
     public function fetchMultiple(array $input)
@@ -323,7 +349,7 @@ class Service extends Base\Service
 
             if ($payment->isMethodCardOrEmi() === false)
             {
-                return;
+                return [];
             }
 
             $card = $payment->card;
@@ -381,7 +407,7 @@ class Service extends Base\Service
 
                 $merchant = $payment->merchant;
 
-                $refund = $this->processor($merchant)
+                $refund = $this->getNewProcessor($merchant)
                                ->refundAuthorizedPayment(
                                     $payment->getPublicId(), []);
 
@@ -463,33 +489,53 @@ class Service extends Base\Service
 
     public function timeoutOldPayments()
     {
+        $count = 0;
+
         $timestamp = time() - 9 * 60;
 
+        $payments = $this->repo->payment->fetchOldCreatedPaymentsForTimeout($timestamp);
+
         // Timeout all the pending payments, changing the error to timeout
-        $count = (new Payment\Repository)->timeoutOldPayments($timestamp);
+        // $count = (new Payment\Repository)->timeoutOldPayments($timestamp);
 
         // Timeout old payment while retaining the error, if set
-        $payments = (new Payment\Repository)->fetchCreatedPaymentsWithInternalError($timestamp);
+        // $payments = (new Payment\Repository)->fetchCreatedPaymentsWithInternalError($timestamp);
 
         foreach ($payments as $payment)
         {
-            $error = new Error\Error($payment->getInternalErrorCode());
+            $internalErrorCode = $payment->getInternalErrorCode();
 
-            $code = $error->getPublicErrorCode();
+            if ($internalErrorCode !== null)
+            {
+                $error = new Error\Error($internalErrorCode);
 
-            $desc = $error->getDescription();
+                $code = $error->getPublicErrorCode();
 
-            $internalCode = $error->getInternalErrorCode();
+                $desc = $error->getDescription();
 
-            $payment->setStatus(Payment\Status::FAILED);
+                $internalCode = $error->getInternalErrorCode();
 
-            $payment->setError($code, $desc, $internalCode);
+                $payment->setStatus(Payment\Status::FAILED);
 
-            $saved = $payment->save();
+                $payment->setError($code, $desc, $internalCode);
+            }
+            else
+            {
+                $payment->setStatus(Payment\Status::FAILED);
+
+                $payment->setError(
+                    Error\ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT,
+                    Error\PublicErrorDescription::BAD_REQUEST_PAYMENT_TIMED_OUT,
+                    null);
+            }
+
+            $saved = $this->repo->save($payment);
 
             if ($saved === true)
             {
                 ++$count;
+
+                $this->app['events']->fire('api.payment.failed', array($payment));
             }
         }
 
@@ -515,7 +561,7 @@ class Service extends Base\Service
         {
             $this->merchant = $payment->merchant;
 
-            $res = $this->processor()->autoCapturePayment($payment);
+            $res = $this->getNewProcessor()->autoCapturePayment($payment);
 
             if ($res)
             {
@@ -671,7 +717,7 @@ class Service extends Base\Service
             });
     }
 
-    protected function processor(Merchant\Entity $merchant = null)
+    protected function getNewProcessor(Merchant\Entity $merchant = null)
     {
         if ($merchant === null)
         {

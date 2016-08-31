@@ -88,6 +88,10 @@ class TraceWriter extends Logger
         $this->pushProcessor(new CloudInstanceDataProcessor);
 
         $this->pushProcessor(new EnvProcessor);
+
+        $processor = new CardNumberScrubProcessor($this, $this->app->environment());
+
+        $this->pushProcessor($processor);
     }
 
     protected function pushIntrospectionProcessor()
