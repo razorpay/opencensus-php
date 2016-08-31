@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant;
 use Config;
 use RZP\Models\Base;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Terminal\Category;
 use RZP\Models\Pricing\Service as PricingService;
 
 class Entity extends Base\PublicEntity
@@ -73,8 +74,6 @@ class Entity extends Base\PublicEntity
         self::SETTLEMENT_SCHEDULE,
         self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
-        self::METHOD_NETBANKING,
-        self::GATEWAY_AMEX,
     );
 
     // Requires PHP 5.6
@@ -124,8 +123,7 @@ class Entity extends Base\PublicEntity
         self::RISK_RATING           => 3,
         self::LOGO_URL              => null,
         self::MAX_PAYMENT_AMOUNT    => null,
-        self::METHOD_NETBANKING     => null,
-        self::GATEWAY_AMEX          => null,
+        self::TERMINAL_CATEGORY     => null,
     );
 
     protected $publicSetters = array(
@@ -272,36 +270,28 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::LOGO_URL, $logoUrl);
     }
 
-    public function getCategoryColumns()
+    public function setTerminalCategory($category)
     {
-        return [
-                //self::METHOD_CARD,
-                self::METHOD_NETBANKING,
-                //self::METHOD_WALLET,
-                //self::METHOD_EMI,
-                self::GATEWAY_AMEX];
+        return $this->setAttribute(self::TERMINAL_CATEGORY, $category);
     }
 
-    public function setTerminalCategory($categoryColumn, $category)
+    protected function setTerminalCategoryAttribute($category)
     {
-        $categoryColumns = $this->getCategoryColumns();
-
-        if (in_array($categoryColumn, $categoryColumns))
-        {
-            $this->attributes[$categoryColumn] = (empty($categoryColumn) === false) ? $categoryColumn : null;
-        }
+        $this->attributes[self::TERMINAL_CATEGORY] = $category ? $category : null;
     }
 
-    public function getTerminalCategories()
+    public function getTerminalCategory()
     {
-        $categoryColumns = $this->getCategoryColumns();
+        return $this->getAttribute(self::TERMINAL_CATEGORY);
+    }
 
-        foreach ($categoryColumns as $categoryColumn)
-        {
-            $terminalCategories[$categoryColumn] = (empty($this->attributes[$categoryColumn]) === false) ? $categoryColumn : null;
-        }
+    protected function getTerminalCategoryAttribute()
+    {
+        $category = $this->attributes[self::TERMINAL_CATEGORY];
 
-        return $terminalCategories;
+        $category = $category ? $category : null;
+
+        return $category;
     }
 
     public function getBillingLabelElseName()
@@ -669,61 +659,11 @@ class Entity extends Base\PublicEntity
         return array(9999 => 9999, 6211 => 6211);
     }
 
-    public function getCategoryForMethodAndGateway($method, $gateway)
+    public function getTerminalCategoryForMethodAndNetwork($method, $network)
     {
-        $terminalCategory = null;
+        $category = $this->getTerminalCategory();
 
-        $methodCategory = $this->getCategoryForMethod($method);
-
-        $gatewayCategory = $this->getCategoryForGateway($gateway);
-
-        if (empty($methodCategory) === false)
-        {
-            $terminalCategory = $methodCategory;
-        }
-
-        if (empty($gatewayCategory) === false)
-        {
-            $terminalCategory = $gatewayCategory;
-        }
-
-        return $terminalCategory;
-    }
-
-    public function getCategoryForMethod($method)
-    {
-        $methodColumn = $this->getColumnNameForMethod($method);
-
-        return $this->getCategoryFromColumn($methodColumn);
-    }
-
-    public function getCategoryForGateway($gateway)
-    {
-        $gatewayColumn = $this->getColumnNameForGateway($gateway);
-
-        return $this->getCategoryFromColumn($gatewayColumn);
-    }
-
-    protected function getCategoryFromColumn($column)
-    {
-        $categoryColumns = $this->getCategoryColumns();
-
-        if (in_array($column, $categoryColumns))
-        {
-            return $this->getAttribute($column);
-        }
-
-       return null;
-    }
-
-    protected function getColumnNameForMethod($method)
-    {
-        return 'method_'.$method;
-    }
-
-    protected function getColumnNameForGateway($gateway)
-    {
-        return 'gateway_'.$gateway;
+        return Terminal\Category::getCategoryForMethodAndNetwork($method, $network, $category);
     }
 
     public function isShared()
