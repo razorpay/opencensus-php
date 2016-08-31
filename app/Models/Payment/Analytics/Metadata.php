@@ -76,7 +76,7 @@ class Metadata
 
     const WOO_COMMERCE  = 'woo_commerce';
     const MAGENTO       = 'magento';
-    const CS_CART       = 'ca_cart';
+    const CS_CART       = 'cs_cart';
     const OPEN_CART     = 'open_cart';
     const SHOPIFY       = 'shopify';
     const WHMCS         = 'whmcs';

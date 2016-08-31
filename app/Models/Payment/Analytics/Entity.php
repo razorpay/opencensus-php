@@ -94,6 +94,8 @@ class Entity extends Base\PublicEntity
 
     protected static $delimiter = '';
 
+    // ----------------------- Getters ---------------------------------------------
+
     public function getPaymentId()
     {
         return $this->getAttribute(self::PAYMENT_ID);
@@ -199,6 +201,10 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::INTEGRATION_VERSION);
     }
 
+    // ----------------------- Getters End ---------------------------------------------
+
+    // ----------------------- Setters ---------------------------------------------
+
     public function setAttempts($attempts)
     {
         $this->setAttribute(self::ATTEMPTS, $attempts);
@@ -209,24 +215,38 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CHECKOUT_ID, $checkoutId);
     }
 
-    public function setPlatformAttribute($platform)
-    {
-        $this->attributes[self::PLATFORM] = Metadata::getValueForPlatform($platform);
-    }
-
     public function setPlatformVersion($platformVersion)
     {
         $this->setAttribute(self::PLATFORM_VERSION, $platformVersion);
     }
 
-    public function setLibraryAttribute($library)
-    {
-        $this->attributes[self::LIBRARY] = Metadata::getValueForLibrary($library);
-    }
-
     public function setLibraryVersion($libraryVersion)
     {
         $this->setAttribute(self::LIBRARY_VERSION, $libraryVersion);
+    }
+
+    public function setOsVersion($osVersion)
+    {
+        $this->setAttribute(self::OS_VERSION, $osVersion);
+    }
+
+    public function setIntegrationVersion($integrationVersion)
+    {
+        $this->setAttribute(self::INTEGRATION_VERSION, $integrationVersion);
+    }
+
+    // ----------------------- Setters End---------------------------------------------
+
+    // ----------------------- Mutator ---------------------------------------------
+
+    public function setPlatformAttribute($platform)
+    {
+        $this->attributes[self::PLATFORM] = Metadata::getValueForPlatform($platform);
+    }
+
+    public function setLibraryAttribute($library)
+    {
+        $this->attributes[self::LIBRARY] = Metadata::getValueForLibrary($library);
     }
 
     public function setBrowserAttribute($browser)
@@ -239,19 +259,9 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::OS] = Metadata::getValueForOs($os);
     }
 
-    public function setOsVersion($osVersion)
-    {
-        $this->setAttribute(self::OS_VERSION, $osVersion);
-    }
-
     public function setIntegrationAttribute($integration)
     {
         $this->attributes[self::INTEGRATION] = Metadata::getValueForIntegration($integration);
-    }
-
-    public function setIntegrationVersion($integrationVersion)
-    {
-        $this->setAttribute(self::INTEGRATION_VERSION, $integrationVersion);
     }
 
     public function setDeviceAttribute($device)
@@ -273,4 +283,6 @@ class Entity extends Base\PublicEntity
     {
         $this->attributes[self::REFERER] = $referer;
     }
+
+    // ----------------------- Mutator Ends ----------------------------------------
 }

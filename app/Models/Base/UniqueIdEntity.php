@@ -334,13 +334,11 @@ class UniqueIdEntity extends Entity
     }
     public static function base62GetCheckDigit($num)
     {
-        $number = $num;
+        $checkNumber = $num;
 
-        $sum = 0;
+        $sum = $flip = 0;
 
-        $flip = 0;
-
-        $len = strlen($number);
+        $len = strlen($checkNumber);
 
         for ($i = $len - 1; $i >= 0; $i--)
         {
@@ -348,7 +346,7 @@ class UniqueIdEntity extends Entity
             {
                 $multiplier = (($flip++ % 2) == 0) ? 1 : 2;
 
-                $base62Digit = self::$baseValues[$number[$i]];
+                $base62Digit = self::$baseValues[$checkNumber[$i]];
 
                 if ($multiplier === 2)
                 {
@@ -371,13 +369,11 @@ class UniqueIdEntity extends Entity
     }
     public static function validateCheckDigit($num)
     {
-        $number = $num;
+        $checkNumber = $num;
 
-        $sum = 0;
+        $sum = $flip = 0;
 
-        $flip = 0;
-
-        $len = strlen($number);
+        $len = strlen($checkNumber);
 
         for ($i = $len - 1; $i >= 0; $i--)
         {
@@ -385,7 +381,7 @@ class UniqueIdEntity extends Entity
             {
                 $multiplier = (($flip++ % 2) == 0) ? 1 : 2;
 
-                $base62Digit = self::$baseValues[$number[$i]];
+                $base62Digit = self::$baseValues[$checkNumber[$i]];
 
                 if ($multiplier === 2)
                 {
