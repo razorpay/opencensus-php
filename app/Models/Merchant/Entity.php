@@ -33,6 +33,7 @@ class Entity extends Base\PublicEntity
     const LOGO_URL                  = 'logo_url';
     const AWS_LOGO_URL              = 'aws_logo_url';
     const MAX_PAYMENT_AMOUNT        = 'max_payment_amount';
+    const AUTO_REFUND_DELAY         = 'auto_refund_delay';
 
     /**
      * Category for particular methods or gateways
@@ -66,6 +67,7 @@ class Entity extends Base\PublicEntity
         self::BRAND_COLOR,
         self::INTERNATIONAL,
         self::BILLING_LABEL,
+        self::AUTO_REFUND_DELAY,
         self::MAX_PAYMENT_AMOUNT,
         self::SETTLEMENT_SCHEDULE,
         self::SETTLEMENT_SCHEDULE_ID,
@@ -107,6 +109,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::LOGO_URL,
+        self::AUTO_REFUND_DELAY,
      );
 
     protected $defaults = array(
@@ -124,6 +127,11 @@ class Entity extends Base\PublicEntity
         self::RISK_RATING            => 3,
         self::LOGO_URL               => null,
         self::MAX_PAYMENT_AMOUNT     => null,
+        self::AUTO_REFUND_DELAY      => null,
+    );
+
+    protected $casts = array(
+        self::AUTO_REFUND_DELAY => 'int',
     );
 
     protected $publicSetters = array(
@@ -415,6 +423,11 @@ class Entity extends Base\PublicEntity
     public function getMaxPaymentAmount()
     {
         return $this->getAttribute(self::MAX_PAYMENT_AMOUNT);
+    }
+
+    public function getAutoRefundDelay()
+    {
+        return $this->getAttribute(self::AUTO_REFUND_DELAY);
     }
 
     /**
