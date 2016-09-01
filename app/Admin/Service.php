@@ -281,9 +281,9 @@ class Service extends Base\Service
 
     public function fetchMerchantActivationDetails($id)
     {
-        $merchant_details =  MerchantDetails\Entity::findorfail($id);
+        $merchantDetails =  MerchantDetails\Entity::findorfail($id);
 
-        $response = $merchant_details->filterDetails();
+        $response = $merchantDetails->filterDetails();
 
         $response['data'] = MerchantDetails\Validator::sortDataInSteps($response['data']);
 
@@ -377,13 +377,13 @@ class Service extends Base\Service
             return $merchant->toArray();
         }
 
-        $merchant_details = MerchantDetails\Entity::findorfail($id);
+        $merchantDetails = MerchantDetails\Entity::findorfail($id);
 
         $this->setApiCredentials();
 
         $data = $this->api->merchant->fetch($id)->toArray();
 
-        $data['merchant_details'] = $merchant_details->toArray();
+        $data['merchant_details'] = $merchantDetails->toArray();
 
         $merchant = $merchant->toArray();
 
@@ -393,11 +393,11 @@ class Service extends Base\Service
 
         $response = array(
             'archived_at'       => $merchant['archived_at'],
-            'steps_finished'    => $merchant_details['steps_finished'],
-            'locked'            => $merchant_details['locked'],
-            'submitted'         => $merchant_details['submitted'],
+            'steps_finished'    => $merchantDetails['steps_finished'],
+            'locked'            => $merchantDetails['locked'],
+            'submitted'         => $merchantDetails['submitted'],
             'tags'              => $merchant['tags'],
-            'submitted_at'      => $merchant_details['submitted_at'],
+            'submitted_at'      => $merchantDetails['submitted_at'],
             'activated_dashboard' => $merchant['activated'],
             'referrer'          => $merchant['referrer'],
         ) + $data;
@@ -564,7 +564,7 @@ class Service extends Base\Service
         ]);
 
         $this->setApiCredentials();
-        $merchant_details = MerchantDetails\Entity::findorfail($id);
+        $merchantDetails = MerchantDetails\Entity::findorfail($id);
         try
         {
             $this->api->merchant->fetch($id)->setBankAccount($input);
@@ -581,8 +581,8 @@ class Service extends Base\Service
                 'bank_beneficiary_state'     => $input['beneficiary_state']
             );
 
-            $merchant_details->fill($merchantDetails);
-            $merchant_details->save();
+            $merchantDetails->fill($merchantDetails);
+            $merchantDetails->save();
 
             $this->logActionToSlack($id, Actions::BANK_DETAILS_EDITED, $input);
         }
@@ -592,17 +592,17 @@ class Service extends Base\Service
             $error[] = $e->getMessage();
         }
 
-        return [$error, $merchant_details->toArray()];
+        return [$error, $merchantDetails->toArray()];
     }
 
     public function postEditMerchantComment($id, $comment)
     {
         $error = array();
 
-        $merchant_details = MerchantDetails\Entity::findorfail($id);
+        $merchantDetails = MerchantDetails\Entity::findorfail($id);
 
-        $merchant_details->comment = $comment;
-        $merchant_details->save();
+        $merchantDetails->comment = $comment;
+        $merchantDetails->save();
 
         return array($error, $comment);
     }
@@ -831,17 +831,17 @@ class Service extends Base\Service
     {
         $error = array();
 
-        $merchant_details = MerchantDetails\Entity::findorfail($id);
+        $merchantDetails = MerchantDetails\Entity::findorfail($id);
 
-        if ($merchant_details->isLocked())
+        if ($merchantDetails->isLocked())
         {
             $error[] = 'Merchant already locked.';
 
             return $error;
         }
 
-        $merchant_details->locked = 1;
-        $merchant_details->save();
+        $merchantDetails->locked = 1;
+        $merchantDetails->save();
 
         $this->logActionToSlack($id, Actions::FORM_LOCKED);
 
@@ -852,16 +852,16 @@ class Service extends Base\Service
     {
         $error = array();
 
-        $merchant_details = MerchantDetails\Entity::findorfail($id);
+        $merchantDetails = MerchantDetails\Entity::findorfail($id);
 
-        if ($merchant_details->locked === 0)
+        if ($merchantDetails->locked === 0)
         {
             $error[] = 'Merchant already unlocked.';
             return $error;
         }
 
-        $merchant_details->locked = 0;
-        $merchant_details->save();
+        $merchantDetails->locked = 0;
+        $merchantDetails->save();
 
         $this->logActionToSlack($id, Actions::FORM_UNLOCKED);
 
