@@ -199,7 +199,7 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function getRequestFromFormPostResponse($request, $response)
+    protected function getRequestFromFormPostResponse($request, $response, $setHeaders = true)
     {
         $crawler = new Crawler($response->body, $request['url']);
 
@@ -220,7 +220,10 @@ class Gateway extends Base\Gateway
             'content' => $form->getValues(),
         ];
 
-        $this->setRequestHeaderAndOption($request);
+        if ($setHeaders === true)
+        {
+            $this->setRequestHeaderAndOption($request);
+        }
 
         return $request;
     }
@@ -303,7 +306,7 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $authorizeRequest = $this->getRequestFromFormPostResponse($request, $response);
+            $authorizeRequest = $this->getRequestFromFormPostResponse($request, $response, false);
         }
 
         return $authorizeRequest;
