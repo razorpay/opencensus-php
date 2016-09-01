@@ -45,6 +45,7 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentRequest($request, $input);
 
+        /*
         //TODO:: To be removed after it is tested on production
         // Second merchant id is for Test user running test cases
         if (($input['merchant']['id'] === '4izmfM9TFCAgFN') or
@@ -55,6 +56,7 @@ class Gateway extends Base\Gateway
                 $request = $this->makeRequestAndGetBankUrl($request, $input);
             }
         }
+        */
 
         return $request;
     }
@@ -737,18 +739,15 @@ class Gateway extends Base\Gateway
 
     protected function getAuthorizeAttributesForPaymentEntity($content)
     {
-        $attributes = [Entity::AMOUNT => $content[Req::AMOUNT]];
+        $attributes = [Entity::AMOUNT => $content[Req::AMOUNT] * 100];
 
         return $attributes;
     }
 
     protected function getRefundContent($response, $input)
     {
-        $refundAmount = $input['refund']['amount'] / 100;
-
         $attributes = [
-            Entity::REFUND_ID   => $input['refund'][Payment\Entity::ID],
-            Entity::AMOUNT      => $refundAmount,
+            Entity::AMOUNT      => $input['refund']['amount'],
             Entity::RECEIVED    => true,
         ];
 
@@ -768,6 +767,10 @@ class Gateway extends Base\Gateway
         {
             $attributes[Entity::ERROR_CODE]        = $response[Resp::ERROR_CODE];
             $attributes[Entity::ERROR_DESCRIPTION] = $response[Resp::ERROR];
+        }
+        else
+        {
+            $attributes[Entity::REFUND_ID] = $input['refund'][Payment\Refund\Entity::ID];
         }
 
         return $attributes;
