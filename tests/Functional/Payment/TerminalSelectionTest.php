@@ -161,4 +161,29 @@ class TerminalSelectionTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('ShAmEduSrvTmnl', $payment['terminal_id']);
     }
+
+    public function testTerminalCategoryCorporate()
+    {
+        $this->fixtures->merchant->setTerminalCategory('corporate');
+        $this->fixtures->create('terminal:netbanking_kotak_terminal',
+                                ['id' => 'DCrpNbKtkTrmnl', 'terminal_category' => 'corporate']);
+        $this->fixtures->create('terminal:netbanking_kotak_terminal',
+                                ['id' => 'DEduNbKtkTrmnl', 'terminal_category' => 'education']);
+        $this->fixtures->create('terminal:netbanking_kotak_terminal',
+                                ['id' => 'DrctNbKtkTrmnl']);
+
+        $this->fixtures->create('terminal:shared_netbanking_kotak_terminal',
+                                ['id' => 'SCorNbKtkTrmnl','terminal_category' => 'corporate']);
+        $this->fixtures->create('terminal:shared_netbanking_kotak_terminal',
+                                ['id' => 'SEduNbKtkTrmnl','terminal_category' => 'education']);
+        $this->fixtures->create('terminal:shared_netbanking_kotak_terminal',
+                                ['id' => 'SharNbKtkTrmnl']);
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment['bank'] = 'KKBK';
+
+        $content = $this->doAuthAndCapturePayment($payment);
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('DCrpNbKtkTrmnl', $payment['terminal_id']);
+    }
 }
