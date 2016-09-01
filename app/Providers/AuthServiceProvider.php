@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Contracts\Auth\Access\Gate as GateContract;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+use Config;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -26,6 +27,13 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies($gate);
 
-        //
+        $userRoles = Config::get('user-roles');
+
+        foreach ($userRoles as $route => $roles)
+        {
+            $gate->define($route, function($user) {
+                return (in_array($user->getUserRoleWithCurrentMerchant(), $roles, true));
+            });
+        }
     }
 }

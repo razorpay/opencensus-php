@@ -7,7 +7,8 @@ app.controller('EntityListCtrl', [
   'alertsFactory',
   '$state',
   'statusClass',
-  function ($scope, $http, alertsFactory, $state, getStatusClass) {
+  '$modal',
+  function ($scope, $http, alertsFactory, $state, getStatusClass, $modal) {
     //Intialise alerts and scope functions
     $scope.getStatusClass = getStatusClass;
     $scope.alerts = alertsFactory.getHandler();
@@ -57,6 +58,21 @@ app.controller('EntityListCtrl', [
       clear('id');
       generateTable();
     };
+
+    $scope.showSettlementBreakup = function (settlement_id) {
+      var modalInstance = $modal.open({
+        templateUrl: 'settlementBreakupModalContent.html',
+        controller: 'settlementBreakupModalCtrl',
+        resolve: {
+          settlement_id: function () {
+            return settlement_id;
+          },
+          baseURL: function () {
+            return '/' + $scope.mode + '/' + $scope.entity.type + 's';
+          }
+        }
+      });
+    }
 
     function clear(field) {
       if (field === 'id')
@@ -139,5 +155,33 @@ app.controller('EntityListCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     }
+  }
+])
+.controller('settlementBreakupModalCtrl', [
+  '$scope',
+  '$modalInstance',
+  '$http',
+  'settlement_id',
+  'baseURL',
+  function($scope, $modalInstance, $http, settlement_id, baseURL) {
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+
+    $scope.settlement_id = settlement_id;
+
+    // TODO: Caching
+
+    var request = $http.get(baseURL + '/' + settlement_id + '/details');
+
+    request.success(function (data) {
+
+      if (data.success) {
+        $scope.breakupDetails = data.data.items;
+      }
+      
+    }).error(function () {
+      $scope.alerts.addAlert('danger', null, true);
+    });
   }
 ]);

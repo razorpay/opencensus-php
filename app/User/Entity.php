@@ -7,6 +7,7 @@ use Session;
 use App\Base;
 use App\Merchant;
 use App\Invitation;
+use Auth;
 use RandomLib\Factory as RandomLibFactory;
 
 use Illuminate\Auth\Authenticatable;
@@ -324,5 +325,18 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
         $this->save();
 
         return $this;
+    }
+
+    public function getUserRoleWithCurrentMerchant()
+    {
+        $user = Auth::guard('user')->user();
+
+        $currentMerchant = $user->getCurrentMerchantAttribute();
+        return $currentMerchant->pivot->role;
+    }
+
+    public static function getUserWithEmail($email)
+    {
+        return self::where('email', $email)->first();
     }
 }

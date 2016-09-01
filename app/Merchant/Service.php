@@ -179,33 +179,76 @@ class Service extends Base\Service
     public function changeEmail($id, $input)
     {
         $merchant = Merchant\Entity::findorfail($id);
+        $originalEmail = $merchant->email;
 
         if ($merchant->isTestAccount()) {
             return [[static::EMAIL_CHANGE_FORBIDDEN], null];
         }
 
-        $originalEmail = $merchant->email;
         $error = $merchant->changeEmail($input);
 
         if (empty($error))
         {
-            if ($merchant->hasUsers())
-            {
-                $user = $merchant->users()->where('email',$originalEmail)->first();
-                if ($user)
-                {
-                    $user->email = $merchant->email;
-                    $user->saveOrFail();
-                }
-            }
+            $this->handleUserEmailChange($merchant, $originalEmail, $input); //This handles different cases of 'user' email change.
+
             $merchant->saveOrFail();
+            $merchantDetails = $merchant->merchantDetails;
+            $merchantDetails->contact_email = $merchant->email;
+            $merchantDetails->save();
         }
 
-        $merchantDetails = $merchant->merchantDetails;
-        $merchantDetails->contact_email = $merchant->email;
-        $merchantDetails->save();
-
         return [$error, null];
+    }
+
+    /**
+     * This handles 3 possible cases when changing user email.
+     * 1. There exists a team member with the new email
+     *    Here, we swap the roles of the team member(manager) with new email and the original owner
+     * 2. There exists a user(not team member) with the new email
+     *    Here, we change the original owner to manager and then add the user with new email as owner
+     * 3. The new email is unique so far
+     *    Here, we just change the email of the original user(owner).
+     * @param App\Merchant\Entity $merchant Merchant entity for which email is to be changed
+     * @param array $input array containing the new email
+     */
+    protected function handleUserEmailChange($merchant, $originalEmail, $input)
+    {
+        if ($merchant->hasUsers())
+        {
+            $teamUser = $merchant->users()->where('email', $input['email'])->first();
+
+            $existingUser = User\Entity::getUserWithEmail($input['email']);
+
+            $selfUser = $merchant->users()->where('email',$originalEmail)->first();
+
+            //The merchant has a team member with new email
+            if ($teamUser !== null)
+            {
+                //swap roles between user with new email and original owner
+                $oldOwner = $merchant->users()->where('role', 'owner')->first();
+                $merchant->removeUserById($oldOwner->id);
+                $oldOwner->joinMerchantByIdWithRole($merchant->id, 'manager');
+
+                $merchant->removeUserById($teamUser->id);
+                $teamUser->joinMerchantByIdWithRole($merchant->id, 'owner');
+            }
+            //There is an existing user with new email but not a team member
+            else if ($existingUser !== null)
+            {
+                //assign owner to existing user and make existing owner a manager.
+                $oldOwner = $merchant->users()->where('role', 'owner')->first();
+                $merchant->removeUserById($oldOwner->id);
+                $oldOwner->joinMerchantByIdWithRole($merchant->id, 'manager');
+
+                $existingUser->joinMerchantByIdWithRole($merchant->id, 'owner');
+            }
+            //change email of existing user attached to the merchant as owner
+            else if ($selfUser)
+            {
+                $selfUser->email = $input['email'];
+                $selfUser->saveOrFail();
+            }
+        }
     }
 
     /**
