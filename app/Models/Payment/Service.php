@@ -14,7 +14,6 @@ use RZP\Models\Payment;
 use RZP\Models\Card;
 use RZP\Models\Transaction;
 
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
@@ -296,7 +295,7 @@ class Service extends Base\Service
 
             if ($payment->isMethodCardOrEmi() === false)
             {
-                return;
+                return [];
             }
 
             $card = $payment->card;
@@ -383,7 +382,7 @@ class Service extends Base\Service
         // Since we are taking 12 am of today, we only need to subtract 4 days from today
         // to arrive at 5 days before.
 
-        $days = 5;
+        $days = Processor\Processor::AUTO_REFUND_TIME_PERIOD;
         $date = Carbon::today('Asia/Kolkata');
         $ts = $date->subDays($days)->timestamp;
 
@@ -487,33 +486,53 @@ class Service extends Base\Service
 
     public function timeoutOldPayments()
     {
+        $count = 0;
+
         $timestamp = time() - 9 * 60;
 
+        $payments = $this->repo->payment->fetchOldCreatedPaymentsForTimeout($timestamp);
+
         // Timeout all the pending payments, changing the error to timeout
-        $count = (new Payment\Repository)->timeoutOldPayments($timestamp);
+        // $count = (new Payment\Repository)->timeoutOldPayments($timestamp);
 
         // Timeout old payment while retaining the error, if set
-        $payments = (new Payment\Repository)->fetchCreatedPaymentsWithInternalError($timestamp);
+        // $payments = (new Payment\Repository)->fetchCreatedPaymentsWithInternalError($timestamp);
 
         foreach ($payments as $payment)
         {
-            $error = new Error\Error($payment->getInternalErrorCode());
+            $internalErrorCode = $payment->getInternalErrorCode();
 
-            $code = $error->getPublicErrorCode();
+            if ($internalErrorCode !== null)
+            {
+                $error = new Error\Error($internalErrorCode);
 
-            $desc = $error->getDescription();
+                $code = $error->getPublicErrorCode();
 
-            $internalCode = $error->getInternalErrorCode();
+                $desc = $error->getDescription();
 
-            $payment->setStatus(Payment\Status::FAILED);
+                $internalCode = $error->getInternalErrorCode();
 
-            $payment->setError($code, $desc, $internalCode);
+                $payment->setStatus(Payment\Status::FAILED);
 
-            $saved = $payment->save();
+                $payment->setError($code, $desc, $internalCode);
+            }
+            else
+            {
+                $payment->setStatus(Payment\Status::FAILED);
+
+                $payment->setError(
+                    Error\ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT,
+                    Error\PublicErrorDescription::BAD_REQUEST_PAYMENT_TIMED_OUT,
+                    null);
+            }
+
+            $saved = $this->repo->save($payment);
 
             if ($saved === true)
             {
                 ++$count;
+
+                $this->app['events']->fire('api.payment.failed', array($payment));
             }
         }
 

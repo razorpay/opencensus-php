@@ -21,24 +21,24 @@ class FeeCalculator
      *
      * @var RZP\Models\Payment\Entity
      */
-    protected $payment;
+    protected $entity;
 
     protected $defaultPricingPlan = '1hDYlICobzOCYt';
 
-    public function __construct($payment)
+    public function __construct($entity)
     {
-        $this->payment = $payment;
+        $this->entity = $entity;
 
         $this->trace = \Trace::getFacadeRoot();
     }
 
     public function calculate($pricing, $preCalculationOfFees = false)
     {
-        $payment = $this->payment;
+        $entity = $this->entity;
 
         $rule = $this->getRelevantPricingRule($pricing);
 
-        list($fee, $serviceTax) = $this->getFees($rule, $payment->getAmount(), $preCalculationOfFees);
+        list($fee, $serviceTax) = $this->getFees($rule, $entity->getAmount(), $preCalculationOfFees);
 
         return array($fee, $serviceTax, $rule->getKey());
     }
@@ -70,40 +70,58 @@ class FeeCalculator
 
     protected function getRelevantPricingRule($pricing)
     {
-        $payment = $this->payment;
+        $entity = $this->entity;
 
-        $method = $payment->getMethod();
+        $feature = $entity->getEntity();
 
-        $rules = $this->filterRulesOnFieldByValue(
-                $pricing, Pricing\Entity::PAYMENT_METHOD, $method, false);
+        $method = $entity->getMethod();
+
+        $filters = array(
+            [Pricing\Entity::FEATURE, $feature, false, null  ],
+            [Pricing\Entity::PAYMENT_METHOD,  $method,  false, null  ],
+        );
+
+        $rules = $this->applyFiltersOnRules($pricing, $filters);
 
         $this->trace->debug(
-            TraceCode::PAYMENT_PRICING_RULE_SELECTION,
+            TraceCode::PRICING_RULE_SELECTION,
             ['count' => count($rules)]);
 
         $this->traceAllRules($rules);
 
-        if ($method === Payment\Method::CARD)
+        if ($feature === Pricing\Feature::PAYMENT)
         {
-            $rule = $this->getRelevantPricingRuleForCard($rules);
-        }
-        elseif ($method === Payment\Method::WALLET)
-        {
-            $rule = $this->getRelevantPricingRuleForWallet($rules);
-        }
-        elseif ($method === Payment\Method::NETBANKING)
-        {
-            $rule = $this->getRelevantPricingRuleForNB($rules);
-        }
-        else
-        {
-            $rule = $this->getRelevantPricingRuleForMethod($rules);
+            $rule = $this->getRelevantPaymentPricingRule($rules, $method);
         }
 
         if ($rule === null)
         {
             throw new Exception\LogicException(
-                'No appropriate pricing rule found', null, ['payment' => $payment->toArray()]);
+                'No appropriate pricing rule found', null, ['entity' => $entity->toArray()]);
+        }
+
+        return $rule;
+    }
+
+    protected function getRelevantPaymentPricingRule($rules, $method)
+    {
+        $rule = null;
+
+        if ($method === Payment\Method::CARD)
+        {
+            $rule = $this->getRelevantPricingRuleForCardPayment($rules);
+        }
+        else if ($method === Payment\Method::WALLET)
+        {
+            $rule = $this->getRelevantPricingRuleForWalletPayment($rules);
+        }
+        else if ($method === Payment\Method::NETBANKING)
+        {
+            $rule = $this->getRelevantPricingRuleForNBPayment($rules);
+        }
+        else
+        {
+            $rule = $this->getRelevantPricingRuleForMethod($rules);
         }
 
         return $rule;
@@ -115,13 +133,13 @@ class FeeCalculator
 
     }
 
-    protected function getRelevantPricingRuleForNB($rules)
+    protected function getRelevantPricingRuleForNBPayment($rules)
     {
         // All the rules for the current pricing plan will be put
         // through various filters till the right pricing rule
         // for the current case remains.
 
-        $payment = $this->payment;
+        $payment = $this->entity;
 
         $bank = $payment->getBank();
 
@@ -157,13 +175,13 @@ class FeeCalculator
         return $rule;
     }
 
-    protected function getRelevantPricingRuleForWallet($rules)
+    protected function getRelevantPricingRuleForWalletPayment($rules)
     {
         // All the rules for the current pricing plan will be put
         // through various filters till the right pricing rule
         // for the current case remains.
 
-        $payment = $this->payment;
+        $payment = $this->entity;
 
         $wallet = $payment->getWallet();
 
@@ -181,16 +199,16 @@ class FeeCalculator
         return $this->validateAndGetOnePricingRule($rules);
     }
 
-    protected function getRelevantPricingRuleForCard($rules)
+    protected function getRelevantPricingRuleForCardPayment($rules)
     {
         // All the rules for the current pricing plan will be put
         // through various filters till the right pricing rule
         // for the current case remains.
 
         // Fee based on the method type
-        $payment = $this->payment;
+        $payment = $this->entity;
 
-        $cardType = $this->getCardType($payment);
+        $cardType = $payment->card->getTypeElseDefault();
 
         $international = $payment->isInternational();
 
@@ -391,31 +409,6 @@ class FeeCalculator
                 return $rule;
             }
         }
-    }
-
-    protected function getCardType($payment)
-    {
-        // Fee based on the method type
-        $cardType = $payment->card->getType();
-
-        if ($cardType === Card\Type::UNKNOWN)
-        {
-
-            // Disabling until IIN
-            // import is complete
-            /*
-            $slackArray = ['id' => $payment->card->getDashboardEntityLinkForSlack() ];
-
-            $this->app['slack']->queue(
-                'Unknown card type found',
-                $slackArray,
-                ['channel' => '#tech_logs']);
-
-            */
-            $cardType = Card\Type::DEBIT;
-        }
-
-        return $cardType;
     }
 
     protected function validateAndGetOnePricingRule($pricing)

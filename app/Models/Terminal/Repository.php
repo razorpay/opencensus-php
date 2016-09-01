@@ -25,6 +25,7 @@ class Repository extends Base\Repository
         Entity::GATEWAY_MERCHANT_ID => 'sometimes|string|max:50',
         Entity::GATEWAY_ACQUIRER    => 'sometimes|string',
         Entity::GATEWAY_TERMINAL_ID => 'sometimes|alpha_num',
+        Entity::EMI                 => 'sometimes|in:0,1',
     );
 
     public function addQueryParamDeleted($query, $params)

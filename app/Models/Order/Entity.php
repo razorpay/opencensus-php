@@ -9,37 +9,38 @@ class Entity extends Base\PublicEntity
 {
     use NotesTrait;
 
-    const ID             = 'id';
-    const MERCHANT_ID    = 'merchant_id';
-    const AMOUNT         = 'amount';
-    const CURRENCY       = 'currency';
-    const ATTEMPTS       = 'attempts';
-    const STATUS         = 'status';
-    const NOTES          = 'notes';
+    const ID              = 'id';
+    const MERCHANT_ID     = 'merchant_id';
+    const AMOUNT          = 'amount';
+    const CURRENCY        = 'currency';
+    const ATTEMPTS        = 'attempts';
+    const STATUS          = 'status';
+    const NOTES           = 'notes';
 
     // Ideally should be a unique from the merchant side as well
-    const RECEIPT        = 'receipt';
+    const RECEIPT         = 'receipt';
 
     // To Mark If a payment corresponding to
     // this order is in authorized state
-    const AUTHORIZED     = 'authorized';
-    const METHOD         = 'method';
-    const BANK           = 'bank';
-    const ACCOUNT_NUMBER = 'account_number';
+    const AUTHORIZED      = 'authorized';
+    const METHOD          = 'method';
+    const BANK            = 'bank';
+    const ACCOUNT_NUMBER  = 'account_number';
 
-    const CUSTOMER_ID    = 'customer_id';
+    const CUSTOMER_ID     = 'customer_id';
 
 
-    // const VALIDITY    = 'validity';
-    // const VALID_TILL  = 'valid_till';
+    // const VALIDITY     = 'validity';
+    // const VALID_TILL   = 'valid_till';
 
     // Auto capture if set
-    // const CAPTURE     = 'capture';
+    const PAYMENT_CAPTURE = 'payment_capture';
 
     protected $fillable = array(
         self::AMOUNT,
         self::CURRENCY,
         self::RECEIPT,
+        self::PAYMENT_CAPTURE,
         self::NOTES,
         self::METHOD,
         self::ACCOUNT_NUMBER,
@@ -53,6 +54,7 @@ class Entity extends Base\PublicEntity
     protected $defaults = array(
         self::ATTEMPTS          => 0,
         self::STATUS            => Status::CREATED,
+        self::PAYMENT_CAPTURE   => 0,
         self::AUTHORIZED        => 0,
         self::NOTES             => [],
         self::METHOD            => null,
@@ -70,6 +72,13 @@ class Entity extends Base\PublicEntity
         self::ATTEMPTS,
         self::NOTES,
         self::CREATED_AT
+    );
+
+    protected $casts = array(
+        self::AMOUNT          => 'int',
+        self::PAYMENT_CAPTURE => 'bool',
+        self::AUTHORIZED      => 'bool',
+        self::ATTEMPTS        => 'int'
     );
 
     protected $amounts = array(
@@ -118,27 +127,32 @@ class Entity extends Base\PublicEntity
 
     public function getAmount()
     {
-        return $this->getAmountAttribute();
+        return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getPaymentCapture()
+    {
+        return $this->getAttribute(self::PAYMENT_CAPTURE);
     }
 
     public function getAccountNumber()
     {
-        return $this->attributes[self::ACCOUNT_NUMBER];
+        return $this->getAttribute(self::ACCOUNT_NUMBER);
     }
 
     public function getMethod()
     {
-        return $this->attributes[self::METHOD];
+        return $this->getAttribute(self::METHOD);
     }
 
     public function getAttempts()
     {
-        return $this->getAttemptsAttribute();
+        return $this->getAttribute(self::ATTEMPTS);
     }
 
     public function getBank()
     {
-        return $this->attributes[self::BANK];
+        return $this->getAttribute(self::BANK);
     }
 
     public function getMaskedAccountNumber()
@@ -155,24 +169,6 @@ class Entity extends Base\PublicEntity
     }
 
     /** End Setters And Getters */
-
-    /** Mutators */
-    protected function getAmountAttribute()
-    {
-        return (int) $this->attributes[self::AMOUNT];
-    }
-
-    protected function getAuthorizedAttribute()
-    {
-        return (bool) $this->attributes[self::AUTHORIZED];
-    }
-
-    protected function getAttemptsAttribute()
-    {
-        return (int) $this->attributes[self::ATTEMPTS];
-    }
-
-    /** End Mutators */
 
     /** Other Functions */
     public function incrementAttempts()

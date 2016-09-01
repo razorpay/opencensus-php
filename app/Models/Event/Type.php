@@ -13,4 +13,5 @@ use RZP\Exception;
 class Type
 {
     const PAYMENT_AUTHORIZED = 'payment.authorized';
+    const PAYMENT_FAILED     = 'payment.failed';
 }
