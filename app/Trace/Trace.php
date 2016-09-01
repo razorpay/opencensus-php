@@ -2,6 +2,7 @@
 
 namespace RZP\Trace;
 
+use RZP\Exception\CardNumberTraceException;
 use RZP\Trace\TraceCode;
 use RZP\Trace\TraceFields;
 
@@ -18,6 +19,10 @@ class Trace extends TraceWriter
         try
         {
             return parent::addRecord($level, $traceCode, $context);
+        }
+        catch (CardNumberTraceException $exception)
+        {
+            ;
         }
         catch (\Exception $exception)
         {

@@ -54,8 +54,6 @@ trait Authorize
         // Adds callback url, payment and card info to $gatewayInput
         $this->prePaymentAuthorizeProcessing($payment, $input, $gatewayInput);
 
-        $this->verifyFeesLessThanAmount($payment);
-
         $this->getTerminalsForPayment($payment);
 
         return  $this->authorizeAcrossTerminals($gatewayInput, $payment, $input);
@@ -87,7 +85,7 @@ trait Authorize
 
             $payment->associateTerminal($currentTerminal);
 
-            $this->runGatewaySpecificPreProcessing($payment, $terminalGatewayInput);
+            $this->runPostGatewaySelectionPreProcessing($payment, $terminalGatewayInput);
 
             if ($this->canRunOtpPaymentFlow($payment, $input))
             {
@@ -194,10 +192,10 @@ trait Authorize
 
         $payment = $this->payment;
 
-        if ($payment->isSigned())
+        if ($this->shouldAutoCapture($payment) === true)
         {
             // If payment is signed, then we capture it in this step only.
-            $payment = $this->capturePayment($payment, $payment->getAmount());
+            $this->autoCapturePayment($payment);
         }
 
         return $this->postPaymentAuthorizeProcessing($payment);
@@ -308,12 +306,17 @@ trait Authorize
         return $gatewayInput;
     }
 
-    protected function runGatewaySpecificPreProcessing($payment, array & $gatewayInput)
+    protected function runPostGatewaySelectionPreProcessing($payment, array & $gatewayInput)
     {
         // International card validation happens here because we want to save the failure.
         // For payment creation, gateway is compulsory field which is only finalized in
         // previous step.
         $this->validateInternationalAllowed($payment);
+
+        // Fees validation can only happen after international validation has gone through
+        // otherwise can cause issues with international pricing rule being not available when
+        // international is not enabled.
+        $this->verifyFeesLessThanAmount($payment);
 
         $this->repo->saveOrFail($payment);
 
@@ -873,6 +876,12 @@ trait Authorize
             return $this->getReturnDataForSignedPayment($payment);
         }
 
+        if (($payment->order !== null) and
+            ($payment->order->getPaymentCapture() === true))
+        {
+            return $this->getReturnDataForAutoCaptureOrders($payment);
+        }
+
         if ($payment->getCallbackUrl())
         {
             return $this->getReturnRequestDataForMerchant($payment);
@@ -890,12 +899,19 @@ trait Authorize
             'merchant_order_id'   => $payment->getNotes()['merchant_order_id'],
         );
 
-        $sortedData = $data;
-        ksort($sortedData);
+        $data['signature'] = $this->getSignature($data);
 
-        $str = implode('|', $sortedData);
+        return $data;
+    }
 
-        $data['signature'] = $this->getSignature($str);
+    protected function getReturnDataForAutoCaptureOrders($payment)
+    {
+        $data = array(
+            'razorpay_payment_id' => $payment->getPublicId(),
+            'razorpay_order_id'   => $payment->order->getPublicId()
+        );
+
+        $data['razorpay_signature'] = $this->getSignature($data);
 
         return $data;
     }

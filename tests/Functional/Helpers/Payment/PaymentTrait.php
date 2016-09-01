@@ -179,6 +179,11 @@ trait PaymentTrait
             'currency'          => 'INR',
             'merchant_order_id' => $payment['notes']['merchant_order_id']);
 
+        return $this->getSignature($data, $secret);
+    }
+
+    protected function getSignature(array $data, $secret = '')
+    {
         if ($secret === '')
         {
             $secret = $this->ba->getSecret();
