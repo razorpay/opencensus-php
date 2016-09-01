@@ -48,7 +48,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where(BankAccount\Entity::TYPE, '=', BankAccount\Type::MERCHANT)
-                    ->oldest
+                    ->oldest()
                     ->get();
     }
 
@@ -57,7 +57,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->whereBetween(BankAccount\Entity::CREATED_AT, array($from, $to))
                     ->where(Entity::TYPE, '=', Type::MERCHANT)
-                    ->oldest
+                    ->oldest()
                     ->get();
     }
 
@@ -67,7 +67,7 @@ class Repository extends Base\Repository
                     ->where(BankAccount\Entity::TYPE, '=', $type)
                     ->where(BankAccount\Entity::ENTITY_ID, '=', $entityId)
                     ->where(BankAccount\Entity::MERCHANT_ID, '=', $merchantId)
-                    ->oldest
+                    ->oldest()
                     ->get();
     }
 

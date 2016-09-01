@@ -29,7 +29,6 @@ class Raven
 
     const RAVEN_URLS = [
         'send-otp'      => 'sms/send-otp',
-        'send-invoice'  => 'sms/send-invoice',
         'verify-otp'    => 'sms/verify-otp',
     ];
 
@@ -81,7 +80,7 @@ class Raven
         }
         else
         {
-            $response = $this->sendRequest('sms/verify-otp', 'post', $input);
+            $response = $this->sendRequest(self::RAVEN_URLS['verify-otp'], 'post', $input);
         }
 
         return $response;
