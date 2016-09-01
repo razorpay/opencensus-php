@@ -14,34 +14,34 @@
     </div>
     <div class="row wrapper">
       <div class="list-group">
-        <a href class="list-group-item">
+        <div class="list-group-item">
           <span class="pull-right">{{entity.amount/100 | rupee:"INR "}}</span>
           Amount
-        </a>
-        <a href class="list-group-item">
+        </div>
+        <div class="list-group-item">
           <span class="label text-base pull-right" title="{{entity.status}}" ng-class="getStatusClass(entity.status)">
             {{entity.status | titlecase}}
           </span>
           Status
-        </a>
-        <a href class="list-group-item">
+        </div>
+        <div class="list-group-item">
           <span class="pull-right">{{entity.created_at*1000 | date:'medium'}}</span>
           Created At
-        </a>
-        <a href class="list-group-item">
+        </div>
+        <div class="list-group-item">
           <span class="pull-right">{{entity.fees/100 | rupee}}</span>
           Fees
-        </a>
-        <a href class="list-group-item">
+        </div>
+        <div class="list-group-item">
           <code class="pull-right">{{entity.utr}}</code>
           UTR
-        </a>
-        <a href class="list-group-item">
+        </div>
+        <div class="list-group-item">
           <span class="pull-right">{{entity.service_tax/100 | rupee}}</span>
           Service Tax
-        </a>
+        </div>
 
-        <a href class="list-group-item" ng-init="isSettlementDetailsCollapsed = true">
+        <div class="list-group-item" ng-init="isSettlementDetailsCollapsed = true">
           <span class="pull-right">
             <button class="btn btn-default btn-xs pull-right" ng-click="showSettlementDetails()">Show/Hide</button>
           </span>
