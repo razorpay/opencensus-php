@@ -106,18 +106,50 @@ trait Authorize
         $this->verifyAuthResponse($this->authEnrolledResponse);
     }
 
-    protected function verifyAuthResponse(array & $auth)
+    protected function verifyAuthResponse(array & $authResponse)
     {
-        $this->isAuthSuccess($auth);
+        $this->isAuthSuccess($authResponse);
 
-        $this->traceAuthEnrolledResponse($auth);
+        $this->traceAuthEnrolledResponse($authResponse);
 
-        $this->persistAfterAuthEnrolled($auth);
+        if (($this->error === true) and
+            ($this->callbackAlreadyProcessed($authResponse) === true))
+        {
+            // We don't want to silently return here because that would mean
+            // that it is considered as authorized and will end up notifying and
+            // triggering a webhook if present.
+
+            // We are throwing an error here itself because we don't want to persist this data.
+            // The second callback should have never come in the first place and hence not storing
+            // this data in the gateway entity. It was a mistake.
+
+            $this->throwException($authResponse['error']);
+        }
+
+        $this->persistAfterAuthEnrolled($authResponse);
 
         if ($this->error)
         {
-            $this->throwException($auth['error']);
+            $this->throwException($authResponse['error']);
         }
+    }
+
+    protected function callbackAlreadyProcessed($authResponse)
+    {
+        // This function is called only if $this->error is set.
+        // Hence, it is okay to reload here, since it will be done
+        // only in case of an error in the authorize flow.
+        $this->repo->reload($this->model);
+
+        // HDFC throws CM90004 when the authorize request has already been
+        // sent for this payment.
+        if (($this->model->getStatus() === Status::AUTHORIZED) and
+            ($authResponse['error']['code'] === Hdfc\ErrorCode::CM90004))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function postAuthNotEnrolledRequestToBank()
