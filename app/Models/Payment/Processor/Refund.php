@@ -44,10 +44,7 @@ trait Refund
             $this->validateMerchantBalance($refund);
         }
 
-        if (Lock::set($payment->getId()) === false)
-        {
-            $this->failIfMutexIsSet(Payment\Action::REFUND);
-        }
+        $this->lockPayment($payment);
 
         $this->refund = $refund;
 
@@ -337,7 +334,7 @@ trait Refund
         }
         finally
         {
-            Lock::release($this->payment->getId());
+            $this->lock->release($this->payment->getId());
         }
     }
 

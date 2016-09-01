@@ -90,6 +90,8 @@ class Processor
 
         $this->request = $this->app['request'];
 
+        $this->lock = $this->app['api.lock'];
+
         // Only used in hdfc verify refund flow
         $this->verifyRefundStatus = null;
     }
@@ -691,22 +693,15 @@ class Processor
         return false;
     }
 
-    protected function failIfMutexIsSet($action)
+    protected function lockPayment($payment)
     {
-        //
-        // Don't continue if action is in progress
-        //
-        if ($action === Payment\Action::CAPTURE)
-        {
-            $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_DUPLICATE_CAPTURE_REQUEST;
-        }
-        else if ($action === Payment\Action::REFUND)
-        {
-            $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_DUPLICATE_REFUND_REQUEST;
-        }
+        $resource = $payment->getId();
 
-        throw new Exception\BadRequestException(
-            $errorCode);
+        if ($this->lock->set($resource) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSING);
+        }
     }
 
     protected function createOrUpdateToken($input, $data)

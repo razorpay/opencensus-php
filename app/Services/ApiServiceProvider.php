@@ -75,11 +75,13 @@ class ApiServiceProvider extends BaseServiceProvider
             return new \RZP\Base\RepositoryManager($app);
         });
 
+        $this->app->singleton('api.lock', '\RZP\Models\Base\Lock');
+
         $this->registerValidatorResolver();
 
         $this->registerQueueableEntityResolver();
 
-        $this->registerRequestMacro();
+        $this->registerRequestGetIdMacro();
     }
 
     /**
@@ -124,7 +126,7 @@ class ApiServiceProvider extends BaseServiceProvider
         });
     }
 
-    protected function registerRequestMacro()
+    protected function registerRequestGetIdMacro()
     {
         $this->app['request']->macro('getId', function()
         {

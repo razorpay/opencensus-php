@@ -7,24 +7,40 @@ use Request;
 
 class Lock
 {
-    public static function set($resource, $ttl = 60)
+    public function __construct(Request $request, Redis $redis)
     {
-        $requestId = Request::getFacadeRoot()->getId();
-        $redis = Redis::getFacadeRoot();
+        $this->requestId = Request::getFacadeRoot()->getId();
 
-        $status = (string) $redis->set($resource, $requestId, 'ex', $ttl, 'nx');
+        $this->redis = Redis::getFacadeRoot();
+    }
+
+    /**
+     * Set the lock for the resource provided
+     *
+     * @param string $resource Name of the resource
+     * @param int    $ttl      Expiry time of lock in minutes
+     *
+     * @return boolean
+     */
+    public function set($resource, $ttl = 60)
+    {
+        $status = $this->redis->set($resource, $this->requestId, 'ex', $ttl, 'nx');
 
         return ($status === 'OK');
     }
 
-    public static function release($resource)
+    /**
+     * Release the lock for the resource provided
+     *
+     * @param string $resource Name of the resource
+     *
+     * @return integer
+     */
+    public function release($resource)
     {
-        $requestId = Request::getFacadeRoot()->getId();
-        $redis = Redis::getFacadeRoot();
-
-        if ($redis->get($resource) === $requestId)
+        if ($this->redis->get($resource) === $this->requestId)
         {
-            return $redis->del($resource);
+            return $this->redis->del($resource);
         }
 
         return 0;

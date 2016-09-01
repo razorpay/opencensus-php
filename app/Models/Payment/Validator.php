@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Payment;
 
-use App;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use Lib\PhoneBook;

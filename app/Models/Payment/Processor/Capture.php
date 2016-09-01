@@ -53,10 +53,7 @@ trait Capture
 
         (new Payment\Validator)->captureValidate($payment, $input);
 
-        if (Lock::set($payment->getId()) === false)
-        {
-            $this->failIfMutexIsSet(Payment\Action::CAPTURE);
-        }
+        $this->lockPayment($payment);
 
         return $this->capturePayment($payment, $input['amount']);
     }
@@ -233,7 +230,10 @@ trait Capture
                 // Note: Capture shouldn't be done again for Cybersource
                 // as cybersource settles the amount from CH account again
                 //
-                assert($this->payment->getGateway() === Payment\Gateway::HDFC);
+                if ($this->payment->getGateway() !== Payment\Gateway::HDFC)
+                {
+                    throw $ex;
+                }
 
                 $data['mode'] = $this->mode;
 
@@ -278,7 +278,7 @@ trait Capture
         }
         finally
         {
-            Lock::release($this->payment->getId());
+            $this->lock->release($this->payment->getId());
         }
     }
 
