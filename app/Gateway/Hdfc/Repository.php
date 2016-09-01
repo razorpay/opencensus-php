@@ -290,10 +290,10 @@ class Repository extends Base\Repository
                     ->where('payment_id', '=', $id)->firstOrFail();
     }
 
-    public function retrieveCapturedOrAcceptedCaptureError($id)
+    public function retrieveCapturedOrAcceptedCaptureErrorOrFail($paymentId)
     {
         $payment = $this->newQuery()
-                        ->where('payment_id', '=', $id)
+                        ->where('payment_id', '=', $paymentId)
                         ->where('status', '=', Payment\Status::CAPTURED)
                         ->first();
 
@@ -303,15 +303,28 @@ class Repository extends Base\Repository
         }
 
         return $this->newQuery()
-                    ->where('payment_id', '=', $id)
+                    ->where('payment_id', '=', $paymentId)
+                    ->where('status', '=', Payment\Status::CAPTURE_FAILED)
                     ->where('error_code', '=', ErrorCode::GW00176)
                     ->firstOrFail();
     }
 
-    public function retrieveByPaymentIdAndStatus($id, $status)
+    public function retrieveCapturedOrAcceptedCaptureError($paymentId)
+    {
+        try
+        {
+            return $this->retrieveCapturedOrAcceptedCaptureErrorOrFail($paymentId);
+        }
+        catch(\Exception $ex)
+        {
+            return null;
+        }
+    }
+
+    public function retrieveByPaymentIdAndStatusOrFail($paymentId, $status)
     {
         return $this->newQuery()
-                    ->where('payment_id', '=', $id)
+                    ->where('payment_id', '=', $paymentId)
                     ->where('status', '=', $status)
                     ->firstOrFail();
     }
@@ -371,6 +384,14 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where('payment_id', '=', $id)
+                    ->get();
+    }
+
+    public function findByRefundIdOrderedById($refundId, $direction = 'desc')
+    {
+        return $this->newQuery()
+                    ->where('refund_id', '=', $refundId)
+                    ->orderBy('id', $direction)
                     ->get();
     }
 

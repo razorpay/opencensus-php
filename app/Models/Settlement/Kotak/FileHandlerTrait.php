@@ -31,18 +31,27 @@ trait FileHandlerTrait
 
     public function writeToTextFileH2H($txt)
     {
-        $name = 'RAZORNODAL$$'. Carbon::now('Asia/Kolkata')->format('d-m-Y');;
+        try
+        {
+            $name = 'RAZORNODAL\$\$'. Carbon::now('Asia/Kolkata')->format('dmYHis') . '.txt';
 
-        $fullpath = $this->saveLocally($name, $txt);
+            $fullpath = $this->saveLocally($name, $txt);
 
-        $bucket = 'h2h_bucket';
+            $bucket = 'h2h_bucket';
 
-        $metadata = $this->getH2HMetadata();
+            $metadata = $this->getH2HMetadata();
 
-        $url = $this->saveToAws($name, $fullpath, 'text/plain', $bucket, $metadata);
+            $key = 'kotak/outgoing/' . $name;
 
-        // This will be local file path if aws is mocked
-        return $url;
+            $url = $this->saveToAws($key, $fullpath, 'text/plain', $bucket, $metadata);
+
+            // This will be local file path if aws is mocked
+            return $url;
+        }
+        catch (\Exception $e)
+        {
+            $this->trace()->traceException($e);
+        }
     }
 
     public function writeToCsvFile($data, $name, $fullName = null)
@@ -461,7 +470,7 @@ trait FileHandlerTrait
         $data = array();
         $headings = $this->getHeadings();
 
-        foreach ($rows as $row)
+        foreach ($rows as $ix => $row)
         {
             // Ending row may be just empty.
             if ($row === '')
@@ -470,6 +479,13 @@ trait FileHandlerTrait
             }
 
             $values = explode('~', $row);
+
+            if (count($headings) !== count($values))
+            {
+                throw new Exception\RuntimeException(
+                    'Count of array elements for combine not equal. Heading count: ' .
+                    count($headings). ' Value count: ' . count($values) . ' Row: ' . $ix);
+            }
 
             $values = array_combine($headings, $values);
             $data[] = $values;
@@ -496,9 +512,7 @@ trait FileHandlerTrait
             $filePath = $file->getRealPath();
         }
 
-        $file = fopen($filePath, 'r');
-        $txt = fread($file, filesize($filePath));
-        $lines = explode("\r\n", $txt);
+        $lines = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 
         return $lines;
     }
@@ -589,10 +603,10 @@ trait FileHandlerTrait
     protected function getH2HMetadata()
     {
         return array(
-            'x-amz-meta-gid'   => '10000',
-            'x-amz-meta-uid'   => '10001',
-            'x-amz-meta-mtime' => Carbon::now()->timestamp,
-            'x-amz-meta-mode'  => '33188'
+            'gid'   => '10000',
+            'uid'   => '10001',
+            'mtime' => Carbon::now()->timestamp,
+            'mode'  => '33188'
         );
     }
 }

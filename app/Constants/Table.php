@@ -29,6 +29,7 @@ class Table
     const SETTLEMENT_DETAIL     = 'settlement_details';
 
     // Gateway related
+    const EBS                   = 'ebs';
     const ATOM                  = 'atom';
     const HDFC                  = 'hdfc';
     const AXIS                  = 'axis';
@@ -37,12 +38,13 @@ class Table
     const BILLDESK              = 'billdesk';
     const MOBIKWIK              = 'mobikwik';
     const NETBANKING            = 'netbanking';
+    const WALLET                = 'wallet';
 
     // Sessions table
     const SESSION               = 'sessions';
 
     // Internal Purposes
-    const CREDITS           = 'credits';
+    const CREDITS               = 'credits';
 
     // Terminal Performance
     const TERMINAL_ACTION       = 'terminal_action_logs';

@@ -3,10 +3,31 @@
 namespace RZP\Tests\Functional\Helpers\Payment;
 
 use Requests;
+use RZP\Exception\GatewayTimeoutException;
 use Symfony\Component\DomCrawler\Crawler;
 
 trait PaymentHdfcTrait
 {
+    protected function hdfcPaymentFailedDueToDeniedByRisk()
+    {
+        $this->mockServerContentFunction(function (& $content, $action)
+        {
+            $content['result'] = 'DENIED BY RISK';
+        });
+    }
+
+    protected function hdfcPaymentMockResultCode($result, $expectedAction)
+    {
+        $this->mockServerContentFunction(
+            function (& $content, $action) use ($result, $expectedAction)
+            {
+                if ($action === $expectedAction)
+                {
+                    $content['result'] = $result;
+                }
+            });
+    }
+
     protected function runPaymentCallbackFlowHdfc($response, &$callback = null)
     {
         $tds = $this->is3dSecure($response, $callback);
@@ -106,9 +127,9 @@ trait PaymentHdfcTrait
                         ->shouldReceive('content')
                         ->andReturnUsing(function (& $content)
                         {
-                            throw new \Requests_Exception(
+                            throw new GatewayTimeoutException(
                                 'cURL error 28: Operation timed out after ' .
-                                '10001 milliseconds with 0 bytes received', 'curlerror');
+                                '10001 milliseconds with 0 bytes received');
                         }, function (& $content)
                         {
                             return $content;

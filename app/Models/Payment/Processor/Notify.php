@@ -12,6 +12,7 @@ use RZP\Trace\TraceCode;
 class Notify
 {
     const AUTHORIZED = 'authorized';
+    const CARD_SAVED = 'card_saved';
     const CAPTURED   = 'captured';
     const REFUNDED   = 'refunded';
     const FAILED_TO_AUTHORIZED = 'failed_to_authorized';
@@ -33,9 +34,9 @@ class Notify
 
     /**
      * When are receipt emails sent to the customer
-     * @var Array
+     * @var array
      */
-    protected static $receptEmails = [
+    protected static $receiptEmails = [
         self::AUTHORIZED,
         self::FAILED_TO_AUTHORIZED
     ];
@@ -83,6 +84,12 @@ class Notify
                 ],
             ],
         ],
+        self::CARD_SAVED    => [
+            'customer'  => [
+                'from' => 'care',
+                'view' => 'emails.payment.cardsaving',
+            ]
+        ]
     ];
 
     protected $payment;
@@ -239,7 +246,7 @@ class Notify
         // You can control slack posts via SLACK_ENABLE
 
         if ((array_key_exists($event, $slackMessages)) and
-            ($this->isSlackEnabled($event)))
+            ($this->isSlackEnabled()))
         {
             $settings = [
                 'channel'   => $this->getSlackChannel(),
@@ -359,6 +366,11 @@ class Notify
         else
         {
             $subject = "$action successful for {$this->template['payment']['amount']}";
+        }
+
+        if ($event === self::CARD_SAVED)
+        {
+            $subject = "Card successfully saved with Razorpay";
         }
 
         // All mails that we send out to the merchant follow the same pattern:
@@ -513,6 +525,20 @@ class Notify
             ]
         ];
 
+        if ($this->payment->card !== null)
+        {
+            $card = $this->payment->card;
+
+            $expiryMonth = str_pad($card->getExpiryMonth(), 2, "0", STR_PAD_LEFT);
+
+            $data['card'] = [
+                'number'    => '**** **** **** ' . $card->getLast4(),
+                'expiry'    => $expiryMonth . '/' . $card->getExpiryYear(),
+                'network'   => $card->getNetworkCode(),
+                'color'     => $card->getNetworkColorCode(),
+            ];
+        }
+
         if ($this->refund)
         {
             $data['refund'] = [
@@ -620,7 +646,7 @@ class Notify
             return false;
         }
 
-        return in_array($event, self::$receptEmails);
+        return in_array($event, self::$receiptEmails);
     }
 
     /**
@@ -639,16 +665,15 @@ class Notify
             return false;
         }
 
-        return $this->isEnabled($event);
+        return $this->isEnabled();
 
     }
 
     /**
      * Whether to send notifications or not
-     * @param  string  $event Event trigger
      * @return boolean
      */
-    protected function isEnabled($event)
+    protected function isEnabled()
     {
         // We only send notifications if Mode is not TEST
         // or if the env=dev or env=testing
@@ -668,11 +693,10 @@ class Notify
 
     /**
      * Whether to send slack notifications
-     * @param  string $event Event trigger
      * @return boolean
      */
-    protected function isSlackEnabled($event)
+    protected function isSlackEnabled()
     {
-        return $this->isEnabled($event);
+        return $this->isEnabled();
     }
 }

@@ -32,6 +32,7 @@ class Selector
      * @var array
      */
     protected static $sorters = [
+        Sorters\ExclusivitySorter::class,
         Sorters\CardSorter::class,
         Sorters\NetbankingSorter::class,
         Sorters\MerchantSorter::class,
@@ -143,7 +144,7 @@ class Selector
 
         $terminal = $sortedTerminals[0];
 
-        $this->payment->setTerminal($terminal);
+        $this->payment->associateTerminal($terminal);
 
         // hack to return multiple terminals if needed.
         if ($options and $options->getMultiple() === true)
@@ -156,6 +157,11 @@ class Selector
 
     protected function traceTerminals($terminals, $msg, $verbose = false)
     {
+        if ($this->merchant->getId() === '4izmfM9TFCAgFN')
+        {
+            $verbose = true;
+        }
+
         if (($verbose === true) and (empty($terminals) === false))
         {
             $terminalIds = [];
@@ -188,12 +194,6 @@ class Selector
         {
             // make this into an array, since the caller expects an array
             $terminalsSelected = array($terminalsSelected);
-        }
-
-        // restrict international merchants from using terminal rotation to prevent fraud
-        if ($this->merchant->isInternational() === true)
-        {
-            return array($terminalsSelected[0]);
         }
 
         return $terminalsSelected;

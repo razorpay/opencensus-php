@@ -11,6 +11,7 @@ final class Route
      */
 
     protected static $apiRoutes = array(
+        'account'                                 => ['get',      'account',                                  'PublicController@getAccount'                                       ],
         'checkout'                                => ['get',      'checkout',                                 'MerchantController@getCheckout'                                    ],
         'checkout_public'                         => ['get',      'checkout/public',                          'MerchantController@getCheckoutPublic'                              ],
         'merchant_methods'                        => ['get',      'methods',                                  'MerchantController@getPaymentMethods'                              ],
@@ -55,7 +56,8 @@ final class Route
         'refund_fetch_multiple'                   => ['get',      'refunds',                                  'PaymentController@getRefunds'                                      ],
         'refund_netbanking_generate_excel'        => ['post',     'refunds/netbanking/excel',                 'PaymentController@generateNetbankingRefunds'                       ],
         'refund_generate_excel'                   => ['post',     'refunds/excel',                            'PaymentController@generateRefunds'                                 ],
-        'refund_verify'                           => ['get',      'refunds/{id}/verify',                      'PaymentController@getRefundVerify'                                 ],
+        'refund_verify'                           => ['post',     'refunds/{ids}/verify',                     'PaymentController@postRefundVerify'                                ],
+        'payment_capture_verify'                  => ['post',     'payments/{id}/verify/capture',             'PaymentController@postCaptureVerify'                               ],
         'card_fetch_by_id'                        => ['get',      'cards/{id}',                               'PaymentController@getCard'                                         ],
         'card_fetch_multiple'                     => ['get',      'cards',                                    'PaymentController@getCards'                                        ],
         'iin_fetch_by_iin'                        => ['get',      'iins/{id}',                                'CardController@getIin'                                             ],
@@ -176,14 +178,16 @@ final class Route
         'mock_paytm_payment'                      => ['post',     'gateway/mockpaytm/payment',                'MockGatewayController@postPaytmPayment'                            ],
         'mock_mobikwik_payment'                   => ['post',     'gateway/mockmobikwik/payment',             'MockGatewayController@postMobikwikPayment'                         ],
         'mock_billdesk_payment'                   => ['post',     'gateway/mockbilldesk/payment',             'MockGatewayController@postBilldeskPayment'                         ],
+        'mock_ebs_payment'                        => ['post',     'gateway/mockebs/payment',                  'MockGatewayController@postEbsPayment'                              ],
         'mock_sharp_payment_post'                 => ['post',     'gateway/mocksharp/payment',                'MockGatewayController@getSharpPayment'                             ],
         'mock_sharp_payment_get'                  => ['get',      'gateway/mocksharp/payment',                'MockGatewayController@getSharpPayment'                             ],
         'mock_amex_payment'                       => ['post',     'gateway/mockamex/payment',                 'MockGatewayController@postAmexPayment'                             ],
         'mock_sharp_payment_submit'               => ['post',     'gateway/mocksharp/payment/submit',         'MockGatewayController@postSharpPayment'                            ],
         'mock_netbanking_payment'                 => ['post',     'gateway/mock/netbanking/{bank}',           'MockGatewayController@postNetbankingPayment'                       ],
         'mock_sbiepay_payment'                    => ['post',     'gateway/mocksbiepay/payment',              'MockGatewayController@postSbiepayPayment'                          ],
-        'mock_wallet_payment'                     => ['post',     'gateway/mock/wallet/{wallet}',             'MockGatewayController@postWalletPayment'                           ],
-        'mock_wallet_payment_with_paymentid'      => ['post',     'gateway/mock/wallet/{wallet}/{paymentId}', 'MockGatewayController@postWalletPayment'                           ],
+        'mock_wallet_payment'                     => ['post',     'gateway/mock/wallet/{wallet}',             'MockGatewayController@walletPayment'                               ],
+        'mock_wallet_payment_get'                 => ['get',      'gateway/mock/wallet/{wallet}',             'MockGatewayController@walletPayment'                               ],
+        'mock_wallet_payment_with_paymentid'      => ['post',     'gateway/mock/wallet/{wallet}/{paymentId}', 'MockGatewayController@walletPayment'                               ],
         'admin_fetch_entity_multiple'             => ['get',      'admin/{type}',                             'AdminController@getEntityMultiple'                                 ],
         'admin_fetch_entity_by_id'                => ['get',      'admin/{type}/{id}',                        'AdminController@getEntityById'                                     ],
         'send_test_newsletter'                    => ['post',     'admin/newsletter/test',                    'AdminController@postSendTestNewsletter'                            ],
@@ -220,6 +224,8 @@ final class Route
         'customer_update'                         => ['put',      'customers/{id}',                           'CustomerController@updateCustomer'                                 ],
         'customer_get'                            => ['get',      'customers/{id}',                           'CustomerController@getCustomer'                                    ],
         'customer_delete'                         => ['delete',   'customers/{id}',                           'CustomerController@deleteCustomer'                                 ],
+        'customer_add_bank_account'               => ['post',     'customers/{id}/bank_account',              'CustomerController@postBankAccount'                                ],
+        'customer_fetch_bank_account'             => ['get',      'customers/{id}/bank_account',              'CustomerController@getBankAccounts'                                ],
         'customer_create_token'                   => ['post',     'customers/{id}/tokens',                    'CustomerController@addToken'                                       ],
         'customer_update_token'                   => ['put',      'customers/{id}/tokens/{token}',            'CustomerController@updateToken'                                    ],
         'customer_fetch_token'                    => ['get',      'customers/{id}/tokens/{token}',            'CustomerController@fetchToken'                                     ],
@@ -229,11 +235,13 @@ final class Route
         'customer_logout_global'                  => ['delete',   'apps/logout',                              'CustomerController@logoutCustomer'                                 ],
         'app_delete_token'                        => ['delete',   'apps/tokens/{token}',                      'CustomerController@deleteTokenForGlobalCustomer'                   ],
         'app_fetch_tokens'                        => ['get',      'apps/tokens',                              'CustomerController@fetchTokensForGlobalCustomer'                   ],
+        'app_fetch_payments'                      => ['get',      'apps/payments',                            'CustomerController@fetchPaymentsForGlobalCustomer'                 ],
         'device_verify_token'                     => ['post',     'devices/{deviceToken}/verify',             'CustomerController@validateDeviceToken'                            ],
         'otp_post'                                => ['post',     'otp/create',                               'CustomerController@postOtp'                                        ],
         'otp_verify'                              => ['post',     'otp/verify',                               'CustomerController@verifyOtp'                                      ],
         'sms_callback'                            => ['post',     'sms/{id}/callback',                        'CustomerController@updateSmsStatus'                                ],
         'es_migrate_entity'                       => ['post',     'es/migrate/{entityName}',                  'EsController@migrateEntity'                                        ],
+        'refund_gateway_manual'                   => ['post',     'refunds/{ids}/gateway',                    'PaymentController@postManualGatewayRefund'                         ],
     );
 
     public static $public = array(
@@ -265,16 +273,19 @@ final class Route
         'mock_mobikwik_payment',
         'mock_netbanking_payment',
         'mock_billdesk_payment',
+        'mock_ebs_payment',
         'mock_sharp_payment_post',
         'mock_sharp_payment_get',
         'mock_sharp_payment_submit',
         'mock_sbiepay_payment',
         'mock_wallet_payment',
+        'mock_wallet_payment_get',
         'mock_wallet_payment_with_paymentid',
         'dummy_return_callback',
         'get_emi_plans',
         'customer_get_saved_status',
         'app_delete_token',
+        'app_fetch_payments',
         'customer_logout_global',
         'otp_post',
         'otp_verify'
@@ -308,6 +319,8 @@ final class Route
         'customer_delete_token',
         'customer_fetch_token',
         'customer_fetch_tokens',
+        'customer_add_bank_account',
+        'customer_fetch_bank_account',
         'setl_combined_report',
     );
 
@@ -414,12 +427,14 @@ final class Route
         'emi_generate_excel',
         'order_update',
         'refund_verify',
+        'payment_capture_verify',
         'es_migrate_entity',
         'dummy_critical_error',
         'reconciliate',
         'credits_create',
         'credits_edit',
         'credits_delete',
+        'refund_gateway_manual',
     );
 
     public static $proxy = array(
@@ -460,6 +475,7 @@ final class Route
     );
 
     public static $direct = array(
+        'account',
         'dummy_route',
         'checkout_public',
         'mockhdfc_3dsecure',

@@ -63,6 +63,7 @@ class IFSC
     const ICIC = 'ICIC';
     const IBKL = 'IBKL';
     const IDIB = 'IDIB';
+    const IDFB = 'IDFB';
     const IOBA = 'IOBA';
     const INDB = 'INDB';
     const ICBK = 'ICBK';
