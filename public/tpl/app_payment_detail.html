@@ -15,120 +15,120 @@
     </div>
       <div class="row wrapper">
         <div class="list-group">
-          <a href class="list-group-item">
+          <div class="list-group-item">
             <span class="pull-right">{{entity.amount/100 | rupee:""}}</span>
             Amount
-          </a>
-          <a href class="list-group-item">
+          </div>
+          <div class="list-group-item">
             <span class="pull-right">{{entity.amount_refunded/100 | rupee:""}}</span>
             Amount Refunded
-          </a>
-          <a href class="list-group-item">
+          </div>
+          <div class="list-group-item">
             <span class="pull-right">{{entity.currency}}</span>
             Currency
-          </a>
-          <a href class="list-group-item">
+          </div>
+          <div class="list-group-item">
             <span class="label text-base pull-right" title="{{entity.status}}" ng-class="getStatusClass(entity.status)">{{entity.status | titlecase}}</span>
             Status
-          </a>
-          <a href class="list-group-item">
+          </div>
+          <div class="list-group-item">
             <span class="pull-right">{{entity.captured}}</span>
             Captured
-          </a>
-          <a href class="list-group-item">
-            <span class="pull-right">{{entity.method}}</span>
+          </div>
+          <div class="list-group-item">
+            <span class="pull-right">{{entity.method | titlecase}}</span>
             Method
-          </a>
-          <a href class="list-group-item" ng-show="entity.bank">
+          </div>
+          <div class="list-group-item" ng-show="entity.bank">
             <span class="pull-right">{{entity.bank}}</span>
             Bank
-          </a>
-          <a href class="list-group-item" ng-show="entity.wallet">
+          </div>
+          <div class="list-group-item" ng-show="entity.wallet">
             <span class="pull-right">{{entity.wallet}}</span>
             Wallet
-          </a>
-          <a href class="list-group-item" ng-show="entity.method === 'card'">
+          </div>
+          <div class="list-group-item" ng-show="entity.method === 'card'">
             <span class="pull-right">
               <button class="btn btn-default btn-xs pull-right"  ng-click="toggleCardDetails()">Show/Hide</button>
             </span>
             Card Details
-          </a>
+          </div>
           <div collapse="!showCardDetails" class="panel-body">
-            <a href class="list-group-item" ng-repeat="(key,value) in card">
+            <div class="list-group-item" ng-repeat="(key,value) in card">
               <span class="pull-right">{{value}}</span>
               {{key|titlecase}}
-            </a>
+            </div>
           </div>
-          <a href class="list-group-item">
+          <div class="list-group-item">
             <span class="pull-right" ng-show="entity.refund_status">{{entity.refund_status | titlecase}}</span>
             <span class="pull-right" ng-hide="entity.refund_status">None</span>
             Refund Status
-          </a>
-          <a href class="list-group-item">
+          </div>
+          <div class="list-group-item">
             <span class="pull-right">{{entity.description}}<span ng-hide="entity.description">No Description</span></span>
             Description
-          </a>
-          <a href class="list-group-item">
-            <span class="pull-right">{{entity.email}}</span>
+          </div>
+          <div class="list-group-item">
+            <span class="pull-right"><a href="mailto:{{entity.email}}" title="Customer Email">{{entity.email}}</a></span>
             Email
-          </a>
-          <a href class="list-group-item">
-            <span class="pull-right">{{entity.contact}}</span>
+          </div>
+          <div class="list-group-item">
+            <span class="pull-right"><a href="tel:{{entity.contact}}">{{entity.contact}}</a></span>
             Contact
-          </a>
-          <a href class="list-group-item">
+          </div>
+          <div class="list-group-item">
             <span class="pull-right">{{(entity.fee - entity.service_tax)/100 | rupee:""}}</span>
             Fees
-          </a>
-          <a href class="list-group-item">
+          </div>
+          <div class="list-group-item">
             <span class="pull-right">{{entity.service_tax/100 | rupee:""}}</span>
             Service Tax
-          </a>
-          <a href class="list-group-item" tooltip="Total Fees is inclusive of Service Tax charges">
+          </div>
+          <div class="list-group-item" tooltip="Total Fees is inclusive of Service Tax charges">
             <span class="pull-right">{{entity.fee/100 | rupee:""}}</span>
             Total Fees
-          </a>
-          <a href class="list-group-item" ng-show="entity.error_code">
+          </div>
+          <div class="list-group-item" ng-show="entity.error_code">
             <span class="pull-right">
               {{entity.error_code}}
             </span>
             Error
-          </a>
+          </div>
           <div href class="list-group-item panel-body" ng-show="entity.error_description">
             <span class="pull-right col-lg-8 text-right">
               {{entity.error_description}}
             </span>
             Error Description
           </div>
-          <a href class="list-group-item" ng-init="isCollapsed = false">
+          <div class="list-group-item" ng-init="isCollapsed = false">
             <span class="pull-right">
               <button class="btn btn-default btn-xs pull-right"  ng-click="isCollapsed = !isCollapsed" ng-show="entity.notes.length != 0">Show/Hide</button>
               <span ng-hide="entity.notes.length != 0">No Notes</span>
             </span>
             Notes
-          </a>
+          </div>
           <div collapse="isCollapsed" class="panel-body">
-            <a href class="list-group-item" ng-repeat="(label,key) in entity.notes">
+            <div class="list-group-item" ng-repeat="(label,key) in entity.notes">
               <span class="pull-right">{{key}}</span>
               {{label}}
-            </a>
+            </div>
           </div>
-          <a href class="list-group-item">
+          <div class="list-group-item">
             <span class="pull-right">{{entity.created_at*1000 | fromNow}} ({{entity.created_at*1000 | date : 'medium'}})</span>
             Created At
-          </a>
-          <a href class="list-group-item"  ng-init="isRefundsCollapsed = true">
+          </div>
+          <div class="list-group-item"  ng-init="isRefundsCollapsed = true">
             <span class="pull-right">
               <button class="btn btn-default btn-xs pull-right"  ng-click="showRefunds()" ng-show="entity.refund_status">Show/Hide</button>
               <span ng-hide="entity.refund_status">No Refunds</span>
             </span>
             Refunds
-          </a>
+          </div>
           <div collapse="isRefundsCollapsed" class="panel-body">
-            <a class="list-group-item" ng-repeat="refund in entity.refunds" ui-sref="app.refunds.detail({id:refund.id})">
+            <div class="list-group-item" ng-repeat="refund in entity.refunds" ui-sref="app.refunds.detail({id:refund.id})">
               <span class="pull-right">{{refund.created_at*1000 | fromNow}} ({{refund.created_at*1000 | date:'medium'}})</span>
               {{refund.amount/100 | rupee:refund.currency + " "}}
-            </a>
+            </div>
           </div>
         </div>
         <div class="text-center">

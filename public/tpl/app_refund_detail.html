@@ -14,31 +14,35 @@
     </div>
   <div class="row wrapper">
       <div class="list-group">
-        <a ui-sref="app.payments.detail({id:entity.payment_id})" class="list-group-item">
-          <span class="pull-right">{{entity.payment_id}}</span>
+        <div  class="list-group-item">
+          <span class="pull-right">
+          <a ui-sref="app.payments.detail({id:entity.payment_id})" title="Payment Details">
+            {{entity.payment_id}}
+          </a>
+          </span>
           Payment
-        </a>
-        <a href class="list-group-item">
+        </div>
+        <div class="list-group-item">
           <span class="pull-right">{{entity.amount/100 | rupee:""}}</span>
           Amount
-        </a>
-        <a href class="list-group-item">
+        </div>
+        <div class="list-group-item">
           <span class="pull-right">{{entity.currency}}</span>
           Currency
-        </a>
+        </div>
 
-        <a href class="list-group-item">
+        <div class="list-group-item">
           <span class="pull-right">{{entity.created_at*1000 | fromNow}} ({{entity.created_at*1000 | date : 'medium'}})</span>
           Created At
-        </a>
-        <a href class="list-group-item" ng-show="entity.notes">
+        </div>
+        <div class="list-group-item" ng-show="entity.notes">
           Notes
-        </a>
+        </div>
         <div class="panel-body">
           <a href class="list-group-item" ng-repeat="(label,key) in entity.notes" tooltip="{{getTooltip(label)}}">
             <span class="pull-right">{{key}}</span>
             {{label}}
-          </a>
+          </div>
         </div>
       </div>
 
