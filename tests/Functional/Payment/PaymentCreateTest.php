@@ -62,34 +62,6 @@ class PaymentCreateTest extends TestCase
         $id = $payment['razorpay_payment_id'];
     }
 
-    public function testAutoCaptureWithOrderPayment()
-    {
-        $order = $this->fixtures->create('order', ['payment_capture' => true]);
-        $payment = $this->getDefaultPaymentArray();
-        $payment['order_id'] = $order->getPublicId();
-        $payment['amount'] = $order->getAmount();
-
-        $response = $this->doAuthPayment($payment);
-
-        $actualSignature = $response['razorpay_signature'];
-
-        unset($response['razorpay_signature']);
-
-        ksort($response);
-        $exceptedSignature = $this->getSignature($response, 'TheKeySecretForTests');
-
-        $this->assertEquals($actualSignature, $exceptedSignature);
-
-        $payment = $this->getLastEntity('payment', true);
-        $this->assertEquals($order->getPublicId(), $payment['order_id']);
-        $this->assertEquals('captured', $payment['status']);
-        $this->assertEquals(true, $payment['auto_captured']);
-
-        $order = $this->getLastEntity('order', true);
-        $this->assertEquals('paid', $order['status']);
-        $this->assertEquals(true, $order['authorized']);
-    }
-
     public function testInternationalPayment()
     {
         $this->fixtures->merchant->enableInternational();
