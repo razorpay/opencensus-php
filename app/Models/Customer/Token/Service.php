@@ -74,6 +74,9 @@ class Service extends Base\Service
     {
         Customer\Entity::verifyIdAndStripSign($customerId);
 
+        // This is needed to ensure that the merchant is getting only HIS customer's details
+        $customer = $this->repo->customer->findByIdAndMerchantId($customerId, $this->merchant->getId());
+
         $tokens = $this->repo->token->getByCustomerId($customerId);
 
         return $tokens->toArrayPublic();
