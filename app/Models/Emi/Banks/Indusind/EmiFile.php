@@ -104,8 +104,6 @@ class EmiFile extends Base\EmiFile
 
         foreach ($input as $emiPayment)
         {
-            $date = Carbon::createFromTimestamp($emiPayment->getCaptureTimestamp(), 'Asia/Kolkata')->format('M d,Y h:i:s A');
-
             $emiPlan = (new Service)->fetch($emiPayment->getEmiPlanId());
 
             $emiTenure = $emiPlan['duration'];
@@ -129,7 +127,7 @@ class EmiFile extends Base\EmiFile
                 'MID'                          => '',
                 'TID'                          => '',
                 'Tx Time'                      => $this->formattedDateFromTimestamp($emiPayment->getCaptureTimestamp()),
-                'Settlement Time'              => '', //$this->formattedDateFromTimestamp($emiPayment->transaction->getSettledAt()),
+                'Settlement Time'              => '',
                 'Customer Processing Fee'      => '',
                 'Customer Processing Amt'      => '',
                 'Subvention payable to Issuer' => '',
@@ -157,7 +155,7 @@ class EmiFile extends Base\EmiFile
 
     private function formattedDateFromTimestamp($timestamp)
     {
-        return Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata')->format('d/M/Y');
+        return Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata')->format('j/n/Y');
     }
 
     protected function sendEmiPassword()
