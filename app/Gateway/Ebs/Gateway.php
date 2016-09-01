@@ -45,7 +45,6 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentRequest($request, $input);
 
-        /*
         //TODO:: To be removed after it is tested on production
         // Second merchant id is for Test user running test cases
         if (($input['merchant']['id'] === '4izmfM9TFCAgFN') or
@@ -56,7 +55,6 @@ class Gateway extends Base\Gateway
                 $request = $this->makeRequestAndGetBankUrl($request, $input);
             }
         }
-        */
 
         return $request;
     }

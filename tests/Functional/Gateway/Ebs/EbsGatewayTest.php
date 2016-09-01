@@ -76,7 +76,6 @@ class EbsGatewayTest extends TestCase
         $this->assertEquals('txn_'.$payment['transaction_id'], $txn['id']);
     }
 
-    /*
     public function testPaymentForFirstGatewayRequestFailure()
     {
         $payment = $this->getDefaultNetbankingPaymentArray('CBIN');
@@ -108,7 +107,6 @@ class EbsGatewayTest extends TestCase
             $payment = $this->doAuthPayment($payment);
         });
     }
-     */
 
     public function testHackedPayment()
     {
