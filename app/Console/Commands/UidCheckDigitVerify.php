@@ -29,7 +29,7 @@ class UidCheckDigitVerify extends Command
     {
         $uid = $this->input->getOption('uid');
 
-        $ret = UniqueIdEntity::validateCheckDigit($uid);
+        $ret = UniqueIdEntity::isValidBase62Id($uid);
 
         if ($ret === true)
         {

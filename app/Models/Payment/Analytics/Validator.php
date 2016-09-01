@@ -143,7 +143,7 @@ class Validator extends Base\Validator
     {
         if (isset($metadata[Entity::CHECKOUT_ID]))
         {
-            if (Entity::validateCheckDigit($metadata[Entity::CHECKOUT_ID]) !== true)
+            if (Entity::isValidBase62Id($metadata[Entity::CHECKOUT_ID]) !== true)
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_INVALID_CHECKOUT_ID, [Entity::CHECKOUT_ID => $metadata[Entity::CHECKOUT_ID]]);

@@ -16,5 +16,4 @@ class HttpRequestHeader
     const X_FRAME_OPTIONS               = 'X-Frame-Options';
     const CONTENT_TYPE                  = 'content-type';
     const X_RAZORPAY_SIGNATURE          = 'X-Razorpay-Signature';
-    const CORS                          = 'cors';
 }

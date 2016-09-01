@@ -332,75 +332,53 @@ class UniqueIdEntity extends Entity
 
         return $base62Digit;
     }
+
+    public static function getSumForCheckDigit($num)
+    {
+        $checkNumber = $num;
+
+        $sum = $flip = 0;
+
+        $len = strlen($checkNumber);
+
+        for ($i = $len - 1; $i >= 0; $i--)
+        {
+            try
+            {
+                $multiplier = (($flip++ % 2) === 0) ? 1 : 2;
+
+                $base62Digit = self::$baseValues[$checkNumber[$i]];
+
+                if ($multiplier === 2)
+                {
+                    $base62Digit = $base62Digit * 2;
+
+                    if ($base62Digit >= 62)
+                    {
+                        $base62Digit = ($base62Digit % 62) + 1;
+                    }
+                }
+
+                $sum += $base62Digit;
+            }
+            catch (\ErrorException $e)
+            {
+                return false;
+            }
+        }
+
+        return $sum;
+    }
+
     public static function base62GetCheckDigit($num)
     {
-        $checkNumber = $num;
-
-        $sum = $flip = 0;
-
-        $len = strlen($checkNumber);
-
-        for ($i = $len - 1; $i >= 0; $i--)
-        {
-            try
-            {
-                $multiplier = (($flip++ % 2) == 0) ? 1 : 2;
-
-                $base62Digit = self::$baseValues[$checkNumber[$i]];
-
-                if ($multiplier === 2)
-                {
-                    $base62Digit = $base62Digit * 2;
-
-                    if ($base62Digit >= 62)
-                    {
-                        $base62Digit = ($base62Digit % 62) + 1;
-                    }
-                }
-
-                $sum += $base62Digit;
-            }
-            catch (\ErrorException $e)
-            {
-                return false;
-            }
-        }
-        return $sum % 62;
+        return (self::getSumForCheckDigit($num) % 62);
     }
-    public static function validateCheckDigit($num)
+
+    public static function validateBase62Id($num)
     {
-        $checkNumber = $num;
+        $base62Sum = self::base62GetCheckDigit($num);
 
-        $sum = $flip = 0;
-
-        $len = strlen($checkNumber);
-
-        for ($i = $len - 1; $i >= 0; $i--)
-        {
-            try
-            {
-                $multiplier = (($flip++ % 2) == 0) ? 1 : 2;
-
-                $base62Digit = self::$baseValues[$checkNumber[$i]];
-
-                if ($multiplier === 2)
-                {
-                    $base62Digit = $base62Digit * 2;
-
-                    if ($base62Digit >= 62)
-                    {
-                        $base62Digit = ($base62Digit % 62) + 1;
-                    }
-                }
-
-                $sum += $base62Digit;
-            }
-            catch (\ErrorException $e)
-            {
-                return false;
-            }
-        }
-
-        return (($sum % 62) === 0);
+        return (($base62Sum % 62) === 0);
     }
 }
