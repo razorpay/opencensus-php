@@ -277,9 +277,9 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postRefundVerify($id)
+    public function postRefundVerify($ids)
     {
-        $data = $this->refund->verify($id);
+        $data = $this->refund->verify($ids);
 
         return ApiResponse::json($data);
     }
@@ -291,9 +291,9 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postManualGatewayRefund($refundId)
+    public function postManualGatewayRefund($refundIds)
     {
-        $data = $this->payment->manualGatewayRefund($refundId);
+        $data = $this->payment->manualGatewayRefund($refundIds);
 
         return ApiResponse::json($data);
     }

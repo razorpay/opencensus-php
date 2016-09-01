@@ -41,4 +41,5 @@ class RequestConstants
     const API_AMOUNT            = 'Amount';
     const API_PAYMENT_ID        = 'PaymentID';
     const API_TRANSACTION_ID    = 'TransactionID';
+    const API_REFERENCE_NO      = 'RefNo';
 }

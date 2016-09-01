@@ -123,6 +123,8 @@ trait Refund
     {
         $payment = $refund->payment;
 
+        $this->setPaymentAndRefundInfo($refund, $payment);
+
         // Currently doing it for only HDFC. In case when other gateways start
         // getting similar issues, we will start supporting for them too.
         assert ($payment->getGateway() === Payment\Gateway::HDFC);
@@ -137,7 +139,9 @@ trait Refund
         // The payment should have been captured. Otherwise, refund transaction should not have been created.
         // Though, there are some edge cases where refund transaction was created even though the payment has not
         // been captured. Check PR #905 and #909.
-        assert ($payment->hasBeenCaptured());
+        assert (($payment->hasBeenCaptured() === true) or
+                (in_array($payment->card->getNetworkCode(),
+                    [Card\Network::MAES, Card\Network::RUPAY, Card\Network::DICL]) === true));
 
         $data = array(
             'payment'   => $payment->toArray(),
@@ -285,6 +289,14 @@ trait Refund
     protected function callGatewayForManualRefund($data)
     {
         $manualGatewayRefundResult = null;
+
+        $this->trace->info(
+            TraceCode::MANUAL_GATEWAY_REFUND_INITIATED,
+            [
+                'payment_id'    => $data['payment']['id'],
+                'refund_id'     => $data['refund']['id'],
+            ]
+        );
 
         try
         {

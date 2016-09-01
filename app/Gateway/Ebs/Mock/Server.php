@@ -9,8 +9,8 @@ use RZP\Gateway\Ebs;
 use RZP\Gateway\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Card;
-use Requests;
 use RZP\Models\Payment\Core;
+use RZP\Gateway\Ebs\RequestConstants as Request;
 use RZP\Gateway\Ebs\ResponseConstants as Response;
 
 class Server extends Base\Mock\Server
@@ -21,8 +21,8 @@ class Server extends Base\Mock\Server
 
         $this->validateActionInput($input, 'verify');
 
-        $payment = $this->getRepo()->findByEbsPaymentIdAndActionOrFail(
-            $input['PaymentID'], Action::AUTHORIZE);
+        $payment = $this->getRepo()->findByPaymentIdAndAction(
+            $input[Request::API_REFERENCE_NO], Action::AUTHORIZE);
 
         $date = Carbon::today('Asia/Kolkata')->format('d-m-Y H:i:s');
 
