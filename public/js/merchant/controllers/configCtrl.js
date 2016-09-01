@@ -29,7 +29,7 @@ app.controller('ConfigCtrl', [
        * API is currently returning invalid logo urls
        * so we need to translate it into a valid URL
        */
-      if (!/^http/.test(config.logo_url)) {
+      if ((config.logo_url !== null) && !/^http/.test(config.logo_url)) {
         $scope.config.logo_url = 'https://cdn.razorpay.com' + config.logo_url.replace(/\.([^\.]+$)/,'_medium.$1');
       }
       else {
@@ -74,6 +74,7 @@ app.controller('ConfigCtrl', [
         brand_color: config.brand_color ? config.brand_color.substr(1).toUpperCase() : null,
         transaction_report_email: config.transaction_report_email ? config.transaction_report_email.split(',') : null
       };
+
       var request = $http({
         "method": 'PUT',
         "url": '/config',
