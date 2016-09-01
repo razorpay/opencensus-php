@@ -89,6 +89,8 @@ class GatewayController extends Controller
                     TraceCode::GATEWAY_PAYMENT_CALLBACK,
                     [
                         'input'     => $input,
+                        'body'      => Request::getContent(),
+                        'headers'   => Request::header(),
                         'gateway'   => 'upi_icici',
                     ]);
 

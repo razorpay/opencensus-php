@@ -87,6 +87,15 @@ class CustomerController extends Controller
         return ApiResponse::json($tokens);
     }
 
+    public function fetchPaymentsForGlobalCustomer()
+    {
+        $input = Request::all();
+
+        $payments = (new Customer\Service)->fetchPaymentsForGlobalCustomer($input);
+
+        return ApiResponse::json($payments);
+    }
+
     public function fetchGlobalCustomerStatus($contact)
     {
         $input = Request::all();
@@ -108,6 +117,22 @@ class CustomerController extends Controller
         $input = Request::all();
 
         $data = (new Customer\AppToken\Service)->deleteAppTokensForGlobalCustomer($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postBankAccount($id)
+    {
+        $input = Request::all();
+
+        $data = (new Customer\Service)->addBankAccount($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getBankAccounts($id)
+    {
+        $data = (new Customer\Service)->getBankAccounts($id);
 
         return ApiResponse::json($data);
     }

@@ -14,7 +14,7 @@ class CustomerTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/CustomerTestData.php';
+        $this->testDataFilePath = __DIR__.'/helpers/CustomerTestData.php';
 
         parent::setUp();
 

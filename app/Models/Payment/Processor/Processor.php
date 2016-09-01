@@ -3,11 +3,12 @@
 namespace RZP\Models\Payment\Processor;
 
 use App;
-use RZP\Constants\Mode;
 use BasicAuth;
+use Request;
+use Carbon\Carbon;
+
+use RZP\Constants\Mode;
 use RZP\Dashboard\Dashboard;
-use RZP\Http\Route;
-use RZP\Models\Gateway;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\BankAccount;
 use RZP\Models\Terminal;
@@ -16,7 +17,6 @@ use RZP\Models\Order;
 use RZP\Models\Pricing;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
-use Request;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer;
@@ -36,9 +36,15 @@ class Processor
      * WIthin certain duration x minutes, we will return payment
      * success or failed when the url is hit again.
      * After that duration, we will simply throw
-     * BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED payment_processed error.
+     * BAD_REQUEST_PAYMENT_ALREADY_PROCESSED payment_processed error.
      */
     const CALLBACK_PROCESS_AGAIN_DURATION = 20;
+
+    /**
+     * Number of days after which authorized payments
+     * are auto-refunded
+     */
+    const AUTO_REFUND_TIME_PERIOD = 5;
 
     /**
      * If payment fails on gateway then we may retry it with a different terminal/gateway.
@@ -48,6 +54,12 @@ class Processor
     // Make sure that this is below 900 (seconds) because SQS doesn't support
     // delay over 15 minutes.
     const CAPTURE_QUEUE_DELAY = 180;
+
+    /**
+     * If a payment gets converted to authorized from failed after 15 minutes of creation of payment,
+     * we do not send a notification to the customer.
+     */
+    const FAILED_TO_AUTHORIZED_NOTIFY_DURATION = 900;
 
     protected $merchant;
     protected $trace;
@@ -190,9 +202,7 @@ class Processor
             'merchant_order_id' => $payment->getNotes()['merchant_order_id'],
         );
 
-        $str = implode('|', $data);
-
-        $signature = $this->getSignature($str);
+        $signature = $this->getSignature($data);
 
         // use hash_equals to prevent timing attacks
         if (! hash_equals($signature, $input['signature']))
@@ -204,8 +214,12 @@ class Processor
         return true;
     }
 
-    protected function getSignature($str)
+    protected function getSignature(array $data)
     {
+        ksort($data);
+
+        $str = implode('|', $data);
+
         return $this->app['basicauth']->sign($str);
     }
 
@@ -295,9 +309,9 @@ class Processor
         $this->payment = $payment;
 
         $this->callGatewayFunction(Payment\Action::CAPTURE, $data);
-        
+
         $payment->setGatewayCaptured(true);
-        
+
         $this->repo->saveOrFail($payment);
     }
 
@@ -345,9 +359,16 @@ class Processor
 
         $payment->setError($code, $desc, $internalCode);
 
-        $payment->saveOrFail();
+        $this->repo->saveOrFail($payment);
 
         $this->tracePaymentFailed($error, $traceCode);
+
+        $this->eventPaymentFailed();
+    }
+
+    protected function eventPaymentFailed()
+    {
+        $this->app['events']->fire('api.payment.failed', array($this->payment));
     }
 
     protected function setPaymentError($error)
@@ -358,7 +379,7 @@ class Processor
 
         $payment->setInternalErrorCode($internalCode);
 
-        $payment->saveOrFail();
+        $this->repo->saveOrFail($payment);
     }
 
     /**
@@ -658,6 +679,29 @@ class Processor
         $merchant->setRelation('bankAccount', $ba);
 
         return $ba;
+    }
+
+    protected function shouldAutoCapture($payment)
+    {
+        if ($payment->isLateAuthorized() === true)
+        {
+            return false;
+        }
+
+        // If payment is signed
+        if ($payment->isSigned() === true)
+        {
+            return true;
+        }
+
+        // If payment order was marked as auto capture
+        if (($payment->order !== null) and
+            ($payment->order->getPaymentCapture() === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function createOrUpdateToken($input, $data)

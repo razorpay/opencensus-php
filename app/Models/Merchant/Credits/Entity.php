@@ -28,12 +28,14 @@ class Entity extends Base\PublicEntity
         self::CAMPAIGN,
         self::MERCHANT_ID,
         self::VALUE,
+        self::CREATED_AT
     );
 
     protected $public = array(
         self::ID,
         self::CAMPAIGN,
         self::VALUE,
+        self::CREATED_AT
     );
 
     protected $defaults = array(

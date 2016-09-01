@@ -13,12 +13,12 @@ use RZP\Models\Payment\Processor\Wallet;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        'amount'                  =>  'required|integer|max:50000000',
+        'amount'                  =>  'required|integer',
         'currency'                =>  'required|size:3',
         'method'                  =>  'in:card,netbanking,wallet,emi',
         'card'                    =>  'sometimes',
         'bank'                    =>  'required_if:method,netbanking',
-        'wallet'                  =>  'sometimes',
+        'wallet'                  =>  'required_if:method,wallet|in:paytm,payzapp,mobikwik,payumoney,olamoney',
         'emi_duration'            =>  'required_if:method,emi|integer|in:3,6,9,12,18,24',
         'description'             =>  'sometimes',
         'email'                   =>  'required|email',
@@ -110,7 +110,7 @@ class Validator extends Base\Validator
                 'amount');
         }
 
-        if (($input['method'] === Payment\Method::EMI) and ($amount < 300000))
+        if (($input['method'] === Payment\Method::EMI) and ($amount < 200000))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT_FOR_EMI,
@@ -122,7 +122,8 @@ class Validator extends Base\Validator
         if ($amount > $maxAmountAllowed)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Amount exceeds maximum amount allowed.');
+                'Amount exceeds maximum amount allowed.',
+                'amount');
         }
     }
 

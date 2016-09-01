@@ -13,6 +13,8 @@ class Entity extends Base\PublicEntity
 
     const ID                    = 'id';
     const MERCHANT_ID           = 'merchant_id';
+    const ENTITY_ID             = 'entity_id';
+    const TYPE                  = 'type';
     const IFSC_CODE             = 'ifsc_code';
     const ACCOUNT_NUMBER        = 'account_number';
     const BENEFICIARY_NAME      = 'beneficiary_name';
@@ -28,9 +30,11 @@ class Entity extends Base\PublicEntity
     const BENEFICIARY_COUNTRY   = 'beneficiary_country';
     const DELETED_AT            = 'deleted_at';
 
-    const IFSC_CODE_LENGTH = 11;
+    const IFSC_CODE_LENGTH      = 11;
 
-    const SPECIAL_IFSC_CODE = 'RZPB0000000';
+    const SPECIAL_IFSC_CODE     = 'RZPB0000000';
+
+    protected static $sign      = 'ba';
 
     protected $primaryKey = self::ID;
 
@@ -40,6 +44,8 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = array(
         self::MERCHANT_ID,
+        self::ENTITY_ID,
+        self::TYPE,
         self::IFSC_CODE,
         self::BENEFICIARY_NAME,
         self::ACCOUNT_NUMBER,
@@ -57,6 +63,8 @@ class Entity extends Base\PublicEntity
     protected $visible = array(
         self::ID,
         self::MERCHANT_ID,
+        self::ENTITY_ID,
+        self::TYPE,
         self::IFSC_CODE,
         self::BENEFICIARY_NAME,
         self::ACCOUNT_NUMBER,
@@ -70,6 +78,7 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_STATE,
         self::BENEFICIARY_COUNTRY,
         self::BENEFICIARY_PIN,
+        self::CREATED_AT
     );
 
     protected $public = array(
@@ -119,6 +128,17 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
+    public function source()
+    {
+        $type = $this->getAttribute(self::TYPE);
+
+        BankAccount\Type::validateType($type);
+
+        $class = BankAccount\Type::getEntityClass($type);
+
+        return $this->belongsTo($class, self::ENTITY_ID);
+    }
+
     public function settlements()
     {
         return $this->hasMany('RZP\Models\Settlement\Entity');
@@ -139,6 +159,15 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::IFSC_CODE);
     }
 
+    public function getType()
+    {
+        return $this->getAttribute(self::TYPE);
+    }
+
+    public function getEntityId()
+    {
+        return $this->getAttribute(self::ENTITY_ID);
+    }
 
     protected function setIfscCodeAttribute($code)
     {
@@ -165,6 +194,7 @@ class Entity extends Base\PublicEntity
     public function equals($baCopy)
     {
         $orig = $this->toArray();
+        ksort($orig);
         unset(
             $orig[self::ID],
             $orig[self::CREATED_AT],
@@ -172,7 +202,9 @@ class Entity extends Base\PublicEntity
             $orig[self::DELETED_AT],
             $orig[self::BENEFICIARY_ADDRESS3],
             $orig[self::BENEFICIARY_ADDRESS4]);
+
         $copy = $baCopy->toArray();
+        ksort($copy);
         unset(
             $copy[self::ID],
             $copy[self::CREATED_AT],
@@ -180,6 +212,7 @@ class Entity extends Base\PublicEntity
             $copy[self::DELETED_AT],
             $copy[self::BENEFICIARY_ADDRESS3],
             $copy[self::BENEFICIARY_ADDRESS4]);
+
         return ($orig === $copy);
     }
 
@@ -203,5 +236,19 @@ class Entity extends Base\PublicEntity
         assert(strlen($beneficiaryCode) === 10);
 
         return $beneficiaryCode;
+    }
+
+    public function associateCustomer($customer)
+    {
+        $this->attributes[self::ENTITY_ID] = $customer->getId();
+
+        $this->attributes[self::TYPE] = Type::CUSTOMER;
+    }
+
+    public function associateMerchant($merchant)
+    {
+        $this->attributes[self::ENTITY_ID] = $merchant->getId();
+
+        $this->attributes[self::TYPE] = Type::MERCHANT;
     }
 }

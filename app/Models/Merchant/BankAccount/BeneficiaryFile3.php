@@ -49,7 +49,7 @@ class BeneficiaryFile3
 
     public function generate()
     {
-        $list = (new BankAccount\Repository)->getAllOrderedByCreatedAt();
+        $list = (new BankAccount\Repository)->getAllActivatedMerchantAccountsOrderedByCreatedAt();
 
         $result = $this->createBenefeciaryFile($list);
 
@@ -58,7 +58,7 @@ class BeneficiaryFile3
 
     public function generateBetweenTimestamps($from, $to)
     {
-        $list = (new BankAccount\Repository)->getBankAccountsBetweenTimestamp($from, $to);
+        $list = (new BankAccount\Repository)->getMerchantBankAccountsBetweenTimestamp($from, $to);
 
         $result = $this->createBenefeciaryFile($list);
 

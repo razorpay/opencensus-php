@@ -387,6 +387,14 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function findByRefundIdOrderedById($refundId, $direction = 'desc')
+    {
+        return $this->newQuery()
+                    ->where('refund_id', '=', $refundId)
+                    ->orderBy('id', $direction)
+                    ->get();
+    }
+
     public function findByPaymentIdAndStatus($id, $status)
     {
         return $this->newQuery()

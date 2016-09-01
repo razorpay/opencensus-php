@@ -56,8 +56,8 @@ final class Route
         'refund_fetch_multiple'                   => ['get',      'refunds',                                  'PaymentController@getRefunds'                                      ],
         'refund_netbanking_generate_excel'        => ['post',     'refunds/netbanking/excel',                 'PaymentController@generateNetbankingRefunds'                       ],
         'refund_generate_excel'                   => ['post',     'refunds/excel',                            'PaymentController@generateRefunds'                                 ],
-        'refund_verify'                           => ['get',      'refunds/{id}/verify',                      'PaymentController@getRefundVerify'                                 ],
-        'payment_capture_verify'                  => ['post',     'payments/{id}/verify/capture',             'PaymentController@getCaptureVerify'                                ],
+        'refund_verify'                           => ['post',     'refunds/{ids}/verify',                     'PaymentController@postRefundVerify'                                ],
+        'payment_capture_verify'                  => ['post',     'payments/{id}/verify/capture',             'PaymentController@postCaptureVerify'                               ],
         'card_fetch_by_id'                        => ['get',      'cards/{id}',                               'PaymentController@getCard'                                         ],
         'card_fetch_multiple'                     => ['get',      'cards',                                    'PaymentController@getCards'                                        ],
         'iin_fetch_by_iin'                        => ['get',      'iins/{id}',                                'CardController@getIin'                                             ],
@@ -224,6 +224,8 @@ final class Route
         'customer_update'                         => ['put',      'customers/{id}',                           'CustomerController@updateCustomer'                                 ],
         'customer_get'                            => ['get',      'customers/{id}',                           'CustomerController@getCustomer'                                    ],
         'customer_delete'                         => ['delete',   'customers/{id}',                           'CustomerController@deleteCustomer'                                 ],
+        'customer_add_bank_account'               => ['post',     'customers/{id}/bank_account',              'CustomerController@postBankAccount'                                ],
+        'customer_fetch_bank_account'             => ['get',      'customers/{id}/bank_account',              'CustomerController@getBankAccounts'                                ],
         'customer_create_token'                   => ['post',     'customers/{id}/tokens',                    'CustomerController@addToken'                                       ],
         'customer_update_token'                   => ['put',      'customers/{id}/tokens/{token}',            'CustomerController@updateToken'                                    ],
         'customer_fetch_token'                    => ['get',      'customers/{id}/tokens/{token}',            'CustomerController@fetchToken'                                     ],
@@ -233,11 +235,13 @@ final class Route
         'customer_logout_global'                  => ['delete',   'apps/logout',                              'CustomerController@logoutCustomer'                                 ],
         'app_delete_token'                        => ['delete',   'apps/tokens/{token}',                      'CustomerController@deleteTokenForGlobalCustomer'                   ],
         'app_fetch_tokens'                        => ['get',      'apps/tokens',                              'CustomerController@fetchTokensForGlobalCustomer'                   ],
+        'app_fetch_payments'                      => ['get',      'apps/payments',                            'CustomerController@fetchPaymentsForGlobalCustomer'                 ],
         'device_verify_token'                     => ['post',     'devices/{deviceToken}/verify',             'CustomerController@validateDeviceToken'                            ],
         'otp_post'                                => ['post',     'otp/create',                               'CustomerController@postOtp'                                        ],
         'otp_verify'                              => ['post',     'otp/verify',                               'CustomerController@verifyOtp'                                      ],
         'sms_callback'                            => ['post',     'sms/{id}/callback',                        'CustomerController@updateSmsStatus'                                ],
         'es_migrate_entity'                       => ['post',     'es/migrate/{entityName}',                  'EsController@migrateEntity'                                        ],
+        'refund_gateway_manual'                   => ['post',     'refunds/{ids}/gateway',                    'PaymentController@postManualGatewayRefund'                         ],
     );
 
     public static $public = array(
@@ -281,6 +285,7 @@ final class Route
         'get_emi_plans',
         'customer_get_saved_status',
         'app_delete_token',
+        'app_fetch_payments',
         'customer_logout_global',
         'otp_post',
         'otp_verify'
@@ -314,6 +319,8 @@ final class Route
         'customer_delete_token',
         'customer_fetch_token',
         'customer_fetch_tokens',
+        'customer_add_bank_account',
+        'customer_fetch_bank_account',
         'setl_combined_report',
     );
 
@@ -427,6 +434,7 @@ final class Route
         'credits_create',
         'credits_edit',
         'credits_delete',
+        'refund_gateway_manual',
     );
 
     public static $proxy = array(
