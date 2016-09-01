@@ -112,14 +112,12 @@ class EmiFile extends Base\EmiFile
 
             $emiPercent = $emiPlan['rate']/100;
 
-            $authCode = $this->getAuthCode($emiPayment);
-
             $data[] = array(
                 'EMI ID'                       => $emiPayment->getId(),
                 'Card Pan'                     => $this->getCardNumber($emiPayment->card),
                 'Issuer'                       => 'INDUSIND',
-                'RRN'                          => '', // How  ?
-                'Auth Code'                    => $authCode,
+                'RRN'                          => '',
+                'Auth Code'                    => $this->getAuthCode($emiPayment),
                 'Tx Amount'                    => $emiPayment->getAmount()/ 100,
                 'EMI_Offer'                    => $emiTenure.' Months',
                 'Manufacturer'                 => '',
@@ -128,16 +126,16 @@ class EmiFile extends Base\EmiFile
                 'Store City'                   => '',
                 'Store State'                  => '',
                 'Acquirer'                     => '',
-                'MID'                          => '', // Fill
-                'TID'                          => '', // Fill
+                'MID'                          => '',
+                'TID'                          => '',
                 'Tx Time'                      => $this->formattedDateFromTimestamp($emiPayment->getCaptureTimestamp()),
-                'Settlement Time'              => $this->formattedDateFromTimestamp($emiPayment->transaction->getSettledAt()),
+                'Settlement Time'              => '', //$this->formattedDateFromTimestamp($emiPayment->transaction->getSettledAt()),
                 'Customer Processing Fee'      => '',
                 'Customer Processing Amt'      => '',
                 'Subvention payable to Issuer' => '',
                 'Subvention Amount (Rs.)'      => '',
                 'Interest Rate'                => $emiPercent.'%',
-                'Tx Status'                    => 'Settled',
+                'Tx Status'                    => '',
                 'Product Category'             => '',
                 'Product Sub-Category 1'       => '',
                 'Product Sub-Category 2'       => '',
@@ -147,10 +145,10 @@ class EmiFile extends Base\EmiFile
                 'Loan Amount'                  => '',
                 'Discount / Cashback %'        => '',
                 'Discount / Cashback Amount'   => '',
-                'Is New Model'                 => 'Yes',
+                'Is New Model'                 => '',
                 'Additional Cashback'          => '',
                 'Reward Point'                 => '',
-                'Txn Type'                     => 'IPG',
+                'Txn Type'                     => '',
             );
         }
 
