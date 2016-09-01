@@ -6,7 +6,6 @@ use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\Customer\AppToken;
 use RZP\Models\Customer\Token;
-use RZP\Models\Merchant\Account;
 use RZP\Exception;
 
 class Service extends Base\Service
@@ -14,7 +13,7 @@ class Service extends Base\Service
     /**
      * Note that this is on internal auth and not private auth
      * Adds token for a customer
-     * @param string customer_id
+     * @param string customerId
      * @param array customer token params
      */
     public function add($id, $input)
@@ -68,16 +67,14 @@ class Service extends Base\Service
 
     /**
      * fetch tokens for local customer
-     * @param  string customer_id
+     * @param  string $customerId
      * @return entity tokens
      */
-    public function fetchMultiple($id)
+    public function fetchMultiple($customerId)
     {
-        Customer\Entity::verifyIdAndStripSign($id);
+        Customer\Entity::verifyIdAndStripSign($customerId);
 
-        $customer = $this->repo->customer->findByIdAndMerchantId($id, $this->merchant->getId());
-
-        $tokens = $this->repo->token->getByCustomerId($id);
+        $tokens = $this->repo->token->getByCustomerId($customerId);
 
         return $tokens->toArrayPublic();
     }
@@ -132,6 +129,8 @@ class Service extends Base\Service
 
             return $this->deleteTokenForCustomer($token, $app->customer);
         }
+
+        return null;
     }
 
     protected function deleteTokenForCustomer($token, $customer)

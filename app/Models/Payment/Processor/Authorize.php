@@ -682,17 +682,17 @@ trait Authorize
 
         if ($payment->isMethodCardOrEmi())
         {
-            $saveMethodInput['method'] = Payment\Method::CARD;
+            $saveMethodInput[Token\Entity::METHOD] = Payment\Method::CARD;
 
-            $saveMethodInput['card_id'] = $savedCardId;
+            $saveMethodInput[Token\Entity::CARD_ID] = $savedCardId;
         }
         else if ($payment->isMethod(Payment\Method::NETBANKING))
         {
-            $saveMethodInput['bank'] = $payment->getBank();
+            $saveMethodInput[Token\Entity::BANK] = $payment->getBank();
         }
         else if ($payment->isMethod(Payment\Method::WALLET))
         {
-            $saveMethodInput['wallet'] = $payment->getWallet();
+            $saveMethodInput[Token\Entity::WALLET] = $payment->getWallet();
         }
 
         try
@@ -709,6 +709,8 @@ trait Authorize
         {
             $this->trace->traceException($e);
         }
+
+        return $token;
     }
 
     protected function verifyPaymentMethodEnabled($payment, $input)
@@ -1184,8 +1186,10 @@ trait Authorize
 
         return array_merge(
                 $card->toArray(),
-                ['number' => $cardNumber,
-                 'cvv' => $cvv]);
+                [
+                    'number' => $cardNumber,
+                    'cvv' => $cvv
+                ]);
     }
 
     protected function createCardEntityFromSavedToken($token, $input)
@@ -1206,8 +1210,10 @@ trait Authorize
 
         return array_merge(
             $card->toArray(),
-            ['number' => $cardNumber,
-             'cvv' => $cvv]);
+            [
+                'number' => $cardNumber,
+                'cvv' => $cvv
+            ]);
     }
 
     protected function verifyBankEnabled($payment)

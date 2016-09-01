@@ -40,7 +40,7 @@ class Repository extends Base\Repository
     public function getAllOrderedByCreatedAt()
     {
         return $this->newQuery()
-                    ->orderBy(BankAccount\Entity::CREATED_AT)
+                    ->oldest()
                     ->get();
     }
 
@@ -48,7 +48,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where(BankAccount\Entity::TYPE, '=', BankAccount\Type::MERCHANT)
-                    ->orderBy(BankAccount\Entity::CREATED_AT)
+                    ->oldest
                     ->get();
     }
 
@@ -57,18 +57,17 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->whereBetween(BankAccount\Entity::CREATED_AT, array($from, $to))
                     ->where(Entity::TYPE, '=', Type::MERCHANT)
-                    ->orderBy(BankAccount\Entity::CREATED_AT)
+                    ->oldest
                     ->get();
     }
 
     public function fetchByEntityIdAndType($entityId, $type, $merchantId)
     {
-        $repo = $this->repo;
-
-        return $repo::where(BankAccount\Entity::TYPE, '=', $type)
+        return $this->newQuery()
+                    ->where(BankAccount\Entity::TYPE, '=', $type)
                     ->where(BankAccount\Entity::ENTITY_ID, '=', $entityId)
                     ->where(BankAccount\Entity::MERCHANT_ID, '=', $merchantId)
-                    ->orderBy(BankAccount\Entity::CREATED_AT)
+                    ->oldest
                     ->get();
     }
 

@@ -8,8 +8,6 @@ use RZP\Models\Customer;
 use RZP\Models\Terminal;
 use RZP\Models\Customer\AppToken;
 use RZP\Models\Customer\Token;
-use RZP\Models\Merchant\Account;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
 
 class Core extends Base\Core
@@ -64,7 +62,7 @@ class Core extends Base\Core
         $existingTokens = $this->repo->token->getByMethodAndCustomerId(
                                 $token->getMethod(), $token->customer);
 
-        $func = 'validateExistingToken'.$token->getMethod();
+        $func = 'validateExistingToken' . $token->getMethod();
 
         return $this->$func($existingTokens, $token);
     }
@@ -78,6 +76,8 @@ class Core extends Base\Core
                 return $token;
             }
         }
+
+        return null;
     }
 
     protected function validateExistingTokenNetbanking($existingTokens, $newToken)
@@ -90,6 +90,8 @@ class Core extends Base\Core
                 return $token;
             }
         }
+
+        return null;
     }
 
     protected function validateExistingTokenWallet($existingTokens, $newToken)
@@ -102,5 +104,7 @@ class Core extends Base\Core
                 return $token;
             }
         }
+
+        return null;
     }
 }
