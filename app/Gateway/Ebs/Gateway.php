@@ -307,6 +307,8 @@ class Gateway extends Base\Gateway
             $authorizeRequest = $this->getRequestFromFormPostResponse($request, $response, false);
         }
 
+        $authorizeRequest['headers']['Referer'] = $response->url;
+
         return $authorizeRequest;
     }
 
