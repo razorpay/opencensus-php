@@ -1139,11 +1139,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT_REFUNDED, $amountRefunded);
     }
 
-    public function scopeMerchantId($query, $merchantId)
-    {
-        return $query->where(self::MERCHANT_ID,'=',$merchantId);
-    }
-
     public function toArrayTraceRelevant()
     {
         $fields = array(
