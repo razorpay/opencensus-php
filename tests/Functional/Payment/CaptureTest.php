@@ -50,6 +50,10 @@ class CaptureTest extends TestCase
         $this->mockDashboardRequest();
 
         $this->startTest();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(true, $payment['gateway_captured']);
     }
 
     public function testCaptureTwice()
