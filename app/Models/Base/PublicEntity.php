@@ -90,7 +90,7 @@ class PublicEntity extends UniqueIdEntity
     {
         foreach ($this->publicSetters as $attr)
         {
-            $func = 'setPublic'.studly_case($attr).'Attribute';
+            $func = 'setPublic' . studly_case($attr) . 'Attribute';
 
             $this->$func($array);
         }

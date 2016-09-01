@@ -4,8 +4,6 @@ namespace RZP\Models\Payment\Processor;
 
 use App;
 use BasicAuth;
-use Request;
-use Carbon\Carbon;
 
 use RZP\Constants\Mode;
 use RZP\Dashboard\Dashboard;
@@ -186,8 +184,6 @@ class Processor
         }
 
         $this->verifySignature($input, $payment);
-
-        return true;
     }
 
     protected function verifySignature($input, $payment)

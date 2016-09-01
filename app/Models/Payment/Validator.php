@@ -312,41 +312,4 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_ONLY_AUTHORIZED);
         }
     }
-
-    // protected function processValidationFailure($messages, $operation, $input)
-    // {
-    //     $bag = $messages;
-
-    //     $this->checkValidationFailureEmail($bag);
-
-    //     $this->checkValidationFailureContact($bag);
-
-    //     parent::processValidationFailure($messages, $operation, $input);
-    // }
-
-    protected function checkValidationFailureEmail($bag)
-    {
-        if ($bag->has(Entity::EMAIL))
-        {
-            $msg = $bag->first(Entity::EMAIL);
-
-            throw new Exception\FieldErrorException(
-                $msg,
-                ErrorCode::FIELD_ERROR_INVALID_EMAIL,
-                Entity::EMAIL);
-        }
-    }
-
-    protected function checkValidationFailureContact($bag)
-    {
-        if ($bag->has(Entity::CONTACT))
-        {
-            $msg = $bag->first(Entity::CONTACT);
-
-            throw new Exception\FieldErrorException(
-                $msg,
-                ErrorCode::FIELD_ERROR_INVALID_CONTACT,
-                Entity::CONTACT);
-        }
-    }
 }
