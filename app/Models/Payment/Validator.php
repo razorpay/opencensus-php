@@ -13,7 +13,7 @@ use RZP\Models\Payment\Processor\Wallet;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        'amount'                  =>  'required|integer|max:50000000',
+        'amount'                  =>  'required|integer',
         'currency'                =>  'required|size:3',
         'method'                  =>  'in:card,netbanking,wallet,emi',
         'card'                    =>  'sometimes',
@@ -122,7 +122,8 @@ class Validator extends Base\Validator
         if ($amount > $maxAmountAllowed)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Amount exceeds maximum amount allowed.');
+                'Amount exceeds maximum amount allowed.',
+                'amount');
         }
     }
 
