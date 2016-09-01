@@ -11,7 +11,7 @@ class Repository extends Base\Repository
 
     protected $appFetchParamRules = array(
         Entity::PAYMENT_ID    => 'sometimes|string|min:14|max:18',
-        Entity::WALLET        => 'sometimes|in:payumoney,payzapp,olamoney'
+        Entity::WALLET        => 'sometimes|in:payumoney,payzapp,olamoney,aritelmoney',
     );
 
     public function fetchGatewayPaymentId2ByPaymentId($paymentId)

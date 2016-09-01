@@ -40,10 +40,10 @@ class Gateway extends Base\Gateway
     public function callback(array $input)
     {
         parent::callback($input);
+
         // E-Comm Transaction URL on success and
         // failure of wallet transaction
-
-        if ($input['Status'] === Status::TRANSACTION_SUCCESS)
+        if (isset($input['Status']) && $input['Status'] === Status::SUCCESS)
             $this->callbackDebitSuccessFlow($input);
         else
             $this->callbackDebitFailureFlow($input);
@@ -64,7 +64,23 @@ class Gateway extends Base\Gateway
     {
         // Create a payment gateway entity and save it.
         $contentToSave = [
+            'MID'         => $this->getMerchantId($input['terminal']),
+            'CUST_EMAIL'  => $input['payment']['email'],
+            'CUST_MOBILE' => $this->getFormattedContact($input['payment']['contact']),
+            'STATUS'      => $content['status'],
+            'TRAN_ID'     => $content['TRAN_ID'],
+            'MSG'         => $content['MSG'],
+            'TXN_REF_NO'  => $content['TXN_REF_NO'],
+            'TRAN_DATE'   => $content['TRAN_DATE'],
+            'received'    => true
         ];
+
+        //  Changing action to AUTHORIZE to keep the action consistent
+        $this->action = Action::AUTHORIZE;
+
+        $this->createGatewayPaymentEntity($contentToSave);
+
+        $this->action = Action::DEBIT_WALLET;
 
     }
 
@@ -76,9 +92,16 @@ class Gateway extends Base\Gateway
     /*
      * Convert the date to DDMMYYYYhhmmss
      */
-    protected function getFormattedDate($date)
+    protected function getFormattedDate($date = null)
     {
+        if($date === null)
+        {
+            $date = Carbon::now();
+        }
 
+        $format = 'dmYHis';
+
+        return Carbon::createFromFormat($date, $format);
     }
 
     protected function getDebitRedirectRequestArray($input)
@@ -124,7 +147,8 @@ class Gateway extends Base\Gateway
 
         $content = $response->body;
 
-        if ($content['CODE'] !== 000 || $content['STATUS'] !== Status::TRANSACTION_SUCCESS)
+        if ($content['CODE'] !== ResponseCode::SUCCESS and
+                $content['STATUS'] !== Status::SUCCESS)
         {
             //TODO: Raise Error
         }
@@ -233,51 +257,45 @@ class Gateway extends Base\Gateway
         $content = $verify->verifyResponseContent;
 
         $verify->status = VerifyResult::STATUS_MATCH;
+        // In Airtel, There is no explicit field which says transaction is 
+        // successful.
+        // Compare the amount and 
 
         if ($content['STATUS'] !== Status::SUCCESS)
         {
-            $verify->apiSuccess = false;
-        }
-        else
-        {
-            //TODO: Once you get the transaction success field in Inquiry API,
-            // change this.
-            if ($content['result'][0]['status'] !== 'success')
-            {
-                $verify->gatewaySuccess = false;
+            $verify->gatewaySuccess = false;
 
-                if (($payment === null) and
-                    (($input['payment']['status'] === 'failed') or
-                     ($input['payment']['status'] === 'created')))
-                {
-                    $verify->apiSuccess = false;
-                }
-                else if (($payment['received'] === false) and
-                         (($payment['status_code'] === null) or
-                          ($payment['status_code'] !== (string) Status::SUCCESS)))
-                {
-                    $verify->apiSuccess = false;
-                }
-                else if ($payment['status_code'] === (string) Status::SUCCESS)
-                {
-                    $verify->status = VerifyResult::STATUS_MISMATCH;
-                    $verify->apiSuccess = true;
-                }
+            if (($payment === null) or
+                (($input['payment']['status'] === 'failed') or
+                    ($input['payment']['status'] === 'created')))
+            {
+                $verify->apiSuccess = false;
             }
-            else if ($content['result'][0]['status'] === "success")
+            else if (($payment['received'] === false) and
+                        (($payment['status_code'] === null) or
+                        ($payment['status_code'] !== (string) Status::SUCCESS)))
             {
-                $verify->gatewaySuccess = true;
+                $verify->apiSuccess = false;
+            }
+            else if ($payment['status_code'] === (string) Status::SUCCESS)
+            {
+                $verify->status = VerifyResult::STATUS_MISMATCH;
+                $verify->apiSuccess = true;
+            }
+        }
+        else if ($content['STATUS'] === Status::SUCCESS)
+        {
+            $verify->gatewaySuccess = true;
 
-                if (($input['payment']['status'] !== 'created') and
-                    ($input['payment']['status'] !== 'failed'))
-                {
-                    $verify->apiSuccess = true;
-                }
-                else
-                {
-                    $verify->status = VerifyResult::STATUS_MISMATCH;
-                    $verify->apiSuccess = false;
-                }
+            if (($input['payment']['status'] !== 'created') and
+                ($input['payment']['status'] !== 'failed'))
+            {
+                $verify->apiSuccess = true;
+            }
+            else
+            {
+                $verify->status = VerifyResult::STATUS_MISMATCH;
+                $verify->apiSuccess = false;
             }
         }
 
@@ -318,7 +336,7 @@ class Gateway extends Base\Gateway
             'MID'         => $this->getMerchantId($this->input['terminal']),
             'CUST_EMAIL'  => $this->input['payment']['email'],
             'CUST_MOBILE' => $this->getFormattedContact($this->input['payment']['contact']),
-            'STATUS'      => Status::TRANSACTION_SUCCESS,
+            'STATUS'      => Status::SUCCESS,
             'TXN_REF_NO'  => $content['paymentId'],
             'received'    => true
         ];

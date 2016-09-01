@@ -17,6 +17,7 @@ class Entity extends Base\PublicEntity
     const PAYTM             = 'paytm';
     const PAYZAPP           = 'payzapp';
     const PAYUMONEY         = 'payumoney';
+    const AIRTELMONEY       = 'airtelmoney';
     const EMI               = 'emi';
     const DEBIT_CARD        = 'debit_card';
     const CREDIT_CARD       = 'credit_card';
@@ -39,6 +40,7 @@ class Entity extends Base\PublicEntity
         self::PAYTM,
         self::PAYZAPP,
         self::PAYUMONEY,
+        self::AIRTELMONEY,
         self::MOBIKWIK,
         self::OLAMONEY,
         self::EMI,
@@ -53,6 +55,7 @@ class Entity extends Base\PublicEntity
         self::PAYTM,
         self::PAYZAPP,
         self::PAYUMONEY,
+        self::AIRTELMONEY,
         self::MOBIKWIK,
         self::OLAMONEY,
         self::EMI,
@@ -70,6 +73,7 @@ class Entity extends Base\PublicEntity
         self::MOBIKWIK      => false,
         self::PAYZAPP       => false,
         self::PAYUMONEY     => false,
+        self::AIRTELMONEY   => false,
         self::OLAMONEY      => false,
         self::BANKS         => [],
         self::EMI           => false,
@@ -84,6 +88,7 @@ class Entity extends Base\PublicEntity
         self::PAYZAPP,
         self::PAYUMONEY,
         self::OLAMONEY,
+        self::AIRTELMONEY,
     );
 
     public function setMethods(array $input = array())
@@ -421,6 +426,7 @@ class Entity extends Base\PublicEntity
             self::PAYZAPP,
             self::PAYUMONEY,
             self::OLAMONEY,
+            self::AIRTELMONEY,
             self::EMI
         );
     }

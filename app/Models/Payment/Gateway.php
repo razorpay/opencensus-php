@@ -13,27 +13,28 @@ use RZP\Models\Payment\Processor\Netbanking;
 
 class Gateway
 {
-    const AMEX              = 'amex';
-    const ATOM              = 'atom';
-    const AXIS_GENIUS       = 'axis_genius';
-    const AXIS_MIGS         = 'axis_migs';
-    const BILLDESK          = 'billdesk';
-    const EBS               = 'ebs';
-    const HDFC              = 'hdfc';
-    const KOTAK             = 'kotak';
-    const MOBIKWIK          = 'mobikwik';
-    const PAYTM             = 'paytm';
-    const SBIEPAY           = 'sbiepay';
-    const SHARP             = 'sharp';
-    const NETBANKING_HDFC   = 'netbanking_hdfc';
-    const NETBANKING_KOTAK  = 'netbanking_kotak';
-    const WALLET_OLAMONEY   = 'wallet_olamoney';
-    const WALLET_PAYZAPP    = 'wallet_payzapp';
-    const WALLET_PAYUMONEY  = 'wallet_payumoney';
-    const CYBERSOURCE       = 'cybersource';
+    const AMEX               = 'amex';
+    const ATOM               = 'atom';
+    const AXIS_GENIUS        = 'axis_genius';
+    const AXIS_MIGS          = 'axis_migs';
+    const BILLDESK           = 'billdesk';
+    const EBS                = 'ebs';
+    const HDFC               = 'hdfc';
+    const KOTAK              = 'kotak';
+    const MOBIKWIK           = 'mobikwik';
+    const PAYTM              = 'paytm';
+    const SBIEPAY            = 'sbiepay';
+    const SHARP              = 'sharp';
+    const NETBANKING_HDFC    = 'netbanking_hdfc';
+    const NETBANKING_KOTAK   = 'netbanking_kotak';
+    const WALLET_OLAMONEY    = 'wallet_olamoney';
+    const WALLET_PAYZAPP     = 'wallet_payzapp';
+    const WALLET_PAYUMONEY   = 'wallet_payumoney';
+    const WALLET_AIRTELMONEY = 'wallet_airtelmoney';
+    const CYBERSOURCE        = 'cybersource';
 
-    const NOT_SUPPORTED     = 'not_supported';
-    const SUPPORTED         = 'supported';
+    const NOT_SUPPORTED      = 'not_supported';
+    const SUPPORTED          = 'supported';
 
     const POWER_WALLETS = array(
         Wallet::MOBIKWIK,
@@ -47,24 +48,25 @@ class Gateway
     );
 
     public static $channels = array(
-        self::AMEX              => Settlement\Channel::KOTAK,
-        self::ATOM              => Settlement\Channel::ATOM,
-        self::AXIS_GENIUS       => Settlement\Channel::KOTAK,
-        self::AXIS_MIGS         => Settlement\Channel::KOTAK,
-        self::BILLDESK          => Settlement\Channel::KOTAK,
-        self::EBS               => Settlement\Channel::KOTAK,
-        self::HDFC              => Settlement\Channel::KOTAK,
-        self::KOTAK             => Settlement\Channel::KOTAK,
-        self::MOBIKWIK          => Settlement\Channel::KOTAK,
-        self::PAYTM             => Settlement\Channel::KOTAK,
-        self::SBIEPAY           => Settlement\Channel::KOTAK,
-        self::SHARP             => Settlement\Channel::KOTAK,
-        self::NETBANKING_HDFC   => Settlement\Channel::KOTAK,
-        self::NETBANKING_KOTAK  => Settlement\Channel::KOTAK,
-        self::WALLET_PAYZAPP    => Settlement\Channel::KOTAK,
-        self::WALLET_PAYUMONEY  => Settlement\Channel::KOTAK,
-        self::WALLET_OLAMONEY   => Settlement\Channel::KOTAK,
-        self::CYBERSOURCE       => Settlement\Channel::KOTAK,
+        self::AMEX               => Settlement\Channel::KOTAK,
+        self::ATOM               => Settlement\Channel::ATOM,
+        self::AXIS_GENIUS        => Settlement\Channel::KOTAK,
+        self::AXIS_MIGS          => Settlement\Channel::KOTAK,
+        self::BILLDESK           => Settlement\Channel::KOTAK,
+        self::EBS                => Settlement\Channel::KOTAK,
+        self::HDFC               => Settlement\Channel::KOTAK,
+        self::KOTAK              => Settlement\Channel::KOTAK,
+        self::MOBIKWIK           => Settlement\Channel::KOTAK,
+        self::PAYTM              => Settlement\Channel::KOTAK,
+        self::SBIEPAY            => Settlement\Channel::KOTAK,
+        self::SHARP              => Settlement\Channel::KOTAK,
+        self::NETBANKING_HDFC    => Settlement\Channel::KOTAK,
+        self::NETBANKING_KOTAK   => Settlement\Channel::KOTAK,
+        self::WALLET_PAYZAPP     => Settlement\Channel::KOTAK,
+        self::WALLET_PAYUMONEY   => Settlement\Channel::KOTAK,
+        self::WALLET_OLAMONEY    => Settlement\Channel::KOTAK,
+        self::WALLET_AIRTELMONEY => Settlement\Channel::KOTAK,
+        self::CYBERSOURCE        => Settlement\Channel::KOTAK,
     );
 
     /**
@@ -100,6 +102,7 @@ class Gateway
             self::WALLET_OLAMONEY,
             self::WALLET_PAYZAPP,
             self::WALLET_PAYUMONEY,
+            self::WALLET_AIRTELMONEY,
         ),
 
         Method::EMI => array(
@@ -172,6 +175,7 @@ class Gateway
         Wallet::MOBIKWIK    => Gateway::MOBIKWIK,
         Wallet::PAYZAPP     => Gateway::WALLET_PAYZAPP,
         Wallet::PAYUMONEY   => Gateway::WALLET_PAYUMONEY,
+        Wallet::AIRTELMONEY => Gateway::WALLET_AIRTELMONEY,
     );
 
     /**
