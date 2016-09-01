@@ -405,7 +405,7 @@ class Service extends Base\Service
         ];
     }
 
-    protected function refundAuthorizedPaymentsForOrderWithCapturedPayment(array $payments)
+    protected function refundAuthorizedPaymentsForOrderWithCapturedPayment(Base\PublicCollection $payments)
     {
         $refundedCount = $failureCount = 0;
 

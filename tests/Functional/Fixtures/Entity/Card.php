@@ -34,7 +34,7 @@ class Card extends Base
         {
             $cards[] = $this->fixtures->create('card', $attributes);
         }
-
+        
         return $cards;
     }
 }

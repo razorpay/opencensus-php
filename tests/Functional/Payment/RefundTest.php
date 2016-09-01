@@ -145,35 +145,23 @@ class RefundTest extends TestCase
 
     public function testRefundOfMultipleAuthorizedPaymentsForOrder()
     {
+        $this->ba->appAuth();
         $orders = $this->fixtures->times(2)->create('order');
 
-        $createdOrders = array_reverse($orders);
-        $ordersCollection = new \RZP\Models\Base\PublicCollection($createdOrders);
-        //$ordersArray = $ordersCollection->toArrayPublic();
+        $orderIdOne = $orders[0]->getId();
+        $orderIdTwo = $orders[1]->getId();
 
-        $orderIds = $ordersCollection->getIds();
+        // Card not getting created properly when using ->times(x)
+        $this->fixtures->payment->createAuthorized(['order_id' => $orderIdOne]);
+        $this->fixtures->payment->createAuthorized(['order_id' => $orderIdOne]);
 
-        $paymentOne = $this->fixtures->create(
-            'payment:authorized',
-            ['order_id' => $orderIds[0]]
-        );
+        $this->fixtures->payment->createAuthorized(['order_id' => $orderIdTwo]);
+        $this->fixtures->payment->createAuthorized(['order_id' => $orderIdTwo]);
+        $this->fixtures->payment->createCaptured(['order_id' => $orderIdTwo]);
 
-        $paymentTwo = $this->fixtures->create(
-            'payment:authorized',
-            ['order_id' => $orderIds[0]]
-        );
+        $testData = $this->testData[__FUNCTION__];
 
-        $paymentThree = $this->fixtures->create(
-            'payment:authorized',
-            ['order_id' => $orderIds[1]]
-        );
-
-        $paymentFour = $this->fixtures->create(
-            'payment:authorized',
-            ['order_id' => $orderIds[1]]
-        );
-
-        $content = $this->refundMultipleAuthorizedPaymentsForOrders();
+        $this->runRequestResponseFlow($testData);
     }
 
     public function testRefundCalledOnPurchaseWithoutCapture()
