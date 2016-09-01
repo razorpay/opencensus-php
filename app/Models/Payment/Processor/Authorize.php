@@ -5,6 +5,7 @@ namespace RZP\Models\Payment\Processor;
 use App;
 use Crypt;
 use Mail;
+use Config;
 
 use Carbon\Carbon;
 use Lib\PhoneBook;
@@ -56,7 +57,7 @@ trait Authorize
 
         $this->getTerminalsForPayment($payment);
 
-        return  $this->authorizeAcrossTerminals($gatewayInput, $payment, $input);
+        return $this->authorizeAcrossTerminals($gatewayInput, $payment, $input);
 
     }
 
@@ -977,7 +978,8 @@ trait Authorize
 
         $slackData = ['id' => $payment->getDashboardEntityLinkForSlack()];
 
-        $this->app['slack']->queue($message, $slackData, ['color' => 'good', 'channel' => '#tech_logs']);
+        $this->app['slack']->queue(
+            $message, $slackData, ['color' => 'good', 'channel' => Config::get('slack.channels.tech_logs')]);
 
         $this->trace->info(
             TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,

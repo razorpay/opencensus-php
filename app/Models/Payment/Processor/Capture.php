@@ -382,7 +382,7 @@ trait Capture
 
             $order->setStatus(Order\Status::PAID);
 
-            $order->saveOrFail();
+            $this->repo->saveOrFail($order);
         }
     }
 }

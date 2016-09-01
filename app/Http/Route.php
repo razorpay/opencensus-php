@@ -569,6 +569,7 @@ final class Route
     public static function getCurrentRouteName()
     {
         $router = self::$router;
+
         return $router->currentRouteName();
     }
 
