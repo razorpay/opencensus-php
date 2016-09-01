@@ -193,8 +193,6 @@ trait Authorize
 
         $payment = $this->payment;
 
-        $this->autoCapturePaymentIfApplicable($payment);
-
         return $this->postPaymentAuthorizeProcessing($payment);
     }
 
@@ -864,11 +862,13 @@ trait Authorize
 
     /**
      * This function is just meant for preparing the return value
-     * after payment authorize processing. This should not contain
-     * any state updating statements.
+     * after payment authorize processing and auto capturing, if applicable.
      */
     protected function postPaymentAuthorizeProcessing($payment)
     {
+        // Auto capture payment, if applicable
+        $this->autoCapturePaymentIfApplicable($payment);
+
         //
         // If it's signed payment, then we return signed data from our
         // end as well.

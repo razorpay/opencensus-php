@@ -62,8 +62,6 @@ trait Callback
 
         $this->processPaymentCallback($payment, $gatewayInput);
 
-        $this->autoCapturePaymentIfApplicable($payment);
-
         return $this->postPaymentAuthorizeProcessing($payment);
     }
 
