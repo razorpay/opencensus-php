@@ -62,11 +62,7 @@ trait Callback
 
         $this->processPaymentCallback($payment, $gatewayInput);
 
-        if ($this->shouldAutoCapture($payment) === true)
-        {
-            // If payment is signed or capture was sent as true in order, then we capture it in this step only.
-            $payment = $this->capturePayment($payment, $payment->getAmount());
-        }
+        $this->autoCapturePaymentIfApplicable($payment);
 
         return $this->postPaymentAuthorizeProcessing($payment);
     }
