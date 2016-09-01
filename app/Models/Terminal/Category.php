@@ -17,7 +17,9 @@ class Category
         Network::AMEX   => 'retail_services',
     ];
 
-    // The list of all possible categories that can be chosen
+    /**
+     * The list of all possible categories that can be chosen
+     * */
     protected static $CATEGORIES_ALL = [
         'auto',
         'car_rental',
@@ -38,15 +40,16 @@ class Category
         'utilities',
     ];
 
-    // For netbanking, each of the categories on the left will
-    // be mapped to the category on the right.
+    /**
+     * For netbanking, each of the categories on the left will
+     * be mapped to the category on the right.
+     * */
     protected static $METHOD_NETBANKING = [
         'corporate'               => 'corporate',
         'education'               => 'education',
         'education_services'      => 'education',
         'government_business'     => 'government',
         'insurance'               => 'insurance',
-
         'auto'                    => 'ecommerce',
         'car_rental'              => 'ecommerce',
         'entertainment'           => 'ecommerce',
@@ -61,15 +64,17 @@ class Category
         'utilities'               => 'ecommerce',
     ];
 
-    // The Network specific override for each of the
-    // allowed categories.
-    // Only Overrides are allowed to have empty categories
-    // This implies that the default or specific from the previous
-    // will be used instead of this.
+    /**
+     * The default categories allowed are the ones specified in method.
+     * Anything defined on network, or otherwise is an override.
+     * If for some category an override is not required,
+     * i.e the category decided by the method is to be used,
+     * then it shoould be left empty
+     * */
     protected static $NETWORK_AMEX = [
         'auto'                    => 'auto',
         'car_rental'              => 'car_rental',
-        'corporate'               => '', // empty implies no override. implies use the previous default or specific
+        'corporate'               => '',
         'education'               => 'education',
         'education_services'      => 'education_services',
         'entertainment'           => 'entertainment',
@@ -88,23 +93,24 @@ class Category
 
     public static function getDefaultForMethod($method)
     {
-        $category = null;
-
-        if (isset(self::$DEFAULT_METHOD[$method]))
-        {
-            $category = self::$DEFAULT_METHOD[$method];
-        }
-
-        return $category;
+        return self::getDefaultForType('method', $method);
     }
 
     public static function getDefaultForNetwork($network)
     {
+        return self::getDefaultForType('network', $network);
+    }
+
+    protected static function getDefaultForType($type, $item)
+    {
         $category = null;
 
-        if (isset(self::$DEFAULT_NETWORK[$network]))
+        $constantName = self::getConstantName('default', $type);
+
+        if ((self::isConstantDefined('default', $type) === true) and
+            (isset(self::$$constantName[$item]) === true))
         {
-            $category = self::$DEFAULT_NETWORK[$network];
+            $category = self::$$constantName[$item];
         }
 
         return $category;
@@ -139,27 +145,22 @@ class Category
 
     public static function getCategoryForMethod($method, $category)
     {
-        $returnCategory = null;
-
-        if ((self::isConstantDefined('method', $method)) and
-            (is_null($category) === false))
-        {
-            $name = self::getConstantName('method', $method);
-
-            $returnCategory = self::$$name[$category];
-        }
-
-        return $returnCategory;
+        return self::getCategoryForType('method', $method, $category);
     }
 
     public static function getCategoryForNetwork($network, $category)
     {
+        return self::getCategoryForType('network', $network, $category);
+    }
+
+    protected static function getCategoryForType($type, $item, $category)
+    {
         $returnCategory = null;
 
-        if ((self::isConstantDefined('network', $network)) and
+        if ((self::isConstantDefined($type, $item)) and
             (is_null($category) === false))
         {
-            $name = self::getConstantName('network', $network);
+            $name = self::getConstantName($type, $item);
 
             $returnCategory = self::$$name[$category];
         }
