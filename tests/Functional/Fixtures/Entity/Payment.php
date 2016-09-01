@@ -143,7 +143,7 @@ class Payment extends Base
     public function createAuthorized(array $attributes = array())
     {
         $card = $this->fixtures->create('card');
-        
+
         $defaultValues = array(
             'authorized_at' => time(),
             'status' => 'authorized',
