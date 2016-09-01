@@ -37,7 +37,7 @@ class Repository extends Base\Repository
     public function persistAfterEnroll($request, $response)
     {
         $result = $response['enroll_result'];
-        
+
         $status = null;
 
         if ($result === Payment\Result::ENROLLED)
@@ -290,10 +290,10 @@ class Repository extends Base\Repository
                     ->where('payment_id', '=', $id)->firstOrFail();
     }
 
-    public function retrieveCapturedOrAcceptedCaptureError($id)
+    public function retrieveCapturedOrAcceptedCaptureErrorOrFail($paymentId)
     {
         $payment = $this->newQuery()
-                        ->where('payment_id', '=', $id)
+                        ->where('payment_id', '=', $paymentId)
                         ->where('status', '=', Payment\Status::CAPTURED)
                         ->first();
 
@@ -303,9 +303,22 @@ class Repository extends Base\Repository
         }
 
         return $this->newQuery()
-                    ->where('payment_id', '=', $id)
+                    ->where('payment_id', '=', $paymentId)
+                    ->where('status', '=', Payment\Status::CAPTURE_FAILED)
                     ->where('error_code', '=', ErrorCode::GW00176)
                     ->firstOrFail();
+    }
+
+    public function retrieveCapturedOrAcceptedCaptureError($paymentId)
+    {
+        try
+        {
+            return $this->retrieveCapturedOrAcceptedCaptureErrorOrFail($paymentId);
+        }
+        catch(\Exception $ex)
+        {
+            return null;
+        }
     }
 
     public function retrieveByPaymentIdAndStatusOrFail($paymentId, $status)
@@ -371,6 +384,14 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where('payment_id', '=', $id)
+                    ->get();
+    }
+
+    public function findByRefundIdOrderedById($refundId, $direction = 'desc')
+    {
+        return $this->newQuery()
+                    ->where('refund_id', '=', $refundId)
+                    ->orderBy('id', $direction)
                     ->get();
     }
 

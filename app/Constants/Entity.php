@@ -176,7 +176,7 @@ class Entity
                 TraceCode::ERROR_INVALID_ARGUMENT,
                 ['entity' => $entity]);
 
-            throw new Exception\RuntimeException(
+            throw new Exception\BadRequestValidationFailureException(
                 'Not a valid entity.');
         }
     }

@@ -50,6 +50,64 @@ class EbsGatewayTest extends TestCase
             $this->testData['testPaymentEbsEntity'], $payment);
     }
 
+    public function testPaymentForBankWith302Redirect()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray('UBIN');
+        $payment = $this->doAuthPayment($payment);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertArraySelectiveEquals(
+            $this->testData['testTransactionAfterAuthorize'], $txn);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('txn_'.$payment['transaction_id'], $txn['id']);
+    }
+
+    public function testPaymentForBankWithFormRedirect()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray('YESB');
+        $payment = $this->doAuthPayment($payment);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertArraySelectiveEquals(
+            $this->testData['testTransactionAfterAuthorize'], $txn);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('txn_'.$payment['transaction_id'], $txn['id']);
+    }
+
+    public function testPaymentForFirstGatewayRequestFailure()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray('CBIN');
+
+        $data = $this->testData['testPaymentForFirstGatewayRequestFailure'];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $payment = $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testPaymentForSecondGatewayRequestFailure()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray('CNRB');
+        $data = $this->testData['testPaymentForSecondGatewayRequestFailure'];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $payment = $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testPaymentForThirdGatewayRequestFailure()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray('CORP');
+
+        $data = $this->testData['testPaymentForThirdGatewayRequestFailure'];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $payment = $this->doAuthPayment($payment);
+        });
+    }
+
     public function testHackedPayment()
     {
         $this->getHackedResponse();

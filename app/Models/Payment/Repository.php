@@ -128,6 +128,14 @@ class Repository extends Base\Repository
                         );
     }
 
+    public function fetchOldCreatedPaymentsForTimeout($timestamp)
+    {
+        return $this->newQuery()
+                    ->status(Payment\Status::CREATED)
+                    ->where(Payment\Entity::CREATED_AT, '<=', $timestamp)
+                    ->get();
+    }
+
     public function getAuthorizedPaymentsBeforeTimestamp($timestamp)
     {
         return $this->newQuery()
@@ -197,6 +205,17 @@ class Repository extends Base\Repository
                     ->whereNotNull(Payment\Entity::CAPTURED_AT)
                     ->whereNull(Payment\Entity::SERVICE_TAX)
                     ->take(500)
+                    ->get();
+    }
+
+    public function fetchPaymentsForCustomerMethod($customer, $method, $skip)
+    {
+        return $this->newQuery()
+                    ->where(Payment\Entity::METHOD, '=', $method)
+                    ->where(Payment\Entity::GLOBAL_CUSTOMER_ID, '=', $customer->getId())
+                    ->whereNotNull(Payment\Entity::CAPTURED_AT)
+                    ->skip($skip)
+                    ->take(10)
                     ->get();
     }
 
@@ -272,7 +291,7 @@ class Repository extends Base\Repository
 
     protected function addQueryParamOrderId($query, $params)
     {
-        $order_id = (new Order\Entity)->verifyIdAndStripSign($params[Entity::ORDER_ID]);
+        $order_id = (new Order\Entity)->verifyIdAndSilentlyStripSign($params[Entity::ORDER_ID]);
 
         $query->where(Entity::ORDER_ID, '=', $order_id);
     }

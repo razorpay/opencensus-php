@@ -68,7 +68,7 @@ trait Refund
         return $refund;
     }
 
-    public function verifyRefund($refund)
+    public function verifyRefund(Payment\Refund\Entity $refund)
     {
         $payment = $refund->payment;
 
@@ -97,7 +97,7 @@ trait Refund
 
         if ($verify === false)
         {
-            $this->recordRefund();
+            $this->recordRefund(true);
 
             $this->trace->info(
                 TraceCode::VERIFY_REFUND_TRANSACTION_CREATED,
@@ -117,6 +117,67 @@ trait Refund
         }
 
         return ['verify_refund' => $msg];
+    }
+
+    public function manualGatewayRefund(Payment\Refund\Entity $refund)
+    {
+        $payment = $refund->payment;
+
+        $this->setPaymentAndRefundInfo($refund, $payment);
+
+        // Currently doing it for only HDFC. In case when other gateways start
+        // getting similar issues, we will start supporting for them too.
+        assert ($payment->getGateway() === Payment\Gateway::HDFC);
+
+        // The refund should have already been successful and everything on the api side.
+        assert ($refund->getTransactionId() !== null);
+
+        // Just making sure that the payment also has the transaction id. Refund will not have a transaction
+        // if payment does not have a transaction, anyway.
+        assert ($payment->getTransactionId() !== null);
+
+        // The payment should have been captured. Otherwise, refund transaction should not have been created.
+        // Though, there are some edge cases where refund transaction was created even though the payment has not
+        // been captured. Check PR #905 and #909.
+        assert (($payment->hasBeenCaptured() === true) or
+                (in_array($payment->card->getNetworkCode(),
+                    [Card\Network::MAES, Card\Network::RUPAY, Card\Network::DICL]) === true));
+
+        $data = array(
+            'payment'   => $payment->toArray(),
+            'refund'    => $refund->toArray(),
+            'amount'    => $refund->getAmount());
+
+        if ($payment->isMethodCardOrEmi())
+        {
+            $data['card'] = $payment->card->toArray();
+        }
+
+        // The reason for NOT using verifyRefund Gateway function is because in ManualRefund, we want to add
+        // more checks and validations in the gateway function. VerifyRefund takes care of the checks specific
+        // to verifyRefund only. Since manualRefund is a very exceptional case and hopefully a one-time execution,
+        // we want to add more asserts around it.
+        $manualGatewayRefundResult = $this->callGatewayForManualRefund($data);
+
+        // Here, $manualGatewayRefundResult=true means that the payment is refunded on the gateway side.
+        if ($manualGatewayRefundResult === true)
+        {
+            $msg = 'Successfully created a refund on gateway';
+        }
+        else if ($manualGatewayRefundResult === false)
+        {
+            $msg = 'DID NOT CREATE A REFUND ON GATEWAY. ISSUE!';
+        }
+        else
+        {
+            $msg = 'THIS IS UNEXPECTED!';
+        }
+
+        return [
+            'manual_gateway_refund' => $msg,
+            'payment_id'            => $payment->getId(),
+            'refund_id'             => $refund->getId(),
+        ];
     }
 
     protected function setPaymentAndRefundInfo($refund, $payment)
@@ -213,7 +274,7 @@ trait Refund
         {
             $verifyRefundResult = $this->callGatewayFunction(Payment\Action::VERIFY_REFUND, $data);
         }
-        catch(Exception\BaseException $e)
+        catch (Exception\BaseException $e)
         {
             $this->tracePaymentFailed(
                     $e->getError(),
@@ -225,13 +286,42 @@ trait Refund
         return $verifyRefundResult;
     }
 
+    protected function callGatewayForManualRefund($data)
+    {
+        $manualGatewayRefundResult = null;
+
+        $this->trace->info(
+            TraceCode::MANUAL_GATEWAY_REFUND_INITIATED,
+            [
+                'payment_id'    => $data['payment']['id'],
+                'refund_id'     => $data['refund']['id'],
+            ]
+        );
+
+        try
+        {
+            $manualGatewayRefundResult = $this->callGatewayFunction(Payment\Action::MANUAL_GATEWAY_REFUND, $data);
+        }
+        catch (Exception\BaseException $ex)
+        {
+            $this->tracePaymentFailed(
+                $ex->getError(),
+                TraceCode::MANUAL_GATEWAY_REFUND_FAILURE
+            );
+
+            throw $ex;
+        }
+
+        return $manualGatewayRefundResult;
+    }
+
     protected function callGatewayForRefund($data)
     {
         try
         {
             $this->callGatewayFunction(Payment\Action::REFUND, $data);
         }
-        catch(BaseException $e)
+        catch (Exception\BaseException $e)
         {
             $this->tracePaymentFailed(
                     $e->getError(),
@@ -241,15 +331,15 @@ trait Refund
         }
     }
 
-    protected function recordRefund()
+    protected function recordRefund($forceRefundTransaction = false)
     {
-        $this->repo->transaction(function()
+        $this->repo->transaction(function() use ($forceRefundTransaction)
         {
             $payment = $this->payment;
 
             $this->paymentRepo->lockForUpdate($payment->getKey());
 
-            $this->createTransactionForRefund($this->refund, $payment);
+            $this->createTransactionForRefund($this->refund, $payment, $forceRefundTransaction);
 
             $this->updatePaymentRefunded();
 
@@ -294,7 +384,17 @@ trait Refund
         }
     }
 
-    public function createTransactionForRefund($refund, $payment)
+    /**
+     * @param Payment\Refund\Entity $refund
+     * @param Payment\Entity $payment
+     * @param bool $forceRefundTransaction This param is used for when we don't want to check for captured payment
+     *                                      for authAndCapture supported gateways before creating a refund transaction
+     *
+     * @return null|Transaction\Entity
+     * @throws Exception\LogicException
+     */
+    public function createTransactionForRefund(
+        Payment\Refund\Entity $refund, Payment\Entity $payment, $forceRefundTransaction = false)
     {
         $gateway = $payment->getGateway();
 
@@ -322,7 +422,8 @@ trait Refund
         $supportsAuthAndCapture = Payment\Gateway::supportsAuthAndCapture($gateway, $networkCode);
 
         if ((($supportsAuthAndCapture === true) and ($payment->getCaptureTimestamp() !== null)) or
-            ($supportsAuthAndCapture === false))
+            ($supportsAuthAndCapture === false) or
+            ($forceRefundTransaction === true))
         {
             if ($payment->transaction === null)
             {
