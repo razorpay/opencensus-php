@@ -14,16 +14,16 @@ app.controller('TeamManagementCtrl', [
     $scope.team = {};
 
     $scope.roleOptions = [
-      { name: 'Manager', value: 'manager' },
-      { name: 'Operations', value: 'operations' },
-      { name: 'Finance', value: 'finance' }
+      { name: 'Manager', id: 'manager' },
+      { name: 'Operations', id: 'operations' },
+      { name: 'Finance', id: 'finance' }
     ];
 
     user.identity(true).then(function(data) {
       $scope.merchant = data;
       if (data.tags.indexOf('Roles') == -1) {
         $scope.roleOptions = [
-          { name: 'Manager', value: 'manager' },
+          { name: 'Manager', id: 'manager' },
         ];
       }
     });
