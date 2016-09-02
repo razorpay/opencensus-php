@@ -63,24 +63,6 @@ class CaptureTest extends TestCase
         $this->startTest();
     }
 
-    public function testDuplicateCaptureRequest()
-    {
-        $payment = $this->defaultAuthPayment();
-
-        $redisResponse = new \Predis\Response\Status('');
-
-        Redis::shouldReceive('set')
-            ->once()
-            ->andReturn($redisResponse);
-
-        $data = $this->testData[__FUNCTION__];
-
-        $this->runRequestResponseFlow($data, function() use ($payment)
-        {
-            $this->capturePayment($payment['id'], $payment['amount']);
-        });
-    }
-
     public function testCaptureWithDifferentAmount()
     {
         $amount = $this->payment['amount'] - 1000;

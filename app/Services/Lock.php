@@ -37,7 +37,17 @@ class Lock
     {
         $response = $this->redis->set($resource, $this->requestId, 'ex', $ttl, 'nx');
 
-        return ($response->getPayload() === 'OK');
+        /**
+         * Do not block the payment if redis returns unexpected response
+         * Currently, if a lock is already acquired then the expected
+         * response is null
+         */
+        if ($response !== null)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /**
