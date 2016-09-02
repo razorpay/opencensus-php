@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Payment\Analytics;
 
+use RZP\Exception;
+
 class Metadata
 {
     // Platform values
@@ -94,120 +96,207 @@ class Metadata
         self::PRESTASHOP    => 8,
     );
 
+    public static function isValidIntegration($integration)
+    {
+        return array_key_exists($integration, self::INTEGRATION_VALUES);
+    }
+
     public static function validateIntegration($integration)
     {
-        if (!$integration)
-        {
-            return true;
-        }
+        $integration = strtolower($integration);
 
-        return array_key_exists(strtolower($integration), self::INTEGRATION_VALUES);
+        if (self::isValidIntegration($integration) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_INTEGRATION);
+        }
     }
 
     public static function getValueForIntegration($integration)
     {
-        return (!$integration) ? null : self::INTEGRATION_VALUES[strtolower($integration)];
+        $integration = strtolower($integration);
+
+        if (self::isValidIntegration($integration))
+        {
+            return self::INTEGRATION_VALUES[$integration];
+        }
+
+        return null;
     }
 
     public static function getStringForIntegrationValue($value)
     {
         $values = array_flip(self::INTEGRATION_VALUES);
 
-        return $values[strtolower($value)];
+        return $values[$value];
+    }
+
+    public static function isValidPlatform($platform)
+    {
+        return array_key_exists($platform, self::PLATFORM_VALUES);
     }
 
     public static function validatePlatform($platform)
     {
-        if (!$platform)
-        {
-            return true;
-        }
+        $platform = strtolower($platform);
 
-        return array_key_exists(strtolower($platform), self::PLATFORM_VALUES);
+        if (self::isValidPlatform($platform) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_PLATFORM);
+        }
     }
 
     public static function getValueForPlatform($platform)
     {
-        return (!$platform) ? null : self::PLATFORM_VALUES[strtolower($platform)];
+        $platform = strtolower($platform);
+
+        if (self::isValidPlatform($platform))
+        {
+            return self::PLATFORM_VALUES[$platform];
+        }
+
+        return null;
     }
 
     public static function getStringForPlatformValue($value)
     {
         $values = array_flip(self::PLATFORM_VALUES);
 
-        return $values[strtolower($value)];
+        return $values[$value];
+    }
+
+    public static function isValidOs($os)
+    {
+        return array_key_exists($os, self::OS_VALUES);
     }
 
     public static function validateOs($os)
     {
-        if (!$os)
-        {
-            return true;
-        }
+        $os = strtolower($os);
 
-        if (strtolower($os) === 'os x')
+        if (self::isValidOs($os) === false)
         {
-            $os = self::MACOS;
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_OS);
         }
-
-        return array_key_exists(strtolower($os), self::OS_VALUES);
     }
 
     public static function getValueForOs($os)
     {
-        if (strtolower($os) === 'os x')
+        $os = strtolower($os);
+
+        if (self::isValidOs($os))
         {
-            $os = self::MACOS;
+            return self::OS_VALUES[$os];
         }
 
-        return (!$os) ? null : self::OS_VALUES[strtolower($os)];
+        return null;
+    }
+
+    public static function getStringForOsValue($value)
+    {
+        $values = array_flip(self::OS_VALUES);
+
+        return $values[$value];
+    }
+
+    public static function isValidLibrary($library)
+    {
+        return array_key_exists($library, self::LIBRARY_VALUES);
     }
 
     public static function validateLibrary($library)
     {
-        return array_key_exists(strtolower($library), self::LIBRARY_VALUES);
+        $library = strtolower($library);
+
+        if (self::isValidLibrary($library) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_LIBRARY);
+        }
     }
 
     public static function getValueForLibrary($library)
     {
-        return (!$library) ? null : self::LIBRARY_VALUES[strtolower($library)];
+        $library = strtolower($library);
+
+        if (self::isValidlibrary($library))
+        {
+            return self::LIBRARY_VALUES[$library];
+        }
+
+        return null;
     }
 
     public static function getStringForLibraryValue($value)
     {
         $values = array_flip(self::LIBRARY_VALUES);
 
-        return $values[strtolower($value)];
+        return $values[$value];
     }
 
-    public static function validateBrowser($browser)
+    public static function isValidBrowser($browser)
     {
-        if (!$browser)
+        return array_key_exists($browser, self::BROWSER_VALUES);
+    }
+
+    public static function validatebrowser($browser)
+    {
+        $browser = strtolower($browser);
+
+        if (self::isValidBrowser($browser) === false)
         {
-            return true;
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_BROWSER);
+        }
+    }
+
+    public static function getValueForbrowser($browser)
+    {
+        $browser = strtolower($browser);
+
+        if (self::isValidBrowser($browser))
+        {
+            return self::BROWSER_VALUES[$browser];
         }
 
-        return array_key_exists(strtolower($browser), self::BROWSER_VALUES);
+        return null;
     }
 
-    public static function getValueForBrowser($browser)
+    public static function getStringForBrowserValue($value)
     {
-        return (!$browser) ? null : self::BROWSER_VALUES[strtolower($browser)];
+        $values = array_flip(self::BROWSER_VALUES);
+
+        return $values[$value];
     }
 
-    public static function validateDevice($device)
+    public static function isValidDevice($device)
     {
-        if (!$device)
+        return array_key_exists($device, self::DEVICE_VALUES);
+    }
+
+    public static function validatedevice($device)
+    {
+        $device = strtolower($device);
+
+        if (self::isValidDevice($device) === false)
         {
-            return true;
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_DEVICE);
         }
-
-        return array_key_exists(strtolower($device), self::DEVICE_VALUES);
     }
 
     public static function getValueForDevice($device)
     {
+        $device = strtolower($device);
 
-        return (!$device) ? null : self::DEVICE_VALUES[strtolower($device)];
+        if (self::isValidDevice($device))
+        {
+            return self::DEVICE_VALUES[$device];
+        }
+
+        return null;
+    }
+
+    public static function getStringForDeviceValue($value)
+    {
+        $values = array_flip(self::DEVICE_VALUES);
+
+        return $values[$value];
     }
 }

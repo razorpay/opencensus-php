@@ -5,6 +5,7 @@ namespace RZP\Models\Payment\Analytics;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base;
+use RZP\Models\Payment\Analytics\Metadata;
 
 class Validator extends Base\Validator
 {
@@ -34,124 +35,86 @@ class Validator extends Base\Validator
      );
 
     protected static $createValidators = array(
-        'checkout_id',
-        'library',
-        'platform',
-        'browser',
-        'os',
-        'device',
-        'integration',
+        Entity::CHECKOUT_ID,
+        Entity::LIBRARY,
+        Entity::PLATFORM,
+        Entity::BROWSER,
+        Entity::OS,
+        Entity::DEVICE,
+        Entity::INTEGRATION,
     );
 
-    protected function validateIntegration($metadata)
+    protected function validateCheckoutId($input)
     {
-        if (isset($metadata[Entity::INTEGRATION]))
+        if (empty($input[Entity::CHECKOUT_ID]))
         {
-            if (Metadata::validateIntegration($metadata[Entity::INTEGRATION]) !== true)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_INVALID_INTEGRATION, [Entity::INTEGRATION => $metadata[Entity::INTEGRATION]]);
-            }
-
-            return true;
+            return;
         }
 
-        return true;
+        if (Entity::isValidBase62Id($input[Entity::CHECKOUT_ID]) !== true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_CHECKOUT_ID);
+        }
     }
 
-    protected function validateDevice($metadata)
+    protected function validateLibrary($input)
     {
-        if (isset($metadata[Entity::DEVICE]))
+        if (empty($input[Entity::LIBRARY]))
         {
-            if (Metadata::validateDevice($metadata[Entity::DEVICE]) !== true)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_INVALID_DEVICE, [Entity::DEVICE => $metadata[Entity::DEVICE]]);
-            }
-
-            return true;
+            return;
         }
 
-        return true;
+        Metadata::validateLibrary($input[Entity::LIBRARY]);
     }
 
-    protected function validateOs($metadata)
+    protected function validatePlatform($input)
     {
-        if (isset($metadata[Entity::OS]))
+        if (empty($input[Entity::PLATFORM]))
         {
-            if (Metadata::validateOs($metadata[Entity::OS]) !== true)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_INVALID_OS, [Entity::OS => $metadata[Entity::OS]]);
-            }
-
-            return true;
+            return;
         }
 
-        return true;
+        Metadata::validatePlatform($input[Entity::PLATFORM]);
     }
 
-    protected function validateBrowser($metadata)
+    protected function validateBrowser($input)
     {
-        if (isset($metadata[Entity::BROWSER]))
+        if (empty($input[Entity::BROWSER]))
         {
-            if (Metadata::validateBrowser($metadata[Entity::BROWSER]) !== true)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_INVALID_BROWSER, [Entity::BROWSER => $metadata[Entity::BROWSER]]);
-            }
-
-            return true;
+            return;
         }
 
-        return true;
+        Metadata::validateBrowser($input[Entity::BROWSER]);
     }
 
-    protected function validateLibrary($metadata)
+    protected function validateOs($input)
     {
-        if (isset($metadata[Entity::LIBRARY]))
+        if (empty($input[Entity::OS]))
         {
-            if (Metadata::validateLibrary($metadata[Entity::LIBRARY]) !== true)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_INVALID_LIBRARY, [Entity::LIBRARY => $metadata[Entity::LIBRARY]]);
-            }
-
-            return true;
+            return;
         }
 
-        return true;
+        Metadata::validateOs($input[Entity::OS]);
     }
 
-    protected function validatePlatform($metadata)
+    protected function validateDevice($input)
     {
-        if (isset($metadata[Entity::PLATFORM]))
+        if (empty($input[Entity::DEVICE]))
         {
-            if (Metadata::validatePlatform($metadata[Entity::PLATFORM]) !== true)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_INVALID_PLATFORM, [Entity::PLATFORM => $metadata[Entity::PLATFORM]]);
-            }
-
-            return true;
+            return;
         }
 
-        return true;
+        Metadata::validateDevice($input[Entity::DEVICE]);
     }
 
-    protected function validateCheckoutId($metadata)
+    protected function validateIntegration($input)
     {
-        if (isset($metadata[Entity::CHECKOUT_ID]))
+        if (empty($input[Entity::INTEGRATION]))
         {
-            if (Entity::isValidBase62Id($metadata[Entity::CHECKOUT_ID]) !== true)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_INVALID_CHECKOUT_ID, [Entity::CHECKOUT_ID => $metadata[Entity::CHECKOUT_ID]]);
-            }
-
-            return true;
+            return;
         }
 
-        return true;
+        Metadata::validateIntegration($input[Entity::INTEGRATION]);
     }
 }

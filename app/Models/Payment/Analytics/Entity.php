@@ -33,6 +33,14 @@ class Entity extends Base\PublicEntity
     const CREATED_AT                    = 'created_at';
     const UPDATED_AT                    = 'updated_at';
 
+    protected $table = \RZP\Constants\Table::PAYMENT_ANALYTICS;
+
+    protected $entity = 'payment_analytics';
+
+    protected static $sign = '';
+
+    protected static $delimiter = '';
+
     protected $fillable = array(
         self::PAYMENT_ID,
         self::CHECKOUT_ID,
@@ -86,13 +94,9 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT
     );
 
-    protected $table = \RZP\Constants\Table::PAYMENT_ANALYTICS;
-
-    protected $entity = 'payment_analytics';
-
-    protected static $sign = '';
-
-    protected static $delimiter = '';
+    protected static $modifiers = array(
+        self::OS,
+    );
 
     // ----------------------- Getters ---------------------------------------------
 
@@ -239,50 +243,61 @@ class Entity extends Base\PublicEntity
 
     // ----------------------- Mutator ---------------------------------------------
 
-    public function setPlatformAttribute($platform)
+    protected function setPlatformAttribute($platform)
     {
         $this->attributes[self::PLATFORM] = Metadata::getValueForPlatform($platform);
     }
 
-    public function setLibraryAttribute($library)
+    protected function setLibraryAttribute($library)
     {
         $this->attributes[self::LIBRARY] = Metadata::getValueForLibrary($library);
     }
 
-    public function setBrowserAttribute($browser)
+    protected function setBrowserAttribute($browser)
     {
         $this->attributes[self::BROWSER] = Metadata::getValueForBrowser($browser);
     }
 
-    public function setOsAttribute($os)
+    protected function setOsAttribute($os)
     {
         $this->attributes[self::OS] = Metadata::getValueForOs($os);
     }
 
-    public function setIntegrationAttribute($integration)
+    protected function setIntegrationAttribute($integration)
     {
         $this->attributes[self::INTEGRATION] = Metadata::getValueForIntegration($integration);
     }
 
-    public function setDeviceAttribute($device)
+    protected function setDeviceAttribute($device)
     {
         $this->attributes[self::DEVICE] = Metadata::getValueForDevice($device);
     }
 
-    public function setIpAttribute($ip)
+    protected function setIpAttribute($ip)
     {
         $this->attributes[self::IP] = $ip;
     }
 
-    public function setUserAgentAttribute($ua)
+    protected function setUserAgentAttribute($ua)
     {
         $this->attributes[self::USER_AGENT] = $ua;
     }
 
-    public function setRefererAttribute($referer)
+    protected function setRefererAttribute($referer)
     {
         $this->attributes[self::REFERER] = $referer;
     }
 
     // ----------------------- Mutator Ends ----------------------------------------
+
+    // ----------------------- Modifieres ------------------------------------------
+
+    protected function modifyOs(& $input)
+    {
+        if ((isset($input[self::OS])) and
+            (strtolower($input[self::OS]) === 'os x'))
+        {
+            $input[self::OS] = Metadata::MACOS;
+        }
+    }
 }
