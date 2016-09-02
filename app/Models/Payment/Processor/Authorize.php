@@ -1082,10 +1082,10 @@ trait Authorize
     {
         try
         {
-             $log = [
-                        'payment_id'    => $rawData['payment_id'],
-                        'terminal_id'   => $rawData['terminal_id'],
-                    ];
+            $log = [
+                'payment_id'    => $rawData['payment_id'],
+                'terminal_id'   => $rawData['terminal_id'],
+            ];
 
             // 1. Record terminal data
             $this->recordTerminalAudit($rawData, $log);
@@ -1100,7 +1100,9 @@ trait Authorize
         {
             $this->trace->error(
                 TraceCode::PAYMENT_ANALYTICS_SAVE_FAILED,
-                ['raw_data' => $rawData]);
+                [
+                    'raw_data' => $rawData
+                ]);
 
             $this->trace->traceException($e);
         }
