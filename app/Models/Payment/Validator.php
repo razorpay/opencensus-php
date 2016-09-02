@@ -13,7 +13,7 @@ use RZP\Models\Payment\Processor\Wallet;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        'amount'                  =>  'required|integer|max:50000000',
+        'amount'                  =>  'required|integer',
         'currency'                =>  'required|size:3',
         'method'                  =>  'in:card,netbanking,wallet,emi',
         'card'                    =>  'sometimes',
@@ -110,7 +110,7 @@ class Validator extends Base\Validator
                 'amount');
         }
 
-        if (($input['method'] === Payment\Method::EMI) and ($amount < 300000))
+        if (($input['method'] === Payment\Method::EMI) and ($amount < 200000))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT_FOR_EMI,
@@ -122,7 +122,8 @@ class Validator extends Base\Validator
         if ($amount > $maxAmountAllowed)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Amount exceeds maximum amount allowed.');
+                'Amount exceeds maximum amount allowed.',
+                'amount');
         }
     }
 
@@ -309,43 +310,6 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_ONLY_AUTHORIZED);
-        }
-    }
-
-    // protected function processValidationFailure($messages, $operation, $input)
-    // {
-    //     $bag = $messages;
-
-    //     $this->checkValidationFailureEmail($bag);
-
-    //     $this->checkValidationFailureContact($bag);
-
-    //     parent::processValidationFailure($messages, $operation, $input);
-    // }
-
-    protected function checkValidationFailureEmail($bag)
-    {
-        if ($bag->has(Entity::EMAIL))
-        {
-            $msg = $bag->first(Entity::EMAIL);
-
-            throw new Exception\FieldErrorException(
-                $msg,
-                ErrorCode::FIELD_ERROR_INVALID_EMAIL,
-                Entity::EMAIL);
-        }
-    }
-
-    protected function checkValidationFailureContact($bag)
-    {
-        if ($bag->has(Entity::CONTACT))
-        {
-            $msg = $bag->first(Entity::CONTACT);
-
-            throw new Exception\FieldErrorException(
-                $msg,
-                ErrorCode::FIELD_ERROR_INVALID_CONTACT,
-                Entity::CONTACT);
         }
     }
 }

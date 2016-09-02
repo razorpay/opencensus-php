@@ -238,6 +238,7 @@ $factory(\RZP\Models\Order\Entity::class, [
     'currency' => 'INR',
     'status' => 'created',
     'receipt' => $faker->uniqueid,
+    'payment_capture' => false,
     'notes' => null,
     'attempts' => 0,
     'created_at' => $faker->timestamp,

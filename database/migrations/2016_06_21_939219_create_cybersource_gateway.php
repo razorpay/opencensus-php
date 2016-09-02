@@ -91,5 +91,4 @@ class CreateCybersourceGateway extends Migration
 
         Schema::drop(Table::CYBERSOURCE);
     }
-
 }

@@ -66,7 +66,6 @@ class Entity extends Base\PublicEntity
     const CURRENCY_LENGTH       = 3;
 
     const MIN_PAYMENT_AMOUNT    = 100;
-    const MAX_PAYMENT_AMOUNT    = 1000000000;
 
     protected static $sign      = 'pay';
 
@@ -1165,6 +1164,11 @@ class Entity extends Base\PublicEntity
     public function scopeCreatedAtLessThan($query, $ts)
     {
         return $query->where(Payment\Entity::CREATED_AT, '<', $ts);
+    }
+
+    public function scopeMerchantId($query, $merchantId)
+    {
+        return $query->where(self::MERCHANT_ID,'=',$merchantId);
     }
 
 // --------------------- Query scopes section ends -----------------------------

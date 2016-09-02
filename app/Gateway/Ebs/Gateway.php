@@ -197,7 +197,7 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function getRequestFromFormPostResponse($request, $response)
+    protected function getRequestFromFormPostResponse($request, $response, $setHeaders = true)
     {
         $crawler = new Crawler($response->body, $request['url']);
 
@@ -218,7 +218,10 @@ class Gateway extends Base\Gateway
             'content' => $form->getValues(),
         ];
 
-        $this->setRequestHeaderAndOption($request);
+        if ($setHeaders === true)
+        {
+            $this->setRequestHeaderAndOption($request);
+        }
 
         return $request;
     }
@@ -301,8 +304,10 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $authorizeRequest = $this->getRequestFromFormPostResponse($request, $response);
+            $authorizeRequest = $this->getRequestFromFormPostResponse($request, $response, false);
         }
+
+        $authorizeRequest['headers']['Referer'] = $response->url;
 
         return $authorizeRequest;
     }
@@ -737,18 +742,15 @@ class Gateway extends Base\Gateway
 
     protected function getAuthorizeAttributesForPaymentEntity($content)
     {
-        $attributes = [Entity::AMOUNT => $content[Req::AMOUNT]];
+        $attributes = [Entity::AMOUNT => $content[Req::AMOUNT] * 100];
 
         return $attributes;
     }
 
     protected function getRefundContent($response, $input)
     {
-        $refundAmount = $input['refund']['amount'] / 100;
-
         $attributes = [
-            Entity::REFUND_ID   => $input['refund'][Payment\Entity::ID],
-            Entity::AMOUNT      => $refundAmount,
+            Entity::AMOUNT      => $input['refund']['amount'],
             Entity::RECEIVED    => true,
         ];
 
@@ -768,6 +770,10 @@ class Gateway extends Base\Gateway
         {
             $attributes[Entity::ERROR_CODE]        = $response[Resp::ERROR_CODE];
             $attributes[Entity::ERROR_DESCRIPTION] = $response[Resp::ERROR];
+        }
+        else
+        {
+            $attributes[Entity::REFUND_ID] = $input['refund'][Payment\Refund\Entity::ID];
         }
 
         return $attributes;

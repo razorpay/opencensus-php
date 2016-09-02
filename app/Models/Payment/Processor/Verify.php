@@ -2,13 +2,13 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use App;
+use Config;
+
 use RZP\Exception;
-use RZP\Error\ErrorCode;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
 use RZP\Models\Payment\VerifyResult;
-use App;
 
 trait Verify
 {
@@ -90,7 +90,7 @@ trait Verify
             [
                 'color' => 'bad',
                 'icon' => ':boom:',
-                'channel' => '#tech_logs'
+                'channel' => Config::get('slack.channels.tech_logs')
             ]);
     }
 }
