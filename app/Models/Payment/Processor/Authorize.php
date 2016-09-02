@@ -1091,12 +1091,10 @@ trait Authorize
             $this->recordTerminalAudit($rawData, $log);
 
             // 2. Record payment actions
-            $pAnalyticsService = new Analytics\Service();
-
-            $pAnalyticsService->recordPaymentRequestData($rawData, $log);
+            Analytics\Parser::recordPaymentRequestData($rawData, $log);
 
             // Create log
-            $pAnalyticsService->createAuditLog($log);
+            (new Analytics\Service)->createAuditLog($log);
         }
         catch (Exception\BaseException $e)
         {
