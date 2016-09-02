@@ -5,6 +5,13 @@ namespace RZP\Services;
 use Redis;
 use Request;
 
+/**
+ * The below lock implementation is based on single-instance redis redlock algorithm
+ * as detailed here - http://redis.io/topics/distlock
+ *
+ * SETNX - This command is crucial to lock implementation.
+ *         Man page - http://redis.io/commands/setnx
+ */
 class Lock
 {
     public function __construct($app)
