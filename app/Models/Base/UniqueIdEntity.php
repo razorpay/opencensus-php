@@ -3,6 +3,7 @@
 namespace RZP\Models\Base;
 
 use RZP\Exception;
+use RZP\Base\Luhn;
 
 class UniqueIdEntity extends Entity
 {
@@ -305,21 +306,13 @@ class UniqueIdEntity extends Entity
     {
         $base62 = self::generateUniqueId();
 
-        $base62[13] = 0;
+        $base62 = substr($base62, 0, 13);
 
-        $digit = self::base62GetCheckDigit($base62);
+        $digit = Luhn::computeCheckDigit($base62, 62);
 
-        if ($digit === 0)
-        {
-            return $base62;
-        }
-        else
-        {
-            $base62[13] = array_flip(self::$baseValues)[62 - $digit];
-        }
-
-        return $base62;
+        return $base62 . $digit;
     }
+
     public static function getCheckDigit($uid)
     {
         $uid[13] = ' ';
@@ -375,10 +368,8 @@ class UniqueIdEntity extends Entity
         return (self::getSumForCheckDigit($num) % 62);
     }
 
-    public static function validateBase62Id($num)
+    public static function isValidBase62Id($num)
     {
-        $base62Sum = self::base62GetCheckDigit($num);
-
-        return (($base62Sum % 62) === 0);
+        return Luhn::isValid($num, 62);
     }
 }
