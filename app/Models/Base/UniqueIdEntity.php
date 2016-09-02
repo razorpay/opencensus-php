@@ -164,9 +164,9 @@ class UniqueIdEntity extends Entity
 
     public static function verifyArrayUid($id, $key = self::ID)
     {
-        Assert(is_array($id) === true);
+        assert(is_array($id) === true);
 
-        if (! isset($id[$key]))
+        if (isset($id[$key]) === false)
         {
             throw new Exception\InvalidArgumentException('id key not set');
         }
@@ -315,57 +315,11 @@ class UniqueIdEntity extends Entity
 
     public static function getCheckDigit($uid)
     {
-        $uid[13] = ' ';
+        $uid = substr($uid, 0, 13);
 
-        $uid = trim($uid);
+        $digit = Luhn::computeCheckDigit($uid, 62);
 
-        $digit = self::base62GetCheckDigit($uid);
-
-        $base62Digit = array_flip(self::$baseValues)[62 - $digit];
-
-        return $base62Digit;
-    }
-
-    public static function getSumForCheckDigit($num)
-    {
-        $checkNumber = $num;
-
-        $sum = $flip = 0;
-
-        $len = strlen($checkNumber);
-
-        for ($i = $len - 1; $i >= 0; $i--)
-        {
-            try
-            {
-                $multiplier = (($flip++ % 2) === 0) ? 1 : 2;
-
-                $base62Digit = self::$baseValues[$checkNumber[$i]];
-
-                if ($multiplier === 2)
-                {
-                    $base62Digit = $base62Digit * 2;
-
-                    if ($base62Digit >= 62)
-                    {
-                        $base62Digit = ($base62Digit % 62) + 1;
-                    }
-                }
-
-                $sum += $base62Digit;
-            }
-            catch (\ErrorException $e)
-            {
-                return false;
-            }
-        }
-
-        return $sum;
-    }
-
-    public static function base62GetCheckDigit($num)
-    {
-        return (self::getSumForCheckDigit($num) % 62);
+        return $digit;
     }
 
     public static function isValidBase62Id($num)
