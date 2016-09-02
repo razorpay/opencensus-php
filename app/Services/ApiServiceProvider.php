@@ -75,17 +75,7 @@ class ApiServiceProvider extends BaseServiceProvider
             return new \RZP\Base\RepositoryManager($app);
         });
 
-        $this->app->singleton('api.lock', function($app)
-        {
-             $lockMock = $app['config']->get('services.lock.mock');
-
-            if ($lockMock === true)
-            {
-                return new Services\Mock\Lock($app);
-            }
-
-            return new Services\Lock($app);
-        });
+        $this->registerApiLock();
 
         $this->registerValidatorResolver();
 
@@ -108,6 +98,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'gateway',
             'webhook.inferno',
             'card.tokenex',
+            'api.lock',
             'raven',
             'repo',
             'es',
@@ -146,6 +137,21 @@ class ApiServiceProvider extends BaseServiceProvider
             }
 
             return $this->requestId;
+        });
+    }
+
+    protected function registerApiLock()
+    {
+        $this->app->singleton('api.lock', function($app)
+        {
+             $lockMock = $app['config']->get('services.lock.mock');
+
+            if ($lockMock === true)
+            {
+                return new Services\Mock\Lock($app);
+            }
+
+            return new Services\Lock($app);
         });
     }
 }
