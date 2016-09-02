@@ -19,13 +19,11 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
      */
     public function __construct()
     {
-        $this->request = App::make('request');
+        $app = App::getFacadeRoot();
 
-        $this->context = App::make('config')->get('app.context');
+        $this->request = $app['request'];
 
-        $this->requestId = bin2hex(openssl_random_pseudo_bytes(16));
-
-        $this->console = App::runningInConsole();
+        $this->console = $app->runningInConsole();
 
         $serverData = $this->getServerData();
 
@@ -51,7 +49,7 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
     public function getServerData()
     {
         $serverData = array(
-            'request_id'    => $this->requestId,
+            'request_id'    => $this->request->getId(),
             'uri'           => $this->request->path(),
             'url'           => $this->request->fullUrl(),
             'method'        => $this->request->method(),
@@ -61,8 +59,7 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
             'server_ip'     => $this->request->server('SERVER_ADDR'),
             'referer'       => $this->request->headers->get('referer'),
             'user_agent'    => $this->request->server('HTTP_USER_AGENT'),
-            'console'       => $this->console,
-            'context'       => $this->context);
+            'console'       => $this->console);
 
         $userData = array(
             'dashboard'     => $this->request->headers->get('X-Dashboard'),
