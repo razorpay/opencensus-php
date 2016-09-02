@@ -224,17 +224,6 @@ trait Capture
 
                 $this->trace->traceException($ex);
 
-                //
-                // We are currently doing capture queue for HDFC, as we don't want to mark
-                // the captured payment on gateway as failed on API
-                // Note: Capture shouldn't be done again for Cybersource
-                // as cybersource settles the amount from CH account again
-                //
-                if ($this->payment->getGateway() !== Payment\Gateway::HDFC)
-                {
-                    throw $ex;
-                }
-
                 $data['mode'] = $this->mode;
 
                 $this->trace->info(
