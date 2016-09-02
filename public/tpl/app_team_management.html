@@ -18,7 +18,7 @@
           <input type="text" class="form-control" id="description" name="description" ng-model="team.email" placeholder="Email address of the user" tooltip-placement="right" tooltip="Email Address" required>
         </div>
         <div class="m-b col-sm-4">
-          <select class="form-control" name="role" ng-model="team.role" tooltip-placement="right" tooltip="User Role" required><option ng-repeat="role in roleOptions" value="{{role.id}}" ng-selected="role.id=='manager'">{{role.name}}</option>
+          <select class="form-control" name="role" ng-model="team.role" tooltip-placement="right" tooltip="User Role" required><option ng-repeat="role in roleOptions" value="{{role.id}}" ng-init="team.role=roleOptions[0].id">{{role.name}}</option>
           </select>
         </div>
       </div>
