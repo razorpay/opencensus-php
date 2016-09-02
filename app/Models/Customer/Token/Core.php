@@ -56,6 +56,7 @@ class Core extends Base\Core
      */
     public function getByTokenAndCustomer($id, $customer)
     {
+        // TODO: remove this once merchants shifts to token_id
         $token = $this->repo->token->getByTokenAndCustomerId($id, $customer->getId());
 
         if ($token === null)
