@@ -60,9 +60,11 @@ class RefundTest extends TestCase
         $payment = $this->defaultAuthPayment();
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
+        $redisResponse = new \Predis\Response\Status('');
+
         Redis::shouldReceive('set')
-                    ->once()
-                    ->andReturn('');
+                ->once()
+                ->andReturn($redisResponse);
 
         $data = $this->testData[__FUNCTION__];
 

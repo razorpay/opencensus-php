@@ -75,8 +75,10 @@ class TestCase extends IlluminateTestCase
 
     protected function setRedisMock()
     {
+        $redisResponse = new \Predis\Response\Status('OK');
+
         Redis::shouldReceive('set')
-            ->andReturn('OK')
+            ->andReturn($redisResponse)
             ->byDefault();
 
         Redis::shouldReceive('get')

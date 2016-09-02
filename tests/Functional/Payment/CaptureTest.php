@@ -67,9 +67,11 @@ class CaptureTest extends TestCase
     {
         $payment = $this->defaultAuthPayment();
 
+        $redisResponse = new \Predis\Response\Status('');
+
         Redis::shouldReceive('set')
             ->once()
-            ->andReturn('');
+            ->andReturn($redisResponse);
 
         $data = $this->testData[__FUNCTION__];
 
