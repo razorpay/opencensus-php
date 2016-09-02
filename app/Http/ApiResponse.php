@@ -96,7 +96,7 @@ class ApiResponse
         {
             $response->setCallback($callback);
         }
-        catch(\InvalidArgumentException $e)
+        catch (\InvalidArgumentException $e)
         {
             $response->setCallback(self::JSONP_FALLBACK_CALLBACK);
         }

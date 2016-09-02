@@ -2,8 +2,7 @@
 
 namespace RZP\Tests\Functional\Payment\Analytics;
 
-use RZP\Constants\Table;
-use RZP\Constants\HttpRequestHeader;
+use RZP\Constants\Entity as E;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Payment\Analytics\Entity as AnalyticsEntity;
 use RZP\Tests\Functional\TestCase;
@@ -34,7 +33,7 @@ class AnalyticsTest extends TestCase
 
         $payment = $this->doAuthPayment($payment);
 
-        $paymentAnalytic = $this->getLastEntity(Table::PAYMENT_ANALYTICS, true);
+        $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
 
         $this->assertEquals($checkoutId, $paymentAnalytic[AnalyticsEntity::CHECKOUT_ID]);
 
@@ -46,7 +45,7 @@ class AnalyticsTest extends TestCase
         $payment['_'][AnalyticsEntity::CHECKOUT_ID] = $checkoutId;
 
         $payment = $this->doAuthPayment($payment);
-        $paymentAnalytic = $this->getLastEntity(Table::PAYMENT_ANALYTICS, true);
+        $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
 
         $this->assertEquals($checkoutId, $paymentAnalytic[AnalyticsEntity::CHECKOUT_ID]);
 
@@ -76,7 +75,7 @@ class AnalyticsTest extends TestCase
 
         $payment = $this->doAuthPayment($payment, $requestServer);
 
-        $paymentAnalytic = $this->getLastEntity(Table::PAYMENT_ANALYTICS, true);
+        $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
 
         $this->assertTestResponse($paymentAnalytic, 'testPaymentAnalytics');
     }
@@ -114,7 +113,7 @@ class AnalyticsTest extends TestCase
 
         $payment = $this->doAuthPayment($payment, $requestServer);
 
-        $paymentAnalytic = $this->getLastEntity(Table::PAYMENT_ANALYTICS, true);
+        $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
 
         $this->assertTestResponse($paymentAnalytic, 'testPaymentAnalyticsOtp');
     }
@@ -139,7 +138,7 @@ class AnalyticsTest extends TestCase
 
         $payment = $this->doAuthPayment($payment, $requestServer);
 
-        $paymentAnalytic = $this->getLastEntity(Table::PAYMENT_ANALYTICS, true);
+        $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
 
         $this->assertTestResponse($paymentAnalytic, 'testDataForUserAgentAnomaly');
     }

@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Payment\Analytics;
 
-use RZP\Constants\ResponseHeader;
+use RZP\Http\RequestHeader;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment\Analytics;
@@ -11,15 +11,6 @@ use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
-    protected $uAgent;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->uAgent = $this->app['agent'];
-    }
-
     public function createAuditLog($input)
     {
         $action = (new Analytics\Core)->create($input);
@@ -164,7 +155,7 @@ class Service extends Base\Service
         {
             $this->trace->warning(
                 TraceCode::PAYMENT_CHECKOUT_INVALID_ID,
-                $checkoutId);
+                ['checkout_id' => $checkoutId]);
 
             return;
         }
@@ -177,7 +168,7 @@ class Service extends Base\Service
     protected function setHttpRequestData(array & $log)
     {
         // get user-agent service
-        $uAgent = $this->uAgent;
+        $uAgent = $this->app['agent'];
 
         $log[Entity::BROWSER] = $uAgent->browser();
 
@@ -197,14 +188,14 @@ class Service extends Base\Service
 
         $log[Entity::IP] = $request->ip();
 
-        if ($request->header(ResponseHeader::REFERER) !== null)
+        if ($request->header(RequestHeader::REFERER) !== null)
         {
-            $log[Entity::REFERER] = $request->header(ResponseHeader::REFERER);
+            $log[Entity::REFERER] = $request->header(RequestHeader::REFERER);
         }
 
-        if ($request->header(ResponseHeader::USER_AGENT) !== null)
+        if ($request->header(RequestHeader::USER_AGENT) !== null)
         {
-            $log[Entity::USER_AGENT] = $request->header(ResponseHeader::USER_AGENT);
+            $log[Entity::USER_AGENT] = $request->header(RequestHeader::USER_AGENT);
         }
     }
 
