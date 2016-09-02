@@ -108,7 +108,21 @@ class Report extends Service
                 'time_taken'    => $timeTaken
             ]);
 
-        return $entities->toArrayReport();
+        $data = $entities->toArrayReport();
+
+        $timeTaken = time() - $begin;
+
+        $this->trace->debug(
+            TraceCode::MERCHANT_REPORT_GENERATION,
+            [
+                'entity'        => $entity,
+                'from'          => $from,
+                'to'            => $to,
+                'merchantId'    => $merchantId,
+                'time_taken'    => $timeTaken
+            ]);
+
+        return $data;
     }
 
     public function getInvoice($input)
@@ -296,6 +310,6 @@ class Report extends Service
     protected function increaseAllowedSystemLimits()
     {
         ini_set('memory_limit', '1024M');
-        set_time_limit(301);
+        set_time_limit(501);
     }
 }

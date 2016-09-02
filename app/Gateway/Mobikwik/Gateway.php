@@ -7,7 +7,6 @@ use RZP\Error;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Base;
-// use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;

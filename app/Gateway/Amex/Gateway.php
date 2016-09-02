@@ -89,7 +89,7 @@ class Gateway extends AxisMigs\Gateway
 
             $content['vpc_SubMerchant_StateProvince'] = $ba['beneficiary_state'];
 
-            $content['vpc_SubMerchant_Country'] = $ba['beneficiary_country'];
+            $content['vpc_SubMerchant_Country'] = 'IND';
 
             $content['vpc_SubMerchant_Phone'] = substr($ba['beneficiary_mobile'], -10);
 

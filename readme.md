@@ -13,7 +13,7 @@
 * Install Virtualbox & Vagrant
 * Add laravel/homestead box. (Manual download recommended.)
 * Clone Homestead repo & follow setup instructions.
-* Map api to /path/to/api in folders [ ~/.homestead/Homestead.yaml ]
+* Map api to /path/to/api in folders [ ~/.homestead/Homestead.yaml ], with "nfs" enabled.
 * Map api.razorpay.dev to /path/to/api/public in sites [ ~/.homestead/Homestead.yaml ]
 * Follow Common Instructions
 * Follow Common Test Setup Instructions
@@ -35,14 +35,15 @@
 * `chmod -R o+wx storage/`
 * `php composer.phar install` to install project dependencies
 * Create 2 databases (one is for live and another for test accounts). (`api-live`, `api-test` are sample names)
-* Copy over `environment/.env.sample` to `environment/.env.dev` and provide both database usernames and password
+* Copy over `environment/.env.vault.sample` to `environment/.env.vault` and provide both database usernames and password
+* Copy over `environment/.env.dev.sample` to `environment/.env.dev`
 * Copy over `environment/env.sample.php` to `environment/env.php`. This specifies the `dev` environment for local development.
 * `php artisan rzp:dbr --install --seed` (Creates tables and seeds them)
 
 ### Common Test Setup Instructions
 
 * Create two seperate databases for testing (separate from the development ones). (sample names: `api-testing-live`, `api-testing-test`)
-* Copy over `environment/.env.sample` to `.env.testing` and provide the database information
+* Copy over `environment/.env.dev.sample` to `.env.testing` and provide the database information
 * For above step, if you have sqlite set-up. Google how to do that with laravel.
 * Install php unit `sudo apt-get install phpunit`
 * Disable Xdebug ( Some Tests fail with Xdebug enabled ): `sudo php5dismod xdebug`

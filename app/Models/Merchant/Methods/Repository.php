@@ -24,6 +24,7 @@ class Repository extends Base\Repository
         Entity::PAYTM       => 'sometimes|in:0,1',
         Entity::PAYUMONEY   => 'sometimes|in:0,1',
         Entity::PAYZAPP     => 'sometimes|in:0,1',
+        Entity::OLAMONEY    => 'sometimes|in:0,1',
     );
 
     public function getMerchantMethods($id)

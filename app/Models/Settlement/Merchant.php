@@ -325,6 +325,8 @@ class Merchant
 
         $ba->merchant()->associate($merchant);
 
+        $ba->associateMerchant($merchant);
+
         $merchant->setRelation('bankAccount', $ba);
 
         $this->repo->bank_account->save($ba);

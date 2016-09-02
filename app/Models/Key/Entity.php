@@ -84,11 +84,6 @@ class Entity extends Base\PublicEntity
         });
     }
 
-    public function scopeMerchantId($query, $merchantId)
-    {
-        return $query->where(self::MERCHANT_ID,'=',$merchantId);
-    }
-
     public function isExpiredOrExpiring()
     {
         return ($this->attributes[self::EXPIRED_AT] !== null);

@@ -64,6 +64,8 @@ class Gateway extends Base\Gateway
             'method' => 'post',
             'content' => $content);
 
+        $this->traceGatewayPaymentRequest($request, $input);
+
         return $request;
     }
 

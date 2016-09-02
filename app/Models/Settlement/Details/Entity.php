@@ -50,10 +50,14 @@ class Entity extends Base\PublicEntity
     );
 
     protected $public = array(
-        self::TYPE,
         self::COMPONENT,
+        self::AMOUNT,
         self::COUNT,
-        self::AMOUNT
+        self::TYPE,
+    );
+
+    protected $amounts = array(
+        self::AMOUNT,
     );
 
     protected $casts = array(

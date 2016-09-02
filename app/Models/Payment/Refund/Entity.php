@@ -66,6 +66,10 @@ class Entity extends Base\PublicEntity
         self::ID, self::ENTITY, self::PAYMENT_ID
     );
 
+    protected $amounts = array(
+        self::AMOUNT,
+    );
+
     public function payment()
     {
         return $this->belongsTo('RZP\Models\Payment\Entity');

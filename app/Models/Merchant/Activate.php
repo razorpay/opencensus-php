@@ -19,17 +19,8 @@ use RZP\Error\ErrorCode;
 
 use RZP\Trace\TraceCode;
 
-class Activate
+class Activate extends Base\Core
 {
-    public function __construct($app)
-    {
-        $this->app = $app;
-
-        $this->repo = $app['repo'];
-
-        $this->trace = $app['trace'];
-    }
-
     public function activate($merchant)
     {
         if ($merchant->isActivated())

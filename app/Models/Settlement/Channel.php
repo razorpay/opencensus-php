@@ -23,6 +23,7 @@ class Channel
             Payment\Gateway::NETBANKING_HDFC,
             Payment\Gateway::WALLET_PAYZAPP,
             Payment\Gateway::WALLET_PAYUMONEY,
+            Payment\Gateway::WALLET_OLAMONEY,
         ),
 
         self::ATOM => array(

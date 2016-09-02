@@ -29,6 +29,31 @@ trait FileHandlerTrait
         return $url;
     }
 
+    public function writeToTextFileH2H($txt)
+    {
+        try
+        {
+            $name = 'RAZORNODAL\$\$'. Carbon::now('Asia/Kolkata')->format('dmYHis') . '.txt';
+
+            $fullpath = $this->saveLocally($name, $txt);
+
+            $bucket = 'h2h_bucket';
+
+            $metadata = $this->getH2HMetadata();
+
+            $key = 'kotak/outgoing/' . $name;
+
+            $url = $this->saveToAws($key, $fullpath, 'text/plain', $bucket, $metadata);
+
+            // This will be local file path if aws is mocked
+            return $url;
+        }
+        catch (\Exception $e)
+        {
+            $this->trace()->traceException($e);
+        }
+    }
+
     public function writeToCsvFile($data, $name, $fullName = null)
     {
         $excelObject = $this->createExcelObject($data, $name);
@@ -61,6 +86,29 @@ trait FileHandlerTrait
 
         $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
         $url = $this->saveToAws($name.'.xlsx', $fullpath, $xlsxMimeType);
+
+        return $url;
+    }
+
+
+    public function writeToExcelFileH2H($data, $name)
+    {
+        \Config::set('excel::export.calculate', true);
+
+        $columnFormat = $this->getColumnFormatForExcel();
+
+        $excel = $this->createExcelObject($data, $name, $columnFormat);
+
+        $fileMetadata = $excel->store('xlsx', storage_path('files/settlement'), true);
+        $fullpath = $fileMetadata['full'];
+
+        $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+
+        $bucket = 'h2h_bucket';
+
+        $metadata = $this->getH2HMetadata();
+
+        $url = $this->saveToAws($name.'.xlsx', $fullpath, $xlsxMimeType, $bucket, $metadata);
 
         return $url;
     }
@@ -191,7 +239,8 @@ trait FileHandlerTrait
         return $this->saveToAws($name, $fullpath, 'text/plain');
     }
 
-    protected function saveToAws($name, $fullpath, $mime = 'text/plain')
+    protected function saveToAws(
+        $name, $fullpath, $mime = 'text/plain', $bucket = 'settlement_bucket', $metadata = array())
     {
         $config =  \Config::get('aws');
 
@@ -207,10 +256,11 @@ trait FileHandlerTrait
         try
         {
             $s3Obj = array(
-                'Bucket'        => $config['settlement_bucket'],
+                'Bucket'        => $config[$bucket],
                 'Key'           => $name,
                 'ContentType'   => $mime,
                 'SourceFile'    => $fullpath,
+                'Metadata'      => $metadata,
             );
 
             $this->trace()->info(TraceCode::AWS_FILE_UPLOAD, $s3Obj);
@@ -420,7 +470,7 @@ trait FileHandlerTrait
         $data = array();
         $headings = $this->getHeadings();
 
-        foreach ($rows as $row)
+        foreach ($rows as $ix => $row)
         {
             // Ending row may be just empty.
             if ($row === '')
@@ -429,6 +479,13 @@ trait FileHandlerTrait
             }
 
             $values = explode('~', $row);
+
+            if (count($headings) !== count($values))
+            {
+                throw new Exception\RuntimeException(
+                    'Count of array elements for combine not equal. Heading count: ' .
+                    count($headings). ' Value count: ' . count($values) . ' Row: ' . $ix);
+            }
 
             $values = array_combine($headings, $values);
             $data[] = $values;
@@ -455,9 +512,7 @@ trait FileHandlerTrait
             $filePath = $file->getRealPath();
         }
 
-        $file = fopen($filePath, 'r');
-        $txt = fread($file, filesize($filePath));
-        $lines = explode("\r\n", $txt);
+        $lines = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 
         return $lines;
     }
@@ -543,5 +598,15 @@ trait FileHandlerTrait
         $trace = \Trace::getFacadeRoot();
 
         return $trace;
+    }
+
+    protected function getH2HMetadata()
+    {
+        return array(
+            'gid'   => '10000',
+            'uid'   => '10001',
+            'mtime' => Carbon::now()->timestamp,
+            'mode'  => '33188'
+        );
     }
 }

@@ -54,12 +54,7 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_PRICING_RULE_FOR_AMEX_NOT_PRESENT);
         }
 
-        if ($merchant->isInternational() and
-            ($plan->hasInternationalPricing() === false))
-        {
-                throw new Exception\BadRequestValidationFailureException(
-                    'International payment enabled, but pricing not present.');
-        }
+        $this->valdiateInternationalPricingForMerchant($merchant, $plan);
     }
 
     public function checkPricing($merchant, $methods = null)
@@ -92,6 +87,16 @@ class Core extends Base\Core
         return $this->getEnabledDisabledBanks($banks);
     }
 
+    public function valdiateInternationalPricingForMerchant($merchant, $plan)
+    {
+        if (($merchant->isInternational()) and
+            ($plan->hasInternationalPricing() === false))
+        {
+                throw new Exception\BadRequestValidationFailureException(
+                    'International payment enabled, but pricing not present.');
+        }
+    }
+
     protected function getPaymentMethods($merchant)
     {
         $methods = $this->repo->methods->getMerchantMethods($merchant->getId());
@@ -114,6 +119,7 @@ class Core extends Base\Core
         $methods->setAmex(true);
         $methods->setMobikwik(true);
         $methods->setPayzapp(true);
+        $methods->setPayumoney(true);
 
         $this->setAllPaymentBanks($methods);
 

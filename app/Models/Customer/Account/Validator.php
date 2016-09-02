@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Customer;
 
+use App;
 use RZP\Models\Base;
 use RZP\Models\Customer\Entity;
 use libphonenumber\PhoneNumberFormat;
@@ -31,14 +32,18 @@ class Validator extends Base\Validator
     );
 
     protected static $contactRules = array(
-        Entity::CONTACT => 'required|contact_syntax|phone:AUTO,LENIENT,IN,mobile,fixed_line'
+        Entity::CONTACT         => 'required|contact_syntax|phone:AUTO,LENIENT,IN,mobile,fixed_line'
+    );
+
+    protected static $paymentRules = array(
+        'skip'                  => 'sometimes|integer'
     );
 
     public static function validateAndParseContact($contact)
     {
         (new static)->validateInput('contact', ['contact' => $contact]);
 
-        $app = \App::getFacadeRoot();
+        $app = App::getFacadeRoot();
 
         $phoneNumberLib = $app['libphonenumber'];
 
@@ -48,6 +53,11 @@ class Validator extends Base\Validator
         $contact = $phoneNumberLib->format($phoneNumber, PhoneNumberFormat::E164);
 
         return $contact;
+    }
+
+    public static function validateFetchCustomerPaymentsInput($input)
+    {
+        (new static)->validateInput('payment', $input);
     }
 
     public static function validateGlobalCustomerCreateInput($input)

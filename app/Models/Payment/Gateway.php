@@ -18,15 +18,16 @@ class Gateway
     const AXIS_GENIUS       = 'axis_genius';
     const AXIS_MIGS         = 'axis_migs';
     const BILLDESK          = 'billdesk';
+    const EBS               = 'ebs';
     const HDFC              = 'hdfc';
     const KOTAK             = 'kotak';
-    const AXIS              = 'axis';
     const MOBIKWIK          = 'mobikwik';
     const PAYTM             = 'paytm';
     const SBIEPAY           = 'sbiepay';
     const SHARP             = 'sharp';
     const NETBANKING_HDFC   = 'netbanking_hdfc';
     const NETBANKING_KOTAK  = 'netbanking_kotak';
+    const WALLET_OLAMONEY   = 'wallet_olamoney';
     const WALLET_PAYZAPP    = 'wallet_payzapp';
     const WALLET_PAYUMONEY  = 'wallet_payumoney';
     const CYBERSOURCE       = 'cybersource';
@@ -36,7 +37,7 @@ class Gateway
 
     const POWER_WALLETS = array(
         Wallet::MOBIKWIK,
-        Wallet::PAYUMONEY
+        Wallet::PAYUMONEY,
     );
 
     const TOPUP_GATEWAYS = array(
@@ -51,6 +52,7 @@ class Gateway
         self::AXIS_GENIUS       => Settlement\Channel::KOTAK,
         self::AXIS_MIGS         => Settlement\Channel::KOTAK,
         self::BILLDESK          => Settlement\Channel::KOTAK,
+        self::EBS               => Settlement\Channel::KOTAK,
         self::HDFC              => Settlement\Channel::KOTAK,
         self::KOTAK             => Settlement\Channel::KOTAK,
         self::MOBIKWIK          => Settlement\Channel::KOTAK,
@@ -61,6 +63,7 @@ class Gateway
         self::NETBANKING_KOTAK  => Settlement\Channel::KOTAK,
         self::WALLET_PAYZAPP    => Settlement\Channel::KOTAK,
         self::WALLET_PAYUMONEY  => Settlement\Channel::KOTAK,
+        self::WALLET_OLAMONEY   => Settlement\Channel::KOTAK,
         self::CYBERSOURCE       => Settlement\Channel::KOTAK,
     );
 
@@ -85,6 +88,7 @@ class Gateway
         Method::NETBANKING => array(
             self::PAYTM,
             self::BILLDESK,
+            self::EBS,
             self::NETBANKING_HDFC,
             self::NETBANKING_KOTAK,
             self::SBIEPAY,
@@ -93,6 +97,7 @@ class Gateway
         Method::WALLET => array(
             self::MOBIKWIK,
             self::PAYTM,
+            self::WALLET_OLAMONEY,
             self::WALLET_PAYZAPP,
             self::WALLET_PAYUMONEY,
         ),
@@ -162,6 +167,7 @@ class Gateway
     );
 
     public static $walletToGatewayMap = array(
+        Wallet::OLAMONEY    => Gateway::WALLET_OLAMONEY,
         Wallet::PAYTM       => Gateway::PAYTM,
         Wallet::MOBIKWIK    => Gateway::MOBIKWIK,
         Wallet::PAYZAPP     => Gateway::WALLET_PAYZAPP,
@@ -177,6 +183,7 @@ class Gateway
     public static $verifyEnabled = array(
         self::AXIS_MIGS,
         self::BILLDESK,
+        self::EBS,
         self::MOBIKWIK,
         self::PAYTM,
         self::HDFC,
@@ -193,7 +200,8 @@ class Gateway
      * @var array
      */
     public static $s2sCallbackGateways = array(
-        Gateway::BILLDESK);
+        Gateway::BILLDESK,
+        Gateway::WALLET_OLAMONEY);
 
     /**
      * Card gateways which support international payments
@@ -305,6 +313,7 @@ class Gateway
      */
     public static $netbankingGateways = array(
         Gateway::BILLDESK,
+        Gateway::EBS,
         Gateway::SBIEPAY,
         Gateway::PAYTM,
         Gateway::ATOM);
@@ -315,7 +324,8 @@ class Gateway
      * @var array
      */
     public static $directNetbankingGateways = array(
-        Gateway::BILLDESK);
+        Gateway::BILLDESK,
+        Gateway::EBS);
 
     /**
      * Gateways which support netbanking in test mode
@@ -333,16 +343,13 @@ class Gateway
         IFSC::HDFC,
         IFSC::KKBK,
         IFSC::UTIB,
+        IFSC::INDB,
     );
 
     public static $emiBanksUsingCardTerminals = array(
         IFSC::KKBK,
         IFSC::UTIB,
-    );
-
-    public static $emiFileBanks = array(
-        self::KOTAK     => IFSC::KKBK,
-        self::AXIS      => IFSC::UTIB,
+        IFSC::INDB,
     );
 
     public static $emiBankToGatewayMap = array(
