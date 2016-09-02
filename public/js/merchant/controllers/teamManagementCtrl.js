@@ -12,20 +12,47 @@ app.controller('TeamManagementCtrl', [
 
     $scope.roles = ['owner', 'manager', 'operations', 'finance'];
 
-    $scope.team = {};
+    $scope.team = {
+      role: 'manager'
+    };
 
     $scope.roleOptions = [
       { name: 'Manager', id: 'manager' },
-      { name: 'Operations', id: 'operations' },
-      { name: 'Finance', id: 'finance' }
     ];
+
+    var errorHandler = function(data, msg) {
+      if (typeof data !== 'undefined') {
+        $scope.alerts.resetAlerts();
+        if(data.errors) {
+          angular.forEach(data.errors, function (value) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+        else {
+          if (typeof msg === 'string') {
+            $scope.alerts.addAlert('danger', msg);
+          }
+          else {
+            $scope.alerts.addAlert('danger', null);
+          }
+        }
+      }
+      else {
+        $scope.alerts.addAlert('danger', null, true);
+      }
+    };
 
     user.identity(true).then(function(data) {
       $scope.merchant = data;
-      if (data.tags.indexOf('Roles') == -1) {
-        $scope.roleOptions = [
-          { name: 'Manager', id: 'manager' },
-        ];
+
+      $scope.rolesSupport = (data.tags.indexOf('Roles') > -1);
+
+      // Merchant has roles enabled, give them extra roles!
+      if ($scope.rolesSupport) {
+        $scope.roleOptions = $scope.roleOptions.concat([
+          { name: 'Operations', id: 'operations' },
+          { name: 'Finance', id: 'finance' }
+        ]);
       }
     });
 
@@ -37,10 +64,11 @@ app.controller('TeamManagementCtrl', [
           $scope.users = data.data.users;
           $scope.invitations = data.data.invitations;
         }
+        else {
+          errorHandler(data, 'Error getting list of team members');
+        }
       })
-      .error(function () {
-        $scope.alerts.addAlert('danger', null, true);
-      });
+      .error(errorHandler);
     };
 
     $scope.updateTeamMember = function (user){
@@ -55,19 +83,9 @@ app.controller('TeamManagementCtrl', [
           $scope.alerts.addAlert('success', "Team member's role has been changed successfully", true);
           $scope.getTeamMembers();
         } else {
-          $scope.alerts.resetAlerts();
-          if(data.errors)
-          {
-            angular.forEach(data.errors, function (value) {
-              $scope.alerts.addAlert('danger', value);
-            });
-          }
-          else
-            $scope.alerts.addAlert('danger', "There was an error in changing the team member's role");
+          errorHandler(data);
         }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
-      });
+      }).error(errorHandler);
     };
 
     $scope.removeTeamMember = function (user){
@@ -81,14 +99,9 @@ app.controller('TeamManagementCtrl', [
           $scope.alerts.addAlert('success', "Team member has been removed successfully.", true);
           $scope.getTeamMembers();
         } else {
-          $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value) {
-            $scope.alerts.addAlert('danger', value);
-          });
+          errorHandler(data);
         }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
-      });
+      }).error(errorHandler);
     };
 
     $scope.updateInvitation = function (invite){
@@ -103,14 +116,9 @@ app.controller('TeamManagementCtrl', [
           $scope.alerts.addAlert('success', "Team member's role has been changed successfully", true);
           $scope.getTeamMembers();
         } else {
-          $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value) {
-            $scope.alerts.addAlert('danger', value);
-          });
+          errorHandler(data);
         }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
-      });
+      }).error(errorHandler);
     };
 
     $scope.removeInvitation = function (invite){
@@ -124,14 +132,9 @@ app.controller('TeamManagementCtrl', [
           $scope.alerts.addAlert('success', "Team member's invitation has been removed successfully", true);
           $scope.getTeamMembers();
         } else {
-          $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value) {
-            $scope.alerts.addAlert('danger', value);
-          });
+          errorHandler(data);
         }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
-      });
+      }).error(errorHandler);
     };
 
     $scope.resendInvitation = function(invite) {
@@ -145,19 +148,16 @@ app.controller('TeamManagementCtrl', [
             .addAlert('success', 'Invitation has been successfully resent to ' + invite.email, true);
           $scope.getTeamMembers();
         } else {
-          $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value) {
-            $scope.alerts.addAlert('danger', value);
-          });
+          errorHandler(data);
         }
       })
-      .error(function () {
-        $scope.alerts.addAlert('danger', null, true);
-      });
+      .error(errorHandler);
 
     };
 
     $scope.sendInvitation = function() {
+
+      console.log($scope.team);
 
       var request = $http({
         method: 'post',
@@ -175,15 +175,10 @@ app.controller('TeamManagementCtrl', [
           $scope.team.email = '';
           $scope.getTeamMembers();
         } else {
-          $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value) {
-            $scope.alerts.addAlert('danger', value);
-          });
+          errorHandler(data);
         }
       })
-      .error(function () {
-        $scope.alerts.addAlert('danger', null, true);
-      });
+      .error(errorHandler);
 
     };
   }

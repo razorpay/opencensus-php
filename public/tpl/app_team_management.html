@@ -18,7 +18,10 @@
           <input type="text" class="form-control" id="description" name="description" ng-model="team.email" placeholder="Email address of the user" tooltip-placement="right" tooltip="Email Address" required>
         </div>
         <div class="m-b col-sm-4">
-          <select class="form-control" name="role" ng-model="team.role" tooltip-placement="right" tooltip="User Role" required ng-init="team.role=roleOptions[0].id"><option ng-repeat="role in roleOptions" value="{{role.id}}">{{role.name}}</option>
+          <select class="form-control" name="role" required
+            tooltip-placement="right" tooltip="User Role"
+            ng-model="team.role" ng-options="role.id as role.name for role in roleOptions"
+          >
           </select>
         </div>
       </div>
@@ -32,12 +35,12 @@
         <div class="row" ng-repeat="user in users" ng-show="user.email !== merchant.email">
           <div class="m-b col-sm-3">{{ user.email }}</div>
           <div class="m-b col-sm-3">{{ user.name }}</div>
-          <div class="m-b col-sm-3">
+          <div class="m-b col-sm-3" ng-show="rolesSupport">
             <select ng-model="user.pivot.role" ng-options="role.id as role.name for role in roleOptions" class="form-control" required>
             </select>
           </div>
           <div class="m-b col-sm-2" ng-show="user.email !== merchant.email">
-            <button class="btn btn-sm btn-success" ng-click="updateTeamMember(user)">Update</button>
+            <button class="btn btn-sm btn-success" ng-click="updateTeamMember(user)" ng-show="rolesSupport">Update</button>
             <button class="btn btn-sm btn-danger" ng-click="removeTeamMember(user)">
               Remove
             </button>
