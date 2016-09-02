@@ -80,8 +80,6 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerValidatorResolver();
 
         $this->registerQueueableEntityResolver();
-
-        $this->registerRequestGetIdMacro();
     }
 
     /**
@@ -124,19 +122,6 @@ class ApiServiceProvider extends BaseServiceProvider
         {
             return new \RZP\Models\Base\ExtendedValidations(
                             $translator, $data, $rules, $messages);
-        });
-    }
-
-    protected function registerRequestGetIdMacro()
-    {
-        $this->app['request']->macro('getId', function()
-        {
-            if ($this->requestId === null)
-            {
-                $this->requestId = bin2hex(openssl_random_pseudo_bytes(16));
-            }
-
-            return $this->requestId;
         });
     }
 
