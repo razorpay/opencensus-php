@@ -547,10 +547,9 @@ trait Authorize
                 'token' => $input[Payment\Entity::TOKEN]
             ]);
 
-        // Token should definitely exist in database.
-        $token = $this->repo->token->getByTokenAndCustomerId(
-            $input[Payment\Entity::TOKEN],
-            $customer->getId());
+        $tokenId = $input[Payment\Entity::TOKEN];
+
+        $token = (new Token\Core)->getByTokenAndCustomer($tokenId, $customer);
 
         if ($payment->isMethodCardOrEmi())
         {
@@ -571,9 +570,9 @@ trait Authorize
             ]);
 
         // Token should definitely exist in database.
-        $token = $this->repo->token->getByTokenAndCustomerId(
-            $input[Payment\Entity::TOKEN],
-            $customer->getId());
+        $tokenId = $input[Payment\Entity::TOKEN];
+
+        $token = (new Token\Core)->getByTokenAndCustomer($tokenId, $customer);
 
         if ($payment->isMethodCardOrEmi())
         {

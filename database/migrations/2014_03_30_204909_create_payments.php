@@ -89,10 +89,10 @@ class CreatePayments  extends Migration
             $table->string(Payment::APP_TOKEN, 14)
                   ->nullable();
 
-            $table->string(Payment::TOKEN, 14)
+            $table->string(Payment::TOKEN, 20)
                   ->nullable();
 
-            $table->string(Payment::GLOBAL_TOKEN, 14)
+            $table->string(Payment::GLOBAL_TOKEN, 20)
                   ->nullable();
 
             $table->string(Payment::EMAIL, 255)
@@ -147,7 +147,7 @@ class CreatePayments  extends Migration
 
             $table->boolean(Payment::SAVE)
                   ->default(0);
-            
+
             $table->boolean(Payment::LATE_AUTHORIZED)
                   ->nullable();
 
