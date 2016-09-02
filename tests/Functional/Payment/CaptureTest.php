@@ -2,10 +2,12 @@
 
 namespace RZP\Tests\Functional\Payment;
 
+use Redis;
 use Carbon\Carbon;
 use Mockery;
 use Dashboard\Payment;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 /**
@@ -59,6 +61,22 @@ class CaptureTest extends TestCase
         $this->payment = $payment;
 
         $this->startTest();
+    }
+
+    public function testDuplicateCaptureRequest()
+    {
+        $payment = $this->defaultAuthPayment();
+
+        Redis::shouldReceive('set')
+            ->once()
+            ->andReturn('');
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->capturePayment($payment['id'], $payment['amount']);
+        });
     }
 
     public function testCaptureWithDifferentAmount()

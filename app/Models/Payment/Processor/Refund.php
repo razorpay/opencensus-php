@@ -58,7 +58,7 @@ trait Refund
         if (($payment->getTransactionId() !== null) or
             ($payment->isAuthorized() === false))
         {
-            $this->callGatewayForRefund($data);
+            $this->refundOnGateway($data);
         }
 
         $this->recordRefund();
@@ -315,10 +315,12 @@ trait Refund
         return $manualGatewayRefundResult;
     }
 
-    protected function callGatewayForRefund($data)
+    protected function refundOnGateway($data)
     {
         try
         {
+            $this->acquireLockOnPayment($this->payment);
+
             $this->callGatewayFunction(Payment\Action::REFUND, $data);
         }
         catch (Exception\BaseException $e)
@@ -328,6 +330,10 @@ trait Refund
                     TraceCode::PAYMENT_REFUND_FAILURE);
 
             throw $e;
+        }
+        finally
+        {
+            $this->releaseLockOnPayment($this->payment);
         }
     }
 
