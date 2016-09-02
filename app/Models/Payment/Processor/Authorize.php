@@ -1090,7 +1090,7 @@ trait Authorize
             // Create log
             (new Analytics\Service)->createAuditLog($log);
         }
-        catch (Exception\BaseException $e)
+        catch (\Exception $e)
         {
             $this->trace->error(
                 TraceCode::PAYMENT_ANALYTICS_SAVE_FAILED,
