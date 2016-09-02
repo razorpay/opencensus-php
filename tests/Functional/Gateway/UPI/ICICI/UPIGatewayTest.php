@@ -26,6 +26,21 @@ class UPIGatewayTest extends TestCase
 
     public function testPayment()
     {
-        $this->doAuthPayment($this->payment);
+        $res = $this->doAuthPayment($this->payment);
+        $paymentId = $res['payment_id'];
+
+        // Co Proto must be working
+        $this->assertEquals('async', $res['type']);
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('created', $payment['status']);
+
+        $upiEntity = $this->getLastEntity('upi_icici', true);
+
+        $this->assertNotNull($upiEntity);
+
+        return [$payment, $upiEntity];
     }
 }

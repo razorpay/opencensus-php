@@ -815,6 +815,11 @@ trait Authorize
 
     protected function getPaymentGatewayRequestData($request, $payment)
     {
+        if (Payment\Gateway::supportsAsync($payment->getGateway()))
+        {
+            return $this->getAsyncPaymentCreatedResponse($payment);
+        }
+
         $data['type'] = 'first';
 
         $data['request'] = $request;
@@ -832,6 +837,19 @@ trait Authorize
         $data['image'] = $payment->merchant->getFullLogoUrlWithSize(Merchant\Logo::MEDIUM_SIZE);
 
         return $data;
+    }
+
+    /**
+     * @see  CoProto supports async payments https://github.com/razorpay/api/wiki/COPROTO
+     * @return array payment response
+     */
+    protected function getAsyncPaymentCreatedResponse(Payment\Entity $payment)
+    {
+        return [
+            'type'          =>  'async',
+            'version'       =>  1,
+            'payment_id'    =>  $payment->getPublicId(),
+        ];
     }
 
     protected function updateAndNotifyPaymentAuthorized($wasFailed = false)

@@ -129,6 +129,18 @@ class Gateway
         self::CYBERSOURCE => [],
     );
 
+
+    /**
+     * For async gateways, we mark the payment as created and return
+     * the response immediately. The payment is authorized over a webhook
+     * or some other async medium. Checkout currently long-polls for
+     * the payment to be authorized.
+     * @var array
+     */
+    public static $asynchronous = array(
+        self::UPI_ICICI
+    );
+
     /**
      * Each card gateway only support specific card networks.
      * This maintains a map of gateway to card network which
@@ -416,7 +428,7 @@ class Gateway
     {
         $arrayKeys = array_keys(self::$authAndCapture);
 
-        $supportsAuthAndCapture = in_array($gateway, $arrayKeys);
+        $supportsAuthAndCapture = in_array($gateway, $arrayKeys, true);
 
         if ($supportsAuthAndCapture === false)
         {
@@ -433,6 +445,16 @@ class Gateway
                 return self::supportsAuthAndCaptureForNetwork($gateway, $networkCode);
             }
         }
+    }
+
+    /**
+     * Whether the gateway supports async payments
+     * @param  string $gateway
+     * @return boolean
+     */
+    public static function supportsAsync($gateway)
+    {
+        return in_array($gateway, self::$asynchronous, true);
     }
 
     public static function supportsAuthAndCaptureForNetwork($gateway, $networkCode)

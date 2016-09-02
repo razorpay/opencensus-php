@@ -97,6 +97,8 @@ class Gateway extends Base\Gateway
                 $status,
                 ResponseMap::getResponseMessage($status));
         }
+
+        return true;
     }
 
     /**
