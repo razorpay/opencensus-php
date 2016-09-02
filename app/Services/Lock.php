@@ -14,6 +14,10 @@ use Request;
  */
 class Lock
 {
+    protected $requestId;
+
+    protected $redis;
+
     public function __construct($app)
     {
         $this->requestId = $app['request']->getId();

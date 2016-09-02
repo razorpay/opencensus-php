@@ -9,7 +9,6 @@ use RZP\Models\Transaction;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Models\Base\Lock;
 
 trait Capture
 {

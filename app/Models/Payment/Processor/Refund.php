@@ -16,7 +16,6 @@ use Request;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Hdfc;
-use RZP\Models\Base\Lock;
 
 trait Refund
 {

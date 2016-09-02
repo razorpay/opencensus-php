@@ -65,6 +65,7 @@ class Processor
     protected $orderRepo;
     protected $paymentRepo;
     protected $app;
+    protected $lock;
     protected $request;
     protected $methods;
     protected $refund;
