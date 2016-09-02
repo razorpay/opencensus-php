@@ -1085,7 +1085,7 @@ trait Authorize
             $this->recordTerminalAudit($rawData, $log);
 
             // 2. Record payment actions
-            Analytics\Parser::recordPaymentRequestData($rawData, $log);
+            (new Analytics\Parser)->recordPaymentRequestData($rawData, $log);
 
             // Create log
             (new Analytics\Service)->createAuditLog($log);

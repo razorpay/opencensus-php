@@ -2,15 +2,14 @@
 
 namespace RZP\Models\Payment\Analytics;
 
-use App;
-
 use RZP\Exception;
 use RZP\Http\RequestHeader;
+use RZP\Models\Base;
 use RZP\Models\Payment\Analytics;
 use RZP\Models\Payment\Analytics\Metadata;
 use RZP\Trace\TraceCode;
 
-class Parser
+class Parser extends Base\Core
 {
     private static $setKeys = [
         Entity::CHECKOUT_ID,
@@ -29,29 +28,27 @@ class Parser
         Entity::DEVICE,
     ];
 
-    public static function recordPaymentRequestData($rawData, array & $log)
+    public function recordPaymentRequestData($rawData, array & $log)
     {
         // get data from request
-        self::setHttpRequestData($log);
+        $this->setHttpRequestData($log);
 
-        $metadata = self::getCheckoutMetadata($rawData);
+        $metadata = $this->getCheckoutMetadata($rawData);
 
         if ($metadata !== null)
         {
-            self::setLogFromMetadata($metadata, $log);
+            $this->setLogFromMetadata($metadata, $log);
 
-            self::setLogAttempts($metadata, $log);
+            $this->setLogAttempts($metadata, $log);
 
-            self::updateLogFromMetadata($metadata, $log);
+            $this->updateLogFromMetadata($metadata, $log);
         }
     }
 
-    protected static function setHttpRequestData(array & $log)
+    protected function setHttpRequestData(array & $log)
     {
         // get user-agent service
-        $app = App::getFacadeRoot();
-
-        $uAgent = $app['agent'];
+        $uAgent = $this->app['agent'];
 
         $log[Entity::BROWSER] = $uAgent->browser();
 
@@ -64,10 +61,10 @@ class Parser
 
         $log[Entity::OS_VERSION] = $uAgent->version($uAgent->platform());
 
-        $log[Entity::DEVICE] = self::getDeviceValue($uAgent);
+        $log[Entity::DEVICE] = $this->getDeviceValue($uAgent);
 
         // get the HTTP request
-        $request = $app['request'];
+        $request = $this->app['request'];
 
         $log[Entity::IP] = $request->ip();
 
@@ -82,10 +79,8 @@ class Parser
         }
     }
 
-    protected static function getCheckoutMetadata($rawData)
+    protected function getCheckoutMetadata($rawData)
     {
-        $app = App::getFacadeRoot();
-
         // get data from frontend
         if ((isset($rawData['input']) === false) or
             (isset($rawData['input']['_']) === false))
@@ -95,7 +90,7 @@ class Parser
 
         $metadata = $rawData['input']['_'];
 
-        $app['trace']->info(
+        $this->trace->info(
             TraceCode::PAYMENT_METADATA,
             [
                 'metadata'   => $metadata,
@@ -106,7 +101,7 @@ class Parser
     }
 
     // set analytics data from metadata
-    protected static function setLogFromMetadata($metadata, & $log)
+    protected function setLogFromMetadata($metadata, & $log)
     {
         foreach (self::$setKeys as $key)
         {
@@ -117,7 +112,7 @@ class Parser
         }
     }
 
-    protected static function setLogAttempts($metadata, & $log)
+    protected function setLogAttempts($metadata, & $log)
     {
         if (isset($metadata[Entity::CHECKOUT_ID]) === false)
         {
@@ -126,13 +121,11 @@ class Parser
 
         $checkoutId = $metadata[Entity::CHECKOUT_ID];
 
-        $log[Entity::ATTEMPTS] = self::calculatePaymentAttempts($checkoutId);
+        $log[Entity::ATTEMPTS] = $this->calculatePaymentAttempts($checkoutId);
     }
 
-    protected static function updateLogFromMetadata($metadata, & $log)
+    protected function updateLogFromMetadata($metadata, & $log)
     {
-        $app = App::getFacadeRoot();
-
         $anomalies = [];
 
         // Give preference to value passed from frontend over that parsed from user-agent
@@ -142,7 +135,7 @@ class Parser
                 (isset($log[$key]) === true))
             {
                 // collect anomalies
-                self::collectMismatch($log[$key], $metadata[$key], $key, $anomalies);
+                $this->collectMismatch($log[$key], $metadata[$key], $key, $anomalies);
 
                 $log[$key] = $metadata[$key];
             }
@@ -151,15 +144,13 @@ class Parser
         // log anomalies
         if (empty($anomalies) === false)
         {
-            $app['trace']->info(TraceCode::PAYMENT_USER_AGENT_ANOMALY, $anomalies);
+            $this->trace->info(TraceCode::PAYMENT_USER_AGENT_ANOMALY, $anomalies);
         }
     }
 
-    protected static function calculatePaymentAttempts($checkoutId)
+    protected function calculatePaymentAttempts($checkoutId)
     {
-        $app = App::getFacadeRoot();
-
-        $oldPayments = $app['repo']->payment_analytics->getRecentMerchantPaymentsForCheckoutId($checkoutId);
+        $oldPayments = $this->repo->payment_analytics->getRecentMerchantPaymentsForCheckoutId($checkoutId);
 
         $oldPaymentsGroupedByPaymentId = $oldPayments->groupBy(Entity::PAYMENT_ID);
 
@@ -168,7 +159,7 @@ class Parser
         if (($count > 0) and
             ($count !== $oldPayments->first()->getAttempts()))
         {
-            $app['trace']->warning(
+            $this->trace->warning(
                 TraceCode::PAYMENT_CHECKOUT_INVALID_ID,
                 [
                     'checkout_id' => $checkoutId
@@ -187,7 +178,7 @@ class Parser
      * @param string $valueFromUserAgent
      * @param string $dataPoint
      */
-    protected static function collectMismatch($checkoutValue, $userAgentValue,
+    protected function collectMismatch($checkoutValue, $userAgentValue,
         $dataPoint, array & $anomalies)
     {
         if (strcasecmp($checkoutValue, $userAgentValue) !== 0)
@@ -199,7 +190,7 @@ class Parser
         }
     }
 
-    protected static function getDeviceValue($uAgent)
+    protected function getDeviceValue($uAgent)
     {
         $device = null;
 
