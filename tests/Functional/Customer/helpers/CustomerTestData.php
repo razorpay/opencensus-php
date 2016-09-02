@@ -251,14 +251,8 @@ return [
             'url' => '/customers/cust_100000customer/tokens',
             'method' => 'post',
             'content' => [
-                'method' => 'card',
-                'card' => [
-                    'number' => '4111111111111111',
-                    'expiry_month' => '11',
-                    'expiry_year'  => '21',
-                    'name' => 'test',
-                    'cvv' => '222',
-                ],
+                'method'  => 'card',
+                'card_id' => '10000savedcard',
             ],
         ],
         'response' => [

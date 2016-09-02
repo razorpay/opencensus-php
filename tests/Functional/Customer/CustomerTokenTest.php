@@ -24,27 +24,23 @@ class CustomerTokenTest extends TestCase
 
     public function testAddCustomerTokenCard()
     {
-        $this->ba->proxyAuth();
+        $this->fixtures->create('card', ['id' => '10000savedcard']);
 
-        $this->mockTokenex();
+        $this->ba->proxyAuth();
 
         $this->startTest();
     }
 
     public function testAddCustomerTokenWallet()
     {
-        $this->markTestSkipped();
-
-        $this->ba->appAuth();
+        $this->ba->proxyAuth();
 
         $this->startTest();
     }
 
     public function testAddCustomerTokenNetbanking()
     {
-        $this->markTestSkipped();
-
-        $this->ba->appAuth();
+        $this->ba->proxyAuth();
 
         $this->startTest();
     }
