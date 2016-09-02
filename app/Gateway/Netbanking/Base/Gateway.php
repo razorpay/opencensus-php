@@ -7,6 +7,8 @@ use RZP\Gateway\Base\Action;
 
 class Gateway extends \RZP\Gateway\Base\Gateway
 {
+    protected $gateway = 'netbanking';
+
     protected function createGatewayPaymentEntity($attributes)
     {
         $attr = $this->getMappedAttributes($attributes);
@@ -49,8 +51,10 @@ class Gateway extends \RZP\Gateway\Base\Gateway
         return $attr;
     }
 
-    protected function getRepo()
+    protected function getRepository()
     {
-        return new Repository();
+        $gateway = 'netbanking';
+
+        return $this->app['repo']->$gateway;
     }
 }
