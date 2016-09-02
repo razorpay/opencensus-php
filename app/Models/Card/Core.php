@@ -71,8 +71,10 @@ class Core extends Base\Core
 
         return array_merge(
             $card->toArray(),
-            ['number' => $input['number'],
-             'cvv' => $input['cvv']]);
+            [
+                'number' => $input['number'],
+                'cvv' => $input['cvv']
+            ]);
     }
 
     public function createDuplicateCard($input, $merchant)

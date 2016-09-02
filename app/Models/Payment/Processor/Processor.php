@@ -4,7 +4,6 @@ namespace RZP\Models\Payment\Processor;
 
 use App;
 use BasicAuth;
-use Request;
 
 use RZP\Constants\Mode;
 use RZP\Dashboard\Dashboard;
@@ -38,6 +37,12 @@ class Processor
      * BAD_REQUEST_PAYMENT_ALREADY_PROCESSED payment_processed error.
      */
     const CALLBACK_PROCESS_AGAIN_DURATION = 20;
+
+    /**
+     * Number of days after which authorized payments
+     * are auto-refunded
+     */
+    const AUTO_REFUND_TIME_PERIOD = 5;
 
     /**
      * If payment fails on gateway then we may retry it with a different terminal/gateway.
@@ -179,8 +184,6 @@ class Processor
         }
 
         $this->verifySignature($input, $payment);
-
-        return true;
     }
 
     protected function verifySignature($input, $payment)
@@ -191,9 +194,7 @@ class Processor
             'merchant_order_id' => $payment->getNotes()['merchant_order_id'],
         );
 
-        $str = implode('|', $data);
-
-        $signature = $this->getSignature($str);
+        $signature = $this->getSignature($data);
 
         // use hash_equals to prevent timing attacks
         if (! hash_equals($signature, $input['signature']))
@@ -205,8 +206,12 @@ class Processor
         return true;
     }
 
-    protected function getSignature($str)
+    protected function getSignature(array $data)
     {
+        ksort($data);
+
+        $str = implode('|', $data);
+
         return $this->app['basicauth']->sign($str);
     }
 
@@ -662,6 +667,27 @@ class Processor
         $merchant->setRelation('bankAccount', $ba);
 
         return $ba;
+    }
+
+    protected function shouldAutoCapture($payment)
+    {
+        if ($payment->isLateAuthorized() === false)
+        {
+            // If payment is signed
+            if ($payment->isSigned() === true)
+            {
+                return true;
+            }
+
+            // If payment order was marked as auto capture
+            if (($payment->order !== null) and
+                ($payment->order->getPaymentCapture() === true))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     protected function createOrUpdateToken($input, $data)

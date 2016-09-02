@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Customer;
 
+use App;
 use RZP\Models\Base;
 use RZP\Models\Customer\Entity;
 use libphonenumber\PhoneNumberFormat;
@@ -42,7 +43,7 @@ class Validator extends Base\Validator
     {
         (new static)->validateInput('contact', ['contact' => $contact]);
 
-        $app = \App::getFacadeRoot();
+        $app = App::getFacadeRoot();
 
         $phoneNumberLib = $app['libphonenumber'];
 

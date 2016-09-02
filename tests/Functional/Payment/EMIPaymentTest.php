@@ -102,7 +102,7 @@ class EmiPaymentTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals(count($content), 2);
+        $this->assertEquals(count($content), 3);
         $this->assertEquals(File::exists($this->zipFileName($content['KKBK'])), true);
         $this->assertEquals(File::exists($this->zipFileName($content['UTIB'])), true);
 

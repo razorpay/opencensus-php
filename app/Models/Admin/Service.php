@@ -13,6 +13,8 @@ class Service extends Base\Service
 {
     public function fetchEntityById($entity, $id)
     {
+        Entity::validateEntityOrFailPublic($entity);
+
         $entityClass = Entity::getEntityClass($entity);
 
         $id = $entityClass::verifyIdAndSilentlyStripSign($id);
@@ -26,6 +28,8 @@ class Service extends Base\Service
 
     public function fetchMultipleEntities($entity, $input)
     {
+        Entity::validateEntityOrFailPublic($entity);
+
         $repo = Entity::getEntityRepository($entity);
 
         $repo = new $repo;

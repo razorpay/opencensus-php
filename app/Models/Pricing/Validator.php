@@ -6,6 +6,7 @@ use RZP\Models\Base;
 use RZP\Models\Card\Network;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Processor\Wallet;
+use RZP\Models\Pricing;
 use RZP\Models\Bank\IFSC;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -14,9 +15,10 @@ use RZP\Error\PublicErrorDescription;
 class Validator extends Base\Validator
 {
     protected static $addPlanRuleRules = array(
+        Entity::FEATURE             => 'sometimes|alpha',
         Entity::GATEWAY             => 'sometimes|',
         Entity::PLAN_NAME           => 'sometimes|',
-        Entity::PAYMENT_METHOD      => 'required|alpha|in:card,netbanking,wallet,emi',
+        Entity::PAYMENT_METHOD      => 'required|alpha',
         Entity::PAYMENT_METHOD_TYPE => 'sometimes_if:payment_method,card|in:debit,credit',
         Entity::PAYMENT_NETWORK     => 'sometimes|alpha',
         Entity::PAYMENT_ISSUER      => 'sometimes_if:payment_method,card|alpha|max:10',
@@ -32,10 +34,42 @@ class Validator extends Base\Validator
         'addPlanRuleNB',
         'addPlanRulePaymentNetwork',
         'addPlanRuleInternational',
-        'addPlanRuleAmountRange');
+        'addPlanRuleAmountRange',
+        'addPlanRuleFeature',
+        'addPlanRulePricingMethod');
 
     protected static $createPlanRules = array(
         Entity::PLAN_NAME => 'required|alpha_num|max:20');
+
+    protected function validateAddPlanRuleFeature($input)
+    {
+        if (empty($input[Pricing\Entity::FEATURE]))
+        {
+            return;
+        }
+
+        Pricing\Feature::validateFeature($input[Pricing\Entity::FEATURE]);
+    }
+
+    protected function validateAddPlanRulePricingMethod($input)
+    {
+        $feature = Pricing\Feature::PAYMENT;
+
+        if (empty($input[Pricing\Entity::FEATURE]) === false)
+        {
+            $feature = $input[Pricing\Entity::FEATURE];
+        }
+
+        if ($feature === Pricing\Feature::PAYMENT)
+        {
+            Payment\Method::validateMethod($input[Pricing\Entity::PAYMENT_METHOD]);
+        }
+
+        if ($feature === Pricing\FEATURE::PAYOUT)
+        {
+            //add payout validator
+        }
+    }
 
     protected function validateAddPlanRuleNB($input)
     {
