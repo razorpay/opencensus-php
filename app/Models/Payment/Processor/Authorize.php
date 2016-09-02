@@ -157,23 +157,17 @@ trait Authorize
     protected function logAndCheckForAuthRetry($e, $payment)
     {
         $traceData = array(
-            'errorcode' => $e->getCode(),
-            'message' => $e->getMessage(),
-            'payment_id' => $payment->getId(),
-            'terminal_id' => $payment->terminal->getId()
+            'errorcode'     => $e->getCode(),
+            'message'       => $e->getMessage(),
+            'payment_id'    => $payment->getId(),
+            'terminal_id'   => $payment->terminal->getId()
         );
 
-        $this->trace->info(
-            TraceCode::TERMINAL_FAILURE, $traceData);
+        $this->trace->info(TraceCode::TERMINAL_FAILURE, $traceData);
 
         // retry only if it is safe to do so
-        if ((property_exists($e, 'safeRetry') === true) and
-            ($e->safeRetry === true))
-        {
-            return true;
-        }
-
-        return false;
+        return ((property_exists($e, 'safeRetry') === true) and
+                ($e->safeRetry === true));
     }
 
     protected function updatePaymentAuthFailedAndThrowException($e)
