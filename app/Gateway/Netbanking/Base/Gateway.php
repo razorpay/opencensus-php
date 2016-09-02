@@ -7,8 +7,6 @@ use RZP\Gateway\Base\Action;
 
 class Gateway extends \RZP\Gateway\Base\Gateway
 {
-    protected $gateway = 'netbanking';
-
     protected function createGatewayPaymentEntity($attributes)
     {
         $attr = $this->getMappedAttributes($attributes);
