@@ -6,8 +6,6 @@ class ResponseHeader
 {
     const PRAGMA                        = 'Pragma';
     const EXPIRES                       = 'Expires';
-    const REFERER                       = 'referer';
-    const USER_AGENT                    = 'user-agent';
     const REMOTE_ADDR                   = 'remote-addr';
     const CONTENT_TYPE                  = 'content-type';
     const CACHE_CONTROL                 = 'Cache-Control';
