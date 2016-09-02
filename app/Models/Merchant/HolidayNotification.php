@@ -61,69 +61,64 @@ class HolidayNotification
     {
         list($msg, $holidays) = $this->getHolidayNotificationMsg($input);
 
-        $tomorrow = Carbon::tomorrow('Asia/Kolkata');
+        $mailer = new Newsletter(
+            'Notification of Bank Holiday',
+            $msg,
+            'holiday_notification');
 
-        if (empty($errors))
+        // Handle based on action
+        switch ($input['action'])
         {
-            $mailer = new Newsletter(
-                $input['lists'],
-                'Notification of Bank Holiday',
-                $msg,
-                'holiday_notification');
+            // Action to send test email to one email id
+            case self::TEST_EMAIL:
+                // Set the email to which test email is to be sent.
+                $mailer->setTestEmail($input['lists']);
 
-            // Handle based on action
-            switch ($input['action'])
-            {
-                // Action to send test email to one email id
-                case self::TEST_EMAIL:
-                    // Set the email to which test email is to be sent.
-                    $mailer->setTestEmail($input['lists']);
-                    break;
+                $msg = $mailer->send();
+                break;
 
-                // Action to add email ids to mailing list
-                case self::ADD_TO_LIST:
-                    // Set the mailer to add the members to mailing list
-                    $mailer->setTestListMembersAdd();
+            // Action to add email ids to mailing list
+            case self::ADD_TO_LIST:
+                $mailer->setRecipient($input['lists']);
 
-                    // Set the mailing list name.
-                    $mailer->setMailingListName($input['lists']);
-                    break;
+                // Set the mailer to add the members to mailing list
+                $mailer->setTestListMembersAdd();
 
-                // Action to send the email to mailing list
-                case self::EMAIL:
-                    // Adds logic to send only on specific days
-                    $isMailToBeSent = $this->isMailToBeSent();
+                // Set the mailing list name.
+                $mailer->setMailingListName($input['lists']);
 
-                    if ($isMailToBeSent['send'] === false)
-                    {
-                        return ['message' => $isMailToBeSent['message']];
-                    }
+                $msg = $mailer->send();
+                break;
 
-                    // Send a notification to slack
-                    $this->notifySettlementsChannel($holidays);
+            // Action to send the email to mailing list
+            case self::EMAIL:
+                $mailer->setRecipient($input['lists']);
 
-                    // Set the mailing list name.
-                    $mailer->setMailingListName($input['lists']);
-                    break;
+                // Adds logic to send only on specific days
+                list($send, $returnMessage) = $this->isMailToBeSent();
 
-                default:
-                    return ['message' => 'No Appropriate action has been set. Nothing done.'];
-                    break;
-            }
+                if ($send === false)
+                {
+                    $msg = ['message' => $returnMessage];
+                }
+                else
+                {
+                    $msg = $this->sendEmail($mailer, $holidays, $input['lists']);
+                }
+                break;
 
-            return $mailer->send();
-        }
-        else
-        {
-            return $errors;
+            default:
+                $msg = ['message' => 'No Appropriate action has been set. Nothing done.'];
+                break;
         }
 
+        return $msg;
     }
 
     /**
      * Adding more rules for when a mail is to be sent
      *
-     * 0) This check is only applicable for live mode
+     * 0) Mails are to be sent in test mode, check only in live
      * 1) Mails are to be sent only on a working day
      * 2) Mails are to be sent for series of holidays.
      */
@@ -131,28 +126,29 @@ class HolidayNotification
     {
         $today = Carbon::today('Asia/Kolkata');
 
-        if ($this->mode === Mode::LIVE)
+        if ($this->mode === Mode::TEST)
         {
-            // Mails not to sent on holidays
-            if (Holidays::isWorkingDay($today) === false)
-            {
-                return ['send' => false, 'message' => 'Not a working day today. Nothing to send.'];
-            }
-
-            // Get Next working day that is not a bank holiday
-            $ignoreBankHolidays = true;
-            $nextWorkingDay = Holidays::getNextWorkingDay($today, $ignoreBankHolidays);
-
-            // Ensure if that is a settlement holiday then send mail
-            if (Holidays::isSpecifiedBankHoliday($nextWorkingDay) === true)
-            {
-                return ['send' => true, 'message' => 'Next non `settlement holiday` working day is a bank holiday. Mail to be sent.'];
-            }
-
-            return ['send' => false, 'message' => 'Next non `settlement holiday` working day is not a bank holiday. Nothing to send.'];
+            return [true, 'Test Mode. Mail to be sent.'];
         }
 
-        return ['send' => true, 'message' => 'Test Mode. Mail to be sent.'];
+        // Mails not to sent on holidays in live mode
+        if (Holidays::isWorkingDay($today) === false)
+        {
+            return [false, 'Not a working day today. Nothing to send.'];
+        }
+
+        // Get Next working day that is not a bank holiday
+        $ignoreBankHolidays = true;
+        $nextWorkingDay = Holidays::getNextWorkingDay($today, $ignoreBankHolidays);
+
+        // Ensure if that is a settlement holiday then send mail
+        if (Holidays::isSpecifiedBankHoliday($nextWorkingDay) === true)
+        {
+            return [true, 'Next working day is a bank holiday. Mail to be sent.'];
+        }
+
+        return [false, 'Next working day is not a bank holiday. Nothing to send.'];
+
     }
 
     protected function notifySettlementsChannel($holidays)
@@ -197,5 +193,16 @@ class HolidayNotification
         ];
 
         return [$testHoliday];
+    }
+
+    protected function sendEmail($mailer, $holidays, $lists)
+    {
+        // Send a notification to slack
+        $this->notifySettlementsChannel($holidays);
+
+        // Set the mailing list name.
+        $mailer->setMailingListName($lists);
+
+        return $mailer->send();
     }
 }
