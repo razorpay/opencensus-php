@@ -170,12 +170,26 @@ class Entity
 
     public static function validateIsEntity($entity)
     {
-        if (constant(__CLASS__ . '::' . strtoupper($entity)) === null)
+        if (self::isValidEntity($entity) === false)
         {
             Trace::error(
                 TraceCode::ERROR_INVALID_ARGUMENT,
                 ['entity' => $entity]);
 
+            throw new Exception\BadRequestValidationFailureException(
+                'Not a valid entity.');
+        }
+    }
+
+    public static function isValidEntity($entity)
+    {
+        return (defined(__CLASS__ . '::' . strtoupper($entity)));
+    }
+
+    public static function validateEntityOrFailPublic($entity)
+    {
+        if (self::isValidEntity($entity) === false)
+        {
             throw new Exception\BadRequestValidationFailureException(
                 'Not a valid entity.');
         }
