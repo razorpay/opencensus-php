@@ -1,17 +1,16 @@
 <?php
 
-namespace RZP\Models\Base;
+namespace RZP\Services\Mock;
 
-use Redis;
-use Request;
+use RZP\Services\Lock as BaseLock;
 
-class Lock
+class Lock extends BaseLock
 {
-    public function __construct(Request $request, Redis $redis)
+    public function __construct($app)
     {
-        $this->requestId = Request::getFacadeRoot()->getId();
+        $this->requestId = $app['request']->getId();
 
-        $this->redis = Redis::getFacadeRoot();
+        $this->cache = $app['cache'];
     }
 
     /**
@@ -24,9 +23,12 @@ class Lock
      */
     public function set($resource, $ttl = 60)
     {
-        $status = $this->redis->set($resource, $this->requestId, 'ex', $ttl, 'nx');
+        if ($this->cache->store('file')->get($resource))
+        {
+            return false;
+        }
 
-        return ($status === 'OK');
+        return $this->cache->store('file')->put($resource, $this->requestId, $ttl);
     }
 
     /**
@@ -38,9 +40,9 @@ class Lock
      */
     public function release($resource)
     {
-        if ($this->redis->get($resource) === $this->requestId)
+        if ($this->cache->get($resource) === $this->requestId)
         {
-            return $this->redis->del($resource);
+            return ($this->cache->forget($resource) ? 1 : 0);
         }
 
         return 0;

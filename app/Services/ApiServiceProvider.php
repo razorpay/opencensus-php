@@ -75,7 +75,17 @@ class ApiServiceProvider extends BaseServiceProvider
             return new \RZP\Base\RepositoryManager($app);
         });
 
-        $this->app->singleton('api.lock', '\RZP\Models\Base\Lock');
+        $this->app->singleton('api.lock', function($app)
+        {
+             $lockMock = $app['config']->get('services.lock.mock');
+
+            if ($lockMock === true)
+            {
+                return new Services\Mock\Lock($app);
+            }
+
+            return new Services\Lock($app);
+        });
 
         $this->registerValidatorResolver();
 
