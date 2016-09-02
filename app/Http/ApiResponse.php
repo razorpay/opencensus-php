@@ -9,7 +9,6 @@ use Response;
 use BasicAuth;
 use RZP\Error\Error;
 use RZP\Error\ErrorCode;
-use RZP\Constants\HttpRequestHeader;
 
 class ApiResponse
 {
@@ -33,7 +32,7 @@ class ApiResponse
         $response = self::generateJsonErrorResponse(
             ErrorCode::BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED);
 
-        $response->header(HttpRequestHeader::WWW_AUTHENTICATE, 'Basic realm="Razorpay"');
+        $response->header(ResponseHeader::WWW_AUTHENTICATE, 'Basic realm="Razorpay"');
 
         return $response;
     }
@@ -71,14 +70,14 @@ class ApiResponse
         //
         // Ask browser not to cache
         //
-        $response->headers->set(HttpRequestHeader::CACHE_CONTROL,'nocache, no-store, max-age=0, must-revalidate');
+        $response->headers->set(ResponseHeader::CACHE_CONTROL,'nocache, no-store, max-age=0, must-revalidate');
 
-        $response->headers->set(HttpRequestHeader::PRAGMA,'no-cache');
+        $response->headers->set(ResponseHeader::PRAGMA,'no-cache');
 
         //
         // Put old time so that any browser cache gets expired
         //
-        $response->headers->set(HttpRequestHeader::EXPIRES,'Fri, 01 Jan 1990 00:00:00 GMT');
+        $response->headers->set(ResponseHeader::EXPIRES,'Fri, 01 Jan 1990 00:00:00 GMT');
     }
 
     /**
@@ -291,7 +290,7 @@ class ApiResponse
             // because on android 2.* json content is not being read on form
             // post for cards with no 3d-secure.
             //
-            $response->headers->set(HttpRequestHeader::CONTENT_TYPE, 'text/html; charset=UTF-8');
+            $response->headers->set(ResponseHeader::CONTENT_TYPE, 'text/html; charset=UTF-8');
         }
     }
 
@@ -312,7 +311,7 @@ class ApiResponse
             // otherwise these routes will not work there. Read furhter on CORS
             // to understand better.
             //
-            $response->headers->set(HttpRequestHeader::ACCESS_CONTROL_ALLOW_ORIGIN, '*');
+            $response->headers->set(ResponseHeader::ACCESS_CONTROL_ALLOW_ORIGIN, '*');
         }
     }
 
@@ -323,7 +322,7 @@ class ApiResponse
             return;
         }
 
-        $response->headers->set(HttpRequestHeader::X_FRAME_OPTIONS, 'SAMEORIGIN', false);
+        $response->headers->set(ResponseHeader::X_FRAME_OPTIONS, 'SAMEORIGIN', false);
     }
 
     protected static function mustNotSetSameOriginHeaders($route)

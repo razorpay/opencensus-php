@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Payment\Analytics;
 
-use RZP\Constants\HttpRequestHeader;
+use RZP\Constants\ResponseHeader;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment\Analytics;
@@ -197,14 +197,14 @@ class Service extends Base\Service
 
         $log[Entity::IP] = $request->ip();
 
-        if ($request->header(HttpRequestHeader::REFERER) !== null)
+        if ($request->header(ResponseHeader::REFERER) !== null)
         {
-            $log[Entity::REFERER] = $request->header(HttpRequestHeader::REFERER);
+            $log[Entity::REFERER] = $request->header(ResponseHeader::REFERER);
         }
 
-        if ($request->header(HttpRequestHeader::USER_AGENT) !== null)
+        if ($request->header(ResponseHeader::USER_AGENT) !== null)
         {
-            $log[Entity::USER_AGENT] = $request->header(HttpRequestHeader::USER_AGENT);
+            $log[Entity::USER_AGENT] = $request->header(ResponseHeader::USER_AGENT);
         }
     }
 
