@@ -101,6 +101,11 @@ class Entity extends Base\PublicEntity
         self::OS,
     );
 
+    protected $casts = array(
+        self::TERMINAL_RESPONSE_TIME => 'int',
+        self::ATTEMPTS               => 'int',
+    );
+
     // ----------------------- Getters ---------------------------------------------
 
     public function getPaymentId()
@@ -245,6 +250,49 @@ class Entity extends Base\PublicEntity
     // ----------------------- Setters End---------------------------------------------
 
     // ----------------------- Mutator ---------------------------------------------
+    //
+
+    protected function getLibraryAttribure()
+    {
+        $value = $this->attributes[self::LIBRARY];
+
+        return Metadata::getStringForLibraryValue($value);
+    }
+
+    protected function getPlatformAttribure()
+    {
+        $value = $this->attributes[self::PLATFORM];
+
+        return Metadata::getStringForPlatformValue($value);
+    }
+
+    protected function getBrowserAttribure()
+    {
+        $value = $this->attributes[self::BROWSER];
+
+        return Metadata::getStringForBrowserValue($value);
+    }
+
+    protected function getOsAttribure()
+    {
+        $value = $this->attributes[self::OS];
+
+        return Metadata::getStringForOsValue($value);
+    }
+
+    protected function getDeviceAttribure()
+    {
+        $value = $this->attributes[self::DEVICE];
+
+        return Metadata::getStringForDeviceValue($value);
+    }
+
+    protected function getIntegrationAttribure()
+    {
+        $value = $this->attributes[self::INTEGRATION];
+
+        return Metadata::getStringForIntegrationValue($value);
+    }
 
     protected function setPlatformAttribute($platform)
     {
