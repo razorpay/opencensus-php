@@ -35,7 +35,7 @@ class Lock
      */
     public function acquire($resource, $ttl = 60)
     {
-        $status = $this->redis->set($resource, $this->requestId, 'ex', $ttl, 'nx');
+        $status = (string) $this->redis->set($resource, $this->requestId, 'ex', $ttl, 'nx');
 
         return ($status === 'OK');
     }
