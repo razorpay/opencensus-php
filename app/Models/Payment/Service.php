@@ -2,18 +2,16 @@
 
 namespace RZP\Models\Payment;
 
+use Mail;
+use Config;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Error;
-
-use Mail;
-
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Card;
 use RZP\Models\Transaction;
-
 use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
@@ -385,7 +383,7 @@ class Service extends Base\Service
         // Since we are taking 12 am of today, we only need to subtract 4 days from today
         // to arrive at 5 days before.
 
-        $days = 5;
+        $days = Processor\Processor::AUTO_REFUND_TIME_PERIOD;
         $date = Carbon::today('Asia/Kolkata');
         $ts = $date->subDays($days)->timestamp;
 
@@ -459,7 +457,7 @@ class Service extends Base\Service
 
         $message = 'Authorized payments refunded: ' . $refunded;
 
-        $this->slack->queue($message, $results, ['channel' => '#tech_logs']);
+        $this->slack->queue($message, $results, ['channel' => Config::get('slack.channels.tech_logs')]);
 
         return $results;
     }
@@ -481,7 +479,7 @@ class Service extends Base\Service
             $message = 'Payment authorizations till ' .
                         $date->format('d-m-y') . ': ' . $count;
 
-            $this->slack->queue($message, [], ['channel' => '#tech_logs']);
+            $this->slack->queue($message, [], ['channel' => Config::get('slack.channels.tech_logs')]);
         }
 
         return ['count' => $count];

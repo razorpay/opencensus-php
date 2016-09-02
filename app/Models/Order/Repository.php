@@ -12,12 +12,13 @@ class Repository extends Base\Repository
 
     protected $appFetchParamRules = array(
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
-        Entity::STATUS 			=> 'sometimes|in:created,attempted,paid',
-        Entity::AUTHORIZED 		=> 'sometimes|in:0,1',
+        Entity::STATUS          => 'sometimes|in:created,attempted,paid',
+        Entity::AUTHORIZED      => 'sometimes|in:0,1',
     );
 
     protected $entityFetchParamRules = array(
         Entity::AUTHORIZED      => 'sometimes|in:0,1',
+        Entity::RECEIPT         => 'sometimes|string|max:40',
     );
 
     public function getOrderForPayment($payment)
