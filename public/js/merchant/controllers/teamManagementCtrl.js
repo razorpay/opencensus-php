@@ -1,3 +1,4 @@
+"use strict";
 //Team Management Controller
 app.controller('TeamManagementCtrl', [
   '$scope',
@@ -40,7 +41,7 @@ app.controller('TeamManagementCtrl', [
       .error(function () {
         $scope.alerts.addAlert('danger', null, true);
       });
-    }
+    };
 
     $scope.updateTeamMember = function (user){
       var request = $http({
@@ -57,7 +58,7 @@ app.controller('TeamManagementCtrl', [
           $scope.alerts.resetAlerts();
           if(data.errors)
           {
-            angular.forEach(data.errors, function (value, key) {
+            angular.forEach(data.errors, function (value) {
               $scope.alerts.addAlert('danger', value);
             });
           }
@@ -81,7 +82,7 @@ app.controller('TeamManagementCtrl', [
           $scope.getTeamMembers();
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
@@ -103,7 +104,7 @@ app.controller('TeamManagementCtrl', [
           $scope.getTeamMembers();
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
@@ -124,7 +125,7 @@ app.controller('TeamManagementCtrl', [
           $scope.getTeamMembers();
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
@@ -145,7 +146,7 @@ app.controller('TeamManagementCtrl', [
           $scope.getTeamMembers();
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
@@ -175,7 +176,7 @@ app.controller('TeamManagementCtrl', [
           $scope.getTeamMembers();
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
