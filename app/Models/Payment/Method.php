@@ -10,27 +10,30 @@ class Method
     const EMI           = 'emi';
     const UPI           = 'upi';
 
+    protected static $methods = array(
+        self::CARD       => 'Card',
+        self::NETBANKING => 'Net Banking',
+        self::WALLET     => 'Wallet',
+        self::UPI        => 'UPI',
+        self::EMI        => 'EMI',
+    );
+
     public static function formatted($method)
     {
-        $methodFormat = [
-            self::CARD          => 'Card',
-            self::NETBANKING    => 'Net Banking',
-            self::WALLET        => 'Wallet',
-            self::EMI           => 'EMI',
-            self::UPI           => 'UPI',
-        ];
-
-        return $methodFormat[$method];
+        return self::$methods[$method];
     }
 
     public static function getAllPaymentMethods()
     {
-        return array(
-            self::CARD,
-            self::NETBANKING,
-            self::WALLET,
-            self::EMI,
-            self::UPI
-        );
+        return array_keys(self::$methods);
+    }
+
+    public static function validateMethod($method)
+    {
+        if (defined(__CLASS__.'::'.strtoupper($method)) === false)
+        {
+            throw new Exception\InvalidArgumentException(
+                'Not a valid Payment method: ' . $method);
+        }
     }
 }

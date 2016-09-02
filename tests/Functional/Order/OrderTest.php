@@ -36,6 +36,13 @@ class OrderTest extends TestCase
         return $order;
     }
 
+    public function testCreateAutoCaptureOrder()
+    {
+        $order = $this->startTest();
+
+        return $order;
+    }
+
     public function testCreateTPVOrder()
     {
         $order = $this->startTest();
@@ -62,6 +69,22 @@ class OrderTest extends TestCase
         $this->testData[__FUNCTION__]['response']['content'] = $array;
 
         $this->startTest();
+    }
+
+    public function testRetrieveOrderWithReceipt()
+    {
+        $order = $this->fixtures->create('order');
+
+        $this->ba->proxyAuth();
+
+        $orders = $this->retrieveOrdersDefault();
+
+        //GIVEN
+        $receipt = $orders['items'][0]['receipt'];
+
+        $order = $this->retrieveOrdersDefault(['receipt' => $receipt]);
+
+        $this->assertEquals($receipt, $order['items'][0]['receipt']);
     }
 
     public function testStatusAfterPayment()
@@ -103,6 +126,35 @@ class OrderTest extends TestCase
         {
             $this->doAuthPayment($payment1);
         });
+    }
+
+    public function testStatusAfterAutoCapturePayment()
+    {
+        $order = $this->testCreateAutoCaptureOrder();
+        $order = $this->getLastEntity('order');
+        $this->assertEquals($order['status'], 'created');
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order['id'];
+        $response = $this->doAuthPayment($payment);
+
+        $actualSignature = $response['razorpay_signature'];
+
+        unset($response['razorpay_signature']);
+
+        ksort($response);
+        $exceptedSignature = $this->getSignature($response, 'TheKeySecretForTests');
+
+        $this->assertEquals($actualSignature, $exceptedSignature);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals($order['id'], $payment['order_id']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(true, $payment['auto_captured']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals($order['status'], 'paid');
+        $this->assertEquals($order['authorized'], true);
     }
 
     public function testOrderAndPaymentAmountMismatch()
@@ -206,5 +258,16 @@ class OrderTest extends TestCase
         $preferences = $this->startTest($testData);
 
         $this->fixtures->merchant->disableTPV();
+    }
+
+    protected function retrieveOrdersDefault(array $content = [], $method = 'GET')
+    {
+        $request = array(
+            'method'  => $method,
+            'url'     => '/orders',
+            'content' => $content
+        );
+
+        return $this->makeRequestAndGetContent($request);
     }
 }

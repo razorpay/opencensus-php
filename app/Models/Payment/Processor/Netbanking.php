@@ -72,6 +72,8 @@ class Netbanking
         IFSC::DCBL,
         IFSC::DEUT,
         IFSC::DLXB,
+        IFSC::DBSS,
+        IFSC::IDFB,
         IFSC::FDRL,
         IFSC::IBKL,
         IFSC::ICIC,

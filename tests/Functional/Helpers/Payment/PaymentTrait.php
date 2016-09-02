@@ -179,6 +179,11 @@ trait PaymentTrait
             'currency'          => 'INR',
             'merchant_order_id' => $payment['notes']['merchant_order_id']);
 
+        return $this->getSignature($data, $secret);
+    }
+
+    protected function getSignature(array $data, $secret = '')
+    {
         if ($secret === '')
         {
             $secret = $this->ba->getSecret();
@@ -1070,33 +1075,14 @@ trait PaymentTrait
                             "Success" => true,
                         );
 
-                        $cardToTokenMap = array(
-                                '41476700000006'   => '1a2b3c4b3e',
-                                '4111111111111111' => '1a2b3c4b5e',
-                                '4280951000002433' => '1a2b3c4b4e',
-                                '4111460212312338' => '1a2b3c4b6e',
-                                '4000400000000004' => '1a2b3c4b7e',
-                                '4012001038443335' => '1a2b3c4d8e',
-                                '555555555555558'  => '1a2b3c4d9e',
-                                '42809500000009'   => '1a2b3c4d2e',
-                            );
-
                         switch ($route)
                         {
                             case 'REST/Tokenize':
-                                if(isset($cardToTokenMap[$input['Data']]))
-                                {
-                                    $response['Token'] = $cardToTokenMap[$input['Data']];
-                                }
-                                else
-                                {
-                                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
-                                }
+                                $response['Token'] = base64_encode($input['Data']);
                                 break;
 
                             case 'REST/Detokenize':
-                                $tokenToCardMap = array_flip($cardToTokenMap);
-                                $response['Value'] = $tokenToCardMap[$input['Token']];
+                                $response['Value'] = base64_decode($input['Token']);
                                 break;
 
                             case 'REST/ValidateToken':

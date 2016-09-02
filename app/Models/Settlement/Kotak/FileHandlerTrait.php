@@ -512,9 +512,7 @@ trait FileHandlerTrait
             $filePath = $file->getRealPath();
         }
 
-        $file = fopen($filePath, 'r');
-        $txt = fread($file, filesize($filePath));
-        $lines = explode("\r\n", $txt);
+        $lines = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 
         return $lines;
     }
