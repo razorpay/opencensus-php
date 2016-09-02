@@ -96,9 +96,9 @@ trait Authorize
 
             if ($this->canRunOtpPaymentFlow($payment, $input))
             {
-                $request = $this->runOtpPaymentFlow($terminalGatewayInput, $payment);
-
                 $this->createAnalyticsLog($rawData);
+
+                $request = $this->runOtpPaymentFlow($terminalGatewayInput, $payment);
 
                 return $request;
             }
@@ -113,21 +113,12 @@ trait Authorize
             {
                 $request = $this->callGatewayAuthorize($terminalGatewayInput);
 
-                // record a successful payment here for the given terminal id
-                $rawData['terminal_data']['end'] = microtime();
-
-                $this->createAnalyticsLog($rawData);
-
                 break;
             }
             catch (Exception\GatewayRequestException $e)
             {
                 // record a failed payment for given terminal and continue
                 $rawData['terminal_data']['exception'] = $e;
-
-                $rawData['terminal_data']['end'] = microtime();
-
-                $this->createAnalyticsLog($rawData);
 
                 $retryAttempts += 1;
 
@@ -149,11 +140,14 @@ trait Authorize
                 //
                 $rawData['terminal_data']['exception'] = $e;
 
+                $this->updatePaymentAuthFailedAndThrowException($e);
+            }
+            finally
+            {
+                // record a successful payment here for the given terminal id
                 $rawData['terminal_data']['end'] = microtime();
 
                 $this->createAnalyticsLog($rawData);
-
-                $this->updatePaymentAuthFailedAndThrowException($e);
             }
         }
 
