@@ -25,11 +25,11 @@ class Lock
      * Set the lock for the resource provided
      *
      * @param string $resource Name of the resource
-     * @param int    $ttl      Expiry time of lock in minutes
+     * @param int    $ttl      Expiry time of lock in seconds
      *
      * @return boolean
      */
-    public function set($resource, $ttl = 60)
+    public function acquire($resource, $ttl = 60)
     {
         $status = $this->redis->set($resource, $this->requestId, 'ex', $ttl, 'nx');
 

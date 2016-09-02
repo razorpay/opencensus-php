@@ -53,8 +53,6 @@ trait Capture
 
         (new Payment\Validator)->captureValidate($payment, $input);
 
-        $this->lockPayment($payment);
-
         return $this->capturePayment($payment, $input['amount']);
     }
 
@@ -205,6 +203,8 @@ trait Capture
 
         try
         {
+            $this->acquireLockOnPayment($this->payment);
+
             try
             {
                 $this->callGatewayFunction(Payment\Action::CAPTURE, $data);
@@ -267,7 +267,7 @@ trait Capture
         }
         finally
         {
-            $this->lock->release($this->payment->getId());
+            $this->releaseLockOnPayment($this->payment);
         }
     }
 

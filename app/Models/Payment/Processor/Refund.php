@@ -44,8 +44,6 @@ trait Refund
             $this->validateMerchantBalance($refund);
         }
 
-        $this->lockPayment($payment);
-
         $this->refund = $refund;
 
         $data = array(
@@ -61,7 +59,7 @@ trait Refund
         if (($payment->getTransactionId() !== null) or
             ($payment->isAuthorized() === false))
         {
-            $this->callGatewayForRefund($data);
+            $this->refundOnGateway($data);
         }
 
         $this->recordRefund();
@@ -318,10 +316,12 @@ trait Refund
         return $manualGatewayRefundResult;
     }
 
-    protected function callGatewayForRefund($data)
+    protected function refundOnGateway($data)
     {
         try
         {
+            $this->acquireLockOnPayment($this->payment);
+
             $this->callGatewayFunction(Payment\Action::REFUND, $data);
         }
         catch (Exception\BaseException $e)
@@ -334,7 +334,7 @@ trait Refund
         }
         finally
         {
-            $this->lock->release($this->payment->getId());
+            $this->releaseLockOnPayment($this->payment);
         }
     }
 

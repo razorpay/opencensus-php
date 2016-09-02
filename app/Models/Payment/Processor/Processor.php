@@ -693,15 +693,20 @@ class Processor
         return false;
     }
 
-    protected function lockPayment($payment)
+    protected function acquireLockOnPayment($payment)
     {
         $resource = $payment->getId();
 
-        if ($this->lock->set($resource) === false)
+        if ($this->lock->acquire($resource) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
         }
+    }
+
+    protected function releaseLockOnPayment($payment)
+    {
+        $this->lock->release($this->payment->getId());
     }
 
     protected function createOrUpdateToken($input, $data)

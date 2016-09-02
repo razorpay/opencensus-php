@@ -17,11 +17,11 @@ class Lock extends BaseLock
      * Set the lock for the resource provided
      *
      * @param string $resource Name of the resource
-     * @param int    $ttl      Expiry time of lock in minutes
+     * @param int    $ttl      Expiry time of lock in seconds
      *
      * @return boolean
      */
-    public function set($resource, $ttl = 60)
+    public function acquire($resource, $ttl = 60)
     {
         if ($this->cache->store('file')->get($resource))
         {
