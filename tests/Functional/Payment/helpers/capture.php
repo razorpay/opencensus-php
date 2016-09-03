@@ -31,22 +31,6 @@ return [
         ],
     ],
 
-    'testDuplicateCaptureRequest' => [
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS
-        ],
-    ],
-
     'testCaptureWithDifferentAmount' => [
         'response' => [
             'content' => [
