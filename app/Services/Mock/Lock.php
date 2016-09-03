@@ -42,9 +42,9 @@ class Lock extends BaseLock
     {
         if ($this->cache->get($resource) === $this->requestId)
         {
-            return ($this->cache->forget($resource) ? 1 : 0);
+            return $this->cache->forget($resource);
         }
 
-        return 0;
+        return false;
     }
 }

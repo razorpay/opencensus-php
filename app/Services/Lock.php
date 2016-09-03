@@ -74,9 +74,10 @@ class Lock
     {
         try
         {
-            if ($this->redis->get($resource) === $this->requestId)
+            if (($this->redis->get($resource) === $this->requestId) and
+                ($this->redis->del($resource) === 1))
             {
-                return $this->redis->del($resource);
+                return true;
             }
         }
         catch (PredisException $e)
@@ -84,9 +85,9 @@ class Lock
             $this->trace->traceException($e);
 
             // Do not block the payment in case of any exception
-            return 1;
+            return true;
         }
 
-        return 0;
+        return false;
     }
 }
