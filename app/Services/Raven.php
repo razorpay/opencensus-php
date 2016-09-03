@@ -124,7 +124,7 @@ class Raven
         $response = $this->sendRavenRequest($request);
 
         $this->trace->info(TraceCode::RAVEN_RESPONSE, [
-                    'response' => $response
+                    'response' => $response->body
                 ]);
 
         $decodedResponse = json_decode($response->body, true);
