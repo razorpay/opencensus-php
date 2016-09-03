@@ -54,6 +54,7 @@ class ResponseCode extends Base\ResponseCode
         'E629'      => 'Refund Amount Exceeding Transaction Amount',
         'E701'      => 'Invalid OTP id',
         'E702'      => 'Invalid OTP',
+        'E705'      => 'CallbackUrl is not registered',
         // UI Status Codes
         'EU001'     => 'Issue occurred while processing. Please contact customer support.',
         'EU002'     => 'User does not exist',

@@ -28,29 +28,21 @@ class Repository extends Base\Repository
     public function fetchGatewayPaymentId2ByPaymentId($paymentId)
     {
         return $this->newQuery()
-                    ->where('payment_id', '=', $paymentId)
-                    ->lists('gateway_payment_id_2');
+                    ->where(Entity::PAYMENT_ID , '=', $paymentId)
+                    ->lists(Entity::GATEWAY_PAYMENT_ID2);
     }
 
     public function fetchWalletByPaymentId($paymentId)
     {
         return $this->newQuery()
-                    ->where('payment_id', '=', $paymentId)
+                    ->where(Entity::PAYMENT_ID , '=', $paymentId)
                     ->first();
     }
 
     public function findByGatewayRefundId($gatewayRefundId)
     {
         return $this->newQuery()
-                    ->where('gateway_refund_id', '=', $gatewayRefundId)
+                    ->where(Entity::GATEWAY_REFUND_ID, '=', $gatewayRefundId)
                     ->firstOrFail();
-    }
-
-    public function fetchWalletByPaymentIdAndAction($paymentId, $action)
-    {
-        return $this->newQuery()
-            ->where('payment_id', '=', $paymentId)
-            ->where('action', '=', $action)
-            ->first();
     }
 }

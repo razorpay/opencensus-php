@@ -12,20 +12,11 @@ class ResponseCodeMap
         'E701'  => ErrorCode::BAD_REQUEST_PAYMENT_OTP_EXPIRED,
     );
 
-    protected static $success = array(
-        0
-    );
-
     public static function getResponseMessage($code)
     {
         $codes = self::$codes;
 
         return $codes[(int)$code];
-    }
-
-    public static function getStatus($code)
-    {
-        ; // @todo
     }
 
     public static function getApiErrorCode($code)

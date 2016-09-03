@@ -70,14 +70,4 @@ class Validator extends Base\Validator
         'accessToken'           => 'required|string',
         'checksum'              => 'required|string|regex:"^[a-f0-9]+$"'
     );
-
-    protected static $topupRedirectRules = array(
-        'merchantId'            => 'required|string',
-        'amount'                => 'required|numeric',
-        'channel'               => 'required|string|in:WEB,ANDROID,WINDOWS,IOS,WAP',
-        'loginToken'            => 'required|string',
-        'checksum'              => 'required|string|regex:"^[a-f0-9]+$"',
-        'callbackUrl'           => 'required|url',
-        'metadata'              => 'sometimes|string',
-    );
 }

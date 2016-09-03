@@ -25,4 +25,20 @@ class Gateway extends Freecharge\Gateway
 
         return $request;
     }
+
+    protected function sendGatewayRequest($request)
+    {
+        // Although we reset the url, it's not being used currently.
+        // $request['url'] = $this->makeMockRequestUrl($request);
+
+        // Redirect the request internally
+        $serverResponse = $this->callGatewayRequestFunctionInternally($request);
+
+        $response = $this->prepareInternalResponse($serverResponse);
+
+        // Handle API Request Failure and throw exception
+        $this->handleIfRequestFailed($response);
+
+        return $response;
+    }
 }

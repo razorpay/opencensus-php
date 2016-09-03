@@ -12,6 +12,7 @@ use RZP\Models\Customer;
 use RZP\Models\Customer\Token;
 use RZP\Models\Emi;
 use RZP\Models\Payment;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Status;
 use RZP\Models\Transaction;
@@ -189,6 +190,13 @@ trait Callback
         else
         {
             $data = $this->callGatewayFunction(Payment\Action::CALLBACK, $input);
+
+            if(isset($data['token']) and $payment->getGateway() === Gateway::FREECHARGE)
+            {
+                $this->postPaymentOtpCallbackProcessing($input, $data);
+
+                $this->callGatewayFunction('checkBalance', $input);
+            }
         }
 
         $this->callGatewayFunction(Payment\Action::DEBIT, $input);

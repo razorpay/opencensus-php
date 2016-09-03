@@ -106,21 +106,4 @@ class Gateway extends Base\Gateway
 
         return $phoneBook->format(PhoneBook::DOMESTIC);
     }
-
-    /*
-     * Fetch Payment Gateway (P.G) entity.
-     *
-     * @param paymentId
-     *
-     * @param action        P.G Entity corresponds to what stage (authorize or
-     *                      refund for now)
-     *
-     * @\Wallet\Base\Entity In our case it's a wallet
-     */
-    protected function fetchPaymentGateway($paymentId, $action = Action::AUTHORIZE)
-    {
-
-        return $this->getRepo()
-            ->fetchWalletByPaymentIdAndAction($paymentId, $action);
-    }
 }

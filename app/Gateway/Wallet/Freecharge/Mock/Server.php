@@ -4,6 +4,7 @@ namespace RZP\Gateway\Wallet\Freecharge\Mock;
 
 use Carbon\Carbon;
 
+use RZP\Constants\HashAlgo;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Http\Route;
@@ -11,6 +12,8 @@ use RZP\Gateway\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Wallet\Base\Otp;
 use RZP\Gateway\Wallet\Freecharge;
+use RZP\Gateway\Wallet\Freecharge\ResponseFields;
+use RZP\Gateway\Wallet\Freecharge\RequestFields;
 use RZP\Models\Base\UniqueIdentity;
 use RZP\Models\Payment;
 
@@ -27,17 +30,7 @@ class Server extends Base\Mock\Server
 
         $this->validateActionInput($input);
 
-        $this->topupRequest = $input;
-
         $callbackUrl = $input['callbackUrl'];
-
-        $request = array(
-            'status'        => 'COMPLETED',
-            'metadata'      => '',
-            'walletBalance' => '1232',
-        );
-
-        $request['checksum'] = $this->sortKeysAndGenerateHash($request);
 
         return \Redirect::to($callbackUrl);
     }
@@ -50,10 +43,10 @@ class Server extends Base\Mock\Server
         $content = $this->mockRequest['content'];
 
         $response = [
-            'merchantTxnId'     => $content['merchantTxnId'],
-            'txnId'             => $content['txnId'],
-            'amount'            => '50000',
-            'status'            => Freecharge\Status::TRANSACTION_SUCCESS,
+            ResponseFields::MERCHANT_TXN_ID => $content[RequestFields::MERCHANT_TXN_ID],
+            ResponseFields::TXN_ID          => $content[RequestFields::TXN_ID],
+            ResponseFields::AMOUNT          => '50000',
+            ResponseFields::STATUS          => Freecharge\Status::TRANSACTION_SUCCESS,
         ];
 
         $response['checksum'] = $this->sortKeysAndGenerateHash($response);
@@ -68,12 +61,12 @@ class Server extends Base\Mock\Server
         $this->validateActionInput($input, 'refund');
 
         $response = array(
-            'status'                => Freecharge\Status::REFUND_SUCCESS,
-            'refundTxnId'           => $this->getRefundTxnId(),
-            'refundMerchantTxnId'   => $this->getRefundMerchantTxnId(),
-            'refundedAmount'        => '100',
-            'errorCode'             => null,
-            'errorMessage'          => null,
+            ResponseFields::STATUS                 => Freecharge\Status::REFUND_SUCCESS,
+            ResponseFields::REFUND_TXN_ID          => $this->getRefundTxnId(),
+            ResponseFIelds::REFUND_MERCHANT_TXN_ID => $this->getRefundMerchantTxnId(),
+            ResponseFields::REFUNDED_AMOUNT        => '100',
+            ResponseFields::ERROR_CODE             => null,
+            ResponseFields::ERROR_MESSAGE          => null,
         );
 
         $response['checksum'] = $this->sortKeysAndGenerateHash($response);
@@ -85,13 +78,13 @@ class Server extends Base\Mock\Server
     {
         $this->validateActionInput($input, 'otpGenerate');
 
-        $mobile = $input['mobileNumber'];
+        $mobile = $input[RequestFields::MOBILE_NUMBER];
 
         $response = array(
-            'otpId'         => '1asda2345',
-            'redirectUrl'   => '',
-            'isIvrEnabled'  => 'false',
-            'status'        => 'VERIFY',
+            ResponseFields::OTP_ID         => '1asda2345',
+            ResponseFields::REDIRECT_URL   => '',
+            ResponseFields::IS_IVR_ENABLED => 'false',
+            ResponseFields::STATUS         => 'VERIFY',
         );
 
         return $this->makeResponse($response);
@@ -102,7 +95,7 @@ class Server extends Base\Mock\Server
         $this->validateActionInput($input, 'otpResend');
 
         $response = [
-            'otpId' => '12345a',
+            ResponseFields::OTP_ID => '12345a',
         ];
 
         return $this->makeResponse($response);
@@ -113,7 +106,7 @@ class Server extends Base\Mock\Server
         $this->validateActionInput($input, 'getBalance');
 
         $response = [
-            'walletBalance'     => '500',
+            ResponseFields::WALLET_BALANCE     => '500',
         ];
 
         return $this->makeResponse($response);
@@ -123,22 +116,22 @@ class Server extends Base\Mock\Server
     {
         $this->validateActionInput($input, 'otpSubmit');
 
-        if ($input['otp'] === Otp::EXPIRED)
+        if ($input[RequestFields::OTP] === Otp::EXPIRED)
         {
             $response = array(
-                'errorMessage'  => Freecharge\ResponseCode::getResponseMessage('E701'),
-                'errorCode'     => 'E701',
+                ResponseFields::ERROR_MESSAGE  => Freecharge\ResponseCode::getResponseMessage('E701'),
+                ResponseFields::ERROR_CODE     => 'E701',
             );
             $response = $this->makeResponse($response);
             $response->setStatusCode(202);
             return $response;
         }
 
-        if ($input['otp'] === Otp::INCORRECT)
+        if ($input[RequestFields::OTP] === Otp::INCORRECT)
         {
             $response = array(
-                'errorMessage'  => Freecharge\ResponseCode::getResponseMessage('E702'),
-                'errorCode'     => 'E702',
+                ResponseFields::ERROR_MESSAGE  => Freecharge\ResponseCode::getResponseMessage('E702'),
+                ResponseFields::ERROR_CODE => 'E702',
             );
             $response = $this->makeResponse($response);
             $response->setStatusCode(202);
@@ -146,30 +139,11 @@ class Server extends Base\Mock\Server
         }
 
         $response = [
-            'accessToken'           => $this->accessToken,
-            'accessTokenExpiry'     => $this->accessTokenExpiry,
-            'refreshToken'          => $this->refreshToken,
-            'refreshTokenExpiry'    => $this->refreshTokenExpiry,
+            ResponseFields::ACCESS_TOKEN         => $this->accessToken,
+            ResponseFields::ACCESS_TOKEN_EXPIRY  => $this->accessTokenExpiry,
+            ResponseFields::REFRESH_TOKEN        => $this->refreshToken,
+            ResponseFields::REFRESH_TOKEN_EXPIRY => $this->refreshTokenExpiry,
         ];
-
-        return $this->makeResponse($response);
-    }
-
-    public function topupRedirect($input)
-    {
-        $this->validateActionInput($input, 'topupRedirect');
-
-        $this->topupRequest = $input;
-
-        $callbackUrl = $input['callbackUrl'];
-
-        $response = array(
-            'status'        => 'COMPLETED',
-            'metadata'      => 'dummy',
-            'walletBalance' => '1232',
-        );
-
-        $response['checksum'] = $this->sortKeysAndGenerateHash($response);
 
         return $this->makeResponse($response);
     }
@@ -181,15 +155,15 @@ class Server extends Base\Mock\Server
         if ($this->mockRequest['content']['accessToken'] === $this->accessToken)
         {
             $response = array(
-                'txnId'         => $this->getTxnId(),
-                'merchantTxnId' => $this->getMerchantTxnId(),
-                'amount'        => '123',
-                'status'        => 'COMPLETED',
-                'errorCode'     => null,
-                'errorMessage'  => null,
+                ResponseFields::TXN_ID          => $this->getTxnId(),
+                ResponseFields::MERCHANT_TXN_ID => $this->getMerchantTxnId(),
+                ResponseFields::AMOUNT          => '123',
+                ResponseFields::STATUS          => Freecharge\Status::DEBIT_SUCCESS,
+                ResponseFields::ERROR_CODE      => null,
+                ResponseFields::ERROR_MESSAGE   => null,
             );
 
-            $response['checksum'] = $this->sortKeysAndGenerateHash($response);
+            $response[ResponseFields::CHECKSUM] = $this->sortKeysAndGenerateHash($response);
 
             return $this->makeResponse($response);
         }
@@ -231,18 +205,19 @@ class Server extends Base\Mock\Server
     {
         foreach ($response as $key => $value)
         {
-            if($value === null || $value === "")
+            if ($value === null or $value === "")
             {
                 unset($response[$key]);
             }
         }
+
         ksort($response);
 
         $secretKey = $this->app->config['gateway']['wallet_freecharge']['test_hash_secret'];
 
         $hashString = json_encode($response).$secretKey;
 
-        return hash('sha256', $hashString);
+        return hash(HashAlgo::SHA256, $hashString);
     }
 
     /*
