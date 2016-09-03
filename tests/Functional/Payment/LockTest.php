@@ -82,6 +82,20 @@ class LockTest extends TestCase
         $this->assertArraySelectiveEquals($expected, $capturedPayment);
     }
 
+    public function testCaptureRequestWithException()
+    {
+        $payment = $this->defaultAuthPayment();
+
+        Redis::shouldReceive('set')
+                ->once()
+                ->andReturnUsing(function()
+                {
+                    throw new \Predis\Response\ServerException('Internal Error');
+                });
+
+        $this->capturePayment($payment['id'], $payment['amount']);
+    }
+
     public function testLockCaptureRequestWithDiffRedisResponse()
     {
         $payment = $this->defaultAuthPayment();
