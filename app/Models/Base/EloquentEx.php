@@ -100,4 +100,9 @@ class EloquentEx extends \Razorpay\Spine\Entity
 
         $query->orderBy(Entity::CREATED_AT, $desc);
     }
+
+    public static function createOrFail(array $attributes)
+    {
+        throw new Exception\RuntimeException('Use createOrFail via Repository');
+    }
 }

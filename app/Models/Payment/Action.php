@@ -32,8 +32,6 @@ class Action
 
     protected $mode;
 
-    protected $repo;
-
     public function __construct(
         Merchant\Entity $merchant,
         Payment\Core $core,
@@ -46,10 +44,6 @@ class Action
         $this->mode = $mode;
 
         $this->checkMerchantPermissions();
-
-        $this->repo = new Payment\Repository;
-
-        $this->terminal = $this->getTerminal();
     }
 
     public static function create($action, $bindings)

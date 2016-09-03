@@ -18,6 +18,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer;
+use RZP\Models\Base\Lock;
 
 class Processor
 {
@@ -64,6 +65,7 @@ class Processor
     protected $orderRepo;
     protected $paymentRepo;
     protected $app;
+    protected $lock;
     protected $request;
     protected $methods;
     protected $refund;
@@ -88,6 +90,8 @@ class Processor
         $this->orderRepo = $this->repo->order;
 
         $this->request = $this->app['request'];
+
+        $this->lock = $this->app['api.lock'];
 
         // Only used in hdfc verify refund flow
         $this->verifyRefundStatus = null;
@@ -570,8 +574,7 @@ class Processor
 
     protected function retrieveToken($input)
     {
-        $token = (new Customer\Token\Repository)
-                        ->getByWalletTerminalAndCustomerId(
+        $token = $this->repo->token->getByWalletTerminalAndCustomerId(
                             $input['payment']['wallet'],
                             $input['payment']['terminal_id'],
                             $input['customer']->getId());
@@ -671,25 +674,39 @@ class Processor
 
     protected function shouldAutoCapture($payment)
     {
-        if ($payment->isLateAuthorized() === true)
+        if ($payment->isLateAuthorized() === false)
         {
-            return false;
-        }
+            // If payment is signed
+            if ($payment->isSigned() === true)
+            {
+                return true;
+            }
 
-        // If payment is signed
-        if ($payment->isSigned() === true)
-        {
-            return true;
-        }
-
-        // If payment order was marked as auto capture
-        if (($payment->order !== null) and
-            ($payment->order->getPaymentCapture() === true))
-        {
-            return true;
+            // If payment order was marked as auto capture
+            if (($payment->order !== null) and
+                ($payment->order->getPaymentCapture() === true))
+            {
+                return true;
+            }
         }
 
         return false;
+    }
+
+    protected function acquireLockOnPayment($payment)
+    {
+        $resource = $payment->getId();
+
+        if ($this->lock->acquire($resource) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
+        }
+    }
+
+    protected function releaseLockOnPayment($payment)
+    {
+        $this->lock->release($this->payment->getId());
     }
 
     protected function createOrUpdateToken($input, $data)

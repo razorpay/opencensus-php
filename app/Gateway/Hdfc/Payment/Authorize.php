@@ -366,8 +366,8 @@ trait Authorize
                 TraceCode::PAYMENT_CARD_NOT_ENROLLED,
                 ['payment_id' => $input['payment']['id']]);
 
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED);
+            // throw new Exception\BadRequestException(
+            //     ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED);
         }
     }
 

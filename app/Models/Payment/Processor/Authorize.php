@@ -193,15 +193,18 @@ trait Authorize
 
         $payment = $this->payment;
 
-        if ($this->shouldAutoCapture($payment) === true)
-        {
-            // If payment is signed, then we capture it in this step only.
-            $this->autoCapturePayment($payment);
-        }
-
         return $this->postPaymentAuthorizeProcessing($payment);
     }
 
+    protected function autoCapturePaymentIfApplicable($payment)
+    {
+        if ($this->shouldAutoCapture($payment) === true)
+        {
+            // If payment is signed or capture was sent as true in order,
+            // then we capture it in this step only.
+            $this->autoCapturePayment($payment);
+        }
+    }
 
     public function authorizeFailedPayment($payment)
     {
@@ -866,11 +869,13 @@ trait Authorize
 
     /**
      * This function is just meant for preparing the return value
-     * after payment authorize processing. This should not contain
-     * any state updating statements.
+     * after payment authorize processing and auto capturing, if applicable.
      */
     protected function postPaymentAuthorizeProcessing($payment)
     {
+        // Auto capture payment, if applicable
+        $this->autoCapturePaymentIfApplicable($payment);
+
         //
         // If it's signed payment, then we return signed data from our
         // end as well.

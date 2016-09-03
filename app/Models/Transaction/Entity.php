@@ -154,11 +154,6 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Settlement\Entity');
     }
 
-    public function getMerchantId()
-    {
-        return $this->getAttribute(self::MERCHANT_ID);
-    }
-
     public function getCredit()
     {
         return (int) $this->getAttribute(self::CREDIT);
