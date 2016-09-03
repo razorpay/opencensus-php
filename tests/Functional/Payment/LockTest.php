@@ -52,6 +52,10 @@ class LockTest extends TestCase
         {
             $this->capturePayment($payment['id'], $payment['amount']);
         });
+
+        $paymentEntity = $this->getEntityById('payment', $payment['id'], true);
+
+        $this->assertSame('authorized', $paymentEntity['status']);
     }
 
     public function testLockAcquiredRefundRequest()
