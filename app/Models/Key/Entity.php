@@ -79,7 +79,7 @@ class Entity extends Base\PublicEntity
     {
         return $query->where(function ($query)
         {
-            $query->where(self::EXPIRED_AT, '=', NULL)
+            $query->whereNull(self::EXPIRED_AT)
                   ->orWhere(self::EXPIRED_AT, '>', time());
         });
     }

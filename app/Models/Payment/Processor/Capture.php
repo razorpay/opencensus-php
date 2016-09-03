@@ -202,6 +202,8 @@ trait Capture
 
         try
         {
+            $this->acquireLockOnPayment($this->payment);
+
             try
             {
                 $this->callGatewayFunction(Payment\Action::CAPTURE, $data);
@@ -261,6 +263,10 @@ trait Capture
                     TraceCode::PAYMENT_CAPTURE_FAILURE);
 
             throw $ex;
+        }
+        finally
+        {
+            $this->releaseLockOnPayment($this->payment);
         }
     }
 
