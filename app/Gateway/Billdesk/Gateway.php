@@ -49,7 +49,7 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        $payment = $this->getRepo()->findByPaymentIdAndAction(
+        $payment = $this->repo->findByPaymentIdAndAction(
                         $input['payment']['id'], Action::AUTHORIZE);
 
         // We should ensure once that AuthStatus is 0300 and
@@ -76,7 +76,7 @@ class Gateway extends Base\Gateway
                     '');
         }
 
-        $payment = $this->getRepo()->findByPaymentIdAndAction(
+        $payment = $this->repo->findByPaymentIdAndAction(
                         $content['CustomerID'], Action::AUTHORIZE);
 
         $content['received'] = 1;
@@ -99,7 +99,7 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        $payment = $this->getRepo()->findByPaymentIdAndAction(
+        $payment = $this->repo->findByPaymentIdAndAction(
                                 $input['payment']['id'], Action::AUTHORIZE);
 
         $content = $this->getPaymentRefundRequestContent($payment, $input);
