@@ -35,9 +35,19 @@ class Lock
      */
     public function acquire($resource, $ttl = 60)
     {
-        $status = $this->redis->set($resource, $this->requestId, 'ex', $ttl, 'nx');
+        $response = $this->redis->set($resource, $this->requestId, 'ex', $ttl, 'nx');
 
-        return ($status === 'OK');
+        /**
+         * Do not block the payment if redis returns unexpected response
+         * Currently, if a lock is already acquired then the expected
+         * response is null
+         */
+        if ($response !== null)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /**

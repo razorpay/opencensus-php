@@ -574,8 +574,7 @@ class Processor
 
     protected function retrieveToken($input)
     {
-        $token = (new Customer\Token\Repository)
-                        ->getByWalletTerminalAndCustomerId(
+        $token = $this->repo->token->getByWalletTerminalAndCustomerId(
                             $input['payment']['wallet'],
                             $input['payment']['terminal_id'],
                             $input['customer']->getId());

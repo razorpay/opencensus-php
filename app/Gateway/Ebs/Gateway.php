@@ -63,7 +63,7 @@ class Gateway extends Base\Gateway
     {
         parent::capture($input);
 
-        $gatewayPayment = $this->getRepo()->findByPaymentIdAndAction(
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
             $input['payment'][Payment\Entity::ID], Action::AUTHORIZE);
 
         assert(($gatewayPayment[Entity::ERROR_CODE] === null) or
@@ -80,7 +80,7 @@ class Gateway extends Base\Gateway
 
         $this->validateCallbackGetSecureHash($input['gateway'], $input['terminal']);
 
-        $gatewayPayment = $this->getRepo()->findByPaymentIdAndActionOrFail(
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment'][Payment\Entity::ID], Action::AUTHORIZE);
 
         $attributes = $this->getGatewayEntityDataFromResponse($input);
@@ -119,7 +119,7 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        $gatewayPayment = $this->getRepo()->findByPaymentIdAndAction(
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
                                 $input['payment'][Payment\Entity::ID], Action::AUTHORIZE);
 
         $attributes = $this->sendRefundGatewayRequest($gatewayPayment, $input);

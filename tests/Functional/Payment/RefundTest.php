@@ -55,23 +55,6 @@ class RefundTest extends TestCase
         $this->assertGreaterThan(time() - 30, $refund['created_at']);
     }
 
-    public function testDuplicateRefundRequest()
-    {
-        $payment = $this->defaultAuthPayment();
-        $payment = $this->capturePayment($payment['id'], $payment['amount']);
-
-        Redis::shouldReceive('set')
-                    ->once()
-                    ->andReturn('');
-
-        $data = $this->testData[__FUNCTION__];
-
-        $this->runRequestResponseFlow($data, function() use ($payment)
-        {
-            $this->refundPayment($payment['id']);
-        });
-    }
-
     public function testMultipleRefunds()
     {
         $payment = $this->defaultAuthPayment();
