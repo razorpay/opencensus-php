@@ -51,8 +51,6 @@ class TestCase extends IlluminateTestCase
         //     $this->markTestSkippedForWercker();
         parent::setUp();
 
-        $this->setRedisMock();
-
         // Load test data
         $this->loadTestData();
 
@@ -71,21 +69,6 @@ class TestCase extends IlluminateTestCase
     protected function setUpTraits()
     {
         ;
-    }
-
-    protected function setRedisMock()
-    {
-        Redis::shouldReceive('set')
-            ->andReturn(\Predis\Response\Status::get('OK'))
-            ->byDefault();
-
-        Redis::shouldReceive('get')
-            ->andReturn('requestId')
-            ->byDefault();
-
-        Redis::shouldReceive('del')
-            ->andReturn(true)
-            ->byDefault();
     }
 
     protected function freeUpObjectProperties()
