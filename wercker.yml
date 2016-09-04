@@ -11,6 +11,7 @@ build:
           MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: root
           MYSQL_ROOT_PASSWORD: root
+      - redis
     # The steps that will be executed on build
     steps:
       - script:
@@ -37,6 +38,11 @@ build:
           code: >
               export DB_TEST_HOST="$MYSQL_PORT_3306_TCP_ADDR"
               export DB_TEST_PORT="$MYSQL_PORT_3306_TCP_PORT"
+      - script:
+          name: Export wercker Redis env var to API environment variables
+          code: >
+              export REDIS_HOST="$REDIS_PORT_6379_TCP_ADDR"
+              export REDIS_PORT="6379"
       - script:
           name: Run unit tests
           code: php -d memory_limit=1024M vendor/phpunit/phpunit/phpunit --debug --verbose

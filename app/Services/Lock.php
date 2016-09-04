@@ -23,9 +23,7 @@ class Lock
     {
         $this->requestId = $app['request']->getId();
 
-        $this->redis = $app['redis'];
-
-        $this->trace = $app['trace'];
+        $this->app = $app;
     }
 
     /**
@@ -40,11 +38,11 @@ class Lock
     {
         try
         {
-            $response = $this->redis->set($resource, $this->requestId, 'ex', $ttl, 'nx');
+            $response = $this->app['redis']->set($resource, $this->requestId, 'ex', $ttl, 'nx');
         }
         catch (PredisException $e)
         {
-            $this->trace->traceException($e);
+            $this->app['trace']->traceException($e);
 
             // Do not block the payment in case of any exception
             return true;
@@ -74,8 +72,8 @@ class Lock
     {
         try
         {
-            if (($this->redis->get($resource) === $this->requestId) and
-                ($this->redis->del($resource) === 1))
+            if (($this->app['redis']->get($resource) === $this->requestId) and
+                ($this->app['redis']->del($resource) === 1))
             {
                 return true;
             }
