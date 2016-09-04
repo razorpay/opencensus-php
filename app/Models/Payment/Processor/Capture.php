@@ -68,7 +68,7 @@ trait Capture
         $amount = $payment->getAmount();
 
         // set auto-capture 1
-        $payment->setAutoCaptureTrue();
+        $payment->setAutoCapturedTrue();
 
         try
         {
@@ -198,16 +198,29 @@ trait Capture
     {
         $this->verifyOrderUnpaid($this->payment);
 
-        $paymentCopy = $this->payment->replicate();
+        $paymentCopy = clone $this->payment;
 
         try
         {
+            $this->acquireLockOnPayment($this->payment);
+
             try
             {
                 $this->callGatewayFunction(Payment\Action::CAPTURE, $data);
             }
             catch (Exception\GatewayTimeoutException $ex)
             {
+                //
+                // We are currently doing capture queue for HDFC, as we don't want to mark
+                // the captured payment on gateway as failed on API
+                // Note: Capture shouldn't be done again for Cybersource
+                // as cybersource settles the amount from CH account again
+                //
+                if ($this->payment->getGateway() !== Payment\Gateway::HDFC)
+                {
+                    throw $ex;
+                }
+
                 $this->trace->traceException($ex);
 
                 $data['mode'] = $this->mode;
@@ -221,18 +234,15 @@ trait Capture
 
             $this->recordCapture();
         }
-        catch (Exception\BadRequestException $ex)
-        {
-            // For validation failures, we shouldn't mark capture as failed ever.
-            throw $ex;
-        }
-        catch (Exception\BadRequestValidationFailureException $ex)
-        {
-            // For validation failures, we shouldn't mark capture as failed ever.
-            throw $ex;
-        }
         catch (Exception\BaseException $ex)
         {
+            // For validation failures, we shouldn't mark capture as failed ever.
+            if (($ex instanceof Exception\BadRequestValidationFailureException) or
+                ($ex instanceof Exception\BadRequestException))
+            {
+                throw $ex;
+            }
+
             //
             // We need to use the old payment
             // because the recordCapture would have made some changes
@@ -253,6 +263,10 @@ trait Capture
                     TraceCode::PAYMENT_CAPTURE_FAILURE);
 
             throw $ex;
+        }
+        finally
+        {
+            $this->releaseLockOnPayment($this->payment);
         }
     }
 
@@ -282,6 +296,8 @@ trait Capture
 
         $this->repo->transaction(function() use ($payment)
         {
+            $autoCaptured = $payment->getAutoCaptured();
+
             $this->lockForUpdateAndReload($payment);
 
             if ($payment->hasBeenCaptured() === true)
@@ -290,7 +306,7 @@ trait Capture
                     ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_CAPTURED);
             }
 
-            $this->updatePaymentCaptured($payment);
+            $this->updatePaymentCaptured($payment, $autoCaptured);
 
             $this->createTransactionFromCapturedPayment($payment);
 
@@ -308,11 +324,13 @@ trait Capture
         $notifier->trigger(Notify::CAPTURED);
     }
 
-    protected function updatePaymentCaptured($payment)
+    protected function updatePaymentCaptured($payment, $autoCaptured = false)
     {
         $payment->setStatus(Payment\Status::CAPTURED);
 
         $payment->setCaptureTimestamp();
+
+        $payment->setAutoCaptured($autoCaptured);
     }
 
     protected function createTransactionFromCapturedPayment(Payment\Entity $payment)
@@ -370,7 +388,7 @@ trait Capture
 
             $order->setStatus(Order\Status::PAID);
 
-            $order->saveOrFail();
+            $this->repo->saveOrFail($order);
         }
     }
 }

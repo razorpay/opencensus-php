@@ -51,7 +51,7 @@ class Service extends Base\Service
         $rule->getValidator()->matchPaymentRules($plan);
         $rule->generateId();
 
-        (new Pricing\Repository)->saveOrFail($rule);
+        $this->repo->saveOrFail($rule);
 
         $this->trace->info(
             TraceCode::PRICING_PLAN_RULE_ADD_SUCCESS,

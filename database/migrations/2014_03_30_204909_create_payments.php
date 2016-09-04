@@ -92,10 +92,10 @@ class CreatePayments  extends Migration
             $table->string(Payment::TOKEN, 20)
                   ->nullable();
 
-            $table->string(Payment::GLOBAL_TOKEN, 20)
+            $table->string(Payment::TOKEN_ID, 14)
                   ->nullable();
 
-            $table->string(Payment::TOKEN_ID, 14)
+            $table->string(Payment::GLOBAL_TOKEN, 14)
                   ->nullable();
 
             $table->string(Payment::GLOBAL_TOKEN_ID, 14)

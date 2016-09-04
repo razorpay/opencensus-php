@@ -11,7 +11,7 @@ class TraceServiceProvider extends BaseServiceProvider
      *
      * @var bool
      */
-    protected $defer = true;
+    protected $defer = false;
 
     /**
      * Register the service provider.
@@ -20,6 +20,14 @@ class TraceServiceProvider extends BaseServiceProvider
      */
     public function register()
     {
+        //
+        // We need to register this macro here
+        // because immediately after it's being used
+        // in trace constructor
+        //
+
+        $this->registerRequestGetIdMacro();
+
         $this->app->singleton('trace', function($app)
         {
             return new Trace($app);
@@ -35,4 +43,18 @@ class TraceServiceProvider extends BaseServiceProvider
     {
         return array('trace');
     }
+
+    protected function registerRequestGetIdMacro()
+    {
+        $this->app['request']->macro('getId', function()
+        {
+            if ($this->requestId === null)
+            {
+                $this->requestId = bin2hex(openssl_random_pseudo_bytes(16));
+            }
+
+            return $this->requestId;
+        });
+    }
+
 }

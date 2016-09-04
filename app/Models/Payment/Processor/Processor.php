@@ -4,7 +4,6 @@ namespace RZP\Models\Payment\Processor;
 
 use App;
 use BasicAuth;
-use Request;
 
 use RZP\Constants\Mode;
 use RZP\Dashboard\Dashboard;
@@ -19,6 +18,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer;
+use RZP\Models\Base\Lock;
 
 class Processor
 {
@@ -40,6 +40,12 @@ class Processor
     const CALLBACK_PROCESS_AGAIN_DURATION = 20;
 
     /**
+     * Number of days after which authorized payments
+     * are auto-refunded
+     */
+    const AUTO_REFUND_TIME_PERIOD = 5;
+
+    /**
      * If payment fails on gateway then we may retry it with a different terminal/gateway.
      */
     const MAX_RETRY_ATTEMPTS = 3;
@@ -59,6 +65,7 @@ class Processor
     protected $orderRepo;
     protected $paymentRepo;
     protected $app;
+    protected $lock;
     protected $request;
     protected $methods;
     protected $refund;
@@ -83,6 +90,8 @@ class Processor
         $this->orderRepo = $this->repo->order;
 
         $this->request = $this->app['request'];
+
+        $this->lock = $this->app['api.lock'];
 
         // Only used in hdfc verify refund flow
         $this->verifyRefundStatus = null;
@@ -179,8 +188,6 @@ class Processor
         }
 
         $this->verifySignature($input, $payment);
-
-        return true;
     }
 
     protected function verifySignature($input, $payment)
@@ -191,9 +198,7 @@ class Processor
             'merchant_order_id' => $payment->getNotes()['merchant_order_id'],
         );
 
-        $str = implode('|', $data);
-
-        $signature = $this->getSignature($str);
+        $signature = $this->getSignature($data);
 
         // use hash_equals to prevent timing attacks
         if (! hash_equals($signature, $input['signature']))
@@ -205,8 +210,12 @@ class Processor
         return true;
     }
 
-    protected function getSignature($str)
+    protected function getSignature(array $data)
     {
+        ksort($data);
+
+        $str = implode('|', $data);
+
         return $this->app['basicauth']->sign($str);
     }
 
@@ -565,8 +574,7 @@ class Processor
 
     protected function retrieveToken($input)
     {
-        $token = (new Customer\Token\Repository)
-                        ->getByWalletTerminalAndCustomerId(
+        $token = $this->repo->token->getByWalletTerminalAndCustomerId(
                             $input['payment']['wallet'],
                             $input['payment']['terminal_id'],
                             $input['customer']->getId());
@@ -662,6 +670,43 @@ class Processor
         $merchant->setRelation('bankAccount', $ba);
 
         return $ba;
+    }
+
+    protected function shouldAutoCapture($payment)
+    {
+        if ($payment->isLateAuthorized() === false)
+        {
+            // If payment is signed
+            if ($payment->isSigned() === true)
+            {
+                return true;
+            }
+
+            // If payment order was marked as auto capture
+            if (($payment->order !== null) and
+                ($payment->order->getPaymentCapture() === true))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function acquireLockOnPayment($payment)
+    {
+        $resource = $payment->getId();
+
+        if ($this->lock->acquire($resource) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
+        }
+    }
+
+    protected function releaseLockOnPayment($payment)
+    {
+        $this->lock->release($this->payment->getId());
     }
 
     protected function createOrUpdateToken($input, $data)

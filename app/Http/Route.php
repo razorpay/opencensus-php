@@ -235,7 +235,7 @@ final class Route
         'customer_logout_global'                  => ['delete',   'apps/logout',                              'CustomerController@logoutCustomer'                                 ],
         'app_delete_token'                        => ['delete',   'apps/tokens/{token}',                      'CustomerController@deleteTokenForGlobalCustomer'                   ],
         'app_fetch_tokens'                        => ['get',      'apps/tokens',                              'CustomerController@fetchTokensForGlobalCustomer'                   ],
-        'app_fetch_payments'                      => ['post',     'apps/payments',                            'CustomerController@fetchPaymentsForGlobalCustomer'                 ],
+        'app_fetch_payments'                      => ['get',      'apps/payments',                            'CustomerController@fetchPaymentsForGlobalCustomer'                 ],
         'device_verify_token'                     => ['post',     'devices/{deviceToken}/verify',             'CustomerController@validateDeviceToken'                            ],
         'otp_post'                                => ['post',     'otp/create',                               'CustomerController@postOtp'                                        ],
         'otp_verify'                              => ['post',     'otp/verify',                               'CustomerController@verifyOtp'                                      ],
@@ -569,6 +569,7 @@ final class Route
     public static function getCurrentRouteName()
     {
         $router = self::$router;
+
         return $router->currentRouteName();
     }
 

@@ -243,6 +243,19 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::EXPIRY_YEAR);
     }
 
+    public function getTypeElseDefault()
+    {
+        // Fee based on the method type
+        $cardType = $this->getType();
+
+        if ($cardType === Card\Type::UNKNOWN)
+        {
+            $cardType = Card\Type::DEBIT;
+        }
+
+        return $cardType;
+    }
+
     public function setCountry($country)
     {
         $this->setAttribute(self::COUNTRY, $country);

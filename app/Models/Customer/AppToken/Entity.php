@@ -3,6 +3,7 @@
 namespace RZP\Models\Customer\AppToken;
 
 use RZP\Models\Base;
+use RZP\Constants\Table;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Entity extends Base\PublicEntity
@@ -20,7 +21,7 @@ class Entity extends Base\PublicEntity
 
     protected $entity           = 'app_token';
 
-    protected $table            = \RZP\Constants\Table::APP_TOKEN;
+    protected $table            = Table::APP_TOKEN;
 
     protected $generateIdOnCreate = true;
 

@@ -69,7 +69,6 @@ class Entity extends Base\PublicEntity
     const CURRENCY_LENGTH       = 3;
 
     const MIN_PAYMENT_AMOUNT    = 100;
-    const MAX_PAYMENT_AMOUNT    = 1000000000;
 
     protected static $sign      = 'pay';
 
@@ -91,7 +90,6 @@ class Entity extends Base\PublicEntity
         self::WALLET,
         self::CURRENCY,
         self::DESCRIPTION,
-        self::TOKEN,
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
@@ -119,10 +117,13 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_ID,
         self::GLOBAL_CUSTOMER_ID,
         self::APP_TOKEN,
-        self::APP_ID,
         self::TOKEN,
-        self::GLOBAL_TOKEN,
         self::TOKEN_ID,
+        self::GLOBAL_TOKEN,
+<<<<<<< HEAD
+        self::TOKEN_ID,
+=======
+>>>>>>> master
         self::GLOBAL_TOKEN_ID,
         self::EMAIL,
         self::CONTACT,
@@ -137,6 +138,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::TERMINAL_ID,
         self::TRANSACTION_ID,
+        self::AUTO_CAPTURED,
         self::ORDER_ID,
         self::SIGNED,
         self::VERIFIED,
@@ -401,9 +403,14 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SIGNED, $signed);
     }
 
-    public function setAutoCaptureTrue()
+    public function setAutoCapturedTrue()
     {
         $this->setAttribute(self::AUTO_CAPTURED, true);
+    }
+
+    public function setAutoCaptured($autoCaptured)
+    {
+        $this->setAttribute(self::AUTO_CAPTURED, $autoCaptured);
     }
 
     public function setVerified($verified)
@@ -600,7 +607,12 @@ class Entity extends Base\PublicEntity
 
     public function hasBeenAuthorized()
     {
-        return ($this->getAttribute(self::AUTHORIZED_AT) !== null);
+        return ($this->isAttributeNull(self::AUTHORIZED_AT));
+    }
+
+    public function hasTransaction()
+    {
+        return ($this->isAttributeNull(self::TRANSACTION_ID));
     }
 
     public function isCaptured()
@@ -626,6 +638,11 @@ class Entity extends Base\PublicEntity
     public function isFailed()
     {
         return ($this->getAttribute(self::STATUS) === Status::FAILED);
+    }
+
+    public function isLateAuthorized()
+    {
+        return ($this->getAttribute(self::LATE_AUTHORIZED) === true);
     }
 
     protected function isStatus($status)
@@ -686,11 +703,6 @@ class Entity extends Base\PublicEntity
     }
 
 // ----------------------- Getters ---------------------------------------------
-
-    public function getMerchantId()
-    {
-        return $this->getAttribute(self::MERCHANT_ID);
-    }
 
     public function getAmount()
     {
@@ -781,6 +793,11 @@ class Entity extends Base\PublicEntity
     public function getTransactionId()
     {
         return $this->getAttribute(self::TRANSACTION_ID);
+    }
+
+    public function getAutoCaptured()
+    {
+        return $this->getAttribute(self::AUTO_CAPTURED);
     }
 
     public function getErrorCode()
@@ -1118,11 +1135,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT_REFUNDED, $amountRefunded);
     }
 
-    public function scopeMerchantId($query, $merchantId)
-    {
-        return $query->where(self::MERCHANT_ID,'=',$merchantId);
-    }
-
     public function toArrayTraceRelevant()
     {
         $fields = array(
@@ -1149,6 +1161,11 @@ class Entity extends Base\PublicEntity
     public function scopeCreatedAtLessThan($query, $ts)
     {
         return $query->where(Payment\Entity::CREATED_AT, '<', $ts);
+    }
+
+    public function scopeMerchantId($query, $merchantId)
+    {
+        return $query->where(self::MERCHANT_ID,'=',$merchantId);
     }
 
 // --------------------- Query scopes section ends -----------------------------
