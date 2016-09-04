@@ -52,6 +52,10 @@ class LockTest extends TestCase
         {
             $this->capturePayment($payment['id'], $payment['amount']);
         });
+
+        $paymentEntity = $this->getEntityById('payment', $payment['id'], true);
+
+        $this->assertSame('authorized', $paymentEntity['status']);
     }
 
     public function testLockAcquiredRefundRequest()
@@ -80,6 +84,20 @@ class LockTest extends TestCase
         $capturedPayment = $this->capturePayment($payment['id'], $payment['amount']);
 
         $this->assertArraySelectiveEquals($expected, $capturedPayment);
+    }
+
+    public function testCaptureRequestWithException()
+    {
+        $payment = $this->defaultAuthPayment();
+
+        Redis::shouldReceive('set')
+                ->once()
+                ->andReturnUsing(function()
+                {
+                    throw new \Predis\Response\ServerException('Internal Error');
+                });
+
+        $this->capturePayment($payment['id'], $payment['amount']);
     }
 
     public function testLockCaptureRequestWithDiffRedisResponse()

@@ -4,6 +4,7 @@ namespace RZP\Services;
 
 use Redis;
 use Request;
+use Predis\PredisException;
 
 /**
  * The below lock implementation is based on single-instance redis redlock algorithm
@@ -23,6 +24,8 @@ class Lock
         $this->requestId = $app['request']->getId();
 
         $this->redis = $app['redis'];
+
+        $this->trace = $app['trace'];
     }
 
     /**
@@ -35,7 +38,17 @@ class Lock
      */
     public function acquire($resource, $ttl = 60)
     {
-        $response = $this->redis->set($resource, $this->requestId, 'ex', $ttl, 'nx');
+        try
+        {
+            $response = $this->redis->set($resource, $this->requestId, 'ex', $ttl, 'nx');
+        }
+        catch (PredisException $e)
+        {
+            $this->trace->traceException($e);
+
+            // Do not block the payment in case of any exception
+            return true;
+        }
 
         /**
          * Do not block the payment if redis returns unexpected response
@@ -59,11 +72,22 @@ class Lock
      */
     public function release($resource)
     {
-        if ($this->redis->get($resource) === $this->requestId)
+        try
         {
-            return $this->redis->del($resource);
+            if (($this->redis->get($resource) === $this->requestId) and
+                ($this->redis->del($resource) === 1))
+            {
+                return true;
+            }
+        }
+        catch (PredisException $e)
+        {
+            $this->trace->traceException($e);
+
+            // Do not block the payment in case of any exception
+            return true;
         }
 
-        return 0;
+        return false;
     }
 }

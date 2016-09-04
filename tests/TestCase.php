@@ -84,7 +84,7 @@ class TestCase extends IlluminateTestCase
             ->byDefault();
 
         Redis::shouldReceive('del')
-            ->andReturn(1)
+            ->andReturn(true)
             ->byDefault();
     }
 
