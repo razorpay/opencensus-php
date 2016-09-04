@@ -4,10 +4,11 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
-use RZP\Models\Card;
-use RZP\Models\Merchant;
-use RZP\Models\Customer;
-use RZP\Models\Terminal;
+use RZP\Models\Card\Entity as Card;
+use RZP\Models\Customer\Entity as Customer;
+use RZP\Models\Merchant\Entity as Merchant;
+use RZP\Models\Payment\Entity as Payment;
+use RZP\Models\Terminal\Entity as Terminal;
 use RZP\Models\Customer\Token\Entity as Token;
 
 class CreateTokens extends Migration {
@@ -66,26 +67,40 @@ class CreateTokens extends Migration {
             $table->index(Token::CREATED_AT);
 
             $table->foreign(Token::CUSTOMER_ID)
-                  ->references(Customer\Entity::ID)
+                  ->references(Customer::ID)
                   ->on(Table::CUSTOMER)
                   ->on_delete('restrict');
 
             $table->foreign(Token::CARD_ID)
-                  ->references(Card\Entity::ID)
+                  ->references(Card::ID)
                   ->on(Table::CARD)
                   ->on_delete('restrict');
 
             $table->foreign(Token::MERCHANT_ID)
-                  ->references(Merchant\Entity::ID)
+                  ->references(Merchant::ID)
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
 
             $table->foreign(Token::TERMINAL_ID)
-                  ->references(Terminal\Entity::ID)
+                  ->references(Terminal::ID)
                   ->on(Table::TERMINAL)
                   ->on_delete('restrict');
 
         });
+
+        Schema::table(Table::PAYMENT, function($table)
+        {
+            $table->foreign(Payment::TOKEN_ID)
+                  ->references(Token::ID)
+                  ->on(Table::TOKEN)
+                  ->on_delete('restrict');
+
+            $table->foreign(Payment::GLOBAL_TOKEN_ID)
+                  ->references(Token::ID)
+                  ->on(Table::TOKEN)
+                  ->on_delete('restrict');
+        });
+
     }
 
     /**
@@ -95,6 +110,14 @@ class CreateTokens extends Migration {
      */
     public function down()
     {
+        Schema::table(Table::PAYMENT, function($table)
+        {
+            $table->dropForeign(Table::PAYMENT.'_'.Payment::TOKEN_ID.'_foreign');
+
+            $table->dropForeign(Table::PAYMENT.'_'.Payment::GLOBAL_TOKEN_ID.'_foreign');
+        });
+
+
         Schema::table(Table::TOKEN, function($table)
         {
             $table->dropForeign(Table::TOKEN.'_'.Token::CUSTOMER_ID.'_foreign');
