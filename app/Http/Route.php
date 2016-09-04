@@ -524,6 +524,10 @@ final class Route
         'hosted' => array(
             'merchant_secret',
         ),
+
+        'h2h' => array(
+            'setl_reconcile_h2h',
+        ),
     );
 
     public static $slaveRoutes = [
