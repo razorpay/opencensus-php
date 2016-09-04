@@ -554,8 +554,6 @@ trait Authorize
         {
             $payment->token()->associate($token);
 
-            $payment->setToken($token->getToken());
-
             $gatewayInput['card'] = $this->getCardArrayForSavedToken($token, $input);
         }
         else
@@ -582,8 +580,6 @@ trait Authorize
             $gatewayInput['card'] = $this->createCardEntityFromSavedToken($token, $input);
 
             $payment->globalToken()->associate($token);
-
-            $payment->setGlobalToken($token->getToken());
 
             $payment->card->globalCard()->associate($token->card);
 
@@ -641,8 +637,6 @@ trait Authorize
 
         if ($token !== null)
         {
-            $this->payment->setToken($token->getToken());
-
             $this->payment->token()->associate($token);
         }
     }
@@ -667,8 +661,6 @@ trait Authorize
 
         if ($token !== null)
         {
-            $this->payment->setGlobalToken($token->getToken());
-
             $this->payment->globalToken()->associate($token);
         }
     }
@@ -966,7 +958,7 @@ trait Authorize
 
         if (($payment->isMethod(Payment\Method::CARD)) and
             ($payment->getSave() === true) and
-            ($payment->getGlobalToken() !== null))
+            ($payment->globalToken() !== null))
         {
             $notifier = new Notify($this->payment);
 
