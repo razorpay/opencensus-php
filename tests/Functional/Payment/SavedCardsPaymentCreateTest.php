@@ -68,25 +68,6 @@ class SavedCardPaymentCreateTest extends TestCase
     }
 
     /**
-     * test card payment creation using a local saved card and token_id
-     */
-    public function testLocalSavedCardPaymentCreateWithTokenId()
-    {
-        $this->payment = $this->getDefaultPaymentArray();
-
-        $this->payment['card'] = array('cvv'  => 111);
-        $this->payment['token'] = 'token_100000custcard';
-        $this->payment['customer_id'] = 'cust_100000customer';
-
-        $content = $this->doAuthAndCapturePayment($this->payment);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertEquals($payment['token'], 'token_100000custcard');
-        $this->assertEquals($payment['customer_id'], '100000customer');
-    }
-
-    /**
      * test emi payment creation using a local saved card
      */
     public function testLocalSavedCardEmiPaymentCreate()
@@ -153,30 +134,6 @@ class SavedCardPaymentCreateTest extends TestCase
 
         $this->assertEquals($payment['global_token'], '1000gcardtoken');
         $this->assertEquals($payment['global_token_id'], '10000custgcard');
-        $this->assertEquals($payment['app_token'], '1000000custapp');
-        $this->assertEquals($card['global_card_id'], '100000000gcard');
-    }
-
-    /**
-     * test card payment creation using global saved card and token_id
-     */
-    public function testGlobalSavedCardPaymentCreateWithTokenId()
-    {
-        $this->payment = $this->getDefaultPaymentArray();
-
-        $this->payment['card'] = array(
-            'cvv'  => 111
-        );
-
-        $this->payment['token'] = 'token_10000custgcard';
-        $this->payment['app_token'] = 'capp_1000000custapp';
-
-        $content = $this->doAuthAndCapturePayment($this->payment);
-
-        $payment = $this->getLastEntity('payment', true);
-        $card = $this->getLastEntity('card', true);
-
-        $this->assertEquals($payment['global_token'], 'token_10000custgcard');
         $this->assertEquals($payment['app_token'], '1000000custapp');
         $this->assertEquals($card['global_card_id'], '100000000gcard');
     }

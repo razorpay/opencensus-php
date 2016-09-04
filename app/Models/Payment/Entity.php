@@ -120,10 +120,6 @@ class Entity extends Base\PublicEntity
         self::TOKEN,
         self::TOKEN_ID,
         self::GLOBAL_TOKEN,
-<<<<<<< HEAD
-        self::TOKEN_ID,
-=======
->>>>>>> master
         self::GLOBAL_TOKEN_ID,
         self::EMAIL,
         self::CONTACT,
