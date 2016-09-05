@@ -37,6 +37,8 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($pricing);
 
-        return $pricing;
+        $plan = new Plan(array($pricing));
+
+        return $plan;
     }
 }

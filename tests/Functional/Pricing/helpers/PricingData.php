@@ -48,12 +48,15 @@ return [
 
     'testUploadPricingPlan' => [
         'request' => [
-            'content' => [['plan_name' => 'TestUploadPlan2',
-                'payment_method' => 'netbanking',
-                'percent_rate' => 1000,
+            'content' => [
+                [
+                    'plan_name'      => 'TestUploadPlan2',
+                    'payment_method' => 'netbanking',
+                    'percent_rate'   => 1000,
                 ],
-                ['payment_method' => 'card',
-                'percent_rate' => 1000,
+                [
+                    'payment_method' => 'card',
+                    'percent_rate'   => 1000,
                 ]
             ],
             'url' => '/pricing',
