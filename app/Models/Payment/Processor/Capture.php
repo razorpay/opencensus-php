@@ -52,7 +52,8 @@ trait Capture
         // set auto-capture 1
         $payment->setAutoCapturedTrue();
 
-        $this->trace->info(TraceCode::PAYMENT_AUTO_CAPTURE);
+        $this->trace->info(
+            TraceCode::PAYMENT_AUTO_CAPTURE, ['payment_id' => $payment->getId()]);
 
         try
         {
@@ -163,13 +164,13 @@ trait Capture
         {
             $amount = $amount + $payment->getFee();
 
-            $payment->setCapture($amount);
+            $payment->setCaptureAmount($amount);
 
             $this->trace->info(
                 TraceCode::PAYMENT_CAPTURE_REQUEST,
                 [
-                    'payment_id' => $id,
-                    'amount' => $input['amount'],
+                    'payment_id' => $payment->getId(),
+                    'amount' => $amount,
                     'message' => 'Adds fee to the amount because fee bearer is customer',
                 ]
             );

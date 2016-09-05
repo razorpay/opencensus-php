@@ -347,7 +347,7 @@ class Processor
 
         $payment = $this->payment;
 
-        assert ($payment->isAuthorized() or $payment->isFailed());
+        assert (($payment->isAuthorized() or $payment->isCreated()));
 
         $payment->setStatus(Payment\Status::FAILED);
 
