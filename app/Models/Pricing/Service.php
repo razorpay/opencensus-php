@@ -15,7 +15,7 @@ class Service extends Base\Service
 {
     public function createPricingPlan($input)
     {
-        $pricing = (new Pricing\Core)->buildPricingPlan($input);
+        $pricing = (new Pricing\Core)->createPricingPlan($input);
 
         $plan = new Plan(array($pricing));
 
@@ -30,17 +30,14 @@ class Service extends Base\Service
     {
         $this->repo->transactionOnLiveAndTest(function() use ($input){
 
-            $pricing = (new Pricing\Core)->buildPricingPlan($input[0]);
+            $pricing = (new Pricing\Core)->createPricingPlan($input[0]);
 
-            $planId = $pricing->plan_id;
+            $planId = $pricing->getPlanId();
             $plan = $this->repo->pricing->getPricingPlanByIdOrFailPublic($planId);
 
+            array_shift($input);
             foreach ($input as $key => $value)
             {
-                if ($key === 0)
-                {
-                    continue;
-                }
                 $rule = (new Pricing\Core)->addPlanRule($value, $plan);
             }
         });

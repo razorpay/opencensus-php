@@ -17,28 +17,25 @@ class Core extends Base\Core
         $rule = (new Entity)->addPlanRule($input, $plan);
 
         $rule->getValidator()->matchPaymentRules($plan);
-        $rule->generateId();
 
-        (new Pricing\Repository)->saveOrFail($rule);
+        $this->repo->saveOrFail($rule);
 
         return $rule;
     }
 
-    public function buildPricingPlan($input)
+    public function createPricingPlan($input)
     {
-        $pricing = (new Pricing\Entity)->build($input);
-
         $this->trace->info(
             TraceCode::PRICING_PLAN_CREATE_ATTEMPT,
             $input);
+
+        $pricing = (new Pricing\Entity)->build($input);
 
         $plan = $this->repo->pricing->getPricingPlanByName($input[Entity::PLAN_NAME]);
 
         Pricing\Validator::validatePlanCountZero($plan);
 
-        $pricing->generateId();
-
-        (new Pricing\Repository)->saveOrFail($pricing);
+        $this->repo->saveOrFail($pricing);
 
         return $pricing;
     }
