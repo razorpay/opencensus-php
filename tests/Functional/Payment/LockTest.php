@@ -23,7 +23,7 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
  * instead of utilizing the default created payment entity.
  */
 
-class MutexTest extends TestCase
+class LockTest extends TestCase
 {
     use PaymentTrait;
 
@@ -31,7 +31,7 @@ class MutexTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__ . '/helpers/mutexTestData.php';
+        $this->testDataFilePath = __DIR__ . '/helpers/lockTestData.php';
 
         parent::setUp();
 
