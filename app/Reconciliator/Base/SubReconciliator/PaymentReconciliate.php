@@ -64,7 +64,10 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         foreach ($fileContents as $row)
         {
-            $this->runReconciliate($row, $extraDetails);
+            $this->repo->transactionOnLiveAndTest(function() use ($row, $extraDetails)
+            {
+                $this->runReconciliate($row, $extraDetails);
+            });
         }
 
         return $this->getSummary();
