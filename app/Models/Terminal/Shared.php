@@ -26,7 +26,7 @@ class Shared
     const SHARP_RAZORPAY_TERMINAL           = '1000SharpTrmnl';
     const CYBERSOURCE_HDFC_TERMINAL         = '1000CybrsTrmnl';
     const CYBERSOURCE_AXIS_TERMINAL         = '1000CybAxTrmnl';
-    const AIRTELMONEY_RAZORPAY_TERMINAL     = '100ARTLMNYTmnl';
+    const AIRTELMONEY_RAZORPAY_TERMINAL     = '100ArtlMnyTmnl';
 
     protected static $shared = array(
         self::ATOM_RAZORPAY_TERMINAL,

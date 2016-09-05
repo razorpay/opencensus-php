@@ -8,15 +8,17 @@ use Lib\PhoneBook;
 
 class Gateway extends Base\Gateway
 {
-    protected function createGatewayPaymentEntity($attributes)
+    protected function createGatewayPaymentEntity($attributes, $action = null;)
     {
         $attr = $this->getMappedAttributes($attributes);
+
+        $action = $action ? $action : $this->action;
 
         $payment = $this->getNewGatewayPaymentEntity();
 
         $payment->setPaymentId($this->input['payment']['id']);
 
-        $payment->setAction($this->action);
+        $payment->setAction($action);
 
         $payment->setWallet($this->input['payment']['wallet']);
 

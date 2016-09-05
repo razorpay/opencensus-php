@@ -8,33 +8,34 @@ use RZP\Error\ErrorCode;
 class ResponseCodeMap
 {
     public static $codes = array(
-        901 => ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_ID,
-        905 => ErrorCode::GATEWAY_ERROR_INVALID_CALLBACK_URL,
-        909 => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_CURRENCY,
-        912 => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_AMOUNT,
-        913 => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_AMOUNT,
-        920 => ErrorCode::GATEWAY_ERROR_INVALID_DATE_FORMAT,
-        931 => ErrorCode::GATEWAY_ERROR_INVALID_DATE_FORMAT,
-        // Refund
-        923 => ErrorCode::GATEWAY_ERROR_PAYMENT_CREDIT_LESS_THAN_DEBIT,
-
-        930 => ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_ID,
-        999 => ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
+        '901'   => ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_ID,
+        '905'   => ErrorCode::GATEWAY_ERROR_INVALID_CALLBACK_URL,
+        '909'   => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_CURRENCY,
+        '912'   => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_AMOUNT,
+        '913'   => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_AMOUNT,
+        '920'   => ErrorCode::GATEWAY_ERROR_INVALID_DATE_FORMAT,
+        '931'   => ErrorCode::GATEWAY_ERROR_INVALID_DATE_FORMAT,
+        '923'   => ErrorCode::GATEWAY_ERROR_PAYMENT_CREDIT_LESS_THAN_DEBIT,
+        '930'   => ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_ID,
+        '999'   => ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
+        '13365' => ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED,
+        '14236' => ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
     );
 
     protected static $success = array(
-        000
+        '000'
     );
-
 
     public static function getResponseMessage($code)
     {
         $codes = self::$codes;
 
         if (in_array($code, $codes))
-            return $codes[(int)$code];
+        {
+            return $codes[$code];
+        }
 
-        // If the response code is not mapped, return error message airtel 
+        // If the response code is not mapped, return error message airtel
         // gives us.
         return Airtelmoney\ResponseCode::getResponseMessage($code);
     }
@@ -43,8 +44,8 @@ class ResponseCodeMap
     {
         $class = 'RZP\Error\ErrorCode::';
 
-        if (empty($code) or
-            isset(self::$codes[$code]) === false)
+        if ((empty($code) === true) or
+             (isset(self::$codes[$code]) === false))
         {
             return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
         }

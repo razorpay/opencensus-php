@@ -6,131 +6,64 @@ use Carbon\Carbon;
 
 use RZP\Constants\HashAlgo;
 use RZP\Constants\Mode;
+use RZP\Error;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Wallet\Base;
+use RZP\Gateway\Wallet\Base\Action;
+use RZP\Trace\TraceCode;
 
 class Gateway extends Base\Gateway
 {
     use AuthorizeFailed;
 
-    protected $canRunOTPFlow = false;
+    const PROXY_URL = 'https://splunk.razorpay.com:8888';
+
+    protected $canRunOtpFlow = false;
 
     protected $topup = false;
 
     protected $gateway = 'wallet_airtelmoney';
 
     protected $map = [
-        'MID'               => 'gateway_merchant_id',
-        'CUST_MOBILE'       => 'contact',
-        'CUST_EMAIL'        => 'email',
-        'TXN_REF_NO'        => 'payment_id',
-        'AMT'               => 'amount',
-        'TRAN_ID'           => 'gateway_payment_id',
-        'MSG'               => 'response_description',
-        'STATUS'            => 'status',
-        'NEW_FDC_TXN_ID'    => 'gateway_refund_id',
-        'TRAN_DATE'         => 'reference1',
-        'NEW_FDC_TXN_DATE'  => 'reference2',
+        RequestFields::MID               => 'gateway_merchant_id',
+        RequestFields::CUST_MOBILE       => 'contact',
+        RequestFields::CUST_EMAIL        => 'email',
+        RequestFields::TXN_REF_NO        => 'payment_id',
+        RequestFields::AMT               => 'amount',
+        ResponseFields::MSG              => 'response_description',
+        ResponseFields::STATUS           => 'status_code',
+        ResponseFields::TRAN_ID          => 'gateway_payment_id',
+        ResponseFields::NEW_FDC_TXN_ID   => 'gateway_refund_id',
+        ResponseFields::TRAN_DATE        => 'reference1',
+        ResponseFields::NEW_FDC_TXN_DATE => 'reference2',
+        'received'                       => 'received',
     ];
 
     public function authorize(array $input)
     {
         parent::authorize($input);
+
+        $request = $this->getAuthRedirectRequestArray($input);
+
+        $this->traceGatewayPaymentRequest($request, $input);
+
+        // It is a redirect to airtel money.
+        return $request;
     }
 
     public function callback(array $input)
     {
         parent::callback($input);
 
-        // E-Comm Transaction URL on success and
-        // failure of wallet transaction
-        if (isset($input['Status']) && $input['Status'] === Status::SUCCESS)
-            $this->callbackDebitSuccessFlow($input);
-        else
-            $this->callbackDebitFailureFlow($input);
-    }
+        $content = $input['gateway'];
 
-    public function debit(array $input)
-    {
-        $this->action($input, Action::DEBIT_WALLET);
+        $this->handleRequestFailure($content);
 
-        $request = $this->getDebitRedirectRequestArray($input);
-
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
-
-        return $request;
-    }
-
-    protected function callbackDebitSuccessFlow(array $input)
-    {
-        // Create a payment gateway entity and save it.
-        $contentToSave = [
-            'MID'         => $this->getMerchantId($input['terminal']),
-            'CUST_EMAIL'  => $input['payment']['email'],
-            'CUST_MOBILE' => $this->getFormattedContact($input['payment']['contact']),
-            'STATUS'      => $content['status'],
-            'TRAN_ID'     => $content['TRAN_ID'],
-            'MSG'         => $content['MSG'],
-            'TXN_REF_NO'  => $content['TXN_REF_NO'],
-            'TRAN_DATE'   => $content['TRAN_DATE'],
-            'received'    => true
-        ];
-
-        //  Changing action to AUTHORIZE to keep the action consistent
-        $this->action = Action::AUTHORIZE;
-
-        $this->createGatewayPaymentEntity($contentToSave);
-
-        $this->action = Action::DEBIT_WALLET;
-
-    }
-
-    protected function getHashOfString($hashString)
-    {
-        return strtolower(hash(HashAlgo::SHA512, $hashString, false));
-    }
-
-    /*
-     * Convert the date to DDMMYYYYhhmmss
-     */
-    protected function getFormattedDate($date = null)
-    {
-        if($date === null)
-        {
-            $date = Carbon::now();
-        }
-
-        $format = 'dmYHis';
-
-        return Carbon::createFromFormat($date, $format);
-    }
-
-    protected function getDebitRedirectRequestArray($input)
-    {
-        $payment = $input['payment'];
-
-        $content = [
-            'MID'           => $this->getMerchantId($input['terminal']),
-            'TXN_REF_NO'    => $payment['id'],
-            'SU'            => $input['callbackUrl'],
-            'FU'            => $input['callbackUrl'],
-            'AMT'           => (string) $input['amount'],
-            'CUR'           => 'INR',
-            'DATE'          => $this->getFormattedDate($payment['created_at']),
-            'CUST_MOBILE'   => $this->getFormattedContact($payment['contact']),
-            'CUST_EMAIL'    => $payment['email'],
-        ];
-
-        $content['hash'] = $this->generateHashForDebitArray($content);
-
-        return $this->getStandardRequestArray($content);
-    }
-
-    protected function generateHashForDebitArray(array $content)
-    {
-        $hashString = $content['MID'].'#'.$content['TXN_REF_NO'].'#';
-        $hashString .= $content['AMT'].$content['DATE'].'#'.$this->getSecretKey();
-
-        return $this->getHashOfString($hashString);
+        $this->callbackAuthSuccessFlow($input);
     }
 
     public function refund(array $input)
@@ -139,19 +72,15 @@ class Gateway extends Base\Gateway
 
         $request = $this->getRefundRequestArray($input);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+        $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST, $request);
 
         $response = $this->sendGatewayRequest($request);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $response);
+        $content = $this->xmlToArray($response->body);
 
-        $content = $response->body;
+        $this->handleRequestFailure($content);
 
-        if ($content['CODE'] !== ResponseCode::SUCCESS and
-                $content['STATUS'] !== Status::SUCCESS)
-        {
-            //TODO: Raise Error
-        }
+        $this->trace->info(TraceCode::GATEWAY_REFUND_RESPONSE, $content);
 
         $contentToSave = [
             'payment_id'            => $input['payment']['id'],
@@ -160,40 +89,19 @@ class Gateway extends Base\Gateway
             'amount'                => $input['refund']['amount'],
             'wallet'                => $input['payment']['wallet'],
             'email'                 => $input['payment']['email'],
-            'received'              => 1,
+            'received'              => true,
             'contact'               => $this->getFormattedContact($input['payment']['contact']),
             'gateway_merchant_id'   => $this->getMerchantId($input['terminal']),
             'refund_id'             => $input['refund']['id'],
-            'response_code'         => '',
-            'response_description'  => $content['MSG'],
-            'status_code'           => $content['STATUS'],
-            'error_message'         => '',
-            'gateway_refund_id'     => $content['NEW_FDC_TXN_ID'],
-            'reference2'            => $content['NEW_FDX_TXN_DATE'],
+            'response_description'  => $content[ResponseFields::MSG],
+            'status_code'           => $content[ResponseFields::STATUS],
+            'gateway_refund_id'     => $content[ResponseFields::NEW_FDC_TXN_ID],
+            'reference2'            => $this->getEpochTime(
+                $content[ResponseFields::NEW_FDC_TXN_DATE],
+                Constants::NEW_FDC_TXN_DATE_FORMAT),
         ];
 
         $this->createGatewayRefundEntity($contentToSave);
-    }
-
-    protected function getRefundRequestArray(array $input)
-    {
-        $wallet = $this->getRepo()->fetchWalletByPaymentId($input['payment']['id']);
-
-        $content = [
-            'MID'           => $this->getMerchantId($input['terminal']),
-            'TXN_ID'        => $wallet['gateway_payment_id'],
-            'AMT'           => (string) $input['amount'],
-            'DATE'          => $this->getFormattedDate($wallet['reference1']),
-            'REMARKS'       => 'Razorpay Refund',
-        ];
-
-        $request = $this->getStandardRequestArray($content);
-
-        $request['headers'] = array(
-            'Content-Type' => 'application/x-www-form-urlencoded',
-        );
-
-        return $request;
     }
 
     public function verify(array $input)
@@ -219,13 +127,13 @@ class Gateway extends Base\Gateway
 
         $this->response = $response;
 
-        $content = $this->jsonToArray($response->body);
+        $content = $this->xmlToArray($response->body);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY,
             [
-                'content' => $content,
-                'gateway' => 'airtelmoney',
+                'content'    => $content,
+                'gateway'    => $this->gateway,
                 'payment_id' => $input['payment']['id'],
             ]);
 
@@ -240,15 +148,18 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyRequestArray($input)
     {
-        $wallet = $this->getRepo()->fetchWalletByPaymentId($input['payment']['id']);
-        $content = [
-            'MID'        => $this->getMerchantId($input['terminal']),
-            'TXN_REF_NO' => $wallet['gateway_payment_id'],
-            'DATE'       => $this->getFormattedDate($wallet['reference2']),
-        ];
-        return $this->getStandardRequestArray($content);
-    }
+        $wallet = $this->repo->fetchWalletByPaymentId($input['payment']['id']);
 
+        $content = [
+            RequestFields::MID        => $this->getMerchantId($input['terminal']),
+            RequestFields::TXN_REF_NO => $input['payment']['id'],
+            RequestFields::DATE       => $this->getFormattedDate(
+                $wallet['reference1'],
+                Constants::REQUEST_DATE_FORMAT),
+        ];
+
+        return $this->getStandardRequestArray($content, 'post');
+    }
 
     protected function verifyPayment($verify)
     {
@@ -257,35 +168,37 @@ class Gateway extends Base\Gateway
         $content = $verify->verifyResponseContent;
 
         $verify->status = VerifyResult::STATUS_MATCH;
-        // In Airtel, There is no explicit field which says transaction is 
-        // successful.
-        // Compare the amount and 
 
-        if ($content['STATUS'] !== Status::SUCCESS)
+        // Verify API of airtel sends multiple transaction per API call.
+        // In our case, Refund and Authorize transactions as they use same
+        // payment ID. We handle the case differently.
+        if (isset($content['nestedParams']) === false)
         {
-            $verify->gatewaySuccess = false;
-
-            if (($payment === null) or
-                (($input['payment']['status'] === 'failed') or
-                    ($input['payment']['status'] === 'created')))
+            if ($content[ResponseFields::STATUS] !== Status::SUCCESS)
             {
-                $verify->apiSuccess = false;
+                $this->verifyStatusOnGatewayFailure($verify, $payment, $input);
             }
-            else if (($payment['received'] === false) and
-                        (($payment['status_code'] === null) or
-                        ($payment['status_code'] !== (string) Status::SUCCESS)))
+            else if ($content[ResponseFields::STATUS] === Status::SUCCESS)
             {
-                $verify->apiSuccess = false;
-            }
-            else if ($payment['status_code'] === (string) Status::SUCCESS)
-            {
-                $verify->status = VerifyResult::STATUS_MISMATCH;
-                $verify->apiSuccess = true;
+                $this->verifyStatusOnGatewaySuccess($verify, $payment, $input);
             }
         }
-        else if ($content['STATUS'] === Status::SUCCESS)
+        else
         {
-            $verify->gatewaySuccess = true;
+            $content = (array) $content['nestedParams'];
+            $content = $content['nParamList'];
+            $authTransaction  = $this->getVerifyArrayFromXml((array) $content[0]);
+            $refundTransaction = $this->getVerifyArrayFromXml((array) $content[1]);
+
+            $verify->gatewaySuccess = false;
+
+            // If both refund and authorize are successful. Mark it as gateway
+            // success.
+            if ($authTransaction[ResponseFields::STATUS] === Status::SUCCESS and
+                ($refundTransaction[ResponseFields::STATUS] === Status::SUCCESS))
+            {
+                $verify->gatewaySuccess = true;
+            }
 
             if (($input['payment']['status'] !== 'created') and
                 ($input['payment']['status'] !== 'failed'))
@@ -294,9 +207,14 @@ class Gateway extends Base\Gateway
             }
             else
             {
-                $verify->status = VerifyResult::STATUS_MISMATCH;
                 $verify->apiSuccess = false;
+
+                if ($verify->gatewaySuccess)
+                {
+                    $verify->status = VerifyResult::STATUS_MISMATCH;
+                }
             }
+
         }
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
@@ -306,11 +224,66 @@ class Gateway extends Base\Gateway
         return $verify->status;
     }
 
+    protected function verifyStatusOnGatewayFailure($verify, $payment, $input)
+    {
+        $verify->gatewaySuccess = false;
+
+        if (($payment === null) or
+            (($input['payment']['status'] === 'failed') or
+                ($input['payment']['status'] === 'created')))
+        {
+            $verify->apiSuccess = false;
+        }
+        else if (($payment['received'] === false) and
+                    (($payment['status_code'] === null) or
+                    ($payment['status_code'] !== Status::SUCCESS)))
+        {
+            $verify->apiSuccess = false;
+        }
+        else if ($payment['status_code'] === Status::SUCCESS)
+        {
+            $verify->status = VerifyResult::STATUS_MISMATCH;
+            $verify->apiSuccess = true;
+        }
+    }
+
+    protected function verifyStatusOnGatewaySuccess($verify, $payment, $input)
+    {
+        $verify->gatewaySuccess = true;
+
+        if (($input['payment']['status'] !== 'created') and
+            ($input['payment']['status'] !== 'failed'))
+        {
+            $verify->apiSuccess = true;
+        }
+        else
+        {
+            $verify->status = VerifyResult::STATUS_MISMATCH;
+            $verify->apiSuccess = false;
+        }
+    }
+
+    protected function getVerifyArrayFromXml(array $content)
+    {
+        $params = $content['nparam'];
+
+        $transaction = array();
+
+        foreach ($params as $param)
+        {
+            $attr = (array) $param;
+            $attr = $attr['@attributes'];
+            $transaction[$attr['name']] = $attr['value'];
+        }
+        return $transaction;
+    }
+
     protected function saveVerifyContentIfNeeded($payment, $content)
     {
         $this->action = Action::AUTHORIZE;
 
-        if (isset($content['STATUS']) and $content['STATUS'] === Status::VERIFY_SUCCESS)
+        if ((isset($content[ResponseFields::STATUS])) and
+            ($content[ResponseFields::STATUS] === Status::VERIFY_SUCCESS))
         {
             $walletAttributes = $this->getWalletContentFromVerify($payment, $content);
 
@@ -333,20 +306,176 @@ class Gateway extends Base\Gateway
     protected function getWalletContentFromVerify($payment, array $content)
     {
         $contentToSave = [
-            'MID'         => $this->getMerchantId($this->input['terminal']),
-            'CUST_EMAIL'  => $this->input['payment']['email'],
-            'CUST_MOBILE' => $this->getFormattedContact($this->input['payment']['contact']),
-            'STATUS'      => Status::SUCCESS,
-            'TXN_REF_NO'  => $content['paymentId'],
-            'received'    => true
+            RequestFields::MID         => $this->getMerchantId($this->input['terminal']),
+            RequestFields::CUST_EMAIL  => $this->input['payment']['email'],
+            RequestFields::CUST_MOBILE => $this->getFormattedContact($this->input['payment']['contact']),
+            ResponseFields::STATUS     => Status::SUCCESS,
+            RequestFields::TXN_REF_NO  => $this->input['payment']['id'],
+            'received'                 => true,
         ];
 
         if (isset($payment['amount']) === false)
         {
-            $contentToSave['amount'] = $this->input['payment']['amount'];
+            $contentToSave[RequestFields::AMT] = $this->input['payment']['amount'];
         }
 
         return $contentToSave;
     }
 
+    protected function getMerchantId($terminal)
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->config['test_merchant_id'];
+        }
+
+        return $terminal['gateway_merchant_id'];
+    }
+
+    protected function getEndMerchantId($terminal)
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->config['test_end_mid'];
+        }
+
+        return $terminal['gateway_merchant_id2'];
+    }
+
+    protected function shouldReturnIfPaymentNullInVerifyFlow($verify)
+    {
+        return false;
+    }
+
+    protected function getFormattedDate($date = null, $format)
+    {
+        return Carbon::createFromTimestamp($date)->format($format);
+    }
+
+    protected function getEpochTime($date, $format)
+    {
+        return Carbon::createFromFormat($format, (string) $date)->timestamp;
+    }
+
+    protected function handleRequestFailure($content)
+    {
+        if ((isset($content[ResponseFields::STATUS]) === false) or
+            ($content[ResponseFields::STATUS] !== Status::SUCCESS))
+        {
+            $this->trace->error(TraceCode::GATEWAY_PAYMENT_ERROR, $content);
+
+            if (isset($content[ResponseFields::MESSAGE]))
+            {
+                // Handle Generic Interface layer messages.
+                // They have only two fields - STATUS and MESSAGE
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+                    $content[ResponseFields::STATUS],
+                    $content[ResponseFields::MESSAGE]);
+            }
+            else if (isset($content[ResponseFields::ERR_CODE]))
+            {
+                // It's a different exception of airtel money when refund for same
+                // amount and same airtel transaction Id is initiated within a span
+                // of 5 minutes.
+                // TODO Good to have a test case to simulate it.
+                throw new Exception\GatewayErrorException(
+                    ResponseCodeMap::getApiErrorCode($content[ResponseFields::ERR_CODE]),
+                    $content[ResponseFields::ERR_CODE],
+                    $content[ResponseFields::TEXT]);
+            }
+
+            throw new Exception\GatewayErrorException(
+                ResponseCodeMap::getApiErrorCode($content[ResponseFields::CODE]),
+                $content[ResponseFields::CODE],
+                $content[ResponseFields::MSG]);
+        }
+    }
+
+    protected function callbackAuthSuccessFlow(array $input)
+    {
+        $content = $input['gateway'];
+
+        $date = $this->getEpochTime($content[ResponseFields::TRAN_DATE], Constants::TRAN_DATE_FORMAT)
+
+        // Create a payment gateway entity and save it.
+        $contentToSave = [
+            RequestFields::MID         => $this->getMerchantId($input['terminal']),
+            RequestFields::CUST_EMAIL  => $input['payment']['email'],
+            RequestFields::CUST_MOBILE => $this->getFormattedContact($input['payment']['contact']),
+            RequestFields::AMT         => $content[ResponseFields::TRAN_AMT]*100,
+            ResponseFields::STATUS     => $content[ResponseFields::STATUS],
+            ResponseFields::MSG        => $content[ResponseFields::MSG],
+            ResponseFields::TXN_REF_NO => $content[ResponseFields::TXN_REF_NO],
+            ResponseFields::TRAN_ID    => $content[ResponseFields::TRAN_ID],
+            ResponseFields::TRAN_DATE  => $date,
+            'received'                 => true
+        ];
+
+        // Changing action to AUTHORIZE to keep the action consistent
+        $this->action = Action::AUTHORIZE;
+
+        $this->createGatewayPaymentEntity($contentToSave);
+
+        $this->action = Action::CALLBACK;
+    }
+
+    protected function getHashOfString($hashString)
+    {
+        return hash(HashAlgo::SHA512, $hashString, false);
+    }
+
+    protected function getAuthRedirectRequestArray($input)
+    {
+        $payment = $input['payment'];
+
+        $date = $this->getFormattedDate($payment['created_at'], Constants::REQUEST_DATE_FORMAT)
+
+        $content = [
+            RequestFields::MID         => $this->getMerchantId($input['terminal']),
+            RequestFields::TXN_REF_NO  => $payment['id'],
+            RequestFields::SU          => $input['callbackUrl'],
+            RequestFields::FU          => $input['callbackUrl'],
+            RequestFields::AMT         => $input['payment']['amount']/100,
+            RequestFields::CUR         => Constants::INR,
+            RequestFields::DATE        => $date,
+            RequestFields::CUST_MOBILE => $this->getFormattedContact($payment['contact']),
+            RequestFields::CUST_EMAIL  => $payment['email'],
+            RequestFields::END_MID     => $this->getEndMerchantId($input['terminal']),
+        ];
+
+        $content[RequestFields::HASH] = $this->getHashOfArray($content);
+
+        return $this->getStandardRequestArray($content, 'post');
+    }
+
+    protected function getStringToHash($content, $glue = '')
+    {
+        $hashArray = [
+            $content['MID'],
+            $content['TXN_REF_NO'],
+            $content['AMT'],
+            $content['DATE'],
+            $this->getSecret(),
+        ];
+
+        return implode('#', $hashArray);
+    }
+
+    protected function getRefundRequestArray(array $input)
+    {
+        $wallet = $this->repo->fetchWalletByPaymentId($input['payment']['id']);
+
+        $date = $this->getFormattedDate($wallet['reference1'], Constants::REQUEST_DATE_FORMAT)
+
+        $content = [
+            RequestFields::MID     => $this->getMerchantId($input['terminal']),
+            RequestFields::TXN_ID  => $wallet['gateway_payment_id'],
+            RequestFields::AMT     => $input['amount']/100,
+            RequestFields::DATE    => $date,
+            RequestFields::REMARKS => 'Razorpay Refund',
+        ];
+
+        return $this->getStandardRequestArray($content, 'post');
+    }
 }

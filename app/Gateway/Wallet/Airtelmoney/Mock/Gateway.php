@@ -12,9 +12,9 @@ class Gateway extends Airtelmoney\Gateway
 {
     use Base\Mock\GatewayTrait;
 
-    public function topup($input)
+    public function authorize(array $input)
     {
-        $request = parent::topup($input);
+        $request = parent::authorize($input);
 
         $url = Route::getUrlWithPublicAuth(
                     'mock_wallet_payment_with_paymentid',

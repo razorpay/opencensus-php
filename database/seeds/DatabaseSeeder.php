@@ -834,9 +834,9 @@ class DatabaseSeeder extends Seeder
     {
         DB::table(Table::TERMINAL)->insert(
             array(
-                'id'                        => '2byKhdVKZ9iDex',
+                'id'                        => '2byKhdVKZ9iDey',
                 'merchant_id'               => Account::TEST_ACCOUNT,
-                'gateway'                   => Gateway::WALLET_OLAMONEY,
+                'gateway'                   => Gateway::WALLET_AIRTELMONEY,
                 'card'                      => '0',
                 'gateway_terminal_id'       => 'test_terminal_airtelmoney',
                 'gateway_terminal_password' => Crypt::encrypt('test_account_airtelmoney_terminal_pass'),

@@ -2,19 +2,71 @@
 
 namespace RZP\Gateway\Wallet\Airtelmoney\Mock;
 
+use Carbon\Carbon;
+
+use RZP\Constants\HashAlgo;
 use RZP\Http\Route;
 use RZP\Gateway\Base;
 use RZP\Exception;
-use Carbon\Carbon;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Wallet\Base\Otp;
 use RZP\Gateway\Wallet\Airtelmoney;
+use RZP\Gateway\Wallet\Airtelmoney\Status;
+use RZP\Gateway\Wallet\Airtelmoney\ResponseCode;
+use RZP\Gateway\Wallet\Airtelmoney\ResponseFields;
+use RZP\Gateway\Wallet\Airtelmoney\RequestFields;
+
+use RZP\Gateway\Wallet\Airtelmoney\Constants as ArtlConstants;
 
 class Server extends Base\Mock\Server
 {
-    protected $accessToken = '8c31d80b-83ed-4f52-8377-71301790ccaa';
+    const DUMMY_MSG = 'SUCCESS';
+
+    public function authorize($input)
+    {
+        $this->validateActionInput($input, 'authorize');
+
+        $this->verifyHash($input);
+
+        // TODO Change it some definite value
+        if ($input[RequestFields::AMT] < 100000)
+        {
+            $redirectUrl = $input[RequestFields::SU];
+
+            $queryArray = [
+                ResponseFields::STATUS     => Status::SUCCESS,
+                ResponseFields::CODE       => ResponseCode::SUCCESS_CODE,
+                ResponseFields::MSG        => self::DUMMY_MSG,
+                ResponseFields::MID        => $input[RequestFields::MID],
+                ResponseFields::TRAN_ID    => $this->getArtlTxnId(),
+                ResponseFields::TRAN_AMT   => $input[RequestFields::AMT],
+                ResponseFields::TRAN_CUR   => ArtlConstants::INR,
+                ResponseFields::TRAN_DATE  => $this->getFormattedDate(
+                    Carbon::now(),
+                    ArtlConstants::TRAN_DATE_FORMAT),
+                ResponseFields::TXN_REF_NO => $input[RequestFields::TXN_REF_NO],
+            ];
+
+            $params = http_build_query($queryArray);
+        }
+        else
+        {
+            $redirectUrl = $input[RequestFields::FU];
+
+            $queryArray = [
+                Responsefields::STATUS     => Status::FAILURE,
+                ResponseFields::CODE       => '902',
+                ResponseFields::MSG        => ResponseCode::getResponseMessage('902'),
+                ResponseFields::TXN_REF_NO => $input[RequestFields::TXN_REF_NO],
+            ];
+
+            $params = http_build_query($queryArray);
+        }
+
+        return \Redirect::to($redirectUrl.'?'.$params);
+    }
 
     public function verify($input)
     {
@@ -23,22 +75,19 @@ class Server extends Base\Mock\Server
         $this->validateActionInput($this->mockRequest['content']);
 
         $response = array(
-            'status'    => 0,
-            'message'   => 'Transaction status',
-            'result'    => array(
-                array(
-                    'amount'                => 500,
-                    'transactionDirection'  => -1,
-                    'paymentId'             => 1110561680,
-                    'status'                => 'success',
-                    'merchantTransactionId' => $this->mockRequest['content']['merchantTransactionId'],
-                    'completedOn'           => strtotime('-30 mins')
-                )
-            ),
-            'errorCode' => null
+            ResponseFields::STATUS       => Status::SUCCESS,
+            ResponseFields::CODE         => ResponseCode::SUCCESS_CODE,
+            ResponseFields::FDC_TXN_ID   => $this->getArtlTxnId(),
+            ResponseFields::TXN_AMT      => 50000,
+            ResponseFields::FDC_TXN_DATE => $this->getFormattedDate(
+                Carbon::now(),
+                ArtlConstants::FDC_TXN_DATE_FORMAT),
+            ResponseFields::MSG          => self::DUMMY_MSG,
         );
 
-        return $this->makeResponse($response);
+        $response = $this->generateXMLResponse($response);
+
+        return $this->makeXmlResponse($response);
     }
 
     public function refund($input)
@@ -47,72 +96,77 @@ class Server extends Base\Mock\Server
 
         $this->validateActionInput($input, 'refund');
 
-        $refundResponse = array(
-            'status'    => 0,
-            'rows'      => 0,
-            'message'   => 'Refund Initiated',
-            'result'    => 13797,
-            'guid'      => null,
-            'sessionId' => null,
-            'errorCode' => null
-        );
+        $refundResponse = [
+            ResponseFields::STATUS           => Status::SUCCESS,
+            ResponseFields::CODE             => ResponseCode::SUCCESS_CODE,
+            ResponseFields::NEW_FDC_TXN_ID   => $this->getArtlTxnId(),
+            ResponseFields::AMT              => $input[RequestFields::AMT],
+            ResponseFields::NEW_FDC_TXN_DATE => $this->getFormattedDate(
+                Carbon::now(),
+                ArtlConstants::NEW_FDC_TXN_DATE_FORMAT),
+            ResponseFields::MSG              => self::DUMMY_MSG,
+        ];
 
-        return $this->makeResponse($refundResponse);
-    }
+        $response = $this->generateXMLResponse($refundResponse);
 
-    public function debitWallet($input)
-    {
-        $this->validateActionInput($input, 'debitWallet');
-
-        if (!isset($this->mockRequest['headers']['Authorization']))
-        {
-            $response = array(
-                'error'              => 'unauthorized',
-                'error_description'  => 'Full authentication is required to access this resource',
-            );
-
-            return $this->makeResponse($response);
-        }
-
-        if ($this->mockRequest['headers']['Authorization'] === $this->authHeader)
-        {
-            $response = array(
-                'status'        => 0,
-                'message'       => 'Use wallet successful',
-                'errorCode'     => null,
-                'guid'          => null,
-                'result'        => 1110562955,
-                'userVaultDTO'  => null
-            );
-
-            return $this->makeResponse($response);
-        }
-
-        $response = array(
-            'error'              => 'invalid_token',
-            'error_description'  => 'Invalid access token: ' . $this->mockRequest['headers']['Authorization'],
-        );
-
-        return $this->makeResponse($response);
+        return $this->makeXmlResponse($response);
     }
 
     protected function getArtlTxnId()
     {
-        return mt_rand(1000000000, 2567890123);
+        return uniqid();
     }
 
-    protected function getArtlRefundId()
+    protected function verifyHash(array $content)
     {
-        return mt_rand(10000, 35000);
+        $hashArray = [
+            $content['MID'],
+            $content['TXN_REF_NO'],
+            $content['AMT'],
+            $content['DATE'],
+            $this->getSecret(),
+        ];
+
+        $hashString = implode('#', $hashArray);
+
+        $hash = $this->getHashOfString($hashString);
+
+        assert($hash === $content['HASH']);
+    }
+
+    protected function getHashOfString($hashString)
+    {
+        return hash(HashAlgo::SHA512, $hashString);
     }
 
     protected function makeResponse($json)
     {
-        $response = \Response::make($json);
+        $response = parent::makeResponse($json);
 
         $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
-        $response->headers->set('Cache-Control', 'no-cache');
 
         return $response;
+    }
+
+    protected function makeXmlResponse($json)
+    {
+        $response = parent::makeResponse($json);
+
+        $response->headers->set('Content-Type', 'text/xml; charset=UTF-8');
+
+        return $response;
+    }
+
+    protected function getFormattedDate($date, $format)
+    {
+        return $date->format($format);
+    }
+
+    protected function generateXMLResponse($content)
+    {
+        $content = array_flip($content);
+        $xml = new \SimpleXMLElement('<wallet/>');
+        array_walk_recursive($content, array($xml, 'addChild'));
+        return ($xml->asXML());
     }
 }

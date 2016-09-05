@@ -1,5 +1,7 @@
 <?php
 
+namespace RZP\Gateway\Wallet\Airtelmoney;
+
 class Status
 {
     const TRANSACTION_SUCCESS = 'SUC';
@@ -7,5 +9,4 @@ class Status
 
     const VERIFY_SUCCESS = 'SUC';
     const SUCCESS = 'SUC';
-
 }
