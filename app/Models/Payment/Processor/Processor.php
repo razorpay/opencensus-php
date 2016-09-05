@@ -12,6 +12,7 @@ use RZP\Models\Merchant\BankAccount;
 use RZP\Models\Terminal;
 use RZP\Models\Payment;
 use RZP\Models\Order;
+use RZP\Models\Payment\Status;
 use RZP\Models\Pricing;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -347,7 +348,13 @@ class Processor
 
         $payment = $this->payment;
 
-        assert (($payment->isAuthorized() or $payment->isCreated()));
+        $status = $payment->getStatus();
+
+        if (($status !== Status::CREATED) and ($status !== Status::AUTHORIZED))
+        {
+            throw new Exception\LogicException(
+                'Payment Id: ' . $payment->getId() . ' Status not appropriate: ' . $status);
+        }
 
         $payment->setStatus(Payment\Status::FAILED);
 
