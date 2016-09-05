@@ -192,7 +192,10 @@ class Inferno
 
         $this->trace->info(
             TraceCode::WEBHOOK_FIRING,
-            $request);
+            [
+                'webhook_id' => $webhook->getId(),
+                'request'    => $request
+            ]);
 
         try
         {

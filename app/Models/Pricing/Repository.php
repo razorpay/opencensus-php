@@ -57,28 +57,11 @@ class Repository extends Base\Repository
         return $this->getPricingPlanById($id, true, true);
     }
 
-    public function getPricingRulesForCard($id)
-    {
-        // cannot use laravel's whereIn here because it doesn't give correct result with 'null'
-        return $this->newQuery()
-                    ->planId($id)
-                    ->where(Pricing\Entity::PAYMENT_METHOD, '=', Payment\Method::CARD)
-                    ->orderBy(Pricing\Entity::ID, 'desc')
-                    ->get();
-    }
-
-    public function getPricingRulesForMethod($pricingPlanId, $method)
-    {
-        return $this->newQuery()
-                    ->planId($pricingPlanId)
-                    ->where(Pricing\Entity::PAYMENT_METHOD, '=', $method)
-                    ->get();
-    }
-
-    public function getZeroPricingPlanRuleForMethod($method)
+    public function getZeroPricingPlanRuleForMethod($feature, $method)
     {
         return $this->newQuery()
                     ->planId(Pricing\Entity::ZERO_PRICING)
+                    ->where(Pricing\Entity::FEATURE, '=', $feature)
                     ->where(Pricing\Entity::PAYMENT_METHOD, '=', $method)
                     ->firstOrFail();
     }

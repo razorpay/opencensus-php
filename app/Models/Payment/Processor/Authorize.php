@@ -2,13 +2,19 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use App;
+use Crypt;
 use Mail;
+use Config;
+
+use Carbon\Carbon;
 use Lib\PhoneBook;
 use RZP\Models\Emi;
 use RZP\Http\Route;
 use RZP\Models\Card;
 use RZP\Models\Order;
 use RZP\Models\Payment;
+use RZP\Models\Pricing;
 use RZP\Constants\Mode;
 use RZP\Models\Card\IIN;
 use RZP\Models\Merchant;
@@ -27,9 +33,6 @@ use RZP\Exception;
 use RZP\Trace\Trace;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-
-use App;
-use Crypt;
 
 trait Authorize
 {
@@ -54,7 +57,7 @@ trait Authorize
 
         $this->getTerminalsForPayment($payment);
 
-        return  $this->authorizeAcrossTerminals($gatewayInput, $payment, $input);
+        return $this->authorizeAcrossTerminals($gatewayInput, $payment, $input);
 
     }
 
@@ -83,7 +86,7 @@ trait Authorize
 
             $payment->associateTerminal($currentTerminal);
 
-            $this->runGatewaySpecificPreProcessing($payment, $terminalGatewayInput);
+            $this->runPostGatewaySelectionPreProcessing($payment, $terminalGatewayInput);
 
             if ($this->canRunOtpPaymentFlow($payment, $input))
             {
@@ -162,6 +165,19 @@ trait Authorize
         throw $e;
     }
 
+    protected function verifyFeesLessThanAmount($payment)
+    {
+        // Ignore the pricing rule not found exception for authorization.
+        list($fee, $serviceTax, $ruleKey) = (new Pricing\Fee)->calculateMerchantFees($payment);
+
+        if ($payment->getAmount() < $fee)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT,
+                Payment\Entity::AMOUNT);
+        }
+    }
+
     protected function processAuthResponse($request, $payment)
     {
         //
@@ -177,15 +193,18 @@ trait Authorize
 
         $payment = $this->payment;
 
-        if ($payment->isSigned())
-        {
-            // If payment is signed, then we capture it in this step only.
-            $payment = $this->capturePayment($payment, $payment->getAmount());
-        }
-
         return $this->postPaymentAuthorizeProcessing($payment);
     }
 
+    protected function autoCapturePaymentIfApplicable($payment)
+    {
+        if ($this->shouldAutoCapture($payment) === true)
+        {
+            // If payment is signed or capture was sent as true in order,
+            // then we capture it in this step only.
+            $this->autoCapturePayment($payment);
+        }
+    }
 
     public function authorizeFailedPayment($payment)
     {
@@ -274,9 +293,10 @@ trait Authorize
      * Selects a terminal, based on the gateway.
      * Validates if international is allowed or not.
      *
-     * @param RZP/Models/Payment/Entity $payment Payment entity that needs to be processed.
+     * @param RZP /Models/Payment/Entity $payment Payment entity that needs to be processed.
      * @param array $input Input data received from checkout/merchant.
      * @param array $gatewayInput Data that is required by gateway for the payment to be processed.
+     * @return array
      * @throws Exception\BadRequestException
      * @throws Exception\RuntimeException
      */
@@ -290,16 +310,21 @@ trait Authorize
         return $gatewayInput;
     }
 
-    protected function runGatewaySpecificPreProcessing($payment, array & $gatewayInput)
+    protected function runPostGatewaySelectionPreProcessing($payment, array & $gatewayInput)
     {
         // International card validation happens here because we want to save the failure.
         // For payment creation, gateway is compulsory field which is only finalized in
         // previous step.
         $this->validateInternationalAllowed($payment);
 
+        // Fees validation can only happen after international validation has gone through
+        // otherwise can cause issues with international pricing rule being not available when
+        // international is not enabled.
+        $this->verifyFeesLessThanAmount($payment);
+
         $this->repo->saveOrFail($payment);
 
-        $this->trace(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
+        $this->tracePaymentInfo(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
 
         //
         // Call gateway input
@@ -504,10 +529,6 @@ trait Authorize
         // If token is set, then pay using global saved card
         if (empty($input[Payment\Entity::TOKEN]) === false)
         {
-            $this->payment->setToken(null);
-
-            $this->payment->setGlobalToken($input[Payment\Entity::TOKEN]);
-
             $this->preProcessPaymentFromSavedCardGlobal($customer, $payment, $input, $gatewayInput);
         }
         else
@@ -525,13 +546,16 @@ trait Authorize
                 'token' => $input[Payment\Entity::TOKEN]
             ]);
 
-        // Token should definitely exist in database.
-        $token = $this->repo->token->getByTokenAndCustomerId(
-            $input[Payment\Entity::TOKEN],
-            $customer->getId());
+        $tokenId = $input[Payment\Entity::TOKEN];
+
+        $token = (new Token\Core)->getByTokenAndCustomer($tokenId, $customer);
 
         if ($payment->isMethodCardOrEmi())
         {
+            $payment->token()->associate($token);
+
+            $payment->setToken($token->getToken());
+
             $gatewayInput['card'] = $this->getCardArrayForSavedToken($token, $input);
         }
         else
@@ -549,13 +573,17 @@ trait Authorize
             ]);
 
         // Token should definitely exist in database.
-        $token = $this->repo->token->getByTokenAndCustomerId(
-            $input[Payment\Entity::TOKEN],
-            $customer->getId());
+        $tokenId = $input[Payment\Entity::TOKEN];
+
+        $token = (new Token\Core)->getByTokenAndCustomer($tokenId, $customer);
 
         if ($payment->isMethodCardOrEmi())
         {
             $gatewayInput['card'] = $this->createCardEntityFromSavedToken($token, $input);
+
+            $payment->globalToken()->associate($token);
+
+            $payment->setGlobalToken($token->getToken());
 
             $payment->card->globalCard()->associate($token->card);
 
@@ -614,6 +642,8 @@ trait Authorize
         if ($token !== null)
         {
             $this->payment->setToken($token->getToken());
+
+            $this->payment->token()->associate($token);
         }
     }
 
@@ -638,6 +668,8 @@ trait Authorize
         if ($token !== null)
         {
             $this->payment->setGlobalToken($token->getToken());
+
+            $this->payment->globalToken()->associate($token);
         }
     }
 
@@ -660,17 +692,17 @@ trait Authorize
 
         if ($payment->isMethodCardOrEmi())
         {
-            $saveMethodInput['method'] = Payment\Method::CARD;
+            $saveMethodInput[Token\Entity::METHOD] = Payment\Method::CARD;
 
-            $saveMethodInput['card_id'] = $savedCardId;
+            $saveMethodInput[Token\Entity::CARD_ID] = $savedCardId;
         }
         else if ($payment->isMethod(Payment\Method::NETBANKING))
         {
-            $saveMethodInput['bank'] = $payment->getBank();
+            $saveMethodInput[Token\Entity::BANK] = $payment->getBank();
         }
         else if ($payment->isMethod(Payment\Method::WALLET))
         {
-            $saveMethodInput['wallet'] = $payment->getWallet();
+            $saveMethodInput[Token\Entity::WALLET] = $payment->getWallet();
         }
 
         try
@@ -687,6 +719,8 @@ trait Authorize
         {
             $this->trace->traceException($e);
         }
+
+        return $token;
     }
 
     protected function verifyPaymentMethodEnabled($payment, $input)
@@ -708,7 +742,7 @@ trait Authorize
                 break;
 
             case Payment\Method::EMI:
-                $this->verifyEmiEnabled();
+                $this->verifyEmiEnabled($input);
                 break;
 
             default:
@@ -812,7 +846,7 @@ trait Authorize
     protected function updateAndNotifyPaymentAuthorized($wasFailed = false)
     {
         // Updates payment entity to authorized and adds a transaction.
-        $this->updatePaymentAuthorized();
+        $this->updatePaymentAuthorized($wasFailed);
 
         $this->eventPaymentAuthorized();
 
@@ -835,11 +869,13 @@ trait Authorize
 
     /**
      * This function is just meant for preparing the return value
-     * after payment authorize processing. This should not contain
-     * any state updating statements.
+     * after payment authorize processing and auto capturing, if applicable.
      */
     protected function postPaymentAuthorizeProcessing($payment)
     {
+        // Auto capture payment, if applicable
+        $this->autoCapturePaymentIfApplicable($payment);
+
         //
         // If it's signed payment, then we return signed data from our
         // end as well.
@@ -853,6 +889,12 @@ trait Authorize
         if ($payment->isSigned())
         {
             return $this->getReturnDataForSignedPayment($payment);
+        }
+
+        if (($payment->order !== null) and
+            ($payment->order->getPaymentCapture() === true))
+        {
+            return $this->getReturnDataForAutoCaptureOrders($payment);
         }
 
         if ($payment->getCallbackUrl())
@@ -872,16 +914,26 @@ trait Authorize
             'merchant_order_id'   => $payment->getNotes()['merchant_order_id'],
         );
 
-        $sortedData = $data;
-        ksort($sortedData);
-
-        $str = implode('|', $sortedData);
-
-        $data['signature'] = $this->getSignature($str);
+        $data['signature'] = $this->getSignature($data);
 
         return $data;
     }
 
+    protected function getReturnDataForAutoCaptureOrders($payment)
+    {
+        $data = array(
+            'razorpay_payment_id' => $payment->getPublicId(),
+            'razorpay_order_id'   => $payment->order->getPublicId()
+        );
+
+        $data['razorpay_signature'] = $this->getSignature($data);
+
+        return $data;
+    }
+
+    /**
+     * @param boolean $wasFailed If a payment is being converted from authorized to failed.
+     */
     protected function notifyAuthorized($wasFailed)
     {
         // Trigger notification events for authorization
@@ -889,6 +941,15 @@ trait Authorize
 
         if ($wasFailed)
         {
+            $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+
+            // If a payment has been authorized 15 minutes after the creation, we do not send a notification.
+
+            if (($this->payment->getCreatedAt() - $currentTime) > self::FAILED_TO_AUTHORIZED_NOTIFY_DURATION)
+            {
+                return;
+            }
+
             $trigger = Notify::FAILED_TO_AUTHORIZED;
         }
         else
@@ -931,7 +992,8 @@ trait Authorize
 
         $slackData = ['id' => $payment->getDashboardEntityLinkForSlack()];
 
-        $this->app['slack']->queue($message, $slackData, ['color' => 'good', 'channel' => '#tech_logs']);
+        $this->app['slack']->queue(
+            $message, $slackData, ['color' => 'good', 'channel' => Config::get('slack.channels.tech_logs')]);
 
         $this->trace->info(
             TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
@@ -1136,8 +1198,10 @@ trait Authorize
 
         return array_merge(
                 $card->toArray(),
-                ['number' => $cardNumber,
-                 'cvv' => $cvv]);
+                [
+                    'number' => $cardNumber,
+                    'cvv' => $cvv
+                ]);
     }
 
     protected function createCardEntityFromSavedToken($token, $input)
@@ -1158,8 +1222,10 @@ trait Authorize
 
         return array_merge(
             $card->toArray(),
-            ['number' => $cardNumber,
-             'cvv' => $cvv]);
+            [
+                'number' => $cardNumber,
+                'cvv' => $cvv
+            ]);
     }
 
     protected function verifyBankEnabled($payment)
@@ -1193,7 +1259,7 @@ trait Authorize
         }
     }
 
-    protected function verifyEmiEnabled()
+    protected function verifyEmiEnabled($input)
     {
         $merchantMethods = $this->methods;
 
@@ -1203,6 +1269,8 @@ trait Authorize
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_EMI_NOT_ENALBED_FOR_MERCHANT);
         }
+
+        $this->checkAndValidateAmexIfNotEnabled($merchantMethods, $input['card']);
     }
 
     protected function verifyCardEnabledInLive($payment, $input)
@@ -1281,11 +1349,11 @@ trait Authorize
         $this->repo->saveOrFail($this->payment);
     }
 
-    protected function updatePaymentAuthorized()
+    protected function updatePaymentAuthorized($wasFailed = false)
     {
         $payment = $this->payment;
 
-        $this->repo->transaction(function() use ($payment)
+        $this->repo->transaction(function() use ($payment, $wasFailed)
         {
             $this->lockForUpdateAndReload($payment);
 
@@ -1303,6 +1371,11 @@ trait Authorize
             $payment->setAuthorizeTimestamp();
 
             $payment->terminal->incrementUsedCount();
+
+            if ($wasFailed === true)
+            {
+                $payment->setLateAuthorized(true);
+            }
 
             $this->repo->saveOrFail($payment);
             $this->repo->saveOrFail($payment->terminal);
@@ -1324,7 +1397,7 @@ trait Authorize
             // set the order to be paid
             $this->updateAuthorizedOrderStatus($payment);
 
-            $this->trace(TraceCode::PAYMENT_AUTH_SUCCESS);
+            $this->tracePaymentInfo(TraceCode::PAYMENT_AUTH_SUCCESS);
         });
     }
 

@@ -3,23 +3,23 @@
 namespace RZP\Models\Payment\Processor;
 
 use App;
-use RZP\Constants\Mode;
 use BasicAuth;
+
+use RZP\Constants\Mode;
 use RZP\Dashboard\Dashboard;
-use RZP\Http\Route;
-use RZP\Models\Gateway;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\BankAccount;
 use RZP\Models\Terminal;
 use RZP\Models\Payment;
 use RZP\Models\Order;
+use RZP\Models\Payment\Status;
 use RZP\Models\Pricing;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
-use Request;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer;
+use RZP\Models\Base\Lock;
 
 class Processor
 {
@@ -36,14 +36,26 @@ class Processor
      * WIthin certain duration x minutes, we will return payment
      * success or failed when the url is hit again.
      * After that duration, we will simply throw
-     * BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED payment_processed error.
+     * BAD_REQUEST_PAYMENT_ALREADY_PROCESSED payment_processed error.
      */
     const CALLBACK_PROCESS_AGAIN_DURATION = 20;
+
+    /**
+     * Number of days after which authorized payments
+     * are auto-refunded
+     */
+    const AUTO_REFUND_TIME_PERIOD = 5;
 
     /**
      * If payment fails on gateway then we may retry it with a different terminal/gateway.
      */
     const MAX_RETRY_ATTEMPTS = 3;
+
+    /**
+     * If a payment gets converted to authorized from failed after 15 minutes of creation of payment,
+     * we do not send a notification to the customer.
+     */
+    const FAILED_TO_AUTHORIZED_NOTIFY_DURATION = 900;
 
     protected $merchant;
     protected $trace;
@@ -54,8 +66,10 @@ class Processor
     protected $orderRepo;
     protected $paymentRepo;
     protected $app;
+    protected $lock;
     protected $request;
     protected $methods;
+    protected $refund;
 
     protected $verifyRefundStatus;
 
@@ -77,6 +91,8 @@ class Processor
         $this->orderRepo = $this->repo->order;
 
         $this->request = $this->app['request'];
+
+        $this->lock = $this->app['api.lock'];
 
         // Only used in hdfc verify refund flow
         $this->verifyRefundStatus = null;
@@ -173,8 +189,6 @@ class Processor
         }
 
         $this->verifySignature($input, $payment);
-
-        return true;
     }
 
     protected function verifySignature($input, $payment)
@@ -185,9 +199,7 @@ class Processor
             'merchant_order_id' => $payment->getNotes()['merchant_order_id'],
         );
 
-        $str = implode('|', $data);
-
-        $signature = $this->getSignature($str);
+        $signature = $this->getSignature($data);
 
         // use hash_equals to prevent timing attacks
         if (! hash_equals($signature, $input['signature']))
@@ -199,8 +211,12 @@ class Processor
         return true;
     }
 
-    protected function getSignature($str)
+    protected function getSignature(array $data)
     {
+        ksort($data);
+
+        $str = implode('|', $data);
+
         return $this->app['basicauth']->sign($str);
     }
 
@@ -315,7 +331,7 @@ class Processor
         return Payment\Status::FAILED;
     }
 
-    protected function trace($traceCode, $level = Trace::INFO)
+    protected function tracePaymentInfo($traceCode, $level = Trace::INFO)
     {
         $data = $this->payment->toArrayTraceRelevant();
 
@@ -332,13 +348,33 @@ class Processor
 
         $payment = $this->payment;
 
+        $status = $payment->getStatus();
+
+        if (($status !== Status::CREATED) and ($status !== Status::AUTHORIZED))
+        {
+            throw new Exception\LogicException(
+                'Payment not in the appropriate status to be marked as failed.',
+                null,
+                [
+                    'payment_id'    => $payment->getId(),
+                    'status'        => $status
+                ]);
+        }
+
         $payment->setStatus(Payment\Status::FAILED);
 
         $payment->setError($code, $desc, $internalCode);
 
-        $payment->saveOrFail();
+        $this->repo->saveOrFail($payment);
 
         $this->tracePaymentFailed($error, $traceCode);
+
+        $this->eventPaymentFailed();
+    }
+
+    protected function eventPaymentFailed()
+    {
+        $this->app['events']->fire('api.payment.failed', array($this->payment));
     }
 
     protected function setPaymentError($error)
@@ -349,7 +385,7 @@ class Processor
 
         $payment->setInternalErrorCode($internalCode);
 
-        $payment->saveOrFail();
+        $this->repo->saveOrFail($payment);
     }
 
     /**
@@ -552,13 +588,12 @@ class Processor
 
     protected function retrieveToken($input)
     {
-        $this->token = (new Customer\Token\Repository)
-                        ->getByWalletTerminalAndCustomerId(
+        $token = $this->repo->token->getByWalletTerminalAndCustomerId(
                             $input['payment']['wallet'],
                             $input['payment']['terminal_id'],
                             $input['customer']->getId());
 
-        return $this->token;
+        return $token;
     }
 
     protected function retrieve($id)
@@ -649,6 +684,49 @@ class Processor
         $merchant->setRelation('bankAccount', $ba);
 
         return $ba;
+    }
+
+    protected function shouldAutoCapture($payment)
+    {
+        // If payment is not authorized or if it's late authorized,
+        // do not auto capture it, irrespective of it being a signed
+        // payment or marked for auto capture.
+        if (($payment->isAuthorized() === false) or
+            ($payment->isLateAuthorized() === true))
+        {
+            return false;
+        }
+
+        // If payment is signed
+        if ($payment->isSigned() === true)
+        {
+            return true;
+        }
+
+        // If payment order was marked as auto capture
+        if (($payment->order !== null) and
+            ($payment->order->getPaymentCapture() === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function acquireLockOnPayment($payment)
+    {
+        $resource = $payment->getId();
+
+        if ($this->lock->acquire($resource) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
+        }
+    }
+
+    protected function releaseLockOnPayment($payment)
+    {
+        $this->lock->release($this->payment->getId());
     }
 
     protected function createOrUpdateToken($input, $data)

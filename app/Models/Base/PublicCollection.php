@@ -54,6 +54,15 @@ class PublicCollection extends Collection
         return $ids;
     }
 
+    public function toArrayWithItems()
+    {
+        $array[static::ENTITY] = $this->entity;
+        $array[static::COUNT] = count($this->items);
+        $array[static::ITEMS] = $this->items;
+
+        return $array;
+    }
+
     public function getPublicIds()
     {
         $publicIds = array_map(function($item)

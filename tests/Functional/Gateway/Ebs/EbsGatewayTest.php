@@ -24,7 +24,7 @@ class EbsGatewayTest extends TestCase
 
     public function testPayment()
     {
-        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment = $this->getDefaultNetbankingPaymentArray('ANDB');
         $payment = $this->doAuthPayment($payment);
 
         $txn = $this->getLastEntity('transaction', true);
@@ -50,11 +50,69 @@ class EbsGatewayTest extends TestCase
             $this->testData['testPaymentEbsEntity'], $payment);
     }
 
+    public function testPaymentForBankWith302Redirect()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray('UBIN');
+        $payment = $this->doAuthPayment($payment);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertArraySelectiveEquals(
+            $this->testData['testTransactionAfterAuthorize'], $txn);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('txn_'.$payment['transaction_id'], $txn['id']);
+    }
+
+    public function testPaymentForBankWithFormRedirect()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray('YESB');
+        $payment = $this->doAuthPayment($payment);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertArraySelectiveEquals(
+            $this->testData['testTransactionAfterAuthorize'], $txn);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('txn_'.$payment['transaction_id'], $txn['id']);
+    }
+
+    public function testPaymentForFirstGatewayRequestFailure()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray('CBIN');
+
+        $data = $this->testData['testPaymentForFirstGatewayRequestFailure'];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $payment = $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testPaymentForSecondGatewayRequestFailure()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray('CNRB');
+        $data = $this->testData['testPaymentForSecondGatewayRequestFailure'];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $payment = $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testPaymentForThirdGatewayRequestFailure()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray('CORP');
+
+        $data = $this->testData['testPaymentForThirdGatewayRequestFailure'];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $payment = $this->doAuthPayment($payment);
+        });
+    }
+
     public function testHackedPayment()
     {
         $this->getHackedResponse();
 
-        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment = $this->getDefaultNetbankingPaymentArray('ANDB');
 
         $data = $this->testData['testHackedPayment'];
 
@@ -65,7 +123,7 @@ class EbsGatewayTest extends TestCase
 
     public function testPaymentRefund()
     {
-        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment = $this->getDefaultNetbankingPaymentArray('ANDB');
         $payment = $this->doAuthPayment($payment);
 
         $txn = $this->getLastEntity('transaction', true);
@@ -85,7 +143,7 @@ class EbsGatewayTest extends TestCase
 
     public function testPaymentRefundWithoutCapture()
     {
-        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment = $this->getDefaultNetbankingPaymentArray('ANDB');
 
         $data = $this->testData['testPaymentRefundWithoutCapture'];
 
@@ -100,7 +158,7 @@ class EbsGatewayTest extends TestCase
 
     public function testAuthorizedPaymentRefund()
     {
-        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment = $this->getDefaultNetbankingPaymentArray('ANDB');
         $payment = $this->doAuthPayment($payment);
 
         $input['force'] = '1';
@@ -120,7 +178,7 @@ class EbsGatewayTest extends TestCase
     {
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
-        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment = $this->getDefaultNetbankingPaymentArray('ANDB');
 
         $data = $this->testData['testErrorOnCard'];
 
@@ -133,7 +191,7 @@ class EbsGatewayTest extends TestCase
 
     public function testPaymentInvalidRefund()
     {
-        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment = $this->getDefaultNetbankingPaymentArray('ANDB');
         $payment = $this->doAuthPayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
@@ -156,7 +214,7 @@ class EbsGatewayTest extends TestCase
 
     public function testPaymentVerify()
     {
-        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment = $this->getDefaultNetbankingPaymentArray('ANDB');
         $payment = $this->doAuthAndCapturePayment($payment);
 
         $this->verifyPayment($payment['id']);
@@ -168,7 +226,7 @@ class EbsGatewayTest extends TestCase
 
     public function testPaymentFailedVerify()
     {
-        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment = $this->getDefaultNetbankingPaymentArray('ANDB');
         $payment = $this->doAuthAndCapturePayment($payment);
 
         $this->getErrorInVerify();
@@ -185,7 +243,7 @@ class EbsGatewayTest extends TestCase
 
     public function testPaymentFailedVerifyAndRetry()
     {
-        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment = $this->getDefaultNetbankingPaymentArray('ANDB');
         $payment = $this->doAuthAndCapturePayment($payment);
 
         $this->getErrorInVerify();

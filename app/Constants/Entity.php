@@ -63,6 +63,7 @@ class Entity
     const NETBANKING_HDFC       = 'netbanking_hdfc';
     const NETBANKING_KOTAK      = 'netbanking_kotak';
     const WALLET_PAYUMONEY      = 'wallet_payumoney';
+    const WALLET_OLAMONEY       = 'wallet_olamoney';
 
     public static $namespace = array(
         self::IIN                   => \RZP\Models\Card\IIN::class,
@@ -97,6 +98,7 @@ class Entity
         self::NETBANKING_KOTAK      => \RZP\Gateway\Netbanking\Kotak::class,
         self::WALLET_PAYUMONEY      => \RZP\Gateway\Wallet\Payumoney::class,
         self::SETTLEMENT_DETAILS    => \RZP\Models\Settlement\Details::class,
+        self::WALLET_OLAMONEY       => \RZP\Gateway\Wallet\Olamoney::class,
         self::TERMINAL_ACTION       => \RZP\Models\Terminal\Action::class,
         self::PAYMENT_ANALYTICS     => \RZP\Models\Payment\Analytics::class,
         self::GATEWAY_ABSENCE       => \RZP\Models\GatewayStatus\Absence::class,
@@ -107,6 +109,7 @@ class Entity
         self::NETBANKING_HDFC   => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_KOTAK  => \RZP\Gateway\Netbanking\Base::class,
         self::WALLET_PAYUMONEY  => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_OLAMONEY   => \RZP\Gateway\Wallet\Base::class,
     );
 
     public static function getEntityNamespace($entity)
@@ -167,13 +170,27 @@ class Entity
 
     public static function validateIsEntity($entity)
     {
-        if (constant(__CLASS__ . '::' . strtoupper($entity)) === null)
+        if (self::isValidEntity($entity) === false)
         {
             Trace::error(
                 TraceCode::ERROR_INVALID_ARGUMENT,
                 ['entity' => $entity]);
 
-            throw new Exception\RuntimeException(
+            throw new Exception\BadRequestValidationFailureException(
+                'Not a valid entity.');
+        }
+    }
+
+    public static function isValidEntity($entity)
+    {
+        return (defined(__CLASS__ . '::' . strtoupper($entity)));
+    }
+
+    public static function validateEntityOrFailPublic($entity)
+    {
+        if (self::isValidEntity($entity) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
                 'Not a valid entity.');
         }
     }

@@ -4,9 +4,11 @@ namespace RZP\Tests\Functional\Payment;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
 class SavedCardPaymentCreateTest extends TestCase
 {
+    use InteractsWithSession;
     use PaymentTrait;
 
     public function setUp()
@@ -25,7 +27,7 @@ class SavedCardPaymentCreateTest extends TestCase
     }
 
     /**
-     * test card payment creation using a local saved card
+     * test card payment creation using a local saved card and token
      */
     public function testLocalSavedCardPaymentCreate()
     {
@@ -40,6 +42,28 @@ class SavedCardPaymentCreateTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals($payment['token'], '10000cardtoken');
+        $this->assertEquals($payment['token_id'], '100000custcard');
+        $this->assertEquals($payment['customer_id'], '100000customer');
+    }
+
+    /**
+     * test card payment creation using a local saved card and token_id
+     */
+    public function testLocalSavedCardPaymentCreateWithTokenId()
+    {
+        $this->payment = $this->getDefaultPaymentArray();
+
+        $this->payment['card'] = array('cvv'  => 111);
+        $this->payment['token'] = 'token_100000custcard';
+        $this->payment['customer_id'] = 'cust_100000customer';
+
+        $content = $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+
+        $this->assertEquals($payment['token'], '10000cardtoken');
+        $this->assertEquals($payment['token_id'], '100000custcard');
         $this->assertEquals($payment['customer_id'], '100000customer');
     }
 
@@ -59,14 +83,17 @@ class SavedCardPaymentCreateTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals($payment['token'], '10000cardtoken');
+        $this->assertEquals($payment['token_id'], '100000custcard');
         $this->assertEquals($payment['customer_id'], '100000customer');
     }
 
     /**
-     * test card payment creation using global saved card
+     * test card payment creation using global saved card and token
      */
     public function testGlobalSavedCardPaymentCreate()
     {
+        $this->mockSession();
+
         $this->payment = $this->getDefaultPaymentArray();
 
         $this->payment['card'] = array(
@@ -74,6 +101,30 @@ class SavedCardPaymentCreateTest extends TestCase
         );
 
         $this->payment['token'] = '1000gcardtoken';
+
+        $content = $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertEquals($payment['global_token'], '1000gcardtoken');
+        $this->assertEquals($payment['global_token_id'], '10000custgcard');
+        $this->assertEquals($payment['app_token'], '1000000custapp');
+        $this->assertEquals($card['global_card_id'], '100000000gcard');
+    }
+
+    /**
+     * test card payment creation using global saved card and token_id
+     */
+    public function testGlobalSavedCardPaymentCreateWithTokenId()
+    {
+        $this->payment = $this->getDefaultPaymentArray();
+
+        $this->payment['card'] = array(
+            'cvv'  => 111
+        );
+
+        $this->payment['token'] = 'token_10000custgcard';
         $this->payment['app_token'] = 'capp_1000000custapp';
 
         $content = $this->doAuthAndCapturePayment($this->payment);
@@ -82,6 +133,7 @@ class SavedCardPaymentCreateTest extends TestCase
         $card = $this->getLastEntity('card', true);
 
         $this->assertEquals($payment['global_token'], '1000gcardtoken');
+        $this->assertEquals($payment['global_token_id'], '10000custgcard');
         $this->assertEquals($payment['app_token'], '1000000custapp');
         $this->assertEquals($card['global_card_id'], '100000000gcard');
     }
@@ -91,12 +143,13 @@ class SavedCardPaymentCreateTest extends TestCase
      */
     public function testGlobalSavedCardEmiPaymentCreate()
     {
+        $this->mockSession();
+
         $this->fixtures->merchant->enableEmi();
 
         $this->payment = $this->getDefaultPaymentArrayEmi(true);
 
         $this->payment['token'] = '1000gcardtoken';
-        $this->payment['app_token'] = 'capp_1000000custapp';
 
         $content = $this->doAuthAndCapturePayment($this->payment);
 
@@ -104,6 +157,7 @@ class SavedCardPaymentCreateTest extends TestCase
         $card = $this->getLastEntity('card', true);
 
         $this->assertEquals($payment['global_token'], '1000gcardtoken');
+        $this->assertEquals($payment['global_token_id'], '10000custgcard');
         $this->assertEquals($payment['app_token'], '1000000custapp');
         $this->assertEquals($card['global_card_id'], '100000000gcard');
     }
@@ -126,6 +180,7 @@ class SavedCardPaymentCreateTest extends TestCase
 
         $this->assertEquals($payment['card_id'], $card['id']);
         $this->assertEquals($payment['token'], $token['token']);
+        $this->assertEquals('token_'.$payment['token_id'], $token['id']);
         $this->assertEquals('card_'.$token['card_id'], $card['id']);
         $this->assertEquals($payment['customer_id'], '100000customer');
 
@@ -138,6 +193,7 @@ class SavedCardPaymentCreateTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals($payment['token'], $token['token']);
+        $this->assertEquals('token_'.$payment['token_id'], $token['id']);
         $this->assertEquals($payment['customer_id'], '100000customer');
     }
 
@@ -160,6 +216,7 @@ class SavedCardPaymentCreateTest extends TestCase
 
         $this->assertEquals($payment['card_id'], $card['id']);
         $this->assertEquals($payment['token'], $token['token']);
+        $this->assertEquals('token_'.$payment['token_id'], $token['id']);
         $this->assertEquals('card_'.$token['card_id'], $card['id']);
         $this->assertEquals($payment['customer_id'], '100000customer');
 
@@ -172,6 +229,7 @@ class SavedCardPaymentCreateTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals($payment['token'], $token['token']);
+        $this->assertEquals('token_'.$payment['token_id'], $token['id']);
         $this->assertEquals($payment['customer_id'], '100000customer');
     }
 
@@ -180,10 +238,11 @@ class SavedCardPaymentCreateTest extends TestCase
      */
     public function testPaymentCreateAndSaveCardGlobal()
     {
+        $this->mockSession();
+
         $this->payment = $this->getDefaultPaymentArray();
         $this->payment['save'] = 1;
         $this->payment['card']['number'] = '4000400000000004';
-        $this->payment['app_token'] = 'capp_1000000custapp';
 
         $content = $this->doAuthAndCapturePayment($this->payment);
 
@@ -196,11 +255,11 @@ class SavedCardPaymentCreateTest extends TestCase
         $this->assertEquals($card['global_card_id'], $token['card_id']);
         $this->assertEquals($payment['app_token'], '1000000custapp');
         $this->assertEquals($payment['global_token'], $token['token']);
+        $this->assertEquals('token_'.$payment['global_token_id'], $token['id']);
         $this->assertEquals($payment['token'], null);
 
         $this->payment['card'] = array('cvv'  => 111);
         $this->payment['token'] = $token['token'];
-        $this->payment['app_token'] = 'capp_1000000custapp';
 
         $content = $this->doAuthAndCapturePayment($this->payment);
 
@@ -208,6 +267,7 @@ class SavedCardPaymentCreateTest extends TestCase
         $card = $this->getLastEntity('card', true);
 
         $this->assertEquals($payment['global_token'], $token['token']);
+        $this->assertEquals('token_'.$payment['global_token_id'], $token['id']);
         $this->assertEquals($payment['token'], null);
         $this->assertEquals($payment['app_token'], '1000000custapp');
         $this->assertEquals($card['global_card_id'], $token['card_id']);
@@ -218,11 +278,12 @@ class SavedCardPaymentCreateTest extends TestCase
      */
     public function testEmiPaymentCreateAndSaveCardGlobal()
     {
+        $this->mockSession();
+
         $this->fixtures->merchant->enableEmi();
 
         $this->payment = $this->getDefaultPaymentArrayEmi(false);
         $this->payment['save'] = 1;
-        $this->payment['app_token'] = 'capp_1000000custapp';
 
         $content = $this->doAuthAndCapturePayment($this->payment);
 
@@ -235,10 +296,10 @@ class SavedCardPaymentCreateTest extends TestCase
         $this->assertEquals($card['global_card_id'], $token['card_id']);
         $this->assertEquals($payment['app_token'], '1000000custapp');
         $this->assertEquals($payment['global_token'], $token['token']);
+        $this->assertEquals('token_'.$payment['global_token_id'], $token['id']);
         $this->assertEquals($payment['token'], null);
 
         $this->payment['token'] = $token['token'];
-        $this->payment['app_token'] = 'capp_1000000custapp';
 
         $content = $this->doAuthAndCapturePayment($this->payment);
 
@@ -246,6 +307,7 @@ class SavedCardPaymentCreateTest extends TestCase
         $card = $this->getLastEntity('card', true);
 
         $this->assertEquals($payment['global_token'], $token['token']);
+        $this->assertEquals('token_'.$payment['global_token_id'], $token['id']);
         $this->assertEquals($payment['token'], null);
         $this->assertEquals($payment['app_token'], '1000000custapp');
         $this->assertEquals($card['global_card_id'], $token['card_id']);
@@ -272,4 +334,37 @@ class SavedCardPaymentCreateTest extends TestCase
         $this->assertEquals($payment1['card_id'], $payment2['card_id']);
     }
 
+    /**
+     * test card multiple payments with save card local, only one card should be saved
+     */
+    public function testCustomerFetchPayments()
+    {
+        $this->testPaymentCreateAndSaveCardGlobal();
+
+        $this->mockSession();
+
+        $this->ba->publicAuth();
+
+        $request = array(
+            'url' => '/apps/payments',
+            'method' => 'get',
+            'content' => [
+                'skip'  => 1
+            ]);
+
+        $payments = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(empty($payments), false);
+        $this->assertEquals($payments['entity'], 'collection');
+        $this->assertEquals($payments['count'], 1);
+    }
+
+    protected function mockSession()
+    {
+        $data = array(
+            'test_app_token' => 'capp_1000000custapp'
+        );
+
+        $this->session($data);
+    }
 }

@@ -74,6 +74,10 @@ class Core extends Base\Core
     {
         $merchant->edit($input);
 
+        $plan = $this->repo->pricing->getMerchantPricingPlan($merchant);
+
+        (new Methods\Core)->valdiateInternationalPricingForMerchant($merchant, $plan);
+
         $this->saveAndNotify($merchant);
 
         $this->trace->info(

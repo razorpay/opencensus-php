@@ -6,11 +6,12 @@ use Config;
 use Carbon\Carbon;
 use RZP\Exception;
 use Mail;
-use RZP\Trace\TraceCode;
+use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Settlement;
+use RZP\Trace\TraceCode;
 
-class DailyReport
+class DailyReport extends Base\Core
 {
     /**
      * Generates a new daily report
@@ -18,6 +19,8 @@ class DailyReport
      */
     function __construct($id)
     {
+        parent::__construct();
+
         $this->merchantId = $id;
 
         // 00:00 Yesterday
@@ -31,7 +34,7 @@ class DailyReport
 
         $this->data = $this->fetchDailyDetails();
 
-        $this->trace = \Trace::getFacadeRoot();
+        $this->increaseAllowedSystemLimits();
     }
 
     /**
@@ -59,6 +62,18 @@ class DailyReport
         $view = ['html'=>'emails.merchant.daily_report'];
 
         $data = $this->data;
+
+        // Log merchant whose data has been computed
+        $this->trace->info(
+            TraceCode::SETTLEMENT_DAILY_REPORT_DATA,
+            array(
+                    'merchant_id'   => $data['merchant']['id'],
+                    'merchant_name' => $data['merchant']['name'],
+                    'captured'      => $data['captured']['payments']['count'],
+                    'authorized'    => $data['authorized']['payments']['count'],
+                    'refunds'       => $data['refunds']['refunds']['count'],
+                    )
+        );
 
         // This is a debug view only for raising proper errors
         \View::make('emails.merchant.daily_report_debug', $data)->render();
@@ -102,7 +117,7 @@ class DailyReport
      */
     protected function getAuthorizedPayments()
     {
-        $authorizedCollection = (new Payment\Repository)->fetch(
+        $authorizedCollection = $this->repo->payment->fetch(
             ['status'    => 'authorized'],
             $this->merchantId);
 
@@ -111,7 +126,7 @@ class DailyReport
 
     protected function getCapturedPayments()
     {
-        $capturedCollection = (new Payment\Repository)
+        $capturedCollection = $this->repo->payment
             ->fetchCapturedBetweenTimestamp(
                 $this->timeLowerLimit,
                 $this->timeUpperLimit,
@@ -164,7 +179,7 @@ class DailyReport
      */
     protected function getSettlement()
     {
-        $settlements = (new Settlement\Repository)->fetch([
+        $settlements = $this->repo->settlement->fetch([
             'from' => $this->timeLowerLimit,
             'to' => $this->timeUpperLimit
         ], $this->merchantId);
@@ -192,7 +207,7 @@ class DailyReport
 
     protected function getRefunds()
     {
-        $refunds = (new Payment\Refund\Repository)->fetch([
+        $refunds = $this->repo->refund->fetch([
             'from' => $this->timeLowerLimit,
             'to' => $this->timeUpperLimit
         ], $this->merchantId);
@@ -205,7 +220,7 @@ class DailyReport
 
     protected function fetchDailyDetails()
     {
-        $merchant = (new Repository)->findOrFailPublic($this->merchantId);
+        $merchant = $this->repo->merchant->findOrFailPublic($this->merchantId);
 
         $data = [
             'captured'       => $this->getCapturedPayments(),
@@ -231,5 +246,11 @@ class DailyReport
                 ($data['authorized']['payments']['count'] === 0) and
                 ($data['refunds']['refunds']['count'] === 0) and
                 ($data['settlement'] === null));
+    }
+
+    protected function increaseAllowedSystemLimits()
+    {
+        ini_set('memory_limit', '1024M');
+        set_time_limit(3000);
     }
 }

@@ -66,6 +66,10 @@ class Entity extends Base\PublicEntity
         self::ID, self::ENTITY, self::PAYMENT_ID
     );
 
+    protected $amounts = array(
+        self::AMOUNT,
+    );
+
     public function payment()
     {
         return $this->belongsTo('RZP\Models\Payment\Entity');
@@ -105,11 +109,6 @@ class Entity extends Base\PublicEntity
     protected function generateCurrency($input)
     {
         $this->setAttribute(self::CURRENCY, $this->payment->getCurrency());
-    }
-
-    public function getMerchantId()
-    {
-        return $this->getAttribute(self::MERCHANT_ID);
     }
 
     public function getAmount()

@@ -343,7 +343,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        $ba = (new BankAccount\Repository)->getBankAccount($merchant);
+        $ba = $this->repo->bank_account->getBankAccount($merchant);
 
         if ($ba === null)
         {
@@ -356,7 +356,7 @@ class Service extends Base\Service
 
     public function getOwnBankAccount()
     {
-        $ba = (new BankAccount\Repository)->getBankAccount($this->merchant);
+        $ba = $this->repo->bank_account->getBankAccount($this->merchant);
 
         if ($ba === null)
         {
@@ -625,6 +625,12 @@ class Service extends Base\Service
     {
         ini_set('memory_limit', '1024M');
         set_time_limit(300);
+
+        // Trace to indicate start of mailing
+        $this->trace->info(
+            TraceCode::SETTLEMENT_DAILY_REPORT_MAILING,
+            array()
+        );
 
         $merchants = $this->repo->merchant->fetchAllLiveMerchants()
                                             ->select(Entity::ID)

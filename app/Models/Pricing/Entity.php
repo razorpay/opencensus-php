@@ -9,6 +9,7 @@ class Entity extends Base\PublicEntity
     const ID                    = 'id';
     const PLAN_ID               = 'plan_id';
     const PLAN_NAME             = 'plan_name';
+    const FEATURE               = 'feature';
     const GATEWAY               = 'gateway';
     const PAYMENT_METHOD        = 'payment_method';
     const PAYMENT_METHOD_TYPE   = 'payment_method_type';
@@ -33,6 +34,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::PLAN_ID,
         self::PLAN_NAME,
+        self::FEATURE,
         self::GATEWAY,
         self::PAYMENT_METHOD,
         self::PAYMENT_METHOD_TYPE,
@@ -62,6 +64,7 @@ class Entity extends Base\PublicEntity
     protected static $generators = array('plan_id');
 
     protected $defaults = array(
+        self::FEATURE               => Feature::PAYMENT,
         self::PAYMENT_METHOD_TYPE   => null,
         self::PAYMENT_NETWORK       => null,
         self::PAYMENT_ISSUER        => null,

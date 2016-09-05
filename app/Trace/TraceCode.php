@@ -18,6 +18,7 @@ class TraceCode
     const PAYMENT_REFUND_REQUEST                    = 'PAYMENT_REFUND_REQUEST';
     const PAYMENT_REFUND_SUCCESS                    = 'PAYMENT_REFUND_SUCCESS';
     const PAYMENT_REFUND_FAILURE                    = 'PAYMENT_REFUND_FAILURE';
+    const PAYMENT_VERIFY_CAPTURE_FAILURE            = 'PAYMENT_VERIFY_CAPTURE_FAILURE';
     const PAYMENT_VERIFY_REFUND_FAILURE             = 'PAYMENT_VERIFY_REFUND_FAILURE';
     const PAYMENT_TOPUP_REQUEST                     = 'PAYMENT_TOPUP_REQUEST';
     const PAYMENT_TOPUP_RESPONSE                    = 'PAYMENT_TOPUP_RESPONSE';
@@ -26,6 +27,8 @@ class TraceCode
     const PAYMENT_CAPTURE_SUCCESS                   = 'PAYMENT_CAPTURE_SUCCESS';
     const PAYMENT_CAPTURE_FAILURE                   = 'PAYMENT_CAPTURE_FAILURE';
     const PAYMENT_CAPTURE_FORCED                    = 'PAYMENT_CAPTURE_FORCED';
+    const PAYMENT_AUTO_CAPTURE                      = 'PAYMENT_AUTO_CAPTURE';
+    const PAYMENT_AUTO_CAPTURE_FAILED               = 'PAYMENT_AUTO_CAPTURE_FAILED';
     const PAYMENT_QUEUE_CAPTURE_REQUEST             = 'PAYMENT_QUEUE_CAPTURE_REQUEST';
     const PAYMENT_QUEUE_CAPTURE_SUCCESS             = 'PAYMENT_QUEUE_CAPTURE_SUCCESS';
     const PAYMENT_QUEUE_CAPTURE_FAILURE             = 'PAYMENT_QUEUE_CAPTURE_FAILURE';
@@ -38,13 +41,13 @@ class TraceCode
     const PAYMENT_CANCELLED                         = 'PAYMENT_CANCELLED';
     const PAYMENT_FAILED_TO_AUTHORIZED              = 'PAYMENT_FAILED_TO_AUTHORIZED';
     const PAYMENT_CALLBACK_FAILURE                  = 'PAYMENT_CALLBACK_FAILURE';
+    const PAYMENT_CALLBACK_RETRY                    = 'PAYMENT_CALLBACK_RETRY';
+    const PAYMENT_CALLBACK_RETRY_SUCCESS            = 'PAYMENT_CALLBACK_RETRY_SUCCESS';
     const PAYMENT_AUTHORIZE_FAILED                  = 'PAYMENT_AUTHORIZE_FAILED';
     const PAYMENT_NOTIFY_FAILED                     = 'PAYMENT_NOTIFY_FAILED';
     const PAYMENT_AUTHORIZE_REMINDER                = 'PAYMENT_AUTHORIZE_REMINDER';
     const PAYMENT_WEBHOOK                           = 'PAYMENT_WEBHOOK';
-    const PAYMENT_PRICING_RULE_NOT_FOUND            = 'PAYMENT_PRICING_RULE_NOT_FOUND';
     const PAYMENT_OTP_READ_FAILURE                  = 'PAYMENT_OTP_READ_FAILURE';
-    const PAYMENT_PRICING_RULE_SELECTION            = 'PAYMENT_PRICING_RULE_SELECTION';
     const PAYMENT_METADATA                          = 'PAYMENT_METADATA';
     const PAYMENT_CREATE_ON_PUBLIC                  = 'PAYMENT_CREATE_ON_PUBLIC';
     const PAYMENT_CARD_NOT_ENROLLED                 = 'PAYMENT_CARD_NOT_ENROLLED';
@@ -53,7 +56,16 @@ class TraceCode
     const PAYMENT_CAPTURE_UPDATE_TRANSACTION        = 'PAYMENT_CAPTURE_UPDATE_TRANSACTION';
     const PAYMENT_CAPTURE_ORDER_UPDATE              = 'PAYMENT_CAPTURE_ORDER_UPDATE';
     const PAYMENT_TRANSACTION_OLD                   = 'PAYMENT_TRANSACTION_OLD';
+    const TRANSACTION_CREATED_IN_VERIFY_CAPTURE     = 'TRANSACTION_CREATED_IN_VERIFY_CAPTURE';
     const TRANSACTION_FREE_CREDITS                  = 'TRANSACTION_FREE_CREDITS';
+    const PAYMENT_NOT_CAPTURED_CREATE_TRANSACTION   = 'PAYMENT_NOT_CAPTURED_CREATE_TRANSACTION';
+    const VERIFY_CAPTURE_RESPONSE                   = 'VERIFY_CAPTURE_RESPONSE';
+    const VERIFY_REFUND_TRANSACTION_CREATED         = 'VERIFY_REFUND_TRANSACTION_CREATED';
+    const MANUAL_GATEWAY_REFUND_RESPONSE            = 'MANUAL_GATEWAY_REFUND_RESPONSE';
+    const MANUAL_GATEWAY_ALL_REFUNDS_RESPONSE       = 'MANUAL_GATEWAY_ALL_REFUNDS_RESPONSE';
+    const MANUAL_GATEWAY_REFUND_FAILURE             = 'MANUAL_GATEWAY_REFUND_FAILURE';
+    const MANUAL_GATEWAY_REFUND_INITIATED           = 'MANUAL_GATEWAY_REFUND_INITIATED';
+    const REFUND_GATEWAY_REQUIRED                   = 'REFUND_GATEWAY_REQUIRED';
 
     const TERMINAL_SELECTION                        = 'TERMINAL_SELECTION';
     const TERMINAL_SELECTION_MISMATCH               = 'TERMINAL_SELECTION_MISMATCH';
@@ -62,6 +74,7 @@ class TraceCode
     const MERCHANT_EDIT                             = 'MERCHANT_EDIT';
     const CUSTOMER_EDIT                             = 'CUSTOMER_EDIT';
     const CUSTOMER_TOKEN_EDIT                       = 'CUSTOMER_TOKEN_EDIT';
+    const CARD_NUMBER_SCRUBBED                      = 'CARD_NUMBER_SCRUBBED';
 
     const TRANSACTION_REFUND_TRACE                  = 'TRANSACTION_REFUND_TRACE';
 
@@ -81,6 +94,11 @@ class TraceCode
     const PAYMENT_PROCESS_FROM_SAVED_LOCAL          = 'PAYMENT_PROCESS_FROM_SAVED_LOCAL';
     const PAYMENT_PROCESS_FROM_SAVED_GLOBAL         = 'PAYMENT_PROCESS_FROM_SAVED_GLOBAL';
     const PAYMENT_SAVE_METHOD                       = 'PAYMENT_SAVE_METHOD';
+
+    //Pricing
+    const PRICING_RULE_SELECTION                    = 'PRICING_RULE_SELECTION';
+    const PAYMENT_PRICING_RULE_NOT_FOUND            = 'PAYMENT_PRICING_RULE_NOT_FOUND';
+    const PAYMENT_PRICING_RULE_SELECTION            = 'PAYMENT_PRICING_RULE_SELECTION';
 
     /*
      * Gateway component error messages
@@ -150,6 +168,7 @@ class TraceCode
     const SETTLEMENT_ATOM_INITIATED_RECONCILED      = 'SETTLEMENT_ATOM_INITIATED_RECONCILED';
     const SETTLEMENT_MERCHANT_SETL_FAILED           = 'SETTLEMENT_MERCHANT_SETL_FAILED';
     const SETTLEMENT_KOTAK_RECONCILE_FILE_GENERATED = 'SETTLEMENT_KOTAK_RECONCILE_FILE_GENERATED';
+    const SETTLEMENT_DAILY_REPORT_MAILING           = 'SETTLEMENT_DAILY_REPORT_MAILING';
     const SETTLEMENT_DAILY_REPORT_DATA              = 'SETTLEMENT_DAILY_REPORT_DATA';
     const SETTLEMENT_DAILY_REPORT_RESULT            = 'SETTLEMENT_DAILY_REPORT_RESULT';
 
@@ -221,76 +240,86 @@ class TraceCode
     const PAYMENT_NOTES_INVALID                     = 'PAYMENT_NOTES_INVALID';
 
     protected static $messages = array(
-        self::PAYMENT_NEW_REQUEST                   => 'Request for new payment received',
-        self::PAYMENT_CREATED                       => 'New payment created',
-        self::PAYMENT_CREATE_FAILED                 => 'Payment creation failed',
-        self::PAYMENT_AUTH_SUCCESS                  => 'Payment authenticated successfully',
-        self::PAYMENT_AUTH_FAILURE                  => 'Payment auth failed',
-        self::PAYMENT_FAILED                        => 'Payment failed',
-        self::PAYMENT_CANCELLED                     => 'Payment cancelled by user',
-        self::PAYMENT_REFUND_SUCCESS                => 'Payment refunded successfully',
-        self::PAYMENT_REFUND_FAILURE                => 'Payment refund failed',
-        self::PAYMENT_CAPTURE_SUCCESS               => 'Payment captured successfully',
-        self::PAYMENT_CAPTURE_FAILURE               => 'Payment capture failed',
-        self::PAYMENT_VERIFY_FAILED                 => 'Payment verification with gateway failed',
-        self::PAYMENT_FAILED_TO_AUTHORIZED          => 'Payment failed but which succeded on gateway, converting it to authorized',
-        self::PAYMENT_QUEUE_CAPTURE_REQUEST         => 'Payment capture request via queue',
-        self::PAYMENT_QUEUE_CAPTURE_SUCCESS         => 'Payment captured successfully via queue',
-        self::PAYMENT_QUEUE_CAPTURE_FAILURE         => 'Payment failed to capture via queue',
-        self::PAYMENT_CAPTURE_FAILURE_EXCEPTION     => 'Payment failed to capture because of an exception',
-        self::PAYMENT_QUEUE_CAPTURE_DELETE          => 'Deleting the capture request from the queue',
-        self::PAYMENT_CAPTURE_REQUEST               => 'Payment capture request received',
-        self::PAYMENT_CAPTURE_ADD_TO_QUEUE          => 'Adding capture request to queue',
-        self::PAYMENT_CAPTURE_CREATE_TRANSACTION    => 'Create transaction on payment capture',
-        self::PAYMENT_CAPTURE_UPDATE_TRANSACTION    => 'Update existing transaction on payment capture',
-        self::PAYMENT_CAPTURE_ORDER_UPDATE          => 'Update corresponding order on payment capture',
-        self::PAYMENT_TRANSACTION_OLD               => 'Updating/Creating transaction of an old payment',
-        self::TRANSACTION_FREE_CREDITS              => 'Using free credits for the payment',
+        self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
+        self::PAYMENT_CREATED                           => 'New payment created',
+        self::PAYMENT_CREATE_FAILED                     => 'Payment creation failed',
+        self::PAYMENT_AUTH_SUCCESS                      => 'Payment authenticated successfully',
+        self::PAYMENT_AUTH_FAILURE                      => 'Payment auth failed',
+        self::PAYMENT_FAILED                            => 'Payment failed',
+        self::PAYMENT_CANCELLED                         => 'Payment cancelled by user',
+        self::PAYMENT_REFUND_SUCCESS                    => 'Payment refunded successfully',
+        self::PAYMENT_REFUND_FAILURE                    => 'Payment refund failed',
+        self::PAYMENT_CAPTURE_SUCCESS                   => 'Payment captured successfully',
+        self::PAYMENT_CAPTURE_FAILURE                   => 'Payment capture failed',
+        self::PAYMENT_VERIFY_FAILED                     => 'Payment verification with gateway failed',
+        self::PAYMENT_FAILED_TO_AUTHORIZED              => 'Payment failed but which succeded on gateway, converting it to authorized',
+        self::PAYMENT_QUEUE_CAPTURE_REQUEST             => 'Payment capture request via queue',
+        self::PAYMENT_QUEUE_CAPTURE_SUCCESS             => 'Payment captured successfully via queue',
+        self::PAYMENT_QUEUE_CAPTURE_FAILURE             => 'Payment failed to capture via queue',
+        self::PAYMENT_CAPTURE_FAILURE_EXCEPTION         => 'Payment failed to capture because of an exception',
+        self::PAYMENT_QUEUE_CAPTURE_DELETE              => 'Deleting the capture request from the queue',
+        self::PAYMENT_CAPTURE_REQUEST                   => 'Payment capture request received',
+        self::PAYMENT_CAPTURE_ADD_TO_QUEUE              => 'Adding capture request to queue',
+        self::PAYMENT_CAPTURE_CREATE_TRANSACTION        => 'Create transaction on payment capture',
+        self::PAYMENT_NOT_CAPTURED_CREATE_TRANSACTION   => 'Create transaction on payment failed capture',
+        self::PAYMENT_CAPTURE_UPDATE_TRANSACTION        => 'Update existing transaction on payment capture',
+        self::PAYMENT_CAPTURE_ORDER_UPDATE              => 'Update corresponding order on payment capture',
+        self::PAYMENT_TRANSACTION_OLD                   => 'Updating/Creating transaction of an old payment',
+        self::TRANSACTION_FREE_CREDITS                  => 'Using free credits for the payment',
+        self::PAYMENT_VERIFY_CAPTURE_FAILURE            => 'Issue while performing verify for capture',
+        self::VERIFY_CAPTURE_RESPONSE                   => 'Response received on verify capture',
+        self::VERIFY_REFUND_TRANSACTION_CREATED         => 'Refund transaction created in verify refund',
+        self::MANUAL_GATEWAY_REFUND_RESPONSE            => 'Response received on manual gateway refund',
+        self::MANUAL_GATEWAY_ALL_REFUNDS_RESPONSE       => 'Response received for all refunds on manual gateway refund',
+        self::MANUAL_GATEWAY_REFUND_FAILURE             => 'Failed while trying to refund from gateway',
+        self::MANUAL_GATEWAY_REFUND_INITIATED           => 'Manual gateway refund has been initiated for this refund id',
+        self::REFUND_GATEWAY_REQUIRED                   => 'Traces whether the gateway refund is required or not',
 
-        self::BAD_REQUEST_INVALID_API_KEY           => 'The api key provided is invalid',
+        self::BAD_REQUEST_INVALID_API_KEY               => 'The api key provided is invalid',
 
-        self::RUNTIME_ERROR                         => 'The request failed at runtime',
+        self::RUNTIME_ERROR                             => 'The request failed at runtime',
 
-        self::GATEWAY_ENROLL_REQUEST                => 'Request for enrollment sent',
-        self::GATEWAY_ENROLL_RESPONSE               => 'Enrollment response received',
-        self::GATEWAY_ENROLL_ERROR                  => 'Error in enrollment',
-        self::GATEWAY_NOT_ENROLLED_REQUEST          => 'Request for not-enrolled card sent',
-        self::GATEWAY_NOT_ENROLLED_RESPONSE         => 'Response for not-enrolled card received',
-        self::GATEWAY_NOT_ENROLLED_ERROR            => 'Error occured for not-enrolled card',
-        self::GATEWAY_ENROLLED_AUTH_REQUEST         => 'Authentication request sent for enrolled card',
-        self::GATEWAY_ENROLLED_AUTH_RESPONSE        => 'Authentication response received for enrolled card',
-        self::GATEWAY_ENROLLED_AUTH_ERROR           => 'Authentication error occured for enrolled card',
-        self::GATEWAY_SUPPORT_REQUEST               => 'Support request sent',
-        self::GATEWAY_SUPPORT_RESPONSE              => 'Support response received',
-        self::GATEWAY_SUPPORT_ERROR                 => 'Error in support',
-        self::GATEWAY_UNKNOWN_ERROR                 => 'Unknown gateway error',
-        self::GATEWAY_PAYMENT_VERIFY_UNEXPECTED     => 'Unexpected state of events in verify flow',
-        self::GATEWAY_UNSUPPORTED_CARD_NETWORK      => 'Card network not supported',
+        self::GATEWAY_ENROLL_REQUEST                    => 'Request for enrollment sent',
+        self::GATEWAY_ENROLL_RESPONSE                   => 'Enrollment response received',
+        self::GATEWAY_ENROLL_ERROR                      => 'Error in enrollment',
+        self::GATEWAY_NOT_ENROLLED_REQUEST              => 'Request for not-enrolled card sent',
+        self::GATEWAY_NOT_ENROLLED_RESPONSE             => 'Response for not-enrolled card received',
+        self::GATEWAY_NOT_ENROLLED_ERROR                => 'Error occured for not-enrolled card',
+        self::GATEWAY_ENROLLED_AUTH_REQUEST             => 'Authentication request sent for enrolled card',
+        self::GATEWAY_ENROLLED_AUTH_RESPONSE            => 'Authentication response received for enrolled card',
+        self::GATEWAY_ENROLLED_AUTH_ERROR               => 'Authentication error occured for enrolled card',
+        self::GATEWAY_SUPPORT_REQUEST                   => 'Support request sent',
+        self::GATEWAY_SUPPORT_RESPONSE                  => 'Support response received',
+        self::GATEWAY_SUPPORT_ERROR                     => 'Error in support',
+        self::GATEWAY_UNKNOWN_ERROR                     => 'Unknown gateway error',
+        self::GATEWAY_PAYMENT_VERIFY_UNEXPECTED         => 'Unexpected state of events in verify flow',
+        self::GATEWAY_UNSUPPORTED_CARD_NETWORK          => 'Card network not supported',
 
-        self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured',
-        self::RECOVERABLE_EXCEPTION                 => 'Recoverable exception occurred',
-        self::MISC_TRACE_CODE                       => 'Miscellaneous trace code',
-        self::ES_SAVE_FAILED                        => 'Failed while trying to save the entity to ES',
-        self::ES_BULK_UPDATE_FAILED                 => 'Failed while bulk updating in ES',
-        self::ES_BULK_UPDATE                        => 'Bulk update for ES',
-        self::ES_SAVE_REQUEST                       => 'Request for saving in ES',
+        self::ERROR_EXCEPTION                           => 'Unhandled critical exception occured',
+        self::RECOVERABLE_EXCEPTION                     => 'Recoverable exception occurred',
+        self::MISC_TRACE_CODE                           => 'Miscellaneous trace code',
+        self::ES_SAVE_FAILED                            => 'Failed while trying to save the entity to ES',
+        self::ES_BULK_UPDATE_FAILED                     => 'Failed while bulk updating in ES',
+        self::ES_BULK_UPDATE                            => 'Bulk update for ES',
+        self::ES_SAVE_REQUEST                           => 'Request for saving in ES',
 
-        self::RECON_ALERT                           => 'Alert raised for reconciliation',
-        self::RECON_FILE_SKIP                       => 'Skipping a reconciliation file',
-        self::RECON_MISMATCH                        => 'Mismatch between the data present in DB and recon file',
-        self::RECON_PARSE_ERROR                     => 'Not able to parse some content of the recon file',
-        self::RECON_FAILURE                         => 'Reconciliation could not happen',
-        self::RECON_FAILED_VERIFY                   => 'Payment verify and authorize was unsuccessful',
-        self::RECON_FILE_DELETE_FAILURE             => 'Deleting local file during reconciliation',
-        self::RECON_INFO_ALERT                      => 'Info alert raised for reconciliation',
-        self::RECON_CRITICAL_ALERT                  => 'Critical alert raised for reconciliation',
-        self::RECON_REQUEST                         => 'Request made for reconciliation',
-        self::RECON_FILE_ROW                        => 'Row in the reconciliation file that is being reconciled',
-        self::RECON_FILE_DETAILS                    => 'Details of all the files collected in the request',
-        self::IIN_INSERT_FAILED                     => 'Inserting into Iin failed for given Iin',
-        self::RECON_INFO                            => 'General recon info',
-        self::REFUND_TRANSACTION_FAILED             => 'Transaction failed to create for refund',
-        self::RECON_INFO_SUMMARY                    => 'Summary of the reconciliation of the files',
+        self::RECON_ALERT                               => 'Alert raised for reconciliation',
+        self::RECON_FILE_SKIP                           => 'Skipping a reconciliation file',
+        self::RECON_MISMATCH                            => 'Mismatch between the data present in DB and recon file',
+        self::RECON_PARSE_ERROR                         => 'Not able to parse some content of the recon file',
+        self::RECON_FAILURE                             => 'Reconciliation could not happen',
+        self::RECON_FAILED_VERIFY                       => 'Payment verify and authorize was unsuccessful',
+        self::RECON_FILE_DELETE_FAILURE                 => 'Deleting local file during reconciliation',
+        self::RECON_INFO_ALERT                          => 'Info alert raised for reconciliation',
+        self::RECON_CRITICAL_ALERT                      => 'Critical alert raised for reconciliation',
+        self::RECON_REQUEST                             => 'Request made for reconciliation',
+        self::RECON_FILE_ROW                            => 'Row in the reconciliation file that is being reconciled',
+        self::RECON_FILE_DETAILS                        => 'Details of all the files collected in the request',
+        self::IIN_INSERT_FAILED                         => 'Inserting into Iin failed for given Iin',
+        self::RECON_INFO                                => 'General recon info',
+        self::REFUND_TRANSACTION_FAILED                 => 'Transaction failed to create for refund',
+        self::RECON_INFO_SUMMARY                        => 'Summary of the reconciliation of the files',
+        self::TRANSACTION_CREATED_IN_VERIFY_CAPTURE     => 'Transaction created for a failed capture',
     );
 
     /**

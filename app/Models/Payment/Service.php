@@ -2,19 +2,16 @@
 
 namespace RZP\Models\Payment;
 
+use Mail;
+use Config;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Error;
-
-use Mail;
-
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Card;
 use RZP\Models\Transaction;
-
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
@@ -35,7 +32,7 @@ class Service extends Base\Service
      */
     public function process(array $input)
     {
-        return $this->processor()->process($input);
+        return $this->getNewProcessor()->process($input);
     }
 
     /**
@@ -47,12 +44,12 @@ class Service extends Base\Service
         $input['_']['source']   = 's2s';
         $input['method']        = 'wallet';
 
-        return $this->processor()->process($input);
+        return $this->getNewProcessor()->process($input);
     }
 
     public function processAndReturnFees(array & $input)
     {
-        return $this->processor()->processAndReturnFees($input);
+        return $this->getNewProcessor()->processAndReturnFees($input);
     }
 
     /**
@@ -65,7 +62,7 @@ class Service extends Base\Service
      */
     public function otpResend($id, $input)
     {
-        return $this->processor()->otpResend($id, $input);
+        return $this->getNewProcessor()->otpResend($id, $input);
     }
 
     /*
@@ -78,7 +75,7 @@ class Service extends Base\Service
      */
     public function topup($id, $input)
     {
-        $data = $this->processor()->topup($id, $input);
+        $data = $this->getNewProcessor()->topup($id, $input);
 
         return $data;
     }
@@ -92,7 +89,7 @@ class Service extends Base\Service
      */
     public function refund($id, $input)
     {
-        $refund = $this->processor()->refundCapturedPayment($id, $input);
+        $refund = $this->getNewProcessor()->refundCapturedPayment($id, $input);
 
         return $refund->toArrayPublic();
     }
@@ -106,7 +103,7 @@ class Service extends Base\Service
      */
     public function refundAuthorized($id, $input)
     {
-        $refund = $this->processor()->refundAuthorizedPayment($id, $input);
+        $refund = $this->getNewProcessor()->refundAuthorizedPayment($id, $input);
 
         return $refund->toArrayPublic();
     }
@@ -117,32 +114,32 @@ class Service extends Base\Service
 
         $merchantId = $payment->getMerchantId();
 
-        $merchant = (new Merchant\Repository)->findOrFail($merchantId);
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-        $data = $this->processor($merchant)->verify($payment);
+        $data = $this->getNewProcessor($merchant)->verify($payment);
 
         return $data;
     }
 
     public function cancel($id, $input)
     {
-        $status = $this->processor()->cancel($id, $input);
+        $status = $this->getNewProcessor()->cancel($id, $input);
 
         return ['status' => $status];
     }
 
     public function redirect($id)
     {
-        return $this->processor()->redirect($id);
+        return $this->getNewProcessor()->redirect($id);
     }
 
     public function forceAuthorizeFailed($id, $input)
     {
         $payment = $this->core->retrieveById($id);
 
-        $merchant = (new Merchant\Repository)->findOrFail($payment->getMerchantId());
+        $merchant = $this->repo->merchant->findOrFail($payment->getMerchantId());
 
-        $data = $this->processor($merchant)
+        $data = $this->getNewProcessor($merchant)
                      ->forceAuthorizeFailedPayment($payment, $input);
 
         return $data;
@@ -154,9 +151,9 @@ class Service extends Base\Service
 
         $merchantId = $payment->getMerchantId();
 
-        $merchant = (new Merchant\Repository)->findOrFail($merchantId);
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-        $data = $this->processor($merchant)->authorizeFailedPayment($payment);
+        $data = $this->getNewProcessor($merchant)->authorizeFailedPayment($payment);
 
         return $data;
     }
@@ -166,7 +163,7 @@ class Service extends Base\Service
         Payment\Entity::verifyIdAndStripSign($paymentId);
         Refund\Entity::verifyIdAndStripSign($rfndId);
 
-        $refund = (new Refund\Repository)->fetchByIdPaymentIdMerchantId(
+        $refund = $this->repo->refund->fetchByIdPaymentIdMerchantId(
                                     $rfndId,
                                     $paymentId,
                                     $this->merchant->getKey());
@@ -191,7 +188,7 @@ class Service extends Base\Service
 
         $payment = $this->repo->payment->findByIdAndMerchantId($id, $this->merchant->getId());
 
-        $refunds = (new Refund\Repository)->findForPayment($payment, $this->merchant);
+        $refunds = $this->repo->refund->findForPayment($payment, $this->merchant);
 
         return $refunds->toArrayPublic();
     }
@@ -206,9 +203,92 @@ class Service extends Base\Service
      */
     public function capture($id, $input)
     {
-        $payment = $this->processor()->capture($id, $input);
+        $payment = $this->getNewProcessor()->capture($id, $input);
 
         return $payment->toArrayPublic();
+    }
+
+
+    /**
+     * If a payment has been captured on gateway but not on the api side,
+     * we create a transaction for the payment.
+     *
+     * @param $paymentId
+     * @return array
+     */
+    public function verifyCapture($paymentId)
+    {
+        $payment = $this->repo->payment->findOrFail($paymentId);
+
+        $merchantId = $payment->getMerchantId();
+
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $data = $this->getNewProcessor($merchant)->verifyCapture($payment);
+
+        $this->trace->info(
+            TraceCode::VERIFY_CAPTURE_RESPONSE,
+            [
+                'payment_id'    => $paymentId,
+                'data'          => $data
+            ]
+        );
+
+        return $data;
+    }
+
+    /**
+     * USE WITH EXTREME CAUTION
+     * This calls the gateway for refund and does nothing on the api side.
+     *
+     * @param $refundId
+     * @return array
+     */
+    public function manualGatewayRefund($refundIds)
+    {
+        $refundIds = explode(',', $refundIds);
+
+        $data = [];
+
+        foreach ($refundIds as $refundId)
+        {
+            $refund = $this->repo->refund->findOrFail($refundId);
+            $merchantId = $refund->getMerchantId();
+            $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+            try
+            {
+                $response = $this->getNewProcessor($merchant)->manualGatewayRefund($refund);
+            }
+            catch(\Exception $ex)
+            {
+                $response = [
+                    'refund_id'     => $refundId,
+                    'payment_id'    => $refund->getPaymentId(),
+                    'error_message' => $ex->getMessage(),
+                ];
+
+                $this->trace->traceException($ex);
+            }
+
+            $this->trace->info(
+                TraceCode::MANUAL_GATEWAY_REFUND_RESPONSE,
+                [
+                    'refund_id'  => $refundId,
+                    'payment_id' => $refund->getPaymentId(),
+                    'response'   => $response
+                ]
+            );
+
+            $data[] = $response;
+        }
+
+        $this->trace->info(
+            TraceCode::MANUAL_GATEWAY_ALL_REFUNDS_RESPONSE,
+            $data
+        );
+
+        return $data;
     }
 
     /**
@@ -225,7 +305,7 @@ class Service extends Base\Service
      */
     public function callback($id, $hash, array $input)
     {
-        return $this->processor()->callback($id, $hash, $input);
+        return $this->getNewProcessor()->callback($id, $hash, $input);
     }
 
     public function s2sCallback($id, $input)
@@ -236,14 +316,14 @@ class Service extends Base\Service
 
         $merchant = $payment->merchant;
 
-        return $this->processor($merchant)->s2sCallback($payment, $input);
+        return $this->getNewProcessor($merchant)->s2sCallback($payment, $input);
     }
 
     public function fetchMultiple(array $input)
     {
         $merchantId = $this->merchant->getId();
 
-        $payments = (new Payment\Repository)->fetch($input, $merchantId);
+        $payments = $this->repo->payment->fetch($input, $merchantId);
 
         return $payments->toArrayPublic();
     }
@@ -267,14 +347,13 @@ class Service extends Base\Service
 
             if ($payment->isMethodCardOrEmi() === false)
             {
-                return;
+                return [];
             }
 
             $card = $payment->card;
 
             $cardIin = $card->iin;
-            $repo = new Card\IIN\Repository;
-            $iin = $repo->find($cardIin);
+            $iin = $this->repo->iin->find($cardIin);
 
             if ($iin === null)
             {
@@ -284,7 +363,7 @@ class Service extends Base\Service
             if ($otpRead === '1')
             {
                 $iin->setOtpRead(true);
-                $repo->saveOrFail($iin);
+                $this->repo->saveOrFail($iin);
             }
             else if (($otpRead === '0') and
                      ($iin->getOtpRead() === true))
@@ -303,11 +382,11 @@ class Service extends Base\Service
         // Since we are taking 12 am of today, we only need to subtract 4 days from today
         // to arrive at 5 days before.
 
-        $days = 5;
+        $days = Processor\Processor::AUTO_REFUND_TIME_PERIOD;
         $date = Carbon::today('Asia/Kolkata');
         $ts = $date->subDays($days)->timestamp;
 
-        $payments = (new Payment\Repository)->getAuthorizedPaymentsBeforeTimestamp($ts);
+        $payments = $this->repo->payment->getAuthorizedPaymentsBeforeTimestamp($ts);
 
         $authorized = $payments->count();
         $refunded = 0;
@@ -325,7 +404,7 @@ class Service extends Base\Service
 
                 $merchant = $payment->merchant;
 
-                $refund = $this->processor($merchant)
+                $refund = $this->getNewProcessor($merchant)
                                ->refundAuthorizedPayment(
                                     $payment->getPublicId(), []);
 
@@ -377,7 +456,7 @@ class Service extends Base\Service
 
         $message = 'Authorized payments refunded: ' . $refunded;
 
-        $this->slack->queue($message, $results, ['channel' => '#tech_logs']);
+        $this->slack->queue($message, $results, ['channel' => Config::get('slack.channels.tech_logs')]);
 
         return $results;
     }
@@ -387,7 +466,7 @@ class Service extends Base\Service
         $date = Carbon::yesterday('Asia/Kolkata');
         $timestamp = $date->timestamp;
 
-        $payments = (new Payment\Repository)->getAuthorizedPaymentsBeforeTimestamp(
+        $payments = $this->repo->payment->getAuthorizedPaymentsBeforeTimestamp(
                             $timestamp);
 
         $count = $payments->count();
@@ -399,7 +478,7 @@ class Service extends Base\Service
             $message = 'Payment authorizations till ' .
                         $date->format('d-m-y') . ': ' . $count;
 
-            $this->slack->queue($message, [], ['channel' => '#tech_logs']);
+            $this->slack->queue($message, [], ['channel' => Config::get('slack.channels.tech_logs')]);
         }
 
         return ['count' => $count];
@@ -407,33 +486,47 @@ class Service extends Base\Service
 
     public function timeoutOldPayments()
     {
+        $count = 0;
+
         $timestamp = time() - 9 * 60;
 
-        // Timeout all the pending payments, changing the error to timeout
-        $count = (new Payment\Repository)->timeoutOldPayments($timestamp);
-
-        // Timeout old payment while retaining the error, if set
-        $payments = (new Payment\Repository)->fetchCreatedPaymentsWithInternalError($timestamp);
+        $payments = $this->repo->payment->fetchOldCreatedPaymentsForTimeout($timestamp);
 
         foreach ($payments as $payment)
         {
-            $error = new Error\Error($payment->getInternalErrorCode());
+            $internalErrorCode = $payment->getInternalErrorCode();
 
-            $code = $error->getPublicErrorCode();
+            if ($internalErrorCode !== null)
+            {
+                $error = new Error\Error($internalErrorCode);
 
-            $desc = $error->getDescription();
+                $code = $error->getPublicErrorCode();
 
-            $internalCode = $error->getInternalErrorCode();
+                $desc = $error->getDescription();
 
-            $payment->setStatus(Payment\Status::FAILED);
+                $internalCode = $error->getInternalErrorCode();
 
-            $payment->setError($code, $desc, $internalCode);
+                $payment->setStatus(Payment\Status::FAILED);
 
-            $saved = $payment->save();
+                $payment->setError($code, $desc, $internalCode);
+            }
+            else
+            {
+                $payment->setStatus(Payment\Status::FAILED);
+
+                $payment->setError(
+                    Error\ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT,
+                    Error\PublicErrorDescription::BAD_REQUEST_PAYMENT_TIMED_OUT,
+                    null);
+            }
+
+            $saved = $this->repo->save($payment);
 
             if ($saved === true)
             {
                 ++$count;
+
+                $this->app['events']->fire('api.payment.failed', array($payment));
             }
         }
 
@@ -450,7 +543,7 @@ class Service extends Base\Service
         $timeLowerLimit = time() - (48 * 60 * 60);
         $timeUpperLimit = time() - (24 * 60 * 60);
 
-        $payments = (new Payment\Repository)->getAuthorizedPaymentsBetweenTimestamps(
+        $payments = $this->repo->payment->getAuthorizedPaymentsBetweenTimestamps(
                             $timeLowerLimit, $timeUpperLimit);
 
         $count = 0;
@@ -459,7 +552,7 @@ class Service extends Base\Service
         {
             $this->merchant = $payment->merchant;
 
-            $res = $this->processor()->autoCapturePayment($payment);
+            $res = $this->getNewProcessor()->autoCapturePayment($payment);
 
             if ($res)
             {
@@ -475,7 +568,7 @@ class Service extends Base\Service
         $timeLowerLimit = Carbon::yesterday('Asia/Kolkata')->timestamp;
         $timeUpperLimit = Carbon::today('Asia/Kolkata')->timestamp;
 
-        $payments = (new Payment\Repository)->getAutoCapturedPaymentsBetweenTimestamps(
+        $payments = $this->repo->payment->getAutoCapturedPaymentsBetweenTimestamps(
                                                         $timeLowerLimit, $timeUpperLimit);
 
         $count = $payments->count();
@@ -496,7 +589,7 @@ class Service extends Base\Service
                 $i++;
             }
 
-            $merchant = (new Merchant\Repository)->findOrFail($merchantId);
+            $merchant = $this->repo->merchant->findOrFail($merchantId);
             $this->app['mailgun']->sendAutoCaptureEmail($merchant->email, $str);
             $emailCount++;
         }
@@ -547,7 +640,7 @@ class Service extends Base\Service
         $result['from'] = (string) $start;
         $result['to']   = (string) $end;
 
-        $authorizedPayments = (new Payment\Repository)->getAuthorizedPaymentsBetweenTimestamps($from, $to);
+        $authorizedPayments = $this->repo->payment->getAuthorizedPaymentsBetweenTimestamps($from, $to);
 
         $grouped = $authorizedPayments->keyBy(Payment\Entity::MERCHANT_ID);
 
@@ -615,7 +708,7 @@ class Service extends Base\Service
             });
     }
 
-    protected function processor(Merchant\Entity $merchant = null)
+    protected function getNewProcessor(Merchant\Entity $merchant = null)
     {
         if ($merchant === null)
         {
@@ -629,14 +722,13 @@ class Service extends Base\Service
 
     public function computeServiceTax()
     {
-        $repo = new Payment\Repository;
-        $payments = $repo->getNonTaxComputedPayments();
+        $payments = $this->repo->payment->getNonTaxComputedPayments();
 
         $totalRecords = 0;
         $updatedRecords = 0;
         $totalServiceTax = 0;
 
-        $repo->transaction(function() use ($payments, &$totalRecords, &$updatedRecords, &$totalServiceTax)
+        $this->repo->transaction(function() use ($payments, &$totalRecords, &$updatedRecords, &$totalServiceTax)
         {
             $totalRecords = $payments->count();
             foreach ($payments as $payment)
@@ -648,8 +740,8 @@ class Service extends Base\Service
                 $payment->setServiceTax($txn->getServiceTax());
                 $payment->setFee($txn->getFee());
 
-                $txn->saveOrFail();
-                $payment->saveOrFail();
+                $this->repo->saveOrFail($txn);
+                $this->repo->saveOrFail($payment);
 
                 $updatedRecords++;
                 $totalServiceTax += $txn -> getServiceTax();

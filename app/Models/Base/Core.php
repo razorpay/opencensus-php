@@ -28,6 +28,8 @@ class Core
      */
     protected $trace;
 
+    protected $merchant;
+
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -40,5 +42,7 @@ class Core
         $this->trace = $this->app['trace'];
 
         $this->repo = $this->app['repo'];
+
+        $this->merchant = $this->app['basicauth']->getMerchant();
     }
 }

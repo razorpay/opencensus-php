@@ -25,6 +25,10 @@ class CreateBankAccounts extends Migration
 
             $table->char(BankAccount::MERCHANT_ID, BankAccount::ID_LENGTH);
 
+            $table->char(BankAccount::ENTITY_ID, BankAccount::ID_LENGTH);
+
+            $table->char(BankAccount::TYPE, 8);
+
             $table->char(BankAccount::IFSC_CODE, BankAccount::IFSC_CODE_LENGTH);
 
             $table->string(BankAccount::ACCOUNT_NUMBER, 40);
@@ -55,6 +59,10 @@ class CreateBankAccounts extends Migration
             $table->integer(BankAccount::UPDATED_AT);
             $table->integer(BankAccount::DELETED_AT)
                   ->nullable();
+
+            $table->index(BankAccount::ENTITY_ID);
+
+            $table->index(BankAccount::TYPE);
 
             $table->foreign(BankAccount::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)

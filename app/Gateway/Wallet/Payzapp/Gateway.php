@@ -17,6 +17,7 @@ use RZP\Models\Payment\Core;
 use Carbon\Carbon;
 use View;
 use Lib\PhoneBook;
+use RZP\Constants\HashAlgo;
 
 class Gateway extends Base\Gateway
 {
@@ -98,7 +99,7 @@ class Gateway extends Base\Gateway
 
         assert ($input['gateway']['merTxnId'] === $input['payment']['id']);
 
-        $payment = $this->getRepo()->findByPaymentIdAndAction(
+        $payment = $this->repo->findByPaymentIdAndAction(
                     $input['gateway']['merTxnId'], Action::AUTHORIZE);
 
         $mappedPayment = $this->getReverseMappedAttributes($payment->toArray());
@@ -227,7 +228,7 @@ class Gateway extends Base\Gateway
 
     protected function getRefundRequestContent($input)
     {
-        $wallet = $this->getRepo()->fetchWalletByPaymentId($input['payment']['id']);
+        $wallet = $this->repo->fetchWalletByPaymentId($input['payment']['id']);
 
         $originalTransactionId = $wallet['gateway_payment_id_2'];
 
@@ -772,7 +773,7 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $hash =  base64_encode(hash('sha256', $str, true));
+            $hash =  base64_encode(hash(HashAlgo::SHA256, $str, true));
         }
 
         return $hash;
