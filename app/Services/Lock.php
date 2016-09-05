@@ -23,6 +23,8 @@ class Lock
     {
         $this->requestId = $app['request']->getId();
 
+        $this->trace = $app['trace'];
+
         $this->app = $app;
     }
 
@@ -42,7 +44,7 @@ class Lock
         }
         catch (PredisException $e)
         {
-            $this->app['trace']->traceException($e);
+            $this->trace->traceException($e);
 
             // Do not block the payment in case of any exception
             return true;
