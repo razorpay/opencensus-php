@@ -353,7 +353,12 @@ class Processor
         if (($status !== Status::CREATED) and ($status !== Status::AUTHORIZED))
         {
             throw new Exception\LogicException(
-                'Payment Id: ' . $payment->getId() . ' Status not appropriate: ' . $status);
+                'Payment not in the appropriate status to be marked as failed.',
+                null,
+                [
+                    'payment_id'    => $payment->getId(),
+                    'status'        => $status
+                ]);
         }
 
         $payment->setStatus(Payment\Status::FAILED);
@@ -683,25 +688,26 @@ class Processor
 
     protected function shouldAutoCapture($payment)
     {
-        if ($payment->isAuthorized() === false)
+        // If payment is not authorized or if it's late authorized,
+        // do not auto capture it, irrespective of it being a signed
+        // payment or marked for auto capture.
+        if (($payment->isAuthorized() === false) or
+            ($payment->isLateAuthorized() === true))
         {
             return false;
         }
 
-        if ($payment->isLateAuthorized() === false)
+        // If payment is signed
+        if ($payment->isSigned() === true)
         {
-            // If payment is signed
-            if ($payment->isSigned() === true)
-            {
-                return true;
-            }
+            return true;
+        }
 
-            // If payment order was marked as auto capture
-            if (($payment->order !== null) and
-                ($payment->order->getPaymentCapture() === true))
-            {
-                return true;
-            }
+        // If payment order was marked as auto capture
+        if (($payment->order !== null) and
+            ($payment->order->getPaymentCapture() === true))
+        {
+            return true;
         }
 
         return false;
