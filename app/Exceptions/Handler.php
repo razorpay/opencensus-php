@@ -158,7 +158,7 @@ class Handler extends ExceptionHandler
             'code'      => $exception->getCode(),
             'message'   => $exception->getMessage(),
             'data'      => $data,
-            'stack'     => $this->parseStack($stack),
+            'stack'     => $stack,
             'previous'  => $previous);
 
         return $traceData;
