@@ -237,15 +237,13 @@ class Validator extends Base\Validator
         }
     }
 
-    public function captureValidate($payment, $input)
+    public function captureValidate($payment, $amount)
     {
         $this->failIfCaptured($payment);
 
         $this->failIfNotAuthorized($payment);
 
-        $this->validateInput('capture', $input);
-
-        $this->captureAmountValidate($payment, $input);
+        $this->captureAmountValidate($payment, $amount);
     }
 
     public function cancelValidate($payment)
@@ -253,9 +251,9 @@ class Validator extends Base\Validator
         $this->failIfNotCreated($payment);
     }
 
-    public function captureAmountValidate($payment, $input)
+    public function captureAmountValidate($payment, $amount)
     {
-        $amount = (int) $input['amount'];
+        $amount = (int) $amount;
 
         if ($amount !== $payment->getAmount())
         {
@@ -263,7 +261,7 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_AMOUNT_NOT_EQUAL_TO_AUTH,
                 Payment\Entity::AMOUNT);
 
-            $e->setData(['amount' => $input['amount']]);
+            $e->setData(['amount' => $amount]);
 
             throw $e;
         }

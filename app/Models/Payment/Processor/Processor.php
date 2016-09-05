@@ -347,6 +347,8 @@ class Processor
 
         $payment = $this->payment;
 
+        assert ($payment->isAuthorized() or $payment->isFailed());
+
         $payment->setStatus(Payment\Status::FAILED);
 
         $payment->setError($code, $desc, $internalCode);
@@ -674,6 +676,11 @@ class Processor
 
     protected function shouldAutoCapture($payment)
     {
+        if ($payment->isAuthorized() === false)
+        {
+            return false;
+        }
+
         if ($payment->isLateAuthorized() === false)
         {
             // If payment is signed
