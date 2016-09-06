@@ -15,25 +15,30 @@ class Service extends Base\Service
 {
     public function createPricingPlan($input)
     {
-        $pricing = (new Pricing\Entity)->build($input);
-
-        $this->trace->info(
-            TraceCode::PRICING_PLAN_CREATE_ATTEMPT,
-            $input);
-
-        $plan = $this->repo->pricing->getPricingPlanByName($input[Entity::PLAN_NAME]);
-
-        Pricing\Validator::validatePlanCountZero($plan);
-
-        $pricing->generateId();
-
-        $this->repo->saveOrFail($pricing);
-
-        $plan = new Plan(array($pricing));
+        $plan = (new Pricing\Core)->createPricingPlan($input);
 
         $this->trace->info(
             TraceCode::PRICING_PLAN_CREATE_SUCCESS,
             $plan->toArrayPublic());
+
+        return $plan->toArrayPublic();
+    }
+
+    public function uploadPricingPlan($input)
+    {
+        $this->repo->transactionOnLiveAndTest(function() use ($input){
+
+            $plan = (new Pricing\Core)->createPricingPlan($input[0]);
+
+            array_shift($input);
+
+            foreach ($input as $value)
+            {
+                $rule = (new Pricing\Core)->addPlanRule($value, $plan);
+            }
+        });
+
+        $plan = $this->repo->pricing->getPricingPlanByName($input[0][Entity::PLAN_NAME]);
 
         return $plan->toArrayPublic();
     }
@@ -46,12 +51,7 @@ class Service extends Base\Service
 
         $plan = $this->repo->pricing->getPricingPlanByIdOrFailPublic($id);
 
-        $rule = (new Pricing\Entity)->addPlanRule($input, $plan);
-
-        $rule->getValidator()->matchPaymentRules($plan);
-        $rule->generateId();
-
-        $this->repo->saveOrFail($rule);
+        $rule = (new Pricing\Core)->addPlanRule($input, $plan);
 
         $this->trace->info(
             TraceCode::PRICING_PLAN_RULE_ADD_SUCCESS,

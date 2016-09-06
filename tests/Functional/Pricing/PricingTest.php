@@ -33,6 +33,13 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testUploadPricingPlan()
+    {
+        $testData['request']['url'] = '/pricing/upload';
+
+        $this->startTest($testData);
+    }
+
     public function testAddPricingPlanNBRule()
     {
         $content = $this->createPricingPlan();

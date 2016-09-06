@@ -88,12 +88,7 @@ class Reconciliate
 
             $this->setSubReconciliator($reconciliationType);
 
-            $summary = [];
-
-            $this->repo->transactionOnLiveAndTest(function() use ($fileContents, & $summary)
-            {
-                $summary = $this->subReconciliator->startReconciliation($fileContents);
-            });
+            $summary = $this->subReconciliator->startReconciliation($fileContents);
 
             $allSummaries[] = $summary;
         }
@@ -158,7 +153,7 @@ class Reconciliate
         }
 
         $fileName = strtolower($fileName);
-        
+
         // The method is present in child class since different gateways have
         // different sheet names/file names for reconciliation types.
         $reconciliationType = $this->getTypeName($fileName);

@@ -543,10 +543,6 @@ trait Authorize
         // If token is set, then pay using global saved card
         if (empty($input[Payment\Entity::TOKEN]) === false)
         {
-            $this->payment->setToken(null);
-
-            $this->payment->setGlobalToken($input[Payment\Entity::TOKEN]);
-
             $this->preProcessPaymentFromSavedCardGlobal($customer, $payment, $input, $gatewayInput);
         }
         else
@@ -564,13 +560,16 @@ trait Authorize
                 'token' => $input[Payment\Entity::TOKEN]
             ]);
 
-        // Token should definitely exist in database.
-        $token = $this->repo->token->getByTokenAndCustomerId(
-            $input[Payment\Entity::TOKEN],
-            $customer->getId());
+        $tokenId = $input[Payment\Entity::TOKEN];
+
+        $token = (new Token\Core)->getByTokenAndCustomer($tokenId, $customer);
 
         if ($payment->isMethodCardOrEmi())
         {
+            $payment->token()->associate($token);
+
+            $payment->setToken($token->getToken());
+
             $gatewayInput['card'] = $this->getCardArrayForSavedToken($token, $input);
         }
         else
@@ -588,13 +587,17 @@ trait Authorize
             ]);
 
         // Token should definitely exist in database.
-        $token = $this->repo->token->getByTokenAndCustomerId(
-            $input[Payment\Entity::TOKEN],
-            $customer->getId());
+        $tokenId = $input[Payment\Entity::TOKEN];
+
+        $token = (new Token\Core)->getByTokenAndCustomer($tokenId, $customer);
 
         if ($payment->isMethodCardOrEmi())
         {
             $gatewayInput['card'] = $this->createCardEntityFromSavedToken($token, $input);
+
+            $payment->globalToken()->associate($token);
+
+            $payment->setGlobalToken($token->getToken());
 
             $payment->card->globalCard()->associate($token->card);
 
@@ -653,6 +656,8 @@ trait Authorize
         if ($token !== null)
         {
             $this->payment->setToken($token->getToken());
+
+            $this->payment->token()->associate($token);
         }
     }
 
@@ -677,6 +682,8 @@ trait Authorize
         if ($token !== null)
         {
             $this->payment->setGlobalToken($token->getToken());
+
+            $this->payment->globalToken()->associate($token);
         }
     }
 
