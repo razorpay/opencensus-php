@@ -45,6 +45,17 @@ class Repository extends \Razorpay\Spine\Repository
         $this->manager = $this->app['repo'];
     }
 
+    public function createOrFail(array $attributes)
+    {
+        $class = $this->getEntityClass();
+
+        $entity = new $class($attributes);
+
+        $this->saveOrFail($entity);
+
+        return $entity;
+    }
+
     public function findOrFailPublic($id, $columns = array('*'))
     {
         return $this->newQuery()->findOrFailPublic($id, $columns);

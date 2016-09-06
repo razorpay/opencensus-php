@@ -166,11 +166,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::USED_COUNT, $usedCount);
     }
 
-    public function getMerchantId()
-    {
-        return $this->attributes[self::MERCHANT_ID];
-    }
-
     public function getGatewayMerchantId()
     {
         return $this->attributes[self::GATEWAY_MERCHANT_ID];

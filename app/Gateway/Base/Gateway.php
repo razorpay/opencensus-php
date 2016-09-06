@@ -226,7 +226,7 @@ class Gateway
             return $row['payment']['id'];
         }, $input['data']);
 
-        $payments = $this->getRepo()->fetchByPaymentIdsAndAction(
+        $payments = $this->repo->fetchByPaymentIdsAndAction(
                                 $paymentIds, Action::AUTHORIZE);
 
         $payments = $payments->getDictionaryByAttribute(Entity::PAYMENT_ID);
@@ -366,7 +366,7 @@ class Gateway
 
     protected function getPaymentToVerify($input, $verify)
     {
-        $payment = $this->getRepo()->findByPaymentIdAndAction(
+        $payment = $this->repo->findByPaymentIdAndAction(
                     $input['payment']['id'], Action::AUTHORIZE);
 
         $verify->payment = $payment;
@@ -444,11 +444,6 @@ class Gateway
         $class = $this->getGatewayNamespace() . '\Entity';
 
         return new $class;
-    }
-
-    protected function getRepo()
-    {
-        return $this->getRepository();
     }
 
     protected function getStringToHash($content, $glue = '')

@@ -15,12 +15,19 @@ class Failure
 
     protected $merchant;
 
+    public function __construct()
+    {
+        $app = \App::getFacadeRoot();
+
+        $this->repo = $app['repo'];
+    }
+
     public function markFailed($setl, $reason = null)
     {
         $setl->setStatus(Status::FAILED);
         $setl->setFailureReason($reason);
 
-        (new Repository)->save($setl);
+        $this->repo->save($setl);
 
         $desc = 'Adjustment corresponding to failure of settlement: ' . $setl->getPublicId();
 
@@ -28,8 +35,8 @@ class Failure
 
         $adjTxn = (new Transaction\Core)->createFromAdjustment($adj);
 
-        (new Transaction\Repository)->save($adjTxn);
-        (new Adjustment\Repository)->save($adj);
+        $this->repo->save($adjTxn);
+        $this->repo->save($adj);
 
         \Trace::error(TraceCode::SETTLEMENT_MERCHANT_SETL_FAILED);
     }
@@ -45,7 +52,7 @@ class Failure
 
         $adj->merchant()->associate($setl->merchant);
 
-        (new Adjustment\Repository)->saveOrFail($adj);
+        $this->repo->saveOrFail($adj);
 
         return $adj;
     }

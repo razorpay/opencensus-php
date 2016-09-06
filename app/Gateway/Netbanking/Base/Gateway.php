@@ -31,8 +31,28 @@ class Gateway extends \RZP\Gateway\Base\Gateway
         return new Netbanking\Base\Entity;
     }
 
-    protected function getRepo()
+    protected function getMappedAttributes($attributes)
     {
-        return new Repository();
+        $attr = [];
+
+        $map = $this->map;
+
+        foreach ($attributes as $key => $value)
+        {
+            if (isset($map[$key]))
+            {
+                $newKey = $map[$key];
+                $attr[$newKey] = $value;
+            }
+        }
+
+        return $attr;
+    }
+
+    protected function getRepository()
+    {
+        $gateway = 'netbanking';
+
+        return $this->app['repo']->$gateway;
     }
 }

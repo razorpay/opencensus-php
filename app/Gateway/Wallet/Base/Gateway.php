@@ -61,9 +61,11 @@ class Gateway extends Base\Gateway
         return $attr;
     }
 
-    protected function getRepo()
+    protected function getRepository()
     {
-        return new Repository();
+        $gateway = 'wallet';
+
+        return $this->app['repo']->$gateway;
     }
 
     protected function getFormattedContact($contact)

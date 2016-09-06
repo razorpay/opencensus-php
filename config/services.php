@@ -28,4 +28,8 @@ return [
         'secret' => env('SES_SECRET'),
         'region' => 'us-east-1',
     ],
+
+    'lock' => [
+        'mock' => env('LOCK_MOCK', false)
+    ]
 ];

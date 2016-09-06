@@ -4,7 +4,6 @@ namespace RZP\Models\Order;
 
 use RZP\Models\Base;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 
 class Core extends Base\Core
 {

@@ -70,11 +70,6 @@ class Entity extends Base\PublicEntity
         return 'rzp_' . $mode . '_' . $this->getKey();
     }
 
-    public function getMerchantId()
-    {
-        return $this->getAttribute(self::MERCHANT_ID);
-    }
-
     public function setMerchantId($merchantId)
     {
         $this->setAttribute(self::MERCHANT_ID, $merchantId);
@@ -84,14 +79,9 @@ class Entity extends Base\PublicEntity
     {
         return $query->where(function ($query)
         {
-            $query->where(self::EXPIRED_AT, '=', NULL)
+            $query->whereNull(self::EXPIRED_AT)
                   ->orWhere(self::EXPIRED_AT, '>', time());
         });
-    }
-
-    public function scopeMerchantId($query, $merchantId)
-    {
-        return $query->where(self::MERCHANT_ID,'=',$merchantId);
     }
 
     public function isExpiredOrExpiring()

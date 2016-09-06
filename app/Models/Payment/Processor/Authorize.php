@@ -5,6 +5,7 @@ namespace RZP\Models\Payment\Processor;
 use App;
 use Crypt;
 use Mail;
+use Config;
 
 use Carbon\Carbon;
 use Lib\PhoneBook;
@@ -56,7 +57,7 @@ trait Authorize
 
         $this->getTerminalsForPayment($payment);
 
-        return  $this->authorizeAcrossTerminals($gatewayInput, $payment, $input);
+        return $this->authorizeAcrossTerminals($gatewayInput, $payment, $input);
 
     }
 
@@ -192,15 +193,18 @@ trait Authorize
 
         $payment = $this->payment;
 
-        if ($this->shouldAutoCapture($payment) === true)
-        {
-            // If payment is signed, then we capture it in this step only.
-            $this->autoCapturePayment($payment);
-        }
-
         return $this->postPaymentAuthorizeProcessing($payment);
     }
 
+    protected function autoCapturePaymentIfApplicable($payment)
+    {
+        if ($this->shouldAutoCapture($payment) === true)
+        {
+            // If payment is signed or capture was sent as true in order,
+            // then we capture it in this step only.
+            $this->autoCapturePayment($payment);
+        }
+    }
 
     public function authorizeFailedPayment($payment)
     {
@@ -530,10 +534,6 @@ trait Authorize
         // If token is set, then pay using global saved card
         if (empty($input[Payment\Entity::TOKEN]) === false)
         {
-            $this->payment->setToken(null);
-
-            $this->payment->setGlobalToken($input[Payment\Entity::TOKEN]);
-
             $this->preProcessPaymentFromSavedCardGlobal($customer, $payment, $input, $gatewayInput);
         }
         else
@@ -551,13 +551,16 @@ trait Authorize
                 'token' => $input[Payment\Entity::TOKEN]
             ]);
 
-        // Token should definitely exist in database.
-        $token = $this->repo->token->getByTokenAndCustomerId(
-            $input[Payment\Entity::TOKEN],
-            $customer->getId());
+        $tokenId = $input[Payment\Entity::TOKEN];
+
+        $token = (new Token\Core)->getByTokenAndCustomer($tokenId, $customer);
 
         if ($payment->isMethodCardOrEmi())
         {
+            $payment->token()->associate($token);
+
+            $payment->setToken($token->getToken());
+
             $gatewayInput['card'] = $this->getCardArrayForSavedToken($token, $input);
         }
         else
@@ -575,13 +578,17 @@ trait Authorize
             ]);
 
         // Token should definitely exist in database.
-        $token = $this->repo->token->getByTokenAndCustomerId(
-            $input[Payment\Entity::TOKEN],
-            $customer->getId());
+        $tokenId = $input[Payment\Entity::TOKEN];
+
+        $token = (new Token\Core)->getByTokenAndCustomer($tokenId, $customer);
 
         if ($payment->isMethodCardOrEmi())
         {
             $gatewayInput['card'] = $this->createCardEntityFromSavedToken($token, $input);
+
+            $payment->globalToken()->associate($token);
+
+            $payment->setGlobalToken($token->getToken());
 
             $payment->card->globalCard()->associate($token->card);
 
@@ -640,6 +647,8 @@ trait Authorize
         if ($token !== null)
         {
             $this->payment->setToken($token->getToken());
+
+            $this->payment->token()->associate($token);
         }
     }
 
@@ -664,6 +673,8 @@ trait Authorize
         if ($token !== null)
         {
             $this->payment->setGlobalToken($token->getToken());
+
+            $this->payment->globalToken()->associate($token);
         }
     }
 
@@ -686,17 +697,17 @@ trait Authorize
 
         if ($payment->isMethodCardOrEmi())
         {
-            $saveMethodInput['method'] = Payment\Method::CARD;
+            $saveMethodInput[Token\Entity::METHOD] = Payment\Method::CARD;
 
-            $saveMethodInput['card_id'] = $savedCardId;
+            $saveMethodInput[Token\Entity::CARD_ID] = $savedCardId;
         }
         else if ($payment->isMethod(Payment\Method::NETBANKING))
         {
-            $saveMethodInput['bank'] = $payment->getBank();
+            $saveMethodInput[Token\Entity::BANK] = $payment->getBank();
         }
         else if ($payment->isMethod(Payment\Method::WALLET))
         {
-            $saveMethodInput['wallet'] = $payment->getWallet();
+            $saveMethodInput[Token\Entity::WALLET] = $payment->getWallet();
         }
 
         try
@@ -713,6 +724,8 @@ trait Authorize
         {
             $this->trace->traceException($e);
         }
+
+        return $token;
     }
 
     protected function verifyPaymentMethodEnabled($payment, $input)
@@ -883,11 +896,13 @@ trait Authorize
 
     /**
      * This function is just meant for preparing the return value
-     * after payment authorize processing. This should not contain
-     * any state updating statements.
+     * after payment authorize processing and auto capturing, if applicable.
      */
     protected function postPaymentAuthorizeProcessing($payment)
     {
+        // Auto capture payment, if applicable
+        $this->autoCapturePaymentIfApplicable($payment);
+
         //
         // If it's signed payment, then we return signed data from our
         // end as well.
@@ -1004,7 +1019,8 @@ trait Authorize
 
         $slackData = ['id' => $payment->getDashboardEntityLinkForSlack()];
 
-        $this->app['slack']->queue($message, $slackData, ['color' => 'good', 'channel' => '#tech_logs']);
+        $this->app['slack']->queue(
+            $message, $slackData, ['color' => 'good', 'channel' => Config::get('slack.channels.tech_logs')]);
 
         $this->trace->info(
             TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
@@ -1209,8 +1225,10 @@ trait Authorize
 
         return array_merge(
                 $card->toArray(),
-                ['number' => $cardNumber,
-                 'cvv' => $cvv]);
+                [
+                    'number' => $cardNumber,
+                    'cvv' => $cvv
+                ]);
     }
 
     protected function createCardEntityFromSavedToken($token, $input)
@@ -1231,8 +1249,10 @@ trait Authorize
 
         return array_merge(
             $card->toArray(),
-            ['number' => $cardNumber,
-             'cvv' => $cvv]);
+            [
+                'number' => $cardNumber,
+                'cvv' => $cvv
+            ]);
     }
 
     protected function verifyBankEnabled($payment)
