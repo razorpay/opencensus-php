@@ -243,6 +243,7 @@ final class Route
         'sms_callback'                            => ['post',     'sms/{id}/callback',                        'CustomerController@updateSmsStatus'                                ],
         'es_migrate_entity'                       => ['post',     'es/migrate/{entityName}',                  'EsController@migrateEntity'                                        ],
         'refund_gateway_manual'                   => ['post',     'refunds/{ids}/gateway',                    'PaymentController@postManualGatewayRefund'                         ],
+        'refund_timeouts_gateway_create'          => ['post',     'refunds/timeouts/{gateway}/create',        'PaymentController@postGatewayRefundForTimeouts'                    ],
     );
 
     public static $public = array(
@@ -437,6 +438,7 @@ final class Route
         'credits_edit',
         'credits_delete',
         'refund_gateway_manual',
+        'refund_timeouts_gateway_create',
     );
 
     public static $proxy = array(
@@ -519,6 +521,7 @@ final class Route
             'emi_generate_excel',
             'es_migrate_entity',
             'setl_post_details_old',
+            'refund_timeouts_gateway_create',
         ),
 
         'mailgun' => array(

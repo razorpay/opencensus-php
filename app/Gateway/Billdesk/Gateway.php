@@ -10,8 +10,7 @@ use RZP\Gateway\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Billdesk;
-use Requests;
-use RZP\Trace\Trace;
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -22,13 +21,15 @@ class Gateway extends Base\Gateway
 
     protected $gateway = 'billdesk';
 
+    protected $response;
+
     public function authorize(array $input)
     {
         parent::authorize($input);
 
         $content = $this->getAuthRequestContentArray($input);
 
-        $payment = $this->createGatewayPaymentEntity($content);
+        $this->createGatewayPaymentEntity($content);
 
         $request = $this->getRequestArrayForAuthorize($content, $input);
 
@@ -176,6 +177,25 @@ class Gateway extends Base\Gateway
         $content = array_combine($fields, $content);
 
         return $content['CustomerID'];
+    }
+
+    public function createRefundRecord(array $input)
+    {
+        $refundId = $input['refund'][Payment\Refund\Entity::ID];
+
+        $payment = $input['payment'];
+
+        $gatewayRefundEntity = $this->repo->findByRefundId($refundId);
+
+        if ($gatewayRefundEntity === null)
+        {
+            $refunded = $this->checkIfRefunded();
+
+            if ($refunded === true)
+            {
+                // TODO: Create a gateway refund entity here
+            }
+        }
     }
 
     protected function verifyPayment($verify)
@@ -430,9 +450,9 @@ class Gateway extends Base\Gateway
         $request = $this->getRequestArrayWithProxy($content);
         $request['options']['timeout'] = 60;
 
-        $response = $this->sendGatewayRequest($request);
+        $this->response = $this->sendGatewayRequest($request);
 
-        $content = $this->getContentAfterChecksumVerification($response->body);
+        $content = $this->getContentAfterChecksumVerification($this->response->body);
 
         return $content;
     }

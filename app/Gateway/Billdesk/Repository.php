@@ -25,4 +25,11 @@ class Repository extends Base\Repository
                     ->where('refundId', '=', $gatewayRefundId)
                     ->firstOrFail();
     }
+
+    public function findByRefundId($refundId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::REFUND_ID, '=', $refundId)
+                    ->first();
+    }
 }

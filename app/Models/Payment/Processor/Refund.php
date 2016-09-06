@@ -74,9 +74,13 @@ trait Refund
 
         $this->setPaymentAndRefundInfo($refund, $payment);
 
-        // Currently doing it for only HDFC. In case when other gateways start
+        // Currently doing it for only HDFC and Billdesk. In case when other gateways start
         // getting similar issues, we will start supporting for them too.
-        assert ($payment->getGateway() === Payment\Gateway::HDFC);
+        if (($payment->getGateway() !== Payment\Gateway::HDFC) or
+            ($payment->getGateway() !== Payment\Gateway::BILLDESK))
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_GATEWAY);
+        }
 
         $data = array(
             'payment'   => $payment->toArray(),
@@ -178,6 +182,28 @@ trait Refund
             'payment_id'            => $payment->getId(),
             'refund_id'             => $refund->getId(),
         ];
+    }
+
+    public function createGatewayRefundIfTimedOut(Payment\Refund\Entity $refund)
+    {
+        $payment = $refund->payment;
+
+        $this->setPaymentAndRefundInfo($refund, $payment);
+
+        // The refund should have already been successful and everything on the api side.
+        // Because on timeout, we would have ignored it and created a refund as it was successful.
+        assert ($refund->getTransactionId() !== null);
+
+        // Just making sure that the payment also has the transaction id. Refund will not have a transaction
+        // if payment does not have a transaction, anyway.
+        assert ($payment->getTransactionId() !== null);
+
+        $data = array(
+            'payment'   => $payment->toArray(),
+            'refund'    => $refund->toArray(),
+            'amount'    => $refund->getAmount());
+
+        $createGatewayRefundResult = $this->callGatewayForCreateRefundRecord($data);
     }
 
     protected function setPaymentAndRefundInfo($refund, $payment)
@@ -311,6 +337,27 @@ trait Refund
         }
 
         return $manualGatewayRefundResult;
+    }
+
+    protected function callGatewayForCreateRefundRecord(array $data)
+    {
+        $createRefundRecordResult = null;
+
+        try
+        {
+            $createRefundRecordResult = $this->callGatewayFunction(Payment\Action::CREATE_REFUND_RECORD, $data);
+        }
+        catch (Exception\BaseException $ex)
+        {
+            $this->tracePaymentFailed(
+                $ex->getError(),
+                TraceCode::CREATE_GATEWAY_REFUND_RECORD_FAILED
+            );
+
+            throw $ex;
+        }
+
+        return $createRefundRecordResult;
     }
 
     protected function refundOnGateway($data)

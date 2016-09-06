@@ -205,6 +205,23 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function createGatewayRefundRecordsForTimeouts($gateway)
+    {
+        // Currently, we are running this for billdesk refund timeouts only.
+        assert ($gateway === Payment\Gateway::BILLDESK);
+
+        $billdeskRefunds = $this->repo->payment->fetchBilldeskRefunds();
+
+        foreach ($billdeskRefunds as $billdeskRefund)
+        {
+            $merchant = $this->repo->merchant->getMerchantFromEntity($billdeskRefund);
+
+            $data[] = $this->processor($merchant)->createGatewayRefundIfTimedOut($billdeskRefund);
+        }
+        
+        return $data;
+    }
+
     public function createMissingTransactions()
     {
         $refundsWithoutTransaction = $this->repo->refund->fetchRefundsWithoutTransactionsAndWithPaymentTransactions();

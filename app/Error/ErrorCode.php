@@ -209,6 +209,7 @@ class ErrorCode
     const BAD_REQUEST_CARD_DAILY_LIMIT_REACHED                                      = 'BAD_REQUEST_CARD_DAILY_LIMIT_REACHED';
     const BAD_REQUEST_CARD_BILL_SHIP_MISMATCH                                       = 'BAD_REQUEST_CARD_BILL_SHIP_MISMATCH';
     const BAD_REQUEST_INVALID_PARAMETERS                                            = 'BAD_REQUEST_INVALID_PARAMETERS';
+    const BAD_REQUEST_INVALID_GATEWAY                                               = 'BAD_REQUEST_INVALID_GATEWAY';
 
     const BAD_REQUEST_UNSUPPORTED_CHARACTER_SET                                     = 'BAD_REQUEST_UNSUPPORTED_CHARACTER_SET';
 

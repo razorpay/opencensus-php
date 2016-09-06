@@ -277,6 +277,17 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
+    /**
+     * The current implementation:
+     * This is run when refunds in api don't have corresponding transactions (refund on gateway was not called).
+     * On gateway, we check whether we should have called refund for this entity or not. If the check returns true,
+     * we call refund on the gateway and then create a refund transaction on api side.
+     *
+     * The name is a misnomer. This route should have ideally meant whether a refund was successful or not on gateway.
+     *
+     * @param string $ids Refund IDs of refunds without refund transactions, but should have had.
+     * @return array
+     */
     public function postRefundVerify($ids)
     {
         $data = $this->refund->verify($ids);
@@ -291,9 +302,39 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
+    /**
+     * The current implementation:
+     * These refunds already have a refund transaction.
+     * But, we did not actually call refund on gateway or refund on gateway actually failed.
+     * This route calls refund on gateway forcefully (albeit some checks).
+     *
+     * @param string $refundIds refund IDs for which we want to call refund on gateway
+     * @return mixed
+     */
     public function postManualGatewayRefund($refundIds)
     {
         $data = $this->payment->manualGatewayRefund($refundIds);
+
+        return ApiResponse::json($data);
+    }
+
+    /**
+     * This is a little similar to manual gateway refund and verify refund (a combination).
+     *
+     * In this route, we get all the refunds which have been timed out. We call verify on the gateway
+     * to find out whether the refund was done successfully. If it has, we record the refund on gateway. If it has
+     * not, we just notify on slack and move on.
+     * We DO NOT call refund on the gateway. (That's why we don't use verifyRefund)
+     * 
+     * Two basic checks which we would have here:
+     * - The refund on api side has a corresponding transaction.
+     * - No refund entity created on the gateway side.
+     *
+     * @param $gateway
+     */
+    public function postGatewayRefundForTimeouts($gateway)
+    {
+        $data = $this->refund->createGatewayRefundRecordsForTimeouts($gateway);
 
         return ApiResponse::json($data);
     }
