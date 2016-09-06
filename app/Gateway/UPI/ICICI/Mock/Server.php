@@ -7,6 +7,7 @@ use Gateway\UPI\ICICI;
 use phpseclib\Crypt\RSA;
 use RZP\Gateway\Base;
 use RZP\Gateway\Base\Action;
+use RZP\Gateway\UPI\Base\Entity as UPIEntity;
 use Models\Payment;
 
 class Server extends Base\Mock\Server
@@ -119,5 +120,38 @@ class Server extends Base\Mock\Server
         $rsa->setEncryptionMode(RSA::ENCRYPTION_PKCS1);
 
         return $rsa;
+    }
+
+    public function makeS2SRequest(array $upiEntity, array $payment)
+    {
+        $data = $this->S2SRequestContent($upiEntity, $payment);
+
+        $json = json_encode($data, JSON_PRETTY_PRINT);
+
+        $encrypted = $this->encrypt($json);
+
+        return base64_encode($encrypted);
+    }
+
+    protected function S2SRequestContent(array $entity, array $payment)
+    {
+        // Format is 20160830152240
+        $initDate = Carbon::createFromTimestampUTC($entity['created_at'], 'Asia/Kolkata');
+        $completeDate = Carbon::createFromTimestampUTC($entity['created_at'], 'Asia/Kolkata')->addMinutes(1);
+
+        return [
+            'merchantId' => $entity['gateway_merchant_id'],
+            'subMerchantId' =>  $payment['merchant_id'],
+            'terminalId' => "1234",
+            'BankRRN' =>  $entity['gateway_payment_id'],
+            'merchantTranId' =>  $entity['payment_id'],
+            'PayerName' =>  "payer name not available",
+            'PayerMobile' =>  $payment['contact'],
+            'PayerVA' =>  $entity['vpa'],
+            'PayerAmount' => number_format($payment['amount']/100, 2),
+            'TxnStatus' => "SUCCESS",
+            'TxnInitDate' =>  $initDate->format('Ymdhis'),
+            'TxnCompletionDate' =>  $completeDate->format('Ymdhis'),
+        ];
     }
 }

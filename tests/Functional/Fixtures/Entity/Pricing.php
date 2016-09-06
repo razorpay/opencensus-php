@@ -105,6 +105,7 @@ class Pricing extends Base
                         'id' => '1zE3CYqf1zbyaF',
                         'plan_id' => '1hDYlICobzOCYt',
                         'plan_name' => 'testDefaultPlan',
+                        'feature'   =>  'payment',
                         'payment_method' => 'upi',
                         'payment_method_type' => null,
                         'payment_network' => null,

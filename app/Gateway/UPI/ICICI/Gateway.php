@@ -225,7 +225,6 @@ class Gateway extends Base\Gateway
             'collectByDate'     =>  $collect,
             'billNumber'        =>  '1234',
             'merchantId'        =>  $this->getMerchantId(),
-            // 'merchantName'  =>  null,//$input['merchant']['billing_label'],
             'merchantTranId'    =>  $payment['id'],
             'note'              =>  'collect-pay-request',
             // TODO: talk to icici and ask what all is allowed here

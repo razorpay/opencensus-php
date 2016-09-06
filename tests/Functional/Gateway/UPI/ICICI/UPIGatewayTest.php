@@ -43,4 +43,21 @@ class UPIGatewayTest extends TestCase
 
         return [$payment, $upiEntity];
     }
+
+    public function testPaymentWithS2S()
+    {
+        list($payment, $upiEntity) = $this->testPayment();
+
+        $mockServer = $this->mockServer();
+
+        $content = $mockServer->makeS2SRequest($upiEntity, $payment);
+
+        $request = [
+            'content'   => $content,
+            'url'       => '/callback/upi_icici',
+            'method'    => 'post'
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+    }
 }
