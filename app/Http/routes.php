@@ -140,6 +140,8 @@ Route::group(['middleware'  =>  'admin'], function()
     // This is the merchant's bank account
     Route::get('/admin/merchant/{id}/bank_account', 'AdminController@getMerchantBankAccount');
     Route::get('/admin/merchant/{id}/login', 'AdminController@getMerchantLogin');
+    Route::get('/admin/activity', 'AdminController@getAdminActivity');
+    Route::delete('/admin/activity', 'AdminController@deleteOtherAdminActivity');
 
     Route::get('/admin/pricing/list', 'AdminController@getPricingList');
     Route::get('/admin/pricing/{id}', 'AdminController@getPricingRules');

@@ -9,6 +9,7 @@ use App\MerchantDetails;
 use App\Trace\TraceCode;
 use App\Transaction;
 use App\User;
+use App\Session as SessionTable;
 
 use Auth;
 use Config;
@@ -222,6 +223,18 @@ class Service extends Base\Service
     public function getAdmins()
     {
         return Admin\Entity::get()->toArray();
+    }
+
+    public function getAdminActivity($id)
+    {
+        return (new SessionTable\Entity)->getAllSessionsForAdmin($id);
+    }
+
+    public function deleteAllOtherAdminSessions($id)
+    {
+        $currentSessionId = Session::getId();
+
+        (new SessionTable\Entity)->deleteAllOtherSessionsForAdmin($id, $currentSessionId);
     }
 
     public function deleteAdmin($id)
