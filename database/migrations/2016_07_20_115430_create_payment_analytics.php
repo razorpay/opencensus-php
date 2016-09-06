@@ -24,7 +24,7 @@ class CreatePaymentAnalytics extends Migration
 
             $table->char(Analytics::PAYMENT_ID, Analytics::ID_LENGTH);
 
-            $table->char(Analytics::CHECKOUT_ID, Analytics::ID_LENGTH)
+            $table->string(Analytics::CHECKOUT_ID, Analytics::ID_LENGTH)
                   ->nullable();
 
             $table->char(Analytics::TERMINAL_ID, Analytics::ID_LENGTH);
@@ -45,12 +45,13 @@ class CreatePaymentAnalytics extends Migration
                 ->default(0);
 
             $table->smallInteger(Analytics::ATTEMPTS)
+                  ->unsigned()
                   ->nullable();
 
             $table->tinyInteger(Analytics::LIBRARY)
                   ->nullable();
 
-            $table->char(Analytics::LIBRARY_VERSION)
+            $table->string(Analytics::LIBRARY_VERSION, 50)
                   ->nullable();
 
             $table->tinyInteger(Analytics::BROWSER)
@@ -59,7 +60,7 @@ class CreatePaymentAnalytics extends Migration
             $table->tinyInteger(Analytics::OS)
                   ->nullable();
 
-            $table->char(Analytics::OS_VERSION)
+            $table->string(Analytics::OS_VERSION, 50)
                   ->nullable();
 
             $table->tinyInteger(Analytics::DEVICE)
@@ -68,20 +69,20 @@ class CreatePaymentAnalytics extends Migration
             $table->tinyInteger(Analytics::PLATFORM)
                   ->nullable();
 
-            $table->char(Analytics::PLATFORM_VERSION)
+            $table->string(Analytics::PLATFORM_VERSION, 50)
                   ->nullable();
 
             $table->tinyInteger(Analytics::INTEGRATION)
                   ->nullable();
 
-            $table->char(Analytics::INTEGRATION_VERSION)
+            $table->string(Analytics::INTEGRATION_VERSION, 50)
                   ->nullable();
 
             // http://stackoverflow.com/questions/1076714/max-length-for-client-ip-address
-            $table->char(Analytics::IP, 45)
+            $table->string(Analytics::IP, 45)
                   ->nullable();
 
-            $table->char(Analytics::REFERER)
+            $table->string(Analytics::REFERER)
                   ->nullable();
 
             $table->text(Analytics::USER_AGENT)
