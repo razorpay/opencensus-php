@@ -550,26 +550,30 @@ class Service extends Base\Service
         }
     }
 
-    // this is a refrence
     public function postEditBankDetails($id, $input)
     {
         $error = array();
 
         $this->dropFields($input, [
+            "beneficiary_address4",
+            "beneficiary_code",
+            "beneficiary_country",
+            "created_at",
+            "entity_id",
+            "type",
             'id',
             'merchant_id',
-            "beneficiary_code",
-            "beneficiary_address4",
-            "beneficiary_country",
         ]);
 
         $this->setApiCredentials();
+
         $merchantDetails = MerchantDetails\Entity::findorfail($id);
+
         try
         {
             $this->api->merchant->fetch($id)->setBankAccount($input);
 
-            $merchantDetails = array(
+            $merchantDetailsData = array(
                 'bank_branch_ifsc'           => $input['ifsc_code'],
                 'bank_account_name'          => $input['beneficiary_name'],
                 'bank_account_number'        => $input['account_number'],
@@ -581,7 +585,7 @@ class Service extends Base\Service
                 'bank_beneficiary_state'     => $input['beneficiary_state']
             );
 
-            $merchantDetails->fill($merchantDetails);
+            $merchantDetails->fill($merchantDetailsData);
             $merchantDetails->save();
 
             $this->logActionToSlack($id, Actions::BANK_DETAILS_EDITED, $input);
