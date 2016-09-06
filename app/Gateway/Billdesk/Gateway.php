@@ -63,6 +63,11 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            $input
+        );
+
         $msg = $input['gateway']['msg'];
 
         $content = $this->getContentAfterChecksumVerification($msg);
@@ -104,43 +109,50 @@ class Gateway extends Base\Gateway
 
         $content = $this->getPaymentRefundRequestContent($payment, $input);
 
+        // This may throw a gateway timeout exception or gateway request exception.
+        // These exceptions bubble up to api's refund processor and are handled there.
         $content = $this->postRequest($content);
 
         $content['refund_id'] = $input['refund']['id'];
         $content['CurrencyType'] = 'INR';
         $content['received'] = 1;
-        $refund = $this->createGatewayPaymentEntity($content);
+        $this->createGatewayPaymentEntity($content);
 
         if ($content['ProcessStatus'] !== 'Y')
         {
+            // The below piece of code is commented out because, Billdesk does not auto refund
+            // late authorized payments anymore.
+
+            // //
+            // // For very very few transactions, the payment status on billdesk changes
+            // // after 1 whole day. These are automatically refunded by billdesk.
+            // // So, the AuthStatus changes to 0300 but RefundStatus also changes to 0699.
+            // // In that case, we need to let the refund go ahead.
             //
-            // For very very few transactions, the payment status on billdesk changes
-            // after 1 whole day. These are automatically refunded by billdesk.
-            // So, the AuthStatus changes to 0300 but RefundStatus also changes to 0699.
-            // In that case, we need to let the refund go ahead.
-
-            $refundAmount = (int) ($payment['RefAmount'] * 100);
-
-            if (($content['ErrorCode'] === 'ERR_REF009') and
-                ($payment['RefStatus'] === RefundStatus::CANCELLED) and
-                ($refundAmount === $input['payment']['amount']))
-            {
-                $this->trace->info(
-                    TraceCode::GATEWAY_PAYMENT_REFUND,
-                    [
-                        'message' => 'Payment was already cancelled at this point by billdesk',
-                        'payment_id' => $input['payment']['id']
-                    ]);
-
-                return;
-            }
+            // $refundAmount = (int) ($payment['RefAmount'] * 100);
+            //
+            // if (($content['ErrorCode'] === 'ERR_REF009') and
+            //     ($payment['RefStatus'] === RefundStatus::CANCELLED) and
+            //     ($refundAmount === $input['payment']['amount']))
+            // {
+            //     $this->trace->info(
+            //         TraceCode::GATEWAY_PAYMENT_REFUND,
+            //         [
+            //             'message' => 'Payment was already cancelled at this point by billdesk',
+            //             'payment_id' => $input['payment']['id']
+            //         ]);
+            //
+            //     return;
+            // }
 
             $this->trace->error(
                 TraceCode::PAYMENT_REFUND_FAILURE,
-                [$content]);
+                $content
+            );
 
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_REFUND_FAILED);
+                ErrorCode::BAD_REQUEST_REFUND_FAILED
+            );
         }
     }
 
@@ -416,34 +428,9 @@ class Gateway extends Base\Gateway
     protected function postRequest($content)
     {
         $request = $this->getRequestArrayWithProxy($content);
-        $request['options']['timeout'] = 30;
+        $request['options']['timeout'] = 60;
 
-        try
-        {
-            $response = $this->sendGatewayRequest($request);
-        }
-        catch (\Requests_Exception $e)
-        {
-            throw new Exception\RuntimeException(
-                'Billdesk payment verification request failed.', null, $e);
-        }
-
-        $this->response = $response;
-
-        $statusCode = $response->status_code;
-        if ($statusCode !== 200)
-        {
-            if ($statusCode === 504)
-            {
-                throw new Exception\GatewayTimeoutException(
-                    'Http status code - 504');
-            }
-
-            throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
-                '',
-                'Wrong status code: ' . $response->status_code);
-        }
+        $response = $this->sendGatewayRequest($request);
 
         $content = $this->getContentAfterChecksumVerification($response->body);
 
@@ -454,17 +441,13 @@ class Gateway extends Base\Gateway
     {
         $fields = $this->getFieldsForAction($this->action);
 
-        $this->trace->info(
-            TraceCode::GATEWAY_CHECKSUM_VERIFY,
-            [$msg]);
-
         $content = explode('|', $msg);
 
         $content = array_combine($fields, $content);
 
         $this->trace->info(
             TraceCode::GATEWAY_CHECKSUM_VERIFY,
-            [$content]);
+            $content);
 
         $this->verifySecureHash($content);
 
@@ -538,7 +521,7 @@ class Gateway extends Base\Gateway
         if ($generatedHash !== $hash)
         {
             $this->trace->info(
-                TraceCode::GATEWAY_CHECKSUM_VERIFY,
+                TraceCode::GATEWAY_CHECKSUM_VERIFY_FAILED,
                 [$content, $hash, $generatedHash]);
 
             throw new Exception\BadRequestValidationFailureException(

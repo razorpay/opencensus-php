@@ -202,9 +202,7 @@ trait Refund
      * @param  Payment\Refund\Entity $refund  Refund Entity
      * @return null
      */
-    protected function sendRefundNotification(
-        Payment\Entity $payment,
-        Payment\Refund\Entity $refund)
+    protected function sendRefundNotification(Payment\Entity $payment, Payment\Refund\Entity $refund)
     {
         //
         // Analytics is on dashboard side for now
@@ -322,6 +320,24 @@ trait Refund
             $this->acquireLockOnPayment($this->payment);
 
             $this->callGatewayFunction(Payment\Action::REFUND, $data);
+        }
+        catch (Exception\GatewayTimeoutException $ex)
+        {
+            // Currently, we are running this experiment only for Billdesk.
+            // Billdesk gives us a way to find out how much amount has been refunded.
+            // We are not aware of any other gateway which provides us this feature, currently.
+            if ($this->payment->getGateway() !== Payment\Gateway::BILLDESK)
+            {
+                throw $ex;
+            }
+
+            $this->trace->traceException($ex);
+
+            // We just ignore the timeout and mark it as refunded on the api side.
+            // Later we would run verify for these refunds and create appropriate entries on the gateway side.
+            $this->trace->info(
+                TraceCode::PAYMENT_REFUND_TIMEOUT_SKIP, ['payment_id' => $this->payment->getId()]
+            );
         }
         catch (Exception\BaseException $e)
         {
