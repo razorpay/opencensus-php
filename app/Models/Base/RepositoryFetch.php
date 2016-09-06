@@ -30,6 +30,11 @@ trait RepositoryFetch
 
     protected $merchantIdRequiredForMultipleFetch = true;
 
+    public function fetchAndReturnPublicArray($id, $merchant)
+    {
+        return $this->findByPublicIdAndMerchant($id, $merchant)->toArrayPublic();
+    }
+
     /**
      * Retrieves the entities according to given fetch params
      * @params array        $params
@@ -239,6 +244,24 @@ trait RepositoryFetch
         }
 
         return $this->merchantIdRequiredForMultipleFetch;
+    }
+
+    public function findByPublicId($id)
+    {
+        $entity = $this->getEntityClass();
+
+        $id = $entity::verifyIdAndStripSign($id);
+
+        return $this->findOrFailPublic($id);
+    }
+
+    public function findByPublicIdAndMerchant($id, $merchant)
+    {
+        $entity = $this->getEntityClass();
+
+        $id = $entity::verifyIdAndStripSign($id);
+
+        return $this->findByIdAndMerchant($id, $merchant);
     }
 
     public function findByIdAndMerchant($id, $merchant)

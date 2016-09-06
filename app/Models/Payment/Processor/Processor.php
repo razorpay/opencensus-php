@@ -12,12 +12,14 @@ use RZP\Models\Merchant\BankAccount;
 use RZP\Models\Terminal;
 use RZP\Models\Payment;
 use RZP\Models\Order;
+use RZP\Models\Payment\Status;
 use RZP\Models\Pricing;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer;
+use RZP\Models\Base\Lock;
 
 class Processor
 {
@@ -64,6 +66,7 @@ class Processor
     protected $orderRepo;
     protected $paymentRepo;
     protected $app;
+    protected $lock;
     protected $request;
     protected $methods;
     protected $refund;
@@ -88,6 +91,8 @@ class Processor
         $this->orderRepo = $this->repo->order;
 
         $this->request = $this->app['request'];
+
+        $this->lock = $this->app['api.lock'];
 
         // Only used in hdfc verify refund flow
         $this->verifyRefundStatus = null;
@@ -343,6 +348,19 @@ class Processor
 
         $payment = $this->payment;
 
+        $status = $payment->getStatus();
+
+        if (($status !== Status::CREATED) and ($status !== Status::AUTHORIZED))
+        {
+            throw new Exception\LogicException(
+                'Payment not in the appropriate status to be marked as failed.',
+                null,
+                [
+                    'payment_id'    => $payment->getId(),
+                    'status'        => $status
+                ]);
+        }
+
         $payment->setStatus(Payment\Status::FAILED);
 
         $payment->setError($code, $desc, $internalCode);
@@ -570,8 +588,7 @@ class Processor
 
     protected function retrieveToken($input)
     {
-        $token = (new Customer\Token\Repository)
-                        ->getByWalletTerminalAndCustomerId(
+        $token = $this->repo->token->getByWalletTerminalAndCustomerId(
                             $input['payment']['wallet'],
                             $input['payment']['terminal_id'],
                             $input['customer']->getId());
@@ -671,23 +688,45 @@ class Processor
 
     protected function shouldAutoCapture($payment)
     {
-        if ($payment->isLateAuthorized() === false)
+        // If payment is not authorized or if it's late authorized,
+        // do not auto capture it, irrespective of it being a signed
+        // payment or marked for auto capture.
+        if (($payment->isAuthorized() === false) or
+            ($payment->isLateAuthorized() === true))
         {
-            // If payment is signed
-            if ($payment->isSigned() === true)
-            {
-                return true;
-            }
+            return false;
+        }
 
-            // If payment order was marked as auto capture
-            if (($payment->order !== null) and
-                ($payment->order->getPaymentCapture() === true))
-            {
-                return true;
-            }
+        // If payment is signed
+        if ($payment->isSigned() === true)
+        {
+            return true;
+        }
+
+        // If payment order was marked as auto capture
+        if (($payment->order !== null) and
+            ($payment->order->getPaymentCapture() === true))
+        {
+            return true;
         }
 
         return false;
+    }
+
+    protected function acquireLockOnPayment($payment)
+    {
+        $resource = $payment->getId();
+
+        if ($this->lock->acquire($resource) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
+        }
+    }
+
+    protected function releaseLockOnPayment($payment)
+    {
+        $this->lock->release($this->payment->getId());
     }
 
     protected function createOrUpdateToken($input, $data)

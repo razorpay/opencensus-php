@@ -99,7 +99,7 @@ class Gateway extends Base\Gateway
 
         assert ($input['gateway']['merTxnId'] === $input['payment']['id']);
 
-        $payment = $this->getRepo()->findByPaymentIdAndAction(
+        $payment = $this->repo->findByPaymentIdAndAction(
                     $input['gateway']['merTxnId'], Action::AUTHORIZE);
 
         $mappedPayment = $this->getReverseMappedAttributes($payment->toArray());
@@ -228,7 +228,7 @@ class Gateway extends Base\Gateway
 
     protected function getRefundRequestContent($input)
     {
-        $wallet = $this->getRepo()->fetchWalletByPaymentId($input['payment']['id']);
+        $wallet = $this->repo->fetchWalletByPaymentId($input['payment']['id']);
 
         $originalTransactionId = $wallet['gateway_payment_id_2'];
 

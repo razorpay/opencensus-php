@@ -74,7 +74,10 @@ class CombinedReconciliate extends Foundation\SubReconciliate
             $subReconciliatorClassName = $this->getSubReconciliatorClassName($entityType);
             $subReconciliatorObject = new $subReconciliatorClassName;
 
-            $subReconciliatorObject->runReconciliate($row, $extraDetails);
+            $this->repo->transactionOnLiveAndTest(function() use ($subReconciliatorObject, $row, $extraDetails)
+            {
+                $subReconciliatorObject->runReconciliate($row, $extraDetails);
+            });
         }
 
         //
