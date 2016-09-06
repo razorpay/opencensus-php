@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Mail;
 
 use RZP\Models\Base;
+use RZP\Models\BankAccount;
 use RZP\Models\Merchant;
 use RZP\Models\Key;
 use RZP\Models\Payment;

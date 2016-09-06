@@ -217,7 +217,7 @@ class Entity extends Base\PublicEntity
     public function bankAccount()
     {
         return $this->hasOne(
-            'RZP\Models\Merchant\BankAccount\Entity', 'entity_id', self::ID);
+            'RZP\Models\BankAccount\Entity', 'entity_id', self::ID);
     }
 
     public function methods()
