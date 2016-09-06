@@ -427,7 +427,12 @@ class Entity extends Base\PublicEntity
 
     public function getAutoRefundDelay()
     {
-        return $this->getAttribute(self::AUTO_REFUND_DELAY);
+        $autoRefundDelay = $this->getAttribute(self::AUTO_REFUND_DELAY);
+
+        if ($autoRefundDelay !== null)
+        {
+            return (int) $autoRefundDelay;
+        }
     }
 
     /**

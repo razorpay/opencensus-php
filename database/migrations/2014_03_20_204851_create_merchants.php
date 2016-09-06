@@ -59,7 +59,7 @@ class CreateMerchants extends Migration
             $table->integer(Merchant::SETTLEMENT_SCHEDULE);
 
             $table->integer(Merchant::AUTO_REFUND_DELAY)
-                  ->nullable();
+                  ->default(432000);
 
             $table->string(Merchant::TRANSACTION_REPORT_EMAIL)
                   ->nullable();

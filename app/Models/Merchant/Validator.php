@@ -39,8 +39,8 @@ class Validator extends Base\Validator
         Entity::RISK_RATING                 => 'sometimes|min:0|max:5',
         Entity::FEE_BEARER                  => 'sometimes|in:customer,platform',
         Entity::MAX_PAYMENT_AMOUNT          => 'sometimes|integer',
-        // max:10 days, min:20 minutes
-        Entity::AUTO_REFUND_DELAY           => 'sometimes|integer|min:1200|max:864000'
+        // max: 5 days (don't change max value without consult), min:60 minutes
+        Entity::AUTO_REFUND_DELAY           => 'sometimes|integer|min:3600|max:432000'
     );
 
     protected static $uniqueEmailRules = array(

@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
+use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Merchant;
@@ -172,6 +173,16 @@ class Repository extends Base\Repository
                     ->status(Payment\Status::AUTHORIZED)
                     ->where(Payment\Entity::CREATED_AT, '<=', $timestamp)
                     ->orderBy(Payment\Entity::MERCHANT_ID)
+                    ->get();
+    }
+
+    public function getAuthorizedPaymentsForAutoRefund()
+    {
+        return $this->newQuery()
+                    ->select($this->getAttributeWithTableName('*'))
+                    ->join(Table::MERCHANT, 'payments.merchant_id', '=', 'merchants.id')
+                    ->status(Payment\Status::AUTHORIZED)
+                    ->whereRaw('(payments.authorized_at - payments.created_at) >= merchants.auto_refund_delay')
                     ->get();
     }
 
