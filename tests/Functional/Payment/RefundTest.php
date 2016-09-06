@@ -178,11 +178,11 @@ class RefundTest extends TestCase
 
     public function testRefundCalledOnPurchaseWithoutCapture()
     {
-        $authorizedAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp;
+        $createdAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp;
 
         $payments = $this->fixtures->times(2)->create(
             'payment:purchased',
-            ['authorized_at' => $authorizedAt, 'created_at' => $authorizedAt]);
+            ['created_at' => $createdAt]);
 
         $payments = $this->fixtures->times(2)->create('payment:purchased');
 
@@ -207,11 +207,12 @@ class RefundTest extends TestCase
     // This will also be picked up for a refund and refunded.
     public function testRefundOnHdfcCapturedPaymentAuthorized()
     {
-        $authorizedAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp;
+        $createdAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp;
+        $authorizedAt = Carbon::today('Asia/Kolkata')->timestamp;
 
         $payment = $this->fixtures->create(
             'payment:captured',
-            ['authorized_at' => $authorizedAt, 'created_at' => $authorizedAt]);
+            ['authorized_at' => $authorizedAt, 'created_at' => $createdAt]);
 
         $this->fixtures->payment->edit($payment->getId(), ['status' => 'authorized']);
 

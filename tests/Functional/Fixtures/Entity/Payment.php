@@ -39,17 +39,21 @@ class Payment extends Base
 
     public function createCardCaptured(array $attributes = array())
     {
+        $time = time();
+
         $defaultValues = array(
-            'created_at' => time() - 10,
-            'updated_at' => time() - 5);
+            'authorized_at' => $time - 10,
+            'captured_at'   => $time + 10,
+            'created_at'    => $time - 10,
+            'updated_at'    => $time - 5);
 
         $attributes = array_merge($defaultValues, $attributes);
 
         $payment = $this->createCardAuthorized($attributes);
 
         $payment['status'] = 'captured';
-        $payment['authorized_at'] = $attributes['created_at'];
-        $payment['captured_at'] = $attributes['created_at'] + 10;
+        $payment['authorized_at'] = $attributes['authorized_at'];
+        $payment['captured_at'] = $attributes['captured_at'];
 
         $hdfcAttrArray = array(
             'payment_id' => $payment->getKey(),
