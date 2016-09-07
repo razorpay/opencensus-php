@@ -86,7 +86,7 @@ class MerchantFilter extends Terminal\Filter
 
         $defaultCategory = Terminal\Category::getDefaultForMethodAndNetwork($method, $network);
 
-        // If category is a defaultCategory allow, no need to compute merchant categogry
+        // If category is a defaultCategory allow, no need to compute merchant category
         if ($category === $defaultCategory)
         {
             return true;

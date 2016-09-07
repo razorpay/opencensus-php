@@ -38,7 +38,7 @@ class Validator extends Base\Validator
         Entity::RISK_RATING                 => 'sometimes|min:0|max:5',
         Entity::FEE_BEARER                  => 'sometimes|in:customer,platform',
         Entity::MAX_PAYMENT_AMOUNT          => 'sometimes|integer',
-        Entity::TERMINAL_CATEGORY 	        => 'sometimes',
+        Entity::TERMINAL_CATEGORY           => 'sometimes|string|max:30|custom',
     );
 
     protected static $uniqueEmailRules = array(
@@ -66,7 +66,6 @@ class Validator extends Base\Validator
     protected static $editValidators = [
         'csv_email',
         'features',
-        'terminal_category',
     ];
 
     public function validateLogo($imageDetails)
@@ -113,14 +112,9 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateTerminalCategory($input)
+    public function validateTerminalCategory($attribute, $value)
     {
-        if (empty($input[Entity::TERMINAL_CATEGORY]) === true)
-        {
-            return;
-        }
-
-        $category = $input[Entity::TERMINAL_CATEGORY];
+        $category = $value;
 
         if (Terminal\Category::isMerchantCategoryValid($category) === false)
         {

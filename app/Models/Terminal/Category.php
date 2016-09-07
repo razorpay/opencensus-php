@@ -205,11 +205,17 @@ class Category
         return in_array($category, constant('self::CATEGORIES_ALL'));
     }
 
-    public static function isTerminalCategoryValid($category, $method = null, $network = null)
+    public static function isTerminalCategoryValid($input)
     {
         // get the correct constant for the terminal
         // get the values array and check in array
         $values = [];
+
+        $category = $input[Entity::TERMINAL_CATEGORY];
+
+        $method = self::getMethod($input);
+
+        $network = self::getNetwork($input);
 
         if(self::isConstantDefined('method', $method) === true)
         {
@@ -227,4 +233,40 @@ class Category
 
         return in_array($category, $values);
     }
+
+    protected static function getNetwork($input)
+    {
+        $network = null;
+
+        if ($input[Entity::GATEWAY] === Gateway::AMEX)
+        {
+            $network = Network::AMEX;
+        }
+
+        return $network;
+    }
+
+    protected static function getMethod($input)
+    {
+        if ((isset($input[Entity::CARD]) === true) and
+            (empty($input[Entity::CARD]) === false))
+        {
+            return Method::CARD;
+        }
+
+        if ((isset($input[Entity::NETBANKING]) === true) and
+            (empty($input[Entity::NETBANKING]) === false))
+        {
+            return Method::NETBANKING;
+        }
+
+        if ((isset($input[Entity::EMI]) === true) and
+            (empty($input[Entity::EMI]) === false))
+        {
+            return Method::EMI;
+        }
+
+        return null;
+    }
+
 }

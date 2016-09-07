@@ -28,7 +28,7 @@ class Validator extends Base\Validator
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
         Entity::SHARED                      => 'sometimes|boolean',
         Entity::GATEWAY_ACQUIRER            => 'sometimes|string',
-        Entity::TERMINAL_CATEGORY           => 'sometimes',
+        Entity::TERMINAL_CATEGORY           => 'sometimes|string|max:30',
     );
 
     protected static $editTerminalGateways = array(
@@ -204,6 +204,13 @@ class Validator extends Base\Validator
         }
     }
 
+    /**
+     * Does not use custom validator as the other parameters of input are required
+     * to decide validity.
+     *
+     * @param array $input
+     * @return void
+     * */
     public function validateTerminalCategory($input)
     {
         if (empty($input[Entity::TERMINAL_CATEGORY]) === true)
@@ -211,52 +218,13 @@ class Validator extends Base\Validator
             return ;
         }
 
-        $category = $input[Entity::TERMINAL_CATEGORY];
-
-        $method = $this->getMethod($input);
-
-        $network = $this->getNetwork();
-
-        if (Category::isTerminalCategoryValid($category, $method, $network) === false)
+        if (Category::isTerminalCategoryValid($input) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Category provided invalid for gateway',
                 Entity::TERMINAL_CATEGORY
                 );
             }
-    }
-
-    protected function getNetwork()
-    {
-        $network = null;
-
-        if ($this->entity->getGateway() === Payment\Gateway::AMEX)
-        {
-            $network = Card\Network::AMEX;
-        }
-
-        return $network;
-    }
-
-    protected function getMethod($input)
-    {
-        if ((isset($input[Entity::CARD]) === true) and
-            (empty($input[Entity::CARD]) === false))
-        {
-            return Payment\Method::CARD;
-        }
-
-        if ((isset($input[Entity::NETBANKING]) === true) and
-            (empty($input[Entity::NETBANKING]) === false))
-        {
-            return Payment\Method::NETBANKING;
-        }
-
-        if ((isset($input[Entity::EMI]) === true) and
-            (empty($input[Entity::EMI]) === false))
-        {
-            return Payment\Method::EMI;
-        }
     }
 
     protected function matchGatewayForNewTerminal($new, $existing)

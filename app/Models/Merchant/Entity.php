@@ -276,23 +276,9 @@ class Entity extends Base\PublicEntity
         return $this->setAttribute(self::TERMINAL_CATEGORY, $category);
     }
 
-    protected function setTerminalCategoryAttribute($category)
-    {
-        $this->attributes[self::TERMINAL_CATEGORY] = $category ? $category : null;
-    }
-
     public function getTerminalCategory()
     {
         return $this->getAttribute(self::TERMINAL_CATEGORY);
-    }
-
-    protected function getTerminalCategoryAttribute()
-    {
-        $category = $this->attributes[self::TERMINAL_CATEGORY];
-
-        $category = $category ? $category : null;
-
-        return $category;
     }
 
     public function getBillingLabelElseName()
