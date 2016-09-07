@@ -57,6 +57,15 @@ class Processor
      */
     const FAILED_TO_AUTHORIZED_NOTIFY_DURATION = 900;
 
+    /**
+     * Payment can be cancelled in multiple ways, one of which being
+     * by closing the payment pop-up that.
+     * However, we only allow payment to be cancelled within a certain duration.
+     * A payment created today can only be cancelled within few minutes and
+     * not on next day.
+     */
+    const PAYMENT_CANCEL_TIME_DURATION = 1800;  // 30 min * 60 sec
+
     protected $merchant;
     protected $trace;
     protected $payment;
@@ -260,32 +269,60 @@ class Processor
      */
     public function cancel($id, $input)
     {
-        return $this->repo->transaction(function() use ($id, $input)
+        $status = null;
+
+        $payment = $this->retrieve($id);
+
+        $diff = time() - $payment->getCreatedAt();
+
+        if ($diff > self::PAYMENT_CANCEL_TIME_DURATION)
         {
-            $status = null;
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED);
+        }
 
-            $payment = $this->retrieve($id);
+        // If payment is not in created state, then that means
+        // it's already been processed. It's possible that payment
+        // may have succeeded. In such cases, we need to send back
+        // exact same response as we would have if the payment succeeded
+        if ($payment->isCreated() === false)
+        {
+            return $this->processPaymentCallbackSecondTime($payment);
+        }
 
-            $createdAt = $payment->getCreatedAt();
-
-            $diff = time() - $createdAt;
-
-            if ($diff > 30 * 60)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Payment created long back and cannot be cancelled now');
-            }
-
-            if (($payment->isAuthorized()) or
-                ($payment->isCaptured()))
-            {
-                return Payment\Status::AUTHORIZED;
-            }
-
+        $errorCode = $this->repo->transaction(function() use ($payment)
+        {
             $this->lockForUpdateAndReload($payment);
 
-            return $this->cancelPayment($payment, $input);
+            $errorCode = $this->cancelPayment($payment);
+
+            return $errorCode;
         });
+
+        throw new Exception\BadRequestException($errorCode);
+    }
+
+    protected function cancelPayment($payment)
+    {
+        $errorCode = null;
+
+        $payment->getValidator()->cancelValidate($payment);
+
+        if ((isset($input['platform'])) and
+            ($input['platform'] === 'android_sdk'))
+        {
+            $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_PRESSING_BACK_ON_ANDROID;
+        }
+        else
+        {
+            $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_USER;
+        }
+
+        $e = new Exception\BadRequestException($errorCode);
+
+        $this->updatePaymentFailed($e->getError(), TraceCode::PAYMENT_CANCELLED);
+
+        return $errorCode;
     }
 
     public function redirect($id)
@@ -306,29 +343,6 @@ class Processor
         $this->payment = $payment;
 
         $this->callGatewayFunction(Payment\Action::CAPTURE, $data);
-    }
-
-    protected function cancelPayment($payment)
-    {
-        $errorCode = null;
-
-        (new Payment\Validator)->cancelValidate($payment);
-
-        if ((isset($input['platform'])) and
-            ($input['platform'] === 'android_sdk'))
-        {
-            $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_PRESSING_BACK_ON_ANDROID;
-        }
-        else
-        {
-            $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_USER;
-        }
-
-        $e = new Exception\BadRequestException($errorCode);
-
-        $this->updatePaymentFailed($e->getError(), TraceCode::PAYMENT_CANCELLED);
-
-        return Payment\Status::FAILED;
     }
 
     protected function tracePaymentInfo($traceCode, $level = Trace::INFO)

@@ -770,9 +770,11 @@ trait Authorize
         $payment->emiPlan()->associate($emiPlan);
     }
 
-    protected function getReturnRequestDataForMerchant($payment)
+    protected function fillReturnRequestDataForMerchant($payment, array & $data)
     {
         assert ($payment->getCallbackUrl() !== null);
+
+        $content = $data;
 
         $data = array(
             'version' => 1,
@@ -780,13 +782,9 @@ trait Authorize
             'request' => [
                 'url' => $payment->getCallbackUrl(),
                 'method' => 'post',
-                'content' => array(
-                    'razorpay_payment_id' => $payment->getPublicId(),
-                ),
+                'content' => $content,
             ],
         );
-
-        return $data;
     }
 
     protected function checkAndFillSavedAppToken(array & $input)
@@ -886,23 +884,28 @@ trait Authorize
         // Otherwise we simply return 'razorpay_payment_id' as is normal.
         //
 
+        // @todo: Remove this code once hosted integration
+        //        using order and receipt goes live.
         if ($payment->isSigned())
         {
             return $this->getReturnDataForSignedPayment($payment);
         }
 
+        $returnData = ['razorpay_payment_id' => $payment->getPublicId()];
+
+        // @todo: Shift to using auto-capture flag in payment
         if (($payment->order !== null) and
             ($payment->order->getPaymentCapture() === true))
         {
-            return $this->getReturnDataForAutoCaptureOrders($payment);
+            $this->fillReturnDataForAutoCaptureOrders($payment, $returnData);
         }
 
         if ($payment->getCallbackUrl())
         {
-            return $this->getReturnRequestDataForMerchant($payment);
+            $this->fillReturnRequestDataForMerchant($payment, $returnData);
         }
 
-        return ['razorpay_payment_id' => $payment->getPublicId()];
+        return $returnData;
     }
 
     protected function getReturnDataForSignedPayment($payment)
@@ -919,16 +922,11 @@ trait Authorize
         return $data;
     }
 
-    protected function getReturnDataForAutoCaptureOrders($payment)
+    protected function fillReturnDataForAutoCaptureOrders($payment, & $data)
     {
-        $data = array(
-            'razorpay_payment_id' => $payment->getPublicId(),
-            'razorpay_order_id'   => $payment->order->getPublicId()
-        );
+        $data['razorpay_order_id'] = $payment->order->getPublicId();
 
         $data['razorpay_signature'] = $this->getSignature($data);
-
-        return $data;
     }
 
     /**
