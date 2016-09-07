@@ -47,7 +47,7 @@ class Gateway extends Base\Gateway
 
     public function capture(array $input)
     {
-        parent::callback($input);
+        parent::capture($input);
 
         $payment = $this->repo->findByPaymentIdAndAction(
                         $input['payment']['id'], Action::AUTHORIZE);

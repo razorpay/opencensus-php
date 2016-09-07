@@ -266,7 +266,7 @@ trait PaymentTrait
         return $content;
     }
 
-    protected function doAuthPayment($payment = null)
+    protected function doAuthPayment($payment = null, $server = null)
     {
         if ($payment === null)
         {
@@ -277,6 +277,11 @@ trait PaymentTrait
             'method' => 'POST',
             'url' => '/payments',
             'content' => $payment);
+
+        if (isset($server))
+        {
+            $request['server'] = $server;
+        }
 
         $this->ba->publicAuth();
 
