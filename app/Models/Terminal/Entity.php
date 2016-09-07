@@ -49,6 +49,7 @@ class Entity extends Base\PublicEntity
         self::EMI,
         self::EMI_DURATION,
         self::SHARED,
+        self::RECURRING,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_MERCHANT_ID2,
         self::GATEWAY_TERMINAL_ID,

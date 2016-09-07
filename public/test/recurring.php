@@ -73,7 +73,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
     </tr>
     <tr>
         <td colspan='40'>Recurring:</td>
-        <td><input type="checkbox" name="recurring" checked></td>
+        <td><input type="checkbox" name="recurring" value="1"></td>
     </tr>
     <tr>
         <td colspan="100" align="center">
