@@ -25,6 +25,7 @@ class Features
         self::S2SWALLET,
         self::SETL_REPORT,
         self::CARD_SAVING,
+        self::RECURRING,
     );
 
     public static function validateFeatures($input)
