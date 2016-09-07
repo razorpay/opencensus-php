@@ -108,7 +108,7 @@ class Category
         $constantName = self::getConstantName('default', $type);
 
         if ((self::isConstantDefined('default', $type) === true) and
-            (in_array($item, constant('self::'.$constantName)) === true))
+            (isset(constant('self::'.$constantName)[$item]) === true))
         {
             $category = constant('self::'.$constantName)[$item];
         }
@@ -146,11 +146,12 @@ class Category
     {
         $returnCategory = null;
 
-        if ((self::isConstantDefined($type, $item)) and
-            (is_null($category) === false))
-        {
-            $name = self::getConstantName($type, $item);
+        $name = self::getConstantName($type, $item);
 
+        if ((is_null($category) === false) and
+            (self::isConstantDefined($type, $item)) and
+            (isset(constant('self::'.$name)[$category]) === true))
+        {
             $returnCategory = constant('self::'.$name)[$category];
         }
 

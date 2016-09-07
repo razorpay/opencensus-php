@@ -186,4 +186,44 @@ class TerminalSelectionTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('DCrpNbKtkTrmnl', $payment['terminal_id']);
     }
+
+    public function testTerminalDefaultCategoryChoiceForAmex()
+    {
+        $this->fixtures->merchant->setTerminalCategory('auto');
+        $this->fixtures->merchant->enableMethod('10000000000000', 'amex');
+        $this->fixtures->create('terminal:all_shared_terminals');
+        $this->fixtures->create('terminal:shared_amex_terminal');
+        $this->fixtures->create('terminal:shared_amex_category_terminals');
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '341111111111111';
+        $payment['card']['cvv'] = '8888';
+
+        $content = $this->doAuthAndCapturePayment($payment);
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('ShRetailSvcsTl', $payment['terminal_id']);
+    }
+
+    /**
+     * Used to test if the terminals can be given categories
+     * before adding categories for merchants.
+     *
+     * @param void
+     * @return void
+     * */
+    public function testTerminalDefaultCategoryChoiceForAmexNonCategoryMerchant()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'amex');
+        $this->fixtures->create('terminal:all_shared_terminals');
+
+        $this->fixtures->create('terminal:shared_amex_category_terminals');
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '341111111111111';
+        $payment['card']['cvv'] = '8888';
+
+        $content = $this->doAuthAndCapturePayment($payment);
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('ShRetailSvcsTl', $payment['terminal_id']);
+    }
 }
