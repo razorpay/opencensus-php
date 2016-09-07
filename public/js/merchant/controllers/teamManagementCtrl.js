@@ -51,7 +51,8 @@ app.controller('TeamManagementCtrl', [
       if ($scope.rolesSupport) {
         $scope.roleOptions = $scope.roleOptions.concat([
           { name: 'Operations', id: 'operations' },
-          { name: 'Finance', id: 'finance' }
+          { name: 'Finance', id: 'finance' },
+          { name: 'Support', id: 'support'}
         ]);
       }
     });

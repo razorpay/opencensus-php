@@ -15,4 +15,10 @@ return [
     'edit_webhooks'             => ['owner', 'manager'],
     'get_config'                => ['owner', 'manager'],
     'post_config_logo'          => ['owner', 'manager'],
+    'dashboard'                 => ['owner', 'manager', 'operations', 'finance'],
+    'reports_entity'            => ['owner', 'manager', 'operations', 'finance'],
+    'reports_invoice'           => ['owner', 'manager', 'operations', 'finance'],
+    'settlements'               => ['owner', 'manager', 'operations', 'finance'],
+    'settlement'                => ['owner', 'manager', 'operations', 'finance'],
+    'settlement_detail'         => ['owner', 'manager', 'operations', 'finance'],
 ];

@@ -31,7 +31,7 @@ class AuthServiceProvider extends ServiceProvider
 
         foreach ($userRoles as $route => $roles)
         {
-            $gate->define($route, function($user) {
+            $gate->define($route, function($user) use ($roles){
                 return (in_array($user->getUserRoleWithCurrentMerchant(), $roles, true));
             });
         }
