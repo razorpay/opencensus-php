@@ -1421,6 +1421,10 @@ trait Authorize
             {
                 $payment->setLateAuthorized(true);
             }
+            else
+            {
+                $payment->setLateAuthorized(false);
+            }
 
             $this->repo->saveOrFail($payment);
             $this->repo->saveOrFail($payment->terminal);
