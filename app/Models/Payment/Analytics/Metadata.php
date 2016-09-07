@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment\Analytics;
 
 use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 class Metadata
 {

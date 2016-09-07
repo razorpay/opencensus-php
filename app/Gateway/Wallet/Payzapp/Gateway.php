@@ -135,7 +135,7 @@ class Gateway extends Base\Gateway
         $content = array(
             'merchantInfo' => array(
                 'merId'                 => $input['terminal']['gateway_merchant_id'],
-                'merAppId'              => $input['terminal']['gateway_terminal_id'],
+                'merAppId'              => $this->getMerchantAppId($input),
                 'merCountryCode'        => 'IN',
                 'merName'               => 'RazorPay',
             ),
@@ -786,6 +786,6 @@ class Gateway extends Base\Gateway
             return $this->config['test_merchant_app_id'];
         }
 
-        return $input['terminal']['gateway_terminal_id'];
+        return $input['terminal']['gateway_access_code'];
     }
 }
