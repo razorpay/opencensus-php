@@ -96,7 +96,7 @@ class SubReconciliate
         {
             $summary['failures'] = $this->failures;
         }
-        
+
         return $summary;
     }
 }

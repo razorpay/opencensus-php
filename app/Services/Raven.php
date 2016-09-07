@@ -13,6 +13,8 @@ class Raven
 {
     const SMS_ID = 'sms_id';
 
+    const REQUEST_TIMEOUT = 30;
+
     protected $baseUrl;
 
     protected $key;
@@ -110,6 +112,7 @@ class Raven
         $headers['Authorization'] = $authHeader;
 
         $options = array(
+            'timeout' => self::REQUEST_TIMEOUT,
             // 'proxy' => $this->proxy
         );
 
