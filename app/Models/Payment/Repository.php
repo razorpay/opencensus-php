@@ -178,11 +178,18 @@ class Repository extends Base\Repository
 
     public function getAuthorizedPaymentsForAutoRefund()
     {
+        $paymentMerchantId = $this->getAttributeWithTableName(Entity::MERCHANT_ID);
+        $paymentAuthorizedAt = $this->getAttributeWithTableName(Entity::AUTHORIZED_AT);
+        $paymentCreatedAt = $this->getAttributeWithTableName(Entity::CREATED_AT);
+
+        $merchantId = Merchant\Entity::getAttributeWithTableName(Merchant\Entity::ID);
+        $merchantAutoRefundDelay = Merchant\Entity::getAttributeWithTableName(Merchant\Entity::AUTO_REFUND_DELAY);
+
         return $this->newQuery()
                     ->select($this->getAttributeWithTableName('*'))
-                    ->join(Table::MERCHANT, 'payments.merchant_id', '=', 'merchants.id')
+                    ->join(Table::MERCHANT, $paymentMerchantId, '=', $merchantId)
                     ->status(Payment\Status::AUTHORIZED)
-                    ->whereRaw('(payments.authorized_at - payments.created_at) >= merchants.auto_refund_delay')
+                    ->whereRaw('(' . $paymentAuthorizedAt . ' - ' . $paymentCreatedAt . ') >= ' . $merchantAutoRefundDelay)
                     ->get();
     }
 

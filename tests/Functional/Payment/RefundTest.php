@@ -176,6 +176,30 @@ class RefundTest extends TestCase
         $this->runRequestResponseFlow($testData);
     }
 
+    public function testRefundPaymentsWithRefundDelay()
+    {
+        $this->fixtures->merchant->editAutoRefundDelay(172800);
+
+        $createdAt = Carbon::today('Asia/Kolkata')->subDays(2)->timestamp;
+
+        $payments = $this->fixtures->times(3)->create(
+            'payment:authorized',
+            ['created_at' => $createdAt]);
+
+        $createdAt = Carbon::today('Asia/Kolkata')->subDays(1)->timestamp;
+
+        $payments = $this->fixtures->times(2)->create(
+            'payment:authorized',
+            ['created_at' => $createdAt]);
+
+        $content = $this->refundOldAuthorizedPayments();
+
+        $this->assertArrayHasKey('refunded', $content);
+        $this->assertEquals(3, $content['refunded']);
+        $this->assertArrayHasKey('authorized', $content);
+        $this->assertEquals(3, $content['authorized']);
+    }
+
     public function testRefundCalledOnPurchaseWithoutCapture()
     {
         $createdAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp;
