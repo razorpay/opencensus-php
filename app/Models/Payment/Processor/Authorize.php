@@ -958,7 +958,7 @@ trait Authorize
 
         if (($payment->isMethod(Payment\Method::CARD)) and
             ($payment->getSave() === true) and
-            ($payment->globalToken() !== null))
+            ($payment->getGlobalTokenId() !== null))
         {
             $notifier = new Notify($this->payment);
 

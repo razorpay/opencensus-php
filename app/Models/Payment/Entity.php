@@ -831,9 +831,14 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SERVICE_TAX);
     }
 
-    public function getCreatedTimestamp()
+    public function getTokenId()
     {
-        return $this->getAttribute(self::CREATED_AT);
+        return $this->getAttribute(self::TOKEN_ID);
+    }
+
+    public function getGlobalTokenId()
+    {
+        return $this->getAttribute(self::GLOBAL_TOKEN_ID);
     }
 
     public function getDescription()
