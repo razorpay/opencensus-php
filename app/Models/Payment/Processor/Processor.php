@@ -334,8 +334,7 @@ class Processor
             return $this->processPaymentCallbackSecondTime($payment);
         }
 
-        throw new Exception\RuntimeException(
-                'Should not have been hit.');
+        throw new Exception\LogicException('Should not have been hit.');
     }
 
     public function callGatewayFunctionCaptureViaQueue($data, $payment)

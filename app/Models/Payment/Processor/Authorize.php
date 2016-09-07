@@ -784,13 +784,17 @@ trait Authorize
         $payment->emiPlan()->associate($emiPlan);
     }
 
-    protected function fillReturnRequestDataForMerchant(Payment\Entity $payment, array & $data)
+    protected function fillReturnRequestDataForMerchant(Payment\Entity $payment, array & $returnData)
     {
         assert ($payment->getCallbackUrl() !== null);
 
-        $content = $data;
+        // This would be normal request data at this point.
+        // But since we will be redirecting to merchant's callback url
+        // we need to push the request data into coproto structure
+        // so that controller can then redirect peacefully.
+        $content = $returnData;
 
-        $data = array(
+        $returnData = array(
             'version' => 1,
             'type' => 'return',
             'request' => [
