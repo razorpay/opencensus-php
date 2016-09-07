@@ -108,7 +108,7 @@ class Category
         $constantName = self::getConstantName('default', $type);
 
         if ((self::isConstantDefined('default', $type) === true) and
-            (isset(self::$$constantName[$item]) === true))
+            (array_key_exists($item, self::$$constantName) === true))
         {
             $category = self::$$constantName[$item];
         }
@@ -130,17 +130,6 @@ class Category
         }
 
         return $category;
-    }
-    public static function isCategoryValidFor($category, $name)
-    {
-        $name = strtoupper($name);
-
-        if (isset(self::$$name) === false)
-        {
-            return false;
-        }
-
-        return in_array($category, self::$$name);
     }
 
     public static function getCategoryForMethod($method, $category)
