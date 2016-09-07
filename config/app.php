@@ -171,6 +171,7 @@ return array(
          * Third party providers
          */
         Aws\Laravel\AwsServiceProvider::class,
+        Jenssegers\Agent\AgentServiceProvider::class,
         Maknz\Slack\SlackServiceProvider::class,
         Propaganistas\LaravelPhone\LaravelPhoneServiceProvider::class,
         Collective\Bus\BusServiceProvider::class,
