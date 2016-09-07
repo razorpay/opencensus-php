@@ -45,7 +45,7 @@ build:
               export REDIS_PORT="6379"
       - script:
           name: Run unit tests
-          code: php -d memory_limit=1024M vendor/phpunit/phpunit/phpunit --debug --verbose
+          code: php -d memory_limit=2G vendor/phpunit/phpunit/phpunit --debug --verbose
       - script:
           name: List directory
           code: ls -lah
