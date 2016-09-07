@@ -92,15 +92,6 @@ class Repository extends Base\Repository
         }
     }
 
-    public function bankAccountsWhereIdNullOrBlank()
-    {
-        return $this->query()
-                    ->where(Entity::ID, '=', '')
-                    ->orWhereNull(BankAccount\Entity::ID)
-                    ->take(500)
-                    ->get();
-    }
-
     /**
      * This should be called when deleting a BankAccount Entity.
      *
