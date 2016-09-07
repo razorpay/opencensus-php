@@ -39,8 +39,6 @@ class Entity extends Base\PublicEntity
 
     const MAX_TERMINALS_COUNT           = 25;
 
-    const STATUS                        = 'status';
-
     //const PRIORITY                      = 'priority';
 
     protected $fillable = array(
