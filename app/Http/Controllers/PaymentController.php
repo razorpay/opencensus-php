@@ -324,17 +324,17 @@ class PaymentController extends Controller
      * In this route, we get all the refunds which have been timed out. We call verify on the gateway
      * to find out whether the refund was done successfully. If it has, we record the refund on gateway. If it has
      * not, we just notify on slack and move on.
-     * We DO NOT call refund on the gateway. (That's why we don't use verifyRefund)
-     * 
+     * We DO NOT call refund on the gateway. (That's why we don't use verifyRefund/manualRefund)
+     *
      * Two basic checks which we would have here:
      * - The refund on api side has a corresponding transaction.
      * - No refund entity created on the gateway side.
      *
      * @param $gateway
      */
-    public function postGatewayRefundForTimeouts($gateway)
+    public function postGatewayRefundRecord($gateway)
     {
-        $data = $this->refund->createGatewayRefundRecordsForTimeouts($gateway);
+        $data = $this->refund->createGatewayRefundRecords($gateway);
 
         return ApiResponse::json($data);
     }

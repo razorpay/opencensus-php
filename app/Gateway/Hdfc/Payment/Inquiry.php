@@ -14,8 +14,10 @@ trait Inquiry
 {
     use Base\AuthorizeFailed;
 
-    protected function getPaymentToVerify($input, $verify)
+    protected function getPaymentToVerify($verify)
     {
+        $input = $verify->input;
+        
         $payment = $this->repo->findByPaymentIdToVerify($input['payment']['id']);
 
         $verify->payment = $payment;

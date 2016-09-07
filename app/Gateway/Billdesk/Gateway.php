@@ -183,18 +183,83 @@ class Gateway extends Base\Gateway
     {
         $refundId = $input['refund'][Payment\Refund\Entity::ID];
 
-        $payment = $input['payment'];
-
         $gatewayRefundEntity = $this->repo->findByRefundId($refundId);
+
+        $applicable = false;
+        $success = null;
 
         if ($gatewayRefundEntity === null)
         {
-            $refunded = $this->checkIfRefunded();
+            $applicable = true;
+
+            $refunded = $this->verifyIfRefunded($input);
 
             if ($refunded === true)
             {
                 // TODO: Create a gateway refund entity here
+
+                $success = true;
+
+                $this->trace->info(
+                    TraceCode::GATEWAY_REFUND_RECORD_CREATED,
+                    [
+                        'payment_id' => $input['payment'][Payment\Entity::ID],
+                        'refund_id'  => $refundId
+                    ]
+                );
             }
+            else
+            {
+                $success = false;
+
+                // TODO: Trace error if not exception.
+
+                // It should have been refunded on the gateway side also. But, verify returned
+                // false in the verify response for refund.
+                //throw new Exception\GatewayErrorException(ErrorCode::BAD_REQUEST_GATEWAY_REFUND_ABSENT);
+            }
+        }
+
+        return [
+            'applicable'    => $applicable,
+            'success'       => $success,
+            'refund_id'     => $refundId,
+            'payment_id'    => $input['payment'][Payment\Entity::ID]
+        ];
+    }
+
+    protected function verifyIfRefunded(array $input)
+    {
+        $verify = new Base\Verify($this->gateway, $input);
+
+        $verify->payment = $this->repo->findByPaymentIdAndAction(
+            $input['payment'][Payment\Entity::ID], Action::AUTHORIZE);
+
+        $content = $this->sendPaymentVerifyRequest($verify);
+
+        //
+        // If the query status is not Y, return false.
+        // If auth status is not success, return false.
+        // If ref status is not refunded, return false.
+        // If ref amount is not equal to api's ref amount, return false.
+        //
+        if (($content['QueryStatus'] !== QueryStatus::Y) or
+            ($content['AuthStatus'] !== AuthStatus::SUCCESS) or
+            ($content['RefStatus'] !== RefundStatus::REFUNDED) or
+            ($content['CustomerID'] !== $input['payment'][Payment\Entity::ID]))
+        {
+            return false;
+        }
+
+        $gatewayRefundAmount = (int) $content['RefAmount'] * 100;
+
+        if ($gatewayRefundAmount !== $input['payment']['refunded_amount'])
+        {
+            return false;
+        }
+        else
+        {
+            return true;
         }
     }
 
@@ -208,7 +273,7 @@ class Gateway extends Base\Gateway
 
         if ($content['QueryStatus'] !== QueryStatus::Y)
         {
-            $this->verifyPaymentNonExistentCase($content, $verify, $payment);
+            $this->verifyPaymentNonExistentCase($verify, $payment);
         }
         else if ($content['AuthStatus'] === AuthStatus::SUCCESS)
         {
@@ -238,7 +303,7 @@ class Gateway extends Base\Gateway
         return $status;
     }
 
-    protected function verifyPaymentNonExistentCase($content, $verify, $payment)
+    protected function verifyPaymentNonExistentCase($verify, $payment)
     {
         // Could be the case where the transaction didn't even hit billdesk
         if (($payment['received'] === false) and
@@ -329,7 +394,7 @@ class Gateway extends Base\Gateway
         $content = $this->getPaymentVerifyRequestContentArray($verify);
 
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
             $content);
 
         $content = $this->postRequest($content);
@@ -337,7 +402,7 @@ class Gateway extends Base\Gateway
         unset($content['Checksum']);
 
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             $content);
 
         $verify->verifyResponse = $this->response;

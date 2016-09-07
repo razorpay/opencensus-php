@@ -184,7 +184,7 @@ trait Refund
         ];
     }
 
-    public function createGatewayRefundIfTimedOut(Payment\Refund\Entity $refund)
+    public function createGatewayRefundRecord(Payment\Refund\Entity $refund)
     {
         $payment = $refund->payment;
 
@@ -198,12 +198,13 @@ trait Refund
         // if payment does not have a transaction, anyway.
         assert ($payment->getTransactionId() !== null);
 
-        $data = array(
+        $data = [
             'payment'   => $payment->toArray(),
             'refund'    => $refund->toArray(),
-            'amount'    => $refund->getAmount());
+            'amount'    => $refund->getAmount()
+        ];
 
-        $createGatewayRefundResult = $this->callGatewayForCreateRefundRecord($data);
+        return $this->callGatewayForCreateRefundRecord($data);
     }
 
     protected function setPaymentAndRefundInfo($refund, $payment)
@@ -341,11 +342,9 @@ trait Refund
 
     protected function callGatewayForCreateRefundRecord(array $data)
     {
-        $createRefundRecordResult = null;
-
         try
         {
-            $createRefundRecordResult = $this->callGatewayFunction(Payment\Action::CREATE_REFUND_RECORD, $data);
+            return $this->callGatewayFunction(Payment\Action::CREATE_REFUND_RECORD, $data);
         }
         catch (Exception\BaseException $ex)
         {
@@ -356,8 +355,6 @@ trait Refund
 
             throw $ex;
         }
-
-        return $createRefundRecordResult;
     }
 
     protected function refundOnGateway($data)

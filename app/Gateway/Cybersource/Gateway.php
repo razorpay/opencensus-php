@@ -159,7 +159,7 @@ class Gateway extends Base\Gateway
         {
             $response = $this->postRequest($request);
 
-            $this->persistAfterRefund($input, $response, $request);
+            $this->persistAfterRefund($input, $response);
         }
         catch (SoapFault $exception)
         {
@@ -588,7 +588,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function persistAfterRefund($input, $response, $request)
+    protected function persistAfterRefund($input, $response)
     {
         $this->trace->info(TraceCode::GATEWAY_REFUND_RESPONSE, $response);
 

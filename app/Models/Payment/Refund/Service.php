@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment\Refund;
 
 use Carbon\Carbon;
+use Config;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Base;
 use RZP\Gateway\Netbanking;
@@ -205,21 +206,54 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function createGatewayRefundRecordsForTimeouts($gateway)
+    public function createGatewayRefundRecords($gateway)
     {
         // Currently, we are running this for billdesk refund timeouts only.
         assert ($gateway === Payment\Gateway::BILLDESK);
 
+        // TODO: Call the below function dynamically.
+
         $billdeskRefunds = $this->repo->payment->fetchBilldeskRefunds();
+
+        $data = [];
+
+        // we get all the billdesk refunds. we return back data for applicable and if success.
 
         foreach ($billdeskRefunds as $billdeskRefund)
         {
             $merchant = $this->repo->merchant->getMerchantFromEntity($billdeskRefund);
 
-            $data[] = $this->processor($merchant)->createGatewayRefundIfTimedOut($billdeskRefund);
+            $data[] = $this->processor($merchant)->createGatewayRefundRecord($billdeskRefund);
         }
-        
-        return $data;
+
+        $applicable = $success = 0;
+        $successRefundData = [];
+
+        foreach ($data as $refundData)
+        {
+            if ($refundData['applicable'] === true)
+            {
+                $applicable++;
+            }
+
+            if ($refundData['success'] === true)
+            {
+                $success++;
+                $successRefundData[] = $refundData;
+            }
+        }
+
+        $summary = [
+            'total_applicable_refunds'  => $applicable,
+            'total_success_refunds'     => $success,
+            'success_refund_data'       => $successRefundData,
+        ];
+
+        $message = "Gateway refund records creation";
+
+        $this->app['slack']->queue($message, $summary, ['channel' => Config::get('slack.channels.tech_logs')]);
+
+        return $summary;
     }
 
     public function createMissingTransactions()
