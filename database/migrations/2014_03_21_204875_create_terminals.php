@@ -72,7 +72,7 @@ class CreateTerminals extends Migration
             $table->integer(Terminal::EMI_DURATION)
                   ->nullable();
 
-            $table->integer(Terminal::RECURRING)
+            $table->tinyInteger(Terminal::RECURRING)
                   ->unsigned()
                   ->default(Recurring::NON_RECURRING);
 
