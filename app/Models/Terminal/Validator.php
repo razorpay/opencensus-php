@@ -209,7 +209,8 @@ class Validator extends Base\Validator
         if (($new->getGateway() === $existing->getGateway()) and
             ($new->getId() !== $existing->getId()) and
             ($new->isEmiEnabled() === $existing->isEmiEnabled()) and
-            ($new->getEmiDuration() === $existing->getEmiDuration()))
+            ($new->getEmiDuration() === $existing->getEmiDuration()) and
+            ($new->getRecurring() === $existing->getRecurring()))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY);
