@@ -26,6 +26,7 @@ class Validator extends Base\Validator
         Entity::EMI                         => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
         Entity::SHARED                      => 'sometimes|boolean',
+        Entity::RECURRING                   => 'sometimes|in:0,1,2',
         Entity::GATEWAY_ACQUIRER            => 'sometimes|string',
     );
 
@@ -92,6 +93,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID         => 'required|string|max:20',
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
         Entity::GATEWAY_ACQUIRER            => 'required|string',
+        Entity::RECURRING                   => 'sometimes|in:0,1,2',
     );
 
     protected static $axisMigsEditTerminalRules = array(
