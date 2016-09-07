@@ -879,6 +879,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::GLOBAL_TOKEN);
     }
 
+    public function isRecurring()
+    {
+        return false;
+    }
+
     public function getCardId()
     {
         return $this->getAttribute(self::CARD_ID);
