@@ -139,6 +139,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::GATEWAY_TOKEN2);
     }
 
+    public function isRecurring()
+    {
+        return false;
+    }
+
     public function getExpiredAt()
     {
         return $this->getAttribute(self::EXPIRED_AT);

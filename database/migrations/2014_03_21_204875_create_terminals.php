@@ -6,10 +6,10 @@ use Illuminate\Database\Migrations\Migration;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal\Entity as Terminal;
+use RZP\Models\Terminal\Recurring;
 
 class CreateTerminals extends Migration
 {
-
     /**
      * Run the migrations.
      *
@@ -72,6 +72,10 @@ class CreateTerminals extends Migration
             $table->integer(Terminal::EMI_DURATION)
                   ->nullable();
 
+            $table->integer(Terminal::RECURRING)
+                  ->unsigned()
+                  ->default(Recurring::NON_RECURRING);
+
             $table->boolean(Terminal::SHARED)
                   ->default(0);
 
@@ -89,7 +93,7 @@ class CreateTerminals extends Migration
                   ->on_delete('restrict');
 
             $table->enum(Terminal::STATUS, ['ACTIVE','INACTIVE', 'SUSPENDED'])
-                    ->default('ACTIVE');
+                  ->default('ACTIVE');
 
             // Needed for future
             //$table->integer(Terminal::PRIORITY)
