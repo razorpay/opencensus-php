@@ -217,7 +217,6 @@ class Entity extends Base\PublicEntity
 
 // --------------------- Modifiers ---------------------------------------------
 
-    // TODO: This function doesn't seem to be doing anything at all. Can I remove it?
     protected function modifyContact(& $input)
     {
         if (isset($input['contact']) === false)
