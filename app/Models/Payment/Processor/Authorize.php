@@ -784,23 +784,25 @@ trait Authorize
         $payment->emiPlan()->associate($emiPlan);
     }
 
-    protected function getReturnRequestDataForMerchant($payment)
+    protected function fillReturnRequestDataForMerchant(Payment\Entity $payment, array & $returnData)
     {
         assert ($payment->getCallbackUrl() !== null);
 
-        $data = array(
+        // This would be normal request data at this point.
+        // But since we will be redirecting to merchant's callback url
+        // we need to push the request data into coproto structure
+        // so that controller can then redirect peacefully.
+        $content = $returnData;
+
+        $returnData = array(
             'version' => 1,
             'type' => 'return',
             'request' => [
                 'url' => $payment->getCallbackUrl(),
                 'method' => 'post',
-                'content' => array(
-                    'razorpay_payment_id' => $payment->getPublicId(),
-                ),
+                'content' => $content,
             ],
         );
-
-        return $data;
     }
 
     protected function checkAndFillSavedAppToken(array & $input)
@@ -900,23 +902,28 @@ trait Authorize
         // Otherwise we simply return 'razorpay_payment_id' as is normal.
         //
 
+        // @todo: Remove this code once hosted integration
+        //        using order and receipt goes live.
         if ($payment->isSigned())
         {
             return $this->getReturnDataForSignedPayment($payment);
         }
 
+        $returnData = ['razorpay_payment_id' => $payment->getPublicId()];
+
+        // @todo: Shift to using auto-capture flag in payment
         if (($payment->order !== null) and
             ($payment->order->getPaymentCapture() === true))
         {
-            return $this->getReturnDataForAutoCaptureOrders($payment);
+            $this->fillReturnDataForAutoCaptureOrders($payment, $returnData);
         }
 
         if ($payment->getCallbackUrl())
         {
-            return $this->getReturnRequestDataForMerchant($payment);
+            $this->fillReturnRequestDataForMerchant($payment, $returnData);
         }
 
-        return ['razorpay_payment_id' => $payment->getPublicId()];
+        return $returnData;
     }
 
     protected function getReturnDataForSignedPayment($payment)
@@ -933,16 +940,11 @@ trait Authorize
         return $data;
     }
 
-    protected function getReturnDataForAutoCaptureOrders($payment)
+    protected function fillReturnDataForAutoCaptureOrders($payment, & $data)
     {
-        $data = array(
-            'razorpay_payment_id' => $payment->getPublicId(),
-            'razorpay_order_id'   => $payment->order->getPublicId()
-        );
+        $data['razorpay_order_id'] = $payment->order->getPublicId();
 
         $data['razorpay_signature'] = $this->getSignature($data);
-
-        return $data;
     }
 
     /**
