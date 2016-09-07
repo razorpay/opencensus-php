@@ -22,7 +22,9 @@ class RecurringPaymentTest extends TestCase
 
         $this->payment = $this->getDefaultPaymentArray();
 
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal');
+
+        $this->fixtures->create('terminal:shared_cybersource_hdfc_recurring_terminals');
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
@@ -67,17 +69,21 @@ class RecurringPaymentTest extends TestCase
         $paymentEntity = $this->getLastEntity('payment', true);
         $tokenEntity   = $this->getLastEntity('token', true);
 
+        $this->assertEquals($paymentEntity['terminal_id'], '1RecurringTerm');
+
         $this->assertEquals(true, $tokenEntity['recurring']);
 
         $token = $paymentEntity['token'];
 
-        $payment['card'] = [];
+        unset($payment['card']);
 
         $payment['token'] = $token;
 
         $content = $this->doAuthAndCapturePayment($payment);
 
         $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($paymentEntity['terminal_id'], '2RecurringTerm');
     }
 
     public function testRecurringPaymentFailedCardNotSupported()
@@ -133,5 +139,9 @@ class RecurringPaymentTest extends TestCase
         $this->fixtures->base->editEntity('token', '100000custcard', ["recurring" => true]);
 
         $content = $this->doAuthAndCapturePayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($paymentEntity['terminal_id'], '2RecurringTerm');
     }
 }

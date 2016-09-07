@@ -19,6 +19,7 @@ class Terminal extends Base
         $this->createSharedNetbankingHdfcTerminal();
         $this->createSharedNetbankingKotakTerminal();
         $this->createSharedCybersourceHdfcTerminal();
+        $this->createSharedCybersourceHdfcRecurringTerminals();
         $this->createSharedCybersourceAxisTerminal();
         $this->createSharedEbsTerminal();
     }
@@ -260,6 +261,34 @@ class Terminal extends Base
         );
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedCybersourceHdfcRecurringTerminals(array $attributes = array())
+    {
+        $attributes = array(
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'cybersource',
+            'card'                      => 1,
+            'netbanking'                => 0,
+            'shared'                    => 1,
+            'gateway_merchant_id'       => 'merchant_id',
+            'gateway_terminal_id'       => 'cybersource',
+            'gateway_terminal_password' => 'cybersource',
+            'gateway_access_code'       => '111111',
+            'gateway_secure_secret'     => 'secret',
+        );
+
+        // Add recurring 3ds terminal;
+        $attributes['id'] = '1RecurringTerm';
+        $attributes['recurring'] = 1;
+
+        $this->createEntityInTestAndLive('terminal', $attributes);
+
+        // Add recurring 3ds
+        $attributes['id'] = '2RecurringTerm';
+        $attributes['recurring'] = 2;
+
+        $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
     public function createSharedCybersourceAxisTerminal(array $attributes = array())
