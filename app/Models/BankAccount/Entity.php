@@ -183,14 +183,6 @@ class Entity extends Base\PublicEntity
         return strtoupper($code);
     }
 
-    public function generateIdFromCreatedAt()
-    {
-        $createdAt = $this->getAttribute(self::CREATED_AT);
-        $this->setAttribute(
-            self::ID,
-            self::generateUniqueIdFromTimestamp($createdAt));
-    }
-
     public function equals($baCopy)
     {
         $orig = $this->toArray();

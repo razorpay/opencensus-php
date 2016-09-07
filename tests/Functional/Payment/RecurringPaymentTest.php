@@ -73,11 +73,11 @@ class RecurringPaymentTest extends TestCase
 
         $this->assertEquals(true, $tokenEntity['recurring']);
 
-        $token = $paymentEntity['token'];
+        $tokenId = 'token_' . $paymentEntity['token_id'];
 
         unset($payment['card']);
 
-        $payment['token'] = $token;
+        $payment['token'] = $tokenId;
 
         $content = $this->doAuthAndCapturePayment($payment);
 

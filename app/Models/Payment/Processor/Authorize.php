@@ -357,7 +357,7 @@ trait Authorize
 
         if (empty($payment->token) === false)
         {
-            $gatewayInput['token'] = $payment->token()->first();
+            $gatewayInput['token'] = $payment->token;
         }
     }
 
@@ -586,8 +586,6 @@ trait Authorize
         {
             $payment->token()->associate($token);
 
-            $payment->setToken($token->getToken());
-
             $gatewayInput['card'] = $this->getCardArrayForSavedToken($token, $input);
         }
         else
@@ -616,8 +614,6 @@ trait Authorize
             $gatewayInput['card'] = $this->createCardEntityFromSavedToken($token, $input);
 
             $payment->globalToken()->associate($token);
-
-            $payment->setGlobalToken($token->getToken());
 
             $payment->card->globalCard()->associate($token->card);
 
@@ -678,8 +674,6 @@ trait Authorize
 
         if ($token !== null)
         {
-            $this->payment->setToken($token->getToken());
-
             $this->payment->token()->associate($token);
         }
     }
@@ -704,8 +698,6 @@ trait Authorize
 
         if ($token !== null)
         {
-            $this->payment->setGlobalToken($token->getToken());
-
             $this->payment->globalToken()->associate($token);
         }
     }
@@ -807,23 +799,25 @@ trait Authorize
         $payment->emiPlan()->associate($emiPlan);
     }
 
-    protected function getReturnRequestDataForMerchant($payment)
+    protected function fillReturnRequestDataForMerchant(Payment\Entity $payment, array & $returnData)
     {
         assert ($payment->getCallbackUrl() !== null);
 
-        $data = array(
+        // This would be normal request data at this point.
+        // But since we will be redirecting to merchant's callback url
+        // we need to push the request data into coproto structure
+        // so that controller can then redirect peacefully.
+        $content = $returnData;
+
+        $returnData = array(
             'version' => 1,
             'type' => 'return',
             'request' => [
                 'url' => $payment->getCallbackUrl(),
                 'method' => 'post',
-                'content' => array(
-                    'razorpay_payment_id' => $payment->getPublicId(),
-                ),
+                'content' => $content,
             ],
         );
-
-        return $data;
     }
 
     protected function checkAndFillSavedAppToken(array & $input)
@@ -884,7 +878,7 @@ trait Authorize
     {
         if ($this->payment->isMethodCardOrEmi())
         {
-            $token = $this->payment->token()->first();
+            $token = $this->payment->token;
 
             if (($this->payment->isRecurring() == true) and
                 ($token->isRecurring() === false))
@@ -939,23 +933,28 @@ trait Authorize
         // Otherwise we simply return 'razorpay_payment_id' as is normal.
         //
 
+        // @todo: Remove this code once hosted integration
+        //        using order and receipt goes live.
         if ($payment->isSigned())
         {
             return $this->getReturnDataForSignedPayment($payment);
         }
 
+        $returnData = ['razorpay_payment_id' => $payment->getPublicId()];
+
+        // @todo: Shift to using auto-capture flag in payment
         if (($payment->order !== null) and
             ($payment->order->getPaymentCapture() === true))
         {
-            return $this->getReturnDataForAutoCaptureOrders($payment);
+            $this->fillReturnDataForAutoCaptureOrders($payment, $returnData);
         }
 
         if ($payment->getCallbackUrl())
         {
-            return $this->getReturnRequestDataForMerchant($payment);
+            $this->fillReturnRequestDataForMerchant($payment, $returnData);
         }
 
-        return ['razorpay_payment_id' => $payment->getPublicId()];
+        return $returnData;
     }
 
     protected function getReturnDataForSignedPayment($payment)
@@ -972,16 +971,11 @@ trait Authorize
         return $data;
     }
 
-    protected function getReturnDataForAutoCaptureOrders($payment)
+    protected function fillReturnDataForAutoCaptureOrders($payment, & $data)
     {
-        $data = array(
-            'razorpay_payment_id' => $payment->getPublicId(),
-            'razorpay_order_id'   => $payment->order->getPublicId()
-        );
+        $data['razorpay_order_id'] = $payment->order->getPublicId();
 
         $data['razorpay_signature'] = $this->getSignature($data);
-
-        return $data;
     }
 
     /**
@@ -1019,7 +1013,7 @@ trait Authorize
 
         if (($payment->isMethod(Payment\Method::CARD)) and
             ($payment->getSave() === true) and
-            ($payment->getGlobalToken() !== null))
+            ($payment->getGlobalTokenId() !== null))
         {
             $notifier = new Notify($this->payment);
 
@@ -1478,6 +1472,10 @@ trait Authorize
             if ($wasFailed === true)
             {
                 $payment->setLateAuthorized(true);
+            }
+            else
+            {
+                $payment->setLateAuthorized(false);
             }
 
             $this->repo->saveOrFail($payment);
