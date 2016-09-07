@@ -23,9 +23,9 @@ class Lock
     {
         $this->requestId = $app['request']->getId();
 
-        $this->trace = $app['trace'];
+        $this->redis = $app['redis'];
 
-        $this->app = $app;
+        $this->trace = $app['trace'];
     }
 
     /**
@@ -40,7 +40,7 @@ class Lock
     {
         try
         {
-            $response = $this->app['redis']->set($resource, $this->requestId, 'ex', $ttl, 'nx');
+            $response = $this->redis->set($resource, $this->requestId, 'ex', $ttl, 'nx');
         }
         catch (PredisException $e)
         {
@@ -74,8 +74,8 @@ class Lock
     {
         try
         {
-            if (($this->app['redis']->get($resource) === $this->requestId) and
-                ($this->app['redis']->del($resource) === 1))
+            if (($this->redis->get($resource) === $this->requestId) and
+                ($this->redis->del($resource) === 1))
             {
                 return true;
             }

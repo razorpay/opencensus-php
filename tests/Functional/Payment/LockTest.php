@@ -40,8 +40,6 @@ class LockTest extends TestCase
 
     public function testLockAcquiredCaptureRequest()
     {
-        $payment = $this->defaultAuthPayment();
-
         Redis::shouldReceive('set')
             ->once()
             ->andReturn(null);
@@ -52,6 +50,8 @@ class LockTest extends TestCase
                 {
                     return null;
                 });
+
+        $payment = $this->defaultAuthPayment();
 
         $data = $this->testData[__FUNCTION__];
 
@@ -67,9 +67,6 @@ class LockTest extends TestCase
 
     public function testLockAcquiredRefundRequest()
     {
-        $payment = $this->defaultAuthPayment();
-        $payment = $this->capturePayment($payment['id'], $payment['amount']);
-
         Redis::shouldReceive('set')
                 ->once()
                 ->andReturn(null);
@@ -81,11 +78,13 @@ class LockTest extends TestCase
                     return null;
                 });
 
+        $payment = $this->fixtures->create('payment:captured');
+
         $data = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow($data, function() use ($payment)
         {
-            $this->refundPayment($payment['id']);
+            $this->refundPayment($payment->getPublicId());
         });
     }
 
@@ -102,8 +101,6 @@ class LockTest extends TestCase
 
     public function testCaptureRequestWithException()
     {
-        $payment = $this->defaultAuthPayment();
-
         Redis::shouldReceive('set')
                 ->once()
                 ->andReturnUsing(function()
@@ -118,13 +115,13 @@ class LockTest extends TestCase
                     return 'false_id';
                 });
 
+        $payment = $this->defaultAuthPayment();
+
         $this->capturePayment($payment['id'], $payment['amount']);
     }
 
     public function testLockCaptureRequestWithDiffRedisResponse()
     {
-        $payment = $this->defaultAuthPayment();
-
         Redis::shouldReceive('set')
                 ->once()
                 ->andReturnUsing(function ($resource, $requestId)
@@ -144,6 +141,8 @@ class LockTest extends TestCase
         Redis::shouldReceive('del')
                 ->once()
                 ->andReturn(true);
+
+        $payment = $this->defaultAuthPayment();
 
         $this->capturePayment($payment['id'], $payment['amount']);
     }
