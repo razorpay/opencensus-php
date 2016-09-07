@@ -39,7 +39,6 @@ class Entity extends Base\PublicEntity
     const APP_TOKEN             = 'app_token';
     const TOKEN                 = 'token';
     const TOKEN_ID              = 'token_id';
-    const GLOBAL_TOKEN          = 'global_token';
     const GLOBAL_TOKEN_ID       = 'global_token_id';
     const EMAIL                 = 'email';
     const CONTACT               = 'contact';
@@ -115,9 +114,7 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_ID,
         self::GLOBAL_CUSTOMER_ID,
         self::APP_TOKEN,
-        self::TOKEN,
         self::TOKEN_ID,
-        self::GLOBAL_TOKEN,
         self::GLOBAL_TOKEN_ID,
         self::EMAIL,
         self::CONTACT,
@@ -437,16 +434,6 @@ class Entity extends Base\PublicEntity
     public function setMetadata($metadata)
     {
         $this->metadata = $metadata;
-    }
-
-    public function setToken($token)
-    {
-        $this->setAttribute(self::TOKEN, $token);
-    }
-
-    public function setGlobalToken($globalToken)
-    {
-        $this->setAttribute(self::GLOBAL_TOKEN, $globalToken);
     }
 
     public function setSave($save)
@@ -843,9 +830,14 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SERVICE_TAX);
     }
 
-    public function getCreatedTimestamp()
+    public function getTokenId()
     {
-        return $this->getAttribute(self::CREATED_AT);
+        return $this->getAttribute(self::TOKEN_ID);
+    }
+
+    public function getGlobalTokenId()
+    {
+        return $this->getAttribute(self::GLOBAL_TOKEN_ID);
     }
 
     public function getDescription()
