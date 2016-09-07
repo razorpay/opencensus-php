@@ -1,9 +1,9 @@
 <?php
 
-namespace RZP\Models\Merchant\BankAccount;
+namespace RZP\Models\BankAccount;
 
 use RZP\Models\Base;
-use RZP\Models\Merchant\BankAccount;
+use RZP\Models\BankAccount;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 

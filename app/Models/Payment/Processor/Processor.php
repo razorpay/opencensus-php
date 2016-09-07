@@ -8,7 +8,7 @@ use BasicAuth;
 use RZP\Constants\Mode;
 use RZP\Dashboard\Dashboard;
 use RZP\Models\Merchant;
-use RZP\Models\Merchant\BankAccount;
+use RZP\Models\BankAccount;
 use RZP\Models\Terminal;
 use RZP\Models\Payment;
 use RZP\Models\Order;
