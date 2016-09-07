@@ -194,8 +194,6 @@ class ApiResponse
         self::setContentTypeHtmlForSpecificRoutes($route, $response);
         self::setAccessControlAllowOriginStarOnSpecificRoutes($route, $response);
 
-        $callback = $request->input('callback');
-
         if ((self::$jsonp === null) and
             (self::isJsonpRoute($route)))
         {

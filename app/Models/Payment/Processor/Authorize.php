@@ -770,7 +770,7 @@ trait Authorize
         $payment->emiPlan()->associate($emiPlan);
     }
 
-    protected function fillReturnRequestDataForMerchant($payment, array & $data)
+    protected function fillReturnRequestDataForMerchant(Payment\Entity $payment, array & $data)
     {
         assert ($payment->getCallbackUrl() !== null);
 

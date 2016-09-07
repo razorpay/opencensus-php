@@ -29,8 +29,9 @@ class PaymentCancelTest extends TestCase
 	                'error' => [
 	                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
 	                ],
+                    'http_status_code' => 400,
 	            ],
-	            'status_code' => 400,
+	            'status_code' => 200,
 	        ],
 	        'exception' => [
 	            'class' => 'RZP\Exception\BadRequestException',
@@ -54,6 +55,8 @@ class PaymentCancelTest extends TestCase
     	$pid = $content['razorpay_payment_id'];
 
     	$content2 = $this->cancelPayment($pid);
+        unset($content2['http_status_code']);
+
     	$this->assertEquals($content, $content2);
     }
 
@@ -68,6 +71,7 @@ class PaymentCancelTest extends TestCase
     	$pid = $content['razorpay_payment_id'];
 
     	$content2 = $this->cancelPayment($pid);
+        unset($content2['http_status_code']);
     	$this->assertEquals($content, $content2);
     }
 }
