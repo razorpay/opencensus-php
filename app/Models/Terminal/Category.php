@@ -9,18 +9,18 @@ use RZP\Models\Payment\Gateway;
 
 class Category
 {
-    protected static $DEFAULT_METHOD = [
+    const DEFAULT_METHOD = [
         Method::NETBANKING => 'ecommerce',
     ];
 
-    protected static $DEFAULT_NETWORK = [
+    const DEFAULT_NETWORK = [
         Network::AMEX   => 'retail_services',
     ];
 
     /**
      * The list of all possible categories that can be chosen
      * */
-    protected static $CATEGORIES_ALL = [
+    const CATEGORIES_ALL = [
         'auto',
         'car_rental',
         'corporate',
@@ -44,7 +44,7 @@ class Category
      * For netbanking, each of the categories on the left will
      * be mapped to the category on the right.
      * */
-    protected static $METHOD_NETBANKING = [
+    const METHOD_NETBANKING = [
         'corporate'               => 'corporate',
         'education'               => 'education',
         'education_services'      => 'education',
@@ -71,7 +71,7 @@ class Category
      * i.e the category decided by the method is to be used,
      * then it shoould be left empty
      * */
-    protected static $NETWORK_AMEX = [
+    const NETWORK_AMEX = [
         'auto'                    => 'auto',
         'car_rental'              => 'car_rental',
         'corporate'               => '',
@@ -108,9 +108,9 @@ class Category
         $constantName = self::getConstantName('default', $type);
 
         if ((self::isConstantDefined('default', $type) === true) and
-            (array_key_exists($item, self::$$constantName) === true))
+            (in_array($item, constant('self::'.$constantName)) === true))
         {
-            $category = self::$$constantName[$item];
+            $category = constant('self::'.$constantName)[$item];
         }
 
         return $category;
@@ -151,7 +151,7 @@ class Category
         {
             $name = self::getConstantName($type, $item);
 
-            $returnCategory = self::$$name[$category];
+            $returnCategory = constant('self::'.$name)[$category];
         }
 
         return $returnCategory;
@@ -192,7 +192,7 @@ class Category
     {
         $name = self::getConstantName($type, $name);
 
-        return isset(self::$$name);
+        return defined('self::'.$name);
     }
 
     protected static function getConstantName($type, $name)
@@ -202,7 +202,7 @@ class Category
 
     public static function isMerchantCategoryValid($category)
     {
-        return in_array($category, self::$CATEGORIES_ALL);
+        return in_array($category, constant('self::CATEGORIES_ALL'));
     }
 
     public static function isTerminalCategoryValid($category, $method = null, $network = null)
@@ -215,14 +215,14 @@ class Category
         {
             $methodConstantName = self::getConstantName('method', $method);
 
-            $values = array_values(self::$$methodConstantName);
+            $values = array_values(constant('self::'.$methodConstantName));
         }
 
         if(self::isConstantDefined('network', $network) === true)
         {
             $networkConstantName = self::getConstantName('network', $network);
 
-            $values = array_values(self::$$networkConstantName);
+            $values = array_values(constant('self::'.$networkConstantName));
         }
 
         return in_array($category, $values);
