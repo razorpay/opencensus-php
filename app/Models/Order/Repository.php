@@ -16,12 +16,9 @@ class Repository extends Base\Repository
         Entity::AUTHORIZED      => 'sometimes|in:0,1',
     );
 
-    protected $proxyFetchParamRules = array(
-        Entity::RECEIPT         => 'sometimes|string'
-    );
-
     protected $entityFetchParamRules = array(
         Entity::AUTHORIZED      => 'sometimes|in:0,1',
+        Entity::RECEIPT         => 'sometimes|string|max:40',
     );
 
     public function getOrderForPayment($payment)

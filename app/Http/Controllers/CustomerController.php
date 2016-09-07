@@ -4,7 +4,6 @@ namespace RZP\Http\Controllers;
 
 use RZP\Http\ApiResponse;
 use RZP\Models\Customer;
-use RZP\Models\Customer\Account;
 use Request;
 
 class CustomerController extends Controller

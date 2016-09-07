@@ -8,7 +8,7 @@ class Issuer
 {
     const KOTAK         = 'Kotak';
     const AXIS          = 'Axis';
-    const INDUS_IND     = 'IndusInd';
+    const INDUS_IND     = 'Indusind';
 
     public static $emiFileBanks = array(
         IFSC::KKBK  => self::KOTAK,

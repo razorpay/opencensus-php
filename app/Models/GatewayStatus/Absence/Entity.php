@@ -3,6 +3,7 @@
 namespace RZP\Models\GatewayStatus\Absence;
 
 use RZP\Models\Base;
+use RZP\Constants\Table;
 
 class Entity extends Base\PublicEntity
 {
@@ -32,7 +33,7 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT
     );
 
-    protected $table = \RZP\Constants\Table::GATEWAYSTATUS_ABSENCE;
+    protected $table = Table::GATEWAYSTATUS_ABSENCE;
 
     protected $entity = 'gateway_absence';
 

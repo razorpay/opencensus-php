@@ -6,6 +6,7 @@ use Crypt;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Models\Terminal\Recurring;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Entity extends Base\PublicEntity
@@ -30,6 +31,7 @@ class Entity extends Base\PublicEntity
     const NETBANKING                    = 'netbanking';
     const EMI                           = 'emi';
     const EMI_DURATION                  = 'emi_duration';
+    const RECURRING                     = 'recurring';
 
     const SHARED                        = 'shared';
 
@@ -38,8 +40,6 @@ class Entity extends Base\PublicEntity
     const DELETED_AT                    = 'deleted_at';
 
     const MAX_TERMINALS_COUNT           = 25;
-
-    const STATUS                        = 'status';
 
     //const PRIORITY                      = 'priority';
 
@@ -113,6 +113,11 @@ class Entity extends Base\PublicEntity
         self::EMI                       => false,
         self::EMI_DURATION              => null,
         self::GATEWAY_ACQUIRER          => null,
+        self::RECURRING                 => Recurring::NON_RECURRING,
+    );
+
+    protected $casts = array(
+        self::RECURRING                 => 'int'
     );
 
     public function generateMethod($input)
@@ -166,11 +171,6 @@ class Entity extends Base\PublicEntity
         $usedCount = $this->getUsedCount() + 1;
 
         $this->setAttribute(self::USED_COUNT, $usedCount);
-    }
-
-    public function getMerchantId()
-    {
-        return $this->attributes[self::MERCHANT_ID];
     }
 
     public function getGatewayMerchantId()
@@ -269,6 +269,11 @@ class Entity extends Base\PublicEntity
     public function getShared()
     {
         return $this->getAttribute(self::SHARED);
+    }
+
+    public function getRecurring()
+    {
+        return $this->getAttribute(self::RECURRING);
     }
 
     protected function getUsedCountAttribute()

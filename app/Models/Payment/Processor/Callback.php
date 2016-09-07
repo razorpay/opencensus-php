@@ -62,12 +62,6 @@ trait Callback
 
         $this->processPaymentCallback($payment, $gatewayInput);
 
-        if ($this->shouldAutoCapture($payment) === true)
-        {
-            // If payment is signed or capture was sent as true in order, then we capture it in this step only.
-            $payment = $this->capturePayment($payment, $payment->getAmount());
-        }
-
         return $this->postPaymentAuthorizeProcessing($payment);
     }
 
@@ -202,9 +196,9 @@ trait Callback
         {
             $contact = $this->parseContact($input['payment']['contact']);
 
-            $sharedAccount = (new Merchant\Repository)->getSharedAccount();
+            $sharedAccount = $this->repo->merchant->getSharedAccount();
 
-            $customer = (new Customer\Repository)->findByContactAndMerchant(
+            $customer = $this->repo->customer->findByContactAndMerchant(
                                     $contact->format(), $sharedAccount);
 
             if ($customer === null)
@@ -228,6 +222,8 @@ trait Callback
             $token = $this->createOrUpdateToken($input, $data);
 
             $payment->setGlobalToken($token->getToken());
+
+            $payment->globalToken()->associate($token);
         }
 
         $this->repo->saveOrFail($payment);
