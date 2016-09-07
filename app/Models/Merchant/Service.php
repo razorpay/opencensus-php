@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Mail;
 
 use RZP\Models\Base;
+use RZP\Models\BankAccount;
 use RZP\Models\Merchant;
 use RZP\Models\Key;
 use RZP\Models\Payment;
@@ -365,41 +366,6 @@ class Service extends Base\Service
         }
 
         return $ba->toArrayPublic();
-    }
-
-    public function generateBankAccountIds()
-    {
-        $bankAccountRepo = new BankAccount\Repository();
-
-        $bankAccounts = $bankAccountRepo->bankAccountsWhereIdNullOrBlank();
-
-        $fetched = $bankAccounts->count();
-
-        $bankAccountRepo->beginTransaction();
-
-        $count = 0;
-
-        try
-        {
-            foreach ($bankAccounts as $bankAcc)
-            {
-                $bankAcc->generateIdFromCreatedAt();
-                $bankAccountRepo->save($bankAcc);
-                $count++;
-            }
-
-            $bankAccountRepo->commit();
-        }
-        catch (Exception $e)
-        {
-            $bankAccountRepo->rollback();
-            throw new Exception\RuntimeException(
-                        'Failed generating BankAccount id',
-                        $e->getTrace());
-        }
-
-        return ['fetched' => $fetched, 'processed' => $count];
-
     }
 
     public function generateTestBankAccounts()

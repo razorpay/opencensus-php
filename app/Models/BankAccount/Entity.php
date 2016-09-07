@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Merchant\BankAccount;
+namespace RZP\Models\BankAccount;
 
 use App;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -181,14 +181,6 @@ class Entity extends Base\PublicEntity
         $code = $this->attributes[self::IFSC_CODE] = $code;
 
         return strtoupper($code);
-    }
-
-    public function generateIdFromCreatedAt()
-    {
-        $createdAt = $this->getAttribute(self::CREATED_AT);
-        $this->setAttribute(
-            self::ID,
-            self::generateUniqueIdFromTimestamp($createdAt));
     }
 
     public function equals($baCopy)

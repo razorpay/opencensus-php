@@ -719,40 +719,4 @@ class Service extends Base\Service
 
         return $processor;
     }
-
-    public function computeServiceTax()
-    {
-        $payments = $this->repo->payment->getNonTaxComputedPayments();
-
-        $totalRecords = 0;
-        $updatedRecords = 0;
-        $totalServiceTax = 0;
-
-        $this->repo->transaction(function() use ($payments, &$totalRecords, &$updatedRecords, &$totalServiceTax)
-        {
-            $totalRecords = $payments->count();
-            foreach ($payments as $payment)
-            {
-                $txn = $payment->transaction;
-                $this->merchant = $payment->merchant;
-                (new Transaction\Core)->fillServiceTax($txn, $payment);
-
-                $payment->setServiceTax($txn->getServiceTax());
-                $payment->setFee($txn->getFee());
-
-                $this->repo->saveOrFail($txn);
-                $this->repo->saveOrFail($payment);
-
-                $updatedRecords++;
-                $totalServiceTax += $txn -> getServiceTax();
-            }
-        });
-
-        $results = array(
-            'total'                 => $totalRecords,
-            'updated'               => $updatedRecords,
-            'total service tax'     => $totalServiceTax);
-
-        return $results;
-    }
 }

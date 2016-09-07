@@ -1,9 +1,9 @@
 <?php
 
-namespace RZP\Models\Merchant\BankAccount;
+namespace RZP\Models\BankAccount;
 
 use Carbon\Carbon;
-use RZP\Models\Merchant\BankAccount;
+use RZP\Models\BankAccount;
 use RZP\Models\Settlement\Kotak\FileHandlerTrait;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
