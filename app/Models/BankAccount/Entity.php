@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Merchant\BankAccount;
+namespace RZP\Models\BankAccount;
 
 use App;
 use Illuminate\Database\Eloquent\SoftDeletes;
