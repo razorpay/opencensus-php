@@ -235,7 +235,7 @@ class Service extends Base\Service
         {
             $parser = Parser::create();
             $session->parsed_user_agent = $parser->parse($session->user_agent);
-            $session->parsed_last_activity = $date =  Carbon::createFromTimeStamp(time(), "Asia/Kolkata")->format('j M Y h:i a');
+            $session->parsed_last_activity = Carbon::createFromTimeStamp(time(), "Asia/Kolkata")->format('j M Y h:i a');
             $sessions[] = $session;
         }
 
