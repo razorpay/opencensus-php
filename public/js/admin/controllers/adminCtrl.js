@@ -103,10 +103,9 @@ app.controller('AdminCtrl', [
         method: 'get',
         url: '/admin/activity',
       }).success(function (data) {
-        console.log(data);
         $scope.activity = data.data
       }).error(function () {
-        console.log('error');
+        $scope.alerts.addAlert('danger', null, true);
       });
     };
     $scope.deleteSession = function(id) {
@@ -114,10 +113,19 @@ app.controller('AdminCtrl', [
         method: 'delete',
         url: '/admin/activity/'+id,
       }).success(function (data) {
-        console.log(data);
-        $scope.activity = data.data
+        $scope.alerts.addAlert('success', 'Session deleted successfully.', true);
       }).error(function () {
-        console.log('error');
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+    $scope.deleteAllOtherSessions = function(adminId) {
+      $http({
+        method: 'delete',
+        url: '/admin/activity/',
+      }).success(function (data) {
+        $scope.alerts.addAlert('success', 'Sessions deleted successfully.', true);
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
       });
     };
     function passwordChangeRequest(data) {

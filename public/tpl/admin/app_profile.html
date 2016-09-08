@@ -61,7 +61,7 @@
       <button  class="btn btn-primary btn-rounded btn-change-pwd" ng-click="changePassword()">Change Password</button>
     </div>
   </div>
-  <div class="panel panel-default" ng-show="activity">
+  <div class="panel panel-default col-sm-8 col-sm-offset-2" ng-show="activity">
     <div class="panel-heading">
       Admin Id: <strong>{{activity[0].admin_id}}</strong>
     </div>
@@ -75,9 +75,9 @@
         </thead>
         <tbody>
           <tr ng-repeat="act in activity">
-            <td>{{act.user_agent}}</td>
+            <td>{{act.parsed_user_agent.ua.family}}({{act.parsed_user_agent.ua.major}}.{{act.parsed_user_agent.ua.minor}}.{{act.parsed_user_agent.ua.patch}}) {{act.parsed_user_agent.os.family}}</td>
             <td>{{act.ip_address}}</td>
-            <td>{{act.last_activity}}</td>
+            <td>{{act.parsed_last_activity}}</td>
             <td><a class="btn-admin-delete" ng-show="row.username != admin.username" ng-confirm-click="Are you sure you want to delete this session?" ng-click="deleteSession(act.id)">
                 <i class="fa fa-user-times text-danger" tooltip="Delete"></i>
               </a></td>
@@ -85,5 +85,11 @@
         </tbody>
       </table>
     </div>
+    <br>
+    <button class="btn btn-sm btn-danger col-sm-offset-9" ng-confirm-click="Are you sure you want to delete all other sessions you are signed in with?" ng-click="deleteAllOtherSessions(activity[0].admin_id)">
+      Sign out all other sessions
+    </button>
+    <br>
+    <br>
   </div>
 </div>
