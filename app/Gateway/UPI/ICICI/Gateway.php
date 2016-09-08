@@ -59,6 +59,20 @@ class Gateway extends Base\Gateway
         return str_replace('\n', "\n", $key);
     }
 
+
+    /**
+     * Gets the correct URL from the
+     * Url class
+     * @param  string $type Action String
+     * @return String URL
+     */
+    protected function getUrl($type = 'authorize')
+    {
+        $type = "{$this->mode}_$type";
+
+        return parent::getUrl($type);
+    }
+
     /**
      * Authorizes a payment using UPI Gateway
      * @param  array  $input
@@ -345,5 +359,15 @@ class Gateway extends Base\Gateway
     public function parseS2SResponse($body)
     {
         return $this->parseGatewayResponse($body);
+    }
+
+    /**
+     * Handles the S2S callback
+     * @param  array $input
+     * @return boolean
+     */
+    public function callback(array $input)
+    {
+        parent::callback($input);
     }
 }

@@ -428,6 +428,7 @@ class Processor
         $gatewayData['terminal'] = $terminal;
         $gatewayData['merchant'] = $this->payment->merchant;
 
+        // TODO: Shouldn't be KOTAK specific
         if ($gateway === Payment\Gateway::KOTAK)
         {
             $gatewayData['bank_account'] = $this->getMerchantBankAccount($terminal->merchant);

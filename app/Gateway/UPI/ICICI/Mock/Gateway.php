@@ -34,9 +34,9 @@ class Gateway extends ICICI\Gateway
         return file_get_contents(__DIR__ . '/keys/mockclient.key');
     }
 
-    protected function getUrl($type = null)
+    protected function getUrl($type = 'authorize')
     {
-        $url = parent::getUrl();
+        $url = parent::getUrl($type);
 
         $url = Route::getUrlWithPublicAuth('mock_upi_icici_payment',
                                             ['bank' => 'icici']);
