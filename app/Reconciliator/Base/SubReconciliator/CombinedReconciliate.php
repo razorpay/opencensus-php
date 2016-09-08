@@ -15,11 +15,13 @@ class CombinedReconciliate extends Foundation\SubReconciliate
     protected $messenger;
 
     protected $app;
+    protected $repo;
 
     public function __construct()
     {
         $this->messenger = new Messenger();
         $this->app = App::getFacadeRoot();
+        $this->repo = $this->app['repo'];
     }
 
     /**

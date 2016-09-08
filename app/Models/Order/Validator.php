@@ -28,7 +28,7 @@ class Validator extends Base\Validator
             ($order->isAuthorized()))
         {
             // Order already paid for
-            throw new Exception\BadRequestValidationFailureException(
+            throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID);
         }
     }
