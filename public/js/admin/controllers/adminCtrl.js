@@ -93,6 +93,33 @@ app.controller('AdminCtrl', [
         });
       });
     });
+    $scope.showActivity = function () {
+      if ($scope.activity)
+      {
+        $scope.activity = null;
+        return;
+      }
+      $http({
+        method: 'get',
+        url: '/admin/activity',
+      }).success(function (data) {
+        console.log(data);
+        $scope.activity = data.data
+      }).error(function () {
+        console.log('error');
+      });
+    };
+    $scope.deleteSession = function(id) {
+      $http({
+        method: 'delete',
+        url: '/admin/activity/'+id,
+      }).success(function (data) {
+        console.log(data);
+        $scope.activity = data.data
+      }).error(function () {
+        console.log('error');
+      });
+    };
     function passwordChangeRequest(data) {
       var request = $http({
         method: 'post',

@@ -30,7 +30,7 @@
           <span class="pull-right">{{admin.created_at | date:'medium'}}</span>
           Creation Date
         </a>
-        <a href="{{'/admin/activity'}}" target="_blank" class="list-group-item">
+        <a class="list-group-item" ng-click="showActivity()">
           Show Activity Log
         </a>
       </div>
@@ -59,6 +59,31 @@
         </div>
       </script>
       <button  class="btn btn-primary btn-rounded btn-change-pwd" ng-click="changePassword()">Change Password</button>
+    </div>
+  </div>
+  <div class="panel panel-default" ng-show="activity">
+    <div class="panel-heading">
+      Admin Id: <strong>{{activity[0].admin_id}}</strong>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-striped b-t b-light">
+        <thead>
+          <th>Device</th>
+          <th>Ip address</th>
+          <th>Date/Time</th>
+          <th></th>
+        </thead>
+        <tbody>
+          <tr ng-repeat="act in activity">
+            <td>{{act.user_agent}}</td>
+            <td>{{act.ip_address}}</td>
+            <td>{{act.last_activity}}</td>
+            <td><a class="btn-admin-delete" ng-show="row.username != admin.username" ng-confirm-click="Are you sure you want to delete this session?" ng-click="deleteSession(act.id)">
+                <i class="fa fa-user-times text-danger" tooltip="Delete"></i>
+              </a></td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </div>

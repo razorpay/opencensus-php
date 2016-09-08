@@ -227,7 +227,14 @@ class Service extends Base\Service
 
     public function getAdminActivity($id)
     {
-        return (new SessionTable\Entity)->getAllSessionsForAdmin($id);
+        $sessionsCollection = (new SessionTable\Entity)->getAllSessionsForAdmin($id);
+
+        foreach ($sessionsCollection as $session)
+        {
+            $sessions[] = $session;
+        }
+
+        return $sessions;
     }
 
     public function deleteAllOtherAdminSessions($id)
@@ -235,6 +242,11 @@ class Service extends Base\Service
         $currentSessionId = Session::getId();
 
         (new SessionTable\Entity)->deleteAllOtherSessionsForAdmin($id, $currentSessionId);
+    }
+
+    public function deleteOneAdminSessions($sessionId)
+    {
+        (new SessionTable\Entity)->deleteOneSessionForAdmin($sessionId);
     }
 
     public function deleteAdmin($id)

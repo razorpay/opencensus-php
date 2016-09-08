@@ -52,13 +52,24 @@ class AdminController extends Controller
         $id = Auth::guard('admin')->user()->id;
 
         $activity = (new Admin\Service)->getAdminActivity($id);
+
+        return AppResponse::jsonResponse([], $activity);
     }
 
     public function deleteOtherAdminActivity()
     {
         $id = Auth::guard('admin')->user()->id;
 
-        $activity = (new Admin\Service)->deleteAllOtherAdminSessions($id);
+        (new Admin\Service)->deleteAllOtherAdminSessions($id);
+
+        return AppResponse::jsonResponse([]);
+    }
+
+    public function deleteAdminActivity($sessionId)
+    {
+        (new Admin\Service)->deleteOneAdminSessions($sessionId);
+
+        return AppResponse::jsonResponse([]);
     }
 
     public function getLogout()
