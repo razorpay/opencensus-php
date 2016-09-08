@@ -501,23 +501,6 @@ app.controller('MerchantDetailCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     };
-    $scope.editCredits = function (credits) {
-      var url = '/admin/merchants/' + $scope.merchant.id + '/credits';
-      var request = $http.put(url, { credits: credits });
-      request.success(function (data) {
-        if (data.success) {
-          $scope.alerts.addAlert('success', 'Merchant Credits edited successfully', true);
-          $scope.merchant.credits.live = data.data.credits;
-        } else {
-          $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value) {
-            $scope.alerts.addAlert('danger', value);
-          });
-        }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
-      });
-    };
     $scope.archiveMerchant = function () {
       var request = $http.get('/admin/merchant/' + $scope.merchant.id + '/archive');
       request.success(function (data) {
@@ -722,20 +705,6 @@ app.controller('MerchantDetailCtrl', [
         $scope.editComment(merchant);
       }, $.noop);
     };
-    $scope.openEditCredits = function (credits) {
-      var modalInstance = $modal.open({
-        templateUrl: 'editCreditsModalContent.html',
-        controller: 'editCreditsModalCtrl',
-        resolve: {
-          credits: function () {
-            return credits;
-          }
-        }
-      });
-      modalInstance.result.then(function (merchant) {
-        $scope.editCredits(merchant);
-      }, $.noop);
-    };
     $scope.openAssignBanks = function () {
       var currentId = $scope.merchant.id;
       var modalInstance = $modal.open({
@@ -773,6 +742,83 @@ app.controller('MerchantDetailCtrl', [
         }
       });
     };
+
+    // Credits
+    $scope.openCredits = function () {
+      var modalInstance = $modal.open({
+        templateUrl: 'openCredits.html',
+        controller: 'openCredits'
+      });
+      modalInstance.result.then(function (creditsData) {
+        // Transform money from paise to rupee
+        var creditsDataCloned = JSON.parse(JSON.stringify(creditsData));
+        creditsDataCloned.value = creditsDataCloned.value * 100;
+
+        var request = $http({
+          method: 'POST',
+          url: '/admin/merchant/' + $scope.merchant.id + '/credits/add',
+          data: creditsDataCloned
+        });
+        request.success(function (data) {
+          if (data.success) {
+            $scope.alerts.addAlert('success', 'Credits added successfully', true);
+          }
+          else {
+            $scope.alerts.resetAlerts();
+            angular.forEach(data.errors, function (value) {
+              $scope.alerts.addAlert('danger', value);
+            });
+          }
+        });
+      });
+    };
+
+    function getCreditsLog(mode) {
+      var data = {
+        mode: mode
+      };
+
+      var request = $http.get('/admin/merchant/'+$scope.merchant.id+'/credits_log', {
+        params: data
+      });
+
+      request.success(function (data) {
+        if (data.success) {
+          $scope.merchant.creditsLog = data.data;
+        }
+        else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      });
+    }
+    $scope.getCreditsLog = getCreditsLog;
+
+    $scope.deleteCredit = function (creditId, $index) {
+      creditId = creditId.split('_')[1];
+
+      var request = $http.delete('/admin/merchant/' + $scope.merchant.id + '/credit/' + creditId, {
+        params: {
+          mode: $scope.merchant.creditsLogMode
+        }
+      });
+
+      request.success(function (data) {
+        if (data.success) {
+          // Remove the object from the model
+          $scope.merchant.creditsLog.items.splice($index, 1);
+        }
+        else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      });
+    }
+
     function generateMerchant() {
       var request = $http.get('/admin/merchant/' + $scope.merchant.id);
       request.success(function (data) {
@@ -785,6 +831,9 @@ app.controller('MerchantDetailCtrl', [
           $scope.merchant.details.international = data.data.details.international;
           fetchBalance();
           getMerchantFeatures();
+
+          $scope.merchant.creditsLogMode = 'live';
+          getCreditsLog($scope.merchant.creditsLogMode);
         } else {
           $scope.alerts.resetAlerts(true);
           angular.forEach(data.errors, function (value) {
@@ -1061,19 +1110,6 @@ app.controller('MerchantDetailCtrl', [
       $modalInstance.dismiss('cancel');
     };
   }
-]).controller('editCreditsModalCtrl', [
-  '$scope',
-  '$modalInstance',
-  'credits',
-  function ($scope, $modalInstance, credits) {
-    $scope.credits = credits;
-    $scope.ok = function (credits) {
-      $modalInstance.close(credits);
-    };
-    $scope.cancel = function () {
-      $modalInstance.dismiss('cancel');
-    };
-  }
 ]).controller('tagModalCtrl', [
   '$scope',
   '$modalInstance',
@@ -1328,6 +1364,19 @@ app.controller('MerchantDetailCtrl', [
           });
         }
       });
+    };
+  }
+]).controller('openCredits', [
+  '$scope',
+  '$modalInstance',
+  '$http',
+  'modeFactory',
+  function ($scope, $modalInstance, $http, modeFactory) {
+    $scope.ok = function (credits) {
+      $modalInstance.close(credits);
+    };
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
     };
   }
 ]);
