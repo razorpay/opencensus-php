@@ -673,6 +673,16 @@
           </select>
         </div>
       </div>
+      <div class="form-group" >
+        <label for="shared" class="col-lg-3 control-label">Recurring Type</label>
+        <div class="col-lg-9" >
+          <select class="form-control m-b" ng-model="terminal.recurring">
+             <option value="0">Non-recurring</option>
+             <option value="1">Recurring 2 factor</option>
+             <option value="2">Recurring without 2 factor</option>
+          </select>
+        </div>
+      </div>
     </form>
   </div>
   <div class="modal-footer">
