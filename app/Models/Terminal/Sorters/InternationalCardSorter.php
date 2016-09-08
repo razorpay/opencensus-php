@@ -30,6 +30,7 @@ class InternationalCardSorter extends Terminal\Sorter
         $boostedGateways = [Gateway::AXIS_MIGS];
 
         $boostedTerminals = [];
+
         $nonBoostedTerminals = [];
 
         // As the terminals are from the priority list
