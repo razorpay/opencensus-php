@@ -558,6 +558,7 @@ class Terminal extends Base
     public function createSharedAmexTerminal(array $attributes = array())
     {
         $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+
         $termId = \RZP\Models\Terminal\Shared::AMEX_RAZORPAY_TERMINAL;
 
         $defaultValues = array(
@@ -580,14 +581,17 @@ class Terminal extends Base
     {
         // Create education terminal
         $attributes = ['id' => 'ShAmexEduTrmnl', 'terminal_category' => 'education'];
+
         $this->createSharedAmexTerminal($attributes);
 
         // Create education services terminal
         $attributes = ['id' => 'ShAmEduSrvTmnl', 'terminal_category' => 'education_services'];
+
         $this->createSharedAmexTerminal($attributes);
 
         // Create retail services terminal
         $attributes = ['id' => 'ShRetailSvcsTl', 'terminal_category' => 'retail_services'];
+
         $this->createSharedAmexTerminal($attributes);
     }
 

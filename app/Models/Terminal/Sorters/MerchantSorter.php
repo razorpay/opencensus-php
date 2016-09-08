@@ -24,7 +24,9 @@ class MerchantSorter extends Terminal\Sorter
     public function categorySorter($terminals, array $input)
     {
         $specificCategoryTerminals = [];
+
         $genericCategoryTerminals  = [];
+
         $nonCategoryTerminals      = [];
 
         $method = $input['payment']->getMethod();
@@ -57,7 +59,10 @@ class MerchantSorter extends Terminal\Sorter
             }
         }
 
-        $sortedTerminals = array_merge($specificCategoryTerminals, $genericCategoryTerminals, $nonCategoryTerminals);
+        $sortedTerminals = array_merge(
+                                $specificCategoryTerminals,
+                                $genericCategoryTerminals,
+                                $nonCategoryTerminals);
 
         return $sortedTerminals;
     }

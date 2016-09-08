@@ -90,6 +90,7 @@ class CreateMerchants extends Migration
                   ->default(null);
 
             $table->integer(Merchant::CREATED_AT);
+
             $table->integer(Merchant::UPDATED_AT);
 
             $table->index(Merchant::ACTIVATED_AT);

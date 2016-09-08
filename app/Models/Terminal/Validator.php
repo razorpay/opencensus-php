@@ -27,7 +27,7 @@ class Validator extends Base\Validator
         Entity::EMI                         => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
         Entity::SHARED                      => 'sometimes|boolean',
-        Entity::GATEWAY_ACQUIRER            => 'sometimes|string',
+        Entity::GATEWAY_ACQUIRER            => 'sometimes|string|max:30',
         Entity::TERMINAL_CATEGORY           => 'sometimes|string|max:30',
     );
 

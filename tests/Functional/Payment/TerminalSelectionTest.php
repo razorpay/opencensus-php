@@ -88,7 +88,6 @@ class TerminalSelectionTest extends TestCase
         $this->mockTokenex();
 
         $payment = $this->getDefaultPaymentArray();
-
         $content = $this->doAuthAndCapturePayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
@@ -140,6 +139,8 @@ class TerminalSelectionTest extends TestCase
         $content = $this->doAuthAndCapturePayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
+
+        // Payment should have been made through axis terminal
         $this->assertEquals('1000AxisMigsTl', $payment['terminal_id']);
 
         $this->fixtures->merchant->disableRisky();
@@ -159,6 +160,8 @@ class TerminalSelectionTest extends TestCase
 
         $content = $this->doAuthAndCapturePayment($payment);
         $payment = $this->getLastEntity('payment', true);
+
+        // Payment should have been made through amex education services terminal
         $this->assertEquals('ShAmEduSrvTmnl', $payment['terminal_id']);
     }
 
@@ -171,7 +174,6 @@ class TerminalSelectionTest extends TestCase
                                 ['id' => 'DEduNbKtkTrmnl', 'terminal_category' => 'education']);
         $this->fixtures->create('terminal:netbanking_kotak_terminal',
                                 ['id' => 'DrctNbKtkTrmnl']);
-
         $this->fixtures->create('terminal:shared_netbanking_kotak_terminal',
                                 ['id' => 'SCorNbKtkTrmnl','terminal_category' => 'corporate']);
         $this->fixtures->create('terminal:shared_netbanking_kotak_terminal',
@@ -184,6 +186,9 @@ class TerminalSelectionTest extends TestCase
 
         $content = $this->doAuthAndCapturePayment($payment);
         $payment = $this->getLastEntity('payment', true);
+
+        // Payment should have been made through direct
+        // corporate netbanking kotak terminal.
         $this->assertEquals('DCrpNbKtkTrmnl', $payment['terminal_id']);
     }
 
@@ -201,6 +206,9 @@ class TerminalSelectionTest extends TestCase
 
         $content = $this->doAuthAndCapturePayment($payment);
         $payment = $this->getLastEntity('payment', true);
+
+        // Payment should have been made through default amex category terminal
+        // when no appropriate category terminal is available.
         $this->assertEquals('ShRetailSvcsTl', $payment['terminal_id']);
     }
 
@@ -215,7 +223,6 @@ class TerminalSelectionTest extends TestCase
     {
         $this->fixtures->merchant->enableMethod('10000000000000', 'amex');
         $this->fixtures->create('terminal:all_shared_terminals');
-
         $this->fixtures->create('terminal:shared_amex_category_terminals');
 
         $payment = $this->getDefaultPaymentArray();
@@ -224,6 +231,10 @@ class TerminalSelectionTest extends TestCase
 
         $content = $this->doAuthAndCapturePayment($payment);
         $payment = $this->getLastEntity('payment', true);
+
+        // Payment should have been made through default amex
+        // category terminal when merchant has no category
+        // assigned and shared terminal is not available
         $this->assertEquals('ShRetailSvcsTl', $payment['terminal_id']);
     }
 }
