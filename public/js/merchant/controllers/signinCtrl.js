@@ -28,8 +28,14 @@ app.controller('SigninCtrl', [
       });
       request.success(function (data) {
         if (data.success) {
-          user.identity(true);
-          $state.go('app.dashboard');
+          user.identity(true).then(function(user) {
+            console.log(user.merchants[user.id].pivot.role);
+            if (user.merchants[user.id].pivot.role === 'support') {
+              $state.go('app.payments.list');
+            } else {
+              $state.go('app.dashboard');
+            }
+          });
         } else {
           $scope.alerts.resetAlerts();
           if (data.errors[0] == 'not activated') {

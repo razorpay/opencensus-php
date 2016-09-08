@@ -3,7 +3,7 @@
     <li ng-show="merchant" class="hidden-folded padder m-t m-b-sm text-muted text-xs">
       <span>Features</span>
     </li>
-    <li class="active" ng-show="merchant">
+    <li class="active" ng-show="merchant" my-role="owner manager operations finance">
       <a id="dashboardNav" ui-sref="app.dashboard">
         <i class="fa fa-area-chart text-info"></i>
         <span>Dashboard</span>
@@ -28,7 +28,7 @@
         <span>Refunds</span>
       </a>
     </li>
-    <li ng-show="merchant">
+    <li ng-show="merchant" my-role="owner manager operations finance">
       <a id="settlementsNav" ui-sref="app.settlements.list">
         <i class="fa  fa-check-square-o icon text-success"></i>
         <span>Settlements</span>
@@ -47,7 +47,7 @@
         <span>Add Funds</span>
       </a>
     </li>
-    <li ng-show="merchant">
+    <li ng-show="merchant" my-role="owner manager operations finance">
       <a id="generateReportNav" ui-sref="app.generatereport">
         <i class="fa fa-file-excel-o icon text-danger-lter"></i>
         <!-- <b class="badge bg-success dk pull-right ng-binding">beta</b> -->
