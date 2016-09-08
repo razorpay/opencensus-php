@@ -168,7 +168,7 @@ class NodalAccount
 
         $txt = $this->generateText($textData);
 
-        $urlText = $this->writeToTextFileH2H($txt);
+        // $urlText = $this->writeToTextFileH2H($txt);
 
         $urlText = $this->writeToTextFile($txt);
 

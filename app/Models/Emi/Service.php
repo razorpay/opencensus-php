@@ -7,7 +7,7 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
-
+use RZP\Models\Emi;
 
 class Service extends Base\Service
 {
@@ -45,22 +45,26 @@ class Service extends Base\Service
     {
         list($from, $to) = $this->getTimestamps($input);
 
-        $returnValue = [];
+        // default list of banks
+        $emiFileBanks = Payment\Gateway::$emiBanksUsingCardTerminals;
 
-        $emiFileBanks = Payment\Gateway::$emiFileBanks;
-
+        // if input bank is set, emi file to be processed for only that bank
         if (isset($input['bank']))
         {
-            $bankIfsc = $emiFileBanks[$input['bank']];
+            $bankIfsc = $input['bank'];
 
-            $returnValue[$bankIfsc] = $this->generateEmiFileForBank($bankIfsc, $from, $to, $input['bank']);
+            IFSC::exists($bankIfsc);
+
+            $emiFileBanks = array($bankIfsc);
         }
-        else
+
+        $returnValue = [];
+
+        foreach ($emiFileBanks as $bankIfsc)
         {
-            foreach ($emiFileBanks as $bank => $bankIfsc)
-            {
-                $returnValue[$bankIfsc] = $this->generateEmiFileForBank($bankIfsc, $from, $to, $bank);
-            }
+            $bank = Emi\Issuer::$emiFileBanks[$bankIfsc];
+
+            $returnValue[$bankIfsc] = $this->generateEmiFileForBank($bankIfsc, $from, $to, $bank);
         }
 
         return $returnValue;
@@ -68,7 +72,7 @@ class Service extends Base\Service
 
     protected function generateEmiFileForBank($bankIfsc, $from, $to, $bank)
     {
-        $emiPaymentsForBank = (new Payment\Repository)->fetchEmiPaymentsBetween($from, $to, $bankIfsc);
+        $emiPaymentsForBank = $this->repo->payment->fetchEmiPaymentsBetween($from, $to, $bankIfsc);
 
         $count = $emiPaymentsForBank->count();
 

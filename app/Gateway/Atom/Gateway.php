@@ -132,7 +132,7 @@ class Gateway extends Base\Gateway
         $atomStatus = ($content['VERIFIED'] === 'SUCCESS');
 
         $id = $input['payment']['id'];
-        $payment = $this->getRepo()->find($id);
+        $payment = $this->repo->find($id);
 
         $res = ['match' => true];
 

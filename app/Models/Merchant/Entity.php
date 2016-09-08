@@ -54,6 +54,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::NAME,
         self::EMAIL,
+        self::SCOPE,
         self::WEBSITE,
         self::CATEGORY,
         self::FEATURES,
@@ -64,7 +65,7 @@ class Entity extends Base\PublicEntity
         self::BRAND_COLOR,
         self::INTERNATIONAL,
         self::BILLING_LABEL,
-        self::SCOPE,
+        self::MAX_PAYMENT_AMOUNT,
         self::SETTLEMENT_SCHEDULE,
         self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
@@ -216,7 +217,7 @@ class Entity extends Base\PublicEntity
     public function bankAccount()
     {
         return $this->hasOne(
-            'RZP\Models\Merchant\BankAccount\Entity');
+            'RZP\Models\BankAccount\Entity', 'entity_id', self::ID);
     }
 
     public function methods()
@@ -419,8 +420,8 @@ class Entity extends Base\PublicEntity
         // In DB, we are storing the base URL. The actual URL has the
         // respective size appended to it.
         $logoUrl = $this->getLogoUrlBasedOnSize($baseLogoUrl, $size);
-        return $logoUrl;
 
+        return $logoUrl;
     }
 
     public function getAwsLogoUrl($size = self::ORIGINAL_SIZE)
@@ -436,6 +437,7 @@ class Entity extends Base\PublicEntity
         // In DB, we are storing the base URL. The actual URL
         // has the respective size appended to it.
         $awsLogoUrl = $this->getLogoUrlBasedOnSize($baseAwsLogoUrl, $size);
+
         return $awsLogoUrl;
     }
 

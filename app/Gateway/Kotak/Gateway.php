@@ -63,7 +63,7 @@ class Gateway extends Base\Gateway
 
         $this->verifySecureHash($input);
 
-        $payment = $this->getRepo()->findByTxnRefAndType(
+        $payment = $this->repo->findByTxnRefAndType(
             $input['gateway']['TxnRefNo'], Type::PURCHASE);
 
         $payment->fill($input['gateway']);
@@ -81,7 +81,7 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        $payment = $this->getRepo()->findByPaymentIdAndType(
+        $payment = $this->repo->findByPaymentIdAndType(
                                 $input['payment']['id'], Type::PURCHASE);
 
         $content = array(

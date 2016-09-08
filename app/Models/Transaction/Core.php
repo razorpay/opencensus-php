@@ -179,7 +179,7 @@ class Core extends Base\Core
 
     protected function checkIfOldPayment($payment)
     {
-        if (($payment->getCreatedTimestamp() < self::JULY_FIRST_EPOCH) and
+        if (($payment->getCreatedAt() < self::JULY_FIRST_EPOCH) and
             ($payment->transaction === null) and
             ($payment->isAuthorized() === true))
         {
@@ -187,7 +187,7 @@ class Core extends Base\Core
                 TraceCode::PAYMENT_TRANSACTION_OLD,
                 [
                     'payment_id' => $payment->getId(),
-                    'payment_created' => Carbon::createFromTimestamp($payment->getCreatedTimestamp())
+                    'payment_created' => Carbon::createFromTimestamp($payment->getCreatedAt())
                                                ->toDateTimeString()
                 ]
             );
@@ -196,20 +196,6 @@ class Core extends Base\Core
         }
 
         return false;
-    }
-
-    public function fillServiceTax($txn, $payment)
-    {
-        if ($txn->isGratis())
-        {
-            $txn->setServiceTax(0);
-        }
-        else
-        {
-            $serviceTax = (new Pricing\Fee)->calculateServiceTax($txn, $payment);
-
-            $txn->setServiceTax($serviceTax);
-        }
     }
 
     protected function paymentOnAtomGateway(array & $txnData, $payment, $fee)
@@ -358,7 +344,7 @@ class Core extends Base\Core
         }
         else
         {
-            $nodalBalance = $this->getNodalBalanceLockForUpdate($txn->getChannel());
+            $nodalBalance = $this->repo->balance->getNodalBalance($txn->getChannel());
 
             $txn->setEscrowBalance($nodalBalance->getBalance());
         }
@@ -400,7 +386,7 @@ class Core extends Base\Core
         // These transactions are not using the free credits.
         if (($txn->getFee() !== 0) or
             ($txn->getCredit() !== $txn->getAmount()) or
-            ($payment->getCreatedTimestamp() < self::JULY_FIRST_EPOCH))
+            ($payment->getCreatedAt() < self::JULY_FIRST_EPOCH))
         {
             return;
         }

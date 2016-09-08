@@ -63,7 +63,7 @@ class Core extends Base\Core
     {
         $key->checkAndSetExpired($delay);
 
-        (new Key\Repository)->saveOrFail($key);
+        $this->repo->key->saveOrFail($key);
     }
 
     public function rollKey($merchantId, $keyId, array $input, $mode)

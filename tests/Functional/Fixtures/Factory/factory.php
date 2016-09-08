@@ -37,9 +37,11 @@ $factory(\RZP\Models\Merchant\Balance\Entity::class, [
     'balance' => 0,
 ]);
 
-$factory(\RZP\Models\Merchant\BankAccount\Entity::class, [
+$factory(\RZP\Models\BankAccount\Entity::class, [
     'id' => $faker->uniqueid,
-    'merchant_id' => $faker->uniqueid,
+    'merchant_id' => '10000000000000',
+    'entity_id'   => '10000000000000',
+    'type' => 'merchant',
     'ifsc_code' => 'RZPB0000000',
     'account_number' => 10010101011,
     'beneficiary_name' => 'random_name',
@@ -118,6 +120,7 @@ $factory(\RZP\Models\Pricing\Entity::class, [
     'id' => $faker->uniqueid,
     'plan_id' => '1ycviEdCgurrFI',
     'plan_name' => 'testFixturePlan',
+    'feature' => 'payment',
     'payment_method' => 'card',
     'payment_method_type' => 'credit',
     'payment_network' => 'VISA',
@@ -235,6 +238,7 @@ $factory(\RZP\Models\Order\Entity::class, [
     'currency' => 'INR',
     'status' => 'created',
     'receipt' => $faker->uniqueid,
+    'payment_capture' => false,
     'notes' => null,
     'attempts' => 0,
     'created_at' => $faker->timestamp,

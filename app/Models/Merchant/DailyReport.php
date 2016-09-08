@@ -63,6 +63,18 @@ class DailyReport extends Base\Core
 
         $data = $this->data;
 
+        // Log merchant whose data has been computed
+        $this->trace->info(
+            TraceCode::SETTLEMENT_DAILY_REPORT_DATA,
+            array(
+                    'merchant_id'   => $data['merchant']['id'],
+                    'merchant_name' => $data['merchant']['name'],
+                    'captured'      => $data['captured']['payments']['count'],
+                    'authorized'    => $data['authorized']['payments']['count'],
+                    'refunds'       => $data['refunds']['refunds']['count'],
+                    )
+        );
+
         // This is a debug view only for raising proper errors
         \View::make('emails.merchant.daily_report_debug', $data)->render();
 
@@ -239,6 +251,6 @@ class DailyReport extends Base\Core
     protected function increaseAllowedSystemLimits()
     {
         ini_set('memory_limit', '1024M');
-        set_time_limit(501);
+        set_time_limit(3000);
     }
 }
