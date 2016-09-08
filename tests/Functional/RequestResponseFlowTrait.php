@@ -192,7 +192,9 @@ trait RequestResponseFlowTrait
             'content' => array(),
             'server' => array(),
             'cookies' => array(),
-            'files' => array());
+            'files' => array(),
+            // Raw request body
+            'body' => '');
 
         $request = array_merge($defaults, $request);
 
@@ -221,13 +223,26 @@ trait RequestResponseFlowTrait
             $request['content']['key_id'] = $this->ba->getKey();
         }
 
+        /**
+         * This is the function signature
+         *
+         * @param  string  $method
+         * @param  string  $uri
+         * @param  array   $parameters
+         * @param  array   $cookies
+         * @param  array   $files
+         * @param  array   $server
+         * @param  string  $content
+         * @return \Illuminate\Http\Response
+         */
         $response = $this->call(
             $request['method'],
             $request['url'],
             $request['content'],
             $request['cookies'],
             $request['files'],
-            $request['server']);
+            $request['server'],
+            $request['body']);
 
         $this->response = $response;
 
