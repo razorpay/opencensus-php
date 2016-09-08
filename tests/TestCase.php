@@ -63,12 +63,20 @@ class TestCase extends IlluminateTestCase
 
         $this->freeUpObjectProperties();
 
+        $this->resetIniConfiguration();
+
         parent::tearDown();
     }
 
     protected function setUpTraits()
     {
         ;
+    }
+
+    protected function resetIniConfiguration()
+    {
+        ini_restore('memory_limit');
+        ini_restore('max_execution_time');
     }
 
     protected function freeUpObjectProperties()
