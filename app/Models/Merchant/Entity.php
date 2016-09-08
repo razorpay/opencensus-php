@@ -647,13 +647,6 @@ class Entity extends Base\PublicEntity
         return array(9999 => 9999, 6211 => 6211);
     }
 
-    public function getTerminalCategoryForMethodAndNetwork($method, $network)
-    {
-        $category = $this->getTerminalCategory();
-
-        return Category::getCategoryForMethodAndNetwork($method, $network, $category);
-    }
-
     public function isShared()
     {
         return ($this->getId() === Account::SHARED_ACCOUNT);

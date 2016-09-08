@@ -3,6 +3,7 @@
 namespace RZP\Models\Terminal\Sorters;
 
 use RZP\Models\Terminal;
+use RZP\Models\Terminal\Category;
 
 class MerchantSorter extends Terminal\Sorter
 {
@@ -30,14 +31,16 @@ class MerchantSorter extends Terminal\Sorter
 
         $network = $input['payment']->isMethodCardOrEmi() ? $input['payment']->card->getNetworkCode() : null;
 
+        $category = $input['merchant']->getTerminalCategory();
+
+        $defaultCategory = Category::getDefaultForMethodAndNetwork($method, $network);
+
+        $merchantTerminalCategory = Category::getCategoryForMethodAndNetwork($method, $network, $category);
+
         // As the terminals are from the priority list
         // append to the terminal
         foreach ($terminals as $terminal)
         {
-            $merchantTerminalCategory = $input['merchant']->getTerminalCategoryForMethodAndNetwork($method, $network);
-
-            $defaultCategory  = Terminal\Category::getDefaultForMethodAndNetwork($method, $network);
-
             $terminalCategory = $terminal->getTerminalCategory();
 
             if ($merchantTerminalCategory === $terminalCategory)
