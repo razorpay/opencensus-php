@@ -339,4 +339,9 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
     {
         return self::where('email', $email)->first();
     }
+
+    public function setEmailAttribute($value)
+    {
+        $this->attributes['email'] = mb_strtolower($value);
+    }
 }
