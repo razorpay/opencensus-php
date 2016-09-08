@@ -787,19 +787,16 @@ app.controller('MerchantDetailCtrl', [
           $scope.merchant.creditsLog = data.data;
         }
         else {
-
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value) {
+            $scope.alerts.addAlert('danger', value);
+          });
         }
       });
     }
     $scope.getCreditsLog = getCreditsLog;
 
-    $scope.deleteCredit = function (creditId, $event) {
-      var confirmation = confirm('Do you surely want to delete it?');
-
-      if (!confirmation) {
-        return false;
-      }
-
+    $scope.deleteCredit = function (creditId, $index) {
       creditId = creditId.split('_')[1];
 
       var request = $http.delete('/admin/merchant/' + $scope.merchant.id + '/credit/' + creditId, {
@@ -810,10 +807,14 @@ app.controller('MerchantDetailCtrl', [
 
       request.success(function (data) {
         if (data.success) {
-          $($event.target).closest('tr').fadeOut();
+          // Remove the object from the model
+          $scope.merchant.creditsLog.items.splice($index, 1);
         }
         else {
-
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value) {
+            $scope.alerts.addAlert('danger', value);
+          });
         }
       });
     }

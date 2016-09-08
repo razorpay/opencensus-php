@@ -457,7 +457,11 @@
                     <td>{{credit.value/100 | rupee:"INR "}}</td>
                     <td>{{credit.created_at*1000 | date:'short'}}</td>
                     <td>
-                      <a href="javascript:void(0);" ng-click="deleteCredit(credit.id, $event)">
+                      <a
+                        href="javascript:void(0);"
+                        ng-click="deleteCredit(credit.id, $index)"
+                        ng-confirm-click="Are you sure you want to delete it?"
+                        >
                         <i class="pull-right fa fa-minus-circle"></i>
                       </a>
                     </td>
