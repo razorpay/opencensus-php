@@ -61,5 +61,10 @@ class UPIGatewayTest extends TestCase
         $response = $this->makeRequestAndGetContent($request);
 
         $this->assertEquals(['success' => true], $response);
+
+        $payment = $this->getEntityById('payment', $payment['id'], true);
+        $upiEntity = $this->getLastEntity('upi_icici', true);
+
+        $this->assertEquals('authorized', $payment['status']);
     }
 }

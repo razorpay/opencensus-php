@@ -20,6 +20,15 @@ class ResponseMap
         '9999'  =>  'No response from Bank'
     );
 
+    // Response codes in S2S callback
+    const SUCCESS = array(
+        'SUCCESS'
+    );
+
+    const S2S_STATUS_MAP = array(
+        'SUCCESS'   =>  'Transaction Successful'
+    );
+
     public static function getResponseMessage($code)
     {
         if (array_key_exists($code, self::CODES))
@@ -40,6 +49,11 @@ class ResponseMap
     public static function isInitiated($status)
     {
         return (intval($status) === 92);
+    }
+
+    public static function isPaymentSuccess($code)
+    {
+        return in_array($code, self::SUCCESS, true);
     }
 
     public static function getApiErrorCode($code)

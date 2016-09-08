@@ -69,4 +69,19 @@ class Entity extends Base\Entity
     {
         return (int) $this->attributes[self::AMOUNT];
     }
+
+    public function getPaymentId()
+    {
+        return $this->attributes[self::PAYMENT_ID];
+    }
+
+    public function getGatewayPaymentId()
+    {
+        return $this->attributes[self::GATEWAY_PAYMENT_ID];
+    }
+
+    public function getMerchantId()
+    {
+        return $this->attributes[self::GATEWAY_MERCHANT_ID];
+    }
 }

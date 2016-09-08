@@ -369,5 +369,45 @@ class Gateway extends Base\Gateway
     public function callback(array $input)
     {
         parent::callback($input);
+
+        $content = $input['gateway'];
+
+        $code = $content[ResponseFields::TXN_STATUS];
+
+        $repo = $this->getRepository();
+
+        $entity = $repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
+
+        // Since there is no Auth in this flow (just public key encryption)
+        // and we are not revealing Bank RRN, this gives us a bit of
+        // extra security for fake callbacks
+
+        assert($content[ResponseFields::MERCHANT_ID] === $entity->getMerchantId());
+        assert($content[ResponseFields::MERCHANT_TRAN_ID] === $entity->getPaymentId());
+        assert($content[ResponseFields::BANK_RRN] === $entity->getGatewayPaymentId());
+
+        // Payment got authorized
+        if (!ResponseMap::isPaymentSuccess($code))
+        {
+            $message = "Payment Failed during callback";
+
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                $content[ResponseFields::TXN_STATUS],
+                $message);
+        }
+        else
+        {
+            $this->updateGatewayPaymentResponse($entity, $content);
+        }
+
+        return $entity->toArray();
+    }
+
+    protected function getRepository()
+    {
+        $gateway = 'upi_icici';
+
+        return $this->app['repo']->$gateway;
     }
 }
