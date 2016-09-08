@@ -145,7 +145,7 @@ class TransactionFilter extends Terminal\Filter
 
         if ($payment->isRecurring() === true)
         {
-            $value = Terminal\Recurring::RECURRING_3DS;
+            //$value = Terminal\Recurring::RECURRING_3DS;
 
             if (($payment->token !== null) and
                 ($payment->token->isRecurring() === true))
