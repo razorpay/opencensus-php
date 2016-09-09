@@ -71,6 +71,8 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
 
         $this->unsetUrlForSensitiveUrls($serverData);
 
+        $this->scrapeSensitiveDataFromUrls($serverData);
+
         return $serverData;
     }
 
@@ -82,6 +84,38 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
         {
             unset($serverData['url']);
         }
+    }
+
+    protected function scrapeSensitiveDataFromUrls(& $serverData)
+    {
+        $sensitiveKeys = ['referer'];
+
+        foreach ($sensitiveKeys as $key)
+        {
+            if (empty($serverData[$key]) === false)
+            {
+                $parsedUrl = parse_url($serverData[$key]);
+
+                $serverData[$key] = $this->buildUrlFromParts($parsedUrl);
+            }
+        }
+    }
+
+    protected function buildUrlFromParts($urlParts)
+    {
+        $scheme   = isset($urlParts['scheme']) ? $urlParts['scheme'] . '://' : '';
+
+        $host     = isset($urlParts['host']) ? $urlParts['host'] : '';
+
+        $port     = isset($urlParts['port']) ? ':' . $urlParts['port'] : '';
+
+        $path     = isset($urlParts['path']) ? $urlParts['path'] : '';
+
+        $query    = isset($urlParts['query']) ? '?' . $urlParts['query'] : '';
+
+        $fragment = isset($urlParts['fragment']) ? '#' . $urlParts['fragment'] : '';
+
+        return $scheme . $host . $port . $path . $query . $fragment;
     }
 
     protected function getClientIp()
