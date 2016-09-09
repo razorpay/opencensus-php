@@ -600,17 +600,22 @@ class Gateway extends Base\Gateway
         if (isset($input['gateway']['amount']))
         {
             if ((isset($userWalletLimit) === true) and
-                ($input['gateway']['amount'] > ($userWalletLimit['maxLimit'] * 100)))
+                ($input['gateway']['amount'] > $userWalletLimit['maxLimit']))
             {
                 throw new Exception\GatewayErrorException(
                     ErrorCode::BAD_REQUEST_PAYMENT_WALLET_PER_PAYMENT_AMOUNT_CROSSED);
             }
 
-            $amount = ($input['gateway']['amount'] / 100);
+            $amount = $input['gateway']['amount'];
         }
         else
         {
-            $amount = (($input['payment']['amount'] / 100) - $userWalletLimit['availableBalance']);
+            $amount = ($input['payment']['amount'] / 100);
+
+            if (isset($userWalletLimit) === true)
+            {
+                $amount = ($amount - $userWalletLimit['availableBalance']);
+            }
         }
 
         $content = array(
