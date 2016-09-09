@@ -351,14 +351,22 @@ class Service extends Base\Service
     public function fetchKeysFromApi($merchant_id, $mode)
     {
         $this->setApiCredentials(null, $mode);
+        $error = $response = null;
 
-        $response = $this->api->merchant
-                              ->fetch($merchant_id)
-                              ->keys()
-                              ->all()
-                              ->toArray();
+        try
+        {
+            $response = $this->api->merchant
+                ->fetch($merchant_id)
+                ->keys()
+                ->all()
+                ->toArray();
+        }
+        catch(BadRequestError $e)
+        {
+            $error = [$e->getMessage()];
+        }
 
-        return $response;
+        return [$error, $response];
     }
 
     public function createKey($merchant_id, $mode)
