@@ -96,6 +96,12 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
             {
                 $parsedUrl = parse_url($serverData[$key]);
 
+                if (($parsedUrl === false) or
+                    (is_array($parsedUrl) === false))
+                {
+                    continue;
+                }
+
                 $serverData[$key] = $this->buildUrlFromParts($parsedUrl);
             }
         }
