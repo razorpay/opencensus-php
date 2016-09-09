@@ -171,4 +171,13 @@ class CustomerController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function createAddress($customerId)
+    {
+        $input = Request::all();
+
+        $data = (new Customer\Service)->createAddress($customerId, $input);
+
+        return ApiResponse::json($data);
+    }
 }

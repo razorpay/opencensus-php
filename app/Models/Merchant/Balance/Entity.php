@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Balance;
 
+use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Exception;
 
@@ -12,7 +13,7 @@ class Entity extends Base\PublicEntity
     const ON_HOLD = 'on_hold';
     const CREDITS = 'credits';
 
-    protected $table = \RZP\Constants\Table::BALANCE;
+    protected $table = Table::BALANCE;
 
     protected $fillable = array(
         self::ID);
@@ -49,7 +50,7 @@ class Entity extends Base\PublicEntity
         if (is_int($arg) === false)
         {
             throw new Exception\InvalidArgumentException('
-                Unsigned integer required. Supplied: '.$arg);
+                Unsigned integer required. Supplied: ' . $arg);
         }
     }
 
@@ -84,7 +85,8 @@ class Entity extends Base\PublicEntity
      * We need to check for balance going negative
      * whenever we update balance
      *
-     * @param  Transaction\Entity $txn
+     * @param  \RZP\Models\Transaction\Entity $txn
+     * @throws Exception\LogicException
      */
     public function updateBalance($txn)
     {

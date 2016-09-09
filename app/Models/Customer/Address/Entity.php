@@ -7,13 +7,17 @@ use RZP\Constants\Table;
 
 class Entity extends Base\PublicEntity
 {
-    //const CUSTOMER_ID           = 'customer_id';
-    const ADDRESS_LINE_ONE      = 'address_line_one';
-    const ADDRESS_LINE_TWO      = 'address_line_two';
+    const ENTITY_ID             = 'entity_id';
+    const ENTITY_TYPE           = 'entity_type';
+    const ADDRESS_TYPE          = 'address_type';
+    const PRIMARY               = 'primary';
+    const LINE_ONE              = 'address_line_one';
+    const LINE_TWO              = 'address_line_two';
     const PINCODE               = 'pincode';
     const CITY                  = 'city';
     const STATE                 = 'state';
     const COUNTRY               = 'country';
+    const DELETED_AT            = 'deleted_at';
 
     protected static $sign      = 'addr';
 
@@ -25,9 +29,10 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::ID,
-        //self::CUSTOMER_ID,
-        self::ADDRESS_LINE_ONE,
-        self::ADDRESS_LINE_TWO,
+        self::ENTITY_ID,
+        self::ENTITY_TYPE,
+        self::LINE_ONE,
+        self::LINE_TWO,
         self::PINCODE,
         self::CITY,
         self::STATE,
@@ -36,9 +41,8 @@ class Entity extends Base\PublicEntity
 
     protected $visible = [
         self::ID,
-        //self::CUSTOMER_ID,
-        self::ADDRESS_LINE_TWO,
-        self::ADDRESS_LINE_ONE,
+        self::LINE_ONE,
+        self::LINE_TWO,
         self::PINCODE,
         self::CITY,
         self::STATE,
@@ -49,8 +53,8 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
-        self::ADDRESS_LINE_ONE,
-        self::ADDRESS_LINE_TWO,
+        self::LINE_ONE,
+        self::LINE_TWO,
         self::PINCODE,
         self::CITY,
         self::STATE,
@@ -58,12 +62,30 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::ADDRESS_LINE_TWO  => null,
+        self::LINE_TWO  => null,
         self::PINCODE           => null,
     ];
 
     // public function customer()
     // {
     //     return $this->belongsTo('RZP\Models\Customer\Entity');
+    // }
+
+    // public function source()
+    // {
+    //     $entityType = $this->getAttribute(self::ENTITY_TYPE);
+    //
+    //     Type::validateType($entityType);
+    //
+    //     $class = 'RZP\\Models\\';
+    //
+    //     if ($type === Transaction\Type::REFUND)
+    //     {
+    //         $class .= 'Payment\\';
+    //     }
+    //
+    //     $class .= ucfirst($type).'\\'.'Entity';
+    //
+    //     return $this->belongsTo($class, self::ENTITY_ID);
     // }
 }

@@ -284,5 +284,16 @@ class Service extends Base\Service
 
         return $collection->toArrayWithItems();
     }
+
+    public function createAddress($customerId, array $input)
+    {
+        var_dump($input);
+
+        $customer = $this->repo->customer->findByIdAndMerchantId($customerId);
+
+        $address = (new Address\Core)->create($customer, $input);
+
+        return $address->toArrayPublic();
+    }
 }
 

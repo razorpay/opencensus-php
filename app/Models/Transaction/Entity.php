@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Transaction;
 
+use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Transaction;
@@ -36,7 +37,7 @@ class Entity extends Base\PublicEntity
 
     const RECONCILED        = 'reconciled';
 
-    protected $table = \RZP\Constants\Table::TRANSACTION;
+    protected $table = Table::TRANSACTION;
 
     protected static $sign = 'txn';
 

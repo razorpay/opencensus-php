@@ -23,18 +23,24 @@ class CreateAddress extends Migration
             $table->char(Entity::ID, Entity::ID_LENGTH)
                   ->primary();
 
-            //$table->char(Entity::CUSTOMER_ID, Entity::ID_LENGTH);
+            $table->char(Entity::ENTITY_ID, Entity::ID_LENGTH);
+            $table->string(Entity::ENTITY_TYPE, 64);
 
-            $table->string(Entity::COUNTRY);
-            $table->string(Entity::STATE);
-            $table->string(Entity::ADDRESS_LINE_ONE);
-            $table->string(Entity::ADDRESS_LINE_TWO);
-            $table->string(Entity::CITY);
-            $table->string(Entity::PINCODE);
+            $table->string(Entity::LINE_ONE, 1024);
+            $table->string(Entity::LINE_TWO, 1024);
+            $table->string(Entity::CITY, 128);
+            $table->string(Entity::PINCODE, 32);
+            $table->string(Entity::STATE, 128);
+            $table->string(Entity::COUNTRY, 128);
 
+            $table->string(Entity::ADDRESS_TYPE, 64);
+            $table->tinyInteger(Entity::PRIMARY);
+
+            $table->integer(Entity::DELETED_AT);
             $table->integer(Entity::CREATED_AT);
             $table->integer(Entity::UPDATED_AT);
 
+            $table->index(Entity::DELETED_AT);
             $table->index(Entity::CREATED_AT);
             $table->index(Entity::UPDATED_AT);
 
