@@ -851,6 +851,34 @@ trait Authorize
         return $data;
     }
 
+    protected function updateTokenOnAuthorized()
+    {
+        $token = null;
+
+        $payment = $this->payment;
+
+        // get token from local customer or global customer
+        if ($payment->getTokenId() !== null)
+        {
+            $token = $payment->token;
+        }
+        else if ($payment->getGlobalTokenId() !== null)
+        {
+            $token = $payment->globalToken;
+        }
+
+        // update token stats, assuming same token is not getting used in
+        // multiple payments, actually we should locking
+        if ($token !== null)
+        {
+            $token->setLastUsedAt(time());
+
+            $token->incrementUsedCount();
+
+            $this->repo->saveOrFail($token);
+        }
+    }
+
     protected function updateAndNotifyPaymentAuthorized($wasFailed = false)
     {
         // Updates payment entity to authorized and adds a transaction.
