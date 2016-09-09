@@ -615,6 +615,11 @@ class Service extends Base\Service
                 $refund = $this->getNewProcessor($merchant)
                                ->refundAuthorizedPayment($payment);
 
+                $this->trace->info(TraceCode::PAYMENT_AUTO_REFUNDED, [
+                        'payment_id' => $payment->getId(),
+                        'auto_refund_delay' => $merchant->getAutoRefundDelay()
+                    ]);
+
                 $refunded++;
             }
             catch (Exception\GatewayErrorException $e)

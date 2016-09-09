@@ -9,6 +9,11 @@ use RZP\Trace;
 
 class Entity extends Base\PublicEntity
 {
+    /**
+     * Max auto refund delay as 5 days in seconds
+     */
+    const MAX_AUTO_REFUND_DELAY = 432000;
+
     const ID                        = 'id';
     const NAME                      = 'name';
     const EMAIL                     = 'email';
@@ -81,6 +86,7 @@ class Entity extends Base\PublicEntity
         self::BRAND_COLOR,
         self::TRANSACTION_REPORT_EMAIL,
         self::LOGO_URL,
+        self::AUTO_REFUND_DELAY,
     );
 
     protected $public = array(
@@ -108,8 +114,7 @@ class Entity extends Base\PublicEntity
         self::RISK_RATING,
         self::CREATED_AT,
         self::UPDATED_AT,
-        self::LOGO_URL,
-        self::AUTO_REFUND_DELAY,
+        self::LOGO_URL
      );
 
     protected $defaults = array(
@@ -127,7 +132,7 @@ class Entity extends Base\PublicEntity
         self::RISK_RATING            => 3,
         self::LOGO_URL               => null,
         self::MAX_PAYMENT_AMOUNT     => null,
-        self::AUTO_REFUND_DELAY      => null,
+        self::AUTO_REFUND_DELAY      => self::MAX_AUTO_REFUND_DELAY,
     );
 
     protected $casts = array(
@@ -137,7 +142,18 @@ class Entity extends Base\PublicEntity
     protected $publicSetters = array(
         self::ID,
         self::ENTITY,
-        self::LOGO_URL
+        self::LOGO_URL,
+    );
+
+    protected $casts = array(
+        self::ACTIVATED             => 'bool',
+        self::LIVE                  => 'bool',
+        self::INTERNATIONAL         => 'bool',
+        self::RECEIPT_EMAIL_ENABLED => 'bool',
+        self::HOLD_FUNDS            => 'bool',
+        self::CATEGORY              => 'int',
+        self::SETTLEMENT_SCHEDULE   => 'int',
+        self::AUTO_REFUND_DELAY     => 'int',
     );
 
     protected $casts = [
@@ -160,7 +176,7 @@ class Entity extends Base\PublicEntity
 
     public function isInternational()
     {
-        return (bool) $this->getAttribute(self::INTERNATIONAL);
+        return $this->getAttribute(self::INTERNATIONAL);
     }
 
     public function isFeeBearerCustomer()
@@ -342,16 +358,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PRICING_PLAN_ID);
     }
 
-    protected function getActivatedAttribute()
-    {
-        return (bool) $this->attributes[self::ACTIVATED];
-    }
-
-    protected function getLiveAttribute()
-    {
-        return (bool) $this->attributes[self::LIVE];
-    }
-
     protected function getMaxPaymentAmountAttribute()
     {
         $amount = $this->attributes[self::MAX_PAYMENT_AMOUNT];
@@ -368,31 +374,6 @@ class Entity extends Base\PublicEntity
     protected function getFeeBearerAttribute()
     {
         return  FeeBearer::getBearerStringForValue($this->attributes[self::FEE_BEARER]);
-    }
-
-    protected function getInternationalAttribute()
-    {
-        return (bool) $this->attributes[self::INTERNATIONAL];
-    }
-
-    protected function getReceiptEmailEnabledAttribute()
-    {
-        return (bool) $this->attributes[self::RECEIPT_EMAIL_ENABLED];
-    }
-
-    protected function getHoldFundsAttribute()
-    {
-        return (bool) $this->attributes[self::HOLD_FUNDS];
-    }
-
-    protected function getCategoryAttribute()
-    {
-        return (int) $this->attributes[self::CATEGORY];
-    }
-
-    protected function getSettlementScheduleAttribute()
-    {
-        return (int) $this->attributes[self::SETTLEMENT_SCHEDULE];
     }
 
     public function getWebsite()
@@ -427,12 +408,7 @@ class Entity extends Base\PublicEntity
 
     public function getAutoRefundDelay()
     {
-        $autoRefundDelay = $this->getAttribute(self::AUTO_REFUND_DELAY);
-
-        if ($autoRefundDelay !== null)
-        {
-            return (int) $autoRefundDelay;
-        }
+        return $this->getAttribute(self::AUTO_REFUND_DELAY);
     }
 
     /**
@@ -599,7 +575,7 @@ class Entity extends Base\PublicEntity
 
     public function holdFunds()
     {
-        return (bool) $this->attributes[self::HOLD_FUNDS];
+        return $this->getAttribute(self::HOLD_FUNDS);
     }
 
     public function setHoldFunds($holdFunds)
