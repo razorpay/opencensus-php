@@ -145,4 +145,20 @@ class TerminalSelectionTest extends TestCase
         $this->fixtures->merchant->disableRisky();
     }
 
+    public function testTerminalChoiceForInternatioalCard()
+    {
+        $this->fixtures->create('terminal:all_shared_terminals');
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '42451200000003';
+
+        $content = $this->doAuthAndCapturePayment($payment);
+
+        $card = $this->getLastEntity('card', true);
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('1000AxisMigsTl', $payment['terminal_id']);
+
+        $this->fixtures->merchant->disableRisky();
+    }
+
 }
