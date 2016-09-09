@@ -15,7 +15,7 @@ class Entity extends Base\PublicEntity
     const CONTACT               = 'contact';
     const EMAIL                 = 'email';
     const MERCHANT_ID           = 'merchant_id';
-    const ADDRESS_ID            = 'address_id';
+    const SHIPPING_ADDRESS_ID   = 'shipping_address_id';
     const ACTIVE                = 'active';
     const NOTES                 = 'notes';
     const CREATED_AT            = 'created_at';
@@ -37,7 +37,6 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::ACTIVE,
         self::CONTACT,
-        self::ADDRESS_ID,
         self::MERCHANT_ID,
     );
 
@@ -48,7 +47,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::ACTIVE,
         self::CONTACT,
-        self::ADDRESS_ID,
+        self::SHIPPING_ADDRESS_ID,
         self::NOTES,
         self::MERCHANT_ID,
         self::CREATED_AT,
@@ -62,28 +61,22 @@ class Entity extends Base\PublicEntity
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
-        self::ADDRESS_ID,
+        self::SHIPPING_ADDRESS_ID,
         self::CREATED_AT,
     );
 
     protected $defaults = array(
         self::ACTIVE    => true,
         self::NOTES     => [],
+        // TODO: Find out how payments is working without having this default value for transaction?
+        //self::ADDRESS_ID    => null,
     );
 
-    public function merchant()
-    {
-        return $this->belongsTo('RZP\Models\Merchant\Entity');
-    }
+    // ----------------------------------- GETTERS -----------------------------------
 
-    public function tokens()
+    public function isLocal()
     {
-        return $this->hasMany('RZP\Models\Customer\Token\Entity');
-    }
-    
-    public function address()
-    {
-        return $this->hasOne('RZP\Models\Customer\Address\Entity');
+        return ($this->getMerchantId() !== Account::SHARED_ACCOUNT);
     }
 
     public function getName()
@@ -106,10 +99,27 @@ class Entity extends Base\PublicEntity
         return (bool)$this->getAttribute(self::ACTIVE);
     }
 
+    // ----------------------------------- END GETTERS -----------------------------------
+
+    // ----------------------------------- ACCESSORS -----------------------------------
+
     protected function getActiveAttribute()
     {
         return (bool)$this->attributes[self::ACTIVE];
     }
+
+    // ----------------------------------- END ACCESSORS -----------------------------------
+
+    // ----------------------------------- SETTERS -----------------------------------
+
+    public function setShippingAddressId($shippingAddressId)
+    {
+        $this->setAttribute(self::SHIPPING_ADDRESS_ID, $shippingAddressId);
+    }
+
+    // -----------------------------------  END SETTERS -----------------------------------
+
+    // ----------------------------------- MUTATORS -----------------------------------
 
     protected function setEmailAttribute($email)
     {
@@ -117,8 +127,35 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::EMAIL] = mb_strtolower($email);
     }
 
-    public function isLocal()
+    // ----------------------------------- END MUTATORS -----------------------------------
+
+    // ----------------------------------- RELATIONS -----------------------------------
+
+    public function merchant()
     {
-        return ($this->getMerchantId() !== Account::SHARED_ACCOUNT);
+        return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
+
+    public function tokens()
+    {
+        return $this->hasMany('RZP\Models\Customer\Token\Entity');
+    }
+
+    public function shippingAddresses()
+    {
+        return $this->hasMany('RZP\Models\Customer\Address\Entity', self::SHIPPING_ADDRESS_ID, Address\Entity::ENTITY_ID);
+                    //->where(Address\Entity::ENTITY_TYPE, '=', Address\Type::CUSTOMER);
+    }
+
+    // public function address()
+    // {
+    //     return $this->hasMany('RZP\Models\Customer\Address\Entity', self::ADDRESS_ID, Address\Entity::ENTITY_ID);
+    // }
+
+    // public function address()
+    // {
+    //     return $this->hasMany('RZP\Models\Customer\Address\Entity');
+    // }
+
+    // ----------------------------------- END RELATIONS -----------------------------------
 }

@@ -27,6 +27,10 @@ class CreateCustomers extends Migration {
 
             $table->char(Customer::MERCHANT_ID, 14);
 
+            // TODO: Foreign key association to be added?
+            $table->char(Customer::SHIPPING_ADDRESS_ID, Customer::ID_LENGTH)
+                  ->nullable();
+
             $table->string(Customer::NAME, 50)
                   ->nullable();
 
@@ -46,6 +50,7 @@ class CreateCustomers extends Migration {
             $table->integer(Customer::DELETED_AT)
                   ->nullable();
 
+            // TODO: Add index on shipping_address_id?
             $table->index(Customer::CONTACT);
             $table->index(Customer::CREATED_AT);
 

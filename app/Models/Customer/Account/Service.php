@@ -287,9 +287,9 @@ class Service extends Base\Service
 
     public function createAddress($customerId, array $input)
     {
-        var_dump($input);
+        Entity::verifyIdAndStripSign($customerId);
 
-        $customer = $this->repo->customer->findByIdAndMerchantId($customerId);
+        $customer = $this->repo->customer->findByIdAndMerchant($customerId, $this->merchant);
 
         $address = (new Address\Core)->create($customer, $input);
 

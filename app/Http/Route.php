@@ -543,9 +543,6 @@ final class Route
     public static $routeNameToFeatureMap = array(
         'dummy_feature'             => 'dummy',
         'submerchant_create'        => 'aggregator',
-        'customer_create'           => 'tokens',
-        'customer_update'           => 'tokens',
-        'customer_get'              => 'tokens',
         'customer_delete'           => 'tokens',
         'customer_delete_token'     => 'tokens',
         'customer_fetch_tokens'     => 'tokens',
@@ -554,8 +551,6 @@ final class Route
         'customer_get_saved_status' => 'cardsaving',
         'customer_logout_global'    => 'cardsaving',
         'app_delete_token'          => 'cardsaving',
-        'otp_post'                  => 'cardsaving',
-        'otp_verify'                => 'cardsaving',
     );
 
     protected static $router;

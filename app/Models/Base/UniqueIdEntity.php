@@ -231,6 +231,8 @@ class UniqueIdEntity extends Entity
     {
         exec('date +%s%N', $nanotime, $status);
 
+        return 1473439921558838000;
+
         return $nanotime[0];
     }
 

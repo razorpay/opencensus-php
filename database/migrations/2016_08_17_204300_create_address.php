@@ -23,8 +23,10 @@ class CreateAddress extends Migration
             $table->char(Entity::ID, Entity::ID_LENGTH)
                   ->primary();
 
-            $table->char(Entity::ENTITY_ID, Entity::ID_LENGTH);
-            $table->string(Entity::ENTITY_TYPE, 64);
+            $table->char(Entity::ENTITY_ID, Entity::ID_LENGTH)
+                  ->nullable();
+            $table->string(Entity::ENTITY_TYPE, 64)
+                  ->nullable();
 
             $table->string(Entity::LINE_ONE, 1024);
             $table->string(Entity::LINE_TWO, 1024);
@@ -36,7 +38,12 @@ class CreateAddress extends Migration
             $table->string(Entity::ADDRESS_TYPE, 64);
             $table->tinyInteger(Entity::PRIMARY);
 
-            $table->integer(Entity::DELETED_AT);
+            $table->integer(Entity::DELETED_AT)
+                  // TODO: Find out why this works. If this is not there, I will need to add
+                  // default value. How does this take care of that?
+                  ->unsigned()
+                  ->nullable();
+
             $table->integer(Entity::CREATED_AT);
             $table->integer(Entity::UPDATED_AT);
 

@@ -176,6 +176,7 @@ class CustomerController extends Controller
     {
         $input = Request::all();
 
+        // TODO: Probably move this to Address\Core directly instead of from Customer\Service?
         $data = (new Customer\Service)->createAddress($customerId, $input);
 
         return ApiResponse::json($data);
