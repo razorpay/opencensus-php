@@ -185,11 +185,16 @@ class Repository extends Base\Repository
         $merchantId = Merchant\Entity::getAttributeWithTableName(Merchant\Entity::ID);
         $merchantAutoRefundDelay = Merchant\Entity::getAttributeWithTableName(Merchant\Entity::AUTO_REFUND_DELAY);
 
+        $minCreatedAt = Carbon::now()->subMinutes(30)->timestamp;
+        $maxCreatedAt = Carbon::now()->subDays(7)->timestamp;
+
         return $this->newQuery()
                     ->select($this->getAttributeWithTableName('*'))
                     ->join(Table::MERCHANT, $paymentMerchantId, '=', $merchantId)
                     ->status(Payment\Status::AUTHORIZED)
                     ->whereRaw('(' . $paymentAuthorizedAt . ' - ' . $paymentCreatedAt . ') >= ' . $merchantAutoRefundDelay)
+                    ->where($paymentCreatedAt, '<', $minCreatedAt)
+                    ->where($paymentCreatedAt, '>=', $maxCreatedAt)
                     ->get();
     }
 
