@@ -89,6 +89,52 @@ class WebhookTest extends TestCase
         $this->doAuthPayment();
     }
 
+    public function testOrderPaidWebhookEventData()
+    {
+        $webhook = $this->createWebhook(['events' => ['order.paid' => "1"]]);
+
+        $inferno = $this->mockInferno();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $inferno->shouldReceive('fire')
+                ->once()
+                ->with(
+                    Mockery::type('RZP\Jobs\WebHook'),
+                    Mockery::on(function ($data) use ($testData)
+                        {
+                            $data['event'] = json_decode($data['event'], true);
+
+                            $this->assertArraySelectiveEquals($testData, $data);
+
+                            return true;
+                        }));
+
+        $this->app->instance('webhook.inferno', $inferno);
+
+        $order = $this->fixtures->create('order', ['amount' => 50000, 'receipt' => 'random']);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = $order->getAmount();
+
+        $this->doAuthAndCapturePayment($payment);
+    }
+
+    public function testOrderPaidWebhookEventDataWithoutOrder()
+    {
+        $webhook = $this->createWebhook(['events' => ['order.paid' => "1"]]);
+
+        $inferno = $this->mockInferno();
+
+        $inferno->shouldReceive('fire')
+                ->never();
+
+        $this->app->instance('webhook.inferno', $inferno);
+
+        $this->doAuthAndCapturePayment();
+    }
+
     public function testDisableWebhookAfter3Attempts()
     {
         $webhook = $this->createWebhook();

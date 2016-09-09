@@ -85,17 +85,22 @@ class ApiEventSubscriber
 
     protected function onPaymentAuthorized($payment)
     {
-        $this->prepareAndDispatchPaymentWebhook($payment);
+        $this->prepareAndDispatchWebhook($payment);
     }
 
     protected function onPaymentFailed($payment)
     {
-        $this->prepareAndDispatchPaymentWebhook($payment);
+        $this->prepareAndDispatchWebhook($payment);
     }
 
-    protected function prepareAndDispatchPaymentWebhook($payment)
+    protected function onOrderPaid($order)
     {
-        $webhook = $payment->merchant->webhook;
+        $this->prepareAndDispatchWebhook($order);
+    }
+
+    protected function prepareAndDispatchWebhook($entity)
+    {
+        $webhook = $entity->merchant->webhook;
 
         $eventFired = $this->event;
 
@@ -107,18 +112,16 @@ class ApiEventSubscriber
         $attributes = array(
             Event\Entity::EVENT       => $eventFired,
             Event\Entity::CONTAINS    => Event\Contains::getEntityNamesForEvent($eventFired),
-            Event\Entity::CREATED_AT  => $payment->getUpdatedAt(),
+            Event\Entity::CREATED_AT  => $entity->getUpdatedAt(),
         );
 
         $event = new Event\Entity($attributes);
 
-        $payload = array(
-            Constants\Entity::PAYMENT => ['entity' => $payment->toArrayPublic()]
-        );
+        $payload = $this->getPayload($entity);
 
         $event->setPayload($payload);
 
-        $event->merchant()->associate($payment->merchant);
+        $event->merchant()->associate($entity->merchant);
 
         $data = array(
             'mode'          => $this->getMode(),
@@ -126,6 +129,17 @@ class ApiEventSubscriber
             'webhook_id'    => $webhook->getId());
 
         $this->dispatch(new Webhook($data));
+    }
+
+    protected function getPayload($entity)
+    {
+        $entityType = $entity->getEntity();
+
+        $payload = array(
+            $entityType => ['entity' => $entity->toArrayPublic()]
+        );
+
+        return $payload;
     }
 
     protected function isWebhookEnabledForEvent($webhook)

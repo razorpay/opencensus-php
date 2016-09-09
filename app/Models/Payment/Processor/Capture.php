@@ -322,6 +322,8 @@ trait Capture
             $this->tracePaymentInfo(TraceCode::PAYMENT_CAPTURE_SUCCESS);
         });
 
+        $this->eventOrderPaid();
+
         //
         // Analytics
         //
@@ -329,6 +331,18 @@ trait Capture
 
         $notifier = new Notify($this->payment);
         $notifier->trigger(Notify::CAPTURED);
+
+
+    }
+
+    protected function eventOrderPaid()
+    {
+        $order = $this->payment->order;
+
+        if (isset($order) === true)
+        {
+            $this->app['events']->fire('api.order.paid', array($order));
+        }
     }
 
     protected function updatePaymentCaptured($payment, $autoCaptured = false)

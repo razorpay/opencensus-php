@@ -208,6 +208,26 @@ return [
         // 'webhook_id' => '4WVwsVEmeO3wwp',
     ],
 
+    'testOrderPaidWebhookEventData' => [
+        'event' => [
+            'event' => 'order.paid',
+            'contains' => ['order'],
+            'payload' => [
+                'order' => [
+                    'entity' => [
+                        'entity' => 'order',
+                        'amount' => 50000,
+                        'receipt' => 'random',
+                        'currency' => 'INR',
+                        'status' => 'paid',
+                        'attempts' => 1,
+                        'notes' => []
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testWebhookEventDataJustBeforeFiring' => [
         'url' => 'http://localhost/v1/dummy/route',
         'method' => 'post',
