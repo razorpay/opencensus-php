@@ -181,4 +181,12 @@ class CustomerController extends Controller
 
         return ApiResponse::json($data);
     }
+    
+    public function deleteAddress($customerId, $addressId)
+    {
+        // TODO: Probably move this to Address\Core directly? Or Maybe Address\Service?
+        $data = (new Customer\Service)->deleteAddress($customerId, $addressId);
+        
+        return ApiResponse::json($data);
+    }
 }

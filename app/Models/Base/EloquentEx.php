@@ -94,6 +94,15 @@ class EloquentEx extends \Razorpay\Spine\Entity
         $query->where($merchantIdColumn, '=', $merchantId);
     }
 
+    public function scopeCustomerId($query, $customerId)
+    {
+        $table = $this->getTable();
+
+        $customerIdColumn = $table . '.' . Common::CUSTOMER_ID;
+
+        $query->where($customerIdColumn, '=', $customerId);
+    }
+
     public function scopeOrderByCreatedAt($query, $desc = true)
     {
         $desc = ($desc) ? 'desc' : 'asc';

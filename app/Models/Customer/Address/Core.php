@@ -64,7 +64,53 @@ class Core extends Base\Core
         return $address;
     }
 
-    protected function handlePrimaryAddressSwitch($currentPrimaryAddress, $customer)
+    public function delete(Entity $address, Customer\Entity $customer)
+    {
+        return $this->repo->transaction(function() use ($address, $customer)
+        {
+            if ($address->getPrimary() === true)
+            {
+                // We are passing the address ID here because we want the latest address, excluding the current one
+                // since we are going to delete this one.
+                $latestAddress = $this->repo->address->fetchLatestAddress(
+                    Type::CUSTOMER, $customer->getId(), $address->getAddressType(), $address->getId());
+
+                if ($latestAddress !== null)
+                {
+                    $this->convertLatestAddressToPrimary($latestAddress, $address);
+
+                    $addressId = $latestAddress->getId();
+                }
+                else
+                {
+                    // If $latestAddress is null, there's nothing to do. It just means that there was just
+                    // one address which we are going to delete.
+
+                    $addressId = null;
+                }
+
+                // TODO: Use type also to figure what value to set null.
+                $customer->setShippingAddressId($addressId);
+
+                $this->repo->saveOrFail($customer);
+            }
+
+            return $this->repo->address->deleteOrFail($address);
+        });
+    }
+
+    protected function convertLatestAddressToPrimary(Entity $latestAddress, Entity $currentAddress)
+    {
+        $latestAddress->setPrimary(true);
+
+        $currentAddress->setPrimary(false);
+
+        $this->repo->saveOrFail($latestAddress);
+
+        $this->repo->saveOrFail($currentAddress);
+    }
+
+    protected function handlePrimaryAddressSwitch(Base\PublicCollection $currentPrimaryAddress, Customer\Entity $customer)
     {
         if ($currentPrimaryAddress->count() > 1)
         {

@@ -295,5 +295,29 @@ class Service extends Base\Service
 
         return $address->toArrayPublic();
     }
+
+    public function deleteAddress($customerId, $addressId)
+    {
+        Entity::verifyIdAndStripSign($customerId);
+
+        Address\Entity::verifyIdAndStripSign($addressId);
+
+        // The following two statements ensure that
+        // the merchant is trying to delete his customer only.
+        // the merchant is trying to delete the right customer's address.
+
+        $customer = $this->repo->customer->findByIdAndMerchant($customerId, $this->merchant);
+
+        $address = $this->repo->address->findByIdAndCustomer($addressId, $customer);
+
+        $address = (new Address\Core)->delete($address, $customer);
+
+        if ($address === null)
+        {
+            return [];
+        }
+
+        return $address->toArrayPublic();
+    }
 }
 

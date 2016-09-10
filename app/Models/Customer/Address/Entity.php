@@ -75,7 +75,7 @@ class Entity extends Base\PublicEntity
         self::STATE,
         self::COUNTRY,
     ];
-    
+
     protected $defaults = [
         self::LINE_TWO      => null,
         self::PINCODE       => null,
@@ -87,7 +87,7 @@ class Entity extends Base\PublicEntity
         self::PRIMARY       => true,
         //self::DELETED_AT    => null,
     ];
-    
+
     protected $casts = [
         self::PRIMARY => 'bool'
     ];
@@ -96,12 +96,12 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::ADDRESS_TYPE);
     }
-    
+
     public function getPrimary()
     {
         return $this->getAttribute(self::PRIMARY);
     }
-    
+
     public function getType()
     {
         return $this->getAttribute(self::ADDRESS_TYPE);
@@ -113,7 +113,7 @@ class Entity extends Base\PublicEntity
 
         $this->setAttribute(self::ENTITY_TYPE, $entityType);
     }
-    
+
     public function setPrimary($primary)
     {
         $this->setAttribute(self::PRIMARY, $primary);
