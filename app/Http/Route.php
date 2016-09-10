@@ -232,8 +232,9 @@ final class Route
         'customer_delete_token'                   => ['delete',   'customers/{id}/tokens/{token}',            'CustomerController@deleteToken'                                    ],
         'customer_get_saved_status'               => ['get',      'customers/status/{contact}',               'CustomerController@fetchGlobalCustomerStatus'                      ],
         'customer_logout_global'                  => ['delete',   'apps/logout',                              'CustomerController@logoutCustomer'                                 ],
-        'customer_create_address'                 => ['post',     'customers/{id}/address',                   'CustomerController@createAddress'                                  ],
-        'customer_delete_address'                 => ['delete',   'customers/{id}/address/{address_id}',      'CustomerController@deleteAddress'                                  ],
+        'customer_create_address'                 => ['post',     'customers/{id}/addresses',                 'CustomerController@createAddress'                                  ],
+        'customer_delete_address'                 => ['delete',   'customers/{id}/addresses/{address_id}',    'CustomerController@deleteAddress'                                  ],
+        'customer_fetch_addresses'                => ['get',      'customers/{id}/addresses',                 'CustomerController@getAddresses'                                   ],
         'app_delete_token'                        => ['delete',   'apps/tokens/{token}',                      'CustomerController@deleteTokenForGlobalCustomer'                   ],
         'app_fetch_tokens'                        => ['get',      'apps/tokens',                              'CustomerController@fetchTokensForGlobalCustomer'                   ],
         'app_fetch_payments'                      => ['get',      'apps/payments',                            'CustomerController@fetchPaymentsForGlobalCustomer'                 ],
@@ -325,6 +326,7 @@ final class Route
         'setl_combined_report',
         'customer_create_address',
         'customer_delete_address',
+        'customer_fetch_addresses',
     );
 
     public static $internal = array(

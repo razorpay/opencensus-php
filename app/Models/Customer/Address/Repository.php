@@ -59,4 +59,19 @@ class Repository extends Base\Repository
             return $latestAddress->first();
         }
     }
+
+    public function fetchAddressesForEntity($entityType, $entityId, array $input)
+    {
+        $addresses = $this->newQuery()
+                          ->where(Entity::ENTITY_TYPE, '=', $entityType)
+                          ->where(Entity::ENTITY_ID, '=', $entityId);
+
+        if (empty($input[Entity::ADDRESS_TYPE]) === false)
+        {
+            $addressType = $input[Entity::ADDRESS_TYPE];
+            $addresses = $addresses->where(Entity::ADDRESS_TYPE, '=', $addressType);
+        }
+
+        return $addresses->get();
+    }
 }

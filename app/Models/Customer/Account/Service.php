@@ -296,6 +296,17 @@ class Service extends Base\Service
         return $address->toArrayPublic();
     }
 
+    public function fetchAddresses($customerId, array $input)
+    {
+        Entity::verifyIdAndStripSign($customerId);
+
+        $customer = $this->repo->customer->findByIdAndMerchant($customerId, $this->merchant);
+
+        $addresses = $this->repo->address->fetchAddressesForEntity(Address\Type::CUSTOMER, $customer->getId(), $input);
+
+        return $addresses->toArrayPublic();
+    }
+
     public function deleteAddress($customerId, $addressId)
     {
         Entity::verifyIdAndStripSign($customerId);

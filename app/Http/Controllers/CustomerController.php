@@ -182,6 +182,15 @@ class CustomerController extends Controller
         return ApiResponse::json($data);
     }
     
+    public function getAddresses($customerId)
+    {
+        $input = Request::all();
+        
+        $data = (new Customer\Service)->fetchAddresses($customerId, $input);
+        
+        return ApiResponse::json($data);
+    }
+    
     public function deleteAddress($customerId, $addressId)
     {
         // TODO: Probably move this to Address\Core directly? Or Maybe Address\Service?

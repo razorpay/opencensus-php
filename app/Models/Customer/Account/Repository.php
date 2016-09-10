@@ -7,6 +7,7 @@ use RZP\Models\Customer;
 use RZP\Models\Merchant\Account;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 
 class Repository extends Base\Repository
 {
@@ -21,7 +22,7 @@ class Repository extends Base\Repository
         Entity::CONTACT         => 'sometimes'
     );
 
-    public function findByContactAndMerchant($contact, $merchant)
+    public function findByContactAndMerchant($contact, Merchant\Entity $merchant)
     {
         return $this->newQuery()
                     ->where(Customer\Entity::CONTACT, '=', $contact)
@@ -29,7 +30,7 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function findByContactEmailAndMerchant($contact, $email, $merchant)
+    public function findByContactEmailAndMerchant($contact, $email, Merchant\Entity $merchant)
     {
         return $this->newQuery()
                     ->where(Customer\Entity::CONTACT, '=', $contact)
