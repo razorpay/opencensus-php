@@ -177,25 +177,32 @@ class CustomerController extends Controller
         $input = Request::all();
 
         // TODO: Probably move this to Address\Core directly instead of from Customer\Service?
-        $data = (new Customer\Service)->createAddress($customerId, $input);
+        $address = (new Customer\Service)->createAddress($customerId, $input);
 
-        return ApiResponse::json($data);
+        return ApiResponse::json($address);
     }
-    
+
     public function getAddresses($customerId)
     {
         $input = Request::all();
-        
-        $data = (new Customer\Service)->fetchAddresses($customerId, $input);
-        
-        return ApiResponse::json($data);
+
+        $addresses = (new Customer\Service)->fetchAddresses($customerId, $input);
+
+        return ApiResponse::json($addresses);
     }
-    
+
+    public function putPrimaryAddress($customerId, $addressId)
+    {
+        $address = (new Customer\Service)->setPrimaryAddress($customerId, $addressId);
+
+        return ApiResponse::json($address);
+    }
+
     public function deleteAddress($customerId, $addressId)
     {
         // TODO: Probably move this to Address\Core directly? Or Maybe Address\Service?
         $data = (new Customer\Service)->deleteAddress($customerId, $addressId);
-        
+
         return ApiResponse::json($data);
     }
 }

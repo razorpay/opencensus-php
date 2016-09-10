@@ -12,11 +12,6 @@ class Core extends Base\Core
     // entity and not only customer. These functions should be able to handle
     // merchant's address also in the same manner.
 
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
     public function create(Customer\Entity $customer, array $input)
     {
         // TODO: Should we limit the number of addresses that a particular
@@ -38,28 +33,22 @@ class Core extends Base\Core
 
             $address->customer()->associate($customer);
 
+            // This needs to be saved here so that handlePrimaryAddressSwitch()
+            // can retrieve the customer by association if required.
             $this->repo->saveOrFail($address);
 
             if ($address->getPrimary() === true)
             {
-                // We are passing the address ID here because we save the address in the previous step with
-                // primary set to true. Hence, we will always get 1 or more primary addresses even if we are
-                // creating a new address for the customer. We need to get primary addresses `except`
-                // this address which is just created.
-                $currentPrimaryAddress = $this->repo->address->fetchCurrentPrimaryAddress(
-                    Type::CUSTOMER, $customer->getId(), $address->getAddressType(), $address->getId());
-
-                $this->handlePrimaryAddressSwitch($currentPrimaryAddress, $customer);
-
-                // We can't use associations here because a customer's shipping address can be
-                // associated with many addresses. Laravel will not understand which one to associate it with.
-                // TODO: Check if there's a better way of doing this than just setting.
-                // TODO: Make this dynamic.
-                $customer->setShippingAddressId($address->getId());
+                $this->handlePrimaryAddressSwitch($address);
             }
-
-            $this->repo->saveOrFail($customer);
         });
+
+        return $address;
+    }
+
+    public function setPrimaryAddress(Entity $address)
+    {
+        $this->handlePrimaryAddressSwitch($address);
 
         return $address;
     }
@@ -101,38 +90,66 @@ class Core extends Base\Core
 
     protected function convertLatestAddressToPrimary(Entity $latestAddress, Entity $currentAddress)
     {
-        $latestAddress->setPrimary(true);
+        $this->repo->transaction(function() use ($latestAddress, $currentAddress)
+        {
+            $latestAddress->setPrimary(true);
 
-        $currentAddress->setPrimary(false);
+            $currentAddress->setPrimary(false);
 
-        $this->repo->saveOrFail($latestAddress);
+            $this->repo->saveOrFail($latestAddress);
 
-        $this->repo->saveOrFail($currentAddress);
+            $this->repo->saveOrFail($currentAddress);
+        });
     }
 
-    protected function handlePrimaryAddressSwitch(Base\PublicCollection $currentPrimaryAddress, Customer\Entity $customer)
+    protected function handlePrimaryAddressSwitch(Entity $address)
     {
+        $customer = $address->customer;
+
+        // We are passing the address ID here because we save the address in the previous step with
+        // primary set to true. Hence, we will always get 1 or more primary addresses even if we are
+        // creating a new address for the customer. We need to get primary addresses `except`
+        // this address which is just created.
+        $currentPrimaryAddress = $this->repo->address->fetchCurrentPrimaryAddress(
+            Type::CUSTOMER, $customer->getId(), $address->getAddressType(), $address->getId());
+
         if ($currentPrimaryAddress->count() > 1)
         {
             throw new LogicException(
-                'Found multiple primary addresses.',
+                'Found multiple primary addresses for an address type.',
                 null,
                 [
                     'entity_id'     => $customer->getId(),
                     'entity_type'   => Type::CUSTOMER,
+                    'address_type'  => $address->getAddressType(),
                 ]
             );
         }
 
-        if ($currentPrimaryAddress->count() === 1)
+        $this->repo->transaction(function() use ($currentPrimaryAddress, $address, $customer)
         {
-            $currentPrimaryAddress = $currentPrimaryAddress->first();
+            // If there is no current primary address, there's no need to do anything
 
-            $currentPrimaryAddress->setPrimary(false);
+            if ($currentPrimaryAddress->count() === 1)
+            {
+                $currentPrimaryAddress = $currentPrimaryAddress->first();
 
-            $this->repo->saveOrFail($currentPrimaryAddress);
-        }
+                $currentPrimaryAddress->setPrimary(false);
 
-        // If there is no current primary address, there's no need to do anything
+                $address->setPrimary(true);
+
+                $this->repo->saveOrFail($currentPrimaryAddress);
+
+                $this->repo->saveOrFail($address);
+            }
+
+            // We can't use associations here because a customer's shipping address can be
+            // associated with many addresses. Laravel will not understand which one to associate it with.
+            // TODO: Check if there's a better way of doing this than just setting.
+            // TODO: Make this dynamic.
+            $customer->setShippingAddressId($address->getId());
+
+            $this->repo->saveOrFail($customer);
+        });
     }
 }

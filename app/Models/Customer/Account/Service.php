@@ -307,6 +307,18 @@ class Service extends Base\Service
         return $addresses->toArrayPublic();
     }
 
+    public function setPrimaryAddress($customerId, $addressId)
+    {
+        $address = $this->getAddressFromCustomerId($customerId, $addressId);
+
+        if ($address->getPrimary() === true)
+        {
+            return $address;
+        }
+        
+        return (new Address\Core)->setPrimaryAddress($address);
+    }
+
     public function deleteAddress($customerId, $addressId)
     {
         Entity::verifyIdAndStripSign($customerId);
@@ -329,6 +341,17 @@ class Service extends Base\Service
         }
 
         return $address->toArrayPublic();
+    }
+
+    protected function getAddressFromCustomerId($customerId, $addressId)
+    {
+        Entity::verifyIdAndStripSign($customerId);
+
+        Address\Entity::verifyIdAndStripSign($addressId);
+
+        $customer = $this->repo->customer->findByIdAndMerchant($customerId, $this->merchant);
+
+        return $this->repo->address->findByIdAndCustomer($addressId, $customer);
     }
 }
 
