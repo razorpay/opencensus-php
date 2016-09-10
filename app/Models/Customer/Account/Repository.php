@@ -4,9 +4,7 @@ namespace RZP\Models\Customer;
 
 use RZP\Models\Base;
 use RZP\Models\Customer;
-use RZP\Models\Merchant\Account;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 
 class Repository extends Base\Repository

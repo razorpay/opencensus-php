@@ -353,7 +353,7 @@ class Service extends Base\Service
 
         $customer = $this->repo->customer->findByIdAndMerchant($customerId, $this->merchant);
 
-        return $this->repo->address->findByIdAndCustomer($addressId, $customer);
+        return $this->repo->address->findByEntityTypeAndId($addressId, Address\Type::CUSTOMER, $customerId);
     }
 }
 

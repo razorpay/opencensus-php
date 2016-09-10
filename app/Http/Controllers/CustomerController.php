@@ -176,7 +176,6 @@ class CustomerController extends Controller
     {
         $input = Request::all();
 
-        // TODO: Probably move this to Address\Core directly instead of from Customer\Service?
         $address = (new Customer\Service)->createAddress($customerId, $input);
 
         return ApiResponse::json($address);
@@ -200,7 +199,6 @@ class CustomerController extends Controller
 
     public function deleteAddress($customerId, $addressId)
     {
-        // TODO: Probably move this to Address\Core directly? Or Maybe Address\Service?
         $data = (new Customer\Service)->deleteAddress($customerId, $addressId);
 
         return ApiResponse::json($data);

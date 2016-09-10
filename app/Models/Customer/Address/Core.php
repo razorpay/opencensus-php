@@ -9,10 +9,6 @@ use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
-    // TODO: All the functions here need to be generic enough to handle any type of
-    // entity and not only customer. These functions should be able to handle
-    // merchant's address also in the same manner.
-
     /**
      * Builds a new address entity. Associates this address with the customer which is sent in the input.
      * If this address is set to be the primary address, we switch it with the previous primary address, if present.
@@ -134,13 +130,13 @@ class Core extends Base\Core
     /**
      * Gets the current primary address.
      * If there is no current primary address, we don't do anything.
-     * If there is a current primary address, 
+     * If there is a current primary address,
      *   - set its primary flag to false.
      *   - set the passed address's primary flag to true.
-     * Irrespective of current primary address being present or not, 
+     * Irrespective of current primary address being present or not,
      * we set the associated customer's address ID to the passed address's ID.
-     * 
-     * @param Entity $address The address entity which we need to set as primary, 
+     *
+     * @param Entity $address The address entity which we need to set as primary,
      *                        displacing the older primary address.
      * @throws LogicException
      */

@@ -44,11 +44,7 @@ class Core extends Base\Core
             else
             {
                 throw new Exception\LogicException(
-                    'Customer already exists.',
-                    null,
-                    [
-                        'customer_id'   => $existingCustomer->getId(),
-                    ]);
+                    'Customer already exists.', null, ['customer_id'   => $existingCustomer->getId()]);
             }
         }
 

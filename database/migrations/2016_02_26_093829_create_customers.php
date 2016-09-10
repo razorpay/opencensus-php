@@ -50,7 +50,6 @@ class CreateCustomers extends Migration {
             $table->integer(Customer::DELETED_AT)
                   ->nullable();
 
-            // TODO: Add index on shipping_address_id?
             $table->index(Customer::CONTACT);
             $table->index(Customer::CREATED_AT);
 

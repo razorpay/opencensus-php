@@ -79,18 +79,14 @@ class Entity extends Base\PublicEntity
     protected $defaults = [
         self::LINE_TWO      => null,
         self::PINCODE       => null,
-        // TODO: Is it okay to keep these two here? Is there a better solution for this?
-        // These are null, because customer association happens after saving the address first.
-        self::ENTITY_ID     => null,
-        self::ENTITY_TYPE   => null,
-        // TODO: Need to decide whether to keep the default true or false
         self::PRIMARY       => true,
-        //self::DELETED_AT    => null,
     ];
 
     protected $casts = [
         self::PRIMARY => 'bool'
     ];
+
+    // ----------------------------------- GETTERS -----------------------------------
 
     public function getAddressType()
     {
@@ -107,6 +103,10 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ADDRESS_TYPE);
     }
 
+    // ----------------------------------- END GETTERS -----------------------------------
+
+    // ----------------------------------- SETTERS -----------------------------------
+
     public function setEntityType($entityType)
     {
         Type::validateEntityType($entityType);
@@ -119,37 +119,14 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::PRIMARY, $primary);
     }
 
+    // ----------------------------------- END SETTERS -----------------------------------
+
+    // ----------------------------------- RELATIONS -----------------------------------
+
     public function customer()
     {
         return $this->belongsTo('RZP\Models\Customer\Entity', self::ENTITY_ID);
     }
 
-    // public function source()
-    // {
-    //     $entityType = $this->getAttribute(self::ENTITY_TYPE);
-    //
-    //     Type::validateType($entityType);
-    //
-    //     $class = 'RZP\\Models\\';
-    //
-    //     if ($type === Transaction\Type::REFUND)
-    //     {
-    //         $class .= 'Payment\\';
-    //     }
-    //
-    //     $class .= ucfirst($type).'\\'.'Entity';
-    //
-    //     return $this->belongsTo($class, self::ENTITY_ID);
-    // }
-
-    // /**
-    //  * Associates the entity id and validates that the entity id is unique.
-    //  * @param $entity
-    //  */
-    // public function sourceAssociate($entity)
-    // {
-    //     $this->source()->associate($entity);
-    //     $this->validateEntityIdUnique($entity->getId());
-    //     $entity->transaction()->associate($this);
-    // }
+    // ----------------------------------- END RELATIONS -----------------------------------
 }

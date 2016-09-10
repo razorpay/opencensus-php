@@ -21,7 +21,7 @@ class Entity extends Base\PublicEntity
     const CREATED_AT            = 'created_at';
     const UPDATED_AT            = 'updated_at';
     const DELETED_AT            = 'deleted_at';
-    
+
     const SHIPPING_ADDRESS      = 'shipping_address';
 
     protected static $sign      = 'cust';
@@ -70,8 +70,6 @@ class Entity extends Base\PublicEntity
     protected $defaults = array(
         self::ACTIVE    => true,
         self::NOTES     => [],
-        // TODO: Find out how payments is working without having this default value for transaction?
-        //self::ADDRESS_ID    => null,
     );
 
     // ----------------------------------- GETTERS -----------------------------------
@@ -143,20 +141,10 @@ class Entity extends Base\PublicEntity
         return $this->hasMany('RZP\Models\Customer\Token\Entity');
     }
 
-    public function shippingAddresses()
-    {
-        return $this->hasMany('RZP\Models\Customer\Address\Entity', self::SHIPPING_ADDRESS_ID, Address\Entity::ENTITY_ID);
-                    //->where(Address\Entity::ENTITY_TYPE, '=', Address\Type::CUSTOMER);
-    }
-
-    // public function address()
+    // public function shippingAddresses()
     // {
-    //     return $this->hasMany('RZP\Models\Customer\Address\Entity', self::ADDRESS_ID, Address\Entity::ENTITY_ID);
-    // }
-
-    // public function address()
-    // {
-    //     return $this->hasMany('RZP\Models\Customer\Address\Entity');
+    //     return $this->hasMany('RZP\Models\Customer\Address\Entity', self::SHIPPING_ADDRESS_ID, Address\Entity::ENTITY_ID);
+    //                 //->where(Address\Entity::ENTITY_TYPE, '=', Address\Type::CUSTOMER);
     // }
 
     // ----------------------------------- END RELATIONS -----------------------------------

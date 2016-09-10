@@ -15,7 +15,9 @@ class Type
     ];
 
     protected static $validAddressTypes = [
-        self::SHIPPING_ADDRESS
+        self::CUSTOMER => [
+            self::SHIPPING_ADDRESS
+        ]
     ];
 
     public static function validateEntityType($entityType)
@@ -27,9 +29,9 @@ class Type
         }
     }
 
-    public static function validateAddressType($addressType)
+    public static function validateAddressType($addressType, $entityType)
     {
-        if (in_array($addressType, self::$validAddressTypes) === false)
+        if (in_array($addressType, self::$validAddressTypes[$entityType]) === false)
         {
             throw new Exception\InvalidArgumentException(
                 'Not a valid type for address: ' . $addressType);

@@ -39,9 +39,6 @@ class CreateAddress extends Migration
             $table->tinyInteger(Entity::PRIMARY);
 
             $table->integer(Entity::DELETED_AT)
-                  // TODO: Find out why this works. If this is not there, I will need to add
-                  // default value. How does this take care of that?
-                  ->unsigned()
                   ->nullable();
 
             $table->integer(Entity::CREATED_AT);
@@ -50,11 +47,6 @@ class CreateAddress extends Migration
             $table->index(Entity::DELETED_AT);
             $table->index(Entity::CREATED_AT);
             $table->index(Entity::UPDATED_AT);
-
-            // $table->foreign(Entity::CUSTOMER_ID)
-            //       ->references(Customer\Entity::ID)
-            //       ->on(Table::CUSTOMER)
-            //       ->on_delete('restrict');
         });
     }
 
@@ -65,12 +57,6 @@ class CreateAddress extends Migration
      */
     public function down()
     {
-        // Schema::drop(Table::ADDRESS, function (Blueprint $table)
-        // {
-        //     $table->dropForeign(
-        //         Table::ADDRESS . '_' . Entity::CUSTOMER_ID . '_foreign');
-        // });
-
         Schema::drop(Table::ADDRESS);
     }
 }

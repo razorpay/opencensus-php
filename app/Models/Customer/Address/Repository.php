@@ -9,6 +9,15 @@ class Repository extends Base\Repository
 {
     use Base\RepositoryFetch;
 
+    protected $appFetchParamRules = [
+        Entity::MERCHANT_ID     => 'sometimes|alpha_num|size:14',
+        Entity::ENTITY_ID       => 'sometimes|alpha_num|size:14',
+        Entity::ENTITY_TYPE     => 'sometimes|string|max:64',
+        Entity::ADDRESS_TYPE    => 'sometimes|string|max:64',
+        Entity::STATE           => 'sometimes|string|max:64',
+        Entity::COUNTRY         => 'sometimes|string|max:64',
+    ];
+
     public function fetchCurrentPrimaryAddress($entityType, $entityId, $addressType, $currentAddressId = null)
     {
         $currentPrimaryAddresses = $this->newQuery()
@@ -28,7 +37,6 @@ class Repository extends Base\Repository
         }
     }
 
-    // TODO: Try and make this dynamic. Something like findByIdAndEntity
     public function findByIdAndCustomer($addressId, Customer\Entity $customer)
     {
         return $this->newQuery()
@@ -38,10 +46,18 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
+    public function findByEntityTypeAndId($addressId, $entityType, $entityId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ENTITY_TYPE, '=', $entityType)
+                    ->where(Entity::ENTITY_ID, '=', $entityId)
+                    ->where(Entity::ID, '=', $addressId)
+                    ->firstOrFail();
+    }
+
     public function fetchLatestAddress($entityType, $entityId, $addressType, $currentAddressId = null)
     {
-        // Using get() instead of first() here because except doesn't work on an entity.
-        // it works only on collection.
+        // NOTE: except works on a collection and not on an entity.
 
         $latestAddress = $this->newQuery()
                               ->where(Entity::ENTITY_TYPE, '=', $entityType)
