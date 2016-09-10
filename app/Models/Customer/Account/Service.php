@@ -12,13 +12,13 @@ class Service extends Base\Service
 {
     /**
      * Creates Local customer entity for merchant
-     * @param  array customer data
+     * @param  array $input
      * @return array customer data
      */
     public function createLocalCustomer($input)
     {
         // Not being used currently. Will uncomment when required.
-        
+
         // $failOnDuplicate = true;
         //
         // if ((isset($input['flag'])) and
@@ -312,29 +312,20 @@ class Service extends Base\Service
     {
         $address = $this->getAddressFromCustomerId($customerId, $addressId);
 
+        // If the address is already set as primary, there's nothing to do.
         if ($address->getPrimary() === true)
         {
             return $address;
         }
-        
+
         return (new Address\Core)->setPrimaryAddress($address);
     }
 
     public function deleteAddress($customerId, $addressId)
     {
-        Entity::verifyIdAndStripSign($customerId);
+        $address = $this->getAddressFromCustomerId($customerId, $addressId);
 
-        Address\Entity::verifyIdAndStripSign($addressId);
-
-        // The following two statements ensure that
-        // the merchant is trying to delete his customer only.
-        // the merchant is trying to delete the right customer's address.
-
-        $customer = $this->repo->customer->findByIdAndMerchant($customerId, $this->merchant);
-
-        $address = $this->repo->address->findByIdAndCustomer($addressId, $customer);
-
-        $address = (new Address\Core)->delete($address, $customer);
+        $address = (new Address\Core)->delete($address);
 
         if ($address === null)
         {
@@ -344,6 +335,16 @@ class Service extends Base\Service
         return $address->toArrayPublic();
     }
 
+    /**
+     * Gets the customer from customerId, with merchant as the restriction
+     * Gets the address from addressId, with customer as the restriction
+     * This ensures that the merchant is retrieving his customer only
+     * and is attempting to get an address of that customer only.
+     *
+     * @param $customerId
+     * @param $addressId
+     * @return Address\Entity
+     */
     protected function getAddressFromCustomerId($customerId, $addressId)
     {
         Entity::verifyIdAndStripSign($customerId);

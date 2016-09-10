@@ -5,6 +5,7 @@ namespace RZP\Models\Customer\Address;
 use RZP\Exception\LogicException;
 use RZP\Models\Base;
 use RZP\Models\Customer;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
@@ -12,8 +13,22 @@ class Core extends Base\Core
     // entity and not only customer. These functions should be able to handle
     // merchant's address also in the same manner.
 
+    /**
+     * Builds a new address entity. Associates this address with the customer which is sent in the input.
+     * If this address is set to be the primary address, we switch it with the previous primary address, if present.
+     * If not, we don't do anything. We just create the address and the association with the customer.
+     *
+     * @param Customer\Entity $customer
+     * @param array $input
+     * @return Entity
+     */
     public function create(Customer\Entity $customer, array $input)
     {
+        $this->trace->info(
+            TraceCode::ADDRESS_CREATE_REQUEST,
+            $input
+        );
+
         // TODO: Should we limit the number of addresses that a particular
         // combination of {entity_id, entity_type, address_type} can be created for?
         // If we don't, someone can create thousands of addresses. Where do we have
@@ -22,12 +37,9 @@ class Core extends Base\Core
         // lots of addresses by mistake also. Maybe kept the api in a loop or something.
         // Do we need to worry about this or is it okay?
 
-
-        // TODO: Call a different function inside the transaction and perform all the required actions there.
-
         $address = (new Entity)->build($input);
 
-        $this->repo->transaction(function() use ($address, $customer)
+        return $this->repo->transaction(function() use ($address, $customer)
         {
             $address->setEntityType(Type::CUSTOMER);
 
@@ -41,9 +53,9 @@ class Core extends Base\Core
             {
                 $this->handlePrimaryAddressSwitch($address);
             }
-        });
 
-        return $address;
+            return $address;
+        });
     }
 
     public function setPrimaryAddress(Entity $address)
@@ -53,8 +65,32 @@ class Core extends Base\Core
         return $address;
     }
 
-    public function delete(Entity $address, Customer\Entity $customer)
+    /**
+     * We check whether the address that needs to be deleted in primary.
+     * If it's not, we just delete it and return.
+     * If it is,
+     *  - we set the primary flag to false
+     *  - get the latest address from the db, excluding the address that is being deleted from the query
+     *  - if the above query returns 0 results (there's only one address, the one being deleted),
+     *    we set the customer's address to null.
+     *  - else, we set the latest address to primary and update the customer's address attribute.
+     *
+     * @param Entity $address The address entity which needs to be deleted
+     * @return mixed
+     */
+    public function delete(Entity $address)
     {
+        $customer = $address->customer;
+
+        $this->trace->info(
+            TraceCode::ADDRESS_DELETE_REQUEST,
+            [
+                'address_id'    => $address->getId(),
+                'address_type'  => $address->getAddressType(),
+                'customer_id'   => $customer->getId(),
+            ]
+        );
+
         return $this->repo->transaction(function() use ($address, $customer)
         {
             if ($address->getPrimary() === true)
@@ -85,8 +121,8 @@ class Core extends Base\Core
                     $addressId = null;
                 }
 
-                // TODO: Use type also to figure what value to set null.
-                $customer->setShippingAddressId($addressId);
+                $setterFunc = $this->getSetterFunctionForAddress($address->getAddressType());
+                $customer->$setterFunc($addressId);
 
                 $this->repo->saveOrFail($customer);
             }
@@ -95,6 +131,19 @@ class Core extends Base\Core
         });
     }
 
+    /**
+     * Gets the current primary address.
+     * If there is no current primary address, we don't do anything.
+     * If there is a current primary address, 
+     *   - set its primary flag to false.
+     *   - set the passed address's primary flag to true.
+     * Irrespective of current primary address being present or not, 
+     * we set the associated customer's address ID to the passed address's ID.
+     * 
+     * @param Entity $address The address entity which we need to set as primary, 
+     *                        displacing the older primary address.
+     * @throws LogicException
+     */
     protected function handlePrimaryAddressSwitch(Entity $address)
     {
         $customer = $address->customer;
@@ -134,15 +183,32 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($currentPrimaryAddress);
 
                 $this->repo->saveOrFail($address);
+
+                $this->trace->info(
+                    TraceCode::PRIMARY_ADDRESS_SWITCH,
+                    [
+                        'customer_id'           => $customer->getId(),
+                        'address_type'          => $address->getAddressType(),
+                        'old_primary_address'   => $currentPrimaryAddress->getId(),
+                        'new_primary_address'   => $address->getId(),
+                    ]
+                );
             }
+
+            // TODO: Check if there's a better way of doing this than just setting.
 
             // We can't use associations here because a customer's shipping address can be
             // associated with many addresses. Laravel will not understand which one to associate it with.
-            // TODO: Check if there's a better way of doing this than just setting.
-            // TODO: Make this dynamic.
-            $customer->setShippingAddressId($address->getId());
+
+            $setterFunc = $this->getSetterFunctionForAddress($address->getAddressType());
+            $customer->$setterFunc($address->getId());
 
             $this->repo->saveOrFail($customer);
         });
+    }
+
+    protected function getSetterFunctionForAddress($addressType)
+    {
+        return 'set' . studly_case($addressType) . 'Id';
     }
 }

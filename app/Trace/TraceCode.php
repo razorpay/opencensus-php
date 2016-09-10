@@ -103,6 +103,10 @@ class TraceCode
     const PAYMENT_PRICING_RULE_NOT_FOUND            = 'PAYMENT_PRICING_RULE_NOT_FOUND';
     const PAYMENT_PRICING_RULE_SELECTION            = 'PAYMENT_PRICING_RULE_SELECTION';
 
+    const ADDRESS_CREATE_REQUEST                    = 'ADDRESS_CREATE_REQUEST';
+    const PRIMARY_ADDRESS_SWITCH                    = 'PRIMARY_ADDRESS_SWITCH';
+    const ADDRESS_DELETE_REQUEST                    = 'ADDRESS_DELETE_REQUEST';
+
     /*
      * Gateway component error messages
      */
@@ -277,6 +281,8 @@ class TraceCode
         self::MANUAL_GATEWAY_REFUND_FAILURE             => 'Failed while trying to refund from gateway',
         self::MANUAL_GATEWAY_REFUND_INITIATED           => 'Manual gateway refund has been initiated for this refund id',
         self::REFUND_GATEWAY_REQUIRED                   => 'Traces whether the gateway refund is required or not',
+
+        self::PRIMARY_ADDRESS_SWITCH                    => 'Switching primary address of an entity and address type',
 
         self::BAD_REQUEST_INVALID_API_KEY               => 'The api key provided is invalid',
 
