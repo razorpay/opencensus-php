@@ -16,7 +16,7 @@ class Core extends Base\Core
         $input['merchant_id'] = $merchant->getKey();
 
         $terminal = (new Terminal\Entity)->build($input);
-        
+
         $this->validateExistingTerminal($terminal);
 
         $this->repo->saveOrFail($terminal);

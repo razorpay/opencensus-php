@@ -5,7 +5,6 @@ namespace RZP\Models\Customer;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
-use RZP\Models\Merchant\Account;
 use RZP\Models\BankAccount;
 use RZP\Models\Payment;
 
@@ -18,17 +17,19 @@ class Service extends Base\Service
      */
     public function createLocalCustomer($input)
     {
-        $failOnDuplicate = true;
-
-        if ((isset($input['flag'])) and
-            ($input['flag'] === '1'))
-        {
-            $failOnDuplicate = false;
-        }
+        // Not being used currently. Will uncomment when required.
+        
+        // $failOnDuplicate = true;
+        //
+        // if ((isset($input['flag'])) and
+        //     ($input['flag'] === '1'))
+        // {
+        //     $failOnDuplicate = false;
+        // }
 
         unset($input['flag']);
 
-        $customer = (new Customer\Core)->createLocalCustomer($input, $this->merchant, $failOnDuplicate);
+        $customer = (new Customer\Core)->createLocalCustomer($input, $this->merchant);
 
         return $customer->toArrayPublic();
     }

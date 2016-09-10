@@ -21,6 +21,8 @@ class Entity extends Base\PublicEntity
     const CREATED_AT            = 'created_at';
     const UPDATED_AT            = 'updated_at';
     const DELETED_AT            = 'deleted_at';
+    
+    const SHIPPING_ADDRESS      = 'shipping_address';
 
     protected static $sign      = 'cust';
 

@@ -379,7 +379,7 @@ class Processor
         $payment->setError($code, $desc, $internalCode);
 
         $this->repo->saveOrFail($payment);
-        
+
         $this->tracePaymentFailed($error, $traceCode);
 
         $this->eventPaymentFailed();

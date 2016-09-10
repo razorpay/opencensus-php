@@ -59,6 +59,11 @@ class Core extends Base\Core
         {
             if ($address->getPrimary() === true)
             {
+                // Since this address is going to be deleted, the address cannot be primary any more.
+                $address->setPrimary(false);
+
+                $this->repo->saveOrFail($address);
+
                 // We are passing the address ID here because we want the latest address, excluding the current one
                 // since we are going to delete this one.
                 $latestAddress = $this->repo->address->fetchLatestAddress(
@@ -66,7 +71,9 @@ class Core extends Base\Core
 
                 if ($latestAddress !== null)
                 {
-                    $this->convertLatestAddressToPrimary($latestAddress, $address);
+                    $latestAddress->setPrimary(true);
+
+                    $this->repo->saveOrFail($latestAddress);
 
                     $addressId = $latestAddress->getId();
                 }
@@ -85,20 +92,6 @@ class Core extends Base\Core
             }
 
             return $this->repo->address->deleteOrFail($address);
-        });
-    }
-
-    protected function convertLatestAddressToPrimary(Entity $latestAddress, Entity $currentAddress)
-    {
-        $this->repo->transaction(function() use ($latestAddress, $currentAddress)
-        {
-            $latestAddress->setPrimary(true);
-
-            $currentAddress->setPrimary(false);
-
-            $this->repo->saveOrFail($latestAddress);
-
-            $this->repo->saveOrFail($currentAddress);
         });
     }
 

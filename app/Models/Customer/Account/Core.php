@@ -44,38 +44,33 @@ class Core extends Base\Core
             else
             {
                 throw new Exception\LogicException(
-                    'Should not reach here');
+                    'Customer already exists.',
+                    null,
+                    [
+                        'customer_id'   => $existingCustomer->getId(),
+                    ]);
             }
         }
 
-        $this->repo->transaction(function() use ($customer, $merchant)
+        $this->repo->transaction(function() use ($customer, $merchant, $input)
         {
+            // This needs to happen here because address create associates itself with the customer.
+            // Hence, it's required that the customer is saved.
             $this->repo->saveOrFail($customer);
 
-            if (isset($input['address']) === true)
+            if (empty($input[Entity::SHIPPING_ADDRESS]) === false)
             {
-                $address = $this->createOrFindAddress($input['address'], $merchant);
+                $input[Entity::SHIPPING_ADDRESS][Address\Entity::ADDRESS_TYPE] = Address\Type::SHIPPING_ADDRESS;
 
-                $customer->address()->save($address);
+                $address = (new Address\Core())->create($customer, $input[Entity::SHIPPING_ADDRESS]);
+
+                $customer->setShippingAddressId($address->getId());
+
+                $this->repo->saveOrFail($customer);
             }
         });
 
         return $customer;
-    }
-
-    protected function createOrFindAddress($addressDetails, $merchant)
-    {
-        if (empty($addressDetails[Address\Entity::ID]) === false)
-        {
-            $address = $this->repo->address->findByIdAndMerchantId(
-                $addressDetails[Address\Entity::ID], $merchant->getId());
-        }
-        else
-        {
-            $address = (new Address\Core())->create($addressDetails);
-        }
-
-        return $address;
     }
 
     public function edit($customer, $input)
