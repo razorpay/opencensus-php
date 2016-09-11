@@ -280,20 +280,6 @@ trait RepositoryFetch
                     ->findOrFailPublic($id);
     }
 
-    public function findByIdAndCustomer($id, Customer\Entity $customer)
-    {
-        return $this->newQuery()
-                    ->customerId($customer->getId())
-                    ->findOrFailPublic($id);
-    }
-
-    public function findByIdAndCustomerId($id, $customerId)
-    {
-        return $this->newQuery()
-                    ->customerId($customerId)
-                    ->findOrFailPublic($id);
-    }
-
     protected function addQueryParamDefault($query, $params, $key)
     {
         if ($params[$key] === 'null')
