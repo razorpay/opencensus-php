@@ -5,6 +5,7 @@ namespace RZP\Models\Payment;
 use App;
 use Config;
 
+use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Merchant;
@@ -62,7 +63,7 @@ class Verify
         }
         else
         {
-            ;
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_PARAMETERS, $filter);
         }
     }
 

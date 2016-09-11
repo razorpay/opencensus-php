@@ -34,8 +34,6 @@ class Gateway extends Base\Gateway
 
         $request = $this->getAuthRequestArray($content);
 
-        $this->traceGatewayPaymentRequest($request, $input);
-
         return $request;
     }
 
@@ -53,7 +51,7 @@ class Gateway extends Base\Gateway
                         Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
         }
 
-        $payment = $this->getRepo()->findByMerchantTxnRefAndCommand(
+        $payment = $this->repo->findByMerchantTxnRefAndCommand(
             $input['gateway']['vpc_MerchTxnRef'], Command::PAY);
 
         $this->verifySecureHash($input['gateway']);
@@ -79,7 +77,7 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        $payment = $this->getRepo()->findByPaymentIdAndCommand(
+        $payment = $this->repo->findByPaymentIdAndCommand(
                                 $input['payment']['id'], Command::PAY);
 
         $content = $this->getPaymentRefundRequestContent($input, $payment);
@@ -108,7 +106,7 @@ class Gateway extends Base\Gateway
 
     public function forceAuthorizeFailed($input)
     {
-        $repo = $this->getRepo();
+        $repo = $this->repo;
 
         $payment = $repo->findByPaymentIdAndCommand(
                                 $input['payment']['id'], Command::PAY);
@@ -158,7 +156,7 @@ class Gateway extends Base\Gateway
     {
         assert ($input['payment']['status'] === 'authorized');
 
-        $payment = $this->getRepo()->findByPaymentIdAndCommand(
+        $payment = $this->repo->findByPaymentIdAndCommand(
             $input['payment']['id'], Command::PAY);
 
         $capturedAmount = (int) $payment['vpc_CapturedAmount'];

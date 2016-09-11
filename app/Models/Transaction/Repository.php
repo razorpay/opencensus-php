@@ -75,7 +75,7 @@ class Repository extends Base\Repository
                             $query->orWhereIn(Entity::SETTLEMENT_ID, $setlIds);
                         }
                       })
-                      ->orderByCreatedAt()
+                      ->latest()
                       ->get();
 
         $this->trace->info(

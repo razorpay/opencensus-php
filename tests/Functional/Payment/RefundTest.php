@@ -2,10 +2,12 @@
 
 namespace RZP\Tests\Functional\Payment;
 
-use Carbon\Carbon;
-use Mockery;
 use DB;
+use Redis;
+use Mockery;
+use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 /**
@@ -197,7 +199,6 @@ class RefundTest extends TestCase
     public function testVerifyRefund()
     {
         // Case 1
-
         $payment = $this->defaultAuthPayment();
 
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
@@ -206,7 +207,7 @@ class RefundTest extends TestCase
 
         $response = $this->verifyRefund($refund2['id']);
 
-        $this->assertEquals('Refund verified successfully.', $response['verify_refund']);
+        $this->assertEquals('Refund verified successfully.', $response[0]['verify_refund']);
     }
 
     public function testVerifyBuggyRefund()

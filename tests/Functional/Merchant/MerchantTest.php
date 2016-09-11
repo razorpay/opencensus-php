@@ -136,6 +136,14 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testEditMerchantEnableInternationalFail()
+    {
+        $this->fixtures->create('pricing:standard_plan');
+        $this->fixtures->merchant->editPricingPlanId('1A0Fkd38fGZPVC');
+
+        $this->startTest();
+    }
+
     public function testEditTransactionEmailWithCsv()
     {
         $this->createMerchant();
@@ -220,11 +228,14 @@ class MerchantTest extends TestCase
                    ->on('live')
                    ->create(
                         'merchant:bank_account',
-                        ['merchant_id' => '1cXSLlUU8V9sXl']);
+                        ['merchant_id' => '1cXSLlUU8V9sXl',
+                         'entity_id'   => '1cXSLlUU8V9sXl',
+                         'type'        => 'merchant']);
 
         $activatedAt = time();
 
         $content = $this->startTest();
+
         $this->assertLessThanOrEqual($content['activated_at'], $activatedAt);
 
         // We check that the merchant balance is just zero in live mode
@@ -290,7 +301,7 @@ class MerchantTest extends TestCase
         $content = $this->startTest();
 
         $bankAccounts = $this->getEntities(
-                            'bank_account', ['with_trashed' => true], true);
+                            'bank_account', ['with_trashed' => true, 'type' => 'merchant'], true);
 
         // The old account should get deleted (hard delete) as there are
         // no settlements attached to it.
@@ -304,7 +315,7 @@ class MerchantTest extends TestCase
         $content = $this->startTest();
 
         $bankAccounts = $this->getEntities(
-                            'bank_account', ['with_trashed' => true], true);
+                            'bank_account', ['with_trashed' => true, 'type' => 'merchant'], true);
 
         // The old account should get deleted (hard delete) as there are
         // no settlements attached to it.
@@ -333,7 +344,7 @@ class MerchantTest extends TestCase
         $this->runRequestResponseFlow($testData);
 
         $bankAccounts = $this->getEntities(
-                            'bank_account', ['with_trashed' => true], true);
+                            'bank_account', ['with_trashed' => true, 'type' => 'merchant'], true);
 
         // The old account should get SOFT deleted as there are settlements
         // attached to it.
@@ -601,8 +612,9 @@ class MerchantTest extends TestCase
 
     protected function createMerchant()
     {
+        $id = '1X4hRFHFx4UiXt';
         $merchant = array(
-            'id'    => '1X4hRFHFx4UiXt',
+            'id'    => $id,
             'name'  => 'Tester 2',
             'email' => 'liveandtest@localhost.com'
         );
@@ -614,6 +626,8 @@ class MerchantTest extends TestCase
         );
 
         $content = $this->makeRequestAndGetContent($request);
+
+        $this->merchantAssignPricingPlan('1hDYlICobzOCYt', $id);
 
         $this->assertArraySelectiveEquals($merchant, $content);
 

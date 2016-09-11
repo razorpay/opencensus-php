@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base;
+use RZP\Models\BankAccount;
 use RZP\Models\Merchant;
 use RZP\Models\Pricing;
 use RZP\Models\Terminal;
@@ -58,7 +59,7 @@ class Core extends Base\Core
     {
         $this->createBalance($merchant, Mode::TEST);
 
-        (new Merchant\BankAccount\Core)->createTestBankAccount($merchant);
+        (new BankAccount\Core)->createTestBankAccount($merchant);
 
         (new Methods\Core)->setDefaultMethods($merchant);
     }
@@ -73,6 +74,10 @@ class Core extends Base\Core
     public function edit($merchant, $input)
     {
         $merchant->edit($input);
+
+        $plan = $this->repo->pricing->getMerchantPricingPlan($merchant);
+
+        (new Methods\Core)->valdiateInternationalPricingForMerchant($merchant, $plan);
 
         $this->saveAndNotify($merchant);
 

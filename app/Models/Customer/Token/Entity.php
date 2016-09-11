@@ -63,6 +63,8 @@ class Entity extends Base\PublicEntity
     );
 
     protected $public = array(
+        self::ID,
+        self::ENTITY,
         self::TOKEN,
         self::BANK,
         self::WALLET,
@@ -135,6 +137,11 @@ class Entity extends Base\PublicEntity
     public function getGatewayToken2()
     {
         return $this->getAttribute(self::GATEWAY_TOKEN2);
+    }
+
+    public function isRecurring()
+    {
+        return false;
     }
 
     public function getExpiredAt()

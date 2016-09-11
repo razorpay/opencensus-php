@@ -22,6 +22,7 @@ class ErrorCode
      * are added in future
      */
     const GATEWAY_ERROR_FATAL_ERROR                                                 = 'GATEWAY_ERROR_FATAL_ERROR';
+    const GATEWAY_ERROR_REQUEST_ERROR                                               = 'GATEWAY_ERROR_REQUEST_ERROR';
 
     const GATEWAY_ERROR_REQUEST_TIMEOUT                                             = 'GATEWAY_ERROR_REQUEST_TIMEOUT';
     const GATEWAY_ERROR_DENIED_BY_RISK                                              = 'GATEWAY_ERROR_DENIED_BY_RISK';
@@ -52,9 +53,11 @@ class ErrorCode
     const GATEWAY_ERROR_SUPPORT_GREATER_THAN_AUTH                                   = 'GATEWAY_ERROR_SUPPORT_GREATER_THAN_AUTH';
 
     const GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST                                   = 'GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST';
+    const GATEWAY_ERROR_PAYMENT_INVALID_REFERENCE_NO                                = 'GATEWAY_ERROR_PAYMENT_INVALID_REFERENCE_NO';
     const GATEWAY_ERROR_PAYMENT_INVALID_AMOUNT                                      = 'GATEWAY_ERROR_PAYMENT_INVALID_AMOUNT';
     const GATEWAY_ERROR_PAYMENT_INVALID_ACTION                                      = 'GATEWAY_ERROR_PAYMENT_INVALID_ACTION';
     const GATEWAY_ERROR_PAYMENT_INVALID_ID                                          = 'GATEWAY_ERROR_PAYMENT_INVALID_ID';
+    const GATEWAY_ERROR_PAYMENT_CANNOT_BE_RETRIEVED                                 = 'GATEWAY_ERROR_PAYMENT_CANNOT_BE_RETRIEVED';
     const GATEWAY_ERROR_PAYMENT_DENIED_NEGATIVE_BIN                                 = 'GATEWAY_ERROR_PAYMENT_DENIED_NEGATIVE_BIN';
     const GATEWAY_ERROR_PAYMENT_INVALID_CURRENCY                                    = 'GATEWAY_ERROR_PAYMENT_INVALID_CURRENCY';
     const GATEWAY_ERROR_PAYMENT_INVALID_UDF                                         = 'GATEWAY_ERROR_PAYMENT_INVALID_UDF';
@@ -102,6 +105,8 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED                                    = 'BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED';
     const BAD_REQUEST_PAYMENT_ALREADY_CAPTURED                                      = 'BAD_REQUEST_PAYMENT_ALREADY_CAPTURED';
     const BAD_REQUEST_PAYMENT_ALREADY_REFUNDED                                      = 'BAD_REQUEST_PAYMENT_ALREADY_REFUNDED';
+    const BAD_REQUEST_PAYMENT_ALREADY_REFUND_INITIATED                              = 'BAD_REQUEST_PAYMENT_ALREADY_REFUND_INITIATED';
+    const BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS                         = 'BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS';
     const BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED                                = 'BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED';
     const BAD_REQUEST_PAYMENT_CARD_IS_NOT_ARRAY                                     = 'BAD_REQUEST_PAYMENT_CARD_IS_NOT_ARRAY';
     const BAD_REQUEST_PAYMENT_CAPTURE_ONLY_AUTHORIZED                               = 'BAD_REQUEST_PAYMENT_CAPTURE_ONLY_AUTHORIZED';
@@ -109,6 +114,7 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_CARD_NOT_PROVIDED                                     = 'BAD_REQUEST_PAYMENT_CARD_NOT_PROVIDED';
     const BAD_REQUEST_PAYMENT_CARD_INVALID_CVV                                      = 'BAD_REQUEST_PAYMENT_CARD_INVALID_CVV';
     const BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED                                   = 'BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED';
+    const BAD_REQUEST_PAYMENT_STATUS_CAPTURE_NOT_PROCESSED                          = 'BAD_REQUEST_PAYMENT_STATUS_CAPTURE_NOT_PROCESSED';
     const BAD_REQUEST_PAYMENT_FULLY_REFUNDED                                        = 'BAD_REQUEST_PAYMENT_FULLY_REFUNDED';
     const BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_CAPTURED                   = 'BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_CAPTURED';
     const BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_UNREFUNDED                 = 'BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_UNREFUNDED';
@@ -142,6 +148,8 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_BLOCKED_BY_BANK_DUE_TO_RISK_CHECKS_FAILURE            = 'BAD_REQUEST_PAYMENT_BLOCKED_BY_BANK_DUE_TO_RISK_CHECKS_FAILURE';
     const BAD_REQUEST_PAYMENT_TIMED_OUT                                             = 'BAD_REQUEST_PAYMENT_TIMED_OUT';
     const BAD_REQUEST_PAYMENT_BANK_NOT_ENABLED_FOR_MERCHANT                         = 'BAD_REQUEST_PAYMENT_BANK_NOT_ENABLED_FOR_MERCHANT';
+    const BAD_REQUEST_PAYMENT_WALLET_NOT_SUPPORTED                                  = 'BAD_REQUEST_PAYMENT_WALLET_NOT_SUPPORTED';
+    const BAD_REQUEST_PAYMENT_WALLET_NOT_PROVIDED                                   = 'BAD_REQUEST_PAYMENT_WALLET_NOT_PROVIDED';
     const BAD_REQUEST_PAYMENT_WALLET_NOT_ENALBED_FOR_MERCHANT                       = 'BAD_REQUEST_PAYMENT_WALLET_NOT_ENALBED_FOR_MERCHANT';
     const BAD_REQUEST_PAYMENT_CARD_NOT_ENALBED_FOR_MERCHANT                         = 'BAD_REQUEST_PAYMENT_CARD_NOT_ENALBED_FOR_MERCHANT';
     const BAD_REQUEST_PAYMENT_EMI_NOT_ENALBED_FOR_MERCHANT                          = 'BAD_REQUEST_PAYMENT_EMI_NOT_ENALBED_FOR_MERCHANT';
@@ -189,6 +197,9 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_FEES_OR_SERVICE_TAX_TAMPERED                          = 'BAD_REQUEST_PAYMENT_FEES_OR_SERVICE_TAX_TAMPERED';
     const BAD_REQUEST_PAYMENT_MISSING_DATA                                          = 'BAD_REQUEST_PAYMENT_MISSING_DATA';
     const BAD_REQUEST_PAYMENT_PARTIAL_AMOUNT_APPROVED                               = 'BAD_REQUEST_PAYMENT_PARTIAL_AMOUNT_APPROVED';
+    const BAD_REQUEST_PAYMENT_PROBLEM_IN_UPDATING                                   = 'BAD_REQUEST_PAYMENT_PROBLEM_IN_UPDATING';
+    const BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT                              = 'BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT';
+    const BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED                                   = 'BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED';
 
     const BAD_REQUEST_CARD_AVS_FAILED                                               = 'BAD_REQUEST_CARD_AVS_FAILED';
     const BAD_REQUEST_CARD_STOLEN_OR_LOST                                           = 'BAD_REQUEST_CARD_STOLEN_OR_LOST';
@@ -259,6 +270,14 @@ class ErrorCode
 
     const BAD_REQUEST_PAYMENT_VERIFICATION_FAILED                                   = 'BAD_REQUEST_PAYMENT_VERIFICATION_FAILED';
 
+    const BAD_REQUEST_INVALID_CHECKOUT_ID                                           = 'BAD_REQUEST_INVALID_CHECKOUT_ID';
+    const BAD_REQUEST_INVALID_PLATFORM                                              = 'BAD_REQUEST_INVALID_PLATFORM';
+    const BAD_REQUEST_INVALID_LIBRARY                                               = 'BAD_REQUEST_INVALID_LIBRARY';
+    const BAD_REQUEST_INVALID_BROWSER                                               = 'BAD_REQUEST_INVALID_BROWSER';
+    const BAD_REQUEST_INVALID_OS                                                    = 'BAD_REQUEST_INVALID_OS';
+    const BAD_REQUEST_INVALID_DEVICE                                                = 'BAD_REQUEST_INVALID_DEVICE';
+    const BAD_REQUEST_INVALID_INTEGRATION                                           = 'BAD_REQUEST_INVALID_INTEGRATION';
+
     const SERVER_ERROR_INVALID_ARGUMENT                                             = 'SERVER_ERROR_INVALID_ARGUMENT';
     const SERVER_ERROR_DB_QUERY_FAILED                                              = 'SERVER_ERROR_DB_QUERY_FAILED';
     const SERVER_ERROR_LOGICAL_ERROR                                                = 'SERVER_ERROR_LOGICAL_ERROR';
@@ -270,6 +289,7 @@ class ErrorCode
     const SERVER_ERROR_MYSQL_ENTRY_NOT_FOUND                                        = 'SERVER_ERROR_MYSQL_ENTRY_NOT_FOUND';
     const SERVER_ERROR_AWS_FAILURE                                                  = 'SERVER_ERROR_AWS_FAILURE';
     const SERVER_ERROR_PRICING_RULE_ABSENT                                          = 'SERVER_ERROR_PRICING_RULE_ABSENT';
+    const SERVER_ERROR_CARD_NUMBER_LOGGED                                           = 'SERVER_ERROR_CARD_NUMBER_LOGGED';
 
     const BAD_REQUEST_CUSTOMER_ALREADY_EXISTS                                       = 'BAD_REQUEST_CUSTOMER_ALREADY_EXISTS';
     const BAD_REQUEST_CUSTOMER_CARD_ALREADY_EXISTS                                  = 'BAD_REQUEST_CUSTOMER_CARD_ALREADY_EXISTS';
@@ -277,6 +297,7 @@ class ErrorCode
     const BAD_REQUEST_CUSTOMER_WALLET_ALREADY_EXISTS                                = 'BAD_REQUEST_CUSTOMER_WALLET_ALREADY_EXISTS';
 
     const BAD_REQUEST_RECONCILIATION                                                = 'BAD_REQUEST_RECONCILIATION';
+    const BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE                          = 'BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE';
 
     const BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED                                     = 'BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED';
     const BAD_REQUEST_OTP_MAXIMUM_ATTEMPTS_REACHED                                  = 'BAD_REQUEST_OTP_MAXIMUM_ATTEMPTS_REACHED';

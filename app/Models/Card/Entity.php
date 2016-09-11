@@ -203,6 +203,11 @@ class Entity extends Base\PublicEntity
         return $this->getNetworkCodeAttribute();
     }
 
+    public function getNetworkColorCode()
+    {
+        return Card\Network::getColorCode($this->getNetworkCode());
+    }
+
     protected function getNetworkCodeAttribute()
     {
         return Card\Network::getCode($this->getNetwork());
@@ -236,6 +241,19 @@ class Entity extends Base\PublicEntity
     public function getExpiryYear()
     {
         return $this->getAttribute(self::EXPIRY_YEAR);
+    }
+
+    public function getTypeElseDefault()
+    {
+        // Fee based on the method type
+        $cardType = $this->getType();
+
+        if ($cardType === Card\Type::UNKNOWN)
+        {
+            $cardType = Card\Type::DEBIT;
+        }
+
+        return $cardType;
     }
 
     public function setCountry($country)

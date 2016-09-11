@@ -15,12 +15,12 @@ use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Core;
 use Carbon\Carbon;
-use Lib\PhoneBook;
 use RZP\Models\Customer\Token;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
-use RZP\Gateway\Wallet\Payumoney\Action;
+use RZP\Gateway\Wallet\Base\Action;
 use RZP\Gateway\Wallet\Payumoney\ResponseCodeMap;
+use RZP\Constants\HashAlgo;
 
 class Gateway extends Base\Gateway
 {
@@ -449,7 +449,7 @@ class Gateway extends Base\Gateway
     {
         $content = [];
 
-        $wallet = $this->getRepo()->fetchWalletByPaymentId($input['payment']['id']);
+        $wallet = $this->repo->fetchWalletByPaymentId($input['payment']['id']);
 
         $content =  array(
             'merchantKey'   => $this->getMerchantId($input['terminal']),
@@ -746,7 +746,7 @@ class Gateway extends Base\Gateway
 
     protected function getHashOfString($str)
     {
-        return strtolower(hash('sha512', $str, false));
+        return strtolower(hash(HashAlgo::SHA512, $str, false));
     }
 
     protected function getWalletContentFromVerify($payment, array $content)
@@ -787,14 +787,6 @@ class Gateway extends Base\Gateway
     protected function shouldReturnIfPaymentNullInVerifyFlow($verify)
     {
         return false;
-    }
-
-    protected function getFormattedContact($contact)
-    {
-        // Constructor does the basic validation
-        $phoneBook = new PhoneBook($contact, true);
-
-        return $phoneBook->format(PhoneBook::DOMESTIC);
     }
 
     protected function getValidWalletToken($input)

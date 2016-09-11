@@ -4,8 +4,8 @@ namespace RZP\Models\Customer;
 
 use RZP\Constants\Table;
 use RZP\Models\Base;
-use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Base\Traits\NotesTrait;
 
 class Entity extends Base\PublicEntity
 {
@@ -50,6 +50,9 @@ class Entity extends Base\PublicEntity
         self::CONTACT,
         self::ADDRESS,
         self::MERCHANT_ID,
+        self::CREATED_AT,
+        self::UPDATED_AT,
+        self::DELETED_AT,
     );
 
     protected $public = array(

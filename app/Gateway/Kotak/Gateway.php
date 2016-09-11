@@ -10,6 +10,7 @@ use RZP\Gateway\Kotak;
 use Requests;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use RZP\Constants\HashAlgo;
 
 class Gateway extends Base\Gateway
 {
@@ -62,7 +63,7 @@ class Gateway extends Base\Gateway
 
         $this->verifySecureHash($input);
 
-        $payment = $this->getRepo()->findByTxnRefAndType(
+        $payment = $this->repo->findByTxnRefAndType(
             $input['gateway']['TxnRefNo'], Type::PURCHASE);
 
         $payment->fill($input['gateway']);
@@ -80,7 +81,7 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        $payment = $this->getRepo()->findByPaymentIdAndType(
+        $payment = $this->repo->findByPaymentIdAndType(
                                 $input['payment']['id'], Type::PURCHASE);
 
         $content = array(
@@ -188,6 +189,6 @@ class Gateway extends Base\Gateway
     {
         $str = $this->getSecret() . $str;
 
-        return hash('sha256', $str, false);
+        return hash(HashAlgo::SHA256, $str, false);
     }
 }

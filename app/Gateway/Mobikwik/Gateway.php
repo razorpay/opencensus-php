@@ -7,7 +7,6 @@ use RZP\Error;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Base;
-// use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
@@ -52,7 +51,7 @@ class Gateway extends Base\Gateway
 
         $this->verifySecureHash($input['gateway']);
 
-        $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
+        $payment = $this->repo->findByPaymentIdAndActionOrFail(
                             $input['gateway']['orderid'], Action::AUTHORIZE);
 
         $input['gateway']['received'] = 1;
@@ -436,7 +435,7 @@ class Gateway extends Base\Gateway
 
         $this->addTestMerchantIdIfTestMode($content);
 
-        // $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
+        // $payment = $this->repo->findByPaymentIdAndActionOrFail(
         //                         $input['payment']['id'], Action::AUTHORIZE);
 
         $content['txid'] = $input['payment']['id'];

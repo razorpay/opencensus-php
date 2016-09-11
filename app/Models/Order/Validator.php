@@ -11,14 +11,15 @@ use RZP\Error\ErrorCode;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        Entity::AMOUNT         =>  'required|integer|max:50000000',
-        Entity::CURRENCY       =>  'required|size:3|in:INR',
-        Entity::RECEIPT        =>  'required|string|max:40',
-        Entity::CUSTOMER_ID    =>  'sometimes',
-        Entity::NOTES          =>  'sometimes|notes',
-        Entity::METHOD         =>  'sometimes|in:netbanking',
-        Entity::ACCOUNT_NUMBER =>  'sometimes|string|max:50|min:5',
-        Entity::BANK           =>  'sometimes',
+        Entity::AMOUNT          =>  'required|integer|max:50000000',
+        Entity::CURRENCY        =>  'required|size:3|in:INR',
+        Entity::RECEIPT         =>  'required|string|max:40',
+        Entity::PAYMENT_CAPTURE =>  'sometimes|boolean',
+        Entity::CUSTOMER_ID     =>  'sometimes',
+        Entity::NOTES           =>  'sometimes|notes',
+        Entity::METHOD          =>  'sometimes|in:netbanking',
+        Entity::ACCOUNT_NUMBER  =>  'sometimes|string|max:50|min:5',
+        Entity::BANK            =>  'sometimes',
     );
 
     public function validateOrderNotPaid($order)
@@ -27,7 +28,7 @@ class Validator extends Base\Validator
             ($order->isAuthorized()))
         {
             // Order already paid for
-            throw new Exception\BadRequestValidationFailureException(
+            throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID);
         }
     }

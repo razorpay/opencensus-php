@@ -289,18 +289,6 @@ class AuthorizeTest extends TestCase
         $this->startTest();
     }
 
-    public function testCancelPayment()
-    {
-        $payment = $this->fixtures->create(
-            'payment',
-            ['created_at' => time() - 10 * 60, 'status' => 'created', 'terminal_id' => '1n25f6uN5S1Z5a']);
-
-        $this->cancelPayment($payment->getPublicId());
-
-        $contentType = 'application/json';
-        $this->assertContentTypeForResponse($contentType, $this->response);
-    }
-
     public function testAuthorizeFailedPayment()
     {
         $this->markTestIncomplete();

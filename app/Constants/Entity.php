@@ -51,6 +51,7 @@ class Entity
 
     const ATOM                  = 'atom';
     const HDFC                  = 'hdfc';
+    const EBS                   = 'ebs';
     const AMEX                  = 'amex';
     const PAYTM                 = 'paytm';
     const SHARP                 = 'sharp';
@@ -65,6 +66,7 @@ class Entity
     const NETBANKING_HDFC       = 'netbanking_hdfc';
     const NETBANKING_KOTAK      = 'netbanking_kotak';
     const WALLET_PAYUMONEY      = 'wallet_payumoney';
+    const WALLET_OLAMONEY       = 'wallet_olamoney';
 
     public static $namespace = array(
         self::IIN                   => \RZP\Models\Card\IIN::class,
@@ -83,6 +85,7 @@ class Entity
         self::PRICING               => \RZP\Models\Pricing::class,
         self::WEBHOOK               => \RZP\Models\Merchant\Webhook::class,
         self::BILLDESK              => \RZP\Gateway\Billdesk::class,
+        self::EBS                   => \RZP\Gateway\Ebs::class,
         self::CUSTOMER              => \RZP\Models\Customer::class,
         self::EMI_PLAN              => \RZP\Models\Emi::class,
         self::MOBIKWIK              => \RZP\Gateway\Mobikwik::class,
@@ -92,7 +95,7 @@ class Entity
         self::AXIS_GENIUS           => \RZP\Gateway\AxisGenius::class,
         self::CYBERSOURCE           => \RZP\Gateway\Cybersource::class,
         self::INVOICE_ITEM          => \RZP\Models\Invoice\InvoiceItem::class,
-        self::BANK_ACCOUNT          => \RZP\Models\Merchant\BankAccount::class,
+        self::BANK_ACCOUNT          => \RZP\Models\BankAccount::class,
         self::WALLET_PAYZAPP        => \RZP\Gateway\Wallet\Payzapp::class,
         self::TERMINAL_ACTION       => \RZP\Models\Terminal\Action::class,
         self::NETBANKING_HDFC       => \RZP\Gateway\Netbanking\Hdfc::class,
@@ -100,6 +103,9 @@ class Entity
         self::DAILY_SETTLEMENT      => \RZP\Models\Settlement\Daily::class,
         self::NETBANKING_KOTAK      => \RZP\Gateway\Netbanking\Kotak::class,
         self::WALLET_PAYUMONEY      => \RZP\Gateway\Wallet\Payumoney::class,
+        self::SETTLEMENT_DETAILS    => \RZP\Models\Settlement\Details::class,
+        self::WALLET_OLAMONEY       => \RZP\Gateway\Wallet\Olamoney::class,
+        self::TERMINAL_ACTION       => \RZP\Models\Terminal\Action::class,
         self::PAYMENT_ANALYTICS     => \RZP\Models\Payment\Analytics::class,
         self::SETTLEMENT_DETAILS    => \RZP\Models\Settlement\Details::class,
     );
@@ -109,6 +115,7 @@ class Entity
         self::NETBANKING_HDFC   => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_KOTAK  => \RZP\Gateway\Netbanking\Base::class,
         self::WALLET_PAYUMONEY  => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_OLAMONEY   => \RZP\Gateway\Wallet\Base::class,
     );
 
     public static function getEntityNamespace($entity)
@@ -169,13 +176,27 @@ class Entity
 
     public static function validateIsEntity($entity)
     {
-        if (constant(__CLASS__ . '::' . strtoupper($entity)) === null)
+        if (self::isValidEntity($entity) === false)
         {
             Trace::error(
                 TraceCode::ERROR_INVALID_ARGUMENT,
                 ['entity' => $entity]);
 
-            throw new Exception\RuntimeException(
+            throw new Exception\BadRequestValidationFailureException(
+                'Not a valid entity.');
+        }
+    }
+
+    public static function isValidEntity($entity)
+    {
+        return (defined(__CLASS__ . '::' . strtoupper($entity)));
+    }
+
+    public static function validateEntityOrFailPublic($entity)
+    {
+        if (self::isValidEntity($entity) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
                 'Not a valid entity.');
         }
     }

@@ -35,7 +35,8 @@ class CreateSettlementDetailsTable extends Migration
             $table->integer(Entity::COUNT)
                   ->nullable();
 
-            $table->integer(Entity::AMOUNT);
+            $table->integer(Entity::AMOUNT)
+                  ->unsigned();
 
             $table->string(Entity::DESCRIPTION)
                   ->nullable();
@@ -69,7 +70,7 @@ class CreateSettlementDetailsTable extends Migration
                 Table::SETTLEMENT_DETAIL.'_'.Entity::MERCHANT_ID.'_foreign');
 
             $table->dropForeign(
-                Table::SETTLEMENT_DETAIL.'_',Entity::SETTLEMENT_ID.'_foreign');
+                Table::SETTLEMENT_DETAIL.'_'.Entity::SETTLEMENT_ID.'_foreign');
         });
 
         Schema::drop(Table::SETTLEMENT_DETAIL);

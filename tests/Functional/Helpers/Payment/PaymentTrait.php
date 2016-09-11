@@ -9,9 +9,11 @@ use Mockery;
 use Requests;
 use Symfony\Component\DomCrawler\Crawler;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\EntityActionTrait;
 
 trait PaymentTrait
 {
+    use EntityActionTrait;
     use PaymentAmexTrait;
     use PaymentAtomTrait;
     use PaymentAxisGeniusTrait;
@@ -25,6 +27,7 @@ trait PaymentTrait
     use PaymentMobikwikTrait;
     use PaymentSbiepayTrait;
     use PaymentCybersourceTrait;
+    use PaymentEbsTrait;
     use PaymentCreationTrait;
 
     use RequestResponseFlowTrait
@@ -176,6 +179,11 @@ trait PaymentTrait
             'currency'          => 'INR',
             'merchant_order_id' => $payment['notes']['merchant_order_id']);
 
+        return $this->getSignature($data, $secret);
+    }
+
+    protected function getSignature(array $data, $secret = '')
+    {
         if ($secret === '')
         {
             $secret = $this->ba->getSecret();
@@ -249,16 +257,13 @@ trait PaymentTrait
 
         $this->assertArrayHasKey('razorpay_payment_id', $content);
 
-        $this->assertLessThanOrEqual(2, count($content));
-        if (count($content) === 2)
-        {
-            $this->assertEquals(200, $content['http_status_code']);
-        }
+        $count = count($content);
+        $this->assertLessThanOrEqual(4, $count);
 
         return $content;
     }
 
-    protected function doAuthPayment($payment = null)
+    protected function doAuthPayment($payment = null, $server = null)
     {
         if ($payment === null)
         {
@@ -269,6 +274,11 @@ trait PaymentTrait
             'method' => 'POST',
             'url' => '/payments',
             'content' => $payment);
+
+        if (isset($server))
+        {
+            $request['server'] = $server;
+        }
 
         $this->ba->publicAuth();
 
@@ -439,10 +449,10 @@ trait PaymentTrait
             'url' => '/payments/'.$id.'/cancel');
 
         $this->ba->publicAuth();
-        $content = $this->makeRequestAndGetContent($request);
+        return $this->makeRequestAndGetContent($request);
 
-        $this->assertArrayHasKey('status', $content);
-        $this->assertEquals($content['status'], 'failed');
+        // $this->assertArrayHasKey('status', $content);
+        // $this->assertEquals($content['status'], 'failed');
     }
 
     protected function addPaymentMetadata($id, $content)
@@ -518,7 +528,7 @@ trait PaymentTrait
         $content = array();
 
         $request = array(
-            'method' => 'GET',
+            'method' => 'POST',
             'url' => '/refunds/'.$id.'/verify',
             'content' => $content);
 
@@ -593,150 +603,6 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function deleteTerminal($mid, $tid)
-    {
-        $request = array(
-            'url' => '/merchants/'.$mid.'/terminals/'.$tid,
-            'method' => 'delete');
-
-        $this->ba->appAuth();
-
-        return $this->makeRequestAndGetContent($request);
-    }
-
-    protected function deleteTerminal2($tid)
-    {
-        $request = array(
-            'url' => '/terminals/'.$tid,
-            'method' => 'delete');
-
-        $this->ba->appAuth();
-
-        return $this->makeRequestAndGetContent($request);
-    }
-
-    protected function restoreTerminal($tid)
-    {
-        $request = array(
-            'url' => '/terminals/'.$tid.'/restore',
-            'method' => 'put');
-
-        $this->ba->appAuth();
-
-        return $this->makeRequestAndGetContent($request);
-    }
-
-
-    protected function editTerminal($tid, $input)
-    {
-        $request = array(
-            'url' => '/terminals/'.$tid,
-            'method' => 'put',
-            'content' => $input);
-
-        $this->ba->appAuth();
-
-        return $this->makeRequestAndGetContent($request);
-    }
-
-    protected function createWebhook(array $input = array())
-    {
-        $defaultInput = array(
-            'url' => 'http://localhost/v1/dummy/route',
-            'events' => [
-                'payment.authorized' => '1',
-            ]);
-
-        $input = array_merge($defaultInput, $input);
-
-        $request = array(
-            'url' => '/webhooks',
-            'method' => 'post',
-            'content' => $input);
-
-        $this->ba->proxyAuth();
-
-        return $this->makeRequestAndGetContent($request);
-    }
-
-    protected function addCredits(array $input = array(), $mid = '10000000000000')
-    {
-        $request = array(
-            'url' => '/merchants/'.$mid.'/credits_log',
-            'method' => 'POST',
-            'content' => $input);
-
-        $this->ba->appAuth();
-
-        return $this->makeRequestAndGetContent($request);
-    }
-
-    protected function editCredits($creditsId, array $input = array(), $mid = '10000000000000')
-    {
-        $request = array(
-            'url' => '/merchants/'.$mid.'/credits/'.$creditsId,
-            'method' => 'PUT',
-            'content' => $input);
-
-        $this->ba->appAuth();
-
-        return $this->makeRequestAndGetContent($request);
-    }
-
-    protected function editWebhook($wid, $input)
-    {
-        $request = array(
-            'url' => '/webhooks/'.$wid,
-            'method' => 'put',
-            'content' => $input);
-
-        $this->ba->proxyAuth();
-
-        return $this->makeRequestAndGetContent($request);
-    }
-
-    protected function merchantEditCredits($id, $credits)
-    {
-        $request = array(
-            'url' => '/merchants/'.$id.'/credits',
-            'method' => 'post',
-            'content' => ['credits' => $credits]);
-
-        $this->ba->appAuth();
-
-        return $this->makeRequestAndGetContent($request);
-    }
-
-    protected function fetchReport($entity, $content, $id = '10000000000000')
-    {
-        $request = array(
-            'url' => '/reports/'.$entity,
-            'method' => 'get',
-            'content' => $content);
-
-        $this->ba->proxyAuth();
-
-        return $this->makeRequestAndGetContent($request);
-    }
-
-    protected function fetchBalance($mid = '10000000000000')
-    {
-        return $this->getEntityById('balance', $mid, true);
-    }
-
-    protected function fetchInvoice(array $input)
-    {
-        $request = [
-            'url'       => '/reports/invoice',
-            'method'    => 'GET',
-            'content'   => $input
-        ];
-
-        $this->ba->proxyAuth();
-
-        return $this->makeRequestAndGetContent($request);
-    }
-
     protected function getAndMatchPayment($id, $paymentResponse = array())
     {
         $testData['request']['url'] = '/payments/'.$id;
@@ -783,29 +649,6 @@ trait PaymentTrait
         $payment['terminal_id'] = '1n25f6uN5S1Z5a';
 
         return $payment;
-    }
-
-    protected function getPaymentMethods()
-    {
-        $request = [
-            'url' => '/methods',
-            'method' => 'get',
-        ];
-
-        return $this->makeRequestAndGetContent($request);
-    }
-
-    protected function setPaymentMethods($methods, $merchantId = '10000000000000')
-    {
-        $this->ba->appAuth();
-
-        $request = [
-            'url' => '/merchants/'.$merchantId.'/methods',
-            'method' => 'put',
-            'methods' => json_encode($methods)
-        ];
-
-        return $this->makeRequestAndGetContent($request);
     }
 
     protected function getDefaultPaymentArray()
@@ -885,10 +728,15 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function getDefaultNetbankingPaymentArray()
+    protected function getDefaultNetbankingPaymentArray($bank = null)
     {
         $payment = $this->getDefaultPaymentArray();
         $payment['method'] = 'netbanking';
+
+        if ($bank !== null)
+        {
+            $payment['bank'] = $bank;
+        }
 
         return $payment;
     }
@@ -1212,33 +1060,14 @@ trait PaymentTrait
                             "Success" => true,
                         );
 
-                        $cardToTokenMap = array(
-                                '41476700000006'   => '1a2b3c4b3e',
-                                '4111111111111111' => '1a2b3c4b5e',
-                                '4280951000002433' => '1a2b3c4b4e',
-                                '4111460212312338' => '1a2b3c4b6e',
-                                '4000400000000004' => '1a2b3c4b7e',
-                                '4012001038443335' => '1a2b3c4d8e',
-                                '555555555555558'  => '1a2b3c4d9e',
-                                '42809500000009'   => '1a2b3c4d2e',
-                            );
-
                         switch ($route)
                         {
                             case 'REST/Tokenize':
-                                if(isset($cardToTokenMap[$input['Data']]))
-                                {
-                                    $response['Token'] = $cardToTokenMap[$input['Data']];
-                                }
-                                else
-                                {
-                                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
-                                }
+                                $response['Token'] = base64_encode($input['Data']);
                                 break;
 
                             case 'REST/Detokenize':
-                                $tokenToCardMap = array_flip($cardToTokenMap);
-                                $response['Value'] = $tokenToCardMap[$input['Token']];
+                                $response['Value'] = base64_decode($input['Token']);
                                 break;
 
                             case 'REST/ValidateToken':

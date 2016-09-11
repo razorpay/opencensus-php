@@ -52,8 +52,7 @@ class AwsInstance
             return $this->data;
         }
 
-        if (($this->cloud === false) or
-            ($this->env !== 'production'))
+        if ($this->cloud === false)
         {
             $data = $this->generateRandomInstanceData();
         }

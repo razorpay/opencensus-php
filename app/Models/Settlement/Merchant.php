@@ -7,7 +7,7 @@ use RZP\Models;
 use RZP\Models\Base;
 use RZP\Exception;
 use RZP\Models\Adjustment;
-use RZP\Models\Merchant\BankAccount;
+use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
 use RZP\Models\Settlement;
 use RZP\Models\Settlement\Details as SetlDetails;
@@ -324,6 +324,8 @@ class Merchant
         $ba = (new BankAccount\Entity)->build($attributes, true);
 
         $ba->merchant()->associate($merchant);
+
+        $ba->associateMerchant($merchant);
 
         $merchant->setRelation('bankAccount', $ba);
 

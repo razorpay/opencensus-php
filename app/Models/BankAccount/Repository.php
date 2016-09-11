@@ -1,9 +1,9 @@
 <?php
 
-namespace RZP\Models\Merchant\BankAccount;
+namespace RZP\Models\BankAccount;
 
 use RZP\Models\Base;
-use RZP\Models\Merchant\BankAccount;
+use RZP\Models\BankAccount;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 
@@ -18,30 +18,56 @@ class Repository extends Base\Repository
     protected $appFetchParamRules = array(
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
         self::WITH_TRASHED      => 'sometimes|in:0,1',
+        Entity::TYPE            => 'sometimes|in:customer,merchant',
     );
-
-    public function updateBankAccount($ba)
-    {
-        $ba->saveOrFail();
-    }
 
     public function getBankAccount($merchant)
     {
-        return $merchant->bankAccount;
+        return $this->newQuery()
+                    ->where(Entity::ENTITY_ID, '=', $merchant->getId())
+                    ->where(Entity::TYPE, '=', Type::MERCHANT)
+                    ->first();
+    }
+
+    public function getBankAccountsForCustomer($customer)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ENTITY_ID, '=', $customer->getId())
+                    ->where(Entity::TYPE, '=', Type::CUSTOMER)
+                    ->get();
     }
 
     public function getAllOrderedByCreatedAt()
     {
         return $this->newQuery()
-                    ->orderBy(BankAccount\Entity::CREATED_AT)
+                    ->oldest()
                     ->get();
     }
 
-    public function getBankAccountsBetweenTimestamp($from, $to)
+    public function getAllActivatedMerchantAccountsOrderedByCreatedAt()
+    {
+        return $this->newQuery()
+                    ->where(BankAccount\Entity::TYPE, '=', BankAccount\Type::MERCHANT)
+                    ->oldest()
+                    ->get();
+    }
+
+    public function getMerchantBankAccountsBetweenTimestamp($from, $to)
     {
         return $this->newQuery()
                     ->whereBetween(BankAccount\Entity::CREATED_AT, array($from, $to))
-                    ->orderBy(BankAccount\Entity::CREATED_AT)
+                    ->where(Entity::TYPE, '=', Type::MERCHANT)
+                    ->oldest()
+                    ->get();
+    }
+
+    public function fetchByEntityIdAndType($entityId, $type, $merchantId)
+    {
+        return $this->newQuery()
+                    ->where(BankAccount\Entity::TYPE, '=', $type)
+                    ->where(BankAccount\Entity::ENTITY_ID, '=', $entityId)
+                    ->where(BankAccount\Entity::MERCHANT_ID, '=', $merchantId)
+                    ->oldest()
                     ->get();
     }
 
@@ -49,6 +75,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->whereBetween(BankAccount\Entity::CREATED_AT, array($from, $to))
+                    ->where(Entity::TYPE, '=', Type::MERCHANT)
                     ->count();
     }
 
@@ -63,15 +90,6 @@ class Repository extends Base\Repository
         {
             $query->withTrashed();
         }
-    }
-
-    public function bankAccountsWhereIdNullOrBlank()
-    {
-        return $this->query()
-                    ->where(Entity::ID, '=', '')
-                    ->orWhereNull(BankAccount\Entity::ID)
-                    ->take(500)
-                    ->get();
     }
 
     /**

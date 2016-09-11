@@ -108,7 +108,21 @@ class Report extends Service
                 'time_taken'    => $timeTaken
             ]);
 
-        return $entities->toArrayReport();
+        $data = $entities->toArrayReport();
+
+        $timeTaken = time() - $begin;
+
+        $this->trace->debug(
+            TraceCode::MERCHANT_REPORT_GENERATION,
+            [
+                'entity'        => $entity,
+                'from'          => $from,
+                'to'            => $to,
+                'merchantId'    => $merchantId,
+                'time_taken'    => $timeTaken
+            ]);
+
+        return $data;
     }
 
     public function getInvoice($input)
@@ -127,12 +141,12 @@ class Report extends Service
         {
             // Gets the total fees and service tax of transactions of the merchants
             // before 15th november and after 15th november.
-            $dataBefore15Nov = (new Transaction\Repository)->fetchDataForInvoice(
+            $dataBefore15Nov = $this->repo->transaction->fetchDataForInvoice(
                 $merchantId,
                 $from,
                 self::SWACH_BHARAT_CUTOFF_TIMESTAMP);
 
-            $dataAfter15Nov  = (new Transaction\Repository)->fetchDataForInvoice(
+            $dataAfter15Nov  = $this->repo->transaction->fetchDataForInvoice(
                 $merchantId,
                 self::SWACH_BHARAT_CUTOFF_TIMESTAMP,
                 $to);
@@ -148,7 +162,7 @@ class Report extends Service
         }
         else
         {
-            $data = (new Transaction\Repository)->fetchDataForInvoice($merchantId, $from, $to);
+            $data = $this->repo->transaction->fetchDataForInvoice($merchantId, $from, $to);
 
             $sbCessApplied = $this->isCessApplicable($input, $this->SBCessMonth);
 
@@ -296,6 +310,6 @@ class Report extends Service
     protected function increaseAllowedSystemLimits()
     {
         ini_set('memory_limit', '1024M');
-        set_time_limit(301);
+        set_time_limit(501);
     }
 }

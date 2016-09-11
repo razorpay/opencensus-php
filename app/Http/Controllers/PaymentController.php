@@ -3,9 +3,9 @@
 namespace RZP\Http\Controllers;
 
 use RZP\Http\ApiResponse;
-use RZP\Exception\RecoverableException;
 use RZP\Models\Payment;
 use RZP\Models\Card;
+use RZP\Trace\TraceCode;
 use Request;
 use View;
 
@@ -16,6 +16,8 @@ class PaymentController extends Controller
 
     public function __construct()
     {
+        parent::__construct();
+
         $this->payment = new Payment\Service();
         $this->refund = new Payment\Refund\Service();
     }
@@ -251,18 +253,12 @@ class PaymentController extends Controller
         return (new Payment\Service)->sendReminderMerchantMailForAuthorizedPayments();
     }
 
-    public function postComputeServiceTax()
-    {
-        $data = $this->payment->computeServiceTax();
-        return ApiResponse::json($data);
-    }
-
     public function postDummyRoute()
     {
         $input = Request::all();
 
         $this->app['trace']->info(
-            \Trace\TraceCode::PAYMENT_WEBHOOK,
+            TraceCode::PAYMENT_WEBHOOK,
             $input);
     }
 
@@ -275,9 +271,23 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getRefundVerify($id)
+    public function postRefundVerify($ids)
     {
-        $data = $this->refund->verify($id);
+        $data = $this->refund->verify($ids);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postCaptureVerify($id)
+    {
+        $data = $this->payment->verifyCapture($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postManualGatewayRefund($refundIds)
+    {
+        $data = $this->payment->manualGatewayRefund($refundIds);
 
         return ApiResponse::json($data);
     }
