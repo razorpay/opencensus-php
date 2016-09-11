@@ -11,7 +11,7 @@ class Validator extends Base\Validator
         Entity::COMPONENT       => 'required|max:20',
         Entity::TYPE            => 'required|in:debit,credit',
         Entity::COUNT           => 'sometimes|integer',
-        Entity::AMOUNT          => 'required|integer',
+        Entity::AMOUNT          => 'required',
         Entity::DESCRIPTION     => 'sometimes|max:255'
     );
 

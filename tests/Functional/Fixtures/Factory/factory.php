@@ -37,7 +37,7 @@ $factory(\RZP\Models\Merchant\Balance\Entity::class, [
     'balance' => 0,
 ]);
 
-$factory(\RZP\Models\Merchant\BankAccount\Entity::class, [
+$factory(\RZP\Models\BankAccount\Entity::class, [
     'id' => $faker->uniqueid,
     'merchant_id' => '10000000000000',
     'entity_id'   => '10000000000000',
@@ -238,6 +238,7 @@ $factory(\RZP\Models\Order\Entity::class, [
     'currency' => 'INR',
     'status' => 'created',
     'receipt' => $faker->uniqueid,
+    'payment_capture' => false,
     'notes' => null,
     'attempts' => 0,
     'created_at' => $faker->timestamp,

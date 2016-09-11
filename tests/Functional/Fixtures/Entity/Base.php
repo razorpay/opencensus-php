@@ -45,7 +45,7 @@ class Base
         'adjustment'    => \RZP\Models\Adjustment\Entity::class,
         'settlement'    => \RZP\Models\Settlement\Entity::class,
         'transaction'   => \RZP\Models\Transaction\Entity::class,
-        'bank_account'  => \RZP\Models\Merchant\BankAccount\Entity::class,
+        'bank_account'  => \RZP\Models\BankAccount\Entity::class,
         'credits'       => \RZP\Models\Merchant\Credits\Entity::class,
     );
 

@@ -19,6 +19,7 @@ class Kernel extends ConsoleKernel
         Commands\MigrateNotesToEs::class,
         Commands\RzpDbRefresh::class,
         Commands\IinImport::class,
+        Commands\UidCheckDigitVerify::class,
     ];
 
     /**
