@@ -103,9 +103,7 @@ class Entity
         self::DAILY_SETTLEMENT      => \RZP\Models\Settlement\Daily::class,
         self::NETBANKING_KOTAK      => \RZP\Gateway\Netbanking\Kotak::class,
         self::WALLET_PAYUMONEY      => \RZP\Gateway\Wallet\Payumoney::class,
-        self::SETTLEMENT_DETAILS    => \RZP\Models\Settlement\Details::class,
         self::WALLET_OLAMONEY       => \RZP\Gateway\Wallet\Olamoney::class,
-        self::TERMINAL_ACTION       => \RZP\Models\Terminal\Action::class,
         self::PAYMENT_ANALYTICS     => \RZP\Models\Payment\Analytics::class,
         self::SETTLEMENT_DETAILS    => \RZP\Models\Settlement\Details::class,
     );

@@ -45,7 +45,7 @@ class InvoiceController extends Controller
 
     public function sendNotifications()
     {
-        $summary = $this->service->sendNotifications();
+        $summary = $this->service->sendNotificationsInBulk();
 
         return ApiResponse::json($summary);
     }

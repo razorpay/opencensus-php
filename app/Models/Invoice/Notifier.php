@@ -184,6 +184,9 @@ class Notifier
             {
                 $totalSent += 1;
             }
+
+            // Saves the new status of sms
+            $this->repo->saveOrFail($this->invoice);
         }
 
         return $totalSent;
@@ -203,6 +206,9 @@ class Notifier
             {
                 $totalSent += 1;
             }
+
+            // Saves the new status of email
+            $this->repo->saveOrFail($this->invoice);
         }
 
         return $totalSent;

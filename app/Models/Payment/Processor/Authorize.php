@@ -115,7 +115,6 @@ trait Authorize
 
                 break;
             }
-
             catch (Exception\GatewayRequestException $e)
             {
                 // record a failed payment for given terminal and continue
@@ -124,7 +123,6 @@ trait Authorize
                 $retryAttempts += 1;
 
                 $retry = $this->logAndCheckForAuthRetry($e, $payment);
-
 
                 if (($retry === true) and
                     ($retryAttempts < $maxRetryAttempts))

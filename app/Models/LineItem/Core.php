@@ -35,21 +35,24 @@ class Core extends Base\Core
 
         array_map(function($item) use (& $totalAmount)
         {
-            $totalAmount += $item->getAmount();
+            foreach ($item->getQuantity() as $i)
+            {
+                $totalAmount += $item->getAmount();
+            }
         }, $items);
 
         return $totalAmount;
     }
-    
+
     public function getIdsFromLineItems(array $items)
     {
         $itemIds = [];
-        
+
         array_map(function($item) use (& $itemIds)
         {
             $itemIds[] = $item->getId();
         }, $items);
-        
+
         return $itemIds;
     }
 }

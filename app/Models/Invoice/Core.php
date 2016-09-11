@@ -38,7 +38,6 @@ class Core extends Base\Core
         $this->customerCore = new Customer\Core();
     }
 
-    // TODO: The whole create process should be in a transaction
     public function create(array $input)
     {
         // TODO: Should we move this to validator?

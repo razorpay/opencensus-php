@@ -20,7 +20,7 @@ class Raven
     public function sendOtp($input, $merchant)
     {
         $request = $this->getRavenSendOtpRequestInput($input, $merchant);
-        
+
         $response = $this->raven->sendOtp($request);
 
         if (isset($response['sms_id']))

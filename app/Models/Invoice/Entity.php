@@ -392,10 +392,5 @@ class Entity extends Base\PublicEntity
         return $query->where(Entity::CREATED_AT, '<', $ts);
     }
 
-    public function scopeMerchantId($query, $merchantId)
-    {
-        return $query->where(self::MERCHANT_ID,'=',$merchantId);
-    }
-
 // -------------------------------------- Query scopes section ends --------------------------------------
 }

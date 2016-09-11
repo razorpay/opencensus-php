@@ -111,6 +111,7 @@ class Generator
 
         foreach ($lineItemsDetails as $lineItemDetails)
         {
+            // TODO: We can remove the if block because line_item and invoice and have a one-to-one mapping.
             if (empty($lineItemDetails[LineItem\Entity::ID]) === false)
             {
                 $lineItem = $this->repo->line_item
@@ -150,10 +151,10 @@ class Generator
 
     protected function getExistingOrCreateCustomerFromInput($customerDetails)
     {
-        if (isset($customerDetails['id']) === true)
+        if (isset($customerDetails[Customer\Entity::ID]) === true)
         {
             $customer = $this->repo->customer
-                ->findByIdAndMerchantId($customerDetails['id'], $this->merchant->getId());
+                ->findByIdAndMerchantId($customerDetails[Customer\Entity::ID], $this->merchant->getId());
         }
         else
         {
