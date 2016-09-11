@@ -94,34 +94,9 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
         {
             if (empty($serverData[$key]) === false)
             {
-                $parsedUrl = parse_url($serverData[$key]);
-
-                if (($parsedUrl === false) or
-                    (is_array($parsedUrl) === false))
-                {
-                    continue;
-                }
-
-                $serverData[$key] = $this->buildUrlFromParts($parsedUrl);
+                $serverData[$key] = http_build_url($serverData[$key], [], HTTP_URL_STRIP_PASS);
             }
         }
-    }
-
-    protected function buildUrlFromParts($urlParts)
-    {
-        $scheme   = isset($urlParts['scheme']) ? $urlParts['scheme'] . '://' : '';
-
-        $host     = isset($urlParts['host']) ? $urlParts['host'] : '';
-
-        $port     = isset($urlParts['port']) ? ':' . $urlParts['port'] : '';
-
-        $path     = isset($urlParts['path']) ? $urlParts['path'] : '';
-
-        $query    = isset($urlParts['query']) ? '?' . $urlParts['query'] : '';
-
-        $fragment = isset($urlParts['fragment']) ? '#' . $urlParts['fragment'] : '';
-
-        return $scheme . $host . $port . $path . $query . $fragment;
     }
 
     protected function getClientIp()
