@@ -53,12 +53,6 @@ build:
 deploy:
     steps:
       - script:
-          name: Run composer
-          code: composer config -g github-oauth.github.com $github_token
-      - script:
-          name: install dependencies
-          code: composer install --no-interaction
-      - script:
           name: List directory
           code: ls -lah
       - script:
@@ -67,6 +61,9 @@ deploy:
       - script:
           name: check if dotfile rsyncignore exists
           code: if [ ! -f .rsyncignore ] ; then exit 1 ; fi;
+      - script:
+          name: create commit.txt
+          code: git rev-parse HEAD > public/commit.txt
       - nhuray/aws-code-deploy:
           key: $AWS_KEY
           secret: $AWS_SECRET
