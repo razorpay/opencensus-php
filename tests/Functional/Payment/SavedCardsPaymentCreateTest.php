@@ -250,6 +250,8 @@ class SavedCardsPaymentCreateTest extends TestCase
 
         $this->assertEquals($token['used_count'], 1);
 
+        $this->assertNotEquals($token['used_at'], null);
+
         // create payment data from newly saved tokens
         $this->payment['card'] = array('cvv'  => 111);
 
@@ -274,6 +276,8 @@ class SavedCardsPaymentCreateTest extends TestCase
         $this->assertEquals($payment['global_customer_id'], null);
 
         $this->assertEquals($token['used_count'], 2);
+
+        $this->assertNotEquals($token['used_at'], null);
     }
 
     /**
@@ -310,6 +314,8 @@ class SavedCardsPaymentCreateTest extends TestCase
 
         $this->assertEquals($token['used_count'], 1);
 
+        $this->assertNotEquals($token['used_at'], null);
+
         // create another payment using new saved token and fetch enttites
         $this->payment['card'] = array('cvv'  => 111);
 
@@ -333,6 +339,8 @@ class SavedCardsPaymentCreateTest extends TestCase
         $this->assertEquals($payment['global_customer_id'], null);
 
         $this->assertEquals($token['used_count'], 2);
+
+        $this->assertNotEquals($token['used_at'], null);
     }
 
     /**
@@ -373,6 +381,8 @@ class SavedCardsPaymentCreateTest extends TestCase
 
         $this->assertEquals($token['used_count'], 1);
 
+        $this->assertNotEquals($token['used_at'], null);
+
         // create another payment with new token and fetch entities
         $this->payment['card'] = array('cvv'  => 111);
 
@@ -400,6 +410,8 @@ class SavedCardsPaymentCreateTest extends TestCase
         $this->assertEquals($payment['global_customer_id'], '10000gcustomer');
 
         $this->assertEquals($token['used_count'], 2);
+
+        $this->assertNotEquals($token['used_at'], null);
     }
 
     /**
@@ -440,6 +452,8 @@ class SavedCardsPaymentCreateTest extends TestCase
 
         $this->assertEquals($token['used_count'], 1);
 
+        $this->assertNotEquals($token['used_at'], null);
+
         // create another payment using new token and fetch entities
         $this->payment['token'] = $token['token'];
 
@@ -465,6 +479,8 @@ class SavedCardsPaymentCreateTest extends TestCase
         $this->assertEquals($payment['global_customer_id'], '10000gcustomer');
 
         $this->assertEquals($token['used_count'], 2);
+
+        $this->assertNotEquals($token['used_at'], null);
     }
 
     /**

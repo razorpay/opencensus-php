@@ -863,7 +863,7 @@ trait Authorize
         {
             $createdAt = $payment->getCreatedAt();
 
-            $token->setUsedAtIfLatest($createdAt);
+            $token->setUsedAt($createdAt);
 
             $token->incrementUsedCount();
 

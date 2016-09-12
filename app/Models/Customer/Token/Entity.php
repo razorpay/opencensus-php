@@ -172,24 +172,24 @@ class Entity extends Base\PublicEntity
         return ($expiredAt <= time());
     }
 
-    protected function setUsedAt($time)
+    public function setUsedAt($time)
     {
         $this->setAttribute(self::USED_AT, $time);
-    }
-
-    public function setUsedAtIfLatest($time)
-    {
-        $usedAt = $this->getAttribute(self::USED_AT);
-
-        if ($time > $usedAt)
-        {
-            $this->setUsedAt($time);
-        }
     }
 
     public function incrementUsedCount()
     {
         $this->increment(self::USED_COUNT);
+    }
+
+    protected function setUsedAtAttribute($time)
+    {
+        $usedAt = $this->getAttribute(self::USED_AT);
+
+        if ($time > $usedAt)
+        {
+            $this->attributes[self::USED_AT] = $time;
+        }
     }
 
     protected function setPublicCardAttribute(array & $array)
