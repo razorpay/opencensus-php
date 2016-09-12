@@ -13,7 +13,7 @@ class AddressTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__ . '/helpers/AddressTestData.php';
+        $this->testDataFilePath = __DIR__ . '/Helpers/AddressTestData.php';
 
         parent::setUp();
 
