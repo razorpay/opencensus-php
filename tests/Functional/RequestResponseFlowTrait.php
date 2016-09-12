@@ -187,14 +187,15 @@ trait RequestResponseFlowTrait
 
     protected function sendRequest($request)
     {
+        // raw - Raw request body
+
         $defaults = array(
             'method' => 'POST',
             'content' => array(),
             'server' => array(),
             'cookies' => array(),
             'files' => array(),
-            // Raw request body
-            'body' => '');
+            'raw' => '');
 
         $request = array_merge($defaults, $request);
 
@@ -242,7 +243,7 @@ trait RequestResponseFlowTrait
             $request['cookies'],
             $request['files'],
             $request['server'],
-            $request['body']);
+            $request['raw']);
 
         $this->response = $response;
 
