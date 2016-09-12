@@ -49,7 +49,7 @@ class Processor
     /**
      * If payment fails on gateway then we may retry it with a different terminal/gateway.
      */
-    const MAX_RETRY_ATTEMPTS = 3;
+    const MAX_RETRY_ATTEMPTS = 5;
 
     /**
      * If a payment gets converted to authorized from failed after 15 minutes of creation of payment,

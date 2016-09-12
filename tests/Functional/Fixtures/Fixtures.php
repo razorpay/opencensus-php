@@ -139,7 +139,7 @@ class Fixtures
             $arg2 = $id;
             $arg3 = $attributes;
         }
-
+        
         return $obj->$method($arg1, $arg2, $arg3);
     }
 

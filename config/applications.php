@@ -17,6 +17,10 @@ return array(
         'secret'    =>  env('CRON_PASSWORD'),
     ),
 
+    'h2h' => array(
+        'secret'   =>  env('APP_H2H_SECRET'),
+    ),
+
     'mailgun' => array(
         'url'       =>  'razorpay.com',
         'key'       =>  env('MAILGUN_SECRET'),
