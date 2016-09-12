@@ -871,7 +871,7 @@ trait Authorize
         // multiple payments, actually we should locking
         if ($token !== null)
         {
-            $token->setLastUsedAt(time());
+            $token->setUsedAt(time());
 
             $token->incrementUsedCount();
 

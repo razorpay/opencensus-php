@@ -21,7 +21,7 @@ class Entity extends Base\PublicEntity
     const GATEWAY_TOKEN         = 'gateway_token';
     const GATEWAY_TOKEN2        = 'gateway_token2';
     const USED_COUNT            = 'used_count';
-    const LAST_USED_AT          = 'last_used_at';
+    const USED_AT               = 'used_at';
     const EXPIRED_AT            = 'expired_at';
     const CREATED_AT            = 'created_at';
     const UPDATED_AT            = 'updated_at';
@@ -60,7 +60,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_TOKEN,
         self::GATEWAY_TOKEN2,
         self::USED_COUNT,
-        self::LAST_USED_AT,
+        self::USED_AT,
         self::EXPIRED_AT,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -81,7 +81,7 @@ class Entity extends Base\PublicEntity
         self::BANK           => null,
         self::CARD_ID        => null,
         self::GATEWAY_TOKEN2 => null,
-        self::LAST_USED_AT   => null,
+        self::USED_AT   => null,
         self::USED_COUNT     => 0,
         self::EXPIRED_AT     => null,
     );
@@ -168,9 +168,9 @@ class Entity extends Base\PublicEntity
         return ($expiredAt <= time());
     }
 
-    public function setLastUsedAt($time)
+    public function setUsedAt($time)
     {
-        $this->setAttribute(self::LAST_USED_AT, $time);
+        $this->setAttribute(self::USED_AT, $time);
     }
 
     public function incrementUsedCount()
