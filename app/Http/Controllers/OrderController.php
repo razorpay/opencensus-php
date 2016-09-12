@@ -40,19 +40,8 @@ class OrderController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function updateOrder()
-    {
-        $input = Request::all();
-
-        $data = $this->order->update($input);
-
-        return ApiResponse::json($data);
-    }
-
     public function fetchPayments($id)
     {
-        $input = Request::all();
-
         $payments = $this->order->fetchPaymentsFor($id);
 
         return ApiResponse::json($payments);

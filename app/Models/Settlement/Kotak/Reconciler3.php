@@ -57,7 +57,7 @@ class Reconciler3
 
     public function process($input)
     {
-        $reconcileFile = $this->getFile($input);
+        $reconcileFile = $this->getReconcilationFile($input);
 
         if ($reconcileFile === null)
         {
@@ -245,5 +245,24 @@ class Reconciler3
         $headings = array_merge($headings, static::$extraHeadings);
 
         return $headings;
+    }
+
+    protected function getReconcilationFile($input)
+    {
+        $reconcileFile = null;
+
+        if ((isset($input['source']) === true) and
+            ($input['source'] === 'lambda'))
+        {
+            $key = $input['prefix'] . '/' . $input['key'];
+
+            $reconcileFile = $this->getH2HFileFromAws($key);
+        }
+        else
+        {
+            $reconcileFile = $this->getFile($input);
+        }
+
+        return $reconcileFile;
     }
 }

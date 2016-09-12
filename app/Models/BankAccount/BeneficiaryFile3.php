@@ -108,7 +108,10 @@ class BeneficiaryFile3
     {
         $data['body'] = 'Please find attached updated beneficiary file for ' .
                         'Razorpay and kindly update it on your end.' .
-                        'Beneficiaries Count is '. $merchantsCount .' .';
+                        'Beneficiaries Count is '. $merchantsCount .'.' .
+                        'Forward the files to aanchal.wadhwani@kotak.com and '.
+                        'cc:uphendra.bn@kotak.com,Abhijit.B.Joshi@kotak.com,'.
+                        'anupam.namdeo@kotak.com';
 
         $data['file'] = $fullpath;
 
