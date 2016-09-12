@@ -209,7 +209,7 @@ trait Capture
 
         try
         {
-            $this->acquireLockOnPayment($this->payment);
+            $this->acquireMutexOnPayment($this->payment);
 
             try
             {
@@ -273,7 +273,7 @@ trait Capture
         }
         finally
         {
-            $this->releaseLockOnPayment($this->payment);
+            $this->releaseMutexOnPayment($this->payment);
         }
     }
 
@@ -311,6 +311,12 @@ trait Capture
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_CAPTURED);
+            }
+            else if ($payment->isAuthorized() === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::
+                )
             }
 
             $this->updatePaymentCaptured($payment, $autoCaptured);

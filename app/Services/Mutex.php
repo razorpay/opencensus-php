@@ -13,7 +13,7 @@ use Predis\PredisException;
  * SETNX - This command is crucial to lock implementation.
  *         Man page - http://redis.io/commands/setnx
  */
-class Lock
+class Mutex
 {
     protected $requestId;
 
