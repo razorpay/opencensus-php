@@ -92,4 +92,22 @@ class Lock
 
         return false;
     }
+
+    public function acquireAndRelease($resource, callable $callback, $ttl = 60)
+    {
+        $redis = Redis::getFacadeRoot();
+
+        $ret = null;
+
+        try
+        {
+            $this->acquire($resource, $ttl);
+
+            $ret = call_user_func($callback);
+        }
+        finally
+        {
+            $this->release($resource);
+        }
+    }
 }
