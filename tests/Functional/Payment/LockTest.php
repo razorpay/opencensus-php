@@ -46,6 +46,13 @@ class LockTest extends TestCase
             ->once()
             ->andReturn(null);
 
+        Redis::shouldReceive('get')
+                ->once()
+                ->andReturnUsing(function()
+                {
+                    return null;
+                });
+
         $data = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow($data, function() use ($payment)
@@ -60,18 +67,24 @@ class LockTest extends TestCase
 
     public function testLockAcquiredRefundRequest()
     {
-        $payment = $this->defaultAuthPayment();
-        $payment = $this->capturePayment($payment['id'], $payment['amount']);
-
         Redis::shouldReceive('set')
                 ->once()
                 ->andReturn(null);
+
+        Redis::shouldReceive('get')
+                ->once()
+                ->andReturnUsing(function()
+                {
+                    return null;
+                });
+
+        $payment = $this->fixtures->create('payment:captured');
 
         $data = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow($data, function() use ($payment)
         {
-            $this->refundPayment($payment['id']);
+            $this->refundPayment($payment->getPublicId());
         });
     }
 
@@ -97,6 +110,13 @@ class LockTest extends TestCase
                     throw new \Predis\Response\ServerException('Internal Error');
                 });
 
+        Redis::shouldReceive('get')
+                ->once()
+                ->andReturnUsing(function()
+                {
+                    return 'false_id';
+                });
+
         $this->capturePayment($payment['id'], $payment['amount']);
     }
 
@@ -106,7 +126,23 @@ class LockTest extends TestCase
 
         Redis::shouldReceive('set')
                 ->once()
-                ->andReturn(\Predis\Response\Status::get('QUEUED'));
+                ->andReturnUsing(function ($resource, $requestId)
+                    {
+                        $this->requestId = $requestId;
+
+                        return \Predis\Response\Status::get('QUEUED');
+                    });
+
+        Redis::shouldReceive('get')
+                ->once()
+                ->andReturnUsing(function()
+                {
+                    return $this->requestId;
+                });
+
+        Redis::shouldReceive('del')
+                ->once()
+                ->andReturn(true);
 
         $this->capturePayment($payment['id'], $payment['amount']);
     }
