@@ -604,6 +604,11 @@ class Service extends Base\Service
 
         $payments = $payments->shuffle();
 
+        $this->trace->info(TraceCode::PAYMENT_AUTO_REFUND_CRON, [
+                'count' => $authorized,
+                'start_time' => $time
+            ]);
+
         foreach ($payments as $payment)
         {
             try
