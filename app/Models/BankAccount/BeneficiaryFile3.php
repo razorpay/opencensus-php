@@ -1,9 +1,9 @@
 <?php
 
-namespace RZP\Models\Merchant\BankAccount;
+namespace RZP\Models\BankAccount;
 
 use Carbon\Carbon;
-use RZP\Models\Merchant\BankAccount;
+use RZP\Models\BankAccount;
 use RZP\Models\Settlement\Kotak\FileHandlerTrait;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
@@ -49,7 +49,7 @@ class BeneficiaryFile3
 
     public function generate()
     {
-        $list = (new BankAccount\Repository)->getAllOrderedByCreatedAt();
+        $list = (new BankAccount\Repository)->getAllActivatedMerchantAccountsOrderedByCreatedAt();
 
         $result = $this->createBenefeciaryFile($list);
 
@@ -58,7 +58,7 @@ class BeneficiaryFile3
 
     public function generateBetweenTimestamps($from, $to)
     {
-        $list = (new BankAccount\Repository)->getBankAccountsBetweenTimestamp($from, $to);
+        $list = (new BankAccount\Repository)->getMerchantBankAccountsBetweenTimestamp($from, $to);
 
         $result = $this->createBenefeciaryFile($list);
 
@@ -108,7 +108,10 @@ class BeneficiaryFile3
     {
         $data['body'] = 'Please find attached updated beneficiary file for ' .
                         'Razorpay and kindly update it on your end.' .
-                        'Beneficiaries Count is '. $merchantsCount .' .';
+                        'Beneficiaries Count is '. $merchantsCount .'.' .
+                        'Forward the files to aanchal.wadhwani@kotak.com and '.
+                        'cc:uphendra.bn@kotak.com,Abhijit.B.Joshi@kotak.com,'.
+                        'anupam.namdeo@kotak.com';
 
         $data['file'] = $fullpath;
 

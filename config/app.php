@@ -160,17 +160,18 @@ return array(
          */
         // RZP\Providers\AppServiceProvider::class,
         // RZP\Providers\AuthServiceProvider::class,
+        RZP\Services\ApiServiceProvider::class,
         RZP\Providers\EventServiceProvider::class,
         RZP\Providers\RouteServiceProvider::class,
         RZP\Http\BasicAuth\ServiceProvider::class,
         RZP\Trace\TraceServiceProvider::class,
         RZP\Services\DashboardServiceProvider::class,
-        RZP\Services\ApiServiceProvider::class,
 
         /*
          * Third party providers
          */
         Aws\Laravel\AwsServiceProvider::class,
+        Jenssegers\Agent\AgentServiceProvider::class,
         Maknz\Slack\SlackServiceProvider::class,
         Propaganistas\LaravelPhone\LaravelPhoneServiceProvider::class,
         Collective\Bus\BusServiceProvider::class,

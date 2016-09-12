@@ -154,6 +154,9 @@ class TokenEx
         $referenceNumber = $response[self::REFERENCE_NUMBER];
         $success = $response[self::SUCCESS];
 
+        // if successful, value contains the card number, removes if present
+        unset($response[self::VALUE]);
+
         $this->trace->info(
             TraceCode::TOKENEX_REQUEST,
             [

@@ -12,37 +12,31 @@ class Service extends Base\Service
 {
     public function fetch($id)
     {
-        Daily\Entity::verifyIdAndStripSign($id);
-
-        $setl = (new Daily\Repository)->findOrFailPublic($id);
+        $setl = $this->repo->daily_settlement->findByPublicId($id);
 
         return $setl->toArrayPublic();
     }
 
     public function fetchMultiple($input)
     {
-        $settlements = (new Daily\Repository)->fetch($input);
+        $settlements = $this->repo->daily_settlement->fetch($input);
 
         return $settlements->toArrayPublic();
     }
 
     public function calculatePreviousDailySettlementFees()
     {
-        $repo = new Daily\Repository;
-
-        $result = $repo->transaction(function() use ($repo)
+        $result = $this->repo->transaction(function()
                 {
-                    return $this->calculatePreviousDailySettlementFeesCore($repo);
+                    return $this->calculatePreviousDailySettlementFeesCore();
                 });
 
         return $result;
     }
 
-    protected function calculatePreviousDailySettlementFeesCore($repo)
+    protected function calculatePreviousDailySettlementFeesCore()
     {
-        $dailySettlements = $repo->getIfFeesIsNull();
-
-        $setlRepo = new Settlement\Repository;
+        $dailySettlements = $this->repo->daily_settlement->getIfFeesIsNull();
 
         $totalFees = 0;
         $totalSetlCount = 0;
@@ -59,7 +53,7 @@ class Service extends Base\Service
             $from = $date->timestamp;
             $to = $date->addDay()->timestamp;
 
-            $settlements = $setlRepo->fetch(
+            $settlements = $this->repo->settlement->fetch(
                 ['from' => $from, 'to' => $to]);
 
             $dailyFees = 0;
@@ -73,7 +67,7 @@ class Service extends Base\Service
 
             $daily->setFees($dailyFees);
 
-            $repo->saveOrFail($daily);
+            $this->repo->saveOrFail($daily);
 
             $totalFees += $dailyFees;
             $totalSetlCount += $settlements->count();
@@ -84,13 +78,11 @@ class Service extends Base\Service
 
     public function computeDailySettlementServiceTax()
     {
-        $repo = new Daily\Repository;
-
-        return $repo->transaction(function () use($repo)
+        return $this->repo->transaction(function ()
         {
-            $dailySettlements = $repo->getIfServiceTaxIsNullOrZero();
+            $dailySettlements = $this->repo->daily_settlement->getIfServiceTaxIsNullOrZero();
 
-            $setlRepo = new Settlement\Repository;
+            $setlRepo = $this->repo->settlement;
 
             $totalServiceTax = 0;
             $totalSetlCount = 0;
@@ -118,7 +110,7 @@ class Service extends Base\Service
 
                 $daily->setServiceTax($dailyServiceTax);
 
-                $repo->saveOrFail($daily);
+                $this->repo->saveOrFail($daily);
 
                 $totalServiceTax += $dailyServiceTax;
 

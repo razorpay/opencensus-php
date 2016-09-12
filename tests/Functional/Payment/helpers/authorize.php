@@ -247,7 +247,7 @@ return [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
                     'field' => 'amount',
-                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_AMOUNT_TOO_HIGH
+                    'description' => 'Amount exceeds maximum amount allowed.'
                 ],
             ],
             'status_code' => 400,

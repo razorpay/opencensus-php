@@ -91,7 +91,7 @@ class Entity
         self::NETBANKING            => \RZP\Gateway\Netbanking\Base::class,
         self::AXIS_GENIUS           => \RZP\Gateway\AxisGenius::class,
         self::CYBERSOURCE           => \RZP\Gateway\Cybersource::class,
-        self::BANK_ACCOUNT          => \RZP\Models\Merchant\BankAccount::class,
+        self::BANK_ACCOUNT          => \RZP\Models\BankAccount::class,
         self::WALLET_PAYZAPP        => \RZP\Gateway\Wallet\Payzapp::class,
         self::NETBANKING_HDFC       => \RZP\Gateway\Netbanking\Hdfc::class,
         self::DAILY_SETTLEMENT      => \RZP\Models\Settlement\Daily::class,
@@ -170,13 +170,27 @@ class Entity
 
     public static function validateIsEntity($entity)
     {
-        if (constant(__CLASS__ . '::' . strtoupper($entity)) === null)
+        if (self::isValidEntity($entity) === false)
         {
             Trace::error(
                 TraceCode::ERROR_INVALID_ARGUMENT,
                 ['entity' => $entity]);
 
-            throw new Exception\RuntimeException(
+            throw new Exception\BadRequestValidationFailureException(
+                'Not a valid entity.');
+        }
+    }
+
+    public static function isValidEntity($entity)
+    {
+        return (defined(__CLASS__ . '::' . strtoupper($entity)));
+    }
+
+    public static function validateEntityOrFailPublic($entity)
+    {
+        if (self::isValidEntity($entity) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
                 'Not a valid entity.');
         }
     }

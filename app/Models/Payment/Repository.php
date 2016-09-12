@@ -199,12 +199,14 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getNonTaxComputedPayments()
+    public function fetchPaymentsForCustomerMethod($customer, $method, $skip)
     {
         return $this->newQuery()
+                    ->where(Payment\Entity::METHOD, '=', $method)
+                    ->where(Payment\Entity::GLOBAL_CUSTOMER_ID, '=', $customer->getId())
                     ->whereNotNull(Payment\Entity::CAPTURED_AT)
-                    ->whereNull(Payment\Entity::SERVICE_TAX)
-                    ->take(500)
+                    ->skip($skip)
+                    ->take(10)
                     ->get();
     }
 
@@ -280,7 +282,7 @@ class Repository extends Base\Repository
 
     protected function addQueryParamOrderId($query, $params)
     {
-        $order_id = (new Order\Entity)->verifyIdAndStripSign($params[Entity::ORDER_ID]);
+        $order_id = (new Order\Entity)->verifyIdAndSilentlyStripSign($params[Entity::ORDER_ID]);
 
         $query->where(Entity::ORDER_ID, '=', $order_id);
     }

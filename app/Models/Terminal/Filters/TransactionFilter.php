@@ -24,6 +24,7 @@ class TransactionFilter extends Terminal\Filter
         'international',
         'bank',
         'maestro',
+        'recurring',
     ];
 
     public function methodFilter($terminal, $input)
@@ -134,6 +135,28 @@ class TransactionFilter extends Terminal\Filter
         }
 
         return true;
+    }
+
+    public function recurringFilter($terminal, $input)
+    {
+        $value = Terminal\Recurring::NON_RECURRING;
+
+        $payment = $input['payment'];
+
+        if ($payment->isRecurring() === true)
+        {
+            $value = Terminal\Recurring::RECURRING_3DS;
+
+            if (($payment->token !== null) and
+                ($payment->token->isRecurring() === true))
+            {
+                $value = Terminal\Recurring::RECURRING_N3DS;
+            }
+        }
+
+        $isValidTerminal = ($terminal->getRecurring() === $value);
+
+        return $isValidTerminal;
     }
 
     protected function isValidEmiTerminal($terminal, $input)

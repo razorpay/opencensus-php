@@ -40,7 +40,7 @@ class PayumoneyGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertTestResponse($payment, 'testPayment');
-        $this->assertNotEmpty($payment['global_token']);
+        $this->assertNotEmpty($payment['global_token_id']);
         $this->assertNotEmpty($payment['global_customer_id']);
 
         $wallet = $this->getLastEntity('wallet', true);

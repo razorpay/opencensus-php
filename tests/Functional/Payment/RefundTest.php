@@ -2,10 +2,12 @@
 
 namespace RZP\Tests\Functional\Payment;
 
-use Carbon\Carbon;
-use Mockery;
 use DB;
+use Redis;
+use Mockery;
+use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 /**
