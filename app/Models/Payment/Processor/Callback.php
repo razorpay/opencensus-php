@@ -196,9 +196,9 @@ trait Callback
         {
             $contact = $this->parseContact($input['payment']['contact']);
 
-            $sharedAccount = (new Merchant\Repository)->getSharedAccount();
+            $sharedAccount = $this->repo->merchant->getSharedAccount();
 
-            $customer = (new Customer\Repository)->findByContactAndMerchant(
+            $customer = $this->repo->customer->findByContactAndMerchant(
                                     $contact->format(), $sharedAccount);
 
             if ($customer === null)
@@ -221,7 +221,7 @@ trait Callback
         {
             $token = $this->createOrUpdateToken($input, $data);
 
-            $payment->setGlobalToken($token->getToken());
+            $payment->globalToken()->associate($token);
         }
 
         $this->repo->saveOrFail($payment);

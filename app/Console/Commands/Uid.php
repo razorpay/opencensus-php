@@ -27,7 +27,7 @@ class Uid extends Command
      */
     public function fire()
     {
-        $uid = UniqueIdEntity::generateUniqueId();
+        $uid = UniqueIdEntity::generateUniqueIdWithCheckDigit();
 
         $this->info($uid);
     }

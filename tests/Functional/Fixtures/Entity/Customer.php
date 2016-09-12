@@ -70,6 +70,7 @@ class Customer extends Base
             'id'            => '10000custgcard',
             'token'         => '1000gcardtoken',
             'customer_id'   => '10000gcustomer',
+            'merchant_id'   => '100000Razorpay',
             'method'        => 'card',
             'card_id'       => '100000000gcard',
             'bank'          => null,
