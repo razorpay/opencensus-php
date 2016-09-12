@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use Closure;
 use Mockery;
 use RZP\Jobs\WebHook;
 use RZP\Tests\Functional\TestCase;
@@ -68,23 +69,15 @@ class WebhookTest extends TestCase
     {
         $webhook = $this->createWebhook();
 
-        $inferno = $this->mockInferno();
-
         $testData = $this->testData[__FUNCTION__];
 
-        $inferno->shouldReceive('fire')
-                ->once()
-                ->with(
-                    Mockery::type('RZP\Jobs\WebHook'),
-                    Mockery::on(function ($data) use ($testData)
-                        {
-                            $data['event'] = json_decode($data['event'], true);
-                            $this->assertArraySelectiveEquals($testData, $data);
+        $this->mockInfernoFire(function ($data) use ($testData)
+            {
+                $data['event'] = json_decode($data['event'], true);
+                $this->assertArraySelectiveEquals($testData, $data);
 
-                            return true;
-                        }));
-
-        $this->app->instance('webhook.inferno', $inferno);
+                return true;
+            });
 
         $this->doAuthPayment();
     }
@@ -93,24 +86,16 @@ class WebhookTest extends TestCase
     {
         $webhook = $this->createWebhook(['events' => ['order.paid' => "1"]]);
 
-        $inferno = $this->mockInferno();
-
         $testData = $this->testData[__FUNCTION__];
 
-        $inferno->shouldReceive('fire')
-                ->once()
-                ->with(
-                    Mockery::type('RZP\Jobs\WebHook'),
-                    Mockery::on(function ($data) use ($testData)
-                        {
-                            $data['event'] = json_decode($data['event'], true);
+        $this->mockInfernoFire(function ($data) use ($testData)
+            {
+                $data['event'] = json_decode($data['event'], true);
 
-                            $this->assertArraySelectiveEquals($testData, $data);
+                $this->assertArraySelectiveEquals($testData, $data);
 
-                            return true;
-                        }));
-
-        $this->app->instance('webhook.inferno', $inferno);
+                return true;
+            });
 
         $order = $this->fixtures->create('order', ['amount' => 50000, 'receipt' => 'random']);
 
@@ -216,24 +201,17 @@ class WebhookTest extends TestCase
 
     public function testWebhookEventDataJustBeforeFiring()
     {
-        $webhook = $this->createWebhook();
-
-        $inferno = $this->mockInferno();
+        $this->createWebhook();
 
         $testData = $this->testData[__FUNCTION__];
 
-        $inferno->shouldReceive('makeRequest')
-                ->once()
-                ->with(Mockery::type('array'))
-                ->andReturnUsing(function ($request) use ($testData)
-                    {
-                        $request['content'] = json_decode($request['content'], true);
-                        $this->assertArraySelectiveEquals($testData, $request);
-                        $response = $this->getStandardWebhookResponse();
-                        return $response;
-                    });
-
-        $this->app->instance('webhook.inferno', $inferno);
+        $this->mockInfernoMakeRequest(function ($request) use ($testData)
+            {
+                $request['content'] = json_decode($request['content'], true);
+                $this->assertArraySelectiveEquals($testData, $request);
+                $response = $this->getStandardWebhookResponse();
+                return $response;
+            });
 
         $this->doAuthPayment();
     }
@@ -258,14 +236,9 @@ class WebhookTest extends TestCase
     {
         $webhook = $this->createWebhook(['secret'=>'test_secret']);
 
-        $inferno = $this->mockInferno();
-
         $testData = $this->testData[__FUNCTION__];
 
-        $inferno->shouldReceive('makeRequest')
-            ->once()
-            ->with(Mockery::type('array'))
-            ->andReturnUsing(function ($request) use ($testData, $webhook)
+        $this->mockInfernoMakeRequest(function ($request) use ($testData, $webhook)
             {
                 $request['content'] = json_decode($request['content'], true);
 
@@ -280,7 +253,6 @@ class WebhookTest extends TestCase
                 return $response;
             });
 
-        $this->app->instance('webhook.inferno', $inferno);
         $this->doAuthPayment();
     }
 
@@ -324,9 +296,11 @@ class WebhookTest extends TestCase
     protected function mockInfernoWithResponseStatusCode($statusCode, $method='makeRequest')
     {
         $inferno = $this->mockInferno();
+
         $response = $this->getStandardWebhookResponse($statusCode);
         $inferno->shouldReceive($method)
                 ->andReturn($response);
+
         return $inferno;
     }
 
@@ -339,6 +313,31 @@ class WebhookTest extends TestCase
         $this->app->instance('webhook.inferno', $inferno);
 
         return $inferno;
+    }
+
+    protected function mockInfernoMakeRequest(Closure $closure, $times = 1)
+    {
+        $inferno = $this->mockInferno();
+
+        $inferno->shouldReceive('makeRequest')
+                ->times($times)
+                ->with(Mockery::type('array'))
+                ->andReturnUsing($closure);
+
+        $this->app->instance('webhook.inferno', $inferno);
+    }
+
+    protected function mockInfernoFire(Closure $closure, $times = 1)
+    {
+        $inferno = $this->mockInferno();
+
+        $inferno->shouldReceive('fire')
+                ->times($times)
+                ->with(
+                    Mockery::type('RZP\Jobs\WebHook'),
+                    Mockery::on($closure));
+
+        $this->app->instance('webhook.inferno', $inferno);
     }
 
     protected function getStandardWebhookResponse($statusCode = 200)
