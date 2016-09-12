@@ -312,12 +312,6 @@ trait Capture
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_CAPTURED);
             }
-            else if ($payment->isAuthorized() === false)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::
-                )
-            }
 
             $this->updatePaymentCaptured($payment, $autoCaptured);
 
