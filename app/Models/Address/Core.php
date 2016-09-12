@@ -33,13 +33,14 @@ class Core extends Base\Core
 
         $address = (new Entity)->build($input);
 
-        $currentAddresses = $this->repo->address->fetchCurrentAddressesOfType(
-            Type::CUSTOMER, $customer->getId(), $input[Entity::ADDRESS_TYPE]);
+        $currentAddresses = $this->repo->address->fetchAddressesForEntity(
+            Type::CUSTOMER, $customer->getId(), [Entity::ADDRESS_TYPE => $input[Entity::ADDRESS_TYPE]]);
 
-        if ($currentAddresses >= self::MAX_ALLOWED_ADDRESSES)
+        if ($currentAddresses->count() >= self::MAX_ALLOWED_ADDRESSES)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'You cannot have more than ' . self::MAX_ALLOWED_ADDRESSES . $input[Entity::ADDRESS_TYPE] . ' for ' . Type::CUSTOMER);
+                'You cannot have more than ' . self::MAX_ALLOWED_ADDRESSES . ' ' .
+                $input[Entity::ADDRESS_TYPE] . ' for ' . Type::CUSTOMER);
         }
 
         return $this->repo->transaction(function() use ($address, $customer)
@@ -63,6 +64,9 @@ class Core extends Base\Core
 
     public function setPrimaryAddress(Entity $address)
     {
+        $address->setPrimary(true);
+        $this->repo->saveOrFail($address);
+
         $this->handlePrimaryAddressSwitch($address);
 
         return $address;
@@ -135,11 +139,11 @@ class Core extends Base\Core
     }
 
     /**
-     * Gets the current primary address.
+     * Sets the passed address to primary and saves it.
+     * Gets the current primary address (excluding the passed address).
      * If there is no current primary address, we don't do anything.
      * If there is a current primary address,
      *   - set its primary flag to false.
-     *   - set the passed address's primary flag to true.
      * Irrespective of current primary address being present or not,
      * we set the associated customer's address ID to the passed address's ID.
      *
@@ -175,17 +179,17 @@ class Core extends Base\Core
         {
             // If there is no current primary address, there's no need to do anything
 
+            // Since we are switching the passed address to primary, we mark it as primary and save the address.
+            $address->setPrimary(true);
+            $this->repo->saveOrFail($address);
+
             if ($currentPrimaryAddress->count() === 1)
             {
                 $currentPrimaryAddress = $currentPrimaryAddress->first();
 
                 $currentPrimaryAddress->setPrimary(false);
 
-                $address->setPrimary(true);
-
                 $this->repo->saveOrFail($currentPrimaryAddress);
-
-                $this->repo->saveOrFail($address);
 
                 $this->trace->info(
                     TraceCode::PRIMARY_ADDRESS_SWITCH,
