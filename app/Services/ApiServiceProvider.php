@@ -127,16 +127,16 @@ class ApiServiceProvider extends BaseServiceProvider
 
     protected function registerApiLock()
     {
-        $this->app->singleton('api.lock', function($app)
+        $this->app->singleton('api.mutex', function($app)
         {
-             $lockMock = $app['config']->get('services.lock.mock');
+             $lockMock = $app['config']->get('services.mutex.mock');
 
             if ($lockMock === true)
             {
-                return new Services\Mock\Lock($app);
+                return new Services\Mock\Mutex($app);
             }
 
-            return new Services\Lock($app);
+            return new Services\Mutex($app);
         });
     }
 }

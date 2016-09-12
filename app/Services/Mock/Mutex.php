@@ -4,7 +4,7 @@ namespace RZP\Services\Mock;
 
 use RZP\Services\Lock as BaseLock;
 
-class Lock extends BaseLock
+class Mutex extends BaseLock
 {
     public function __construct($app)
     {
