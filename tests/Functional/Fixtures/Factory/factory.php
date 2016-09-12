@@ -224,8 +224,8 @@ $factory(\RZP\Models\Merchant\Webhook\Entity::class, [
 
 $factory(\RZP\Models\Address\Entity::class,
     [
-        'line_one'      => 'some line one',
-        'line_two'      => 'some line two',
+        'line1'         => 'some line one',
+        'line2'         => 'some line two',
         'city'          => 'Bangalore',
         'state'         => 'Karnataka',
         'pincode'       => '560078',

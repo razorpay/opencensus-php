@@ -28,8 +28,8 @@ class CreateAddress extends Migration
             $table->string(Entity::ENTITY_TYPE, 64)
                   ->nullable();
 
-            $table->string(Entity::LINE_ONE, 1024);
-            $table->string(Entity::LINE_TWO, 1024);
+            $table->string(Entity::LINE1, 1024);
+            $table->string(Entity::LINE2, 1024);
             $table->string(Entity::CITY, 128);
             $table->string(Entity::PINCODE, 32);
             $table->string(Entity::STATE, 128);

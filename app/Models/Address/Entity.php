@@ -15,8 +15,8 @@ class Entity extends Base\PublicEntity
     const ENTITY_TYPE           = 'entity_type';
     const ADDRESS_TYPE          = 'address_type';
     const PRIMARY               = 'primary';
-    const LINE_ONE              = 'line_one';
-    const LINE_TWO              = 'line_two';
+    const LINE1                 = 'line1';
+    const LINE2                 = 'line2';
     const PINCODE               = 'pincode';
     const CITY                  = 'city';
     const STATE                 = 'state';
@@ -37,8 +37,8 @@ class Entity extends Base\PublicEntity
         self::ENTITY_TYPE,
         self::ADDRESS_TYPE,
         self::PRIMARY,
-        self::LINE_ONE,
-        self::LINE_TWO,
+        self::LINE1,
+        self::LINE2,
         self::PINCODE,
         self::CITY,
         self::STATE,
@@ -47,8 +47,8 @@ class Entity extends Base\PublicEntity
 
     protected $visible = [
         self::ID,
-        self::LINE_ONE,
-        self::LINE_TWO,
+        self::LINE1,
+        self::LINE2,
         self::ENTITY_ID,
         self::ENTITY_TYPE,
         self::ADDRESS_TYPE,
@@ -68,8 +68,8 @@ class Entity extends Base\PublicEntity
         self::ENTITY_TYPE,
         self::ADDRESS_TYPE,
         self::PRIMARY,
-        self::LINE_ONE,
-        self::LINE_TWO,
+        self::LINE1,
+        self::LINE2,
         self::PINCODE,
         self::CITY,
         self::STATE,
@@ -77,7 +77,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::LINE_TWO      => null,
+        self::LINE2         => null,
         self::PINCODE       => null,
         self::PRIMARY       => true,
     ];
@@ -96,11 +96,6 @@ class Entity extends Base\PublicEntity
     public function getPrimary()
     {
         return $this->getAttribute(self::PRIMARY);
-    }
-
-    public function getType()
-    {
-        return $this->getAttribute(self::ADDRESS_TYPE);
     }
 
     // ----------------------------------- END GETTERS -----------------------------------
