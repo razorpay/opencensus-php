@@ -871,7 +871,13 @@ trait Authorize
         // multiple payments, actually we should locking
         if ($token !== null)
         {
-            $token->setUsedAt(time());
+            $createdAt = $payment->getCreatedAt();
+            $lastUsedAt = $token->getUsedAt();
+
+            if ($createdAt > $lastUsedAt)
+            {
+                $token->setUsedAt($createdAt);
+            }
 
             $token->incrementUsedCount();
 
@@ -1437,17 +1443,9 @@ trait Authorize
 
             $payment->terminal->incrementUsedCount();
 
-            if ($wasFailed === true)
-            {
-                $payment->setLateAuthorized(true);
-            }
-            else
-            {
-                $payment->setLateAuthorized(false);
-            }
-
-            $this->repo->saveOrFail($payment);
-            $this->repo->saveOrFail($payment->terminal);
+            // If payment was earlier failed, then that means it's
+            // getting authorized late.
+            $payment->setLateAuthorized($wasFailed);
 
             //
             // If gateway is authorizing the payment (basically, no authAndCapture support), create transaction.
@@ -1461,6 +1459,9 @@ trait Authorize
             }
 
             $this->repo->saveOrFail($payment);
+            $this->repo->saveOrFail($payment->terminal);
+
+            $this->updateTokenOnAuthorized();
 
             // If payment has an associated order
             // set the order to be paid

@@ -6,7 +6,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
-class SavedCardPaymentCreateTest extends TestCase
+class SavedCardsPaymentCreateTest extends TestCase
 {
     use InteractsWithSession;
     use PaymentTrait;
