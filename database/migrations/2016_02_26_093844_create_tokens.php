@@ -58,7 +58,6 @@ class CreateTokens extends Migration {
                   ->default(0);
 
             $table->integer(Token::USED_AT)
-                  ->unsigned()
                   ->nullable();
 
             $table->integer(Token::EXPIRED_AT)
