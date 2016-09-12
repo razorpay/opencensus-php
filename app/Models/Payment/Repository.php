@@ -21,14 +21,14 @@ class Repository extends Base\Repository
 
     // These are merchant allowed params to search on. These also act as default params.
     protected $entityFetchParamRules = array(
-        Entity::ORDER_ID        => 'sometimes|string|size:20',
+        Entity::ORDER_ID           => 'sometimes|string|size:20',
     );
 
     // These are proxy allowed params to search on.
     protected $proxyFetchParamRules = array(
-        Entity::EMAIL           => 'sometimes',
-        Entity::STATUS          => 'sometimes|string',
-        Entity::NOTES           => 'sometimes|string|max:500',
+        Entity::EMAIL              => 'sometimes',
+        Entity::STATUS             => 'sometimes|string',
+        Entity::NOTES              => 'sometimes|string|max:500',
     );
 
     // These are admin allowed params to search on.
@@ -178,21 +178,19 @@ class Repository extends Base\Repository
 
     public function getAuthorizedPaymentsForAutoRefund()
     {
-        $paymentMerchantId = $this->getAttributeWithTableName(Entity::MERCHANT_ID);
-        $paymentAuthorizedAt = $this->getAttributeWithTableName(Entity::AUTHORIZED_AT);
         $paymentCreatedAt = $this->getAttributeWithTableName(Entity::CREATED_AT);
-
         $merchantId = Merchant\Entity::getAttributeWithTableName(Merchant\Entity::ID);
-        $merchantAutoRefundDelay = Merchant\Entity::getAttributeWithTableName(Merchant\Entity::AUTO_REFUND_DELAY);
 
         $minCreatedAt = Carbon::now()->subMinutes(30)->timestamp;
         $maxCreatedAt = Carbon::now()->subDays(7)->timestamp;
 
+        $rawCondition = '(' . Entity::AUTHORIZED_AT . ' - ' . $paymentCreatedAt . ') >= ' .Merchant\Entity::AUTO_REFUND_DELAY;
+
         return $this->newQuery()
                     ->select($this->getAttributeWithTableName('*'))
-                    ->join(Table::MERCHANT, $paymentMerchantId, '=', $merchantId)
+                    ->join(Table::MERCHANT, Entity::MERCHANT_ID, '=', $merchantId)
                     ->status(Payment\Status::AUTHORIZED)
-                    ->whereRaw('(' . $paymentAuthorizedAt . ' - ' . $paymentCreatedAt . ') >= ' . $merchantAutoRefundDelay)
+                    ->whereRaw($rawCondition)
                     ->where($paymentCreatedAt, '<', $minCreatedAt)
                     ->where($paymentCreatedAt, '>=', $maxCreatedAt)
                     ->get();
