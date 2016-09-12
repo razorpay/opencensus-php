@@ -2,13 +2,18 @@
 
 namespace RZP\Models\Address;
 
-use RZP\Exception\LogicException;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
+    /**
+     * Maximum number of addresses allowed for a particular address type for an entity (customer/merchant)
+     */
+    const MAX_ALLOWED_ADDRESSES = 3;
+
     /**
      * Builds a new address entity. Associates this address with the customer which is sent in the input.
      * If this address is set to be the primary address, we switch it with the previous primary address, if present.
@@ -17,6 +22,7 @@ class Core extends Base\Core
      * @param Customer\Entity $customer
      * @param array $input
      * @return Entity
+     * @throws Exception\BadRequestValidationFailureException
      */
     public function create(Customer\Entity $customer, array $input)
     {
@@ -25,15 +31,16 @@ class Core extends Base\Core
             $input
         );
 
-        // TODO: Should we limit the number of addresses that a particular
-        // combination of {entity_id, entity_type, address_type} can be created for?
-        // If we don't, someone can create thousands of addresses. Where do we have
-        // a validation or a check? We are allowing any number of multiple addresses
-        // for a customer. Since this is done from server side, someone may create
-        // lots of addresses by mistake also. Maybe kept the api in a loop or something.
-        // Do we need to worry about this or is it okay?
-
         $address = (new Entity)->build($input);
+
+        $currentAddresses = $this->repo->address->fetchCurrentAddressesOfType(
+            Type::CUSTOMER, $customer->getId(), $input[Entity::ADDRESS_TYPE]);
+
+        if ($currentAddresses >= self::MAX_ALLOWED_ADDRESSES)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'You cannot have more than ' . self::MAX_ALLOWED_ADDRESSES . $input[Entity::ADDRESS_TYPE] . ' for ' . Type::CUSTOMER);
+        }
 
         return $this->repo->transaction(function() use ($address, $customer)
         {
@@ -138,7 +145,7 @@ class Core extends Base\Core
      *
      * @param Entity $address The address entity which we need to set as primary,
      *                        displacing the older primary address.
-     * @throws LogicException
+     * @throws Exception\LogicException
      */
     protected function handlePrimaryAddressSwitch(Entity $address)
     {
@@ -153,7 +160,7 @@ class Core extends Base\Core
 
         if ($currentPrimaryAddress->count() > 1)
         {
-            throw new LogicException(
+            throw new Exception\LogicException(
                 'Found multiple primary addresses for an address type.',
                 null,
                 [
