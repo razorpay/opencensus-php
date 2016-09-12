@@ -215,7 +215,6 @@ final class Route
         'order_create'                            => ['post',     'orders',                                   'OrderController@createOrder'                                       ],
         'order_fetch'                             => ['get',      'orders',                                   'OrderController@getOrders'                                         ],
         'order_fetch_by_id'                       => ['get',      'orders/{id}',                              'OrderController@fetchOrderById'                                    ],
-        'order_update'                            => ['put',      'orders/{id}',                              'OrderController@updateOrder'                                       ],
         'order_payments'                          => ['get',      'orders/{id}/payments',                     'OrderController@fetchPayments'                                     ],
         'reports_monthly_invoice'                 => ['get',      'reports/invoice',                          'MerchantController@getInvoiceReport'                               ],
         'reports_public_entity'                   => ['get',      'reports/{entity}',                         'MerchantController@getPublicEntityReport'                          ],
@@ -422,7 +421,6 @@ final class Route
         'delete_emi_plan',
         'get_emi_plan_by_id',
         'emi_generate_excel',
-        'order_update',
         'refund_verify',
         'payment_capture_verify',
         'es_migrate_entity',
@@ -523,6 +521,10 @@ final class Route
 
         'hosted' => array(
             'merchant_secret',
+        ),
+
+        'h2h' => array(
+            'setl_reconcile_h2h',
         ),
     );
 
