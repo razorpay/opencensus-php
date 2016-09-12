@@ -194,6 +194,8 @@ class Gateway extends Base\Gateway
     {
         $request = $this->createRecurringAuthorizeRequestFields($input);
 
+        $this->traceGatewayRequest(TraceCode::GATEWAY_AUTHORIZE_REQUEST, $request);
+
         return $this->postRequest($request);
     }
 
