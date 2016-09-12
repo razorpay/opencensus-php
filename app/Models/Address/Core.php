@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Customer\Address;
+namespace RZP\Models\Address;
 
 use RZP\Exception\LogicException;
 use RZP\Models\Base;

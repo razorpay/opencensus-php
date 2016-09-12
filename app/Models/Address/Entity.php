@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Customer\Address;
+namespace RZP\Models\Address;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 

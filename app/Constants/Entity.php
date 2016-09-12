@@ -89,7 +89,6 @@ class Entity
         self::MOBIKWIK              => \RZP\Gateway\Mobikwik::class,
         self::AXIS_MIGS             => \RZP\Gateway\AxisMigs::class,
         self::APP_TOKEN             => \RZP\Models\Customer\AppToken::class,
-        self::ADDRESS               => \RZP\Models\Customer\Address::class,
         self::NETBANKING            => \RZP\Gateway\Netbanking\Base::class,
         self::AXIS_GENIUS           => \RZP\Gateway\AxisGenius::class,
         self::CYBERSOURCE           => \RZP\Gateway\Cybersource::class,

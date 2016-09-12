@@ -4,6 +4,7 @@ namespace RZP\Models\Customer;
 
 use RZP\Models\Base;
 use RZP\Models\Customer;
+use RZP\Models\Address;
 use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
 use RZP\Models\Payment;

@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Customer\Address;
+namespace RZP\Models\Address;
 
 use RZP\Models\Base;
 use RZP\Models\Customer;

@@ -4,7 +4,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
-use RZP\Models\Customer\Address\Entity;
+use RZP\Models\Address\Entity;
 use RZP\Models\Customer;
 
 class CreateAddress extends Migration
