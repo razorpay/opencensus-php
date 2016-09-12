@@ -857,24 +857,16 @@ trait Authorize
 
         $payment = $this->payment;
 
-        // get token from local customer or global customer
-        if ($payment->getTokenId() !== null)
-        {
-            $token = $payment->token;
-        }
-        else if ($payment->getGlobalTokenId() !== null)
-        {
-            $token = $payment->globalToken;
-        }
+        $token = $payment->getGlobalOrLocalTokenEntity();
 
         // update token stats, assuming same token is not getting used in
         // multiple payments, actually we should locking
         if ($token !== null)
         {
             $createdAt = $payment->getCreatedAt();
-            $lastUsedAt = $token->getUsedAt();
+            $usedAt = $token->getUsedAt();
 
-            if ($createdAt > $lastUsedAt)
+            if ($createdAt > $usedAt)
             {
                 $token->setUsedAt($createdAt);
             }

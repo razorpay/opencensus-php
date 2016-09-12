@@ -952,6 +952,22 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ORDER_ID);
     }
 
+    public function getGlobalOrLocalTokenEntity()
+    {
+        $token = null;
+
+        if ($this->getTokenId() !== null)
+        {
+            $token = $this->token;
+        }
+        else if ($this->getGlobalTokenId() !== null)
+        {
+            $token = $this->globalToken;
+        }
+
+        return $token;
+    }
+
     public function setPublicOrderIdAttribute(Array & $array)
     {
         if (isset($array[self::ORDER_ID]))
