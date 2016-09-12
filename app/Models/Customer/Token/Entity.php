@@ -172,9 +172,19 @@ class Entity extends Base\PublicEntity
         return ($expiredAt <= time());
     }
 
-    public function setUsedAt($time)
+    protected function setUsedAt($time)
     {
         $this->setAttribute(self::USED_AT, $time);
+    }
+
+    public function setUsedAtIfLatest($time)
+    {
+        $usedAt = $this->getAttribute(self::USED_AT);
+
+        if ($time > $usedAt)
+        {
+            $this->setUsedAt($time);
+        }
     }
 
     public function incrementUsedCount()

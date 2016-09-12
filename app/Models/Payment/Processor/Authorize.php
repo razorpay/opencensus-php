@@ -853,8 +853,6 @@ trait Authorize
 
     protected function updateTokenOnAuthorized()
     {
-        $token = null;
-
         $payment = $this->payment;
 
         $token = $payment->getGlobalOrLocalTokenEntity();
@@ -864,12 +862,8 @@ trait Authorize
         if ($token !== null)
         {
             $createdAt = $payment->getCreatedAt();
-            $usedAt = $token->getUsedAt();
 
-            if ($createdAt > $usedAt)
-            {
-                $token->setUsedAt($createdAt);
-            }
+            $token->setUsedAtIfLatest($createdAt);
 
             $token->incrementUsedCount();
 
