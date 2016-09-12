@@ -337,11 +337,11 @@ trait Capture
 
     protected function eventOrderPaid()
     {
-        $order = $this->payment->order;
+        $payment = $this->payment;
 
-        if (isset($order) === true)
+        if ($payment->getApiOrderId() !== null)
         {
-            $this->app['events']->fire('api.order.paid', array($order));
+            $this->app['events']->fire('api.order.paid', array($payment));
         }
     }
 
