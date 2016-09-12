@@ -69,7 +69,7 @@ class RecurringPaymentTest extends TestCase
         $paymentEntity = $this->getLastEntity('payment', true);
         $tokenEntity   = $this->getLastEntity('token', true);
 
-        $this->assertEquals($paymentEntity['terminal_id'], '1RecurringTerm');
+        $this->assertEquals($paymentEntity['terminal_id'], '1000CybrsTrmnl');
 
         $this->assertEquals(true, $tokenEntity['recurring']);
 
