@@ -1093,6 +1093,11 @@ trait Authorize
         }
         catch (\Exception $e)
         {
+            if (isset($rawData['input']) and isset($rawData['input']['card']))
+            {
+                unset($rawData['input']['card']);
+            }
+
             $this->trace->error(
                 TraceCode::PAYMENT_ANALYTICS_SAVE_FAILED,
                 [
