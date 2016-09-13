@@ -345,8 +345,6 @@ class Processor
 
         $this->callGatewayFunction(Payment\Action::CAPTURE, $data);
 
-        $this->callGatewayFunction(Payment\Action::CAPTURE, $data);
-
         $payment->setGatewayCaptured(true);
 
         $this->repo->saveOrFail($payment);
