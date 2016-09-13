@@ -11,6 +11,7 @@ build:
           MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: root
           MYSQL_ROOT_PASSWORD: root
+      - redis
     # The steps that will be executed on build
     steps:
       - script:
@@ -38,8 +39,17 @@ build:
               export DB_TEST_HOST="$MYSQL_PORT_3306_TCP_ADDR"
               export DB_TEST_PORT="$MYSQL_PORT_3306_TCP_PORT"
       - script:
+          name: Export wercker Redis env var to API environment variables
+          code: >
+              export REDIS_HOST="$REDIS_PORT_6379_TCP_ADDR"
+              export REDIS_PORT="6379"
+      - script:
+          name: Increase PHP memory limit to 2G
+          code: >
+              echo "memory_limit=2048M" > /usr/local/etc/php/conf.d/memory-limit.ini
+      - script:
           name: Run unit tests
-          code: php -d memory_limit=1024M vendor/phpunit/phpunit/phpunit --debug --verbose
+          code: php -d memory_limit=2G vendor/phpunit/phpunit/phpunit --debug --verbose
       - script:
           name: List directory
           code: ls -lah
@@ -53,12 +63,6 @@ build:
 deploy:
     steps:
       - script:
-          name: Run composer
-          code: composer config -g github-oauth.github.com $github_token
-      - script:
-          name: install dependencies
-          code: composer install --no-interaction
-      - script:
           name: List directory
           code: ls -lah
       - script:
@@ -67,6 +71,9 @@ deploy:
       - script:
           name: check if dotfile rsyncignore exists
           code: if [ ! -f .rsyncignore ] ; then exit 1 ; fi;
+      - script:
+          name: create commit.txt
+          code: git rev-parse HEAD > public/commit.txt
       - nhuray/aws-code-deploy:
           key: $AWS_KEY
           secret: $AWS_SECRET
