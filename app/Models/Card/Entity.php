@@ -387,6 +387,13 @@ class Entity extends Base\PublicEntity
         return ($network === Card\Network::$fullName[Card\Network::AMEX]);
     }
 
+    public function isRuPay()
+    {
+        $network = $this->getNetwork();
+
+        return ($network === Card\Network::$fullName[Card\Network::RUPAY]);
+    }
+
     public function isRecurringSupported()
     {
         return ($this->getType() === Card\Type::CREDIT);

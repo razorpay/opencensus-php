@@ -7,6 +7,7 @@ use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
@@ -139,11 +140,12 @@ class Core extends Base\Core
         }
         else
         {
-            // For cards other than AMEX notify slack of missing IIN
-            if ((($card->isAmex()) === false) and
+            // For cards other than AMEX, RuPay, trace missing IIN
+            if (($card->isAmex() === false) and
+                ($card->isRuPay() === false) and
                 ($this->mode !== Mode::TEST))
             {
-                $this->notifySlack($card);
+                $this->traceMissingIin($card);
             }
         }
 
@@ -153,25 +155,15 @@ class Core extends Base\Core
         $this->checkCvvLength($card, $input);
     }
 
-    protected function notifySlack($card)
+    protected function traceMissingIin($card)
     {
-        $slackArray = array(
+        $data = [
             'iin'       => $card->getIin(),
-            'card_id'   => $card->getDashboardEntityLinkForSlack(),
+            'card_id'   => $card->getPublicId(),
             'merchant'  => $card->merchant->getBillingLabelElseName()
-        );
+        ];
 
-        try
-        {
-            $this->app['slack']->queue(
-                'Missing IIN for payment',
-                $slackArray,
-                ['channel' => '#settlements']);
-        }
-        catch(\Exception $e)
-        {
-            ;
-        }
+        $this->trace->warning(TraceCode::PAYMENT_CARD_IIN_MISSING, $data);
     }
 
     protected function checkCvvLength($card, $input)

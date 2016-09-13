@@ -254,14 +254,15 @@ $factory(\RZP\Models\Customer\Entity::class, [
 ]);
 
 $factory(\RZP\Models\Customer\Token\Entity::class, [
-    'id' => $faker->uniqueid,
+    'id'          => $faker->uniqueid,
     'merchant_id' => '10000000000000',
     'customer_id' => '100000customer',
-    'wallet' => 'paytm',
-    'method' => 'wallet',
-    'bank'   => null,
-    'card_id' => null,
-    'recurring' => false,
+    'wallet'      => 'paytm',
+    'method'      => 'wallet',
+    'bank'        => null,
+    'card_id'     => null,
+    'recurring'   => false,
+    'used_count'  => 0,
 ]);
 
 $factory(\RZP\Models\Customer\AppToken\Entity::class, [

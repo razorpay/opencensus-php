@@ -121,9 +121,9 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function cancel($id, $input)
+    public function cancel($id)
     {
-        $data = $this->getNewProcessor()->cancel($id, $input);
+        $data = $this->getNewProcessor()->cancel($id);
 
         return $data;
     }

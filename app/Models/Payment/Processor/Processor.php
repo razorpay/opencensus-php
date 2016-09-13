@@ -19,7 +19,6 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer;
-use RZP\Models\Base\Lock;
 
 class Processor
 {
@@ -75,7 +74,7 @@ class Processor
     protected $orderRepo;
     protected $paymentRepo;
     protected $app;
-    protected $lock;
+    protected $mutex;
     protected $request;
     protected $methods;
     protected $refund;
@@ -101,7 +100,7 @@ class Processor
 
         $this->request = $this->app['request'];
 
-        $this->lock = $this->app['api.lock'];
+        $this->mutex = $this->app['api.mutex'];
 
         // Only used in hdfc verify refund flow
         $this->verifyRefundStatus = null;
@@ -262,12 +261,11 @@ class Processor
     /**
      * Cancels a previously created payment
      *
-     * @param  string   $id      Id of payment to be captured
-     * @param  array    $input
-     *
-     * @return $status Payment\Status
+     * @param  string $id Id of payment to be captured
+     * @return  $status Payment\Status
+     * @throws Exception\BadRequestException
      */
-    public function cancel($id, $input)
+    public function cancel($id)
     {
         $status = null;
 
@@ -726,20 +724,20 @@ class Processor
         return false;
     }
 
-    protected function acquireLockOnPayment($payment)
+    protected function acquireMutexOnPayment($payment)
     {
         $resource = $payment->getId();
 
-        if ($this->lock->acquire($resource) === false)
+        if ($this->mutex->acquire($resource) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
         }
     }
 
-    protected function releaseLockOnPayment($payment)
+    protected function releaseMutexOnPayment($payment)
     {
-        $this->lock->release($this->payment->getId());
+        $this->mutex->release($payment->getId());
     }
 
     protected function createOrUpdateToken($input, $data)

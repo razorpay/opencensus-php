@@ -150,8 +150,6 @@ trait Callback
             $this->processPaymentCallbackException($e);
         }
 
-        $this->updateTokenOnAuthorized();
-
         $this->updateAndNotifyPaymentAuthorized();
     }
 

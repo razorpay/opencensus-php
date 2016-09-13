@@ -876,17 +876,29 @@ trait Authorize
 
     protected function updateTokenOnAuthorized()
     {
-        if ($this->payment->isMethodCardOrEmi())
-        {
-            $token = $this->payment->token;
+        $payment = $this->payment;
 
-            if (($this->payment->isRecurring() == true) and
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
+        // update token stats, assuming same token is not getting used in
+        // multiple payments, actually we should locking
+        if ($token !== null)
+        {
+            $createdAt = $payment->getCreatedAt();
+
+            $token->setUsedAt($createdAt);
+
+            $token->incrementUsedCount();
+
+            if (($token->isLocal()) and
+                ($payment->isMethodCardOrEmi()) and
+                ($payment->isRecurring() == true) and
                 ($token->isRecurring() === false))
             {
                 $token->setRecurring(true);
-
-                $this->repo->saveOrFail($token);
             }
+
+            $this->repo->saveOrFail($token);
         }
     }
 
@@ -1469,17 +1481,9 @@ trait Authorize
 
             $payment->terminal->incrementUsedCount();
 
-            if ($wasFailed === true)
-            {
-                $payment->setLateAuthorized(true);
-            }
-            else
-            {
-                $payment->setLateAuthorized(false);
-            }
-
-            $this->repo->saveOrFail($payment);
-            $this->repo->saveOrFail($payment->terminal);
+            // If payment was earlier failed, then that means it's
+            // getting authorized late.
+            $payment->setLateAuthorized($wasFailed);
 
             //
             // If gateway is authorizing the payment (basically, no authAndCapture support), create transaction.
@@ -1493,6 +1497,9 @@ trait Authorize
             }
 
             $this->repo->saveOrFail($payment);
+            $this->repo->saveOrFail($payment->terminal);
+
+            $this->updateTokenOnAuthorized();
 
             // If payment has an associated order
             // set the order to be paid

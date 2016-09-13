@@ -118,9 +118,7 @@ class PaymentController extends Controller
 
     public function postCancel($id)
     {
-        $input = Request::all();
-
-        $data = $this->payment->cancel($id, $input);
+        $data = $this->payment->cancel($id);
 
         return ApiResponse::json($data);
     }
