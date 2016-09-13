@@ -10,14 +10,14 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_RECURRING_NOT_ENABLED_FOR_MERCHANT,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_RECURRING_NOT_ENABLED,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_RECURRING_NOT_ENABLED_FOR_MERCHANT,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_RECURRING_NOT_ENABLED,
         ],
     ],
 

@@ -1416,7 +1416,7 @@ trait Authorize
         if ($merchant->isFeatureEnabled(Merchant\Features::RECURRING) === false)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_RECURRING_NOT_ENABLED_FOR_MERCHANT);
+                ErrorCode::BAD_REQUEST_PAYMENT_RECURRING_NOT_ENABLED);
         }
     }
 
