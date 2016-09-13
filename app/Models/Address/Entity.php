@@ -93,7 +93,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ADDRESS_TYPE);
     }
 
-    public function getPrimary()
+    public function isPrimary()
     {
         return $this->getAttribute(self::PRIMARY);
     }

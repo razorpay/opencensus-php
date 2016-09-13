@@ -14,8 +14,8 @@ class Repository extends Base\Repository
         Entity::ENTITY_ID       => 'sometimes|alpha_num|size:14',
         Entity::ENTITY_TYPE     => 'sometimes|string|max:64',
         Entity::ADDRESS_TYPE    => 'sometimes|string|max:64',
-        Entity::STATE           => 'sometimes|string|max:64',
-        Entity::COUNTRY         => 'sometimes|string|max:64',
+        Entity::STATE           => 'sometimes|string|max:128',
+        Entity::COUNTRY         => 'sometimes|string|max:128',
     ];
 
     public function fetchCurrentPrimaryAddress($entityType, $entityId, $addressType, $currentAddressId = null)

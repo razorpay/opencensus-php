@@ -314,7 +314,7 @@ class Service extends Base\Service
         $address = $this->getAddressFromCustomerId($customerId, $addressId);
 
         // If the address is already set as primary, there's nothing to do.
-        if ($address->getPrimary() === true)
+        if ($address->isPrimary() === true)
         {
             return $address;
         }

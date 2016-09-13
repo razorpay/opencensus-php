@@ -27,7 +27,6 @@ class CreateCustomers extends Migration {
 
             $table->char(Customer::MERCHANT_ID, 14);
 
-            // TODO: Foreign key association to be added?
             $table->char(Customer::SHIPPING_ADDRESS_ID, Customer::ID_LENGTH)
                   ->nullable();
 

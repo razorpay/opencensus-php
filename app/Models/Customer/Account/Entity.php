@@ -96,7 +96,7 @@ class Entity extends Base\PublicEntity
 
     public function isActive()
     {
-        return (bool)$this->getAttribute(self::ACTIVE);
+        return $this->getAttribute(self::ACTIVE);
     }
 
     // ----------------------------------- END GETTERS -----------------------------------
@@ -105,7 +105,7 @@ class Entity extends Base\PublicEntity
 
     protected function getActiveAttribute()
     {
-        return (bool)$this->attributes[self::ACTIVE];
+        return (bool) $this->attributes[self::ACTIVE];
     }
 
     // ----------------------------------- END ACCESSORS -----------------------------------

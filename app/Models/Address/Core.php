@@ -53,7 +53,7 @@ class Core extends Base\Core
             // can retrieve the customer by association if required.
             $this->repo->saveOrFail($address);
 
-            if ($address->getPrimary() === true)
+            if ($address->isPrimary() === true)
             {
                 $this->handlePrimaryAddressSwitch($address);
             }
@@ -64,9 +64,6 @@ class Core extends Base\Core
 
     public function setPrimaryAddress(Entity $address)
     {
-        $address->setPrimary(true);
-        $this->repo->saveOrFail($address);
-
         $this->handlePrimaryAddressSwitch($address);
 
         return $address;
@@ -100,7 +97,7 @@ class Core extends Base\Core
 
         return $this->repo->transaction(function() use ($address, $customer)
         {
-            if ($address->getPrimary() === true)
+            if ($address->isPrimary() === true)
             {
                 // Since this address is going to be deleted, the address cannot be primary any more.
                 $address->setPrimary(false);
