@@ -1113,10 +1113,17 @@ trait Authorize
         }
         catch (\Exception $e)
         {
+            $checkoutMetadata = NULL;
+
+            if (isset($rawData['input']) and isset($rawData['input']['_']))
+            {
+                $checkoutMetadata = $rawData['input']['_'];
+            }
+
             $this->trace->error(
                 TraceCode::PAYMENT_ANALYTICS_SAVE_FAILED,
                 [
-                    'raw_data' => $rawData
+                    'raw_data' => $checkoutMetadata
                 ]);
 
             $this->trace->traceException($e);
