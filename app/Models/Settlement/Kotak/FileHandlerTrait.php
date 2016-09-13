@@ -117,7 +117,9 @@ trait FileHandlerTrait
     {
         $bucket = 'h2h_bucket';
 
-        $fullPath = $this->getFullFilePath();
+        $name = $this->getFileToWriteName();
+
+        $fullPath = $this->getFullFilePath($name);
 
         return $this->getFileFromAws($bucket, $key, $fullpath);
     }
