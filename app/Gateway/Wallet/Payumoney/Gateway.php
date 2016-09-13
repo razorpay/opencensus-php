@@ -387,11 +387,11 @@ class Gateway extends Base\Gateway
 
     public function checkBalance(array $input)
     {
-        list($availableBalance, $walletLimit) = $this->getUserWalletLimit($input);
+        list($availableBalance, $maxWalletLimit) = $this->getUserWalletLimit($input);
 
         if ($availableBalance !== null)
         {
-            if (($input['payment']['amount'] - $availableBalance) > $walletLimit)
+            if (($input['payment']['amount'] - $availableBalance) > $maxWalletLimit)
             {
                 throw new Exception\GatewayErrorException(
                     ErrorCode::BAD_REQUEST_PAYMENT_WALLET_PER_PAYMENT_AMOUNT_CROSSED);
@@ -617,6 +617,11 @@ class Gateway extends Base\Gateway
         if (isset($userWalletLimit) === true)
         {
             $amount = ($amount - $userWalletLimit['availableBalance']);
+
+            if ($amount < $userWalletLimit['minLimit'])
+            {
+                $amount = $userWalletLimit['minLimit'];
+            }
         }
 
         $content = array(
