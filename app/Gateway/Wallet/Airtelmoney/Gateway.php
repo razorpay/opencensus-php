@@ -20,8 +20,6 @@ class Gateway extends Base\Gateway
 {
     use AuthorizeFailed;
 
-    const PROXY_URL = 'https://splunk.razorpay.com:8888';
-
     protected $canRunOtpFlow = false;
 
     protected $topup = false;
@@ -51,6 +49,17 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentRequest($request, $input);
 
+        // Create a payment gateway entity and save it.
+        $contentToSave = [
+            RequestFields::MID         => $this->getMerchantId($input['terminal']),
+            RequestFields::CUST_EMAIL  => $input['payment']['email'],
+            RequestFields::CUST_MOBILE => $this->getFormattedContact($input['payment']['contact']),
+            RequestFields::AMT         => $input['payment']['amount'],
+            'received'                 => false,
+        ];
+
+        $this->createGatewayPaymentEntity($contentToSave, Action::AUTHORIZE);
+
         // It is a redirect to airtel money.
         return $request;
     }
@@ -61,9 +70,15 @@ class Gateway extends Base\Gateway
 
         $content = $input['gateway'];
 
-        $this->handleRequestFailure($content);
-
-        $this->callbackAuthSuccessFlow($input);
+        if ((isset($content[ResponseFields::STATUS]) === false)
+            or ($content[ResponseFields::STATUS] !== Status::SUCCESS))
+        {
+            $this->callbackAuthFailureFlow($input);
+        }
+        else
+        {
+            $this->callbackAuthSuccessFlow($input);
+        }
     }
 
     public function refund(array $input)
@@ -78,14 +93,24 @@ class Gateway extends Base\Gateway
 
         $content = $this->xmlToArray($response->body);
 
-        $this->handleRequestFailure($content);
+        // Save the error in gateway payment entity
+        if((isset($content[ResponseFields::STATUS]) === false)
+            or ($content[ResponseFields::STATUS] !== Status::SUCCESS))
+        {
+            $this->saveRefundFailureContent($input, $content);
+
+            $this->handleRequestFailure($content);
+        }
 
         $this->trace->info(TraceCode::GATEWAY_REFUND_RESPONSE, $content);
+
+        $reference2 = $this->getEpochTime(
+            $content[ResponseFields::NEW_FDC_TXN_DATE],
+            DateFormat::NEW_FDC_TXN_DATE_FORMAT);
 
         $contentToSave = [
             'payment_id'            => $input['payment']['id'],
             'action'                => $this->action,
-            // Amount we are asking to refund or amount refunded by gateway
             'amount'                => $input['refund']['amount'],
             'wallet'                => $input['payment']['wallet'],
             'email'                 => $input['payment']['email'],
@@ -96,9 +121,7 @@ class Gateway extends Base\Gateway
             'response_description'  => $content[ResponseFields::MSG],
             'status_code'           => $content[ResponseFields::STATUS],
             'gateway_refund_id'     => $content[ResponseFields::NEW_FDC_TXN_ID],
-            'reference2'            => $this->getEpochTime(
-                $content[ResponseFields::NEW_FDC_TXN_DATE],
-                Constants::NEW_FDC_TXN_DATE_FORMAT),
+            'reference2'            => $reference2,
         ];
 
         $this->createGatewayRefundEntity($contentToSave);
@@ -150,12 +173,14 @@ class Gateway extends Base\Gateway
     {
         $wallet = $this->repo->fetchWalletByPaymentId($input['payment']['id']);
 
+        $requestDate = $this->getFormattedDate(
+            $wallet['reference1'],
+            DateFormat::REQUEST_DATE_FORMAT);
+
         $content = [
             RequestFields::MID        => $this->getMerchantId($input['terminal']),
             RequestFields::TXN_REF_NO => $input['payment']['id'],
-            RequestFields::DATE       => $this->getFormattedDate(
-                $wallet['reference1'],
-                Constants::REQUEST_DATE_FORMAT),
+            RequestFields::DATE       => $requestDate,
         ];
 
         return $this->getStandardRequestArray($content, 'post');
@@ -163,7 +188,7 @@ class Gateway extends Base\Gateway
 
     protected function verifyPayment($verify)
     {
-        $payment = $verify->payment;
+        $gatewayPayment = $verify->payment;
         $input = $verify->input;
         $content = $verify->verifyResponseContent;
 
@@ -176,11 +201,11 @@ class Gateway extends Base\Gateway
         {
             if ($content[ResponseFields::STATUS] !== Status::SUCCESS)
             {
-                $this->verifyStatusOnGatewayFailure($verify, $payment, $input);
+                $this->verifyStatusOnGatewayFailure($verify, $gatewayPayment, $input);
             }
             else if ($content[ResponseFields::STATUS] === Status::SUCCESS)
             {
-                $this->verifyStatusOnGatewaySuccess($verify, $payment, $input);
+                $this->verifyStatusOnGatewaySuccess($verify, $gatewayPayment, $input);
             }
         }
         else
@@ -219,35 +244,35 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
 
-        $verify->payment = $this->saveVerifyContentIfNeeded($payment, $content);
+        $verify->payment = $this->saveVerifyContentIfNeeded($gatewayPayment, $content);
 
         return $verify->status;
     }
 
-    protected function verifyStatusOnGatewayFailure($verify, $payment, $input)
+    protected function verifyStatusOnGatewayFailure($verify, $gatewayPayment, $input)
     {
         $verify->gatewaySuccess = false;
 
-        if (($payment === null) or
+        if (($gatewayPayment === null) or
             (($input['payment']['status'] === 'failed') or
                 ($input['payment']['status'] === 'created')))
         {
             $verify->apiSuccess = false;
         }
-        else if (($payment['received'] === false) and
-                    (($payment['status_code'] === null) or
-                    ($payment['status_code'] !== Status::SUCCESS)))
+        else if (($gatewayPayment['received'] === false) and
+                    (($gatewayPayment['status_code'] === null) or
+                    ($gatewayPayment['status_code'] !== Status::SUCCESS)))
         {
             $verify->apiSuccess = false;
         }
-        else if ($payment['status_code'] === Status::SUCCESS)
+        else if ($gatewayPayment['status_code'] === Status::SUCCESS)
         {
             $verify->status = VerifyResult::STATUS_MISMATCH;
             $verify->apiSuccess = true;
         }
     }
 
-    protected function verifyStatusOnGatewaySuccess($verify, $payment, $input)
+    protected function verifyStatusOnGatewaySuccess($verify, $gatewayPayment, $input)
     {
         $verify->gatewaySuccess = true;
 
@@ -278,32 +303,32 @@ class Gateway extends Base\Gateway
         return $transaction;
     }
 
-    protected function saveVerifyContentIfNeeded($payment, $content)
+    protected function saveVerifyContentIfNeeded($gatewayPayment, $content)
     {
         $this->action = Action::AUTHORIZE;
 
         if ((isset($content[ResponseFields::STATUS])) and
-            ($content[ResponseFields::STATUS] === Status::VERIFY_SUCCESS))
+            ($content[ResponseFields::STATUS] === Status::SUCCESS))
         {
-            $walletAttributes = $this->getWalletContentFromVerify($payment, $content);
+            $walletAttributes = $this->getWalletContentFromVerify($gatewayPayment, $content);
 
-            if ($payment === null)
+            if ($gatewayPayment === null)
             {
-                $payment = $this->createGatewayPaymentEntity($walletAttributes);
+                $gatewayPayment = $this->createGatewayPaymentEntity($walletAttributes);
             }
-            else if ($payment['received'] === false)
+            else if ($gatewayPayment['received'] === false)
             {
-                $payment->fill($walletAttributes);
-                $payment->saveOrFail();
+                $gatewayPayment->fill($walletAttributes);
+                $gatewayPayment->saveOrFail();
             }
         }
 
         $this->action = Action::VERIFY;
 
-        return $payment;
+        return $gatewayPayment;
     }
 
-    protected function getWalletContentFromVerify($payment, array $content)
+    protected function getWalletContentFromVerify($gatewayPayment, array $content)
     {
         $contentToSave = [
             RequestFields::MID         => $this->getMerchantId($this->input['terminal']),
@@ -314,12 +339,31 @@ class Gateway extends Base\Gateway
             'received'                 => true,
         ];
 
-        if (isset($payment['amount']) === false)
+        if (isset($gatewayPayment['amount']) === false)
         {
             $contentToSave[RequestFields::AMT] = $this->input['payment']['amount'];
         }
 
         return $contentToSave;
+    }
+
+    protected function saveRefundFailureContent(array $input, array $content)
+    {
+        $contentToSave = [
+            'payment_id'            => $input['payment']['id'],
+            'action'                => $this->action,
+            'amount'                => $input['refund']['amount'],
+            'wallet'                => $input['payment']['wallet'],
+            'email'                 => $input['payment']['email'],
+            'received'              => false,
+            'contact'               => $this->getFormattedContact($input['payment']['contact']),
+            'gateway_merchant_id'   => $this->getMerchantId($input['terminal']),
+            'refund_id'             => $input['refund']['id'],
+            'response_description'  => $content[ResponseFields::MSG],
+            'status_code'           => $content[ResponseFields::STATUS],
+        ];
+
+        $this->createGatewayRefundEntity($contentToSave);
     }
 
     protected function getMerchantId($terminal)
@@ -329,7 +373,7 @@ class Gateway extends Base\Gateway
             return $this->config['test_merchant_id'];
         }
 
-        return $terminal['gateway_merchant_id'];
+        return $this->config['gateway_merchant_id'];
     }
 
     protected function getEndMerchantId($terminal)
@@ -339,7 +383,7 @@ class Gateway extends Base\Gateway
             return $this->config['test_end_mid'];
         }
 
-        return $this->config['live_end_mid'];
+        return $terminal['gateway_merchant_id2'];
     }
 
     protected function shouldReturnIfPaymentNullInVerifyFlow($verify)
@@ -396,14 +440,12 @@ class Gateway extends Base\Gateway
     {
         $content = $input['gateway'];
 
-        $date = $this->getEpochTime($content[ResponseFields::TRAN_DATE], Constants::TRAN_DATE_FORMAT)
+        $date = $this->getEpochTime(
+            $content[ResponseFields::TRAN_DATE],
+            DateFormat::TRAN_DATE_FORMAT);
 
         // Create a payment gateway entity and save it.
         $contentToSave = [
-            RequestFields::MID         => $this->getMerchantId($input['terminal']),
-            RequestFields::CUST_EMAIL  => $input['payment']['email'],
-            RequestFields::CUST_MOBILE => $this->getFormattedContact($input['payment']['contact']),
-            RequestFields::AMT         => $content[ResponseFields::TRAN_AMT]*100,
             ResponseFields::STATUS     => $content[ResponseFields::STATUS],
             ResponseFields::MSG        => $content[ResponseFields::MSG],
             ResponseFields::TXN_REF_NO => $content[ResponseFields::TXN_REF_NO],
@@ -412,16 +454,46 @@ class Gateway extends Base\Gateway
             'received'                 => true
         ];
 
-        // Changing action to AUTHORIZE to keep the action consistent
-        $this->action = Action::AUTHORIZE;
+        $wallet = $this->repo->findByPaymentIdAndAction(
+            $input['payment']['id'], Action::AUTHORIZE);
 
-        $this->createGatewayPaymentEntity($contentToSave);
+        $this->updateGatewayPaymentEntity($wallet, $contentToSave);
+    }
 
-        $this->action = Action::CALLBACK;
+    /**
+     * Store the failure details in payment gateway entity
+     * and throw an exception
+     */
+    protected function callbackAuthFailureFlow(array $input)
+    {
+        $content = $input['gateway'];
+
+        $date = $this->getEpochTime(
+            $content[ResponseFields::TRAN_DATE],
+            DateFormat::TRAN_DATE_FORMAT);
+
+        // Create a payment gateway entity and save it.
+        $contentToSave = [
+            ResponseFields::STATUS  => $content[ResponseFields::STATUS],
+            ResponseFields::MSG     => $content[ResponseFields::MSG],
+        ];
+
+        $wallet = $this->repo->findByPaymentIdAndAction(
+            $input['payment']['id'], Action::AUTHORIZE);
+
+        $this->updateGatewayPaymentEntity($wallet, $contentToSave);
+
+        // Throw exception for the failure
+        $this->handleRequestFailure();
     }
 
     protected function getHashOfString($hashString)
     {
+        // Secret should only be accessed here.
+        $secret = $this->getSecret();
+
+        $hashString = $hashString.'#'.$secret;
+
         return hash(HashAlgo::SHA512, $hashString, false);
     }
 
@@ -429,7 +501,9 @@ class Gateway extends Base\Gateway
     {
         $payment = $input['payment'];
 
-        $date = $this->getFormattedDate($payment['created_at'], Constants::REQUEST_DATE_FORMAT)
+        $date = $this->getFormattedDate(
+            $payment['created_at'],
+            DateFormat::REQUEST_DATE_FORMAT);
 
         $content = [
             RequestFields::MID         => $this->getMerchantId($input['terminal']),
@@ -437,7 +511,7 @@ class Gateway extends Base\Gateway
             RequestFields::SU          => $input['callbackUrl'],
             RequestFields::FU          => $input['callbackUrl'],
             RequestFields::AMT         => $input['payment']['amount']/100,
-            RequestFields::CUR         => Constants::INR,
+            RequestFields::CUR         => 'INR',
             RequestFields::DATE        => $date,
             RequestFields::CUST_MOBILE => $this->getFormattedContact($payment['contact']),
             RequestFields::CUST_EMAIL  => $payment['email'],
@@ -456,7 +530,6 @@ class Gateway extends Base\Gateway
             $content['TXN_REF_NO'],
             $content['AMT'],
             $content['DATE'],
-            $this->getSecret(),
         ];
 
         return implode('#', $hashArray);
@@ -466,7 +539,9 @@ class Gateway extends Base\Gateway
     {
         $wallet = $this->repo->fetchWalletByPaymentId($input['payment']['id']);
 
-        $date = $this->getFormattedDate($wallet['reference1'], Constants::REQUEST_DATE_FORMAT)
+        $date = $this->getFormattedDate(
+            $wallet['reference1'],
+            DateFormat::REQUEST_DATE_FORMAT);
 
         $content = [
             RequestFields::MID     => $this->getMerchantId($input['terminal']),

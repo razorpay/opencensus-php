@@ -3,9 +3,9 @@
 namespace RZP\Gateway\Wallet\Airtelmoney;
 
 /**
- * Airtel Specific constants are stored here.
+ * Airtel Specific date formats are stored here.
  */
-class Constants
+class DateFormat
 {
     const REQUEST_DATE_FORMAT     = 'mdYHis';
     const TRAN_DATE_FORMAT        = 'dmYHis';

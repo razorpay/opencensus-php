@@ -8,25 +8,25 @@ use Lib\PhoneBook;
 
 class Gateway extends Base\Gateway
 {
-    protected function createGatewayPaymentEntity($attributes, $action = null;)
+    protected function createGatewayPaymentEntity($attributes, $action = null)
     {
         $attr = $this->getMappedAttributes($attributes);
 
         $action = $action ? $action : $this->action;
 
-        $payment = $this->getNewGatewayPaymentEntity();
+        $gatewayPayment = $this->getNewGatewayPaymentEntity();
 
-        $payment->setPaymentId($this->input['payment']['id']);
+        $gatewayPayment->setPaymentId($this->input['payment']['id']);
 
-        $payment->setAction($action);
+        $gatewayPayment->setAction($action);
 
-        $payment->setWallet($this->input['payment']['wallet']);
+        $gatewayPayment->setWallet($this->input['payment']['wallet']);
 
-        $payment->fill($attr);
+        $gatewayPayment->fill($attr);
 
-        $payment->saveOrFail();
+        $gatewayPayment->saveOrFail();
 
-        return $payment;
+        return $gatewayPayment;
     }
 
     protected function createGatewayRefundEntity($attributes)
@@ -38,6 +38,17 @@ class Gateway extends Base\Gateway
         $refund->saveOrFail();
 
         return $refund;
+    }
+
+    protected function updateGatewayPaymentEntity($gatewayPayment, $attributes)
+    {
+        $attr = $this->getMappedAttributes($attributes);
+
+        $gatewayPayment->fill($attr);
+
+        $gatewayPayment->saveOrFail();
+
+        return $gatewayPayment;
     }
 
     protected function getNewGatewayPaymentEntity()

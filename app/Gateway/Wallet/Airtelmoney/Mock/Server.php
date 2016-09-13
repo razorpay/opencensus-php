@@ -13,12 +13,12 @@ use RZP\Error\ErrorCode;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Wallet\Base\Otp;
 use RZP\Gateway\Wallet\Airtelmoney;
+use RZP\Gateway\Wallet\Airtelmoney\DateFormat;
 use RZP\Gateway\Wallet\Airtelmoney\Status;
 use RZP\Gateway\Wallet\Airtelmoney\ResponseCode;
 use RZP\Gateway\Wallet\Airtelmoney\ResponseFields;
 use RZP\Gateway\Wallet\Airtelmoney\RequestFields;
 
-use RZP\Gateway\Wallet\Airtelmoney\Constants as ArtlConstants;
 
 class Server extends Base\Mock\Server
 {
@@ -42,10 +42,10 @@ class Server extends Base\Mock\Server
                 ResponseFields::MID        => $input[RequestFields::MID],
                 ResponseFields::TRAN_ID    => $this->getArtlTxnId(),
                 ResponseFields::TRAN_AMT   => $input[RequestFields::AMT],
-                ResponseFields::TRAN_CUR   => ArtlConstants::INR,
+                ResponseFields::TRAN_CUR   => 'INR',
                 ResponseFields::TRAN_DATE  => $this->getFormattedDate(
                     Carbon::now(),
-                    ArtlConstants::TRAN_DATE_FORMAT),
+                    DateFormat::TRAN_DATE_FORMAT),
                 ResponseFields::TXN_REF_NO => $input[RequestFields::TXN_REF_NO],
             ];
 
@@ -81,7 +81,7 @@ class Server extends Base\Mock\Server
             ResponseFields::TXN_AMT      => 50000,
             ResponseFields::FDC_TXN_DATE => $this->getFormattedDate(
                 Carbon::now(),
-                ArtlConstants::FDC_TXN_DATE_FORMAT),
+                DateFormat::FDC_TXN_DATE_FORMAT),
             ResponseFields::MSG          => self::DUMMY_MSG,
         );
 
@@ -103,7 +103,7 @@ class Server extends Base\Mock\Server
             ResponseFields::AMT              => $input[RequestFields::AMT],
             ResponseFields::NEW_FDC_TXN_DATE => $this->getFormattedDate(
                 Carbon::now(),
-                ArtlConstants::NEW_FDC_TXN_DATE_FORMAT),
+                DateFormat::NEW_FDC_TXN_DATE_FORMAT),
             ResponseFields::MSG              => self::DUMMY_MSG,
         ];
 

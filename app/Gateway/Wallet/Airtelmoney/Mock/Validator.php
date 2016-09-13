@@ -3,7 +3,7 @@
 namespace RZP\Gateway\Wallet\Airtelmoney\Mock;
 
 use RZP\Models\Base;
-use RZP\Gateway\Wallet\Airtelmoney\Constants;
+use RZP\Gateway\Wallet\Airtelmoney\DateFormat;
 use RZP\Gateway\Wallet\Airtelmoney\RequestFields;
 use RZP\Gateway\Wallet\Airtelmoney\ResponseFields;
 
@@ -15,7 +15,7 @@ class Validator extends Base\Validator
         RequestFields::FU          => 'required|url',
         RequestFields::TXN_REF_NO  => 'required|string',
         RequestFields::AMT         => 'required|numeric',
-        RequestFields::DATE        => 'required|date_format:'.Constants::REQUEST_DATE_FORMAT,
+        RequestFields::DATE        => 'required|date_format:'.DateFormat::REQUEST_DATE_FORMAT,
         RequestFields::HASH        => 'required|regex:"^[a-f0-9]+$"',
         RequestFields::CUR         => 'required|in:INR',
         RequestFields::CUST_EMAIL  => 'sometimes|email',
@@ -27,13 +27,13 @@ class Validator extends Base\Validator
         RequestFields::MID     => 'required|string',
         RequestFields::AMT     => 'required|numeric',
         RequestFields::TXN_ID  => 'required|string',
-        RequestFields::DATE    => 'required|date_format:'.Constants::REQUEST_DATE_FORMAT,
+        RequestFields::DATE    => 'required|date_format:'.DateFormat::REQUEST_DATE_FORMAT,
         RequestFields::REMARKS => 'required|string',
     );
 
     protected static $verifyRules = array(
         RequestFields::MID        => 'required|string',
         RequestFields::TXN_REF_NO => 'required|string',
-        RequestFields::DATE       => 'required|date_format:'.Constants::REQUEST_DATE_FORMAT,
+        RequestFields::DATE       => 'required|date_format:'.DateFormat::REQUEST_DATE_FORMAT,
     );
 }

@@ -22,10 +22,6 @@ class ResponseCodeMap
         '14236' => ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
     );
 
-    protected static $success = array(
-        '000'
-    );
-
     public static function getResponseMessage($code)
     {
         $codes = self::$codes;
