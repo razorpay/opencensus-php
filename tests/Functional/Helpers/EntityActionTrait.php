@@ -163,6 +163,26 @@ trait EntityActionTrait
         return $this->makeRequestAndGetContent($request);
     }
 
+    protected function createOrder(array $input = [])
+    {
+        $defaultInput = [
+            'amount'        => 50000,
+            'currency'      => 'INR',
+            'receipt'       => random_int(1000, 99999),
+        ];
+
+        $input = array_merge($defaultInput, $input);
+
+        $request = [
+            'url'       => '/orders',
+            'method'    => 'POST',
+            'content'   => $input
+        ];
+
+        $this->ba->privateAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
 
     protected function getPaymentMethods()
     {

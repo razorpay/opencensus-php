@@ -130,7 +130,17 @@ class Iin extends Base
             'emi'           => 1,
             'trivia'        => 'random trivia'
             ),
-
+        array(
+            'iin'           => '424512',
+            'category'      => 'ELECTRON',
+            'network'       => 'Visa',
+            'type'          => 'debit',
+            'country'       => 'ZA',
+            'issuer_name'   => 'CAPITEC BANK, LTD.',
+            'issuer'        => null,
+            'emi'           => 0,
+            'trivia'        => null,
+            ),
         );
 
     public function createDefaultIins()

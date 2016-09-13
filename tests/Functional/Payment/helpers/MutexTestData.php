@@ -5,7 +5,7 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
-    'testLockAcquiredCaptureRequest' => [
+    'testMutexAcquiredCaptureRequest' => [
         'response' => [
             'content' => [
                 'error' => [
@@ -21,7 +21,7 @@ return [
         ],
     ],
 
-    'testLockAcquiredRefundRequest' => [
+    'testMutexAcquiredRefundRequest' => [
         'response' => [
             'content' => [
                 'error' => [

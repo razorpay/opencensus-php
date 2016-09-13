@@ -75,7 +75,7 @@ class ApiServiceProvider extends BaseServiceProvider
             return new \RZP\Base\RepositoryManager($app);
         });
 
-        $this->registerApiLock();
+        $this->registerApiMutex();
 
         $this->registerValidatorResolver();
 
@@ -96,7 +96,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'gateway',
             'webhook.inferno',
             'card.tokenex',
-            'api.lock',
+            'api.mutex',
             'raven',
             'repo',
             'es',
@@ -125,18 +125,18 @@ class ApiServiceProvider extends BaseServiceProvider
         });
     }
 
-    protected function registerApiLock()
+    protected function registerApiMutex()
     {
-        $this->app->singleton('api.lock', function($app)
+        $this->app->singleton('api.mutex', function($app)
         {
-             $lockMock = $app['config']->get('services.lock.mock');
+             $lockMock = $app['config']->get('services.mutex.mock');
 
             if ($lockMock === true)
             {
-                return new Services\Mock\Lock($app);
+                return new Services\Mock\Mutex($app);
             }
 
-            return new Services\Lock($app);
+            return new Services\Mutex($app);
         });
     }
 }

@@ -24,7 +24,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
      * Instance objects
      *******************/
 
-    protected $refundRepo;
+    protected $repo;
 
     protected $payment;
     protected $refund;
@@ -35,9 +35,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
-        $repo = $this->app['repo'];
-
-        $this->refundRepo = $repo->refund;
+        $this->repo = $this->app['repo'];
 
         $this->messenger = new Messenger();
     }
@@ -208,7 +206,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
         try
         {
-            $this->refund = $this->refundRepo->findOrFail($refundId);
+            $this->refund = $this->repo->refund->findOrFail($refundId);
         }
         catch (\Exception $ex)
         {

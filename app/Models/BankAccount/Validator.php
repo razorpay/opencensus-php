@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Merchant\BankAccount;
+namespace RZP\Models\BankAccount;
 
 use RZP\Constants\Mode;
 use RZP\Exception;
