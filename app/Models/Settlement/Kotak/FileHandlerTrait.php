@@ -121,7 +121,7 @@ trait FileHandlerTrait
 
         $fullPath = $this->getFullFilePath($name);
 
-        return $this->getFileFromAws($bucket, $key, $fullpath);
+        return $this->getFileFromAws($bucket, $key, $fullPath);
     }
 
     protected function createExcelObject($data, $name, $columnFormat = [])
