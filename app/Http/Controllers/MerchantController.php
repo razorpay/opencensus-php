@@ -81,9 +81,9 @@ class MerchantController extends Controller
     {
         $merchant = Auth::user()->currentMerchant;
 
-        $keys = (new Merchant\Service)->fetchKeysFromApi($merchant->id, $mode);
+        list($error, $keys) = (new Merchant\Service)->fetchKeysFromApi($merchant->id, $mode);
 
-        return AppResponse::jsonResponse([], $keys);
+        return AppResponse::jsonResponse($error, $keys);
     }
 
     public function postNewKey($mode)

@@ -113,7 +113,9 @@ app.controller('KeysCtrl', [
           $scope.keys.count = data.data.count;
           $scope.keys.items = data.data.items;
         } else {
-          $scope.alerts.addAlert('danger');
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
         }
       }).error(function () {
         $scope.alerts.addAlert('danger', null, true);
