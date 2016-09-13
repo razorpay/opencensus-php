@@ -3,8 +3,9 @@
 namespace RZP\Services;
 
 use Redis;
-use Request;
 use Predis\PredisException;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 /**
  * The below lock implementation is based on single-instance redis redlock algorithm
@@ -13,7 +14,7 @@ use Predis\PredisException;
  * SETNX - This command is crucial to lock implementation.
  *         Man page - http://redis.io/commands/setnx
  */
-class Lock
+class Mutex
 {
     protected $requestId;
 
@@ -91,5 +92,29 @@ class Lock
         }
 
         return false;
+    }
+
+    public function acquireAndRelease($resource, callable $callback, $ttl = 60)
+    {
+        $ret = null;
+
+        try
+        {
+            $acquired = $this->acquire($resource, $ttl);
+
+            if ($acquired === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
+            }
+
+            $ret = call_user_func($callback);
+
+            return $ret;
+        }
+        finally
+        {
+            $this->release($resource);
+        }
     }
 }
