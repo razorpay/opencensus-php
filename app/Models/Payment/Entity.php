@@ -643,6 +643,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::CAPTURED_AT) !== null);
     }
 
+    public function isCard()
+    {
+        return ($this->getAttribute(self::METHOD) === Payment\Method::CARD);
+    }
+
     public function isNetbanking()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::NETBANKING);

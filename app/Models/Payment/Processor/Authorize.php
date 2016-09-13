@@ -891,7 +891,7 @@ trait Authorize
             $token->incrementUsedCount();
 
             if (($token->isLocal()) and
-                ($payment->isMethodCardOrEmi()) and
+                ($payment->isCard()) and
                 ($payment->isRecurring() == true) and
                 ($token->isRecurring() === false))
             {
