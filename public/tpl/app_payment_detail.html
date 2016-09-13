@@ -150,13 +150,13 @@
     <h3 class="modal-title">Refund Payment</h3>
   </div>
   <div class="modal-body">
-    <form ng-init="partial=false" class="form-horizontal">
+    <form ng-init="partial=false; refund_amount=amount" class="form-horizontal">
       <div class="form-group">
         <label class="col-lg-3 control-label" for="partial">Partial Refund</label>
         <div class="col-lg-9">
           <div class="checkbox">
             <label class="i-checks">
-              <input ng-model="partial" type="checkbox">
+              <input ng-model="partial" type="checkbox" ng-change="setAmount(partial)">
               <i></i>
             </label>
           </div>
@@ -164,11 +164,11 @@
       </div>
 
       <div class="form-group" ng-show="partial">
-        <label class="col-lg-3 control-label" for="amount">Refund Amount</label>
+        <label class="col-lg-3 control-label" for="refund_amount">Refund Amount</label>
         <div class="col-lg-9">
           <div class="input-group">
             <span class="input-group-addon">INR</span>
-            <input type="text" class="form-control m-b" name="amount" ng-model="amount" placeholder="{{amount}}">
+            <input type="text" class="form-control m-b" name="amount" ng-model="refund_amount" placeholder="{{amount}}">
           </div>
         </div>
       </div>
@@ -182,7 +182,6 @@
         </div>
       </div>
 
-
     </form>
   </div>
   <div class="modal-footer">
@@ -190,10 +189,10 @@
         The payment will be
           <span ng-show="partial">partially</span>
           <span ng-show="!partial">completely</span>
-        refunded with the refund amount set to {{amount}} INR.
+        refunded with the refund amount set to {{refund_amount}} INR.
       </div>
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-      <button class="btn btn-primary" ng-click="ok(amount, comment)" ng-confirm-click="Are you sure you want to refund this payment?">OK</button>
+      <button class="btn btn-primary" ng-click="ok(refund_amount, comment)" ng-confirm-click="Are you sure you want to refund this payment?">OK</button>
   </div>
 </script>
 
