@@ -339,7 +339,7 @@ class Gateway extends Base\Gateway
             return $this->config['test_end_mid'];
         }
 
-        return $terminal['gateway_merchant_id2'];
+        return $this->config['live_end_mid'];
     }
 
     protected function shouldReturnIfPaymentNullInVerifyFlow($verify)
@@ -477,5 +477,10 @@ class Gateway extends Base\Gateway
         ];
 
         return $this->getStandardRequestArray($content, 'post');
+    }
+
+    protected function getLiveSecret()
+    {
+        return $this->config['live_hash_secret'];
     }
 }

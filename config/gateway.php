@@ -144,10 +144,11 @@ return array(
     ),
 
     'wallet_airtelmoney' => array(
-        // salt airtel provides us is the secret key
         'test_hash_secret' => env('AIRTELMONEY_WALLET_TEST_HASH_SECRET'),
         'test_merchant_id' => env('AIRTELMONEY_WALLET_TEST_MERCHANT_ID'),
         'test_end_mid'     => env('AIRTELMONEY_WALLET_TEST_END_MID'),
+        'live_end_mid'     => env('AIRTELMONEY_WALLET_TEST_END_MID'),
+        'live_hash_secret' => env('AIRTELMONEY_WALLET_TEST_HASH_SECRET'),
     ),
 
     'netbanking_hdfc' => array(

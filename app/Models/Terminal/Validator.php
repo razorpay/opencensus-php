@@ -133,10 +133,7 @@ class Validator extends Base\Validator
 
     protected static $walletAirtelmoneyTerminalRules = array(
         Entity::GATEWAY                     => 'required|in:wallet_airtelmoney',
-        Entity::GATEWAY_SECURE_SECRET       => 'required|string',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
-        // For END_MID, which airtelmoney gives us
-        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
     );
 
     protected function validateGateway($input)
