@@ -74,6 +74,7 @@ class Entity extends Base\PublicEntity
         self::WALLET,
         self::METHOD,
         self::CARD,
+        self::USED_AT,
     );
 
     protected $defaults = array(
