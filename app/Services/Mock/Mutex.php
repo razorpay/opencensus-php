@@ -2,10 +2,12 @@
 
 namespace RZP\Services\Mock;
 
-use RZP\Services\Lock as BaseLock;
+use RZP\Services\Mutex as BaseLock;
 
 class Mutex extends BaseLock
 {
+    protected $cache;
+
     public function __construct($app)
     {
         $this->requestId = $app['request']->getId();

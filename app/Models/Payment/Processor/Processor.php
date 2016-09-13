@@ -74,7 +74,7 @@ class Processor
     protected $orderRepo;
     protected $paymentRepo;
     protected $app;
-    protected $lock;
+    protected $mutex;
     protected $request;
     protected $methods;
     protected $refund;
@@ -261,12 +261,11 @@ class Processor
     /**
      * Cancels a previously created payment
      *
-     * @param  string   $id      Id of payment to be captured
-     * @param  array    $input
-     *
-     * @return $status Payment\Status
+     * @param  string $id Id of payment to be captured
+     * @return  $status Payment\Status
+     * @throws Exception\BadRequestException
      */
-    public function cancel($id, $input)
+    public function cancel($id)
     {
         $status = null;
 
@@ -738,7 +737,7 @@ class Processor
 
     protected function releaseMutexOnPayment($payment)
     {
-        $this->mutex->release($this->payment->getId());
+        $this->mutex->release($payment->getId());
     }
 
     protected function createOrUpdateToken($input, $data)

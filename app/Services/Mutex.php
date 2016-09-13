@@ -3,7 +3,6 @@
 namespace RZP\Services;
 
 use Redis;
-use Request;
 use Predis\PredisException;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -117,7 +116,5 @@ class Mutex
         {
             $this->release($resource);
         }
-
-        return $ret;
     }
 }

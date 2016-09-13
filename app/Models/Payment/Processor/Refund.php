@@ -91,7 +91,7 @@ trait Refund
             $data['card'] = $refund->payment->card->toArray();
         }
 
-        $msg = $this->mutex->acquireAndRelease($payment, function() use ($data)
+        $msg = $this->mutex->acquireAndRelease($payment, function() use ($data, $payment, $refund)
         {
             $verify = $this->callGatewayForVerifyRefund($data);
 
