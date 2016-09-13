@@ -199,15 +199,6 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getNonTaxComputedPayments()
-    {
-        return $this->newQuery()
-                    ->whereNotNull(Payment\Entity::CAPTURED_AT)
-                    ->whereNull(Payment\Entity::SERVICE_TAX)
-                    ->take(500)
-                    ->get();
-    }
-
     public function fetchPaymentsForCustomerMethod($customer, $method, $skip)
     {
         return $this->newQuery()

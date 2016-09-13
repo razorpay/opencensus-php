@@ -3,7 +3,7 @@
 namespace RZP\Models\Settlement;
 
 use RZP\Models\Base;
-use RZP\Models\Merchant\BankAccount;
+use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
 use RZP\Exception;
 
@@ -76,7 +76,7 @@ class Entity extends Base\PublicEntity
     public function bankAccount()
     {
         return $this->belongsTo(
-                                'RZP\Models\Merchant\BankAccount\Entity',
+                                'RZP\Models\BankAccount\Entity',
                                 self::BANK_ACCOUNT_ID,
                                 BankAccount\Entity::ID);
     }

@@ -199,6 +199,7 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_PARTIAL_AMOUNT_APPROVED                               = 'BAD_REQUEST_PAYMENT_PARTIAL_AMOUNT_APPROVED';
     const BAD_REQUEST_PAYMENT_PROBLEM_IN_UPDATING                                   = 'BAD_REQUEST_PAYMENT_PROBLEM_IN_UPDATING';
     const BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT                              = 'BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT';
+    const BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED                                   = 'BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED';
 
     const BAD_REQUEST_CARD_AVS_FAILED                                               = 'BAD_REQUEST_CARD_AVS_FAILED';
     const BAD_REQUEST_CARD_STOLEN_OR_LOST                                           = 'BAD_REQUEST_CARD_STOLEN_OR_LOST';
@@ -270,6 +271,14 @@ class ErrorCode
 
     const BAD_REQUEST_PAYMENT_VERIFICATION_FAILED                                   = 'BAD_REQUEST_PAYMENT_VERIFICATION_FAILED';
     const BAD_REQUEST_GATEWAY_REFUND_ABSENT                                         = 'BAD_REQUEST_GATEWAY_REFUND_ABSENT';
+
+    const BAD_REQUEST_INVALID_CHECKOUT_ID                                           = 'BAD_REQUEST_INVALID_CHECKOUT_ID';
+    const BAD_REQUEST_INVALID_PLATFORM                                              = 'BAD_REQUEST_INVALID_PLATFORM';
+    const BAD_REQUEST_INVALID_LIBRARY                                               = 'BAD_REQUEST_INVALID_LIBRARY';
+    const BAD_REQUEST_INVALID_BROWSER                                               = 'BAD_REQUEST_INVALID_BROWSER';
+    const BAD_REQUEST_INVALID_OS                                                    = 'BAD_REQUEST_INVALID_OS';
+    const BAD_REQUEST_INVALID_DEVICE                                                = 'BAD_REQUEST_INVALID_DEVICE';
+    const BAD_REQUEST_INVALID_INTEGRATION                                           = 'BAD_REQUEST_INVALID_INTEGRATION';
 
     const SERVER_ERROR_INVALID_ARGUMENT                                             = 'SERVER_ERROR_INVALID_ARGUMENT';
     const SERVER_ERROR_DB_QUERY_FAILED                                              = 'SERVER_ERROR_DB_QUERY_FAILED';

@@ -8,7 +8,7 @@ use BasicAuth;
 use RZP\Constants\Mode;
 use RZP\Dashboard\Dashboard;
 use RZP\Models\Merchant;
-use RZP\Models\Merchant\BankAccount;
+use RZP\Models\BankAccount;
 use RZP\Models\Terminal;
 use RZP\Models\Payment;
 use RZP\Models\Order;
@@ -19,7 +19,6 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer;
-use RZP\Models\Base\Lock;
 
 class Processor
 {
@@ -49,13 +48,22 @@ class Processor
     /**
      * If payment fails on gateway then we may retry it with a different terminal/gateway.
      */
-    const MAX_RETRY_ATTEMPTS = 3;
+    const MAX_RETRY_ATTEMPTS = 5;
 
     /**
      * If a payment gets converted to authorized from failed after 15 minutes of creation of payment,
      * we do not send a notification to the customer.
      */
     const FAILED_TO_AUTHORIZED_NOTIFY_DURATION = 900;
+
+    /**
+     * Payment can be cancelled in multiple ways, one of which being
+     * by closing the payment pop-up that.
+     * However, we only allow payment to be cancelled within a certain duration.
+     * A payment created today can only be cancelled within few minutes and
+     * not on next day.
+     */
+    const PAYMENT_CANCEL_TIME_DURATION = 1800;  // 30 min * 60 sec
 
     protected $merchant;
     protected $trace;
@@ -66,7 +74,7 @@ class Processor
     protected $orderRepo;
     protected $paymentRepo;
     protected $app;
-    protected $lock;
+    protected $mutex;
     protected $request;
     protected $methods;
     protected $refund;
@@ -92,7 +100,7 @@ class Processor
 
         $this->request = $this->app['request'];
 
-        $this->lock = $this->app['api.lock'];
+        $this->mutex = $this->app['api.mutex'];
 
         // Only used in hdfc verify refund flow
         $this->verifyRefundStatus = null;
@@ -253,66 +261,50 @@ class Processor
     /**
      * Cancels a previously created payment
      *
-     * @param  string   $id      Id of payment to be captured
-     * @param  array    $input
-     *
-     * @return $status Payment\Status
+     * @param  string $id Id of payment to be captured
+     * @return  $status Payment\Status
+     * @throws Exception\BadRequestException
      */
     public function cancel($id, $input)
     {
-        return $this->repo->transaction(function() use ($id, $input)
-        {
-            $status = null;
+        $status = null;
 
-            $payment = $this->retrieve($id);
-
-            $createdAt = $payment->getCreatedAt();
-
-            $diff = time() - $createdAt;
-
-            if ($diff > 30 * 60)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Payment created long back and cannot be cancelled now');
-            }
-
-            if (($payment->isAuthorized()) or
-                ($payment->isCaptured()))
-            {
-                return Payment\Status::AUTHORIZED;
-            }
-
-            $this->lockForUpdateAndReload($payment);
-
-            return $this->cancelPayment($payment, $input);
-        });
-    }
-
-    public function redirect($id)
-    {
         $payment = $this->retrieve($id);
 
+        $diff = time() - $payment->getCreatedAt();
+
+        if ($diff > self::PAYMENT_CANCEL_TIME_DURATION)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED);
+        }
+
+        // If payment is not in created state, then that means
+        // it's already been processed. It's possible that payment
+        // may have succeeded. In such cases, we need to send back
+        // exact same response as we would have if the payment succeeded
         if ($payment->isCreated() === false)
         {
             return $this->processPaymentCallbackSecondTime($payment);
         }
 
-        throw new Exception\RuntimeException(
-                'Should not have been hit.');
+        $errorCode = $this->repo->transaction(function() use ($payment, $input)
+        {
+            $this->lockForUpdateAndReload($payment);
+
+            $errorCode = $this->cancelPayment($payment, $input);
+
+            return $errorCode;
+        });
+
+        throw new Exception\BadRequestException($errorCode);
     }
 
-    public function callGatewayFunctionCaptureViaQueue($data, $payment)
-    {
-        $this->payment = $payment;
-
-        $this->callGatewayFunction(Payment\Action::CAPTURE, $data);
-    }
-
-    protected function cancelPayment($payment)
+    protected function cancelPayment($payment, $input)
     {
         $errorCode = null;
 
-        (new Payment\Validator)->cancelValidate($payment);
+        $payment->getValidator()->cancelValidate($payment);
 
         if ((isset($input['platform'])) and
             ($input['platform'] === 'android_sdk'))
@@ -328,7 +320,26 @@ class Processor
 
         $this->updatePaymentFailed($e->getError(), TraceCode::PAYMENT_CANCELLED);
 
-        return Payment\Status::FAILED;
+        return $errorCode;
+    }
+
+    public function redirect($id)
+    {
+        $payment = $this->retrieve($id);
+
+        if ($payment->isCreated() === false)
+        {
+            return $this->processPaymentCallbackSecondTime($payment);
+        }
+
+        throw new Exception\LogicException('Should not have been hit.');
+    }
+
+    public function callGatewayFunctionCaptureViaQueue($data, $payment)
+    {
+        $this->payment = $payment;
+
+        $this->callGatewayFunction(Payment\Action::CAPTURE, $data);
     }
 
     protected function tracePaymentInfo($traceCode, $level = Trace::INFO)
@@ -713,20 +724,20 @@ class Processor
         return false;
     }
 
-    protected function acquireLockOnPayment($payment)
+    protected function acquireMutexOnPayment($payment)
     {
         $resource = $payment->getId();
 
-        if ($this->lock->acquire($resource) === false)
+        if ($this->mutex->acquire($resource) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
         }
     }
 
-    protected function releaseLockOnPayment($payment)
+    protected function releaseMutexOnPayment($payment)
     {
-        $this->lock->release($this->payment->getId());
+        $this->mutex->release($payment->getId());
     }
 
     protected function createOrUpdateToken($input, $data)

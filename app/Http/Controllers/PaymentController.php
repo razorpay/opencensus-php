@@ -253,12 +253,6 @@ class PaymentController extends Controller
         return (new Payment\Service)->sendReminderMerchantMailForAuthorizedPayments();
     }
 
-    public function postComputeServiceTax()
-    {
-        $data = $this->payment->computeServiceTax();
-        return ApiResponse::json($data);
-    }
-
     public function postDummyRoute()
     {
         $input = Request::all();
