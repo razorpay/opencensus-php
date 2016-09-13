@@ -22,6 +22,10 @@ class GatewayController extends Controller
     {
         $gateway = $this->app['gateway']->gateway($gateway);
 
+        // Some gateways may need some preprocessing on the input
+        // to be able to call the next few methods.
+        //
+        // Eg: gateway request needs to be decrypted
         if (method_exists($gateway, 'parseS2SResponse'))
         {
             $input = $gateway->parseS2SResponse($input);
@@ -94,15 +98,6 @@ class GatewayController extends Controller
                 $gateway = 'upi_icici';
 
                 $body = Request::getContent();
-
-                $trace->info(
-                    TraceCode::GATEWAY_PAYMENT_CALLBACK,
-                    [
-                        'input'     => $input,
-                        'body'      => $body,
-                        'headers'   => Request::header(),
-                        'gateway'   => 'upi_icici',
-                    ]);
 
                 $data = $this->processS2SCallback($body, $gateway);
 

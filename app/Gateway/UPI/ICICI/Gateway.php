@@ -358,7 +358,18 @@ class Gateway extends Base\Gateway
      */
     public function parseS2SResponse($body)
     {
-        return $this->parseGatewayResponse($body);
+        $response = $this->parseGatewayResponse($body);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            [
+                'body'      => $body,
+                'headers'   => Request::header(),
+                'gateway'   => $this->gateway,
+                'data'      => $response
+            ]);
+
+        return $response;
     }
 
     /**
