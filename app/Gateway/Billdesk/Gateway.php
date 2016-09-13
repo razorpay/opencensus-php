@@ -202,11 +202,13 @@ class Gateway extends Base\Gateway
         {
             $applicable = true;
 
-            $refunded = $this->verifyIfRefunded($input);
+            list($refunded, $verifyResponse) = $this->verifyIfRefunded($input);
 
             if ($refunded === true)
             {
-                // TODO: Create a gateway refund entity here
+                $refundContent = $this->getRefundContentForGatewayEntity($input, $verifyResponse);
+
+                $this->createGatewayPaymentEntity($refundContent);
 
                 $success = true;
 
@@ -228,8 +230,9 @@ class Gateway extends Base\Gateway
                 $this->trace->error(
                     TraceCode::GATEWAY_REFUND_ABSENT,
                     [
-                        'refund_id'     => $refundId,
-                        'payment_id'    => $paymentId,
+                        'refund_id'         => $refundId,
+                        'payment_id'        => $paymentId,
+                        'verify_response'   => $verifyResponse,
                     ]
                 );
             }
@@ -244,11 +247,65 @@ class Gateway extends Base\Gateway
     }
 
     /**
+     * Constructs the refund data, whatever is available from the input and the verifyResponse.
+     *
+     * NOTE: We do not have any way to get the Billdesk Refund ID currently. Verify response
+     * does not contain the refund ID. Same with ErrorCode and ErrorReason.
+     *
+     * @param array $input
+     * @param array $verifyResponse
+     * @return array
+     */
+    protected function getRefundContentForGatewayEntity(array $input, array $verifyResponse)
+    {
+        $refStatus = $verifyResponse['RefStatus'];
+
+        $txnDate = Carbon::createFromTimestamp($input['payment'][Payment\Entity::CREATED_AT], 'Asia/Kolkata');
+        $txnDate = $txnDate->format('Ymd');
+
+        $refDate = Carbon::createFromTimestamp($input['refund'][Payment\Refund\Entity::CREATED_AT], 'Asia/Kolkata');
+        $refDate = $refDate->format('YmdHis');
+
+        $refundContent = [
+            'payment_id'        => $input['payment'][Payment\Entity::ID],
+            'refund_id'         => $input['refund'][Payment\Entity::ID],
+            'received'          => 1,
+            'CurrencyType'      => 'INR',
+            'CustomerID'        => $verifyResponse['CustomerID'],
+            'MerchantID'        => $verifyResponse['MerchantID'],
+            'refund_status'     => RefundStatus::$statusMap[$refStatus],
+            'RefStatus'         => $refStatus,
+            // The refund request's request type is 0400. But, when we get the response back,
+            // it's 0410. We store that in the normal refund flow.
+            'RequestType'       => '0410',
+            'TxnAmount'         => $verifyResponse['TxnAmount'],
+            'TxnReferenceNo'    => $verifyResponse['TxnReferenceNo'],
+            'RefAmount'         => $verifyResponse['RefAmount'],
+            // The below two fields are not sent as part of refund response, but we get it in the verify response.
+            //'ErrorStatus'       => $verifyResponse['ErrorStatus'],
+            //'ErrorDescription'  => $verifyResponse['ErrorDescription'],
+            'ProcessStatus'     => $verifyResponse['ProcessStatus'],
+            'TxnDate'           => $txnDate,
+            'RefDataTime'       => $refDate,
+        ];
+
+        return $refundContent;
+    }
+
+    /**
      * Conditions which we use to determine if a payment has been refunded by Billdesk
      * If the query status is not Y, return false.
      * If auth status is not success, return false.
      * If ref status is neither refunded nor cancelled, return false.
      * If ref amount is not equal to api's ref amount, return false.
+     *
+     * DISCLAIMER: Will not work as expected in the following case:
+     * There are 3 partial refunds with amounts 5, 10 and 15.
+     * The refunds with 5 and 10 go through successfully and
+     * the one with 15 fails due to some server issue on Billdesk side and that times out on our end.
+     * Now, since the one with 15 was timed out, we mark it as refunded in API and run the following flow.
+     * This below function will return back with TRUE because the refund amount totals 15. We will end up
+     * creating a refund entity on the gateway side even when we are not supposed to!
      *
      * @param array $input
      * @return bool
@@ -260,20 +317,20 @@ class Gateway extends Base\Gateway
         $verify->payment = $this->repo->findByPaymentIdAndAction(
             $input['payment'][Payment\Entity::ID], Action::AUTHORIZE);
 
-        $content = $this->sendPaymentVerifyRequest($verify);
+        $verifyResponse = $this->sendPaymentVerifyRequest($verify);
 
-        if (($content['QueryStatus'] !== QueryStatus::Y) or
-            ($content['AuthStatus'] !== AuthStatus::SUCCESS) or
-            (($content['RefStatus'] !== RefundStatus::REFUNDED) and
-             ($content['RefStatus'] !== RefundStatus::CANCELLED)) or
-            ($content['CustomerID'] !== $input['payment'][Payment\Entity::ID]))
+        if (($verifyResponse['QueryStatus'] !== QueryStatus::Y) or
+            ($verifyResponse['AuthStatus'] !== AuthStatus::SUCCESS) or
+            (($verifyResponse['RefStatus'] !== RefundStatus::REFUNDED) and
+             ($verifyResponse['RefStatus'] !== RefundStatus::CANCELLED)) or
+            ($verifyResponse['CustomerID'] !== $input['payment'][Payment\Entity::ID]))
         {
-            return false;
+            return [false, $verifyResponse];
         }
 
-        $gatewayRefundAmount = (int) $content['RefAmount'] * 100;
+        $gatewayRefundAmount = (int) $verifyResponse['RefAmount'] * 100;
 
-        return ($gatewayRefundAmount === $input['payment']['refunded_amount']);
+        return [($gatewayRefundAmount === $input['payment']['refunded_amount']), $verifyResponse];
     }
 
     protected function verifyPayment($verify)
