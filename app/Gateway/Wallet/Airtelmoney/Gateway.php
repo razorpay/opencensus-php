@@ -468,10 +468,6 @@ class Gateway extends Base\Gateway
     {
         $content = $input['gateway'];
 
-        $date = $this->getEpochTime(
-            $content[ResponseFields::TRAN_DATE],
-            DateFormat::TRAN_DATE_FORMAT);
-
         // Create a payment gateway entity and save it.
         $contentToSave = [
             ResponseFields::STATUS  => $content[ResponseFields::STATUS],
@@ -484,7 +480,7 @@ class Gateway extends Base\Gateway
         $this->updateGatewayPaymentEntity($wallet, $contentToSave);
 
         // Throw exception for the failure
-        $this->handleRequestFailure();
+        $this->handleRequestFailure($content);
     }
 
     protected function getHashOfString($hashString)

@@ -2,11 +2,12 @@
 
 namespace RZP\Tests\Functional\Gateway\Wallet\Airtelmoney;
 
+use Carbon\Carbon;
+
+use RZP\Http\Route;
+use RZP\Gateway\Wallet\Airtelmoney\TestAmount;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
-use RZP\Gateway\Wallet\Base\Otp;
-use Carbon\Carbon;
-use RZP\Http\Route;
 
 class AirtelmoneyGatewayTest extends TestCase
 {
@@ -40,6 +41,24 @@ class AirtelmoneyGatewayTest extends TestCase
         $wallet = $this->getLastEntity('wallet', true);
 
         $this->assertTestResponse($wallet, 'testPaymentWalletEntity');
+    }
+
+    public function testPaymentFailureFlow()
+    {
+        $payment = $this->getDefaultWalletPaymentArray('airtelmoney');
+
+        $payment['amount'] = ((float) TestAmount::FAIL_PAYMENT_AMOUNT) * 100;
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $this->assertTestResponse($wallet, 'testFailedPaymentWalletEntity');
     }
 
     public function testVerifyPayment()
@@ -95,6 +114,28 @@ class AirtelmoneyGatewayTest extends TestCase
         $refund = $this->getLastEntity('wallet', true);
 
         $this->assertTestResponse($refund);
+    }
+
+    public function testRefundFailedPayment()
+    {
+        $payment = $this->getDefaultWalletPaymentArray('airtelmoney');
+
+        $payment['amount'] = ((float) TestAmount::FAIL_REFUND_AMOUNT) * 100;
+
+        $capturePayment = $this->doAuthAndCapturePayment($payment);
+
+        $capturePaymentId = $capturePayment['id'];
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($capturePaymentId)
+        {
+            $this->refundPayment($capturePaymentId);
+        });
+
+        $refund = $this->getLastEntity('wallet', true);
+
+        $this->assertTestResponse($refund, 'testRefundFailedPaymentEntity');
     }
 
     public function testRefundExcelFile()

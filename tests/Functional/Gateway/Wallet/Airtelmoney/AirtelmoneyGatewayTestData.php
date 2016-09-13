@@ -32,6 +32,22 @@ return [
         'otp_attempts'      => null
     ],
 
+    'testPaymentFailureFlow' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED
+        ],
+    ],
+
     'testPaymentWalletEntity' => [
         'action'                => 'authorize',
         'amount'                => 50000,
@@ -43,6 +59,36 @@ return [
         'status_code'           => 'SUC',
         'refund_id'             => null,
         'entity'                => 'wallet',
+    ],
+
+    'testFailedPaymentWalletEntity' => [
+        'action'                => 'authorize',
+        'amount'                => 1999,
+        'wallet'                => 'airtelmoney',
+        'received'              => false,
+        'email'                 => 'a@b.com',
+        'contact'               => '9918899029',
+        'gateway_merchant_id'   => 'random_id',
+        'response_description'  => 'Invalid MID',
+        'status_code'           => 'FAL',
+        'refund_id'             => null,
+        'entity'                => 'wallet',
+    ],
+
+    'testRefundFailedPayment' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => PublicErrorDescription::GATEWAY_ERROR,
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_PAYMENT_CREDIT_LESS_THAN_DEBIT,
+        ],
     ],
 
     'testVerifyFailedPayment'   => [
@@ -70,6 +116,18 @@ return [
         'gateway_merchant_id'   => 'random_id',
         'response_description'  => 'SUCCESS',
         'status_code'           => 'SUC',
+        'entity'                => 'wallet',
+    ],
+
+    'testRefundFailedPaymentEntity' => [
+        'action'                => 'refund',
+        'wallet'                => 'airtelmoney',
+        'email'                 => 'a@b.com',
+        'amount'                => 2999,
+        'contact'               => '9918899029',
+        'gateway_merchant_id'   => 'random_id',
+        'response_description'  => 'Reversal amount is greater than the amount that can be reversed',
+        'status_code'           => 'FAL',
         'entity'                => 'wallet',
     ],
 ];

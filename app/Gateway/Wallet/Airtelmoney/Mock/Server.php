@@ -13,6 +13,7 @@ use RZP\Error\ErrorCode;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Wallet\Base\Otp;
 use RZP\Gateway\Wallet\Airtelmoney;
+use RZP\Gateway\Wallet\Airtelmoney\TestAmount;
 use RZP\Gateway\Wallet\Airtelmoney\DateFormat;
 use RZP\Gateway\Wallet\Airtelmoney\Status;
 use RZP\Gateway\Wallet\Airtelmoney\ResponseCode;
@@ -31,7 +32,20 @@ class Server extends Base\Mock\Server
         $this->verifyHash($input);
 
         // TODO Change it some definite value
-        if ($input[RequestFields::AMT] < 100000)
+        if ($input[RequestFields::AMT] === TestAmount::FAIL_PAYMENT_AMOUNT)
+        {
+            $redirectUrl = $input[RequestFields::FU];
+
+            $queryArray = [
+                Responsefields::STATUS     => Status::FAILED,
+                ResponseFields::CODE       => '902',
+                ResponseFields::MSG        => ResponseCode::getResponseMessage('902'),
+                ResponseFields::TXN_REF_NO => $input[RequestFields::TXN_REF_NO],
+            ];
+
+            $params = http_build_query($queryArray);
+        }
+        else
         {
             $redirectUrl = $input[RequestFields::SU];
 
@@ -46,19 +60,6 @@ class Server extends Base\Mock\Server
                 ResponseFields::TRAN_DATE  => $this->getFormattedDate(
                     Carbon::now(),
                     DateFormat::TRAN_DATE_FORMAT),
-                ResponseFields::TXN_REF_NO => $input[RequestFields::TXN_REF_NO],
-            ];
-
-            $params = http_build_query($queryArray);
-        }
-        else
-        {
-            $redirectUrl = $input[RequestFields::FU];
-
-            $queryArray = [
-                Responsefields::STATUS     => Status::FAILURE,
-                ResponseFields::CODE       => '902',
-                ResponseFields::MSG        => ResponseCode::getResponseMessage('902'),
                 ResponseFields::TXN_REF_NO => $input[RequestFields::TXN_REF_NO],
             ];
 
@@ -96,20 +97,35 @@ class Server extends Base\Mock\Server
 
         $this->validateActionInput($input, 'refund');
 
-        $refundResponse = [
-            ResponseFields::STATUS           => Status::SUCCESS,
-            ResponseFields::CODE             => ResponseCode::SUCCESS_CODE,
-            ResponseFields::NEW_FDC_TXN_ID   => $this->getArtlTxnId(),
-            ResponseFields::AMT              => $input[RequestFields::AMT],
-            ResponseFields::NEW_FDC_TXN_DATE => $this->getFormattedDate(
-                Carbon::now(),
-                DateFormat::NEW_FDC_TXN_DATE_FORMAT),
-            ResponseFields::MSG              => self::DUMMY_MSG,
-        ];
+        if($input[RequestFields::AMT] === (float) TestAmount::FAIL_REFUND_AMOUNT)
+        {
+            $refundResponse = [
+                ResponseFields::STATUS => Status::FAILED,
+                ResponseFields::CODE   => '923',
+                ResponseFields::MSG    => ResponseCode::getResponseMessage('923'),
+            ];
 
-        $response = $this->generateXMLResponse($refundResponse);
+            $response = $this->generateXMLResponse($refundResponse);
 
-        return $this->makeXmlResponse($response);
+            return $this->makeXmlResponse($response);
+        }
+        else
+        {
+            $refundResponse = [
+                ResponseFields::STATUS           => Status::SUCCESS,
+                ResponseFields::CODE             => ResponseCode::SUCCESS_CODE,
+                ResponseFields::NEW_FDC_TXN_ID   => $this->getArtlTxnId(),
+                ResponseFields::AMT              => $input[RequestFields::AMT],
+                ResponseFields::NEW_FDC_TXN_DATE => $this->getFormattedDate(
+                    Carbon::now(),
+                    DateFormat::NEW_FDC_TXN_DATE_FORMAT),
+                ResponseFields::MSG              => self::DUMMY_MSG,
+            ];
+
+            $response = $this->generateXMLResponse($refundResponse);
+
+            return $this->makeXmlResponse($response);
+        }
     }
 
     protected function getArtlTxnId()
