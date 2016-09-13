@@ -1,10 +1,10 @@
 <?php
 
-namespace RZP\Models\Merchant\BankAccount;
+namespace RZP\Models\BankAccount;
 
 use RZP\Constants\Mode;
 use RZP\Models\Base;
-use RZP\Models\Merchant\BankAccount;
+use RZP\Models\BankAccount;
 use Mail;
 use RZP\Trace\TraceCode;
 

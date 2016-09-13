@@ -32,25 +32,7 @@ trait Capture
 
         $payment = $this->retrieve($id);
 
-        //
-        // If the fee bearer is customer then please to adjust input amount
-        // with the available fee for the payment.
-        //
-        if ($this->merchant->isFeeBearerCustomer())
-        {
-            $input['amount'] = $input['amount'] + $payment->getFee();
-
-            $this->trace->info(
-                TraceCode::PAYMENT_CAPTURE_REQUEST,
-                [
-                    'payment_id' => $id,
-                    'amount' => $input['amount'],
-                    'message' => 'Adds fee to the amount because fee bearer is customer',
-                ]
-            );
-        }
-
-        (new Payment\Validator)->captureValidate($payment, $input);
+        $payment->getValidator()->validateInput('capture', $input);
 
         return $this->capturePayment($payment, $input['amount']);
     }
@@ -70,6 +52,9 @@ trait Capture
         // set auto-capture 1
         $payment->setAutoCapturedTrue();
 
+        $this->trace->info(
+            TraceCode::PAYMENT_AUTO_CAPTURE, ['payment_id' => $payment->getId()]);
+
         try
         {
             $payment = $this->capturePayment($payment, $amount);
@@ -77,9 +62,9 @@ trait Capture
         catch (Exception\RecoverableException $e)
         {
             $this->trace->error(
-                TraceCode::TRACE_MISC_CODE,
+                TraceCode::PAYMENT_AUTO_CAPTURE_FAILED,
                 [
-                    'auto_capture' => 1,
+                    'auto_capture' => true,
                     'payment_id' => $payment->getPublicId()
                 ]);
 
@@ -152,7 +137,7 @@ trait Capture
         {
             $verifyCaptureResult = $this->callGatewayFunction(Payment\Action::VERIFY_CAPTURE, $data);
         }
-        catch(Exception\BaseException $e)
+        catch (Exception\BaseException $e)
         {
             $this->tracePaymentFailed(
                 $e->getError(),
@@ -173,6 +158,28 @@ trait Capture
      */
     protected function capturePayment($payment, $amount)
     {
+        //
+        // If the fee bearer is customer then please to adjust input amount
+        // with the available fee for the payment.
+        //
+        if ($this->merchant->isFeeBearerCustomer())
+        {
+            $amount = $amount + $payment->getFee();
+
+            $payment->setCaptureAmount($amount);
+
+            $this->trace->info(
+                TraceCode::PAYMENT_CAPTURE_REQUEST,
+                [
+                    'payment_id' => $payment->getId(),
+                    'amount' => $amount,
+                    'message' => 'Adds fee to the amount because fee bearer is customer',
+                ]
+            );
+        }
+
+        $payment->getValidator()->captureValidate($payment, $amount);
+
         $data = array(
             'payment' => $payment->toArray(),
             'amount' => $amount);
@@ -204,6 +211,8 @@ trait Capture
 
         try
         {
+            $this->acquireMutexOnPayment($this->payment);
+
             try
             {
                 $this->callGatewayFunction(Payment\Action::CAPTURE, $data);
@@ -273,6 +282,10 @@ trait Capture
                     TraceCode::PAYMENT_CAPTURE_FAILURE);
 
             throw $ex;
+        }
+        finally
+        {
+            $this->releaseMutexOnPayment($this->payment);
         }
     }
 
@@ -394,7 +407,7 @@ trait Capture
 
             $order->setStatus(Order\Status::PAID);
 
-            $order->saveOrFail();
+            $this->repo->saveOrFail($order);
         }
     }
 }

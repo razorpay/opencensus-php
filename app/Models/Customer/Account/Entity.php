@@ -3,6 +3,7 @@
 namespace RZP\Models\Customer;
 
 use RZP\Models\Base;
+use RZP\Constants\Table;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Base\Traits\NotesTrait;
 
@@ -24,7 +25,7 @@ class Entity extends Base\PublicEntity
 
     protected $entity           = 'customer';
 
-    protected $table            = \RZP\Constants\Table::CUSTOMER;
+    protected $table            = Table::CUSTOMER;
 
     protected $generateIdOnCreate = true;
 

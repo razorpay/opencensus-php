@@ -18,7 +18,7 @@ class Validator extends Base\Validator
         'method'                  =>  'in:card,netbanking,wallet,emi',
         'card'                    =>  'sometimes',
         'bank'                    =>  'required_if:method,netbanking',
-        'wallet'                  =>  'required_if:method,wallet|in:paytm,payzapp,mobikwik,payumoney,olamoney',
+        'wallet'                  =>  'required_if:method,wallet|custom',
         'emi_duration'            =>  'required_if:method,emi|integer|in:3,6,9,12,18,24',
         'description'             =>  'sometimes',
         'email'                   =>  'required|email',
@@ -52,29 +52,15 @@ class Validator extends Base\Validator
         'currency',
         'description',
         'fee',
-        'contact',
-        'wallet');
+        'contact');
 
-    protected function validateWallet($input)
+    protected function validateWallet($attribute, $value)
     {
-        if ($input['method'] !== Payment\Method::WALLET)
-        {
-            return true;
-        }
-
-        if (isset($input['wallet']) === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_PROVIDED);
-        }
-
-        if (Wallet::exists($input['wallet']) === false)
+        if (Wallet::exists($value) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_SUPPORTED);
         }
-
-        return true;
     }
 
     protected function validateCardKey($input)
@@ -251,15 +237,13 @@ class Validator extends Base\Validator
         }
     }
 
-    public function captureValidate($payment, $input)
+    public function captureValidate($payment, $amount)
     {
         $this->failIfCaptured($payment);
 
         $this->failIfNotAuthorized($payment);
 
-        $this->validateInput('capture', $input);
-
-        $this->captureAmountValidate($payment, $input);
+        $this->captureAmountValidate($payment, $amount);
     }
 
     public function cancelValidate($payment)
@@ -267,17 +251,16 @@ class Validator extends Base\Validator
         $this->failIfNotCreated($payment);
     }
 
-    public function captureAmountValidate($payment, $input)
+    public function captureAmountValidate($payment, $amount)
     {
-        $amount = (int) $input['amount'];
+        $amount = (int) $amount;
 
         if ($amount !== $payment->getAmount())
         {
             $e = new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_AMOUNT_NOT_EQUAL_TO_AUTH,
-                Payment\Entity::AMOUNT);
-
-            $e->setData(['amount' => $input['amount']]);
+                Payment\Entity::AMOUNT,
+                ['amount' => $amount]);
 
             throw $e;
         }
