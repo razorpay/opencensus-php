@@ -407,10 +407,12 @@ class BasicAuth
             if (!empty($allowedFeatures) and
                 in_array($accessedFeature, $allowedFeatures))
             {
-                return;
+                return null;
             }
             return ApiResponse::routeNotFound();
         }
+
+        return null;
     }
 
     protected function verifyKeyLength($key)

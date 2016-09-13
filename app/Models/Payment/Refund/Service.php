@@ -175,11 +175,7 @@ class Service extends Base\Service
 
     public function fetch($id)
     {
-        Refund\Entity::verifyIdAndStripSign($id);
-
-        $refund = $this->repo->refund->findByIdAndMerchantId($id, $this->merchant->getId());
-
-        return $refund->toArrayPublic();
+        return $this->repo->refund->fetchAndReturnPublicArray($id, $this->merchant);
     }
 
     public function fetchMultiple($input)
@@ -199,11 +195,9 @@ class Service extends Base\Service
         {
             Refund\Entity::verifyIdAndStripSign($refundId);
 
-            $refund = $this->repo->refund->findOrFail($refundId);
+            $refund = $this->repo->refund->findOrFailPublic($refundId);
 
-            $merchantId = $refund->getMerchantId();
-
-            $merchant = $this->repo->merchant->findOrFail($merchantId);
+            $merchant = $this->repo->merchant->getMerchantFromEntity($refund);
 
             $data[] = $this->getNewProcessor($merchant)->verifyRefund($refund);
         }

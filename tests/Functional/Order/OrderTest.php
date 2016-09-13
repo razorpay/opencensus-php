@@ -29,6 +29,15 @@ class OrderTest extends TestCase
         $this->setMockGatewayTrue();
     }
 
+    public function setUpSharpGateway()
+    {
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->gateway = 'sharp';
+    }
+
     public function testCreateOrder()
     {
         $order = $this->startTest();
@@ -128,7 +137,7 @@ class OrderTest extends TestCase
         });
     }
 
-    public function testStatusAfterAutoCapturePayment()
+    public function testStatusAfterAutoCapturePaymentWoCallback()
     {
         $order = $this->testCreateAutoCaptureOrder();
         $order = $this->getLastEntity('order');
@@ -138,6 +147,19 @@ class OrderTest extends TestCase
         $payment['order_id'] = $order['id'];
         $response = $this->doAuthPayment($payment);
 
+        $this->assertAutoCaptureResponse($response, $payment, $order);
+    }
+
+    public function testStatusAfterAutoCapturePaymentWCallback()
+    {
+        // Sharp gateway will make payment go via callback flow
+        $this->setUpSharpGateway();
+
+        $this->testStatusAfterAutoCapturePaymentWoCallback();
+    }
+
+    protected function assertAutoCaptureResponse(array $response, $payment, $order)
+    {
         $actualSignature = $response['razorpay_signature'];
 
         unset($response['razorpay_signature']);

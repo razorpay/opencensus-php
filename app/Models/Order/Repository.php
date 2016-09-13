@@ -39,6 +39,11 @@ class Repository extends Base\Repository
         return $order;
     }
 
+    /**
+     * Gets all the orders which have more than 1 payment in authorized or captured state.
+     *
+     * @return Base\Collection
+     */
     public function getOrdersWithMultipleAuthorizedOrCapturedPayments()
     {
         // select count(*), orders.id
@@ -56,7 +61,7 @@ class Repository extends Base\Repository
             ->join(
                 Table::PAYMENT,
                 $paymentOrderId, '=', $orderId)
-            ->select($this->db->raw('count(*), ' . $orderId))
+            ->selectRaw('count(*), ' . $orderId)
             ->whereIn($paymentStatus, $paymentStatusArray)
             ->groupBy($orderId)
             ->havingRaw('count(*) > 1')

@@ -449,7 +449,7 @@ class Gateway extends Base\Gateway
     {
         $content = [];
 
-        $wallet = $this->getRepo()->fetchWalletByPaymentId($input['payment']['id']);
+        $wallet = $this->repo->fetchWalletByPaymentId($input['payment']['id']);
 
         $content =  array(
             'merchantKey'   => $this->getMerchantId($input['terminal']),

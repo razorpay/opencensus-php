@@ -106,6 +106,7 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_ALREADY_CAPTURED                                      = 'BAD_REQUEST_PAYMENT_ALREADY_CAPTURED';
     const BAD_REQUEST_PAYMENT_ALREADY_REFUNDED                                      = 'BAD_REQUEST_PAYMENT_ALREADY_REFUNDED';
     const BAD_REQUEST_PAYMENT_ALREADY_REFUND_INITIATED                              = 'BAD_REQUEST_PAYMENT_ALREADY_REFUND_INITIATED';
+    const BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS                         = 'BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS';
     const BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED                                = 'BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED';
     const BAD_REQUEST_PAYMENT_CARD_IS_NOT_ARRAY                                     = 'BAD_REQUEST_PAYMENT_CARD_IS_NOT_ARRAY';
     const BAD_REQUEST_PAYMENT_CAPTURE_ONLY_AUTHORIZED                               = 'BAD_REQUEST_PAYMENT_CAPTURE_ONLY_AUTHORIZED';
@@ -113,6 +114,7 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_CARD_NOT_PROVIDED                                     = 'BAD_REQUEST_PAYMENT_CARD_NOT_PROVIDED';
     const BAD_REQUEST_PAYMENT_CARD_INVALID_CVV                                      = 'BAD_REQUEST_PAYMENT_CARD_INVALID_CVV';
     const BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED                                   = 'BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED';
+    const BAD_REQUEST_PAYMENT_STATUS_CAPTURE_NOT_PROCESSED                          = 'BAD_REQUEST_PAYMENT_STATUS_CAPTURE_NOT_PROCESSED';
     const BAD_REQUEST_PAYMENT_FULLY_REFUNDED                                        = 'BAD_REQUEST_PAYMENT_FULLY_REFUNDED';
     const BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_CAPTURED                   = 'BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_CAPTURED';
     const BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_UNREFUNDED                 = 'BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_UNREFUNDED';
@@ -197,6 +199,7 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_PARTIAL_AMOUNT_APPROVED                               = 'BAD_REQUEST_PAYMENT_PARTIAL_AMOUNT_APPROVED';
     const BAD_REQUEST_PAYMENT_PROBLEM_IN_UPDATING                                   = 'BAD_REQUEST_PAYMENT_PROBLEM_IN_UPDATING';
     const BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT                              = 'BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT';
+    const BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED                                   = 'BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED';
 
     const BAD_REQUEST_CARD_AVS_FAILED                                               = 'BAD_REQUEST_CARD_AVS_FAILED';
     const BAD_REQUEST_CARD_STOLEN_OR_LOST                                           = 'BAD_REQUEST_CARD_STOLEN_OR_LOST';
@@ -266,6 +269,14 @@ class ErrorCode
     const BAD_REQUEST_KEY_OF_DEMO_ACCOUNT                                           = 'BAD_REQUEST_KEY_OF_DEMO_ACCOUNT';
 
     const BAD_REQUEST_PAYMENT_VERIFICATION_FAILED                                   = 'BAD_REQUEST_PAYMENT_VERIFICATION_FAILED';
+
+    const BAD_REQUEST_INVALID_CHECKOUT_ID                                           = 'BAD_REQUEST_INVALID_CHECKOUT_ID';
+    const BAD_REQUEST_INVALID_PLATFORM                                              = 'BAD_REQUEST_INVALID_PLATFORM';
+    const BAD_REQUEST_INVALID_LIBRARY                                               = 'BAD_REQUEST_INVALID_LIBRARY';
+    const BAD_REQUEST_INVALID_BROWSER                                               = 'BAD_REQUEST_INVALID_BROWSER';
+    const BAD_REQUEST_INVALID_OS                                                    = 'BAD_REQUEST_INVALID_OS';
+    const BAD_REQUEST_INVALID_DEVICE                                                = 'BAD_REQUEST_INVALID_DEVICE';
+    const BAD_REQUEST_INVALID_INTEGRATION                                           = 'BAD_REQUEST_INVALID_INTEGRATION';
 
     const SERVER_ERROR_INVALID_ARGUMENT                                             = 'SERVER_ERROR_INVALID_ARGUMENT';
     const SERVER_ERROR_DB_QUERY_FAILED                                              = 'SERVER_ERROR_DB_QUERY_FAILED';

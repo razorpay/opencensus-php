@@ -38,7 +38,8 @@ class Entity extends Base\PublicEntity
     const APP_ID                = 'app_id';
     const APP_TOKEN             = 'app_token';
     const TOKEN                 = 'token';
-    const GLOBAL_TOKEN          = 'global_token';
+    const TOKEN_ID              = 'token_id';
+    const GLOBAL_TOKEN_ID       = 'global_token_id';
     const EMAIL                 = 'email';
     const CONTACT               = 'contact';
     const NOTES                 = 'notes';
@@ -87,7 +88,6 @@ class Entity extends Base\PublicEntity
         self::WALLET,
         self::CURRENCY,
         self::DESCRIPTION,
-        self::TOKEN,
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
@@ -114,9 +114,8 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_ID,
         self::GLOBAL_CUSTOMER_ID,
         self::APP_TOKEN,
-        self::APP_ID,
-        self::TOKEN,
-        self::GLOBAL_TOKEN,
+        self::TOKEN_ID,
+        self::GLOBAL_TOKEN_ID,
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
@@ -215,7 +214,6 @@ class Entity extends Base\PublicEntity
 
 // --------------------- Modifiers ---------------------------------------------
 
-    // TODO: This function doesn't seem to be doing anything at all. Can I remove it?
     protected function modifyContact(& $input)
     {
         if (isset($input['contact']) === false)
@@ -438,16 +436,6 @@ class Entity extends Base\PublicEntity
         $this->metadata = $metadata;
     }
 
-    public function setToken($token)
-    {
-        $this->setAttribute(self::TOKEN, $token);
-    }
-
-    public function setGlobalToken($globalToken)
-    {
-        $this->setAttribute(self::GLOBAL_TOKEN, $globalToken);
-    }
-
     public function setSave($save)
     {
         $this->setAttribute(self::SAVE, $save);
@@ -624,7 +612,12 @@ class Entity extends Base\PublicEntity
 
     public function hasBeenAuthorized()
     {
-        return ($this->getAttribute(self::AUTHORIZED_AT) !== null);
+        return ($this->isAttributeNull(self::AUTHORIZED_AT));
+    }
+
+    public function hasTransaction()
+    {
+        return ($this->isAttributeNull(self::TRANSACTION_ID));
     }
 
     public function isCaptured()
@@ -715,11 +708,6 @@ class Entity extends Base\PublicEntity
     }
 
 // ----------------------- Getters ---------------------------------------------
-
-    public function getMerchantId()
-    {
-        return $this->getAttribute(self::MERCHANT_ID);
-    }
 
     public function getAmount()
     {
@@ -842,9 +830,14 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SERVICE_TAX);
     }
 
-    public function getCreatedTimestamp()
+    public function getTokenId()
     {
-        return $this->getAttribute(self::CREATED_AT);
+        return $this->getAttribute(self::TOKEN_ID);
+    }
+
+    public function getGlobalTokenId()
+    {
+        return $this->getAttribute(self::GLOBAL_TOKEN_ID);
     }
 
     public function getDescription()
@@ -872,9 +865,9 @@ class Entity extends Base\PublicEntity
         return (bool) $this->getAttribute(self::SAVE);
     }
 
-    public function getGlobalToken()
+    public function isRecurring()
     {
-        return $this->getAttribute(self::GLOBAL_TOKEN);
+        return false;
     }
 
     public function getCardId()
@@ -957,6 +950,22 @@ class Entity extends Base\PublicEntity
     public function getApiOrderId()
     {
         return $this->getAttribute(self::ORDER_ID);
+    }
+
+    public function getGlobalOrLocalTokenEntity()
+    {
+        $token = null;
+
+        if ($this->getTokenId() !== null)
+        {
+            $token = $this->token;
+        }
+        else if ($this->getGlobalTokenId() !== null)
+        {
+            $token = $this->globalToken;
+        }
+
+        return $token;
     }
 
     public function setPublicOrderIdAttribute(Array & $array)
@@ -1093,6 +1102,16 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Customer\Entity', self::GLOBAL_CUSTOMER_ID);
     }
 
+    public function token()
+    {
+        return $this->belongsTo('RZP\Models\Customer\Token\Entity', self::TOKEN_ID);
+    }
+
+    public function globalToken()
+    {
+        return $this->belongsTo('RZP\Models\Customer\Token\Entity', self::GLOBAL_TOKEN_ID);
+    }
+
     public function app()
     {
         return $this->belongsTo('RZP\Models\Customer\AppToken\Entity', self::APP_TOKEN);
@@ -1138,11 +1157,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT_REFUNDED, $amountRefunded);
     }
 
-    public function scopeMerchantId($query, $merchantId)
-    {
-        return $query->where(self::MERCHANT_ID,'=',$merchantId);
-    }
-
     public function toArrayTraceRelevant()
     {
         $fields = array(
@@ -1169,6 +1183,11 @@ class Entity extends Base\PublicEntity
     public function scopeCreatedAtLessThan($query, $ts)
     {
         return $query->where(Payment\Entity::CREATED_AT, '<', $ts);
+    }
+
+    public function scopeMerchantId($query, $merchantId)
+    {
+        return $query->where(self::MERCHANT_ID,'=',$merchantId);
     }
 
 // --------------------- Query scopes section ends -----------------------------

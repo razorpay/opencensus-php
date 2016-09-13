@@ -37,7 +37,7 @@ $factory(\RZP\Models\Merchant\Balance\Entity::class, [
     'balance' => 0,
 ]);
 
-$factory(\RZP\Models\Merchant\BankAccount\Entity::class, [
+$factory(\RZP\Models\BankAccount\Entity::class, [
     'id' => $faker->uniqueid,
     'merchant_id' => '10000000000000',
     'entity_id'   => '10000000000000',
@@ -238,6 +238,7 @@ $factory(\RZP\Models\Order\Entity::class, [
     'currency' => 'INR',
     'status' => 'created',
     'receipt' => $faker->uniqueid,
+    'payment_capture' => false,
     'notes' => null,
     'attempts' => 0,
     'created_at' => $faker->timestamp,
@@ -253,13 +254,14 @@ $factory(\RZP\Models\Customer\Entity::class, [
 ]);
 
 $factory(\RZP\Models\Customer\Token\Entity::class, [
-    'id' => $faker->uniqueid,
+    'id'          => $faker->uniqueid,
     'merchant_id' => '10000000000000',
     'customer_id' => '100000customer',
-    'wallet' => 'paytm',
-    'method' => 'wallet',
-    'bank'   => null,
-    'card_id' => null
+    'wallet'      => 'paytm',
+    'method'      => 'wallet',
+    'bank'        => null,
+    'card_id'     => null,
+    'used_count'  => 0,
 ]);
 
 $factory(\RZP\Models\Customer\AppToken\Entity::class, [

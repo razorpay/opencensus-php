@@ -3,6 +3,7 @@
 namespace RZP\Models\Base;
 
 use RZP\Exception;
+use RZP\Base\Luhn;
 
 class UniqueIdEntity extends Entity
 {
@@ -163,9 +164,9 @@ class UniqueIdEntity extends Entity
 
     public static function verifyArrayUid($id, $key = self::ID)
     {
-        Assert(is_array($id) === true);
+        assert(is_array($id) === true);
 
-        if (! isset($id[$key]))
+        if (isset($id[$key]) === false)
         {
             throw new Exception\InvalidArgumentException('id key not set');
         }
@@ -229,6 +230,7 @@ class UniqueIdEntity extends Entity
     protected static function getNanotimeInteger()
     {
         exec('date +%s%N', $nanotime, $status);
+
         return $nanotime[0];
     }
 
@@ -298,5 +300,30 @@ class UniqueIdEntity extends Entity
         }
 
         return $res;
+    }
+
+    public static function generateUniqueIdWithCheckDigit()
+    {
+        $base62 = self::generateUniqueId();
+
+        $base62 = substr($base62, 0, 13);
+
+        $digit = Luhn::computeCheckDigit($base62, 62);
+
+        return $base62 . $digit;
+    }
+
+    public static function getCheckDigit($uid)
+    {
+        $uid = substr($uid, 0, 13);
+
+        $digit = Luhn::computeCheckDigit($uid, 62);
+
+        return $digit;
+    }
+
+    public static function isValidBase62Id($num)
+    {
+        return Luhn::isValid($num, 62);
     }
 }

@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Payment;
 
+use RZP\Exception;
+
 class Method
 {
     const CARD          = 'card';
@@ -28,7 +30,7 @@ class Method
 
     public static function validateMethod($method)
     {
-        if (defined(__CLASS__.'::'.strtoupper($method)) === false)
+        if (defined(__CLASS__ . '::' . strtoupper($method)) === false)
         {
             throw new Exception\InvalidArgumentException(
                 'Not a valid Payment method: ' . $method);
