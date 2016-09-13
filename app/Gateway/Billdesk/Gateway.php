@@ -105,50 +105,49 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        $payment = $this->repo->findByPaymentIdAndAction(
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
                                 $input['payment']['id'], Action::AUTHORIZE);
 
-        $content = $this->getPaymentRefundRequestContent($payment, $input);
+        $request = $this->getPaymentRefundRequestContent($gatewayPayment, $input);
 
         // This may throw a gateway timeout exception or gateway request exception.
         // These exceptions bubble up to api's refund processor and are handled there.
-        $content = $this->postRequest($content);
+        $response = $this->postRequest($request);
 
-        $content['refund_id'] = $input['refund']['id'];
-        $content['CurrencyType'] = 'INR';
-        $content['received'] = 1;
-        $this->createGatewayPaymentEntity($content);
+        $response['refund_id'] = $input['refund']['id'];
+        $response['CurrencyType'] = 'INR';
+        $response['received'] = 1;
+        $this->createGatewayPaymentEntity($response);
 
-        if ($content['ProcessStatus'] !== 'Y')
+        if ($response['ProcessStatus'] !== 'Y')
         {
-            // The below piece of code is commented out because, Billdesk does not auto refund
-            // late authorized payments anymore.
+            // We are commenting out the below piece of code because
+            // Billdesk does not auto refund anymore.
 
-            // //
             // // For very very few transactions, the payment status on billdesk changes
             // // after 1 whole day. These are automatically refunded by billdesk.
             // // So, the AuthStatus changes to 0300 but RefundStatus also changes to 0699.
             // // In that case, we need to let the refund go ahead.
             //
-            // $refundAmount = (int) ($payment['RefAmount'] * 100);
+            // $refundAmount = (int) ($response['RefAmount'] * 100);
             //
-            // if (($content['ErrorCode'] === 'ERR_REF009') and
-            //     ($payment['RefStatus'] === RefundStatus::CANCELLED) and
+            // if (($response['ErrorCode'] === 'ERR_REF009') and
+            //     ($response['RefStatus'] === RefundStatus::CANCELLED) and
             //     ($refundAmount === $input['payment']['amount']))
             // {
             //     $this->trace->info(
-            //         TraceCode::GATEWAY_PAYMENT_REFUND,
-            //         [
-            //             'message' => 'Payment was already cancelled at this point by billdesk',
-            //             'payment_id' => $input['payment']['id']
-            //         ]);
+            //             TraceCode::GATEWAY_PAYMENT_REFUND,
+            //             [
+            //                 'message' => 'Payment was already cancelled at this point by billdesk',
+            //                 'payment_id' => $input['payment']['id']
+            //             ]);
             //
-            //     return;
+            //         return;
             // }
 
             $this->trace->error(
                 TraceCode::PAYMENT_REFUND_FAILURE,
-                $content
+                $response
             );
 
             throw new Exception\GatewayErrorException(
@@ -179,9 +178,20 @@ class Gateway extends Base\Gateway
         return $content['CustomerID'];
     }
 
+    /**
+     * This only handles for payments which have exactly one refund (either full or partial).
+     * Currently, I don't see a way where we can handle this for multiple partial refunds too.
+     * And since timeouts are a rare case, I think this is fine.
+     * The worst that can happen is we don't have a corresponding entity in the gateway.
+     *
+     * @param array $input
+     * @return array
+     */
     public function createRefundRecord(array $input)
     {
         $refundId = $input['refund'][Payment\Refund\Entity::ID];
+
+        $paymentId = $input['payment'][Payment\Entity::ID];
 
         $gatewayRefundEntity = $this->repo->findByRefundId($refundId);
 
@@ -203,7 +213,7 @@ class Gateway extends Base\Gateway
                 $this->trace->info(
                     TraceCode::GATEWAY_REFUND_RECORD_CREATED,
                     [
-                        'payment_id' => $input['payment'][Payment\Entity::ID],
+                        'payment_id' => $paymentId,
                         'refund_id'  => $refundId
                     ]
                 );
@@ -212,11 +222,16 @@ class Gateway extends Base\Gateway
             {
                 $success = false;
 
-                // TODO: Trace error if not exception.
-
                 // It should have been refunded on the gateway side also. But, verify returned
                 // false in the verify response for refund.
-                //throw new Exception\GatewayErrorException(ErrorCode::BAD_REQUEST_GATEWAY_REFUND_ABSENT);
+
+                $this->trace->error(
+                    TraceCode::GATEWAY_REFUND_ABSENT,
+                    [
+                        'refund_id'     => $refundId,
+                        'payment_id'    => $paymentId,
+                    ]
+                );
             }
         }
 
@@ -228,6 +243,16 @@ class Gateway extends Base\Gateway
         ];
     }
 
+    /**
+     * Conditions which we use to determine if a payment has been refunded by Billdesk
+     * If the query status is not Y, return false.
+     * If auth status is not success, return false.
+     * If ref status is neither refunded nor cancelled, return false.
+     * If ref amount is not equal to api's ref amount, return false.
+     *
+     * @param array $input
+     * @return bool
+     */
     protected function verifyIfRefunded(array $input)
     {
         $verify = new Base\Verify($this->gateway, $input);
@@ -237,15 +262,10 @@ class Gateway extends Base\Gateway
 
         $content = $this->sendPaymentVerifyRequest($verify);
 
-        //
-        // If the query status is not Y, return false.
-        // If auth status is not success, return false.
-        // If ref status is not refunded, return false.
-        // If ref amount is not equal to api's ref amount, return false.
-        //
         if (($content['QueryStatus'] !== QueryStatus::Y) or
             ($content['AuthStatus'] !== AuthStatus::SUCCESS) or
-            ($content['RefStatus'] !== RefundStatus::REFUNDED) or
+            (($content['RefStatus'] !== RefundStatus::REFUNDED) and
+             ($content['RefStatus'] !== RefundStatus::CANCELLED)) or
             ($content['CustomerID'] !== $input['payment'][Payment\Entity::ID]))
         {
             return false;
@@ -253,21 +273,13 @@ class Gateway extends Base\Gateway
 
         $gatewayRefundAmount = (int) $content['RefAmount'] * 100;
 
-        if ($gatewayRefundAmount !== $input['payment']['refunded_amount'])
-        {
-            return false;
-        }
-        else
-        {
-            return true;
-        }
+        return ($gatewayRefundAmount === $input['payment']['refunded_amount']);
     }
 
     protected function verifyPayment($verify)
     {
         $payment = $verify->payment;
         $content = $verify->verifyResponseContent;
-        $input = $verify->input;
 
         $status = VerifyResult::STATUS_MATCH;
 

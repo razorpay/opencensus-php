@@ -16,6 +16,12 @@ use RZP\Models\Transaction;
 
 class Service extends Base\Service
 {
+    /**
+     * We get the last 24 hours refunds created of a gateway.
+     * We run the cron for this once a day.
+     */
+    const GATEWAY_REFUND_RECORDS_TIME_LIMIT = 86400;
+
     public function getRefundsFile(array $input = array())
     {
         list($from, $to) = $this->getTimestamps($input);
@@ -24,11 +30,11 @@ class Service extends Base\Service
 
         $gatewayCode = null;
 
-        $method = $input['method'];
+        $method = $input[Payment\Entity::METHOD];
 
         switch ($method)
         {
-            case 'netbanking':
+            case Payment\Method::NETBANKING:
                 $gateways = Payment\Gateway::$netbankingToGatewayMap;
                 $type = Payment\Entity::BANK;
 
@@ -38,7 +44,7 @@ class Service extends Base\Service
                 }
                 break;
 
-            case 'wallet':
+            case Payment\Method::WALLET:
                 $gateways = Payment\Gateway::$walletToGatewayMap;
                 $type = Payment\Entity::WALLET;
 
@@ -47,6 +53,9 @@ class Service extends Base\Service
                     $gatewayCode = $input['wallet'];
                 }
                 break;
+
+            default:
+                throw new Exception\LogicException('Invalid method provided for generating refunds file.');
         }
 
         if ($gatewayCode === null)
@@ -211,9 +220,10 @@ class Service extends Base\Service
         // Currently, we are running this for billdesk refund timeouts only.
         assert ($gateway === Payment\Gateway::BILLDESK);
 
-        // TODO: Call the below function dynamically.
+        $createdAfter = time() - self::GATEWAY_REFUND_RECORDS_TIME_LIMIT;
 
-        $billdeskRefunds = $this->repo->payment->fetchBilldeskRefunds();
+        $repoFunction = 'fetch' . studly_case($gateway) . 'Refunds';
+        $billdeskRefunds = $this->repo->payment->$repoFunction($createdAfter);
 
         $data = [];
 
