@@ -75,6 +75,8 @@ class WebhookTest extends TestCase
             {
                 $data['event'] = json_decode($data['event'], true);
                 $this->assertArraySelectiveEquals($testData, $data);
+                $this->assertArrayHasKey('webhook_id', $data);
+                $this->assertArrayHasKey('created_at', $data['event']);
 
                 return true;
             });
@@ -93,6 +95,8 @@ class WebhookTest extends TestCase
                 $data['event'] = json_decode($data['event'], true);
 
                 $this->assertArraySelectiveEquals($testData, $data);
+                $this->assertArrayHasKey('webhook_id', $data);
+                $this->assertArrayHasKey('created_at', $data['event']);
 
                 return true;
             });
