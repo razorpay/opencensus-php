@@ -23,6 +23,8 @@ class Reconciler3
 
     protected static $fileToReadName = 'Kotak_Settlement_Reconciliation';
 
+    protected static $fileToWriteName = 'Kotak_Settlement_Reconciliation';
+
     protected static $extraHeadings = array(
         'Status Of transaction',
         'UTR number',
