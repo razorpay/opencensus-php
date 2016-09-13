@@ -43,6 +43,7 @@ class AddDbData extends Command
                     'gateway_merchant_id'   => 'test_merchant_hdfc',
                     'gateway_terminal_id'   => 'test_terminal_hdfc',
                     'gateway_terminal_password' => Crypt::encrypt('test_account_hdfc_terminal_pass'),
+                    'recurring'             => 0,
                     'created_at'            =>  time(),
                     'updated_at'            =>  time(),
                     )
@@ -56,6 +57,7 @@ class AddDbData extends Command
                     'gateway_merchant_id'   => 'test_merchant_atom',
                     'gateway_terminal_id'   => 'test_terminal_atom',
                     'gateway_terminal_password' => Crypt::encrypt('test_account_atom_terminal_pass'),
+                    'recurring'             => 0,
                     'created_at'            =>  time(),
                     'updated_at'            =>  time(),
                     )
@@ -69,6 +71,7 @@ class AddDbData extends Command
                     'gateway_merchant_id'   => 'demo_merchant_hdfc',
                     'gateway_terminal_id'   => 'demo_terminal_hdfc',
                     'gateway_terminal_password' => Crypt::encrypt('demo_account_hdfc_terminal_pass'),
+                    'recurring'             => 0,
                     'created_at'            =>  time(),
                     'updated_at'            =>  time(),
                     )
@@ -82,6 +85,7 @@ class AddDbData extends Command
                     'gateway_merchant_id'   => 'demo_merchant_atom',
                     'gateway_terminal_id'   => 'demo_terminal_atom',
                     'gateway_terminal_password' => Crypt::encrypt('demo_account_atom_terminal_pass'),
+                    'recurring'             => 0,
                     'created_at'            =>  time(),
                     'updated_at'            =>  time(),
                     )

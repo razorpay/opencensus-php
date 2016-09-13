@@ -209,7 +209,7 @@ trait Capture
 
         try
         {
-            $this->acquireLockOnPayment($this->payment);
+            $this->acquireMutexOnPayment($this->payment);
 
             try
             {
@@ -273,7 +273,7 @@ trait Capture
         }
         finally
         {
-            $this->releaseLockOnPayment($this->payment);
+            $this->releaseMutexOnPayment($this->payment);
         }
     }
 

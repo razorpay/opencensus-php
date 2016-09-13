@@ -878,6 +878,26 @@ trait Authorize
         ];
     }
 
+    protected function updateTokenOnAuthorized()
+    {
+        $payment = $this->payment;
+
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
+        // update token stats, assuming same token is not getting used in
+        // multiple payments, actually we should locking
+        if ($token !== null)
+        {
+            $createdAt = $payment->getCreatedAt();
+
+            $token->setUsedAt($createdAt);
+
+            $token->incrementUsedCount();
+
+            $this->repo->saveOrFail($token);
+        }
+    }
+
     protected function updateAndNotifyPaymentAuthorized($wasFailed = false)
     {
         // Updates payment entity to authorized and adds a transaction.
@@ -1448,17 +1468,9 @@ trait Authorize
 
             $payment->terminal->incrementUsedCount();
 
-            if ($wasFailed === true)
-            {
-                $payment->setLateAuthorized(true);
-            }
-            else
-            {
-                $payment->setLateAuthorized(false);
-            }
-
-            $this->repo->saveOrFail($payment);
-            $this->repo->saveOrFail($payment->terminal);
+            // If payment was earlier failed, then that means it's
+            // getting authorized late.
+            $payment->setLateAuthorized($wasFailed);
 
             //
             // If gateway is authorizing the payment (basically, no authAndCapture support), create transaction.
@@ -1472,6 +1484,9 @@ trait Authorize
             }
 
             $this->repo->saveOrFail($payment);
+            $this->repo->saveOrFail($payment->terminal);
+
+            $this->updateTokenOnAuthorized();
 
             // If payment has an associated order
             // set the order to be paid
