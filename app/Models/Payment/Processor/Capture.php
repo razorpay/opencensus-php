@@ -331,8 +331,6 @@ trait Capture
 
         $notifier = new Notify($this->payment);
         $notifier->trigger(Notify::CAPTURED);
-
-
     }
 
     protected function eventOrderPaid()

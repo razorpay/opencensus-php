@@ -35,6 +35,8 @@ class ApiEventSubscriber
 
     protected $trace;
 
+    protected $params;
+
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
