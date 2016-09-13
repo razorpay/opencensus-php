@@ -27,7 +27,7 @@ class Gateway extends Base\Gateway
 {
     use AuthorizeFailed;
 
-    const BALANCE_KEY = '%s_payumoney_balance';
+    const BALANCE_KEY = 'payumoney_balance_%s';
 
     protected $gateway = 'wallet_payumoney';
 
@@ -422,6 +422,12 @@ class Gateway extends Base\Gateway
         {
             $key = $this->getBalanceKeyForCache($input['payment']);
 
+            // We are caching user wallet balance for 30 mins for
+            // optimization purpose.
+            // Optimization: Suppose user already has 50 ruppee in
+            // his wallet and is making a payment of 100 rupppee.
+            // With this optimization, user will only have to add
+            // 50 ruppee instead of 100.
             Cache::put($key, $content['result'], self::PAYMENT_TTL);
 
             return [(int) ($content['result']['availableBalance'] * 100),
