@@ -296,6 +296,8 @@ trait FileHandlerTrait
     {
         $config =  \Config::get('aws');
 
+        $s3 = AWS::createClient('s3');
+
         try
         {
             $request = array(
