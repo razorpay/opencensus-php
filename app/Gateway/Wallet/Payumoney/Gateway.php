@@ -328,7 +328,7 @@ class Gateway extends Base\Gateway
         $content = $input['gateway'];
 
         // Not verifying hash as it's generated with different secret by payu
-        if (isset($content['status']) and
+        if ((isset($content['status']) === true) and
             ($content['status'] === Status::TOPUP_SUCCESS))
         {
             $token = $this->getValidWalletToken($input);
@@ -389,16 +389,19 @@ class Gateway extends Base\Gateway
     {
         list($availableBalance, $walletLimit) = $this->getUserWalletLimit($input);
 
-        if (($input['payment']['amount'] - $availableBalance) > $walletLimit)
+        if ($availableBalance !== null)
         {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_WALLET_PER_PAYMENT_AMOUNT_CROSSED);
-        }
+            if (($input['payment']['amount'] - $availableBalance) > $walletLimit)
+            {
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_WALLET_PER_PAYMENT_AMOUNT_CROSSED);
+            }
 
-        if ($input['payment']['amount'] > $availableBalance)
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE);
+            if ($input['payment']['amount'] > $availableBalance)
+            {
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE);
+            }
         }
     }
 
@@ -414,8 +417,8 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
 
-        if ($content['status'] === Status::SUCCESS and
-            isset($content['result']['availableBalance']))
+        if (($content['status'] === Status::SUCCESS) and
+            (isset($content['result']['availableBalance']) === true))
         {
             $key = $this->getBalanceKeyForCache($input['payment']);
 
@@ -425,7 +428,10 @@ class Gateway extends Base\Gateway
                     (int) ($content['result']['maxLimit'] * 100)];
         }
 
-        return [0, 100000];
+        // If check balance API fails for some reason,
+        // we let payumoney handle it in debit instead
+        // of throwing low balance error.
+        return [null, null];
     }
 
     protected function getBalanceKeyForCache($payment)
@@ -597,25 +603,14 @@ class Gateway extends Base\Gateway
 
         $userWalletLimit = Cache::get($key);
 
-        if (isset($input['gateway']['amount']))
-        {
-            if ((isset($userWalletLimit) === true) and
-                ($input['gateway']['amount'] > $userWalletLimit['maxLimit']))
-            {
-                throw new Exception\GatewayErrorException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_WALLET_PER_PAYMENT_AMOUNT_CROSSED);
-            }
+        $amount = ($input['payment']['amount'] / 100);
 
-            $amount = $input['gateway']['amount'];
-        }
-        else
+        // Optimize wallet topup amount, if wallet balance
+        // cache is available. Use payment amount if cache
+        // is unavailable
+        if (isset($userWalletLimit) === true)
         {
-            $amount = ($input['payment']['amount'] / 100);
-
-            if (isset($userWalletLimit) === true)
-            {
-                $amount = ($amount - $userWalletLimit['availableBalance']);
-            }
+            $amount = ($amount - $userWalletLimit['availableBalance']);
         }
 
         $content = array(
@@ -791,12 +786,12 @@ class Gateway extends Base\Gateway
     protected function getWalletContentFromVerify($payment, array $content)
     {
         $contentToSave = array(
-            'key'                   => $this->getMerchantId($this->input['terminal']),
-            'email'                 => $this->input['payment']['email'],
-            'mobile'                => $this->getFormattedContact($this->input['payment']['contact']),
-            'status'                => Status::SUCCESS,
-            'txnId'                 => $content['paymentId'],
-            'received'              => true
+            'key'       => $this->getMerchantId($this->input['terminal']),
+            'email'     => $this->input['payment']['email'],
+            'mobile'    => $this->getFormattedContact($this->input['payment']['contact']),
+            'status'    => Status::SUCCESS,
+            'txnId'     => $content['paymentId'],
+            'received'  => true
         );
 
         if (isset($payment['amount']) === false)
@@ -836,7 +831,7 @@ class Gateway extends Base\Gateway
                             $input['terminal']['id'],
                             $input['customer']['id']);
 
-        if ($token !== null and $token->getExpiredAt() > time())
+        if (($token !== null) and ($token->getExpiredAt() > time()))
         {
             return $token;
         }
