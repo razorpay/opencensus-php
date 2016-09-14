@@ -226,7 +226,7 @@ class Service extends Base\Service
         {
             $error[] = $e->getMessage();
         }
-        
+
 
         return array($error, null);
     }
@@ -234,8 +234,9 @@ class Service extends Base\Service
     protected function createOrUpdate($key, $inputByMerchant, $type, $createdAt, $mode)
     {
         $obj = Transaction\Entity::retrieveByTypeAndCreatedAt($key, $type, $createdAt, $mode);
+
         if (($obj === null) or
-            ($obj->createdAt->timestamp + self::$timeIntervals[$type] <= $inputByMerchant['updated_at']))
+            ($obj->created_at->timestamp + self::$timeIntervals[$type] <= $inputByMerchant['updated_at']))
         {
             $this->createAggregate($key, $inputByMerchant, $type, $mode);
         }
