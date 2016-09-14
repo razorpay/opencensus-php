@@ -27,6 +27,7 @@ use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Status;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Payment\Analytics;
+use RZP\Models\Payment\TerminalAnalytics;
 
 use RZP\Error;
 use RZP\Exception;
@@ -1040,8 +1041,13 @@ trait Authorize
             ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
     }
 
-    protected function recordTerminalAudit(array $rawData, array & $log)
+
+    protected function recordTerminalAudit($rawData)
     {
+        $log = [
+            'payment_id'    => $rawData['payment_id'],
+            'terminal_id'   => $rawData['terminal_id']
+        ];
         if (isset($rawData['terminal_data']))
         {
             $terminalData = $rawData['terminal_data'];
@@ -1071,6 +1077,22 @@ trait Authorize
                 $log['terminal_status_msg'] = $e->getError()->getDescription();
             }
         }
+
+        try
+        {
+            (new TerminalAnalytics\Service)->createAuditLog($log);
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->error(
+                TraceCode::TERMINAL_ANALYTICS_SAVE_FAILED,
+                ['rawData' => $rawData]
+            );
+
+            $this->trace->traceException($e);
+
+        }
+
     }
 
     protected function createAnalyticsLog($rawData)
@@ -1081,9 +1103,9 @@ trait Authorize
                 'payment_id'    => $rawData['payment_id'],
                 'terminal_id'   => $rawData['terminal_id'],
             ];
-
+            
             // 1. Record terminal data
-            $this->recordTerminalAudit($rawData, $log);
+            $this->recordTerminalAudit($rawData);
 
             // 2. Record payment actions
             (new Analytics\Parser)->recordPaymentRequestData($rawData, $log);

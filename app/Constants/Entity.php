@@ -41,6 +41,7 @@ class Entity
     const TERMINAL_ACTION       = 'terminal_action';
     const PAYMENT_ANALYTICS     = 'payment_analytics';
     const GATEWAY_ABSENCE       = 'gateway_absence';
+    const TERMINAL_ANALYTICS    = 'terminal_analytics';
 
     //
     // Gateway entities
@@ -102,6 +103,7 @@ class Entity
         self::TERMINAL_ACTION       => \RZP\Models\Terminal\Action::class,
         self::PAYMENT_ANALYTICS     => \RZP\Models\Payment\Analytics::class,
         self::GATEWAY_ABSENCE       => \RZP\Models\GatewayStatus\Absence::class,
+        self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
     );
 
     protected static $repository = array(
