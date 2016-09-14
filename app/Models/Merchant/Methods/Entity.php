@@ -17,6 +17,7 @@ class Entity extends Base\PublicEntity
     const PAYTM             = 'paytm';
     const PAYZAPP           = 'payzapp';
     const PAYUMONEY         = 'payumoney';
+    const AIRTELMONEY       = 'airtelmoney';
     const EMI               = 'emi';
     const DEBIT_CARD        = 'debit_card';
     const CREDIT_CARD       = 'credit_card';
@@ -39,6 +40,7 @@ class Entity extends Base\PublicEntity
         self::PAYTM,
         self::PAYZAPP,
         self::PAYUMONEY,
+        self::AIRTELMONEY,
         self::MOBIKWIK,
         self::OLAMONEY,
         self::EMI,
@@ -53,6 +55,7 @@ class Entity extends Base\PublicEntity
         self::PAYTM,
         self::PAYZAPP,
         self::PAYUMONEY,
+        self::AIRTELMONEY,
         self::MOBIKWIK,
         self::OLAMONEY,
         self::EMI,
@@ -70,6 +73,7 @@ class Entity extends Base\PublicEntity
         self::MOBIKWIK      => false,
         self::PAYZAPP       => false,
         self::PAYUMONEY     => false,
+        self::AIRTELMONEY   => false,
         self::OLAMONEY      => false,
         self::BANKS         => [],
         self::EMI           => false,
@@ -84,9 +88,11 @@ class Entity extends Base\PublicEntity
         self::PAYZAPP,
         self::PAYUMONEY,
         self::OLAMONEY,
+        self::AIRTELMONEY,
     );
 
-    protected $casts = array(
+    // Casts the attributes to native types
+    protected $casts = [
         self::AMEX        => 'bool',
         self::PAYTM       => 'bool',
         self::CARD        => 'bool',
@@ -97,8 +103,9 @@ class Entity extends Base\PublicEntity
         self::OLAMONEY    => 'bool',
         self::PAYZAPP     => 'bool',
         self::PAYUMONEY   => 'bool',
+        self::AIRTELMONEY => 'bool',
         self::EMI         => 'bool',
-    );
+    ];
 
     public function setMethods(array $input = array())
     {
@@ -173,6 +180,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::OLAMONEY);
     }
 
+    public function isAirtelmoneyEnabled()
+    {
+        return $this->getAirtelmoneyAttribute();
+    }
+
     public function isPayumoneyEnabled()
     {
         return $this->getAttribute(self::PAYUMONEY);
@@ -242,6 +254,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::OLAMONEY);
     }
 
+    public function getAirtelmoney()
+    {
+        return $this->getAttribute(self::AIRTELMONEY);
+    }
+
     public function getEmi()
     {
         return $this->getAttribute(self::EMI);
@@ -309,6 +326,11 @@ class Entity extends Base\PublicEntity
     public function setOlamoney($value)
     {
         $this->setAttribute(self::OLAMONEY, $value);
+    }
+
+    public function setAirtelmoney($value)
+    {
+        $this->setAttribute(self::Airtelmoney, $value);
     }
 
     public function setCard($card)
@@ -381,6 +403,7 @@ class Entity extends Base\PublicEntity
             self::PAYZAPP,
             self::PAYUMONEY,
             self::OLAMONEY,
+            self::AIRTELMONEY,
         );
     }
 }

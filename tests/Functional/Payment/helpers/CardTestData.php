@@ -23,6 +23,28 @@ return [
         ],
     ],
 
+    'testBlockedCard' => [
+        'request' => [
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD,
+        ],
+    ],
+
+
+
     'testUnsupportedCardNetworks' => [
         'request' => [
             'content' => [

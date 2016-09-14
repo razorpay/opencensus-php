@@ -214,7 +214,7 @@ trait Authorize
     {
         if ($this->shouldAutoCapture($payment) === true)
         {
-            // If payment is signed or capture was sent as true in order,
+            // If payment_capture was sent as true in order,
             // then we capture it in this step only.
             $this->autoCapturePayment($payment);
         }
@@ -332,7 +332,7 @@ trait Authorize
         // International card validation happens here because we want to save the failure.
         // For payment creation, gateway is compulsory field which is only finalized in
         // previous step.
-        $this->validateInternationalAllowed($payment);
+        $this->runInternationalChecks($payment);
 
         // Fees validation can only happen after international validation has gone through
         // otherwise can cause issues with international pricing rule being not available when
@@ -417,25 +417,49 @@ trait Authorize
         return $phoneBook;
     }
 
-    protected function validateInternationalAllowed($payment)
+    protected function runInternationalChecks($payment)
     {
-        if ($payment->getMethod() !== Method::CARD)
+        // return if method is not card or card is not international
+        if (($payment->getMethod() !== Method::CARD) or
+            ($payment->card->isInternational() === false))
         {
             return;
         }
 
+        $this->validateInternationalAllowed($payment);
+
+        $this->validateBlockedInternationalCard($payment->card);
+    }
+
+    protected function validateInternationalAllowed($payment)
+    {
         $card = $payment->card;
+
         $merchant = $payment->merchant;
 
-        if (($card->isInternational() === true) and
-            ($merchant->isInternational() === false))
+        if ($merchant->isInternational() === false)
         {
             $e = new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED);
 
             $this->updatePaymentFailed(
-                    $e->getError(),
-                    TraceCode::PAYMENT_AUTH_FAILURE);
+                $e->getError(),
+                TraceCode::PAYMENT_AUTH_FAILURE);
+
+            throw $e;
+        }
+    }
+
+    protected function validateBlockedInternationalCard($card)
+    {
+        if ($card->isBlocked())
+        {
+            $e = new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD);
+
+            $this->updatePaymentFailed(
+                $e->getError(),
+                TraceCode::PAYMENT_AUTH_FAILURE);
 
             throw $e;
         }
@@ -937,27 +961,15 @@ trait Authorize
         $this->autoCapturePaymentIfApplicable($payment);
 
         //
-        // If it's signed payment, then we return signed data from our
-        // end as well.
-        //
         // If callback url has been set, then we need to redirect
         // to the callback url and prepare data using coproto protocol.
         //
         // Otherwise we simply return 'razorpay_payment_id' as is normal.
         //
 
-        // @todo: Remove this code once hosted integration
-        //        using order and receipt goes live.
-        if ($payment->isSigned())
-        {
-            return $this->getReturnDataForSignedPayment($payment);
-        }
-
         $returnData = ['razorpay_payment_id' => $payment->getPublicId()];
 
-        // @todo: Shift to using auto-capture flag in payment
-        if (($payment->order !== null) and
-            ($payment->order->getPaymentCapture() === true))
+        if ($payment->getAutoCaptured() === true)
         {
             $this->fillReturnDataForAutoCaptureOrders($payment, $returnData);
         }
@@ -968,20 +980,6 @@ trait Authorize
         }
 
         return $returnData;
-    }
-
-    protected function getReturnDataForSignedPayment($payment)
-    {
-        $data = array(
-            'razorpay_payment_id' => $payment->getPublicId(),
-            'amount'              => $payment->getAmount(),
-            'currency'            => $payment->getCurrency(),
-            'merchant_order_id'   => $payment->getNotes()['merchant_order_id'],
-        );
-
-        $data['signature'] = $this->getSignature($data);
-
-        return $data;
     }
 
     protected function fillReturnDataForAutoCaptureOrders($payment, & $data)
@@ -1145,10 +1143,17 @@ trait Authorize
         }
         catch (\Exception $e)
         {
+            $checkoutMetadata = NULL;
+
+            if (isset($rawData['input']) and isset($rawData['input']['_']))
+            {
+                $checkoutMetadata = $rawData['input']['_'];
+            }
+
             $this->trace->error(
                 TraceCode::PAYMENT_ANALYTICS_SAVE_FAILED,
                 [
-                    'raw_data' => $rawData
+                    'raw_data' => $checkoutMetadata
                 ]);
 
             $this->trace->traceException($e);

@@ -26,7 +26,9 @@ class Validator extends Base\Validator
         Entity::VAULT              => 'required_with:vault_token|in:tokenex'
     );
 
-    protected static $createValidators = array('expiry_date');
+    protected static $createValidators = array(
+        'expiry_date'
+    );
 
     protected function validateExpiryDate($input)
     {

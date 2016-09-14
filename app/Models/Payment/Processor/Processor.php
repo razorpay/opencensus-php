@@ -265,7 +265,7 @@ class Processor
      * @return  $status Payment\Status
      * @throws Exception\BadRequestException
      */
-    public function cancel($id)
+    public function cancel($id, $input)
     {
         $status = null;
 
@@ -288,11 +288,11 @@ class Processor
             return $this->processPaymentCallbackSecondTime($payment);
         }
 
-        $errorCode = $this->repo->transaction(function() use ($payment)
+        $errorCode = $this->repo->transaction(function() use ($payment, $input)
         {
             $this->lockForUpdateAndReload($payment);
 
-            $errorCode = $this->cancelPayment($payment);
+            $errorCode = $this->cancelPayment($payment, $input);
 
             return $errorCode;
         });
@@ -300,7 +300,7 @@ class Processor
         throw new Exception\BadRequestException($errorCode);
     }
 
-    protected function cancelPayment($payment)
+    protected function cancelPayment($payment, $input)
     {
         $errorCode = null;
 
@@ -706,12 +706,6 @@ class Processor
             ($payment->isLateAuthorized() === true))
         {
             return false;
-        }
-
-        // If payment is signed
-        if ($payment->isSigned() === true)
-        {
-            return true;
         }
 
         // If payment order was marked as auto capture

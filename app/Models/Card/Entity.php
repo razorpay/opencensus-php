@@ -401,7 +401,24 @@ class Entity extends Base\PublicEntity
         $isSupportedNetwork = in_array($this->getNetworkCode(), Card\Network::$recurringNetworks);
 
         return (($isCreditCard == true) and ($isSupportedNetwork == true));
-   }
+    }
+
+    public function isBlocked()
+    {
+        $iin = $this->getIin();
+
+        $last4 = $this->getLast4();
+
+        $blackList = Card\BlackList::BLOCKED_IIN_LAST4;
+
+        if ((isset($blackList[$iin]) === true) and
+            (in_array($last4, $blackList[$iin])))
+        {
+            return true;
+        }
+
+        return false;
+    }
 
     protected function getTokenRelevantAttributes()
     {

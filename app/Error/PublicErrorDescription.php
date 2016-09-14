@@ -29,6 +29,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_CAPTURED               = 'The refund amount provided is greater than amount captured';
     const BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_UNREFUNDED             = 'The refund amount provided is greater than the unrefunded amount';
     const BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT                       = 'Minimum transaction amount allowed is Rs 1';
+    const BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_10_MIN_AMOUNT                    = 'Minimum transaction amount allowed is Rs 10';
     const BAD_REQUEST_PAYMENT_AMOUNT_TOO_HIGH                                   = 'The amount may not be greater than 50000000.';
     const BAD_REQUEST_PAYMENT_ATOM_NET_BANKING_MIN_AMOUNT_FIFTY                 = 'Minimum amount allowed for net banking transaction for the merchant is INR 50';
     const BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT_FOR_EMI               = 'Minimum transaction amount allowed is Rs 2000';
@@ -68,6 +69,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED                    = 'International card is not allowed.';
     const BAD_REQUEST_PAYMENT_CARD_RECURRING_NOT_SUPPORTED                      = 'Recurring is not supported on this card';
     const BAD_REQUEST_PAYMENT_BLOCKED_BY_BANK_DUE_TO_RISK_CHECKS_FAILURE        = 'Payment was blocked by bank because it failed certain risk checks';
+    const BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD                              = 'Payment was blocked because of fraud';
     const BAD_REQUEST_PAYMENT_FAILED_BECAUSE_SESSION_EXPIRED                    = 'Payment processing failed because session expired due to taking too much time. Please try the payment again.';
     const BAD_REQUEST_PAYMENT_TIMED_OUT                                         = 'Payment was not completed on time.';
     const BAD_REQUEST_PAYMENT_CAPTURE_AMOUNT_NOT_EQUAL_TO_AUTH                  = 'Capture amount must be equal to the amount authorized';

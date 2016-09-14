@@ -17,7 +17,7 @@ class MerchantFilter extends Terminal\Filter
 {
     protected $properties = [
         'tpv',
-        'risk',
+        // 'risk',
     ];
 
     /**
