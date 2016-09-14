@@ -214,7 +214,7 @@ trait Authorize
     {
         if ($this->shouldAutoCapture($payment) === true)
         {
-            // If payment is signed or capture was sent as true in order,
+            // If payment_capture was sent as true in order,
             // then we capture it in this step only.
             $this->autoCapturePayment($payment);
         }
@@ -905,27 +905,15 @@ trait Authorize
         $this->autoCapturePaymentIfApplicable($payment);
 
         //
-        // If it's signed payment, then we return signed data from our
-        // end as well.
-        //
         // If callback url has been set, then we need to redirect
         // to the callback url and prepare data using coproto protocol.
         //
         // Otherwise we simply return 'razorpay_payment_id' as is normal.
         //
 
-        // @todo: Remove this code once hosted integration
-        //        using order and receipt goes live.
-        if ($payment->isSigned())
-        {
-            return $this->getReturnDataForSignedPayment($payment);
-        }
-
         $returnData = ['razorpay_payment_id' => $payment->getPublicId()];
 
-        // @todo: Shift to using auto-capture flag in payment
-        if (($payment->order !== null) and
-            ($payment->order->getPaymentCapture() === true))
+        if ($payment->getAutoCaptured() === true)
         {
             $this->fillReturnDataForAutoCaptureOrders($payment, $returnData);
         }
@@ -936,20 +924,6 @@ trait Authorize
         }
 
         return $returnData;
-    }
-
-    protected function getReturnDataForSignedPayment($payment)
-    {
-        $data = array(
-            'razorpay_payment_id' => $payment->getPublicId(),
-            'amount'              => $payment->getAmount(),
-            'currency'            => $payment->getCurrency(),
-            'merchant_order_id'   => $payment->getNotes()['merchant_order_id'],
-        );
-
-        $data['signature'] = $this->getSignature($data);
-
-        return $data;
     }
 
     protected function fillReturnDataForAutoCaptureOrders($payment, & $data)
