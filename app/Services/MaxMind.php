@@ -55,11 +55,6 @@ class MaxMind
                 'input' => $input,
                 'response' => $response]);
 
-        if (empty($response['err']) === true)
-        {
-            return null;
-        }
-
         return $response;
     }
 }

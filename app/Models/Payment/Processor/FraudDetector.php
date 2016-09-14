@@ -16,7 +16,8 @@ trait FraudDetector
             $riskFields = $this->getRiskDetectionField($payment, $input);
 
             if ((isset($riskFields) === true) and
-                ($riskFields['riskScore'] > 50))
+                (isset($riskFields['riskScore']) === true) and
+                ((float) $riskFields['riskScore'] > 50))
             {
                 throw new Exception\GatewayException(
                         ErrorCode::BAD_REQUEST_PAYMENT_REJECTED_FRAUD_DETECTED);
@@ -37,7 +38,16 @@ trait FraudDetector
             'txn_type'          => $this->getTxnType($input['card'])
         );
 
-        $response = $this->app['maxmind']->query($maxMindInput);
+        $response = null;
+
+        try
+        {
+            $response = $this->app['maxmind']->query($maxMindInput);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e);
+        }
 
         return $response;
     }
