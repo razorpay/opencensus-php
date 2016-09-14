@@ -675,7 +675,6 @@ trait PaymentTrait
         $payment = $this->getDefaultPaymentArrayNeutral();
 
         $payment['card'] = array(
-                'method'            => 'card',
                 'number'            => '4012001038443335',
                 'name'              => 'Harshil',
                 'expiry_month'      => '12',
