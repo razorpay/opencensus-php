@@ -52,7 +52,7 @@ class Gateway extends Base\Gateway
 
         // Create a payment gateway entity and save it.
         $contentToSave = [
-            RequestFields::MID         => $this->getMerchantId($input['terminal']),
+            RequestFields::MID         => $this->getMerchantId(),
             RequestFields::CUST_EMAIL  => $input['payment']['email'],
             RequestFields::CUST_MOBILE => $this->getFormattedContact($input['payment']['contact']),
             RequestFields::AMT         => $input['payment']['amount'],
@@ -182,7 +182,7 @@ class Gateway extends Base\Gateway
             DateFormat::REQUEST_DATE_FORMAT);
 
         $content = [
-            RequestFields::MID        => $this->getMerchantId($input['terminal']),
+            RequestFields::MID        => $this->getMerchantId(),
             RequestFields::TXN_REF_NO => $input['payment']['id'],
             RequestFields::DATE       => $requestDate,
         ];
@@ -338,7 +338,7 @@ class Gateway extends Base\Gateway
     protected function getWalletContentFromVerify()
     {
         $contentToSave = [
-            RequestFields::MID         => $this->getMerchantId($this->input['terminal']),
+            RequestFields::MID         => $this->getMerchantId(),
             RequestFields::CUST_EMAIL  => $this->input['payment']['email'],
             RequestFields::CUST_MOBILE => $this->getFormattedContact($this->input['payment']['contact']),
             ResponseFields::STATUS     => Status::SUCCESS,
@@ -364,14 +364,14 @@ class Gateway extends Base\Gateway
             'email'                 => $input['payment']['email'],
             'received'              => true,
             'contact'               => $this->getFormattedContact($input['payment']['contact']),
-            'gateway_merchant_id'   => $this->getMerchantId($input['terminal']),
+            'gateway_merchant_id'   => $this->getMerchantId(),
             'refund_id'             => $input['refund']['id'],
         ];
 
         return $contentToSave;
     }
 
-    protected function getMerchantId($terminal)
+    protected function getMerchantId()
     {
         if ($this->mode === Mode::TEST)
         {
@@ -510,7 +510,7 @@ class Gateway extends Base\Gateway
             DateFormat::REQUEST_DATE_FORMAT);
 
         $content = [
-            RequestFields::MID         => $this->getMerchantId($input['terminal']),
+            RequestFields::MID         => $this->getMerchantId(),
             RequestFields::TXN_REF_NO  => $payment['id'],
             RequestFields::SU          => $input['callbackUrl'],
             RequestFields::FU          => $input['callbackUrl'],
@@ -548,7 +548,7 @@ class Gateway extends Base\Gateway
             DateFormat::REQUEST_DATE_FORMAT);
 
         $content = [
-            RequestFields::MID     => $this->getMerchantId($input['terminal']),
+            RequestFields::MID     => $this->getMerchantId(),
             RequestFields::TXN_ID  => $wallet['gateway_payment_id'],
             RequestFields::AMT     => ($input['amount'] / 100),
             RequestFields::DATE    => $date,

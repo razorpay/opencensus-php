@@ -22,20 +22,6 @@ class ResponseCodeMap
         '14236' => ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
     );
 
-    public static function getResponseMessage($code)
-    {
-        $codes = self::$codes;
-
-        if (in_array($code, $codes))
-        {
-            return $codes[$code];
-        }
-
-        // If the response code is not mapped, return error message airtel
-        // gives us.
-        return ResponseCode::getResponseMessage($code);
-    }
-
     public static function getApiErrorCode($code)
     {
         $class = 'RZP\Error\ErrorCode::';
