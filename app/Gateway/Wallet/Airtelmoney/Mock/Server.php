@@ -79,7 +79,7 @@ class Server extends Base\Mock\Server
             ResponseFields::STATUS       => Status::SUCCESS,
             ResponseFields::CODE         => ResponseCode::SUCCESS_CODE,
             ResponseFields::FDC_TXN_ID   => $this->getArtlTxnId(),
-            ResponseFields::TXN_AMT      => 50000,
+            ResponseFields::TXN_AMT      => number_format(($input['amount']/100), 2),
             ResponseFields::FDC_TXN_DATE => $this->getFormattedDate(
                 Carbon::now(),
                 DateFormat::FDC_TXN_DATE_FORMAT),

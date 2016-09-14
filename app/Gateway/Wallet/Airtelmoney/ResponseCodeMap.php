@@ -34,11 +34,6 @@ class ResponseCodeMap
 
         $apiCode = self::$codes[$code];
 
-        if (defined($class . $apiCode))
-        {
-            return $apiCode;
-        }
-
-        return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
+        return $apiCode;
     }
 }

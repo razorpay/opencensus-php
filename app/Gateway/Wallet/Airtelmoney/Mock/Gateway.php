@@ -25,4 +25,18 @@ class Gateway extends Airtelmoney\Gateway
 
         return $request;
     }
+
+    /*
+     * Verify API does not send amount and we are asserting the amount in
+     * authorize. So, For mock send the amount also in request to add it to
+     * response
+     */
+    public function getVerifyRequestArray($input)
+    {
+        $request = parent::getVerifyRequestArray($input);
+
+        $request['content']['amount'] = $input['payment']['amount'];
+
+        return $request;
+    }
 }

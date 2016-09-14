@@ -35,5 +35,6 @@ class Validator extends Base\Validator
         RequestFields::MID        => 'required|string',
         RequestFields::TXN_REF_NO => 'required|string',
         RequestFields::DATE       => 'required|date_format:'.DateFormat::REQUEST_DATE_FORMAT,
+        'amount'                  => 'required|numeric',
     );
 }
