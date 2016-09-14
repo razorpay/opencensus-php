@@ -53,7 +53,7 @@ class UPIGatewayTest extends TestCase
         $content = $mockServer->makeS2SRequest($upiEntity, $payment);
 
         $request = [
-            'body'      => $content,
+            'raw'      => $content,
             'url'       => '/callback/upi_icici',
             'method'    => 'post'
         ];
