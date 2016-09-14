@@ -256,7 +256,7 @@ class Reconciler3
         if ((isset($input['source']) === true) and
             ($input['source'] === 'lambda'))
         {
-            $key = $input['prefix'] . '/' . $input['key'];
+            $key = $input['key'];
 
             $reconcileFile = $this->getH2HFileFromAws($key);
         }
