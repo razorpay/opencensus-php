@@ -871,10 +871,16 @@ trait Authorize
      */
     protected function getAsyncPaymentCreatedResponse(Payment\Entity $payment)
     {
+        $id = $payment->getPublicId();
+
         return [
             'type'          =>  'async',
             'version'       =>  1,
-            'payment_id'    =>  $payment->getPublicId(),
+            'payment_id'    =>  $id,
+            'request'       =>  [
+                'url'           =>  route('payment_get_status', ['id'=>$id]),
+                'method'        =>  'GET',
+            ]
         ];
     }
 
