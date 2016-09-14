@@ -594,7 +594,7 @@ trait Authorize
             //TODO for netbanking/wallets
         }
 
-        $this->validatePaymentData($payment, $input);
+        $this->validateRecurringPayment($payment, $input);
     }
 
     protected function preProcessPaymentFromSavedCardGlobal($customer, $payment, & $input, & $gatewayInput)
@@ -676,7 +676,7 @@ trait Authorize
             $this->payment->token()->associate($token);
         }
 
-        $this->validatePaymentData($payment, $input);
+        $this->validateRecurringPayment($payment, $input);
     }
 
     protected function savePaymentMethodGlobal($customer, $payment, $input, array & $gatewayInput)
@@ -1421,7 +1421,7 @@ trait Authorize
         }
     }
 
-    protected function validatePaymentData($payment, $input)
+    protected function validateRecurringPayment($payment, $input)
     {
         // checks if payment is recurring
         if (($payment->isRecurring()) and

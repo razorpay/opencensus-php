@@ -396,17 +396,21 @@ class Entity extends Base\PublicEntity
 
     public function isRecurringSupported()
     {
-        return ($this->getType() === Card\Type::CREDIT);
-    }
+        $isCreditCard = ($this->getType() === Card\Type::CREDIT);
+
+        $isSupportedNetwork = in_array($this->getNetworkCode(), Card\Network::$recurringNetworks);
+
+        return (($isCreditCard == true) and ($isSupportedNetwork == true));
+   }
 
     protected function getTokenRelevantAttributes()
     {
         $emi = $this->getAttribute(self::EMI);
 
         $attributes = array(
-            self::EXPIRY_MONTH      => $this->getAttribute(self::EXPIRY_MONTH),
-            self::EXPIRY_YEAR       => $this->getAttribute(self::EXPIRY_YEAR),
-            self::EMI               => $emi
+            self::EXPIRY_MONTH => $this->getAttribute(self::EXPIRY_MONTH),
+            self::EXPIRY_YEAR  => $this->getAttribute(self::EXPIRY_YEAR),
+            self::EMI          => $emi
         );
 
         if ($emi === true)

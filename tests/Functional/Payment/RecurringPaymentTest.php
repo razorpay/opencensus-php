@@ -104,6 +104,26 @@ class RecurringPaymentTest extends TestCase
         });
     }
 
+    public function testRecurringPaymentAmexCardNotSupported()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = 500000;
+        $payment['recurring'] = true;
+        $payment['customer_id'] = 'cust_100000customer';
+
+        $payment['card']['number'] = '341111111111111';
+        $payment['card']['cvv'] = '8888';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testRecurringPaymentUsingSavedCardTokenNotRecurring()
     {
         $this->ba->publicAuth();
