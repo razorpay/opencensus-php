@@ -58,7 +58,6 @@ class CreateTerminalAnalytics extends Migration
             $table->index(Analytics::CREATED_AT);
 
         });
-
     }
 
     /**

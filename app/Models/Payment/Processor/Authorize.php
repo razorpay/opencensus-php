@@ -78,6 +78,8 @@ trait Authorize
 
         $request = null;
 
+        $retry = false;
+
         while ($retryAttempts < $maxRetryAttempts)
         {
             $terminalGatewayInput = $gatewayInput;
@@ -88,7 +90,7 @@ trait Authorize
 
             $this->runPostGatewaySelectionPreProcessing($payment, $terminalGatewayInput);
 
-            // data for analytics
+            // data for payment analytics
             $rawData = [
                             'payment_id' => $payment['id'],
                             'input' => $input,
@@ -104,11 +106,9 @@ trait Authorize
                 return $request;
             }
 
-            $start = microtime(true);
+            $terminalData = $rawData;
 
-            $terminalData = ['start' => $start];
-
-            $rawData['terminal_data'] = $terminalData;
+            $terminalData['start'] = microtime(true);
 
             try
             {
@@ -119,7 +119,7 @@ trait Authorize
             catch (Exception\GatewayRequestException $e)
             {
                 // record a failed payment for given terminal and continue
-                $rawData['terminal_data']['exception'] = $e;
+                $terminalData['exception'] = $e;
 
                 $retryAttempts += 1;
 
@@ -139,16 +139,19 @@ trait Authorize
                 // An error occurred on gateway due to user or gateway.
                 // We need to record this and mark payment as failed.
                 //
-                $rawData['terminal_data']['exception'] = $e;
+                $terminalData['exception'] = $e;
 
                 $this->updatePaymentAuthFailedAndThrowException($e);
             }
             finally
             {
-                // record a successful payment here for the given terminal id
-                $rawData['terminal_data']['end'] = microtime(true);
+                $this->recordTerminalAudit($terminalData);
 
-                $this->createAnalyticsLog($rawData);
+                if (($retry === false) or
+                    ($retryAttempts >= $maxRetryAttempts))
+                {
+                    $this->createAnalyticsLog($rawData);
+                }
             }
         }
 
@@ -158,7 +161,7 @@ trait Authorize
     protected function logAndCheckForAuthRetry($e, $payment)
     {
         $traceData = array(
-            'errorcode'     => $e->getCode(),
+            'error_code'    => $e->getCode(),
             'message'       => $e->getMessage(),
             'payment_id'    => $payment->getId(),
             'terminal_id'   => $payment->terminal->getId()
@@ -168,7 +171,7 @@ trait Authorize
 
         // retry only if it is safe to do so
         return ((property_exists($e, 'safeRetry') === true) and
-                ($e->safeRetry === true));
+                ($e->getSafeRetry() === true));
     }
 
     protected function updatePaymentAuthFailedAndThrowException($e)
@@ -1060,17 +1063,18 @@ trait Authorize
     }
 
 
-    protected function recordTerminalAudit($rawData)
+    protected function recordTerminalAudit($terminalData)
     {
-        $log = [
-            TerminalAnalytics\Entity::PAYMENT_ID    => $rawData['payment_id'],
-            TerminalAnalytics\Entity::TERMINAL_ID   => $rawData['terminal_id']
-        ];
-        if (isset($rawData['terminal_data']))
-        {
-            $terminalData = $rawData['terminal_data'];
+        $terminalData['end'] = microtime(true);
 
-            $responseTime = TerminalAnalytics\Entity::microtime_diff($terminalData['start'], $terminalData['end']);
+        try
+        {
+            $log = [
+                TerminalAnalytics\Entity::PAYMENT_ID    => $terminalData['payment_id'],
+                TerminalAnalytics\Entity::TERMINAL_ID   => $terminalData['terminal_id']
+            ];
+
+            $responseTime = $terminalData['end'] - $terminalData['start'];
 
             $log[TerminalAnalytics\Entity::TERMINAL_RESPONSE_TIME] = $responseTime;
 
@@ -1094,24 +1098,19 @@ trait Authorize
 
                 $log[TerminalAnalytics\Entity::TERMINAL_STATUS_MSG] = $e->getError()->getDescription();
             }
-        }
 
-        try
-        {
             (new TerminalAnalytics\Core)->create($log);
         }
         catch(\Exception $e)
         {
-            SD($e);
+            SD("Exception:".$e);
             $this->trace->warning(
                 TraceCode::TERMINAL_ANALYTICS_SAVE_FAILED,
-                ['rawData' => $rawData]
+                ['terminalData' => $terminalData]
             );
 
             $this->trace->traceException($e);
-
         }
-
     }
 
     protected function createAnalyticsLog($rawData)
@@ -1122,19 +1121,14 @@ trait Authorize
                 'payment_id'    => $rawData['payment_id'],
                 'terminal_id'   => $rawData['terminal_id'],
             ];
-            
-            // 1. Record terminal data
-            $this->recordTerminalAudit($rawData);
 
-            // 2. Record payment actions
             (new Analytics\Parser)->recordPaymentRequestData($rawData, $log);
 
-            // Create log
             (new Analytics\Service)->createAuditLog($log);
         }
         catch (\Exception $e)
         {
-            $checkoutMetadata = NULL;
+            $checkoutMetadata = null;
 
             if (isset($rawData['input']) and isset($rawData['input']['_']))
             {

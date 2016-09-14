@@ -4,10 +4,10 @@ namespace RZP\Models\Payment\TerminalAnalytics;
 
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Constants\Table;
 
 class Entity extends Base\PublicEntity
 {
-    const ID                            = 'id';
     const PAYMENT_ID                    = 'payment_id';
     const TERMINAL_ID                   = 'terminal_id';
     const TERMINAL_STATUS               = 'terminal_status';
@@ -16,20 +16,15 @@ class Entity extends Base\PublicEntity
     const TERMINAL_STATUS_MSG           = 'terminal_status_msg';
     const PAYMENT_TYPE                  = 'payment_type';
 
-    // window in secs, used to fetch payments with same checkout id
-    const PAYMENT_WINDOW                = 1800;
 
-    protected $table = \RZP\Constants\Table::TERMINAL_ANALYTICS;
+    protected $table = Table::TERMINAL_ANALYTICS;
 
     protected $entity = 'terminal_analytics';
-
-    protected static $sign = '';
-
-    protected static $delimiter = '';
 
     protected $fillable = array(
         self::PAYMENT_ID,
         self::TERMINAL_ID,
+        self::PAYMENT_TYPE,
         self::TERMINAL_STATUS,
         self::TERMINAL_RESPONSE_TIME,
         self::TERMINAL_STATUS_CODE,
@@ -40,6 +35,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::PAYMENT_ID,
         self::TERMINAL_ID,
+        self::PAYMENT_TYPE,
         self::TERMINAL_STATUS,
         self::TERMINAL_RESPONSE_TIME,
         self::TERMINAL_STATUS_CODE,
@@ -52,47 +48,20 @@ class Entity extends Base\PublicEntity
         self::TERMINAL_RESPONSE_TIME => 'int',
     );
 
-    // ----------------------- Getters ---------------------------------------------
-
-    public function getPaymentId()
-    {
-        return $this->getAttribute(self::PAYMENT_ID);
-    }
-
-    public function getTerminalId()
-    {
-        return $this->getAttribute(self::TERMINAL_ID);
-    }
-
-    public function getTerminalStatus()
-    {
-        return $this->getAttribute(self::TERMINAL_STATUS);
-    }
-
-    public function getTerminalResponseTime()
-    {
-        return $this->getAttribute(self::TERMINAL_RESPONSE_TIME);
-    }
-
-    public function getTerminalStatusCode()
-    {
-        return $this->getAttribute(self::TERMINAL_STATUS_CODE);
-    }
-
-    public function getTerminalStatusMsg()
-    {
-        return $this->getAttribute(self::TERMINAL_STATUS_MSG);
-    }
-
     public static function microtime_diff($start, $end = null)
     {
-        if (!$end) {
+        if (!$end)
+        {
             $end = microtime();
         }
         list($start_usec, $start_sec) = explode(" ", $start);
+
         list($end_usec, $end_sec) = explode(" ", $end);
+
         $diff_sec = intval($end_sec) - intval($start_sec);
+
         $diff_usec = floatval($end_usec) - floatval($start_usec);
+
         return floatval($diff_sec) + $diff_usec;
     }
 }
