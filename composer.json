@@ -35,7 +35,7 @@
     ],
     "require-dev": {
         "raveren/kint": "1.*",
-        "phpunit/phpunit": "^4.7",
+        "phpunit/phpunit": "^5.4",
         "laracasts/testdummy": "2.*",
         "mockery/mockery": "*",
         "codacy/coverage": "dev-master",

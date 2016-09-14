@@ -23,6 +23,8 @@ class Reconciler3
 
     protected static $fileToReadName = 'Kotak_Settlement_Reconciliation';
 
+    protected static $fileToWriteName = 'Kotak_Settlement_Reconciliation';
+
     protected static $extraHeadings = array(
         'Status Of transaction',
         'UTR number',
@@ -254,7 +256,7 @@ class Reconciler3
         if ((isset($input['source']) === true) and
             ($input['source'] === 'lambda'))
         {
-            $key = $input['prefix'] . '/' . $input['key'];
+            $key = $input['key'];
 
             $reconcileFile = $this->getH2HFileFromAws($key);
         }

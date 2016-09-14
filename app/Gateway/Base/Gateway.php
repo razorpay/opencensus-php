@@ -20,6 +20,12 @@ class Gateway
     const TIMEOUT = 30;
 
     /**
+     * Default payment timeout duration in mins.
+     * @var  integer
+     */
+    const PAYMENT_TTL = 20;
+
+    /**
      * Default OTP attempts limit
      * @var integer
      */

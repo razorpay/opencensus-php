@@ -98,9 +98,8 @@ trait Callback
 
     public function s2sCallback($payment, array $gatewayInput)
     {
-        // Return if payments is signed to allow for payments to be captured
-        // which come signed via shopify route.
-        if ($payment->isSigned())
+        // Return if payment is auto captured
+        if ($payment->getAutoCaptured())
         {
             return ['success' => false];
         }

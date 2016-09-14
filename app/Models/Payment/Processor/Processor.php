@@ -709,12 +709,6 @@ class Processor
             return false;
         }
 
-        // If payment is signed
-        if ($payment->isSigned() === true)
-        {
-            return true;
-        }
-
         // If payment order was marked as auto capture
         if (($payment->order !== null) and
             ($payment->order->getPaymentCapture() === true))
