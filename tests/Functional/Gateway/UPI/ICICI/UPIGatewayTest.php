@@ -81,6 +81,8 @@ class UPIGatewayTest extends TestCase
 
         $this->capturePayment($payment['id'], 50000);
 
+        $this->expectException('RZP\Exception\GatewayErrorException', 'Refund is currently not supported for this payment method');
+
         $this->refundPayment($payment['id']);
     }
 }
