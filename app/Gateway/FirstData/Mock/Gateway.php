@@ -18,7 +18,7 @@ class Gateway extends FirstData\Gateway
 
     protected function postRequest($request)
     {
-    	sd("Hi");
+    	sd("Mock Gateway postRequest");
         // Redirect the request internally
         $serverResponse = $this->callGatewayRequestInternally($request);
 

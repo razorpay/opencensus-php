@@ -68,6 +68,11 @@ class Server extends Base\Mock\Server
         return $url;
     }
 
+    public function capture($input)
+    {
+        parent::capture($input);
+    }
+
     protected function getHash($approvalCode, $chargeTotal, $currencyCode, $txnDateTime, $storeId)
     {
         $sharedSecret = $this->getGatewayInstance()->getSecret();

@@ -3,6 +3,7 @@
 namespace RZP\Gateway\FirstData;
 
 use Requests;
+use Requests_Hooks;
 use RZP\Error;
 use RZP\Exception;
 use RZP\Constants;
@@ -52,6 +53,7 @@ class Gateway extends Base\Gateway
 
     const TEST_STORE_ID             = 'test_store_id';
     const TEST_HASH_SECRET          = 'test_hash_secret';
+    const SERVER_CERTIFICATE_PATH   = 'server_certificate_path';
 
     protected $gateway = \RZP\Constants\Entity::FIRST_DATA;
 
@@ -65,19 +67,31 @@ class Gateway extends Base\Gateway
 
         $payment = $this->createGatewayPaymentEntity($content);
 
-        $request = $this->getStandardRequestArray($content, 'post');
+        $request = $this->getStandardConnectRequestArray($content, 'post');
 
         $this->traceGatewayPaymentRequest($request, $input);
 
         return $request;
     }
 
-    protected function getStandardRequestArray($content = [], $method = 'post')
+    protected function getStandardConnectRequestArray($content = [], $method = 'post')
     {
         $request = array(
             'url'       => $this->getUrl('processing'),
             'content'   => $content,
             'method'    => $method
+        );
+
+        return $request;
+    }
+
+    protected function getStandardApiRequestArray($content = [], $options = [], $method = 'post')
+    {
+        $request = array(
+            'url'       => $this->getUrl('services'),
+            'content'   => $content,
+            'method'    => $method,
+            'options'   => $options
         );
 
         return $request;
@@ -225,11 +239,14 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_CAPTURE_REQUEST, $input);
 
-        $request = $this->getCaptureRequestContentArray($input);
+        $contentArray = $this->getCaptureRequestContentArray($input);
+
+        $xmlRequest = $this->arrayToXml($contentArray);
+        $content = $this->wrapSoap($xmlRequest);
 
         try
         {
-            $response = $this->postSoapRequest($request);
+            $response = $this->postSoapRequest($content);
         }
         catch (SoapFault $exception)
         {
@@ -238,24 +255,42 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function postSoapRequest($request)
+    protected function wrapSoap($content)
     {
-        $soapClient = $this->getSoapClientObject($request);
+        $soapWrapper = "<?xml version='1.0' encoding='UTF-8'?><SOAP-ENV:Envelope xmlns:SOAP-ENV='http://schemas.xmlsoap.org/soap/envelope/'><SOAP-ENV:Body><ipgapi:IPGApiOrderRequest xmlns:ipgapi='http://ipg-online.com/ipgapi/schemas/ipgapi' xmlns:v1='http://ipg-online.com/ipgapi/schemas/v1'>".$content."</ipgapi:IPGApiOrderRequest></SOAP-ENV:Body></SOAP-ENV:Envelope>";
 
-        $content = json_decode(json_encode($request['content']));
-
-        $response = $soapClient->IPGApiOrderRequest($content);
-
-        return json_decode(json_encode($response), true);;
+        return $soapWrapper;
     }
 
-    protected function getSoapClientObject($request)
+    protected function postSoapRequest($content)
     {
-        $url = $this->getUrl('services');
-        $namespace = $this->getUrl('namespacer');
-        $soapClient = new FirstDataSoapClient($url, $namespace, $request['options']['auth']);
+        $options = $this->getRequestOptions();
+        $request = $this->getStandardApiRequestArray($content, $options);
+        s($request);
 
-        return $soapClient;
+        $response = $this->sendGatewayRequest($request);
+        sd($response);
+
+        return $response;;
+    }
+
+    protected function getRequestOptions()
+    {
+        $auth = $this->getCredentials();
+        $options['auth'] = [$auth['username'], $auth['password']];
+
+        $hooks = new Requests_Hooks();
+        $hooks->register('curl.before_send', 'setCurlSslOpts');
+        $options['hooks'] = $hooks;
+
+        $options['verify'] = $this->getServerCertificate();;
+
+        return $options;
+    }
+
+    protected function setCurlSslOpts()
+    {
+        sd("Reached setCurlSslOpts");
     }
 
     protected function getCaptureRequestContentArray($input)
@@ -272,26 +307,35 @@ class Gateway extends Base\Gateway
         $body['v1:TransactionDetails']['v1:OrderId'] = $gatewayPayment['oid'];
         $body['v1:ClientLocale']['v1:Language'] = Codes::ENGLISH_UK_LANG_CODE_API;
 
-        $content['v1:Transaction'] = $body;
-
-        $request = $this->getStandardSoapRequest($content);
+        $request['v1:Transaction'] = $body;
 
         return $request;
     }
 
-    protected function getStandardSoapRequest($content = [], $method = 'post')
+    private function arrayToXml($array, $wrap=null)
     {
-        $request = [
-            'url'     => $this->getWsdlFile(),
-            'method'  => $method,
-            'content' => $content,
-            'options' => [
-                'auth' => $this->getCredentials()
-            ]
-        ];
+        // set initial value for XML string
+        $xml = '';
+        foreach ($array as $key => $value)
+        {
+            if ( is_array($value) == true )
+            {
+                $xml .= $this->arrayToXml($value, $key);
+            }
+            else
+            {
+                $xml .= "<$key>" . htmlspecialchars(trim($value)) . "</$key>";
+            }
+        }
+        // wrap XML with $wrap TAG
+        if ($wrap != null)
+        {
+            $xml = "<$wrap>".$xml."</$wrap>";
+        }
 
-        return $request;
+        return $xml;
     }
+
 
     protected function verifyPaymentCallbackResponse($input)
     {
@@ -337,13 +381,6 @@ class Gateway extends Base\Gateway
         return $this->terminal['gateway_merchant_id'];
     }
 
-    protected function getWsdlFile()
-    {
-        $file = __DIR__ . '/Wsdl/first_data.wsdl.xml';
-
-        return $file;
-    }
-
     protected function getCredentials()
     {
         $terminal = $this->terminal;
@@ -362,6 +399,11 @@ class Gateway extends Base\Gateway
         }
 
         return $auth;
+    }
+
+    protected function getServerCertificate()
+    {
+        return $this->config[self::SERVER_CERTIFICATE_PATH];
     }
 
     protected function getSharedSecret()
