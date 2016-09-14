@@ -176,7 +176,7 @@ trait Authorize
 
         // retry only if it is safe to do so
         return ((property_exists($e, 'safeRetry') === true) and
-                ($e->safeRetry === true));
+                ($e->getSafeRetry() === true));
     }
 
     protected function updatePaymentAuthFailedAndThrowException($e)
