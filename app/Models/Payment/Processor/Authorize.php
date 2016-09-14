@@ -1438,7 +1438,7 @@ trait Authorize
 
         // if not recurring,  validate card data
         if (($payment->isRecurring() === false) and
-            ($payment->merchant->isShared() === false) and
+            ($payment->token !== null) and
             ($payment->token->isRecurring() === false))
         {
             $payment->getValidator()->validateCardAndCvv($input);
@@ -1449,7 +1449,7 @@ trait Authorize
     {
         $amex = $methods->getAmex();
 
-        if (($card->getNetworkCode() == Card\Network::AMEX) and
+        if (($card->isAmex() === true) and
             ($amex === false))
         {
             throw new Exception\BadRequestException(

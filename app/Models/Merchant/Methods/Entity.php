@@ -182,7 +182,7 @@ class Entity extends Base\PublicEntity
 
     public function isAirtelmoneyEnabled()
     {
-        return $this->getAirtelmoneyAttribute();
+        return $this->getAttribute(self::AIRTELMONEY);
     }
 
     public function isPayumoneyEnabled()
