@@ -32,21 +32,17 @@ class UPIGatewayTest extends TestCase
         // Co Proto must be working
         $this->assertEquals('async', $res['type']);
 
-        $payment = $this->getEntityById('payment', $paymentId, true);
+        $this->testPaymentStatus($paymentId, 'created');
 
-        $this->assertEquals('upi', $payment['method']);
-        $this->assertEquals('created', $payment['status']);
-
-        $upiEntity = $this->getLastEntity('upi_icici', true);
-
-        $this->assertNotNull($upiEntity);
-
-        return [$payment, $upiEntity];
+        return $paymentId;
     }
 
     public function testPaymentWithS2S($assert = true)
     {
-        list($payment, $upiEntity) = $this->testPayment();
+        $paymentId = $this->testPayment();
+
+        $upiEntity = $this->getLastEntity('upi_icici', true);
+        $payment = $this->getEntityById('payment', $paymentId, true);
 
         $mockServer = $this->mockServer();
 
@@ -60,19 +56,30 @@ class UPIGatewayTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        // Since this is the slow part of the test
-        // we only run it once
         if ($assert)
         {
-            $this->assertEquals(['success' => true], $response);
+            $this->assertEquals($response, ['success' => true]);
 
-            $payment = $this->getEntityById('payment', $payment['id'], true);
-            $upiEntity = $this->getLastEntity('upi_icici', true);
-
-            $this->assertEquals('authorized', $payment['status']);
+            $this->testPaymentStatus($paymentId, 'authorized');
         }
 
         return $payment;
+    }
+
+    protected function testPaymentStatus($id, $expectedStatus)
+    {
+        $request = [
+            'url'       => "/payments/$id/status",
+            'method'    => 'get'
+        ];
+
+        $this->ba->publicAuth();
+
+        $data = $this->makeRequestAndGetContent($request);
+
+        $status = $data['status'];
+
+        $this->assertEquals($expectedStatus, $status);
     }
 
     public function testPaymentRefund()

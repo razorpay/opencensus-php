@@ -335,6 +335,29 @@ class Service extends Base\Service
         return $payment->toArrayPublic();
     }
 
+    /**
+     * We only return the payment status in case of an async
+     * payment + status being either of created or authorized
+     * @return array
+     */
+    public function fetchStatus($id)
+    {
+        $payment = $this->core->retrieveByIdAndMerchantId($id, $this->merchant->getId());
+
+        $gateway = $payment->getGateway();
+
+        $status = 'unknown';
+
+        if (Gateway::supportsAsync($gateway) and $payment->isCreatedOrAuthorized())
+        {
+            $status = $payment->getStatus();
+        }
+
+        return [
+            Entity::STATUS    =>  $status
+        ];
+    }
+
     public function addPaymentMetadata($id, $input)
     {
         $payment = $this->core->retrieveByIdAndMerchantId($id, $this->merchant->getKey());

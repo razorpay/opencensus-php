@@ -610,6 +610,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::STATUS) === Status::AUTHORIZED);
     }
 
+    public function isCreatedOrAuthorized()
+    {
+        return ($this->isCreated() or $this->isAuthorized());
+    }
+
     public function hasBeenAuthorized()
     {
         return ($this->isAttributeNull(self::AUTHORIZED_AT));
