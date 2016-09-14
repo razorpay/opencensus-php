@@ -43,7 +43,7 @@ class Validator extends Base\Validator
         $blackList = BlackList::BLOCKED_IIN_LAST4;
 
         if ((isset($blackList[$iin]) === true) and
-            (isset($blackList[$iin][$last4]) === true))
+            (in_array($last4, $blackList[$iin])))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD);
