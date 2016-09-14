@@ -49,6 +49,7 @@ class ErrorCode
     const GATEWAY_ERROR_PAYMENT_VOID_FAILED                                         = 'GATEWAY_ERROR_PAYMENT_VOID_FAILED';
     const GATEWAY_ERROR_PAYMENT_REFUND_FAILED                                       = 'GATEWAY_ERROR_PAYMENT_REFUND_FAILED';
     const GATEWAY_ERROR_TIMED_OUT                                                   = 'GATEWAY_ERROR_TIMED_OUT';
+    const GATEWAY_ERROR_INVALID_DATE_FORMAT                                         = 'GATEWAY_ERROR_INVALID_DATE_FORMAT';
 
     const GATEWAY_ERROR_SUPPORT_GREATER_THAN_AUTH                                   = 'GATEWAY_ERROR_SUPPORT_GREATER_THAN_AUTH';
 
@@ -79,6 +80,7 @@ class ErrorCode
 
     const GATEWAY_ERROR_PAYMENT_MISSING_DATA                                        = 'GATEWAY_ERROR_PAYMENT_MISSING_DATA';
     const GATEWAY_ERROR_INVALID_PARAMETERS                                          = 'GATEWAY_ERROR_INVALID_PARAMETERS';
+    const GATEWAY_ERROR_INVALID_CALLBACK_URL                                        = 'GATEWAY_ERROR_INVALID_CALLBACK_URL';
 // Generic bad requests
     const BAD_REQUEST_INVALID_ID                                                    = 'BAD_REQUEST_INVALID_ID';
     const BAD_REQUEST_NO_RECORDS_FOUND                                              = 'BAD_REQUEST_NO_RECORDS_FOUND';
@@ -123,6 +125,7 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_BANK_NOT_PROVIDED                                     = 'BAD_REQUEST_PAYMENT_BANK_NOT_PROVIDED';
     const BAD_REQUEST_PAYMENT_INVALID_BANK_CODE                                     = 'BAD_REQUEST_PAYMENT_INVALID_BANK_CODE';
     const BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT                           = 'BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT';
+    const BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_10_MIN_AMOUNT                        = 'BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_10_MIN_AMOUNT';
     const BAD_REQUEST_PAYMENT_ATOM_NET_BANKING_MIN_AMOUNT_FIFTY                     = 'BAD_REQUEST_PAYMENT_ATOM_NET_BANKING_MIN_AMOUNT_FIFTY';
     const BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT_FOR_EMI                   = 'BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT_FOR_EMI';
     const BAD_REQUEST_PAYMENT_AMOUNT_TOO_HIGH                                       = 'BAD_REQUEST_PAYMENT_AMOUNT_TOO_HIGH';
