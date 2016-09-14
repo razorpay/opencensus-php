@@ -194,6 +194,7 @@ class DatabaseSeeder extends Seeder
                     'payzapp'       => '1',
                     'payumoney'     => '1',
                     'card'          => '1',
+                    'upi'           => '1',
                     'created_at'    =>  time(),
                     'updated_at'    =>  time()
                 )
@@ -210,6 +211,7 @@ class DatabaseSeeder extends Seeder
                     'payumoney'     => '1',
                     'card'          => '1',
                     'emi'           => '1',
+                    'upi'           => '1',
                     'created_at'    =>  time(),
                     'updated_at'    =>  time()
                 )
@@ -474,6 +476,7 @@ class DatabaseSeeder extends Seeder
         $this->createSharpGatewayTerminals();
         $this->createNetbankingKotakTerminals();
         $this->createOlamoneyTerminals();
+        $this->createUPITerminals();
     }
 
     protected function createNetbankingHdfcTerminals()
@@ -766,8 +769,9 @@ class DatabaseSeeder extends Seeder
             'card'                      => '0',
             'netbanking'                => '0',
             'upi'                       => '1',
+            // This needs to be numeric
             'gateway_merchant_id'       => 'demo_merchant_upi_icici',
-            'gateway_terminal_id'       => 'demo_terminal_upi_icici',
+            'gateway_terminal_id'       => '1234',
             'gateway_terminal_password' => Crypt::encrypt('demo_account_upi_icici_terminal_pass'),
             'created_at'                =>  time(),
             'updated_at'                =>  time(),

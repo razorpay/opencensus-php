@@ -30,6 +30,7 @@ class Entity extends Base\PublicEntity
     const CARD                          = 'card';
     const NETBANKING                    = 'netbanking';
     const EMI                           = 'emi';
+    const UPI                           = 'upi';
     const EMI_DURATION                  = 'emi_duration';
     const RECURRING                     = 'recurring';
 
