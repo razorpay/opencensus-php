@@ -75,8 +75,7 @@ class Validator extends Base\Validator
 
         if ((isset($input['recurring']) === true) and
             ($input['recurring'] === '1') and
-            (isset($input['token']) === true) and
-            ($input['token'] !== null))
+            (empty($input['token']) === false))
         {
             return;
         }
@@ -120,6 +119,21 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'Amount exceeds maximum amount allowed.',
                 'amount');
+        }
+    }
+
+    public function validateCardAndCvv($input)
+    {
+        if (isset($input['card']) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_NOT_PROVIDED);
+        }
+
+        if (isset($input['card']['cvv']) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_CVV_NOT_PROVIDED);
         }
     }
 

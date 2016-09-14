@@ -140,6 +140,10 @@ class RecurringPaymentTest extends TestCase
 
         $content = $this->doAuthAndCapturePayment($payment);
 
+        $payment['card'] = [];
+
+        $content = $this->doAuthAndCapturePayment($payment);
+
         $paymentEntity = $this->getLastEntity('payment', true);
 
         $this->assertEquals($paymentEntity['terminal_id'], '2RecurringTerm');

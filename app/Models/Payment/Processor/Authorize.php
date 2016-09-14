@@ -355,7 +355,8 @@ trait Authorize
             $gatewayInput['order'] = $payment->order->toArray();
         }
 
-        if (empty($payment->token) === false)
+        // set token for local card saving in gateway input
+        if ($payment->getTokenId() !== null)
         {
             $gatewayInput['token'] = $payment->token;
         }
@@ -593,7 +594,7 @@ trait Authorize
             //TODO for netbanking/wallets
         }
 
-        $this->validateRecurringForPayment($payment);
+        $this->validatePaymentData($payment, $input);
     }
 
     protected function preProcessPaymentFromSavedCardGlobal($customer, $payment, & $input, & $gatewayInput)
@@ -667,8 +668,6 @@ trait Authorize
 
         $savedLocalCard = $payment->card;
 
-        $this->validateRecurringForPayment($payment);
-
         // save local saved card for local customer
         $token = $this->savePaymentMethod($customer, $payment, $savedLocalCard->getId());
 
@@ -676,6 +675,8 @@ trait Authorize
         {
             $this->payment->token()->associate($token);
         }
+
+        $this->validatePaymentData($payment, $input);
     }
 
     protected function savePaymentMethodGlobal($customer, $payment, $input, array & $gatewayInput)
@@ -1420,13 +1421,22 @@ trait Authorize
         }
     }
 
-    protected function validateRecurringForPayment($payment)
+    protected function validatePaymentData($payment, $input)
     {
+        // checks if payment is recurring
         if (($payment->isRecurring()) and
             ($payment->card->isRecurringSupported() === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_RECURRING_NOT_SUPPORTED);
+        }
+
+        // if not recurring,  validate card data
+        if (($payment->isRecurring() === false) and
+            ($payment->merchant->isShared() === false) and
+            ($payment->token->isRecurring() === false))
+        {
+            $payment->getValidator()->validateCardAndCvv($input);
         }
     }
 
