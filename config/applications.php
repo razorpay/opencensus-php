@@ -58,6 +58,7 @@ return array(
     ),
 
     'maxmind' => array(
+        'mock'      => env('MAXMIND_MOCK', false),
         'secret'    => env('MAXMIND_SECRET')
     )
 );

@@ -133,7 +133,14 @@ class ApiServiceProvider extends BaseServiceProvider
     {
         $this->app->singleton('maxmind', function($app)
         {
-            return new CreditCardFraudDetection;
+            $maxMindMock = $app['config']->get('applications.maxmind.mock');
+
+            if ($maxMindMock === true)
+            {
+                return new Services\Mock\MaxMind($app);
+            }
+
+            return new Services\MaxMind($app);
         });
     }
 

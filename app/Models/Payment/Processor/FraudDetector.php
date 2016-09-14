@@ -13,9 +13,9 @@ trait FraudDetector
     {
         if ($payment->isMethod(Payment\Method::CARD) === true)
         {
-            $riskFields = $this->getRiskDetectionField($payment, $true)
+            $riskFields = $this->getRiskDetectionField($payment, $input);
 
-            if ((isset($riskFields['riskScore']) === true) and
+            if ((isset($riskFields) === true) and
                 ($riskFields['riskScore'] > 50))
             {
                 throw new Exception\GatewayException(
@@ -26,38 +26,18 @@ trait FraudDetector
 
     protected function getRiskDetectionField($payment, $input)
     {
-        $request = $this->app['request'];
-
         $maxMindInput = array(
-            "license_key"       => config('applications.maxmind.secret'),
-            "i"                 => $request->server('REMOTE_ADDR'),
             'domain'            => $this->getEmailDomain($payment),
             'custPhone'         => $payment->getContact(),
             'emailMD5'          => md5($payment->getEmail()),
             'bin'               => $input['card']['iin'],
-            'user_agent'        => $request->header('user-agent'),
-            'accept_language'   => $request->header('accept_language'),
             'txnID'             => $payment->getId(),
             'order_amount'      => $this->getFormattedAmount($payment),
             'order_currency'    => $payment->getCurrency(),
             'txn_type'          => $this->getTxnType($input['card'])
         );
 
-        $this->app['maxmind']->input($maxMindInput);
-        $this->app['maxmind']->query();
-
-        $result = $this->app['maxmind']->output();
-
-        $riskFields = explode(';', $result);
-
-        $response = [];
-
-        foreach ($riskFields as $riskField)
-        {
-            $field = explode('=', $riskField, 2);
-
-            $response[$field[0]] = $field[1];
-        }
+        $response = $this->app['maxmind']->query($maxMindInput);
 
         return $response;
     }
