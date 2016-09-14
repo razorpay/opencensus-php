@@ -218,8 +218,11 @@ class Service extends Base\Service
                 $createdAt = strtotime(date('j F Y', $value['updated_at']));
 
                 $type = 'day';
+                var_dump($createdAt);
+                var_dump($key);
+                var_dump($value);
 
-                $this->createOrUpdate($key, $value, $type, $createdAt, $mode);
+                //$this->createOrUpdate($key, $value, $type, $createdAt, $mode);
             }
         }
         catch (\Exception $e)
