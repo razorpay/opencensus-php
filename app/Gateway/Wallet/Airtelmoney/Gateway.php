@@ -70,8 +70,8 @@ class Gateway extends Base\Gateway
 
         $content = $input['gateway'];
 
-        if ((isset($content[ResponseFields::STATUS]) === false)
-            or ($content[ResponseFields::STATUS] !== Status::SUCCESS))
+        if ((isset($content[ResponseFields::STATUS]) === false) or
+            ($content[ResponseFields::STATUS] !== Status::SUCCESS))
         {
             $this->callbackAuthFailureFlow($input);
         }
@@ -94,8 +94,8 @@ class Gateway extends Base\Gateway
         $content = $this->xmlToArray($response->body);
 
         // Save the error in gateway payment entity
-        if((isset($content[ResponseFields::STATUS]) === false)
-            or ($content[ResponseFields::STATUS] !== Status::SUCCESS))
+        if ((isset($content[ResponseFields::STATUS]) === false) or
+            ($content[ResponseFields::STATUS] !== Status::SUCCESS))
         {
             $this->saveRefundFailureContent($input, $content);
 
@@ -194,11 +194,10 @@ class Gateway extends Base\Gateway
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
-        // Verify API of airtel sends multiple transaction per API call.
-        // In our case, Refund and Authorize transactions as they use same
-        // payment ID. We handle the case differently.
         if (isset($content['nestedParams']) === false)
         {
+            // Single transaction is present under razorpay_payment_id, Check
+            // if it was successful on airtel's end.
             if ($content[ResponseFields::STATUS] !== Status::SUCCESS)
             {
                 $this->verifyStatusOnGatewayFailure($verify, $gatewayPayment, $input);
@@ -210,6 +209,9 @@ class Gateway extends Base\Gateway
         }
         else
         {
+            // Verify API of airtel sends multiple transaction per API call.
+            // In our case, Refund and Authorize transactions as they use same
+            // payment ID. We handle the case differently.
             $content = (array) $content['nestedParams'];
             $content = $content['nParamList'];
             $authTransaction  = $this->getVerifyArrayFromXml((array) $content[0]);
@@ -219,7 +221,7 @@ class Gateway extends Base\Gateway
 
             // If both refund and authorize are successful. Mark it as gateway
             // success.
-            if ($authTransaction[ResponseFields::STATUS] === Status::SUCCESS and
+            if (($authTransaction[ResponseFields::STATUS] === Status::SUCCESS) and
                 ($refundTransaction[ResponseFields::STATUS] === Status::SUCCESS))
             {
                 $verify->gatewaySuccess = true;
@@ -260,7 +262,7 @@ class Gateway extends Base\Gateway
             $verify->apiSuccess = false;
         }
         else if (($gatewayPayment['received'] === false) and
-                    (($gatewayPayment['status_code'] === null) or
+                 (($gatewayPayment['status_code'] === null) or
                     ($gatewayPayment['status_code'] !== Status::SUCCESS)))
         {
             $verify->apiSuccess = false;
@@ -319,6 +321,7 @@ class Gateway extends Base\Gateway
             else if ($gatewayPayment['received'] === false)
             {
                 $gatewayPayment->fill($walletAttributes);
+
                 $gatewayPayment->saveOrFail();
             }
         }
@@ -410,7 +413,8 @@ class Gateway extends Base\Gateway
 
             if (isset($content[ResponseFields::MESSAGE]))
             {
-                // Handle Generic Interface layer messages.
+                // Handle Generic Interface layer messages. They are not API
+                // Messages from Airtel.
                 // They have only two fields - STATUS and MESSAGE
                 throw new Exception\GatewayErrorException(
                     ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
@@ -419,10 +423,10 @@ class Gateway extends Base\Gateway
             }
             else if (isset($content[ResponseFields::ERR_CODE]))
             {
-                // It's a different exception of airtel money when refund for same
-                // amount and same airtel transaction Id is initiated within a span
-                // of 5 minutes.
-                // TODO Good to have a test case to simulate it.
+                // It's a different exception of airtel money
+                // Same amount transaction under same tan ID(airtel's),
+                // there should be a time difference of 5 minutes.
+                // Need more clarification on why it occurs.
                 throw new Exception\GatewayErrorException(
                     ResponseCodeMap::getApiErrorCode($content[ResponseFields::ERR_CODE]),
                     $content[ResponseFields::ERR_CODE],
