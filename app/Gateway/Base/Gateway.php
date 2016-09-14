@@ -638,9 +638,7 @@ class Gateway
         }
         catch (\Exception $e)
         {
-            $this->trace->error(
-                TraceCode::ERROR_EXCEPTION,
-                ['xml' => $xml]);
+            $this->trace->traceException($e);
 
             throw new Exception\RuntimeException(
                 'Failed to convert xml to array',

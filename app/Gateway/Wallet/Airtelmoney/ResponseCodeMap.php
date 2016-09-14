@@ -33,7 +33,7 @@ class ResponseCodeMap
 
         // If the response code is not mapped, return error message airtel
         // gives us.
-        return Airtelmoney\ResponseCode::getResponseMessage($code);
+        return ResponseCode::getResponseMessage($code);
     }
 
     public static function getApiErrorCode($code)
@@ -41,7 +41,7 @@ class ResponseCodeMap
         $class = 'RZP\Error\ErrorCode::';
 
         if ((empty($code) === true) or
-             (isset(self::$codes[$code]) === false))
+            (isset(self::$codes[$code]) === false))
         {
             return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
         }

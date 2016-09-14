@@ -11,5 +11,4 @@ class DateFormat
     const TRAN_DATE_FORMAT        = 'dmYHis';
     const FDC_TXN_DATE_FORMAT     = 'mdYHis';
     const NEW_FDC_TXN_DATE_FORMAT = 'd/M/Y H:i';
-    const INR                     = 'INR';
 }
