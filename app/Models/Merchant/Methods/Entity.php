@@ -285,9 +285,6 @@ class Entity extends Base\PublicEntity
                 case self::PAYUMONEY:
                     $this->setAttribute($wallet, true);
                     break;
-                case self::FREECHARGE:
-                    $this->setAttribute($wallet, true);
-                    break;
 
                 default:
                     break;
@@ -441,7 +438,7 @@ class Entity extends Base\PublicEntity
 
     protected function getFreechargeAttribute()
     {
-        return (bool) $this->attributes[self::FREECHARGE];
+        return $this->attributes[self::FREECHARGE];
     }
 
     protected function getBanksAttribute()

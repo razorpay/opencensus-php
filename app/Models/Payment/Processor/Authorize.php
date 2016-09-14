@@ -101,10 +101,10 @@ trait Authorize
 
             // data for payment analytics
             $rawData = [
-                            'payment_id' => $payment['id'],
-                            'input' => $input,
-                            'terminal_id' => $payment['terminal_id']
-                        ];
+                'payment_id' => $payment['id'],
+                'input' => $input,
+                'terminal_id' => $payment['terminal_id']
+            ];
 
             if ($this->canRunOtpPaymentFlow($payment, $input))
             {
@@ -1264,7 +1264,7 @@ trait Authorize
         // In most gateways, otpResend is similar to otpGenerate.
         // TODO Instead of wallet, Check if gateway has a separate OTP_RESEND
         // URL
-        if ($payment->getOtpCount() > 0 && $payment['wallet'] === Wallet::FREECHARGE)
+        if (($payment->getOtpCount() > 0) and ($payment['wallet'] === Wallet::FREECHARGE))
         {
             return $this->callGatewayOtpResend($gatewayInput, $payment);
         }
@@ -1323,9 +1323,13 @@ trait Authorize
             //
             // TODO Define a static variable for all gateways that asks if
             // gateway supports registration of new user.
-            if($request !== null and $payment['wallet'] == Wallet::FREECHARGE)
+            if (($request !== null) and ($payment['wallet'] === Wallet::FREECHARGE))
             {
-                return $this->getPaymentGatewayRequestData($request, $payment);
+                $gatewayRequest = $this->getPaymentGatewayRequestData($request, $payment);
+
+                $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $gatewayRequest);
+
+                return $gatewayRequest;
             }
 
             return array(

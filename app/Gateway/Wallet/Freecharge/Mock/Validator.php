@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Wallet\Freecharge\Mock;
 
+use RZP\Gateway\Wallet\Freecharge\ResponseCodeMap;
 use RZP\Models\Base;
 
 class Validator extends Base\Validator
@@ -9,7 +10,7 @@ class Validator extends Base\Validator
     protected static $authorizeRules   = array(
         'merchantId'            => 'required|string',
         'amount'                => 'required|numeric',
-        'channel'               => 'required|string|in:WEB,ANDROID,WINDOWS,IOS,WAP',
+        'channel'               => 'required|string|custom',
         'loginToken'            => 'required|string',
         'checksum'              => 'required|string|regex:"^[a-f0-9]+$"',
         'callbackUrl'           => 'required|url',
@@ -22,7 +23,7 @@ class Validator extends Base\Validator
         'accessToken'           => 'required|string',
         'currency'              => 'required|string',
         'merchantTxnId'         => 'required|string',
-        'channel'               => 'required|string|in:WEB,ANDROID,WINDOWS,IOS,WAP',
+        'channel'               => 'required|string|custom',
         'checksum'              => 'required|regex:"^[a-f0-9]+$"'
     );
 
@@ -70,4 +71,15 @@ class Validator extends Base\Validator
         'accessToken'           => 'required|string',
         'checksum'              => 'required|string|regex:"^[a-f0-9]+$"'
     );
+
+    protected function validateChannel($attribute, $value)
+    {
+        $channels = ['WEB', 'ANDROID', 'WINDOWS', 'IOS', 'WAP'];
+
+        if(in_array($value, $channels) === false)
+        {
+            throw new Exception\BadRequestException(
+                ResponseCodeMap::getApiErrorCode('E023'));
+        }
+    }
 }

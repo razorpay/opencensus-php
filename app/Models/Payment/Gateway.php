@@ -33,7 +33,7 @@ class Gateway
     const WALLET_PAYZAPP     = 'wallet_payzapp';
     const WALLET_PAYUMONEY   = 'wallet_payumoney';
     const WALLET_AIRTELMONEY = 'wallet_airtelmoney';
-    const WALLET_FREECHARGE = 'wallet_freecharge';
+    const WALLET_FREECHARGE  = 'wallet_freecharge';
     const CYBERSOURCE        = 'cybersource';
 
     const NOT_SUPPORTED     = 'not_supported';

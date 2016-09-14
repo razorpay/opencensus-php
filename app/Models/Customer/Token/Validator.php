@@ -2,9 +2,10 @@
 
 namespace RZP\Models\Customer\Token;
 
+use RZP\Exception;
 use RZP\Models\Bank;
 use RZP\Models\Base;
-use RZP\Exception;
+use RZP\Models\Payment\Processor\Wallet;
 
 class Validator extends Base\Validator
 {
@@ -12,7 +13,7 @@ class Validator extends Base\Validator
         Entity::METHOD          => 'required|in:card,netbanking,wallet',
         Entity::CARD_ID         => 'required_only_if:method,card|alpha_num|size:14',
         Entity::BANK            => 'required_only_if:method,netbanking',
-        Entity::WALLET          => 'required_only_if:method,wallet|in:paytm,mobikwik,payzapp,payumoney,olamoney,freecharge',
+        Entity::WALLET          => 'required_only_if:method,wallet|custom',
         Entity::GATEWAY_TOKEN   => 'sometimes|string',
         Entity::GATEWAY_TOKEN2  => 'sometimes|string',
         Entity::EXPIRED_AT      => 'sometimes|integer',
@@ -35,4 +36,14 @@ class Validator extends Base\Validator
                 'Invalid bank name in input: '. $input[Entity::BANK]);
         }
     }
+
+    protected function validateWallet($attribute, $value)
+    {
+        if (Wallet::exists($value) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_SUPPORTED);
+        }
+    }
 }
+

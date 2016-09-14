@@ -26,8 +26,6 @@ class FreechargeGatewayTest extends TestCase
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_freecharge_terminal');
 
-        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-
         $this->gateway = 'wallet_freecharge';
 
         $this->fixtures->merchant->enableWallet($this->merchantId, 'freecharge');
@@ -37,55 +35,17 @@ class FreechargeGatewayTest extends TestCase
     {
         $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
 
-        $authPayment = $this->doAuthPayment($payment);
-
-        $capturePayment = $this->capturePayment($authPayment['razorpay_payment_id'], $payment['amount']);
+        $capturePayment = $this->doAuthAndCapturePayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertTestResponse($payment, 'testPayment');
-        $this->assertNotEmpty($payment['global_token']);
+        $this->assertNotEmpty($payment['global_token_id']);
         $this->assertNotEmpty($payment['global_customer_id']);
 
         $wallet = $this->getLastEntity('wallet', true);
 
         $this->assertTestResponse($wallet, 'testPaymentWalletEntity');
-    }
-
-    public function testPaymentWithRedirection()
-    {
-        $payment = $this->getDefaultWalletPaymentArray('freecharge');
-
-        $authPayment = $this->doAuthPayment($payment);
-
-        $response = $this->redirectPayment($authPayment['razorpay_payment_id']);
-
-        $this->assertArraySelectiveEquals($authPayment, $response);
-    }
-
-    public function testFailedPaymentWithRedirection()
-    {
-        $payment = $this->getDefaultWalletPaymentArray('freecharge');
-
-        $this->setOtp(Otp::EXPIRED);
-
-        $data = $this->testData[__FUNCTION__];
-
-        $authResponse = $this->runRequestResponseFlow($data, function() use ($payment)
-        {
-            return $this->doAuthPaymentViaAjaxRoute($payment);
-        });
-
-        $content = $this->getJsonContentFromResponse($this->response);
-
-        $data = $this->testData['testExpiredOtpPaymentRedirection'];
-
-        $redirectResponse = $this->runRequestResponseFlow($data, function() use ($content)
-        {
-            return $this->redirectPayment($content['payment_id']);
-        });
-
-        $this->assertArraySelectiveEquals($authResponse, $redirectResponse);
     }
 
     public function testOtpRetryPayment()
@@ -182,7 +142,7 @@ class FreechargeGatewayTest extends TestCase
         $wallet = $this->fixtures->create('wallet', [
             'payment_id'    => $payment->getId(),
             'amount'        => $payment->getAmount(),
-            'wallet'        => 'wallet_freecharge',
+            'wallet'        => 'freecharge',
             'reference1'    => '1asda2345',
             'action'        => 'authorize',
         ]);
@@ -355,6 +315,23 @@ class FreechargeGatewayTest extends TestCase
                             'card_id'       => null,
                             'terminal_id'   => $this->sharedTerminal->id
                         ]);
+
+        $wallet = $this->fixtures->create(
+            'wallet',
+            [
+                'payment_id'          => $payment->getId(),
+                'amount'              => $payment->getAmount(),
+                'wallet'              => 'freecharge',
+                'gateway_merchant_id' => 'random_id',
+                'reference1'          => '1asda2345',
+                'action'              => 'authorize',
+                'status_code'         => 'SUCCESS',
+                // Causes the failure, gateway_payment_id is not set if payment
+                // failed
+                'gateway_payment_id'  => 'asdas',
+            ]
+        );
+
 
         $id = $payment->getPublicId();
 

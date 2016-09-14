@@ -67,11 +67,11 @@ class Entity
     const NETBANKING_HDFC       = 'netbanking_hdfc';
     const NETBANKING_KOTAK      = 'netbanking_kotak';
     const UPI_ICICI             = 'upi_icici';
-    const WALLET_FREECHARGE     = 'wallet_freecharge';
     const WALLET_PAYZAPP        = 'wallet_payzapp';
     const WALLET_PAYUMONEY      = 'wallet_payumoney';
     const WALLET_OLAMONEY       = 'wallet_olamoney';
     const WALLET_AIRTELMONEY    = 'wallet_airtelmoney';
+    const WALLET_FREECHARGE     = 'wallet_freecharge';
 
     public static $namespace = array(
         self::UPI                   => \RZP\Gateway\Upi\Base::class,

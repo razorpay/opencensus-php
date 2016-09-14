@@ -58,17 +58,6 @@ class Gateway extends Base\Gateway
         return $refund;
     }
 
-    protected function updateGatewayPaymentEntity($gatewayPayment, $attributes)
-    {
-        $attr = $this->getMappedAttributes($attributes);
-
-        $gatewayPayment->fill($attr);
-
-        $gatewayPayment->saveOrFail();
-
-        return $gatewayPayment;
-    }
-
     protected function getNewGatewayPaymentEntity()
     {
         return new Wallet\Base\Entity;

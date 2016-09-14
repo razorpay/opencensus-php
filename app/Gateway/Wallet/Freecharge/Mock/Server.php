@@ -14,7 +14,6 @@ use RZP\Gateway\Wallet\Base\Otp;
 use RZP\Gateway\Wallet\Freecharge;
 use RZP\Gateway\Wallet\Freecharge\ResponseFields;
 use RZP\Gateway\Wallet\Freecharge\RequestFields;
-use RZP\Models\Base\UniqueIdentity;
 use RZP\Models\Payment;
 
 class Server extends Base\Mock\Server
@@ -39,18 +38,31 @@ class Server extends Base\Mock\Server
     {
         parent::verify($input);
 
-        $this->validateActionInput($this->mockRequest['content'], 'verify');
+        $this->validateActionInput($input, 'verify');
 
-        $content = $this->mockRequest['content'];
+        // We send Freecharge Transaction ID if it exists,
+        // It exists if freecharge acknowledged our TxnId
+        // It can mark our transaction as failure later though
+        if (isset($input[RequestFields::TXN_ID]) === true)
+        {
+            $response = [
+                ResponseFields::MERCHANT_TXN_ID => $input[RequestFields::MERCHANT_TXN_ID],
+                ResponseFields::TXN_ID          => $input[RequestFields::TXN_ID],
+                ResponseFields::AMOUNT          => '50000',
+                ResponseFields::STATUS          => Freecharge\Status::TRANSACTION_SUCCESS,
+            ];
 
-        $response = [
-            ResponseFields::MERCHANT_TXN_ID => $content[RequestFields::MERCHANT_TXN_ID],
-            ResponseFields::TXN_ID          => $content[RequestFields::TXN_ID],
-            ResponseFields::AMOUNT          => '50000',
-            ResponseFields::STATUS          => Freecharge\Status::TRANSACTION_SUCCESS,
-        ];
+            $response['checksum'] = $this->sortKeysAndGenerateHash($response);
+        }
+        else
+        {
+            $errMsg = Freecharge\ResponseCode::getResponseMessage('E008');
 
-        $response['checksum'] = $this->sortKeysAndGenerateHash($response);
+            $response = [
+                ResponseFields::ERROR_CODE => 'E008',
+                ResponseFields::ERROR_MESSAGE => $errMsg,
+            ];
+        }
 
         return $this->makeResponse($response);
     }
@@ -232,6 +244,6 @@ class Server extends Base\Mock\Server
      */
     protected function getRefundTxnId()
     {
-        return UniqueIdentity::generateUniqueId();
+        return uniqid();
     }
 }

@@ -69,8 +69,8 @@ class Gateway extends Base\Gateway
 
         $content = $input['gateway'];
 
-        if ((isset($content[ResponseFields::ERROR_CODE])) and
-                ($content[ResponseFields::ERROR_CODE] != ResponseCode::SUCCESS_CODE))
+        if ((isset($content[ResponseFields::ERROR_CODE]) === true) and
+            ($content[ResponseFields::ERROR_CODE] !== ResponseCode::SUCCESS_CODE))
         {
             throw new Exception\GatewayErrorException(
                 ResponseCodeMap::getApiErrorCode($content[ResponseFields::ERROR_CODE]),
@@ -80,7 +80,7 @@ class Gateway extends Base\Gateway
 
         // OTP_REDIRECT sends a authCode as query param
         // If it exists, handle it as callback for OTP_REDIRECT
-        if (isset($input['gateway'][ResponseFields::AUTH_CODE]))
+        if (isset($input['gateway'][ResponseFields::AUTH_CODE]) === true)
         {
             return $this->callbackOtpRedirectFlow($input);
         }
@@ -88,7 +88,7 @@ class Gateway extends Base\Gateway
         return $this->callbackTopupFlow($input);
     }
 
-    public function otpGenerate($input)
+    public function otpGenerate(array $input)
     {
         $this->action($input, Action::OTP_GENERATE);
 
@@ -96,13 +96,15 @@ class Gateway extends Base\Gateway
 
         $request = $this->getOtpGenerateRequestArray($input);
 
-        $response = $this->sendGatewayRequest($request);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
 
-        $this->handleRequestFailed($response);
+        $response = $this->sendGatewayRequest($request);
 
         $content = $this->jsonToArray($response->body);
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+
+        $this->handleRequestFailed($response);
 
         $code = $content[ResponseFields::STATUS];
 
@@ -113,7 +115,7 @@ class Gateway extends Base\Gateway
             RequestFields::AMOUNT        => $input['payment']['amount'],
         ];
 
-        $this->action  = Action::AUTHORIZE;
+        $this->action = Action::AUTHORIZE;
 
         if ($code === Status::OTP_SENT)
         {
@@ -143,13 +145,15 @@ class Gateway extends Base\Gateway
 
         $request = $this->getOtpResendRequestArray($input);
 
-        $response = $this->sendGatewayRequest($request);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
 
-        $this->handleRequestFailed($response);
+        $response = $this->sendGatewayRequest($request);
 
         $content = $this->jsonToArray($response->body);
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+
+        $this->handleRequestFailed($response);
 
         $otpId = $content[ResponseFields::OTP_ID];
 
@@ -204,15 +208,17 @@ class Gateway extends Base\Gateway
 
         $request = $this->getDebitRequestArray($input);
 
-        $response = $this->sendGatewayRequest($request);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
 
-        $this->handleRequestFailed($response);
+        $response = $this->sendGatewayRequest($request);
 
         $content = $this->jsonToArray($response->body);
 
-        $this->verifyCheckSumForResponse($content);
-
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+
+        $this->handleRequestFailed($response);
+
+        $this->verifyCheckSumForResponse($content);
 
         if ($content[ResponseFields::STATUS] === Status::DEBIT_FAILED)
         {
@@ -394,7 +400,7 @@ class Gateway extends Base\Gateway
 
         $expectedCheckSum  = $this->getHashOfArray($response);
 
-        if($checkSum !== $expectedCheckSum)
+        if ($checkSum !== $expectedCheckSum)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Failed checksum verification');
@@ -405,7 +411,7 @@ class Gateway extends Base\Gateway
     {
         foreach ($content as $key => $value)
         {
-            if($value === null or $value === "")
+            if (($value === null) or ($value === ""))
             {
                 unset($content[$key]);
             }
@@ -499,14 +505,12 @@ class Gateway extends Base\Gateway
             RequestFields::CHANNEL         => self::DEFAULT_TXN_CHANNEL,
             RequestFields::CURRENCY        => 'INR',
             RequestFields::MERCHANT_ID     => $this->getMerchantId($input['terminal']),
-            RequestFields::MERCHANT_TXN_ID => $input['payment']['id'],
+            RequestFields::MERCHANT_TXN_ID => $input['payment']['public_id'],
         );
 
         $content[ResponseFields::CHECKSUM] = $this->getHashOfArray($content);
 
         $request = $this->getStandardRequestArray($content);
-
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
 
         return $request;
     }
@@ -522,8 +526,6 @@ class Gateway extends Base\Gateway
         $content[RequestFields::CHECKSUM] = $this->getHashOfArray($content);
 
         $request = $this->getStandardRequestArray($content);
-
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
 
         return $request;
     }
@@ -543,8 +545,6 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
-
         return $request;
     }
 
@@ -555,7 +555,7 @@ class Gateway extends Base\Gateway
         $content = array(
             RequestFields::OTP_ID                  => $wallet['reference1'],
             RequestFields::OTP                     => $input['gateway']['otp'],
-            RequestFields::USER_MACHINE_IDENTIFIER => $this->getUMIForVerifyUser(),
+            RequestFields::USER_MACHINE_IDENTIFIER => $input['payment']['id'],
             RequestFields::MERCHANT_ID             => $this->getMerchantId($this->input['terminal']),
         );
 
@@ -566,18 +566,6 @@ class Gateway extends Base\Gateway
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
 
         return $request;
-    }
-
-    /*
-     * Return an Unique Machine Identifier for the user's device
-     * through which payment is being made
-     * Presently, We return a unique string.
-     *
-     * @return string
-     */
-    protected function getUMIForVerifyUser()
-    {
-        return uniqid();
     }
 
     protected function getValidWalletToken($input)
@@ -625,7 +613,7 @@ class Gateway extends Base\Gateway
 
         $content = [
             RequestFields::MERCHANT_ID            => $this->getMerchantId($input['terminal']),
-            RequestFields::MERCHANT_TXN_ID        => $input['payment']['id'],
+            RequestFields::MERCHANT_TXN_ID        => $input['payment']['public_id'],
             RequestFields::REFUND_AMOUNT          => (string) ($input['refund']['amount'] / 100),
             RequestFields::REFUND_MERCHANT_TXN_ID => $input['refund']['id'],
             RequestFields::TXN_ID                 => $wallet['gateway_payment_id'],
@@ -670,15 +658,17 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
             $request);
 
-        $response = $this->sendGatewayRequest($request, 'GET');
-
-        $this->handleRequestFailed($response);
+        $response = $this->sendGatewayRequest($request);
 
         $this->response = $response;
 
         $content = $this->jsonToArray($response->body);
 
-        $this->verifyCheckSumForResponse($content);
+        if ((isset($content[ResponseFields::STATUS]) === true) and
+            ($content[ResponseFields::STATUS] === Status::TRANSACTION_SUCCESS))
+        {
+            $this->verifyCheckSumForResponse($content);
+        }
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY,
@@ -707,7 +697,8 @@ class Gateway extends Base\Gateway
         $verify->status = VerifyResult::STATUS_MATCH;
 
         // Gateway marked payment as a failure
-        if ($content[ResponseFields::STATUS] !== Status::TRANSACTION_SUCCESS)
+        if ((isset($content[ResponseFields::STATUS]) === false) or
+            ($content[ResponseFields::STATUS] !== Status::TRANSACTION_SUCCESS))
         {
             $this->verifyStatusOnGatewayFailure($verify, $payment, $input);
         }
@@ -723,7 +714,7 @@ class Gateway extends Base\Gateway
         return $verify->status;
     }
 
-    protected function verifyStatusOnGatewayFailure()
+    protected function verifyStatusOnGatewayFailure($verify, $payment, $input)
     {
         $verify->gatewaySuccess = false;
 
@@ -749,7 +740,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function verifyStatusOnGatewaySuccess()
+    protected function verifyStatusOnGatewaySuccess($verify, $payment, $input)
     {
         $verify->gatewaySuccess = true;
 
@@ -817,21 +808,25 @@ class Gateway extends Base\Gateway
 
         $content = [
             RequestFields::MERCHANT_ID     => $this->getMerchantId($input['terminal']),
-            RequestFields::MERCHANT_TXN_ID => $input['payment']['id'],
+            RequestFields::MERCHANT_TXN_ID => $input['payment']['public_id'],
             RequestFields::TXN_ID          => $wallet['gateway_payment_id'],
             RequestFields::TXN_TYPE        => self::DEFAULT_TXN_TYPE,
         ];
 
         $content[RequestFields::CHECKSUM] = $this->getHashOfArray($content);
 
-        $request = $this->getStandardRequestArray($content);
+        $request = $this->getStandardRequestArray($content, 'GET');
+
+        $content = http_build_query($content);
+        $request['url'] .= '?' . $content;
+        $request['content'] = [];
 
         return $request;
     }
 
     protected function shouldReturnIfPaymentNullInVerifyFlow($verify)
     {
-        return false;
+        return true;
     }
 
     protected function getOtpRedirectRequestArray(array $input)
@@ -874,8 +869,6 @@ class Gateway extends Base\Gateway
                 $this->accessToken = $token->getGatewayToken();
             }
         }
-
-        $this->handleRequestFailed($content);
     }
 
     /*
@@ -890,9 +883,9 @@ class Gateway extends Base\Gateway
 
         $this->domainType = Url::LOGIN;
 
-        $request = $this->getExchangeTokenRequestArray($callback);
+        $request = $this->getExchangeTokenRequestArray($input, $callback);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $content);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -910,11 +903,15 @@ class Gateway extends Base\Gateway
 
             $content[ResponseFields::REFRESH_TOKEN] = '';
 
+            $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+
             return $data;
         }
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
     }
 
-    protected function getExchangeTokenRequestArray($callback)
+    protected function getExchangeTokenRequestArray(array $input, $callback)
     {
         $content = [
             RequestFields::AUTH_CODE   => $callback[ResponseFields::AUTH_CODE],
@@ -935,16 +932,12 @@ class Gateway extends Base\Gateway
     {
         if ($response->status_code === 500)
         {
-            $this->trace->info(TraceCode::GATEWAY_PAYMENT_ERROR, $response);
-
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_FATAL_ERROR);
         }
         else if ($response->status_code === 202)
         {
             $content = $this->jsonToArray($response->body);
-
-            $this->trace->info(TraceCode::GATEWAY_PAYMENT_ERROR, $content);
 
             throw new Exception\GatewayErrorException(
                 ResponseCodeMap::getApiErrorCode($content[ResponseFields::ERROR_CODE]),
