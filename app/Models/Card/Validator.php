@@ -5,7 +5,6 @@ namespace RZP\Models\Card;
 use RZP\Models\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
-use RZP\Models\Card\BlackList;
 
 class Validator extends Base\Validator
 {
@@ -28,27 +27,8 @@ class Validator extends Base\Validator
     );
 
     protected static $createValidators = array(
-        'number',
         'expiry_date'
     );
-
-    protected function validateNumber($input)
-    {
-        $number = $input['number'];
-
-        $iin = substr($number, 0, 6);
-
-        $last4 = substr($number, -4);
-
-        $blackList = BlackList::BLOCKED_IIN_LAST4;
-
-        if ((isset($blackList[$iin]) === true) and
-            (in_array($last4, $blackList[$iin])))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD);
-        }
-    }
 
     protected function validateExpiryDate($input)
     {
