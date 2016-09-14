@@ -7,10 +7,11 @@ use phpseclib\Crypt\RSA;
 use Request;
 use Requests_Response;
 use RZP\Constants\Mode;
+use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Gateway\UPI\Base;
 use RZP\Gateway\UPI\Base\Entity;
 use RZP\Exception\GatewayErrorException;
-use RZP\Trace\TraceCode;
 
 class Gateway extends Base\Gateway
 {
@@ -402,7 +403,7 @@ class Gateway extends Base\Gateway
         {
             $message = "Payment Failed during callback";
 
-            throw new Exception\GatewayErrorException(
+            throw new GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
                 $content[ResponseFields::TXN_STATUS],
                 $message);
@@ -420,5 +421,14 @@ class Gateway extends Base\Gateway
         $gateway = 'upi_icici';
 
         return $this->app['repo']->$gateway;
+    }
+
+    public function refund(array $input)
+    {
+        parent::refund($input);
+
+        throw new GatewayErrorException(
+            ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED
+        );
     }
 }

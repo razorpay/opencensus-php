@@ -44,7 +44,7 @@ class UPIGatewayTest extends TestCase
         return [$payment, $upiEntity];
     }
 
-    public function testPaymentWithS2S()
+    public function testPaymentWithS2S($assert = true)
     {
         list($payment, $upiEntity) = $this->testPayment();
 
@@ -60,11 +60,27 @@ class UPIGatewayTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals(['success' => true], $response);
+        // Since this is the slow part of the test
+        // we only run it once
+        if ($assert)
+        {
+            $this->assertEquals(['success' => true], $response);
 
-        $payment = $this->getEntityById('payment', $payment['id'], true);
-        $upiEntity = $this->getLastEntity('upi_icici', true);
+            $payment = $this->getEntityById('payment', $payment['id'], true);
+            $upiEntity = $this->getLastEntity('upi_icici', true);
 
-        $this->assertEquals('authorized', $payment['status']);
+            $this->assertEquals('authorized', $payment['status']);
+        }
+
+        return $payment;
+    }
+
+    public function testPaymentRefund()
+    {
+        $payment = $this->testPaymentWithS2S();
+
+        $this->capturePayment($payment['id'], 50000);
+
+        $this->refundPayment($payment['id']);
     }
 }
