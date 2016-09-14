@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Helpers\Payment;
 
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Exception\BaseException;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -172,16 +173,6 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function signPayment(array $payment, $secret = '')
-    {
-        $data = array(
-            'amount'            => $payment['amount'],
-            'currency'          => 'INR',
-            'merchant_order_id' => $payment['notes']['merchant_order_id']);
-
-        return $this->getSignature($data, $secret);
-    }
-
     protected function getSignature(array $data, $secret = '')
     {
         if ($secret === '')
@@ -191,24 +182,7 @@ trait PaymentTrait
 
         $str = implode('|', $data);
 
-        return hash_hmac('sha1', $str, $secret);
-    }
-
-    protected function assertSignatureMatches(array $content, $secret)
-    {
-        $this->assertArrayHasKey('signature', $content);
-
-        $data = array(
-            'amount'                => $content['amount'],
-            'currency'              => $content['currency'],
-            'merchant_order_id'     => $content['merchant_order_id'],
-            'razorpay_payment_id'   => $content['razorpay_payment_id']);
-
-        $str = implode('|', $data);
-
-        $signature = hash_hmac('sha1', $str, $secret);
-
-        $this->assertEquals($signature, $content['signature']);
+        return hash_hmac(BasicAuth::HMAC_ALGO, $str, $secret);
     }
 
     protected function getPaymentJsonFromCallback($content)

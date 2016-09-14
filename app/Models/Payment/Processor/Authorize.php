@@ -215,7 +215,7 @@ trait Authorize
     {
         if ($this->shouldAutoCapture($payment) === true)
         {
-            // If payment is signed or capture was sent as true in order,
+            // If payment_capture was sent as true in order,
             // then we capture it in this step only.
             $this->autoCapturePayment($payment);
         }
@@ -852,6 +852,26 @@ trait Authorize
         return $data;
     }
 
+    protected function updateTokenOnAuthorized()
+    {
+        $payment = $this->payment;
+
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
+        // update token stats, assuming same token is not getting used in
+        // multiple payments, actually we should locking
+        if ($token !== null)
+        {
+            $createdAt = $payment->getCreatedAt();
+
+            $token->setUsedAt($createdAt);
+
+            $token->incrementUsedCount();
+
+            $this->repo->saveOrFail($token);
+        }
+    }
+
     protected function updateAndNotifyPaymentAuthorized($wasFailed = false)
     {
         // Updates payment entity to authorized and adds a transaction.
@@ -886,27 +906,15 @@ trait Authorize
         $this->autoCapturePaymentIfApplicable($payment);
 
         //
-        // If it's signed payment, then we return signed data from our
-        // end as well.
-        //
         // If callback url has been set, then we need to redirect
         // to the callback url and prepare data using coproto protocol.
         //
         // Otherwise we simply return 'razorpay_payment_id' as is normal.
         //
 
-        // @todo: Remove this code once hosted integration
-        //        using order and receipt goes live.
-        if ($payment->isSigned())
-        {
-            return $this->getReturnDataForSignedPayment($payment);
-        }
-
         $returnData = ['razorpay_payment_id' => $payment->getPublicId()];
 
-        // @todo: Shift to using auto-capture flag in payment
-        if (($payment->order !== null) and
-            ($payment->order->getPaymentCapture() === true))
+        if ($payment->getAutoCaptured() === true)
         {
             $this->fillReturnDataForAutoCaptureOrders($payment, $returnData);
         }
@@ -917,20 +925,6 @@ trait Authorize
         }
 
         return $returnData;
-    }
-
-    protected function getReturnDataForSignedPayment($payment)
-    {
-        $data = array(
-            'razorpay_payment_id' => $payment->getPublicId(),
-            'amount'              => $payment->getAmount(),
-            'currency'            => $payment->getCurrency(),
-            'merchant_order_id'   => $payment->getNotes()['merchant_order_id'],
-        );
-
-        $data['signature'] = $this->getSignature($data);
-
-        return $data;
     }
 
     protected function fillReturnDataForAutoCaptureOrders($payment, & $data)
@@ -1115,10 +1109,17 @@ trait Authorize
         }
         catch (\Exception $e)
         {
+            $checkoutMetadata = NULL;
+
+            if (isset($rawData['input']) and isset($rawData['input']['_']))
+            {
+                $checkoutMetadata = $rawData['input']['_'];
+            }
+
             $this->trace->error(
                 TraceCode::PAYMENT_ANALYTICS_SAVE_FAILED,
                 [
-                    'raw_data' => $rawData
+                    'raw_data' => $checkoutMetadata
                 ]);
 
             $this->trace->traceException($e);
@@ -1431,17 +1432,9 @@ trait Authorize
 
             $payment->terminal->incrementUsedCount();
 
-            if ($wasFailed === true)
-            {
-                $payment->setLateAuthorized(true);
-            }
-            else
-            {
-                $payment->setLateAuthorized(false);
-            }
-
-            $this->repo->saveOrFail($payment);
-            $this->repo->saveOrFail($payment->terminal);
+            // If payment was earlier failed, then that means it's
+            // getting authorized late.
+            $payment->setLateAuthorized($wasFailed);
 
             //
             // If gateway is authorizing the payment (basically, no authAndCapture support), create transaction.
@@ -1455,6 +1448,9 @@ trait Authorize
             }
 
             $this->repo->saveOrFail($payment);
+            $this->repo->saveOrFail($payment->terminal);
+
+            $this->updateTokenOnAuthorized();
 
             // If payment has an associated order
             // set the order to be paid
