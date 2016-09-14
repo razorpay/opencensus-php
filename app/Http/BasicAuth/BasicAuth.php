@@ -32,6 +32,8 @@ class BasicAuth
      *
      */
 
+    const HMAC_ALGO = 'sha256';
+
     /**
      * The application instance.
      *
@@ -407,10 +409,12 @@ class BasicAuth
             if (!empty($allowedFeatures) and
                 in_array($accessedFeature, $allowedFeatures))
             {
-                return;
+                return null;
             }
             return ApiResponse::routeNotFound();
         }
+
+        return null;
     }
 
     protected function verifyKeyLength($key)
@@ -824,6 +828,6 @@ class BasicAuth
 
         $secret = Crypt::decrypt($this->key->getSecret());
 
-        return hash_hmac('sha1', $str, $secret);
+        return hash_hmac(self::HMAC_ALGO, $str, $secret);
     }
 }

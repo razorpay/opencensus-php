@@ -142,4 +142,15 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::LIVE, '=', 1);
     }
+
+    public function getMerchantFromEntity($entity)
+    {
+        $merchantId = $entity->getMerchantId();
+
+        $merchant = $this->findOrFail($merchantId);
+
+        $entity->merchant()->associate($merchant);
+
+        return $merchant;
+    }
 }

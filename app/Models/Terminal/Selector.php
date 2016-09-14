@@ -36,6 +36,7 @@ class Selector
         Sorters\CardSorter::class,
         Sorters\NetbankingSorter::class,
         Sorters\MerchantSorter::class,
+        Sorters\InternationalCardSorter::class,
     ];
 
     public function __construct(Payment\Entity $payment, $mode)

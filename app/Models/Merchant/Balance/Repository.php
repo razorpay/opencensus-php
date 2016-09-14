@@ -75,6 +75,21 @@ class Repository extends Base\Repository
         $balance->saveOrFail();
     }
 
+    public function getNodalBalance($channel)
+    {
+        $func = 'get'.ucfirst($channel).'Balance';
+
+        return $this->$func();
+    }
+
+    public function getKotakBalance()
+    {
+        assert ($this->isTransactionActive());
+
+        return $this->newQuery()
+                    ->findOrFail(Merchant\Account::NODAL_ACCOUNT);
+    }
+
     public function getNodalBalanceLockForUpdate($channel)
     {
         $func = 'get'.ucfirst($channel).'BalanceLockForUpdate';

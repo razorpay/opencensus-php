@@ -99,7 +99,18 @@ class NetbankingSorter extends Terminal\Sorter
                 unset($gatewaysPriority[0]);
             }
         }
+
+        //TODO Remove this extra code after testing
+        if ($merchant === '4izmfM9TFCAgFN')
+        {
+            $index = array_search('ebs', $gatewaysPriority);
+
+            if ($index !== false)
+            {
+                unset($gatewaysPriority[$index]);
+
+                array_unshift($gatewaysPriority, 'ebs');
+            }
+        }
     }
-
-
 }

@@ -49,8 +49,10 @@ class Gateway extends \RZP\Gateway\Base\Gateway
         return $attr;
     }
 
-    protected function getRepo()
+    protected function getRepository()
     {
-        return new Repository();
+        $gateway = 'netbanking';
+
+        return $this->app['repo']->$gateway;
     }
 }
