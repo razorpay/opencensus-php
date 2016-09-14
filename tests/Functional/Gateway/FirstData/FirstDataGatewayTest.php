@@ -33,6 +33,7 @@ class FirstDataGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals($payment['transaction_id'], null);
+        $this->assertEquals($payment['status'], 'authorized');
 
         $txn = $this->getEntities('transaction', [], true);
         $this->assertEquals(0, $txn['count']);
@@ -40,5 +41,6 @@ class FirstDataGatewayTest extends TestCase
         $this->capturePayment($authResponse['razorpay_payment_id'], $payment['amount']);
 
         $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals($payment['status'], 'captured');
     }
 }

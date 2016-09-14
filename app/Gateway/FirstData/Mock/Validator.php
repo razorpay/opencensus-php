@@ -37,7 +37,6 @@ class Validator extends Base\Validator
         FirstData\Gateway::CVM                       => 'required|numeric|digits_between:2,4',
     );
 
-
     protected static $authValidators = array(
         FirstData\Gateway::TXNTYPE,
         FirstData\Gateway::MODE,
@@ -47,6 +46,24 @@ class Validator extends Base\Validator
         FirstData\Gateway::LANGUAGE,
     );
 
+    protected static $captureRules = array(
+        'Transaction'                                => 'required|',
+        );
+
+    protected static $captureValidators = array(
+        'Transaction',
+        );
+
+    protected function validateTransaction($input)
+    {
+        if ((in_array($input['Transaction'], 'CreditCardTxType') === false) or
+            (in_array($input['Transaction'], 'Payment') === false) or
+            (in_array($input['Transaction'], 'TransactionDetails') === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid Transaction Body');
+        }
+    }
 
     protected function validateTxntype($input)
     {

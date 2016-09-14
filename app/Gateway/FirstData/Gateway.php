@@ -53,7 +53,10 @@ class Gateway extends Base\Gateway
 
     const TEST_STORE_ID             = 'test_store_id';
     const TEST_HASH_SECRET          = 'test_hash_secret';
-    const SERVER_CERTIFICATE_PATH   = 'server_certificate_path';
+
+    const SERVER_CERTIFICATE_PATH           = 'server_certificate_path';
+    const CLIENT_CERTIFICATE_PATH           = 'client_certificate_path';
+    const CLIENT_CERTIFICATE_KEY_PATH       = 'client_certificate_key_path';
 
     protected $gateway = \RZP\Constants\Entity::FIRST_DATA;
 
@@ -72,6 +75,78 @@ class Gateway extends Base\Gateway
         $this->traceGatewayPaymentRequest($request, $input);
 
         return $request;
+    }
+
+    public function callback(array $input)
+    {
+        parent::callback($input);
+
+        $this->verifyPaymentCallbackResponse($input);
+
+        $payment = $this->getRepo()
+                        ->findByPaymentIdAndActionOrFail($input['gateway']['oid'], Base\Action::AUTHORIZE);
+
+        $this->verifyHash($input['gateway'],$payment);
+
+        $attributes = array(
+            Entity::RECEIVED            => true,
+            Entity::TDATE               => $input['gateway'][Entity::TDATE],
+            Entity::APPROVAL_CODE       => $input['gateway'][Entity::APPROVAL_CODE],
+            Entity::STATUS              => $input['gateway'][Entity::STATUS],
+            Entity::TXNDATE_PROCESSED   => $input['gateway'][Entity::TXNDATE_PROCESSED],
+        );
+
+        $payment->fill($attributes);
+        $payment->saveOrFail();
+    }
+
+    public function capture(array $input)
+    {
+        parent::capture($input);
+
+        $content = $this->getCaptureRequestContentArray($input);
+
+        $this->trace->info(TraceCode::GATEWAY_CAPTURE_REQUEST, $content);
+
+        try
+        {
+            $response = $this->postSoapRequest($content);
+            $this->trace->info(TraceCode::GATEWAY_CAPTURE_RESPONSE, [$response]);
+        }
+        catch (SoapFault $exception)
+        {
+            throw new Exception\RuntimeException(
+                'Capture request failed.', null, $exception);
+        }
+    }
+
+    public function refund(array $input)
+    {
+        parent::refund($input);
+
+        $content = $this->getRefundRequestContentArray($input);
+
+        $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST, $content);
+
+        try
+        {
+            $response = $this->postSoapRequest($content);
+            $this->trace->info(TraceCode::GATEWAY_REFUND_RESPONSE, [$response]);
+        }
+        catch (SoapFault $exception)
+        {
+            throw new Exception\RuntimeException(
+                'Refund request failed.', null, $exception);
+        }
+    }
+
+    public function verify(array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Base\Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
     }
 
     protected function getStandardConnectRequestArray($content = [], $method = 'post')
@@ -208,53 +283,6 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    public function callback(array $input)
-    {
-        parent::callback($input);
-
-        $this->verifyPaymentCallbackResponse($input);
-
-        $payment = $this->getRepo()
-                        ->findByPaymentIdAndActionOrFail($input['gateway']['oid'], Base\Action::AUTHORIZE);
-
-        $this->verifyHash($input['gateway'],$payment);
-
-        $attributes = array(
-            Entity::RECEIVED            => true,
-            Entity::TDATE               => $input['gateway'][Entity::TDATE],
-            Entity::APPROVAL_CODE       => $input['gateway'][Entity::APPROVAL_CODE],
-            Entity::STATUS              => $input['gateway'][Entity::STATUS],
-            Entity::TXNDATE_PROCESSED   => $input['gateway'][Entity::TXNDATE_PROCESSED],
-        );
-
-        $payment->fill($attributes);
-        $payment->saveOrFail();
-    }
-
-    public function capture(array $input)
-    {
-        parent::capture($input);
-
-        $gatewayPayment = $this->getRepo()->retrieveCapturedByPaymentId($input['payment']['id']);
-
-        $this->trace->info(TraceCode::GATEWAY_CAPTURE_REQUEST, $input);
-
-        $contentArray = $this->getCaptureRequestContentArray($input);
-
-        $xmlRequest = $this->arrayToXml($contentArray);
-        $content = $this->wrapSoap($xmlRequest);
-
-        try
-        {
-            $response = $this->postSoapRequest($content);
-        }
-        catch (SoapFault $exception)
-        {
-            throw new Exception\RuntimeException(
-                'Capture request failed.', null, $exception);
-        }
-    }
-
     protected function wrapSoap($content)
     {
         $soapWrapper = "<?xml version='1.0' encoding='UTF-8'?><SOAP-ENV:Envelope xmlns:SOAP-ENV='http://schemas.xmlsoap.org/soap/envelope/'><SOAP-ENV:Body><ipgapi:IPGApiOrderRequest xmlns:ipgapi='http://ipg-online.com/ipgapi/schemas/ipgapi' xmlns:v1='http://ipg-online.com/ipgapi/schemas/v1'>".$content."</ipgapi:IPGApiOrderRequest></SOAP-ENV:Body></SOAP-ENV:Envelope>";
@@ -264,12 +292,18 @@ class Gateway extends Base\Gateway
 
     protected function postSoapRequest($content)
     {
+        $xmlRequest = $this->arrayToXml($content);
+        $content = $this->wrapSoap($xmlRequest);
+
         $options = $this->getRequestOptions();
         $request = $this->getStandardApiRequestArray($content, $options);
-        s($request);
 
         $response = $this->sendGatewayRequest($request);
-        sd($response);
+        $this->trace->info(TraceCode::GATEWAY_RESPONSE, [$response]);
+
+        $xml   = simplexml_load_string($response->body);
+        $xmlBody = $xml->children('SOAP-ENV', true)->Body->children('ipgapi', true)->children('ipgapi', true);
+        $body = json_decode(json_encode($xmlBody), true);
 
         return $response;;
     }
@@ -280,17 +314,20 @@ class Gateway extends Base\Gateway
         $options['auth'] = [$auth['username'], $auth['password']];
 
         $hooks = new Requests_Hooks();
-        $hooks->register('curl.before_send', 'setCurlSslOpts');
+        $hooks->register('curl.before_send', [$this, 'setCurlSslOpts']);
         $options['hooks'] = $hooks;
 
-        $options['verify'] = $this->getServerCertificate();;
+        // $options['verify'] = $this->getServerCertificate();
 
         return $options;
     }
 
-    protected function setCurlSslOpts()
+    public function setCurlSslOpts($curl)
     {
-        sd("Reached setCurlSslOpts");
+        curl_setopt($curl, CURLOPT_SSLCERT, $this->getClientCertificate());
+        curl_setopt($curl, CURLOPT_SSLKEY, $this->getClientCertificateKey());
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array("Content-Type: text/xml"));
+        // curl_setopt($curl, CURLOPT_SSLKEYPASSWD, $this->getClientCertificateKeyPassword());
     }
 
     protected function getCaptureRequestContentArray($input)
@@ -302,7 +339,25 @@ class Gateway extends Base\Gateway
         $orderId = $gatewayPayment['oid'];
 
         $body['v1:CreditCardTxType']['v1:Type'] = Codes::TXNTYPE_POSTAUTH;
-        $body['v1:Payment']['v1:ChargeTotal'] = $input['payment']['amount'];
+        $body['v1:Payment']['v1:ChargeTotal'] = $input['payment']['amount']/100;
+        $body['v1:Payment']['v1:Currency'] = $currencyCode;
+        $body['v1:TransactionDetails']['v1:OrderId'] = $gatewayPayment['oid'];
+
+        $request['v1:Transaction'] = $body;
+
+        return $request;
+    }
+
+    protected function getRefundRequestContentArray($input)
+    {
+        $gatewayPayment = $this->getRepo()->retrieveByPaymentIdOrFail($input['payment']['id']);
+
+        $currency = $input['payment']['currency'];
+        $currencyCode = Mapping::$isoNumericCodes[$currency];
+        $orderId = $gatewayPayment['oid'];
+
+        $body['v1:CreditCardTxType']['v1:Type'] = Codes::TXNTYPE_REFUND;
+        $body['v1:Payment']['v1:ChargeTotal'] = $input['refund']['amount']/100;
         $body['v1:Payment']['v1:Currency'] = $currencyCode;
         $body['v1:TransactionDetails']['v1:OrderId'] = $gatewayPayment['oid'];
         $body['v1:ClientLocale']['v1:Language'] = Codes::ENGLISH_UK_LANG_CODE_API;
@@ -403,7 +458,17 @@ class Gateway extends Base\Gateway
 
     protected function getServerCertificate()
     {
-        return $this->config[self::SERVER_CERTIFICATE_PATH];
+        return storage_path() . '/' . $this->config[self::SERVER_CERTIFICATE_PATH];
+    }
+
+    protected function getClientCertificate()
+    {
+        return storage_path() . '/' . $this->config[self::CLIENT_CERTIFICATE_PATH];
+    }
+
+    protected function getClientCertificateKey()
+    {
+        return storage_path() . '/' . $this->config[self::CLIENT_CERTIFICATE_KEY_PATH];
     }
 
     protected function getSharedSecret()

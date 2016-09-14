@@ -64,11 +64,13 @@ return array(
     ),
 
     'first_data' => array(
-        'test_store_id'             => env('FIRST_DATA_TEST_STORE_ID'),
-        'test_hash_secret'    	    => env('FIRST_DATA_TEST_HASH_SECRET'),
-        'test_user_id'              => env('FIRST_DATA_TEST_USER_ID'),
-        'test_password'             => env('FIRST_DATA_TEST_PASSWORD'),
-        'server_certificate_path'   => env('FIRST_DATA_SERVER_CERTIFICATE_PATH')
+        'test_store_id'                     => env('FIRST_DATA_TEST_STORE_ID'),
+        'test_hash_secret'    	            => env('FIRST_DATA_TEST_HASH_SECRET'),
+        'test_user_id'                      => env('FIRST_DATA_TEST_USER_ID'),
+        'test_password'                     => env('FIRST_DATA_TEST_PASSWORD'),
+        'server_certificate_path'           => env('FIRST_DATA_SERVER_CERTIFICATE_PATH'),
+        'client_certificate_path'           => env('FIRST_DATA_CLIENT_CERTIFICATE_PATH'),
+        'client_certificate_key_path'       => env('FIRST_DATA_CLIENT_CERTIFICATE_KEY_PATH'),
     ),
 
     'amex' => array(

@@ -19,6 +19,7 @@ final class Codes
     const TXNTYPE_PREAUTH   = 'preauth';
     const TXNTYPE_POSTAUTH  = 'postauth';
     const TXNTYPE_VOID      = 'void';
+    const TXNTYPE_REFUND    = 'return';
 
     const STATUS_AUTHORIZED                = 'authorized';
     const STATUS_AUTHORIZE_FAILED          = 'authorize_failed';

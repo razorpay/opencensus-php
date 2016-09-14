@@ -97,6 +97,7 @@ class TraceCode
      * Gateway component error messages
      */
 
+    const GATEWAY_RESPONSE                          = 'GATEWAY_RESPONSE';
     const GATEWAY_ENROLL_REQUEST                    = 'GATEWAY_ENROLL_REQUEST';
     const GATEWAY_ENROLL_RESPONSE                   = 'GATEWAY_ENROLL_RESPONSE';
     const GATEWAY_ENROLL_ERROR                      = 'GATEWAY_ENROLL_ERROR';
