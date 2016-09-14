@@ -9,6 +9,7 @@ class Core extends Base\Core
 {
     public function create($input)
     {
+        SD("reached here");
         $auditLog = (new TerminalAnalytics\Entity)->build($input);
 
         $this->repo->saveOrFail($auditLog);

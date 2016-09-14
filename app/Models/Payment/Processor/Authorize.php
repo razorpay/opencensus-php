@@ -104,7 +104,7 @@ trait Authorize
                 return $request;
             }
 
-            $start = microtime();
+            $start = microtime(true);
 
             $terminalData = ['start' => $start];
 
@@ -146,7 +146,7 @@ trait Authorize
             finally
             {
                 // record a successful payment here for the given terminal id
-                $rawData['terminal_data']['end'] = microtime();
+                $rawData['terminal_data']['end'] = microtime(true);
 
                 $this->createAnalyticsLog($rawData);
             }
@@ -1063,20 +1063,20 @@ trait Authorize
     protected function recordTerminalAudit($rawData)
     {
         $log = [
-            'payment_id'    => $rawData['payment_id'],
-            'terminal_id'   => $rawData['terminal_id']
+            TerminalAnalytics\Entity::PAYMENT_ID    => $rawData['payment_id'],
+            TerminalAnalytics\Entity::TERMINAL_ID   => $rawData['terminal_id']
         ];
         if (isset($rawData['terminal_data']))
         {
             $terminalData = $rawData['terminal_data'];
 
-            $responseTime = $terminalData['end'] - $terminalData['start'];
+            $responseTime = TerminalAnalytics\Entity::microtime_diff($terminalData['start'], $terminalData['end']);
 
-            $log['terminal_response_time'] = $responseTime;
+            $log[TerminalAnalytics\Entity::TERMINAL_RESPONSE_TIME] = $responseTime;
 
-            $log['payment_type'] = 1;
+            $log[TerminalAnalytics\Entity::PAYMENT_TYPE] = 1;
 
-            $log['terminal_status'] = 1;
+            $log[TerminalAnalytics\Entity::TERMINAL_STATUS] = 1;
 
             $errorCode = null;
 
@@ -1086,23 +1086,24 @@ trait Authorize
             {
                 $e = $terminalData['exception'];
 
-                $log['terminal_status'] = 0;
+                $log[TerminalAnalytics\Entity::TERMINAL_STATUS] = 0;
 
                 // we care about this exception, since its an indicator of
                 // terminal failure
-                $log['terminal_status_code'] = $e->getError()->getHttpStatusCode();
+                $log[TerminalAnalytics\Entity::TERMINAL_STATUS_CODE] = $e->getError()->getHttpStatusCode();
 
-                $log['terminal_status_msg'] = $e->getError()->getDescription();
+                $log[TerminalAnalytics\Entity::TERMINAL_STATUS_MSG] = $e->getError()->getDescription();
             }
         }
 
         try
         {
-            (new TerminalAnalytics\Service)->createAuditLog($log);
+            (new TerminalAnalytics\Core)->create($log);
         }
         catch(\Exception $e)
         {
-            $this->trace->error(
+            SD($e);
+            $this->trace->warning(
                 TraceCode::TERMINAL_ANALYTICS_SAVE_FAILED,
                 ['rawData' => $rawData]
             );

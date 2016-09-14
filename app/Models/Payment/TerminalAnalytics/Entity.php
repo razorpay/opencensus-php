@@ -15,8 +15,6 @@ class Entity extends Base\PublicEntity
     const TERMINAL_STATUS_CODE          = 'terminal_status_code';
     const TERMINAL_STATUS_MSG           = 'terminal_status_msg';
     const PAYMENT_TYPE                  = 'payment_type';
-    const CREATED_AT                    = 'created_at';
-    const UPDATED_AT                    = 'updated_at';
 
     // window in secs, used to fetch payments with same checkout id
     const PAYMENT_WINDOW                = 1800;
@@ -84,5 +82,17 @@ class Entity extends Base\PublicEntity
     public function getTerminalStatusMsg()
     {
         return $this->getAttribute(self::TERMINAL_STATUS_MSG);
+    }
+
+    public static function microtime_diff($start, $end = null)
+    {
+        if (!$end) {
+            $end = microtime();
+        }
+        list($start_usec, $start_sec) = explode(" ", $start);
+        list($end_usec, $end_sec) = explode(" ", $end);
+        $diff_sec = intval($end_sec) - intval($start_sec);
+        $diff_usec = floatval($end_usec) - floatval($start_usec);
+        return floatval($diff_sec) + $diff_usec;
     }
 }
