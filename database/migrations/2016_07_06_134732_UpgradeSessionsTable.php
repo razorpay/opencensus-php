@@ -16,7 +16,7 @@ class UpgradeSessionsTable extends Migration
         {
             // This is for our default sessions table
             $table->char('user_id', 14)->nullable();
-            $table->char('admin_id', 14)->nullable();
+            $table->integer('admin_id', 10)->nullable();
             $table->string('ip_address')->nullable();
             $table->string('user_agent');
         });

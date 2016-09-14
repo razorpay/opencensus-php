@@ -103,7 +103,9 @@ app.controller('AdminCtrl', [
         method: 'get',
         url: '/admin/activity',
       }).success(function (data) {
-        $scope.activity = data.data
+        if (data.success) {
+          $scope.activity = data.data
+        }
       }).error(function () {
         $scope.alerts.addAlert('danger', null, true);
       });
@@ -113,7 +115,15 @@ app.controller('AdminCtrl', [
         method: 'delete',
         url: '/admin/activity/'+id,
       }).success(function (data) {
-        $scope.alerts.addAlert('success', 'Session deleted successfully.', true);
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Session deleted successfully.', true);
+          location.reload();
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
       }).error(function () {
         $scope.alerts.addAlert('danger', null, true);
       });
@@ -123,7 +133,15 @@ app.controller('AdminCtrl', [
         method: 'delete',
         url: '/admin/activity/',
       }).success(function (data) {
-        $scope.alerts.addAlert('success', 'Sessions deleted successfully.', true);
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Sessions deleted successfully.', true);
+          location.reload();
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
       }).error(function () {
         $scope.alerts.addAlert('danger', null, true);
       });

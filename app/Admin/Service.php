@@ -17,6 +17,7 @@ use Hash;
 use Requests;
 use Queue;
 use Session;
+use Crypt;
 
 use Aws\Laravel\AwsFacade as AWS;
 use Carbon\Carbon;
@@ -233,6 +234,7 @@ class Service extends Base\Service
 
         foreach ($sessionsCollection as $session)
         {
+            $session->id = Crypt::encrypt($session->id);
             $parser = Parser::create();
             $session->parsed_user_agent = $parser->parse($session->user_agent);
             $session->parsed_last_activity = Carbon::createFromTimeStamp(time(), "Asia/Kolkata")->format('j M Y h:i a');
@@ -251,6 +253,7 @@ class Service extends Base\Service
 
     public function deleteOneAdminSessions($sessionId)
     {
+        $sessionId = Crypt::decrypt($sessionId);
         (new SessionTable\Entity)->deleteOneSessionForAdmin($sessionId);
     }
 
