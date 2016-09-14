@@ -78,6 +78,8 @@ trait Authorize
 
         $request = null;
 
+        $retry = false;
+
         while ($retryAttempts < $maxRetryAttempts)
         {
             $terminalGatewayInput = $gatewayInput;
