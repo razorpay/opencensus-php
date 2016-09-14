@@ -336,6 +336,8 @@ trait Authorize
         // international is not enabled.
         $this->verifyFeesLessThanAmount($payment);
 
+        $this->validateFraudDetection($payment, $gatewayInput);
+
         $this->repo->saveOrFail($payment);
 
         $this->tracePaymentInfo(TraceCode::PAYMENT_CREATED, Trace::DEBUG);

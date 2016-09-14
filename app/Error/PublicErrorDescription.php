@@ -9,6 +9,7 @@ class PublicErrorDescription
     const GATEWAY_ERROR_REQUEST_TIMEOUT                                         = 'The gateway request to submit payment information timed out. Please submit your details again';
     const GATEWAY_ERROR_PROCESSING_DECLINED                                     = 'Payment failed due to processing error on gateway';
 
+    const BAD_REQUEST_PAYMENT_REJECTED_FRAUD_DETECTED                           = 'Payment has been declined as fraud detected';
     const BAD_REQUEST_URL_NOT_FOUND                                             = 'The requested URL was not found on the server.';
     const BAD_REQUEST_ONLY_HTTPS_ALLOWED                                        = 'Razorpay API is only available over HTTPS.';
     const BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED                                   = 'The current http method is not supported';
