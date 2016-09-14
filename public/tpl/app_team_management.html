@@ -39,7 +39,7 @@
             <select ng-model="user.pivot.role" ng-options="role.id as role.name for role in roleOptions" class="form-control" required>
             </select>
           </div>
-          <div class="m-b col-sm-2" ng-show="user.email !== merchant.email">
+          <div class="m-b col-sm-3" ng-show="user.email !== merchant.email">
             <button class="btn btn-sm btn-success" ng-click="updateTeamMember(user)" ng-show="rolesSupport">Update</button>
             <button class="btn btn-sm btn-danger" ng-click="removeTeamMember(user)">
               Remove
