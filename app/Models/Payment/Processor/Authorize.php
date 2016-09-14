@@ -88,7 +88,7 @@ trait Authorize
 
             $this->runPostGatewaySelectionPreProcessing($payment, $terminalGatewayInput);
 
-            // data for analytics
+            // data for payment analytics
             $rawData = [
                             'payment_id' => $payment['id'],
                             'input' => $input,
@@ -104,22 +104,22 @@ trait Authorize
                 return $request;
             }
 
-            $start = microtime();
+            $terminalData = $rawData;
 
-            $terminalData = ['start' => $start];
-
-            $rawData['terminal_data'] = $terminalData;
+            $terminalData['start'] = microtime();
 
             try
             {
                 $request = $this->callGatewayAuthorize($terminalGatewayInput);
+
+                $retry = false;
 
                 break;
             }
             catch (Exception\GatewayRequestException $e)
             {
                 // record a failed payment for given terminal and continue
-                $rawData['terminal_data']['exception'] = $e;
+                $terminalData['exception'] = $e;
 
                 $retryAttempts += 1;
 
@@ -128,6 +128,7 @@ trait Authorize
                 if (($retry === true) and
                     ($retryAttempts < $maxRetryAttempts))
                 {
+
                     continue;
                 }
 
@@ -139,16 +140,22 @@ trait Authorize
                 // An error occurred on gateway due to user or gateway.
                 // We need to record this and mark payment as failed.
                 //
-                $rawData['terminal_data']['exception'] = $e;
+                $terminalData['exception'] = $e;
 
                 $this->updatePaymentAuthFailedAndThrowException($e);
             }
             finally
             {
                 // record a successful payment here for the given terminal id
-                $rawData['terminal_data']['end'] = microtime();
+                $terminalData['end'] = microtime();
 
-                $this->createAnalyticsLog($rawData);
+                $this->recordTerminalAudit($terminalData);
+
+                if (($retry === false) or
+                    ($retryAttempts >= $maxRetryAttempts))
+                {
+                    $this->createAnalyticsLog($rawData);
+                }
             }
         }
 
@@ -1036,15 +1043,14 @@ trait Authorize
     }
 
 
-    protected function recordTerminalAudit($rawData)
+    protected function recordTerminalAudit($terminalData)
     {
-        $log = [
-            'payment_id'    => $rawData['payment_id'],
-            'terminal_id'   => $rawData['terminal_id']
-        ];
-        if (isset($rawData['terminal_data']))
+        try
         {
-            $terminalData = $rawData['terminal_data'];
+            $log = [
+                'payment_id'    => $terminalData['payment_id'],
+                'terminal_id'   => $terminalData['terminal_id']
+            ];
 
             $responseTime = $terminalData['end'] - $terminalData['start'];
 
@@ -1070,23 +1076,18 @@ trait Authorize
 
                 $log['terminal_status_msg'] = $e->getError()->getDescription();
             }
-        }
 
-        try
-        {
             (new TerminalAnalytics\Service)->createAuditLog($log);
         }
         catch(\Exception $e)
         {
             $this->trace->error(
                 TraceCode::TERMINAL_ANALYTICS_SAVE_FAILED,
-                ['rawData' => $rawData]
+                ['terminalData' => $terminalData]
             );
 
             $this->trace->traceException($e);
-
         }
-
     }
 
     protected function createAnalyticsLog($rawData)
@@ -1097,19 +1098,14 @@ trait Authorize
                 'payment_id'    => $rawData['payment_id'],
                 'terminal_id'   => $rawData['terminal_id'],
             ];
-            
-            // 1. Record terminal data
-            $this->recordTerminalAudit($rawData);
 
-            // 2. Record payment actions
             (new Analytics\Parser)->recordPaymentRequestData($rawData, $log);
 
-            // Create log
             (new Analytics\Service)->createAuditLog($log);
         }
         catch (\Exception $e)
         {
-            $checkoutMetadata = NULL;
+            $checkoutMetadata = null;
 
             if (isset($rawData['input']) and isset($rawData['input']['_']))
             {
