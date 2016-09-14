@@ -211,42 +211,42 @@ class Entity extends Base\PublicEntity
     // ----------------------- Mutator ---------------------------------------------
     //
 
-    protected function getLibraryAttribure()
+    protected function getLibraryAttribute()
     {
         $value = $this->attributes[self::LIBRARY];
 
         return Metadata::getStringForLibraryValue($value);
     }
 
-    protected function getPlatformAttribure()
+    protected function getPlatformAttribute()
     {
         $value = $this->attributes[self::PLATFORM];
 
         return Metadata::getStringForPlatformValue($value);
     }
 
-    protected function getBrowserAttribure()
+    protected function getBrowserAttribute()
     {
         $value = $this->attributes[self::BROWSER];
 
         return Metadata::getStringForBrowserValue($value);
     }
 
-    protected function getOsAttribure()
+    protected function getOsAttribute()
     {
         $value = $this->attributes[self::OS];
 
         return Metadata::getStringForOsValue($value);
     }
 
-    protected function getDeviceAttribure()
+    protected function getDeviceAttribute()
     {
         $value = $this->attributes[self::DEVICE];
 
         return Metadata::getStringForDeviceValue($value);
     }
 
-    protected function getIntegrationAttribure()
+    protected function getIntegrationAttribute()
     {
         $value = $this->attributes[self::INTEGRATION];
 
@@ -300,7 +300,7 @@ class Entity extends Base\PublicEntity
 
     // ----------------------- Mutator Ends ----------------------------------------
 
-    // ----------------------- Modifieres ------------------------------------------
+    // ----------------------- Modifiers ------------------------------------------
 
     protected function modifyOs(& $input)
     {

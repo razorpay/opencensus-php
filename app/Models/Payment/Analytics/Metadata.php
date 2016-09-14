@@ -238,7 +238,7 @@ class Metadata
         return array_key_exists($browser, self::BROWSER_VALUES);
     }
 
-    public static function validatebrowser($browser)
+    public static function validateBrowser($browser)
     {
         $browser = strtolower($browser);
 
@@ -248,7 +248,7 @@ class Metadata
         }
     }
 
-    public static function getValueForbrowser($browser)
+    public static function getValueForBrowser($browser)
     {
         $browser = strtolower($browser);
 
@@ -272,7 +272,7 @@ class Metadata
         return array_key_exists($device, self::DEVICE_VALUES);
     }
 
-    public static function validatedevice($device)
+    public static function validateDevice($device)
     {
         $device = strtolower($device);
 

@@ -130,7 +130,6 @@ trait Authorize
                 if (($retry === true) and
                     ($retryAttempts < $maxRetryAttempts))
                 {
-
                     continue;
                 }
 
@@ -167,7 +166,7 @@ trait Authorize
     protected function logAndCheckForAuthRetry($e, $payment)
     {
         $traceData = array(
-            'errorcode'     => $e->getCode(),
+            'error_code'    => $e->getCode(),
             'message'       => $e->getMessage(),
             'payment_id'    => $payment->getId(),
             'terminal_id'   => $payment->terminal->getId()

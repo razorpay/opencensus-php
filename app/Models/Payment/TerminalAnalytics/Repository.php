@@ -24,6 +24,11 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    /**
+     * @param $paymentId
+     * @param $id
+     * @return mixed
+     */
     public function findForPayment($paymentId, $id = null)
     {
         $repo = $this->repo;
