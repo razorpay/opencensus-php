@@ -330,7 +330,7 @@ trait Authorize
         // International card validation happens here because we want to save the failure.
         // For payment creation, gateway is compulsory field which is only finalized in
         // previous step.
-        $this->validateInternationalAllowed($payment);
+        $this->runInternationalChecks($payment);
 
         // Fees validation can only happen after international validation has gone through
         // otherwise can cause issues with international pricing rule being not available when
@@ -409,25 +409,49 @@ trait Authorize
         return $phoneBook;
     }
 
-    protected function validateInternationalAllowed($payment)
+    protected function runInternationalChecks($payment)
     {
-        if ($payment->getMethod() !== Method::CARD)
+        // return if method is not card or card is not international
+        if (($payment->getMethod() !== Method::CARD) or
+            ($payment->card->isInternational() === false))
         {
             return;
         }
 
+        $this->validateInternationalAllowed($payment);
+
+        $this->validateBlockedInternationalCard($payment->card);
+    }
+
+    protected function validateInternationalAllowed($payment)
+    {
         $card = $payment->card;
+
         $merchant = $payment->merchant;
 
-        if (($card->isInternational() === true) and
-            ($merchant->isInternational() === false))
+        if ($merchant->isInternational() === false)
         {
             $e = new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED);
 
             $this->updatePaymentFailed(
-                    $e->getError(),
-                    TraceCode::PAYMENT_AUTH_FAILURE);
+                $e->getError(),
+                TraceCode::PAYMENT_AUTH_FAILURE);
+
+            throw $e;
+        }
+    }
+
+    protected function validateBlockedInternationalCard($card)
+    {
+        if ($card->isBlocked())
+        {
+            $e = new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD);
+
+            $this->updatePaymentFailed(
+                $e->getError(),
+                TraceCode::PAYMENT_AUTH_FAILURE);
 
             throw $e;
         }
