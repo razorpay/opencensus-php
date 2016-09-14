@@ -42,7 +42,7 @@ class OlamoneyGatewayTest extends TestCase
 
         $this->assertTestResponse($payment, 'testPayment');
 
-        $this->assertNotEmpty($payment['global_token']);
+        $this->assertNotEmpty($payment['global_token_id']);
 
         $this->assertNotEmpty($payment['global_customer_id']);
 
