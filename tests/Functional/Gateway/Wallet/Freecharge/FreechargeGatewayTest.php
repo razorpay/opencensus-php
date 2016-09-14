@@ -198,6 +198,7 @@ class FreechargeGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertSame($payment['otp_attempts'], null);
+
         $this->assertSame($payment['otp_count'], 2);
     }
 
@@ -242,6 +243,7 @@ class FreechargeGatewayTest extends TestCase
                 'metadata'      => 'dummy',
                 'key_id'        => $this->ba->getKey(),
             ];
+
             $content['checksum'] = $this->sortKeysAndGenerateHash($content);
 
             $callback = array(
@@ -379,17 +381,6 @@ class FreechargeGatewayTest extends TestCase
         $refund = $this->getLastEntity('wallet', true);
 
         $this->assertTestResponse($refund);
-    }
-
-    public function testRefundPayment2()
-    {
-        $payment = $this->getDefaultWalletPaymentArray('freecharge');
-
-        $capturePayment = $this->doAuthAndCapturePayment($payment);
-
-        $this->refundPayment($capturePayment['id']);
-
-        $refund = $this->getLastEntity('wallet', true);
     }
 
     public function testRefundExcelFile()

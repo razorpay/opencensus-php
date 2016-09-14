@@ -37,7 +37,7 @@ class Gateway extends Freecharge\Gateway
         $response = $this->prepareInternalResponse($serverResponse);
 
         // Handle API Request Failure and throw exception
-        $this->handleIfRequestFailed($response);
+        $this->handleRequestFailed($response);
 
         return $response;
     }

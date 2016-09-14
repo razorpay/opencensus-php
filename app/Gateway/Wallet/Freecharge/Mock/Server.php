@@ -40,6 +40,7 @@ class Server extends Base\Mock\Server
         parent::verify($input);
 
         $this->validateActionInput($this->mockRequest['content'], 'verify');
+
         $content = $this->mockRequest['content'];
 
         $response = [
@@ -122,8 +123,11 @@ class Server extends Base\Mock\Server
                 ResponseFields::ERROR_MESSAGE  => Freecharge\ResponseCode::getResponseMessage('E701'),
                 ResponseFields::ERROR_CODE     => 'E701',
             );
+
             $response = $this->makeResponse($response);
+
             $response->setStatusCode(202);
+
             return $response;
         }
 
@@ -133,8 +137,11 @@ class Server extends Base\Mock\Server
                 ResponseFields::ERROR_MESSAGE  => Freecharge\ResponseCode::getResponseMessage('E702'),
                 ResponseFields::ERROR_CODE => 'E702',
             );
+
             $response = $this->makeResponse($response);
+
             $response->setStatusCode(202);
+
             return $response;
         }
 
@@ -193,10 +200,9 @@ class Server extends Base\Mock\Server
 
     protected function makeResponse($json)
     {
-        $response = \Response::make($json);
+        $response = parent::makeResponse($json);
 
         $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
-        $response->headers->set('Cache-Control', 'no-cache');
 
         return $response;
     }
@@ -223,7 +229,6 @@ class Server extends Base\Mock\Server
     /*
      * Freecharge requires us to create a refund entity and send its Id before it initiates a refund.
      * Mocks presently generates a unique Id/
-     *
      */
     protected function getRefundTxnId()
     {

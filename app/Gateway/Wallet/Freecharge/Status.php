@@ -14,7 +14,6 @@ class Status
     const TRANSACTION_FAILED    = 'FAILED';
 
     const OTP_SENT              = 'VERIFY';
-
     // User does not exist, freecharge asks to redirect to create account.
     const OTP_REDIRECT          = 'REDIRECT';
 
