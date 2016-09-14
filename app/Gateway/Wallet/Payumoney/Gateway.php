@@ -631,7 +631,7 @@ class Gateway extends Base\Gateway
                 'surl'  => $input['callbackUrl'],
                 'furl'  => $input['callbackUrl'],
             )),
-            'totalAmount'   => $amount,
+            'totalAmount'   => ceil($amount),
             'client_id'     => $this->getClientId($input['terminal']),
         );
 
