@@ -68,7 +68,7 @@ return array(
         'test_hash_secret'    	    => env('FIRST_DATA_TEST_HASH_SECRET'),
         'test_user_id'              => env('FIRST_DATA_TEST_USER_ID'),
         'test_password'             => env('FIRST_DATA_TEST_PASSWORD'),
-        'server_certificate_path'   => env('FIRST_DATA_SERVER_CERTIFICATE_PATH'),
+        'server_certificate_path'   => env('FIRST_DATA_SERVER_CERTIFICATE_PATH')
     ),
 
     'amex' => array(
