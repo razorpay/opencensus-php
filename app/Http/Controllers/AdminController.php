@@ -228,6 +228,13 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function getMerchantFeatures($id)
+    {
+        list($error, $data) = (new Admin\Service)->fetchMerchantFeatures($id);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     public function getMerchantBalance($id)
     {
         $data = (new Merchant\Service)->fetchMerchantBalance($id);
@@ -254,7 +261,6 @@ class AdminController extends Controller
         $input = Input::all();
 
         list($error, $data) = (new Admin\Service)->postEditMerchant($id, $input);
-
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -589,6 +595,16 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $response);
     }
 
+    public function postSetMerchantInternational($merchantId)
+    {
+        $input = Input::only('international');
+
+        list($error, $response) = (new Admin\Service)
+            ->postSetMerchantInternational($merchantId, $input);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
+
     public function getMerchantTags($merchantId)
     {
         list($error, $response) = (new Admin\Service)
@@ -717,4 +733,36 @@ class AdminController extends Controller
 
         return AppResponse::jsonResponse($error, $response);
     }
+    // ----- Credits -----
+
+    // Get log of merchant's credit entries
+    public function getMerchantCreditsLog($merchantId)
+    {
+        $input = Input::all();
+
+        list($error, $response) = (new Admin\Service)->getMerchantCreditsLog($merchantId, $input['mode']);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
+
+    // Add free credits for the merchant
+    public function addMerchantCredits($merchantId)
+    {
+        $input = Input::all();
+
+        list($error, $response) = (new Admin\Service)->addMerchantCredits($merchantId, $input);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
+
+    public function deleteMerchantCredit($merchantId, $creditId)
+    {
+        $input = Input::all();
+
+        list($error, $response) = (new Admin\Service)->deleteMerchantCredit($merchantId, $creditId, $input);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
+
+    // ----- /Credits -----
 }

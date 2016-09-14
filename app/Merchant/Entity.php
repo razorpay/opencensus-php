@@ -32,6 +32,7 @@ class Entity extends Base\Entity
     protected $appends = ['referrer', 'tags'];
 
     const ID_LENGTH = 14;
+    const EMAIL     = 'email';
 
     protected static $generators = array('id', 'confirm_token');
 
@@ -311,6 +312,12 @@ class Entity extends Base\Entity
                         ->exists();
     }
 
+    public static function getMerchantFromEmail($email)
+    {
+        $data = Entity::whereEmail($email)->first();
+        return $data;
+    }
+
     public static function getAggregations($data, $mode)
     {
         $data = \DB::table('aggregations')
@@ -520,7 +527,7 @@ class Entity extends Base\Entity
         // This is only to make sure that the user and merchants are in sync
         // for now. We will drop the method from Merchant\Entity and shift it
         // to User\Entity going ahead.
-        if($this->hasUsers())
+        if ($this->hasUsers())
         {
             $user = $this->users()->where('email', $email)->first();
             if($user)

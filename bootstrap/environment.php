@@ -1,32 +1,69 @@
 <?php
 
-$app->useEnvironmentPath(__DIR__.'/../environment');
+/*
+ | ----------------------------------------------------------------------------------
+ | Detect The Application Environment
+ | ----------------------------------------------------------------------------------
+ |
+ */
+use Dotenv\Dotenv;
+use Dotenv\Exception\InvalidPathException;
 
-$app->detectEnvironment(function() use ($app) {
-    $env = 'production';
+$envDir = __DIR__.'/../environment';
+$app->useEnvironmentPath($envDir);
 
-    $envLocation = __DIR__ . '/../environment/env.php';
+//
+// By default we assume environment is prod.
+// During testing, laravel sets APP_ENV to 'testing'
+// Otherwise, we get the environement from the file
+// environment/env.php
+//
 
-    if (env('APP_ENV') === 'testing')
+$env = 'production';
+
+if (env('APP_ENV') === 'testing')
+{
+    $env = 'testing';
+}
+else if (file_exists($file = __DIR__ . '/../environment/env.php'))
+{
+    $env = require $file;
+}
+
+putenv("APP_ENV=$env");
+
+$file = $app->environmentFile();
+
+$cascadingEnvFile = '.env.' . $env;
+
+//
+// Environment variable files are loaded in the order
+// * Vault env file
+// * Cascaded environment based env file
+// * Default env file
+//
+// Note that of the above 3, first two are committed in git
+// while last one comes into the folder when baking amis via brahma
+//
+
+if (! function_exists('read_env_file'))
+{
+    function read_env_file($envDir, $fileName)
     {
-        $env = 'testing';
+        $file = $envDir . '/' . $fileName;
+
+        if (file_exists($file) === false)
+        {
+            return;
+        }
+
+        $dotenv = new Dotenv($envDir, $fileName);
+
+        $dotenv->load();
     }
+}
 
-    else if (file_exists($envLocation))
-    {
-        $env = require($envLocation);
-    }
+read_env_file($envDir, '.env.vault');
+read_env_file($envDir, $cascadingEnvFile);
+read_env_file($envDir, '.env.defaults');
 
-    $envSuffix = ($env==='production') ? '' : ".$env";
-
-    $file = $app->environmentFile().$envSuffix;
-
-    // sd($file);
-    //
-    // sd($app->environmentPath());
-
-    if (file_exists($app->environmentPath().'/'.$file))
-    {
-        $app->loadEnvironmentFrom($file);
-    }
-});

@@ -3,6 +3,7 @@
 namespace App\Base;
 
 use Razorpay\Api\Request as ApiRequest;
+use Razorpay\Api\Errors\BadRequestError;
 use Config;
 use App\RZP\Api;
 use Slack;
@@ -65,7 +66,7 @@ class Service
         {
             return $this->api->$entity->fetch($id);
         }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        catch(BadRequestError $e)
         {
             return null;
         }

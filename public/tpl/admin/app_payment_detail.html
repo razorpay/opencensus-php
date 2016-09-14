@@ -78,6 +78,10 @@
             Status
           </a>
           <a href class="list-group-item">
+            <span class="pull-right">{{entity.captured}}</span>
+            Captured
+          </a>
+          <a href class="list-group-item">
             <span class="pull-right">{{entity.amount_authorized/100 | rupee}}</span>
             Amount Authorized
           </a>
@@ -245,33 +249,33 @@
     <h3 class="modal-title">Refund Payment</h3>
   </div>
   <div class="modal-body">
-    <form ng-init="partial=false" class="form-horizontal">
+    <form ng-init="partial=false; refund_amount=amount" class="form-horizontal">
       <div class="form-group">
         <label class="col-lg-3 control-label" for="partial">Partial Refund</label>
         <div class="col-lg-9">
           <div class="checkbox">
             <label class="i-checks">
-              <input ng-model="partial" type="checkbox">
+              <input ng-model="partial" type="checkbox" ng-change="setAmount(partial)">
               <i></i>
             </label>
           </div>
         </div>
       </div>
+      <div class="form-group" ng-show="partial">
+        <label class="col-lg-3 control-label" for="refund_amount">Refund Amount</label>
+        <div class="col-lg-9">
+          <div class="input-group">
+            <span class="input-group-addon">INR</span>
+            <input type="text" class="form-control m-b" name="amount" ng-model="refund_amount" placeholder="{{amount}}">
+          </div>
+        </div>
+      </div>
+
       <div class="form-group">
         <label class="col-lg-3 control-label" for="partial">Comment</label>
         <div class="col-lg-9">
           <div class="input-group" style="width: 100%">
             <input required type="text" class="form-control" name="comment" ng-model="comment" placeholder="Add a comment (visible to merchant)">
-          </div>
-        </div>
-      </div>
-
-      <div class="form-group" ng-show="partial">
-        <label class="col-lg-3 control-label" for="amount">Refund Amount</label>
-        <div class="col-lg-9">
-          <div class="input-group">
-            <span class="input-group-addon">INR</span>
-            <input type="text" class="form-control m-b" name="amount" ng-model="amount" placeholder="{{amount}}">
           </div>
         </div>
       </div>
@@ -283,9 +287,9 @@
       The payment will be
         <span ng-show="partial">partially</span>
         <span ng-show="!partial">completely</span>
-      refunded with the refund amount set to {{amount}} INR.
+      refunded with the refund amount set to {{refund_amount}} INR.
     </div>
     <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-    <button ng-disabled="!valid(amount, comment)" class="btn btn-primary" ng-click="ok(amount, comment)" ng-confirm-click="Are you sure you want to refund this payment?">OK</button>
+    <button ng-disabled="!valid(refund_amount, comment)" class="btn btn-primary" ng-click="ok(refund_amount, comment)" ng-confirm-click="Are you sure you want to refund this payment?">OK</button>
   </div>
 </script>

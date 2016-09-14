@@ -244,6 +244,14 @@ class TransactionController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function getSettlementDetails($mode, $id) {
+        $this->checkMode($mode);
+
+        list($error, $data) = (new Api\Service)->getEntity($mode, 'settlement')->getDetails($id);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     public function getResourceReport($mode, $resource)
     {
         $this->checkMode($mode);

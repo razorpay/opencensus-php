@@ -19,11 +19,6 @@
       <h4>Contact Details</h4>
       <form name="step1" class="form-validation form-horizontal" ng-submit="submit(1)" novalidate>
       <fieldset ng-disabled="locked">
-        <div class="m-t m-b text-center prev-next">
-          <button type="submit" class="pull-left btn btn-prev btn-default btn-rounded disabled">Prev</button>
-          <button type="submit" class="pull-right btn btn-next btn-default btn-rounded" ng-click="steps.step2=true">Next</button>
-          <button type="submit" class="btn btn-save btn-default btn-rounded">Save</button>
-        </div>
         <div class="text-center m-t m-b alerts">
           <alert ng-repeat="alert in alerts[1].getAlerts()" type="{{alert.type}}" close="alerts[1].closeAlert($index)">{{alert.msg}}</alert>
         </div>
@@ -58,6 +53,10 @@
             <input type="text" class="form-control" name="contact_landline" ng-model="data.1.contact_landline" placeholder="Landline">
           </div>
         </div>
+        <div class="m-t m-b text-center prev-next">
+          <button type="submit" class="pull-right btn btn-next btn-default btn-rounded" ng-click="steps.step2=true">Next</button>
+          <button type="submit" class="btn btn-save btn-default btn-rounded">Save</button>
+        </div>
       </fieldset>
       </form>
     </tab>
@@ -70,9 +69,6 @@
       <form name="step2" class="form-validation form-horizontal" ng-submit="submit(2)" novalidate>
       <fieldset ng-disabled="locked">
         <div class="m-t m-b text-center prev-next">
-          <button type="button" class="pull-left btn btn-prev btn-default btn-rounded" ng-click="steps.step1=true">Prev</button>
-          <button type="submit" class="pull-right btn btn-next btn-default btn-rounded" ng-click="steps.step3=true">Next</button>
-          <button type="submit" class="btn btn-save btn-default btn-rounded">Save</button>
         </div>
         <div class="text-center m-t m-b alerts">
           <alert ng-repeat="alert in alerts[2].getAlerts()" type="{{alert.type}}" close="alerts[2].closeAlert($index)">{{alert.msg}}</alert>
@@ -256,6 +252,11 @@
             <input type="text" class="form-control" name="promoter_pan_name" ng-model="data.2.promoter_pan_name" placeholder="Name on PAN Card" required>
           </div>
         </div>
+        <div class="m-t m-b text-center prev-next">
+          <button type="button" class="pull-left btn btn-prev btn-default btn-rounded" ng-click="steps.step1=true">Prev</button>
+          <button type="submit" class="pull-right btn btn-next btn-default btn-rounded" ng-click="steps.step3=true">Next</button>
+          <button type="submit" class="btn btn-save btn-default btn-rounded">Save</button>
+        </div>
       </fieldset>
       </form>
     </tab>
@@ -268,9 +269,6 @@
       <form name="step3" class="form-validation form-horizontal" ng-submit="submit(3)" novalidate>
       <fieldset ng-disabled="locked">
         <div class="m-t m-b text-center prev-next">
-          <button type="submit" class="pull-left btn btn-prev btn-default btn-rounded" ng-click="steps.step2=true">Prev</button>
-          <button type="submit" class="pull-right btn btn-next btn-default btn-rounded" ng-click="steps.step4=true">Next</button>
-          <button type="submit" class="btn btn-save btn-default btn-rounded">Save</button>
         </div>
         <div class="text-center m-t m-b alerts">
           <alert ng-repeat="alert in alerts[3].getAlerts()" type="{{alert.type}}" close="alerts[3].closeAlert($index)">{{alert.msg}}</alert>
@@ -300,7 +298,10 @@
           <label for="website_privacy" class="col-sm-3 control-label">Privacy Policy URL</label>
           <div class="col-sm-8">
             <span class="help-block">
-              <a href="https://docs.google.com/document/d/1MpaLoEbx5-cmTB3qfbDadhjsuNCkEA2j13H2ZGx3PAk/edit?usp=sharing" target="_blank">Download a template here</a>. Example: http://www.website.com/privacy.html
+              <a href="https://docs.google.com/document/d/1MpaLoEbx5-cmTB3qfbDadhjsuNCkEA2j13H2ZGx3PAk/edit?usp=sharing" target="_blank">
+                Download a template here
+              </a>
+              . Example: http://www.website.com/privacy.html
             </span>
             <input type="text" class="form-control" name="website_privacy" ng-model="data.3.website_privacy" placeholder="http://www.website.com/privacy.html" >
           </div>
@@ -309,7 +310,10 @@
           <label for="website_terms" class="col-sm-3 control-label">Terms &amp; Conditions URL</label>
           <div class="col-sm-8">
             <span class="help-block">
-              <a href="https://docs.google.com/document/d/1wYq6CULlAtBdYrcjEVygQ3uYOplqU-kT1wrxguUKHcI/edit?usp=sharing" target="_blank">Download a template here</a>. Example: http://www.website.com/terms.html
+              <a href="https://docs.google.com/document/d/1wYq6CULlAtBdYrcjEVygQ3uYOplqU-kT1wrxguUKHcI/edit?usp=sharing" target="_blank">
+                Download a template here
+              </a>
+              . Example: http://www.website.com/terms.html
             </span>
             <input type="text" class="form-control" name="website_terms" ng-model="data.3.website_terms" placeholder="http://www.website.com/terms.html" >
           </div>
@@ -318,7 +322,10 @@
           <label for="website_refund" class="col-sm-3 control-label">Refund/Cancellation Policy URL</label>
           <div class="col-sm-8">
             <span class="help-block">
-              <a href="https://docs.google.com/document/d/1zOrg11NPYSMCxa3KwkOnfPxKRkllzXBdocEQsQN10TM/edit?usp=sharing" target="_blank">Download a template here</a>. Example: http://www.website.com/refund.html
+              <a href="https://docs.google.com/document/d/1zOrg11NPYSMCxa3KwkOnfPxKRkllzXBdocEQsQN10TM/edit?usp=sharing" target="_blank">
+                Download a template here
+              </a>
+              . Example: http://www.website.com/refund.html
             </span>
             <input type="text" class="form-control" name="website_refund" ng-model="data.3.website_refund" placeholder="http://www.website.com/refund.html" >
           </div>
@@ -326,7 +333,12 @@
         <div class="form-group">
           <label for="website_pricing" class="col-sm-3 control-label">URL displaying Product Pricing (in INR)</label>
           <div class="col-sm-8">
-            <span class="help-block">Any page with product prices in INR. May display a range of prices if not actual price as part of a static pricing policy. Download a template <a href="https://docs.google.com/document/d/1pcgpjZyeV9fGB-fjo9p9xx4992QeymEMi8oFllcbXsw/edit?usp=sharing">here</a></span>
+            <span class="help-block">
+              Any page with product prices in INR. May display a range of prices if not actual price as part of a static pricing policy. Download a template
+              <a href="https://docs.google.com/document/d/1pcgpjZyeV9fGB-fjo9p9xx4992QeymEMi8oFllcbXsw/edit?usp=sharing" target="_blank">
+                here
+              </a>
+            </span>
             <input type="text" class="form-control" name="website_pricing" ng-model="data.3.website_pricing" placeholder="http://www.website.com/pricing.html" >
           </div>
         </div>
@@ -337,6 +349,11 @@
             <input type="text" class="form-control" name="website_login" ng-model="data.3.website_login" placeholder="http://www.website.com/login.html" >
           </div>
         </div> -->
+        <div class="m-t m-b text-center prev-next">
+          <button type="submit" class="pull-left btn btn-prev btn-default btn-rounded" ng-click="steps.step2=true">Prev</button>
+          <button type="submit" class="pull-right btn btn-next btn-default btn-rounded" ng-click="steps.step4=true">Next</button>
+          <button type="submit" class="btn btn-save btn-default btn-rounded">Save</button>
+        </div>
       </fieldset>
       </form>
     </tab>
@@ -349,9 +366,6 @@
       <form name="step4" class="form-validation form-horizontal" ng-submit="submit(4)" novalidate>
       <fieldset ng-disabled="locked">
         <div class="m-t m-b text-center prev-next">
-          <button type="submit" class="pull-left btn btn-prev btn-default btn-rounded" ng-click="steps.step3=true">Prev</button>
-          <button type="submit" class="pull-right btn btn-next btn-default btn-rounded" ng-click="steps.step5=true">Next</button>
-          <button type="submit" class="btn btn-save btn-default btn-rounded">Save</button>
         </div>
         <div class="text-center m-t m-b alerts">
           <alert ng-repeat="alert in alerts[4].getAlerts()" type="{{alert.type}}" close="alerts[4].closeAlert($index)">{{alert.msg}}</alert>
@@ -465,6 +479,11 @@
             <input type="text" class="form-control" name="bank_branch_ifsc" ng-model="data.4.bank_branch_ifsc" placeholder="IFSC Code of the Bank Branch" required>
           </div>
         </div>
+        <div class="m-t m-b text-center prev-next">
+          <button type="submit" class="pull-left btn btn-prev btn-default btn-rounded" ng-click="steps.step3=true">Prev</button>
+          <button type="submit" class="pull-right btn btn-next btn-default btn-rounded" ng-click="steps.step5=true">Next</button>
+          <button type="submit" class="btn btn-save btn-default btn-rounded">Save</button>
+        </div>
       </fieldset>
       </form>
     </tab>
@@ -476,11 +495,6 @@
       <h4>Documents Uploads</h4>
       <form name="step5" class="form-validation form-horizontal" ng-submit="submit(5)" novalidate>
       <fieldset ng-disabled="locked">
-        <div class="m-t m-b text-center prev-next">
-          <button type="submit" class="pull-left btn btn-prev btn-default btn-rounded" ng-click="steps.step4=true">Prev</button>
-          <button type="submit" class="pull-right btn btn-next btn-default btn-rounded" ng-click="steps.step6=true">Next</button>
-          <button type="submit" class="btn btn-save btn-default btn-rounded">Save</button>
-        </div>
         <div class="text-center m-t m-b alerts">
           <alert ng-repeat="alert in alerts[5].getAlerts()" type="{{alert.type}}" close="alerts[5].closeAlert($index)">{{alert.msg}}</alert>
         </div>
@@ -581,6 +595,11 @@
             </div>
           </div>
         </div>
+        <div class="m-t m-b text-center prev-next">
+          <button type="submit" class="pull-left btn btn-prev btn-default btn-rounded" ng-click="steps.step4=true">Prev</button>
+          <button type="submit" class="pull-right btn btn-next btn-default btn-rounded" ng-click="steps.step6=true">Next</button>
+          <button type="submit" class="btn btn-save btn-default btn-rounded">Save</button>
+        </div>
       </fieldset>
       </form>
     </tab>
@@ -592,11 +611,6 @@
       <h4>Submit For Activation</h4>
       <form name="step6" class="form-validation form-horizontal" ng-submit="submit(6)" novalidate>
       <fieldset ng-disabled="locked">
-        <div class="m-t m-b text-center prev-next">
-          <button type="submit" class="pull-left btn btn-prev btn-default btn-rounded" ng-click="steps.step5=true">Prev</button>
-          <button type="submit" class="pull-right btn btn-next btn-default btn-rounded disabled">Next</button>
-          <button type="submit" class="btn btn-save btn-default btn-rounded disabled">Save</button>
-        </div>
         <div class="text-center m-t m-b alerts">
           <alert ng-repeat="alert in alerts[6].getAlerts()" type="{{alert.type}}" close="alerts[6].closeAlert($index)">{{alert.msg}}</alert>
         </div>
@@ -607,6 +621,9 @@
         </div>
         <div class="m-t m-b text-center prev-next">
           <button type="submit" class="btn btn-submit btn-default btn-rounded">Click here to submit</button>
+        </div>
+        <div class="m-t m-b text-center prev-next">
+          <button type="submit" class="pull-left btn btn-prev btn-default btn-rounded" ng-click="steps.step5=true">Prev</button>
         </div>
       </fieldset>
       </form>

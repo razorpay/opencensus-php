@@ -12,6 +12,7 @@ app.controller('EntityDetailCtrl', [
     $scope.alerts = alertsFactory.getHandler();
     $scope.entity = { id: $stateParams.id };
     $scope.generate = function (entity) {
+      $scope.entity_type = entity; // because entity gets overriden after XHR below
       $scope.entity.type = entity;
       fetchEntity();
     };
@@ -38,5 +39,24 @@ app.controller('EntityDetailCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     }
+
+    // For settlement breakup
+    $scope.showSettlementDetails = function () {
+      if ($scope.isSettlementDetailsCollapsed === false) {
+        $scope.isSettlementDetailsCollapsed = true;
+        return;
+      }
+
+      var request = $http.get('/' + $scope.mode + '/' + $scope.entity_type + 's/' + $scope.entity.id + '/details');
+      request.success(function (data) {
+        if (data.success) {
+          $scope.isSettlementDetailsCollapsed = false;
+
+          $scope.breakupDetails = data.data.items;
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
   }
 ]);

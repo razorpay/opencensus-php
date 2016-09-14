@@ -1,11 +1,13 @@
-/environment/.env*
-/environment/env.php
 .DS_Store
 Thumbs.db
-/bootstrap/environment.php
 /storage/*
 /.git/*
 /node_modules/*
 /storage/selenium.png
 /config/dev/*
 /storage/logs/*
+/environment/.env.vault
+/environment/.env.wercker
+/environment/.env.testing
+/environment/.env.dev
+/environment/env.php

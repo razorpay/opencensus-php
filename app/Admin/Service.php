@@ -2,26 +2,29 @@
 
 namespace App\Admin;
 
-use Aws\Laravel\AwsFacade as AWS;
-use Illuminate\Support\Facades\App as App;
-use Auth;
-use Hash;
-use Carbon\Carbon;
-use Config;
-use Queue;
-use Requests;
-use Session;
-
-use App\Base;
 use App\Admin;
+use App\Base;
 use App\Merchant;
 use App\MerchantDetails;
-use App\Transaction;
 use App\Trace\TraceCode;
-use Razorpay\Api\Request as ApiRequest;
-use Razorpay\Api\Errors\Error as ApiError;
+use App\Transaction;
+use App\User;
+
+use Auth;
+use Config;
+use Hash;
+use Requests;
+use Queue;
+use Session;
+
+use Aws\Laravel\AwsFacade as AWS;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\App as App;
+
 use Razorpay\Api\Errors\BadRequestError as BadRequestError;
 use App\Transaction\Service as TransactionService;
+use Razorpay\Api\Errors\Error as ApiError;
+use Razorpay\Api\Request as ApiRequest;
 
 class Service extends Base\Service
 {
@@ -99,6 +102,7 @@ class Service extends Base\Service
         if ($ownerUser)
         {
             $user = Auth::guard('user')->loginUsingId($ownerUser->id);
+            (new User\Service)->switchCurrentMerchantForUser($merchant_id, $user);
         }
         else
         {
@@ -279,9 +283,9 @@ class Service extends Base\Service
 
     public function fetchMerchantActivationDetails($id)
     {
-        $merchant_details =  MerchantDetails\Entity::findorfail($id);
+        $merchantDetails =  MerchantDetails\Entity::findorfail($id);
 
-        $response = $merchant_details->filterDetails();
+        $response = $merchantDetails->filterDetails();
 
         $response['data'] = MerchantDetails\Validator::sortDataInSteps($response['data']);
 
@@ -331,6 +335,15 @@ class Service extends Base\Service
         return [[], $data];
     }
 
+    public function fetchMerchantFeatures($id)
+    {
+        $this->setApiCredentials();
+
+        $response = $this->api->merchant->fetch($id)->getFeatures()->toArray();
+
+        return [[], $response];
+    }
+
     public function fetchFullMerchantDetails($id)
     {
         $details = null;
@@ -366,13 +379,13 @@ class Service extends Base\Service
             return $merchant->toArray();
         }
 
-        $merchant_details = MerchantDetails\Entity::findorfail($id);
+        $merchantDetails = MerchantDetails\Entity::findorfail($id);
 
         $this->setApiCredentials();
 
         $data = $this->api->merchant->fetch($id)->toArray();
 
-        $data['merchant_details'] = $merchant_details->toArray();
+        $data['merchant_details'] = $merchantDetails->toArray();
 
         $merchant = $merchant->toArray();
 
@@ -382,11 +395,11 @@ class Service extends Base\Service
 
         $response = array(
             'archived_at'       => $merchant['archived_at'],
-            'steps_finished'    => $merchant_details['steps_finished'],
-            'locked'            => $merchant_details['locked'],
-            'submitted'         => $merchant_details['submitted'],
+            'steps_finished'    => $merchantDetails['steps_finished'],
+            'locked'            => $merchantDetails['locked'],
+            'submitted'         => $merchantDetails['submitted'],
             'tags'              => $merchant['tags'],
-            'submitted_at'      => $merchant_details['submitted_at'],
+            'submitted_at'      => $merchantDetails['submitted_at'],
             'activated_dashboard' => $merchant['activated'],
             'referrer'          => $merchant['referrer'],
         ) + $data;
@@ -502,6 +515,14 @@ class Service extends Base\Service
 
         try
         {
+            $existingMerchant = Merchant\Entity::getMerchantFromEmail($input[Merchant\Entity::EMAIL]);
+
+            if ($existingMerchant !== null)
+            {
+                $error[] = "Merchant already exists with this email id.";
+                return [$error, $data];
+            }
+
             $data = $this->api->merchant->fetch($id)->editEmail($input)->toArray();
 
             // Only when it is changed we update on the dashboard side as well
@@ -515,7 +536,12 @@ class Service extends Base\Service
             $error[] = $e->getMessage();
         }
 
-        return array($error, $data);
+        return [$error, $data];
+    }
+
+    public function postSetMerchantInternational($id, array $input)
+    {
+        return $this->postEditMerchant($id, $input);
     }
 
     protected function dropFields(array &$array, array $fields)
@@ -526,26 +552,30 @@ class Service extends Base\Service
         }
     }
 
-    // this is a refrence
     public function postEditBankDetails($id, $input)
     {
         $error = array();
 
         $this->dropFields($input, [
+            "beneficiary_address4",
+            "beneficiary_code",
+            "beneficiary_country",
+            "created_at",
+            "entity_id",
+            "type",
             'id',
             'merchant_id',
-            "beneficiary_code",
-            "beneficiary_address4",
-            "beneficiary_country",
         ]);
 
         $this->setApiCredentials();
-        $merchant_details = MerchantDetails\Entity::findorfail($id);
+
+        $merchantDetails = MerchantDetails\Entity::findorfail($id);
+
         try
         {
             $this->api->merchant->fetch($id)->setBankAccount($input);
 
-            $merchantDetails = array(
+            $merchantDetailsData = array(
                 'bank_branch_ifsc'           => $input['ifsc_code'],
                 'bank_account_name'          => $input['beneficiary_name'],
                 'bank_account_number'        => $input['account_number'],
@@ -557,8 +587,8 @@ class Service extends Base\Service
                 'bank_beneficiary_state'     => $input['beneficiary_state']
             );
 
-            $merchant_details->fill($merchantDetails);
-            $merchant_details->save();
+            $merchantDetails->fill($merchantDetailsData);
+            $merchantDetails->save();
 
             $this->logActionToSlack($id, Actions::BANK_DETAILS_EDITED, $input);
         }
@@ -568,17 +598,17 @@ class Service extends Base\Service
             $error[] = $e->getMessage();
         }
 
-        return [$error, $merchant_details->toArray()];
+        return [$error, $merchantDetails->toArray()];
     }
 
     public function postEditMerchantComment($id, $comment)
     {
         $error = array();
 
-        $merchant_details = MerchantDetails\Entity::findorfail($id);
+        $merchantDetails = MerchantDetails\Entity::findorfail($id);
 
-        $merchant_details->comment = $comment;
-        $merchant_details->save();
+        $merchantDetails->comment = $comment;
+        $merchantDetails->save();
 
         return array($error, $comment);
     }
@@ -807,17 +837,17 @@ class Service extends Base\Service
     {
         $error = array();
 
-        $merchant_details = MerchantDetails\Entity::findorfail($id);
+        $merchantDetails = MerchantDetails\Entity::findorfail($id);
 
-        if ($merchant_details->isLocked())
+        if ($merchantDetails->isLocked())
         {
             $error[] = 'Merchant already locked.';
 
             return $error;
         }
 
-        $merchant_details->locked = 1;
-        $merchant_details->save();
+        $merchantDetails->locked = 1;
+        $merchantDetails->save();
 
         $this->logActionToSlack($id, Actions::FORM_LOCKED);
 
@@ -828,16 +858,16 @@ class Service extends Base\Service
     {
         $error = array();
 
-        $merchant_details = MerchantDetails\Entity::findorfail($id);
+        $merchantDetails = MerchantDetails\Entity::findorfail($id);
 
-        if ($merchant_details->locked === 0)
+        if ($merchantDetails->locked === 0)
         {
             $error[] = 'Merchant already unlocked.';
             return $error;
         }
 
-        $merchant_details->locked = 0;
-        $merchant_details->save();
+        $merchantDetails->locked = 0;
+        $merchantDetails->save();
 
         $this->logActionToSlack($id, Actions::FORM_UNLOCKED);
 
@@ -1109,7 +1139,7 @@ class Service extends Base\Service
 
         list(, $data) = $this->fetchMerchantAndActivationDetails($id);
 
-        $file = HdfcTidExcel::generateExcel($data);
+        $file = Hdfc\HdfcTidExcel::generateExcel($data);
 
         $this->logActionToSlack($id, Actions::HDFC_EXCEL);
 
@@ -1975,5 +2005,65 @@ class Service extends Base\Service
 
         return $minimal_payment;
     }
-}
+    
+    // ----- Credits -----
 
+    public function getMerchantCreditsLog($merchantId, $mode)
+    {
+        $error = $data = null;
+
+        $this->setApiCredentials($merchantId, $mode);
+
+        try
+        {
+            $data = $this->api->merchant->getMerchantCreditLogs();
+        }
+        catch (BadRequestError $e)
+        {
+            $error = [$e->getMessage()];
+        }
+
+        return [$error, $data];
+    }
+
+    public function addMerchantCredits($merchantId, $input)
+    {
+        $error = $data = null;
+
+        $this->setApiCredentials(null, $input['mode']);
+
+        unset($input['mode']);
+
+        try
+        {
+            $data = $this->api->merchant->addMerchantCredits($merchantId, $input)->toArray();
+        }
+        catch (BadRequestError $e)
+        {
+            $error = [$e->getMessage()];
+        }
+
+        return [$error, $data];
+    }
+
+    public function deleteMerchantCredit($merchantId, $creditId, $input)
+    {
+        $error = $data = null;
+
+        $this->setApiCredentials(null, $input['mode']);
+
+        unset($input['mode']);
+
+        try
+        {
+            $data = $this->api->merchant->deleteMerchantCredits($merchantId, $creditId);
+        }
+        catch (BadRequestError $e)
+        {
+            $error = [$e->getMessage()];
+        }
+
+        return [$error, $data];
+    }
+
+}

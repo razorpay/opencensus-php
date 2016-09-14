@@ -184,6 +184,7 @@ class AdminTest extends TestCase
         $this->execScript('$(".merchant_go").click()');
         $this->assertTrue($this->displayedByClassName('merchants-table-body'));
         $this->clickByLinkText($this->merchant->id);
+        $this->window($this->windowHandles()[1]);
         $this->waitUntilDisplayedByClassName('merchant-wrapper');
         $this->waitUntilContainsByCss('body', $this->merchant->id);
         $this->waitUntilContainsByCss('body', 'Merchant Detail');
@@ -200,15 +201,15 @@ class AdminTest extends TestCase
         $this->waitUntilContainsByCss('body', 'Merchant Form unlocked successfully');
 
         //Assign Pricing
-        $this->waitAndClickByLinkText('Assign Pricing');
+        $this->execScript('$(".assign-pricing").click()');
         $this->waitUntilDisplayedByClassName('pricing-modal');
         $this->waitUntilDisplayedByName('pricing_plan_id');
         //$this->select($this->byXPath('//select[@Name="pricing_plan_id"]/option[0]'));
         $this->clickByClassName('modal-ok');
         $this->waitUntilDisplayedByClassName('confirm-modal');
         $this->clickByClassName('confirm-ok');
-        $this->waitUntilAbsentByClassName('pricing-modal');
-        $this->waitUntilAbsentByClassName('alert-danger');
+        $this->waitUntilAbsentByCss('.pricing-modal');
+        $this->waitUntilAbsentByCss('.alert-danger');
         $this->waitUntilContainsByCss('body', 'Plan Assigned successfully');
 
         // Assign Terminal
@@ -223,47 +224,20 @@ class AdminTest extends TestCase
         $this->clickByClassName('modal-ok');
         $this->waitUntilDisplayedByClassName('confirm-modal');
         $this->clickByClassName('confirm-ok');
-        $this->waitUntilAbsentByClassName('terminal-modal');
-        $this->waitUntilAbsentByClassName('alert-danger');
+        $this->waitUntilAbsentByCss('.terminal-modal');
+        $this->waitUntilAbsentByCss('.alert-danger');
         $this->waitUntilContainsByCss('body', 'Terminal Assigned successfully');
 
         // Edit Merchant Details
-        $this->clickByLinkText('Edit Merchant');
+        $this->execScript('$(".edit-merchant").click()');
         $this->waitUntilDisplayedByClassName('merchant-modal');
-        $this->selectByNameAndValue('international', '0');
         $this->setValueByName('category', '1234');
         $this->setValueByName('website', 'http://razorpay.com');
         $this->setValueByName('billing_label', 'razorpay');
         $this->setValueByName('transaction_report_email', 'test@razorpay.com, nemo@razorpay.com');
         $this->setValueByName('settlement_schedule', '5');
         $this->clickByClassName('modal-ok');
-        $this->waitUntilAbsentByClassName('alert-danger');
-
-        // Activate Merchant
-        $this->clickByLinkText('Activate Merchant');
-        $this->waitUntilDisplayedByClassName('confirm-ok');
-        $this->clickByClassName('confirm-ok');
-        $this->waitUntilAbsentByClassName('confirm-modal');
-        $this->waitUntilAbsentByClassName('alert-danger');
-        $this->waitUntilContainsByCss('body', 'Merchant Activated successfully');
-
-        $this->execScript('location.reload()');
-
-        $this->waitUntilContainsByCss('body', 'Disable Live Transactions');
-        $this->clickByLinkText('Disable Live Transactions');
-        $this->waitUntilDisplayedByClassName('confirm-ok');
-        $this->clickByClassName('confirm-ok');
-        $this->waitUntilAbsentByClassName('confirm-modal');
-        $this->waitUntilAbsentByClassName('alert-danger');
-        $this->waitUntilContainsByCss('body', 'Live transactions for merchant disabled successfully');
-
-        $this->clickByLinkText('Enable Live Transactions');
-        $this->waitUntilAbsentByClassName('alert-danger');
-        $this->waitUntilContainsByCss('body', 'Live transactions for merchant enabled successfully');
-
-        // See Merchant Activation Details
-        $this->clickByLinkText('See Activation Form Details');
-        $this->waitUntilDisplayedByClassName('activation-wrapper');
+        $this->waitUntilAbsentByCss('.alert-danger');
     }
 
     /**
@@ -281,11 +255,12 @@ class AdminTest extends TestCase
         $this->execScript('$(".merchant_go").click()');
         $this->assertTrue($this->displayedByClassName('merchants-table-body'));
         $this->clickByXPath('a','text',$this->merchant->id);
+        $this->window($this->windowHandles()[1]);
         $this->waitUntilDisplayedByClassName('merchant-wrapper');
         $this->waitUntilContainsByCss('body', $this->merchant->id);
         $this->waitUntilContainsByCss('body', 'Merchant Detail');
         $this->clickByLinkText('Login as Merchant');
-        $this->window($this->windowHandles()[1]);
+        $this->window($this->windowHandles()[2]);
         $this->waitUntilContainsByCss('body', 'Welcome to Razorpay');
 
         // Logout is currently broken
@@ -311,6 +286,7 @@ class AdminTest extends TestCase
         $this->execScript('$(".merchant_go").click()');
         $this->assertTrue($this->displayedByClassName('merchants-table-body'));
         $this->clickByXPath('a','text',$this->merchant->id);
+        $this->window($this->windowHandles()[1]);
         $this->waitUntilDisplayedByClassName('merchant-wrapper');
         $this->waitUntilContainsByCss('body', $this->merchant->id);
         $this->waitUntilContainsByCss('body', 'Merchant Detail');
@@ -341,6 +317,7 @@ class AdminTest extends TestCase
         $this->execScript('$(".merchant_go").click()');
         $this->assertTrue($this->displayedByClassName('merchants-table-body'));
         $this->clickByXPath('a','text',$this->merchant->id);
+        $this->window($this->windowHandles()[1]);
         $this->waitUntilDisplayedByClassName('merchant-wrapper');
         $this->waitUntilContainsByCss('body', $this->merchant->id);
         $this->waitUntilContainsByCss('body', 'Merchant Detail');
@@ -378,7 +355,7 @@ class AdminTest extends TestCase
         $this->setValueByName('password', '1234567');
         $this->setValueByName('password_confirmation', '1234567');
         $this->clickByXPath('button','text','OK');
-        $this->waitUntilAbsentByClassName('new-admin-modal');
+        $this->waitUntilAbsentByCss('.new-admin-modal');
         $this->waitUntilContainsByCss('body', 'Admin created successfully');
 
         // Test Promote Admin
@@ -386,13 +363,13 @@ class AdminTest extends TestCase
         //$this->clickByClassName('btn-admin-promote');
         $this->waitUntilDisplayedByClassName('confirm-ok');
         $this->clickByClassName('confirm-ok');
-        $this->waitUntilAbsentByClassName('confirm-modal');
+        $this->waitUntilAbsentByCss('.confirm-modal');
         $this->waitUntilContainsByCss('body', 'Admin promoted successfully');
 
         $this->execScript('$("a[class=\"btn-admin-delete\"]").click()');
         $this->waitUntilDisplayedByClassName('confirm-ok');
         $this->clickByClassName('confirm-ok');
-        $this->waitUntilAbsentByClassName('confirm-modal');
+        $this->waitUntilAbsentByCss('.confirm-modal');
         $this->waitUntilContainsByCss('body', 'Admin deleted successfully');
     }
 
@@ -409,7 +386,7 @@ class AdminTest extends TestCase
         $this->submitByName('submit');
         $this->waitUntilDisplayedById('profileNav');
         $this->clickById('profileNav');
-        $this->waitUntilAbsentByClassName('profile-wrapper');
+        $this->waitUntilDisplayedByClassName('profile-wrapper');
         $this->waitUntilContainsByCss('body', $this->admin->name);
         $this->waitUntilContainsByCss('body', $this->admin->username);
 
@@ -420,7 +397,7 @@ class AdminTest extends TestCase
         $this->setValueByName('password', '1234567');
         $this->setValueByName('password_confirmation', '1234567');
         $this->clickByClassName('modal-ok');
-        $this->waitUntilAbsentByClassName('change-pwd-modal');
+        $this->waitUntilAbsentByCss('.change-pwd-modal');
 
         $this->waitUntilContainsByCss('body', 'Password changed successfully');
     }

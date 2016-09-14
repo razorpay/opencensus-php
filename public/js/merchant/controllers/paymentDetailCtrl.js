@@ -187,6 +187,14 @@ app.controller('PaymentDetailCtrl', [
       comment: null
     };
 
+    $scope.setAmount = function(isPartial) {
+      if (isPartial) {
+        this.refund_amount = '';
+      } else {
+        this.refund_amount = $scope.amount;
+      }
+    }
+
     $scope.ok = function (amount, comment) {
       // We get amount in INR
       var data = {

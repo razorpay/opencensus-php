@@ -59,6 +59,12 @@ class UserController extends Controller
     {
         $input = Input::all();
 
+        // Lowercasing emails for consistency
+        if (isset($input['email']))
+        {
+            $input['email'] = mb_strtolower($input['email']);
+        }
+
         list($error, $data) = (new User\Service)->login($input);
 
         return AppResponse::jsonResponse($error);

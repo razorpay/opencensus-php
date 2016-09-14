@@ -4,7 +4,7 @@
     <spinner class="inline"></spinner>
   </h1>
 </div>
-<div class="wrapper-md profile-wrapper" ng-init="getPendingInvitations()">
+<div class="wrapper-md profile-wrapper" ng-init="getPendingInvitations()" ng-controller="ProfileCtrl">
   <div class="panel panel-default col-sm-6 col-sm-offset-3">
     <div class="panel-heading m-t m-b" ng-show="user.current">
       Merchant Id: <strong>{{user.id}}</strong>
@@ -36,6 +36,11 @@
         <a class="list-group-item">
           <span class="pull-right">{{user.activation_progress}}%</span>
           Activation Form Progress {{Object.keys(user)}}
+        </a>
+
+        <a class="list-group-item" ng-show="credits">
+          <span class="pull-right">{{credits/100|rupee}}</span>
+          Credits
         </a>
       </div>
     </div>
@@ -72,6 +77,10 @@
           <a href="mailto:{{loggedInUser.email}}" class="list-group-item">
             <span class="pull-right">{{loggedInUser.email}}</span>
             Login Email
+          </a>
+          <a href class="list-group-item">
+            <span class="pull-right">{{role | titlecase}}</span>
+            Role
           </a>
         </div>
       </div>

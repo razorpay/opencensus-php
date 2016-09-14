@@ -5,7 +5,7 @@
   </h1>
 </div>
 <div class="wrapper-md" ng-controller="TeamManagementCtrl" ng-init="getTeamMembers()">
-  <div class="panel panel-default col-sm-8 col-sm-offset-2" >
+  <div class="panel panel-default invites-table col-sm-8 col-sm-offset-2" >
     <div class="panel-heading m-t m-b">
       Invite users to your Organization Team
     </div>
@@ -15,10 +15,14 @@
       </div>
       <div class="row">
         <div class="m-b col-sm-8">
-          <input type="text" class="form-control" name="description" ng-model="team.email" placeholder="Email address of the user" tooltip-placement="right" tooltip="Email Address" required>
+          <input type="text" class="form-control" id="description" name="description" ng-model="team.email" placeholder="Email address of the user" tooltip-placement="right" tooltip="Email Address" required>
         </div>
         <div class="m-b col-sm-4">
-          <input type="hidden" ng-model="team.role">
+          <select class="form-control" name="role" required
+            tooltip-placement="right" tooltip="User Role"
+            ng-model="team.role" ng-options="role.id as role.name for role in roleOptions"
+          >
+          </select>
         </div>
       </div>
       <button  class="btn btn-primary btn-rounded" ng-click="sendInvitation()">Send Invitation</button>
@@ -29,11 +33,14 @@
       </div>
       <div class="row wrapper">
         <div class="row" ng-repeat="user in users" ng-show="user.email !== merchant.email">
-          <div class="m-b col-sm-5">{{ user.email }}</div>
+          <div class="m-b col-sm-3">{{ user.email }}</div>
           <div class="m-b col-sm-3">{{ user.name }}</div>
-          <!-- <div class="m-b col-sm-3"><select ng-model="user.pivot.role" ng-options="role | titlecase for role in roles" class="form-control" required></select></div> -->
-          <div class="m-b col-sm-4" ng-show="user.email !== merchant.email">
-            <!-- <button class="btn btn-sm btn-success" ng-click="updateTeamMember(user)">Update</button> -->
+          <div class="m-b col-sm-3" ng-show="rolesSupport">
+            <select ng-model="user.pivot.role" ng-options="role.id as role.name for role in roleOptions" class="form-control" required>
+            </select>
+          </div>
+          <div class="m-b col-sm-3" ng-show="user.email !== merchant.email">
+            <button class="btn btn-sm btn-success" ng-click="updateTeamMember(user)" ng-show="rolesSupport">Update</button>
             <button class="btn btn-sm btn-danger" ng-click="removeTeamMember(user)">
               Remove
             </button>

@@ -113,7 +113,7 @@ trait BrowserHelper
 
 	public function waitUntilDisplayedByXPath($type, $attribute, $value)
 	{
-		$this->waitUntil(function() use($type, $attribute, $value){
+		$this->waitUntil(function() use ($type, $attribute, $value) {
             $this->assertTrue($this->displayedByXPath($type, $attribute, $value));
             return true;
         }, 20000);
@@ -121,7 +121,7 @@ trait BrowserHelper
 
 	public function waitAndClickByXPath($type, $attribute, $value)
 	{
-		$this->waitUntil(function() use($type, $attribute, $value){
+		$this->waitUntil(function() use ($type, $attribute, $value) {
             $this->clickByXPath($type, $attribute, $value);
             return true;
         }, 20000);
@@ -129,7 +129,7 @@ trait BrowserHelper
 
 	public function waitAndClickByClassName($class)
 	{
-		$this->waitUntil(function() use($class){
+		$this->waitUntil(function() use ($class) {
 			$this->assertTrue($this->displayedByClassName($class));
             $this->clickByClassName($class);
             return true;
@@ -138,7 +138,7 @@ trait BrowserHelper
 
 	public function waitAndClickById($id)
 	{
-		$this->waitUntil(function() use($id){
+		$this->waitUntil(function() use ($id) {
 			$this->assertTrue($this->displayedById($id));
             $this->clickById($id);
             return true;
@@ -147,7 +147,7 @@ trait BrowserHelper
 
 	public function waitAndClickByLinkText($text)
 	{
-		$this->waitUntil(function() use($text){
+		$this->waitUntil(function() use ($text) {
             $this->clickByLinkText($text);
             return true;
         }, 20000);
@@ -155,7 +155,7 @@ trait BrowserHelper
 
 	public function waitUntilDisplayedByCss($selector)
 	{
-		$this->waitUntil(function() use($selector){
+		$this->waitUntil(function() use ($selector) {
             $this->assertTrue($this->displayedByCss($selector));
             return true;
         }, 20000);
@@ -163,7 +163,7 @@ trait BrowserHelper
 
 	public function waitUntilDisplayedByClassName($class)
 	{
-		$this->waitUntil(function() use($class){
+		$this->waitUntil(function() use ($class) {
             $this->assertTrue($this->displayedByClassName($class));
             return true;
         }, 20000);
@@ -171,7 +171,7 @@ trait BrowserHelper
 
 	public function waitUntilDisplayedByName($name)
 	{
-		$this->waitUntil(function() use($name){
+		$this->waitUntil(function() use ($name) {
             $this->assertTrue($this->displayedByName($name));
             return true;
         }, 20000);
@@ -179,7 +179,7 @@ trait BrowserHelper
 
 	public function waitUntilDisplayedById($id)
 	{
-		$this->waitUntil(function() use($id){
+		$this->waitUntil(function() use ($id) {
             $this->assertTrue($this->displayedById($id));
             return true;
         }, 20000);
@@ -187,7 +187,7 @@ trait BrowserHelper
 
 	public function waitUntilContainsByCss($selector, $text)
 	{
-		$this->waitUntil(function() use($selector, $text){
+		$this->waitUntil(function() use ($selector, $text) {
             $span = $this->findByCss($selector);
             $this->assertContains($text, $span->text());
             return true;
@@ -196,26 +196,43 @@ trait BrowserHelper
 
 	public function waitUntilContainsByClassName($class, $text)
 	{
-		$this->waitUntil(function() use($class, $text){
+		$this->waitUntil(function() use ($class, $text) {
             $span = $this->findByClassName($class);
             $this->assertContains($text, $span->text());
             return true;
         }, 20000);
 	}
 
-	public function waitUntilAbsentByClassName($class)
+	public function waitUntilAbsentByCss($selector, $time=20000)
 	{
-		$this->waitUntil(function(){
+        // waitUntil runs till the inner method returns non-null
+		$this->waitUntil(function() use ($selector){
             try
             {
-                $this->assertFalse($this->displayedByClassName($class));
+                $displayed = $this->displayedByCss($selector);
+                if ($displayed === true)
+                {
+                    return null;
+                }
+                else
+                {
+                    return false;
+                }
             }
-            catch(\Exception $e)
+            catch(\PHPUnit_Extensions_Selenium2TestCase_WebDriverException $e)
             {
-
+                if (strpos($e->getMessage(), 'NoSuchElementException') !== false)
+                {
+                    return true;
+                }
+                else
+                {
+                    throw $e;
+                }
             }
+
             return true;
-        }, 20000);
+        }, $time);
 	}
 
 	public function selectByNameAndLabel($name, $option)

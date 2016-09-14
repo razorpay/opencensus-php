@@ -13,7 +13,7 @@ app.controller('AddfundsCtrl', [
 
     $scope.options = {
       'key': '',
-      'amount': '50000',
+      'amount': 50000,
       'name': '',
       'description': 'Add Funds to Account',
       'image': '',
@@ -26,10 +26,13 @@ app.controller('AddfundsCtrl', [
         'contact': ''
       },
       notes: { 'dashboard': 'true' },
-      netbanking: true
+      netbanking: true,
+
+      amountInINR: 50000 / 100
     };
     $scope.addFunds = function () {
       try {
+        $scope.options.amount = parseInt($scope.options.amountInINR * 100); // converting rupee to paise
         var rzp1 = new window.Razorpay($scope.options);
         rzp1.open();
       } catch (e) {

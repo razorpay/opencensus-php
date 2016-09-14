@@ -3,7 +3,7 @@
     <li ng-show="merchant" class="hidden-folded padder m-t m-b-sm text-muted text-xs">
       <span>Features</span>
     </li>
-    <li class="active" ng-show="merchant">
+    <li class="active" ng-show="merchant" my-role="owner manager operations finance">
       <a id="dashboardNav" ui-sref="app.dashboard">
         <i class="fa fa-area-chart text-info"></i>
         <span>Dashboard</span>
@@ -15,11 +15,11 @@
         <span>Payments</span>
       </a>
     </li>
-    <li ng-show="merchant && user.tags.indexOf('Orders') != -1">
+    <li ng-show="merchant">
       <a id="paymentsNav" ui-sref="app.orders.list">
         <i class="fa fa-archive text-success-lter"></i>
         <span>Orders</span>
-        <b class="badge bg-success dk pull-right ng-binding">beta</b>
+        <b class="badge bg-success dk pull-right ng-binding">new</b>
       </a>
     </li>
     <li ng-show="merchant">
@@ -28,7 +28,7 @@
         <span>Refunds</span>
       </a>
     </li>
-    <li ng-show="merchant">
+    <li ng-show="merchant" my-role="owner manager operations finance">
       <a id="settlementsNav" ui-sref="app.settlements.list">
         <i class="fa  fa-check-square-o icon text-success"></i>
         <span>Settlements</span>
@@ -47,7 +47,7 @@
         <span>Add Funds</span>
       </a>
     </li>
-    <li ng-show="merchant">
+    <li ng-show="merchant" my-role="owner manager operations finance">
       <a id="generateReportNav" ui-sref="app.generatereport">
         <i class="fa fa-file-excel-o icon text-danger-lter"></i>
         <!-- <b class="badge bg-success dk pull-right ng-binding">beta</b> -->
@@ -76,24 +76,23 @@
     <li class="hidden-folded padder m-t m-b-sm text-muted text-xs">
       <span>Settings</span>
     </li>
-    <li ng-show="merchant">
+    <li ng-show="merchant" my-role="owner">
       <a id="keysNav" ui-sref="app.keys">
         <i class="icon-key icon text-success-lter"></i>
         <span>Api Keys</span>
       </a>
     </li>
-    <li ng-show="merchant">
+    <li ng-show="merchant" my-role="owner manager">
       <a id="activationNav" ui-sref="app.activation">
         <i class="icon-question icon text-success-lter"></i>
         <b class="badge bg-success dk pull-right">{{user.activation_progress}}%</b>
         <span>Activation</span>
       </a>
     </li>
-    <li ng-show="merchant">
+    <li ng-show="merchant" my-role="owner manager">
       <a id="webhookNav" ui-sref="app.webhooks">
         <i class="icon-share icon text-success-lter"></i>
         <span>Webhook</span>
-        <b class="badge bg-success dk pull-right ng-binding">beta</b>
       </a>
     </li>
     <li>
@@ -102,7 +101,7 @@
         <span>Profile</span>
       </a>
     </li>
-    <li ng-show="merchant">
+    <li ng-show="merchant" my-role="owner manager">
       <a id="configNav" ui-sref="app.config">
         <i class="icon-settings icon text-warning-lter"></i>
         <span>Configuration</span>

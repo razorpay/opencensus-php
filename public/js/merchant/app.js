@@ -36,6 +36,10 @@ var app = angular.module('app', [
       if (user.isIdentityResolved()) {
         authorization.authorize();
       }
+      user.identity(true).then(function (data) {
+        $rootScope.role = data.merchants[data.id].pivot.role;
+      });
+
     });
     $rootScope.$on('$stateChangeError', function () {
       $state.go('500');
