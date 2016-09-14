@@ -605,6 +605,20 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::STATUS) == Status::CREATED);
     }
 
+    /**
+     * A payment is considered just created for 15
+     * minutes since creation
+     * @return bool
+     */
+    public function justCreated()
+    {
+        $currentTime = time();
+
+        $secondsSinceCreated = $currentTime - $this->getAttribute(self::CREATED_AT);
+
+        return (bool) (($currentTime - $secondsSinceCreated) > (60*15));
+    }
+
     public function isAuthorized()
     {
         return ($this->getAttribute(self::STATUS) === Status::AUTHORIZED);

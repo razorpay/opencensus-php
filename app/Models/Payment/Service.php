@@ -338,7 +338,12 @@ class Service extends Base\Service
     /**
      * We only return the payment status in case of an async
      * payment + status being either of created or authorized
+     *
+     * Note: This will only work within 15 minutes of the payment creation
+     *
      * @return array
+     *
+     *
      */
     public function fetchStatus($id)
     {
@@ -348,14 +353,23 @@ class Service extends Base\Service
 
         $status = 'unknown';
 
-        if (Gateway::supportsAsync($gateway) and $payment->isCreatedOrAuthorized())
+        // Error cases
+        //
+        if ((!Gateway::supportsAsync($gateway)) or (!$payment->justCreated()))
         {
-            $status = $payment->getStatus();
+            // Throw error
         }
 
-        return [
-            Entity::STATUS    =>  $status
-        ];
+        if ($payment->isCreated())
+        {
+            return [
+                Entity::STATUS      =>  $payment->getStatus(),
+            ]
+        }
+        else if($payment->isAuthorized())
+        {
+            // Send entire authorized response
+        }
     }
 
     public function addPaymentMetadata($id, $input)

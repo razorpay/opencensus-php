@@ -8,6 +8,7 @@ class ResponseMap
 {
     const CODES = array(
         '0'     =>  'Transaction Successful',
+        '5'     =>  'Invalid Amount Format',
         '92'    =>  'Transaction Authorized',
         '5000'  =>  ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
         '5001'  =>  'Invalid Merchant Id',
