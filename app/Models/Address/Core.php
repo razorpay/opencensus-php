@@ -4,7 +4,6 @@ namespace RZP\Models\Address;
 
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
@@ -15,16 +14,17 @@ class Core extends Base\Core
     const MAX_ALLOWED_ADDRESSES = 3;
 
     /**
-     * Builds a new address entity. Associates this address with the customer which is sent in the input.
+     * Builds a new address entity. Associates this address with the entity which is sent in the input.
      * If this address is set to be the primary address, we switch it with the previous primary address, if present.
-     * If not, we don't do anything. We just create the address and the association with the customer.
+     * If not, we don't do anything. We just create the address and the association with the entity.
      *
-     * @param Customer\Entity $customer
+     * @param Base\Entity $entity
+     * @param $entityType
      * @param array $input
      * @return Entity
      * @throws Exception\BadRequestValidationFailureException
      */
-    public function create(Customer\Entity $customer, array $input)
+    public function create(Base\Entity $entity, $entityType, array $input)
     {
         $this->trace->info(
             TraceCode::ADDRESS_CREATE_REQUEST,
@@ -34,20 +34,20 @@ class Core extends Base\Core
         $address = (new Entity)->build($input);
 
         $currentAddresses = $this->repo->address->fetchAddressesForEntity(
-            Type::CUSTOMER, $customer->getId(), [Entity::ADDRESS_TYPE => $input[Entity::ADDRESS_TYPE]]);
+            $entityType, $entity->getId(), [Entity::ADDRESS_TYPE => $input[Entity::ADDRESS_TYPE]]);
 
         if ($currentAddresses->count() >= self::MAX_ALLOWED_ADDRESSES)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'You cannot have more than ' . self::MAX_ALLOWED_ADDRESSES . ' ' .
-                $input[Entity::ADDRESS_TYPE] . ' for ' . Type::CUSTOMER);
+                $input[Entity::ADDRESS_TYPE] . ' for ' . $entityType);
         }
 
-        return $this->repo->transaction(function() use ($address, $customer)
+        return $this->repo->transaction(function() use ($address, $entity, $entityType)
         {
-            $address->setEntityType(Type::CUSTOMER);
+            $address->setEntityType($entityType);
 
-            $address->customer()->associate($customer);
+            $address->source()->associate($entity);
 
             if ($address->isPrimary() === true)
             {
@@ -74,26 +74,26 @@ class Core extends Base\Core
      *  - we set the primary flag to false
      *  - get the latest address from the db, excluding the address that is being deleted from the query
      *  - if the above query returns 0 results (there's only one address, the one being deleted),
-     *    we set the customer's address to null.
-     *  - else, we set the latest address to primary and update the customer's address attribute.
+     *    we set the entity's address to null.
+     *  - else, we set the latest address to primary and update the entity's address attribute.
      *
      * @param Entity $address The address entity which needs to be deleted
      * @return mixed
      */
     public function delete(Entity $address)
     {
-        $customer = $address->customer;
+        $entity = $this->getAssociatedEntityFromAddress($address);
 
         $this->trace->info(
             TraceCode::ADDRESS_DELETE_REQUEST,
             [
                 'address_id'    => $address->getId(),
                 'address_type'  => $address->getAddressType(),
-                'customer_id'   => $customer->getId(),
+                'entity_id'     => $entity->getId(),
             ]
         );
 
-        return $this->repo->transaction(function() use ($address, $customer)
+        return $this->repo->transaction(function() use ($address, $entity)
         {
             if ($address->isPrimary() === true)
             {
@@ -105,7 +105,7 @@ class Core extends Base\Core
                 // We are passing the address ID here because we want the latest address, excluding the current one
                 // since we are going to delete this one.
                 $latestAddress = $this->repo->address->fetchLatestAddress(
-                    Type::CUSTOMER, $customer->getId(), $address->getAddressType(), $address->getId());
+                    $address->getEntityType(), $entity->getId(), $address->getAddressType(), $address->getId());
 
                 if ($latestAddress !== null)
                 {
@@ -124,9 +124,9 @@ class Core extends Base\Core
                 }
 
                 $setterFunc = $this->getSetterFunctionForAddress($address->getAddressType());
-                $customer->$setterFunc($addressId);
+                $entity->$setterFunc($addressId);
 
-                $this->repo->saveOrFail($customer);
+                $this->repo->saveOrFail($entity);
             }
 
             return $this->repo->address->deleteOrFail($address);
@@ -140,7 +140,7 @@ class Core extends Base\Core
      * If there is a current primary address,
      *   - set its primary flag to false.
      * Irrespective of current primary address being present or not,
-     * we set the associated customer's address ID to the passed address's ID.
+     * we set the associated entity's address ID to the passed address's ID.
      *
      * @param Entity $address The address entity which we need to set as primary,
      *                        displacing the older primary address.
@@ -148,14 +148,14 @@ class Core extends Base\Core
      */
     protected function handlePrimaryAddressSwitch(Entity $address)
     {
-        $customer = $address->customer;
+        $entity = $this->getAssociatedEntityFromAddress($address);
 
         // We are passing the address ID here because we save the address in the previous step with
         // primary set to true. Hence, we will always get 1 or more primary addresses even if we are
-        // creating a new address for the customer. We need to get primary addresses `except`
+        // creating a new address for the entity. We need to get primary addresses `except`
         // this address which is just created.
         $currentPrimaryAddress = $this->repo->address->fetchCurrentPrimaryAddress(
-            Type::CUSTOMER, $customer->getId(), $address->getAddressType(), $address->getId());
+            $address->getEntityType(), $entity->getId(), $address->getAddressType(), $address->getId());
 
         if ($currentPrimaryAddress->count() > 1)
         {
@@ -163,14 +163,14 @@ class Core extends Base\Core
                 'Found multiple primary addresses for an address type.',
                 null,
                 [
-                    'entity_id'     => $customer->getId(),
-                    'entity_type'   => Type::CUSTOMER,
+                    'entity_id'     => $entity->getId(),
+                    'entity_type'   => $address->getEntityType(),
                     'address_type'  => $address->getAddressType(),
                 ]
             );
         }
 
-        $this->repo->transaction(function() use ($currentPrimaryAddress, $address, $customer)
+        $this->repo->transaction(function() use ($currentPrimaryAddress, $address, $entity)
         {
             // If there is no current primary address, there's no need to do anything
 
@@ -189,7 +189,8 @@ class Core extends Base\Core
                 $this->trace->info(
                     TraceCode::PRIMARY_ADDRESS_SWITCH,
                     [
-                        'customer_id'           => $customer->getId(),
+                        'entity_id'             => $entity->getId(),
+                        'entity_type'           => $address->getEntityType(),
                         'address_type'          => $address->getAddressType(),
                         'old_primary_address'   => $currentPrimaryAddress->getId(),
                         'new_primary_address'   => $address->getId(),
@@ -197,16 +198,20 @@ class Core extends Base\Core
                 );
             }
 
-            // TODO: Check if there's a better way of doing this than just setting.
-
-            // We can't use associations here because a customer's shipping address can be
-            // associated with many addresses. Laravel will not understand which one to associate it with.
-
             $setterFunc = $this->getSetterFunctionForAddress($address->getAddressType());
-            $customer->$setterFunc($address->getId());
+            $entity->$setterFunc($address->getId());
 
-            $this->repo->saveOrFail($customer);
+            $this->repo->saveOrFail($entity);
         });
+    }
+
+    protected function getAssociatedEntityFromAddress(Entity $address)
+    {
+        $entityType = $address->getEntityType();
+
+        $entity = $address->{$entityType};
+
+        return $entity;
     }
 
     protected function getSetterFunctionForAddress($addressType)

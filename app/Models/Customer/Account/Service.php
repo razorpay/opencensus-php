@@ -293,7 +293,7 @@ class Service extends Base\Service
 
         $customer = $this->repo->customer->findByIdAndMerchant($customerId, $this->merchant);
 
-        $address = (new Address\Core)->create($customer, $input);
+        $address = (new Address\Core)->create($customer, Address\Type::CUSTOMER, $input);
 
         return $address->toArrayPublic();
     }

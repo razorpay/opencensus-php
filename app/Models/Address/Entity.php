@@ -97,6 +97,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PRIMARY);
     }
 
+    public function getEntityType()
+    {
+        return $this->getAttribute(self::ENTITY_TYPE);
+    }
+
     // ----------------------------------- END GETTERS -----------------------------------
 
     // ----------------------------------- SETTERS -----------------------------------
@@ -116,6 +121,19 @@ class Entity extends Base\PublicEntity
     // ----------------------------------- END SETTERS -----------------------------------
 
     // ----------------------------------- RELATIONS -----------------------------------
+
+    public function source()
+    {
+        $entityType = $this->getAttribute(self::ENTITY_TYPE);
+
+        Type::validateEntityType($entityType);
+
+        $class = 'RZP\\Models\\';
+
+        $class .= ucfirst($entityType) . '\\' . 'Entity';
+
+        return $this->belongsTo($class, self::ENTITY_ID);
+    }
 
     public function customer()
     {
