@@ -72,7 +72,7 @@ class MaxMind
 
     protected function getFormattedAmount($payment)
     {
-        $amount = $payment->getAmount();
+        $amount = $payment->getAmount() / 100;
 
         return number_format($amount, 2, '.', '');
     }
