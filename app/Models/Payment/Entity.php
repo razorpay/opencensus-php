@@ -25,6 +25,7 @@ class Entity extends Base\PublicEntity
     const AMOUNT_REFUNDED       = 'amount_refunded';
     const STATUS                = 'status';
     const ORDER_ID              = 'order_id';
+    const INTERNATIONAL         = 'international';
     const METHOD                = 'method';
     const REFUND_STATUS         = 'refund_status';
     const CAPTURED              = 'captured';
@@ -82,6 +83,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::MERCHANT_ID,
         self::AMOUNT,
+        self::INTERNATIONAL,
         self::METHOD,
         self::EMI_PLAN_ID,
         self::BANK,
@@ -131,6 +133,7 @@ class Entity extends Base\PublicEntity
         self::TRANSACTION_ID,
         self::AUTO_CAPTURED,
         self::ORDER_ID,
+        self::INTERNATIONAL,
         self::SIGNED,
         self::VERIFIED,
         self::CALLBACK_URL,
@@ -198,6 +201,7 @@ class Entity extends Base\PublicEntity
         self::OTP_COUNT         => null,
         self::EMI_PLAN_ID       => null,
         self::LATE_AUTHORIZED   => null,
+        self::INTERNATIONAL     => 0,
     );
 
     protected $amounts = array(
@@ -303,6 +307,11 @@ class Entity extends Base\PublicEntity
 // --------------------- Modifiers Ends ----------------------------------------
 
 // ----------------------- Setters ---------------------------------------------
+
+    public function setInternational($value)
+    {
+        $this->setAttribute(self::INTERNATIONAL, $value);
+    }
 
     public function setCaptureAmount($amount)
     {
@@ -681,6 +690,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::METHOD) === Payment\Method::EMI);
     }
 
+    public function isCard()
+    {
+        return ($this->getAttribute(self::METHOD) === Payment\Method::CARD);
+    }
+
     public function isGateway($gateway)
     {
         return ($this->getAttribute(self::GATEWAY) === $gateway);
@@ -704,7 +718,7 @@ class Entity extends Base\PublicEntity
 
     public function isInternational()
     {
-        return $this->card->isInternational();
+        return $this->getAttribute(self::INTERNATIONAL);
     }
 
 // ----------------------- Getters ---------------------------------------------
