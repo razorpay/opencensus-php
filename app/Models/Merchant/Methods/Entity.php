@@ -45,6 +45,8 @@ class Entity extends Base\PublicEntity
         self::OLAMONEY,
         self::EMI,
         self::NETBANKING,
+        self::DEBIT_CARD,
+        self::CREDIT_CARD,
     );
 
     protected $visible = array(
@@ -60,6 +62,8 @@ class Entity extends Base\PublicEntity
         self::OLAMONEY,
         self::EMI,
         self::NETBANKING,
+        self::DEBIT_CARD,
+        self::CREDIT_CARD,
     );
 
     protected $public = array(
