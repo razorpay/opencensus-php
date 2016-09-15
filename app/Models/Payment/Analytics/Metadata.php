@@ -126,6 +126,11 @@ class Metadata
 
     public static function getStringForIntegrationValue($value)
     {
+        if ($value === null)
+        {
+            return null;
+        }
+
         $values = array_flip(self::INTEGRATION_VALUES);
 
         return $values[$value];
@@ -160,6 +165,10 @@ class Metadata
 
     public static function getStringForPlatformValue($value)
     {
+        if ($value === null)
+        {
+            return null;
+        }
         $values = array_flip(self::PLATFORM_VALUES);
 
         return $values[$value];
@@ -194,6 +203,11 @@ class Metadata
 
     public static function getStringForOsValue($value)
     {
+        if ($value === null)
+        {
+            return null;
+        }
+
         $values = array_flip(self::OS_VALUES);
 
         return $values[$value];
@@ -228,6 +242,11 @@ class Metadata
 
     public static function getStringForLibraryValue($value)
     {
+        if ($value === null)
+        {
+            return null;
+        }
+
         $values = array_flip(self::LIBRARY_VALUES);
 
         return $values[$value];
@@ -238,7 +257,7 @@ class Metadata
         return array_key_exists($browser, self::BROWSER_VALUES);
     }
 
-    public static function validatebrowser($browser)
+    public static function validateBrowser($browser)
     {
         $browser = strtolower($browser);
 
@@ -248,7 +267,7 @@ class Metadata
         }
     }
 
-    public static function getValueForbrowser($browser)
+    public static function getValueForBrowser($browser)
     {
         $browser = strtolower($browser);
 
@@ -262,6 +281,10 @@ class Metadata
 
     public static function getStringForBrowserValue($value)
     {
+        if ($value === null)
+        {
+            return null;
+        }
         $values = array_flip(self::BROWSER_VALUES);
 
         return $values[$value];
@@ -272,7 +295,7 @@ class Metadata
         return array_key_exists($device, self::DEVICE_VALUES);
     }
 
-    public static function validatedevice($device)
+    public static function validateDevice($device)
     {
         $device = strtolower($device);
 
@@ -296,6 +319,11 @@ class Metadata
 
     public static function getStringForDeviceValue($value)
     {
+        if ($value === null)
+        {
+            return null;
+        }
+
         $values = array_flip(self::DEVICE_VALUES);
 
         return $values[$value];
