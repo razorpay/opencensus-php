@@ -68,11 +68,6 @@ class Server extends Base\Mock\Server
         return $url;
     }
 
-    protected function getApprovalCode()
-    {
-        return 'Y'.':'.random_integer(6).':'.random_integer(10).':PPX :'.random_integer(12);
-    }
-
     public function capture($input)
     {
         parent::capture($input);
@@ -109,6 +104,59 @@ class Server extends Base\Mock\Server
         $captureResponse = $this->buildCaptureResponse($content);
 
         return $this->prepareResponse($captureResponse);
+    }
+
+    public function verify($input)
+    {
+        $xml   = simplexml_load_string($input);
+        $xmlBody = $xml->children('SOAP-ENV', true)->Body->children('ipgapi', true)->children('a1', true);
+        $body = json_decode(json_encode($xmlBody), true);
+
+        $oid = $body['Action']['InquiryOrder']['OrderId'];
+        $timestamp = Carbon::now('Asia/Kolkata');
+        $tdate = (string) $timestamp->getTimeStamp();
+        $approvalCode = $this->getApprovalCode();
+        $tdateformatted = (string) $timestamp->format("Y.m.d H:i:s (T)");
+
+        $soapContent="<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"><SOAP-ENV:Header/><SOAP-ENV:Body><ipgapi:IPGApiActionResponse xmlns:ipgapi=\"http://ipg-online.com/ipgapi/schemas/ipgapi\" xmlns:a1=\"http://ipg-online.com/ipgapi/schemas/a1\" xmlns:pay_1_0_0=\"http://api.clickandbuy.com/webservices/pay_1_0_0/\" xmlns:v1=\"http://ipg-online.com/ipgapi/schemas/v1\"><ipgapi:successfully>true</ipgapi:successfully><ipgapi:OrderId>$oid</ipgapi:OrderId><v1:Billing><v1:Name>name</v1:Name></v1:Billing><v1:Shipping/><a1:TransactionValues><v1:CreditCardTxType><v1:Type>preauth</v1:Type></v1:CreditCardTxType><v1:CreditCardData><v1:CardNumber>card_number</v1:CardNumber><v1:ExpMonth>12</v1:ExpMonth><v1:ExpYear>18</v1:ExpYear><v1:Brand>VISA</v1:Brand></v1:CreditCardData><v1:Payment><v1:ChargeTotal>3</v1:ChargeTotal><v1:Currency>356</v1:Currency></v1:Payment><v1:TransactionDetails><v1:InvoiceNumber>$oid</v1:InvoiceNumber><v1:OrderId>$oid</v1:OrderId><v1:Ip>182.74.201.50</v1:Ip><v1:TDate>$tdate</v1:TDate><v1:TransactionOrigin>ECI</v1:TransactionOrigin></v1:TransactionDetails><ipgapi:IPGApiOrderResponse><ipgapi:ApprovalCode>$approvalCode</ipgapi:ApprovalCode><ipgapi:AVSResponse>PPX</ipgapi:AVSResponse><ipgapi:Brand>VISA</ipgapi:Brand><ipgapi:OrderId>$oid</ipgapi:OrderId><ipgapi:PayerSecurityLevel>1</ipgapi:PayerSecurityLevel><ipgapi:PaymentType>CREDITCARD</ipgapi:PaymentType><ipgapi:ProcessorApprovalCode>014932</ipgapi:ProcessorApprovalCode><ipgapi:ProcessorCCVResponse> </ipgapi:ProcessorCCVResponse><ipgapi:ReferencedTDate>$tdate</ipgapi:ReferencedTDate><ipgapi:TDate>$tdate</ipgapi:TDate><ipgapi:TDateFormatted>$tdateformatted</ipgapi:TDateFormatted><ipgapi:TerminalID>44000025</ipgapi:TerminalID></ipgapi:IPGApiOrderResponse><a1:TraceNumber>625915</a1:TraceNumber><a1:TransactionState>AUTHORIZED</a1:TransactionState><a1:SubmissionComponent>CONNECT</a1:SubmissionComponent></a1:TransactionValues><a1:TransactionValues><v1:CreditCardTxType><v1:Type>postauth</v1:Type></v1:CreditCardTxType><v1:CreditCardData><v1:CardNumber>card_number</v1:CardNumber><v1:ExpMonth>12</v1:ExpMonth><v1:ExpYear>18</v1:ExpYear><v1:Brand>VISA</v1:Brand></v1:CreditCardData><v1:Payment><v1:ChargeTotal>3</v1:ChargeTotal><v1:Currency>356</v1:Currency></v1:Payment><v1:TransactionDetails><v1:InvoiceNumber>$oid</v1:InvoiceNumber><v1:OrderId>$oid</v1:OrderId><v1:Ip>182.74.201.50</v1:Ip><v1:TDate>1473952020</v1:TDate><v1:TransactionOrigin>ECI</v1:TransactionOrigin></v1:TransactionDetails><ipgapi:IPGApiOrderResponse><ipgapi:ApprovalCode>$approvalCode</ipgapi:ApprovalCode><ipgapi:AVSResponse>PPX</ipgapi:AVSResponse><ipgapi:Brand>VISA</ipgapi:Brand><ipgapi:OrderId>$oid</ipgapi:OrderId><ipgapi:PayerSecurityLevel>1</ipgapi:PayerSecurityLevel><ipgapi:PaymentType>CREDITCARD</ipgapi:PaymentType><ipgapi:ProcessorApprovalCode>014932</ipgapi:ProcessorApprovalCode><ipgapi:ProcessorCCVResponse> </ipgapi:ProcessorCCVResponse><ipgapi:ReferencedTDate>$tdate</ipgapi:ReferencedTDate><ipgapi:TDate>1473952020</ipgapi:TDate><ipgapi:TDateFormatted>$tdateformatted</ipgapi:TDateFormatted><ipgapi:TerminalID>44000025</ipgapi:TerminalID></ipgapi:IPGApiOrderResponse><a1:TraceNumber>625915</a1:TraceNumber><a1:TransactionState>CAPTURED</a1:TransactionState><a1:UserID>1</a1:UserID><a1:SubmissionComponent>API</a1:SubmissionComponent></a1:TransactionValues><a1:TransactionValues><v1:CreditCardTxType><v1:Type>credit</v1:Type></v1:CreditCardTxType><v1:CreditCardData><v1:CardNumber>card_number</v1:CardNumber><v1:ExpMonth>12</v1:ExpMonth><v1:ExpYear>18</v1:ExpYear><v1:Brand>VISA</v1:Brand></v1:CreditCardData><v1:Payment><v1:ChargeTotal>3</v1:ChargeTotal><v1:Currency>356</v1:Currency></v1:Payment><v1:TransactionDetails><v1:InvoiceNumber>$oid</v1:InvoiceNumber><v1:OrderId>$oid</v1:OrderId><v1:Ip>182.74.201.50</v1:Ip><v1:TDate>$tdate</v1:TDate><v1:TransactionOrigin>ECI</v1:TransactionOrigin></v1:TransactionDetails><ipgapi:IPGApiOrderResponse><ipgapi:ApprovalCode>$approvalCode</ipgapi:ApprovalCode><ipgapi:AVSResponse>PPX</ipgapi:AVSResponse><ipgapi:Brand>VISA</ipgapi:Brand><ipgapi:OrderId>$oid</ipgapi:OrderId><ipgapi:PaymentType>CREDITCARD</ipgapi:PaymentType><ipgapi:ProcessorApprovalCode>014932</ipgapi:ProcessorApprovalCode><ipgapi:ProcessorCCVResponse> </ipgapi:ProcessorCCVResponse><ipgapi:ReferencedTDate>$tdate</ipgapi:ReferencedTDate><ipgapi:TDate>$tdate</ipgapi:TDate><ipgapi:TDateFormatted>$tdateformatted</ipgapi:TDateFormatted><ipgapi:TerminalID>44000025</ipgapi:TerminalID></ipgapi:IPGApiOrderResponse><a1:TraceNumber>625915</a1:TraceNumber><a1:TransactionState>CAPTURED</a1:TransactionState><a1:UserID>1</a1:UserID><a1:SubmissionComponent>API</a1:SubmissionComponent></a1:TransactionValues></ipgapi:IPGApiActionResponse></SOAP-ENV:Body></SOAP-ENV:Envelope>";
+
+        return $this->prepareResponse($soapContent);
+    }
+
+    protected function getApprovalCode()
+    {
+        return 'Y'.':'.random_integer(6).':'.random_integer(10).':PPX :'.random_integer(12);
+    }
+
+    protected function wrapSoap($content)
+    {
+        $soapWrapper = "<SOAP-ENV:Envelope xmlns:SOAP-ENV='http://schemas.xmlsoap.org/soap/envelope/'><SOAP-ENV:Header/><SOAP-ENV:Body><ipgapi:IPGApiActionResponse xmlns:a1='http://ipg-online.com/ipgapi/schemas/a1' xmlns:ipgapi='http://ipg-online.com/ipgapi/schemas/ipgapi' xmlns:pay_1_0_0='http://api.clickandbuy.com/webservices/pay_1_0_0/' xmlns:v1='http://ipg-online.com/ipgapi/schemas/v1'>$content</ipgapi:IPGApiActionResponse></SOAP-ENV:Body></SOAP-ENV:Envelope>";
+
+        return $soapWrapper;
+    }
+
+    private function arrayToXml($array, $wrap=null)
+    {
+        // set initial value for XML string
+        $xml = '';
+        foreach ($array as $key => $value)
+        {
+            if ( is_array($value) == true )
+            {
+                $xml .= $this->arrayToXml($value, $key);
+            }
+            else
+            {
+                $xml .= "<$key>" . htmlspecialchars(trim($value)) . "</$key>";
+            }
+        }
+        // wrap XML with $wrap TAG
+        if ($wrap != null)
+        {
+            $xml = "<$wrap>".$xml."</$wrap>";
+        }
+
+        return $xml;
     }
 
     protected function buildCaptureResponse($array)

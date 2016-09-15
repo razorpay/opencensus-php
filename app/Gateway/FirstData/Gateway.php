@@ -13,6 +13,7 @@ use RZP\Gateway\Base;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Gateway\Base\VerifyResult;
 use Carbon\Carbon;
 
 class Gateway extends Base\Gateway
@@ -50,6 +51,8 @@ class Gateway extends Base\Gateway
 
     const APPROVAL_CODE             = 'approval_code';
     const RESPONSE_HASH             = 'response_hash';
+    const ORDER_REQUEST             = 'IPGApiOrderRequest';
+    const ACTION_REQUEST            = 'IPGApiActionRequest';
 
     const TEST_STORE_ID             = 'test_store_id';
     const TEST_HASH_SECRET          = 'test_hash_secret';
@@ -104,20 +107,29 @@ class Gateway extends Base\Gateway
     {
         parent::capture($input);
 
+        $gatewayPayment = $this->getRepo()->retrieveCapturedByPaymentId($input['payment']['id']);
+
+        if (($gatewayPayment !== null) and
+            ($gatewayPayment['amount'] === $input['payment']['amount']))
+        {
+            return;
+        }
+
         $content = $this->getCaptureRequestContentArray($input);
 
         $this->trace->info(TraceCode::GATEWAY_CAPTURE_REQUEST, $content);
 
-        try
-        {
-            $response = $this->postSoapRequest($content);
-            $this->trace->info(TraceCode::GATEWAY_CAPTURE_RESPONSE, [$response]);
-        }
-        catch (SoapFault $exception)
-        {
-            throw new Exception\RuntimeException(
-                'Capture request failed.', null, $exception);
-        }
+        $response = $this->postOrderRequestAndParseResponse($content);
+        $this->trace->info(TraceCode::GATEWAY_CAPTURE_RESPONSE, [$response]);
+
+        $payment = $this->getRepo()->findByPaymentIdAndActionOrFail($input['payment']['id'], Base\Action::AUTHORIZE);
+
+        $attributes = array(
+            Entity::STATUS  => $response['TransactionResult'],
+        );
+
+        $payment->fill($attributes);
+        $payment->saveOrFail();
     }
 
     public function refund(array $input)
@@ -128,16 +140,8 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST, $content);
 
-        try
-        {
-            $response = $this->postSoapRequest($content);
-            $this->trace->info(TraceCode::GATEWAY_REFUND_RESPONSE, [$response]);
-        }
-        catch (SoapFault $exception)
-        {
-            throw new Exception\RuntimeException(
-                'Refund request failed.', null, $exception);
-        }
+        $response = $this->postOrderRequestAndParseResponse($content);
+        $this->trace->info(TraceCode::GATEWAY_REFUND_RESPONSE, [$response]);
     }
 
     public function verify(array $input)
@@ -147,6 +151,158 @@ class Gateway extends Base\Gateway
         $verify = new Base\Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
+    }
+
+    protected function sendPaymentVerifyRequest($verify)
+    {
+        $input = $verify->input;
+        $payment = $verify->payment;
+
+        $content = $this->getVerifyRequestContentArray($input);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST, $content);
+
+
+        $ipgApiActionResponse = $this->postActionRequestAndParseResponse($content);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE, [$ipgApiActionResponse->asXML()]);
+
+        $content = array(
+            Entity::TDATE       => $ipgApiActionResponse->children('a1',true)->children('ipgapi',true)->IPGApiOrderResponse->TDate->__toString(),
+            Entity::STATUS      => $ipgApiActionResponse->children('a1',true)->TransactionValues->TransactionState->__tostring(),
+        );
+
+        $verify->verifyResponseContent = $ipgApiActionResponse;
+
+        return $content;
+    }
+
+    protected function verifyPayment($verify)
+    {
+        $input = $verify->input;
+        $gatewayPayment = $verify->payment;
+        $content = $verify->verifyResponseContent;
+
+        $verify->status = VerifyResult::STATUS_MATCH;
+
+        $verify->gatewaySuccess = $this->getVerifyGatewayStatus($content);
+
+        $verify->apiSuccess = $this->getVerifyApiStatus($gatewayPayment, $input);
+
+        if ($verify->apiSuccess !== $verify->gatewaySuccess)
+        {
+            $verify->status = VerifyResult::STATUS_MISMATCH;
+        }
+
+        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
+
+        return $verify->status;
+    }
+
+    protected function getVerifyGatewayStatus($ipgApiActionResponse)
+    {
+        $transactionValues = $ipgApiActionResponse->children('a1',true);
+        $transactionValuesArray = (json_decode(json_encode($transactionValues), true)['TransactionValues']);
+
+        $latestTransactionState = end($transactionValuesArray)['TransactionState'];
+
+        $gatewayStatus = in_array($latestTransactionState, array('AUTHORIZED','CAPTURED')) ? true : false;
+
+        return $gatewayStatus;
+    }
+
+    protected function getVerifyApiStatus($gatewayPayment, $input)
+    {
+        if (($input['payment']['status'] === 'failed') or
+            ($input['payment']['status'] === 'created'))
+        {
+            $apiStatus = false;
+
+            if (($gatewayPayment['received'] === true) or
+                ($gatewayPayment['status'] === 'APPROVED'))
+            {
+                $this->trace->info(
+                    TraceCode::GATEWAY_PAYMENT_VERIFY_UNEXPECTED,
+                    [
+                        'gateway_payment'   => $gatewayPayment,
+                        'payment'           => $input['payment']
+                    ]);
+            }
+        }
+        else
+        {
+            $apiStatus = true;
+
+            if (($gatewayPayment['received'] === false) or
+                ($gatewayPayment['status'] !== 'APPROVED'))
+            {
+                $this->trace->info(
+                    TraceCode::GATEWAY_PAYMENT_VERIFY_UNEXPECTED,
+                    [
+                        'gateway_payment'   => $gatewayPayment,
+                        'payment'           => $input['payment']
+                    ]);
+            }
+        }
+
+        return $apiStatus;
+    }
+
+    protected function postSoapRequest($content, $action = self::ORDER_REQUEST)
+    {
+        $xmlRequest = $this->arrayToXml($content);
+        $content = $this->wrapSoap($xmlRequest, $action);
+
+        $options = $this->getRequestOptions();
+        $request = $this->getStandardApiRequestArray($content, $options);
+
+        $response = $this->sendGatewayRequest($request);
+        $this->trace->info(TraceCode::GATEWAY_RESPONSE, [$response->body]);
+
+        $xml   = simplexml_load_string($response->body);
+
+        return $xml;
+    }
+
+    protected function postOrderRequestAndParseResponse($content)
+    {
+        $xml = $this->postSoapRequest($content, self::ORDER_REQUEST);
+
+        if ( $xml->children('SOAP-ENV', true)->Body->Fault->count() > 0)
+        {
+            $gatewayCode = $xml->children('SOAP-ENV', true)->Body->Fault->children()->detail->children('ipgapi',true)->IPGApiOrderResponse->ApprovalCode->__toString();
+            $desc = $xml->children('SOAP-ENV', true)->Body->Fault->children()->detail->children('ipgapi',true)->IPGApiOrderResponse->ErrorMessage->__toString();
+            throw new Exception\GatewayErrorException(Error\ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED, $gatewayCode, $desc);
+        }
+
+        $ipgApiOrderResponse = $xml->children('SOAP-ENV', true)->Body->children('ipgapi', true);
+
+        $xmlBody = $ipgApiOrderResponse->children('ipgapi', true);
+        $body = json_decode(json_encode($xmlBody), true);
+
+        return $body;
+    }
+
+    protected function postActionRequestAndParseResponse($content)
+    {
+        $xml = $this->postSoapRequest($content, self::ACTION_REQUEST);
+
+        $ipgApiActionResponse = $xml->children('SOAP-ENV', true)->Body->children('ipgapi', true);
+
+        $successful = $ipgApiActionResponse->IPGApiActionResponse->successfully->__toString();
+        if ( $successful == 'false' )
+        {
+            throw new Exception\GatewayErrorException(
+                        Error\ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
+        }
+
+        return $ipgApiActionResponse;
+    }
+
+    protected function wrapSoap($content, $action)
+    {
+        $soapWrapper = "<?xml version='1.0' encoding='UTF-8'?><SOAP-ENV:Envelope xmlns:SOAP-ENV='http://schemas.xmlsoap.org/soap/envelope/'><SOAP-ENV:Body><ipgapi:$action xmlns:ipgapi='http://ipg-online.com/ipgapi/schemas/ipgapi' xmlns:v1='http://ipg-online.com/ipgapi/schemas/v1' xmlns:a1='http://ipg-online.com/ipgapi/schemas/a1'>$content</ipgapi:$action></SOAP-ENV:Body></SOAP-ENV:Envelope>";
+
+        return $soapWrapper;
     }
 
     protected function getStandardConnectRequestArray($content = [], $method = 'post')
@@ -283,31 +439,6 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected function wrapSoap($content)
-    {
-        $soapWrapper = "<?xml version='1.0' encoding='UTF-8'?><SOAP-ENV:Envelope xmlns:SOAP-ENV='http://schemas.xmlsoap.org/soap/envelope/'><SOAP-ENV:Body><ipgapi:IPGApiOrderRequest xmlns:ipgapi='http://ipg-online.com/ipgapi/schemas/ipgapi' xmlns:v1='http://ipg-online.com/ipgapi/schemas/v1'>".$content."</ipgapi:IPGApiOrderRequest></SOAP-ENV:Body></SOAP-ENV:Envelope>";
-
-        return $soapWrapper;
-    }
-
-    protected function postSoapRequest($content)
-    {
-        $xmlRequest = $this->arrayToXml($content);
-        $content = $this->wrapSoap($xmlRequest);
-
-        $options = $this->getRequestOptions();
-        $request = $this->getStandardApiRequestArray($content, $options);
-
-        $response = $this->sendGatewayRequest($request);
-        $this->trace->info(TraceCode::GATEWAY_RESPONSE, [$response]);
-
-        $xml   = simplexml_load_string($response->body);
-        $xmlBody = $xml->children('SOAP-ENV', true)->Body->children('ipgapi', true)->children('ipgapi', true);
-        $body = json_decode(json_encode($xmlBody), true);
-
-        return $response;;
-    }
-
     protected function getRequestOptions()
     {
         $auth = $this->getCredentials();
@@ -328,6 +459,15 @@ class Gateway extends Base\Gateway
         curl_setopt($curl, CURLOPT_SSLKEY, $this->getClientCertificateKey());
         curl_setopt($curl, CURLOPT_HTTPHEADER, array("Content-Type: text/xml"));
         // curl_setopt($curl, CURLOPT_SSLKEYPASSWD, $this->getClientCertificateKeyPassword());
+    }
+
+    protected function getVerifyRequestContentArray($input)
+    {
+        $gatewayPayment = $this->getRepo()->retrieveByPaymentIdOrFail($input['payment']['id']);
+
+        $request['a1:Action']['a1:InquiryOrder']['a1:OrderId'] = $gatewayPayment['oid'];
+
+        return $request;
     }
 
     protected function getCaptureRequestContentArray($input)
