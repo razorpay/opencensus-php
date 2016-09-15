@@ -59,11 +59,7 @@ class Core extends Base\Core
             {
                 $input[Entity::SHIPPING_ADDRESS][Address\Entity::ADDRESS_TYPE] = Address\Type::SHIPPING_ADDRESS;
 
-                $address = (new Address\Core())->create($customer, $input[Entity::SHIPPING_ADDRESS]);
-
-                $customer->setShippingAddressId($address->getId());
-
-                $this->repo->saveOrFail($customer);
+                (new Address\Core)->create($customer, $input[Entity::SHIPPING_ADDRESS]);
             }
         });
 
