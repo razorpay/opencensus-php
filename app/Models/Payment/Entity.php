@@ -987,6 +987,11 @@ class Entity extends Base\PublicEntity
         return $token;
     }
 
+    protected function getInternationalAttribute()
+    {
+        return (bool) $this->attributes[self::INTERNATIONAL];
+    }
+
     public function setPublicOrderIdAttribute(Array & $array)
     {
         if (isset($array[self::ORDER_ID]))
