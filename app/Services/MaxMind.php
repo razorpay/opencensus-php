@@ -50,7 +50,8 @@ class MaxMind
             'txnID'             => $payment->getId(),
             'order_amount'      => $this->getFormattedAmount($payment),
             'order_currency'    => $payment->getCurrency(),
-            'txn_type'          => Card\Type::getMaxmindCardType($card->getType())
+            'txn_type'          => Card\Type::getMaxmindCardType($card->getType()),
+            'requested_type'    => 'standard'
         );
 
         $this->maxmind->input($input);
