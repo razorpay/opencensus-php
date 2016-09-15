@@ -81,6 +81,14 @@ trait Authorize
 
         $retry = false;
 
+        // We are attempting to rotate across multiple terminals to get a successful payment here.
+        // For each of the terminals tried, we want to record the terminal metrics using recordTerminalAudit()
+        // At the end of a successful/failed payment, we want to record the payment details
+        // using createAnalyticsLog. There could be cases where terminal #1 failed and terminal #2 succeeded.
+        // In the above scenario, we will have 2 records in terminal analytics, but only one record
+        // for the entire payment in payment analytics. The terminal chosen here in payment analytics
+        // will be the last terminal tried.
+
         while ($retryAttempts < $maxRetryAttempts)
         {
             $terminalGatewayInput = $gatewayInput;
