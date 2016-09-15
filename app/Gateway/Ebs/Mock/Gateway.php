@@ -58,6 +58,8 @@ class Gateway extends Ebs\Gateway
         $response = $this->setBody($response, $this->getText());
         $response = $this->setHeader($response, $header);
 
+        $response = $this->setBody($response, $this->getText($this->content));
+
         // For Canara Bank Fail Second Gateway Request
         if ($this->content['payment_option'] === BankCodes::getMappedCode(IFSC::CNRB))
         {
@@ -89,7 +91,7 @@ class Gateway extends Ebs\Gateway
         $response = $this->setBody($response, $this->getText($this->content));
 
         // For Corporation Bank Fail Third Gatteway Request,
-        if ($this->content['payment_option'] === BankCodes::getMappedCode(IFSC::CORP))
+        if ($this->content['payment_option'] === BankCodes::getMappedCode(IFSC::JAKA))
         {
             $response = $this->setBody($response, '');
         }
