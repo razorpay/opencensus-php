@@ -19,8 +19,14 @@ trait FraudDetector
             (isset($riskFields['riskScore']) === true) and
             ((float) $riskFields['riskScore'] > 20))
         {
-            throw new Exception\BadRequestException(
+            $e = new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD);
+
+            $this->updatePaymentFailed(
+                $e->getError(),
+                TraceCode::PAYMENT_AUTH_FAILURE);
+
+            throw $e;
         }
     }
 
