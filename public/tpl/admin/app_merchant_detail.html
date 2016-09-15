@@ -306,6 +306,10 @@
           AirtelMoney
         </a>
         <a href class="list-group-item">
+          <span class="pull-right" tooltip="{{merchant.details.methods.freecharge == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.freecharge == true, 'fa-times text-danger':merchant.details.methods.freecharge == false}"></i></span>
+          Freecharge
+        </a>
+        <a href class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.methods.card == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.card == true, 'fa-times text-danger':merchant.details.methods.card == false}"></i></span>
           Card
         </a>
@@ -565,6 +569,7 @@
              <option value="wallet_olamoney">Olamoney</option>
              <option value="upi_icici">UPI/ICICI</option>
              <option value="wallet_airtelmoney">Airtelmoney</option>
+             <option value="wallet_freecharge">Freecharge</option>
              <option value="mobikwik">Mobikwik</option><
              <option value="billdesk">Billdesk</option>
              <option value="ebs">EBS</option>
