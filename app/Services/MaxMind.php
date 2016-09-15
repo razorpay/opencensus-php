@@ -50,7 +50,7 @@ class MaxMind
             'txnID'             => $payment->getId(),
             'order_amount'      => $this->getFormattedAmount($payment),
             'order_currency'    => $payment->getCurrency(),
-            'txn_type'          => $this->getTxnType($payment->card)
+            'txn_type'          => Card\Type::getMaxmindCardType($card->getType())
         );
 
         $this->maxmind->input($input);
@@ -65,22 +65,6 @@ class MaxMind
                 'response' => $response]);
 
         return $response;
-    }
-
-    protected function getTxnType($card)
-    {
-        $type = 'other';
-
-        if ($card->getType() === Card\Type::CREDIT)
-        {
-            $type = 'creditcard';
-        }
-        else if ($card->getType() === Card\Type::DEBIT)
-        {
-            $type = 'debitcard';
-        }
-
-        return $type;
     }
 
     protected function getFormattedAmount($payment)
