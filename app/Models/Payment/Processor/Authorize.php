@@ -115,6 +115,8 @@ trait Authorize
             {
                 $request = $this->callGatewayAuthorize($terminalGatewayInput);
 
+                $retry = false;
+
                 break;
             }
             catch (Exception\GatewayRequestException $e)
@@ -1075,7 +1077,8 @@ trait Authorize
                 TerminalAnalytics\Entity::TERMINAL_ID   => $terminalData['terminal_id']
             ];
 
-            $responseTime = $terminalData['end'] - $terminalData['start'];
+            // convert difference to milliseconds to record as integer
+            $responseTime = (int) (($terminalData['end'] - $terminalData['start']) * 1000);
 
             $log[TerminalAnalytics\Entity::TERMINAL_RESPONSE_TIME] = $responseTime;
 

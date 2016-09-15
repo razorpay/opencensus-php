@@ -10,7 +10,7 @@ class Validator extends Base\Validator
         Entity::PAYMENT_ID              => 'required|alpha_num|size:14',
         Entity::TERMINAL_ID             => 'required|alpha_num|size:14',
         Entity::TERMINAL_STATUS         => 'sometimes|boolean',
-        Entity::TERMINAL_RESPONSE_TIME  => 'sometimes|numeric',
+        Entity::TERMINAL_RESPONSE_TIME  => 'sometimes|integer',
         Entity::TERMINAL_STATUS_CODE    => 'sometimes|integer',
         Entity::TERMINAL_STATUS_MSG     => 'sometimes|string',
         // For default payments, payment_type is 1. In case of

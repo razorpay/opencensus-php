@@ -29,9 +29,9 @@ class CreateTerminalAnalytics extends Migration
             $table->boolean(Analytics::TERMINAL_STATUS)
                 ->default(1);
 
-            $table->double(Analytics::TERMINAL_RESPONSE_TIME, 8, 5)
-                ->nullable();
-
+            // this is recorded in milliseconds
+            $table->integer(Analytics::TERMINAL_RESPONSE_TIME);
+            
             $table->integer(Analytics::TERMINAL_STATUS_CODE)
                 ->nullable();
 
