@@ -380,7 +380,7 @@ class Gateway extends Base\Gateway
 
         assert($this->mode === Mode::LIVE);
 
-        return $this->config['gateway_merchant_id'];
+        return $this->config['live_merchant_id'];
     }
 
     protected function getEndMerchantId($terminal)
