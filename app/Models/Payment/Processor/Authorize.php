@@ -426,6 +426,8 @@ trait Authorize
 
         $this->validateInternationalAllowed($payment);
 
+        $this->validateFraudDetection($payment);
+
         $this->validateBlockedInternationalCard($payment->card);
     }
 
