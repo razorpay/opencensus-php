@@ -212,47 +212,47 @@ class Entity extends Base\PublicEntity
     // ----------------------- Mutator ---------------------------------------------
     //
 
-     protected function getLibraryAttribute()
-     {
-         $value = $this->attributes[self::LIBRARY];
+    protected function getLibraryAttribute()
+    {
+        $value = $this->attributes[self::LIBRARY];
 
-         return Metadata::getStringForLibraryValue($value);
-     }
+        return Metadata::getStringForLibraryValue($value);
+    }
 
-     protected function getPlatformAttribute()
-     {
-         $value = $this->attributes[self::PLATFORM];
+    protected function getPlatformAttribute()
+    {
+        $value = $this->attributes[self::PLATFORM];
 
-         return Metadata::getStringForPlatformValue($value);
-     }
+        return Metadata::getStringForPlatformValue($value);
+    }
 
-     protected function getBrowserAttribute()
-     {
-         $value = $this->attributes[self::BROWSER];
+    protected function getBrowserAttribute()
+    {
+        $value = $this->attributes[self::BROWSER];
 
-         return Metadata::getStringForBrowserValue($value);
-     }
+        return Metadata::getStringForBrowserValue($value);
+    }
 
-     protected function getOsAttribute()
-     {
-         $value = $this->attributes[self::OS];
+    protected function getOsAttribute()
+    {
+        $value = $this->attributes[self::OS];
 
-         return Metadata::getStringForOsValue($value);
-     }
+        return Metadata::getStringForOsValue($value);
+    }
 
-     protected function getDeviceAttribute()
-     {
-         $value = $this->attributes[self::DEVICE];
+    protected function getDeviceAttribute()
+    {
+        $value = $this->attributes[self::DEVICE];
 
-         return Metadata::getStringForDeviceValue($value);
-     }
+        return Metadata::getStringForDeviceValue($value);
+    }
 
-     protected function getIntegrationAttribute()
-     {
-         $value = $this->attributes[self::INTEGRATION];
+    protected function getIntegrationAttribute()
+    {
+        $value = $this->attributes[self::INTEGRATION];
 
-         return Metadata::getStringForIntegrationValue($value);
-     }
+        return Metadata::getStringForIntegrationValue($value);
+    }
 
     protected function setPlatformAttribute($platform)
     {
