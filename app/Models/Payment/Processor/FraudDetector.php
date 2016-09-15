@@ -17,7 +17,7 @@ trait FraudDetector
 
         if ((isset($riskFields) === true) and
             (isset($riskFields['riskScore']) === true) and
-            ((float) $riskFields['riskScore'] > 50))
+            ((float) $riskFields['riskScore'] > 20))
         {
             throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD);

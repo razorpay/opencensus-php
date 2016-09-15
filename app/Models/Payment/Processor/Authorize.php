@@ -417,9 +417,9 @@ trait Authorize
             return;
         }
 
-        $this->validateFraudDetection($payment);
-
         $this->validateInternationalAllowed($payment);
+
+        $this->validateFraudDetection($payment);
 
         $this->validateBlockedInternationalCard($payment->card);
     }

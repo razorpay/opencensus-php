@@ -5,6 +5,7 @@ namespace RZP\Services;
 use CreditCardFraudDetection;
 use RZP\Trace\TraceCode;
 use RZP\Trace\Trace;
+use RZP\Models\Card;
 
 class MaxMind
 {
