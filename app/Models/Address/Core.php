@@ -33,6 +33,16 @@ class Core extends Base\Core
 
         $address = (new Entity)->build($input);
 
+        // TODO: Should we use the first method or the second?
+        // $fetchParams = [
+        //     Entity::ADDRESS_TYPE    => $input[Entity::ADDRESS_TYPE],
+        //     Entity::ENTITY_TYPE     => $entityType,
+        //     Entity::ENTITY_ID       => $entity->getId(),
+        // ];
+        //
+        // $this->repo->address->setMerchantIdRequiredForMultipleFetch(false);
+        // $currentAddress = $this->repo->address->fetch($fetchParams);
+
         $currentAddresses = $this->repo->address->fetchAddressesForEntity(
             $entityType, $entity->getId(), [Entity::ADDRESS_TYPE => $input[Entity::ADDRESS_TYPE]]);
 
