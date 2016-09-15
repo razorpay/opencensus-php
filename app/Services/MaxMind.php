@@ -39,8 +39,8 @@ class MaxMind
         $card = $payment->card;
 
         $input = array(
-            "license_key"       => $this->licenseKey,
-            "i"                 => $this->request->getRealClientIp(),
+            'license_key'       => $this->licenseKey,
+            'i'                 => $this->request->getRealClientIp(),
             'user_agent'        => $this->request->header('User-Agent'),
             'accept_language'   => $this->request->header('Accept-Language'),
             'domain'            => $this->getEmailDomain($payment),
@@ -58,6 +58,8 @@ class MaxMind
         $this->maxmind->query();
 
         $response = $this->maxmind->output();
+
+        unset($input['license_key']);
 
         $this->trace->info(TraceCode::MAXMIND_RESPONSE, [
                 'input' => $input,
