@@ -36,4 +36,5 @@ class CustomerErrorDescription
     const BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT                          = 'Payment failed. Please contact site admin';
 
     const BAD_REQUEST_PAYMENT_DECLINED_BY_CLICKING_CANCEL                       = 'Payment cancelled due to clicking the cancel button on 3dSecure page';
+    const BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD                                    = 'Payment declined';
 }
