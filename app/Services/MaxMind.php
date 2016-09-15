@@ -40,7 +40,7 @@ class MaxMind
 
         $input = array(
             "license_key"       => $this->licenseKey,
-            "i"                 => $this->request->server('REMOTE_ADDR'),
+            "i"                 => $this->request->getRealClientIp(),
             'user_agent'        => $this->request->header('User-Agent'),
             'accept_language'   => $this->request->header('Accept-Language'),
             'domain'            => $this->getEmailDomain($payment),
