@@ -167,7 +167,7 @@ class Metadata
     {
         if ($value === null)
         {
-            return $value;
+            return null;
         }
         $values = array_flip(self::PLATFORM_VALUES);
 
