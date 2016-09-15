@@ -31,12 +31,6 @@ class Validator extends Base\Validator
 
     protected static $createValidators = array(
         Entity::CHECKOUT_ID,
-        Entity::LIBRARY,
-        Entity::PLATFORM,
-        Entity::BROWSER,
-        Entity::OS,
-        Entity::DEVICE,
-        Entity::INTEGRATION,
     );
 
     protected function validateCheckoutId($input)
@@ -51,65 +45,5 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_CHECKOUT_ID);
         }
-    }
-
-    protected function validateLibrary($input)
-    {
-        if (empty($input[Entity::LIBRARY]))
-        {
-            return;
-        }
-
-        Metadata::validateLibrary($input[Entity::LIBRARY]);
-    }
-
-    protected function validatePlatform($input)
-    {
-        if (empty($input[Entity::PLATFORM]))
-        {
-            return;
-        }
-
-        Metadata::validatePlatform($input[Entity::PLATFORM]);
-    }
-
-    protected function validateBrowser($input)
-    {
-        if (empty($input[Entity::BROWSER]))
-        {
-            return;
-        }
-
-        Metadata::validateBrowser($input[Entity::BROWSER]);
-    }
-
-    protected function validateOs($input)
-    {
-        if (empty($input[Entity::OS]))
-        {
-            return;
-        }
-
-        Metadata::validateOs($input[Entity::OS]);
-    }
-
-    protected function validateDevice($input)
-    {
-        if (empty($input[Entity::DEVICE]))
-        {
-            return;
-        }
-
-        Metadata::validateDevice($input[Entity::DEVICE]);
-    }
-
-    protected function validateIntegration($input)
-    {
-        if (empty($input[Entity::INTEGRATION]))
-        {
-            return;
-        }
-
-        Metadata::validateIntegration($input[Entity::INTEGRATION]);
     }
 }

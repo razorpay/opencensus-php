@@ -38,4 +38,13 @@ return [
         'os_version' => '11.0',
         'device' => 3,
     ],
+
+    'testHttpRequestDataForInvalidData' => [
+        'browser' => 99,
+        'os' => 99,
+        'device' => 99,
+        'library' => 99,
+        'platform' => 99,
+        'integration' => 99,
+    ]
 ];
