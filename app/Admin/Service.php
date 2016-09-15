@@ -1939,8 +1939,11 @@ class Service extends Base\Service
 
     public function updateMerchantDayAggregations($mode, $input)
     {
-        
         $total_payments = $this->fetchPaymentsToAggregate($input, $mode);
+
+        $app = \App::getFacadeRoot();
+        $trace = $app['trace'];
+        $trace->info(TraceCode::MISC_TRACE_CODE, array_keys($total_payments));
 
         list($error, $response) = (new Transaction\Service)->processDayAggregations($total_payments, $mode);
 
@@ -2005,7 +2008,7 @@ class Service extends Base\Service
 
         return $minimal_payment;
     }
-    
+
     // ----- Credits -----
 
     public function getMerchantCreditsLog($merchantId, $mode)

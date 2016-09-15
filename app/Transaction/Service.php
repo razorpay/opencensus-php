@@ -7,6 +7,7 @@ use App\Transaction;
 use App\Merchant;
 use App\MerchantDetails;
 use DB;
+use App\Trace\TraceCode;
 
 class Service extends Base\Service
 {
@@ -201,7 +202,6 @@ class Service extends Base\Service
         {
             foreach ($paymentsByMerchant as $key => $paymentByMerchant)
             {
-
                 $inputByMerchant[$key]['count'] = count($paymentByMerchant);
                 $inputByMerchant[$key]['amount'] = 0;
 
@@ -233,6 +233,10 @@ class Service extends Base\Service
 
     protected function createOrUpdate($key, $inputByMerchant, $type, $createdAt, $mode)
     {
+        $app = \App::getFacadeRoot();
+        $trace = $app['trace'];
+
+        $trace->info(TraceCode::MISC_TRACE_CODE, $inputByMerchant);
         $obj = Transaction\Entity::retrieveByTypeAndCreatedAt($key, $type, $createdAt, $mode);
 
         if (($obj === null) or
