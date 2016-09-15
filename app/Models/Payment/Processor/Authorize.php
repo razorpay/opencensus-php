@@ -27,6 +27,7 @@ use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Status;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Payment\Analytics;
+use RZP\Models\Payment\Analytics\Entity as AnalyticsEntity;
 use RZP\Models\Payment\TerminalAnalytics;
 
 use RZP\Error;
@@ -1118,13 +1119,11 @@ trait Authorize
         try
         {
             $log = [
-                'payment_id'    => $rawData['payment_id'],
-                'terminal_id'   => $rawData['terminal_id'],
+                AnalyticsEntity::PAYMENT_ID     => $rawData['payment_id'],
+                AnalyticsEntity::TERMINAL_ID    => $rawData['terminal_id'],
             ];
 
-            (new Analytics\Parser)->recordPaymentRequestData($rawData, $log);
-
-            (new Analytics\Service)->createAuditLog($log);
+            (new Analytics\Service)->createAuditLog($log, $rawData);
         }
         catch (\Exception $e)
         {
