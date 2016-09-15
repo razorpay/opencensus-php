@@ -74,6 +74,7 @@ app.controller('EntitiesCtrl', [
       'wallet_payzapp',
       'wallet_olamoney',
       'wallet_airtelmoney',
+      'wallet_freecharge',
     ];
     var walletList = [
       'all',
@@ -83,6 +84,7 @@ app.controller('EntitiesCtrl', [
       'payumoney',
       'olamoney',
       'airtelmoney',
+      'freecharge',
       'ezeclick',
     ];
     var upiBankList = [
@@ -246,6 +248,7 @@ app.controller('EntitiesCtrl', [
         olamoney: booleanList2,
         upi: booleanList2,
         airtelmoney: booleanList2,
+        freecharge: booleanList2,
         pricing_plan_id: ['Pricing Plan Id'],
         receipt_email_enabled: booleanList
       },
@@ -261,6 +264,7 @@ app.controller('EntitiesCtrl', [
         olamoney: booleanList,
         upi: booleanList,
         airtelmoney: booleanList,
+        freecharge: booleanList,
       },
       netbanking: {
         bank_payment_id: ['Bank Reference Id'],
