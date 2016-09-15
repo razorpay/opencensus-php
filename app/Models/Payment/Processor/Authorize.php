@@ -156,6 +156,8 @@ trait Authorize
             }
             finally
             {
+                $terminalData['end'] = microtime(true);
+
                 $this->recordTerminalAudit($terminalData);
 
                 if (($retry === false) or
@@ -1078,8 +1080,6 @@ trait Authorize
 
     protected function recordTerminalAudit($terminalData)
     {
-        $terminalData['end'] = microtime(true);
-
         try
         {
             $log = [
@@ -1117,7 +1117,6 @@ trait Authorize
         }
         catch(\Exception $e)
         {
-            SD("Exception:".$e);
             $this->trace->warning(
                 TraceCode::TERMINAL_ANALYTICS_SAVE_FAILED,
                 ['terminalData' => $terminalData]
