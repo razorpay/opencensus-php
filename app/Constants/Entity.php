@@ -179,7 +179,7 @@ class Entity
     {
         if (self::isValidEntity($entity) === false)
         {
-            Trace::error(
+            App::getFacadeRoot()['trace']->error(
                 TraceCode::ERROR_INVALID_ARGUMENT,
                 ['entity' => $entity]);
 

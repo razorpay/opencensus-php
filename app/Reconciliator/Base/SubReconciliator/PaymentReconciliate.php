@@ -348,6 +348,30 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         return [];
     }
 
+    /**
+     * A few netbanking gateways do not provide us with
+     * gateway service tax in their reconciliation files.
+     * For them, we mark the gateway service tax as null.
+     *
+     * @return null
+     */
+    protected function getGatewayServiceTax()
+    {
+        return null;
+    }
+
+    /**
+     * A few netbanking gateways do not provide us with
+     * gateway fees in their reconciliation files.
+     * For them, we mark the gateway fees as null.
+     *
+     * @return null
+     */
+    protected function getGatewayFee()
+    {
+        return null;
+    }
+
     protected function setPaymentAndTransaction($row, $paymentId)
     {
         try
