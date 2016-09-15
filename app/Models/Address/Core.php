@@ -49,14 +49,12 @@ class Core extends Base\Core
 
             $address->customer()->associate($customer);
 
-            // This needs to be saved here so that handlePrimaryAddressSwitch()
-            // can retrieve the customer by association if required.
-            $this->repo->saveOrFail($address);
-
             if ($address->isPrimary() === true)
             {
                 $this->handlePrimaryAddressSwitch($address);
             }
+
+            $this->repo->saveOrFail($address);
 
             return $address;
         });

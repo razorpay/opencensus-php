@@ -37,25 +37,25 @@ class Repository extends Base\Repository
         }
     }
 
-    public function findByIdAndCustomer($addressId, Customer\Entity $customer)
-    {
-        return $this->newQuery()
-                    ->where(Entity::ENTITY_TYPE, '=', Type::CUSTOMER)
-                    ->where(Entity::ENTITY_ID, '=', $customer->getId())
-                    ->where(Entity::ID, '=', $addressId)
-                    ->firstOrFail();
-    }
-
     public function findByEntityTypeAndId($addressId, $entityType, $entityId)
     {
         return $this->newQuery()
                     ->where(Entity::ENTITY_TYPE, '=', $entityType)
                     ->where(Entity::ENTITY_ID, '=', $entityId)
-                    ->where(Entity::ID, '=', $addressId)
-                    ->firstOrFail();
+                    ->findOrFail($addressId);
     }
 
-    public function fetchLatestAddress($entityType, $entityId, $addressType, $currentAddressId = null)
+    /**
+     * Gets the latest address. If $exceptAddress parameter is sent,
+     * we exclude that address while fetching the latest address.
+     *
+     * @param $entityType
+     * @param $entityId
+     * @param $addressType
+     * @param null $exceptAddressId
+     * @return Entity
+     */
+    public function fetchLatestAddress($entityType, $entityId, $addressType, $exceptAddressId = null)
     {
         // NOTE: except works on a collection and not on an entity.
 
@@ -66,9 +66,9 @@ class Repository extends Base\Repository
                               ->latest()
                               ->get();
 
-        if ($currentAddressId !== null)
+        if ($exceptAddressId !== null)
         {
-            return $latestAddress->except($currentAddressId)->first();
+            return $latestAddress->except($exceptAddressId)->first();
         }
         else
         {

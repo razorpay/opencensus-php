@@ -32,7 +32,6 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $fillable = [
-        self::ID,
         self::ENTITY_ID,
         self::ENTITY_TYPE,
         self::ADDRESS_TYPE,
