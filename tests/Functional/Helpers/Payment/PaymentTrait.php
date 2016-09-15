@@ -1018,6 +1018,32 @@ trait PaymentTrait
         return $this->app['gateway']->resetDriver($this->gateway);
     }
 
+    protected function mockMaxmind()
+    {
+        $maxmind = Mockery::mock('RZP\Services\Mock\MaxMind')->makePartial();
+
+        $maxmind->shouldReceive('query')
+              ->with(Mockery::type('RZP\Models\Payment\Entity'))
+              ->andReturnUsing(function ($payment)
+                    {
+                        $bin = $payment->card->getIin();
+
+                        $binRiskMapping = [
+                            '510510' => '22.0',
+                            '401201' => '60.3',
+                        ];
+
+                        if (isset($binRiskMapping[$bin]) === true)
+                        {
+                            return ['riskScore' => $binRiskMapping[$bin]];
+                        }
+
+                        return null;
+                    });
+
+        $this->app->instance('maxmind', $maxmind);
+    }
+
     protected function mockTokenex()
     {
         $tokenex = Mockery::mock('RZP\Services\TokenEx')->makePartial();

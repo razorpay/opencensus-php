@@ -133,9 +133,9 @@ class ApiServiceProvider extends BaseServiceProvider
     {
         $this->app->singleton('maxmind', function($app)
         {
-            $maxMindMock = $app['config']->get('applications.maxmind.mock');
+            $maxmindMock = $app['config']->get('applications.maxmind.mock');
 
-            if ($maxMindMock === true)
+            if ($maxmindMock === true)
             {
                 return new Services\Mock\MaxMind($app);
             }

@@ -2,12 +2,9 @@
 
 namespace RZP\Services\Mock;
 
-use RZP\Exception;
-use Requests;
-use RZP\Trace\Trace;
-use RZP\Trace\TraceCode;
+use RZP\Services\MaxMind as BaseMaxmind;
 
-class MaxMind
+class MaxMind extends BaseMaxmind
 {
     const LICENSE_KEY = 'license_key';
 
@@ -20,6 +17,4 @@ class MaxMind
     {
         return null;
     }
-
-
 }

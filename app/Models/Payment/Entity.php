@@ -875,6 +875,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CARD_ID);
     }
 
+    public function getMerchantId()
+    {
+        return $this->getAttribute(self::MERCHANT_ID);
+    }
+
     /**
      * This function returns the current payment method
      * and a detail string for that particular method

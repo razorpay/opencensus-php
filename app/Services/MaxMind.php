@@ -3,10 +3,8 @@
 namespace RZP\Services;
 
 use CreditCardFraudDetection;
-use RZP\Exception;
-use Requests;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use RZP\Trace\Trace;
 
 class MaxMind
 {
@@ -35,16 +33,24 @@ class MaxMind
         $this->maxmind = new CreditCardFraudDetection;
     }
 
-    public function query($input)
+    public function query($payment)
     {
-        $default = array(
+        $card = $payment->card;
+
+        $input = array(
             "license_key"       => $this->licenseKey,
             "i"                 => $this->request->server('REMOTE_ADDR'),
-            'user_agent'        => $this->request->header('user-agent'),
-            'accept_language'   => $this->request->header('accept_language')
+            'user_agent'        => $this->request->header('User-Agent'),
+            'accept_language'   => $this->request->header('Accept-Language'),
+            'domain'            => $this->getEmailDomain($payment),
+            'custPhone'         => $payment->getContact(),
+            'emailMD5'          => md5($payment->getEmail()),
+            'bin'               => $payment->card->getIin(),
+            'txnID'             => $payment->getId(),
+            'order_amount'      => $this->getFormattedAmount($payment),
+            'order_currency'    => $payment->getCurrency(),
+            'txn_type'          => $this->getTxnType($payment->card)
         );
-
-        $input = array_merge($input, $default);
 
         $this->maxmind->input($input);
         $this->maxmind->query();
@@ -53,8 +59,42 @@ class MaxMind
 
         $this->trace->info(TraceCode::MAXMIND_RESPONSE, [
                 'input' => $input,
+                'payment_id' => $payment->getId(),
+                'merchant_id' => $payment->getMerchantId(),
                 'response' => $response]);
 
         return $response;
+    }
+
+    protected function getTxnType($card)
+    {
+        $type = 'other';
+
+        if ($card->getType() === Card\Type::CREDIT)
+        {
+            $type = 'creditcard';
+        }
+        else if ($card->getType() === Card\Type::DEBIT)
+        {
+            $type = 'debitcard';
+        }
+
+        return $type;
+    }
+
+    protected function getFormattedAmount($payment)
+    {
+        $amount = $payment->getAmount();
+
+        return number_format($amount, 2, '.', '');
+    }
+
+    protected function getEmailDomain($payment)
+    {
+        $email = $payment->getEmail();
+
+        $emailDomain = explode('@', $email, 2);
+
+        return $emailDomain[1];
     }
 }

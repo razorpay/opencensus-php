@@ -206,7 +206,7 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED                                   = 'BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED';
 
 
-    const BAD_REQUEST_PAYMENT_REJECTED_FRAUD_DETECTED                               = 'BAD_REQUEST_PAYMENT_REJECTED_FRAUD_DETECTED';
+    const BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD                                        = 'BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD';
     const BAD_REQUEST_CARD_AVS_FAILED                                               = 'BAD_REQUEST_CARD_AVS_FAILED';
     const BAD_REQUEST_CARD_STOLEN_OR_LOST                                           = 'BAD_REQUEST_CARD_STOLEN_OR_LOST';
     const BAD_REQUEST_CARD_ISSUING_BANK_UNAVAILABLE                                 = 'BAD_REQUEST_CARD_ISSUING_BANK_UNAVAILABLE';
