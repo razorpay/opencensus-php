@@ -234,7 +234,7 @@ class Gateway extends Base\Gateway
 
     protected function verifyPayment($verify)
     {
-        $payment = $verify->payment;
+        $gatewayPayment = $verify->payment;
         $content = $verify->verifyResponseContent;
         $input = $verify->input;
 
@@ -258,7 +258,9 @@ class Gateway extends Base\Gateway
 
         if ($content['vpc_DRExists'] !== 'Y')
         {
-            $this->verifyPaymentNonExistentCase($verify, $payment);
+            $this->verifyPaymentNonExistentCase($verify, $gatewayPayment);
+
+            $this->verifyApiAndGatewayStatusMatch($verify, $gatewayPayment);
         }
         else
         {
@@ -269,17 +271,17 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
 
-        $this->verifyPaymentBackfillDataIfRequired($content, $payment);
+        $this->verifyPaymentBackfillDataIfRequired($content, $gatewayPayment);
 
         return $verify->status;
     }
 
-    protected function verifyPaymentNonExistentCase($verify, $payment)
+    protected function verifyPaymentNonExistentCase($verify, $gatewayPayment)
     {
         // Could be the case where the transaction didn't even hit migs
-        if (($payment['received'] === false) and
-            (($payment['vpc_TxnResponseCode'] === null) or
-             ($payment['vpc_TxnResponseCode'] !== '0')))
+        if (($gatewayPayment['received'] === false) and
+            (($gatewayPayment['vpc_TxnResponseCode'] === null) or
+             ($gatewayPayment['vpc_TxnResponseCode'] !== '0')))
         {
             $verify->apiSuccess = false;
             $verify->gatewaySuccess = false;
@@ -292,7 +294,25 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function verifyPaymentReconcileWithGatewayResponse($content, $verify)
+    /**
+     * Verifies that gateway status maintained in axis table matches
+     * api payment status. This is only run in case no payment is found
+     * on migs end. (Most probable reason of payment not being found on migs
+     * end is because 3 days have elapsed and no data is maintained after that
+     * on their end.)
+     */
+    protected function verifyApiAndGatewayStatusMatch($verify, $gatewayPayment)
+    {
+        if (($input['payment']['status'] === 'failed') and
+            ($gatewayPayment['vpc_TxnResponseCode'] === '0'))
+        {
+            $verify->status = VerifyResult::STATUS_MISMATCH;
+            $verify->apiSuccess = false;
+            $verify->gatewaySuccess = true;
+        }
+    }
+
+    protected function verifyPaymentReconcileWithGatewayResponse($content, $verify, & $status)
     {
         $payment = $verify->payment;
         $input = $verify->input;
