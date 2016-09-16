@@ -77,12 +77,12 @@ class GatewayController extends Controller
         switch ($gateway)
         {
             case 'billdesk':
-            case 'wallet_olamoney':
                 $data = $this->processS2SCallback($input, $gateway);
                 break;
 
             case 'upi':
             case 'upi_icici':
+            case 'wallet_olamoney':
                 $trace = $this->app['trace'];
 
                 // check mode before search
@@ -92,7 +92,7 @@ class GatewayController extends Controller
                         'input'     => $input,
                         'body'      => Request::getContent(),
                         'headers'   => Request::header(),
-                        'gateway'   => 'upi_icici',
+                        'gateway'   => $gateway,
                     ]);
 
                 break;

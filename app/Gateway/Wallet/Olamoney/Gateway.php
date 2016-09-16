@@ -29,8 +29,6 @@ class Gateway extends Base\Gateway
 
     protected $walletAccessTokenExpiry = 28800; // 8 hours - 8 * 60 * 60
 
-    //protected $canRunOtpFlow = false;
-
     protected $map = array(
         Entity::EMAIL                   => Entity::EMAIL,
         Entity::CONTACT                 => Entity::CONTACT,
@@ -40,6 +38,8 @@ class Gateway extends Base\Gateway
         ResponseFields::TRANSACTION_ID  => Entity::GATEWAY_PAYMENT_ID,
     );
 
+    // Not used in power-wallet flow
+    // Used only for topup which is via a redirect flow
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -49,6 +49,8 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
+    // Not used in power-wallet flow
+    // Used only for topup which is via a redirect flow
     public function callback(array $input)
     {
         parent::callback($input);
@@ -97,16 +99,13 @@ class Gateway extends Base\Gateway
         return $input['merchantBillId'];
     }
 
-    /**
-     * This fuction is not being used right now.
-     * This method will be used when power-wallet is enabled for Olamoney.
-     * It is currently implemented using redirect-flow and not as a power-wallet.
-     */
     public function otpGenerate($input)
     {
         $this->action($input, Action::OTP_GENERATE);
 
         $request = $this->getOtpGenerateRequestArray($input);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -137,11 +136,6 @@ class Gateway extends Base\Gateway
         }
     }
 
-    /**
-     * This fuction is not being used right now.
-     * This method will be used when power-wallet is enabled for Olamoney.
-     * It is currently implemented using redirect-flow and not as a power-wallet.
-     */
     public function callbackOtpSubmit(array $input)
     {
         $this->action($input, Action::OTP_SUBMIT);
@@ -149,6 +143,8 @@ class Gateway extends Base\Gateway
         $this->verifyOtpAttempts($input['payment']);
 
         $request = $this->getOtpSubmitRequestArray($input);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -250,11 +246,28 @@ class Gateway extends Base\Gateway
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
         }
 
+        if ($content[ResponseFields::STATUS] !== Status::SUCCESS)
+        {
+            $code = null;
+
+            if (isset($content[ResponseFields::MESSAGE]))
+            {
+                $code = $content[ResponseFields::MESSAGE];
+            }
+            else if (isset($content[ResponseFields::COMMENTS]))
+            {
+                $code = $content[ResponseFields::COMMENTS];
+            }
+
+            $errorCode = ResponseCode::getApiErrorCode($code);
+
+            throw new Exception\GatewayErrorException($errorCode);
+        }
+
         $this->verifySecureHash($content);
 
         $gatewayPaymentAttrs = $this->getCreateWalletAttributes($input, $content);
 
-        // Changing action to AUTHORIZE to keep the action consistent
         $this->action = Action::AUTHORIZE;
 
         $this->createGatewayPaymentEntity($gatewayPaymentAttrs);
@@ -457,8 +470,6 @@ class Gateway extends Base\Gateway
             'headers' => $this->getRequestHeaders(),
         ];
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
-
         return $request;
     }
 
@@ -481,8 +492,6 @@ class Gateway extends Base\Gateway
             'url'     => $url. '?' . $query,
             'headers' => $this->getRequestHeaders(),
         ];
-
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
 
         return $request;
     }

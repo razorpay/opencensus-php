@@ -7,8 +7,9 @@ use RZP\Error\ErrorCode;
 class ResponseCode
 {
     public static $codes = array(
-        'hash_mismatch'     => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        'Invalid OTP'       => ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
+        'hash_mismatch'                 => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        'Invalid OTP'                   => ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
+        'Invalid user access token'     => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_AUTHENTICATION_FAILED,
     );
 
     protected static $success = array(
