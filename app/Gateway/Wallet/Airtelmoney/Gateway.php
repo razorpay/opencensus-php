@@ -187,7 +187,14 @@ class Gateway extends Base\Gateway
             RequestFields::DATE       => $requestDate,
         ];
 
-        return $this->getStandardRequestArray($content);
+        $request = $this->getStandardRequestArray($content);
+
+        if ($this->mode === Mode::LIVE)
+        {
+            $request['options']['proxy'] = 'https://splunk.razorpay.com:8888';
+        }
+
+        return $request;
     }
 
     protected function verifyPayment($verify)
@@ -571,7 +578,14 @@ class Gateway extends Base\Gateway
             RequestFields::REMARKS => 'Razorpay Refund',
         ];
 
-        return $this->getStandardRequestArray($content);
+        $request = $this->getStandardRequestArray($content);
+
+        if ($this->mode === Mode::LIVE)
+        {
+            $request['options']['proxy'] = 'https://splunk.razorpay.com:8888';
+        }
+
+        return $request;
     }
 
     protected function getLiveSecret()
