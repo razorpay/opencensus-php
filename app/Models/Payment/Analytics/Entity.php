@@ -276,7 +276,6 @@ class Entity extends Base\PublicEntity
 
     protected function setIntegrationAttribute($integration)
     {
-        s('set integration');
         $this->attributes[self::INTEGRATION] = Metadata::getValueForIntegration($integration);
     }
 

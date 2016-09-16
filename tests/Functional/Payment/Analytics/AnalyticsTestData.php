@@ -40,11 +40,11 @@ return [
     ],
 
     'testHttpRequestDataForInvalidData' => [
-        'browser' => 99,
-        'os' => 99,
-        'device' => 99,
-        'library' => 99,
-        'platform' => 99,
-        'integration' => 99,
+        'browser' => 'others',
+        'os' => 'others',
+        'device' => 'others',
+        'library' => 'others',
+        'platform' => 'others',
+        'integration' => 'others',
     ]
 ];

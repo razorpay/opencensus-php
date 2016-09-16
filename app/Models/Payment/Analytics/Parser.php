@@ -103,7 +103,6 @@ class Parser extends Base\Core
     // set analytics data from metadata
     protected function setLogFromMetadata($metadata, & $log)
     {
-        $metadata[Entity::INTEGRATION] = 'unknown_integration';
         foreach (self::$setKeys as $key)
         {
             if (empty($metadata[$key]) === false)

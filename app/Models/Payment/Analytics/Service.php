@@ -17,27 +17,7 @@ class Service extends Base\Service
 
         $action = (new Analytics\Core)->create($log);
 
-        $row = $action->toArrayPublic();
-
-        $this->logUnknownData($row);
-        s($row);
-        return $row;
-    }
-
-    protected function logUnknownData($row)
-    {
-        $invalidData = [];
-
-        foreach ($row as $key => $value) {
-
-            if (Metadata::isInvalidValue($value))
-            {
-                $invalidData[$key] = $value;
-            }
-        }
-
-        $this->trace->error(TraceCode::PAYMENT_ANALYTICS_UNRECOGNIZED_DATA,
-            ['invalid_data' => $invalidData]);
+        return $action->toArrayPublic();
     }
 
     public function getAuditsForTerminal($id)

@@ -1144,26 +1144,24 @@ trait Authorize
                 AnalyticsEntity::TERMINAL_ID    => $rawData['terminal_id'],
             ];
 
-            (new Analytics\Service)->createAuditLog($log, $rawData);
-        }
-        catch (\Exception $e)
-        {
-            $checkoutMetadata = null;
+            $row = (new Analytics\Service)->createAuditLog($log, $rawData);
 
             // log invalid data
             $invalidData = [];
 
             foreach ($row as $key => $value) {
-
-                if (Metadata::isInvalidValue($value))
+                if (Analytics\Metadata::isInvalidValue($value))
                 {
                     $invalidData[$key] = $value;
                 }
             }
 
-            $this->trace->warning(TraceCode::PAYMENT_ANALYTICS_UNRECOGNIZED_DATA,
-                ['invalid_data' => $invalidData,
-                 'raw_data'      => $checkoutMetadataToLog]);
+            if (empty($invalidData) === false)
+            {
+                $this->trace->warning(TraceCode::PAYMENT_ANALYTICS_UNRECOGNIZED_DATA,
+                    ['invalid_data' => $invalidData,
+                     'raw_data'     => $checkoutMetadataToLog]);
+            }
         }
         catch (\Exception $e)
         {
