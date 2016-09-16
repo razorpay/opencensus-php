@@ -364,11 +364,14 @@ class Service extends Base\Service
         {
             return [
                 Entity::STATUS      =>  $payment->getStatus(),
-            ]
+            ];
         }
         else if($payment->isAuthorized())
         {
-            // Send entire authorized response
+            // TODO: Send entire authorized response
+            return [
+                Entity::STATUS      =>  $payment->getStatus(),
+            ];
         }
     }
 

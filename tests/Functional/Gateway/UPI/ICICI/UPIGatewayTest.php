@@ -21,7 +21,7 @@ class UPIGatewayTest extends TestCase
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
 
-        $this->payment = $this->getDefaultPaymentArrayUpi();
+        $this->payment = $this->getDefaultUpiPaymentArray();
     }
 
     public function testPayment()
