@@ -14,7 +14,7 @@ class AxisGatewayTest extends TestCase
 
     public function setUp()
     {
-        $this->markTestSkipped('Removed');
+        // $this->markTestSkipped('Removed');
 
         $this->testDataFilePath = __DIR__.'/AxisGatewayTestData.php';
 
@@ -116,10 +116,25 @@ class AxisGatewayTest extends TestCase
     public function testPaymentVerify()
     {
         $payment = $this->doAuthAndCapturePayment();
+        $this->assertEquals($payment['status'], 'captured');
 
         $this->verifyPayment($payment['id']);
         $payment = $this->getLastEntity('axis_migs', true);
         $this->assertEquals('pay', $payment['vpc_Command']);
+    }
+
+    public function testPaymentVerifyFailed()
+    {
+        $payment = $this->doAuthPayment();
+        $pid = $payment['razorpay_payment_id'];
+
+        $this->fixtures->payment->edit($pid, ['status' => 'failed', 'authorized_at' => null]);
+
+        $data = $this->testData[__FUNCTION__];
+        $this->runRequestResponseFlow($data, function() use ($pid)
+        {
+            $this->verifyPayment($pid);
+        });
     }
 
     public function testAuthorizeFailedPayment()
