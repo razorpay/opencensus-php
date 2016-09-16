@@ -73,6 +73,7 @@ class MaxMind
                 'input' => $input,
                 'payment_id' => $payment->getId(),
                 'merchant_id' => $payment->getMerchantId(),
+                'merchant' => $payment->merchant->getBillingLabelElseName(),
                 'response' => $response]);
 
         return $response;
