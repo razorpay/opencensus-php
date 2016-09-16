@@ -149,6 +149,7 @@ class Payment extends Base
             'status' => 'authorized',
             'terminal_id' => '1n25f6uN5S1Z5a',
             'card_id' => $card['id'],
+            'international' => false,
         );
 
         $attributes = array_merge($defaultValues, $attributes);
