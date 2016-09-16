@@ -615,7 +615,7 @@ trait Authorize
         }
         else
         {
-            //TODO for netbanking/wallets
+            // @todo for netbanking/wallets
         }
 
         $this->validateRecurringPayment($payment, $input);
@@ -773,8 +773,6 @@ trait Authorize
         {
             $this->trace->traceException($e);
         }
-
-        return $token;
     }
 
     protected function verifyPaymentMethodEnabled($payment)
@@ -1436,9 +1434,9 @@ trait Authorize
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_RECURRING_NOT_SUPPORTED);
         }
 
-        // if not recurring,  validate card data
+        // if not recurring, validate card data
         if (($payment->isRecurring() === false) and
-            ($payment->token !== null) and
+            ($payment->getTokenId() !== null) and
             ($payment->token->isRecurring() === false))
         {
             $payment->getValidator()->validateCardAndCvv($input);
