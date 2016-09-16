@@ -54,4 +54,19 @@ class FirstDataGatewayTest extends TestCase
 
         $this->assertSame($payment['verified'], 1);
     }
+
+    public function testPaymentRefund()
+    {
+        $this->doAuthAndCapturePayment($this->payment);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('txn_'.$payment['transaction_id'], $txn['id']);
+
+        $this->refundPayment($payment['id']);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals($payment['status'], 'refunded');
+    }
 }

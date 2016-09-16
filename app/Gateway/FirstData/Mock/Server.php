@@ -101,7 +101,45 @@ class Server extends Base\Mock\Server
         );
 
 
-        $captureResponse = $this->buildCaptureResponse($content);
+        $captureResponse = $this->buildIpgApiOrderResponse($content);
+
+        return $this->prepareResponse($captureResponse);
+    }
+
+    public function refund($input)
+    {
+        parent::refund($input);
+
+        $xml   = simplexml_load_string($input);
+        $xmlBody = $xml->children('SOAP-ENV', true)->Body->children('ipgapi', true)->children('v1', true);
+        $body = json_decode(json_encode($xmlBody), true);
+
+        $timestamp = Carbon::now('Asia/Kolkata');
+
+        $content = array(
+            "ApprovalCode"               => $this->getApprovalCode(),
+            "AVSResponse"                => "random",
+            "Brand"                      => "MASTERCARD",
+            "Country"                    => "RANDOM_COUNTRY_CODE",
+            "CommercialServiceProvider"  => "random",
+            "OrderId"                    => $body['Transaction']['TransactionDetails']['OrderId'],
+            "IpgTransactionId"           => random_integer(10),
+            "PaymentType"                => "RANDOM_PAYMENT_TYPE",
+            "ProcessorApprovalCode"      => "007121",
+            "ProcessorResponseCode"      => "00",
+            "ProcessorResponseMessage"   => "Function performed error-free",
+            "ReferencedTDate"            => (string) $timestamp->getTimeStamp(),
+            "TDate"                      => (string) $timestamp->getTimeStamp(),
+            "TDateFormatted"             => (string) $timestamp->format("Y.m.d H:i:s (T)"),
+            "TerminalID"                 => "random_terminal_id",
+            "TransactionResult"          => "APPROVED",
+            "TransactionTime"            => (string) $timestamp->getTimeStamp(),
+            "Version"                    => "5.4.0-200",
+            "BuildTime"                  => (string) $timestamp->format("Y.m.d @ H:i:s T"),
+        );
+
+
+        $captureResponse = $this->buildIpgApiOrderResponse($content);
 
         return $this->prepareResponse($captureResponse);
     }
@@ -159,7 +197,7 @@ class Server extends Base\Mock\Server
         return $xml;
     }
 
-    protected function buildCaptureResponse($array)
+    protected function buildIpgApiOrderResponse($array)
     {
         $xml = new \SimpleXMLElement("<SOAP-ENV:Envelope xmlns:SOAP-ENV='http://schemas.xmlsoap.org/soap/envelope/'><SOAP-ENV:Header/><SOAP-ENV:Body><ipgapi:IPGApiOrderResponse xmlns:a1='http://ipg-online.com/ipgapi/schemas/a1' xmlns:ipgapi='http://ipg-online.com/ipgapi/schemas/ipgapi' xmlns:pay_1_0_0='http://api.clickandbuy.com/webservices/pay_1_0_0/' xmlns:v1='http://ipg-online.com/ipgapi/schemas/v1'></ipgapi:IPGApiOrderResponse></SOAP-ENV:Body></SOAP-ENV:Envelope>");
         foreach ($array as $key => $value)
