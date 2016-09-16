@@ -203,6 +203,8 @@ class Inferno
         }
         catch (\Requests_Exception $e)
         {
+            $this->trace->traceException($e);
+
             //
             // Some error occurred.
             // Check that whether the gateway response timed out.
