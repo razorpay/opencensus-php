@@ -66,7 +66,7 @@ class Parser extends Base\Core
         // get the HTTP request
         $request = $this->app['request'];
 
-        $log[Entity::IP] = $request->ip();
+        $log[Entity::IP] = $request->getRealClientIp();
 
         if ($request->header(RequestHeader::REFERER) !== null)
         {
