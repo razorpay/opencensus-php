@@ -29,6 +29,7 @@ class Processor
     use Verify;
     use OtpResend;
     use Topup;
+    use FraudDetector;
 
     /**
      * Callback urls can be hit multiple times by customers.

@@ -4,6 +4,7 @@ namespace RZP\Models\Payment\Analytics;
 
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Constants\Table;
 
 class Entity extends Base\PublicEntity
 {
@@ -31,7 +32,7 @@ class Entity extends Base\PublicEntity
     // window in secs, used to fetch payments with same checkout id
     const PAYMENT_WINDOW                = 1800;
 
-    protected $table = \RZP\Constants\Table::PAYMENT_ANALYTICS;
+    protected $table = Table::PAYMENT_ANALYTICS;
 
     protected $entity = 'payment_analytics';
 
@@ -211,42 +212,42 @@ class Entity extends Base\PublicEntity
     // ----------------------- Mutator ---------------------------------------------
     //
 
-    protected function getLibraryAttribure()
+    protected function getLibraryAttribute()
     {
         $value = $this->attributes[self::LIBRARY];
 
         return Metadata::getStringForLibraryValue($value);
     }
 
-    protected function getPlatformAttribure()
+    protected function getPlatformAttribute()
     {
         $value = $this->attributes[self::PLATFORM];
 
         return Metadata::getStringForPlatformValue($value);
     }
 
-    protected function getBrowserAttribure()
+    protected function getBrowserAttribute()
     {
         $value = $this->attributes[self::BROWSER];
 
         return Metadata::getStringForBrowserValue($value);
     }
 
-    protected function getOsAttribure()
+    protected function getOsAttribute()
     {
         $value = $this->attributes[self::OS];
 
         return Metadata::getStringForOsValue($value);
     }
 
-    protected function getDeviceAttribure()
+    protected function getDeviceAttribute()
     {
         $value = $this->attributes[self::DEVICE];
 
         return Metadata::getStringForDeviceValue($value);
     }
 
-    protected function getIntegrationAttribure()
+    protected function getIntegrationAttribute()
     {
         $value = $this->attributes[self::INTEGRATION];
 
@@ -275,6 +276,7 @@ class Entity extends Base\PublicEntity
 
     protected function setIntegrationAttribute($integration)
     {
+        s('set integration');
         $this->attributes[self::INTEGRATION] = Metadata::getValueForIntegration($integration);
     }
 
@@ -300,7 +302,7 @@ class Entity extends Base\PublicEntity
 
     // ----------------------- Mutator Ends ----------------------------------------
 
-    // ----------------------- Modifieres ------------------------------------------
+    // ----------------------- Modifiers ------------------------------------------
 
     protected function modifyOs(& $input)
     {

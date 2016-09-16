@@ -11,11 +11,33 @@ use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
-    public function createAuditLog($input)
+    public function createAuditLog($log, $rawData)
     {
-        $action = (new Analytics\Core)->create($input);
+        (new Analytics\Parser)->recordPaymentRequestData($rawData, $log);
 
-        return $action->toArrayPublic();
+        $action = (new Analytics\Core)->create($log);
+
+        $row = $action->toArrayPublic();
+
+        $this->logUnknownData($row);
+        s($row);
+        return $row;
+    }
+
+    protected function logUnknownData($row)
+    {
+        $invalidData = [];
+
+        foreach ($row as $key => $value) {
+
+            if (Metadata::isInvalidValue($value))
+            {
+                $invalidData[$key] = $value;
+            }
+        }
+
+        $this->trace->error(TraceCode::PAYMENT_ANALYTICS_UNRECOGNIZED_DATA,
+            ['invalid_data' => $invalidData]);
     }
 
     public function getAuditsForTerminal($id)

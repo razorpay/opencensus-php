@@ -29,17 +29,17 @@ class CreateTerminalAnalytics extends Migration
             $table->boolean(Analytics::TERMINAL_STATUS)
                 ->default(1);
 
-            $table->double(Analytics::TERMINAL_RESPONSE_TIME, 8, 5)
-                ->default(0);
-
+            // this is recorded in milliseconds
+            $table->integer(Analytics::TERMINAL_RESPONSE_TIME);
+            
             $table->integer(Analytics::TERMINAL_STATUS_CODE)
-                ->default(0);
+                ->nullable();
 
             $table->text(Analytics::TERMINAL_STATUS_MSG)
                 ->nullable();
 
             $table->tinyInteger(Analytics::PAYMENT_TYPE)
-                ->default(0);
+                ->default(1);
 
             $table->integer(Analytics::CREATED_AT);
 
@@ -58,7 +58,6 @@ class CreateTerminalAnalytics extends Migration
             $table->index(Analytics::CREATED_AT);
 
         });
-
     }
 
     /**
@@ -71,10 +70,10 @@ class CreateTerminalAnalytics extends Migration
         Schema::table(Table::TERMINAL_ANALYTICS, function($table)
         {
             $table->dropForeign(
-                TABLE::TERMINAL_ANALYTICS.'_'.Analytics::TERMINAL_ID.'_foreign');
+                TABLE::TERMINAL_ANALYTICS. '_' .Analytics::TERMINAL_ID.'_foreign');
 
             $table->dropForeign(
-                TABLE::TERMINAL_ANALYTICS.'_'.Analytics::PAYMENT_ID.'_foreign');
+                TABLE::TERMINAL_ANALYTICS. '_' .Analytics::PAYMENT_ID.'_foreign');
         });
 
         Schema::drop(Table::TERMINAL_ANALYTICS);
