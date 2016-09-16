@@ -387,6 +387,8 @@ class Gateway extends Base\Gateway
 
         assert($this->mode === Mode::LIVE);
 
+        // We are fetching merchant id from config
+        // as it's common across all the merchants
         return $this->config['live_merchant_id'];
     }
 
@@ -399,7 +401,7 @@ class Gateway extends Base\Gateway
 
         assert($this->mode === Mode::LIVE);
 
-        return $terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2];
+        return $terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
     }
 
     protected function shouldReturnIfPaymentNullInVerifyFlow($verify)
