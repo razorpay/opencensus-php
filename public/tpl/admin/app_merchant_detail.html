@@ -298,6 +298,10 @@
           Olamoney
         </a>
         <a href class="list-group-item">
+          <span class="pull-right" tooltip="{{merchant.details.methods.airtelmoney == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.airtelmoney == true, 'fa-times text-danger':merchant.details.methods.airtelmoney == false}"></i></span>
+          AirtelMoney
+        </a>
+        <a href class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.methods.card == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.card == true, 'fa-times text-danger':merchant.details.methods.card == false}"></i></span>
           Card
         </a>
@@ -555,6 +559,7 @@
              <option value="wallet_payzapp">Payzapp</option>
              <option value="wallet_payumoney">Payumoney</option>
              <option value="wallet_olamoney">Olamoney</option>
+             <option value="wallet_airtelmoney">Airtelmoney</option>
              <option value="mobikwik">Mobikwik</option><
              <option value="billdesk">Billdesk</option>
              <option value="ebs">EBS</option>
@@ -665,6 +670,15 @@
           <select class="form-control m-b" ng-model="terminal.shared">
              <option value="1">Yes</option>
              <option value="0">No</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group" >
+        <label for="shared" class="col-lg-3 control-label">Recurring Type</label>
+        <div class="col-lg-9" >
+          <select class="form-control m-b" ng-model="terminal.recurring">
+             <option value="0">Twofactor</option>
+             <option value="2">Non-twofactor</option>
           </select>
         </div>
       </div>

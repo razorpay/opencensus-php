@@ -71,7 +71,8 @@ app.controller('EntitiesCtrl', [
       'sharp',
       'wallet_payumoney',
       'wallet_payzapp',
-      'wallet_olamoney'
+      'wallet_olamoney',
+      'wallet_airtelmoney',
     ];
     var walletList = [
       'all',
@@ -80,7 +81,8 @@ app.controller('EntitiesCtrl', [
       'payzapp',
       'payumoney',
       'olamoney',
-      'ezeclick'
+      'airtelmoney',
+      'ezeclick',
     ];
     var booleanList = [
       'all',
@@ -235,6 +237,7 @@ app.controller('EntitiesCtrl', [
         payumoney: booleanList2,
         payzapp: booleanList2,
         olamoney: booleanList2,
+        airtelmoney: booleanList2,
         pricing_plan_id: ['Pricing Plan Id'],
         receipt_email_enabled: booleanList
       },
@@ -247,7 +250,8 @@ app.controller('EntitiesCtrl', [
         paytm: booleanList,
         payumoney: booleanList,
         payzapp: booleanList,
-        olamoney: booleanList
+        olamoney: booleanList,
+        airtelmoney: booleanList,
       },
       netbanking: {
         bank_payment_id: ['Bank Reference Id'],
