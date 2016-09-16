@@ -12,7 +12,6 @@ use Models\Payment;
 
 class Server extends Base\Mock\Server
 {
-
     public function __construct()
     {
         if (defined('CRYPT_RSA_PKCS15_COMPAT') === false)

@@ -8,16 +8,18 @@ class ResponseMap
 {
     const CODES = array(
         '0'     =>  'Transaction Successful',
-        '5'     =>  'Invalid Amount Format',
+        '5'     =>  ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_AMOUNT,
         '92'    =>  'Transaction Authorized',
         '5000'  =>  ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
         '5001'  =>  'Invalid Merchant Id',
-        '5002'  =>  'Transaction Id Reused',
-        '5003'  =>  'Invalid Transaction Id',
+        // 'Transaction Id Reused',
+        '5002'  =>  ErrorCode::GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST,
+        '5003'  =>  ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_ID,
         // Defined as "Invalid Packet"
         '5004'  =>  ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
         '5005'  =>  'Invalid Collection Date',
-        '5006'  =>  'No such transaction',
+        // 'No such transaction',
+        '5006'  =>  ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_REFERENCE_NO,
         '9999'  =>  'No response from Bank'
     );
 

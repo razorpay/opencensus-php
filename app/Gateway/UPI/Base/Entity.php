@@ -55,6 +55,10 @@ class Entity extends Base\Entity
         self::VPA,
     );
 
+    protected $casts = array(
+      'amount'  =>  'int'
+    );
+
     public function setBank($bank)
     {
         $this->setAttribute(self::BANK, $bank);
@@ -67,7 +71,7 @@ class Entity extends Base\Entity
 
     public function getAmountAttribute()
     {
-        return (int) $this->attributes[self::AMOUNT];
+        return $this->attributes[self::AMOUNT];
     }
 
     public function getPaymentId()

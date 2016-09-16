@@ -649,17 +649,17 @@ trait PaymentTrait
         $payment = $this->getDefaultPaymentArrayNeutral();
 
         $payment['card'] = array(
-                'number'            => '4012001038443335',
-                'name'              => 'Harshil',
-                'expiry_month'      => '12',
-                'expiry_year'       => '2017',
-                'cvv'               => '566',
-            );
+            'number'            => '4012001038443335',
+            'name'              => 'Harshil',
+            'expiry_month'      => '12',
+            'expiry_year'       => '2017',
+            'cvv'               => '566',
+        );
 
         return $payment;
     }
 
-    protected function getDefaultPaymentArrayEmi($saved)
+    protected function getDefaultEmiPaymentArray($saved)
     {
         $card = null;
 
@@ -693,7 +693,7 @@ trait PaymentTrait
         return $payment;
     }
 
-    protected function getDefaultPaymentArrayUpi()
+    protected function getDefaultUpiPaymentArray()
     {
         $payment = $this->getDefaultPaymentArrayNeutral();
 

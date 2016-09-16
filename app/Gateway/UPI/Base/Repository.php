@@ -18,7 +18,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where('payment_id' , '=', $paymentId)
-                    ->lists('gateway_payment_id');
+                    ->pluck('gateway_payment_id');
     }
 
     public function fetchByPaymentId($paymentId)

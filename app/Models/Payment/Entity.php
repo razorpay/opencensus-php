@@ -616,7 +616,7 @@ class Entity extends Base\PublicEntity
 
         $secondsSinceCreated = $currentTime - $this->getAttribute(self::CREATED_AT);
 
-        return (bool) (($currentTime - $secondsSinceCreated) > (60*15));
+        return (bool) ($secondsSinceCreated > (60*15));
     }
 
     public function isAuthorized()

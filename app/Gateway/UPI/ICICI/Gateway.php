@@ -81,9 +81,7 @@ class Gateway extends Base\Gateway
      */
     public function authorize(array $input)
     {
-        $this->input = $input;
-
-        $this->action = Action::AUTHORIZE;
+        parent::authorize($input);
 
         $attributes = $this->getGatewayEntityAttributes($input);
 
@@ -173,10 +171,7 @@ class Gateway extends Base\Gateway
         {
             return $this->config['test_merchant_id'];
         }
-        else
-        {
-            return $this->config['live_merchant_id'];
-        }
+        return $this->config['live_merchant_id'];
     }
 
     /**
@@ -230,19 +225,17 @@ class Gateway extends Base\Gateway
     {
         $payment = $input['payment'];
 
-        $collectByTimestamp = time() + 15 * 60;
-        $collect = Carbon::now('Asia/Kolkata')->addMinutes(15)->format('d/m/Y h:i A');
+        $collectByTimestamp = Carbon::now('Asia/Kolkata')->addMinutes(15)->format('d/m/Y h:i A');
 
         $data = [
             // Amount and note are lowercase
             // despite being uppercase in docs
             'amount'            =>  $this->formatAmount($payment['amount']),
-            'collectByDate'     =>  $collect,
+            'collectByDate'     =>  $collectByTimestamp,
             'billNumber'        =>  '1234',
             'merchantId'        =>  $this->getMerchantId(),
             'merchantTranId'    =>  $payment['id'],
             'note'              =>  'collect-pay-request',
-            // TODO: talk to icici and ask what all is allowed here
             'payerVa'           =>  $input['vpa'],
             'subMerchantId'     =>  $this->getSubMerchantId($input),
             'subMerchantName'   =>  $input['merchant']->getBillingLabel(),
@@ -365,7 +358,7 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             [
                 'body'      => $body,
-                'headers'   => Request::header(),
+                'headers'   => $this->app['request']->header(),
                 'gateway'   => $this->gateway,
                 'data'      => $response
             ]);
@@ -398,8 +391,8 @@ class Gateway extends Base\Gateway
         assert($content[ResponseFields::MERCHANT_TRAN_ID] === $entity->getPaymentId());
         assert($content[ResponseFields::BANK_RRN] === $entity->getGatewayPaymentId());
 
-        // Payment got authorized
-        if (!ResponseMap::isPaymentSuccess($code))
+        // Payment didn't get authorized
+        if (ResponseMap::isPaymentSuccess($code) === false)
         {
             $message = "Payment Failed during callback";
 
@@ -408,10 +401,9 @@ class Gateway extends Base\Gateway
                 $content[ResponseFields::TXN_STATUS],
                 $message);
         }
-        else
-        {
-            $this->updateGatewayPaymentResponse($entity, $content);
-        }
+
+        // Authorization was successful
+        $this->updateGatewayPaymentResponse($entity, $content);
 
         return $entity->toArray();
     }
