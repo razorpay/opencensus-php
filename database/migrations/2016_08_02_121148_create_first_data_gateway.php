@@ -29,7 +29,7 @@ class CreateFirstDataGateway extends Migration
 
             $table->char(FirstData::REFUND_ID, FirstData::ID_LENGTH)->nullable()->default(null);
 
-            $table->char(FirstData::TXNDATETIME, 20)->nullable();
+            $table->char(FirstData::TXN_DATE_TIME, 20)->nullable();
 
             $table->char(FirstData::TXNDATE_PROCESSED, 20)->nullable();
 
@@ -41,11 +41,11 @@ class CreateFirstDataGateway extends Migration
 
             $table->char(FirstData::STATUS, 20)->nullable();
 
-            $table->char(FirstData::OID, 20)->nullable();
+            $table->char(FirstData::ORDER_ID, 20)->nullable();
 
             $table->char(FirstData::TDATE, 20)->nullable();
 
-            $table->char(FirstData::REFNUMBER, 20)->nullable();
+            $table->char(FirstData::REF_NUMBER, 20)->nullable();
 
             $table->integer(FirstData::CREATED_AT);
 
@@ -66,11 +66,11 @@ class CreateFirstDataGateway extends Migration
 
             $table->index(FirstData::REFUND_ID);
 
-            $table->index(FirstData::REFNUMBER);
+            $table->index(FirstData::REF_NUMBER);
 
             $table->index(FirstData::TDATE);
 
-            $table->index(FirstData::OID);
+            $table->index(FirstData::ORDER_ID);
         });
     }
 

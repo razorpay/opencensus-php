@@ -18,44 +18,44 @@ use Carbon\Carbon;
 
 class Gateway extends Base\Gateway
 {
-    const TXNTYPE                   = 'txntype';
-    const TIMEZONE                  = 'timezone';
-    const TXNDATETIME               = 'txndatetime';
-    const HASH_ALGORITHM            = 'hash_algorithm';
-    const HASH                      = 'hash';
-    const STORENAME                 = 'storename';
-    const MODE                      = 'mode';
-    const CHARGETOTAL               = 'chargetotal';
-    const CURRENCY                  = 'currency';
-    const OID                       = 'oid';
-    const TDATE                     = 'tdate';
-    const NAME                      = 'bname';
-    const PAYMENT_METHOD            = 'paymentMethod';
-    const CUSTOMERID                = 'customerid';
-    const INVOICENUMBER             = 'invoicenumber';
-    const CARD_FUNCTION             = 'cardFunction';
-    const COMMENTS                  = 'comments';
-    const RESPONSE_SUCCESS_URL      = 'responseSuccessURL';
-    const RESPONSE_FAIL_URL         = 'responseFailURL';
-    const DYNAMIC_MERCHANT_NAME     = 'dynamicMerchantName';
-    const LANGUAGE                  = 'language';
-    const HASH_EXTENDED             = 'hashExtended';
-    const NUMBER_OF_INSTALLMENTS    = 'numberOfInstallments';
-    const TRX_ORIGIN                = 'trxOrigin';
-    const DCC_INQUIRY_ID            = 'dccInquiryId';
+    const TXN_TYPE                          = 'txntype';
+    const TIME_ZONE                         = 'timezone';
+    const TXN_DATE_TIME                     = 'txndatetime';
+    const HASH_ALGORITHM                    = 'hash_algorithm';
+    const HASH                              = 'hash';
+    const STORE_NAME                        = 'storename';
+    const MODE                              = 'mode';
+    const CHARGE_TOTAL                      = 'chargetotal';
+    const CURRENCY                          = 'currency';
+    const ORDER_ID                          = 'oid';
+    const TDATE                             = 'tdate';
+    const NAME                              = 'bname';
+    const PAYMENT_METHOD                    = 'paymentMethod';
+    const CUSTOMER_ID                       = 'customerid';
+    const INVOICE_NUMBER                    = 'invoicenumber';
+    const CARD_FUNCTION                     = 'cardFunction';
+    const COMMENTS                          = 'comments';
+    const RESPONSE_SUCCESS_URL              = 'responseSuccessURL';
+    const RESPONSE_FAIL_URL                 = 'responseFailURL';
+    const DYNAMIC_MERCHANT_NAME             = 'dynamicMerchantName';
+    const LANGUAGE                          = 'language';
+    const HASH_EXTENDED                     = 'hashExtended';
+    const NUMBER_OF_INSTALLMENTS            = 'numberOfInstallments';
+    const TRX_ORIGIN                        = 'trxOrigin';
+    const DCC_INQUIRY_ID                    = 'dccInquiryId';
 
-    const CARDNUMBER                = 'cardnumber';
-    const EXPMONTH                  = 'expmonth';
-    const EXPYEAR                   = 'expyear';
-    const CVM                       = 'cvm';
+    const CARD_NUMBER                       = 'cardnumber';
+    const EXP_MONTH                         = 'expmonth';
+    const EXP_YEAR                          = 'expyear';
+    const CVM                               = 'cvm';
 
-    const APPROVAL_CODE             = 'approval_code';
-    const RESPONSE_HASH             = 'response_hash';
-    const ORDER_REQUEST             = 'IPGApiOrderRequest';
-    const ACTION_REQUEST            = 'IPGApiActionRequest';
+    const APPROVAL_CODE                     = 'approval_code';
+    const RESPONSE_HASH                     = 'response_hash';
+    const ORDER_REQUEST                     = 'IPGApiOrderRequest';
+    const ACTION_REQUEST                    = 'IPGApiActionRequest';
 
-    const TEST_STORE_ID             = 'test_store_id';
-    const TEST_HASH_SECRET          = 'test_hash_secret';
+    const TEST_STORE_ID                     = 'test_store_id';
+    const TEST_HASH_SECRET                  = 'test_hash_secret';
 
     const SERVER_CERTIFICATE_PATH           = 'server_certificate_path';
     const CLIENT_CERTIFICATE_PATH           = 'client_certificate_path';
@@ -332,7 +332,7 @@ class Gateway extends Base\Gateway
     {
         $content = $this->getRequestContentArray($input);
 
-        $content[self::TXNTYPE] = Codes::TXNTYPE_PREAUTH;
+        $content[self::TXN_TYPE] = Codes::TXN_TYPE_PREAUTH;
 
         $method = $input['card']['network_code'];
 
@@ -346,13 +346,13 @@ class Gateway extends Base\Gateway
 
     protected function setCardDetails(&$content, $input)
     {
-        // $content[self::CARDNUMBER] = Card\Tokenex::getCardNumber($input['card']['vault_token']);
-        $content[self::CARDNUMBER] = $input['card']['number'];
+        // $content[self::CARD_NUMBER] = Card\Tokenex::getCardNumber($input['card']['vault_token']);
+        $content[self::CARD_NUMBER] = $input['card']['number'];
 
-        $content[self::NAME]     = $input['card']['name'];
-        $content[self::EXPMONTH] = $input['card']['expiry_month'];
-        $content[self::EXPYEAR ] = $input['card']['expiry_year'];
-        $content[self::CVM]      = $input['card']['cvv'];
+        $content[self::NAME]      = $input['card']['name'];
+        $content[self::EXP_MONTH] = $input['card']['expiry_month'];
+        $content[self::EXP_YEAR ] = $input['card']['expiry_year'];
+        $content[self::CVM]       = $input['card']['cvv'];
     }
 
     protected function setCallbackUrls(&$content, $input)
@@ -366,7 +366,7 @@ class Gateway extends Base\Gateway
         $payment = $this->getNewGatewayPaymentEntity();
 
         $payment->fill($content);
-        $payment->setPaymentId($content[self::INVOICENUMBER]);
+        $payment->setPaymentId($content[self::ORDER_ID]);
         $payment->setAction($this->action);
         $payment->saveOrFail();
 
@@ -416,18 +416,17 @@ class Gateway extends Base\Gateway
         $currencyCode = Mapping::$isoNumericCodes[$currency];
 
         $content = array(
-            self::TIMEZONE                  => 'Asia/Kolkata',
-            self::TXNDATETIME               => $txnDateTime,
+            self::TIME_ZONE                 => 'Asia/Kolkata',
+            self::TXN_DATE_TIME             => $txnDateTime,
             self::HASH_ALGORITHM            => Codes::FIRST_DATA_HASH_ALGORITHM,
             self::HASH                      => $this->getRequestHash($txnDateTime, $chargeTotal, $currencyCode),
-            self::STORENAME                 => $this->getStoreName(),
+            self::STORE_NAME                => $this->getStoreName(),
             self::MODE                      => Codes::PAYMENT_MODE_PAYONLY,
-            self::CHARGETOTAL               => $chargeTotal,
+            self::CHARGE_TOTAL              => $chargeTotal,
             self::CURRENCY                  => $currencyCode,
 
-            self::OID                       => $input['payment']['id'],
-            // self::CUSTOMERID                => $input['payment']['customer_id'],
-            self::INVOICENUMBER             => $input['payment']['id'],
+            self::ORDER_ID                  => $input['payment']['id'],
+            self::INVOICE_NUMBER            => $input['payment']['id'],
 
             self::CARD_FUNCTION             => $input['card']['type'],
             self::COMMENTS                  => '',
@@ -458,7 +457,6 @@ class Gateway extends Base\Gateway
         curl_setopt($curl, CURLOPT_SSLCERT, $this->getClientCertificate());
         curl_setopt($curl, CURLOPT_SSLKEY, $this->getClientCertificateKey());
         curl_setopt($curl, CURLOPT_HTTPHEADER, array("Content-Type: text/xml"));
-        // curl_setopt($curl, CURLOPT_SSLKEYPASSWD, $this->getClientCertificateKeyPassword());
     }
 
     protected function getVerifyRequestContentArray($input)
@@ -478,7 +476,7 @@ class Gateway extends Base\Gateway
         $currencyCode = Mapping::$isoNumericCodes[$currency];
         $orderId = $gatewayPayment['oid'];
 
-        $body['v1:CreditCardTxType']['v1:Type'] = Codes::TXNTYPE_POSTAUTH;
+        $body['v1:CreditCardTxType']['v1:Type'] = Codes::TXN_TYPE_POSTAUTH;
         $body['v1:Payment']['v1:ChargeTotal'] = $input['payment']['amount']/100;
         $body['v1:Payment']['v1:Currency'] = $currencyCode;
         $body['v1:TransactionDetails']['v1:OrderId'] = $gatewayPayment['oid'];
@@ -496,7 +494,7 @@ class Gateway extends Base\Gateway
         $currencyCode = Mapping::$isoNumericCodes[$currency];
         $orderId = $gatewayPayment['oid'];
 
-        $body['v1:CreditCardTxType']['v1:Type'] = Codes::TXNTYPE_REFUND;
+        $body['v1:CreditCardTxType']['v1:Type'] = Codes::TXN_TYPE_REFUND;
         $body['v1:Payment']['v1:ChargeTotal'] = $input['refund']['amount']/100;
         $body['v1:Payment']['v1:Currency'] = $currencyCode;
         $body['v1:TransactionDetails']['v1:OrderId'] = $gatewayPayment['oid'];
@@ -549,8 +547,8 @@ class Gateway extends Base\Gateway
     {
         $approvalCode = $input[self::APPROVAL_CODE];
 
-        $txnDateTime = $input[self::TXNDATETIME];
-        $chargeTotal = $input[self::CHARGETOTAL];
+        $txnDateTime = $input[self::TXN_DATE_TIME];
+        $chargeTotal = $input[self::CHARGE_TOTAL];
         $currencyCode = $input[self::CURRENCY];
 
         $expectedHash = $this->getResponseHash($approvalCode, $chargeTotal, $currencyCode, $txnDateTime);

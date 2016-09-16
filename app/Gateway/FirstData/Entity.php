@@ -9,13 +9,13 @@ class Entity extends Base\Entity
 {
     const ID                        = 'id';
     const AMOUNT                    = 'chargetotal';
-    const TXNDATETIME               = 'txndatetime';
+    const TXN_DATE_TIME             = 'txndatetime';
     const HASH                      = 'hash';
-    const OID                       = 'oid';
+    const ORDER_ID                  = 'oid';
     const TDATE                     = 'tdate';
     const PAYMENT_METHOD            = 'paymentMethod';
     const APPROVAL_CODE             = 'approval_code';
-    const REFNUMBER                 = 'refnumber';
+    const REF_NUMBER                = 'refnumber';
     const STATUS                    = 'status';
     const TXNDATE_PROCESSED         = 'txndate_processed';
     const RESPONSE_HASH             = 'response_hash';
@@ -23,9 +23,9 @@ class Entity extends Base\Entity
     const FAIL_REASON               = 'fail_reason';
     const FAIL_RC                   = 'fail_rc';
 
-    const CCBIN                     = 'ccbin';
-    const CCCOUNTRY                 = 'cccountry';
-    const CCBRAND                   = 'ccbrand';
+    const CC_BIN                    = 'ccbin';
+    const CC_COUNTRY                = 'cccountry';
+    const CC_BRAND                  = 'ccbrand';
 
     const CREATED_AT                = 'created_at';
     const UPDATED_AT                = 'updated_at';
@@ -37,10 +37,10 @@ class Entity extends Base\Entity
         self::RECEIVED,
         self::ACTION,
         self::AMOUNT,
-        self::TXNDATETIME,
+        self::TXN_DATE_TIME,
         self::HASH,
-        self::OID,
-        self::REFNUMBER,
+        self::ORDER_ID,
+        self::REF_NUMBER,
         self::STATUS,
         self::RESPONSE_HASH,
         self::PROCESSOR_RESPONSE_CODE,
@@ -56,10 +56,10 @@ class Entity extends Base\Entity
         self::REFUND_ID,
         self::ACTION,
         self::AMOUNT,
-        self::TXNDATETIME,
+        self::TXN_DATE_TIME,
         self::HASH,
-        self::OID,
-        self::REFNUMBER,
+        self::ORDER_ID,
+        self::REF_NUMBER,
         self::STATUS,
         self::RESPONSE_HASH,
         self::PROCESSOR_RESPONSE_CODE,
@@ -94,7 +94,7 @@ class Entity extends Base\Entity
 
     public function getTxndatetime()
     {
-        return $this->getAttribute(self::TXNDATETIME);
+        return $this->getAttribute(self::TXN_DATE_TIME);
     }
 
     public function setAmount($amount)

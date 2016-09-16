@@ -15,11 +15,11 @@ final class Codes
     const PAYMENT_MODE_PAYPLUS = 'payplus';
     const PAYMENT_MODE_FULLPAY = 'fullpay';
 
-    const TXNTYPE_SALE      = 'sale';
-    const TXNTYPE_PREAUTH   = 'preauth';
-    const TXNTYPE_POSTAUTH  = 'postauth';
-    const TXNTYPE_VOID      = 'void';
-    const TXNTYPE_REFUND    = 'return';
+    const TXN_TYPE_SALE      = 'sale';
+    const TXN_TYPE_PREAUTH   = 'preauth';
+    const TXN_TYPE_POSTAUTH  = 'postauth';
+    const TXN_TYPE_VOID      = 'void';
+    const TXN_TYPE_REFUND    = 'return';
 
     const STATUS_AUTHORIZED                = 'authorized';
     const STATUS_AUTHORIZE_FAILED          = 'authorize_failed';
@@ -30,10 +30,10 @@ final class Codes
     const STATUS_REFUND_FAILED             = 'refund_failed';
 
     public static $txnTypes = array(
-        self::TXNTYPE_SALE,
-        self::TXNTYPE_PREAUTH,
-        self::TXNTYPE_POSTAUTH,
-        self::TXNTYPE_VOID,
+        self::TXN_TYPE_SALE,
+        self::TXN_TYPE_PREAUTH,
+        self::TXN_TYPE_POSTAUTH,
+        self::TXN_TYPE_VOID,
     );
 
     public static $paymentModes = array(
