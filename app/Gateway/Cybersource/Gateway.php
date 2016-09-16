@@ -113,7 +113,7 @@ class Gateway extends Base\Gateway
     {
         parent::capture($input);
 
-        $gatewayPayment = $this->getRepo()->retrieveCapturedByPaymentId(
+        $gatewayPayment = $this->repo->retrieveCapturedByPaymentId(
             $input['payment']['id']);
 
         if (($gatewayPayment !== null) and
@@ -504,7 +504,7 @@ class Gateway extends Base\Gateway
 
     protected function persistAfterAuthorize($input, $response, $request)
     {
-        $gateway = $this->getRepo()->retrieveByPaymentIdOrFail($input['payment']['id']);
+        $gateway = $this->repo->retrieveByPaymentIdOrFail($input['payment']['id']);
 
         $this->trace->info(TraceCode::GATEWAY_AUTHORIZE_RESPONSE, $response);
 
@@ -733,7 +733,7 @@ class Gateway extends Base\Gateway
     {
         $content = $this->getCommonRequestData($input);
 
-        $gatewayPayment = $this->getRepo()->retrieveByPaymentIdOrFail($input['payment']['id']);
+        $gatewayPayment = $this->repo->retrieveByPaymentIdOrFail($input['payment']['id']);
 
         $content['ccCaptureService'] = [
             self::RUN => 'true',
@@ -754,7 +754,7 @@ class Gateway extends Base\Gateway
     {
         $content = $this->getCommonRequestData($input);
 
-        $gateway = $this->getRepo()->retrieveByPaymentIdAndStatus($input['payment']['id'], Status::CAPTURED);
+        $gateway = $this->repo->retrieveByPaymentIdAndStatus($input['payment']['id'], Status::CAPTURED);
 
         $content['ccCreditService'][self::RUN] = 'true';
         $content['ccCreditService'][self::CAPTURE_REQUEST_ID] = $gateway->getCaptureRef();
@@ -1079,7 +1079,7 @@ class Gateway extends Base\Gateway
     {
         if ($this->model === null)
         {
-            $this->model = $this->getRepo()->retrieveByPaymentIdOrFail($paymentId);
+            $this->model = $this->repo->retrieveByPaymentIdOrFail($paymentId);
         }
 
         return $this->model;

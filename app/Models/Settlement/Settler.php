@@ -149,16 +149,14 @@ class Settler
 
             if ($settlements->count() !== 0)
             {
-                list($urlText, $urlExcel) = $this->createSettlementFile($settlements, $txns);
-
                 $this->updateDailySettlementAttributes(
-                    $urlText,
-                    $urlExcel,
+                    null,
+                    null,
                     $settlements->count(),
                     $txns->count());
 
-                $data['settlement_text_file'] = $urlText;
-                $data['settlement_excel_file'] = $urlExcel;
+                $data['settlement_text_file'] = null;
+                $data['settlement_excel_file'] = null;
             }
             else
             {
@@ -172,6 +170,11 @@ class Settler
             $this->repo->rollback();
 
             $this->settlementFailure('kotak', $e);
+        }
+
+        if ($settlements->count() !== 0)
+        {
+            list($urlText, $urlExcel) = $this->createSettlementFile($settlements, $txns);
         }
 
         $this->successNotification($data, $settlements);

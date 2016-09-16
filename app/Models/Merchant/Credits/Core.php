@@ -18,7 +18,7 @@ class Core extends Base\Core
 
         $creditsLog->merchant()->associate($merchant);
 
-        $this->repo->credits->validateCamapignCreditsNotAssigned(
+        $this->repo->credits->validateCampaignCreditsNotAssigned(
                                 $creditsLog->getCampaign(), $merchant);
 
         return $this->repo->transaction(function() use ($merchant, $creditsLog)

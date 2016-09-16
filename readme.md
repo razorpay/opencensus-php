@@ -13,7 +13,7 @@
 * Install Virtualbox & Vagrant
 * Add laravel/homestead box. (Manual download recommended.)
 * Clone Homestead repo & follow setup instructions.
-* Map api to /path/to/api in folders [ ~/.homestead/Homestead.yaml ]
+* Map api to /path/to/api in folders [ ~/.homestead/Homestead.yaml ], with "nfs" enabled.
 * Map api.razorpay.dev to /path/to/api/public in sites [ ~/.homestead/Homestead.yaml ]
 * Follow Common Instructions
 * Follow Common Test Setup Instructions

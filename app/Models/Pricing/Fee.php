@@ -34,50 +34,24 @@ class Fee
         $this->repo = $repo;
     }
 
-    public function getZeroPricingPlanRule($payment)
+    public function getZeroPricingPlanRule($entity)
     {
-        $method = $payment->getMethod();
+        $feature = $entity->getEntity();
 
-        return $this->repo->getZeroPricingPlanRuleForMethod($method)->getId();
+        $method = $entity->getMethod();
+
+        return $this->repo->getZeroPricingPlanRuleForMethod($feature, $method)->getId();
     }
 
-    public function calculateMerchantFees($payment, $preCalculationOfFees = false)
+    public function calculateMerchantFees($entity, $preCalculationOfFees = false)
     {
-        $calculator = new FeeCalculator($payment, $this->repo);
+        $calculator = new FeeCalculator($entity, $this->repo);
 
-        $pricingPlanId = $this->getPricingPlanId($payment->merchant);
+        $pricingPlanId = $this->getPricingPlanId($entity->merchant);
 
         $pricing = $this->repo->getPricingPlanById($pricingPlanId);
 
         return $calculator->calculate($pricing, $preCalculationOfFees);
-    }
-
-    public function calculateServiceTax($txn, $payment)
-    {
-        $rule = $this->repo->getPricingPlanRule($txn->getPricingRule());
-
-        $txnAuthTime = $payment->getAuthorizeTimestamp();
-
-        // Set the authorized_at time if not set
-        if (is_null($txnAuthTime) === True)
-        {
-            $txnCreatedTime = $payment->getCreatedAt();
-            $txnCapturedTime = $payment->getCaptureTimestamp();
-
-            assert(is_null($txnCreatedTime) === FALSE);
-            assert(is_null($txnCapturedTime) === FALSE);
-
-            $txnAuthTime = ($txnCreatedTime + 45);
-
-            $payment->setAuthorizeTimestamp($txnAuthTime);
-        }
-
-        list($fee, $serviceTax) = $this->getFees($rule, $payment->getAmount(), 0);
-
-        $serviceTax = $txn->getFee() - $fee;
-        assert($serviceTax > 0);
-
-        return $serviceTax;
     }
 
     public function calculateServiceTaxFromFees($fee)

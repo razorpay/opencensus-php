@@ -3,7 +3,6 @@
 namespace RZP\Http\Controllers;
 
 use RZP\Http\ApiResponse;
-use RZP\Exception\RecoverableException;
 use RZP\Models\Order;
 use Request;
 
@@ -36,26 +35,13 @@ class OrderController extends Controller
 
     public function fetchOrderById($id)
     {
-        $input = Request::all();
-
         $data = $this->order->fetch($id);
-
-        return ApiResponse::json($data);
-    }
-
-    public function updateOrder()
-    {
-        $input = Request::all();
-
-        $data = $this->order->update($input);
 
         return ApiResponse::json($data);
     }
 
     public function fetchPayments($id)
     {
-        $input = Request::all();
-
         $payments = $this->order->fetchPaymentsFor($id);
 
         return ApiResponse::json($payments);

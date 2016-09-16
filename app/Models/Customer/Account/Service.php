@@ -6,7 +6,7 @@ use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Account;
-use RZP\Models\Merchant\BankAccount;
+use RZP\Models\BankAccount;
 use RZP\Models\Payment;
 
 class Service extends Base\Service
@@ -197,7 +197,7 @@ class Service extends Base\Service
      * @param  input params
      * @return issues a new app_token if device_token is valid
      */
-    private function validateDeviceToken($deviceToken, $customer)
+    public function validateDeviceToken($deviceToken, $customer)
     {
         $result = ['valid' => false];
 

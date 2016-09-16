@@ -92,7 +92,6 @@ final class Route
         'merchant_get_pricing'                    => ['get',      'merchants/{id}/pricing',                   'MerchantController@getPricingPlan'                                 ],
         'merchant_add_bank_account'               => ['post',     'merchants/{id}/bank_account',              'MerchantController@postBankAccount'                                ],
         'merchant_fetch_bank_account'             => ['get',      'merchants/{id}/bank_account',              'MerchantController@getBankAccount'                                 ],
-        'merchant_generate_bank_account_id'       => ['post',     'merchants/bank_account/id',                'MerchantController@postGenerateBankAccountIds'                     ],
         'merchant_generate_test_bank_acnt'        => ['post',     'merchants/bank_account/generate/test',     'MerchantController@postGenerateTestBankAccounts'                   ],
         'merchant_create_terminal'                => ['post',     'merchants/{id}/terminals',                 'MerchantController@postCreateTerminal'                             ],
         'merchant_get_terminals'                  => ['get',      'merchants/{id}/terminals',                 'MerchantController@getTerminals'                                   ],
@@ -126,6 +125,7 @@ final class Route
         'webhook_fetch'                           => ['get',      'webhooks/{id}',                            'MerchantController@getWebhook'                                     ],
         'webhook_fetch_multiple'                  => ['get',      'webhooks',                                 'MerchantController@getWebhooks'                                    ],
         'pricing_create_plan'                     => ['post',     'pricing',                                  'PricingController@postCreatePricingPlan'                           ],
+        'pricing_upload_plan'                     => ['post',     'pricing/upload',                           'PricingController@postUploadPricingPlan'                           ],
         'pricing_get_plans'                       => ['get',      'pricing',                                  'PricingController@getPricingPlans'                                 ],
         'pricing_get_merchant_plans'              => ['get',      'pricing/merchants',                        'PricingController@getMerchantPricingPlans'                         ],
         'pricing_get_gateway_plans'               => ['get',      'pricing/gateways',                         'PricingController@getGatewayPricingPlans'                          ],
@@ -204,7 +204,6 @@ final class Route
         'dummy_route'                             => ['post',     'dummy/route',                              'PaymentController@postDummyRoute'                                  ],
         'transparent_redirect_get'                => ['get',      'redirect',                                 'AdminController@getTransparentRedirect'                            ],
         'transparent_redirect_post'               => ['post',     'redirect',                                 'AdminController@postTransparentRedirect'                           ],
-        'payment_compute_tax'                     => ['post',     'payments/compute/tax',                     'PaymentController@postComputeServiceTax'                           ],
         'settlement_compute_tax'                  => ['post',     'settlements/compute/tax',                  'SettlementController@postComputeSettlementServiceTax'              ],
         'daily_settlement_compute_tax'            => ['post',     'dailysettlements/compute/tax',             'SettlementController@postComputeDailySettlementServiceTax'         ],
         'get_features'                            => ['get',      'features',                                 'MerchantController@getAllFeatures'                                 ],
@@ -217,7 +216,6 @@ final class Route
         'order_create'                            => ['post',     'orders',                                   'OrderController@createOrder'                                       ],
         'order_fetch'                             => ['get',      'orders',                                   'OrderController@getOrders'                                         ],
         'order_fetch_by_id'                       => ['get',      'orders/{id}',                              'OrderController@fetchOrderById'                                    ],
-        'order_update'                            => ['put',      'orders/{id}',                              'OrderController@updateOrder'                                       ],
         'order_payments'                          => ['get',      'orders/{id}/payments',                     'OrderController@fetchPayments'                                     ],
         'reports_monthly_invoice'                 => ['get',      'reports/invoice',                          'MerchantController@getInvoiceReport'                               ],
         'reports_public_entity'                   => ['get',      'reports/{entity}',                         'MerchantController@getPublicEntityReport'                          ],
@@ -342,7 +340,6 @@ final class Route
         'merchant_get_pricing',
         'merchant_add_bank_account',
         'merchant_fetch_bank_account',
-        'merchant_generate_bank_account_id',
         'merchant_generate_test_bank_acnt',
         'merchant_create_terminal',
         'merchant_daily_report',
@@ -367,6 +364,7 @@ final class Route
         'key_fetch_by_id',
         'key_fetch_multiple',
         'pricing_create_plan',
+        'pricing_upload_plan',
         'pricing_get_plans',
         'pricing_get_merchant_plans',
         'pricing_get_gateway_plans',
@@ -399,7 +397,6 @@ final class Route
         'payment_force_authorize',
         'payment_capture_reminder',
         'payment_refund_authorized',
-        'payment_compute_tax',
         'payment_verify_multiple',
         'refund_create_missing_txn',
         'settlement_compute_tax',
@@ -419,7 +416,6 @@ final class Route
         'iin_generate_post',
         'send_test_newsletter',
         'send_newsletter',
-        'payment_compute_tax',
         'merchant_add_features',
         'merchant_get_features',
         'get_features',
@@ -427,7 +423,6 @@ final class Route
         'delete_emi_plan',
         'get_emi_plan_by_id',
         'emi_generate_excel',
-        'order_update',
         'refund_verify',
         'payment_capture_verify',
         'es_migrate_entity',
@@ -529,6 +524,10 @@ final class Route
         'hosted' => array(
             'merchant_secret',
         ),
+
+        'h2h' => array(
+            'setl_reconcile_h2h',
+        ),
     );
 
     public static $slaveRoutes = [
@@ -571,6 +570,7 @@ final class Route
     public static function getCurrentRouteName()
     {
         $router = self::$router;
+
         return $router->currentRouteName();
     }
 

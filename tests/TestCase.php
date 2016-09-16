@@ -2,7 +2,9 @@
 
 namespace RZP\Tests;
 
+use Redis;
 use Mockery;
+use Request;
 use ReflectionObject;
 use RZP\Models\Terminal\Options as TerminalOptions;
 use Illuminate\Foundation\Testing\TestCase as IlluminateTestCase;
@@ -61,12 +63,20 @@ class TestCase extends IlluminateTestCase
 
         $this->freeUpObjectProperties();
 
+        $this->resetIniConfiguration();
+
         parent::tearDown();
     }
 
     protected function setUpTraits()
     {
         ;
+    }
+
+    protected function resetIniConfiguration()
+    {
+        ini_restore('memory_limit');
+        ini_restore('max_execution_time');
     }
 
     protected function freeUpObjectProperties()

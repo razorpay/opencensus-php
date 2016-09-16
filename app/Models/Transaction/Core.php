@@ -198,20 +198,6 @@ class Core extends Base\Core
         return false;
     }
 
-    public function fillServiceTax($txn, $payment)
-    {
-        if ($txn->isGratis())
-        {
-            $txn->setServiceTax(0);
-        }
-        else
-        {
-            $serviceTax = (new Pricing\Fee)->calculateServiceTax($txn, $payment);
-
-            $txn->setServiceTax($serviceTax);
-        }
-    }
-
     protected function paymentOnAtomGateway(array & $txnData, $payment, $fee)
     {
         $txnData[Transaction\Entity::RECONCILED_AT] = time();
@@ -358,7 +344,7 @@ class Core extends Base\Core
         }
         else
         {
-            $nodalBalance = $this->getNodalBalanceLockForUpdate($txn->getChannel());
+            $nodalBalance = $this->repo->balance->getNodalBalance($txn->getChannel());
 
             $txn->setEscrowBalance($nodalBalance->getBalance());
         }

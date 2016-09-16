@@ -45,6 +45,7 @@ class Orchestrator
         self::PAYZAPP  => ['prashanth@razorpay.com'],
         self::MOBIKWIK => ['prashanth@razorpay.com'],
         self::PAYTM    => ['prashanth@razorpay.com'],
+        self::KOTAK    => ['giri@razorpay.com'],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
         self::ADMIN => ['prashanth.yv@razorpay.com'],
@@ -546,6 +547,7 @@ class Orchestrator
     protected function setGatewayReconciliatorObject($gateway)
     {
         $gatewayReconciliatorClassName = 'RZP\\Reconciliator' . '\\' . $gateway . '\\' . 'Reconciliate';
+
         $this->gatewayReconciliator = new $gatewayReconciliatorClassName;
     }
 
@@ -612,7 +614,9 @@ class Orchestrator
 
     protected function handleSettingCsvContent($fileDetails)
     {
-        $csvArray = $this->converter->convertCsvToArray($fileDetails);
+        $columnHeaders = $this->getColumnHeadersForGatewayIfApplicable($fileDetails);
+
+        $csvArray = $this->converter->convertCsvToArray($fileDetails, $columnHeaders);
 
         $this->setExtraDetails($csvArray, $fileDetails);
 
@@ -622,7 +626,27 @@ class Orchestrator
     protected function setExtraDetails(& $arrayContent, $fileDetails)
     {
         $arrayContent[self::EXTRA_DETAILS][FileProcessor::FILE_DETAILS] = $fileDetails;
+
         $arrayContent[self::EXTRA_DETAILS][self::EMAIL_DETAILS] = $this->emailDetails;
+    }
+
+    /**
+     * In case of some csv files, the column headers are not present in the csv.
+     * These have to be manually defined in the bank reconciliator file.
+     *
+     * @param $fileDetails
+     *
+     * @return array
+     */
+    protected function getColumnHeadersForGatewayIfApplicable($fileDetails)
+    {
+        $fileName = $fileDetails[FileProcessor::FILE_NAME];
+
+        $reconType = $this->gatewayReconciliator->getReconciliationTypeFromFileName($fileName);
+
+        $columnHeaders = $this->gatewayReconciliator->getColumnHeadersForType($reconType);
+
+        return $columnHeaders;
     }
 
     /**
