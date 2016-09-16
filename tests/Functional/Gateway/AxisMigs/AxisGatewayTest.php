@@ -130,6 +130,15 @@ class AxisGatewayTest extends TestCase
 
         $this->fixtures->payment->edit($pid, ['status' => 'failed', 'authorized_at' => null]);
 
+        $server = $this->mockServer()
+                        ->shouldReceive('content')
+                        ->andReturnUsing(function (& $content)
+                        {
+                            $content['vpc_DRExists'] = 'N';
+                        })->mock();
+
+        $this->setMockServer($server);
+
         $data = $this->testData[__FUNCTION__];
         $this->runRequestResponseFlow($data, function() use ($pid)
         {

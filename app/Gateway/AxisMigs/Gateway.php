@@ -303,6 +303,8 @@ class Gateway extends Base\Gateway
      */
     protected function verifyApiAndGatewayStatusMatch($verify, $gatewayPayment)
     {
+        $input = $verify->input;
+
         if (($input['payment']['status'] === 'failed') and
             ($gatewayPayment['vpc_TxnResponseCode'] === '0'))
         {
@@ -312,7 +314,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function verifyPaymentReconcileWithGatewayResponse($content, $verify, & $status)
+    protected function verifyPaymentReconcileWithGatewayResponse($content, $verify)
     {
         $payment = $verify->payment;
         $input = $verify->input;
