@@ -223,6 +223,7 @@ class Gateway extends Base\Gateway
         }
     }
 
+    // Uncomment on topup enable
     // public function topup($input)
     // {
     //     return $this->authorize($input);

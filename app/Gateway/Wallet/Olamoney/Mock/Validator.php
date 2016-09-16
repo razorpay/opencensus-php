@@ -38,16 +38,6 @@ class Validator extends Base\Validator
         RequestFields::HASH                 => 'required|string',
     );
 
-    // protected static $debitRules   = array(
-    //     'paymentId'                                            => 'required|alpha_num',
-    //     RequestFields::BILL                                    => 'required|array',
-    //     RequestFields::BILL . '.' . RequestFields::UNIQUE_ID   => 'required|alpha_num',
-    //     RequestFields::BILL . '.' . RequestFields::AMOUNT      => 'required|numeric',
-    //     RequestFields::BILL . '.' . RequestFields::COMMENTS    => 'sometimes|string',
-    //     RequestFields::BILL . '.' . RequestFields::UDF         => 'required|string',
-    //     RequestFields::PHONE                                   => 'required|integer'
-    // );
-
     protected static $refundRules = array(
         RequestFields::ACCESS_TOKEN     => 'required|string',
         RequestFields::COMMAND          => 'required|in:refund',
