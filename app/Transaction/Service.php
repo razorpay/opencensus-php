@@ -212,14 +212,18 @@ class Service extends Base\Service
                 $inputByMerchant[$key]['updated_at'] = time();
             }
 
+            $app = \App::getFacadeRoot();
+            $trace = $app['trace'];
+
             foreach ($inputByMerchant as $key => $value)
             {
+                $trace->info(TraceCode::MISC_TRACE_CODE, [$key, $value]);
 
                 $createdAt = strtotime(date('j F Y', $value['updated_at']));
 
                 $type = 'day';
 
-                $this->createOrUpdate($key, $value, $type, $createdAt, $mode);
+                // $this->createOrUpdate($key, $value, $type, $createdAt, $mode);
             }
         }
         catch (\Exception $e)
@@ -233,10 +237,10 @@ class Service extends Base\Service
 
     protected function createOrUpdate($key, $inputByMerchant, $type, $createdAt, $mode)
     {
-        $app = \App::getFacadeRoot();
-        $trace = $app['trace'];
+        // $app = \App::getFacadeRoot();
+        // $trace = $app['trace'];
+        // $trace->info(TraceCode::MISC_TRACE_CODE, [$key, $inputByMerchant]);
 
-        $trace->info(TraceCode::MISC_TRACE_CODE, $inputByMerchant);
         $obj = Transaction\Entity::retrieveByTypeAndCreatedAt($key, $type, $createdAt, $mode);
 
         if (($obj === null) or

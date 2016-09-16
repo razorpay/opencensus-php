@@ -1952,6 +1952,7 @@ class Service extends Base\Service
 
     protected function fetchPaymentsToAggregate($input, $mode)
     {
+        date_default_timezone_set('Asia/Kolkata');
         $dateFrom = strtotime(date('j F Y', strtotime($input['date'])));
 
         $dateTo = $dateFrom + TransactionService::$timeIntervals['day'];
