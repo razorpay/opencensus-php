@@ -204,6 +204,10 @@ class Entity extends Base\PublicEntity
         self::INTERNATIONAL     => 0,
     );
 
+    protected $casts = [
+        self::INTERNATIONAL => 'bool',
+    ];
+
     protected $amounts = array(
         self::AMOUNT,
         self::AMOUNT_AUTHORIZED,
@@ -982,11 +986,6 @@ class Entity extends Base\PublicEntity
         }
 
         return $token;
-    }
-
-    protected function getInternationalAttribute()
-    {
-        return (bool) $this->attributes[self::INTERNATIONAL];
     }
 
     public function setPublicOrderIdAttribute(Array & $array)
