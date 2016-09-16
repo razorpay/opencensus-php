@@ -4,7 +4,6 @@ namespace RZP\Models\Payment\Processor;
 
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
-use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Card;
 use RZP\Trace\Trace;
@@ -14,11 +13,6 @@ trait FraudDetector
 {
     protected function validateFraudDetection($payment)
     {
-        if ($this->mode === Mode::TEST)
-        {
-            return;
-        }
-
         $riskFields = $this->getRiskDetectionField($payment);
 
         if ((isset($riskFields) === true) and
