@@ -83,7 +83,6 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::MERCHANT_ID,
         self::AMOUNT,
-        self::INTERNATIONAL,
         self::METHOD,
         self::EMI_PLAN_ID,
         self::BANK,
@@ -201,7 +200,7 @@ class Entity extends Base\PublicEntity
         self::OTP_COUNT         => null,
         self::EMI_PLAN_ID       => null,
         self::LATE_AUTHORIZED   => null,
-        self::INTERNATIONAL     => 0,
+        self::INTERNATIONAL     => null,
     );
 
     protected $casts = [
