@@ -308,9 +308,11 @@ class Entity extends Base\PublicEntity
 
 // ----------------------- Setters ---------------------------------------------
 
-    public function setInternational($value)
+    public function setInternational()
     {
-        $this->setAttribute(self::INTERNATIONAL, $value);
+        $isInternational = $this->isMethodCardOrEmi() ? $this->card->isInternational() : false;
+
+        $this->setAttribute(self::INTERNATIONAL, $isInternational);
     }
 
     public function setCaptureAmount($amount)
@@ -688,11 +690,6 @@ class Entity extends Base\PublicEntity
     public function isEmi()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::EMI);
-    }
-
-    public function isCard()
-    {
-        return ($this->getAttribute(self::METHOD) === Payment\Method::CARD);
     }
 
     public function isGateway($gateway)
