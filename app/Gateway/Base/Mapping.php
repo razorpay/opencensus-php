@@ -4,7 +4,7 @@ namespace RZP\Gateway\Base;
 
 class Mapping
 {
-    public static $isoNumericCodes = array(
+    const ISO_NUMERIC_CODES = array(
         //Brazilian Real
         'BRL' => '986',
         //Euro

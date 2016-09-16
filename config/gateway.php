@@ -35,7 +35,7 @@ return array(
     'mock_amex'               => env('AMEX_MOCK'),
     'mock_hdfc'               => env('HDFC_MOCK'),
     'mock_cybersource'        => env('CYBERSOURCE_MOCK'),
-    'mock_first_data'       => env('FIRST_DATA_MOCK'),
+    'mock_first_data'         => env('FIRST_DATA_MOCK'),
     'mock_atom'               => env('ATOM_MOCK'),
     'mock_axis_migs'          => env('AXIS_MIGS_MOCK'),
     'mock_axis_genius'        => env('AXIS_GENIUS_MOCK'),
@@ -67,7 +67,7 @@ return array(
 
     'first_data' => array(
         'test_store_id'                     => env('FIRST_DATA_TEST_STORE_ID'),
-        'test_hash_secret'    	            => env('FIRST_DATA_TEST_HASH_SECRET'),
+        'test_hash_secret'                  => env('FIRST_DATA_TEST_HASH_SECRET'),
         'test_user_id'                      => env('FIRST_DATA_TEST_USER_ID'),
         'test_password'                     => env('FIRST_DATA_TEST_PASSWORD'),
         'server_certificate_path'           => env('FIRST_DATA_SERVER_CERTIFICATE_PATH'),

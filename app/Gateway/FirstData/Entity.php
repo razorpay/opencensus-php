@@ -27,9 +27,6 @@ class Entity extends Base\Entity
     const CC_COUNTRY                = 'cccountry';
     const CC_BRAND                  = 'ccbrand';
 
-    const CREATED_AT                = 'created_at';
-    const UPDATED_AT                = 'updated_at';
-
     protected $fields = array(
         self::ID,
         self::PAYMENT_ID,

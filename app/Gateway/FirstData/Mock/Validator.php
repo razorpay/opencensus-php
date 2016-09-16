@@ -3,47 +3,49 @@
 namespace RZP\Gateway\FirstData\Mock;
 
 use RZP\Models\Base;
-use RZP\Gateway\FirstData;
+use RZP\Gateway\FirstData\Constants;
+use RZP\Gateway\FirstData\Mapping;
+use RZP\Gateway\FirstData\Codes;
 
 class Validator extends Base\Validator
 {
     protected static $authRules = array(
-        FirstData\Gateway::TXN_TYPE                  => 'required|',
-        FirstData\Gateway::TIME_ZONE                 => 'required|string',
-        FirstData\Gateway::TXN_DATE_TIME             => 'required|string',
-        FirstData\Gateway::HASH_ALGORITHM            => 'required|',
-        FirstData\Gateway::HASH                      => 'required|size:40|string',
-        FirstData\Gateway::STORE_NAME                => 'required|size:10|string',
-        FirstData\Gateway::MODE                      => 'sometimes|',
-        FirstData\Gateway::CHARGE_TOTAL              => 'required|numeric',
-        FirstData\Gateway::CURRENCY                  => 'required|',
-        FirstData\Gateway::ORDER_ID                  => 'sometimes|',
-        FirstData\Gateway::TDATE                     => 'sometimes|',
-        FirstData\Gateway::PAYMENT_METHOD            => 'required|',
-        FirstData\Gateway::CUSTOMER_ID               => 'sometimes|',
-        FirstData\Gateway::INVOICE_NUMBER            => 'sometimes|',
-        FirstData\Gateway::CARD_FUNCTION             => 'sometimes|in:credit,debit|string',
-        FirstData\Gateway::COMMENTS                  => 'sometimes|',
-        FirstData\Gateway::RESPONSE_SUCCESS_URL      => 'required|url',
-        FirstData\Gateway::RESPONSE_FAIL_URL         => 'required|url',
-        FirstData\Gateway::DYNAMIC_MERCHANT_NAME     => 'sometimes|string',
-        FirstData\Gateway::LANGUAGE                  => 'sometimes|',
-        FirstData\Gateway::HASH_EXTENDED             => 'sometimes|size:40|string',
-        FirstData\Gateway::NUMBER_OF_INSTALLMENTS    => 'sometimes|',
-        FirstData\Gateway::CARD_NUMBER               => 'required|numeric|digits_between:12,19',
-        FirstData\Gateway::NAME                      => 'sometimes|',
-        FirstData\Gateway::EXP_MONTH                 => 'required|size:2',
-        FirstData\Gateway::EXP_YEAR                  => 'required|size:4',
-        FirstData\Gateway::CVM                       => 'required|numeric|digits_between:2,4',
+        Constants::TXN_TYPE                  => 'required|in:preauth',
+        Constants::TIME_ZONE                 => 'required|string',
+        Constants::TXN_DATE_TIME             => 'required|string',
+        Constants::HASH_ALGORITHM            => 'required|',
+        Constants::HASH                      => 'required|size:40|string',
+        Constants::STORE_NAME                => 'required|size:10|string',
+        Constants::MODE                      => 'sometimes|',
+        Constants::CHARGE_TOTAL              => 'required|numeric',
+        Constants::CURRENCY                  => 'required|',
+        Constants::ORDER_ID                  => 'sometimes|',
+        Constants::TDATE                     => 'sometimes|',
+        Constants::PAYMENT_METHOD            => 'required|',
+        Constants::CUSTOMER_ID               => 'sometimes|',
+        Constants::INVOICE_NUMBER            => 'sometimes|',
+        Constants::CARD_FUNCTION             => 'sometimes|in:credit,debit|string',
+        Constants::COMMENTS                  => 'sometimes|',
+        Constants::RESPONSE_SUCCESS_URL      => 'required|url',
+        Constants::RESPONSE_FAIL_URL         => 'required|url',
+        Constants::DYNAMIC_MERCHANT_NAME     => 'sometimes|string',
+        Constants::LANGUAGE                  => 'sometimes|',
+        Constants::HASH_EXTENDED             => 'sometimes|size:40|string',
+        Constants::NUMBER_OF_INSTALLMENTS    => 'sometimes|',
+        Constants::CARD_NUMBER               => 'required|numeric|digits_between:12,19',
+        Constants::NAME                      => 'sometimes|',
+        Constants::EXP_MONTH                 => 'required|size:2',
+        Constants::EXP_YEAR                  => 'required|size:4',
+        Constants::CVV                       => 'required|numeric|digits_between:2,4',
     );
 
     protected static $authValidators = array(
-        FirstData\Gateway::TXN_TYPE,
-        FirstData\Gateway::MODE,
-        FirstData\Gateway::PAYMENT_METHOD,
-        FirstData\Gateway::HASH_ALGORITHM,
-        FirstData\Gateway::CURRENCY,
-        FirstData\Gateway::LANGUAGE,
+        Constants::TXN_TYPE,
+        Constants::MODE,
+        Constants::PAYMENT_METHOD,
+        Constants::HASH_ALGORITHM,
+        Constants::CURRENCY,
+        Constants::LANGUAGE,
     );
 
     protected static $captureRules = array(
@@ -68,7 +70,7 @@ class Validator extends Base\Validator
     protected function validateTxntype($input)
     {
         if ((isset($input['txntype']) === false) or
-            (in_array($input['txntype'], FirstData\Codes::$txnTypes) === false))
+            (in_array($input['txntype'], Codes::$txnTypes) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid txntype');
@@ -78,7 +80,7 @@ class Validator extends Base\Validator
     protected function validateMode($input)
     {
         if ((isset($input['mode']) === true) and
-            (in_array($input['mode'], FirstData\Codes::$paymentModes) === false))
+            (in_array($input['mode'], Codes::$paymentModes) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid mode');
@@ -88,7 +90,7 @@ class Validator extends Base\Validator
     protected function validatePaymentMethod($input)
     {
         if ((isset($input['paymentMethod']) === false) or
-            (in_array($input['paymentMethod'], array_values(FirstData\Mapping::$paymentMethodCodes)) === false))
+            (in_array($input['paymentMethod'], array_values(Mapping::PAYMENT_METHOD_CODES)) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid paymentMethod');
@@ -98,7 +100,7 @@ class Validator extends Base\Validator
     protected function validateLanguage($input)
     {
         if ((isset($input['language']) === true) and
-            ($input['language'] !== FirstData\Codes::ENGLISH_UK_LANG_CODE_CONNECT))
+            ($input['language'] !== Codes::ENGLISH_UK_LANG_CODE_CONNECT))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Unsupported language');
@@ -108,7 +110,7 @@ class Validator extends Base\Validator
     protected function validateCurrency($input)
     {
         if ((isset($input['currency']) === false) or
-            ($input['currency'] !== FirstData\Mapping::$isoNumericCodes['INR']))
+            ($input['currency'] !== Mapping::ISO_NUMERIC_CODES['INR']))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Unsupported currency');
@@ -118,7 +120,7 @@ class Validator extends Base\Validator
     protected function validateHashAlgorithm($input)
     {
         if ((isset($input['hash_algorithm']) === false) or
-            ($input['hash_algorithm'] !== FirstData\Codes::FIRST_DATA_HASH_ALGORITHM))
+            ($input['hash_algorithm'] !== Codes::FIRST_DATA_HASH_ALGORITHM))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Unsupported hash_algorithm');

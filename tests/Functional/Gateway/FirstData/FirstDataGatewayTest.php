@@ -27,8 +27,6 @@ class FirstDataGatewayTest extends TestCase
 
     public function testPayment()
     {
-        $this->markTestSkippedForWercker();
-
         $authResponse = $this->doAuthPayment($this->payment);
 
         $payment = $this->getLastEntity('payment', true);

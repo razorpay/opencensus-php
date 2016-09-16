@@ -7,7 +7,7 @@ use RZP\Models\Card;
 
 class Mapping extends Base\Mapping
 {
-    public static $paymentMethodCodes = array(
+    const PAYMENT_METHOD_CODES = array(
         // MasterCard
         Card\Network::MC    => 'M',
         // Visa
