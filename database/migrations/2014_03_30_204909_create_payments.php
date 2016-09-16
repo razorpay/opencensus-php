@@ -41,7 +41,7 @@ class CreatePayments  extends Migration
                   ->nullable();
 
             $table->boolean(Payment::INTERNATIONAL)
-                  ->default(0);
+                  ->nullable();
 
             $table->integer(Payment::AMOUNT_AUTHORIZED)
                   ->unsigned()
