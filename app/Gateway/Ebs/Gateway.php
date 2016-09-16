@@ -271,18 +271,27 @@ class Gateway extends Base\Gateway
 
             $lastRedirectRequest = $this->getRequestFromFormPostResponse($secondRedirectRequest, $secondRedirectResponse);
 
-            // Makes the last redirect request before the request to bank's ACS url is made by the checkout.
-            $lastRedirectResponse = $this->sendThirdGatewayRequestForEbsAuthorize($lastRedirectRequest);
+            if (in_array($input['payment'][Payment\Entity::BANK], BankCodes::$bank302Redirect) !== false)
+            {
+                // Makes the last redirect request before the request to bank's ACS url is made by the checkout.
+                $lastRedirectResponse = $this->sendThirdGatewayRequestForEbsAuthorize($lastRedirectRequest);
 
-            $authorizeRequest = $this->getAuthorizeRequestFromLastRedirectResponse(
-                $lastRedirectRequest, $lastRedirectResponse);
+                $authorizeRequest = $this->getAuthorizeRequestFromLastRedirectResponse(
+                    $lastRedirectRequest, $lastRedirectResponse);
+            }
+            else
+            {
+                $authorizeRequest = $lastRedirectRequest;
+            }
         }
         catch (Exception\GatewayTimeoutException $e)
         {
             $this->trace->warning(
                 TraceCode::GATEWAY_REQUEST_TIMEOUT,
-                ['payment_id' => $input['payment'][Payment\Entity::ID],
-                'message'    => 'Payment Authorization failed after '.$this->requestNumber.' Authorization request']);
+                [
+                    'payment_id' => $input['payment'][Payment\Entity::ID],
+                    'message'    => 'Payment Authorization failed after '.$this->requestNumber.' Authorization request'
+                ]);
 
             throw $e;
         }

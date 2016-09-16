@@ -52,4 +52,5 @@ class Table
 
     // Payment Analytics
     const PAYMENT_ANALYTICS     = 'payment_analytics';
+    const TERMINAL_ANALYTICS    = 'terminal_analytics';
 }

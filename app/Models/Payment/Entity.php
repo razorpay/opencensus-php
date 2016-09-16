@@ -875,6 +875,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CARD_ID);
     }
 
+    public function getMerchantId()
+    {
+        return $this->getAttribute(self::MERCHANT_ID);
+    }
+
     /**
      * This function returns the current payment method
      * and a detail string for that particular method
@@ -1183,11 +1188,6 @@ class Entity extends Base\PublicEntity
     public function scopeCreatedAtLessThan($query, $ts)
     {
         return $query->where(Payment\Entity::CREATED_AT, '<', $ts);
-    }
-
-    public function scopeMerchantId($query, $merchantId)
-    {
-        return $query->where(self::MERCHANT_ID,'=',$merchantId);
     }
 
 // --------------------- Query scopes section ends -----------------------------

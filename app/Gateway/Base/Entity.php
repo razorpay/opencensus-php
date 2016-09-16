@@ -2,7 +2,9 @@
 
 namespace RZP\Gateway\Base;
 
-class Entity extends \RZP\Models\Base\PublicEntity
+use RZP\Models\Base;
+
+class Entity extends Base\PublicEntity
 {
     const PAYMENT_ID    = 'payment_id';
     const REFUND_ID     = 'refund_id';

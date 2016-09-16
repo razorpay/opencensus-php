@@ -394,6 +394,23 @@ class Entity extends Base\PublicEntity
         return ($network === Card\Network::$fullName[Card\Network::RUPAY]);
     }
 
+    public function isBlocked()
+    {
+        $iin = $this->getIin();
+
+        $last4 = $this->getLast4();
+
+        $blackList = Card\BlackList::BLOCKED_IIN_LAST4;
+
+        if ((isset($blackList[$iin]) === true) and
+            (in_array($last4, $blackList[$iin])))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     protected function getTokenRelevantAttributes()
     {
         $emi = $this->getAttribute(self::EMI);

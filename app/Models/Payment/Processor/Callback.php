@@ -163,6 +163,7 @@ trait Callback
 
             $this->postPaymentOtpCallbackProcessing($input, $data);
 
+            // Send a request to topup if balance is insufficient
             $this->callGatewayFunction('checkBalance', $input);
         }
         else

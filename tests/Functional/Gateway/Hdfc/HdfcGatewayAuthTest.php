@@ -104,6 +104,8 @@ class HdfcGatewayAuthTest extends TestCase
 
     public function testTerminalRotator()
     {
+        $this->markTestSkipped();
+
         // fail the payment with a card that throws timeout and
         // succeed wih another terminal and assert so.
         $this->fixtures->create('terminal:shared_axis_terminal');
