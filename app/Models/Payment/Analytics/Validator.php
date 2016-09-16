@@ -28,22 +28,4 @@ class Validator extends Base\Validator
         Entity::INTEGRATION             => 'sometimes',
         Entity::INTEGRATION_VERSION     => 'sometimes'
      );
-
-    protected static $createValidators = array(
-        Entity::CHECKOUT_ID,
-    );
-
-    protected function validateCheckoutId($input)
-    {
-        if (empty($input[Entity::CHECKOUT_ID]))
-        {
-            return;
-        }
-
-        if (Entity::isValidBase62Id($input[Entity::CHECKOUT_ID]) !== true)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_INVALID_CHECKOUT_ID);
-        }
-    }
 }

@@ -1128,8 +1128,6 @@ trait Authorize
 
     protected function createAnalyticsLog($rawData)
     {
-        $log = [];
-
         $checkoutMetadataToLog = null;
 
         if (isset($rawData['input']) and isset($rawData['input']['_']))
