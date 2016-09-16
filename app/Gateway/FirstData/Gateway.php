@@ -86,7 +86,7 @@ class Gateway extends Base\Gateway
 
         $this->verifyPaymentCallbackResponse($input);
 
-        $payment = $this->getRepo()
+        $payment = $this->getRepository()
                         ->findByPaymentIdAndActionOrFail($input['gateway']['oid'], Base\Action::AUTHORIZE);
 
         $this->verifyHash($input['gateway'],$payment);
@@ -107,7 +107,7 @@ class Gateway extends Base\Gateway
     {
         parent::capture($input);
 
-        $gatewayPayment = $this->getRepo()->retrieveCapturedByPaymentId($input['payment']['id']);
+        $gatewayPayment = $this->getRepository()->retrieveCapturedByPaymentId($input['payment']['id']);
 
         if (($gatewayPayment !== null) and
             ($gatewayPayment['amount'] === $input['payment']['amount']))
@@ -122,7 +122,7 @@ class Gateway extends Base\Gateway
         $response = $this->postOrderRequestAndParseResponse($content);
         $this->trace->info(TraceCode::GATEWAY_CAPTURE_RESPONSE, [$response]);
 
-        $payment = $this->getRepo()->findByPaymentIdAndActionOrFail($input['payment']['id'], Base\Action::AUTHORIZE);
+        $payment = $this->getRepository()->findByPaymentIdAndActionOrFail($input['payment']['id'], Base\Action::AUTHORIZE);
 
         $attributes = array(
             Entity::STATUS  => $response['TransactionResult'],
@@ -461,7 +461,7 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyRequestContentArray($input)
     {
-        $gatewayPayment = $this->getRepo()->retrieveByPaymentIdOrFail($input['payment']['id']);
+        $gatewayPayment = $this->getRepository()->retrieveByPaymentIdOrFail($input['payment']['id']);
 
         $request['a1:Action']['a1:InquiryOrder']['a1:OrderId'] = $gatewayPayment['oid'];
 
@@ -470,7 +470,7 @@ class Gateway extends Base\Gateway
 
     protected function getCaptureRequestContentArray($input)
     {
-        $gatewayPayment = $this->getRepo()->retrieveByPaymentIdOrFail($input['payment']['id']);
+        $gatewayPayment = $this->getRepository()->retrieveByPaymentIdOrFail($input['payment']['id']);
 
         $currency = $input['payment']['currency'];
         $currencyCode = Mapping::$isoNumericCodes[$currency];
@@ -488,7 +488,7 @@ class Gateway extends Base\Gateway
 
     protected function getRefundRequestContentArray($input)
     {
-        $gatewayPayment = $this->getRepo()->retrieveByPaymentIdOrFail($input['payment']['id']);
+        $gatewayPayment = $this->getRepository()->retrieveByPaymentIdOrFail($input['payment']['id']);
 
         $currency = $input['payment']['currency'];
         $currencyCode = Mapping::$isoNumericCodes[$currency];

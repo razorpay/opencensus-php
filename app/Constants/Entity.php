@@ -75,7 +75,6 @@ class Entity
         self::ATOM                  => \RZP\Gateway\Atom::class,
         self::AMEX                  => \RZP\Gateway\Amex::class,
         self::HDFC                  => \RZP\Gateway\Hdfc::class,
-        self::CYBERSOURCE           => \RZP\Gateway\Cybersource::class,
         self::FIRST_DATA            => \RZP\Gateway\FirstData::class,
         self::ORDER                 => \RZP\Models\Order::class,
         self::PAYTM                 => \RZP\Gateway\Paytm::class,
