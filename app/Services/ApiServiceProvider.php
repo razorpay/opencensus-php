@@ -60,10 +60,10 @@ class ApiServiceProvider extends BaseServiceProvider
 
             if ($tokenexMock === true)
             {
-                return new Services\Mock\TokenEx($app);
+                return new Mock\TokenEx($app);
             }
 
-            return new Services\TokenEx($app);
+            return new TokenEx($app);
         });
 
         $this->app->singleton('raven', function($app)
@@ -139,10 +139,10 @@ class ApiServiceProvider extends BaseServiceProvider
 
             if ($lockMock === true)
             {
-                return new Services\Mock\Lock($app);
+                return new Mock\Lock($app);
             }
 
-            return new Services\Lock($app);
+            return new Lock($app);
         });
     }
 }
