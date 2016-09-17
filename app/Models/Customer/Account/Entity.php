@@ -17,7 +17,7 @@ class Entity extends Base\PublicEntity
     const CONTACT               = 'contact';
     const EMAIL                 = 'email';
     const MERCHANT_ID           = 'merchant_id';
-    const SHIPPING_ADDRESS_ID   = 'shipping_address_id';
+    //const SHIPPING_ADDRESS_ID   = 'shipping_address_id';
     const ACTIVE                = 'active';
     const NOTES                 = 'notes';
     const CREATED_AT            = 'created_at';
