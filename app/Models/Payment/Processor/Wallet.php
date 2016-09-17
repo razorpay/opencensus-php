@@ -4,11 +4,12 @@ namespace RZP\Models\Payment\Processor;
 
 class Wallet
 {
-    const PAYTM     = 'paytm';
-    const PAYZAPP   = 'payzapp';
-    const MOBIKWIK  = 'mobikwik';
-    const PAYUMONEY = 'payumoney';
-    const OLAMONEY  = 'olamoney';
+    const PAYTM       = 'paytm';
+    const PAYZAPP     = 'payzapp';
+    const MOBIKWIK    = 'mobikwik';
+    const PAYUMONEY   = 'payumoney';
+    const OLAMONEY    = 'olamoney';
+    const AIRTELMONEY = 'airtelmoney';
 
     public static $fullName = array(
         self::MOBIKWIK      => 'Mobikwik',
@@ -16,6 +17,7 @@ class Wallet
         self::PAYTM         => 'Paytm',
         self::PAYUMONEY     => 'Payumoney',
         self::PAYZAPP       => 'Payzapp',
+        self::AIRTELMONEY   => 'Airtelmoney',
     );
 
     public static function exists($wallet)

@@ -98,9 +98,8 @@ trait Callback
 
     public function s2sCallback($payment, array $gatewayInput)
     {
-        // Return if payments is signed to allow for payments to be captured
-        // which come signed via shopify route.
-        if ($payment->isSigned())
+        // Return if payment is auto captured
+        if ($payment->getAutoCaptured())
         {
             return ['success' => false];
         }
@@ -164,6 +163,7 @@ trait Callback
 
             $this->postPaymentOtpCallbackProcessing($input, $data);
 
+            // Send a request to topup if balance is insufficient
             $this->callGatewayFunction('checkBalance', $input);
         }
         else
@@ -220,8 +220,6 @@ trait Callback
         if (isset($data['token']) === true)
         {
             $token = $this->createOrUpdateToken($input, $data);
-
-            $payment->setGlobalToken($token->getToken());
 
             $payment->globalToken()->associate($token);
         }

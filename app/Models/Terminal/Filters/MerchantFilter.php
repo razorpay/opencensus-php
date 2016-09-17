@@ -17,7 +17,7 @@ class MerchantFilter extends Terminal\Filter
 {
     protected $properties = [
         'tpv',
-        'risk',
+        // 'risk',
         'category',
     ];
 
@@ -54,7 +54,10 @@ class MerchantFilter extends Terminal\Filter
      */
     public function riskFilter($terminal, $input)
     {
-        if ($input['payment']->isMethodCardOrEmi())
+        // We allow EMI transactions a pass through for
+        // the riskFilter. Because in EMI, we may have to
+        // allow payment through a specific EMI terminal
+        if ($input['payment']->isMethod(Method::CARD))
         {
             if ($input['merchant']->getRiskRating() >= 4)
             {

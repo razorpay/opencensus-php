@@ -44,4 +44,14 @@ class Type
     {
         return (defined(__CLASS__.'::'.strtoupper($type)));
     }
+
+    public static function getMaxmindCardType($type)
+    {
+        if ($type === self::UNKNOWN)
+        {
+            return 'other';
+        }
+
+        return $type . 'card';
+    }
 }

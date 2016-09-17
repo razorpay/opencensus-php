@@ -82,6 +82,7 @@ class GatewayController extends Controller
                 break;
 
             case 'upi':
+            case 'upi_icici':
                 $trace = $this->app['trace'];
 
                 // check mode before search

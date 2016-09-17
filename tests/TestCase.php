@@ -51,8 +51,6 @@ class TestCase extends IlluminateTestCase
         //     $this->markTestSkippedForWercker();
         parent::setUp();
 
-        $this->setRedisMock();
-
         // Load test data
         $this->loadTestData();
 
@@ -65,6 +63,8 @@ class TestCase extends IlluminateTestCase
 
         $this->freeUpObjectProperties();
 
+        $this->resetIniConfiguration();
+
         parent::tearDown();
     }
 
@@ -73,19 +73,10 @@ class TestCase extends IlluminateTestCase
         ;
     }
 
-    protected function setRedisMock()
+    protected function resetIniConfiguration()
     {
-        Redis::shouldReceive('set')
-            ->andReturn(\Predis\Response\Status::get('OK'))
-            ->byDefault();
-
-        Redis::shouldReceive('get')
-            ->andReturn('requestId')
-            ->byDefault();
-
-        Redis::shouldReceive('del')
-            ->andReturn(true)
-            ->byDefault();
+        ini_restore('memory_limit');
+        ini_restore('max_execution_time');
     }
 
     protected function freeUpObjectProperties()
