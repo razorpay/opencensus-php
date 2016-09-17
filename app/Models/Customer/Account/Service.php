@@ -321,7 +321,7 @@ class Service extends Base\Service
 
         $address = (new Address\Core)->setPrimaryAddress($address);
 
-        return $address;
+        return $address->toArrayPublic();
     }
 
     public function deleteAddress($customerId, $addressId)

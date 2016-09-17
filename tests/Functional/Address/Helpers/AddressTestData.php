@@ -22,7 +22,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'entity_id'     => '100000customer',
+                'entity_id'     => 'cust_100000customer',
                 'entity_type'   => 'customer',
                 'address_type'  => 'shipping_address',
                 'primary'       => true,
@@ -53,7 +53,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'entity_id'     => '100000customer',
+                'entity_id'     => 'cust_100000customer',
                 'entity_type'   => 'customer',
                 'address_type'  => 'shipping_address',
                 'primary'       => false,
@@ -112,7 +112,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'entity_id'     => '100000customer',
+                'entity_id'     => 'cust_100000customer',
                 'entity_type'   => 'customer',
                 'address_type'  => 'shipping_address',
                 'primary'       => true,
@@ -143,7 +143,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'entity_id'     => '100000customer',
+                'entity_id'     => 'cust_100000customer',
                 'entity_type'   => 'customer',
                 'address_type'  => 'shipping_address',
                 'primary'       => false,
@@ -160,7 +160,7 @@ return [
     'testSetPrimaryAddressForNonPrimaryAddressWithNoSwitch' => [
         'response'  => [
             'content'   => [
-                'entity_id'     => '100000customer',
+                'entity_id'     => 'cust_100000customer',
                 'entity_type'   => 'customer',
                 'address_type'  => 'shipping_address',
                 'primary'       => true,
@@ -177,7 +177,7 @@ return [
     'testSetPrimaryAddressForNonPrimaryAddressWithSwitch' => [
         'response'  => [
             'content'   => [
-                'entity_id'     => '100000customer',
+                'entity_id'     => 'cust_100000customer',
                 'entity_type'   => 'customer',
                 'address_type'  => 'shipping_address',
                 'primary'       => true,
@@ -225,7 +225,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'entity_id'     => '100000customer',
+                'entity_id'     => 'cust_100000customer',
                 'entity_type'   => 'customer',
                 'address_type'  => 'shipping_address',
                 'primary'       => true,
@@ -249,22 +249,22 @@ return [
                 'count' => 4,
                 'items' => [
                     [
-                        'entity_id' => '100000customer',
+                        'entity_id' => 'cust_100000customer',
                         'entity_type' => 'customer',
                         'address_type' => 'shipping_address',
                     ],
                     [
-                        'entity_id' => '100000customer',
+                        'entity_id' => 'cust_100000customer',
                         'entity_type' => 'customer',
                         'address_type' => 'shipping_address',
                     ],
                     [
-                        'entity_id' => '100000customer',
+                        'entity_id' => 'cust_100000customer',
                         'entity_type' => 'customer',
                         'address_type' => 'shipping_address',
                     ],
                     [
-                        'entity_id' => '100000customer',
+                        'entity_id' => 'cust_100000customer',
                         'entity_type' => 'customer',
                         'address_type' => 'shipping_address',
                     ]
