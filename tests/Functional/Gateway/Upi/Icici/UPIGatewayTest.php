@@ -37,6 +37,13 @@ class UPIGatewayTest extends TestCase
         return $paymentId;
     }
 
+    public function testUnencryptedResponsePayment()
+    {
+        $this->payment['vpa'] = 'shk@icici';
+
+        $this->testPayment();
+    }
+
     public function testPaymentWithS2S($assert = true)
     {
         $paymentId = $this->testPayment();

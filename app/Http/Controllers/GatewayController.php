@@ -45,7 +45,7 @@ class GatewayController extends Controller
         $paymentId = Payment\Entity::getSignedId($paymentId);
 
         return (new Payment\Service)->s2sCallback($paymentId, $input);
-    }-
+    }
 
     protected function callbackEbs($input)
     {

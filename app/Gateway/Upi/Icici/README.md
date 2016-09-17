@@ -32,3 +32,5 @@
 - Payment remains in `created`, not `authorized`, so flow is async
 - Request/Responses are encrypted using RSA, which means the input
   is very often "strings", instead of arrays.
+- the authorize method returns true, because we do not have a request to redirect to
+- the icici server only encrypts responses sometimes. (Take a look at mock server)

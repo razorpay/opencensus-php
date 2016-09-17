@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Gateway\Upi\ICICI;
+namespace RZP\Gateway\Upi\Icici;
 
 use Carbon\Carbon;
 use phpseclib\Crypt\RSA;
@@ -102,7 +102,7 @@ class Gateway extends Base\Gateway
 
         $status = (int) $response['response'];
 
-        if ($status === Status::TXN_INITIATED)
+        if ($status !== Status::TXN_INITIATED)
         {
             $errorCode = ResponseMap::getApiErrorCode($status);
 
@@ -112,7 +112,7 @@ class Gateway extends Base\Gateway
                 ResponseMap::getResponseMessage($status));
         }
 
-        return [];
+        return true;
     }
 
     /**
@@ -134,11 +134,19 @@ class Gateway extends Base\Gateway
      */
     protected function parseGatewayResponse($response)
     {
+        $json = json_decode($response, true);
+
+        // The response is encrypted sometimes,
+        // but not in all cases (usually errors are unencrypted)
+        if ($json !== null)
+        {
+            return $json;
+        }
+
         // The gateway response is encrypted, but wrapped
         // in lines of 80-length. Decryption can't handle
         // this, so we remove any whitespace from the response
         // since this is base64, it only removes newlines
-
         $response = preg_replace('/\s/', '', $response);
         $response = base64_decode($response, true);
         $response = $this->decrypt($response);

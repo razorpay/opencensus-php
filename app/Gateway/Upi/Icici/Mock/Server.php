@@ -1,9 +1,9 @@
 <?php
 
-namespace RZP\Gateway\Upi\ICICI\Mock;
+namespace RZP\Gateway\Upi\Icici\Mock;
 
 use Carbon\Carbon;
-use Gateway\Upi\ICICI;
+use Gateway\Upi\Icici;
 use phpseclib\Crypt\RSA;
 use RZP\Gateway\Base;
 use RZP\Gateway\Base\Action;
@@ -39,8 +39,8 @@ class Server extends Base\Mock\Server
 
     public function authorize($input)
     {
-        parent::authorize($input);
         $input = $this->parseInput($input);
+        parent::authorize($input);
 
         $this->validateAuthorizeInput($input);
 
@@ -62,13 +62,22 @@ class Server extends Base\Mock\Server
     {
         $json = json_encode($data);
 
-        $res = $this->encrypt($json);
+        // The ICICI Gateway inconsistently
+        // does encrypted responses, and we
+        // handle both the cases using
+        // special values for VPA
+        if ($this->input['payerVa'] === 'shk@icici')
+        {
+            $content = $json;
+        }
+        else
+        {
+            $res = $this->encrypt($json);
+            assert($res !== false);
+            $content = base64_encode($res);
+        }
 
-        assert($res !== false);
-
-        $content = base64_encode($res);
-
-        $response = response($content);
+        $response = parent::makeResponse($content);
 
         $response->headers->set('Content-Type', 'text/html; charset=UTF-8');
         $response->headers->set('Content-Language', 'en-US');

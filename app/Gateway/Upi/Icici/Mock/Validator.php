@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Gateway\Upi\ICICI\Mock;
+namespace RZP\Gateway\Upi\Icici\Mock;
 
 use RZP\Models\Base;
 

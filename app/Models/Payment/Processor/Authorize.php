@@ -853,7 +853,7 @@ trait Authorize
      * @see  CoProto supports async payments https://github.com/razorpay/api/wiki/COPROTO
      * @return array payment response
      */
-    protected function getAsyncPaymentCreatedResponse(array $request, Payment\Entity $payment)
+    protected function getAsyncPaymentCreatedResponse($request, Payment\Entity $payment)
     {
         $id = $payment->getPublicId();
 
@@ -868,7 +868,7 @@ trait Authorize
         ];
     }
 
-    protected function getFirstPaymentCreatedResponse(array $request, Payment\Entity $payment)
+    protected function getFirstPaymentCreatedResponse($request, Payment\Entity $payment)
     {
         $data['type'] = 'first';
 
