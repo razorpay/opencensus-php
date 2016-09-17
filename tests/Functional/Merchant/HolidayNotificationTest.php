@@ -7,6 +7,7 @@ use RZP\Constants\Mode;
 use Mockery;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Holidays;
+use Http\Adapter\Guzzle6\Client as GuzzleClient;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 

@@ -4,7 +4,6 @@ namespace RZP\Services;
 
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use RZP\Gateway\GatewayManager;
-use RZP\Services;
 use RZP;
 
 class ApiServiceProvider extends BaseServiceProvider
@@ -25,6 +24,13 @@ class ApiServiceProvider extends BaseServiceProvider
     {
         $this->app->singleton('mailgun', function($app)
         {
+            $mailgunMock = $app['config']->get('applications.mailgun.mock');
+
+            if ($mailgunMock === true)
+            {
+                return new Mock\Mailgun($app);
+            }
+
             return new Mailgun($app);
         });
 
