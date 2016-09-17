@@ -71,15 +71,18 @@ class Reconciler3
 
         $data = $this->parseTextFile($reconcileFile);
 
-        $date = Carbon::createFromFormat('d-M-Y', $data[0]['Payment_Date']);
+        $date = Carbon::createFromFormat('d-M-y', $data[0]['Payment_Date']);
 
-        list($settlements, $failures) = $this->reconcile($data);
+        // update the format so that recon mail is appended to settlement mail
+        $date = $date->format('d-m-Y');
+
+        $response = $this->reconcile($data);
 
         $this->storeReconciledFile($reconcileFile);
 
-        $this->sendReconciliationMail($date, $failures);
+        $this->sendReconciliationMail($date, $response);
 
-        return $settlements;
+        return $response;
     }
 
     protected function reconcile($data)
@@ -116,14 +119,14 @@ class Reconciler3
 
         $failureIds = implode(',', $failures->getPublicIds());
 
-        $slackData = [
+        $response = [
             'setl_count'     => $collection->count(),
             'failures_count' => $failures->count(),
             'failure ids'    => $failureIds];
 
-        (new SlackNotification)->success('setl_reconciliation', $slackData);
+        (new SlackNotification)->success('setl_reconciliation', $response);
 
-        return [$collection, $failures];
+        return $response;
     }
 
     protected function reconcileSetl($row)
@@ -213,15 +216,15 @@ class Reconciler3
         return $setl;
     }
 
-    protected function sendReconciliationMail($date, $failures)
+    protected function sendReconciliationMail($date, $response)
     {
         $msg = 'UTR File reconciled.' . PHP_EOL;
-        $failureCount = $failures->count();
-        $msg .= 'Failure Count: ' . $failureCount . PHP_EOL;
+
+        $msg .= 'Failure Count: ' . $response['failures_count'] . PHP_EOL;
 
         if ($failureCount !== 0)
         {
-            $msg .= 'Failed settlement ids: ' . implode(',', $failures->getPublicIds());
+            $msg .= 'Failed settlement ids: ' . $response['failure ids'];
         }
 
         $data['subject'] = "Re: Kotak Settlement files for $date";
