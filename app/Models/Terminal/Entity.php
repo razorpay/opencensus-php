@@ -47,6 +47,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY,
         self::CARD,
         self::CATEGORY,
+        self::UPI,
         self::EMI,
         self::EMI_DURATION,
         self::SHARED,
@@ -67,6 +68,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY,
         self::CARD,
         self::CATEGORY,
+        self::UPI,
         self::EMI,
         self::EMI_DURATION,
         self::SHARED,
@@ -116,7 +118,12 @@ class Entity extends Base\PublicEntity
     );
 
     protected $casts = array(
-        self::RECURRING                 => 'int'
+        self::CARD                      => 'boolean',
+        self::EMI                       => 'boolean',
+        self::NETBANKING                => 'boolean',
+        self::RECURRING                 => 'int',
+        self::SHARED                    => 'boolean',
+        self::UPI                       => 'boolean',
     );
 
     public function generateMethod($input)
@@ -307,21 +314,6 @@ class Entity extends Base\PublicEntity
         }
 
         return $emiDuration;
-    }
-
-    protected function getCardAttribute()
-    {
-        return (bool) $this->attributes[self::CARD];
-    }
-
-    protected function getNetbankingAttribute()
-    {
-        return (bool) $this->attributes[self::NETBANKING];
-    }
-
-    protected function getSharedAttribute()
-    {
-        return (bool) $this->attributes[self::SHARED];
     }
 
     public function merchant()
