@@ -546,6 +546,8 @@ trait Authorize
 
             $this->setBankAndEmiPlanDetails($payment, $cardNumber, $emiDuration);
         }
+
+        $payment->setInternational();
     }
 
     protected function preProcessPaymentWithoutSaving($payment, & $input, array & $gatewayInput)

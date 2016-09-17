@@ -25,6 +25,7 @@ class Entity extends Base\PublicEntity
     const AMOUNT_REFUNDED       = 'amount_refunded';
     const STATUS                = 'status';
     const ORDER_ID              = 'order_id';
+    const INTERNATIONAL         = 'international';
     const METHOD                = 'method';
     const REFUND_STATUS         = 'refund_status';
     const CAPTURED              = 'captured';
@@ -131,6 +132,7 @@ class Entity extends Base\PublicEntity
         self::TRANSACTION_ID,
         self::AUTO_CAPTURED,
         self::ORDER_ID,
+        self::INTERNATIONAL,
         self::SIGNED,
         self::VERIFIED,
         self::CALLBACK_URL,
@@ -198,7 +200,12 @@ class Entity extends Base\PublicEntity
         self::OTP_COUNT         => null,
         self::EMI_PLAN_ID       => null,
         self::LATE_AUTHORIZED   => null,
+        self::INTERNATIONAL     => null,
     );
+
+    protected $casts = [
+        self::INTERNATIONAL => 'bool',
+    ];
 
     protected $amounts = array(
         self::AMOUNT,
@@ -303,6 +310,13 @@ class Entity extends Base\PublicEntity
 // --------------------- Modifiers Ends ----------------------------------------
 
 // ----------------------- Setters ---------------------------------------------
+
+    public function setInternational()
+    {
+        $isInternational = $this->isMethodCardOrEmi() ? $this->card->isInternational() : false;
+
+        $this->setAttribute(self::INTERNATIONAL, $isInternational);
+    }
 
     public function setCaptureAmount($amount)
     {
@@ -704,7 +718,7 @@ class Entity extends Base\PublicEntity
 
     public function isInternational()
     {
-        return $this->card->isInternational();
+        return $this->getAttribute(self::INTERNATIONAL);
     }
 
 // ----------------------- Getters ---------------------------------------------
