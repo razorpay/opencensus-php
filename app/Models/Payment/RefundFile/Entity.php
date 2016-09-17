@@ -25,6 +25,12 @@ class Entity extends Base\PublicEntity
     const FILE_URL_LENGTH           = 100;
     const STATUS_LENGTH             = 20;
 
+    const CREATED                   = 'CREATED';
+    const IN_PROGRESS               = 'IN_PROGRESS';
+    const FAILURE                   = 'FAILURE';
+    const FAILED                    = 'FAILED';
+    const PROCESSED                 = 'PROCESSED';
+
     protected $table = \RZP\Constants\Table::REFUND_FILE;
 
     protected static $sign = '';
@@ -64,7 +70,7 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = array(
         self::RETRY_ATTEMPT                  => 0,
-        self::STATUS                         => 'CREATED',
+        self::STATUS                         => RefundFile::CREATED,
         self::UPLOAD_FILE_URL                => '',
         self::DOWNLOAD_FILE_URL              => '',
         self::SUCCESS_COUNT                  => 0,

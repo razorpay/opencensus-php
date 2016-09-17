@@ -80,7 +80,7 @@ class RefundTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals('CREATED', $content['status']);
+        $this->assertEquals(RefundFile::CREATED, $content['status']);
 
     }
 
@@ -106,7 +106,7 @@ class RefundTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals('CREATED', $content['status']);
+        $this->assertEquals(RefundFile::CREATED, $content['status']);
 
         $testData = $this->testData['testProcessRefundFile'];
 

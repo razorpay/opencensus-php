@@ -19,7 +19,7 @@ class Repository extends Base\Repository
 
     public function findUnprocessedRefunds($limit = 10)
     {
-        $status = array('CREATED', 'FAILURE');
+        $status = array(RefundFile::CREATED, RefundFile::FAILURE);
         return $this->newQuery()
                     ->whereIn(RefundFile\Entity::STATUS, $status)
                     ->where(RefundFile\Entity::RETRY_ATTEMPT, '<', 3)

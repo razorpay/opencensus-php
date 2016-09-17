@@ -123,8 +123,8 @@ class Service extends Base\Service
             else
             {
                 throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_REFUND_FILE_VALIDATION); 
-            }    
+                    ErrorCode::BAD_REQUEST_REFUND_FILE_VALIDATION);
+            }
         }
 
         $merchant = $this->merchant;
@@ -136,14 +136,14 @@ class Service extends Base\Service
         {
             // Warning to merchant about insufficient balance
              // throw new Exception\BadRequestException(
-             //    ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE); 
+             //    ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE);
 
         }
 
         $refundFile = [
             'total_count' => $totalEntries
         ];
-        
+
         $refundFile = (new RefundFile\Entity)->build($refundFile);
 
         $refundFile->merchant()->associate($merchant);
@@ -158,7 +158,7 @@ class Service extends Base\Service
         $this->repo->saveOrFail($refundFile);
 
         return $refundFile->toArrayPublic();
-        
+
     }
 
     public function processRefundFile()
@@ -168,13 +168,13 @@ class Service extends Base\Service
         foreach ($refundFiles as $refundFile)
         {
 
-            if($refundFile->getStatus() == 'CREATED')
+            if($refundFile->getStatus() == RefundFile::CREATED)
             {
                 $filePath = $refundFile->getUploadFileUrl();
                 $fileFromAws = $this->getFileFromAws('refund_file_upload_bucket', $refundFile->getId().'.xlsx', $filePath);
             }
 
-            elseif($refundFile->getStatus() == 'FAILURE')
+            elseif($refundFile->getStatus() == RefundFile::FAILURE)
             {
                 $filePath = $refundFile->getDownloadFileUrl();
                 $fileFromAws = $this->getFileFromAws('refund_file_download_bucket', $refundFile->getId().'.xlsx', $filePath);
@@ -189,7 +189,7 @@ class Service extends Base\Service
 
             $processedFile = array();
 
-            foreach ($entries as $entry) 
+            foreach ($entries as $entry)
             {
 
                 $refundEntry = array();
@@ -214,24 +214,24 @@ class Service extends Base\Service
                 ];
 
                 array_push($refundEntry, $paymentId);
-                
-                try 
-                {     
+
+                try
+                {
                     $refund = $this->getNewProcessor()->refundCapturedPayment($paymentId, $refundRequest);
-               
-                    array_push($refundEntry, $refund->getAmount(), $refund->getId(), "SUCCESS");
+
+                    array_push($refundEntry, $refund->getAmount(), $refund->getId(), RefundFile::PROCESSED);
 
                     $totalSuccessCount++;
                     $totalRefundedAmount += $refund->getAmount();
 
-   
+
                 } catch (\Exception $e)
                 {
 
-                    array_push($refundEntry, 0, '', $e->getMessage());  
-                    
-                    $totalFailureCount++;           
-                }    
+                    array_push($refundEntry, 0, '', $e->getMessage());
+
+                    $totalFailureCount++;
+                }
 
                 array_push($processedFile, $refundEntry);
             }
@@ -239,7 +239,7 @@ class Service extends Base\Service
             $refundFile->setAmount($totalRefundedAmount);
             $refundFile->setSuccessCount($totalSuccessCount);
             $refundFile->setFailureCount($totalFailureCount);
-            
+
             $retryAttempts = $refundFile->getRetryAttempt() + 1;
             $refundFile->setRetryAttempt($retryAttempts);
 
@@ -249,17 +249,17 @@ class Service extends Base\Service
             {
                 if($retryAttempts == 3)
                 {
-                    $refundFile->setStatus('FAILED');
+                    $refundFile->setStatus(RefundFile::FAILED);
                     $shouldSendMail = true;
                 }
                 else
                 {
-                    $refundFile->setStatus('FAILURE');
+                    $refundFile->setStatus(RefundFile::FAILURE);
                 }
             }
             else
             {
-                $refundFile->setStatus('PROCESSED');
+                $refundFile->setStatus(RefundFile::PROCESSED);
                 $shouldSendMail = true;
             }
 
@@ -280,8 +280,8 @@ class Service extends Base\Service
                 $this->sendMail($fullpath, $totalRefundedAmount, $refundFile->merchant);
             }
         }
-        
-        
+
+
     }
 
     /**
