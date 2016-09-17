@@ -66,8 +66,6 @@ class UPIGatewayTest extends TestCase
         if ($assert)
         {
             $this->assertEquals($response, ['success' => true]);
-
-            $this->testPaymentStatus($paymentId, 'authorized');
         }
 
         return $payment;
