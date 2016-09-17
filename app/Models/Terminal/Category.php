@@ -142,6 +142,10 @@ class Category
         return self::getCategoryForType('network', $network, $category);
     }
 
+    /**
+     * Utitlity function that is used to get the category for a
+     * particular pair of (method, $method) or a (network, $network)
+     * */
     protected static function getCategoryForType($type, $item, $category)
     {
         $returnCategory = null;

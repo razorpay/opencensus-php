@@ -78,6 +78,9 @@ class MerchantFilter extends Terminal\Filter
     {
         $category = $terminal->getTerminalCategory();
 
+        // If the terminal's category is null, pass though.
+        // When all the terminals are without category, this
+        // will pass them all through.
         if (empty($category) === true)
         {
             return true;
@@ -89,7 +92,8 @@ class MerchantFilter extends Terminal\Filter
 
         $defaultCategory = Terminal\Category::getDefaultForMethodAndNetwork($method, $network);
 
-        // If category is a defaultCategory allow, no need to compute merchant category
+        // If category is a defaultCategory allow,
+        // no need to compute merchant category
         if ($category === $defaultCategory)
         {
             return true;
@@ -97,13 +101,12 @@ class MerchantFilter extends Terminal\Filter
 
         $merchantTerminalCategory = $input['merchant']->getTerminalCategory();
 
-        // Use Merchant specific for method or maybe overridden for gateway;
+        // Use Merchant specific category for method, network or maybe overridden for gateway
         $merchantTerminalCategory = Terminal\Category::getCategoryForMethodAndNetwork(
                                                                         $method,
                                                                         $network,
                                                                         $merchantTerminalCategory);
 
-        // If the category matches merchantTerminalCategory pass, else fail
         return ($category === $merchantTerminalCategory);
     }
 
