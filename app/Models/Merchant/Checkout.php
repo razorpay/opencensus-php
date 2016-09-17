@@ -228,6 +228,8 @@ class Checkout
 
     protected function shouldEnableCardSaving($merchant, $input)
     {
+        $rememberCustomer = $merchant->isFeatureEnabled(Features::CARD_SAVING);
+
         // On few devices where browser is blocking cookies, disable card saving
         if (isset($input['checkcookie']))
         {
@@ -235,14 +237,15 @@ class Checkout
 
             $cookie = Request::cookie('checkcookie');
 
-            if ($expectedValue !== $cookie)
+            if (($expectedValue === '1') and ($expectedValue !== $cookie))
             {
                 $this->app['trace']->info(
                     TraceCode::CHECKOUT_PREFERENCES_COOKIE_CHECK,
                     [
-                        'actual'      => $cookie,
-                        'expected'    => $expectedValue,
-                        'merchant_id' => $merchant->getId(),
+                        'actual'           => $cookie,
+                        'expected'         => $expectedValue,
+                        'merchant_id'      => $merchant->getId(),
+                        'rememberCustomer' => $rememberCustomer,
                     ]);
 
                 //uncomment this once we are sure its becuase of above mismatch
@@ -250,6 +253,6 @@ class Checkout
             }
         }
 
-        return $merchant->isFeatureEnabled(Features::CARD_SAVING);
+        return $rememberCustomer;
     }
 }
