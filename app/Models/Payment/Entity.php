@@ -25,6 +25,7 @@ class Entity extends Base\PublicEntity
     const AMOUNT_REFUNDED       = 'amount_refunded';
     const STATUS                = 'status';
     const ORDER_ID              = 'order_id';
+    const INTERNATIONAL         = 'international';
     const METHOD                = 'method';
     const REFUND_STATUS         = 'refund_status';
     const CAPTURED              = 'captured';
@@ -131,6 +132,7 @@ class Entity extends Base\PublicEntity
         self::TRANSACTION_ID,
         self::AUTO_CAPTURED,
         self::ORDER_ID,
+        self::INTERNATIONAL,
         self::SIGNED,
         self::VERIFIED,
         self::CALLBACK_URL,
@@ -198,7 +200,12 @@ class Entity extends Base\PublicEntity
         self::OTP_COUNT         => null,
         self::EMI_PLAN_ID       => null,
         self::LATE_AUTHORIZED   => null,
+        self::INTERNATIONAL     => null,
     );
+
+    protected $casts = [
+        self::INTERNATIONAL => 'bool',
+    ];
 
     protected $amounts = array(
         self::AMOUNT,
@@ -303,6 +310,13 @@ class Entity extends Base\PublicEntity
 // --------------------- Modifiers Ends ----------------------------------------
 
 // ----------------------- Setters ---------------------------------------------
+
+    public function setInternational()
+    {
+        $isInternational = $this->isMethodCardOrEmi() ? $this->card->isInternational() : false;
+
+        $this->setAttribute(self::INTERNATIONAL, $isInternational);
+    }
 
     public function setCaptureAmount($amount)
     {
@@ -704,7 +718,7 @@ class Entity extends Base\PublicEntity
 
     public function isInternational()
     {
-        return $this->card->isInternational();
+        return $this->getAttribute(self::INTERNATIONAL);
     }
 
 // ----------------------- Getters ---------------------------------------------
@@ -865,11 +879,6 @@ class Entity extends Base\PublicEntity
         return (bool) $this->getAttribute(self::SAVE);
     }
 
-    public function getGlobalToken()
-    {
-        return $this->getAttribute(self::GLOBAL_TOKEN);
-    }
-
     public function isRecurring()
     {
         return false;
@@ -878,6 +887,11 @@ class Entity extends Base\PublicEntity
     public function getCardId()
     {
         return $this->getAttribute(self::CARD_ID);
+    }
+
+    public function getMerchantId()
+    {
+        return $this->getAttribute(self::MERCHANT_ID);
     }
 
     /**
@@ -955,6 +969,22 @@ class Entity extends Base\PublicEntity
     public function getApiOrderId()
     {
         return $this->getAttribute(self::ORDER_ID);
+    }
+
+    public function getGlobalOrLocalTokenEntity()
+    {
+        $token = null;
+
+        if ($this->getTokenId() !== null)
+        {
+            $token = $this->token;
+        }
+        else if ($this->getGlobalTokenId() !== null)
+        {
+            $token = $this->globalToken;
+        }
+
+        return $token;
     }
 
     public function setPublicOrderIdAttribute(Array & $array)
@@ -1172,11 +1202,6 @@ class Entity extends Base\PublicEntity
     public function scopeCreatedAtLessThan($query, $ts)
     {
         return $query->where(Payment\Entity::CREATED_AT, '<', $ts);
-    }
-
-    public function scopeMerchantId($query, $merchantId)
-    {
-        return $query->where(self::MERCHANT_ID,'=',$merchantId);
     }
 
 // --------------------- Query scopes section ends -----------------------------
