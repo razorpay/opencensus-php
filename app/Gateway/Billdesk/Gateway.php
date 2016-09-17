@@ -232,11 +232,11 @@ class Gateway extends Base\Gateway
 
     protected function checkIfAlreadyRefunded(array $response, array $input)
     {
-        if ($response['ErrorCode'] !== 'ERR_REF010')
-        {
-            return false;
-        }
-
+        //
+        // NOTE: Billdesk is NOT going to throw this error if the attempted refund is less
+        // than [transaction_amount - {refunds so far}]
+        // It will, instead, do an actual refund.
+        //
         if ($response['ErrorCode'] === 'ERR_REF010')
         {
             return $this->validateAlreadyRefundedByApi($input);
@@ -244,7 +244,7 @@ class Gateway extends Base\Gateway
 
         if ($response['ErrorCode'] === 'ERR_REF009')
         {
-            return $this->validateAutoRefunded();
+            return $this->validateAutoRefundedByBilldesk($response, $input);
         }
 
         return false;
@@ -261,6 +261,8 @@ class Gateway extends Base\Gateway
      */
     protected function validateAlreadyRefundedByApi(array $input)
     {
+        $refundAmount = $input['amount'];
+
         // We check whether we have a refund record for this particular payment already in the Billdesk entity.
 
         $refundRecords = $this->repo->getSuccessfulRefundRecordForThePayment($input['payment'][Payment\Entity::ID]);
@@ -269,8 +271,6 @@ class Gateway extends Base\Gateway
         {
             return false;
         }
-
-        $refundAmount = $input['amount'];
 
         foreach ($refundRecords as $refundRecord)
         {
