@@ -231,11 +231,6 @@ class Holidays
         return ($day->weekOfMonth % 2 !== 0);
     }
 
-    public static function getRandomWorkingDay($date, $ignoreBankHolidays = false)
-    {
-        return self::getNextWorkingDay($date, $ignoreBankHolidays);
-    }
-
     /**
      * Get next settlement holiday after the given day.
      * The below is not an O(n^3) loop.

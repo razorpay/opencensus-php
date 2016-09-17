@@ -45,7 +45,7 @@ class HolidayNotificationTest extends TestCase
     {
         $date = Carbon::today('Asia/Kolkata');
 
-        $date = Holidays::getRandomWorkingDay($date);
+        $date = $this->getRandomWorkingDay($date);
 
         Carbon::setTestNow($date);
 
@@ -95,6 +95,11 @@ class HolidayNotificationTest extends TestCase
         $previousWorkingDay = Holidays::getPreviousWorkingDay($nextSettlementHoliday);
 
         return $previousWorkingDay;
+    }
+
+    protected function getRandomWorkingDay($date, $ignoreBankHolidays = false)
+    {
+        return Holidays::getNextWorkingDay($date, $ignoreBankHolidays);
     }
 
     protected function sendHolidayNotification($mode)
