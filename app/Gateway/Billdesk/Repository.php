@@ -32,4 +32,15 @@ class Repository extends Base\Repository
                     ->where(Entity::REFUND_ID, '=', $refundId)
                     ->first();
     }
+
+    public function getSuccessfulRefundRecordForThePayment($paymentId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::PAYMENT_ID, '=', $paymentId)
+                    ->where('ProcessStatus', '=', QueryStatus::Y)
+                    ->where('RequestType', '=', '0410')
+                    ->where('action', '=', Base\Action::REFUND)
+                    ->where('received', '=', '1')
+                    ->get();
+    }
 }

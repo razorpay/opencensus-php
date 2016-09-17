@@ -121,29 +121,13 @@ class Gateway extends Base\Gateway
 
         if ($response['ProcessStatus'] !== 'Y')
         {
-            // We are commenting out the below piece of code because
-            // Billdesk does not auto refund anymore.
+            $alreadyRefunded = $this->checkIfAlreadyRefunded($response, $gatewayPayment);
 
-            // // For very very few transactions, the payment status on billdesk changes
-            // // after 1 whole day. These are automatically refunded by billdesk.
-            // // So, the AuthStatus changes to 0300 but RefundStatus also changes to 0699.
-            // // In that case, we need to let the refund go ahead.
-            //
-            // $refundAmount = (int) ($response['RefAmount'] * 100);
-            //
-            // if (($response['ErrorCode'] === 'ERR_REF009') and
-            //     ($response['RefStatus'] === RefundStatus::CANCELLED) and
-            //     ($refundAmount === $input['payment']['amount']))
-            // {
-            //     $this->trace->info(
-            //             TraceCode::GATEWAY_PAYMENT_REFUND,
-            //             [
-            //                 'message' => 'Payment was already cancelled at this point by billdesk',
-            //                 'payment_id' => $input['payment']['id']
-            //             ]);
-            //
-            //         return;
-            // }
+            if ($alreadyRefunded === true)
+            {
+                return;
+            }
+
 
             $this->trace->error(
                 TraceCode::PAYMENT_REFUND_FAILURE,
@@ -244,6 +228,96 @@ class Gateway extends Base\Gateway
             'refund_id'     => $refundId,
             'payment_id'    => $input['payment'][Payment\Entity::ID]
         ];
+    }
+
+    protected function checkIfAlreadyRefunded(array $response, array $input)
+    {
+        if ($response['ErrorCode'] !== 'ERR_REF010')
+        {
+            return false;
+        }
+
+        if ($response['ErrorCode'] === 'ERR_REF010')
+        {
+            return $this->validateAlreadyRefundedByApi($input);
+        }
+
+        if ($response['ErrorCode'] === 'ERR_REF009')
+        {
+            return $this->validateAutoRefunded();
+        }
+
+        return false;
+    }
+
+    /**
+     * It is possible that a refund was successful on Billdesk and
+     * we even created a record in the Billdesk Entity, but, due to some reason,
+     * it failed on the API side and we don't have a record of it.
+     * Billdesk sends an error code of ERR_REF010 when we try to refund it again.
+     *
+     * @param array $input
+     * @return bool
+     */
+    protected function validateAlreadyRefundedByApi(array $input)
+    {
+        // We check whether we have a refund record for this particular payment already in the Billdesk entity.
+
+        $refundRecords = $this->repo->getSuccessfulRefundRecordForThePayment($input['payment'][Payment\Entity::ID]);
+
+        if (empty($refundRecords) === true)
+        {
+            return false;
+        }
+
+        $refundAmount = $input['amount'];
+
+        foreach ($refundRecords as $refundRecord)
+        {
+            $recordedRefundAmount = $refundRecord->getRefundAmount() * 100;
+
+            if ($recordedRefundAmount === $refundAmount)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * For very very few transactions, the payment status on billdesk changes
+     * after 1 whole day. These are automatically refunded by billdesk.
+     * So, the AuthStatus changes to 0300 but RefundStatus also changes to 0699.
+     * In that case, we need to let the refund go ahead.
+     *
+     * @param array $response
+     * @param array $input
+     * @return bool
+     */
+    protected function validateAutoRefundedByBilldesk(array $response, array $input)
+    {
+        // For very very few transactions, the payment status on billdesk changes
+        // after 1 whole day. These are automatically refunded by billdesk.
+        // So, the AuthStatus changes to 0300 but RefundStatus also changes to 0699.
+        // In that case, we need to let the refund go ahead.
+
+        $refundAmount = (int) ($response['RefAmount'] * 100);
+
+        if (($response['RefStatus'] === RefundStatus::CANCELLED) and
+            ($refundAmount === $input['amount']))
+        {
+            $this->trace->info(
+                TraceCode::GATEWAY_PAYMENT_REFUND,
+                [
+                    'message' => 'Payment was already cancelled at this point by billdesk',
+                    'payment_id' => $input['payment']['id']
+                ]);
+
+            return true;
+        }
+
+        return false;
     }
 
     /**

@@ -133,6 +133,8 @@ class TerminalSelectionTest extends TestCase
 
     public function testTerminalChoiceOnRiskyMerchant()
     {
+        $this->markTestSkipped();
+
         $this->fixtures->merchant->enableRisky();
         $this->fixtures->create('terminal:all_shared_terminals');
 
@@ -147,6 +149,8 @@ class TerminalSelectionTest extends TestCase
 
     public function testTerminalChoiceForInternatioalCard()
     {
+        $this->markTestSkipped();
+
         $this->fixtures->create('terminal:all_shared_terminals');
 
         $payment = $this->getDefaultPaymentArray();

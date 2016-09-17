@@ -177,10 +177,19 @@ class Reconciliate
         return $reconciliationType;
     }
 
+    public function getReconciliationTypeFromFileName($fileName)
+    {
+        $fileName = strtolower($fileName);
+
+        return $this->getTypeName($fileName);
+    }
+
     protected function setSubReconciliator($reconciliationType)
     {
         $subReconciliatorClassName = $this->getSubReconciliatorClassName($reconciliationType);
+
         $this->subReconciliator = new $subReconciliatorClassName;
+
     }
 
     protected function getSubReconciliatorClassName($reconciliationType)
@@ -200,5 +209,10 @@ class Reconciliate
     {
         // Gets the namespace from the called class, by removing the last part of the FQCN.
         return join('\\', explode('\\', get_called_class(), -1));
+    }
+
+    public function getColumnHeadersForType($type)
+    {
+        return [];
     }
 }

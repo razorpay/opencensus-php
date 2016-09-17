@@ -99,7 +99,7 @@ class EbsGatewayTest extends TestCase
 
     public function testPaymentForThirdGatewayRequestFailure()
     {
-        $payment = $this->getDefaultNetbankingPaymentArray('CORP');
+        $payment = $this->getDefaultNetbankingPaymentArray('JAKA');
 
         $data = $this->testData['testPaymentForThirdGatewayRequestFailure'];
 

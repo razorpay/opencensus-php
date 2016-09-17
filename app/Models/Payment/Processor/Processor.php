@@ -29,6 +29,7 @@ class Processor
     use Verify;
     use OtpResend;
     use Topup;
+    use FraudDetector;
 
     /**
      * Callback urls can be hit multiple times by customers.
@@ -706,12 +707,6 @@ class Processor
             ($payment->isLateAuthorized() === true))
         {
             return false;
-        }
-
-        // If payment is signed
-        if ($payment->isSigned() === true)
-        {
-            return true;
         }
 
         // If payment order was marked as auto capture

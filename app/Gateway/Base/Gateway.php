@@ -20,6 +20,12 @@ class Gateway
     const TIMEOUT = 30;
 
     /**
+     * Default payment timeout duration in mins.
+     * @var  integer
+     */
+    const PAYMENT_TTL = 20;
+
+    /**
      * Default OTP attempts limit
      * @var integer
      */
@@ -619,5 +625,27 @@ class Gateway
         $gateway = $this->gateway;
 
         return $this->app['repo']->$gateway;
+    }
+
+    protected function xmlToArray($xml)
+    {
+        $e = null;
+        $res = null;
+
+        try
+        {
+            $res = simplexml_load_string($xml);
+
+            return (array) $res;
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e);
+
+            throw new Exception\RuntimeException(
+                'Failed to convert xml to array',
+                ['xml' => $xml],
+                $e);
+        }
     }
 }
