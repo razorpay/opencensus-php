@@ -71,6 +71,8 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
 
         $this->unsetUrlForSensitiveUrls($serverData);
 
+        $this->scrapeSensitiveDataFromUrls($serverData);
+
         return $serverData;
     }
 
@@ -81,6 +83,19 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
         if (in_array($serverData['uri'], $sensitiveUrls))
         {
             unset($serverData['url']);
+        }
+    }
+
+    protected function scrapeSensitiveDataFromUrls(& $serverData)
+    {
+        $sensitiveKeys = ['referer'];
+
+        foreach ($sensitiveKeys as $key)
+        {
+            if (empty($serverData[$key]) === false)
+            {
+                $serverData[$key] = http_build_url($serverData[$key], [], HTTP_URL_STRIP_PASS);
+            }
         }
     }
 }
