@@ -37,4 +37,11 @@ class Type
                 'Not a valid type for address: ' . $addressType);
         }
     }
+
+    public static function getEntityClass($entityType)
+    {
+        $entity = 'RZP\\Models\\' . ucfirst($entityType) . '\\Entity';
+
+        return $entity;
+    }
 }

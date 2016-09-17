@@ -2,8 +2,10 @@
 
 namespace RZP\Models\Customer;
 
+use App;
 use RZP\Models\Base;
 use RZP\Constants\Table;
+use RZP\Models\Address;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Base\Traits\NotesTrait;
 
@@ -49,7 +51,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::ACTIVE,
         self::CONTACT,
-        self::SHIPPING_ADDRESS_ID,
+        self::SHIPPING_ADDRESS,
         self::NOTES,
         self::MERCHANT_ID,
         self::CREATED_AT,
@@ -63,7 +65,7 @@ class Entity extends Base\PublicEntity
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
-        self::SHIPPING_ADDRESS_ID,
+        self::SHIPPING_ADDRESS,
         self::CREATED_AT,
     );
 
@@ -71,6 +73,14 @@ class Entity extends Base\PublicEntity
         self::ACTIVE    => true,
         self::NOTES     => [],
     );
+
+    protected $appends = array(
+        self::SHIPPING_ADDRESS);
+
+    protected $publicSetters = array(
+        self::ID,
+        self::ENTITY,
+        self::SHIPPING_ADDRESS);
 
     // ----------------------------------- GETTERS -----------------------------------
 
@@ -108,6 +118,25 @@ class Entity extends Base\PublicEntity
         return (bool) $this->attributes[self::ACTIVE];
     }
 
+    protected function getShippingAddressAttribute()
+    {
+        $input[Address\Entity::ADDRESS_TYPE] = Address\Type::SHIPPING_ADDRESS;
+
+        $customerId = $this->getAttribute(self::ID);
+
+        $app = App::getFacadeRoot();
+
+        $shippingAddresses = $app['repo']->address->fetchAddressesForEntity(
+            Address\Type::CUSTOMER, $customerId, $input);
+
+        if ($shippingAddresses->count() === 0)
+        {
+            return null;
+        }
+
+        return $shippingAddresses->toArrayPublic();
+    }
+
     // ----------------------------------- END ACCESSORS -----------------------------------
 
     // ----------------------------------- SETTERS -----------------------------------
@@ -118,6 +147,18 @@ class Entity extends Base\PublicEntity
     // }
 
     // -----------------------------------  END SETTERS -----------------------------------
+
+    // ----------------------------------- PUBLIC SETTERS -----------------------------------
+
+    public function setPublicShippingAddressAttribute(array & $array)
+    {
+        if (empty($array[self::SHIPPING_ADDRESS]) === true)
+        {
+            unset($array[self::SHIPPING_ADDRESS]);
+        }
+    }
+
+    // ----------------------------------- END PUBLIC SETTERS -----------------------------------
 
     // ----------------------------------- MUTATORS -----------------------------------
 

@@ -81,6 +81,12 @@ class Entity extends Base\PublicEntity
         self::PRIMARY       => true,
     ];
 
+    protected $publicSetters = [
+        self::ID,
+        self::ENTITY,
+        self::ENTITY_ID,
+    ];
+
     protected $casts = [
         self::PRIMARY => 'bool'
     ];
@@ -120,6 +126,19 @@ class Entity extends Base\PublicEntity
 
     // ----------------------------------- END SETTERS -----------------------------------
 
+    // ----------------------------------- PUBLIC SETTERS -----------------------------------
+    
+    public function setPublicEntityIdAttribute(array & $array)
+    {
+        $entity = Type::getEntityClass($array[self::ENTITY_TYPE]);
+
+        $sign = $entity::getIdPrefix();
+
+        $array[self::ENTITY_ID] = $sign . $array[self::ENTITY_ID];
+    }
+
+    // ----------------------------------- END PUBLIC SETTERS -----------------------------------
+    
     // ----------------------------------- RELATIONS -----------------------------------
 
     public function source()

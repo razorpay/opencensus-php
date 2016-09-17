@@ -27,14 +27,14 @@ class Repository extends Base\Repository
                                         ->where(Entity::PRIMARY, '=', '1')
                                         ->get();
 
-        if ($currentAddressId !== null)
-        {
-            return $currentPrimaryAddresses->except($currentAddressId);
-        }
-        else
-        {
+        // if ($currentAddressId !== null)
+        // {
+        //     return $currentPrimaryAddresses->except($currentAddressId);
+        // }
+        // else
+        // {
             return $currentPrimaryAddresses;
-        }
+        // }
     }
 
     public function findByEntityTypeAndId($addressId, $entityType, $entityId)
