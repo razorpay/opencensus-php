@@ -51,7 +51,7 @@ class HolidayNotificationTest extends TestCase
 
         $content = $this->sendHolidayNotification(Mode::LIVE);
 
-        assert($content['message'] === "Next non `settlement holiday` working day is not a bank holiday. Nothing to send.");
+        assert($content['message'] === "Next working day is not a bank holiday. Nothing to send.");
 
         Carbon::setTestNow();
     }
