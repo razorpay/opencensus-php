@@ -128,9 +128,9 @@ class Gateway extends Base\Gateway
 
         if ($code === Status::OTP_REDIRECT)
         {
-            return $this->getOtpRedirectRequestArray($input);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_WALLET_USER_DOES_NOT_EXIST);
         }
-
     }
 
     /*
