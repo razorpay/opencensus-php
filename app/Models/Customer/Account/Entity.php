@@ -112,10 +112,10 @@ class Entity extends Base\PublicEntity
 
     // ----------------------------------- SETTERS -----------------------------------
 
-    public function setShippingAddressId($shippingAddressId)
-    {
-        $this->setAttribute(self::SHIPPING_ADDRESS_ID, $shippingAddressId);
-    }
+    // public function setShippingAddressId($shippingAddressId)
+    // {
+    //     $this->setAttribute(self::SHIPPING_ADDRESS_ID, $shippingAddressId);
+    // }
 
     // -----------------------------------  END SETTERS -----------------------------------
 
@@ -140,12 +140,6 @@ class Entity extends Base\PublicEntity
     {
         return $this->hasMany('RZP\Models\Customer\Token\Entity');
     }
-
-    // public function shippingAddresses()
-    // {
-    //     return $this->hasMany('RZP\Models\Customer\Address\Entity', self::SHIPPING_ADDRESS_ID, Address\Entity::ENTITY_ID);
-    //                 //->where(Address\Entity::ENTITY_TYPE, '=', Address\Type::CUSTOMER);
-    // }
 
     // ----------------------------------- END RELATIONS -----------------------------------
 }

@@ -27,8 +27,8 @@ class CreateCustomers extends Migration {
 
             $table->char(Customer::MERCHANT_ID, 14);
 
-            $table->char(Customer::SHIPPING_ADDRESS_ID, Customer::ID_LENGTH)
-                  ->nullable();
+            // $table->char(Customer::SHIPPING_ADDRESS_ID, Customer::ID_LENGTH)
+            //       ->nullable();
 
             $table->string(Customer::NAME, 50)
                   ->nullable();

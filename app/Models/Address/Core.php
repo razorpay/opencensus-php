@@ -33,16 +33,6 @@ class Core extends Base\Core
 
         $address = (new Entity)->build($input);
 
-        // TODO: Should we use the first method or the second?
-        // $fetchParams = [
-        //     Entity::ADDRESS_TYPE    => $input[Entity::ADDRESS_TYPE],
-        //     Entity::ENTITY_TYPE     => $entityType,
-        //     Entity::ENTITY_ID       => $entity->getId(),
-        // ];
-        //
-        // $this->repo->address->setMerchantIdRequiredForMultipleFetch(false);
-        // $currentAddress = $this->repo->address->fetch($fetchParams);
-
         $currentAddresses = $this->repo->address->fetchAddressesForEntity(
             $entityType, $entity->getId(), [Entity::ADDRESS_TYPE => $input[Entity::ADDRESS_TYPE]]);
 
@@ -123,20 +113,20 @@ class Core extends Base\Core
 
                     $this->repo->saveOrFail($latestAddress);
 
-                    $addressId = $latestAddress->getId();
+                    //$addressId = $latestAddress->getId();
                 }
-                else
-                {
-                    // If $latestAddress is null, there's nothing to do. It just means that there was just
-                    // one address which we are going to delete.
+                // else
+                // {
+                //     // If $latestAddress is null, there's nothing to do. It just means that there was just
+                //     // one address which we are going to delete.
+                //
+                //     $addressId = null;
+                // }
 
-                    $addressId = null;
-                }
-
-                $setterFunc = $this->getSetterFunctionForAddress($address->getAddressType());
-                $entity->$setterFunc($addressId);
-
-                $this->repo->saveOrFail($entity);
+                // $setterFunc = $this->getSetterFunctionForAddress($address->getAddressType());
+                // $entity->$setterFunc($addressId);
+                //
+                // $this->repo->saveOrFail($entity);
             }
 
             return $this->repo->address->deleteOrFail($address);
@@ -160,12 +150,8 @@ class Core extends Base\Core
     {
         $entity = $this->getAssociatedEntityFromAddress($address);
 
-        // We are passing the address ID here because we save the address in the previous step with
-        // primary set to true. Hence, we will always get 1 or more primary addresses even if we are
-        // creating a new address for the entity. We need to get primary addresses `except`
-        // this address which is just created.
         $currentPrimaryAddress = $this->repo->address->fetchCurrentPrimaryAddress(
-            $address->getEntityType(), $entity->getId(), $address->getAddressType(), $address->getId());
+            $address->getEntityType(), $entity->getId(), $address->getAddressType());
 
         if ($currentPrimaryAddress->count() > 1)
         {
@@ -208,10 +194,10 @@ class Core extends Base\Core
                 );
             }
 
-            $setterFunc = $this->getSetterFunctionForAddress($address->getAddressType());
-            $entity->$setterFunc($address->getId());
-
-            $this->repo->saveOrFail($entity);
+            // $setterFunc = $this->getSetterFunctionForAddress($address->getAddressType());
+            // $entity->$setterFunc($address->getId());
+            //
+            // $this->repo->saveOrFail($entity);
         });
     }
 
