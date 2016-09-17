@@ -55,7 +55,7 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
             'method'        => $this->request->method(),
             'ajax'          => $this->request->ajax(),
             'origin'        => $this->request->header('origin'),
-            'client_ip'     => $this->getClientIp(),
+            'client_ip'     => $this->request->getRealClientIp(),
             'server_ip'     => $this->request->server('SERVER_ADDR'),
             'referer'       => $this->request->headers->get('referer'),
             'user_agent'    => $this->request->server('HTTP_USER_AGENT'),
@@ -97,19 +97,5 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
                 $serverData[$key] = http_build_url($serverData[$key], [], HTTP_URL_STRIP_PASS);
             }
         }
-    }
-
-    protected function getClientIp()
-    {
-        $request = $this->request;
-
-        $clientIp = $request->headers->get('X_FORWARDED_FOR');
-
-        if ($clientIp === null)
-        {
-            $clientIp = $request->getClientIp();
-        }
-
-        return $clientIp;
     }
 }

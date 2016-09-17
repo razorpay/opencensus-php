@@ -241,6 +241,7 @@ class Inferno
                 [
                     'webhook' => $webhook->getId(),
                     'response_code' => $response->status_code,
+                    'response_body' => $response->body,
                 ]
             );
 

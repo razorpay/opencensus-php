@@ -32,6 +32,8 @@ class BasicAuth
      *
      */
 
+    const HMAC_ALGO = 'sha256';
+
     /**
      * The application instance.
      *
@@ -826,6 +828,6 @@ class BasicAuth
 
         $secret = Crypt::decrypt($this->key->getSecret());
 
-        return hash_hmac('sha1', $str, $secret);
+        return hash_hmac(self::HMAC_ALGO, $str, $secret);
     }
 }

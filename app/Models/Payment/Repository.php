@@ -7,6 +7,8 @@ use RZP\Models\Merchant\Methods;
 use RZP\Models\Payment;
 use RZP\Models\Card;
 use RZP\Models\Order;
+use RZP\Models\Transaction;
+use RZP\Constants\Table;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorDescription;
@@ -214,6 +216,28 @@ class Repository extends Base\Repository
     {
         return $this->fetchBetweenTimestampWithRelations(
                         $merchantId, $from, $to, ['card']);
+    }
+
+    public function fetchReconciledPaymentsForGateway($from, $to, $gateway, $status)
+    {
+        $paymentAttrs = Entity::getAttributeWithTableName('*');
+
+        $paymentId = Entity::getAttributeWithTableName(Entity::ID);
+
+        $transactionPaymentId = Transaction\Entity::getAttributeWithTableName(Transaction\Entity::ENTITY_ID);
+
+        $transactionEntityType = Transaction\Entity::getAttributeWithTableName(Transaction\Entity::TYPE);
+
+        $transactionReconciledAt = Transaction\Entity::getAttributeWithTableName(Transaction\Entity::RECONCILED_AT);
+
+        return $this->newQuery()
+                    ->select($paymentAttrs)
+                    ->join(Table::TRANSACTION, $paymentId, '=', $transactionPaymentId)
+                    ->where(Entity::GATEWAY, '=', $gateway)
+                    ->where($transactionEntityType, '=', 'payment')
+                    ->whereBetween($transactionReconciledAt, [$from, $to])
+                    ->whereIn(Entity::STATUS, $status)
+                    ->get();
     }
 
     protected function addQueryParamBank($query, $params)
