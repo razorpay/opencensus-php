@@ -1,9 +1,8 @@
 <?php
 
-namespace RZP\Gateway\UPI\Base;
+namespace RZP\Gateway\Upi\Base;
 
 use RZP\Gateway\Base;
-use RZP\Gateway\UPI;
 
 class Gateway extends Base\Gateway
 {
@@ -32,6 +31,6 @@ class Gateway extends Base\Gateway
 
     protected function getNewGatewayPaymentEntity()
     {
-        return new UPI\Base\Entity;
+        return new Entity;
     }
 }

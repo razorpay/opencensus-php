@@ -150,7 +150,7 @@ class Checkout
             }
             $methodsArray['wallet'] = $methods->getEnabledWallets();
             $methodsArray['emi'] = $methods->isEmiEnabled();
-            $methodsArray['upi'] = $methods->isUPIEnabled();
+            $methodsArray['upi'] = $methods->isUpiEnabled();
         }
 
         return $methodsArray;

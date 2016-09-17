@@ -104,7 +104,7 @@ class TerminalPicker
                 break;
 
             case Method::UPI:
-                $terminal = $this->pickUPITerminal($terminals, $payment);
+                $terminal = $this->pickUpiTerminal($terminals, $payment);
                 break;
 
             default:
@@ -220,8 +220,9 @@ class TerminalPicker
         return $this->getSharedTerminalForWallet($payment);
     }
 
-    protected function pickUPITerminal($terminals, $payment)
+    protected function pickUpiTerminal($terminals, $payment)
     {
+        // Discuss the logic for UPI terminal picker
         $sharedTerminal = Shared::getSharedTerminalForGateway(Gateway::UPI_ICICI);
 
         if ($this->terminalExists($sharedTerminal))

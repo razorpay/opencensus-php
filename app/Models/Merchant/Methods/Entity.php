@@ -120,9 +120,9 @@ class Entity extends Base\PublicEntity
         return $this->getNetbankingAttribute();
     }
 
-    public function isUPIEnabled()
+    public function isUpiEnabled()
     {
-        return $this->getUPIAttribute();
+        return $this->getUpiAttribute();
     }
 
     public function isWalletEnabled($wallet = null)
@@ -382,7 +382,7 @@ class Entity extends Base\PublicEntity
         return (bool) $this->attributes[self::PAYUMONEY];
     }
 
-    public function getUPIAttribute()
+    public function getUpiAttribute()
     {
         return (bool) $this->attributes[self::UPI];
     }

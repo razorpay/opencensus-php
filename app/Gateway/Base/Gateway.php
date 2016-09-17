@@ -348,6 +348,11 @@ class Gateway
         return $verify->getDataToTrace();
     }
 
+    public function preProcessS2SResponse($input)
+    {
+        return $input;
+    }
+
     protected function shouldReturnIfPaymentNullInVerifyFlow($verify)
     {
         if (($verify->input['payment']['status'] === 'failed') or

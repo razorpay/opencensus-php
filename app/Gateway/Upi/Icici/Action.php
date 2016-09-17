@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Gateway\UPI\ICICI;
+namespace RZP\Gateway\Upi\ICICI;
 
 use RZP\Gateway\Base;
 

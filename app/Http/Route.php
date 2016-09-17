@@ -189,7 +189,7 @@ final class Route
         'mock_wallet_payment'                     => ['post',     'gateway/mock/wallet/{wallet}',             'MockGatewayController@walletPayment'                               ],
         'mock_wallet_payment_get'                 => ['get',      'gateway/mock/wallet/{wallet}',             'MockGatewayController@walletPayment'                               ],
         'mock_wallet_payment_with_paymentid'      => ['post',     'gateway/mock/wallet/{wallet}/{paymentId}', 'MockGatewayController@walletPayment'                               ],
-        'mock_upi_icici_payment'                  => ['post',     'gateway/mock/upi/{bank}',                  'MockGatewayController@postUPIPayment'                              ],
+        'mock_upi_icici_payment'                  => ['post',     'gateway/mock/upi/{bank}',                  'MockGatewayController@postUpiPayment'                              ],
         'admin_fetch_entity_multiple'             => ['get',      'admin/{type}',                             'AdminController@getEntityMultiple'                                 ],
         'admin_fetch_entity_by_id'                => ['get',      'admin/{type}/{id}',                        'AdminController@getEntityById'                                     ],
         'send_test_newsletter'                    => ['post',     'admin/newsletter/test',                    'AdminController@postSendTestNewsletter'                            ],

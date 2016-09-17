@@ -342,37 +342,12 @@ class Service extends Base\Service
      * Note: This will only work within 15 minutes of the payment creation
      *
      * @return array
-     *
-     *
      */
     public function fetchStatus($id)
     {
-        $payment = $this->core->retrieveByIdAndMerchantId($id, $this->merchant->getId());
+        $data = $this->getNewProcessor()->updateAsync($id);
 
-        $gateway = $payment->getGateway();
-
-        $status = 'unknown';
-
-        // Error cases
-        //
-        if ((!Gateway::supportsAsync($gateway)) or (!$payment->justCreated()))
-        {
-            // Throw error
-        }
-
-        if ($payment->isCreated())
-        {
-            return [
-                Entity::STATUS      =>  $payment->getStatus(),
-            ];
-        }
-        else if($payment->isAuthorized())
-        {
-            // TODO: Send entire authorized response
-            return [
-                Entity::STATUS      =>  $payment->getStatus(),
-            ];
-        }
+        return $data;
     }
 
     public function addPaymentMetadata($id, $input)

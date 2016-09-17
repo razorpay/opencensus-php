@@ -335,6 +335,55 @@ class Processor
         throw new Exception\LogicException('Should not have been hit.');
     }
 
+
+    public function updateAsync($id)
+    {
+        $payment = $this->retrieve($id);
+
+        $gateway = $payment->getGateway();
+
+        if ((Payment\Gateway::supportsAsync($gateway) === false) or
+            ($payment->justCreated() === false))
+        {
+            // Throw exception of invalid id
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_ID);
+        }
+
+        // If it failed recently, then throw relevant exception
+        // directly for the failure.
+        if ($payment->isFailed() === true)
+        {
+            $this->rethrowFailedPaymentErrorException($payment);
+        }
+
+        if ($payment->isCreated())
+        {
+            return ['status' => Payment\Status::CREATED];
+        }
+
+        assert($payment->isAuthorized() === true);
+
+        return $this->processAuthAsyncResponse($payment);
+    }
+
+    protected function processAuthAsyncResponse($payment)
+    {
+        $returnData = ['razorpay_payment_id' => $payment->getPublicId()];
+
+        if ($payment->getAutoCaptured() === true)
+        {
+            $this->fillReturnDataForAutoCaptureOrders($payment, $returnData);
+        }
+
+        if ($payment->getCallbackUrl())
+        {
+            $this->fillReturnRequestDataForMerchant($payment, $returnData);
+        }
+
+        return $returnData;
+    }
+
     public function callGatewayFunctionCaptureViaQueue($data, $payment)
     {
         $this->payment = $payment;
@@ -426,7 +475,6 @@ class Processor
         $gatewayData['terminal'] = $terminal;
         $gatewayData['merchant'] = $this->payment->merchant;
 
-        // TODO: Shouldn't be KOTAK specific
         if ($gateway === Payment\Gateway::KOTAK)
         {
             $gatewayData['bank_account'] = $this->getMerchantBankAccount($terminal->merchant);
@@ -613,7 +661,7 @@ class Processor
         Payment\Entity::verifyIdAndStripSign($id);
 
         $this->payment = $this->repo->payment->findByIdAndMerchantId(
-                                                $id, $this->merchant->getKey());
+                                                $id, $this->merchant->getId());
 
         return $this->payment;
     }

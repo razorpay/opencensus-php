@@ -1,9 +1,9 @@
 <?php
 
-namespace RZP\Gateway\UPI\Base;
+namespace RZP\Gateway\Upi\Base;
 
-use RZP\Constants\Table;
 use RZP\Gateway\Base;
+use RZP\Constants\Table;
 
 class Entity extends Base\Entity
 {
@@ -56,7 +56,7 @@ class Entity extends Base\Entity
     );
 
     protected $casts = array(
-      'amount'  =>  'int'
+        'amount'  =>  'int'
     );
 
     public function setBank($bank)
@@ -67,11 +67,6 @@ class Entity extends Base\Entity
     public function setAmount($amount)
     {
         $this->setAttribute(self::AMOUNT, $amount);
-    }
-
-    public function getAmountAttribute()
-    {
-        return $this->attributes[self::AMOUNT];
     }
 
     public function getPaymentId()

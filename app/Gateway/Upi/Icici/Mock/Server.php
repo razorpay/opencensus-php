@@ -1,13 +1,13 @@
 <?php
 
-namespace RZP\Gateway\UPI\ICICI\Mock;
+namespace RZP\Gateway\Upi\ICICI\Mock;
 
 use Carbon\Carbon;
-use Gateway\UPI\ICICI;
+use Gateway\Upi\ICICI;
 use phpseclib\Crypt\RSA;
 use RZP\Gateway\Base;
 use RZP\Gateway\Base\Action;
-use RZP\Gateway\UPI\Base\Entity as UPIEntity;
+use RZP\Gateway\Upi\Base\Entity as UPIEntity;
 use Models\Payment;
 
 class Server extends Base\Mock\Server

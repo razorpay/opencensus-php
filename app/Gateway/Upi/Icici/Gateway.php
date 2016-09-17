@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Gateway\UPI\ICICI;
+namespace RZP\Gateway\Upi\ICICI;
 
 use Carbon\Carbon;
 use phpseclib\Crypt\RSA;
@@ -9,8 +9,8 @@ use Requests_Response;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
-use RZP\Gateway\UPI\Base;
-use RZP\Gateway\UPI\Base\Entity;
+use RZP\Gateway\Upi\Base;
+use RZP\Gateway\Upi\Base\Entity;
 use RZP\Exception\GatewayErrorException;
 
 class Gateway extends Base\Gateway
@@ -57,6 +57,7 @@ class Gateway extends Base\Gateway
     protected function getPrivateKey()
     {
         $key = $this->config['private_key'];
+
         return str_replace('\n', "\n", $key);
     }
 
@@ -69,7 +70,7 @@ class Gateway extends Base\Gateway
      */
     protected function getUrl($type = 'authorize')
     {
-        $type = "{$this->mode}_$type";
+        $type = "{$this->mode}_{$type}";
 
         return parent::getUrl($type);
     }
@@ -99,9 +100,9 @@ class Gateway extends Base\Gateway
 
         $this->updateGatewayPaymentResponse($payment, $response);
 
-        $status = $this->getStatusCode($response);
+        $status = (int) $response['response'];
 
-        if (ResponseMap::isInitiated($status) === false)
+        if ($status === Status::TXN_INITIATED)
         {
             $errorCode = ResponseMap::getApiErrorCode($status);
 
@@ -111,7 +112,7 @@ class Gateway extends Base\Gateway
                 ResponseMap::getResponseMessage($status));
         }
 
-        return true;
+        return [];
     }
 
     /**
@@ -123,7 +124,7 @@ class Gateway extends Base\Gateway
     protected function getGatewayEntityAttributes(array $input)
     {
         return [
-            Entity::VPA         =>  $input['vpa'],
+            Entity::VPA =>  $input['vpa'],
         ];
     }
 
@@ -133,11 +134,12 @@ class Gateway extends Base\Gateway
      */
     protected function parseGatewayResponse($response)
     {
-        $res = preg_replace('/\s/', '', $response);
-        $res = base64_decode($res, true);
-        $res = $this->decrypt($res);
+        // Ask why
+        $response = preg_replace('/\s/', '', $response);
+        $response = base64_decode($response, true);
+        $response = $this->decrypt($response);
 
-        return json_decode($res, true);
+        return $this->jsonToArray($response);
     }
 
     /**
@@ -171,6 +173,7 @@ class Gateway extends Base\Gateway
         {
             return $this->config['test_merchant_id'];
         }
+
         return $this->config['live_merchant_id'];
     }
 
@@ -230,15 +233,17 @@ class Gateway extends Base\Gateway
         $data = [
             // Amount and note are lowercase
             // despite being uppercase in docs
-            'amount'            =>  $this->formatAmount($payment['amount']),
-            'collectByDate'     =>  $collectByTimestamp,
-            'billNumber'        =>  '1234',
-            'merchantId'        =>  $this->getMerchantId(),
-            'merchantTranId'    =>  $payment['id'],
-            'note'              =>  'collect-pay-request',
-            'payerVa'           =>  $input['vpa'],
-            'subMerchantId'     =>  $this->getSubMerchantId($input),
-            'subMerchantName'   =>  $input['merchant']->getBillingLabel(),
+            'amount'            => $this->formatAmount($payment['amount']),
+            'collectByDate'     => $collectByTimestamp,
+            'billNumber'        => '1234',
+            'merchantId'        => $this->getMerchantId(),
+            'merchantTranId'    => $payment['id'],
+            'merchantName'      => 'Razorpay',
+            'note'              => 'collect-pay-request',
+            'payerVa'           => $input['vpa'],
+            // confirm if we can send merchant id
+            // 'subMerchantId'     =>  $this->getSubMerchantId($input),
+            'subMerchantName'   =>  $input['merchant']->getBillingLabelElseName(),
             'terminalId'        =>  '1234',
         ];
 
@@ -350,7 +355,7 @@ class Gateway extends Base\Gateway
      * @param  String $body Request body
      * @return array
      */
-    public function parseS2SResponse($body)
+    public function preProcessS2SResponse($body)
     {
         $response = $this->parseGatewayResponse($body);
 
@@ -377,22 +382,21 @@ class Gateway extends Base\Gateway
 
         $content = $input['gateway'];
 
-        $code = $content[ResponseFields::TXN_STATUS];
+        $status = $content[ResponseFields::TXN_STATUS];
 
         $repo = $this->getRepository();
 
-        $entity = $repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
+        $gatewayPayment = $repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
 
         // Since there is no Auth in this flow (just public key encryption)
         // and we are not revealing Bank RRN, this gives us a bit of
         // extra security for fake callbacks
 
-        assert($content[ResponseFields::MERCHANT_ID] === $entity->getMerchantId());
-        assert($content[ResponseFields::MERCHANT_TRAN_ID] === $entity->getPaymentId());
-        assert($content[ResponseFields::BANK_RRN] === $entity->getGatewayPaymentId());
+        assert($content[ResponseFields::MERCHANT_ID] === $gatewayPayment->getMerchantId());
+        assert($content[ResponseFields::MERCHANT_TRAN_ID] === $gatewayPayment->getPaymentId());
+        assert($content[ResponseFields::BANK_RRN] === $gatewayPayment->getGatewayPaymentId());
 
-        // Payment didn't get authorized
-        if (ResponseMap::isPaymentSuccess($code) === false)
+        if ($status !== Status::SUCCESS)
         {
             $message = "Payment Failed during callback";
 
@@ -403,16 +407,7 @@ class Gateway extends Base\Gateway
         }
 
         // Authorization was successful
-        $this->updateGatewayPaymentResponse($entity, $content);
-
-        return $entity->toArray();
-    }
-
-    protected function getRepository()
-    {
-        $gateway = 'upi_icici';
-
-        return $this->app['repo']->$gateway;
+        $this->updateGatewayPaymentResponse($gatewayPayment, $content);
     }
 
     public function refund(array $input)

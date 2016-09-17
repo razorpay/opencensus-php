@@ -1,9 +1,8 @@
 <?php
 
-namespace RZP\Gateway\UPI\ICICI\Mock;
+namespace RZP\Gateway\Upi\ICICI\Mock;
 
 use RZP\Models\Base;
-use RZP\Gateway\Wallet\Olamoney;
 
 class Validator extends Base\Validator
 {

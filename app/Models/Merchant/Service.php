@@ -455,7 +455,7 @@ class Service extends Base\Service
             }
             $data['wallet'] = $methods->getEnabledWallets();
             $data['emi'] = $methods->isEmiEnabled();
-            $data['upi'] = $methods->isUPIEnabled();
+            $data['upi'] = $methods->isUpiEnabled();
         }
 
         if ($this->mode === Mode::TEST)

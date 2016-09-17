@@ -495,7 +495,7 @@ trait Authorize
             $this->preProcessPaymentForGlobalCustomer($customer, $customerApp, $payment, $input, $gatewayInput);
         }
 
-        if ($payment->isEmi())
+        if ($payment->isEmi() === true)
         {
             $cardNumber = $gatewayInput['card']['number'];
 
@@ -504,7 +504,7 @@ trait Authorize
             $this->setBankAndEmiPlanDetails($payment, $cardNumber, $emiDuration);
         }
 
-        if ($payment->isUpi())
+        if ($payment->isUpi() === true)
         {
             $gatewayInput['vpa'] = $input['vpa'];
         }
@@ -757,7 +757,7 @@ trait Authorize
                 break;
 
             case Payment\Method::UPI:
-                $this->verifyUPIEnabled();
+                $this->verifyUpiEnabled();
                 break;
 
             default:
@@ -843,9 +843,33 @@ trait Authorize
     {
         if (Payment\Gateway::supportsAsync($payment->getGateway()))
         {
-            return $this->getAsyncPaymentCreatedResponse($payment);
+            return $this->getAsyncPaymentCreatedResponse($request, $payment);
         }
 
+        return $this->getFirstPaymentCreatedResponse($request, $payment);
+    }
+
+    /**
+     * @see  CoProto supports async payments https://github.com/razorpay/api/wiki/COPROTO
+     * @return array payment response
+     */
+    protected function getAsyncPaymentCreatedResponse(array $request, Payment\Entity $payment)
+    {
+        $id = $payment->getPublicId();
+
+        return [
+            'type'          => 'async',
+            'version'       => 1,
+            'payment_id'    => $id,
+            'request'       => [
+                'url'    => Route::getUrlWithPublicAuth('payment_get_status', ['id' => $id]),
+                'method' => 'GET',
+            ]
+        ];
+    }
+
+    protected function getFirstPaymentCreatedResponse(array $request, Payment\Entity $payment)
+    {
         $data['type'] = 'first';
 
         $data['request'] = $request;
@@ -863,25 +887,6 @@ trait Authorize
         $data['image'] = $payment->merchant->getFullLogoUrlWithSize(Merchant\Logo::MEDIUM_SIZE);
 
         return $data;
-    }
-
-    /**
-     * @see  CoProto supports async payments https://github.com/razorpay/api/wiki/COPROTO
-     * @return array payment response
-     */
-    protected function getAsyncPaymentCreatedResponse(Payment\Entity $payment)
-    {
-        $id = $payment->getPublicId();
-
-        return [
-            'type'          =>  'async',
-            'version'       =>  1,
-            'payment_id'    =>  $id,
-            'request'       =>  [
-                'url'           =>  route('payment_get_status', ['id'=>$id]),
-                'method'        =>  'GET',
-            ]
-        ];
     }
 
     protected function updateTokenOnAuthorized()
@@ -1344,7 +1349,7 @@ trait Authorize
         $this->checkAndValidateAmexIfNotEnabled($merchantMethods, $input['card']);
     }
 
-    protected function verifyUPIEnabled()
+    protected function verifyUpiEnabled()
     {
         $merchantMethods = $this->methods;
 

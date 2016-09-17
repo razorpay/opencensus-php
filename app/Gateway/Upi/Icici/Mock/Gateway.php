@@ -1,12 +1,12 @@
 <?php
 
-namespace RZP\Gateway\UPI\ICICI\Mock;
+namespace RZP\Gateway\Upi\ICICI\Mock;
 
 use EE\Exception;
 use EE\Error\ErrorCode;
 use RZP\Http\Route;
 use RZP\Gateway\Base;
-use RZP\Gateway\UPI\ICICI;
+use RZP\Gateway\Upi\ICICI;
 
 class Gateway extends ICICI\Gateway
 {

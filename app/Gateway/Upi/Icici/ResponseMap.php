@@ -1,15 +1,13 @@
 <?php
 
-namespace RZP\Gateway\UPI\ICICI;
+namespace RZP\Gateway\Upi\ICICI;
 
 use RZP\Error\ErrorCode;
 
 class ResponseMap
 {
     const CODES = array(
-        '0'     =>  'Transaction Successful',
         '5'     =>  ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_AMOUNT,
-        '92'    =>  'Transaction Authorized',
         '5000'  =>  ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
         '5001'  =>  'Invalid Merchant Id',
         // 'Transaction Id Reused',

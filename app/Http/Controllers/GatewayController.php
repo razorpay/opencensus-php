@@ -26,10 +26,7 @@ class GatewayController extends Controller
         // to be able to call the next few methods.
         //
         // Eg: gateway request needs to be decrypted
-        if (method_exists($gateway, 'parseS2SResponse'))
-        {
-            $input = $gateway->parseS2SResponse($input);
-        }
+        $input = $gateway->preProcessS2SResponse($input);
 
         $paymentId = $gateway->getPaymentIdFromServerCallback($input);
 
@@ -48,7 +45,7 @@ class GatewayController extends Controller
         $paymentId = Payment\Entity::getSignedId($paymentId);
 
         return (new Payment\Service)->s2sCallback($paymentId, $input);
-    }
+    }-
 
     protected function callbackEbs($input)
     {
@@ -90,16 +87,12 @@ class GatewayController extends Controller
                 $data = $this->processS2SCallback($input, $gateway);
                 break;
 
-            // We gave the first URL to ICICI for testing
             case 'upi':
             case 'upi_icici':
-
-                $trace = $this->app['trace'];
+                $input = Request::getContent();
                 $gateway = 'upi_icici';
 
-                $body = Request::getContent();
-
-                $data = $this->processS2SCallback($body, $gateway);
+                $data = $this->processS2SCallback($input, $gateway);
 
                 break;
         }

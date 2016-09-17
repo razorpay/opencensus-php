@@ -476,7 +476,7 @@ class DatabaseSeeder extends Seeder
         $this->createSharpGatewayTerminals();
         $this->createNetbankingKotakTerminals();
         $this->createOlamoneyTerminals();
-        $this->createUPITerminals();
+        $this->createUpiTerminals();
     }
 
     protected function createNetbankingHdfcTerminals()
@@ -760,7 +760,7 @@ class DatabaseSeeder extends Seeder
             );
     }
 
-    protected function createUPITerminals()
+    protected function createUpiTerminals()
     {
         DB::table(Table::TERMINAL)->insert([
             'id'                        => Terminal\Shared::UPI_ICICI_RAZORPAY_TERMINAL,
