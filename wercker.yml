@@ -1,4 +1,5 @@
-box: razorpay/docker:latest
+box:
+  id:  razorpay/docker:php7
 dev:
   steps:
     - internal/shell:
