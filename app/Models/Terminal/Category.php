@@ -19,7 +19,7 @@ class Category
 
     /**
      * The list of all possible categories that can be chosen
-     * */
+     */
     const CATEGORIES_ALL = [
         'auto',
         'car_rental',
@@ -27,7 +27,7 @@ class Category
         'education',
         'education_services',
         'entertainment',
-        'government_business',
+        'government',
         'healthcare',
         'hospitals',
         'insurance',
@@ -45,23 +45,23 @@ class Category
      * be mapped to the category on the right.
      * */
     const METHOD_NETBANKING = [
-        'corporate'               => 'corporate',
-        'education'               => 'education',
-        'education_services'      => 'education',
-        'government_business'     => 'government',
-        'insurance'               => 'insurance',
-        'auto'                    => 'ecommerce',
-        'car_rental'              => 'ecommerce',
-        'entertainment'           => 'ecommerce',
-        'healthcare'              => 'ecommerce',
-        'hospitals'               => 'ecommerce',
-        'lodging'                 => 'ecommerce',
-        'prof_and_financial_serv' => 'ecommerce',
-        'retail_jgwcag'           => 'ecommerce',
-        'retail_services'         => 'ecommerce',
-        'sup_hypermrkt_deptstore' => 'ecommerce',
-        'travel_agency'           => 'ecommerce',
-        'utilities'               => 'ecommerce',
+        'corporate'                 => 'corporate',
+        'education'                 => 'education',
+        'education_services'        => 'education',
+        'government'                => 'government',
+        'insurance'                 => 'insurance',
+        'auto'                      => 'ecommerce',
+        'car_rental'                => 'ecommerce',
+        'entertainment'             => 'ecommerce',
+        'healthcare'                => 'ecommerce',
+        'hospitals'                 => 'ecommerce',
+        'lodging'                   => 'ecommerce',
+        'prof_and_financial_serv'   => 'ecommerce',
+        'retail_jgwcag'             => 'ecommerce',
+        'retail_services'           => 'ecommerce',
+        'sup_hypermrkt_deptstore'   => 'ecommerce',
+        'travel_agency'             => 'ecommerce',
+        'utilities'                 => 'utilities',
     ];
 
     /**
@@ -207,7 +207,7 @@ class Category
 
     public static function isMerchantCategoryValid($category)
     {
-        return in_array($category, constant('self::CATEGORIES_ALL'));
+        return in_array($category, self::CATEGORIES_ALL);
     }
 
     public static function isTerminalCategoryValid($input)
@@ -222,18 +222,17 @@ class Category
 
         $network = self::getNetwork($input);
 
-        if(self::isConstantDefined('method', $method) === true)
-        {
-            $methodConstantName = self::getConstantName('method', $method);
-
-            $values = array_values(constant('self::'.$methodConstantName));
-        }
-
-        if(self::isConstantDefined('network', $network) === true)
+        if (self::isConstantDefined('network', $network) === true)
         {
             $networkConstantName = self::getConstantName('network', $network);
 
             $values = array_values(constant('self::'.$networkConstantName));
+        }
+        else if (self::isConstantDefined('method', $method) === true)
+        {
+            $methodConstantName = self::getConstantName('method', $method);
+
+            $values = array_values(constant('self::'.$methodConstantName));
         }
 
         return in_array($category, $values);

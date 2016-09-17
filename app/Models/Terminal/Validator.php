@@ -220,15 +220,14 @@ class Validator extends Base\Validator
     {
         if (empty($input[Entity::TERMINAL_CATEGORY]) === true)
         {
-            return ;
+            return;
         }
 
         if (Category::isTerminalCategoryValid($input) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Category provided invalid for gateway',
-                Entity::TERMINAL_CATEGORY
-                );
+                Entity::TERMINAL_CATEGORY);
             }
     }
 
