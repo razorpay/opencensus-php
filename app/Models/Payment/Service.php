@@ -345,7 +345,7 @@ class Service extends Base\Service
      */
     public function fetchStatus($id)
     {
-        $data = $this->getNewProcessor()->updateAsync($id);
+        $data = $this->getNewProcessor()->getAsyncResponse($id);
 
         return $data;
     }

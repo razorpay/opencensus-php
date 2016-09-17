@@ -134,7 +134,11 @@ class Gateway extends Base\Gateway
      */
     protected function parseGatewayResponse($response)
     {
-        // Ask why
+        // The gateway response is encrypted, but wrapped
+        // in lines of 80-length. Decryption can't handle
+        // this, so we remove any whitespace from the response
+        // since this is base64, it only removes newlines
+
         $response = preg_replace('/\s/', '', $response);
         $response = base64_decode($response, true);
         $response = $this->decrypt($response);
@@ -228,7 +232,7 @@ class Gateway extends Base\Gateway
     {
         $payment = $input['payment'];
 
-        $collectByTimestamp = Carbon::now('Asia/Kolkata')->addMinutes(15)->format('d/m/Y h:i A');
+        $collectByTimestamp = Carbon::now('Asia/Kolkata')->addMinutes(5)->format('d/m/Y h:i A');
 
         $data = [
             // Amount and note are lowercase
@@ -242,7 +246,7 @@ class Gateway extends Base\Gateway
             'note'              => 'collect-pay-request',
             'payerVa'           => $input['vpa'],
             // confirm if we can send merchant id
-            // 'subMerchantId'     =>  $this->getSubMerchantId($input),
+            'subMerchantId'     =>  $this->getSubMerchantId($input),
             'subMerchantName'   =>  $input['merchant']->getBillingLabelElseName(),
             'terminalId'        =>  '1234',
         ];

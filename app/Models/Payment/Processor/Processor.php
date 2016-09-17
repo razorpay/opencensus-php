@@ -335,8 +335,13 @@ class Processor
         throw new Exception\LogicException('Should not have been hit.');
     }
 
-
-    public function updateAsync($id)
+    /**
+     * Returns the proper async response for the status checks
+     * made by Checkout
+     * @param  string $id payment id
+     * @return array
+     */
+    public function getAsyncResponse($id)
     {
         $payment = $this->retrieve($id);
 
@@ -357,19 +362,29 @@ class Processor
             $this->rethrowFailedPaymentErrorException($payment);
         }
 
-        if ($payment->isCreated())
+        if ($payment->isCreated() === true)
         {
-            return ['status' => Payment\Status::CREATED];
+            return [
+                Payment\Entity::STATUS => Payment\Status::CREATED
+            ];
         }
 
         assert($payment->isAuthorized() === true);
 
-        return $this->processAuthAsyncResponse($payment);
+        return $this->processAsyncAuthorizeResponse($payment);
     }
 
-    protected function processAuthAsyncResponse($payment)
+    /**
+     * Returns the proper response to checkout
+     * in case of the payment is authorized
+     * @param  Payment\Entity $payment
+     * @return array
+     */
+    protected function processAsyncAuthorizeResponse($payment)
     {
-        $returnData = ['razorpay_payment_id' => $payment->getPublicId()];
+        $returnData = [
+            'razorpay_payment_id' => $payment->getPublicId()
+        ];
 
         if ($payment->getAutoCaptured() === true)
         {
@@ -473,8 +488,10 @@ class Processor
         $gateway = $this->payment->getGateway();
 
         $gatewayData['terminal'] = $terminal;
+
         $gatewayData['merchant'] = $this->payment->merchant;
 
+        // TODO: Shouldn't be KOTAK specific
         if ($gateway === Payment\Gateway::KOTAK)
         {
             $gatewayData['bank_account'] = $this->getMerchantBankAccount($terminal->merchant);
