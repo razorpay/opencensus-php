@@ -33,6 +33,8 @@ final class Route
         'payment_topup_post'                      => ['post',     'payments/{id}/topup',                      'PaymentCreateController@postTopup'                                 ],
         'payment_redirect'                        => ['post',     'payments/{id}/redirect',                   'PaymentCreateController@postRedirect'                              ],
         'payment_refund'                          => ['post',     'payments/{id}/refund',                     'PaymentController@postRefund'                                      ],
+        'payment_upload_refund_file'              => ['post',     'payments/refund/upload_file',              'PaymentController@uploadRefundFile'                                ],
+        'payment_process_refund_file'             => ['post',     'payments/refund/process_file',             'PaymentController@processRefundFile'                               ],
         'payment_capture'                         => ['post',     'payments/{id}/capture',                    'PaymentController@postCapture'                                     ],
         'payment_verify'                          => ['get',      'payments/{id}/verify',                     'PaymentController@getVerify'                                       ],
         'payment_force_authorize'                 => ['post',     'payments/{id}/force_authorize',            'PaymentController@postForceAuthorize'                              ],
@@ -467,6 +469,8 @@ final class Route
         'app_fetch_tokens',
         'credits_fetch_multiple',
         'credits_fetch_by_id',
+        'payment_upload_refund_file',
+        'payment_process_refund_file'
     );
 
     public static $direct = array(

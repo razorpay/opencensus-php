@@ -7,15 +7,21 @@ use Config;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Error;
+use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Card;
 use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
+use RZP\Models\Settlement\Kotak\FileHandlerTrait;
 
 class Service extends Base\Service
 {
+    use FileHandlerTrait;
+
+    protected static $fileToReadName = 'Refund_File';
+
     protected $merchant;
 
     protected $core;
@@ -92,6 +98,190 @@ class Service extends Base\Service
         $refund = $this->getNewProcessor()->refundCapturedPayment($id, $input);
 
         return $refund->toArrayPublic();
+    }
+
+    public function uploadRefundFile($input)
+    {
+
+        $entries = $this->parseExcelFile($input['file']);
+
+        $totalEntries = count($entries);
+
+        if($totalEntries > 1000){
+              throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_REFUND_FILE_EXCEED_LIMIT);
+        }
+
+        $totalAmountToBeRefunded = 0;
+
+        foreach ($entries as $entry)
+        {
+            if(isset($entry[1]))
+            {
+                $totalAmountToBeRefunded += $entry[1];
+            }
+            else
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_REFUND_FILE_VALIDATION); 
+            }    
+        }
+
+        $merchant = $this->merchant;
+
+        $balance = $this->repo->balance->getMerchantBalance($merchant);
+        $balanceAmount = $balance->getBalance();
+
+        if($totalAmountToBeRefunded > $balanceAmount)
+        {
+            // Warning to merchant about insufficient balance
+             // throw new Exception\BadRequestException(
+             //    ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE); 
+
+        }
+
+        $refundFile = [
+            'total_count' => $totalEntries
+        ];
+        
+        $refundFile = (new RefundFile\Entity)->build($refundFile);
+
+        $refundFile->merchant()->associate($merchant);
+
+        $this->repo->saveOrFail($refundFile);
+
+        $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+        $url = $this->saveToAws($refundFile->getId().'.xlsx', $input['file'], $xlsxMimeType, 'refund_file_upload_bucket');
+
+        $refundFile->setUploadFileUrl($url);
+
+        $this->repo->saveOrFail($refundFile);
+
+        return $refundFile->toArrayPublic();
+        
+    }
+
+    public function processRefundFile()
+    {
+        $refundFiles = $this->repo->refund_file->findUnprocessedRefunds();
+
+        foreach ($refundFiles as $refundFile)
+        {
+
+            if($refundFile->getStatus() == 'CREATED')
+            {
+                $filePath = $refundFile->getUploadFileUrl();
+                $fileFromAws = $this->getFileFromAws('refund_file_upload_bucket', $refundFile->getId().'.xlsx', $filePath);
+            }
+
+            elseif($refundFile->getStatus() == 'FAILURE')
+            {
+                $filePath = $refundFile->getDownloadFileUrl();
+                $fileFromAws = $this->getFileFromAws('refund_file_download_bucket', $refundFile->getId().'.xlsx', $filePath);
+
+            }
+
+            $entries = $this->parseExcelFile($fileFromAws);
+
+            $totalRefundedAmount = $refundFile->getAmount();
+            $totalSuccessCount = $refundFile->getSuccessCount();
+            $totalFailureCount = 0;
+
+            $processedFile = array();
+
+            foreach ($entries as $entry) 
+            {
+
+                $refundEntry = array();
+
+                // Refund has already been made and the refund id is set
+                if(isset($entry[3]))
+                {
+                    continue;
+                }
+
+                // The complete refund for the payment has already been done
+                if(isset($entry[4]) && $entry[4] == 'BAD_REQUEST_PAYMENT_FULLY_REFUNDED')
+                {
+                    $totalFailureCount++;
+                    continue;
+                }
+
+                $paymentId = $entry[0];
+
+                $refundRequest = [
+                    'amount' => (int) $entry[1]
+                ];
+
+                array_push($refundEntry, $paymentId);
+                
+                try 
+                {     
+                    $refund = $this->getNewProcessor()->refundCapturedPayment($paymentId, $refundRequest);
+               
+                    array_push($refundEntry, $refund->getAmount(), $refund->getId(), "SUCCESS");
+
+                    $totalSuccessCount++;
+                    $totalRefundedAmount += $refund->getAmount();
+
+   
+                } catch (\Exception $e)
+                {
+
+                    array_push($refundEntry, 0, '', $e->getMessage());  
+                    
+                    $totalFailureCount++;           
+                }    
+
+                array_push($processedFile, $refundEntry);
+            }
+
+            $refundFile->setAmount($totalRefundedAmount);
+            $refundFile->setSuccessCount($totalSuccessCount);
+            $refundFile->setFailureCount($totalFailureCount);
+            
+            $retryAttempts = $refundFile->getRetryAttempt() + 1;
+            $refundFile->setRetryAttempt($retryAttempts);
+
+            $shouldSendMail = false;
+
+            if($totalFailureCount > 0)
+            {
+                if($retryAttempts == 3)
+                {
+                    $refundFile->setStatus('FAILED');
+                    $shouldSendMail = true;
+                }
+                else
+                {
+                    $refundFile->setStatus('FAILURE');
+                }
+            }
+            else
+            {
+                $refundFile->setStatus('PROCESSED');
+                $shouldSendMail = true;
+            }
+
+            $excel = $this->createExcelObject($processedFile, $refundFile->getId());
+
+            $fileMetadata = $excel->store('xlsx', storage_path('files/refund_file_download'), true);
+            $fullpath = $fileMetadata['full'];
+
+            $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+            $downloadUrl = $this->saveToAws($refundFile->getId().'.xlsx', $fullpath, $xlsxMimeType, 'refund_file_download_bucket');
+
+            $refundFile->setDownloadFileUrl($downloadUrl);
+
+            $this->repo->saveOrFail($refundFile);
+
+            if($shouldSendMail)
+            {
+                $this->sendMail($fullpath, $totalRefundedAmount, $refundFile->merchant);
+            }
+        }
+        
+        
     }
 
     /**
@@ -718,5 +908,30 @@ class Service extends Base\Service
         $processor = new Processor\Processor($merchant);
 
         return $processor;
+    }
+
+    protected function sendMail($filePath, $amount, $merchant)
+    {
+        //TODO: Get new blade for the refund mail which will have the attached file
+        // $data = [
+        //     'refundFile' => $filePath,
+        //     'subject' => 'subject',
+        //     'amounts' => $amount,
+        //     'merchant' => $merchant
+
+        // ];
+
+        // Mail::send('emails.refund.common', $data, function($message) use ($data)
+        // {
+        //     $emails = ['settlements@razorpay.com'];
+
+        //     $message->from('settlement@razorpay.com', 'Kotak Settlement');
+
+        //     $message->subject('Refund File Processed');
+
+        //     $message->to($emails);
+
+        //     $message->attach($data['refundFile']);
+        // });
     }
 }

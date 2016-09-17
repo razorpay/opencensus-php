@@ -17,6 +17,43 @@ return [
         ],
     ],
 
+    'testUploadRefundFile' => [
+        'request' => [
+            'url' => '/payments/refund/upload_file',
+            'method' => 'post',
+            'content' => [
+               
+            ],
+        ],
+        'response' => [
+            'content' => [
+                    'id' => 'rfnd_file_6JaB3AUIkCh9kL',
+                    'entity' => 'refund_file',
+                    'status' =>  'CREATED',
+                    'created_at' => 1474032787,
+            ],
+        ],
+    ],
+
+    'testProcessRefundFile' => [
+        'request' => [
+            'url' => '/payments/refund/process_file',
+            'method' => 'post',
+            'content' => [
+               
+            ],
+        ],
+        'response' => [
+            'content' => [
+                    'id' => 'rfnd_file_6JaB3AUIkCh9kL',
+                    'entity' => 'refund_file',
+                    'status' =>  'CREATED',
+                    'created_at' => 1474032787,
+            ],
+        ],
+    ],
+
+
     'testMultipleRefunds' => [
         'request' => [
             'method' => 'GET',

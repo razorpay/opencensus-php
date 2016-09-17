@@ -19,10 +19,11 @@ class Table
     const MERCHANT              = 'merchants';
     const TERMINAL              = 'terminals';
     const CUSTOMER              = 'customers';
+    const EMI_PLAN              = 'emi_plans';
     const APP_TOKEN             = 'customer_apps';
     const ADJUSTMENT            = 'adjustment';
     const SETTLEMENT            = 'settlements';
-    const EMI_PLAN              = 'emi_plans';
+    const REFUND_FILE           = 'refund_files';
     const TRANSACTION           = 'transactions';
     const BANK_ACCOUNT          = 'bank_accounts';
     const DAILY_SETTLEMENT      = 'daily_settlements';

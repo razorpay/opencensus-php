@@ -60,6 +60,22 @@ class PaymentController extends Controller
         return ApiResponse::json($payment);
     }
 
+    public function uploadRefundFile()
+    {
+        $input = Request::all();
+
+        $payment = $this->payment->uploadRefundFile($input);
+
+        return ApiResponse::json($payment);
+    }
+
+    public function processRefundFile()
+    {
+        $result = $this->payment->processRefundFile();
+        
+        return ApiResponse::json($result);
+    }
+
     public function postRefundAuthorized($id)
     {
         $input = Request::all();

@@ -296,6 +296,13 @@ trait FileHandlerTrait
     {
         $config =  \Config::get('aws');
 
+        $awsS3Mock = $config['mock'];
+
+        if ($awsS3Mock)
+        {
+            return $filePath;
+        }
+
         $s3 = AWS::createClient('s3');
 
         try
@@ -533,7 +540,7 @@ trait FileHandlerTrait
         return $data;
     }
 
-    protected function parseExcelFile($file)
+    protected function parseExcelFile($filePath)
     {
         $data = Excel::load($filePath)
                       ->formatDates(false)

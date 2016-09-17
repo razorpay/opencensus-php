@@ -9,6 +9,8 @@ use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Models\Settlement\Kotak\FileHandlerTrait;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 /**
  * Tests for refund payments
@@ -26,6 +28,7 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 class RefundTest extends TestCase
 {
     use PaymentTrait;
+    use FileHandlerTrait;
 
     protected $payment = null;
 
@@ -55,6 +58,80 @@ class RefundTest extends TestCase
         $this->assertGreaterThan(time() - 30, $refund['created_at']);
     }
 
+    public function testUploadRefundFile()
+    {
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+        
+        $testData = $this->testData[__FUNCTION__];
+        $request = $testData['request'];
+        
+        $paymentEntry = array();
+        $payemntObj = array($payment['id'], (int) 2000);
+        array_push($paymentEntry, $payemntObj);
+        
+        $url = $this->writeToExcelFile($paymentEntry, 'upload_refund_test');
+
+        $uploadedFile = $this->createTempFile($url);
+        
+        $request['content']['file'] = $url;
+        
+        $this->ba->proxyAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+        
+        $this->assertEquals('CREATED', $content['status']);
+
+    }
+
+    public function testProcessRefundFile()
+    {
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+        
+        $testData = $this->testData['testUploadRefundFile'];
+        $request = $testData['request'];
+        
+        s($payment['amount']);
+        $paymentEntry = array();
+        $payemntObj = array($payment['id'], (int) 5000);
+        array_push($paymentEntry, $payemntObj);
+        
+        $url = $this->writeToExcelFile($paymentEntry, 'upload_refund_test');
+
+        $uploadedFile = $this->createTempFile($url);
+        
+        $request['content']['file'] = $url;
+        
+        $this->ba->proxyAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+        
+        $this->assertEquals('CREATED', $content['status']);
+
+        $testData = $this->testData['testProcessRefundFile'];
+
+        $this->makeRequestAndGetContent($testData['request']);
+
+    }
+
+
+    protected function createTempFile($url)
+    {
+
+        $mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+ 
+        $uploadedFile = new UploadedFile(
+                               $url,
+                               $url,
+                               $mimeType,
+                               filesize($url),
+                               null,
+                               true);
+ 
+       return $uploadedFile;
+    }
+ 
     public function testMultipleRefunds()
     {
         $payment = $this->defaultAuthPayment();
