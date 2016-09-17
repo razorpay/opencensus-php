@@ -62,24 +62,24 @@ class RefundTest extends TestCase
     {
         $payment = $this->defaultAuthPayment();
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
-        
+
         $testData = $this->testData[__FUNCTION__];
         $request = $testData['request'];
-        
+
         $paymentEntry = array();
         $payemntObj = array($payment['id'], (int) 2000);
         array_push($paymentEntry, $payemntObj);
-        
+
         $url = $this->writeToExcelFile($paymentEntry, 'upload_refund_test');
 
         $uploadedFile = $this->createTempFile($url);
-        
+
         $request['content']['file'] = $url;
-        
+
         $this->ba->proxyAuth();
 
         $content = $this->makeRequestAndGetContent($request);
-        
+
         $this->assertEquals('CREATED', $content['status']);
 
     }
@@ -88,25 +88,24 @@ class RefundTest extends TestCase
     {
         $payment = $this->defaultAuthPayment();
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
-        
+
         $testData = $this->testData['testUploadRefundFile'];
         $request = $testData['request'];
-        
-        s($payment['amount']);
+
         $paymentEntry = array();
         $payemntObj = array($payment['id'], (int) 5000);
         array_push($paymentEntry, $payemntObj);
-        
+
         $url = $this->writeToExcelFile($paymentEntry, 'upload_refund_test');
 
         $uploadedFile = $this->createTempFile($url);
-        
+
         $request['content']['file'] = $url;
-        
+
         $this->ba->proxyAuth();
 
         $content = $this->makeRequestAndGetContent($request);
-        
+
         $this->assertEquals('CREATED', $content['status']);
 
         $testData = $this->testData['testProcessRefundFile'];
@@ -120,7 +119,7 @@ class RefundTest extends TestCase
     {
 
         $mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
- 
+
         $uploadedFile = new UploadedFile(
                                $url,
                                $url,
@@ -128,10 +127,10 @@ class RefundTest extends TestCase
                                filesize($url),
                                null,
                                true);
- 
+
        return $uploadedFile;
     }
- 
+
     public function testMultipleRefunds()
     {
         $payment = $this->defaultAuthPayment();

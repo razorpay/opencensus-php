@@ -9,22 +9,21 @@ use RZP\Models\Payment;
 class Entity extends Base\PublicEntity
 {
 
-	const ID               		 	= 'id';
-    const MERCHANT_ID            	= 'merchant_id';
-    const UPLOAD_FILE_URL       	= 'uploaded_file_url';
-    const DOWNLOAD_FILE_URL       	= 'download_file_url';
-    const STATUS       				= 'status';
-    const TOTAL_COUNT        		= 'total_count';
-    const SUCCESS_COUNT            	= 'success_count';
-    const FAILURE_COUNT          	= 'failure_count';
-    const RETRY_ATTEMPT    			= 'retry_attempt';
-    const AMOUNT             		= 'amount';
-    const COMMENT            		= 'comment';
-    const PROCESSED_AT          	= 'processed_at';
-    
+    const ID                        = 'id';
+    const MERCHANT_ID               = 'merchant_id';
+    const UPLOAD_FILE_URL           = 'uploaded_file_url';
+    const DOWNLOAD_FILE_URL         = 'download_file_url';
+    const STATUS                    = 'status';
+    const TOTAL_COUNT               = 'total_count';
+    const SUCCESS_COUNT             = 'success_count';
+    const FAILURE_COUNT             = 'failure_count';
+    const RETRY_ATTEMPT             = 'retry_attempt';
+    const AMOUNT                    = 'amount';
+    const COMMENT                   = 'comment';
+    const PROCESSED_AT              = 'processed_at';
+
     const FILE_URL_LENGTH           = 100;
     const STATUS_LENGTH             = 20;
-
 
     protected $table = \RZP\Constants\Table::REFUND_FILE;
 
@@ -65,15 +64,14 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = array(
         self::RETRY_ATTEMPT                  => 0,
-        self::STATUS     		             => 'CREATED',
+        self::STATUS                         => 'CREATED',
         self::UPLOAD_FILE_URL                => '',
         self::DOWNLOAD_FILE_URL              => '',
         self::SUCCESS_COUNT                  => 0,
         self::FAILURE_COUNT                  => 0,
         self::AMOUNT                         => 0,
         self::COMMENT                        => '',
-        self::PROCESSED_AT                   => 123456789,
-        
+        self::PROCESSED_AT                   => null,
     );
 
     protected $publicSetters = array(
@@ -84,7 +82,7 @@ class Entity extends Base\PublicEntity
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
-    
+
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
@@ -100,35 +98,35 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::DOWNLOAD_FILE_URL);
     }
 
-	public function getStatus()
+    public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
     }
 
-	public function getTotalCount()
+    public function getTotalCount()
     {
         return $this->getAttribute(self::TOTAL_COUNT);
     }
 
-	public function getSuccessCount()
+    public function getSuccessCount()
     {
         return $this->getAttribute(self::SUCCESS_COUNT);
     }
 
-	public function getFailureCount()
+    public function getFailureCount()
     {
         return $this->getAttribute(self::FAILURE_COUNT);
     }
 
-	public function getRetryAttempt()
+    public function getRetryAttempt()
     {
         return $this->getAttribute(self::RETRY_ATTEMPT);
     }
-	 
-	public function getProcessedAt()
+
+    public function getProcessedAt()
     {
         return $this->getAttribute(self::PROCESSED_AT);
-    }    
+    }
 
     public function setUploadFileUrl($url)
     {

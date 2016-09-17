@@ -9,14 +9,14 @@ use RZP\Error\ErrorCode;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        'amount'        			=> 'sometimes|integer',
-        'uploaded_file_url'        	=> 'sometimes|string|max:100',
-        'download_file_url'        	=> 'sometimes|string|max:100',
-        'total_count'        		=> 'sometimes|integer'
-        
+        'amount'                    => 'sometimes|integer',
+        'uploaded_file_url'         => 'sometimes|string|max:100',
+        'download_file_url'         => 'sometimes|string|max:100',
+        'total_count'               => 'sometimes|integer'
+
     );
 
     protected static $createValidators = array(
-        
+
     );
 }
