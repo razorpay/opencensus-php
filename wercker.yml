@@ -44,10 +44,10 @@ build:
           code: >
               export REDIS_HOST="$REDIS_PORT_6379_TCP_ADDR"
               export REDIS_PORT="6379"
-      - script:
-          name: Increase PHP memory limit to 2G
-          code: >
-              echo "memory_limit=2048M" > /usr/local/etc/php/conf.d/memory-limit.ini
+      # - script:
+      #     name: Increase PHP memory limit to 2G
+      #     code: >
+      #         echo "memory_limit=2048M" > /usr/local/etc/php/conf.d/memory-limit.ini
       - script:
           name: Run unit tests
           code: php -d memory_limit=2G vendor/phpunit/phpunit/phpunit --debug --verbose
