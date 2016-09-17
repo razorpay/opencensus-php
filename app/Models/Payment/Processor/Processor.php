@@ -325,7 +325,7 @@ class Processor
     }
 
     public function redirect($id)
-    {
+    {sd('d');
         $payment = $this->retrieve($id);
 
         if ($payment->isCreated() === false)

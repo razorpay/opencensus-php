@@ -18,6 +18,7 @@ final class Route
         'merchant_checkout_preferences'           => ['get',      'preferences',                              'MerchantController@getCheckoutPreferences'                         ],
         'payment_create'                          => ['post',     'payments',                                 'PaymentCreateController@postCreatePayment'                         ],
         'payment_create_private'                  => ['post',     'payments/create',                          'PaymentCreateController@postCreatePayment'                         ],
+        'payment_create_private_old'              => ['post',     'payments/create/redirect2',                'PaymentCreateController@postCreatePayment'                         ],
         'payment_create_checkout'                 => ['post',     'payments/create/checkout',                 'PaymentCreateController@postCreatePaymentCheckoutCallback'         ],
         'payment_create_jsonp'                    => ['get',      'payments/create/jsonp',                    'PaymentCreateController@getCreatePaymentJsonp'                     ],
         'payment_create_ajax'                     => ['post',     'payments/create/ajax',                     'PaymentCreateController@postAJAX'                                  ],
@@ -295,6 +296,8 @@ final class Route
     );
 
     public static $private = array(
+        'payment_create_private',
+        'payment_create_private_old',
         'payment_create_wallet',
         'payment_refund',
         'payment_capture',
@@ -302,7 +305,6 @@ final class Route
         'payment_fetch_multiple',
         'payment_fetch_refunds',
         'payment_fetch_refund_by_id',
-        'payment_create_private',
         'refund_fetch_by_id',
         'refund_fetch_multiple',
         'card_fetch_by_id',

@@ -267,4 +267,12 @@ trait Callback
 
         throw $e;
     }
+
+    protected function checkForMerchantCallbackUrl($payment)
+    {
+        if ($payment->getCallbackUrl() !== null)
+        {
+            $this->app['rzp.merchant_callback_url'] = $payment->getCallbackUrl();
+        }
+    }
 }
