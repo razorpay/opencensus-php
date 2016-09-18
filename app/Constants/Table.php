@@ -23,7 +23,7 @@ class Table
     const APP_TOKEN             = 'customer_apps';
     const ADJUSTMENT            = 'adjustment';
     const SETTLEMENT            = 'settlements';
-    const REFUND_FILE           = 'refund_files';
+    const BATCH_REFUND          = 'batch_refunds';
     const TRANSACTION           = 'transactions';
     const BANK_ACCOUNT          = 'bank_accounts';
     const DAILY_SETTLEMENT      = 'daily_settlements';

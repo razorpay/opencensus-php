@@ -102,7 +102,6 @@ class Service extends Base\Service
 
     public function uploadRefundFile($input)
     {
-
         $entries = $this->parseExcelFile($input['file']);
 
         $totalEntries = count($entries);
@@ -141,10 +140,10 @@ class Service extends Base\Service
         }
 
         $refundFile = [
-            'total_count' => $totalEntries
+            'total_count' => $totalEntries,
         ];
 
-        $refundFile = (new RefundFile\Entity)->build($refundFile);
+        $refundFile = (new BatchRefund\Entity)->build($refundFile);
 
         $refundFile->merchant()->associate($merchant);
 
@@ -163,18 +162,18 @@ class Service extends Base\Service
 
     public function processRefundFile()
     {
-        $refundFiles = $this->repo->refund_file->findUnprocessedRefunds();
+        $refundFiles = $this->repo->batch_refund->findUnprocessedRefunds();
 
         foreach ($refundFiles as $refundFile)
         {
 
-            if($refundFile->getStatus() == RefundFile::CREATED)
+            if($refundFile->getStatus() == BatchRefund\Entity::CREATED)
             {
                 $filePath = $refundFile->getUploadFileUrl();
                 $fileFromAws = $this->getFileFromAws('refund_file_upload_bucket', $refundFile->getId().'.xlsx', $filePath);
             }
 
-            elseif($refundFile->getStatus() == RefundFile::FAILURE)
+            elseif($refundFile->getStatus() == BatchRefund\Entity::FAILURE)
             {
                 $filePath = $refundFile->getDownloadFileUrl();
                 $fileFromAws = $this->getFileFromAws('refund_file_download_bucket', $refundFile->getId().'.xlsx', $filePath);
@@ -219,7 +218,7 @@ class Service extends Base\Service
                 {
                     $refund = $this->getNewProcessor()->refundCapturedPayment($paymentId, $refundRequest);
 
-                    array_push($refundEntry, $refund->getAmount(), $refund->getId(), RefundFile::PROCESSED);
+                    array_push($refundEntry, $refund->getAmount(), $refund->getId(), BatchRefund\Entity::PROCESSED);
 
                     $totalSuccessCount++;
                     $totalRefundedAmount += $refund->getAmount();
@@ -249,17 +248,17 @@ class Service extends Base\Service
             {
                 if($retryAttempts == 3)
                 {
-                    $refundFile->setStatus(RefundFile::FAILED);
+                    $refundFile->setStatus(BatchRefund\Entity::FAILED);
                     $shouldSendMail = true;
                 }
                 else
                 {
-                    $refundFile->setStatus(RefundFile::FAILURE);
+                    $refundFile->setStatus(BatchRefund\Entity::FAILURE);
                 }
             }
             else
             {
-                $refundFile->setStatus(RefundFile::PROCESSED);
+                $refundFile->setStatus(BatchRefund\Entity::PROCESSED);
                 $shouldSendMail = true;
             }
 

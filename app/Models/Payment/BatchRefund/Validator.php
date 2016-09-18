@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Payment\RefundFile;
+namespace RZP\Models\Payment\BatchRefund;
 
 use RZP\Models\Base;
 use RZP\Exception;

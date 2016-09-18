@@ -1,14 +1,11 @@
 <?php
 
-namespace RZP\Models\Payment\RefundFile;
+namespace RZP\Models\Payment\BatchRefund;
 
 use RZP\Models\Base;
-use RZP\Models\Payment;
-
 
 class Entity extends Base\PublicEntity
 {
-
     const ID                        = 'id';
     const MERCHANT_ID               = 'merchant_id';
     const UPLOAD_FILE_URL           = 'uploaded_file_url';
@@ -31,11 +28,11 @@ class Entity extends Base\PublicEntity
     const FAILED                    = 'FAILED';
     const PROCESSED                 = 'PROCESSED';
 
-    protected $table = \RZP\Constants\Table::REFUND_FILE;
+    protected $table = \RZP\Constants\Table::BATCH_REFUND;
 
     protected static $sign = '';
 
-    protected $entity = 'refund_file';
+    protected $entity = 'batch_refund';
 
     protected $generateIdOnCreate = true;
 
@@ -70,7 +67,7 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = array(
         self::RETRY_ATTEMPT                  => 0,
-        self::STATUS                         => RefundFile::CREATED,
+        self::STATUS                         => self::CREATED,
         self::UPLOAD_FILE_URL                => '',
         self::DOWNLOAD_FILE_URL              => '',
         self::SUCCESS_COUNT                  => 0,

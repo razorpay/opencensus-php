@@ -8,6 +8,7 @@ use Mockery;
 use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment\Entity as PaymentEntity;
+use RZP\Models\Payment\BatchRefund\Entity as BatchRefund;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Settlement\Kotak\FileHandlerTrait;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -80,7 +81,7 @@ class RefundTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals(RefundFile::CREATED, $content['status']);
+        $this->assertEquals(BatchRefund::CREATED, $content['status']);
 
     }
 
@@ -106,7 +107,7 @@ class RefundTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals(RefundFile::CREATED, $content['status']);
+        $this->assertEquals(BatchRefund::CREATED, $content['status']);
 
         $testData = $this->testData['testProcessRefundFile'];
 

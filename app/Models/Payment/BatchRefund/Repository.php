@@ -1,9 +1,9 @@
 <?php
 
-namespace RZP\Models\Payment\RefundFile;
+namespace RZP\Models\Payment\BatchRefund;
 
 use RZP\Models\Base;
-use RZP\Models\Payment\RefundFile;
+use RZP\Models\Payment\BatchRefund\Entity as BatchRefund;
 use RZP\Exception;
 use RZP\Constants\Table;
 
@@ -11,7 +11,7 @@ class Repository extends Base\Repository
 {
     use Base\RepositoryFetch;
 
-    protected $entity = 'refund_file';
+    protected $entity = 'batch_refund';
 
     protected $proxyFetchParamRules = [
         Entity::MERCHANT_ID     => 'sometimes|alpha_num'
@@ -19,11 +19,11 @@ class Repository extends Base\Repository
 
     public function findUnprocessedRefunds($limit = 10)
     {
-        $status = array(RefundFile::CREATED, RefundFile::FAILURE);
+        $status = array(BatchRefund::CREATED, BatchRefund::FAILURE);
         return $this->newQuery()
-                    ->whereIn(RefundFile\Entity::STATUS, $status)
-                    ->where(RefundFile\Entity::RETRY_ATTEMPT, '<', 3)
-                    ->orderBy(RefundFile\Entity::CREATED_AT, 'asc')
+                    ->whereIn(BatchRefund::STATUS, $status)
+                    ->where(BatchRefund::RETRY_ATTEMPT, '<', 3)
+                    ->orderBy(BatchRefund::CREATED_AT, 'asc')
                     ->limit($limit)
                     ->get();
     }

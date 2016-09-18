@@ -23,7 +23,7 @@ class Entity
     const ORDER                 = 'order';
     const TOKEN                 = 'token';
     const REFUND                = 'refund';
-    const REFUND_FILE           = 'refund_file';
+    const BATCH_REFUND          = 'batch_refund';
     const BALANCE               = 'balance';
     const CREDITS               = 'credits';
     const METHODS               = 'methods';
@@ -80,7 +80,7 @@ class Entity
         self::SHARP                 => \RZP\Gateway\Sharp::class,
         self::TOKEN                 => \RZP\Models\Customer\Token::class,
         self::REFUND                => \RZP\Models\Payment\Refund::class,
-        self::REFUND_FILE           => \RZP\Models\Payment\RefundFile::class,
+        self::BATCH_REFUND          => \RZP\Models\Payment\BatchRefund::class,
         self::WALLET                => \RZP\Gateway\Wallet\Base::class,
         self::BALANCE               => \RZP\Models\Merchant\Balance::class,
         self::CREDITS               => \RZP\Models\Merchant\Credits::class,
