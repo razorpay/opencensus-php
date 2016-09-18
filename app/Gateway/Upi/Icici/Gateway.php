@@ -43,9 +43,7 @@ class Gateway extends Base\Gateway
 
         $payment = $this->createGatewayPaymentEntity($attributes);
 
-        $content =  $this->getAuthorizeRequestContent($input);
-
-        $request = $this->getStandardRequestArray($content);
+        $request =  $this->getAuthorizeRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -193,8 +191,13 @@ class Gateway extends Base\Gateway
      * @param  string $type Action String
      * @return String URL
      */
-    protected function getUrl($type = 'authorize')
+    protected function getUrl($type = null)
     {
+        if ($type === null)
+        {
+            $type = $this->action;
+        }
+
         $type = "{$this->mode}_{$type}";
 
         return parent::getUrl($type);
@@ -249,7 +252,7 @@ class Gateway extends Base\Gateway
         return $rsa;
     }
 
-    protected function getAuthorizeRequestContent($input)
+    protected function getAuthorizeRequestArray($input)
     {
         $payment = $input['payment'];
 
@@ -271,10 +274,20 @@ class Gateway extends Base\Gateway
             'terminalId'        => '1234',
         ];
 
-        // We trace it here, because it gets encrypted later
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $data);
+        $content = $this->transformRequestArrayToContent($data);
 
-        return $this->transformRequestArrayToContent($data);
+        $request = $this->getStandardRequestArray($content);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            [
+                'request' => $request,
+                'decrypted_content' => $data,
+                'gateway' => 'upi_icici',
+                'payment_id' => $input['payment']['id'],
+            ]);
+
+        return $request;
     }
 
     /**
@@ -366,6 +379,51 @@ class Gateway extends Base\Gateway
             ]);
 
         return $request;
+    }
+
+    protected function verifyPayment($verify)
+    {
+        $payment = $verify->payment;
+        $content = $verify->verifyResponseContent;
+
+        $status = VerifyResult::STATUS_MATCH;
+
+        $verify->apiSuccess = true;
+        $verify->gatewaySuccess = false;
+
+        if ($content['status'] === Status::SUCCESS)
+        {
+            $verify->gatewaySuccess = true;
+        }
+
+        $input = $verify->input;
+
+        // If payment status is either failed or created,
+        // this is an api failure
+        if (($input['payment']['status'] === 'failed') or
+            ($input['payment']['status'] === 'created'))
+        {
+            $verify->apiSuccess = false;
+        }
+
+        // If both don't match we have a status mis match
+        if ($verify->gatewaySuccess !== $verify->apiSuccess)
+        {
+            $status = VerifyResult::STATUS_MISMATCH;
+        }
+
+        $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
+
+        if (empty($payment['gateway_payment_id']))
+        {
+            $gateway_payment_id = $content['OriginalBankRRN'];
+
+            $payment->fill(['gateway_payment_id' => $gateway_payment_id]);
+
+            $payment->saveOrFail();
+        }
+
+        return $status;
     }
 
     /**
