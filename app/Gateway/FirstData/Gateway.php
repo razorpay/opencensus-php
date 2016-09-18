@@ -14,6 +14,7 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Base\Action;
 use Carbon\Carbon;
 
 class Gateway extends Base\Gateway
@@ -29,7 +30,7 @@ class Gateway extends Base\Gateway
 
         $payment = $this->createGatewayPaymentEntity($content);
 
-        $request = $this->getStandardConnectRequestArray($content, 'post');
+        $request = $this->getStandardRequestArray($content);
 
         $this->traceGatewayPaymentRequest($request, $input);
 
@@ -216,7 +217,7 @@ class Gateway extends Base\Gateway
         $content = SoapWrapper::defaultWrapper($xmlRequest, $action);
 
         $options = $this->getRequestOptions();
-        $request = $this->getStandardApiRequestArray($content, $options);
+        $request = $this->getStandardRequestArray($content, $options);
 
         $response = $this->sendGatewayRequest($request);
         $this->trace->info(TraceCode::GATEWAY_RESPONSE, [$response->body]);
@@ -261,25 +262,33 @@ class Gateway extends Base\Gateway
         return $ipgApiActionResponse;
     }
 
-    protected function getStandardConnectRequestArray($content = [], $method = 'post')
+    protected function getRelativeUrl($type)
     {
-        $request = array(
-            'url'       => $this->getUrl('processing'),
-            'content'   => $content,
-            'method'    => $method
-        );
+        $servicesApiActionList = [
+            Action::CAPTURE,
+            Action::REFUND,
+            Action::VERIFY
+        ];
 
-        return $request;
+        if (in_array($this->action, $servicesApiActionList))
+        {
+            $type = Constants::SERVICES;
+        }
+        else
+        {
+            $type = Constants::PROCESSING;
+        }
+
+        $ns = $this->getGatewayNamespace();
+
+        return constant($ns.'\Url::'.$type);
     }
 
-    protected function getStandardApiRequestArray($content = [], $options = [], $method = 'post')
+    protected function getStandardRequestArray($content = [], $options = [], $method = 'post')
     {
-        $request = array(
-            'url'       => $this->getUrl('services'),
-            'content'   => $content,
-            'method'    => $method,
-            'options'   => $options
-        );
+        $request = parent::getStandardRequestArray($content, $method);
+
+        $request['options'] = $options;
 
         return $request;
     }
@@ -403,7 +412,7 @@ class Gateway extends Base\Gateway
         $hooks->register('curl.before_send', [$this, 'setCurlSslOpts']);
         $options['hooks'] = $hooks;
 
-        // $options['verify'] = $this->getServerCertificate();
+        $options['verify'] = $this->getServerCertificate();
 
         return $options;
     }

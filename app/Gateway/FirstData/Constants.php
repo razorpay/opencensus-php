@@ -59,4 +59,7 @@ class Constants
     const SERVER_CERTIFICATE_PATH           = 'server_certificate_path';
     const CLIENT_CERTIFICATE_PATH           = 'client_certificate_path';
     const CLIENT_CERTIFICATE_KEY_PATH       = 'client_certificate_key_path';
+
+    const PROCESSING                        = 'PROCESSING';
+    const SERVICES                          = 'SERVICES';
 }
