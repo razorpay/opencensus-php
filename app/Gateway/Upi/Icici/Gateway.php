@@ -358,7 +358,12 @@ class Gateway extends Base\Gateway
      */
     protected function getSubMerchantId(array $input)
     {
-        return substr($input['merchant']['id'], 0, 10);
+        // ICICI docs say that they accept alphanumeric
+        // merchant IDs, but they do not. The field is
+        // also marked as optional, but it is not.
+        return '1234';
+
+        // return substr($input['merchant']['id'], 0, 10);
     }
 
     /**
