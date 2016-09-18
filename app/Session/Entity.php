@@ -47,6 +47,6 @@ class Entity extends Base\Entity
 
     public function deleteOneSessionForAdmin($sessionId)
     {
-        $this->where('id', $sessionId)->delete();
+        $this->where(self::ID, $sessionId)->delete();
     }
 }
