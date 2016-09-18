@@ -69,6 +69,7 @@ app.controller('EntitiesCtrl', [
       'netbanking_kotak',
       'paytm',
       'sharp',
+      'upi_icici',
       'wallet_payumoney',
       'wallet_payzapp',
       'wallet_olamoney',
@@ -237,6 +238,7 @@ app.controller('EntitiesCtrl', [
         payumoney: booleanList2,
         payzapp: booleanList2,
         olamoney: booleanList2,
+        upi: booleanList2,
         airtelmoney: booleanList2,
         pricing_plan_id: ['Pricing Plan Id'],
         receipt_email_enabled: booleanList
@@ -251,6 +253,7 @@ app.controller('EntitiesCtrl', [
         payumoney: booleanList,
         payzapp: booleanList,
         olamoney: booleanList,
+        upi: booleanList,
         airtelmoney: booleanList,
       },
       netbanking: {
@@ -505,7 +508,8 @@ app.controller('EntitiesCtrl', [
             'paytm',
             'mobikwik',
             'payzapp',
-            'payumoney'
+            'payumoney',
+            'upi',
           ];
         for (var i in validMethods) {
           var method = validMethods[i];

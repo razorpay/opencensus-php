@@ -934,6 +934,7 @@ app.controller('MerchantDetailCtrl', [
       'payzapp',
       'payumoney',
       'olamoney',
+      'upi',
       'airtelmoney',
       'emi',
       'card',
