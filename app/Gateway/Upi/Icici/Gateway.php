@@ -318,37 +318,54 @@ class Gateway extends Base\Gateway
 
     protected function sendPaymentVerifyRequest($verify)
     {
-        $content = $this->getPaymentVerifyRequestContent($verify);
+        $input = $verify->input;
 
-        $request = $this->getStandardRequestArray($content);
+        $request = $this->getPaymentVerifyRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
 
-        $response = $this->parseGatewayResponse($response->body);
+        $this->response = $response;
+
+        $content = $this->parseGatewayResponse($response->body);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY,
-            $response);
+            [
+                'content' => $content,
+                'gateway' => 'upi_icici',
+                'payment_id' => $input['payment']['id'],
+            ]);
 
         $verify->verifyResponse = $this->response;
-        $verify->verifyResponseBody = $this->response->body;
-        $verify->verifyResponseContent = $response;
 
-        return $response;
+        $verify->verifyResponseBody = $this->response->body;
+
+        $verify->verifyResponseContent = $content;
+
+        return $content;
     }
 
-    protected function getPaymentVerifyRequestContent($verify)
+    protected function getPaymentVerifyRequestArray($input)
     {
         $data = [
             'merchantId'        => $this->getMerchantId(),
-            'merchantTranId'    => $verify->input['payment']['id'],
-            'subMerchantId'     => $this->getSubMerchantId($verify->input),
+            'merchantTranId'    => $input['payment']['id'],
+            'subMerchantId'     => $this->getSubMerchantId($input),
             'terminalId'        => '1234',
         ];
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY, $data);
+        $content = $this->transformRequestArrayToContent($data);
 
-        return $this->transformRequestArrayToContent($data);
+        $request = $this->getStandardRequestArray($content);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            [
+                'request' => $request,
+                'decrypted_content' => $data
+            ]);
+
+        return $request;
     }
 
     /**
