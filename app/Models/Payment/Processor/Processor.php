@@ -324,18 +324,6 @@ class Processor
         return $errorCode;
     }
 
-    public function redirect($id)
-    {
-        $payment = $this->retrieve($id);
-
-        if ($payment->isCreated() === false)
-        {
-            return $this->processPaymentCallbackSecondTime($payment);
-        }
-
-        throw new Exception\LogicException('Should not have been hit.');
-    }
-
     /**
      * Returns the proper async response for the status checks
      * made by Checkout

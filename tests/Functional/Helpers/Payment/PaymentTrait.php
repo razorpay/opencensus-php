@@ -342,7 +342,7 @@ trait PaymentTrait
     {
         $request = [
             'method'    => 'POST',
-            'url'       => '/payments/'.$id.'/redirect',
+            'url'       => '/payments/'.$id.'/redirect_callback',
             'content'   => []
         ];
 
