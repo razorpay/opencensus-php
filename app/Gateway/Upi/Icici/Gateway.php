@@ -381,6 +381,51 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
+    protected function verifyPayment($verify)
+    {
+        $payment = $verify->payment;
+        $content = $verify->verifyResponseContent;
+
+        $status = VerifyResult::STATUS_MATCH;
+
+        $verify->apiSuccess = true;
+        $verify->gatewaySuccess = false;
+
+        if ($content['status'] === Status::SUCCESS)
+        {
+            $verify->gatewaySuccess = true;
+        }
+
+        $input = $verify->input;
+
+        // If payment status is either failed or created,
+        // this is an api failure
+        if (($input['payment']['status'] === 'failed') or
+            ($input['payment']['status'] === 'created'))
+        {
+            $verify->apiSuccess = false;
+        }
+
+        // If both don't match we have a status mis match
+        if ($verify->gatewaySuccess !== $verify->apiSuccess)
+        {
+            $status = VerifyResult::STATUS_MISMATCH;
+        }
+
+        $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
+
+        if (empty($payment['gateway_payment_id']))
+        {
+            $gateway_payment_id = $content['OriginalBankRRN'];
+
+            $payment->fill(['gateway_payment_id' => $gateway_payment_id]);
+
+            $payment->saveOrFail();
+        }
+
+        return $status;
+    }
+
     /**
      * subMerchantId is limited to 10 characters
      * so we send the first 10 characters
