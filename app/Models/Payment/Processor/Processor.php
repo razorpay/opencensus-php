@@ -324,18 +324,6 @@ class Processor
         return $errorCode;
     }
 
-    public function redirect($id)
-    {sd('d');
-        $payment = $this->retrieve($id);
-
-        if ($payment->isCreated() === false)
-        {
-            return $this->processPaymentCallbackSecondTime($payment);
-        }
-
-        throw new Exception\LogicException('Should not have been hit.');
-    }
-
     public function callGatewayFunctionCaptureViaQueue($data, $payment)
     {
         $this->payment = $payment;
