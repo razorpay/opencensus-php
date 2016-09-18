@@ -45,14 +45,14 @@ class Server extends Base\Mock\Server
         $this->validateAuthorizeInput($input);
 
         $content = array(
-            'response'          =>  '92',
-            'merchantId'        =>  $input['merchantId'],
-            'subMerchantId'     =>  isset($input['subMerchantId']) ? $input['subMerchantId'] : null,
-            'terminalId'        =>  isset($input['terminalId']) ? $input['terminalId'] : null,
-            'success'           =>  'true',
-            'message'           =>  'Transaction initiated',
-            'merchantTranId'    =>  $input['merchantTranId'],
-            'BankRRN'           =>  '1234567',
+            'response'          => '92',
+            'merchantId'        => $input['merchantId'],
+            'subMerchantId'     => isset($input['subMerchantId']) ? $input['subMerchantId'] : null,
+            'terminalId'        => isset($input['terminalId']) ? $input['terminalId'] : null,
+            'success'           => 'true',
+            'message'           => 'Transaction initiated',
+            'merchantTranId'    => $input['merchantTranId'],
+            'BankRRN'           => '1234567',
         );
 
         return $this->makeResponse($content);
@@ -72,9 +72,9 @@ class Server extends Base\Mock\Server
         }
         else
         {
-            $res = $this->encrypt($json);
-            assert($res !== false);
-            $content = base64_encode($res);
+            $encryptedData = $this->encrypt($json);
+            assert($encryptedData !== false);
+            $content = base64_encode($encryptedData);
         }
 
         $response = parent::makeResponse($content);
@@ -90,18 +90,19 @@ class Server extends Base\Mock\Server
     {
         $input = base64_decode($input);
         $input = $this->decrypt($input);
+
         return json_decode($input, true);
     }
 
     protected function decrypt($ciphertext)
     {
-        $rsa = $this->getRSAInstance('req');
+        $rsa = $this->getRSAInstance('request');
         return  $rsa->decrypt($ciphertext);
     }
 
     protected function encrypt($plaintext)
     {
-        $rsa = $this->getRSAInstance('res');
+        $rsa = $this->getRSAInstance('response');
         return $rsa->encrypt($plaintext);
     }
 
@@ -111,15 +112,14 @@ class Server extends Base\Mock\Server
 
         switch ($mode)
         {
-
             // Inbound request, decrypt
-            case 'req':
+            case 'request':
 
                 $rsa->setPrivateKey($this->getPrivateKey());
                 break;
 
             // Response, encrypt
-            case 'res':
+            case 'response':
 
                 $rsa->loadKey($this->getPublicKey());
                 break;
@@ -145,21 +145,21 @@ class Server extends Base\Mock\Server
     {
         // Format is 20160830152240
         $initDate = Carbon::createFromTimestampUTC($entity['created_at'], 'Asia/Kolkata');
-        $completeDate = Carbon::createFromTimestampUTC($entity['created_at'], 'Asia/Kolkata')->addMinutes(1);
+        $completeDate = $initDate->copy()->addMinutes(1);
 
         return [
-            'merchantId' => $entity['gateway_merchant_id'],
-            'subMerchantId' =>  $payment['merchant_id'],
-            'terminalId' => "1234",
-            'BankRRN' =>  $entity['gateway_payment_id'],
-            'merchantTranId' =>  $entity['payment_id'],
-            'PayerName' =>  "payer name not available",
-            'PayerMobile' =>  $payment['contact'],
-            'PayerVA' =>  $entity['vpa'],
-            'PayerAmount' => number_format($payment['amount']/100, 2),
-            'TxnStatus' => "SUCCESS",
-            'TxnInitDate' =>  $initDate->format('Ymdhis'),
-            'TxnCompletionDate' =>  $completeDate->format('Ymdhis'),
+            'merchantId'        => $entity['gateway_merchant_id'],
+            'subMerchantId'     => $payment['merchant_id'],
+            'terminalId'        => "1234",
+            'BankRRN'           => $entity['gateway_payment_id'],
+            'merchantTranId'    => $entity['payment_id'],
+            'PayerName'         => "payer name not available",
+            'PayerMobile'       => $payment['contact'],
+            'PayerVA'           => $entity['vpa'],
+            'PayerAmount'       => number_format($payment['amount']/100, 2),
+            'TxnStatus'         => "SUCCESS",
+            'TxnInitDate'       => $initDate->format('Ymdhis'),
+            'TxnCompletionDate' => $completeDate->format('Ymdhis'),
         ];
     }
 }

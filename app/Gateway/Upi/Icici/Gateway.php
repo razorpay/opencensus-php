@@ -31,51 +31,6 @@ class Gateway extends Base\Gateway
     );
 
     /**
-     * In both getPublicKey and getPrivateKey,
-     * we are converting literal '\n' (single quotes)
-     * to actual newlines (double quotes "\n").
-     *
-     * This is because we store them in environment, which
-     * uses literal \n
-     *
-     * This is the public key used to encrypt requests
-     * @return string public key
-     */
-    protected function getPublicKey()
-    {
-        $key = $this->config['public_key'];
-        return str_replace('\n', "\n", $key);
-    }
-
-    /**
-     * This is the private key used for
-     * decrypting responses we get from the
-     * gateway server
-     * @see getPublicKey
-     * @return string Private Key
-     */
-    protected function getPrivateKey()
-    {
-        $key = $this->config['private_key'];
-
-        return str_replace('\n', "\n", $key);
-    }
-
-
-    /**
-     * Gets the correct URL from the
-     * Url class
-     * @param  string $type Action String
-     * @return String URL
-     */
-    protected function getUrl($type = 'authorize')
-    {
-        $type = "{$this->mode}_{$type}";
-
-        return parent::getUrl($type);
-    }
-
-    /**
      * Authorizes a payment using UPI Gateway
      * @param  array  $input
      * @return null
@@ -104,12 +59,12 @@ class Gateway extends Base\Gateway
 
         if ($status !== Status::TXN_INITIATED)
         {
-            $errorCode = ResponseMap::getApiErrorCode($status);
+            $errorCode = ResponseCodeMap::getApiErrorCode($status);
 
             throw new GatewayErrorException(
                 $errorCode,
                 $status,
-                ResponseMap::getResponseMessage($status));
+                ResponseCode::getResponseMessage($status));
         }
 
         return true;
@@ -134,13 +89,13 @@ class Gateway extends Base\Gateway
      */
     protected function parseGatewayResponse($response)
     {
-        $json = json_decode($response, true);
+        $decodedJson = json_decode($response, true);
 
         // The response is encrypted sometimes,
         // but not in all cases (usually errors are unencrypted)
-        if ($json !== null)
+        if ($decodedJson !== null)
         {
-            return $json;
+            return $decodedJson;
         }
 
         // The gateway response is encrypted, but wrapped
@@ -152,16 +107,6 @@ class Gateway extends Base\Gateway
         $response = $this->decrypt($response);
 
         return $this->jsonToArray($response);
-    }
-
-    /**
-     * Returns the status code from the gateway response
-     * @param  array  $response Gateway Response Array
-     * @return String Response Code (integer, but casted as string)
-     */
-    protected function getStatusCode(array $response)
-    {
-        return isset($response['response']) ? $response['response'] : '9999';
     }
 
     /**
@@ -187,6 +132,62 @@ class Gateway extends Base\Gateway
         }
 
         return $this->config['live_merchant_id'];
+    }
+
+    /**
+     * In both getPublicKey and getPrivateKey,
+     * we are converting literal '\n' (single quotes)
+     * to actual newlines (double quotes "\n").
+     *
+     * This is because we store them in environment, which
+     * uses literal \n
+     *
+     * This is the public key used to encrypt requests
+     * @return string public key
+     */
+    protected function getPublicKey()
+    {
+        $key = $this->config['live_public_key'];
+
+        if ($this->mode === Mode::TEST)
+        {
+            $key = $this->config['test_public_key'];
+        }
+
+        return str_replace('\n', "\n", $key);
+    }
+
+    /**
+     * This is the private key used for
+     * decrypting responses we get from the
+     * gateway server
+     * @see getPublicKey
+     * @return string Private Key
+     */
+    protected function getPrivateKey()
+    {
+        $key = $this->config['live_private_key'];
+
+        if ($this->mode === Mode::TEST)
+        {
+            $key = $this->config['test_private_key'];
+        }
+
+        return str_replace('\n', "\n", $key);
+    }
+
+
+    /**
+     * Gets the correct URL from the
+     * Url class
+     * @param  string $type Action String
+     * @return String URL
+     */
+    protected function getUrl($type = 'authorize')
+    {
+        $type = "{$this->mode}_{$type}";
+
+        return parent::getUrl($type);
     }
 
     /**
@@ -253,10 +254,9 @@ class Gateway extends Base\Gateway
             'merchantName'      => 'Razorpay',
             'note'              => 'collect-pay-request',
             'payerVa'           => $input['vpa'],
-            // confirm if we can send merchant id
-            'subMerchantId'     =>  $this->getSubMerchantId($input),
-            'subMerchantName'   =>  $input['merchant']->getBillingLabelElseName(),
-            'terminalId'        =>  '1234',
+            'subMerchantId'     => $this->getSubMerchantId($input),
+            'subMerchantName'   => $input['merchant']->getBillingLabelElseName(),
+            'terminalId'        => '1234',
         ];
 
         // We trace it here, because it gets encrypted later
@@ -328,15 +328,13 @@ class Gateway extends Base\Gateway
     protected function getPaymentVerifyRequestContent($verify)
     {
         $data = [
-            'merchantId'        =>  $this->getMerchantId(),
-            'merchantTranId'    =>  $verify->input['payment']['id'],
-            'subMerchantId'     =>  $this->getSubMerchantId($verify->input),
-            'terminalId'        =>  '1234',
+            'merchantId'        => $this->getMerchantId(),
+            'merchantTranId'    => $verify->input['payment']['id'],
+            'subMerchantId'     => $this->getSubMerchantId($verify->input),
+            'terminalId'        => '1234',
         ];
 
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
-            $data);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY, $data);
 
         return $this->transformRequestArrayToContent($data);
     }
@@ -414,7 +412,7 @@ class Gateway extends Base\Gateway
 
             throw new GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-                $content[ResponseFields::TXN_STATUS],
+                $status,
                 $message);
         }
 
