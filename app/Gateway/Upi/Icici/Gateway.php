@@ -89,6 +89,12 @@ class Gateway extends Base\Gateway
      */
     protected function parseGatewayResponse($response)
     {
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, [
+            'body'      =>  $response,
+            'encrypted' =>  true,
+            'gateway'   =>  $this->gateway
+        ]);
+
         $decodedJson = json_decode($response, true);
 
         // The response is encrypted sometimes,
@@ -103,7 +109,9 @@ class Gateway extends Base\Gateway
         // this, so we remove any whitespace from the response
         // since this is base64, it only removes newlines
         $response = preg_replace('/\s/', '', $response);
+
         $response = base64_decode($response, true);
+
         $response = $this->decrypt($response);
 
         return $this->jsonToArray($response);
@@ -154,7 +162,7 @@ class Gateway extends Base\Gateway
             $key = $this->config['test_public_key'];
         }
 
-        return str_replace('\n', "\n", $key);
+        return str_replace('\n', "\n", trim($key));
     }
 
     /**
@@ -173,7 +181,9 @@ class Gateway extends Base\Gateway
             $key = $this->config['test_private_key'];
         }
 
-        return str_replace('\n', "\n", $key);
+        // The trim is to make sure that the key doesn't end with
+        // an extra newline
+        return str_replace('\n', "\n", trim($key));
     }
 
 
@@ -213,7 +223,9 @@ class Gateway extends Base\Gateway
     {
         $rsa = $this->getRSAInstance();
 
-        $rsa->loadKey($this->getPrivateKey());
+        $key = $this->getPrivateKey();
+
+        $rsa->loadKey($key, RSA::PRIVATE_FORMAT_PKCS1);
 
         return $rsa->decrypt($data);
     }
