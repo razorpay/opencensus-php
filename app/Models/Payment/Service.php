@@ -128,9 +128,9 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function redirect($id)
+    public function redirectCallback($id)
     {
-        return $this->getNewProcessor()->redirect($id);
+        return $this->getNewProcessor()->redirectCallback($id);
     }
 
     public function forceAuthorizeFailed($id, $input)
