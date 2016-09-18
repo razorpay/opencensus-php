@@ -252,9 +252,9 @@ class PaymentCreateController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postRedirect($id)
+    public function postRedirectCallback($id)
     {
-        $data = $this->payment->redirect($id);
+        $data = $this->payment->redirectCallback($id);
 
         return $this->returnCallbackResponse($data);
     }
