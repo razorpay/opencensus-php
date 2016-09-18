@@ -24,7 +24,7 @@ class UPIGatewayTest extends TestCase
         $this->payment = $this->getDefaultUpiPaymentArray();
     }
 
-    public function testPayment()
+    public function testPayment($status = 'created')
     {
         $res = $this->doAuthPayment($this->payment);
         $paymentId = $res['payment_id'];
@@ -32,9 +32,18 @@ class UPIGatewayTest extends TestCase
         // Co Proto must be working
         $this->assertEquals('async', $res['type']);
 
-        $this->testPaymentStatus($paymentId, 'created');
+        $this->testPaymentStatus($paymentId, $status);
 
         return $paymentId;
+    }
+
+    public function testPaymentWithRandomResponseCode()
+    {
+        $this->payment['vpa'] = 'unknown@icici';
+
+        $this->expectException('RZP\Exception\GatewayErrorException');
+
+        $this->testPayment('failed');
     }
 
     public function testUnencryptedResponsePayment()

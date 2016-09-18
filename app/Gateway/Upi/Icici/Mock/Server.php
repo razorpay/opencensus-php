@@ -45,7 +45,7 @@ class Server extends Base\Mock\Server
         $this->validateAuthorizeInput($input);
 
         $content = array(
-            'response'          => '92',
+            'response'          => $this->getResponseCode(),
             'merchantId'        => $input['merchantId'],
             'subMerchantId'     => isset($input['subMerchantId']) ? $input['subMerchantId'] : null,
             'terminalId'        => isset($input['terminalId']) ? $input['terminalId'] : null,
@@ -56,6 +56,27 @@ class Server extends Base\Mock\Server
         );
 
         return $this->makeResponse($content);
+    }
+
+    /**
+     * We are testing if our gateway works
+     * with all possible values of error codes
+     * @return int response code
+     * @see ICICI Documentation:
+     *
+     * >All other values of response codes = Transaction has failed
+     */
+    protected function getResponseCode()
+    {
+        switch($this->input['payerVa'])
+        {
+            // Just make sure that this doesn't return 92
+            case 'unknown@icici':
+                return mt_rand(93, 500);
+                break;
+            default:
+                return 92;
+        }
     }
 
     protected function makeResponse($data)
