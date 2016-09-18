@@ -116,6 +116,13 @@ class PaymentController extends Controller
         return ApiResponse::json($summary);
     }
 
+    public function getPaymentStatusForAsyncPayments($id)
+    {
+        $data = $this->payment->fetchStatus($id);
+
+        return ApiResponse::json($data);
+    }
+
     public function postCancel($id)
     {
         $input = Request::all();

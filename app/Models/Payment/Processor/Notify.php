@@ -30,6 +30,7 @@ class Notify
      * decided by our risk team.
      */
     const MIN_HIGH_RISK_RATING = 3;
+    const HIGH_RISK_RATING     = 4;
     const MAX_HIGH_RISK_RATING = 5;
 
     /**
@@ -285,22 +286,28 @@ class Notify
      */
     protected function getSlackChannel()
     {
-        $channel = $this->app['config']->get('slack.channels.low');
+        $config = $this->app['config'];
+
+        $channel = $config->get('slack.channels.low');
 
         $riskRating = $this->template['payment']['risk'];
 
         // The priority order is important here
         if ($riskRating == self::MAX_HIGH_RISK_RATING)
         {
-            $channel = $this->app['config']->get('slack.channels.highrisk');
+            $channel = $config->get('slack.channels.highrisk');
+        }
+        else if ($riskRating === self::HIGH_RISK_RATING)
+        {
+            $channel = $config->get('slack.channels.high_4');
         }
         else if ($riskRating >= self::MIN_HIGH_RISK_RATING)
         {
-            $channel = $this->app['config']->get('slack.channels.risky');
+            $channel = $config->get('slack.channels.risky');
         }
         else if ($this->payment->amount >= self::MIN_RISK_AMOUNT)
         {
-            $channel = $this->app['config']->get('slack.channels.high');
+            $channel = $config->get('slack.channels.high');
         }
 
         return $channel;

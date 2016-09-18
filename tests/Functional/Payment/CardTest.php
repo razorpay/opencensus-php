@@ -53,6 +53,24 @@ class CardTest extends TestCase
         }
     }
 
+    public function testBlockedCard()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '4532111111175901';
+
+        $this->fixtures->create( 'iin', ['iin' => '453211', 'country' => 'US']);
+
+        $this->ba->publicAuth();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testSupportedCardNetworks()
     {
         $supportedCards = array(

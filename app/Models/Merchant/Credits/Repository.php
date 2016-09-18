@@ -38,7 +38,7 @@ class Repository extends Base\Repository
                     ->exists();
     }
 
-    public function validateCamapignCreditsNotAssigned($campaign, Merchant\Entity $merchant)
+    public function validateCampaignCreditsNotAssigned($campaign, Merchant\Entity $merchant)
     {
         // Check if the log already exists, API is meant to be used for creation only.
         $creditsLog = $this->newQuery()

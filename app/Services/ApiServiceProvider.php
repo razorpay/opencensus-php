@@ -4,6 +4,7 @@ namespace RZP\Services;
 
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use RZP\Gateway\GatewayManager;
+use CreditCardFraudDetection;
 use RZP;
 
 class ApiServiceProvider extends BaseServiceProvider
@@ -81,7 +82,9 @@ class ApiServiceProvider extends BaseServiceProvider
             return new \RZP\Base\RepositoryManager($app);
         });
 
-        $this->registerApiLock();
+        $this->registerApiMutex();
+
+        $this->registerMaxMind();
 
         $this->registerValidatorResolver();
 
@@ -102,10 +105,11 @@ class ApiServiceProvider extends BaseServiceProvider
             'gateway',
             'webhook.inferno',
             'card.tokenex',
-            'api.lock',
+            'api.mutex',
             'raven',
             'repo',
             'es',
+            'maxmind'
         );
     }
 
@@ -131,18 +135,33 @@ class ApiServiceProvider extends BaseServiceProvider
         });
     }
 
-    protected function registerApiLock()
+    protected function registerMaxMind()
     {
-        $this->app->singleton('api.lock', function($app)
+        $this->app->singleton('maxmind', function($app)
         {
-             $lockMock = $app['config']->get('services.lock.mock');
+            $maxmindMock = $app['config']->get('applications.maxmind.mock');
+
+            if ($maxmindMock === true)
+            {
+                return new Services\Mock\MaxMind($app);
+            }
+
+            return new Services\MaxMind($app);
+        });
+    }
+
+    protected function registerApiMutex()
+    {
+        $this->app->singleton('api.mutex', function($app)
+        {
+            $lockMock = $app['config']->get('services.mutex.mock');
 
             if ($lockMock === true)
             {
-                return new Mock\Lock($app);
+                return new Mock\Mutex($app);
             }
 
-            return new Lock($app);
+            return new Mutex($app);
         });
     }
 }

@@ -7,6 +7,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Wallet\Base\Otp;
 use Carbon\Carbon;
 use RZP\Http\Route;
+use Closure;
 
 class PayumoneyGatewayTest extends TestCase
 {
@@ -197,6 +198,28 @@ class PayumoneyGatewayTest extends TestCase
         $data = $this->testData[__FUNCTION__];
 
         $this->setOtp(Otp::INSUFFICIENT_BALANCE);
+
+        $response = $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            return $this->doAuthPayment($payment);
+        });
+
+        return $response;
+    }
+
+    public function testWalletLimitExceededPayment()
+    {
+        $payment = $this->getDefaultWalletPaymentArray('payumoney');
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->setOtp(Otp::WALLET_LIMIT_EXCEEDED);
+
+        $this->setContent(function(&$content)
+        {
+            $content['result']['maxLimit'] = 0;
+            $content['result']['availableBalance'] = 0;
+        });
 
         $response = $this->runRequestResponseFlow($data, function() use ($payment)
         {
@@ -459,6 +482,16 @@ class PayumoneyGatewayTest extends TestCase
         }
 
         return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function setContent(Closure $closure)
+    {
+        $server = $this->mockServer()
+                        ->shouldReceive('content')
+                        ->andReturnUsing($closure)
+                        ->mock();
+
+        $this->setMockServer($server);
     }
 
     protected function runPaymentCallbackFlowWalletPayumoney($response, &$callback = null)

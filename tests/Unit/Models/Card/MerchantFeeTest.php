@@ -496,6 +496,8 @@ class MerchantFeeTest extends TestCase
 
         $payment->card->setInternational($isCardInternational);
 
+        $payment->setInternational();
+
         list($fee, $serviceTax, $ruleKey) = $this->fee->calculateMerchantFees($payment);
 
         $this->assertEquals($expectedRule, $ruleKey);

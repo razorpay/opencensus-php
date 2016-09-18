@@ -55,15 +55,18 @@ trait Refund
             $data['card'] = $refund->payment->card->toArray();
         }
 
-        if (($payment->getTransactionId() !== null) or
-            ($payment->isAuthorized() === false))
+        $this->mutex->acquireAndRelease($payment, function() use ($data, $payment, $refund)
         {
-            $this->refundOnGateway($data);
-        }
+            if (($payment->getTransactionId() !== null) or
+                ($payment->isAuthorized() === false))
+            {
+                $this->refundOnGateway($data);
+            }
 
-        $this->recordRefund();
+            $this->recordRefund();
 
-        $this->sendRefundNotification($payment, $refund);
+            $this->sendRefundNotification($payment, $refund);
+        });
 
         return $refund;
     }
@@ -88,33 +91,38 @@ trait Refund
             $data['card'] = $refund->payment->card->toArray();
         }
 
-        $verify = $this->callGatewayForVerifyRefund($data);
-
-        // Flag indicating if this is a buggy case fix.
-        $this->verifyRefundStatus = $verify;
-
-        $msg = 'Refund verification unsuccessful.';
-
-        if ($verify === false)
+        $msg = $this->mutex->acquireAndRelease($payment, function() use ($data, $payment, $refund)
         {
-            $this->recordRefund(true);
+            $verify = $this->callGatewayForVerifyRefund($data);
 
-            $this->trace->info(
-                TraceCode::VERIFY_REFUND_TRANSACTION_CREATED,
-                [
-                    'payment_id'    => $payment->getId(),
-                    'refund_id'     => $refund->getId(),
-                ]
-            );
+            // Flag indicating if this is a buggy case fix.
+            $this->verifyRefundStatus = $verify;
 
-            //$this->sendRefundNotification($payment, $refund);
+            $msg = 'Refund verification unsuccessful.';
 
-            $msg = 'Refund verification failed and Refund performed.';
-        }
-        else if ($verify === true)
-        {
-            $msg = 'Refund verified successfully.';
-        }
+            if ($verify === false)
+            {
+                $this->recordRefund(true);
+
+                $this->trace->info(
+                    TraceCode::VERIFY_REFUND_TRANSACTION_CREATED,
+                    [
+                        'payment_id'    => $payment->getId(),
+                        'refund_id'     => $refund->getId(),
+                    ]
+                );
+
+                //$this->sendRefundNotification($payment, $refund);
+
+                $msg = 'Refund verification failed and Refund performed.';
+            }
+            else if ($verify === true)
+            {
+                $msg = 'Refund verified successfully.';
+            }
+
+            return $msg;
+        });
 
         return ['verify_refund' => $msg];
     }
@@ -319,8 +327,6 @@ trait Refund
     {
         try
         {
-            $this->acquireLockOnPayment($this->payment);
-
             $this->callGatewayFunction(Payment\Action::REFUND, $data);
         }
         catch (Exception\BaseException $e)
@@ -330,10 +336,6 @@ trait Refund
                     TraceCode::PAYMENT_REFUND_FAILURE);
 
             throw $e;
-        }
-        finally
-        {
-            $this->releaseLockOnPayment($this->payment);
         }
     }
 

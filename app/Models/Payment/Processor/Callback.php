@@ -65,6 +65,18 @@ trait Callback
         return $this->postPaymentAuthorizeProcessing($payment);
     }
 
+    public function redirectCallback($id)
+    {
+        $payment = $this->retrieve($id);
+
+        if ($payment->isCreated() === false)
+        {
+            return $this->processPaymentCallbackSecondTime($payment);
+        }
+
+        throw new Exception\LogicException('Should not have been hit.');
+    }
+
     /**
      * This means the payment has already been processed but
      * we are hitting callabck again. This could be due to
@@ -98,9 +110,8 @@ trait Callback
 
     public function s2sCallback($payment, array $gatewayInput)
     {
-        // Return if payments is signed to allow for payments to be captured
-        // which come signed via shopify route.
-        if ($payment->isSigned())
+        // Return if payment is auto captured
+        if ($payment->getAutoCaptured())
         {
             return ['success' => false];
         }
@@ -164,6 +175,7 @@ trait Callback
 
             $this->postPaymentOtpCallbackProcessing($input, $data);
 
+            // Send a request to topup if balance is insufficient
             $this->callGatewayFunction('checkBalance', $input);
         }
         else
