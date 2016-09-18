@@ -6,12 +6,11 @@ use Auth;
 
 class CustomDatabaseSessionHandler extends \Illuminate\Session\DatabaseSessionHandler
 {
-    /**
-     * {@inheritDoc}
-     */
-    public function write($sessionId, $data)
+    protected function getDefaultPayload($data)
     {
-        $payload = $this->getDefaultPayload($data);
+        $payload = parent::getDefaultPayload($data);
+
+        // Add admin to $payload
         if (Auth::guard('admin')->user() !== null)
         {
             $payload['admin_id'] = Auth::guard('admin')->user()->id;
@@ -21,18 +20,6 @@ class CustomDatabaseSessionHandler extends \Illuminate\Session\DatabaseSessionHa
             $payload['admin_id'] = null;
         }
 
-        if (! $this->exists) {
-            $this->read($sessionId);
-        }
-
-        if ($this->exists) {
-            $this->getQuery()->where('id', $sessionId)->update($payload);
-        } else {
-            $payload['id'] = $sessionId;
-
-            $this->getQuery()->insert($payload);
-        }
-
-        $this->exists = true;
+        return $payload;
     }
 }

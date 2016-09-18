@@ -2,16 +2,29 @@
 
 namespace App\Providers;
 
-use Illuminate\Session\SessionServiceProvider;
-use App\Session\CustomSessionManager;
+use Illuminate\Support\ServiceProvider;
+use Session;
+use App\Session\CustomDatabaseSessionHandler;
 
-class CustomSessionServiceProvider extends SessionServiceProvider {
+class CustomSessionServiceProvider extends ServiceProvider {
 
-    protected function registerSessionManager()
-    {
-        $this->app->singleton('session', function ($app) {
-            return new CustomSessionManager($app);
-        });
-    }
+    public function boot()
+	{
+		Session::extend('custom_database', function ($data)
+		{
+			$connection = $this->app['db']->connection($this->app['config']['session.connection']);
+
+	        $table = $this->app['config']['session.table'];
+
+	        $lifetime = $this->app['config']['session.lifetime'];
+
+			return new CustomDatabaseSessionHandler($connection, $table, $lifetime, $this->app);
+		});
+	}
+
+	public function register()
+	{
+
+	}
 
 }
