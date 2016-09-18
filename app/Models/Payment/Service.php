@@ -335,6 +335,21 @@ class Service extends Base\Service
         return $payment->toArrayPublic();
     }
 
+    /**
+     * We only return the payment status in case of an async
+     * payment + status being either of created or authorized
+     *
+     * Note: This will only work within 15 minutes of the payment creation
+     *
+     * @return array
+     */
+    public function fetchStatus($id)
+    {
+        $data = $this->getNewProcessor()->getAsyncResponse($id);
+
+        return $data;
+    }
+
     public function addPaymentMetadata($id, $input)
     {
         $payment = $this->core->retrieveByIdAndMerchantId($id, $this->merchant->getKey());

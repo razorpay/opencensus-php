@@ -439,7 +439,8 @@ class Service extends Base\Service
             'card'          => true,
             'netbanking'    => [],
             'wallet'        => [],
-            'emi'           => false
+            'emi'           => false,
+            'upi'           => false,
         );
 
         $methods = (new Methods\Core)->getMethods($this->merchant);
@@ -454,6 +455,7 @@ class Service extends Base\Service
             }
             $data['wallet'] = $methods->getEnabledWallets();
             $data['emi'] = $methods->isEmiEnabled();
+            $data['upi'] = $methods->isUpiEnabled();
         }
 
         if ($this->mode === Mode::TEST)

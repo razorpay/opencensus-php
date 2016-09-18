@@ -320,6 +320,10 @@ class PaymentCreateController extends Controller
             {
                 return $this->returnMerchantFullRedirectView($data);
             }
+            else if ($data['type'] === 'async')
+            {
+                return $data;
+            }
             else
             {
                 assert(false, 'Should not reach here');
