@@ -625,7 +625,7 @@ trait PaymentTrait
         return $payment;
     }
 
-    protected function getDefaultPaymentArray()
+    protected function getDefaultPaymentArrayNeutral()
     {
         //
         // default payment object
@@ -633,13 +633,6 @@ trait PaymentTrait
         $payment = [
             'amount'          =>  '50000',
             'currency'        =>  'INR',
-            'card' => array(
-                'number'            => '4012001038443335',
-                'name'              => 'Harshil',
-                'expiry_month'      => '12',
-                'expiry_year'       => '2017',
-                'cvv'               => '566',
-            ),
             'email'             => 'a@b.com',
             'contact'           => '9918899029',
             'notes'             => array(
@@ -651,7 +644,22 @@ trait PaymentTrait
         return $payment;
     }
 
-    protected function getDefaultPaymentArrayEmi($saved)
+    protected function getDefaultPaymentArray()
+    {
+        $payment = $this->getDefaultPaymentArrayNeutral();
+
+        $payment['card'] = array(
+            'number'            => '4012001038443335',
+            'name'              => 'Harshil',
+            'expiry_month'      => '12',
+            'expiry_year'       => '2017',
+            'cvv'               => '566',
+        );
+
+        return $payment;
+    }
+
+    protected function getDefaultEmiPaymentArray($saved)
     {
         $card = null;
 
@@ -670,19 +678,27 @@ trait PaymentTrait
                 'cvv'               => '566');
         }
 
-        $payment = [
+        $payment = $this->getDefaultPaymentArrayNeutral();
+
+        $attributes = [
             'amount'            =>  '300000',
-            'currency'          =>  'INR',
             'method'            =>  'emi',
             'emi_duration'      =>  '9',
             'card'              => $card,
-            'email'             => 'a@b.com',
-            'contact'           => '9918899029',
-            'notes'             => array(
-                'merchant_order_id' => 'random order id'),
-            'description'       => 'random description',
             'bank'              => 'ICIC',
         ];
+
+        $payment = array_merge($payment, $attributes);
+
+        return $payment;
+    }
+
+    protected function getDefaultUpiPaymentArray()
+    {
+        $payment = $this->getDefaultPaymentArrayNeutral();
+
+        $payment['method'] = 'upi';
+        $payment['vpa'] = 'shk@hdfc';
 
         return $payment;
     }
