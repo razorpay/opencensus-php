@@ -29,6 +29,7 @@ return array(
         'upi_icici',
         'wallet_payzapp',
         'wallet_payumoney',
+        'wallet_airtelmoney',
     ),
 
     'mock_amex'               => env('AMEX_MOCK'),
