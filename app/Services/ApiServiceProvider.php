@@ -143,10 +143,10 @@ class ApiServiceProvider extends BaseServiceProvider
 
             if ($maxmindMock === true)
             {
-                return new Services\Mock\MaxMind($app);
+                return new Mock\MaxMind($app);
             }
 
-            return new Services\MaxMind($app);
+            return new MaxMind($app);
         });
     }
 
