@@ -106,7 +106,7 @@ class Service extends Base\Service
 
         $totalEntries = count($entries);
 
-        if($totalEntries > 1000){
+        if ($totalEntries > 1000){
               throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_REFUND_FILE_EXCEED_LIMIT);
         }
@@ -131,7 +131,7 @@ class Service extends Base\Service
         $balance = $this->repo->balance->getMerchantBalance($merchant);
         $balanceAmount = $balance->getBalance();
 
-        if($totalAmountToBeRefunded > $balanceAmount)
+        if ($totalAmountToBeRefunded > $balanceAmount)
         {
             // Warning to merchant about insufficient balance
              // throw new Exception\BadRequestException(
@@ -167,13 +167,13 @@ class Service extends Base\Service
         foreach ($refundFiles as $refundFile)
         {
 
-            if($refundFile->getStatus() == BatchRefund\Entity::CREATED)
+            if ($refundFile->getStatus() == BatchRefund\Entity::CREATED)
             {
                 $filePath = $refundFile->getUploadFileUrl();
                 $fileFromAws = $this->getFileFromAws('refund_file_upload_bucket', $refundFile->getId().'.xlsx', $filePath);
             }
 
-            elseif($refundFile->getStatus() == BatchRefund\Entity::FAILURE)
+            elseif ($refundFile->getStatus() == BatchRefund\Entity::FAILURE)
             {
                 $filePath = $refundFile->getDownloadFileUrl();
                 $fileFromAws = $this->getFileFromAws('refund_file_download_bucket', $refundFile->getId().'.xlsx', $filePath);
@@ -194,13 +194,13 @@ class Service extends Base\Service
                 $refundEntry = array();
 
                 // Refund has already been made and the refund id is set
-                if(isset($entry[3]))
+                if (isset($entry[3]))
                 {
                     continue;
                 }
 
                 // The complete refund for the payment has already been done
-                if(isset($entry[4]) && $entry[4] == 'BAD_REQUEST_PAYMENT_FULLY_REFUNDED')
+                if (isset($entry[4]) && $entry[4] == 'BAD_REQUEST_PAYMENT_FULLY_REFUNDED')
                 {
                     $totalFailureCount++;
                     continue;
@@ -226,7 +226,6 @@ class Service extends Base\Service
 
                 } catch (\Exception $e)
                 {
-
                     array_push($refundEntry, 0, '', $e->getMessage());
 
                     $totalFailureCount++;
@@ -244,9 +243,9 @@ class Service extends Base\Service
 
             $shouldSendMail = false;
 
-            if($totalFailureCount > 0)
+            if ($totalFailureCount > 0)
             {
-                if($retryAttempts == 3)
+                if ($retryAttempts == 3)
                 {
                     $refundFile->setStatus(BatchRefund\Entity::FAILED);
                     $shouldSendMail = true;
@@ -274,13 +273,11 @@ class Service extends Base\Service
 
             $this->repo->saveOrFail($refundFile);
 
-            if($shouldSendMail)
+            if ($shouldSendMail)
             {
                 $this->sendMail($fullpath, $totalRefundedAmount, $refundFile->merchant);
             }
         }
-
-
     }
 
     /**
