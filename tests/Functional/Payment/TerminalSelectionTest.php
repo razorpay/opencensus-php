@@ -150,7 +150,7 @@ class TerminalSelectionTest extends TestCase
 
     public function testTerminalCategoryChoice()
     {
-        $this->fixtures->merchant->setTerminalCategory('education_services');
+        $this->fixtures->merchant->editTerminalCategory('education_services');
         $this->fixtures->merchant->enableMethod('10000000000000', 'amex');
         $this->fixtures->create('terminal:all_shared_terminals');
         $this->fixtures->create('terminal:shared_amex_terminal');
@@ -169,7 +169,7 @@ class TerminalSelectionTest extends TestCase
 
     public function testTerminalCategoryCorporate()
     {
-        $this->fixtures->merchant->setTerminalCategory('corporate');
+        $this->fixtures->merchant->editTerminalCategory('corporate');
         $this->fixtures->create('terminal:netbanking_kotak_terminal',
                                 ['id' => 'DCrpNbKtkTrmnl', 'terminal_category' => 'corporate']);
         $this->fixtures->create('terminal:netbanking_kotak_terminal',
@@ -196,7 +196,7 @@ class TerminalSelectionTest extends TestCase
 
     public function testTerminalDefaultCategoryChoiceForAmex()
     {
-        $this->fixtures->merchant->setTerminalCategory('auto');
+        $this->fixtures->merchant->editTerminalCategory('auto');
         $this->fixtures->merchant->enableMethod('10000000000000', 'amex');
         $this->fixtures->create('terminal:all_shared_terminals');
         $this->fixtures->create('terminal:shared_amex_terminal');
