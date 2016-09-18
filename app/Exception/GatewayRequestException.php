@@ -7,6 +7,8 @@ use RZP\Error\ErrorCode;
 
 class GatewayRequestException extends RecoverableException
 {
+    protected $safeRetry;
+
     public function __construct($curlErrorMessage, \Exception $previous = null, $safeRetry = false)
     {
         $code = ErrorCode::GATEWAY_ERROR_REQUEST_ERROR;
@@ -23,7 +25,7 @@ class GatewayRequestException extends RecoverableException
         $this->safeRetry = true;
     }
 
-    public function isSafeRetryTrue()
+    public function getSafeRetry()
     {
         return $this->safeRetry;
     }

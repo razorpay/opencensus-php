@@ -647,4 +647,26 @@ class Gateway
 
         return $attr;
     }
+
+    protected function xmlToArray($xml)
+    {
+        $e = null;
+        $res = null;
+
+        try
+        {
+            $res = simplexml_load_string($xml);
+
+            return (array) $res;
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e);
+
+            throw new Exception\RuntimeException(
+                'Failed to convert xml to array',
+                ['xml' => $xml],
+                $e);
+        }
+    }
 }

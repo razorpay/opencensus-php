@@ -19,6 +19,10 @@ use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class PaymentReconciliate extends Foundation\SubReconciliate
 {
+    const GATEWAY_FEES_ABSENT_GATEWAYS = [
+        Orchestrator::KOTAK
+    ];
+
     /*******************
      * Instance objects
      *******************/
@@ -348,6 +352,30 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         return [];
     }
 
+    /**
+     * A few netbanking gateways do not provide us with
+     * gateway service tax in their reconciliation files.
+     * For them, we mark the gateway service tax as null.
+     *
+     * @return null
+     */
+    protected function getGatewayServiceTax($row)
+    {
+        return null;
+    }
+
+    /**
+     * A few netbanking gateways do not provide us with
+     * gateway fees in their reconciliation files.
+     * For them, we mark the gateway fees as null.
+     *
+     * @return null
+     */
+    protected function getGatewayFee($row)
+    {
+        return null;
+    }
+
     protected function setPaymentAndTransaction($row, $paymentId)
     {
         try
@@ -647,7 +675,12 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         $reconGatewayFee = $rowDetails[BaseReconciliate::GATEWAY_FEE];
         $reconGatewayServiceTax = $rowDetails[BaseReconciliate::GATEWAY_SERVICE_TAX];
 
-        if (($reconGatewayFee === null) or ($reconGatewayServiceTax === null))
+        $calledClass = get_called_class();
+
+        $nullTaxAndFeesAllowed = $this->isNullGatewayFeesAndTaxAllowed($calledClass);
+
+        if ((($reconGatewayFee === null) or ($reconGatewayServiceTax === null)) and
+            ($nullTaxAndFeesAllowed === false))
         {
             return false;
         }
@@ -686,6 +719,21 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             if ($recordGatewayServiceTaxSuccess === true)
             {
                 $this->paymentTransaction->saveOrFail();
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function isNullGatewayFeesAndTaxAllowed($calledClass)
+    {
+        foreach (self::GATEWAY_FEES_ABSENT_GATEWAYS as $gatewayFeesAbsentGateway)
+        {
+            $checkClass = 'RZP\\Reconciliator\\' . studly_case($gatewayFeesAbsentGateway) . '\\PaymentReconciliate';
+
+            if ($calledClass === $checkClass)
+            {
                 return true;
             }
         }

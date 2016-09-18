@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "1b65e62a2c8ae5cd96fe9c56343dae7e",
-    "content-hash": "78c484920ec1d40b0755a1bd1a8e1250",
+    "hash": "17e44c8378fe98354869573bba8e1a23",
+    "content-hash": "3f5e2dee7172e95a4ff401a30f2ca1a9",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -1496,6 +1496,47 @@
                 "issues": "https://github.com/razorpay/slack/issues"
             },
             "time": "2016-08-03 16:13:57"
+        },
+        {
+            "name": "minfraud/http",
+            "version": "v1.70",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/maxmind/ccfd-api-php.git",
+                "reference": "941e9345f9c237a253be8b908ecef951698a1a99"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/maxmind/ccfd-api-php/zipball/941e9345f9c237a253be8b908ecef951698a1a99",
+                "reference": "941e9345f9c237a253be8b908ecef951698a1a99",
+                "shasum": ""
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "src/HTTPBase.php",
+                    "src/CreditCardFraudDetection.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "LGPL-2.1+"
+            ],
+            "authors": [
+                {
+                    "name": "MaxMind, Inc.",
+                    "email": "support@maxmind.com",
+                    "homepage": "http://www.maxmind.com/"
+                }
+            ],
+            "description": "MaxMind minFraud HTTP API",
+            "homepage": "https://github.com/maxmind/ccfd-api-php",
+            "keywords": [
+                "fraud",
+                "maxmind",
+                "minfraud"
+            ],
+            "time": "2015-07-21 14:49:48"
         },
         {
             "name": "mobiledetect/mobiledetectlib",

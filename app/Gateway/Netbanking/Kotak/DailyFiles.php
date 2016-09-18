@@ -2,20 +2,32 @@
 
 namespace RZP\Gateway\Netbanking\Kotak;
 
-use Carbon\Carbon;
-use RZP\Models\Payment;
-use RZP\Models\Gateway;
-use RZP\Models\Bank\IFSC;
 use App;
 use Mail;
+use Carbon\Carbon;
+use RZP\Models\Payment;
+use RZP\Models\Bank\IFSC;
 
 class DailyFiles
 {
+    protected $app;
+    protected $mail;
+    protected $repo;
+    protected $mode;
+    protected $gateway;
+    protected $bankCode;
+
+    // SECONDS_PER_DAY is 24 Hours/Day * 60 Minutes/Hour * 60 Seconds/Minute
+    //                 is 86400
+    const SECONDS_PER_DAY = 86400;
+
     public function __construct()
     {
         $this->mail = Mail::getFacadeRoot();
 
         $this->app = App::getFacadeRoot();
+
+        $this->repo = $this->app['repo'];
 
         $this->mode = $this->app['basicauth']->getMode();
 
@@ -46,7 +58,7 @@ class DailyFiles
 
     protected function getRefundsData($from, $to)
     {
-        $refunds = (new Payment\Refund\Repository)->fetchRefundsForGatewayBetweenTimestamps(
+        $refunds = $this->repo->refund->fetchRefundsForGatewayBetweenTimestamps(
                                     Payment\Entity::BANK, $this->bankCode, $from, $to, $this->gateway);
 
         $count = $refunds->count();
@@ -83,8 +95,13 @@ class DailyFiles
     {
         $status = [Payment\Status::AUTHORIZED, Payment\Status::CAPTURED, Payment\Status::REFUNDED];
 
-        $claims = (new Payment\Repository)->
-                        fetchPaymentsWithStatus($from, $to, $this->gateway, $status);
+        // Payment made yesterday would have been reconciled today, hence the from, to
+        // have to be forwarded by a day
+        list($from, $to) = $this->updateTimeStamps($from, $to);
+
+        // Fetch payment which have been reconciled in this period
+        $claims = $this->repo->payment->
+                        fetchReconciledPaymentsForGateway($from, $to, $this->gateway, $status);
 
         if ($claims->count() === 0)
         {
@@ -110,6 +127,13 @@ class DailyFiles
         $action = 'generateClaims';
 
         return $this->app['gateway']->call($gateway, $action, $input, $this->mode);
+    }
+
+    protected function updateTimeStamps($from, $to)
+    {
+        $tsDifference = self::SECONDS_PER_DAY;
+
+        return [$from + $tsDifference, $to + $tsDifference];
     }
 
     protected function sendMail($amount, $claimsFilePath, $refundFilePath)
