@@ -270,7 +270,7 @@ trait PaymentTrait
 
         $request = array(
             'method' => 'POST',
-            'url' => '/payments/create/redirect2',
+            'url' => '/payments/create/redirect',
             'content' => $payment);
 
         if (isset($server))

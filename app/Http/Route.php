@@ -18,7 +18,7 @@ final class Route
         'merchant_checkout_preferences'           => ['get',      'preferences',                              'MerchantController@getCheckoutPreferences'                         ],
         'payment_create'                          => ['post',     'payments',                                 'PaymentCreateController@postCreatePayment'                         ],
         'payment_create_private'                  => ['post',     'payments/create',                          'PaymentCreateController@postCreatePayment'                         ],
-        'payment_create_private_old'              => ['post',     'payments/create/redirect2',                'PaymentCreateController@postCreatePayment'                         ],
+        'payment_create_private_old'              => ['post',     'payments/create/redirect',                 'PaymentCreateController@postCreatePayment'                         ],
         'payment_create_checkout'                 => ['post',     'payments/create/checkout',                 'PaymentCreateController@postCreatePaymentCheckoutCallback'         ],
         'payment_create_jsonp'                    => ['get',      'payments/create/jsonp',                    'PaymentCreateController@getCreatePaymentJsonp'                     ],
         'payment_create_ajax'                     => ['post',     'payments/create/ajax',                     'PaymentCreateController@postAJAX'                                  ],
