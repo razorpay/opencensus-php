@@ -339,7 +339,7 @@ class Gateway extends Base\Gateway
 
         $this->response = $response;
 
-        $content = $this->parseGatewayResponse($response->body);
+        $content = $this->jsonToArray($response->body);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY,
@@ -385,6 +385,14 @@ class Gateway extends Base\Gateway
     {
         $payment = $verify->payment;
         $content = $verify->verifyResponseContent;
+
+        if ($content['success'] !== 'true')
+        {
+            throw new GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+                $content['success'],
+                $content['message']);
+        }
 
         $status = VerifyResult::STATUS_MATCH;
 
