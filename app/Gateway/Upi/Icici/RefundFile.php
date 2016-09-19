@@ -1,22 +1,23 @@
 <?php
 
-namespace RZP\Gateway\Wallet\Payumoney;
+namespace RZP\Gateway\Upi\Icici;
 
 use Carbon\Carbon;
 use RZP\Gateway\Base;
 
 class RefundFile extends Base\RefundFile
 {
-    protected static $fileToWriteName = 'Payumoney_Wallet_Refunds';
+    protected static $fileToWriteName = 'Icici_Upi_Refunds';
 
     protected static $headers = array(
-        'Sr No',
-        'Transaction date',
-        'Gateway reference #',
-        'Order #',
-        'Order Amount',
-        'Refund Amount',
-        'Merchant Code',
+        'Merchant reference Number',
+        'bankadjref',
+        'refundRef',
+        'Flag',
+        'shtdat',
+        'adjamt',
+        'shcrd',
+        'specifyother',
     );
 
     public function generate($input)
@@ -35,17 +36,17 @@ class RefundFile extends Base\RefundFile
         $fullpath = $this->getExcelFullFilePath();
 
         $data['file'] = $fullpath;
-        $data['body'] = 'Please find attached refunds information for PayUMoney';
+        $data['body'] = 'Please find attached refunds information for UPI';
 
         $this->mail->queue('emails.message', $data, function ($message) use ($data)
         {
             $emails = ['settlements@razorpay.com'];
 
-            $message->from('refunds@razorpay.com', 'Wallet Payumoney refunds');
+            $message->from('refunds@razorpay.com', 'UPI Icici refunds');
 
             $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
 
-            $message->subject('PayUMoney refunds file for ' . $today);
+            $message->subject('UPI Icici refunds file for ' . $today);
 
             $message->to($emails);
 
@@ -60,16 +61,17 @@ class RefundFile extends Base\RefundFile
         foreach ($input['data'] as $row)
         {
             $date = Carbon::createFromTimestamp(
-                $row['payment']['authorized_at'], 'Asia/Kolkata')->format('d/m/Y');
+                $row['payment']['authorized_at'], 'Asia/Kolkata')->format('Y-m-d');
 
             $data[] = array(
-                'Sr No'               => $i++,
-                'Transaction date'    => $date,
-                'Gateway reference #' => $row['gateway']['gateway_payment_id'],
-                'Order #'             => $row['payment']['id'],
-                'Order Amount'        => $row['payment']['amount'] / 100,
-                'Refund Amount'       => $row['refund']['amount'] / 100,
-                'Merchant Code'       => $row['terminal']['gateway_merchant_id'],
+                'Merchant reference Number' => $row['payment']['id'],
+                'bankadjref'                => '',
+                'refundRef'                 => $row['refund']['id'],
+                'Flag'                      => 'C',
+                'shtdat'                    => $date,
+                'adjamt'                    => ($row['refund']['amount'] / 100),
+                'shcrd'                     => $row['gateway']['vpa'],
+                'specifyother'              => 'Refund',
             );
         }
 

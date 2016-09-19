@@ -1,7 +1,8 @@
 <?php
 
-namespace RZP\Gateway\Wallet\Base;
+namespace RZP\Gateway\Base;
 
+use Mail;
 use Carbon\Carbon;
 use RZP\Models\Settlement\Kotak\FileHandlerTrait;
 
@@ -11,7 +12,7 @@ class RefundFile
 
     public function __construct()
     {
-        $this->mail = \Mail::getFacadeRoot();
+        $this->mail = Mail::getFacadeRoot();
     }
 
     public function generate($input)
@@ -19,7 +20,7 @@ class RefundFile
         ;
     }
 
-    protected function sendRefundEmail()
+    protected function sendHdfcNbRefundEmail()
     {
         ;
     }

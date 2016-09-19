@@ -4,21 +4,10 @@ namespace RZP\Gateway\Netbanking\Base;
 
 use Carbon\Carbon;
 use RZP\Models\Settlement\Kotak\FileHandlerTrait;
+use RZP\Gateway\Base\RefundFile as BaseRefundFile;
 
-class RefundFile
+class RefundFile extends BaseRefundFile
 {
-    use FileHandlerTrait;
-
-    public function __construct()
-    {
-        $this->mail = \Mail::getFacadeRoot();
-    }
-
-    public function generate($input)
-    {
-        ;
-    }
-
     protected function sendHdfcNbRefundEmail()
     {
         ;
