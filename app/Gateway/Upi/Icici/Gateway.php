@@ -54,11 +54,6 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, [
-                'raw_response' => $response->body,
-                'raw_headers'  => $response->headers
-            ]);
-
         $response = $this->parseGatewayResponse($response->body);
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $response);
