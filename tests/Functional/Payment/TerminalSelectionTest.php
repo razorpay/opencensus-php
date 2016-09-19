@@ -150,7 +150,7 @@ class TerminalSelectionTest extends TestCase
 
     public function testTerminalCategoryChoice()
     {
-        $this->fixtures->merchant->editTerminalCategory('education_services');
+        $this->fixtures->merchant->editTerminalCategory('education');
         $this->fixtures->merchant->enableMethod('10000000000000', 'amex');
         $this->fixtures->create('terminal:all_shared_terminals');
         $this->fixtures->create('terminal:shared_amex_terminal');
@@ -164,7 +164,7 @@ class TerminalSelectionTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         // Payment should have been made through amex education services terminal
-        $this->assertEquals('ShAmEduSrvTmnl', $payment['terminal_id']);
+        $this->assertEquals('ShAmexEduTrmnl', $payment['terminal_id']);
     }
 
     public function testTerminalCategoryCorporate()
@@ -196,7 +196,7 @@ class TerminalSelectionTest extends TestCase
 
     public function testTerminalDefaultCategoryChoiceForAmex()
     {
-        $this->fixtures->merchant->editTerminalCategory('auto');
+        $this->fixtures->merchant->editTerminalCategory('grocery');
         $this->fixtures->merchant->enableMethod('10000000000000', 'amex');
         $this->fixtures->create('terminal:all_shared_terminals');
         $this->fixtures->create('terminal:shared_amex_terminal');

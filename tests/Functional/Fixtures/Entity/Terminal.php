@@ -607,7 +607,7 @@ class Terminal extends Base
         $this->createSharedAmexTerminal($attributes);
 
         // Create education services terminal
-        $attributes = ['id' => 'ShAmEduSrvTmnl', 'terminal_category' => 'education_services'];
+        $attributes = ['id' => 'ShAmexUtilTmnl', 'terminal_category' => 'utilities'];
 
         $this->createSharedAmexTerminal($attributes);
 

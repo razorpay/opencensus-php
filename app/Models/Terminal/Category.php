@@ -19,25 +19,17 @@ class Category
 
     /**
      * The list of all possible categories that can be chosen
+     * Broking requires an incompatible flag to be added to
+     * prevent incompatible methods from choosing the default
      */
     const CATEGORIES_ALL = [
-        'auto',
-        'car_rental',
-        'corporate',
+        // 'broking',
+        'grocery',
+        'ecommerce',
         'education',
-        'education_services',
-        'entertainment',
-        'government',
-        'healthcare',
-        'hospitals',
-        'insurance',
-        'lodging',
-        'prof_and_financial_serv',
-        'retail_jgwcag',
-        'retail_services',
-        'sup_hypermrkt_deptstore',
-        'travel_agency',
         'utilities',
+        'corporate',
+        'insurance',
     ];
 
     /**
@@ -45,23 +37,13 @@ class Category
      * be mapped to the category on the right.
      * */
     const METHOD_NETBANKING = [
-        'corporate'                 => 'corporate',
-        'education'                 => 'education',
-        'education_services'        => 'education',
-        'government'                => 'government',
-        'insurance'                 => 'insurance',
-        'auto'                      => 'ecommerce',
-        'car_rental'                => 'ecommerce',
-        'entertainment'             => 'ecommerce',
-        'healthcare'                => 'ecommerce',
-        'hospitals'                 => 'ecommerce',
-        'lodging'                   => 'ecommerce',
-        'prof_and_financial_serv'   => 'ecommerce',
-        'retail_jgwcag'             => 'ecommerce',
-        'retail_services'           => 'ecommerce',
-        'sup_hypermrkt_deptstore'   => 'ecommerce',
-        'travel_agency'             => 'ecommerce',
-        'utilities'                 => 'utilities',
+        // 'broking'       => 'broking',
+        'grocery'       => 'grocery',
+        'ecommerce'     => 'ecommerce',
+        'education'     => 'education',
+        'utilities'     => 'utilities',
+        'corporate'     => 'corporate',
+        'insurance'     => 'insurance',
     ];
 
     /**
@@ -72,23 +54,13 @@ class Category
      * then it shoould be left empty
      * */
     const NETWORK_AMEX = [
-        'auto'                    => 'auto',
-        'car_rental'              => 'car_rental',
-        'corporate'               => '',
-        'education'               => 'education',
-        'education_services'      => 'education_services',
-        'entertainment'           => 'entertainment',
-        'government_business'     => 'government_business',
-        'healthcare'              => 'healthcare',
-        'hospitals'               => 'hospitals',
-        'insurance'               => 'insurance',
-        'lodging'                 => 'lodging',
-        'prof_and_financial_serv' => 'prof_and_financial_serv',
-        'retail_jgwcag'           => 'retail_jgwcag',
-        'retail_services'         => 'retail_services',
-        'sup_hypermrkt_deptstore' => 'sup_hypermrkt_deptstore',
-        'travel_agency'           => 'travel_agency',
-        'utilities'               => 'utilities',
+        // 'broking'       => 'incompatible',
+        'grocery'       => 'sup_hypermrkt_deptstore',
+        'ecommerce'     => 'retail_services',
+        'education'     => 'education', //confirm this is not education services
+        'utilities'     => 'utilities',
+        'corporate'     => '',
+        'insurance'     => 'insurance',
     ];
 
     public static function getDefaultForMethod($method)
