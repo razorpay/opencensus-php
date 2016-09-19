@@ -172,7 +172,7 @@ return [
     'testRefundOfMultipleAuthorizedPaymentsForOrder' => [
         'request' => [
             'method'    => 'post',
-            'url'       => '/payments/orders/refund',
+            'url'       => '/orders/payments/refund',
             'content'   => [],
         ],
         'response' => [
