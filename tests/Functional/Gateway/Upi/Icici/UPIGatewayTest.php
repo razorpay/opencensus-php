@@ -24,7 +24,7 @@ class UPIGatewayTest extends TestCase
         $this->payment = $this->getDefaultUpiPaymentArray();
     }
 
-    public function testPayment()
+    public function testPayment($status = 'created')
     {
         $res = $this->doAuthPayment($this->payment);
         $paymentId = $res['payment_id'];
@@ -32,9 +32,18 @@ class UPIGatewayTest extends TestCase
         // Co Proto must be working
         $this->assertEquals('async', $res['type']);
 
-        $this->testPaymentStatus($paymentId, 'created');
+        $this->checkPaymentStatus($paymentId, $status);
 
         return $paymentId;
+    }
+
+    public function testPaymentWithRandomResponseCode()
+    {
+        $this->payment['vpa'] = 'unknown@icici';
+
+        $this->expectException('RZP\Exception\GatewayErrorException');
+
+        $this->testPayment('failed');
     }
 
     public function testUnencryptedResponsePayment()
@@ -71,7 +80,7 @@ class UPIGatewayTest extends TestCase
         return $payment;
     }
 
-    protected function testPaymentStatus($id, $expectedStatus)
+    protected function checkPaymentStatus($id, $expectedStatus)
     {
         $request = [
             'url'       => "/payments/$id/status",
@@ -96,5 +105,60 @@ class UPIGatewayTest extends TestCase
         $this->expectException('RZP\Exception\GatewayErrorException', 'Refund is currently not supported for this payment method');
 
         $this->refundPayment($payment['id']);
+    }
+
+    public function testVerifyPayment()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $authPayment = $this->doAuthPayment($payment);
+
+        $upiEntity = $this->getLastEntity('upi', true);
+        $payment = $this->getEntityById('payment', $authPayment['payment_id'], true);
+
+        $mockServer = $this->mockServer();
+
+        $content = $mockServer->makeS2SRequest($upiEntity, $payment);
+
+        $request = [
+            'raw'      => $content,
+            'url'       => '/callback/upi_icici',
+            'method'    => 'post'
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->payment = $this->verifyPayment($payment['id']);
+
+        $this->assertSame($this->payment['payment']['verified'], 1);
+    }
+
+    public function testVerifyFailedPayment()
+    {
+        $this->ba->publicAuth();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $authPayment = $this->doAuthPayment($payment);
+
+        $payment = $this->getEntityById('payment', $authPayment['payment_id'], true);
+
+        $this->authorizeFailedPayment($payment['id']);
+
+        $upi = $this->getLastEntity('upi', true);
+        $this->assertTestResponse($upi, 'testPaymentUpiEntity');
+        $this->assertArrayHasKey('gateway_payment_id', $upi);
+    }
+
+    protected function setContent(Closure $closure)
+    {
+        $server = $this->mockServer()
+                        ->shouldReceive('content')
+                        ->andReturnUsing($closure)
+                        ->mock();
+
+        $this->setMockServer($server);
     }
 }

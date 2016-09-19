@@ -10,24 +10,31 @@ use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Upi\Base;
+use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Upi\Base\Entity;
+use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Exception\GatewayErrorException;
 
 class Gateway extends Base\Gateway
 {
+    use AuthorizeFailed;
+
     protected $gateway = 'upi_icici';
 
     const BANK = 'icici';
 
     protected $map = array(
-        Entity::VPA                     => Entity::VPA,
-        Entity::CONTACT                 => Entity::CONTACT,
-        ResponseFields::PAYER_NAME      => Entity::NAME,
-        ResponseFields::RESPONSE        => Entity::STATUS_CODE,
-        ResponseFields::PAYER_AMOUNT    => Entity::AMOUNT,
-        Entity::RECEIVED                => Entity::RECEIVED,
-        ResponseFields::BANK_RRN        => Entity::GATEWAY_PAYMENT_ID,
-        ResponseFields::MERCHANT_ID     => Entity::GATEWAY_MERCHANT_ID,
+        Entity::VPA                       => Entity::VPA,
+        Entity::EMAIL                     => Entity::EMAIL,
+        Entity::CONTACT                   => Entity::CONTACT,
+        Entity::RECEIVED                  => Entity::RECEIVED,
+        ResponseFields::PAYER_NAME        => Entity::NAME,
+        ResponseFields::RESPONSE          => Entity::STATUS_CODE,
+        ResponseFields::PAYER_AMOUNT      => Entity::AMOUNT,
+        ResponseFields::BANK_RRN          => Entity::GATEWAY_PAYMENT_ID,
+        ResponseFields::ORIGINAL_BANK_RRN => Entity::GATEWAY_PAYMENT_ID,
+        ResponseFields::MERCHANT_ID       => Entity::GATEWAY_MERCHANT_ID,
     );
 
     /**
@@ -43,11 +50,14 @@ class Gateway extends Base\Gateway
 
         $payment = $this->createGatewayPaymentEntity($attributes);
 
-        $content =  $this->getAuthorizeRequestContent($input);
-
-        $request = $this->getStandardRequestArray($content);
+        $request =  $this->getAuthorizeRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, [
+                'raw_response' => $response->body,
+                'raw_headers'  => $response->headers
+            ]);
 
         $response = $this->parseGatewayResponse($response->body);
 
@@ -79,7 +89,9 @@ class Gateway extends Base\Gateway
     protected function getGatewayEntityAttributes(array $input)
     {
         return [
-            Entity::VPA =>  $input['vpa'],
+            Entity::VPA     => $input['vpa'],
+            Entity::CONTACT => $input['payment']['contact'],
+            Entity::EMAIL   => $input['payment']['email'],
         ];
     }
 
@@ -89,6 +101,12 @@ class Gateway extends Base\Gateway
      */
     protected function parseGatewayResponse($response)
     {
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, [
+            'body'      =>  $response,
+            'encrypted' =>  true,
+            'gateway'   =>  $this->gateway
+        ]);
+
         $decodedJson = json_decode($response, true);
 
         // The response is encrypted sometimes,
@@ -103,7 +121,9 @@ class Gateway extends Base\Gateway
         // this, so we remove any whitespace from the response
         // since this is base64, it only removes newlines
         $response = preg_replace('/\s/', '', $response);
+
         $response = base64_decode($response, true);
+
         $response = $this->decrypt($response);
 
         return $this->jsonToArray($response);
@@ -154,7 +174,7 @@ class Gateway extends Base\Gateway
             $key = $this->config['test_public_key'];
         }
 
-        return str_replace('\n', "\n", $key);
+        return str_replace('\n', "\n", trim($key));
     }
 
     /**
@@ -173,7 +193,9 @@ class Gateway extends Base\Gateway
             $key = $this->config['test_private_key'];
         }
 
-        return str_replace('\n', "\n", $key);
+        // The trim is to make sure that the key doesn't end with
+        // an extra newline
+        return str_replace('\n', "\n", trim($key));
     }
 
 
@@ -183,8 +205,13 @@ class Gateway extends Base\Gateway
      * @param  string $type Action String
      * @return String URL
      */
-    protected function getUrl($type = 'authorize')
+    protected function getUrl($type = null)
     {
+        if ($type === null)
+        {
+            $type = $this->action;
+        }
+
         $type = "{$this->mode}_{$type}";
 
         return parent::getUrl($type);
@@ -213,7 +240,9 @@ class Gateway extends Base\Gateway
     {
         $rsa = $this->getRSAInstance();
 
-        $rsa->loadKey($this->getPrivateKey());
+        $key = $this->getPrivateKey();
+
+        $rsa->loadKey($key, RSA::PRIVATE_FORMAT_PKCS1);
 
         return $rsa->decrypt($data);
     }
@@ -237,7 +266,7 @@ class Gateway extends Base\Gateway
         return $rsa;
     }
 
-    protected function getAuthorizeRequestContent($input)
+    protected function getAuthorizeRequestArray($input)
     {
         $payment = $input['payment'];
 
@@ -259,10 +288,20 @@ class Gateway extends Base\Gateway
             'terminalId'        => '1234',
         ];
 
-        // We trace it here, because it gets encrypted later
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $data);
+        $content = $this->transformRequestArrayToContent($data);
 
-        return $this->transformRequestArrayToContent($data);
+        $request = $this->getStandardRequestArray($content);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            [
+                'request' => $request,
+                'decrypted_content' => $data,
+                'gateway' => 'upi_icici',
+                'payment_id' => $input['payment']['id'],
+            ]);
+
+        return $request;
     }
 
     /**
@@ -299,44 +338,114 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
-        $verify = new \RZP\Gateway\Base\Verify($this->gateway, $input);
+        $verify = new Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
     }
 
     protected function sendPaymentVerifyRequest($verify)
     {
-        $content = $this->getPaymentVerifyRequestContent($verify);
+        $input = $verify->input;
 
-        $request = $this->getStandardRequestArray($content);
+        $request = $this->getPaymentVerifyRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
 
-        $response = $this->parseGatewayResponse($response->body);
+        $this->response = $response;
+
+        $content = $this->jsonToArray($response->body);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY,
-            $response);
+            [
+                'raw_content' => $response->body,
+                'content' => $content,
+                'gateway' => 'upi_icici',
+                'payment_id' => $input['payment']['id'],
+            ]);
 
         $verify->verifyResponse = $this->response;
-        $verify->verifyResponseBody = $this->response->body;
-        $verify->verifyResponseContent = $response;
 
-        return $response;
+        $verify->verifyResponseBody = $this->response->body;
+
+        $verify->verifyResponseContent = $content;
+
+        return $content;
     }
 
-    protected function getPaymentVerifyRequestContent($verify)
+    protected function getPaymentVerifyRequestArray($input)
     {
         $data = [
             'merchantId'        => $this->getMerchantId(),
-            'merchantTranId'    => $verify->input['payment']['id'],
-            'subMerchantId'     => $this->getSubMerchantId($verify->input),
+            'merchantTranId'    => $input['payment']['id'],
+            'subMerchantId'     => $this->getSubMerchantId($input),
             'terminalId'        => '1234',
         ];
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY, $data);
+        $content = $this->transformRequestArrayToContent($data);
 
-        return $this->transformRequestArrayToContent($data);
+        $request = $this->getStandardRequestArray($content);
+
+        $request['headers'] = [
+            'Content-Type' => 'text/plain'
+        ];
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            [
+                'request' => $request,
+                'decrypted_content' => $data
+            ]);
+
+        return $request;
+    }
+
+    protected function verifyPayment($verify)
+    {
+        $payment = $verify->payment;
+        $content = $verify->verifyResponseContent;
+
+        if ($content['success'] !== 'true')
+        {
+            throw new GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+                $content['success'],
+                $content['message']);
+        }
+
+        $status = VerifyResult::STATUS_MATCH;
+
+        $verify->apiSuccess = true;
+        $verify->gatewaySuccess = false;
+
+        $attr = [];
+
+        if ($content['status'] === Status::SUCCESS)
+        {
+            $verify->gatewaySuccess = true;
+        }
+
+        $input = $verify->input;
+
+        // If payment status is either failed or created,
+        // this is an api failure
+        if (($input['payment']['status'] === 'failed') or
+            ($input['payment']['status'] === 'created'))
+        {
+            $verify->apiSuccess = false;
+        }
+
+        // If both don't match we have a status mis match
+        if ($verify->gatewaySuccess !== $verify->apiSuccess)
+        {
+            $status = VerifyResult::STATUS_MISMATCH;
+        }
+
+        $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
+
+        $verify->verifyResponseContent = $this->getMappedAttributes($content);
+
+        return $status;
     }
 
     /**
@@ -346,7 +455,12 @@ class Gateway extends Base\Gateway
      */
     protected function getSubMerchantId(array $input)
     {
-        return substr($input['merchant']['id'], 0, 10);
+        // ICICI docs say that they accept alphanumeric
+        // merchant IDs, but they do not. The field is
+        // also marked as optional, but it is not.
+        return '1234';
+
+        // return substr($input['merchant']['id'], 0, 10);
     }
 
     /**

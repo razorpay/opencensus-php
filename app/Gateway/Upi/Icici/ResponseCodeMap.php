@@ -8,6 +8,7 @@ class ResponseCodeMap
 {
     protected static $codes = array(
         5    => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_AMOUNT,
+        101  => ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
         5000 => ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
         5001 => ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
         5002 => ErrorCode::GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST,

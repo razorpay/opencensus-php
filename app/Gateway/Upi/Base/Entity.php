@@ -9,10 +9,11 @@ class Entity extends Base\Entity
 {
     const ID                    = 'id';
     const ACTION                = 'action';
+    const NAME                  = 'name';
     const AMOUNT                = 'amount';
     const BANK                  = 'bank';
+    const EMAIL                 = 'email';
     const CONTACT               = 'contact';
-    const NAME                  = 'name';
     const GATEWAY_MERCHANT_ID   = 'gateway_merchant_id';
     const GATEWAY_PAYMENT_ID    = 'gateway_payment_id';
     const PAYMENT_ID            = 'payment_id';
@@ -32,6 +33,7 @@ class Entity extends Base\Entity
         self::AMOUNT,
         self::BANK,
         self::CONTACT,
+        self::EMAIL,
         self::NAME,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_PAYMENT_ID,
@@ -46,6 +48,7 @@ class Entity extends Base\Entity
         self::AMOUNT,
         self::BANK,
         self::CONTACT,
+        self::EMAIL,
         self::NAME,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_PAYMENT_ID,

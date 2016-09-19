@@ -40,12 +40,13 @@ class Server extends Base\Mock\Server
     public function authorize($input)
     {
         $input = $this->parseInput($input);
+
         parent::authorize($input);
 
         $this->validateAuthorizeInput($input);
 
         $content = array(
-            'response'          => '92',
+            'response'          => $this->getResponseCode(),
             'merchantId'        => $input['merchantId'],
             'subMerchantId'     => isset($input['subMerchantId']) ? $input['subMerchantId'] : null,
             'terminalId'        => isset($input['terminalId']) ? $input['terminalId'] : null,
@@ -55,25 +56,66 @@ class Server extends Base\Mock\Server
             'BankRRN'           => '1234567',
         );
 
-        return $this->makeResponse($content);
+        $encrypt = ($this->input['payerVa'] === 'shk@icici');
+
+        $this->content($content);
+
+        return $this->makeResponse($content, $encrypt);
     }
 
-    protected function makeResponse($data)
+    public function verify($input)
     {
-        $json = json_encode($data);
+        $input = $this->parseInput($input);
 
-        // The ICICI Gateway inconsistently
-        // does encrypted responses, and we
-        // handle both the cases using
-        // special values for VPA
-        if ($this->input['payerVa'] === 'shk@icici')
+        parent::verify($input);
+
+        $this->validateActionInput($input);
+
+        $response = array(
+            "response"          => "0",
+            "merchantId"        => $input['merchantId'],
+            "subMerchantId"     => "1234",
+            "terminalId"        => "1234",
+            "success"           => "true",
+            "message"           => "Transaction Successful",
+            "merchantTranId"    => $input['merchantTranId'],
+            "OriginalBankRRN"   => (string) mt_rand(1111111, 9999999),
+            "status"            => "SUCCESS"
+        );
+
+        return $this->makeResponse($response, false);
+    }
+
+    /**
+     * We are testing if our gateway works
+     * with all possible values of error codes
+     * @return int response code
+     * @see ICICI Documentation:
+     *
+     * >All other values of response codes = Transaction has failed
+     */
+    protected function getResponseCode()
+    {
+        switch($this->input['payerVa'])
         {
-            $content = $json;
+            // Just make sure that this doesn't return 92
+            case 'unknown@icici':
+                return mt_rand(93, 500);
+                break;
+            default:
+                return 92;
         }
-        else
+    }
+
+    protected function makeResponse($data, $encrypt = true)
+    {
+        $content = json_encode($data);
+
+        if ($encrypt === true)
         {
-            $encryptedData = $this->encrypt($json);
+            $encryptedData = $this->encrypt($content);
             assert($encryptedData !== false);
+
             $content = base64_encode($encryptedData);
         }
 
