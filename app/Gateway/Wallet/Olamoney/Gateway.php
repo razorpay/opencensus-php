@@ -27,7 +27,8 @@ class Gateway extends Base\Gateway
 
     protected $topup = true;
 
-    protected $walletAccessTokenExpiry = 28800; // 8 hours - 8 * 60 * 60
+    // 8 hours - 8 * 60 * 60 = 28
+    protected $walletAccessTokenExpiry = 28800;
 
     protected $map = array(
         Entity::EMAIL                   => Entity::EMAIL,
@@ -480,7 +481,7 @@ class Gateway extends Base\Gateway
         $request = [
             'method'  => 'post',
             'content' => $queryArray,
-            'url'     => $url. '?' . $query,
+            'url'     => $url . '?' . $query,
             'headers' => $this->getRequestHeaders(),
         ];
 
@@ -503,7 +504,7 @@ class Gateway extends Base\Gateway
         $request = [
             'method'  => 'post',
             'content' => $queryArray,
-            'url'     => $url. '?' . $query,
+            'url'     => $url . '?' . $query,
             'headers' => $this->getRequestHeaders(),
         ];
 
@@ -930,7 +931,7 @@ class Gateway extends Base\Gateway
     protected function getRequestHeaders()
     {
         return [
-                    'Content-Type' => 'application/json',
+                    'Content-Type'  => 'application/json',
                     'Authorization' => 'Basic '. $this->getBasicAuthToken()
                 ];
     }
@@ -953,7 +954,7 @@ class Gateway extends Base\Gateway
                             $input['terminal']['id'],
                             $input['customer']['id']);
 
-        if ($token !== null and $token->getExpiredAt() > time())
+        if ($token !== null and ($token->getExpiredAt() > time()))
         {
             return $token;
         }

@@ -80,7 +80,7 @@ class Server extends Base\Mock\Server
             ResponseFields::REFRESH_TOKEN   => 'success_refresh_token',
         );
 
-        if( $input[RequestFields::OTP] === Otp::INCORRECT)
+        if ($input[RequestFields::OTP] === Otp::INCORRECT)
         {
             $responseContent = array(
                 ResponseFields::STATUS      => 'FAILED',
