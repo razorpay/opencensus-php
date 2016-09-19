@@ -34,7 +34,7 @@ return [
                 'amount'          => 50000,
                 'currency'        => 'INR',
                 'receipt'         => 'rcptid42',
-                'payment_capture' => true
+                'payment_capture' => '1'
             ],
             'method'    => 'POST',
             'url'       => '/orders',

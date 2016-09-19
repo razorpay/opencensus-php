@@ -56,4 +56,9 @@ return array(
         'url'       => env('RAVEN_URL'),
         'secret'    => env('RAVEN_SECRET'),
     ),
+
+    'maxmind' => array(
+        'mock'      => env('MAXMIND_MOCK', false),
+        'secret'    => env('MAXMIND_SECRET')
+    )
 );

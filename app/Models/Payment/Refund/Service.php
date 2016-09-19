@@ -29,21 +29,31 @@ class Service extends Base\Service
         {
             case 'netbanking':
                 $gateways = Payment\Gateway::$netbankingToGatewayMap;
+
                 $type = Payment\Entity::BANK;
 
                 if (isset($input['bank']))
                 {
                     $gatewayCode = $input['bank'];
+
+                    $gateway = $gateways[$gatewayCode];
                 }
+
+                // Removing kotak from gateways list/
+                // Should not be run along with others.
+                unset($gateways[IFSC::KKBK]);
                 break;
 
             case 'wallet':
                 $gateways = Payment\Gateway::$walletToGatewayMap;
+
                 $type = Payment\Entity::WALLET;
 
                 if (isset($input['wallet']))
                 {
                     $gatewayCode = $input['wallet'];
+
+                    $gateway = $gateways[$gatewayCode];
                 }
                 break;
         }
@@ -57,8 +67,6 @@ class Service extends Base\Service
         }
         else
         {
-            $gateway = $gateways[$gatewayCode];
-
             $returnValue[$gateway] = $this->generateRefundFileForGateway($type, $gatewayCode, $from, $to, $gateway);
         }
 
