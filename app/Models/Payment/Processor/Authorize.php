@@ -1476,14 +1476,6 @@ trait Authorize
         }
     }
 
-    protected function checkForMerchantCallbackUrl($payment)
-    {
-        if ($payment->getCallbackUrl() !== null)
-        {
-            $this->app['rzp.merchant_callback_url'] = $payment->getCallbackUrl();
-        }
-    }
-
     protected function savePaymentAndCard()
     {
         $this->repo->saveOrFail($this->payment->card);

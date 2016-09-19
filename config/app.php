@@ -250,4 +250,5 @@ return array(
     'context' => env('CONTEXT'),
 
     'checkout' => 'https://checkout.razorpay.com',
+    'throw_exception_in_testing' => env('THROW_EXCEPTION_IN_TESTING', true),
 );
