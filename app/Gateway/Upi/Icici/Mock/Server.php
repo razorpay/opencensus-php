@@ -56,11 +56,11 @@ class Server extends Base\Mock\Server
             'BankRRN'           => '1234567',
         );
 
-        $encrypt = ($this->input['payerVa'] !== 'shk@icici');
+        $dontEncrypt = ($this->input['payerVa'] === 'dontencrypt@icici');
 
         $this->content($content);
 
-        return $this->makeResponse($content, $encrypt);
+        return $this->makeResponse($content, $dontEncrypt);
     }
 
     public function verify($input)
@@ -99,7 +99,7 @@ class Server extends Base\Mock\Server
         switch($this->input['payerVa'])
         {
             // Just make sure that this doesn't return 92
-            case 'unknown@icici':
+            case 'unknownresponse@icici':
                 return mt_rand(93, 500);
                 break;
             default:
@@ -107,11 +107,12 @@ class Server extends Base\Mock\Server
         }
     }
 
-    protected function makeResponse($data, $encrypt = true)
+    protected function makeResponse($data, $dontEncrypt = false)
     {
         $content = json_encode($data);
 
-        if ($encrypt === true)
+        // We encrypt content by default
+        if ($dontEncrypt === true)
         {
             $encryptedData = $this->encrypt($content);
             assert($encryptedData !== false);

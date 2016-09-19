@@ -40,7 +40,7 @@ class UPIGatewayTest extends TestCase
 
     public function testPaymentWithRandomResponseCode()
     {
-        $this->payment['vpa'] = 'unknown@icici';
+        $this->payment['vpa'] = 'unknownresponse@icici';
 
         $this->expectException('RZP\Exception\GatewayErrorException');
 
@@ -49,7 +49,7 @@ class UPIGatewayTest extends TestCase
 
     public function testUnencryptedResponsePayment()
     {
-        $this->payment['vpa'] = 'shk@icici';
+        $this->payment['vpa'] = 'dontencrypt@icici';
 
         $this->testPayment();
     }
@@ -57,7 +57,6 @@ class UPIGatewayTest extends TestCase
     public function testInvalidResponsePayment()
     {
         $payment = $this->getDefaultUpiPaymentArray();
-        $payment['vpa'] = 'shk@icici';
 
         $this->setContent(function (& $content)
         {
