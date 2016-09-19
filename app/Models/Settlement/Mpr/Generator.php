@@ -101,7 +101,7 @@ class Generator
                             $gateway);
 
         $rfndRepo = new Refund\Repository;
-        $refunds = $rfndRepo->findBetweenTimesampsForGateway(
+        $refunds = $rfndRepo->findBetweenTimestampsForGateway(
                             self::$fromTimestamp,
                             self::$toTimestamp,
                             $gateway);

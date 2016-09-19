@@ -71,6 +71,9 @@ class TraceCode
     const MANUAL_GATEWAY_REFUND_FAILURE             = 'MANUAL_GATEWAY_REFUND_FAILURE';
     const MANUAL_GATEWAY_REFUND_INITIATED           = 'MANUAL_GATEWAY_REFUND_INITIATED';
     const REFUND_GATEWAY_REQUIRED                   = 'REFUND_GATEWAY_REQUIRED';
+    const PAYMENT_AUTO_REFUND_FAILURE               = 'PAYMENT_AUTO_REFUND_FAILURE';
+    
+    const ORDER_MULTIPLE_CAPTURED_PAYMENTS          = 'ORDER_MULTIPLE_CAPTURED_PAYMENTS';
 
     const ORDER_CREATE_REQUEST                      = 'ORDER_CREATE_REQUEST';
 
@@ -287,6 +290,8 @@ class TraceCode
         self::MANUAL_GATEWAY_REFUND_FAILURE             => 'Failed while trying to refund from gateway',
         self::MANUAL_GATEWAY_REFUND_INITIATED           => 'Manual gateway refund has been initiated for this refund id',
         self::REFUND_GATEWAY_REQUIRED                   => 'Traces whether the gateway refund is required or not',
+        self::ORDER_MULTIPLE_CAPTURED_PAYMENTS          => 'Found more than one captured payment for an order.',
+        self::PAYMENT_AUTO_REFUND_FAILURE               => 'Refund failed while trying to auto-refund',
 
         self::BAD_REQUEST_INVALID_API_KEY               => 'The api key provided is invalid',
 

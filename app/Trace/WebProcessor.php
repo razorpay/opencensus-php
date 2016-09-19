@@ -14,6 +14,8 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
 {
     protected $request;
 
+    protected $console;
+
     /**
      * @param mixed $serverData array or object w/ ArrayAccess that provides access to the $_SERVER data
      */
