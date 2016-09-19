@@ -121,11 +121,12 @@ return array(
     'channels'  =>  [
         'low'            => '#transactions',
         'high'           => '#transactions_high',
+        'high_4'         => '#transactions_risk_4',
         'risky'          => '#transactions_risky',
         'reconciliation' => '#reconciliation',
         'highrisk'       => '#transactions_highrisk',
+        'tech_logs'      => '#tech_logs',
     ],
 
     'is_slack_enabled' => env('SLACK_MOCK') === true ? false : true
-
 );

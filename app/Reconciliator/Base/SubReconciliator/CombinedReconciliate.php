@@ -15,11 +15,13 @@ class CombinedReconciliate extends Foundation\SubReconciliate
     protected $messenger;
 
     protected $app;
+    protected $repo;
 
     public function __construct()
     {
         $this->messenger = new Messenger();
         $this->app = App::getFacadeRoot();
+        $this->repo = $this->app['repo'];
     }
 
     /**
@@ -74,7 +76,10 @@ class CombinedReconciliate extends Foundation\SubReconciliate
             $subReconciliatorClassName = $this->getSubReconciliatorClassName($entityType);
             $subReconciliatorObject = new $subReconciliatorClassName;
 
-            $subReconciliatorObject->runReconciliate($row, $extraDetails);
+            $this->repo->transactionOnLiveAndTest(function() use ($subReconciliatorObject, $row, $extraDetails)
+            {
+                $subReconciliatorObject->runReconciliate($row, $extraDetails);
+            });
         }
 
         //

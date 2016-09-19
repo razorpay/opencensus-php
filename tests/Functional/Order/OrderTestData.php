@@ -27,6 +27,26 @@ return [
             ],
         ],
     ],
+
+    'testCreateAutoCaptureOrder' => [
+        'request' => [
+            'content' => [
+                'amount'          => 50000,
+                'currency'        => 'INR',
+                'receipt'         => 'rcptid42',
+                'payment_capture' => '1'
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'        => 50000,
+                'currency'      => 'INR',
+                'receipt'       => 'rcptid42',
+            ],
+        ],
+    ],
     'testCreateTPVOrder' => [
         'request' => [
             'content' => [
@@ -76,8 +96,8 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID
         ],
     ],
 

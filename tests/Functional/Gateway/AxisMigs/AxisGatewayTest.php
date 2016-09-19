@@ -16,6 +16,8 @@ class AxisGatewayTest extends TestCase
 
     public function setUp()
     {
+        $this->markTestSkipped('Removed');
+
         $this->testDataFilePath = __DIR__.'/AxisGatewayTestData.php';
 
         parent::setUp();

@@ -9,6 +9,8 @@ class Contains
 {
     protected static $data = array(
         Type::PAYMENT_AUTHORIZED => [Constants\Entity::PAYMENT],
+        Type::PAYMENT_FAILED     => [Constants\Entity::PAYMENT],
+        Type::ORDER_PAID         => [Constants\Entity::PAYMENT, Constants\Entity::ORDER],
     );
 
     public static function getEntityNamesForEvent($event)

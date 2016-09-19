@@ -53,7 +53,7 @@ class ResponseCodeMap
         $class = 'RZP\Error\ErrorCode::';
 
         if (empty($code) or
-            isset(self::$codes[$code]) === false)
+            (isset(self::$codes[$code]) === false))
         {
             return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
         }

@@ -42,6 +42,9 @@ class CreatePayments  extends Migration
             $table->char(Payment::ORDER_ID, Payment::ID_LENGTH)
                   ->nullable();
 
+            $table->boolean(Payment::INTERNATIONAL)
+                  ->nullable();
+
             $table->integer(Payment::AMOUNT_AUTHORIZED)
                   ->unsigned()
                   ->default(0);
@@ -91,10 +94,10 @@ class CreatePayments  extends Migration
             $table->string(Payment::APP_TOKEN, 14)
                   ->nullable();
 
-            $table->string(Payment::TOKEN, 14)
+            $table->string(Payment::TOKEN_ID, 14)
                   ->nullable();
 
-            $table->string(Payment::GLOBAL_TOKEN, 14)
+            $table->string(Payment::GLOBAL_TOKEN_ID, 14)
                   ->nullable();
 
             $table->string(Payment::EMAIL, 255)
@@ -150,6 +153,9 @@ class CreatePayments  extends Migration
             $table->boolean(Payment::SAVE)
                   ->default(0);
 
+            $table->boolean(Payment::LATE_AUTHORIZED)
+                  ->nullable();
+
             // Adds created_at and updated_at columns to the table
             $table->integer(Payment::CREATED_AT);
             $table->integer(Payment::UPDATED_AT);
@@ -162,6 +168,7 @@ class CreatePayments  extends Migration
             $table->index(Payment::AUTHORIZED_AT);
             $table->index(Payment::EMAIL);
             $table->index(Payment::BANK);
+            $table->index(Payment::LATE_AUTHORIZED);
 
             $table->foreign(Payment::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)

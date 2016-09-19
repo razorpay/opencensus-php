@@ -2,10 +2,9 @@
 
 namespace RZP\Models\Payment;
 
+use Carbon\Carbon;
 use Lib\PhoneBook;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Models\Bank\Name as BankNames;
 use RZP\Models\Base;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Card;
@@ -28,6 +27,7 @@ class Entity extends Base\PublicEntity
     const STATUS                = 'status';
     const TWO_FA_STATUS         = 'two_fa_status';
     const ORDER_ID              = 'order_id';
+    const INTERNATIONAL         = 'international';
     const METHOD                = 'method';
     const REFUND_STATUS         = 'refund_status';
     const CAPTURED              = 'captured';
@@ -41,7 +41,8 @@ class Entity extends Base\PublicEntity
     const APP_ID                = 'app_id';
     const APP_TOKEN             = 'app_token';
     const TOKEN                 = 'token';
-    const GLOBAL_TOKEN          = 'global_token';
+    const TOKEN_ID              = 'token_id';
+    const GLOBAL_TOKEN_ID       = 'global_token_id';
     const EMAIL                 = 'email';
     const CONTACT               = 'contact';
     const NOTES                 = 'notes';
@@ -64,11 +65,11 @@ class Entity extends Base\PublicEntity
     const OTP_COUNT             = 'otp_count';
     const FEE                   = 'fee';
     const SAVE                  = 'save';
+    const LATE_AUTHORIZED       = 'late_authorized';
 
     const CURRENCY_LENGTH       = 3;
 
     const MIN_PAYMENT_AMOUNT    = 100;
-    const MAX_PAYMENT_AMOUNT    = 1000000000;
 
     protected static $sign      = 'pay';
 
@@ -90,7 +91,6 @@ class Entity extends Base\PublicEntity
         self::WALLET,
         self::CURRENCY,
         self::DESCRIPTION,
-        self::TOKEN,
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
@@ -118,9 +118,8 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_ID,
         self::GLOBAL_CUSTOMER_ID,
         self::APP_TOKEN,
-        self::APP_ID,
-        self::TOKEN,
-        self::GLOBAL_TOKEN,
+        self::TOKEN_ID,
+        self::GLOBAL_TOKEN_ID,
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
@@ -134,7 +133,9 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::TERMINAL_ID,
         self::TRANSACTION_ID,
+        self::AUTO_CAPTURED,
         self::ORDER_ID,
+        self::INTERNATIONAL,
         self::SIGNED,
         self::VERIFIED,
         self::CALLBACK_URL,
@@ -143,6 +144,7 @@ class Entity extends Base\PublicEntity
         self::SERVICE_TAX,
         self::OTP_ATTEMPTS,
         self::OTP_COUNT,
+        self::LATE_AUTHORIZED,
         self::CREATED_AT,
         self::UPDATED_AT);
 
@@ -202,7 +204,13 @@ class Entity extends Base\PublicEntity
         self::OTP_ATTEMPTS      => null,
         self::OTP_COUNT         => null,
         self::EMI_PLAN_ID       => null,
+        self::LATE_AUTHORIZED   => null,
+        self::INTERNATIONAL     => null,
     );
+
+    protected $casts = [
+        self::INTERNATIONAL => 'bool',
+    ];
 
     protected $amounts = array(
         self::AMOUNT,
@@ -221,7 +229,9 @@ class Entity extends Base\PublicEntity
     protected function modifyContact(& $input)
     {
         if (isset($input['contact']) === false)
+        {
             return;
+        }
 
         $contact = & $input['contact'];
 
@@ -306,6 +316,13 @@ class Entity extends Base\PublicEntity
 
 // ----------------------- Setters ---------------------------------------------
 
+    public function setInternational()
+    {
+        $isInternational = $this->isMethodCardOrEmi() ? $this->card->isInternational() : false;
+
+        $this->setAttribute(self::INTERNATIONAL, $isInternational);
+    }
+
     public function setCaptureAmount($amount)
     {
         $this->setAttribute(self::AMOUNT, $amount);
@@ -386,9 +403,14 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SIGNED, $signed);
     }
 
-    public function setAutoCaptureTrue()
+    public function setAutoCapturedTrue()
     {
         $this->setAttribute(self::AUTO_CAPTURED, true);
+    }
+
+    public function setAutoCaptured($autoCaptured)
+    {
+        $this->setAttribute(self::AUTO_CAPTURED, $autoCaptured);
     }
 
     public function setVerified($verified)
@@ -438,16 +460,6 @@ class Entity extends Base\PublicEntity
         $this->metadata = $metadata;
     }
 
-    public function setToken($token)
-    {
-        $this->setAttribute(self::TOKEN, $token);
-    }
-
-    public function setGlobalToken($globalToken)
-    {
-        $this->setAttribute(self::GLOBAL_TOKEN, $globalToken);
-    }
-
     public function setSave($save)
     {
         $this->setAttribute(self::SAVE, $save);
@@ -465,6 +477,11 @@ class Entity extends Base\PublicEntity
         $count = $this->getOtpCountAttribute() + 1;
 
         $this->setOtpCount($count);
+    }
+
+    public function setLateAuthorized($lateAuthorized)
+    {
+        $this->setAttribute(self::LATE_AUTHORIZED, $lateAuthorized);
     }
 
 // ----------------------- Setters Ends-----------------------------------------
@@ -612,14 +629,38 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::STATUS) == Status::CREATED);
     }
 
+    /**
+     * A payment is considered just created for 15
+     * minutes since creation
+     * @return bool
+     */
+    public function justCreated()
+    {
+        $currentTime = time();
+
+        $secondsSinceCreated = $currentTime - $this->getAttribute(self::CREATED_AT);
+
+        return (bool) ($secondsSinceCreated <= (60*5));
+    }
+
     public function isAuthorized()
     {
         return ($this->getAttribute(self::STATUS) === Status::AUTHORIZED);
     }
 
+    public function isCreatedOrAuthorized()
+    {
+        return ($this->isCreated() or $this->isAuthorized());
+    }
+
     public function hasBeenAuthorized()
     {
-        return ($this->getAttribute(self::AUTHORIZED_AT) !== null);
+        return ($this->isAttributeNull(self::AUTHORIZED_AT));
+    }
+
+    public function hasTransaction()
+    {
+        return ($this->isAttributeNull(self::TRANSACTION_ID));
     }
 
     public function isCaptured()
@@ -645,6 +686,11 @@ class Entity extends Base\PublicEntity
     public function isFailed()
     {
         return ($this->getAttribute(self::STATUS) === Status::FAILED);
+    }
+
+    public function isLateAuthorized()
+    {
+        return ($this->getAttribute(self::LATE_AUTHORIZED) === true);
     }
 
     protected function isStatus($status)
@@ -678,6 +724,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::METHOD) === Payment\Method::EMI);
     }
 
+    public function isUpi()
+    {
+        return ($this->getAttribute(self::METHOD) === Payment\Method::UPI);
+    }
+
     public function isGateway($gateway)
     {
         return ($this->getAttribute(self::GATEWAY) === $gateway);
@@ -701,15 +752,10 @@ class Entity extends Base\PublicEntity
 
     public function isInternational()
     {
-        return $this->card->isInternational();
+        return $this->getAttribute(self::INTERNATIONAL);
     }
 
 // ----------------------- Getters ---------------------------------------------
-
-    public function getMerchantId()
-    {
-        return $this->getAttribute(self::MERCHANT_ID);
-    }
 
     public function getAmount()
     {
@@ -802,6 +848,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TRANSACTION_ID);
     }
 
+    public function getAutoCaptured()
+    {
+        return $this->getAttribute(self::AUTO_CAPTURED);
+    }
+
     public function getErrorCode()
     {
         return $this->getAttribute(self::ERROR_CODE);
@@ -827,9 +878,14 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SERVICE_TAX);
     }
 
-    public function getCreatedTimestamp()
+    public function getTokenId()
     {
-        return $this->getAttribute(self::CREATED_AT);
+        return $this->getAttribute(self::TOKEN_ID);
+    }
+
+    public function getGlobalTokenId()
+    {
+        return $this->getAttribute(self::GLOBAL_TOKEN_ID);
     }
 
     public function getDescription()
@@ -839,7 +895,7 @@ class Entity extends Base\PublicEntity
 
     public function getDaysSinceAuthorized()
     {
-        $now = time();
+        $now = Carbon::now('Asia/Kolkata')->timestamp;
 
         $at = $this->getAuthorizeTimestamp();
         $diff = $now - $at;
@@ -857,9 +913,9 @@ class Entity extends Base\PublicEntity
         return (bool) $this->getAttribute(self::SAVE);
     }
 
-    public function getGlobalToken()
+    public function isRecurring()
     {
-        return $this->getAttribute(self::GLOBAL_TOKEN);
+        return false;
     }
 
     public function getCardId()
@@ -871,6 +927,11 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::TWO_FA_STATUS);
     }
+    public function getMerchantId()
+    {
+        return $this->getAttribute(self::MERCHANT_ID);
+    }
+
     /**
      * This function returns the current payment method
      * and a detail string for that particular method
@@ -946,6 +1007,22 @@ class Entity extends Base\PublicEntity
     public function getApiOrderId()
     {
         return $this->getAttribute(self::ORDER_ID);
+    }
+
+    public function getGlobalOrLocalTokenEntity()
+    {
+        $token = null;
+
+        if ($this->getTokenId() !== null)
+        {
+            $token = $this->token;
+        }
+        else if ($this->getGlobalTokenId() !== null)
+        {
+            $token = $this->globalToken;
+        }
+
+        return $token;
     }
 
     public function setPublicOrderIdAttribute(Array & $array)
@@ -1082,6 +1159,16 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Customer\Entity', self::GLOBAL_CUSTOMER_ID);
     }
 
+    public function token()
+    {
+        return $this->belongsTo('RZP\Models\Customer\Token\Entity', self::TOKEN_ID);
+    }
+
+    public function globalToken()
+    {
+        return $this->belongsTo('RZP\Models\Customer\Token\Entity', self::GLOBAL_TOKEN_ID);
+    }
+
     public function app()
     {
         return $this->belongsTo('RZP\Models\Customer\AppToken\Entity', self::APP_TOKEN);
@@ -1125,11 +1212,6 @@ class Entity extends Base\PublicEntity
         $amountRefunded = $this->getAmountRefunded() + $amount;
 
         $this->setAttribute(self::AMOUNT_REFUNDED, $amountRefunded);
-    }
-
-    public function scopeMerchantId($query, $merchantId)
-    {
-        return $query->where(self::MERCHANT_ID,'=',$merchantId);
     }
 
     public function toArrayTraceRelevant()

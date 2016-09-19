@@ -30,13 +30,14 @@ class Notify
      * decided by our risk team.
      */
     const MIN_HIGH_RISK_RATING = 3;
+    const HIGH_RISK_RATING     = 4;
     const MAX_HIGH_RISK_RATING = 5;
 
     /**
      * When are receipt emails sent to the customer
-     * @var Array
+     * @var array
      */
-    protected static $receptEmails = [
+    protected static $receiptEmails = [
         self::AUTHORIZED,
         self::FAILED_TO_AUTHORIZED
     ];
@@ -246,7 +247,7 @@ class Notify
         // You can control slack posts via SLACK_ENABLE
 
         if ((array_key_exists($event, $slackMessages)) and
-            ($this->isSlackEnabled($event)))
+            ($this->isSlackEnabled()))
         {
             $settings = [
                 'channel'   => $this->getSlackChannel(),
@@ -285,22 +286,28 @@ class Notify
      */
     protected function getSlackChannel()
     {
-        $channel = $this->app['config']->get('slack.channels.low');
+        $config = $this->app['config'];
+
+        $channel = $config->get('slack.channels.low');
 
         $riskRating = $this->template['payment']['risk'];
 
         // The priority order is important here
         if ($riskRating == self::MAX_HIGH_RISK_RATING)
         {
-            $channel = $this->app['config']->get('slack.channels.highrisk');
+            $channel = $config->get('slack.channels.highrisk');
+        }
+        else if ($riskRating === self::HIGH_RISK_RATING)
+        {
+            $channel = $config->get('slack.channels.high_4');
         }
         else if ($riskRating >= self::MIN_HIGH_RISK_RATING)
         {
-            $channel = $this->app['config']->get('slack.channels.risky');
+            $channel = $config->get('slack.channels.risky');
         }
         else if ($this->payment->amount >= self::MIN_RISK_AMOUNT)
         {
-            $channel = $this->app['config']->get('slack.channels.high');
+            $channel = $config->get('slack.channels.high');
         }
 
         return $channel;
@@ -646,7 +653,7 @@ class Notify
             return false;
         }
 
-        return in_array($event, self::$receptEmails);
+        return in_array($event, self::$receiptEmails);
     }
 
     /**
@@ -665,16 +672,15 @@ class Notify
             return false;
         }
 
-        return $this->isEnabled($event);
+        return $this->isEnabled();
 
     }
 
     /**
      * Whether to send notifications or not
-     * @param  string  $event Event trigger
      * @return boolean
      */
-    protected function isEnabled($event)
+    protected function isEnabled()
     {
         // We only send notifications if Mode is not TEST
         // or if the env=dev or env=testing
@@ -694,11 +700,10 @@ class Notify
 
     /**
      * Whether to send slack notifications
-     * @param  string $event Event trigger
      * @return boolean
      */
-    protected function isSlackEnabled($event)
+    protected function isSlackEnabled()
     {
-        return $this->isEnabled($event);
+        return $this->isEnabled();
     }
 }

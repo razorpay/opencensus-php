@@ -27,11 +27,12 @@ final class Route
         'payment_callback_get'                    => ['get',      'payments/{id}/callback/{hash}',            'PaymentCreateController@postCallback'                              ],
         'payment_callback_with_key_post'          => ['post',     'payments/{id}/callback/{hash}/{key}',      'PaymentCreateController@postCallback'                              ],
         'payment_callback_with_key_get'           => ['get',      'payments/{id}/callback/{hash}/{key}',      'PaymentCreateController@postCallback'                              ],
+        'payment_get_status'                      => ['get',      'payments/{id}/status',                     'PaymentController@getPaymentStatusForAsyncPayments'                ],
         'payment_otp_submit'                      => ['post',     'payments/{id}/otp_submit/{hash}',          'PaymentCreateController@postOtpSubmit'                             ],
         'payment_otp_resend'                      => ['post',     'payments/{id}/otp_resend',                 'PaymentCreateController@postOtpResend'                             ],
         'payment_topup_ajax'                      => ['post',     'payments/{id}/topup/ajax',                 'PaymentCreateController@postTopupAjax'                             ],
         'payment_topup_post'                      => ['post',     'payments/{id}/topup',                      'PaymentCreateController@postTopup'                                 ],
-        'payment_redirect'                        => ['post',     'payments/{id}/redirect',                   'PaymentCreateController@postRedirect'                              ],
+        'payment_redirect_callback'               => ['post',     'payments/{id}/redirect_callback',          'PaymentCreateController@postRedirectCallback'                      ],
         'payment_refund'                          => ['post',     'payments/{id}/refund',                     'PaymentController@postRefund'                                      ],
         'payment_capture'                         => ['post',     'payments/{id}/capture',                    'PaymentController@postCapture'                                     ],
         'payment_verify'                          => ['get',      'payments/{id}/verify',                     'PaymentController@getVerify'                                       ],
@@ -92,7 +93,6 @@ final class Route
         'merchant_get_pricing'                    => ['get',      'merchants/{id}/pricing',                   'MerchantController@getPricingPlan'                                 ],
         'merchant_add_bank_account'               => ['post',     'merchants/{id}/bank_account',              'MerchantController@postBankAccount'                                ],
         'merchant_fetch_bank_account'             => ['get',      'merchants/{id}/bank_account',              'MerchantController@getBankAccount'                                 ],
-        'merchant_generate_bank_account_id'       => ['post',     'merchants/bank_account/id',                'MerchantController@postGenerateBankAccountIds'                     ],
         'merchant_generate_test_bank_acnt'        => ['post',     'merchants/bank_account/generate/test',     'MerchantController@postGenerateTestBankAccounts'                   ],
         'merchant_create_terminal'                => ['post',     'merchants/{id}/terminals',                 'MerchantController@postCreateTerminal'                             ],
         'merchant_get_terminals'                  => ['get',      'merchants/{id}/terminals',                 'MerchantController@getTerminals'                                   ],
@@ -126,6 +126,7 @@ final class Route
         'webhook_fetch'                           => ['get',      'webhooks/{id}',                            'MerchantController@getWebhook'                                     ],
         'webhook_fetch_multiple'                  => ['get',      'webhooks',                                 'MerchantController@getWebhooks'                                    ],
         'pricing_create_plan'                     => ['post',     'pricing',                                  'PricingController@postCreatePricingPlan'                           ],
+        'pricing_upload_plan'                     => ['post',     'pricing/upload',                           'PricingController@postUploadPricingPlan'                           ],
         'pricing_get_plans'                       => ['get',      'pricing',                                  'PricingController@getPricingPlans'                                 ],
         'pricing_get_merchant_plans'              => ['get',      'pricing/merchants',                        'PricingController@getMerchantPricingPlans'                         ],
         'pricing_get_gateway_plans'               => ['get',      'pricing/gateways',                         'PricingController@getGatewayPricingPlans'                          ],
@@ -188,6 +189,7 @@ final class Route
         'mock_wallet_payment'                     => ['post',     'gateway/mock/wallet/{wallet}',             'MockGatewayController@walletPayment'                               ],
         'mock_wallet_payment_get'                 => ['get',      'gateway/mock/wallet/{wallet}',             'MockGatewayController@walletPayment'                               ],
         'mock_wallet_payment_with_paymentid'      => ['post',     'gateway/mock/wallet/{wallet}/{paymentId}', 'MockGatewayController@walletPayment'                               ],
+        'mock_upi_icici_payment'                  => ['post',     'gateway/mock/upi/{bank}',                  'MockGatewayController@postUpiPayment'                              ],
         'admin_fetch_entity_multiple'             => ['get',      'admin/{type}',                             'AdminController@getEntityMultiple'                                 ],
         'admin_fetch_entity_by_id'                => ['get',      'admin/{type}/{id}',                        'AdminController@getEntityById'                                     ],
         'send_test_newsletter'                    => ['post',     'admin/newsletter/test',                    'AdminController@postSendTestNewsletter'                            ],
@@ -203,7 +205,6 @@ final class Route
         'dummy_route'                             => ['post',     'dummy/route',                              'PaymentController@postDummyRoute'                                  ],
         'transparent_redirect_get'                => ['get',      'redirect',                                 'AdminController@getTransparentRedirect'                            ],
         'transparent_redirect_post'               => ['post',     'redirect',                                 'AdminController@postTransparentRedirect'                           ],
-        'payment_compute_tax'                     => ['post',     'payments/compute/tax',                     'PaymentController@postComputeServiceTax'                           ],
         'settlement_compute_tax'                  => ['post',     'settlements/compute/tax',                  'SettlementController@postComputeSettlementServiceTax'              ],
         'daily_settlement_compute_tax'            => ['post',     'dailysettlements/compute/tax',             'SettlementController@postComputeDailySettlementServiceTax'         ],
         'get_features'                            => ['get',      'features',                                 'MerchantController@getAllFeatures'                                 ],
@@ -216,7 +217,6 @@ final class Route
         'order_create'                            => ['post',     'orders',                                   'OrderController@createOrder'                                       ],
         'order_fetch'                             => ['get',      'orders',                                   'OrderController@getOrders'                                         ],
         'order_fetch_by_id'                       => ['get',      'orders/{id}',                              'OrderController@fetchOrderById'                                    ],
-        'order_update'                            => ['put',      'orders/{id}',                              'OrderController@updateOrder'                                       ],
         'order_payments'                          => ['get',      'orders/{id}/payments',                     'OrderController@fetchPayments'                                     ],
         'reports_monthly_invoice'                 => ['get',      'reports/invoice',                          'MerchantController@getInvoiceReport'                               ],
         'reports_public_entity'                   => ['get',      'reports/{entity}',                         'MerchantController@getPublicEntityReport'                          ],
@@ -224,6 +224,8 @@ final class Route
         'customer_update'                         => ['put',      'customers/{id}',                           'CustomerController@updateCustomer'                                 ],
         'customer_get'                            => ['get',      'customers/{id}',                           'CustomerController@getCustomer'                                    ],
         'customer_delete'                         => ['delete',   'customers/{id}',                           'CustomerController@deleteCustomer'                                 ],
+        'customer_add_bank_account'               => ['post',     'customers/{id}/bank_account',              'CustomerController@postBankAccount'                                ],
+        'customer_fetch_bank_account'             => ['get',      'customers/{id}/bank_account',              'CustomerController@getBankAccounts'                                ],
         'customer_create_token'                   => ['post',     'customers/{id}/tokens',                    'CustomerController@addToken'                                       ],
         'customer_update_token'                   => ['put',      'customers/{id}/tokens/{token}',            'CustomerController@updateToken'                                    ],
         'customer_fetch_token'                    => ['get',      'customers/{id}/tokens/{token}',            'CustomerController@fetchToken'                                     ],
@@ -233,6 +235,7 @@ final class Route
         'customer_logout_global'                  => ['delete',   'apps/logout',                              'CustomerController@logoutCustomer'                                 ],
         'app_delete_token'                        => ['delete',   'apps/tokens/{token}',                      'CustomerController@deleteTokenForGlobalCustomer'                   ],
         'app_fetch_tokens'                        => ['get',      'apps/tokens',                              'CustomerController@fetchTokensForGlobalCustomer'                   ],
+        'app_fetch_payments'                      => ['get',      'apps/payments',                            'CustomerController@fetchPaymentsForGlobalCustomer'                 ],
         'device_verify_token'                     => ['post',     'devices/{deviceToken}/verify',             'CustomerController@validateDeviceToken'                            ],
         'otp_post'                                => ['post',     'otp/create',                               'CustomerController@postOtp'                                        ],
         'otp_verify'                              => ['post',     'otp/verify',                               'CustomerController@verifyOtp'                                      ],
@@ -252,9 +255,10 @@ final class Route
         'payment_otp_resend',
         'payment_topup_ajax',
         'payment_topup_post',
-        'payment_redirect',
+        'payment_redirect_callback',
         'payment_cancel',
         'payment_add_metadata',
+        'payment_get_status',
         'merchant_public_get_banks',
         'merchant_methods',
         'merchant_checkout_preferences',
@@ -277,11 +281,13 @@ final class Route
         'mock_sbiepay_payment',
         'mock_wallet_payment',
         'mock_wallet_payment_get',
+        'mock_upi_icici_payment',
         'mock_wallet_payment_with_paymentid',
         'dummy_return_callback',
         'get_emi_plans',
         'customer_get_saved_status',
         'app_delete_token',
+        'app_fetch_payments',
         'customer_logout_global',
         'otp_post',
         'otp_verify'
@@ -315,6 +321,8 @@ final class Route
         'customer_delete_token',
         'customer_fetch_token',
         'customer_fetch_tokens',
+        'customer_add_bank_account',
+        'customer_fetch_bank_account',
         'setl_combined_report',
     );
 
@@ -334,7 +342,6 @@ final class Route
         'merchant_get_pricing',
         'merchant_add_bank_account',
         'merchant_fetch_bank_account',
-        'merchant_generate_bank_account_id',
         'merchant_generate_test_bank_acnt',
         'merchant_create_terminal',
         'merchant_daily_report',
@@ -359,6 +366,7 @@ final class Route
         'key_fetch_by_id',
         'key_fetch_multiple',
         'pricing_create_plan',
+        'pricing_upload_plan',
         'pricing_get_plans',
         'pricing_get_merchant_plans',
         'pricing_get_gateway_plans',
@@ -391,7 +399,6 @@ final class Route
         'payment_force_authorize',
         'payment_capture_reminder',
         'payment_refund_authorized',
-        'payment_compute_tax',
         'payment_verify_multiple',
         'refund_create_missing_txn',
         'settlement_compute_tax',
@@ -411,7 +418,6 @@ final class Route
         'iin_generate_post',
         'send_test_newsletter',
         'send_newsletter',
-        'payment_compute_tax',
         'merchant_add_features',
         'merchant_get_features',
         'get_features',
@@ -419,7 +425,6 @@ final class Route
         'delete_emi_plan',
         'get_emi_plan_by_id',
         'emi_generate_excel',
-        'order_update',
         'refund_verify',
         'payment_capture_verify',
         'es_migrate_entity',
@@ -478,6 +483,7 @@ final class Route
         'transparent_redirect_post',
         'gateway_payment_callback_kotak',
         'gateway_payment_callback_kotak_cancel',
+        'reconciliate',
         'gateway_payment_callback_get',
         'gateway_payment_callback_post',
         'sms_callback',
@@ -521,6 +527,10 @@ final class Route
         'hosted' => array(
             'merchant_secret',
         ),
+
+        'h2h' => array(
+            'setl_reconcile_h2h',
+        ),
     );
 
     public static $slaveRoutes = [
@@ -563,6 +573,7 @@ final class Route
     public static function getCurrentRouteName()
     {
         $router = self::$router;
+
         return $router->currentRouteName();
     }
 

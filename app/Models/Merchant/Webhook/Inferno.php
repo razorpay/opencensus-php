@@ -192,7 +192,10 @@ class Inferno
 
         $this->trace->info(
             TraceCode::WEBHOOK_FIRING,
-            $request);
+            [
+                'webhook_id' => $webhook->getId(),
+                'request'    => $request
+            ]);
 
         try
         {
@@ -238,6 +241,7 @@ class Inferno
                 [
                     'webhook' => $webhook->getId(),
                     'response_code' => $response->status_code,
+                    'response_body' => $response->body,
                 ]
             );
 

@@ -62,13 +62,19 @@ trait Callback
 
         $this->processPaymentCallback($payment, $gatewayInput);
 
-        if ($payment->isSigned())
+        return $this->postPaymentAuthorizeProcessing($payment);
+    }
+
+    public function redirectCallback($id)
+    {
+        $payment = $this->retrieve($id);
+
+        if ($payment->isCreated() === false)
         {
-            // If payment is signed, then we capture it in this step only.
-            $payment = $this->capturePayment($payment, $payment->getAmount());
+            return $this->processPaymentCallbackSecondTime($payment);
         }
 
-        return $this->postPaymentAuthorizeProcessing($payment);
+        throw new Exception\LogicException('Should not have been hit.');
     }
 
     /**
@@ -79,12 +85,18 @@ trait Callback
      */
     protected function processPaymentCallbackSecondTime($payment)
     {
+        $this->trace->info(TraceCode::PAYMENT_CALLBACK_RETRY);
+
         $diff = time() - $payment->getCreatedAt();
 
         // If it was authorized recently then send back authorized again.
-        if (($payment->isAuthorized()) and
+        if ((($payment->isAuthorized() === true) or
+             (($payment->isCaptured() === true) and
+              ($payment->getAutoCaptured() === true))) and
             ($diff < self::CALLBACK_PROCESS_AGAIN_DURATION * 60))
         {
+            $this->trace->info(TraceCode::PAYMENT_CALLBACK_RETRY_SUCCESS);
+
             return $this->postPaymentAuthorizeProcessing($payment);
         }
 
@@ -98,9 +110,8 @@ trait Callback
 
     public function s2sCallback($payment, array $gatewayInput)
     {
-        // Return if payments is signed to allow for payments to be captured
-        // which come signed via shopify route.
-        if ($payment->isSigned())
+        // Return if payment is auto captured
+        if ($payment->getAutoCaptured())
         {
             return ['success' => false];
         }
@@ -168,6 +179,7 @@ trait Callback
 
             $this->postPaymentOtpCallbackProcessing($input, $data);
 
+            // Send a request to topup if balance is insufficient
             $this->callGatewayFunction('checkBalance', $input);
         }
         else
@@ -200,9 +212,9 @@ trait Callback
         {
             $contact = $this->parseContact($input['payment']['contact']);
 
-            $sharedAccount = (new Merchant\Repository)->getSharedAccount();
+            $sharedAccount = $this->repo->merchant->getSharedAccount();
 
-            $customer = (new Customer\Repository)->findByContactAndMerchant(
+            $customer = $this->repo->customer->findByContactAndMerchant(
                                     $contact->format(), $sharedAccount);
 
             if ($customer === null)
@@ -225,7 +237,7 @@ trait Callback
         {
             $token = $this->createOrUpdateToken($input, $data);
 
-            $payment->setGlobalToken($token->getToken());
+            $payment->globalToken()->associate($token);
         }
 
         $this->repo->saveOrFail($payment);

@@ -64,6 +64,8 @@ class Gateway extends Base\Gateway
             'method' => 'post',
             'content' => $content);
 
+        $this->traceGatewayPaymentRequest($request, $input);
+
         return $request;
     }
 
@@ -92,7 +94,7 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             $input['gateway']);
 
-        $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
+        $payment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
 
         $bankRefNo = $input['gateway']['BankRefNo'];

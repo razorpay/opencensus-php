@@ -93,7 +93,7 @@ class Gateway extends Base\Gateway
         // is different than what we sent
         unset($content['DateTimeInGMT']);
 
-        $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
+        $payment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
 
         $attrs['received'] = true;
@@ -173,7 +173,7 @@ class Gateway extends Base\Gateway
      */
     protected function fillStatusAndBankPaymentId($input, $content)
     {
-        $payment = $this->getRepo()->retrieveByPaymentIdOrFail(
+        $payment = $this->repo->retrieveByPaymentIdOrFail(
             $input['payment']['id']);
 
         $attrs['received'] = true;
@@ -337,7 +337,7 @@ class Gateway extends Base\Gateway
             return $row['payment']['id'];
         }, $input['data']);
 
-        $payments = $this->getRepo()->fetchByPaymentIdsAndAction(
+        $payments = $this->repo->fetchByPaymentIdsAndAction(
                                 $paymentIds, Action::AUTHORIZE);
 
         $payments = $payments->getDictionaryByAttribute(Entity::PAYMENT_ID);

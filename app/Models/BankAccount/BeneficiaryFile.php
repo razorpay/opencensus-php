@@ -1,9 +1,9 @@
 <?php
 
-namespace RZP\Models\Merchant\BankAccount;
+namespace RZP\Models\BankAccount;
 
 use Carbon\Carbon;
-use RZP\Models\Merchant\BankAccount;
+use RZP\Models\BankAccount;
 use RZP\Models\Settlement\Kotak\FileHandlerTrait;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
@@ -44,7 +44,7 @@ class BeneficiaryFile
 
     public function generate()
     {
-        $list = (new BankAccount\Repository)->getAllOrderedByCreatedAt();
+        $list = (new BankAccount\Repository)->getAllActivatedMerchantAccountsOrderedByCreatedAt();
 
         $data = array();
 

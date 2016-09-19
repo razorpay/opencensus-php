@@ -116,6 +116,13 @@ class PaymentController extends Controller
         return ApiResponse::json($summary);
     }
 
+    public function getPaymentStatusForAsyncPayments($id)
+    {
+        $data = $this->payment->fetchStatus($id);
+
+        return ApiResponse::json($data);
+    }
+
     public function postCancel($id)
     {
         $input = Request::all();
@@ -251,12 +258,6 @@ class PaymentController extends Controller
     public function sendReminderMailForAuthorizedPayments()
     {
         return (new Payment\Service)->sendReminderMerchantMailForAuthorizedPayments();
-    }
-
-    public function postComputeServiceTax()
-    {
-        $data = $this->payment->computeServiceTax();
-        return ApiResponse::json($data);
     }
 
     public function postDummyRoute()

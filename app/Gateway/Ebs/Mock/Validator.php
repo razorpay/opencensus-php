@@ -34,11 +34,10 @@ class Validator extends Base\Validator
     );
 
     protected static $verifyRules = array(
-        Request::API_ACTION         => 'required|in:status',
+        Request::API_ACTION         => 'required|in:statusByRef',
         Request::API_ACCOUNT_ID     => 'required|alpha_num',
         Request::API_SECRET_KEY     => 'required|alpha_num',
-        Request::API_PAYMENT_ID     => 'required|alpha_num',
-        Request::API_TRANSACTION_ID => 'required|alpha_num',
+        Request::API_REFERENCE_NO   => 'required|alpha_num',
     );
 
     protected static $refundRules = array(

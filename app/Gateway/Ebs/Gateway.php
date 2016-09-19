@@ -15,6 +15,7 @@ use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Ebs\RequestConstants as Req;
 use RZP\Gateway\Ebs\ResponseConstants as Resp;
+use Symfony\Component\DomCrawler\Crawler;
 
 class Gateway extends Base\Gateway
 {
@@ -25,6 +26,8 @@ class Gateway extends Base\Gateway
     const API          = 'api';
 
     protected $gateway = 'ebs';
+
+    protected $requestNumber;
 
     protected $sortRequestContent = true;
 
@@ -42,6 +45,17 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentRequest($request, $input);
 
+        //TODO:: To be removed after it is tested on production
+        // Second merchant id is for Test user running test cases
+        if (($input['merchant']['id'] === '4izmfM9TFCAgFN') or
+            ($input['merchant']['id'] === '10000000000000'))
+        {
+            if ($input['payment']['method'] === Payment\Method::NETBANKING)
+            {
+                $request = $this->makeRequestAndGetBankUrl($request, $input);
+            }
+        }
+
         return $request;
     }
 
@@ -49,8 +63,8 @@ class Gateway extends Base\Gateway
     {
         parent::capture($input);
 
-        $gatewayPayment = $this->getRepo()->findByPaymentIdAndAction(
-            $input['payment']['id'], Action::AUTHORIZE);
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
+            $input['payment'][Payment\Entity::ID], Action::AUTHORIZE);
 
         assert(($gatewayPayment[Entity::ERROR_CODE] === null) or
                ($gatewayPayment[Entity::ERROR_CODE] === '0'));
@@ -66,8 +80,8 @@ class Gateway extends Base\Gateway
 
         $this->validateCallbackGetSecureHash($input['gateway'], $input['terminal']);
 
-        $gatewayPayment = $this->getRepo()->findByPaymentIdAndActionOrFail(
-            $input['payment']['id'], Action::AUTHORIZE);
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+            $input['payment'][Payment\Entity::ID], Action::AUTHORIZE);
 
         $attributes = $this->getGatewayEntityDataFromResponse($input);
 
@@ -111,8 +125,8 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        $gatewayPayment = $this->getRepo()->findByPaymentIdAndAction(
-                                $input['payment']['id'], Action::AUTHORIZE);
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
+                                $input['payment'][Payment\Entity::ID], Action::AUTHORIZE);
 
         $attributes = $this->sendRefundGatewayRequest($gatewayPayment, $input);
 
@@ -156,6 +170,166 @@ class Gateway extends Base\Gateway
     protected function getTwoFaStatus($code)
     {
         return Payment\TwoFaStatus::UNKNOWN;
+    }
+
+    protected function getRequest($location, $method, $content)
+    {
+        $request = [
+            'url'       => $location,
+            'method'    => $method,
+            'content'   => $content,
+        ];
+
+        return $request;
+    }
+
+    protected function getRequestFromResponse302($response)
+    {
+        $cookies = [];
+
+        foreach ($response->cookies as $cookie)
+        {
+            $cookies[$cookie->name] = $cookie->value;
+        }
+
+        $location = $response->headers->getValues('location')[0];
+
+        if ($location === null)
+        {
+            throw new Exception\GatewayTimeoutException('Gateway Timed Out', null, true);
+        }
+
+        $request = $this->getRequest($location, 'get', '');
+
+        $request['options']['cookies'] = $cookies;
+
+        $this->setRequestHeaderAndOption($request);
+
+        return $request;
+    }
+
+    protected function getRequestFromFormPostResponse($request, $response, $setHeaders = true)
+    {
+        $crawler = new Crawler($response->body, $request['url']);
+
+        $formCrawler = $crawler->filter('form');
+
+        if ($formCrawler->count() === 0)
+        {
+            throw new Exception\GatewayTimeoutException('Gateway Timed Out', null, true);
+        }
+
+        $form = $formCrawler->form();
+
+        $method = $form->getMethod();
+
+        $request = [
+            'url' => $form->getUri(),
+            'method' => strtolower($method),
+            'content' => $form->getValues(),
+        ];
+
+        if ($setHeaders === true)
+        {
+            $this->setRequestHeaderAndOption($request);
+        }
+
+        return $request;
+    }
+
+    protected function setRequestHeaderAndOption(& $request)
+    {
+        $request['options']['follow_redirects'] = false;
+
+        $request['headers']['Referer'] = $this->app['config']->get('app.url');
+    }
+
+    protected function sendFirstGatewayRequestForEbsAuthorize($request)
+    {
+        $this->requestNumber = 'first';
+
+        return $this->sendGatewayRequest($request);
+    }
+
+    protected function sendSecondGatewayRequestForEbsAuthorize($request)
+    {
+        $this->requestNumber = 'second';
+
+        return $this->sendGatewayRequest($request);
+    }
+
+    protected function sendThirdGatewayRequestForEbsAuthorize($request)
+    {
+        $this->requestNumber = 'third';
+
+        return $this->sendGatewayRequest($request);
+    }
+
+    protected function makeRequestAndGetBankUrl($request, $input)
+    {
+        $this->setRequestHeaderAndOption($request);
+
+        try
+        {
+            // This is the first redirect (302). We receive headers and cookies in this response
+            // which needs to be sent to the second redirect request.
+            $response302 = $this->sendFirstGatewayRequestForEbsAuthorize($request);
+
+            $secondRedirectRequest = $this->getRequestFromResponse302($response302);
+
+            // This is the second redirect (form post). The response of this is passed on to the third redirect request.
+            $secondRedirectResponse = $this->sendSecondGatewayRequestForEbsAuthorize($secondRedirectRequest);
+
+            $lastRedirectRequest = $this->getRequestFromFormPostResponse($secondRedirectRequest, $secondRedirectResponse);
+
+            if (in_array($input['payment'][Payment\Entity::BANK], BankCodes::$bank302Redirect) !== false)
+            {
+                // Makes the last redirect request before the request to bank's ACS url is made by the checkout.
+                $lastRedirectResponse = $this->sendThirdGatewayRequestForEbsAuthorize($lastRedirectRequest);
+
+                $authorizeRequest = $this->getAuthorizeRequestFromLastRedirectResponse(
+                    $lastRedirectRequest, $lastRedirectResponse);
+            }
+            else
+            {
+                $authorizeRequest = $lastRedirectRequest;
+            }
+        }
+        catch (Exception\GatewayTimeoutException $e)
+        {
+            $this->trace->warning(
+                TraceCode::GATEWAY_REQUEST_TIMEOUT,
+                [
+                    'payment_id' => $input['payment'][Payment\Entity::ID],
+                    'message'    => 'Payment Authorization failed after '.$this->requestNumber.' Authorization request'
+                ]);
+
+            throw $e;
+        }
+
+        return $authorizeRequest;
+    }
+
+    protected function getAuthorizeRequestFromLastRedirectResponse($request, $response)
+    {
+        //
+        // If location is set, then we should redirect to Bank page
+        // Else we should crawl the page to get form post
+        //
+        $loc = $response->headers->getValues('location');
+
+        if (empty($loc) === false)
+        {
+            $authorizeRequest = $this->getRequestFromResponse302($response);
+        }
+        else
+        {
+            $authorizeRequest = $this->getRequestFromFormPostResponse($request, $response, false);
+        }
+
+        $authorizeRequest['headers']['Referer'] = $response->url;
+
+        return $authorizeRequest;
     }
 
     protected function sendRefundGatewayRequest($gatewayPayment, $input)
@@ -211,7 +385,8 @@ class Gateway extends Base\Gateway
             {
                 $gatewayStatus = true;
             }
-            else if ($content[Resp::API_TRANSACTION_TYPE] === Status::API_AUTHORIZE_FAILED)
+            else if (($content[Resp::API_TRANSACTION_TYPE] === Status::API_AUTHORIZE_FAILED) or
+                     ($content[Resp::API_TRANSACTION_TYPE] === Status::API_AUTHORIZE_INCOMPLETE))
             {
                 $gatewayStatus = false;
             }
@@ -301,12 +476,12 @@ class Gateway extends Base\Gateway
             $isFlagged = true;
         }
 
-        $content = array(
+        $content = [
             Entity::RECEIVED            => true,
             Entity::IS_FLAGGED          => $isFlagged,
             Entity::TRANSACTION_ID      => $content[Resp::API_TRANSACTION_ID],
             Entity::GATEWAY_PAYMENT_ID  => $content[Resp::API_REFERENCE_ID],
-        );
+        ];
 
         return $content;
     }
@@ -315,10 +490,7 @@ class Gateway extends Base\Gateway
     {
         $input = $verify->input;
 
-        $payment = $this->getRepo()->findByPaymentIdAndAction(
-            $input['payment']['id'], Action::AUTHORIZE);
-
-        $content = $this->getPaymentVerifyRequestContent($input, $payment);
+        $content = $this->getPaymentVerifyRequestContent($input);
 
         $request = $this->getStandardRequestArray($content);
 
@@ -387,12 +559,11 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected function getPaymentVerifyRequestContent($input, $payment)
+    protected function getPaymentVerifyRequestContent($input)
     {
         $content = [
-            Req::API_ACTION         => 'status',
-            Req::API_PAYMENT_ID     => $payment[Entity::GATEWAY_PAYMENT_ID],
-            req::API_TRANSACTION_ID => $payment[Entity::TRANSACTION_ID],
+            Req::API_ACTION         => 'statusByRef',
+            Req::API_REFERENCE_NO   => $input['payment'][Payment\Entity::ID],
         ];
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST, $content);
@@ -445,7 +616,7 @@ class Gateway extends Base\Gateway
     {
         $gatewayPayment = $this->getNewGatewayPaymentEntity();
 
-        $gatewayPayment->setPaymentId($input['payment']['id']);
+        $gatewayPayment->setPaymentId($input['payment'][Payment\Entity::ID]);
 
         $gatewayPayment->fill($attributes);
 
@@ -458,7 +629,7 @@ class Gateway extends Base\Gateway
 
     protected function getDefaultRequestContent()
     {
-        $content = array(
+        $content = [
             Req::NAME          => 'Razorpay',
             Req::ADDRESS       => 'Razorpay',
             Req::CITY          => 'Bangalore',
@@ -468,7 +639,7 @@ class Gateway extends Base\Gateway
             Req::EMAIL         => 'helpdesk@razorpay.com',
             Req::DESCRIPTION   => 'NA',
             Req::CURRENCY      => 'INR',
-        );
+        ];
 
         return $content;
     }
@@ -479,14 +650,14 @@ class Gateway extends Base\Gateway
 
         $defaultContent = $this->getDefaultRequestContent();
 
-        $content = array(
+        $content = [
             Req::ACCOUNT_ID    => $this->getAccountId($input['terminal']),
-            Req::REFERENCE_NO  => $input['payment']['id'],
+            Req::REFERENCE_NO  => $input['payment'][Payment\Entity::ID],
             Req::AMOUNT        => $amount,
             Req::CALLBACK      => $input['callbackUrl'],
             Req::MODE          => strtoupper($this->mode),
             Req::PAYMENT_MODE  => $this->getPaymentMode($input),
-        );
+        ];
 
         $content = array_merge($content, $defaultContent);
 
@@ -559,10 +730,11 @@ class Gateway extends Base\Gateway
 
     protected function getUrlDomain()
     {
-        $apiDomainActionList = array(
+        $apiDomainActionList = [
             Action::CAPTURE,
             Action::REFUND,
-            Action::VERIFY);
+            Action::VERIFY
+        ];
 
         if (in_array($this->action, $apiDomainActionList))
         {
@@ -590,19 +762,15 @@ class Gateway extends Base\Gateway
 
     protected function getAuthorizeAttributesForPaymentEntity($content)
     {
-        $attributes = array();
-        $attributes[Entity::AMOUNT]     = $content[Req::AMOUNT];
+        $attributes = [Entity::AMOUNT => $content[Req::AMOUNT] * 100];
 
         return $attributes;
     }
 
     protected function getRefundContent($response, $input)
     {
-        $refundAmount = $input['refund']['amount']/100;
-
         $attributes = [
-            Entity::REFUND_ID   => $input['refund']['id'],
-            Entity::AMOUNT      => $refundAmount,
+            Entity::AMOUNT      => $input['refund']['amount'],
             Entity::RECEIVED    => true,
         ];
 
@@ -617,11 +785,15 @@ class Gateway extends Base\Gateway
             $attributes[Entity::IS_FLAGGED] = true;
         }
 
-        if ((isset($response[Resp::RESPONSE]) === false) or
-            ($response[Resp::RESPONSE] !== Status::API_SUCCESS))
+        if ((isset($response[Resp::STATUS]) === false) or
+            ($response[Resp::STATUS] !== Status::API_PROCESSING))
         {
             $attributes[Entity::ERROR_CODE]        = $response[Resp::ERROR_CODE];
             $attributes[Entity::ERROR_DESCRIPTION] = $response[Resp::ERROR];
+        }
+        else
+        {
+            $attributes[Entity::REFUND_ID] = $input['refund'][Payment\Refund\Entity::ID];
         }
 
         return $attributes;
@@ -638,7 +810,7 @@ class Gateway extends Base\Gateway
     {
         $hashArray = [];
 
-        foreach($content as $key => $value)
+        foreach ($content as $key => $value)
         {
             if (strlen($value) > 0)
             {

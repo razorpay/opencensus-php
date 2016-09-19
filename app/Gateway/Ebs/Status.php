@@ -15,4 +15,7 @@ class Status
 
     const API_AUTHORIZED            = 'Authorized';
     const API_AUTHORIZE_FAILED      = 'AuthFailed';
+    const API_AUTHORIZE_INCOMPLETE  = 'Incompleted';
+    const API_PROCESSING            = 'Processing';
+
 }

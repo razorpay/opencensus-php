@@ -24,22 +24,54 @@ class CreatePaymentAnalytics extends Migration
 
             $table->char(Analytics::PAYMENT_ID, Analytics::ID_LENGTH);
 
+            $table->string(Analytics::CHECKOUT_ID, Analytics::ID_LENGTH)
+                  ->nullable();
+
             $table->char(Analytics::TERMINAL_ID, Analytics::ID_LENGTH);
 
-            $table->boolean(Analytics::TERMINAL_STATUS)
-                ->default(1);
+            $table->smallInteger(Analytics::ATTEMPTS)
+                  ->unsigned()
+                  ->nullable();
 
-            $table->double(Analytics::TERMINAL_RESPONSE_TIME,8,5)
-                ->default(0);
+            $table->tinyInteger(Analytics::LIBRARY)
+                  ->nullable();
 
-            $table->integer(Analytics::TERMINAL_STATUS_CODE)
-                ->default(0);
+            $table->string(Analytics::LIBRARY_VERSION, 50)
+                  ->nullable();
 
-            $table->text(Analytics::TERMINAL_STATUS_MSG)
-                ->nullable();
+            $table->tinyInteger(Analytics::BROWSER)
+                  ->nullable();
 
-            $table->tinyInteger(Analytics::PAYMENT_TYPE)
-                ->default(0);
+            $table->tinyInteger(Analytics::OS)
+                  ->nullable();
+
+            $table->string(Analytics::OS_VERSION, 50)
+                  ->nullable();
+
+            $table->tinyInteger(Analytics::DEVICE)
+                  ->nullable();
+
+            $table->tinyInteger(Analytics::PLATFORM)
+                  ->nullable();
+
+            $table->string(Analytics::PLATFORM_VERSION, 50)
+                  ->nullable();
+
+            $table->tinyInteger(Analytics::INTEGRATION)
+                  ->nullable();
+
+            $table->string(Analytics::INTEGRATION_VERSION, 50)
+                  ->nullable();
+
+            // http://stackoverflow.com/questions/1076714/max-length-for-client-ip-address
+            $table->string(Analytics::IP, 45)
+                  ->nullable();
+
+            $table->string(Analytics::REFERER)
+                  ->nullable();
+
+            $table->text(Analytics::USER_AGENT)
+                  ->nullable();
 
             $table->integer(Analytics::CREATED_AT);
 
@@ -55,8 +87,9 @@ class CreatePaymentAnalytics extends Migration
                 ->on(Table::PAYMENT)
                 ->on_delete('restrict');
 
-            $table->index(Analytics::CREATED_AT);
+            $table->index(Analytics::CHECKOUT_ID);
 
+            $table->index(Analytics::CREATED_AT);
         });
     }
 

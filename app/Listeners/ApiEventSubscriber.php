@@ -3,17 +3,18 @@
 namespace RZP\Listeners;
 
 use Illuminate\Foundation\Bus\DispatchesJobs;
+use Illuminate\Events\Dispatcher;
 
+use App;
 use RZP\Constants;
 use RZP\Jobs\WebHook;
 use RZP\Models\Event;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 
-
 class ApiEventSubscriber
 {
-    /* Used to push jobs to queues */
+    // Used to push jobs to queues
     use DispatchesJobs;
 
     protected $app;
@@ -30,9 +31,15 @@ class ApiEventSubscriber
      */
     protected $events;
 
+    protected $queue;
+
+    protected $trace;
+
+    protected $params;
+
     public function __construct()
     {
-        $this->app = \App::getFacadeRoot();
+        $this->app = App::getFacadeRoot();
 
         $this->event = $this->app['events'];
         $this->trace = $this->app['trace'];
@@ -48,9 +55,16 @@ class ApiEventSubscriber
     {
         $event = $this->getFiringEvent();
 
-        $event = ucwords(str_replace('.', ' ', $event));
+        if ($this->isWebhookEnabledForEvent($params) === false)
+        {
+            return;
+        }
 
-        $func = 'on'.studly_case($event);
+        $this->params = $params;
+
+        $event = str_replace('.', '_', $event);
+
+        $func = 'on' . studly_case($event);
 
         return $this->$func($params);
     }
@@ -58,7 +72,7 @@ class ApiEventSubscriber
     /**
      * Register the listeners for the subscriber.
      *
-     * @param  Illuminate\Events\Dispatcher  $events
+     * @param  Dispatcher  $events
      * @return array
      */
     public function subscribe($events)
@@ -69,6 +83,8 @@ class ApiEventSubscriber
     protected function getFiringEvent()
     {
         $event = $this->event->firing();
+
+        // This is being done because the event names start with "api."
         $event = substr($event, 4);
 
         $this->event = $event;
@@ -78,43 +94,87 @@ class ApiEventSubscriber
 
     protected function onPaymentAuthorized($payment)
     {
-        $webhook = $payment->merchant->webhook;
+        $payload = $this->getPaymentPayload($payment);
 
-        $eventFired = $this->event;
+        $this->prepareAndDispatchWebhook($payload);
+    }
 
-        if ($this->fireWebhookForEvent($webhook, $eventFired) === false)
-        {
-            return;
-        }
+    protected function onPaymentFailed($payment)
+    {
+        $payload = $this->getPaymentPayload($payment);
 
-        $attributes = array(
-            Event\Entity::EVENT       => $eventFired,
-            Event\Entity::CONTAINS    => Event\Contains::getEntityNamesForEvent($eventFired),
-            Event\Entity::CREATED_AT  => $payment->getAuthorizeTimestamp(),
-        );
+        $this->prepareAndDispatchWebhook($payload);
+    }
 
-        $event = new Event\Entity($attributes);
+    protected function onOrderPaid($payment)
+    {
+        $payload = $this->getOrderPayload($payment);
 
-        $payload = array(
-            \RZP\Constants\Entity::PAYMENT => [
-                'entity' => $payment->toArrayPublic(),
-            ],
-        );
+        $this->prepareAndDispatchWebhook($payload);
+    }
 
-        $event->setPayload($payload);
+    protected function getOrderPayload($payment)
+    {
+        $order = $payment->order;
 
-        $event->merchant()->associate($payment->merchant);
+        $partialPayload = $this->getPaymentPayload($payment);
 
-        $data = array(
-            'mode'          => $this->getMode(),
-            'event'         => json_encode($event->toArrayPublic()),
-            'webhook_id'    => $webhook->getId());
+        $partialPayload[Constants\Entity::ORDER] = [
+            'entity' => $order->toArrayPublic()
+        ];
+
+        return $partialPayload;
+    }
+
+    protected function getPaymentPayload($payment)
+    {
+        $payload = [
+            Constants\Entity::PAYMENT => [
+                'entity' => $payment->toArrayPublic()
+            ]
+        ];
+
+        return $payload;
+    }
+
+    protected function prepareAndDispatchWebhook(array $payload)
+    {
+        $data = $this->getWebhookData($payload);
 
         $this->dispatch(new Webhook($data));
     }
 
-    protected function fireWebhookForEvent($webhook, $event)
+    protected function getWebhookData($payload)
     {
+        $eventFired = $this->event;
+        $entity = $this->params;
+        $webhook = $entity->merchant->webhook;
+
+        $attributes = array(
+            Event\Entity::EVENT       => $eventFired,
+            Event\Entity::CONTAINS    => Event\Contains::getEntityNamesForEvent($eventFired),
+            Event\Entity::CREATED_AT  => $entity->getUpdatedAt(),
+        );
+
+        $event = new Event\Entity($attributes);
+
+        $event->setPayload($payload);
+
+        $event->merchant()->associate($entity->merchant);
+
+        $data = array(
+            'mode'          => $this->getMode(),
+            'event'         => json_encode($event->toArrayPublic()),
+            'webhook_id'    => $webhook->getId()
+        );
+
+        return $data;
+    }
+
+    protected function isWebhookEnabledForEvent($params)
+    {
+        $webhook = $params->merchant->webhook;
+
         return (($webhook !== null) and
                 ($webhook->isActive()) and
                 ($webhook->isEventEnabled($this->event)));

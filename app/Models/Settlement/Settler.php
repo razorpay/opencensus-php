@@ -149,16 +149,14 @@ class Settler
 
             if ($settlements->count() !== 0)
             {
-                list($urlText, $urlExcel) = $this->createSettlementFile($settlements, $txns);
-
                 $this->updateDailySettlementAttributes(
-                    $urlText,
-                    $urlExcel,
+                    null,
+                    null,
                     $settlements->count(),
                     $txns->count());
 
-                $data['settlement_text_file'] = $urlText;
-                $data['settlement_excel_file'] = $urlExcel;
+                $data['settlement_text_file'] = null;
+                $data['settlement_excel_file'] = null;
             }
             else
             {
@@ -172,6 +170,11 @@ class Settler
             $this->repo->rollback();
 
             $this->settlementFailure('kotak', $e);
+        }
+
+        if ($settlements->count() !== 0)
+        {
+            list($urlText, $urlExcel) = $this->createSettlementFile($settlements, $txns);
         }
 
         $this->successNotification($data, $settlements);
@@ -307,7 +310,8 @@ class Settler
                 $i++;
             }
 
-            if ($setlAmount <= 0)
+            //settle only if settlement amount is more than INR 1
+            if ($setlAmount <= 100)
             {
                 $setlAmount = 0;
                 continue;
@@ -389,8 +393,10 @@ class Settler
                          ($merchant->holdFunds() === false));
 
 
+        assert ($merchant->bankAccount !== null);
+
         if (($this->mode !== Mode::TEST) and
-            ($merchant->bankAccount->getCreatedTimestamp() > $lastWorkingDay->timestamp))
+            ($merchant->bankAccount->getCreatedAt() > $lastWorkingDay->timestamp))
         {
             $shouldSettle = false;
         }
