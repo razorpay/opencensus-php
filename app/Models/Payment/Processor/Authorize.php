@@ -907,7 +907,7 @@ trait Authorize
             'version'       => 1,
             'payment_id'    => $id,
             'request'       => [
-                'url'    => Route::getUrlWithPublicAuth('payment_get_status', ['id' => $id]),
+                'url'    => Route::getUrl('payment_get_status', ['id' => $id]),
                 'method' => 'GET',
             ]
         ];
