@@ -742,7 +742,8 @@ class Entity extends Base\PublicEntity
 
     public function isInternational()
     {
-        return $this->getAttribute(self::INTERNATIONAL);
+        // return $this->getAttribute(self::INTERNATIONAL);
+        return $this->card->isInternational();
     }
 
 // ----------------------- Getters ---------------------------------------------
