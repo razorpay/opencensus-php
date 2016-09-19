@@ -539,7 +539,11 @@ class Gateway extends Base\Gateway
         {
             $this->trace->info(
                 TraceCode::GATEWAY_CHECKSUM_VERIFY,
-                [$content, $hash, $generatedHash]);
+                [
+                    'content'           => $content,
+                    'hash'              => $hash,
+                    'generated_hash'    => $generatedHash
+                ]);
 
             throw new Exception\BadRequestValidationFailureException(
                 'Failed checksum verification');
