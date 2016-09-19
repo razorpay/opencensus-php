@@ -43,7 +43,7 @@ class Gateway extends Base\Gateway
 
         $this->verifyPaymentCallbackResponse($input);
 
-        $payment = $this->getRepository()
+        $payment = $this->repo
                         ->findByPaymentIdAndActionOrFail($input['gateway'][Constants::ORDER_ID], Base\Action::AUTHORIZE);
 
         $this->verifyHash($input['gateway'],$payment);
@@ -58,18 +58,19 @@ class Gateway extends Base\Gateway
 
         $payment->fill($attributes);
 
-        $this->getRepository()->saveOrFail($payment);
+        $this->repo->saveOrFail($payment);
     }
 
     public function capture(array $input)
     {
         parent::capture($input);
 
-        $gatewayPayment = $this->getRepository()->retrieveCapturedByPaymentId($input['payment'][Payment\Entity::ID]);
+        $gatewayPayment = $this->repo->retrieveCapturedByPaymentId($input['payment'][Payment\Entity::ID]);
 
         if (($gatewayPayment !== null) and
         ($gatewayPayment[Entity::AMOUNT] === $input['payment'][Payment\Entity::AMOUNT]))
         {
+            $this->trace->info(TraceCode::PAYMENT_ALREADY_CAPTURED, $input['payment']);
             return;
         }
 
@@ -80,7 +81,7 @@ class Gateway extends Base\Gateway
         $response = $this->postOrderRequestAndParseResponse($content);
         $this->trace->info(TraceCode::GATEWAY_CAPTURE_RESPONSE, [$response]);
 
-        $payment = $this->getRepository()->findByPaymentIdAndActionOrFail($input['payment'][Payment\Entity::ID], Base\Action::AUTHORIZE);
+        $payment = $this->repo->findByPaymentIdAndActionOrFail($input['payment'][Payment\Entity::ID], Base\Action::AUTHORIZE);
 
         $attributes = array(
             Entity::STATUS  => $response[Constants::TRANSACTION_RESULT],
@@ -88,7 +89,7 @@ class Gateway extends Base\Gateway
 
         $payment->fill($attributes);
 
-        $this->getRepository()->saveOrFail($payment);
+        $this->repo->saveOrFail($payment);
     }
 
     public function refund(array $input)
@@ -211,10 +212,10 @@ class Gateway extends Base\Gateway
         return $apiStatus;
     }
 
-    protected function postSoapRequest($content, $action = Constants::ORDER_REQUEST)
+    protected function postSoapRequest($content, $requestType = Constants::ORDER_REQUEST)
     {
         $xmlRequest = $this->arrayToXml($content);
-        $content = SoapWrapper::defaultWrapper($xmlRequest, $action);
+        $content = SoapWrapper::defaultWrapper($xmlRequest, $requestType);
 
         $options = $this->getRequestOptions();
         $request = $this->getStandardRequestArray($content, $options);
@@ -333,7 +334,7 @@ class Gateway extends Base\Gateway
         $payment->setPaymentId($content[Constants::ORDER_ID]);
         $payment->setAction($this->action);
 
-        $this->getRepository()->saveOrFail($payment);
+        $this->repo->saveOrFail($payment);
 
         return $payment;
     }
@@ -375,7 +376,6 @@ class Gateway extends Base\Gateway
         $txnDateTime = $dateTime->format(Codes::DATE_TIME_FORMAT);
 
         $chargeTotal = $input['payment'][Payment\Entity::AMOUNT] / 100;
-        $chargeTotal = number_format($chargeTotal,2,'.','');
 
         $currency = $input['payment'][Payment\Entity::CURRENCY];
         $currencyCode = Mapping::ISO_NUMERIC_CODES[$currency];
@@ -412,7 +412,7 @@ class Gateway extends Base\Gateway
         $hooks->register('curl.before_send', [$this, 'setCurlSslOpts']);
         $options['hooks'] = $hooks;
 
-        $options['verify'] = $this->getServerCertificate();
+        // $options['verify'] = $this->getServerCertificate();
 
         return $options;
     }
@@ -426,7 +426,7 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyRequestContentArray($input)
     {
-        $gatewayPayment = $this->getRepository()->retrieveByPaymentIdOrFail($input['payment'][Payment\Entity::ID]);
+        $gatewayPayment = $this->repo->retrieveByPaymentIdOrFail($input['payment'][Payment\Entity::ID]);
 
         $request['a1:Action']['a1:InquiryOrder']['a1:OrderId'] = $gatewayPayment['oid'];
 
@@ -435,7 +435,7 @@ class Gateway extends Base\Gateway
 
     protected function getCaptureRequestContentArray($input)
     {
-        $gatewayPayment = $this->getRepository()->retrieveByPaymentIdOrFail($input['payment'][Payment\Entity::ID]);
+        $gatewayPayment = $this->repo->retrieveByPaymentIdOrFail($input['payment'][Payment\Entity::ID]);
 
         $currency = $input['payment'][Payment\Entity::CURRENCY];
         $currencyCode = Mapping::ISO_NUMERIC_CODES[$currency];
@@ -454,7 +454,7 @@ class Gateway extends Base\Gateway
 
     protected function getRefundRequestContentArray($input)
     {
-        $gatewayPayment = $this->getRepository()->retrieveByPaymentIdOrFail($input['payment'][Payment\Entity::ID]);
+        $gatewayPayment = $this->repo->retrieveByPaymentIdOrFail($input['payment'][Payment\Entity::ID]);
 
         $currency = $input['payment'][Payment\Entity::CURRENCY];
         $currencyCode = Mapping::ISO_NUMERIC_CODES[$currency];
@@ -473,7 +473,7 @@ class Gateway extends Base\Gateway
 
     protected function getIpgApiOrderContentArray($input, $txnType)
     {
-        $gatewayPayment = $this->getRepository()->retrieveByPaymentIdOrFail($input['payment'][Payment\Entity::ID]);
+        $gatewayPayment = $this->repo->retrieveByPaymentIdOrFail($input['payment'][Payment\Entity::ID]);
 
         $currency = $input['payment'][Payment\Entity::CURRENCY];
         $currencyCode = Mapping::ISO_NUMERIC_CODES[$currency];
@@ -520,7 +520,7 @@ class Gateway extends Base\Gateway
         if ((isset($input['gateway'][Constants::APPROVAL_CODE]) === false) or
             ($input['gateway'][Constants::APPROVAL_CODE][0] !== 'Y'))
         {
-            $this->trace->info(
+            $this->trace->warning(
                 TraceCode::GATEWAY_AUTHORIZE_RESPONSE, [$input['gateway']]);
 
             throw new Exception\GatewayErrorException(
