@@ -127,7 +127,7 @@ class Gateway extends Base\Gateway
         }
         catch (ErrorException $e)
         {
-            $this->trace->traceException($e, Trace::INFO, Trace::RECOVERABLE_EXCEPTION);
+            $this->trace->traceException($e, Trace::INFO, TraceCode::RECOVERABLE_EXCEPTION);
 
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED

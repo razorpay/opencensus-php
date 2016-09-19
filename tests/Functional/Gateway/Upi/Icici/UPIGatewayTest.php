@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Gateway\Upi\Icici;
 
+use Closure;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -51,6 +52,23 @@ class UPIGatewayTest extends TestCase
         $this->payment['vpa'] = 'shk@icici';
 
         $this->testPayment();
+    }
+
+    public function testInvalidResponsePayment()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+        $payment['vpa'] = 'shk@icici';
+
+        $this->setContent(function (& $content)
+        {
+            $content = null;
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->doAuthPayment($payment);
+        });
     }
 
     public function testPaymentWithS2S($assert = true)

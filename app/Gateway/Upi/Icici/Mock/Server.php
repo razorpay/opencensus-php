@@ -56,7 +56,7 @@ class Server extends Base\Mock\Server
             'BankRRN'           => '1234567',
         );
 
-        $encrypt = ($this->input['payerVa'] === 'shk@icici');
+        $encrypt = ($this->input['payerVa'] !== 'shk@icici');
 
         $this->content($content);
 
