@@ -172,7 +172,7 @@ class CustomerController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function createAddress($customerId)
+    public function postCreateAddress($customerId)
     {
         $input = Request::all();
 

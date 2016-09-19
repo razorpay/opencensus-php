@@ -18,7 +18,7 @@ class Validator extends Base\Validator
         Entity::PRIMARY         => 'sometimes|in:0,1',
     ];
 
-    protected static function validateAddressType($attribute, $value)
+    protected function validateAddressType($attribute, $value)
     {
         Type::validateAddressType($value, Type::CUSTOMER);
     }

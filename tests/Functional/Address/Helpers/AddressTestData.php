@@ -22,8 +22,8 @@ return [
         ],
         'response' => [
             'content' => [
-                'entity_id'     => 'cust_100000customer',
-                'entity_type'   => 'customer',
+                //'entity_id'     => 'cust_100000customer',
+                //'entity_type'   => 'customer',
                 'address_type'  => 'shipping_address',
                 'primary'       => true,
                 'line1'         => 'some line one',
@@ -53,8 +53,8 @@ return [
         ],
         'response' => [
             'content' => [
-                'entity_id'     => 'cust_100000customer',
-                'entity_type'   => 'customer',
+                //'entity_id'     => 'cust_100000customer',
+                //'entity_type'   => 'customer',
                 'address_type'  => 'shipping_address',
                 'primary'       => false,
                 'line1'         => 'some line one',
@@ -112,8 +112,8 @@ return [
         ],
         'response' => [
             'content' => [
-                'entity_id'     => 'cust_100000customer',
-                'entity_type'   => 'customer',
+                //'entity_id'     => 'cust_100000customer',
+                //'entity_type'   => 'customer',
                 'address_type'  => 'shipping_address',
                 'primary'       => true,
                 'line1'         => 'some line one',
@@ -143,8 +143,8 @@ return [
         ],
         'response' => [
             'content' => [
-                'entity_id'     => 'cust_100000customer',
-                'entity_type'   => 'customer',
+                //'entity_id'     => 'cust_100000customer',
+                //'entity_type'   => 'customer',
                 'address_type'  => 'shipping_address',
                 'primary'       => false,
                 'line1'         => 'some line one',
@@ -160,8 +160,8 @@ return [
     'testSetPrimaryAddressForNonPrimaryAddressWithNoSwitch' => [
         'response'  => [
             'content'   => [
-                'entity_id'     => 'cust_100000customer',
-                'entity_type'   => 'customer',
+                //'entity_id'     => 'cust_100000customer',
+                //'entity_type'   => 'customer',
                 'address_type'  => 'shipping_address',
                 'primary'       => true,
                 'line1'         => 'some line one',
@@ -177,8 +177,8 @@ return [
     'testSetPrimaryAddressForNonPrimaryAddressWithSwitch' => [
         'response'  => [
             'content'   => [
-                'entity_id'     => 'cust_100000customer',
-                'entity_type'   => 'customer',
+                //'entity_id'     => 'cust_100000customer',
+                //'entity_type'   => 'customer',
                 'address_type'  => 'shipping_address',
                 'primary'       => true,
                 'line1'         => 'some line one',
@@ -225,8 +225,8 @@ return [
         ],
         'response' => [
             'content' => [
-                'entity_id'     => 'cust_100000customer',
-                'entity_type'   => 'customer',
+                //'entity_id'     => 'cust_100000customer',
+                //'entity_type'   => 'customer',
                 'address_type'  => 'shipping_address',
                 'primary'       => true,
                 'line1'         => 'some line one',
@@ -249,23 +249,23 @@ return [
                 'count' => 4,
                 'items' => [
                     [
-                        'entity_id' => 'cust_100000customer',
-                        'entity_type' => 'customer',
+                        //'entity_id' => 'cust_100000customer',
+                        //'entity_type' => 'customer',
                         'address_type' => 'shipping_address',
                     ],
                     [
-                        'entity_id' => 'cust_100000customer',
-                        'entity_type' => 'customer',
+                        //'entity_id' => 'cust_100000customer',
+                        //'entity_type' => 'customer',
                         'address_type' => 'shipping_address',
                     ],
                     [
-                        'entity_id' => 'cust_100000customer',
-                        'entity_type' => 'customer',
+                        //'entity_id' => 'cust_100000customer',
+                        //'entity_type' => 'customer',
                         'address_type' => 'shipping_address',
                     ],
                     [
-                        'entity_id' => 'cust_100000customer',
-                        'entity_type' => 'customer',
+                        //'entity_id' => 'cust_100000customer',
+                        //'entity_type' => 'customer',
                         'address_type' => 'shipping_address',
                     ]
                 ],

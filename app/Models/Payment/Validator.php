@@ -15,7 +15,8 @@ class Validator extends Base\Validator
     protected static $createRules = array(
         'amount'                  =>  'required|integer',
         'currency'                =>  'required|size:3',
-        'method'                  =>  'in:card,netbanking,wallet,emi',
+        'method'                  =>  'custom',
+        'vpa'                     =>  'required_if:method,upi',
         'card'                    =>  'sometimes',
         'bank'                    =>  'required_if:method,netbanking',
         'wallet'                  =>  'required_if:method,wallet|custom',
@@ -53,6 +54,11 @@ class Validator extends Base\Validator
         'description',
         'fee',
         'contact');
+
+    protected function validateMethod($attribute, $value)
+    {
+       Method::validateMethod($value);
+    }
 
     protected function validateWallet($attribute, $value)
     {

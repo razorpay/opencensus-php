@@ -538,13 +538,18 @@ trait Authorize
             $this->preProcessPaymentForGlobalCustomer($customer, $customerApp, $payment, $input, $gatewayInput);
         }
 
-        if ($payment->isEmi())
+        if ($payment->isEmi() === true)
         {
             $cardNumber = $gatewayInput['card']['number'];
 
             $emiDuration = $input['emi_duration'];
 
             $this->setBankAndEmiPlanDetails($payment, $cardNumber, $emiDuration);
+        }
+
+        if ($payment->isUpi() === true)
+        {
+            $gatewayInput['vpa'] = $input['vpa'];
         }
 
         $payment->setInternational();
@@ -796,6 +801,10 @@ trait Authorize
                 $this->verifyEmiEnabled($input);
                 break;
 
+            case Payment\Method::UPI:
+                $this->verifyUpiEnabled();
+                break;
+
             default:
                 throw new Exception\LogicException(
                     'Should not reach here.',
@@ -876,6 +885,35 @@ trait Authorize
     }
 
     protected function getPaymentGatewayRequestData($request, $payment)
+    {
+        if (Payment\Gateway::supportsAsync($payment->getGateway()))
+        {
+            return $this->getAsyncPaymentCreatedResponse($request, $payment);
+        }
+
+        return $this->getFirstPaymentCreatedResponse($request, $payment);
+    }
+
+    /**
+     * @see  CoProto supports async payments https://github.com/razorpay/api/wiki/COPROTO
+     * @return array payment response
+     */
+    protected function getAsyncPaymentCreatedResponse($request, Payment\Entity $payment)
+    {
+        $id = $payment->getPublicId();
+
+        return [
+            'type'          => 'async',
+            'version'       => 1,
+            'payment_id'    => $id,
+            'request'       => [
+                'url'    => Route::getUrlWithPublicAuth('payment_get_status', ['id' => $id]),
+                'method' => 'GET',
+            ]
+        ];
+    }
+
+    protected function getFirstPaymentCreatedResponse($request, Payment\Entity $payment)
     {
         $data['type'] = 'first';
 
@@ -1363,6 +1401,18 @@ trait Authorize
         }
 
         $this->checkAndValidateAmexIfNotEnabled($merchantMethods, $input['card']);
+    }
+
+    protected function verifyUpiEnabled()
+    {
+        $merchantMethods = $this->methods;
+
+        if (($merchantMethods === null) or
+            ($merchantMethods->isUPIEnabled() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_UPI_NOT_ENABLED_FOR_MERCHANT);
+        }
     }
 
     protected function verifyCardEnabledInLive($payment, $input)

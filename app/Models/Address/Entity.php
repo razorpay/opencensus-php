@@ -63,8 +63,8 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
-        self::ENTITY_ID,
-        self::ENTITY_TYPE,
+        // self::ENTITY_ID,
+        // self::ENTITY_TYPE,
         self::ADDRESS_TYPE,
         self::PRIMARY,
         self::LINE1,
@@ -127,7 +127,7 @@ class Entity extends Base\PublicEntity
     // ----------------------------------- END SETTERS -----------------------------------
 
     // ----------------------------------- PUBLIC SETTERS -----------------------------------
-    
+
     public function setPublicEntityIdAttribute(array & $array)
     {
         $entity = Type::getEntityClass($array[self::ENTITY_TYPE]);
@@ -138,7 +138,7 @@ class Entity extends Base\PublicEntity
     }
 
     // ----------------------------------- END PUBLIC SETTERS -----------------------------------
-    
+
     // ----------------------------------- RELATIONS -----------------------------------
 
     public function source()
@@ -160,4 +160,15 @@ class Entity extends Base\PublicEntity
     }
 
     // ----------------------------------- END RELATIONS -----------------------------------
+
+    public function getAssociatedEntityFromAddress()
+    {
+        //$entityType = $address->getEntityType();
+
+        $entityType = $this->getAttribute(self::ENTITY_TYPE);
+
+        $entity = $this->{$entityType};
+
+        return $entity;
+    }
 }

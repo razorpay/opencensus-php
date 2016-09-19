@@ -28,8 +28,7 @@ class Core extends Base\Core
     {
         $this->trace->info(
             TraceCode::ADDRESS_CREATE_REQUEST,
-            $input
-        );
+            $input);
 
         $address = (new Entity)->build($input);
 
@@ -82,7 +81,7 @@ class Core extends Base\Core
      */
     public function delete(Entity $address)
     {
-        $entity = $this->getAssociatedEntityFromAddress($address);
+        $entity = $address->getAssociatedEntityFromAddress();
 
         $this->trace->info(
             TraceCode::ADDRESS_DELETE_REQUEST,
@@ -90,8 +89,7 @@ class Core extends Base\Core
                 'address_id'    => $address->getId(),
                 'address_type'  => $address->getAddressType(),
                 'entity_id'     => $entity->getId(),
-            ]
-        );
+            ]);
 
         return $this->repo->transaction(function() use ($address, $entity)
         {
@@ -123,7 +121,7 @@ class Core extends Base\Core
                 //     $addressId = null;
                 // }
 
-                // $setterFunc = $this->getSetterFunctionForAddress($address->getAddressType());
+                // $setterFunc = Type::getSetterFunctionForAddress($address->getAddressType());
                 // $entity->$setterFunc($addressId);
                 //
                 // $this->repo->saveOrFail($entity);
@@ -148,7 +146,7 @@ class Core extends Base\Core
      */
     protected function handlePrimaryAddressSwitch(Entity $address)
     {
-        $entity = $this->getAssociatedEntityFromAddress($address);
+        $entity = $address->getAssociatedEntityFromAddress();
 
         $currentPrimaryAddress = $this->repo->address->fetchCurrentPrimaryAddress(
             $address->getEntityType(), $entity->getId(), $address->getAddressType());
@@ -162,8 +160,7 @@ class Core extends Base\Core
                     'entity_id'     => $entity->getId(),
                     'entity_type'   => $address->getEntityType(),
                     'address_type'  => $address->getAddressType(),
-                ]
-            );
+                ]);
         }
 
         $this->repo->transaction(function() use ($currentPrimaryAddress, $address, $entity)
@@ -183,35 +180,29 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($currentPrimaryAddress);
 
                 $this->trace->info(
-                    TraceCode::PRIMARY_ADDRESS_SWITCH,
+                    TraceCode::ADDRESS_PRIMARY_SWITCH,
                     [
                         'entity_id'             => $entity->getId(),
                         'entity_type'           => $address->getEntityType(),
                         'address_type'          => $address->getAddressType(),
                         'old_primary_address'   => $currentPrimaryAddress->getId(),
                         'new_primary_address'   => $address->getId(),
-                    ]
-                );
+                    ]);
             }
 
-            // $setterFunc = $this->getSetterFunctionForAddress($address->getAddressType());
+            // $setterFunc = Type::getSetterFunctionForAddress($address->getAddressType());
             // $entity->$setterFunc($address->getId());
             //
             // $this->repo->saveOrFail($entity);
         });
     }
 
-    protected function getAssociatedEntityFromAddress(Entity $address)
-    {
-        $entityType = $address->getEntityType();
-
-        $entity = $address->{$entityType};
-
-        return $entity;
-    }
-
-    protected function getSetterFunctionForAddress($addressType)
-    {
-        return 'set' . studly_case($addressType) . 'Id';
-    }
+    // protected function getAssociatedEntityFromAddress(Entity $address)
+    // {
+    //     $entityType = $address->getEntityType();
+    //
+    //     $entity = $address->{$entityType};
+    //
+    //     return $entity;
+    // }
 }

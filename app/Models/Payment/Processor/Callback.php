@@ -65,6 +65,18 @@ trait Callback
         return $this->postPaymentAuthorizeProcessing($payment);
     }
 
+    public function redirectCallback($id)
+    {
+        $payment = $this->retrieve($id);
+
+        if ($payment->isCreated() === false)
+        {
+            return $this->processPaymentCallbackSecondTime($payment);
+        }
+
+        throw new Exception\LogicException('Should not have been hit.');
+    }
+
     /**
      * This means the payment has already been processed but
      * we are hitting callabck again. This could be due to

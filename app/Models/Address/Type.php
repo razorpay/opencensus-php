@@ -38,8 +38,15 @@ class Type
         }
     }
 
+    public static function getSetterFunctionForAddress($addressType)
+    {
+        return 'set' . studly_case($addressType) . 'Id';
+    }
+
     public static function getEntityClass($entityType)
     {
+        self::validateEntityType($entityType);
+
         $entity = 'RZP\\Models\\' . ucfirst($entityType) . '\\Entity';
 
         return $entity;
