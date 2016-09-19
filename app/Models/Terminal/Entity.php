@@ -405,12 +405,12 @@ class Entity extends Base\PublicEntity
         return false;
     }
 
-    public function getTerminalCategory()
+    public function getNetworkCategory()
     {
         return $this->getAttribute(self::NETWORK_CATEGORY);
     }
 
-    public function setTerminalCategory($category)
+    public function setNetworkCategory($category)
     {
         $this->setAttribute(self::NETWORK_CATEGORY, $category);
     }

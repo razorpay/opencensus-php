@@ -76,7 +76,7 @@ class MerchantFilter extends Terminal\Filter
 
     public function categoryFilter($terminal, $input)
     {
-        $category = $terminal->getTerminalCategory();
+        $category = $terminal->getNetworkCategory();
 
         // If the terminal's category is null, pass though.
         // When all the terminals are without category, this

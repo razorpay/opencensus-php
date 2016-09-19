@@ -105,7 +105,7 @@ return [
             ]
         ],
     ],
-    'testCreateTerminalWithTerminalCategory' => [
+    'testCreateTerminalWithNetworkCategory' => [
         'request' => [
             'content' => [
                 'gateway' => 'netbanking_kotak',
@@ -127,7 +127,7 @@ return [
             ]
         ]
     ],
-    'testCreateTerminalWithInvalidTerminalCategory' => [
+    'testCreateTerminalWithInvalidNetworkCategory' => [
         'request' => [
             'content' => [
                 'gateway' => 'hdfc',

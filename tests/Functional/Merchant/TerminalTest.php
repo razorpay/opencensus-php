@@ -50,7 +50,7 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreateTerminalWithTerminalCategory()
+    public function testCreateTerminalWithNetworkCategory()
     {
         $url = '/merchants/100000Razorpay/terminals';
 
@@ -59,7 +59,7 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreateTerminalWithInvalidTerminalCategory()
+    public function testCreateTerminalWithInvalidNetworkCategory()
     {
         $url = '/merchants/100000Razorpay/terminals';
 

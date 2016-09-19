@@ -43,7 +43,7 @@ class MerchantSorter extends Terminal\Sorter
         // append to the terminal
         foreach ($terminals as $terminal)
         {
-            $terminalCategory = $terminal->getTerminalCategory();
+            $terminalCategory = $terminal->getNetworkCategory();
 
             if ($merchantTerminalCategory === $terminalCategory)
             {
