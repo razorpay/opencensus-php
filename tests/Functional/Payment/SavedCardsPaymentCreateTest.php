@@ -92,7 +92,7 @@ class SavedCardsPaymentCreateTest extends TestCase
         // set emi payment data
         $this->fixtures->merchant->enableEmi();
 
-        $this->payment = $this->getDefaultPaymentArrayEmi(true);
+        $this->payment = $this->getDefaultEmiPaymentArray(true);
 
         $this->payment['token'] = '10000cardtoken';
 
@@ -191,7 +191,7 @@ class SavedCardsPaymentCreateTest extends TestCase
 
         $this->fixtures->merchant->enableEmi();
 
-        $this->payment = $this->getDefaultPaymentArrayEmi(true);
+        $this->payment = $this->getDefaultEmiPaymentArray(true);
 
         $this->payment['token'] = '1000gcardtoken';
 
@@ -288,7 +288,7 @@ class SavedCardsPaymentCreateTest extends TestCase
         // sets payment data
         $this->fixtures->merchant->enableEmi();
 
-        $this->payment = $this->getDefaultPaymentArrayEmi(false);
+        $this->payment = $this->getDefaultEmiPaymentArray(false);
 
         $this->payment['save'] = 1;
 
@@ -424,7 +424,7 @@ class SavedCardsPaymentCreateTest extends TestCase
 
         $this->fixtures->merchant->enableEmi();
 
-        $this->payment = $this->getDefaultPaymentArrayEmi(false);
+        $this->payment = $this->getDefaultEmiPaymentArray(false);
 
         $this->payment['save'] = 1;
 
