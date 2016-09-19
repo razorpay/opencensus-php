@@ -18,7 +18,6 @@ class Service extends Base\Service
 
     public function getActionsForTerminal($id)
     {
-
         $actions = $this->repo->terminal_action->findForTerminal($id);
 
         return $actions->toArrayPublic();
@@ -37,6 +36,5 @@ class Service extends Base\Service
         $actions = $this->repo->terminal_action->findBetweenTimesampsForTerminal($from, $to, $id);
 
         return $actions->toArrayPublic();
-
     }
 }

@@ -108,7 +108,7 @@ class Repository extends Base\Repository
     {
         $ptable = Payment\Entity::getTableName();
 
-        $attrs = Refund\Entity::getTableName() . '.*';
+        $attrs = Refund\Entity::getAttributeWithTableName('*');
 
         $query = $this->newQuery();
 

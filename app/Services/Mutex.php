@@ -3,8 +3,9 @@
 namespace RZP\Services;
 
 use Redis;
-use Request;
 use Predis\PredisException;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 /**
  * The below lock implementation is based on single-instance redis redlock algorithm
@@ -13,7 +14,7 @@ use Predis\PredisException;
  * SETNX - This command is crucial to lock implementation.
  *         Man page - http://redis.io/commands/setnx
  */
-class Lock
+class Mutex
 {
     protected $requestId;
 
@@ -22,8 +23,6 @@ class Lock
     public function __construct($app)
     {
         $this->requestId = $app['request']->getId();
-
-        $this->redis = $app['redis'];
 
         $this->trace = $app['trace'];
     }
@@ -38,9 +37,11 @@ class Lock
      */
     public function acquire($resource, $ttl = 60)
     {
+        $redis = Redis::getFacadeRoot();
+
         try
         {
-            $response = $this->redis->set($resource, $this->requestId, 'ex', $ttl, 'nx');
+            $response = $redis->set($resource, $this->requestId, 'ex', $ttl, 'nx');
         }
         catch (PredisException $e)
         {
@@ -72,10 +73,12 @@ class Lock
      */
     public function release($resource)
     {
+        $redis = Redis::getFacadeRoot();
+
         try
         {
-            if (($this->redis->get($resource) === $this->requestId) and
-                ($this->redis->del($resource) === 1))
+            if (($redis->get($resource) === $this->requestId) and
+                ($redis->del($resource) === 1))
             {
                 return true;
             }
@@ -89,5 +92,29 @@ class Lock
         }
 
         return false;
+    }
+
+    public function acquireAndRelease($resource, callable $callback, $ttl = 60)
+    {
+        $ret = null;
+
+        try
+        {
+            $acquired = $this->acquire($resource, $ttl);
+
+            if ($acquired === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
+            }
+
+            $ret = call_user_func($callback);
+
+            return $ret;
+        }
+        finally
+        {
+            $this->release($resource);
+        }
     }
 }

@@ -13,6 +13,8 @@ class SignatureTest extends TestCase
 
     public function setUp()
     {
+        $this->markTestSkipped('Deprecated');
+
         $this->testDataFilePath = __DIR__.'/helpers/SignatureTestData.php';
 
         parent::setUp();

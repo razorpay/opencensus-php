@@ -22,6 +22,12 @@ class GatewayController extends Controller
     {
         $gateway = $this->app['gateway']->gateway($gateway);
 
+        // Some gateways may need some preprocessing on the input
+        // to be able to call the next few methods.
+        //
+        // Eg: gateway request needs to be decrypted
+        $input = $gateway->preProcessS2SResponse($input);
+
         $paymentId = $gateway->getPaymentIdFromServerCallback($input);
 
         $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
@@ -82,17 +88,11 @@ class GatewayController extends Controller
                 break;
 
             case 'upi':
-                $trace = $this->app['trace'];
+            case 'upi_icici':
+                $input = Request::getContent();
+                $gateway = 'upi_icici';
 
-                // check mode before search
-                $trace->info(
-                    TraceCode::GATEWAY_PAYMENT_CALLBACK,
-                    [
-                        'input'     => $input,
-                        'body'      => Request::getContent(),
-                        'headers'   => Request::header(),
-                        'gateway'   => 'upi_icici',
-                    ]);
+                $data = $this->processS2SCallback($input, $gateway);
 
                 break;
         }
