@@ -32,7 +32,7 @@ class UPIGatewayTest extends TestCase
         // Co Proto must be working
         $this->assertEquals('async', $res['type']);
 
-        $this->testPaymentStatus($paymentId, $status);
+        $this->checkPaymentStatus($paymentId, $status);
 
         return $paymentId;
     }
@@ -80,7 +80,7 @@ class UPIGatewayTest extends TestCase
         return $payment;
     }
 
-    protected function testPaymentStatus($id, $expectedStatus)
+    protected function checkPaymentStatus($id, $expectedStatus)
     {
         $request = [
             'url'       => "/payments/$id/status",
