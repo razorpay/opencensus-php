@@ -344,6 +344,14 @@ class Gateway extends Base\Gateway
 
         $this->response = $response;
 
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            [
+                'raw_content' => $response->body,
+                'gateway' => 'upi_icici',
+                'payment_id' => $input['payment']['id'],
+            ]);
+
         $content = $this->jsonToArray($response->body);
 
         $this->trace->info(
