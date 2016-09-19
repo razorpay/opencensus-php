@@ -529,12 +529,12 @@ class Gateway extends Base\Gateway
             'refid'
         );
 
-        $hash = $content['checksum'];
+        $inputHash = $content['checksum'];
 
         $content = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
 
-        $generatedHash = $this->getHashOfArray($content);
-        if (hash_equals($generatedHash,$hash)  !== true)
+        $expectedHash = $this->getHashOfArray($content);
+        if (hash_equals($expectedHash, $inputHash)  !== true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Failed checksum verification');
@@ -550,11 +550,11 @@ class Gateway extends Base\Gateway
             "'" . $content['statusmessage'] . "'" .
             "'" . $content['ordertype'] . "'";
 
-        $generatedHash = $this->getHashOfString($str);
+        $expectedHash = $this->getHashOfString($str);
 
-        $hash = $content['checksum'];
+        $inputHash = $content['checksum'];
 
-        if (hash_equals($generatedHash, $hash)  !== true)
+        if (hash_equals($expectedHash, $inputHash)  !== true)
         {
             throw new Exception\GatewayErrorException(
                 Error\ErrorCode::BAD_REQUEST_ERROR);

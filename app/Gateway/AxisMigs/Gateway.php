@@ -564,12 +564,12 @@ class Gateway extends Base\Gateway
 
     protected function verifySecureHash($input)
     {
-        $hash = strtoupper($input['vpc_SecureHash']);
+        $inputHash = strtoupper($input['vpc_SecureHash']);
         unset($input['vpc_SecureHash']);
 
-        $generatedHash = $this->generateHash($input);
+        $expectedHash = $this->generateHash($input);
 
-        if (hash_equals($generatedHash,$hash) !== true)
+        if (hash_equals($expectedHash, $inputHash) !== true)
         {
             throw new Exception\BadRequestValidationFailureException('Failed checksum verification');
         }

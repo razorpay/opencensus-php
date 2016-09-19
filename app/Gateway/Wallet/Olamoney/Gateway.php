@@ -225,13 +225,13 @@ class Gateway extends Base\Gateway
             ResponseFields::TIMESTAMP,
         );
 
-        $hash = $content[ResponseFields::HASH];
+        $inputHash = $content[ResponseFields::HASH];
 
         $content = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
 
-        $generatedHash = $this->getHashOfArray($content);
+        $expectedHash = $this->getHashOfArray($content);
 
-        if (hash_equals($generatedHash,$hash)  !== true)
+        if (hash_equals($expectedHash, $inputHash)  !== true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Failed checksum verification');

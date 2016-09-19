@@ -1561,11 +1561,11 @@ trait Authorize
     }
 
 
-    protected function verifyHash($hash, $paymentPublicId)
+    protected function verifyHash($inputHash, $paymentPublicId)
     {
         $expectedHash = $this->getHashOf($paymentPublicId);
 
-        if (hash_equals($expectedHash, $hash) === false)
+        if (hash_equals($expectedHash, $inputHash) !== true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Callback payment hash does not match. Please notify the admin of this error.');

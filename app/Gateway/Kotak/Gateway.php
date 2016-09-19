@@ -148,12 +148,12 @@ class Gateway extends Base\Gateway
 
     protected function verifySecureHash($input)
     {
-        $hash = $input['gateway']['SecureHash'];
+        $inputHash = $input['gateway']['SecureHash'];
         unset($input['gateway']['SecureHash']);
 
-        $generatedHash = $this->generateHash($input['gateway']);
+        $expectedHash = $this->generateHash($input['gateway']);
 
-        if (hash_equals($generatedHash, $hash)  !== true)
+        if (hash_equals($expectedHash, $inputHash)  !== true)
         {
             throw new Exception\BadRequestValidationFailureException('Failed checksum verification');
         }

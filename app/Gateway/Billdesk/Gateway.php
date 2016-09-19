@@ -530,12 +530,12 @@ class Gateway extends Base\Gateway
 
     protected function verifySecureHash($content)
     {
-        $hash = $content['Checksum'];
+        $inputHash = $content['Checksum'];
         unset($content['Checksum']);
 
         $generatedHash = $this->getHashOfArray($content);
 
-        if (hash_equals($generatedHash, $hash)  !== true)
+        if (hash_equals($generatedHash, $inputHash)  !== true)
         {
             $this->trace->info(
                 TraceCode::GATEWAY_CHECKSUM_VERIFY,

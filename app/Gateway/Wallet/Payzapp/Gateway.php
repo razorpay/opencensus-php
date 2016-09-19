@@ -573,11 +573,11 @@ class Gateway extends Base\Gateway
 
     protected function verifySecureHash($input, $payment)
     {
-        $generatedHash = $this->generateCallbackSecureHash($input, $payment);
+        $expectedHash = $this->generateCallbackSecureHash($input, $payment);
 
         if (isset($input['gateway']['msgHash']))
         {
-            $hash = $input['gateway']['msgHash'];
+            $inputHash = $input['gateway']['msgHash'];
         }
         else
         {
@@ -591,7 +591,7 @@ class Gateway extends Base\Gateway
             );
         }
 
-        if (hash_equals($generatedHash,$hash)  !== true)
+        if (hash_equals($expectedHash, $inputHash)  !== true)
         {
             throw new Exception\BadRequestValidationFailureException(
                                     'Failed checksum verification');
@@ -606,9 +606,7 @@ class Gateway extends Base\Gateway
         $content['merAppData'] = '';
         $content['txnCurrency'] = '356';
 
-        $generatedHash = $this->getHashForAuthorizeResponse($content);
-
-        return $generatedHash;
+        return $this->getHashForAuthorizeResponse($content);
     }
 
     /**

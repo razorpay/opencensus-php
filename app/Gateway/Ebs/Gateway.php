@@ -735,14 +735,14 @@ class Gateway extends Base\Gateway
 
     protected function validateCallbackGetSecureHash(array $content, $terminal)
     {
-        $hash = $content[Resp::SECURE_HASH];
+        $inputHash = $content[Resp::SECURE_HASH];
 
         // Remove secureHash Value to calculate Expected Hash Value
         unset($content[Resp::SECURE_HASH]);
 
         $expectedHash = $this->getHashOfArray($content);
 
-        if (hash_equals($hash, $expectedHash)  !== true)
+        if (hash_equals($expectedHash, $inputHash)  !== true)
         {
             throw new Exception\LogicException(
                 'Checksum verification failed');
