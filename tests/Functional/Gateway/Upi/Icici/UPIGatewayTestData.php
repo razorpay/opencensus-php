@@ -1,8 +1,8 @@
 <?php
 
-use EE\Error\ErrorCode;
-use EE\Error\PublicErrorCode;
-use EE\Error\PublicErrorDescription;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
 
 return [
     'testPayment' => [
@@ -27,5 +27,34 @@ return [
         'signed' => false,
         'verified' => null,
         'entity' => 'payment',
+    ],
+
+    'testVerifyFailedPayment'   => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\PaymentVerificationException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED
+        ],
+    ],
+
+    'testPaymentUpiEntity' => [
+        'action'                => 'authorize',
+        'amount'                => 50000,
+        'bank'                  => 'icici',
+        'received'              => true,
+        'email'                 => 'a@b.com',
+        'contact'               => '+919918899029',
+        'gateway_merchant_id'   => '123456',
+        'status_code'           => '0',
+        'vpa'                   => 'shk@hdfc',
+        'entity'                => 'upi',
     ],
 ];

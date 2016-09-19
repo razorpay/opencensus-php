@@ -72,6 +72,7 @@ class Entity
     const WALLET_AIRTELMONEY    = 'wallet_airtelmoney';
 
     public static $namespace = array(
+        self::UPI                   => \RZP\Gateway\Upi\Base::class,
         self::IIN                   => \RZP\Models\Card\IIN::class,
         self::ATOM                  => \RZP\Gateway\Atom::class,
         self::AMEX                  => \RZP\Gateway\Amex::class,

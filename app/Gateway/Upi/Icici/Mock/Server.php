@@ -40,6 +40,7 @@ class Server extends Base\Mock\Server
     public function authorize($input)
     {
         $input = $this->parseInput($input);
+
         parent::authorize($input);
 
         $this->validateAuthorizeInput($input);
@@ -55,7 +56,34 @@ class Server extends Base\Mock\Server
             'BankRRN'           => '1234567',
         );
 
-        return $this->makeResponse($content);
+        $encrypt = ($this->input['payerVa'] === 'shk@icici');
+
+        $this->content($content);
+
+        return $this->makeResponse($content, $encrypt);
+    }
+
+    public function verify($input)
+    {
+        $input = $this->parseInput($input);
+
+        parent::verify($input);
+
+        $this->validateActionInput($input);
+
+        $response = array(
+            "response"          => "0",
+            "merchantId"        => "116798",
+            "subMerchantId"     => "1234",
+            "terminalId"        => "1234",
+            "success"           => "true",
+            "message"           => "Transaction Successful",
+            "merchantTranId"    => $input['merchantTranId'],
+            "OriginalBankRRN"   => (string) mt_rand(1111111, 9999999),
+            "status"            => "SUCCESS"
+        );
+
+        return $this->makeResponse($response, false);
     }
 
     /**
@@ -79,22 +107,15 @@ class Server extends Base\Mock\Server
         }
     }
 
-    protected function makeResponse($data)
+    protected function makeResponse($data, $encrypt = true)
     {
-        $json = json_encode($data);
+        $content = json_encode($data);
 
-        // The ICICI Gateway inconsistently
-        // does encrypted responses, and we
-        // handle both the cases using
-        // special values for VPA
-        if ($this->input['payerVa'] === 'shk@icici')
+        if ($encrypt === true)
         {
-            $content = $json;
-        }
-        else
-        {
-            $encryptedData = $this->encrypt($json);
+            $encryptedData = $this->encrypt($content);
             assert($encryptedData !== false);
+
             $content = base64_encode($encryptedData);
         }
 

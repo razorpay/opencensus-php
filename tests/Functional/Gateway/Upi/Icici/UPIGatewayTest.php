@@ -106,4 +106,63 @@ class UPIGatewayTest extends TestCase
 
         $this->refundPayment($payment['id']);
     }
+
+    public function testVerifyPayment()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $authPayment = $this->doAuthPayment($payment);
+
+        $upiEntity = $this->getLastEntity('upi', true);
+        $payment = $this->getEntityById('payment', $authPayment['payment_id'], true);
+
+        $mockServer = $this->mockServer();
+
+        $content = $mockServer->makeS2SRequest($upiEntity, $payment);
+
+        $request = [
+            'raw'      => $content,
+            'url'       => '/callback/upi_icici',
+            'method'    => 'post'
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->payment = $this->verifyPayment($payment['id']);
+
+        $this->assertSame($this->payment['payment']['verified'], 1);
+    }
+
+    public function testVerifyFailedPayment()
+    {
+        $this->ba->publicAuth();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $authPayment = $this->doAuthPayment($payment);
+
+        $upiEntity = $this->getLastEntity('upi_icici', true);
+        $payment = $this->getEntityById('payment', $authPayment['payment_id'], true);
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->verifyPayment($payment['id']);
+        });
+
+        $upi = $this->getLastEntity('upi', true);
+        $this->assertTestResponse($upi, 'testPaymentUpiEntity');
+        $this->assertArrayHasKey('gateway_payment_id', $upi);
+    }
+
+    protected function setContent(Closure $closure)
+    {
+        $server = $this->mockServer()
+                        ->shouldReceive('content')
+                        ->andReturnUsing($closure)
+                        ->mock();
+
+        $this->setMockServer($server);
+    }
 }

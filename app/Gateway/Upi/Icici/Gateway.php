@@ -10,7 +10,9 @@ use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Upi\Base;
+use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Upi\Base\Entity;
+use RZP\Gateway\Base\VerifyResult;
 use RZP\Exception\GatewayErrorException;
 
 class Gateway extends Base\Gateway
@@ -21,11 +23,12 @@ class Gateway extends Base\Gateway
 
     protected $map = array(
         Entity::VPA                     => Entity::VPA,
+        Entity::EMAIL                   => Entity::EMAIL,
         Entity::CONTACT                 => Entity::CONTACT,
+        Entity::RECEIVED                => Entity::RECEIVED,
         ResponseFields::PAYER_NAME      => Entity::NAME,
         ResponseFields::RESPONSE        => Entity::STATUS_CODE,
         ResponseFields::PAYER_AMOUNT    => Entity::AMOUNT,
-        Entity::RECEIVED                => Entity::RECEIVED,
         ResponseFields::BANK_RRN        => Entity::GATEWAY_PAYMENT_ID,
         ResponseFields::MERCHANT_ID     => Entity::GATEWAY_MERCHANT_ID,
     );
@@ -77,7 +80,9 @@ class Gateway extends Base\Gateway
     protected function getGatewayEntityAttributes(array $input)
     {
         return [
-            Entity::VPA =>  $input['vpa'],
+            Entity::VPA     => $input['vpa'],
+            Entity::CONTACT => $input['payment']['contact'],
+            Entity::EMAIL   => $input['payment']['email'],
         ];
     }
 
@@ -324,7 +329,7 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
-        $verify = new \RZP\Gateway\Base\Verify($this->gateway, $input);
+        $verify = new Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
     }
@@ -399,6 +404,8 @@ class Gateway extends Base\Gateway
         $verify->apiSuccess = true;
         $verify->gatewaySuccess = false;
 
+        $attr = [];
+
         if ($content['status'] === Status::SUCCESS)
         {
             $verify->gatewaySuccess = true;
@@ -422,16 +429,30 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
 
-        if (empty($payment['gateway_payment_id']))
+        if ($verify->match === false)
         {
-            $gateway_payment_id = $content['OriginalBankRRN'];
-
-            $payment->fill(['gateway_payment_id' => $gateway_payment_id]);
-
-            $payment->saveOrFail();
+            $verify->payment = $this->saveVerifyContent($payment, $verify);
         }
 
         return $status;
+    }
+
+    protected function saveVerifyContent($gatewayPayment, $verify)
+    {
+        if ($verify->gatewaySuccess === true)
+        {
+            $content = $verify->verifyResponseContent;
+
+            $upiAttr = [
+                'status_code' => '0',
+                'gateway_payment_id' => $content['OriginalBankRRN']
+            ];
+
+            $gatewayPayment->fill($upiAttr);
+            $gatewayPayment->saveOrFail();
+        }
+
+        return $gatewayPayment;
     }
 
     /**
