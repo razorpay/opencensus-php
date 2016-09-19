@@ -182,13 +182,13 @@ class Category
         return in_array($category, self::CATEGORIES_ALL);
     }
 
-    public static function isTerminalCategoryValid($input)
+    public static function isNetworkCategoryValid($input)
     {
         // get the correct constant for the terminal
         // get the values array and check in array
         $values = [];
 
-        $category = $input[Entity::TERMINAL_CATEGORY];
+        $category = $input[Entity::NETWORK_CATEGORY];
 
         $method = self::getMethod($input);
 

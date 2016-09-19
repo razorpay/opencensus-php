@@ -28,7 +28,7 @@ class Validator extends Base\Validator
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
         Entity::SHARED                      => 'sometimes|boolean',
         Entity::GATEWAY_ACQUIRER            => 'sometimes|string|max:30',
-        Entity::TERMINAL_CATEGORY           => 'sometimes|string|max:30',
+        Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
     );
 
     protected static $editTerminalGateways = array(
@@ -37,7 +37,7 @@ class Validator extends Base\Validator
     );
 
     protected static $createValidators = array(
-        Entity::GATEWAY, Entity::EMI, Entity::TERMINAL_CATEGORY);
+        Entity::GATEWAY, Entity::EMI, Entity::NETWORK_CATEGORY);
 
     protected static $hdfcTerminalRules = array(
         Entity::GATEWAY                     => 'required|in:hdfc',
@@ -153,7 +153,7 @@ class Validator extends Base\Validator
             $input['netbanking'],
             $input['merchant_id'],
             $input['category'],
-            $input['terminal_category']);
+            $input[Entity::NETWORK_CATEGORY]);
 
         $op = $input['gateway'] . '_terminal';
 
@@ -216,18 +216,18 @@ class Validator extends Base\Validator
      * @param array $input
      * @return void
      * */
-    public function validateTerminalCategory($input)
+    public function validateNetworkCategory($input)
     {
-        if (empty($input[Entity::TERMINAL_CATEGORY]) === true)
+        if (empty($input[Entity::NETWORK_CATEGORY]) === true)
         {
             return;
         }
 
-        if (Category::isTerminalCategoryValid($input) === false)
+        if (Category::isNetworkCategoryValid($input) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Category provided invalid for gateway',
-                Entity::TERMINAL_CATEGORY);
+                Entity::NETWORK_CATEGORY);
             }
     }
 

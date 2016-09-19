@@ -79,7 +79,7 @@ class CreateTerminals extends Migration
             $table->boolean(Terminal::SHARED)
                   ->default(0);
 
-            $table->string(Terminal::TERMINAL_CATEGORY)
+            $table->string(Terminal::NETWORK_CATEGORY)
                   ->nullable();
 
             $table->integer(Terminal::CREATED_AT);

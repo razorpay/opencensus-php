@@ -171,15 +171,15 @@ class TerminalSelectionTest extends TestCase
     {
         $this->fixtures->merchant->editTerminalCategory('corporate');
         $this->fixtures->create('terminal:netbanking_kotak_terminal',
-                                ['id' => 'DCrpNbKtkTrmnl', 'terminal_category' => 'corporate']);
+                                ['id' => 'DCrpNbKtkTrmnl', 'network_category' => 'corporate']);
         $this->fixtures->create('terminal:netbanking_kotak_terminal',
-                                ['id' => 'DEduNbKtkTrmnl', 'terminal_category' => 'education']);
+                                ['id' => 'DEduNbKtkTrmnl', 'network_category' => 'education']);
         $this->fixtures->create('terminal:netbanking_kotak_terminal',
                                 ['id' => 'DrctNbKtkTrmnl']);
         $this->fixtures->create('terminal:shared_netbanking_kotak_terminal',
-                                ['id' => 'SCorNbKtkTrmnl','terminal_category' => 'corporate']);
+                                ['id' => 'SCorNbKtkTrmnl','network_category' => 'corporate']);
         $this->fixtures->create('terminal:shared_netbanking_kotak_terminal',
-                                ['id' => 'SEduNbKtkTrmnl','terminal_category' => 'education']);
+                                ['id' => 'SEduNbKtkTrmnl','network_category' => 'education']);
         $this->fixtures->create('terminal:shared_netbanking_kotak_terminal',
                                 ['id' => 'SharNbKtkTrmnl']);
 

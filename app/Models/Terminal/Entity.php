@@ -35,7 +35,7 @@ class Entity extends Base\PublicEntity
 
     const SHARED                        = 'shared';
 
-    const TERMINAL_CATEGORY             = 'terminal_category';
+    const NETWORK_CATEGORY              = 'network_category';
 
     const DELETED_AT                    = 'deleted_at';
 
@@ -407,11 +407,11 @@ class Entity extends Base\PublicEntity
 
     public function getTerminalCategory()
     {
-        return $this->getAttribute(self::TERMINAL_CATEGORY);
+        return $this->getAttribute(self::NETWORK_CATEGORY);
     }
 
     public function setTerminalCategory($category)
     {
-        $this->setAttribute(self::TERMINAL_CATEGORY, $category);
+        $this->setAttribute(self::NETWORK_CATEGORY, $category);
     }
 }

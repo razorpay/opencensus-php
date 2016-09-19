@@ -115,7 +115,7 @@ return [
                 'category'  => '4567',
                 'netbanking'   => '1',
                 'shared'    => '1',
-                'terminal_category' => 'education',
+                'network_category' => 'education',
             ],
             'method' => 'POST'
         ],
@@ -137,7 +137,7 @@ return [
                 'category'  => '4567',
                 'card'   => '1',
                 'shared'    => '1',
-                'terminal_category' => 'education',
+                'network_category' => 'education',
             ],
             'method' => 'POST'
         ],

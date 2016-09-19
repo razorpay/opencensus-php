@@ -602,17 +602,17 @@ class Terminal extends Base
     public function createSharedAmexCategoryTerminals()
     {
         // Create education terminal
-        $attributes = ['id' => 'ShAmexEduTrmnl', 'terminal_category' => 'education'];
+        $attributes = ['id' => 'ShAmexEduTrmnl', 'network_category' => 'education'];
 
         $this->createSharedAmexTerminal($attributes);
 
         // Create education services terminal
-        $attributes = ['id' => 'ShAmexUtilTmnl', 'terminal_category' => 'utilities'];
+        $attributes = ['id' => 'ShAmexUtilTmnl', 'network_category' => 'utilities'];
 
         $this->createSharedAmexTerminal($attributes);
 
         // Create retail services terminal
-        $attributes = ['id' => 'ShRetailSvcsTl', 'terminal_category' => 'retail_services'];
+        $attributes = ['id' => 'ShRetailSvcsTl', 'network_category' => 'retail_services'];
 
         $this->createSharedAmexTerminal($attributes);
     }
