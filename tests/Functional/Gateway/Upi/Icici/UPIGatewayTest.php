@@ -143,13 +143,9 @@ class UPIGatewayTest extends TestCase
 
         $authPayment = $this->doAuthPayment($payment);
 
-        $upiEntity = $this->getLastEntity('upi_icici', true);
         $payment = $this->getEntityById('payment', $authPayment['payment_id'], true);
 
-        $this->runRequestResponseFlow($data, function() use ($payment)
-        {
-            $this->verifyPayment($payment['id']);
-        });
+        $this->authorizeFailedPayment($payment['id']);
 
         $upi = $this->getLastEntity('upi', true);
         $this->assertTestResponse($upi, 'testPaymentUpiEntity');

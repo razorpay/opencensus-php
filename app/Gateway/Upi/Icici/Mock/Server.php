@@ -73,7 +73,7 @@ class Server extends Base\Mock\Server
 
         $response = array(
             "response"          => "0",
-            "merchantId"        => "116798",
+            "merchantId"        => $input['merchantId'],
             "subMerchantId"     => "1234",
             "terminalId"        => "1234",
             "success"           => "true",

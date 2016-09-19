@@ -13,24 +13,28 @@ use RZP\Gateway\Upi\Base;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Exception\GatewayErrorException;
 
 class Gateway extends Base\Gateway
 {
+    use AuthorizeFailed;
+
     protected $gateway = 'upi_icici';
 
     const BANK = 'icici';
 
     protected $map = array(
-        Entity::VPA                     => Entity::VPA,
-        Entity::EMAIL                   => Entity::EMAIL,
-        Entity::CONTACT                 => Entity::CONTACT,
-        Entity::RECEIVED                => Entity::RECEIVED,
-        ResponseFields::PAYER_NAME      => Entity::NAME,
-        ResponseFields::RESPONSE        => Entity::STATUS_CODE,
-        ResponseFields::PAYER_AMOUNT    => Entity::AMOUNT,
-        ResponseFields::BANK_RRN        => Entity::GATEWAY_PAYMENT_ID,
-        ResponseFields::MERCHANT_ID     => Entity::GATEWAY_MERCHANT_ID,
+        Entity::VPA                       => Entity::VPA,
+        Entity::EMAIL                     => Entity::EMAIL,
+        Entity::CONTACT                   => Entity::CONTACT,
+        Entity::RECEIVED                  => Entity::RECEIVED,
+        ResponseFields::PAYER_NAME        => Entity::NAME,
+        ResponseFields::RESPONSE          => Entity::STATUS_CODE,
+        ResponseFields::PAYER_AMOUNT      => Entity::AMOUNT,
+        ResponseFields::BANK_RRN          => Entity::GATEWAY_PAYMENT_ID,
+        ResponseFields::ORIGINAL_BANK_RRN => Entity::GATEWAY_PAYMENT_ID,
+        ResponseFields::MERCHANT_ID       => Entity::GATEWAY_MERCHANT_ID,
     );
 
     /**
@@ -434,30 +438,9 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
 
-        if ($verify->match === false)
-        {
-            $verify->payment = $this->saveVerifyContent($payment, $verify);
-        }
+        $verify->verifyResponseContent = $this->getMappedAttributes($content);
 
         return $status;
-    }
-
-    protected function saveVerifyContent($gatewayPayment, $verify)
-    {
-        if ($verify->gatewaySuccess === true)
-        {
-            $content = $verify->verifyResponseContent;
-
-            $upiAttr = [
-                'status_code' => '0',
-                'gateway_payment_id' => $content['OriginalBankRRN']
-            ];
-
-            $gatewayPayment->fill($upiAttr);
-            $gatewayPayment->saveOrFail();
-        }
-
-        return $gatewayPayment;
     }
 
     /**
