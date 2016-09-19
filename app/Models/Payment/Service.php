@@ -128,9 +128,9 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function redirect($id)
+    public function redirectCallback($id)
     {
-        return $this->getNewProcessor()->redirect($id);
+        return $this->getNewProcessor()->redirectCallback($id);
     }
 
     public function forceAuthorizeFailed($id, $input)
@@ -333,6 +333,21 @@ class Service extends Base\Service
         $payment = $this->core->retrieveByIdAndMerchantId($id, $this->merchant->getId());
 
         return $payment->toArrayPublic();
+    }
+
+    /**
+     * We only return the payment status in case of an async
+     * payment + status being either of created or authorized
+     *
+     * Note: This will only work within 15 minutes of the payment creation
+     *
+     * @return array
+     */
+    public function fetchStatus($id)
+    {
+        $data = $this->getNewProcessor()->getAsyncResponse($id);
+
+        return $data;
     }
 
     public function addPaymentMetadata($id, $input)

@@ -142,6 +142,22 @@ class PaymentCreateTest extends TestCase
         });
     }
 
+    public function testPaymentS2SOnPrivateAuth()
+    {
+        $this->ba->privateAuth();
+
+        $this->config['app.throw_exception_in_testing'] = false;
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['cvv'] = '1';
+        $content = $this->doS2SPrivateAuthPayment($payment);
+
+        $error = $content['error'];
+        $this->assertEquals($error['field'], 'cvv');
+        $this->assertEquals($error['code'], 'BAD_REQUEST_ERROR');
+        $this->assertEquals($error['description'], 'The cvv must be between 3 and 4 digits.');
+    }
+
     protected function mockEsClient()
     {
         $clientBuilder = Mockery::mock('RZP\Services\EsClient')->makePartial();
