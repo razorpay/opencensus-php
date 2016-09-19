@@ -31,7 +31,7 @@ return [
                 'pincode'       => '560078',
                 'city'          => 'Bangalore',
                 'state'         => 'Karnataka',
-                'country'       => 'India'
+                'country'       => 'in'
             ],
         ],
     ],
@@ -62,7 +62,7 @@ return [
                 'pincode'       => '560078',
                 'city'          => 'Bangalore',
                 'state'         => 'Karnataka',
-                'country'       => 'India'
+                'country'       => 'in'
             ],
         ],
     ],
@@ -106,7 +106,7 @@ return [
                 'city'          => 'Bangalore',
                 'state'         => 'Karnataka',
                 'pincode'       => '560078',
-                'country'       => 'India',
+                'country'       => 'IN',
                 'address_type'  => 'shipping_address'
             ],
         ],
@@ -121,7 +121,7 @@ return [
                 'pincode'       => '560078',
                 'city'          => 'Bangalore',
                 'state'         => 'Karnataka',
-                'country'       => 'India'
+                'country'       => 'in'
             ],
         ],
     ],
@@ -136,7 +136,7 @@ return [
                 'city'          => 'Bangalore',
                 'state'         => 'Karnataka',
                 'pincode'       => '560078',
-                'country'       => 'India',
+                'country'       => 'india',
                 'address_type'  => 'shipping_address',
                 'primary'       => '0',
             ],
@@ -152,7 +152,7 @@ return [
                 'pincode'       => '560078',
                 'city'          => 'Bangalore',
                 'state'         => 'Karnataka',
-                'country'       => 'India'
+                'country'       => 'in'
             ],
         ],
     ],
@@ -169,7 +169,7 @@ return [
                 'pincode'       => '560078',
                 'city'          => 'Bangalore',
                 'state'         => 'Karnataka',
-                'country'       => 'India'
+                'country'       => 'in'
             ],
         ],
     ],
@@ -186,7 +186,7 @@ return [
                 'pincode'       => '560078',
                 'city'          => 'Bangalore',
                 'state'         => 'Karnataka',
-                'country'       => 'India'
+                'country'       => 'in'
             ],
         ],
     ],
@@ -219,7 +219,7 @@ return [
                 'city'          => 'Bangalore',
                 'state'         => 'Karnataka',
                 'pincode'       => '560078',
-                'country'       => 'India',
+                'country'       => 'in',
                 'address_type'  => 'shipping_address'
             ],
         ],
@@ -234,7 +234,7 @@ return [
                 'pincode'       => '560078',
                 'city'          => 'Bangalore',
                 'state'         => 'Karnataka',
-                'country'       => 'India'
+                'country'       => 'in'
             ],
         ],
     ],

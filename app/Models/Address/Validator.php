@@ -3,6 +3,7 @@
 namespace RZP\Models\Address;
 
 use RZP\Models\Base;
+use RZP\Exception;
 
 class Validator extends Base\Validator
 {
@@ -14,12 +15,23 @@ class Validator extends Base\Validator
         Entity::PINCODE         => 'sometimes|string|between:2,32',
         Entity::STATE           => 'required|string|between:2,128',
         // TODO: Should we add a validator for the country, now? Or later?
-        Entity::COUNTRY         => 'required|string|between:2,128',
+        Entity::COUNTRY         => 'required|string|between:2,128|custom',
         Entity::PRIMARY         => 'sometimes|in:0,1',
     ];
 
     protected function validateAddressType($attribute, $value)
     {
         Type::validateAddressType($value, Type::CUSTOMER);
+    }
+
+    protected function validateCountry($attribute, $value)
+    {
+        $countryCode = Entity::getCountryCode($value);
+
+        if ($countryCode === null)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "Invalid country code/name passed", null, [$value]);
+        }
     }
 }

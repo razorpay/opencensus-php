@@ -44,6 +44,10 @@ class Entity extends Base\PublicEntity
         self::COUNTRY,
     ];
 
+    protected static $modifiers = [
+        self::COUNTRY,
+    ];
+
     protected $visible = [
         self::ID,
         self::LINE1,
@@ -91,6 +95,25 @@ class Entity extends Base\PublicEntity
         self::PRIMARY => 'bool'
     ];
 
+    // ----------------------------------- MODIFIERS -----------------------------------
+
+    protected function modifyCountry(& $input)
+    {
+        if (empty($input[self::COUNTRY]) === true)
+        {
+            return;
+        }
+
+        $country = & $input[self::COUNTRY];
+
+        $country = strtolower($country);
+        $country = str_replace('.', '', $country);
+        $country = str_replace('-', ' ', $country);
+        $country = str_replace('_', ' ', $country);
+    }
+
+    // ----------------------------------- END MODIFIERS -----------------------------------
+
     // ----------------------------------- GETTERS -----------------------------------
 
     public function getAddressType()
@@ -125,6 +148,17 @@ class Entity extends Base\PublicEntity
     }
 
     // ----------------------------------- END SETTERS -----------------------------------
+
+    // ----------------------------------- MUTATORS -----------------------------------
+
+    protected function setCountryAttribute($country)
+    {
+        $countryCode = self::getCountryCode($country);
+
+        $this->attributes[self::COUNTRY] = $countryCode;
+    }
+
+    // ----------------------------------- END MUTATORS -----------------------------------
 
     // ----------------------------------- PUBLIC SETTERS -----------------------------------
 
@@ -170,5 +204,26 @@ class Entity extends Base\PublicEntity
         $entity = $this->{$entityType};
 
         return $entity;
+    }
+
+    public static function getCountryCode($value)
+    {
+        $countryCodesMappingFile = storage_path('countries/names.json');
+
+        $names = json_decode(file_get_contents($countryCodesMappingFile), true);
+
+        if (isset($names[$value]) === true)
+        {
+            return $value;
+        }
+
+        $countryCode = array_search($value, $names);
+
+        if ($countryCode === false)
+        {
+            return null;
+        }
+
+        return $countryCode;
     }
 }
