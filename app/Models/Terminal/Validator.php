@@ -24,6 +24,7 @@ class Validator extends Base\Validator
         Entity::CARD                        => 'sometimes|boolean',
         Entity::NETBANKING                  => 'sometimes|boolean',
         Entity::EMI                         => 'sometimes|boolean',
+        Entity::UPI                         => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
         Entity::SHARED                      => 'sometimes|boolean',
         Entity::GATEWAY_ACQUIRER            => 'sometimes|string',
@@ -32,6 +33,7 @@ class Validator extends Base\Validator
     protected static $editTerminalGateways = array(
         Payment\Gateway::HDFC,
         Payment\Gateway::AXIS_MIGS,
+        Payment\Gateway::UPI_ICICI,
     );
 
     protected static $createValidators = array(
@@ -107,6 +109,12 @@ class Validator extends Base\Validator
         Entity::CARD                        => 'sometimes|boolean|in:1',
     );
 
+    protected static $upiIciciEditTerminalRules = array(
+        Entity::GATEWAY                     => 'sometimes|in:upi_icici',
+        Entity::UPI                         => 'sometimes|boolean|in:1',
+        Entity::GATEWAY_TERMINAL_ID         => 'sometimes',
+    );
+
     protected static $walletPayzappTerminalRules = array(
         Entity::GATEWAY                     => 'required|in:wallet_payzapp',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string|size:21',
@@ -133,7 +141,7 @@ class Validator extends Base\Validator
 
     protected static $walletAirtelmoneyTerminalRules = array(
         Entity::GATEWAY                     => 'required|in:wallet_airtelmoney',
-        Entity::GATEWAY_MERCHANT_ID2        => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
     );
 
     protected function validateGateway($input)

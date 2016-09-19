@@ -29,6 +29,7 @@ class Validator extends Base\Validator
         Entity::EMI         => 'sometimes|boolean',
         Entity::CREDIT_CARD => 'sometimes_if:card,1|required_with:debit_card|boolean',
         Entity::DEBIT_CARD  => 'sometimes_if:card,1|required_with:credit_card|boolean',
+        Entity::UPI         => 'sometimes|boolean',
     );
 
     protected static $setMethodsValidators = array(

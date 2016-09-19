@@ -195,6 +195,7 @@ class DatabaseSeeder extends Seeder
                     'payumoney'     => '1',
                     'airtelmoney'   => '1',
                     'card'          => '1',
+                    'upi'           => '1',
                     'created_at'    =>  time(),
                     'updated_at'    =>  time()
                 )
@@ -212,6 +213,7 @@ class DatabaseSeeder extends Seeder
                     'airtelmoney'   => '1',
                     'card'          => '1',
                     'emi'           => '1',
+                    'upi'           => '1',
                     'created_at'    =>  time(),
                     'updated_at'    =>  time()
                 )
@@ -490,6 +492,7 @@ class DatabaseSeeder extends Seeder
         $this->createSharpGatewayTerminals();
         $this->createNetbankingKotakTerminals();
         $this->createOlamoneyTerminals();
+        $this->createUpiTerminals();
         $this->createAirtelmoneyTerminals();
     }
 
@@ -772,6 +775,24 @@ class DatabaseSeeder extends Seeder
                 'updated_at'                =>  time(),
                 )
             );
+    }
+
+    protected function createUpiTerminals()
+    {
+        DB::table(Table::TERMINAL)->insert([
+            'id'                        => Terminal\Shared::UPI_ICICI_RAZORPAY_TERMINAL,
+            'merchant_id'               => Account::DEMO_ACCOUNT,
+            'gateway'                   => Gateway::UPI_ICICI,
+            'card'                      => '0',
+            'netbanking'                => '0',
+            'upi'                       => '1',
+            // This needs to be numeric
+            'gateway_merchant_id'       => 'demo_merchant_upi_icici',
+            'gateway_terminal_id'       => '1234',
+            'gateway_terminal_password' => Crypt::encrypt('demo_account_upi_icici_terminal_pass'),
+            'created_at'                =>  time(),
+            'updated_at'                =>  time(),
+        ]);
     }
 
     protected function createPayumoneyTerminals()
