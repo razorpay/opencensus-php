@@ -20,6 +20,7 @@
         "giggsey/libphonenumber-for-php": "^7.4",
         "predis/predis": "^1.1",
         "php-http/guzzle6-adapter": "^1.1",
+        "phpseclib/phpseclib": "^2.0",
         "jenssegers/agent": "^2.3",
         "minfraud/http": "^1.70"
     },
