@@ -1565,7 +1565,7 @@ trait Authorize
     {
         $expectedHash = $this->getHashOf($paymentPublicId);
 
-        if ($expectedHash !== $hash)
+        if (hash_equals($expectedHash, $hash) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Callback payment hash does not match. Please notify the admin of this error.');
