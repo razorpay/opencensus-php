@@ -5,8 +5,11 @@ namespace RZP\Gateway\Upi\Icici;
 use Carbon\Carbon;
 use phpseclib\Crypt\RSA;
 use Request;
+use RZP\Exception;
+use ErrorException;
 use Requests_Response;
 use RZP\Constants\Mode;
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Upi\Base;
@@ -14,7 +17,6 @@ use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
-use RZP\Exception\GatewayErrorException;
 
 class Gateway extends Base\Gateway
 {
@@ -66,7 +68,7 @@ class Gateway extends Base\Gateway
         {
             $errorCode = ResponseCodeMap::getApiErrorCode($status);
 
-            throw new GatewayErrorException(
+            throw new Exception\GatewayErrorException(
                 $errorCode,
                 $status,
                 ResponseCode::getResponseMessage($status));
@@ -119,7 +121,18 @@ class Gateway extends Base\Gateway
 
         $response = base64_decode($response, true);
 
-        $response = $this->decrypt($response);
+        try
+        {
+            $response = $this->decrypt($response);
+        }
+        catch (ErrorException $e)
+        {
+            $this->trace->traceException($e, Trace::INFO, Trace::RECOVERABLE_EXCEPTION);
+
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED
+            );
+        }
 
         return $this->jsonToArray($response);
     }
@@ -402,7 +415,7 @@ class Gateway extends Base\Gateway
 
         if ($content['success'] !== 'true')
         {
-            throw new GatewayErrorException(
+            throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
                 $content['success'],
                 $content['message']);
@@ -519,7 +532,7 @@ class Gateway extends Base\Gateway
         {
             $message = "Payment Failed during callback";
 
-            throw new GatewayErrorException(
+            throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
                 $status,
                 $message);
@@ -533,7 +546,7 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        throw new GatewayErrorException(
+        throw new Exception\GatewayErrorException(
             ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED
         );
     }
