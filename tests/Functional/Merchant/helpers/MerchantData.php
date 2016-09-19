@@ -966,10 +966,10 @@ return [
         ],
     ],
 
-    'testAddTerminalCategories' => [
+    'testAddCategory2' => [
         'request' => [
             'content' => [
-                'terminal_category' => 'education'
+                'category2' => 'education'
             ],
             'url' => '/merchants/1X4hRFHFx4UiXt',
             'method' => 'put',
@@ -980,10 +980,10 @@ return [
         ]
     ],
 
-    'testAddInvalidTerminalCategories' => [
+    'testAddInvalidCategory2' => [
         'request' => [
             'content' => [
-                'terminal_category'=>'education2'
+                'category2'=>'education2'
             ],
             'url' => '/merchants/1X4hRFHFx4UiXt',
             'method' => 'put',

@@ -83,7 +83,7 @@ class CreateMerchants extends Migration
                   ->nullable();
 
             // Columns for Method and Gateway Based Categories
-            $table->string(Merchant::TERMINAL_CATEGORY)
+            $table->string(Merchant::CATEGORY2)
                   ->nullable();
 
             $table->integer(Merchant::CREATED_AT);

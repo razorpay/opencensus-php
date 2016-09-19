@@ -28,6 +28,7 @@ class Validator extends Base\Validator
         Entity::HOLD_FUNDS                  => 'sometimes|in:0,1',
         Entity::WEBSITE                     => 'sometimes|url|max:255',
         Entity::CATEGORY                    => 'sometimes|numeric|digits:4',
+        Entity::CATEGORY2                   => 'sometimes|string|max:30|custom',
         Entity::INTERNATIONAL               => 'sometimes|boolean',
         Entity::BILLING_LABEL               => 'sometimes|max:255',
         Entity::TRANSACTION_REPORT_EMAIL    => 'sometimes|array',
@@ -38,7 +39,6 @@ class Validator extends Base\Validator
         Entity::RISK_RATING                 => 'sometimes|min:0|max:5',
         Entity::FEE_BEARER                  => 'sometimes|in:customer,platform',
         Entity::MAX_PAYMENT_AMOUNT          => 'sometimes|integer',
-        Entity::TERMINAL_CATEGORY           => 'sometimes|string|max:30|custom',
     );
 
     protected static $uniqueEmailRules = array(
@@ -112,7 +112,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateTerminalCategory($attribute, $value)
+    public function validateCategory2($attribute, $value)
     {
         $category = $value;
 
@@ -120,7 +120,7 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Category : '.$category.' invalid for merchant',
-                Entity::TERMINAL_CATEGORY
+                Entity::CATEGORY2
             );
         }
     }

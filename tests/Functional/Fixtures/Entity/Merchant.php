@@ -254,9 +254,9 @@ class Merchant extends Base
         return $this->edit($id, ['category' => $category]);
     }
 
-    public function editTerminalCategory($category, $id='10000000000000')
+    public function editCategory2($category, $id='10000000000000')
     {
-        return $this->edit($id, ['terminal_category' => $category]);
+        return $this->edit($id, ['category2' => $category]);
     }
 
     public function editPricingPlanId($planId, $id = '10000000000000')

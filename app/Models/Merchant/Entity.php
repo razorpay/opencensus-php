@@ -37,7 +37,7 @@ class Entity extends Base\PublicEntity
     /**
      * Category for particular methods or gateways
      */
-    const TERMINAL_CATEGORY         = 'terminal_category';
+    const CATEGORY2                 = 'category2';
 
     /**
      * Refers to methods relation and not a property;
@@ -112,6 +112,7 @@ class Entity extends Base\PublicEntity
      );
 
     protected $defaults = array(
+        self::CATEGORY2             => null,
         self::LIVE                  => false,
         self::ACTIVATED             => false,
         self::ACTIVATED_AT          => null,
@@ -124,7 +125,6 @@ class Entity extends Base\PublicEntity
         self::RISK_RATING           => 3,
         self::LOGO_URL              => null,
         self::MAX_PAYMENT_AMOUNT    => null,
-        self::TERMINAL_CATEGORY     => null,
     );
 
     protected $publicSetters = array(
@@ -271,14 +271,14 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::LOGO_URL, $logoUrl);
     }
 
-    public function setTerminalCategory($category)
+    public function setCategory2($category)
     {
-        return $this->setAttribute(self::TERMINAL_CATEGORY, $category);
+        return $this->setAttribute(self::CATEGORY2, $category);
     }
 
-    public function getTerminalCategory()
+    public function getCategory2()
     {
-        return $this->getAttribute(self::TERMINAL_CATEGORY);
+        return $this->getAttribute(self::CATEGORY2);
     }
 
     public function getBillingLabelElseName()

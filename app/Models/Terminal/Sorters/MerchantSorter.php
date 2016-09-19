@@ -33,7 +33,7 @@ class MerchantSorter extends Terminal\Sorter
 
         $network = $input['payment']->isMethodCardOrEmi() ? $input['payment']->card->getNetworkCode() : null;
 
-        $category = $input['merchant']->getTerminalCategory();
+        $category = $input['merchant']->getCategory2();
 
         $defaultCategory = Category::getDefaultForMethodAndNetwork($method, $network);
 

@@ -197,14 +197,14 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
-    public function testAddTerminalCategories()
+    public function testAddCategory2()
     {
         $this->createMerchant();
 
         $this->startTest();
     }
 
-    public function testAddInvalidTerminalCategories()
+    public function testAddInvalidCategory2()
     {
         $this->createMerchant();
 
