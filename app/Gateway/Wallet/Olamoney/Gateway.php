@@ -25,7 +25,7 @@ class Gateway extends Base\Gateway
 
     protected $gateway = 'wallet_olamoney';
 
-    protected $topup = false;
+    protected $topup = true;
 
     protected $walletAccessTokenExpiry = 28800; // 8 hours - 8 * 60 * 60
 
@@ -55,7 +55,7 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        return $this->callbackRedirectFlow($input);
+        return $this->callbackTopupFlow($input);
     }
 
     public function refund(array $input)
@@ -223,11 +223,10 @@ class Gateway extends Base\Gateway
         }
     }
 
-    // Uncomment on topup enable
-    // public function topup($input)
-    // {
-    //     return $this->authorize($input);
-    // }
+    public function topup($input)
+    {
+        return $this->authorize($input);
+    }
 
     public function debit(array $input)
     {
@@ -321,7 +320,7 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected function callbackRedirectFlow($input)
+    protected function callbackTopupFlow($input)
     {
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
@@ -331,16 +330,26 @@ class Gateway extends Base\Gateway
                 'payment_id'    => $input['payment']['id'],
             ]);
 
-        $this->verifySecureHash($input['gateway']);
+        $content = $input['gateway'];
 
-        //  Changing action to AUTHORIZE to keep the action consistent
-        $this->action = Action::AUTHORIZE;
+        if ((isset($content['status']) === false) or
+            ($content['status'] !== Status::SUCCESS))
+        {
+            throw new Exception\GatewayErrorException(
+            ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+            $content['status']);
+        }
 
-        $gatewayPaymentAttrs = $this->getCreateWalletAttributes($input, $input['gateway']);
+        // verify hash - when ola starts sending hash value
 
-        $this->createGatewayPaymentEntity($gatewayPaymentAttrs);
+        $token = $this->getValidWalletToken($input);
 
-        $this->verifyPaymentCallbackResponse($input);
+        if ($token === null)
+        {
+            throw new Exception\BaseException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+        }
+
+        $this->accessToken = $token->getGatewayToken();
     }
 
     protected function getCreateWalletAttributes($input, $content)
@@ -414,6 +423,8 @@ class Gateway extends Base\Gateway
             'content' => [],
         ];
 
+        // find a good way to trace this
+
         return $request;
     }
 
@@ -444,6 +455,8 @@ class Gateway extends Base\Gateway
             RequestFields::AMOUNT                   => $amount,
             RequestFields::USER_ACCESS_TOKEN        => $this->accessToken,
             RequestFields::CURRENCY                 => $input['payment']['currency'],
+            RequestFields::BALANCE_TYPE             => 'cash',
+            RequestFields::BALANCE_NAME             => 'cash',
         );
 
         $content[RequestFields::HASH] = $this->getHashForBill($content);

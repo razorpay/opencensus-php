@@ -173,6 +173,44 @@ class OlamoneyGatewayTest extends TestCase
         return $response;
     }
 
+    public function testTopupPayment()
+    {
+        // Get Insufficient balance response
+        $response = $this->testInsufficientBalancePayment();
+
+        $response = $this->response->getOriginalContent()->data;
+
+        // Send topup request
+        $response = $this->topupPayment($response['payment_id']);
+
+        // Make topup redirection request
+        $redirect = $this->sendRequest($response['request']);
+
+        $ret = (($this->isResponseInstanceType($redirect, 'redirect')) and
+                ($redirect->getStatusCode() === 302));
+
+        if ($ret === true)
+        {
+            $callback = array(
+                'url' => $redirect->getTargetUrl(),
+                'method' => 'get',
+                'content' => []
+            );
+
+            $callbackResponse = $this->sendRequest($callback);
+        }
+        else
+        {
+            assert(false);
+        }
+
+        $this->assertArrayHasKey('razorpay_payment_id', $callbackResponse->getOriginalContent()->data);
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $this->assertTestResponse($wallet, 'testTopUpEntity');
+    }
+
     public function testVerifyPayment()
     {
         $payment = $this->getDefaultWalletPaymentArray('olamoney');
@@ -234,6 +272,17 @@ class OlamoneyGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals('failed', $payment['status']);
+    }
+
+    public function testPaymentWithRedirection()
+    {
+        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+
+        $authPayment = $this->doAuthPayment($payment);
+
+        $response = $this->redirectPayment($authPayment['razorpay_payment_id']);
+
+        $this->assertArraySelectiveEquals($authPayment, $response);
     }
 
     protected function failOlamoneyAuthorizePayment()

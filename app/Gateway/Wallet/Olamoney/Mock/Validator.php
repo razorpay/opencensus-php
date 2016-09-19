@@ -9,6 +9,22 @@ use RZP\Gateway\Wallet\Olamoney\ResponseFields;
 
 class Validator extends Base\Validator
 {
+    protected static $creditRules   = array(
+        'paymentId'                                                         => 'required|string',
+        RequestFields::BILL                                                 => 'required|array',
+        RequestFields::BILL . '.' . RequestFields::MERCHANT_REFERENCE_ID    => 'required|alpha_num',
+        RequestFields::BILL . '.' . RequestFields::COMMAND                  => 'required|string|in:credit',
+        RequestFields::BILL . '.' . RequestFields::RETURN_URL               => 'required|url',
+        RequestFields::BILL . '.' . RequestFields::NOTIFICATION_URL         => 'required',
+        RequestFields::BILL . '.' . RequestFields::USER_ACCESS_TOKEN        => 'required|string',
+        RequestFields::BILL . '.' . RequestFields::CURRENCY                 => 'required|string|in:INR',
+        RequestFields::BILL . '.' . RequestFields::BALANCE_TYPE             => 'required|string|in:cash',
+        RequestFields::BILL . '.' . RequestFields::BALANCE_NAME             => 'required|string|in:cash',
+        RequestFields::BILL . '.' . RequestFields::AMOUNT                   => 'required|numeric',
+        RequestFields::BILL . '.' . RequestFields::COMMENTS                 => 'sometimes|string',
+        RequestFields::BILL . '.' . RequestFields::UDF                      => 'required|string',
+    );
+
     protected static $otpGenerateRules = array(
         RequestFields::PHONE    => 'required|string|size:10',
         RequestFields::EMAIL    => 'required|email'

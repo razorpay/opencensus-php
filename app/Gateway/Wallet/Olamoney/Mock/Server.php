@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Wallet\Olamoney\Mock;
 
+use RZP\Http\Route;
 use RZP\Gateway\Base;
 use RZP\Exception;
 use RZP\Models\Payment;
@@ -18,16 +19,18 @@ class Server extends Base\Mock\Server
     {
         parent::authorize($input);
 
-        $input['bill'] = json_decode(base64_decode(urldecode($input['bill'])), true);
+        $bill = RequestFields::BILL;
 
-        $this->validateActionInput($input, Command::DEBIT);
+        $input[$bill] = json_decode(base64_decode(urldecode($input[$bill])), true);
+
+        $this->validateActionInput($input, $input[$bill][RequestFields::COMMAND]);
 
         $bill = $input['bill'];
 
         $content = array(
-            ResponseFields::TYPE              => 'debit',
+            ResponseFields::TYPE              => 'credit',
             ResponseFields::STATUS            => 'success',
-            ResponseFields::MERCHANT_BILL_ID  => $bill[RequestFields::UNIQUE_ID],
+            ResponseFields::MERCHANT_BILL_ID  => $bill[RequestFields::MERCHANT_REFERENCE_ID],
             ResponseFields::TRANSACTION_ID    => 'ola_txn_id',
             ResponseFields::AMOUNT            => $bill[RequestFields::AMOUNT],
             ResponseFields::COMMENTS          => $bill[RequestFields::COMMENTS],
@@ -37,15 +40,21 @@ class Server extends Base\Mock\Server
 
         $content[ResponseFields::HASH] = $this->generateHash($content);
 
-        $this->content($content);
+        $paymentId = $input['paymentId'];
 
-        $request = array(
-            'url' => $bill[RequestFields::RETURN_URL],
-            'content' => $content,
-            'method' => 'post',
-        );
+        $payment = (new Payment\Repository)->find($paymentId);
 
-        return $this->makePostResponse($request);
+        $publicId = $payment->getPublicId();
+
+        $secret = $this->app->config->get('app.key');
+
+        $hash = hash_hmac('sha1', $publicId, $secret);
+
+        $url = Route::getUrlWithPublicCallbackAuth(['id' => $publicId, 'hash' => $hash]);
+
+        $url .= '?' . http_build_query($content);
+
+        return \Redirect::to($url);
     }
 
     public function otpGenerate($input)
@@ -117,6 +126,19 @@ class Server extends Base\Mock\Server
         );
 
         return $this->makeResponse($responseContent);
+    }
+
+    public function topupWallet($input)
+    {
+        $this->validateActionInput($input, 'topupWallet');
+
+        $this->topupRequest = $input;
+
+        $response = array(
+            'status' => 'success',
+        );
+
+        return $this->makeResponse($response);
     }
 
     public function debitWallet($input)

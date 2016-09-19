@@ -32,6 +32,18 @@ return [
         'otp_attempts'      => null
     ],
 
+    'testTopUpEntity' => [
+        'action'                => 'authorize',
+        'amount'                => 100000,
+        'wallet'                => 'olamoney',
+        'received'              => true,
+        'email'                 => 'a@b.com',
+        'contact'               => '9918899029',
+        'status_code'           => 'success',
+        'refund_id'             => null,
+        'entity'                => 'wallet',
+    ],
+
     'testOtpRetryPayment'       => [
         'response'  => [
             'content'     => [
