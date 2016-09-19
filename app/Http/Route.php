@@ -243,7 +243,7 @@ final class Route
         'sms_callback'                            => ['post',     'sms/{id}/callback',                        'CustomerController@updateSmsStatus'                                ],
         'es_migrate_entity'                       => ['post',     'es/migrate/{entityName}',                  'EsController@migrateEntity'                                        ],
         'refund_gateway_manual'                   => ['post',     'refunds/{ids}/gateway',                    'PaymentController@postManualGatewayRefund'                         ],
-        'order_refund_multiple_authorized'        => ['post',     'payments/orders/refund',                   'PaymentController@postRefundMultipleAuthorizedPaymentsForOrders'   ],
+        'order_refund_multiple_authorized'        => ['post',     'orders/payments/refund',                   'PaymentController@postRefundMultipleAuthorizedPaymentsForOrders'   ],
     );
 
     public static $public = array(
