@@ -742,7 +742,7 @@ class Gateway extends Base\Gateway
 
         $expectedHash = $this->getHashOfArray($content);
 
-        if ($hash !== $expectedHash)
+        if (hash_equals($hash, $expectedHash)  !== true)
         {
             throw new Exception\LogicException(
                 'Checksum verification failed');

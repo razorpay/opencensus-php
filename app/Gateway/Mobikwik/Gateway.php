@@ -534,7 +534,7 @@ class Gateway extends Base\Gateway
         $content = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
 
         $generatedHash = $this->getHashOfArray($content);
-        if ($generatedHash !== $hash)
+        if (hash_equals($generatedHash,$hash)  !== true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Failed checksum verification');
@@ -554,7 +554,7 @@ class Gateway extends Base\Gateway
 
         $hash = $content['checksum'];
 
-        if ($generatedHash !== $hash)
+        if (hash_equals($generatedHash, $hash)  !== true)
         {
             throw new Exception\GatewayErrorException(
                 Error\ErrorCode::BAD_REQUEST_ERROR);

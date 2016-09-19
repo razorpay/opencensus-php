@@ -116,15 +116,7 @@ class Checksum
 
         $validFlag = "FALSE";
 
-        if ($website_hash == $paytm_hash)
-        {
-            return TRUE;
-        }
-        else
-        {
-            return FALSE;
-        }
-
+        return (hash_equals($website_hash,$paytm_hash));
     }
 
     public static function getArray2Str($arrayList)

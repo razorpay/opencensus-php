@@ -591,7 +591,7 @@ class Gateway extends Base\Gateway
             );
         }
 
-        if ($generatedHash !== $hash)
+        if (hash_equals($generatedHash,$hash)  !== true)
         {
             throw new Exception\BadRequestValidationFailureException(
                                     'Failed checksum verification');

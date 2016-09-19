@@ -191,7 +191,7 @@ class Gateway extends Base\Gateway
 
         $generatedHash = $this->getHashOfArray($content);
 
-        if ($expectedHash !== $generatedHash)
+        if (hash_equals($generatedHash, $expectedHash)  !== true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Failed checksum verification');
