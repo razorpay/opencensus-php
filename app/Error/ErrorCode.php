@@ -230,6 +230,7 @@ class ErrorCode
 
     const BAD_REQUEST_REFUND_FILE_EXCEED_LIMIT                                      = 'BAD_REQUEST_REFUND_FILE_EXCEED_LIMIT';
     const BAD_REQUEST_REFUND_FILE_VALIDATION                                        = 'BAD_REQUEST_REFUND_FILE_VALIDATION';
+    const BAD_REQUEST_REFUND_FILE_ALREADY_PROCESSED                                 = 'BAD_REQUEST_REFUND_FILE_ALREADY_PROCESSED';
 
     const BAD_REQUEST_URL_NOT_FOUND                                                 = 'BAD_REQUEST_URL_NOT_FOUND';
     const BAD_REQUEST_NOTES_SHOULD_BE_ARRAY                                         = 'BAD_REQUEST_NOTES_SHOULD_BE_ARRAY';

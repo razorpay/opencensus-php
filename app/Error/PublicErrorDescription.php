@@ -209,4 +209,5 @@ class PublicErrorDescription
 
     const BAD_REQUEST_REFUND_FILE_EXCEED_LIMIT                                  = 'Refund file limit should not be more than 1000 entries';
     const BAD_REQUEST_REFUND_FILE_VALIDATION                                    = 'Refund file does not contain proper values';
+    const BAD_REQUEST_REFUND_FILE_ALREADY_PROCESSED                             = 'Refund File is already processed';
 }

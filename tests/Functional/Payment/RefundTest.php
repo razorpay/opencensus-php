@@ -8,7 +8,7 @@ use Mockery;
 use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment\Entity as PaymentEntity;
-use RZP\Models\Payment\BatchRefund\Entity as BatchRefund;
+use RZP\Models\Payment\BatchRefund\BatchRefundStatus;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Settlement\Kotak\FileHandlerTrait;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -81,7 +81,77 @@ class RefundTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals(BatchRefund::CREATED, $content['status']);
+        $this->assertEquals(BatchRefundStatus::CREATED, $content['entity']['status']);
+    }
+
+    public function testUploadRefundFileException()
+    {
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $testData = $this->testData[__FUNCTION__];
+        $request = $testData['request'];
+
+        $paymentEntry = array();
+        $payemntObj = array($payment['id'], '');
+        array_push($paymentEntry, $payemntObj);
+
+        $url = $this->writeToExcelFile($paymentEntry, 'upload_refund_test');
+
+        $uploadedFile = $this->createTempFile($url);
+
+        $request['content']['file'] = $url;
+
+        $this->runRequestResponseFlow($testData, function() use ($request) {
+            $this->ba->proxyAuth();
+            $content = $this->makeRequestAndGetContent($request);
+
+        });
+    }
+
+    public function testGetRefundFiles()
+    {
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $testData = $this->testData['testUploadRefundFile'];
+        $request = $testData['request'];
+
+        $paymentEntry = array();
+        $payemntObj = array($payment['id'], (int) 4000);
+        array_push($paymentEntry, $payemntObj);
+
+        $url = $this->writeToExcelFile($paymentEntry, $payment['id']);
+
+        $uploadedFile = $this->createTempFile($url);
+
+        $request['content']['file'] = $url;
+
+        $this->ba->proxyAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $refundId = $content['entity']['id'];
+
+        $url = $this->writeToExcelFile($paymentEntry, substr($refundId, 7));
+
+        $this->assertEquals(BatchRefundStatus::CREATED, $content['entity']['status']);
+
+        $testData = $this->testData['testGetAllRefundFiles'];
+
+        $content = $this->makeRequestAndGetContent($testData['request']);
+
+        $items = $content['items'];
+        $this->assertEquals(1, count($items));
+        $this->assertEquals(BatchRefundStatus::CREATED, $items[0]['status']);
+
+
+        $testData = $this->testData['testRetryRefundFiles'];
+        $testData['request']['url'] = '/payments/batch_refunds/' . substr($refundId, 7) .'/retry';
+
+        $content = $this->makeRequestAndGetContent($testData['request']);
+
+        $this->assertEquals(BatchRefundStatus::IN_PROGRESS, $content['status']);
 
     }
 
@@ -94,10 +164,10 @@ class RefundTest extends TestCase
         $request = $testData['request'];
 
         $paymentEntry = array();
-        $payemntObj = array($payment['id'], (int) 5000);
+        $payemntObj = array($payment['id'], (int) 4000);
         array_push($paymentEntry, $payemntObj);
 
-        $url = $this->writeToExcelFile($paymentEntry, 'upload_refund_test');
+        $url = $this->writeToExcelFile($paymentEntry, $payment['id']);
 
         $uploadedFile = $this->createTempFile($url);
 
@@ -107,18 +177,165 @@ class RefundTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals(BatchRefund::CREATED, $content['status']);
+        $refundId = $content['entity']['id'];
+
+        $url = $this->writeToExcelFile($paymentEntry, substr($refundId, 7));
+
+        $this->assertEquals(BatchRefundStatus::CREATED, $content['entity']['status']);
 
         $testData = $this->testData['testProcessRefundFile'];
 
-        $this->makeRequestAndGetContent($testData['request']);
+        $this->ba->appAuthTest();
+        $content = $this->makeRequestAndGetContent($testData['request']);
 
+        $resultBody = $content['items'][0];
+        $this->assertEquals(BatchRefundStatus::PROCESSED, $resultBody['status']);
+        $this->assertEquals(4000, $resultBody['amount']);
+        $this->assertEquals(0, $resultBody['failure_count']);
+
+    }
+
+    public function testProcessRefundFileWithSuccessAfterAttempts()
+    {
+        $payment = $this->defaultAuthPayment();
+
+        $testData = $this->testData['testUploadRefundFile'];
+        $request = $testData['request'];
+
+        $paymentEntry = array();
+        $payemntObj = array($payment['id'], (int) 5000);
+        array_push($paymentEntry, $payemntObj);
+
+        $url = $this->writeToExcelFile($paymentEntry, $payment['id']);
+
+        $uploadedFile = $this->createTempFile($url);
+
+        $request['content']['file'] = $url;
+
+        $this->ba->proxyAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $refundId = $content['entity']['id'];
+
+        $url = $this->writeToExcelFile($paymentEntry, substr($refundId, 7));
+
+        $this->assertEquals(BatchRefundStatus::CREATED, $content['entity']['status']);
+
+        $testData = $this->testData['testProcessRefundFile'];
+
+        $this->ba->appAuth();
+        $content = $this->makeRequestAndGetContent($testData['request']);
+
+        $resultBody = $content['items'][0];
+        $this->assertEquals(BatchRefundStatus::FAILURE, $resultBody['status']);
+        $this->assertEquals(null, $resultBody['amount']);
+        $this->assertEquals(1, $resultBody['failure_count']);
+        $this->assertEquals(1, $resultBody['attempts']);
+
+        $content = $this->makeRequestAndGetContent($testData['request']);
+        $resultBody = $content['items'][0];
+        $this->assertEquals(BatchRefundStatus::FAILURE, $resultBody['status']);
+        $this->assertEquals(null, $resultBody['amount']);
+        $this->assertEquals(2, $resultBody['attempts']);
+
+        $this->ba->privateAuth();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->ba->appAuth();
+        $content = $this->makeRequestAndGetContent($testData['request']);
+        $resultBody = $content['items'][0];
+        $this->assertEquals(BatchRefundStatus::PROCESSED, $resultBody['status']);
+        $this->assertEquals(5000, $resultBody['amount']);
+        $this->assertEquals(3, $resultBody['attempts']);
+
+        $testData = $this->testData['testRetryRefundFilesWithException'];
+        $testData['request']['url'] = '/payments/batch_refunds/' . substr($refundId, 7) .'/retry';
+
+        $request = $testData['request'];
+        $this->runRequestResponseFlow($testData, function() use ($request) {
+            $this->ba->proxyAuth();
+            $content = $this->makeRequestAndGetContent($request);
+
+        });
+
+    }
+
+
+    public function testProcessRefundFileWithFailureAfterAttempts()
+    {
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $testData = $this->testData['testUploadRefundFile'];
+        $request = $testData['request'];
+
+        $paymentEntry = array();
+        $payemntObj = array($payment['id'], (int) 100000);
+        array_push($paymentEntry, $payemntObj);
+
+        $url = $this->writeToExcelFile($paymentEntry, $payment['id']);
+
+        $uploadedFile = $this->createTempFile($url);
+
+        $request['content']['file'] = $url;
+
+        $this->ba->proxyAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $refundId = $content['entity']['id'];
+
+        $url = $this->writeToExcelFile($paymentEntry, substr($refundId, 7));
+
+        $this->assertEquals(BatchRefundStatus::CREATED, $content['entity']['status']);
+
+        $testData = $this->testData['testProcessRefundFile'];
+
+        $testData['request']['content']['file'] = $url;
+
+        $this->ba->appAuth();
+        $content = $this->makeRequestAndGetContent($testData['request']);
+
+        $resultBody = $content['items'][0];
+        $this->assertEquals(BatchRefundStatus::FAILURE, $resultBody['status']);
+        $this->assertEquals(null, $resultBody['amount']);
+        $this->assertEquals(1, $resultBody['failure_count']);
+        $this->assertEquals(1, $resultBody['attempts']);
+
+        $content = $this->makeRequestAndGetContent($testData['request']);
+        $resultBody = $content['items'][0];
+        $this->assertEquals(BatchRefundStatus::FAILURE, $resultBody['status']);
+        $this->assertEquals(null, $resultBody['amount']);
+        $this->assertEquals(2, $resultBody['attempts']);
+
+        $content = $this->makeRequestAndGetContent($testData['request']);
+        $resultBody = $content['items'][0];
+        $this->assertEquals(BatchRefundStatus::FAILED, $resultBody['status']);
+        $this->assertEquals(null, $resultBody['amount']);
+        $this->assertEquals(3, $resultBody['attempts']);
+    }
+
+    public function writeToExcelFile($data, $name)
+    {
+        \Config::set('excel::export.calculate', true);
+
+        $columnFormat = $this->getColumnFormatForExcel();
+
+        $excel = $this->createExcelObject($data, $name, $columnFormat);
+
+        $fileMetadata = $excel->store('xlsx', storage_path('files/refund_file_download'), true);
+        $fullpath = $fileMetadata['full'];
+
+        $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+        $url = $this->saveToAws($name.'.xlsx', $fullpath, $xlsxMimeType);
+
+        return $url;
     }
 
 
     protected function createTempFile($url)
     {
-
         $mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
         $uploadedFile = new UploadedFile(

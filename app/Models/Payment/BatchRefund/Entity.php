@@ -14,7 +14,7 @@ class Entity extends Base\PublicEntity
     const TOTAL_COUNT               = 'total_count';
     const SUCCESS_COUNT             = 'success_count';
     const FAILURE_COUNT             = 'failure_count';
-    const RETRY_ATTEMPT             = 'retry_attempt';
+    const ATTEMPTS                  = 'attempts';
     const AMOUNT                    = 'amount';
     const COMMENT                   = 'comment';
     const PROCESSED_AT              = 'processed_at';
@@ -22,15 +22,9 @@ class Entity extends Base\PublicEntity
     const FILE_URL_LENGTH           = 100;
     const STATUS_LENGTH             = 20;
 
-    const CREATED                   = 'CREATED';
-    const IN_PROGRESS               = 'IN_PROGRESS';
-    const FAILURE                   = 'FAILURE';
-    const FAILED                    = 'FAILED';
-    const PROCESSED                 = 'PROCESSED';
-
     protected $table = \RZP\Constants\Table::BATCH_REFUND;
 
-    protected static $sign = '';
+    protected static $sign = 'btrfnd';
 
     protected $entity = 'batch_refund';
 
@@ -42,7 +36,7 @@ class Entity extends Base\PublicEntity
         self::UPLOAD_FILE_URL,
         self::STATUS,
         self::TOTAL_COUNT,
-        self::RETRY_ATTEMPT
+        self::ATTEMPTS
     );
 
     protected $visible = array(
@@ -52,7 +46,11 @@ class Entity extends Base\PublicEntity
         self::DOWNLOAD_FILE_URL,
         self::STATUS,
         self::AMOUNT,
+        self::TOTAL_COUNT,
+        self::SUCCESS_COUNT,
+        self::FAILURE_COUNT,
         self::PROCESSED_AT,
+        self::ATTEMPTS,
         self::CREATED_AT,
         self::UPDATED_AT
     );
@@ -61,24 +59,32 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::TOTAL_COUNT,
+        self::SUCCESS_COUNT,
+        self::FAILURE_COUNT,
+        self::ATTEMPTS,
+        self::AMOUNT,
+        self::PROCESSED_AT,
         self::STATUS,
         self::CREATED_AT
     );
 
     protected $defaults = array(
-        self::RETRY_ATTEMPT                  => 0,
-        self::STATUS                         => self::CREATED,
-        self::UPLOAD_FILE_URL                => '',
-        self::DOWNLOAD_FILE_URL              => '',
-        self::SUCCESS_COUNT                  => 0,
-        self::FAILURE_COUNT                  => 0,
-        self::AMOUNT                         => 0,
-        self::COMMENT                        => '',
+        self::ATTEMPTS                       => 0,
+        self::STATUS                         => BatchRefundStatus::CREATED,
+        self::DOWNLOAD_FILE_URL              => null,
+        self::SUCCESS_COUNT                  => null,
+        self::FAILURE_COUNT                  => null,
+        self::AMOUNT                         => null,
+        self::COMMENT                        => null,
         self::PROCESSED_AT                   => null,
     );
 
-    protected $publicSetters = array(
-        self::ID, self::ENTITY
+    protected $casts = array(
+        self::TOTAL_COUNT                    => 'int',
+        self::SUCCESS_COUNT                  => 'int',
+        self::FAILURE_COUNT                  => 'int',
+        self::AMOUNT                         => 'int',
+        self::ATTEMPTS                       => 'int',
     );
 
     public function merchant()
@@ -121,9 +127,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FAILURE_COUNT);
     }
 
-    public function getRetryAttempt()
+    public function getAttempts()
     {
-        return $this->getAttribute(self::RETRY_ATTEMPT);
+        return $this->getAttribute(self::ATTEMPTS);
     }
 
     public function getProcessedAt()
@@ -161,8 +167,14 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
     }
 
-    public function setRetryAttempt($retryAttempt)
+    public function setAttempts($attempts)
     {
-        $this->setAttribute(self::RETRY_ATTEMPT, $retryAttempt);
+        $this->setAttribute(self::ATTEMPTS, $attempts);
     }
+
+    public function setProcessedAt($processedAt)
+    {
+        $this->setAttribute(self::PROCESSED_AT, $processedAt);
+    }
+
 }

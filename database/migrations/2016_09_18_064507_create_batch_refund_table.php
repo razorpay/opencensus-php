@@ -29,36 +29,29 @@ class CreateBatchRefundTable extends Migration
             $table->char(BatchRefund::UPLOAD_FILE_URL, BatchRefund::FILE_URL_LENGTH);
 
             $table->char(BatchRefund::DOWNLOAD_FILE_URL, BatchRefund::FILE_URL_LENGTH)
-                  ->nullable()
-                  ->default(null);
+                  ->nullable();
 
             $table->char(BatchRefund::STATUS, BatchRefund::STATUS_LENGTH);
 
             $table->integer(BatchRefund::TOTAL_COUNT);
 
             $table->integer(BatchRefund::SUCCESS_COUNT)
-                  ->nullable()
-                  ->default(null);
+                  ->nullable();
 
             $table->integer(BatchRefund::FAILURE_COUNT)
-                  ->nullable()
-                  ->default(null);
+                  ->nullable();
 
-            $table->integer(BatchRefund::RETRY_ATTEMPT)
-                  ->nullable()
+            $table->integer(BatchRefund::ATTEMPTS)
                   ->default(0);
 
             $table->integer(BatchRefund::AMOUNT)
-                  ->nullable()
-                  ->default(null);
+                  ->nullable();
 
             $table->text(BatchRefund::COMMENT)
-                  ->nullable()
-                  ->default(null);
+                  ->nullable();
 
             $table->integer(BatchRefund::PROCESSED_AT)
-                  ->nullable()
-                  ->default(null);
+                  ->nullable();
 
             $table->integer(BatchRefund::CREATED_AT);
             $table->integer(BatchRefund::UPDATED_AT);
@@ -67,7 +60,6 @@ class CreateBatchRefundTable extends Migration
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
-
         });
     }
 

@@ -19,10 +19,10 @@ return [
 
     'testUploadRefundFile' => [
         'request' => [
-            'url' => '/payments/refund/upload_file',
+            'url' => '/payments/batch_refunds/upload_file',
             'method' => 'post',
             'content' => [
-               
+
             ],
         ],
         'response' => [
@@ -35,12 +35,92 @@ return [
         ],
     ],
 
-    'testProcessRefundFile' => [
+    'testUploadRefundFileException' => [
         'request' => [
-            'url' => '/payments/refund/process_file',
+            'url' => '/payments/batch_refunds/upload_file',
             'method' => 'post',
             'content' => [
-               
+
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Refund file does not contain proper values',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_REFUND_FILE_VALIDATION,
+        ],
+    ],
+
+    'testGetAllRefundFiles' => [
+        'request' => [
+            'url' => '/payments/batch_refunds/list',
+            'method' => 'get',
+            'content' => [
+
+            ],
+        ],
+        'response' => [
+            'content' => [
+                    'id' => 'rfnd_file_6JaB3AUIkCh9kL',
+                    'entity' => 'refund_file',
+                    'status' =>  'CREATED',
+                    'created_at' => 1474032787,
+            ],
+        ],
+    ],
+
+    'testRetryRefundFiles' => [
+        'request' => [
+            'method' => 'post',
+            'content' => [
+
+            ],
+        ],
+        'response' => [
+            'content' => [
+                    'id' => 'rfnd_file_6JaB3AUIkCh9kL',
+                    'entity' => 'refund_file',
+                    'status' =>  'CREATED',
+                    'created_at' => 1474032787,
+            ],
+        ],
+    ],
+
+    'testRetryRefundFilesWithException' => [
+        'request' => [
+            'method' => 'post',
+            'content' => [
+
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Refund File is already processed',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_REFUND_FILE_ALREADY_PROCESSED,
+        ],
+    ],
+
+    'testProcessRefundFile' => [
+        'request' => [
+            'url' => '/payments/batch_refunds/process_file',
+            'method' => 'post',
+            'content' => [
+
             ],
         ],
         'response' => [
