@@ -327,6 +327,27 @@ trait FileHandlerTrait
         return $filePath;
     }
 
+    protected function getPreSignedUrlFromAws($bucket, $key, $filePath)
+    {
+        $config =  \Config::get('aws');
+
+        $awsS3Mock = $config['mock'];
+
+        if ($awsS3Mock)
+        {
+            return $filePath;
+        }
+
+        $s3 = AWS::createClient('s3');
+
+        $url = $s3->getObjectUrl($bucket, $key,
+                '+10 minutes', [
+                    'https'     => true
+            ]);
+
+        return $url;
+    }
+
     protected function saveLocally($name, $txt)
     {
         $fullpath = $this->getFullFilePath($name);

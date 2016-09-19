@@ -250,7 +250,7 @@ class Service extends Base\Service
     {
         $batchRefund = $this->repo->batch_refund->findOrFail($id);
 
-        if($batchRefund->getStatus() === BatchRefundStatus::PROCESSED)
+        if ($batchRefund->getStatus() === BatchRefundStatus::PROCESSED)
         {
             throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_REFUND_FILE_ALREADY_PROCESSED);
@@ -266,9 +266,30 @@ class Service extends Base\Service
 
     }
 
-    public function downloadBatchRefund($id){
+    public function downloadBatchRefund($id)
+    {
 
+        $batchRefund = $this->repo->batch_refund->findOrFail($id);
 
+        $publicUrl = '';
+
+        $storagePath = storage_path('files/refund_file_download');
+        $filePath = $storagePath . '/' . $batchRefund->getId() . '.xlsx';
+
+        if ($batchRefund->getStatus() === BatchRefundStatus::CREATED)
+        {
+            $publicUrl = $this->getPreSignedUrlFromAws('refund_file_download_bucket', $id.'.xlsx', $filePath);
+        }
+        else
+        {
+            $publicUrl = $this->getPreSignedUrlFromAws('refund_file_upload_bucket', $id.'.xlsx', $filePath);
+        }
+
+        $response = [
+            'url' => $publicUrl,
+        ];
+
+        return $response;
     }
 
     protected function getNewProcessor(Merchant\Entity $merchant = null)

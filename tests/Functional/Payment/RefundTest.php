@@ -82,6 +82,12 @@ class RefundTest extends TestCase
         $content = $this->makeRequestAndGetContent($request);
 
         $this->assertEquals(BatchRefundStatus::CREATED, $content['entity']['status']);
+
+
+        $testData = $this->testData['testDownloadRefundFile'];
+        $testData['request']['url'] = '/payments/batch_refunds/' . substr($content['entity']['id'], 7) .'/download';
+
+        $content = $this->makeRequestAndGetContent($testData['request']);
     }
 
     public function testUploadRefundFileException()

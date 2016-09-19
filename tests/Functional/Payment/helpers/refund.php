@@ -35,6 +35,18 @@ return [
         ],
     ],
 
+    'testDownloadRefundFile' => [
+        'request' => [
+            'method' => 'post',
+            'content' => [
+
+            ],
+        ],
+        'response' => [
+
+        ],
+    ],
+
     'testUploadRefundFileException' => [
         'request' => [
             'url' => '/payments/batch_refunds/upload_file',
