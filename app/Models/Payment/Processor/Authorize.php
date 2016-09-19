@@ -907,7 +907,7 @@ trait Authorize
             'version'       => 1,
             'payment_id'    => $id,
             'request'       => [
-                'url'    => Route::getUrlWithPublicAuth('payment_get_status', ['id' => $id]),
+                'url'    => Route::getUrl('payment_get_status', ['id' => $id]),
                 'method' => 'GET',
             ]
         ];
@@ -1473,14 +1473,6 @@ trait Authorize
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED,
                 'number');
-        }
-    }
-
-    protected function checkForMerchantCallbackUrl($payment)
-    {
-        if ($payment->getCallbackUrl() !== null)
-        {
-            $this->app['rzp.merchant_callback_url'] = $payment->getCallbackUrl();
         }
     }
 

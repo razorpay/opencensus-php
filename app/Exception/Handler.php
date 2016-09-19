@@ -21,6 +21,8 @@ use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 
 class Handler extends ExceptionHandler
 {
+    protected $throwExceptionInTesting = true;
+
     /**
      * A list of the exception types that should not be reported.
      *
@@ -38,6 +40,8 @@ class Handler extends ExceptionHandler
         $this->app = App::getFacadeRoot();
 
         $this->trace = $this->app['trace'];
+
+        $this->throwExceptionInTesting = $this->app['config']->get('app.throw_exception_in_testing');
     }
 
     /**
@@ -295,7 +299,7 @@ class Handler extends ExceptionHandler
 
     protected function ifTestingThenRethrowException($e)
     {
-        if ($this->isTesting())
+        if (($this->isTesting()) and ($this->throwExceptionInTesting))
         {
             throw $e;
         }
