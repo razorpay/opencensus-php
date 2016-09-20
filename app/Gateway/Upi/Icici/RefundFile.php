@@ -56,7 +56,7 @@ class RefundFile extends Base\RefundFile
 
     protected function getRefundData($input)
     {
-        $i = 1;
+        $fileName = $this->getFileToWriteNameWithoutExt() . '.xlsx';
 
         foreach ($input['data'] as $row)
         {
@@ -66,7 +66,7 @@ class RefundFile extends Base\RefundFile
             $data[] = array(
                 'Merchant reference Number' => $row['payment']['id'],
                 'bankadjref'                => $row['gateway']['gateway_payment_id'],
-                'refundRef'                 => $row['refund']['id'],
+                'refundRef'                 => $fileName,
                 'Flag'                      => 'C',
                 'shtdat'                    => $date,
                 'adjamt'                    => ($row['refund']['amount'] / 100),
