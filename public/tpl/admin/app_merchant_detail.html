@@ -188,39 +188,36 @@
           <span class="pull-right">{{referer}}</span>
           Referer
         </div>
-        <div href class="list-group-item">
+        <div class="list-group-item">
           <span class="pull-right">{{merchant.balance.test/100 | rupee }}</span>
           Balance (Test)
         </div>
-        <div href class="list-group-item" ng-show="merchant.details.activated == 1">
+        <div class="list-group-item" ng-show="merchant.details.activated == 1">
           <span class="pull-right">{{merchant.balance.live/100 | rupee }}</span>
           Balance (Live)
         </div>
-<!--         <div href class="list-group-item">
-=======
-        </a> -->
 
         <!-- Amount -->
-        <div href class="list-group-item" ng-show="merchant.credits.test != 0">
+        <div class="list-group-item" ng-show="merchant.credits.test != 0">
           <span class="pull-right">{{merchant.credits.test/100 | rupee }}</span>
           Amount Credits (Test)
         </div>
-        <div href class="list-group-item" ng-show="merchant.details.activated == 1 && merchant.credits.live != 0">
+        <div class="list-group-item" ng-show="merchant.details.activated == 1 && merchant.credits.live != 0">
           <span class="pull-right">{{merchant.credits.live/100 | rupee }}</span>
           Amount Credits (Live)
         </div>
 
         <!-- Fee -->
-        <div href class="list-group-item" ng-show="merchant.fee_credits.test != 0">
+        <div class="list-group-item" ng-show="merchant.fee_credits.test != 0">
           <span class="pull-right">{{merchant.fee_credits.test/100 | rupee }}</span>
           Fee Credits (Test)
         </div>
-        <div href class="list-group-item" ng-show="merchant.details.activated == 1 && merchant.fee_credits.live != 0">
+        <div class="list-group-item" ng-show="merchant.details.activated == 1 && merchant.fee_credits.live != 0">
           <span class="pull-right">{{merchant.fee_credits.live/100 | rupee }}</span>
           Fee Credits (Live)
         </div>
 
-        <div href class="list-group-item">
+        <div class="list-group-item">
           <span class="pull-right">{{merchant.details.name}}</span>
           Name
         </div>
@@ -228,7 +225,7 @@
           <span class="pull-right"><a href="mailto:{{merchant.details.email}}">{{merchant.details.email}}</a></span>
           Email
         </div>
-        <div href class="list-group-item">
+        <div class="list-group-item">
           <span class="pull-right">{{merchant.details.created_at*1000 | date:'medium'}}</span>
           Registration Date
         </div>
@@ -236,77 +233,77 @@
           <span class="pull-right">{{merchant.details.website}}</span>
           Website
         </div>
-        <div href class="list-group-item">
+        <div class="list-group-item">
           <span class="pull-right">{{merchant.details.category}}</span>
           MCC
         </div>
-        <div href class="list-group-item">
+        <div class="list-group-item">
           <span class="pull-right">{{merchant.details.category2|titlecase}}</span>
           Category 2
         </div>
-        <div href class="list-group-item">
+        <div class="list-group-item">
           <span class="pull-right">{{merchant.details.billing_label}}</span>
           Billing Label
         </div>
-        <div href class="list-group-item">
+        <div class="list-group-item">
           <span class="pull-right">{{merchant.details.transaction_report_email}}</span>
           Transaction Report Email
         </div>
-        <div href class="list-group-item">
+        <div class="list-group-item">
           <span class="pull-right">{{merchant.details.international}}</span>
           International
         </div>
-        <div href class="list-group-item">
+        <div class="list-group-item">
           <span class="pull-right">{{merchant.details.created_at*1000 | date:'medium'}}</span>
           Registration Date
         </div>
-        <div href class="list-group-item">
+        <div class="list-group-item">
           <span class="pull-right" ng-if="merchant.details.submitted_at">{{merchant.details.submitted_at*1000 | date:'medium'}}</span>
           <span class="pull-right" ng-if="!merchant.details.submitted_at">NULL</span>
           Submission Date
         </div>
-        <div href class="list-group-item">
+        <div class="list-group-item">
           <span class="pull-right" ng-if="merchant.details.activated_at">{{merchant.details.activated_at*1000 | date:'medium'}}</span>
           <span class="pull-right" ng-if="!merchant.details.activated_at">NULL</span>
           Activation Date
         </div>
-        <div href class="list-group-item">
+        <div class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.confirm_token == null ? 'Confirmed' : 'Not Confirmed'}}">
             <i class="fa" ng-class="{'fa-check text-success': merchant.details.confirm_token == null, 'fa-times text-danger':merchant.details.confirm_token != null}"></i>
           </span>
           Confirmed
         </div>
-        <div href class="list-group-item">
+        <div class="list-group-item">
           <span class="pull-right">
             <b class="badge bg-success dk">{{merchant.details.activation_progress}}%</b>
           </span>
           Activation Form Progress
         </div>
-        <div href class="list-group-item">
+        <div class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.submitted == 1 ? 'Submitted' : 'Not Submitted'}}">
             <i class="fa" ng-class="{'fa-check text-success': merchant.details.submitted == 1, ' fa-times text-danger':merchant.details.submitted == 0}"></i>
           </span>
           Activation Form Submitted
         </div>
-        <div href class="list-group-item">
+        <div class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.locked == 1 ? 'Locked' : 'Unlocked'}}">
             <i class="fa" ng-class="{'fa-lock text-danger': merchant.details.locked == 1, ' fa-unlock text-success':merchant.details.locked == 0}"></i>
           </span>
           Activation Form Status
         </div>
-        <div href class="list-group-item">
+        <div class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.activated == 1 ? 'Activated' : 'Not Activated'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.activated == 1, 'fa-times text-danger':merchant.details.activated == 0}"></i></span>
           Activated
         </div>
-        <div href class="list-group-item">
+        <div class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.live == 1 ? 'Live' : 'Not Live'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.live == 1, 'fa-times text-danger':merchant.details.live == 0}"></i></span>
           Live
         </div>
-        <div href class="list-group-item">
+        <div class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.hold_funds == 1 ? 'Yes' : 'No'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.hold_funds == 1, 'fa-times text-danger':merchant.details.hold_funds == 0}"></i></span>
           Funds on Hold
         </div>
-        <div href class="list-group-item">
+        <div class="list-group-item">
           <span class="label text-base pull-right"
             ng-class="riskMap[merchant.details.risk_rating][1]"
           >
@@ -314,65 +311,79 @@
           </span>
           Risk Rating
         </div>
-        <div href class="list-group-item">
+        <div class="list-group-item">
           <span class="pull-right">
             {{merchant.details.fee_bearer|titlecase}}
           </span>
           Fee Bearer
         </div>
-        <div href class="list-group-item">
+        <div class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.settlement_schedule}} Days">{{merchant.details.settlement_schedule}} Days</span>
           Settlement Schedule <i class="fa fa-clock-o"></i>
         </div>
-        <div href class="list-group-item">
-          <span class="pull-right" tooltip="{{merchant.details.methods.amex == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.amex == true, 'fa-times text-danger':merchant.details.methods.amex == false}"></i></span>
-          Amex
+        <div class="list-group-item" ng-init="isMethodsCollapsed = false">
+          <span class="pull-right">
+            <button class="btn btn-default btn-xs pull-right"  ng-click="isMethodsCollapsed = !isMethodsCollapsed" >Show/Hide</button>
+          </span>
+          Methods
+        </div>
+        <div ng-init="isMethodsCollapsed = false" collapse="isMethodsCollapsed" class="panel-body">
+          <!-- TODO: Convert this to a ng-repeat. Make sure you maintain the labels and order -->
+          <div class="list-group-item">
+            <span class="pull-right" tooltip="{{merchant.details.methods.amex == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.amex == true, 'fa-times text-danger':merchant.details.methods.amex == false}"></i></span>
+            Amex <i class="fa fa-cc-amex"></i>
+          </div>
+          <div class="list-group-item">
+            <span class="pull-right" tooltip="{{merchant.details.methods.debit_card == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.debit_card == true, 'fa-times text-danger':merchant.details.methods.debit_card == false}"></i></span>
+            Debit Card <i class="fa fa-credit-card-alt"></i>
+          </div>
+          <div class="list-group-item">
+            <span class="pull-right" tooltip="{{merchant.details.methods.credit_card == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa " ng-class="{'fa-check text-success': merchant.details.methods.credit_card == true, 'fa-times text-danger':merchant.details.methods.credit_card == false}"></i></span>
+            Credit Card <i class="fa fa-credit-card-alt"></i>
+          </div>
+          <div class="list-group-item">
+            <span class="pull-right" tooltip="{{merchant.details.methods.netbanking == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.netbanking == true, 'fa-times text-danger':merchant.details.methods.netbanking == false}"></i></span>
+            Netbanking <i class="fa fa-university"></i>
+          </div>
+          <div class="list-group-item">
+            <span class="pull-right" tooltip="{{merchant.details.methods.airtelmoney == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.airtelmoney == true, 'fa-times text-danger':merchant.details.methods.airtelmoney == false}"></i></span>
+            AirtelMoney
+          </div>
+          <div class="list-group-item">
+            <span class="pull-right" tooltip="{{merchant.details.methods.freecharge === true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.freecharge === true, 'fa-times text-danger': merchant.details.methods.freecharge === false}"></i></span>
+            Freecharge
+          </div>
+          <div class="list-group-item">
+            <span class="pull-right" tooltip="{{merchant.details.methods.mobikwik == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.mobikwik == true, 'fa-times text-danger':merchant.details.methods.mobikwik == false}"></i></span>
+            Mobikwik
+          </div>
+          <div class="list-group-item">
+            <span class="pull-right" tooltip="{{merchant.details.methods.olamoney == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.olamoney == true, 'fa-times text-danger':merchant.details.methods.olamoney == false}"></i></span>
+            Olamoney
+          </div>
+          <div class="list-group-item">
+            <span class="pull-right" tooltip="{{merchant.details.methods.payumoney == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.payumoney == true, 'fa-times text-danger':merchant.details.methods.payumoney == false}"></i></span>
+            PayUMoney
+          </div>
+          <div class="list-group-item">
+            <span class="pull-right" tooltip="{{merchant.details.methods.payzapp == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.payzapp == true, 'fa-times text-danger':merchant.details.methods.payzapp == false}"></i></span>
+            Payzapp
+          </div>
+          <div class="list-group-item">
+            <span class="pull-right" tooltip="{{merchant.details.methods.upi == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.upi == true, 'fa-times text-danger':merchant.details.methods.upi == false}"></i></span>
+            UPI
+          </div>
         </div>
         <!-- <a href class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.methods.paytm == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.paytm == true, 'fa-times text-danger':merchant.details.methods.paytm == false}"></i></span>
           Paytm
         </a> -->
-        <div href class="list-group-item">
-          <span class="pull-right" tooltip="{{merchant.details.methods.payzapp == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.payzapp == true, 'fa-times text-danger':merchant.details.methods.payzapp == false}"></i></span>
-          Payzapp
-        </div>
-        <div href class="list-group-item">
-          <span class="pull-right" tooltip="{{merchant.details.methods.payumoney == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.payumoney == true, 'fa-times text-danger':merchant.details.methods.payumoney == false}"></i></span>
-          PayUMoney
-        </div>
-        <div href class="list-group-item">
-          <span class="pull-right" tooltip="{{merchant.details.methods.mobikwik == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.mobikwik == true, 'fa-times text-danger':merchant.details.methods.mobikwik == false}"></i></span>
-          Mobikwik
-        </div>
-        <div href class="list-group-item">
-          <span class="pull-right" tooltip="{{merchant.details.methods.olamoney == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.olamoney == true, 'fa-times text-danger':merchant.details.methods.olamoney == false}"></i></span>
-          Olamoney
-        </div>
-        <div href class="list-group-item">
-          <span class="pull-right" tooltip="{{merchant.details.methods.upi == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.upi == true, 'fa-times text-danger':merchant.details.methods.upi == false}"></i></span>
-          UPI
-        </div>
-        <div href class="list-group-item">
-          <span class="pull-right" tooltip="{{merchant.details.methods.airtelmoney == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.airtelmoney == true, 'fa-times text-danger':merchant.details.methods.airtelmoney == false}"></i></span>
-          AirtelMoney
-        </div>
-        <div href class="list-group-item">
-          <span class="pull-right" tooltip="{{merchant.details.methods.freecharge === true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.freecharge === true, 'fa-times text-danger': merchant.details.methods.freecharge === false}"></i></span>
-          Freecharge
-        </div>
-        <div href class="list-group-item">
-          <span class="pull-right" tooltip="{{merchant.details.methods.card == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.card == true, 'fa-times text-danger':merchant.details.methods.card == false}"></i></span>
-          Card
-        </div>
-        <div href class="list-group-item">
-          <span class="pull-right" tooltip="{{merchant.details.methods.netbanking == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.netbanking == true, 'fa-times text-danger':merchant.details.methods.netbanking == false}"></i></span>
-          Netbanking
-        </div>
-        <div href class="list-group-item">
+
+        <div class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.archived_at == null ? 'Not Archived' : 'Archived'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.archived_at != null, 'fa-times text-danger':merchant.details.archived_at == null}"></i></span>
           Archived
         </div>
-        <div href class="list-group-item">
+        <div class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.receipt_email_enabled == 1 ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.receipt_email_enabled == 1, 'fa-times text-danger':merchant.details.receipt_email_enabled == 0}"></i></span>
           Customer Receipt Emails
         </div>
@@ -380,7 +391,7 @@
           <span class="pull-right" tooltip="Print screenshots"><i class="fa fa-cloud-download"></i></span>
           Print screenshots
         </div>
-        <div href class="list-group-item" ng-init="isPricingCollapsed = true">
+        <div class="list-group-item" ng-init="isPricingCollapsed = true">
             <span class="pull-right">
               <button class="btn btn-default btn-xs"  ng-click="isPricingCollapsed = !isPricingCollapsed" ng-show="merchant.pricing_plan.length != 0">Show/Hide</button>
               <span ng-hide="merchant.pricing_plan.length != 0">No Pricing Assigned</span>
@@ -485,7 +496,7 @@
           </div>
 
           <!-- Credits -->
-          <div href class="list-group-item" ng-init="isCreditsLogCollapsed = true">
+          <div class="list-group-item" ng-init="isCreditsLogCollapsed = true">
             <span class="pull-right">
               <button class="btn btn-default btn-xs pull-right"  ng-click="isCreditsLogCollapsed = !isCreditsLogCollapsed"
                       ng-show="merchant.creditsLog.items.length != 0">Show/Hide</button>
