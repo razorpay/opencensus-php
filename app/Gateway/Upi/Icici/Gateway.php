@@ -59,6 +59,12 @@ class Gateway extends Base\Gateway
 
         if (Utility::isXml($response->body) === true)
         {
+            $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, [
+                'body'      => $response->body,
+                'encrypted' => false,
+                'gateway'   => $this->gateway
+            ]);
+
             $this->action = 'verify';
 
             $verify = new Verify($this->gateway, $this->input);
