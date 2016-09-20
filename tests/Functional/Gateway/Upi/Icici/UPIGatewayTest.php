@@ -38,13 +38,53 @@ class UPIGatewayTest extends TestCase
         return $paymentId;
     }
 
+    public function testPaymentWithXmlResponse()
+    {
+        $this->setContent(function (& $content)
+        {
+            $content = <<<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+    <soapenv:Body>
+        <soapenv:Fault>
+            <faultcode>soapenv:Server</faultcode>
+            <faultstring>Policy Falsified</faultstring>
+            <faultactor>https://apigwuat.icicibank.com:8443/newCollectPay</faultactor>
+            <detail>
+                <l7:policyResult status="Assertion Falsified" xmlns:l7="http://www.layer7tech.com/ws/policy/fault"/>
+            </detail>
+        </soapenv:Fault>
+    </soapenv:Body>
+</soapenv:Envelope>
+EOT;
+        });
+
+        $payment = $this->getDefaultUpiPaymentArray();
+        $payment['vpa'] = 'dontencrypt@icici';
+        $payment['notes']['status'] = 'created';
+
+        $response = $this->doAuthPayment($payment);
+
+        $paymentId = $response['payment_id'];
+
+        // Co Proto must be working
+        $this->assertEquals('async', $response['type']);
+
+        $status = 'created';
+        $this->checkPaymentStatus($paymentId, $status);
+
+        return $paymentId;
+    }
+
     public function testPaymentWithRandomResponseCode()
     {
         $this->payment['vpa'] = 'unknownresponse@icici';
 
-        $this->expectException('RZP\Exception\GatewayErrorException');
+        $data = $this->testData[__FUNCTION__];
 
-        $this->testPayment('failed');
+        $this->runRequestResponseFlow($data, function() {
+            $this->testPayment('failed');
+        });
     }
 
     public function testUnencryptedResponsePayment()
@@ -119,14 +159,43 @@ class UPIGatewayTest extends TestCase
 
         $this->capturePayment($payment['id'], 50000);
 
-        $this->expectException('RZP\Exception\GatewayErrorException', 'Refund is currently not supported for this payment method');
+        $data = $this->testData[__FUNCTION__];
 
-        $this->refundPayment($payment['id']);
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->refundPayment($payment['id']);
+        });
     }
 
     public function testVerifyPayment()
     {
         $payment = $this->getDefaultUpiPaymentArray();
+
+        $authPayment = $this->doAuthPayment($payment);
+
+        $upiEntity = $this->getLastEntity('upi', true);
+        $payment = $this->getEntityById('payment', $authPayment['payment_id'], true);
+
+        $mockServer = $this->mockServer();
+
+        $content = $mockServer->makeS2SRequest($upiEntity, $payment);
+
+        $request = [
+            'raw'      => $content,
+            'url'       => '/callback/upi_icici',
+            'method'    => 'post'
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->payment = $this->verifyPayment($payment['id']);
+
+        $this->assertSame($this->payment['payment']['verified'], 1);
+    }
+
+    public function testVerifyPaymentWithEncryptedResponse()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+        $payment['notes']['encrypt'] = 'true';
 
         $authPayment = $this->doAuthPayment($payment);
 
@@ -157,6 +226,7 @@ class UPIGatewayTest extends TestCase
         $data = $this->testData[__FUNCTION__];
 
         $payment = $this->getDefaultUpiPaymentArray();
+        $payment['notes']['status'] = 'success';
 
         $authPayment = $this->doAuthPayment($payment);
 
