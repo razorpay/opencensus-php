@@ -115,7 +115,7 @@ return [
                 'category'  => '4567',
                 'netbanking'   => '1',
                 'shared'    => '1',
-                'network_category' => 'education',
+                'network_category' => 'govt_education',
             ],
             'method' => 'POST'
         ],

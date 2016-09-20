@@ -969,7 +969,7 @@ return [
     'testAddCategory2' => [
         'request' => [
             'content' => [
-                'category2' => 'education'
+                'category2' => 'govt_education'
             ],
             'url' => '/merchants/1X4hRFHFx4UiXt',
             'method' => 'put',
