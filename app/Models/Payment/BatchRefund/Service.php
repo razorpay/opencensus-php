@@ -27,6 +27,10 @@ class Service extends Base\Service
     {
         if(!isset($input['file']))
         {
+            $this->trace->error(
+                TraceCode::BATCH_REFUND_UPLOAD_FILE,
+                [ 'message' => 'Input file is not set in the request']);
+
             throw new Exception\BadRequestException('Input file not set');
         }
 
@@ -34,7 +38,12 @@ class Service extends Base\Service
 
         $totalEntries = count($entries);
 
-        if ($totalEntries > 1000){
+        if ($totalEntries > 1000)
+        {
+            $this->trace->error(
+                TraceCode::BATCH_REFUND_UPLOAD_FILE,
+                [ 'message' => 'There are more than 1000 entries in the file.']);
+
               throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_REFUND_FILE_EXCEED_LIMIT);
         }
@@ -48,15 +57,29 @@ class Service extends Base\Service
             $entryMap = array_combine($headers, $entry);
 
             $amount = $entryMap['refund_amount'];
+            $paymentId = $entryMap['payment_id'];
 
-            if (isset($amount))
+            if (!isset($paymentId))
             {
-                $totalAmountToBeRefunded += $amount;
+                $this->trace->error(
+                    TraceCode::BATCH_REFUND_UPLOAD_FILE,
+                    [ 'message' => 'The payment id is not set']);
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_REFUND_FILE_VALIDATION);
+            }
+            elseif (!isset($amount))
+            {
+                $this->trace->error(
+                    TraceCode::BATCH_REFUND_UPLOAD_FILE,
+                    [ 'message' => 'The amount is not set for payment id ' .$paymentId]);
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_REFUND_FILE_VALIDATION);
             }
             else
             {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_REFUND_FILE_VALIDATION);
+                $totalAmountToBeRefunded += $amount;
             }
         }
 
@@ -71,6 +94,14 @@ class Service extends Base\Service
 
         if ($totalAmountToBeRefunded > $balanceAmount)
         {
+             $this->trace->info(
+                TraceCode::BATCH_REFUND_UPLOAD_FILE,
+                [
+                    'message'            => 'The merchant balance is lesser than the total refund amount.',
+                    'merchantBalance'    => $balanceAmount,
+                    'totalRefundAmount'  => $totalAmountToBeRefunded,
+                ]);
+
             // Warning to merchant about insufficient balance
             $response['message'] =  'Successfully uploaded the file. The total refund amoount is greater than your balance.';
         }
@@ -91,6 +122,13 @@ class Service extends Base\Service
         $this->repo->saveOrFail($batchRefund);
 
         $response['entity'] = $batchRefund->toArrayPublic();
+
+        $this->trace->info(
+            TraceCode::BATCH_REFUND_UPLOAD_FILE,
+            [
+                'message'            => 'Successfully uploaded batch refund file',
+                'batchRefund'      => $batchRefund->toArrayPublic(),
+            ]);
 
         return $response;
     }
@@ -126,6 +164,13 @@ class Service extends Base\Service
 
             $processedFile = array();
 
+            $this->trace->info(
+                TraceCode::BATCH_REFUND_PROCESS_FILE,
+                [
+                    'message'            => 'Processing Batch Refund file',
+                    'batchRefund'        => $batchRefund->toArrayPublic(),
+                ]);
+
             foreach ($entries as $entry)
             {
                 $batchRefundEntry = array();
@@ -135,6 +180,15 @@ class Service extends Base\Service
                 // Refund has already been made and the refund id is set
                 if (!empty($entryMap['refund_id']))
                 {
+                    $this->trace->info(
+                        TraceCode::BATCH_REFUND_PROCESS_FILE,
+                        [
+                            'message'            => 'Already processed entry',
+                            'payemntId'          => $entryMap['payment_id'],
+                            'amount'             => $entryMap['refund_amount'],
+                            'refundId'           => $entryMap['refund_id'],
+                        ]);
+
                     array_push($processedFile, $entry);
                     continue;
                 }
@@ -143,6 +197,16 @@ class Service extends Base\Service
                 if (isset($entryMap['status']) && $entryMap['status'] === BatchRefundStatus::FAILURE &&
                     ($entryMap['comment'] === 'BAD_REQUEST_PAYMENT_FULLY_REFUNDED' || $entryMap['comment'] === 'BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_CAPTURED'))
                 {
+                    $this->trace->info(
+                        TraceCode::BATCH_REFUND_PROCESS_FILE,
+                        [
+                            'message'            => 'Error in processing the entity',
+                            'payemntId'          => $entryMap['payment_id'],
+                            'amount'             => $entryMap['refund_amount'],
+                            'status'             => $entryMap['status'],
+                            'comment'            => $entryMap['comment'],
+                        ]);
+
                     $totalFailureCount++;
                     array_push($processedFile, $entry);
                     continue;
@@ -162,13 +226,33 @@ class Service extends Base\Service
                     $merchant = $batchRefund->merchant;
                     $refund = $this->getNewProcessor($merchant)->refundCapturedPayment($paymentId, $refundRequest);
 
-                    array_push($batchRefundEntry, $refund->getId(), $refund->getAmount(), BatchRefundStatus::PROCESSED);
+                    array_push($batchRefundEntry, $refund->getId(), $refund->getAmount(), BatchRefundStatus::PROCESSED, BatchRefundStatus::PROCESSED);
 
                     $totalSuccessCount++;
                     $totalRefundedAmount += $refund->getAmount();
 
-                } catch (\Exception $e)
+                    $this->trace->info(
+                        TraceCode::BATCH_REFUND_PROCESS_FILE,
+                        [
+                            'message'            => 'Refund Successfully',
+                            'payemntId'          => $entryMap['payment_id'],
+                            'amount'             => $entryMap['refund_amount'],
+                            'refundId'           => $refund->getId(),
+                            'refundedAmount'     => $refund->getAmount(),
+                        ]);
+
+                }
+                catch (\Exception $e)
                 {
+                    $this->trace->error(
+                        TraceCode::BATCH_REFUND_PROCESS_FILE,
+                        [
+                            'message'            => 'Refund was not successfull',
+                            'payemntId'          => $entryMap['payment_id'],
+                            'amount'             => $entryMap['refund_amount'],
+                            'errorMessage'       => $e->getCode(),
+                        ]);
+
                     array_push($batchRefundEntry, '', '', BatchRefundStatus::FAILURE, $e->getCode());
 
                     $totalFailureCount++;
@@ -223,6 +307,13 @@ class Service extends Base\Service
             {
                 $this->sendMail($fullpath, $batchRefund->merchant);
             }
+
+            $this->trace->info(
+                TraceCode::BATCH_REFUND_PROCESS_FILE,
+                [
+                    'message'            => 'Processed Batch Refund',
+                    'batchRefund'        => $batchRefund->toArrayPublic(),
+                ]);
         }
 
         return $batchRefunds->toArrayPublic();
@@ -247,6 +338,12 @@ class Service extends Base\Service
         $merchant = $this->merchant;
         $batchRefunds = $this->repo->batch_refund->getBatchRefunds($merchant->getId(), $skip, $take);
 
+        $this->trace->info(
+            TraceCode::BATCH_REFUND_LIST,
+            [
+                'batchRefunds' => $batchRefunds->toArrayPublic(),
+            ]);
+
         return $batchRefunds->toArrayPublic();
 
     }
@@ -257,6 +354,13 @@ class Service extends Base\Service
 
         if ($batchRefund->getStatus() === BatchRefundStatus::PROCESSED)
         {
+            $this->trace->error(
+                TraceCode::BATCH_REFUND_RETRY,
+                [
+                    'message'       => 'Retry cannot be done for the already processed file',
+                    'batchRefund'   => $batchRefund->toArrayPublic(),
+                ]);
+
             throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_REFUND_FILE_ALREADY_PROCESSED);
         }
@@ -266,6 +370,13 @@ class Service extends Base\Service
         $batchRefund->setAttempts(0);
 
         $this->repo->saveOrFail($batchRefund);
+
+        $this->trace->info(
+            TraceCode::BATCH_REFUND_RETRY,
+            [
+                'message'       => 'Submitted batch refund for retry',
+                'batchRefund'   => $batchRefund->toArrayPublic(),
+            ]);
 
         return $batchRefund->toArrayPublic();
 
@@ -293,6 +404,14 @@ class Service extends Base\Service
         $response = [
             'url' => $publicUrl,
         ];
+
+        $this->trace->info(
+            TraceCode::BATCH_REFUND_DOWNLOAD,
+            [
+                'message'       => 'Downloading the batch refund file',
+                'batchRefund'   => $batchRefund->toArrayPublic(),
+                'url'           => $publicUrl,
+            ]);
 
         return $response;
     }
