@@ -25,20 +25,20 @@ class CreateAddress extends Migration
 
             $table->char(Entity::ENTITY_ID, Entity::ID_LENGTH)
                   ->nullable();
-            $table->string(Entity::ENTITY_TYPE, 64)
+            $table->string(Entity::ENTITY_TYPE, 32)
                   ->nullable();
 
-            $table->string(Entity::LINE1, 1024);
-            $table->string(Entity::LINE2, 1024)
+            $table->string(Entity::LINE1, 255);
+            $table->string(Entity::LINE2, 255)
                   ->nullable();
-            $table->string(Entity::CITY, 128)
+            $table->string(Entity::CITY, 64)
                   ->nullable();
-            $table->string(Entity::ZIPCODE, 32)
+            $table->string(Entity::ZIPCODE, 16)
                   ->nullable();
-            $table->string(Entity::STATE, 128);
-            $table->string(Entity::COUNTRY, 128);
+            $table->string(Entity::STATE, 64);
+            $table->string(Entity::COUNTRY, 64);
 
-            $table->string(Entity::TYPE, 64);
+            $table->string(Entity::TYPE, 32);
             $table->tinyInteger(Entity::PRIMARY);
 
             $table->integer(Entity::DELETED_AT)
@@ -53,7 +53,7 @@ class CreateAddress extends Migration
             $table->index(Entity::ENTITY_ID);
             $table->index(Entity::ENTITY_TYPE);
             $table->index(Entity::PRIMARY);
-            
+
             $table->index(Entity::DELETED_AT);
             $table->index(Entity::CREATED_AT);
             $table->index(Entity::UPDATED_AT);

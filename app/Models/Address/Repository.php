@@ -12,10 +12,10 @@ class Repository extends Base\Repository
     protected $appFetchParamRules = [
         Entity::MERCHANT_ID => 'sometimes|alpha_num|size:14',
         Entity::ENTITY_ID   => 'sometimes|alpha_num|size:14',
-        Entity::ENTITY_TYPE => 'sometimes|string|max:64',
-        Entity::TYPE        => 'sometimes|string|max:64',
-        Entity::STATE       => 'sometimes|string|max:128',
-        Entity::COUNTRY     => 'sometimes|string|max:128',
+        Entity::ENTITY_TYPE => 'sometimes|string|max:32',
+        Entity::TYPE        => 'sometimes|string|max:32',
+        Entity::STATE       => 'sometimes|string|max:64',
+        Entity::COUNTRY     => 'sometimes|string|max:64',
     ];
 
     public function fetchCurrentPrimaryAddressOfEntity($entityId, $type)

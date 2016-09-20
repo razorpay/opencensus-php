@@ -11,12 +11,12 @@ class Validator extends Base\Validator
 {
     protected static $createRules = [
         Entity::TYPE    => 'required|custom',
-        Entity::LINE1   => 'required|string|between:10,1024',
-        Entity::LINE2   => 'sometimes|string|between:5,1024',
-        Entity::CITY    => 'sometimes|string|between:2,128',
-        Entity::ZIPCODE => 'sometimes|string|between:2,32',
-        Entity::STATE   => 'sometimes|string|between:2,128',
-        Entity::COUNTRY => 'sometimes|string|between:2,128|custom',
+        Entity::LINE1   => 'required|string|between:10,255',
+        Entity::LINE2   => 'sometimes|string|between:5,255',
+        Entity::CITY    => 'sometimes|string|between:2,32',
+        Entity::ZIPCODE => 'sometimes|string|between:2,10',
+        Entity::STATE   => 'sometimes|string|between:2,32',
+        Entity::COUNTRY => 'sometimes|string|between:2,64|custom',
         Entity::PRIMARY => 'sometimes|in:0,1',
     ];
 

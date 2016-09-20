@@ -297,7 +297,7 @@ class Country
         self::GW => "guinea bissau",
         self::GU => "guam",
         self::GT => "guatemala",
-        self::GS => "south georgia and the south sandwich isla",
+        self::GS => "south georgia and the south sandwich islands",
         self::GR => "greece",
         self::GQ => "equatorial guinea",
         self::GP => "guadeloupe",
