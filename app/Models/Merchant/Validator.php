@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Terminal;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 
@@ -27,6 +28,7 @@ class Validator extends Base\Validator
         Entity::HOLD_FUNDS                  => 'sometimes|in:0,1',
         Entity::WEBSITE                     => 'sometimes|url|max:255',
         Entity::CATEGORY                    => 'sometimes|numeric|digits:4',
+        Entity::CATEGORY2                   => 'sometimes|string|max:30|custom',
         Entity::INTERNATIONAL               => 'sometimes|boolean',
         Entity::BILLING_LABEL               => 'sometimes|max:255',
         Entity::TRANSACTION_REPORT_EMAIL    => 'sometimes|array',
@@ -106,6 +108,19 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_LOGO_NOT_IMAGE
+            );
+        }
+    }
+
+    public function validateCategory2($attribute, $value)
+    {
+        $category = $value;
+
+        if (Terminal\Category::isMerchantCategoryValid($category) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Category : '.$category.' invalid for merchant',
+                Entity::CATEGORY2
             );
         }
     }

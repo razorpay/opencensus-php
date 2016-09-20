@@ -965,4 +965,41 @@ return [
             ],
         ],
     ],
+
+    'testAddCategory2' => [
+        'request' => [
+            'content' => [
+                'category2' => 'govt_education'
+            ],
+            'url' => '/merchants/1X4hRFHFx4UiXt',
+            'method' => 'put',
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+
+    'testAddInvalidCategory2' => [
+        'request' => [
+            'content' => [
+                'category2'=>'education2'
+            ],
+            'url' => '/merchants/1X4hRFHFx4UiXt',
+            'method' => 'put',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Category : education2 invalid for merchant',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];

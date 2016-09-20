@@ -36,6 +36,8 @@ class Entity extends Base\PublicEntity
 
     const SHARED                        = 'shared';
 
+    const NETWORK_CATEGORY              = 'network_category';
+
     const DELETED_AT                    = 'deleted_at';
 
     const MAX_TERMINALS_COUNT           = 25;
@@ -399,5 +401,15 @@ class Entity extends Base\PublicEntity
         }
 
         return false;
+    }
+
+    public function getNetworkCategory()
+    {
+        return $this->getAttribute(self::NETWORK_CATEGORY);
+    }
+
+    public function setNetworkCategory($category)
+    {
+        $this->setAttribute(self::NETWORK_CATEGORY, $category);
     }
 }
