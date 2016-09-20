@@ -58,9 +58,13 @@ class Validator extends Base\Validator
         'fee',
         'contact');
 
-    protected function validateMethod($attribute, $value)
+    protected function validateMethod($attribute, $method)
     {
-       Method::validateMethod($value);
+        if (defined(Method::class . '::' . strtoupper($method)) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid payment method given: ' . $method);
+        }
     }
 
     protected function validateVpa($attribute, $value)
