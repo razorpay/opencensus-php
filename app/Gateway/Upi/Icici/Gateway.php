@@ -199,7 +199,7 @@ class Gateway extends Base\Gateway
             $key = $this->config['test_public_key'];
         }
 
-        return str_replace('\n', "\n", trim($key));
+        return trim(str_replace('\n', "\n", $key));
     }
 
     /**
@@ -220,7 +220,7 @@ class Gateway extends Base\Gateway
 
         // The trim is to make sure that the key doesn't end with
         // an extra newline
-        return str_replace('\n', "\n", trim($key));
+        return trim(str_replace('\n', "\n", $key));
     }
 
 
