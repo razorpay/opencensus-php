@@ -24,11 +24,13 @@ class ReconciliationGenerator
     protected static $fileToWriteName = 'Kotak_Settlement_Reconciliation';
 
     protected static $extraHeadings = array(
-        'Success',
-        'UTR',
-        'Failure Reason',
-        'Date',
-        'Dummy');
+        'Status Of transaction',
+        'UTR number',
+        'Reject Reason',
+        'DateTime',
+        'Int.ref no.',
+        'Dummy',
+    );
 
     public function __construct()
     {
