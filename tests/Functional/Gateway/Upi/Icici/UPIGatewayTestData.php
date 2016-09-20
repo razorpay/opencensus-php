@@ -45,6 +45,22 @@ return [
         ],
     ],
 
+    'testPaymentRefund'   => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED
+        ],
+    ],
+
     'testVerifyFailedPayment'   => [
         'response'  => [
             'content'     => [
@@ -66,8 +82,8 @@ return [
         'amount'                => 50000,
         'bank'                  => 'icici',
         'received'              => true,
-        'email'                 => 'a@b.com',
-        'contact'               => '+919918899029',
+        'email'                 => null,
+        'contact'               => null,
         'gateway_merchant_id'   => '123456',
         'status_code'           => '0',
         'vpa'                   => 'shk@hdfc',

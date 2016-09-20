@@ -119,14 +119,43 @@ class UPIGatewayTest extends TestCase
 
         $this->capturePayment($payment['id'], 50000);
 
-        $this->expectException('RZP\Exception\GatewayErrorException', 'Refund is currently not supported for this payment method');
+        $data = $this->testData[__FUNCTION__];
 
-        $this->refundPayment($payment['id']);
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->refundPayment($payment['id']);
+        });
     }
 
     public function testVerifyPayment()
     {
         $payment = $this->getDefaultUpiPaymentArray();
+
+        $authPayment = $this->doAuthPayment($payment);
+
+        $upiEntity = $this->getLastEntity('upi', true);
+        $payment = $this->getEntityById('payment', $authPayment['payment_id'], true);
+
+        $mockServer = $this->mockServer();
+
+        $content = $mockServer->makeS2SRequest($upiEntity, $payment);
+
+        $request = [
+            'raw'      => $content,
+            'url'       => '/callback/upi_icici',
+            'method'    => 'post'
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->payment = $this->verifyPayment($payment['id']);
+
+        $this->assertSame($this->payment['payment']['verified'], 1);
+    }
+
+    public function testVerifyPaymentWithEncryptedResponse()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+        $payment['notes']['encrypt'] = 'true';
 
         $authPayment = $this->doAuthPayment($payment);
 

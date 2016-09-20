@@ -14,6 +14,8 @@ class Server extends Base\Mock\Server
 {
     public function __construct()
     {
+        parent::__construct();
+
         if (defined('CRYPT_RSA_PKCS15_COMPAT') === false)
         {
             define('CRYPT_RSA_PKCS15_COMPAT', true);
@@ -72,18 +74,22 @@ class Server extends Base\Mock\Server
         $this->validateActionInput($input);
 
         $response = array(
-            "response"          => "0",
-            "merchantId"        => $input['merchantId'],
-            "subMerchantId"     => "1234",
-            "terminalId"        => "1234",
-            "success"           => "true",
-            "message"           => "Transaction Successful",
-            "merchantTranId"    => $input['merchantTranId'],
-            "OriginalBankRRN"   => (string) mt_rand(1111111, 9999999),
-            "status"            => "SUCCESS"
+            'response'          => '0',
+            'merchantId'        => $input['merchantId'],
+            'subMerchantId'     => '1234',
+            'terminalId'        => '1234',
+            'success'           => 'true',
+            'message'           => 'Transaction Successful',
+            'merchantTranId'    => $input['merchantTranId'],
+            'OriginalBankRRN'   => (string) mt_rand(1111111, 9999999),
+            'status'            => 'SUCCESS'
         );
 
-        return $this->makeResponse($response, false);
+        $payment = $this->app['repo']->payment->find($input['merchantTranId']);
+
+        $encrypt = (isset($payment['notes']['encrypt']) and ($payment['notes']['encrypt'] === 'true'));
+
+        return $this->makeResponse($response, $encrypt);
     }
 
     /**
