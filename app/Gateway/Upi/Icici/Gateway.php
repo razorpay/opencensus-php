@@ -306,7 +306,7 @@ class Gateway extends Base\Gateway
             'merchantId'        => $this->getMerchantId(),
             'merchantTranId'    => $payment['id'],
             'merchantName'      => 'Razorpay',
-            'note'              => 'collect-pay-request',
+            'note'              => $this->getPaymentRemark($input),
             'payerVa'           => $input['vpa'],
             'subMerchantId'     => $this->getSubMerchantId($input),
             'subMerchantName'   => $input['merchant']->getBillingLabelElseName(),
@@ -327,6 +327,16 @@ class Gateway extends Base\Gateway
             ]);
 
         return $request;
+    }
+
+    /**
+     * This is same as the payment description, capped
+     * to 50 characters
+     * @return string
+     */
+    protected function getPaymentRemark(array $input)
+    {
+        return substr($input['payment']['description'], 0, 50);
     }
 
     /**
