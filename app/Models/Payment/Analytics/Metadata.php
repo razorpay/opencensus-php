@@ -102,6 +102,18 @@ class Metadata
         self::PRESTASHOP    => 8,
     );
 
+    public static function getStringForValue($value, array $map)
+    {
+        if ($value === null)
+        {
+            return null;
+        }
+
+        $values = array_flip($map);
+
+        return array_key_exists($value, $values) ? $values[$value] : self::OTHERS;
+    }
+
     public static function isInvalidValue($value)
     {
         return $value === self::OTHERS_VALUE;
@@ -124,18 +136,6 @@ class Metadata
         return self::OTHERS_VALUE;
     }
 
-    public static function getStringForIntegrationValue($value)
-    {
-        if ($value === null)
-        {
-            return null;
-        }
-
-        $values = array_flip(self::INTEGRATION_VALUES);
-
-        return array_key_exists($value, $values) ? $values[$value] : self::OTHERS;
-    }
-
     public static function isValidPlatform($platform)
     {
         return array_key_exists($platform, self::PLATFORM_VALUES);
@@ -151,17 +151,6 @@ class Metadata
         }
 
         return self::OTHERS_VALUE;
-    }
-
-    public static function getStringForPlatformValue($value)
-    {
-        if ($value === null)
-        {
-            return null;
-        }
-        $values = array_flip(self::PLATFORM_VALUES);
-
-        return array_key_exists($value, $values) ? $values[$value] : self::OTHERS;
     }
 
     public static function isValidOs($os)
@@ -181,18 +170,6 @@ class Metadata
         return self::OTHERS_VALUE;
     }
 
-    public static function getStringForOsValue($value)
-    {
-        if ($value === null)
-        {
-            return null;
-        }
-
-        $values = array_flip(self::OS_VALUES);
-
-        return array_key_exists($value, $values) ? $values[$value] : self::OTHERS;
-    }
-
     public static function isValidLibrary($library)
     {
         return array_key_exists($library, self::LIBRARY_VALUES);
@@ -208,18 +185,6 @@ class Metadata
         }
 
         return self::OTHERS_VALUE;
-    }
-
-    public static function getStringForLibraryValue($value)
-    {
-        if ($value === null)
-        {
-            return null;
-        }
-
-        $values = array_flip(self::LIBRARY_VALUES);
-
-        return array_key_exists($value, $values) ? $values[$value] : self::OTHERS;
     }
 
     public static function isValidBrowser($browser)
@@ -249,17 +214,6 @@ class Metadata
         return self::OTHERS_VALUE;
     }
 
-    public static function getStringForBrowserValue($value)
-    {
-        if ($value === null)
-        {
-            return null;
-        }
-        $values = array_flip(self::BROWSER_VALUES);
-
-        return array_key_exists($value, $values) ? $values[$value] : self::OTHERS;
-    }
-
     public static function isValidDevice($device)
     {
         return array_key_exists($device, self::DEVICE_VALUES);
@@ -285,17 +239,5 @@ class Metadata
         }
 
         return self::OTHERS_VALUE;
-    }
-
-    public static function getStringForDeviceValue($value)
-    {
-        if ($value === null)
-        {
-            return null;
-        }
-
-        $values = array_flip(self::DEVICE_VALUES);
-
-        return array_key_exists($value, $values) ? $values[$value] : self::OTHERS;
     }
 }

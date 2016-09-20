@@ -1128,13 +1128,6 @@ trait Authorize
 
     protected function createAnalyticsLog($rawData)
     {
-        $checkoutMetadataToLog = null;
-
-        if (isset($rawData['input']) and isset($rawData['input']['_']))
-        {
-            $checkoutMetadataToLog = $rawData['input']['_'];
-        }
-
         try
         {
             $log = [
@@ -1156,6 +1149,13 @@ trait Authorize
 
             if (empty($invalidData) === false)
             {
+                $checkoutMetadataToLog = null;
+
+                if (isset($rawData['input']) and isset($rawData['input']['_']))
+                {
+                    $checkoutMetadataToLog = $rawData['input']['_'];
+                }
+
                 $this->trace->warning(TraceCode::PAYMENT_ANALYTICS_UNRECOGNIZED_DATA,
                     ['invalid_data' => $invalidData,
                      'raw_data'     => $checkoutMetadataToLog]);
@@ -1163,13 +1163,7 @@ trait Authorize
         }
         catch (\Exception $e)
         {
-            $this->trace->error(
-                TraceCode::PAYMENT_ANALYTICS_SAVE_FAILED,
-                [
-                    'raw_data'  => $checkoutMetadataToLog,
-                ]);
-
-            $this->trace->traceException($e);
+            $this->trace->traceException($e, Trace::WARNING, TraceCode::PAYMENT_ANALYTICS_SAVE_FAILED);
         }
     }
 
