@@ -6,6 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use RZP\Constants\Table;
 use RZP\Models\Payment\BatchRefund\Entity as BatchRefund;
 use RZP\Models\Merchant;
+use RZP\Models\Payment\Refund;
 
 
 class CreateBatchRefundTable extends Migration
@@ -61,6 +62,20 @@ class CreateBatchRefundTable extends Migration
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
         });
+
+
+        Schema::table(Table::REFUND, function($table)
+        {
+            $table->char(Refund\Entity::BATCH_REFUND_ID, BatchRefund::ID_LENGTH)
+                  ->nullable()
+                  ->after(Refund\Entity::TRANSACTION_ID);
+
+            $table->foreign(Refund\Entity::BATCH_REFUND_ID)
+                  ->references(BatchRefund::ID)
+                  ->on(Table::BATCH_REFUND)
+                  ->on_delete('restrict');
+
+        });
     }
 
     /**
@@ -70,6 +85,11 @@ class CreateBatchRefundTable extends Migration
      */
     public function down()
     {
+        Schema::table(Table::REFUND, function($table)
+        {
+            $table->dropForeign(Table::REFUND.'_'.Payment::BATCH_REFUND_ID.'_foreign');
+        });
+
         Schema::table(Table::BATCH_REFUND, function($table)
         {
             $table->dropForeign(Table::BATCH_REFUND.'_'.BatchRefund::MERCHANT_ID.'_foreign');

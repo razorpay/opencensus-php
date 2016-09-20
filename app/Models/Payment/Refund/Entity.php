@@ -17,6 +17,7 @@ class Entity extends Base\PublicEntity
     const CURRENCY          = 'currency';
     const TRANSACTION_ID    = 'transaction_id';
     const NOTES             = 'notes';
+    const BATCH_REFUND_ID   = 'batch_refund_id';
 
     protected $table = \RZP\Constants\Table::REFUND;
 
@@ -44,6 +45,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::TRANSACTION_ID,
         self::NOTES,
+        self::BATCH_REFUND_ID,
         self::CREATED_AT,
         self::UPDATED_AT
     );
@@ -83,6 +85,11 @@ class Entity extends Base\PublicEntity
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');
+    }
+
+    public function batchRefund()
+    {
+        return $this->belongsTo('RZP\Models\Payment\BatchRefund\Entity', self::BATCH_REFUND_ID);
     }
 
     public function build(array $input = array())
@@ -140,6 +147,11 @@ class Entity extends Base\PublicEntity
     public function getGateway()
     {
         return $this->relations['payment']->getGateway();
+    }
+
+    public function getBatchRefundId()
+    {
+        return $this->getAttribute(self::BATCH_REFUND_ID);
     }
 
     /**

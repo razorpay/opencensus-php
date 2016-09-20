@@ -25,6 +25,11 @@ class Service extends Base\Service
 
     public function uploadRefundFile($input)
     {
+        if(!isset($input['file']))
+        {
+            throw new Exception\BadRequestException('Input file not set');
+        }
+
         $entries = $this->parseExcelFile($input['file']);
 
         $totalEntries = count($entries);
