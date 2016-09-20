@@ -264,10 +264,13 @@ class Service extends Base\Service
 
             $appToken = (new AppToken\Core)->getAppByAppToken($appTokenId, $this->merchant);
 
-            $payments = $this->repo->payment->fetchPaymentsForCustomerMethod(
-                $appToken->customer,
-                Payment\Method::CARD,
-                $skip);
+            if ($appToken !== null)
+            {
+                $payments = $this->repo->payment->fetchPaymentsForCustomerMethod(
+                    $appToken->customer,
+                    Payment\Method::CARD,
+                    $skip);
+            }
         }
 
         $collection = new Base\PublicCollection;
