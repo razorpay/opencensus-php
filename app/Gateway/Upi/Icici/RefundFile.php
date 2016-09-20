@@ -24,16 +24,16 @@ class RefundFile extends Base\RefundFile
     {
         $data = $this->getRefundData($input);
 
-        $urlExcel = $this->writeToExcelFile($data, $this->getFileToWriteNameWithoutExt());
+        $urlCsv = $this->writeToCsvFile($data, $this->getFileToWriteNameWithoutExt());
 
         $this->sendRefundEmail();
 
-        return $urlExcel;
+        return $urlCsv;
     }
 
     protected function sendRefundEmail()
     {
-        $fullpath = $this->getExcelFullFilePath();
+        $fullpath = $this->getCsvFullFilePath();
 
         $data['file'] = $fullpath;
         $data['body'] = 'Please find attached refunds information for UPI';
@@ -42,7 +42,7 @@ class RefundFile extends Base\RefundFile
         {
             $emails = ['settlements@razorpay.com'];
 
-            $message->from('refunds@razorpay.com', 'UPI Icici refunds');
+            $message->from('refunds@razorpay.com', 'UPI Icici Refunds');
 
             $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
 
@@ -56,7 +56,7 @@ class RefundFile extends Base\RefundFile
 
     protected function getRefundData($input)
     {
-        $fileName = $this->getFileToWriteNameWithoutExt() . '.xlsx';
+        $fileName = $this->getCsvFileToWriteName();
 
         foreach ($input['data'] as $row)
         {
