@@ -87,11 +87,47 @@ EOT;
         });
     }
 
-    public function testUnencryptedResponsePayment()
+    public function testLongVPA()
     {
-        $this->payment['vpa'] = 'dontencrypt@icici';
+        $payment = $this->getDefaultUpiPaymentArray();
 
-        $this->testPayment();
+        $payment['vpa'] = 'thisisaverylongvpathisisaverylongvpathisisaverylongvpa@icici';
+
+        $data = $this->testData['testLongVPA'];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testPhonePeVPA()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['vpa'] = 'nemo@ybl';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testInvalidVPA()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        // Emails are not VPAs
+        $payment['vpa'] = 'nemo@razorpay.com';
+
+        $data = $this->testData['testInvalidVPA'];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
     }
 
     public function testInvalidResponsePayment()
