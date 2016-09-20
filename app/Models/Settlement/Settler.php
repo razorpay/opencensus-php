@@ -9,6 +9,7 @@ use RZP\Exception;
 
 use RZP\Constants\Mode;
 use RZP\Models\Base;
+use RZP\Base\RuntimeManager;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
@@ -573,7 +574,7 @@ class Settler
 
     protected function increaseAllowedSystemLimits()
     {
-        ini_set('memory_limit', '1024M');
-        set_time_limit(300);
+        RuntimeManager::setMemoryLimit('1024M');
+        RuntimeManager::setTimeLimit(300);
     }
 }

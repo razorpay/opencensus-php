@@ -2,11 +2,14 @@
 
 namespace RZP\Models\Base;
 
-use RZP\Constants\Entity as E;
 use Carbon\Carbon;
-use RZP\Trace\TraceCode;
+
+use RZP\Base\RuntimeManager;
+use RZP\Constants\Entity as E;
 use RZP\Exception;
 use RZP\Models\Transaction;
+use RZP\Trace\TraceCode;
+
 
 class Report extends Service
 {
@@ -309,7 +312,7 @@ class Report extends Service
 
     protected function increaseAllowedSystemLimits()
     {
-        ini_set('memory_limit', '1024M');
-        set_time_limit(501);
+        RuntimeManager::setMemoryLimit('1024M');
+        RuntimeManager::setTimeLimit(501);
     }
 }
