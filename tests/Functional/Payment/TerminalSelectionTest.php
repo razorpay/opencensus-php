@@ -150,7 +150,7 @@ class TerminalSelectionTest extends TestCase
 
     public function testTerminalCategoryChoice()
     {
-        $this->fixtures->merchant->editCategory2('education');
+        $this->fixtures->merchant->editCategory2('govt_education');
         $this->fixtures->merchant->enableMethod('10000000000000', 'amex');
         $this->fixtures->create('terminal:all_shared_terminals');
         $this->fixtures->create('terminal:shared_amex_terminal');
