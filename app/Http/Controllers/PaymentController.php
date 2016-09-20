@@ -78,7 +78,7 @@ class PaymentController extends Controller
         return ApiResponse::json($payment);
     }
 
-    public function postRefundOldAUthorizedPayments()
+    public function postRefundOldAuthorizedPayments()
     {
         $data = $this->payment->refundOldAuthorizedPayments();
 
@@ -114,6 +114,13 @@ class PaymentController extends Controller
         $summary = $this->refund->createMissingTransactions();
 
         return ApiResponse::json($summary);
+    }
+
+    public function getPaymentStatusForAsyncPayments($id)
+    {
+        $data = $this->payment->fetchStatus($id);
+
+        return ApiResponse::json($data);
     }
 
     public function postCancel($id)
@@ -287,7 +294,14 @@ class PaymentController extends Controller
 
     public function postManualGatewayRefund($refundIds)
     {
-        $data = $this->payment->manualGatewayRefund($refundIds);
+        $data = $this->refund->manualGatewayRefund($refundIds);
+
+        return ApiResponse::json($data);
+    }
+    
+    public function postRefundMultipleAuthorizedPaymentsForOrders()
+    {
+        $data = $this->payment->refundMultipleAuthorizedPaymentsForOrders();
 
         return ApiResponse::json($data);
     }

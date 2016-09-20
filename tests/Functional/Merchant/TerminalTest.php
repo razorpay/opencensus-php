@@ -118,6 +118,20 @@ class TerminalTest extends TestCase
         $this->assertEquals('random', $terminal->reload()->getGatewayReconPassword());
     }
 
+    public function testEditUpiIciciTerminal()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal:shared_upi_terminal', ['used_count' => 2, 'upi' => 0]);
+
+        $tid = $terminal['id'];
+
+        $data = array('upi' => '1');
+
+        $content = $this->editTerminal($tid, $data);
+
+        $this->assertEquals(true, $terminal->reload()->upi);
+    }
+
     public function startTest($testDataToReplace = [])
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);

@@ -134,7 +134,8 @@ class Checkout
             'card'          => true,
             'netbanking'    => [],
             'wallet'        => [],
-            'emi'           => false
+            'emi'           => false,
+            'upi'           => false,
         );
 
         $methods = (new Methods\Core)->getMethods($merchant);
@@ -149,6 +150,7 @@ class Checkout
             }
             $methodsArray['wallet'] = $methods->getEnabledWallets();
             $methodsArray['emi'] = $methods->isEmiEnabled();
+            $methodsArray['upi'] = $methods->isUpiEnabled();
         }
 
         return $methodsArray;
