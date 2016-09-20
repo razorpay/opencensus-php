@@ -98,10 +98,6 @@ class Server extends Base\Mock\Server
             );
         }
 
-        else if ($input[RequestFields::OTP] === Otp::INSUFFICIENT_BALANCE)
-        {
-
-        }
         return $this->makeResponse($responseContent);
     }
 
@@ -148,6 +144,7 @@ class Server extends Base\Mock\Server
         $this->validateActionInput($input, Command::DEBIT);
 
         $udf = json_encode([RequestFields::MERCHANT_DISPLAY_NAME => 'test_merchant_display_name']);
+
         $responseContent = array(
             ResponseFields::TYPE                    => 'debit',
             ResponseFields::STATUS                  => 'success',

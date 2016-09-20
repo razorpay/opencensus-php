@@ -89,7 +89,6 @@ class GatewayController extends Controller
             case 'wallet_olamoney':
                 $trace = $this->app['trace'];
 
-                // check mode before search
                 $trace->info(
                     TraceCode::GATEWAY_PAYMENT_CALLBACK,
                     [

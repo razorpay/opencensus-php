@@ -212,7 +212,7 @@ class Gateway extends Base\Gateway
         if (($content[ResponseFields::STATUS] === Status::SUCCESS) and
             isset($content[ResponseFields::AMOUNT]))
         {
-            $userBalance = ((int) ($content[ResponseFields::AMOUNT])) * 100;
+            $userBalance = (int) ($content[ResponseFields::AMOUNT]) * 100;
         }
 
         if ($input['payment']['amount'] > $userBalance)
@@ -299,8 +299,9 @@ class Gateway extends Base\Gateway
         $udf = [RequestFields::MERCHANT_DISPLAY_NAME => $input['merchant']->getBillingLabelElseName()];
         $udf = json_encode($udf);
 
-        $notificationUrl = Route::getUrlWithPublicAuth('gateway_payment_callback_post',
-                                            ['gateway' => 'wallet_olamoney']);
+        $notificationUrl = Route::getUrlWithPublicAuth(
+                            'gateway_payment_callback_post', ['gateway' => 'wallet_olamoney']
+                        );
 
         $content = array(
             RequestFields::COMMAND              => Command::DEBIT,
@@ -337,8 +338,8 @@ class Gateway extends Base\Gateway
             ($content['status'] !== Status::SUCCESS))
         {
             throw new Exception\GatewayErrorException(
-            ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-            $content['status']);
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                $content['status']);
         }
 
         // verify hash - when ola starts sending hash value
