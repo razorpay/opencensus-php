@@ -304,7 +304,7 @@ class Service extends Base\Service
 
         $customer = $this->repo->customer->findByIdAndMerchant($customerId, $this->merchant);
 
-        $addresses = $this->repo->address->fetchAddressesForEntity(Address\Type::CUSTOMER, $customer->getId(), $input);
+        $addresses = $this->repo->address->fetchAddressesForEntity($customer->getId(), $input);
 
         return $addresses->toArrayPublic();
     }
@@ -356,7 +356,6 @@ class Service extends Base\Service
 
         $customer = $this->repo->customer->findByIdAndMerchant($customerId, $this->merchant);
 
-        return $this->repo->address->findByEntityTypeAndId($addressId, Address\Type::CUSTOMER, $customerId);
+        return $this->repo->address->findByEntityAndId($addressId, $customerId);
     }
 }
-

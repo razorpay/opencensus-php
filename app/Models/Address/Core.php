@@ -33,20 +33,18 @@ class Core extends Base\Core
         $address = (new Entity)->build($input);
 
         $currentAddresses = $this->repo->address->fetchAddressesForEntity(
-            $entityType, $entity->getId(), [Entity::ADDRESS_TYPE => $input[Entity::ADDRESS_TYPE]]);
+            $entity->getId(), [Entity::TYPE => $input[Entity::TYPE]]);
 
         if ($currentAddresses->count() >= self::MAX_ALLOWED_ADDRESSES)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'You cannot have more than ' . self::MAX_ALLOWED_ADDRESSES . ' ' .
-                $input[Entity::ADDRESS_TYPE] . ' for ' . $entityType);
+                $input[Entity::TYPE] . ' for ' . $entityType);
         }
 
-        return $this->repo->transaction(function() use ($address, $entity, $entityType)
+        return $this->repo->transaction(function() use ($address, $entity)
         {
-            $address->setEntityType($entityType);
-
-            $address->source()->associate($entity);
+            $address->sourceAssociate($entity);
 
             if ($address->isPrimary() === true)
             {
@@ -87,7 +85,7 @@ class Core extends Base\Core
             TraceCode::ADDRESS_DELETE_REQUEST,
             [
                 'address_id'    => $address->getId(),
-                'address_type'  => $address->getAddressType(),
+                'type'          => $address->getType(),
                 'entity_id'     => $entity->getId(),
             ]);
 
@@ -102,29 +100,15 @@ class Core extends Base\Core
 
                 // We are passing the address ID here because we want the latest address, excluding the current one
                 // since we are going to delete this one.
-                $latestAddress = $this->repo->address->fetchLatestAddress(
-                    $address->getEntityType(), $entity->getId(), $address->getAddressType(), $address->getId());
+                $latestAddress = $this->repo->address->fetchLatestAddressForEntity(
+                    $entity->getId(), $address->getType(), $address->getId());
 
                 if ($latestAddress !== null)
                 {
                     $latestAddress->setPrimary(true);
 
                     $this->repo->saveOrFail($latestAddress);
-
-                    //$addressId = $latestAddress->getId();
                 }
-                // else
-                // {
-                //     // If $latestAddress is null, there's nothing to do. It just means that there was just
-                //     // one address which we are going to delete.
-                //
-                //     $addressId = null;
-                // }
-
-                // $setterFunc = Type::getSetterFunctionForAddress($address->getAddressType());
-                // $entity->$setterFunc($addressId);
-                //
-                // $this->repo->saveOrFail($entity);
             }
 
             return $this->repo->address->deleteOrFail($address);
@@ -148,8 +132,8 @@ class Core extends Base\Core
     {
         $entity = $address->getAssociatedEntityFromAddress();
 
-        $currentPrimaryAddress = $this->repo->address->fetchCurrentPrimaryAddress(
-            $address->getEntityType(), $entity->getId(), $address->getAddressType());
+        $currentPrimaryAddress = $this->repo->address->fetchCurrentPrimaryAddressOfEntity(
+            $entity->getId(), $address->getType());
 
         if ($currentPrimaryAddress->count() > 1)
         {
@@ -157,13 +141,13 @@ class Core extends Base\Core
                 'Found multiple primary addresses for an address type.',
                 null,
                 [
-                    'entity_id'     => $entity->getId(),
-                    'entity_type'   => $address->getEntityType(),
-                    'address_type'  => $address->getAddressType(),
+                    'entity_id'   => $entity->getId(),
+                    'entity_type' => $address->getEntityType(),
+                    'type'        => $address->getType(),
                 ]);
         }
 
-        $this->repo->transaction(function() use ($currentPrimaryAddress, $address, $entity)
+        $this->repo->transaction(function () use ($currentPrimaryAddress, $address, $entity)
         {
             // If there is no current primary address, there's no need to do anything
 
@@ -182,27 +166,13 @@ class Core extends Base\Core
                 $this->trace->info(
                     TraceCode::ADDRESS_PRIMARY_SWITCH,
                     [
-                        'entity_id'             => $entity->getId(),
-                        'entity_type'           => $address->getEntityType(),
-                        'address_type'          => $address->getAddressType(),
-                        'old_primary_address'   => $currentPrimaryAddress->getId(),
-                        'new_primary_address'   => $address->getId(),
+                        'entity_id'           => $entity->getId(),
+                        'entity_type'         => $address->getEntityType(),
+                        'type'                => $address->getType(),
+                        'old_primary_address' => $currentPrimaryAddress->getId(),
+                        'new_primary_address' => $address->getId(),
                     ]);
             }
-
-            // $setterFunc = Type::getSetterFunctionForAddress($address->getAddressType());
-            // $entity->$setterFunc($address->getId());
-            //
-            // $this->repo->saveOrFail($entity);
         });
     }
-
-    // protected function getAssociatedEntityFromAddress(Entity $address)
-    // {
-    //     $entityType = $address->getEntityType();
-    //
-    //     $entity = $address->{$entityType};
-    //
-    //     return $entity;
-    // }
 }

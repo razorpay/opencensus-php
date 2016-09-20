@@ -15,20 +15,20 @@ return [
                 'line2'         => 'some line two',
                 'city'          => 'Bangalore',
                 'state'         => 'Karnataka',
-                'pincode'       => '560078',
+                'zipcode'       => '560078',
                 'country'       => 'India',
-                'address_type'  => 'shipping_address'
+                'type'  => 'shipping_address'
             ],
         ],
         'response' => [
             'content' => [
                 //'entity_id'     => 'cust_100000customer',
                 //'entity_type'   => 'customer',
-                'address_type'  => 'shipping_address',
+                'type'  => 'shipping_address',
                 'primary'       => true,
                 'line1'         => 'some line one',
                 'line2'         => 'some line two',
-                'pincode'       => '560078',
+                'zipcode'       => '560078',
                 'city'          => 'Bangalore',
                 'state'         => 'Karnataka',
                 'country'       => 'in'
@@ -45,9 +45,9 @@ return [
                 'line2'         => 'some line two',
                 'city'          => 'Bangalore',
                 'state'         => 'Karnataka',
-                'pincode'       => '560078',
+                'zipcode'       => '560078',
                 'country'       => 'India',
-                'address_type'  => 'shipping_address',
+                'type'  => 'shipping_address',
                 'primary'       => '0',
             ],
         ],
@@ -55,11 +55,11 @@ return [
             'content' => [
                 //'entity_id'     => 'cust_100000customer',
                 //'entity_type'   => 'customer',
-                'address_type'  => 'shipping_address',
+                'type'  => 'shipping_address',
                 'primary'       => false,
                 'line1'         => 'some line one',
                 'line2'         => 'some line two',
-                'pincode'       => '560078',
+                'zipcode'       => '560078',
                 'city'          => 'Bangalore',
                 'state'         => 'Karnataka',
                 'country'       => 'in'
@@ -76,9 +76,9 @@ return [
                 'line2'         => 'some line two',
                 'city'          => 'Bangalore',
                 'state'         => 'Karnataka',
-                'pincode'       => '560078',
+                'zipcode'       => '560078',
                 'country'       => 'India',
-                'address_type'  => 'shipping_address'
+                'type'  => 'shipping_address'
             ],
         ],
         'response' => [
@@ -105,20 +105,20 @@ return [
                 'line2'         => 'some line two',
                 'city'          => 'Bangalore',
                 'state'         => 'Karnataka',
-                'pincode'       => '560078',
+                'zipcode'       => '560078',
                 'country'       => 'IN',
-                'address_type'  => 'shipping_address'
+                'type'  => 'shipping_address'
             ],
         ],
         'response' => [
             'content' => [
                 //'entity_id'     => 'cust_100000customer',
                 //'entity_type'   => 'customer',
-                'address_type'  => 'shipping_address',
+                'type'  => 'shipping_address',
                 'primary'       => true,
                 'line1'         => 'some line one',
                 'line2'         => 'some line two',
-                'pincode'       => '560078',
+                'zipcode'       => '560078',
                 'city'          => 'Bangalore',
                 'state'         => 'Karnataka',
                 'country'       => 'in'
@@ -135,9 +135,9 @@ return [
                 'line2'         => 'some line two',
                 'city'          => 'Bangalore',
                 'state'         => 'Karnataka',
-                'pincode'       => '560078',
+                'zipcode'       => '560078',
                 'country'       => 'india',
-                'address_type'  => 'shipping_address',
+                'type'  => 'shipping_address',
                 'primary'       => '0',
             ],
         ],
@@ -145,11 +145,11 @@ return [
             'content' => [
                 //'entity_id'     => 'cust_100000customer',
                 //'entity_type'   => 'customer',
-                'address_type'  => 'shipping_address',
+                'type'  => 'shipping_address',
                 'primary'       => false,
                 'line1'         => 'some line one',
                 'line2'         => 'some line two',
-                'pincode'       => '560078',
+                'zipcode'       => '560078',
                 'city'          => 'Bangalore',
                 'state'         => 'Karnataka',
                 'country'       => 'in'
@@ -162,11 +162,11 @@ return [
             'content'   => [
                 //'entity_id'     => 'cust_100000customer',
                 //'entity_type'   => 'customer',
-                'address_type'  => 'shipping_address',
+                'type'  => 'shipping_address',
                 'primary'       => true,
                 'line1'         => 'some line one',
                 'line2'         => 'some line two',
-                'pincode'       => '560078',
+                'zipcode'       => '560078',
                 'city'          => 'Bangalore',
                 'state'         => 'Karnataka',
                 'country'       => 'in'
@@ -179,11 +179,11 @@ return [
             'content'   => [
                 //'entity_id'     => 'cust_100000customer',
                 //'entity_type'   => 'customer',
-                'address_type'  => 'shipping_address',
+                'type'  => 'shipping_address',
                 'primary'       => true,
                 'line1'         => 'some line one',
                 'line2'         => 'some line two',
-                'pincode'       => '560078',
+                'zipcode'       => '560078',
                 'city'          => 'Bangalore',
                 'state'         => 'Karnataka',
                 'country'       => 'in'
@@ -218,20 +218,20 @@ return [
                 'line2'         => 'some line two',
                 'city'          => 'Bangalore',
                 'state'         => 'Karnataka',
-                'pincode'       => '560078',
+                'zipcode'       => '560078',
                 'country'       => 'in',
-                'address_type'  => 'shipping_address'
+                'type'  => 'shipping_address'
             ],
         ],
         'response' => [
             'content' => [
                 //'entity_id'     => 'cust_100000customer',
                 //'entity_type'   => 'customer',
-                'address_type'  => 'shipping_address',
+                'type'  => 'shipping_address',
                 'primary'       => true,
                 'line1'         => 'some line one',
                 'line2'         => 'some line two',
-                'pincode'       => '560078',
+                'zipcode'       => '560078',
                 'city'          => 'Bangalore',
                 'state'         => 'Karnataka',
                 'country'       => 'in'
@@ -251,22 +251,22 @@ return [
                     [
                         //'entity_id' => 'cust_100000customer',
                         //'entity_type' => 'customer',
-                        'address_type' => 'shipping_address',
+                        'type' => 'shipping_address',
                     ],
                     [
                         //'entity_id' => 'cust_100000customer',
                         //'entity_type' => 'customer',
-                        'address_type' => 'shipping_address',
+                        'type' => 'shipping_address',
                     ],
                     [
                         //'entity_id' => 'cust_100000customer',
                         //'entity_type' => 'customer',
-                        'address_type' => 'shipping_address',
+                        'type' => 'shipping_address',
                     ],
                     [
                         //'entity_id' => 'cust_100000customer',
                         //'entity_type' => 'customer',
-                        'address_type' => 'shipping_address',
+                        'type' => 'shipping_address',
                     ]
                 ],
             ],

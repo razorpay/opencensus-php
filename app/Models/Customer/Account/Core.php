@@ -57,7 +57,7 @@ class Core extends Base\Core
 
             if (empty($input[Entity::SHIPPING_ADDRESS]) === false)
             {
-                $input[Entity::SHIPPING_ADDRESS][Address\Entity::ADDRESS_TYPE] = Address\Type::SHIPPING_ADDRESS;
+                $input[Entity::SHIPPING_ADDRESS][Address\Entity::TYPE] = Address\Type::SHIPPING_ADDRESS;
 
                 (new Address\Core)->create($customer, Address\Type::CUSTOMER, $input[Entity::SHIPPING_ADDRESS]);
             }

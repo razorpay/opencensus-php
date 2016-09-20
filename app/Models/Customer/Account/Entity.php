@@ -120,14 +120,13 @@ class Entity extends Base\PublicEntity
 
     protected function getShippingAddressAttribute()
     {
-        $input[Address\Entity::ADDRESS_TYPE] = Address\Type::SHIPPING_ADDRESS;
+        $input[Address\Entity::TYPE] = Address\Type::SHIPPING_ADDRESS;
 
         $customerId = $this->getAttribute(self::ID);
 
         $app = App::getFacadeRoot();
 
-        $shippingAddresses = $app['repo']->address->fetchAddressesForEntity(
-            Address\Type::CUSTOMER, $customerId, $input);
+        $shippingAddresses = $app['repo']->address->fetchAddressesForEntity($customerId, $input);
 
         if ($shippingAddresses->count() === 0)
         {

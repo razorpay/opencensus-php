@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
 use RZP\Constants\Table;
+use RZP\Constants;
 
 class Entity extends Base\PublicEntity
 {
@@ -13,11 +14,11 @@ class Entity extends Base\PublicEntity
 
     const ENTITY_ID             = 'entity_id';
     const ENTITY_TYPE           = 'entity_type';
-    const ADDRESS_TYPE          = 'address_type';
+    const TYPE                  = 'type';
     const PRIMARY               = 'primary';
     const LINE1                 = 'line1';
     const LINE2                 = 'line2';
-    const PINCODE               = 'pincode';
+    const ZIPCODE               = 'zipcode';
     const CITY                  = 'city';
     const STATE                 = 'state';
     const COUNTRY               = 'country';
@@ -34,11 +35,11 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::ENTITY_ID,
         self::ENTITY_TYPE,
-        self::ADDRESS_TYPE,
+        self::TYPE,
         self::PRIMARY,
         self::LINE1,
         self::LINE2,
-        self::PINCODE,
+        self::ZIPCODE,
         self::CITY,
         self::STATE,
         self::COUNTRY,
@@ -54,9 +55,9 @@ class Entity extends Base\PublicEntity
         self::LINE2,
         self::ENTITY_ID,
         self::ENTITY_TYPE,
-        self::ADDRESS_TYPE,
+        self::TYPE,
         self::PRIMARY,
-        self::PINCODE,
+        self::ZIPCODE,
         self::CITY,
         self::STATE,
         self::COUNTRY,
@@ -67,22 +68,20 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
-        // self::ENTITY_ID,
-        // self::ENTITY_TYPE,
-        self::ADDRESS_TYPE,
+        self::TYPE,
         self::PRIMARY,
         self::LINE1,
         self::LINE2,
-        self::PINCODE,
+        self::ZIPCODE,
         self::CITY,
         self::STATE,
         self::COUNTRY,
     ];
 
     protected $defaults = [
-        self::LINE2         => null,
-        self::PINCODE       => null,
-        self::PRIMARY       => true,
+        self::LINE2   => null,
+        self::ZIPCODE => null,
+        self::PRIMARY => true,
     ];
 
     protected $publicSetters = [
@@ -116,9 +115,9 @@ class Entity extends Base\PublicEntity
 
     // ----------------------------------- GETTERS -----------------------------------
 
-    public function getAddressType()
+    public function getType()
     {
-        return $this->getAttribute(self::ADDRESS_TYPE);
+        return $this->getAttribute(self::TYPE);
     }
 
     public function isPrimary()
@@ -129,6 +128,11 @@ class Entity extends Base\PublicEntity
     public function getEntityType()
     {
         return $this->getAttribute(self::ENTITY_TYPE);
+    }
+
+    public function getEntityId()
+    {
+        return $this->getAttribute(self::ENTITY_ID);
     }
 
     // ----------------------------------- END GETTERS -----------------------------------
@@ -153,7 +157,7 @@ class Entity extends Base\PublicEntity
 
     protected function setCountryAttribute($country)
     {
-        $countryCode = self::getCountryCode($country);
+        $countryCode = Constants\Country::getCountryCode($country);
 
         $this->attributes[self::COUNTRY] = $countryCode;
     }
@@ -175,17 +179,24 @@ class Entity extends Base\PublicEntity
 
     // ----------------------------------- RELATIONS -----------------------------------
 
-    public function source()
+    protected function source()
     {
         $entityType = $this->getAttribute(self::ENTITY_TYPE);
 
         Type::validateEntityType($entityType);
 
-        $class = 'RZP\\Models\\';
-
-        $class .= ucfirst($entityType) . '\\' . 'Entity';
+        $class = Constants\Entity::getEntityClass($entityType);
 
         return $this->belongsTo($class, self::ENTITY_ID);
+    }
+
+    public function sourceAssociate(Base\Entity $entity)
+    {
+        $entityType = $this->getEntityTypeFromEntity($entity);
+
+        $this->setEntityType($entityType);
+
+        $this->source()->associate($entity);
     }
 
     public function customer()
@@ -197,8 +208,6 @@ class Entity extends Base\PublicEntity
 
     public function getAssociatedEntityFromAddress()
     {
-        //$entityType = $address->getEntityType();
-
         $entityType = $this->getAttribute(self::ENTITY_TYPE);
 
         $entity = $this->{$entityType};
@@ -225,5 +234,16 @@ class Entity extends Base\PublicEntity
         }
 
         return $countryCode;
+    }
+
+    protected function getEntityTypeFromEntity(Base\Entity $entity)
+    {
+        $entityNamespace = Constants\Entity::getEntityNamespace($entity->getEntityName());
+
+        $namespaceArray = explode('\\', $entityNamespace);
+        $entityType = $namespaceArray[count($namespaceArray) - 1];
+        $entityType = strtolower($entityType);
+
+        return $entityType;
     }
 }

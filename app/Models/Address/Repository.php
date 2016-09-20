@@ -10,37 +10,28 @@ class Repository extends Base\Repository
     use Base\RepositoryFetch;
 
     protected $appFetchParamRules = [
-        Entity::MERCHANT_ID     => 'sometimes|alpha_num|size:14',
-        Entity::ENTITY_ID       => 'sometimes|alpha_num|size:14',
-        Entity::ENTITY_TYPE     => 'sometimes|string|max:64',
-        Entity::ADDRESS_TYPE    => 'sometimes|string|max:64',
-        Entity::STATE           => 'sometimes|string|max:128',
-        Entity::COUNTRY         => 'sometimes|string|max:128',
+        Entity::MERCHANT_ID => 'sometimes|alpha_num|size:14',
+        Entity::ENTITY_ID   => 'sometimes|alpha_num|size:14',
+        Entity::ENTITY_TYPE => 'sometimes|string|max:64',
+        Entity::TYPE        => 'sometimes|string|max:64',
+        Entity::STATE       => 'sometimes|string|max:128',
+        Entity::COUNTRY     => 'sometimes|string|max:128',
     ];
 
-    public function fetchCurrentPrimaryAddress($entityType, $entityId, $addressType, $currentAddressId = null)
+    public function fetchCurrentPrimaryAddressOfEntity($entityId, $type)
     {
         $currentPrimaryAddresses = $this->newQuery()
-                                        ->where(Entity::ENTITY_TYPE, '=', $entityType)
                                         ->where(Entity::ENTITY_ID, '=', $entityId)
-                                        ->where(Entity::ADDRESS_TYPE, '=', $addressType)
+                                        ->where(Entity::TYPE, '=', $type)
                                         ->where(Entity::PRIMARY, '=', '1')
                                         ->get();
 
-        // if ($currentAddressId !== null)
-        // {
-        //     return $currentPrimaryAddresses->except($currentAddressId);
-        // }
-        // else
-        // {
-            return $currentPrimaryAddresses;
-        // }
+        return $currentPrimaryAddresses;
     }
 
-    public function findByEntityTypeAndId($addressId, $entityType, $entityId)
+    public function findByEntityAndId($addressId, $entityId)
     {
         return $this->newQuery()
-                    ->where(Entity::ENTITY_TYPE, '=', $entityType)
                     ->where(Entity::ENTITY_ID, '=', $entityId)
                     ->findOrFail($addressId);
     }
@@ -49,20 +40,18 @@ class Repository extends Base\Repository
      * Gets the latest address. If $exceptAddress parameter is sent,
      * we exclude that address while fetching the latest address.
      *
-     * @param $entityType
      * @param $entityId
-     * @param $addressType
+     * @param $type
      * @param null $exceptAddressId
      * @return Entity
      */
-    public function fetchLatestAddress($entityType, $entityId, $addressType, $exceptAddressId = null)
+    public function fetchLatestAddressForEntity($entityId, $type, $exceptAddressId = null)
     {
         // NOTE: except works on a collection and not on an entity.
 
         $latestAddress = $this->newQuery()
-                              ->where(Entity::ENTITY_TYPE, '=', $entityType)
                               ->where(Entity::ENTITY_ID, '=', $entityId)
-                              ->where(Entity::ADDRESS_TYPE, '=', $addressType)
+                              ->where(Entity::TYPE, '=', $type)
                               ->latest()
                               ->get();
 
@@ -76,16 +65,15 @@ class Repository extends Base\Repository
         }
     }
 
-    public function fetchAddressesForEntity($entityType, $entityId, array $input)
+    public function fetchAddressesForEntity($entityId, array $input)
     {
         $addresses = $this->newQuery()
-                          ->where(Entity::ENTITY_TYPE, '=', $entityType)
                           ->where(Entity::ENTITY_ID, '=', $entityId);
 
-        if (empty($input[Entity::ADDRESS_TYPE]) === false)
+        if (empty($input[Entity::TYPE]) === false)
         {
-            $addressType = $input[Entity::ADDRESS_TYPE];
-            $addresses = $addresses->where(Entity::ADDRESS_TYPE, '=', $addressType);
+            $type = $input[Entity::TYPE];
+            $addresses = $addresses->where(Entity::TYPE, '=', $type);
         }
 
         return $addresses->get();

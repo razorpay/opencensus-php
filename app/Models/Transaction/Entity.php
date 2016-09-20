@@ -142,11 +142,12 @@ class Entity extends Base\PublicEntity
 
     /**
      * Associates the entity id and validates that the entity id is unique.
+     * @param $entity
      */
     public function sourceAssociate($entity)
     {
         $this->source()->associate($entity);
-        $this->validateEntityIdUnique($entity->getId());
+        $this->validateEntityIdUnique();
         $entity->transaction()->associate($this);
     }
 
@@ -263,7 +264,7 @@ class Entity extends Base\PublicEntity
 
         if ($settledAt === null)
         {
-            return;
+            return null;
         }
 
         return (int) $settledAt;
