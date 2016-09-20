@@ -187,7 +187,7 @@ class Category
 
     public static function isNetworkCategoryValid($input)
     {
-        // get the correct constant for the terminal
+        // Get the correct constant for the terminal
         // get the values array and check in array
         $values = [];
 
