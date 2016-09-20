@@ -221,7 +221,7 @@ class Service extends Base\Service
 
             if ($shouldSendMail)
             {
-                $this->sendMail($fullpath, $totalRefundedAmount, $batchRefund->merchant);
+                $this->sendMail($fullpath, $batchRefund->merchant);
             }
         }
 
@@ -309,28 +309,28 @@ class Service extends Base\Service
         return $processor;
     }
 
-    protected function sendMail($filePath, $amount, $merchant)
+    protected function sendMail($filePath, $merchant)
     {
-        //TODO: Get new blade for the refund mail which will have the attached file
-        // $data = [
-        //     'refundFile' => $filePath,
-        //     'subject' => 'subject',
-        //     'amounts' => $amount,
-        //     'merchant' => $merchant
+        $data = [
+            'refundFile' => $filePath,
+            'body' => 'Please find attached processed Refunds File',
+            'emails' => array_merge($merchant->getTransactionReportEmailAttribute(), array('settlements@razorpay.com')),
+        ];
 
-        // ];
+        Mail::send('emails.message', $data, function($message) use ($data)
+        {
 
-        // Mail::send('emails.refund.common', $data, function($message) use ($data)
-        // {
-        //     $emails = ['settlements@razorpay.com'];
+            $emails = $data['emails'];
 
-        //     $message->from('settlement@razorpay.com', 'Kotak Settlement');
+            $message->from('refunds@razorpay.com', 'Refunds File');
 
-        //     $message->subject('Refund File Processed');
+            $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
 
-        //     $message->to($emails);
+            $message->subject('Processed Refunds file for  ' . $today);
 
-        //     $message->attach($data['refundFile']);
-        // });
+            $message->to($emails);
+
+            $message->attach($data['refundFile']);
+        });
     }
 }
