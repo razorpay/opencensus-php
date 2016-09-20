@@ -20,7 +20,9 @@
         "giggsey/libphonenumber-for-php": "^7.4",
         "predis/predis": "^1.1",
         "php-http/guzzle6-adapter": "^1.1",
-        "jenssegers/agent": "^2.3"
+        "phpseclib/phpseclib": "^2.0",
+        "jenssegers/agent": "^2.3",
+        "minfraud/http": "^1.70"
     },
     "repositories": [
         {
@@ -34,7 +36,7 @@
     ],
     "require-dev": {
         "raveren/kint": "1.*",
-        "phpunit/phpunit": "^4.7",
+        "phpunit/phpunit": "^5.4",
         "laracasts/testdummy": "2.*",
         "mockery/mockery": "*",
         "codacy/coverage": "dev-master",

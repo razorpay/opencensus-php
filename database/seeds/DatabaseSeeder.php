@@ -193,7 +193,9 @@ class DatabaseSeeder extends Seeder
                     'mobikwik'      => '1',
                     'payzapp'       => '1',
                     'payumoney'     => '1',
+                    'airtelmoney'   => '1',
                     'card'          => '1',
+                    'upi'           => '1',
                     'created_at'    =>  time(),
                     'updated_at'    =>  time()
                 )
@@ -208,8 +210,10 @@ class DatabaseSeeder extends Seeder
                     'olamoney'      => '1',
                     'payzapp'       => '1',
                     'payumoney'     => '1',
+                    'airtelmoney'   => '1',
                     'card'          => '1',
                     'emi'           => '1',
+                    'upi'           => '1',
                     'created_at'    =>  time(),
                     'updated_at'    =>  time()
                 )
@@ -474,6 +478,8 @@ class DatabaseSeeder extends Seeder
         $this->createSharpGatewayTerminals();
         $this->createNetbankingKotakTerminals();
         $this->createOlamoneyTerminals();
+        $this->createUpiTerminals();
+        $this->createAirtelmoneyTerminals();
     }
 
     protected function createNetbankingHdfcTerminals()
@@ -757,6 +763,24 @@ class DatabaseSeeder extends Seeder
             );
     }
 
+    protected function createUpiTerminals()
+    {
+        DB::table(Table::TERMINAL)->insert([
+            'id'                        => Terminal\Shared::UPI_ICICI_RAZORPAY_TERMINAL,
+            'merchant_id'               => Account::DEMO_ACCOUNT,
+            'gateway'                   => Gateway::UPI_ICICI,
+            'card'                      => '0',
+            'netbanking'                => '0',
+            'upi'                       => '1',
+            // This needs to be numeric
+            'gateway_merchant_id'       => 'demo_merchant_upi_icici',
+            'gateway_terminal_id'       => '1234',
+            'gateway_terminal_password' => Crypt::encrypt('demo_account_upi_icici_terminal_pass'),
+            'created_at'                =>  time(),
+            'updated_at'                =>  time(),
+        ]);
+    }
+
     protected function createPayumoneyTerminals()
     {
         DB::table(Table::TERMINAL)->insert(
@@ -821,6 +845,38 @@ class DatabaseSeeder extends Seeder
                 'gateway_terminal_id'       => 'demo_terminal_olamoney',
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_olamoney_terminal_pass'),
                 'recurring'             => 0,
+                'created_at'                => time(),
+                'updated_at'                => time(),
+            )
+        );
+    }
+
+    protected function createAirtelmoneyTerminals()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                        => '2byKhdVKZ9iDey',
+                'merchant_id'               => Account::TEST_ACCOUNT,
+                'gateway'                   => Gateway::WALLET_AIRTELMONEY,
+                'card'                      => '0',
+                'gateway_terminal_id'       => 'test_terminal_airtelmoney',
+                'gateway_terminal_password' => Crypt::encrypt('test_account_airtelmoney_terminal_pass'),
+                'created_at'                => time(),
+                'updated_at'                => time(),
+                'category'                  => 1000,
+                'shared'                    => '1',
+            )
+        );
+
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                        => Terminal\Shared::AIRTELMONEY_RAZORPAY_TERMINAL,
+                'merchant_id'               => Account::DEMO_ACCOUNT,
+                'gateway'                   => Gateway::WALLET_AIRTELMONEY,
+                'card'                      => '0',
+                'netbanking'                => '0',
+                'gateway_terminal_id'       => 'demo_terminal_airtelmoney',
+                'gateway_terminal_password' => Crypt::encrypt('demo_account_airtelmoney_terminal_pass'),
                 'created_at'                => time(),
                 'updated_at'                => time(),
             )

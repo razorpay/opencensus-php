@@ -58,18 +58,23 @@ class TraceCode
     const PAYMENT_CAPTURE_ORDER_UPDATE              = 'PAYMENT_CAPTURE_ORDER_UPDATE';
     const PAYMENT_TRANSACTION_OLD                   = 'PAYMENT_TRANSACTION_OLD';
     const PAYMENT_USER_AGENT_ANOMALY                = 'PAYMENT_USER_AGENT_ANOMALY';
+    const PAYMENT_CARD_IIN_MISSING                  = 'PAYMENT_CARD_IIN_MISSING';
     const TRANSACTION_CREATED_IN_VERIFY_CAPTURE     = 'TRANSACTION_CREATED_IN_VERIFY_CAPTURE';
     const TRANSACTION_FREE_CREDITS                  = 'TRANSACTION_FREE_CREDITS';
     const PAYMENT_NOT_CAPTURED_CREATE_TRANSACTION   = 'PAYMENT_NOT_CAPTURED_CREATE_TRANSACTION';
     const VERIFY_CAPTURE_RESPONSE                   = 'VERIFY_CAPTURE_RESPONSE';
     const PAYMENT_ANALYTICS_SAVE_FAILED             = 'PAYMENT_ANALYTICS_SAVE_FAILED';
+    const TERMINAL_ANALYTICS_SAVE_FAILED            = 'TERMINAL_ANALYTICS_SAVE_FAILED';
     const VERIFY_REFUND_TRANSACTION_CREATED         = 'VERIFY_REFUND_TRANSACTION_CREATED';
     const MANUAL_GATEWAY_REFUND_RESPONSE            = 'MANUAL_GATEWAY_REFUND_RESPONSE';
     const MANUAL_GATEWAY_ALL_REFUNDS_RESPONSE       = 'MANUAL_GATEWAY_ALL_REFUNDS_RESPONSE';
     const MANUAL_GATEWAY_REFUND_FAILURE             = 'MANUAL_GATEWAY_REFUND_FAILURE';
     const MANUAL_GATEWAY_REFUND_INITIATED           = 'MANUAL_GATEWAY_REFUND_INITIATED';
     const REFUND_GATEWAY_REQUIRED                   = 'REFUND_GATEWAY_REQUIRED';
+    const PAYMENT_AUTO_REFUND_FAILURE               = 'PAYMENT_AUTO_REFUND_FAILURE';
     
+    const ORDER_MULTIPLE_CAPTURED_PAYMENTS          = 'ORDER_MULTIPLE_CAPTURED_PAYMENTS';
+
     const ORDER_CREATE_REQUEST                      = 'ORDER_CREATE_REQUEST';
 
     const TERMINAL_SELECTION                        = 'TERMINAL_SELECTION';
@@ -90,6 +95,7 @@ class TraceCode
     const NETBANKING_PAYMENT_CALLBACK               = 'NETBANKING_PAYMENT_CALLBACK';
 
     const CHECKOUT_PREFERENCES_REQUEST              = 'CHECKOUT_PREFERENCES_REQUEST';
+    const CHECKOUT_PREFERENCES_COOKIE_CHECK         = 'CHECKOUT_PREFERENCES_COOKIE_CHECK';
 
     // Card Saving related
     const PAYMENT_FILL_SAVED_APP_TOKEN              = 'PAYMENT_FILL_SAVED_APP_TOKEN';
@@ -99,6 +105,7 @@ class TraceCode
     const PAYMENT_PROCESS_FROM_SAVED_LOCAL          = 'PAYMENT_PROCESS_FROM_SAVED_LOCAL';
     const PAYMENT_PROCESS_FROM_SAVED_GLOBAL         = 'PAYMENT_PROCESS_FROM_SAVED_GLOBAL';
     const PAYMENT_SAVE_METHOD                       = 'PAYMENT_SAVE_METHOD';
+    const PAYMENT_APP_TOKEN_NOT_FOUND               = 'PAYMENT_APP_TOKEN_NOT_FOUND';
 
     //Pricing
     const PRICING_RULE_SELECTION                    = 'PRICING_RULE_SELECTION';
@@ -148,6 +155,8 @@ class TraceCode
     const GATEWAY_REFUND_RESPONSE                   = 'GATEWAY_REFUND_RESPONSE';
     const GATEWAY_REFUND_REQUEST                    = 'GATEWAY_REFUND_REQUEST';
     const GATEWAY_CHECKSUM_VERIFY                   = 'GATEWAY_CHECKSUM_VERIFY';
+    const GATEWAY_CHECKSUM_VERIFY_REQUEST           = 'GATEWAY_CHECKSUM_VERIFY_REQUEST';
+    const GATEWAY_CHECKSUM_VERIFY_FAILED            = 'GATEWAY_CHECKSUM_VERIFY_FAILED';
     const GATEWAY_REQUEST_TIMEOUT                   = 'GATEWAY_REQUEST_TIMEOUT';
     const GATEWAY_RUPAY_CALLBACK                    = 'GATEWAY_RUPAY_CALLBACK';
     const GATEWAY_HDFC_CALLBACK_EMPTY               = 'GATEWAY_HDFC_CALLBACK_EMPTY';
@@ -219,6 +228,8 @@ class TraceCode
     const RAVEN_REQUEST                             = 'RAVEN_REQUEST';
     const RAVEN_RESPONSE                            = 'RAVEN_RESPONSE';
 
+    const MAXMIND_RESPONSE                          = 'MAXMIND_RESPONSE';
+
     const ES_SAVE_FAILED                            = 'ES_SAVE_FAILED';
     const ES_BULK_UPDATE_FAILED                     = 'ES_BULK_UPDATE_FAILED';
     const ES_BULK_UPDATE                            = 'ES_BULK_UPDATE';
@@ -280,6 +291,8 @@ class TraceCode
         self::MANUAL_GATEWAY_REFUND_FAILURE             => 'Failed while trying to refund from gateway',
         self::MANUAL_GATEWAY_REFUND_INITIATED           => 'Manual gateway refund has been initiated for this refund id',
         self::REFUND_GATEWAY_REQUIRED                   => 'Traces whether the gateway refund is required or not',
+        self::ORDER_MULTIPLE_CAPTURED_PAYMENTS          => 'Found more than one captured payment for an order.',
+        self::PAYMENT_AUTO_REFUND_FAILURE               => 'Refund failed while trying to auto-refund',
 
         self::BAD_REQUEST_INVALID_API_KEY               => 'The api key provided is invalid',
 

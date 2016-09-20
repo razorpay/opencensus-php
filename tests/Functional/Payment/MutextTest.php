@@ -23,7 +23,7 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
  * instead of utilizing the default created payment entity.
  */
 
-class LockTest extends TestCase
+class MutexTest extends TestCase
 {
     use PaymentTrait;
 
@@ -31,14 +31,14 @@ class LockTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__ . '/helpers/lockTestData.php';
+        $this->testDataFilePath = __DIR__ . '/helpers/MutexTestData.php';
 
         parent::setUp();
 
         $this->ba->privateAuth();
     }
 
-    public function testLockAcquiredCaptureRequest()
+    public function testMutexAcquiredCaptureRequest()
     {
         $payment = $this->defaultAuthPayment();
 
@@ -65,7 +65,7 @@ class LockTest extends TestCase
         $this->assertSame('authorized', $paymentEntity['status']);
     }
 
-    public function testLockAcquiredRefundRequest()
+    public function testMutexAcquiredRefundRequest()
     {
         Redis::shouldReceive('set')
                 ->once()
@@ -120,7 +120,7 @@ class LockTest extends TestCase
         $this->capturePayment($payment['id'], $payment['amount']);
     }
 
-    public function testLockCaptureRequestWithDiffRedisResponse()
+    public function testMutexCaptureRequestWithDiffRedisResponse()
     {
         $payment = $this->defaultAuthPayment();
 

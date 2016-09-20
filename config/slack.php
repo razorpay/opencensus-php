@@ -121,6 +121,7 @@ return array(
     'channels'  =>  [
         'low'            => '#transactions',
         'high'           => '#transactions_high',
+        'high_4'         => '#transactions_risk_4',
         'risky'          => '#transactions_risky',
         'reconciliation' => '#reconciliation',
         'highrisk'       => '#transactions_highrisk',

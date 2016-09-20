@@ -16,12 +16,12 @@
       <div class="content" style="font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; display: block; max-width: 600px; margin: 0 auto; padding: 0;">
 Hi,
 
-We tried to hit the <b>{{$mode}}</b> webhook specified url - <b>{{ $url }}</b> but it failed with the following error message - <br>"{{ $error_message }}".<br><br>
+We tried to hit the <b>{{$mode}}</b> webhook specified url - <b>{!! $url !!} </b> but it failed with the following error message - <br>"{!! $error_message !!}".<br><br>
 
 To help you debug this, here are a few more details about the failure event:<br><br>
 
-<b>Timestamp:</b> {{$date}}<br>
-<b>Event:</b> {{$event}}<br><br>
+<b>Timestamp:</b> {!! $date !!}}<br>
+<b>Event:</b> {!! $event !!}<br><br>
 
 We will only re-attempt the current webhook delivery multiple times more in next few hours.
 

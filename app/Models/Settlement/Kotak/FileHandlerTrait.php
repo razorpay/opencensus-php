@@ -117,9 +117,11 @@ trait FileHandlerTrait
     {
         $bucket = 'h2h_bucket';
 
-        $fullPath = $this->getFullFilePath();
+        $name = $this->getFileToWriteName();
 
-        return $this->getFileFromAws($bucket, $key, $fullpath);
+        $fullPath = $this->getFullFilePath($name);
+
+        return $this->getFileFromAws($bucket, $key, $fullPath);
     }
 
     protected function createExcelObject($data, $name, $columnFormat = [])
@@ -293,6 +295,8 @@ trait FileHandlerTrait
     protected function getFileFromAws($bucket, $key, $filePath)
     {
         $config =  \Config::get('aws');
+
+        $s3 = AWS::createClient('s3');
 
         try
         {
