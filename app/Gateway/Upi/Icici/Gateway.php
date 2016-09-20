@@ -59,6 +59,12 @@ class Gateway extends Base\Gateway
 
         if (Utility::isXml($response->body) === true)
         {
+            $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, [
+                'body'      => $response->body,
+                'encrypted' => false,
+                'gateway'   => $this->gateway
+            ]);
+
             $this->action = 'verify';
 
             $verify = new Verify($this->gateway, $this->input);
@@ -199,7 +205,7 @@ class Gateway extends Base\Gateway
             $key = $this->config['test_public_key'];
         }
 
-        return str_replace('\n', "\n", trim($key));
+        return trim(str_replace('\n', "\n", $key));
     }
 
     /**
@@ -220,7 +226,7 @@ class Gateway extends Base\Gateway
 
         // The trim is to make sure that the key doesn't end with
         // an extra newline
-        return str_replace('\n', "\n", trim($key));
+        return trim(str_replace('\n', "\n", $key));
     }
 
 
@@ -336,7 +342,14 @@ class Gateway extends Base\Gateway
      */
     protected function getPaymentRemark(array $input)
     {
-        return substr($input['payment']['description'], 0, 50);
+        $description = $input['merchant']->getBillingLabelElseName();
+
+        if (isset($input['payment']['description']) === true)
+        {
+            $description = $input['payment']['description'];
+        }
+
+        return ($description ? substr($description, 0, 50) : 'Pay');
     }
 
     /**

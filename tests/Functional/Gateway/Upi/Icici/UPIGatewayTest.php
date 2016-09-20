@@ -27,6 +27,7 @@ class UPIGatewayTest extends TestCase
 
     public function testPayment($status = 'created')
     {
+        unset($this->payment['description']);
         $res = $this->doAuthPayment($this->payment);
         $paymentId = $res['payment_id'];
 
