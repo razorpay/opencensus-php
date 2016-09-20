@@ -42,19 +42,21 @@ class UPIGatewayTest extends TestCase
     {
         $this->setContent(function (& $content)
         {
-            $content = '<?xml version="1.0" encoding="UTF-8"?>
-                        <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
-                            <soapenv:Body>
-                                <soapenv:Fault>
-                                    <faultcode>soapenv:Server</faultcode>
-                                    <faultstring>Policy Falsified</faultstring>
-                                    <faultactor>https://apigwuat.icicibank.com:8443/newCollectPay</faultactor>
-                                    <detail>
-                                        <l7:policyResult status="Assertion Falsified" xmlns:l7="http://www.layer7tech.com/ws/policy/fault"/>
-                                    </detail>
-                                </soapenv:Fault>
-                            </soapenv:Body>
-                        </soapenv:Envelope>';
+            $content = <<<EOT
+'<?xml version="1.0" encoding="UTF-8"?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+    <soapenv:Body>
+        <soapenv:Fault>
+            <faultcode>soapenv:Server</faultcode>
+            <faultstring>Policy Falsified</faultstring>
+            <faultactor>https://apigwuat.icicibank.com:8443/newCollectPay</faultactor>
+            <detail>
+                <l7:policyResult status="Assertion Falsified" xmlns:l7="http://www.layer7tech.com/ws/policy/fault"/>
+            </detail>
+        </soapenv:Fault>
+    </soapenv:Body>
+</soapenv:Envelope>'
+EOT;
         });
 
         $payment = $this->getDefaultUpiPaymentArray();
