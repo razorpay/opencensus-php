@@ -20,7 +20,7 @@ class RefundFile
         ;
     }
 
-    protected function sendHdfcNbRefundEmail()
+    protected function sendRefundEmail()
     {
         ;
     }
