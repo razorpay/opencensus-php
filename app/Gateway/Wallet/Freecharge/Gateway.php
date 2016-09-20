@@ -272,7 +272,8 @@ class Gateway extends Base\Gateway
 
         if ($token === null)
         {
-            throw new Exception\BaseException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+            throw new Exception\BaseException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
         }
 
         $this->accessToken = $token->getGatewayToken();
@@ -290,11 +291,11 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
-        $this->handleRequestFailed($response);
-
         $content = $this->jsonToArray($response->body);
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+
+        $this->handleRequestFailed($response);
 
         $this->verifyCheckSumForResponse($content);
 
@@ -373,9 +374,9 @@ class Gateway extends Base\Gateway
         return json_encode($content, JSON_UNESCAPED_SLASHES).$this->getSecret();
     }
 
-    protected function getStandardRequestArray($content = [], $method = 'post')
+    protected function getCustomRequestArray($content = [], $method = 'post')
     {
-        $request = parent::getStandardRequestArray($content, $method);
+        $request = $this->getStandardRequestArray($content, $method);
 
         if (!$this->mock)
             $request['content'] = json_encode($request['content']);
@@ -488,7 +489,7 @@ class Gateway extends Base\Gateway
 
         $content[ResponseFields::CHECKSUM] = $this->getHashOfArray($content);
 
-        $request = $this->getStandardRequestArray($content, $method = 'GET');
+        $request = $this->getCustomRequestArray($content, $method = 'GET');
 
         $content = http_build_query($content);
         $request['url'] .= '?' . $content;
@@ -510,7 +511,7 @@ class Gateway extends Base\Gateway
 
         $content[ResponseFields::CHECKSUM] = $this->getHashOfArray($content);
 
-        $request = $this->getStandardRequestArray($content);
+        $request = $this->getCustomRequestArray($content);
 
         return $request;
     }
@@ -525,7 +526,7 @@ class Gateway extends Base\Gateway
 
         $content[RequestFields::CHECKSUM] = $this->getHashOfArray($content);
 
-        $request = $this->getStandardRequestArray($content);
+        $request = $this->getCustomRequestArray($content);
 
         return $request;
     }
@@ -543,7 +544,7 @@ class Gateway extends Base\Gateway
 
         $content[RequestFields::CHECKSUM] = $this->getHashOfArray($content);
 
-        $request = $this->getStandardRequestArray($content);
+        $request = $this->getCustomRequestArray($content);
 
         return $request;
     }
@@ -561,7 +562,7 @@ class Gateway extends Base\Gateway
 
         $content[RequestFields::CHECKSUM] = $this->getHashOfArray($content);
 
-        $request = $this->getStandardRequestArray($content);
+        $request = $this->getCustomRequestArray($content);
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
 
@@ -596,7 +597,7 @@ class Gateway extends Base\Gateway
 
         $content[RequestFields::CHECKSUM] = $this->getHashOfArray($content);
 
-        $request = parent::getStandardRequestArray($content);
+        $request = $this->getStandardRequestArray($content);
 
         $request['headers'] = [
             'Accept' => 'application/x-www-form-urlencoded',
@@ -621,7 +622,7 @@ class Gateway extends Base\Gateway
 
         $content[RequestFields::CHECKSUM] = $this->getHashOfArray($content);
 
-        $request = $this->getStandardRequestArray($content);
+        $request = $this->getCustomRequestArray($content);
 
         return $request;
     }
@@ -815,7 +816,7 @@ class Gateway extends Base\Gateway
 
         $content[RequestFields::CHECKSUM] = $this->getHashOfArray($content);
 
-        $request = $this->getStandardRequestArray($content, 'GET');
+        $request = $this->getCustomRequestArray($content, 'GET');
 
         $content = http_build_query($content);
         $request['url'] .= '?' . $content;
@@ -841,7 +842,7 @@ class Gateway extends Base\Gateway
             RequestFields::MERCHANT_ID   => $this->getMerchantId($input['terminal']),
         ];
 
-        $request = parent::getStandardRequestArray($content);
+        $request = $this->getStandardRequestArray($content);
 
         return $request;
     }
@@ -921,7 +922,7 @@ class Gateway extends Base\Gateway
 
         $content[ResponseFields::CHECKSUM] = $this->getHashOfArray($content);
 
-        return $this->getStandardRequestArray($content);
+        return $this->getCustomRequestArray($content);
     }
 
     /*
