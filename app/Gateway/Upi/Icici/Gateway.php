@@ -12,6 +12,7 @@ use RZP\Constants\Mode;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Gateway\Utility;
 use RZP\Gateway\Upi\Base;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Upi\Base\Entity;
@@ -28,12 +29,12 @@ class Gateway extends Base\Gateway
 
     protected $map = array(
         Entity::VPA                       => Entity::VPA,
-        Entity::EMAIL                     => Entity::EMAIL,
-        Entity::CONTACT                   => Entity::CONTACT,
         Entity::RECEIVED                  => Entity::RECEIVED,
+        ResponseFields::PAYER_VA          => Entity::VPA,
         ResponseFields::PAYER_NAME        => Entity::NAME,
-        ResponseFields::RESPONSE          => Entity::STATUS_CODE,
         ResponseFields::PAYER_AMOUNT      => Entity::AMOUNT,
+        ResponseFields::PAYER_MOBILE      => Entity::CONTACT,
+        ResponseFields::RESPONSE          => Entity::STATUS_CODE,
         ResponseFields::BANK_RRN          => Entity::GATEWAY_PAYMENT_ID,
         ResponseFields::ORIGINAL_BANK_RRN => Entity::GATEWAY_PAYMENT_ID,
         ResponseFields::MERCHANT_ID       => Entity::GATEWAY_MERCHANT_ID,
@@ -56,7 +57,25 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
-        $response = $this->parseGatewayResponse($response->body);
+        if (Utility::isXml($response->body) === true)
+        {
+            $this->action = 'verify';
+
+            $verify = new Verify($this->gateway, $this->input);
+
+            $response = $this->sendPaymentVerifyRequest($verify);
+
+            if ($response['status'] === Status::PENDING)
+            {
+                $response['response'] = Status::TXN_INITIATED;
+            }
+
+            $this->action = 'authorize';
+        }
+        else
+        {
+            $response = $this->parseGatewayResponse($response->body);
+        }
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $response);
 
@@ -87,8 +106,6 @@ class Gateway extends Base\Gateway
     {
         return [
             Entity::VPA     => $input['vpa'],
-            Entity::CONTACT => $input['payment']['contact'],
-            Entity::EMAIL   => $input['payment']['email'],
         ];
     }
 
@@ -289,7 +306,7 @@ class Gateway extends Base\Gateway
             'merchantId'        => $this->getMerchantId(),
             'merchantTranId'    => $payment['id'],
             'merchantName'      => 'Razorpay',
-            'note'              => 'collect-pay-request',
+            'note'              => $this->getPaymentRemark($input),
             'payerVa'           => $input['vpa'],
             'subMerchantId'     => $this->getSubMerchantId($input),
             'subMerchantName'   => $input['merchant']->getBillingLabelElseName(),
@@ -310,6 +327,16 @@ class Gateway extends Base\Gateway
             ]);
 
         return $request;
+    }
+
+    /**
+     * This is same as the payment description, capped
+     * to 50 characters
+     * @return string
+     */
+    protected function getPaymentRemark(array $input)
+    {
+        return substr($input['payment']['description'], 0, 50);
     }
 
     /**

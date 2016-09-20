@@ -2,10 +2,12 @@
 
 namespace RZP\Gateway\Upi\Icici\Mock;
 
+use App;
 use Carbon\Carbon;
 use Gateway\Upi\Icici;
 use phpseclib\Crypt\RSA;
 use RZP\Gateway\Base;
+use RZP\Gateway\Utility;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Upi\Base\Entity as UPIEntity;
 use Models\Payment;
@@ -14,6 +16,8 @@ class Server extends Base\Mock\Server
 {
     public function __construct()
     {
+        parent::__construct();
+
         if (defined('CRYPT_RSA_PKCS15_COMPAT') === false)
         {
             define('CRYPT_RSA_PKCS15_COMPAT', true);
@@ -71,19 +75,42 @@ class Server extends Base\Mock\Server
 
         $this->validateActionInput($input);
 
+        $app = App::getFacadeRoot();
+
+        $payment = $app['repo']->payment->find($input['merchantTranId']);
+
+        $status = 'SUCCESS';
+        $message = 'Transaction Successful';
+
+        if (isset($payment['notes']['status']) === true)
+        {
+            if ($payment['notes']['status'] === 'created')
+            {
+                $status = 'PENDING';
+                $message = 'Transaction Initiated';
+            }
+            else if ($payment['notes']['status'] === 'failed')
+            {
+                $status = 'FAILURE';
+                $message = 'Transaction failed';
+            }
+        }
+
         $response = array(
-            "response"          => "0",
-            "merchantId"        => $input['merchantId'],
-            "subMerchantId"     => "1234",
-            "terminalId"        => "1234",
-            "success"           => "true",
-            "message"           => "Transaction Successful",
-            "merchantTranId"    => $input['merchantTranId'],
-            "OriginalBankRRN"   => (string) mt_rand(1111111, 9999999),
-            "status"            => "SUCCESS"
+            'response'          => '0',
+            'merchantId'        => $input['merchantId'],
+            'subMerchantId'     => '1234',
+            'terminalId'        => '1234',
+            'success'           => 'true',
+            'message'           => $message,
+            'merchantTranId'    => $input['merchantTranId'],
+            'OriginalBankRRN'   => (string) mt_rand(1111111, 9999999),
+            'status'            => $status
         );
 
-        return $this->makeResponse($response, false);
+        $encrypt = (isset($payment['notes']['encrypt']) and ($payment['notes']['encrypt'] === 'true'));
+
+        return $this->makeResponse($response, $encrypt);
     }
 
     /**
@@ -109,6 +136,14 @@ class Server extends Base\Mock\Server
 
     protected function makeResponse($data, $dontEncrypt = false)
     {
+        if ((is_string($data) === true) and
+            (Utility::isXml($data) === true))
+        {
+            $response = parent::makeResponse($data);
+
+            return $response;
+        }
+
         $content = json_encode($data);
 
         // We encrypt content by default
