@@ -470,7 +470,7 @@ class MerchantController extends Controller
         $data['checkout'] = $url;
         $data['framejs'] = $url . $framejs;
         $data['css'] = $url . $css;
-        $data['font'] = 'https://cdn.razorpay.com/lato3';
+        $data['font'] = 'https://cdn.razorpay.com/lato';
 
         return $data;
     }
