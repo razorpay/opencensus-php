@@ -66,6 +66,12 @@ class Processor
      */
     const PAYMENT_CANCEL_TIME_DURATION = 1800;  // 30 min * 60 sec
 
+    /**
+     * If a payment is async, it can receive a callback for 5 mins after which it is converted to a
+     * failed payment
+     */
+    const ASYNC_PAYMENT_TIMEOUT = 300;
+
     protected $merchant;
     protected $trace;
     protected $payment;
@@ -336,8 +342,7 @@ class Processor
 
         $gateway = $payment->getGateway();
 
-        if ((Payment\Gateway::supportsAsync($gateway) === false) or
-            ($payment->justCreated() === false))
+        if (Payment\Gateway::supportsAsync($gateway) === false)
         {
             // Throw exception of invalid id
             throw new Exception\BadRequestException(
@@ -349,6 +354,14 @@ class Processor
         if ($payment->isFailed() === true)
         {
             $this->rethrowFailedPaymentErrorException($payment);
+        }
+
+        // Throw payment failed exception if async payment timeout (5mins)
+        // has been exceeded
+        if ($payment->justCreated() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
         }
 
         if ($payment->isCreated() === true)

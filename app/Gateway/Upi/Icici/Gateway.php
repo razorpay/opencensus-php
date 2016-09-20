@@ -28,12 +28,12 @@ class Gateway extends Base\Gateway
 
     protected $map = array(
         Entity::VPA                       => Entity::VPA,
-        Entity::EMAIL                     => Entity::EMAIL,
-        Entity::CONTACT                   => Entity::CONTACT,
         Entity::RECEIVED                  => Entity::RECEIVED,
+        ResponseFields::PAYER_VA          => Entity::VPA,
         ResponseFields::PAYER_NAME        => Entity::NAME,
-        ResponseFields::RESPONSE          => Entity::STATUS_CODE,
         ResponseFields::PAYER_AMOUNT      => Entity::AMOUNT,
+        ResponseFields::PAYER_MOBILE      => Entity::CONTACT,
+        ResponseFields::RESPONSE          => Entity::STATUS_CODE,
         ResponseFields::BANK_RRN          => Entity::GATEWAY_PAYMENT_ID,
         ResponseFields::ORIGINAL_BANK_RRN => Entity::GATEWAY_PAYMENT_ID,
         ResponseFields::MERCHANT_ID       => Entity::GATEWAY_MERCHANT_ID,
@@ -56,7 +56,16 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
-        $response = $this->parseGatewayResponse($response->body);
+        if ($this->isXml($response->body) === true)
+        {
+            $verify = new Verify($this->gateway, $this->input);
+
+            $response = $this->sendPaymentVerifyRequest($verify);
+        }
+        else
+        {
+            $response = $this->parseGatewayResponse($response->body);
+        }
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $response);
 
@@ -87,8 +96,6 @@ class Gateway extends Base\Gateway
     {
         return [
             Entity::VPA     => $input['vpa'],
-            Entity::CONTACT => $input['payment']['contact'],
-            Entity::EMAIL   => $input['payment']['email'],
         ];
     }
 
@@ -549,5 +556,12 @@ class Gateway extends Base\Gateway
         throw new Exception\GatewayErrorException(
             ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED
         );
+    }
+
+    protected function isXml($xml)
+    {
+        $xml = trim($xml);
+
+        return (mb_substr($xml, 0, 5) === '<?xml');
     }
 }
