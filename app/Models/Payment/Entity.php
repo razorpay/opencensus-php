@@ -152,6 +152,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::STATUS,
         self::ORDER_ID,
+        self::INTERNATIONAL,
         self::METHOD,
         self::AMOUNT_REFUNDED,
         self::REFUND_STATUS,
