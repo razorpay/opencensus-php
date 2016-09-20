@@ -17,7 +17,6 @@ class Entity extends Base\PublicEntity
     const CONTACT               = 'contact';
     const EMAIL                 = 'email';
     const MERCHANT_ID           = 'merchant_id';
-    //const SHIPPING_ADDRESS_ID   = 'shipping_address_id';
     const ACTIVE                = 'active';
     const NOTES                 = 'notes';
     const CREATED_AT            = 'created_at';
@@ -137,15 +136,6 @@ class Entity extends Base\PublicEntity
     }
 
     // ----------------------------------- END ACCESSORS -----------------------------------
-
-    // ----------------------------------- SETTERS -----------------------------------
-
-    // public function setShippingAddressId($shippingAddressId)
-    // {
-    //     $this->setAttribute(self::SHIPPING_ADDRESS_ID, $shippingAddressId);
-    // }
-
-    // -----------------------------------  END SETTERS -----------------------------------
 
     // ----------------------------------- PUBLIC SETTERS -----------------------------------
 

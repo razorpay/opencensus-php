@@ -39,28 +39,16 @@ class AddressTest extends TestCase
 
     public function testCreateShippingAddressPrimarySwitch()
     {
-        $primaryAddress = $this->fixtures->create('address');
+        $this->fixtures->create('address');
 
-        //$this->fixtures->customer->edit('100000customer', ['shipping_address_id' => $primaryAddress->getId()]);
-
-        $response = $this->startTest();
-
-        //$customer = $this->getEntityById('customer', '100000customer', true);
-
-        //$this->assertEquals($response['id'], 'addr_' . $customer['shipping_address_id']);
+        $this->startTest();
     }
 
     public function testCreateShippingAddressNoPrimarySwitch()
     {
-        $primaryAddress = $this->fixtures->create('address');
-
-        //$this->fixtures->customer->edit('100000customer', ['shipping_address_id' => $primaryAddress->getId()]);
+        $this->fixtures->create('address');
 
         $this->startTest();
-
-        //$customer = $this->getEntityById('customer', '100000customer', true);
-
-        //$this->assertEquals($primaryAddress['id'], $customer['shipping_address_id']);
     }
 
     public function testSetPrimaryAddressForNonPrimaryAddressWithNoSwitch()
@@ -71,18 +59,12 @@ class AddressTest extends TestCase
 
         $requestContent = $this->getRequestContentForSetPrimaryAddress($address->getPublicId());
 
-        $response = $this->startTest($requestContent);
-
-        //$customer = $this->getEntityById('customer', '100000customer', true);
-
-        //$this->assertEquals($response['id'], $customer['shipping_address_id']);
+        $this->startTest($requestContent);
     }
 
     public function testSetPrimaryAddressForNonPrimaryAddressWithSwitch()
     {
-        $primaryAddress = $this->fixtures->create('address');
-
-        //$this->fixtures->customer->edit('100000customer', ['shipping_address_id' => $primaryAddress->getId()]);
+        $this->fixtures->create('address');
 
         $nonPrimaryAddress = $this->fixtures->create('address');
 
@@ -91,10 +73,6 @@ class AddressTest extends TestCase
         $requestContent = $this->getRequestContentForSetPrimaryAddress($nonPrimaryAddress->getPublicId());
 
         $this->startTest($requestContent);
-
-        //$customer = $this->getEntityById('customer', '100000customer', true);
-
-        //$this->assertEquals($nonPrimaryAddress->getId(), $customer['shipping_address_id']);
     }
 
     /**
@@ -107,17 +85,11 @@ class AddressTest extends TestCase
 
         $this->fixtures->address->edit($nonPrimaryAddress->getId(), ['primary' => false]);
 
-        $primaryAddress = $this->fixtures->create('address');
-
-        //$this->fixtures->customer->edit('100000customer', ['shipping_address_id' => $primaryAddress->getId()]);
+        $this->fixtures->create('address');
 
         $requestContent = $this->getRequestContentForDeleteAddress($nonPrimaryAddress->getPublicId());
 
         $this->startTest($requestContent);
-
-        //$customer = $this->getEntityById('customer', '100000customer', true);
-
-        //$this->assertEquals($primaryAddress->getId(), $customer['shipping_address_id']);
     }
 
     /**
@@ -127,15 +99,9 @@ class AddressTest extends TestCase
     {
         $primaryAddress = $this->fixtures->create('address');
 
-        //$this->fixtures->customer->edit('100000customer', ['shipping_address_id' => $primaryAddress->getId()]);
-
         $requestContent = $this->getRequestContentForDeleteAddress($primaryAddress->getPublicId());
 
         $this->startTest($requestContent);
-
-        //$customer = $this->getEntityById('customer', '100000customer', true);
-
-        //$this->assertNull($customer['shipping_address_id']);
     }
 
     public function testDeletePrimaryAddressWithSwitch()
@@ -156,7 +122,6 @@ class AddressTest extends TestCase
         $this->fixtures->address->edit(
             $primaryAddressThree->getId(),
             ['created_at' => $currentTime + 2]);
-        //$this->fixtures->customer->edit('100000customer', ['shipping_address_id' => $primaryAddressThree->getId()]);
 
         $primaryAddressFour = $this->fixtures->create('address');
         $this->fixtures->address->edit(
@@ -166,10 +131,6 @@ class AddressTest extends TestCase
         $requestContent = $this->getRequestContentForDeleteAddress($primaryAddressThree->getPublicId());
 
         $this->startTest($requestContent);
-
-        //$customer = $this->getEntityById('customer', '100000customer', true);
-
-        //$this->assertEquals($primaryAddressFour->getId(), $customer['shipping_address_id']);
     }
 
     public function testCreateTwoShippingAddressesForCustomer()
