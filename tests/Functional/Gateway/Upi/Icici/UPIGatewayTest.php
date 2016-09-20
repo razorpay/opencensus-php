@@ -43,7 +43,7 @@ class UPIGatewayTest extends TestCase
         $this->setContent(function (& $content)
         {
             $content = <<<EOT
-'<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
     <soapenv:Body>
         <soapenv:Fault>
@@ -55,7 +55,7 @@ class UPIGatewayTest extends TestCase
             </detail>
         </soapenv:Fault>
     </soapenv:Body>
-</soapenv:Envelope>'
+</soapenv:Envelope>
 EOT;
         });
 

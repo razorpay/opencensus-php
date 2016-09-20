@@ -342,18 +342,14 @@ class Processor
 
         $gateway = $payment->getGateway();
 
-        if (Payment\Gateway::supportsAsync($gateway) === false)
+        // If the gateway is not async or the payment is failed
+        // we just give a generic error to not leak information
+        if ((Payment\Gateway::supportsAsync($gateway) === false) or
+            ($payment->isFailed() === true))
         {
             // Throw exception of invalid id
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_ID);
-        }
-
-        // If it failed recently, then throw relevant exception
-        // directly for the failure.
-        if ($payment->isFailed() === true)
-        {
-            $this->rethrowFailedPaymentErrorException($payment);
         }
 
         // Throw payment failed exception if async payment timeout (5mins)
@@ -371,6 +367,7 @@ class Processor
             ];
         }
 
+        // We don't want to reach this in case of captured|refunded payments
         assert($payment->isAuthorized() === true);
 
         return $this->processAsyncAuthorizeResponse($payment);
