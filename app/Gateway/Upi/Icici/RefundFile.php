@@ -65,13 +65,13 @@ class RefundFile extends Base\RefundFile
 
             $data[] = array(
                 'Merchant reference Number' => $row['payment']['id'],
-                'bankadjref'                => '',
+                'bankadjref'                => $row['gateway']['gateway_payment_id'],
                 'refundRef'                 => $row['refund']['id'],
                 'Flag'                      => 'C',
                 'shtdat'                    => $date,
                 'adjamt'                    => ($row['refund']['amount'] / 100),
                 'shcrd'                     => $row['gateway']['vpa'],
-                'specifyother'              => 'Refund',
+                'specifyother'              => $row['refund']['id'],
             );
         }
 
