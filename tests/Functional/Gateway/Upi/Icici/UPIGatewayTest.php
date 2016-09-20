@@ -38,13 +38,51 @@ class UPIGatewayTest extends TestCase
         return $paymentId;
     }
 
+    public function testPaymentWithXmlResponse()
+    {
+        $this->setContent(function (& $content)
+        {
+            $content = '<?xml version="1.0" encoding="UTF-8"?>
+                        <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+                            <soapenv:Body>
+                                <soapenv:Fault>
+                                    <faultcode>soapenv:Server</faultcode>
+                                    <faultstring>Policy Falsified</faultstring>
+                                    <faultactor>https://apigwuat.icicibank.com:8443/newCollectPay</faultactor>
+                                    <detail>
+                                        <l7:policyResult status="Assertion Falsified" xmlns:l7="http://www.layer7tech.com/ws/policy/fault"/>
+                                    </detail>
+                                </soapenv:Fault>
+                            </soapenv:Body>
+                        </soapenv:Envelope>';
+        });
+
+        $payment = $this->getDefaultUpiPaymentArray();
+        $payment['vpa'] = 'dontencrypt@icici';
+        $payment['notes']['status'] = 'created';
+
+        $response = $this->doAuthPayment($payment);
+
+        $paymentId = $response['payment_id'];
+
+        // Co Proto must be working
+        $this->assertEquals('async', $response['type']);
+
+        $status = 'created';
+        $this->checkPaymentStatus($paymentId, $status);
+
+        return $paymentId;
+    }
+
     public function testPaymentWithRandomResponseCode()
     {
         $this->payment['vpa'] = 'unknownresponse@icici';
 
-        $this->expectException('RZP\Exception\GatewayErrorException');
+        $data = $this->testData[__FUNCTION__];
 
-        $this->testPayment('failed');
+        $this->runRequestResponseFlow($data, function() {
+            $this->testPayment('failed');
+        });
     }
 
     public function testUnencryptedResponsePayment()
@@ -186,6 +224,7 @@ class UPIGatewayTest extends TestCase
         $data = $this->testData[__FUNCTION__];
 
         $payment = $this->getDefaultUpiPaymentArray();
+        $payment['notes']['status'] = 'success';
 
         $authPayment = $this->doAuthPayment($payment);
 

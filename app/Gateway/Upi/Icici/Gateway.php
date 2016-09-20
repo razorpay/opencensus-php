@@ -12,6 +12,7 @@ use RZP\Constants\Mode;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Gateway\Utility;
 use RZP\Gateway\Upi\Base;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Upi\Base\Entity;
@@ -56,11 +57,20 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
-        if ($this->isXml($response->body) === true)
+        if (Utility::isXml($response->body) === true)
         {
+            $this->action = 'verify';
+
             $verify = new Verify($this->gateway, $this->input);
 
             $response = $this->sendPaymentVerifyRequest($verify);
+
+            if ($response['status'] === Status::PENDING)
+            {
+                $response['response'] = Status::TXN_INITIATED;
+            }
+
+            $this->action = 'authorize';
         }
         else
         {
@@ -556,12 +566,5 @@ class Gateway extends Base\Gateway
         throw new Exception\GatewayErrorException(
             ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED
         );
-    }
-
-    protected function isXml($xml)
-    {
-        $xml = trim($xml);
-
-        return (mb_substr($xml, 0, 5) === '<?xml');
     }
 }

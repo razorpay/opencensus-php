@@ -56,4 +56,11 @@ class Utility
 
         return false;
     }
+
+    public static function isXml($xml)
+    {
+        $xml = trim($xml);
+
+        return (mb_substr($xml, 0, 5) === '<?xml');
+    }
 }
