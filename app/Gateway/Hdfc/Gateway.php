@@ -525,9 +525,9 @@ class Gateway extends Base\Gateway
 
     protected function checkResponseStatusCode(& $response)
     {
-        $status_code = (int) $response['response']->status_code;
+        $statusCode = (int) $response['response']->status_code;
 
-        if ($status_code >= 500)
+        if ($statusCode >= 500)
         {
             if ($this->checkForServiceUnavailability($response) === true)
             {
@@ -535,7 +535,7 @@ class Gateway extends Base\Gateway
             }
             else
             {
-                Hdfc\ErrorHandler::setGatewayWrongStatusCode($response, $status_code);
+                Hdfc\ErrorHandler::setGatewayWrongStatusCode($response, $statusCode);
             }
 
             $this->error = true;
