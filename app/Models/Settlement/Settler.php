@@ -155,9 +155,6 @@ class Settler
                     null,
                     $settlements->count(),
                     $txns->count());
-
-                $data['settlement_text_file'] = null;
-                $data['settlement_excel_file'] = null;
             }
             else
             {
@@ -176,6 +173,10 @@ class Settler
         if ($settlements->count() !== 0)
         {
             list($urlText, $urlExcel) = $this->createSettlementFile($settlements, $txns);
+
+            $data['settlement_text_file'] = $urlText;
+
+            $data['settlement_excel_file'] = $urlExcel;
         }
 
         $this->successNotification($data, $settlements);
@@ -408,8 +409,6 @@ class Settler
     protected function createSettlementFile($settlements, $txns)
     {
         $urls = (new Kotak\NodalAccount)->generateSettlementFile($settlements, $txns);
-
-        $urls1 = (new Kotak\NodalAccount)->generateSettlementFile2($settlements, $txns);
 
         $this->trace->info(TraceCode::SETTLEMENT_FILE_GENERATED_KOTAK);
 
