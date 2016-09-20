@@ -619,9 +619,28 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::STATUS) == Status::CREATED);
     }
 
+    /**
+     * A payment is considered just created for 15
+     * minutes since creation
+     * @return bool
+     */
+    public function justCreated()
+    {
+        $currentTime = time();
+
+        $secondsSinceCreated = $currentTime - $this->getAttribute(self::CREATED_AT);
+
+        return (bool) ($secondsSinceCreated <= (60*5));
+    }
+
     public function isAuthorized()
     {
         return ($this->getAttribute(self::STATUS) === Status::AUTHORIZED);
+    }
+
+    public function isCreatedOrAuthorized()
+    {
+        return ($this->isCreated() or $this->isAuthorized());
     }
 
     public function hasBeenAuthorized()
@@ -695,6 +714,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::METHOD) === Payment\Method::EMI);
     }
 
+    public function isUpi()
+    {
+        return ($this->getAttribute(self::METHOD) === Payment\Method::UPI);
+    }
+
     public function isGateway($gateway)
     {
         return ($this->getAttribute(self::GATEWAY) === $gateway);
@@ -718,7 +742,8 @@ class Entity extends Base\PublicEntity
 
     public function isInternational()
     {
-        return $this->getAttribute(self::INTERNATIONAL);
+        // return $this->getAttribute(self::INTERNATIONAL);
+        return $this->card->isInternational();
     }
 
 // ----------------------- Getters ---------------------------------------------

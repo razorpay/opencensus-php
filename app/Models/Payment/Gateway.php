@@ -27,6 +27,7 @@ class Gateway
     const SHARP              = 'sharp';
     const NETBANKING_HDFC    = 'netbanking_hdfc';
     const NETBANKING_KOTAK   = 'netbanking_kotak';
+    const UPI_ICICI          = 'upi_icici';
     const WALLET_OLAMONEY    = 'wallet_olamoney';
     const WALLET_PAYZAPP     = 'wallet_payzapp';
     const WALLET_PAYUMONEY   = 'wallet_payumoney';
@@ -67,6 +68,7 @@ class Gateway
         self::WALLET_OLAMONEY    => Settlement\Channel::KOTAK,
         self::WALLET_AIRTELMONEY => Settlement\Channel::KOTAK,
         self::CYBERSOURCE        => Settlement\Channel::KOTAK,
+        self::UPI_ICICI          => Settlement\Channel::KOTAK,
     );
 
     /**
@@ -109,6 +111,10 @@ class Gateway
             self::AMEX,
             self::HDFC,
         ),
+
+        Method::UPI => array(
+            self::UPI_ICICI
+        ),
     );
 
     /**
@@ -123,6 +129,18 @@ class Gateway
         ],
         self::AMEX => [],
         self::CYBERSOURCE => [],
+    );
+
+
+    /**
+     * For async gateways, we mark the payment as created and return
+     * the response immediately. The payment is authorized over a webhook
+     * or some other async medium. Checkout currently long-polls for
+     * the payment to be authorized.
+     * @var array
+     */
+    public static $asynchronous = array(
+        self::UPI_ICICI
     );
 
     /**
@@ -205,7 +223,9 @@ class Gateway
      */
     public static $s2sCallbackGateways = array(
         Gateway::BILLDESK,
-        Gateway::WALLET_OLAMONEY);
+        Gateway::UPI_ICICI,
+        Gateway::WALLET_OLAMONEY
+    );
 
     /**
      * Card gateways which support international payments
@@ -409,7 +429,7 @@ class Gateway
     {
         $arrayKeys = array_keys(self::$authAndCapture);
 
-        $supportsAuthAndCapture = in_array($gateway, $arrayKeys);
+        $supportsAuthAndCapture = in_array($gateway, $arrayKeys, true);
 
         if ($supportsAuthAndCapture === false)
         {
@@ -426,6 +446,16 @@ class Gateway
                 return self::supportsAuthAndCaptureForNetwork($gateway, $networkCode);
             }
         }
+    }
+
+    /**
+     * Whether the gateway supports async payments
+     * @param  string $gateway
+     * @return boolean
+     */
+    public static function supportsAsync($gateway)
+    {
+        return in_array($gateway, self::$asynchronous, true);
     }
 
     public static function supportsAuthAndCaptureForNetwork($gateway, $networkCode)

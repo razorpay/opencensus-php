@@ -56,24 +56,6 @@ class Gateway extends Base\Gateway
         return new Wallet\Base\Entity;
     }
 
-    protected function getMappedAttributes($attributes)
-    {
-        $attr = [];
-
-        $map = $this->map;
-
-        foreach ($attributes as $key => $value)
-        {
-            if (isset($map[$key]))
-            {
-                $newKey = $map[$key];
-                $attr[$newKey] = $value;
-            }
-        }
-
-        return $attr;
-    }
-
     protected function getReverseMappedAttributes($attributes)
     {
         $attr = [];

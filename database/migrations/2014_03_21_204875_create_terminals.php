@@ -66,6 +66,9 @@ class CreateTerminals extends Migration
             $table->boolean(Terminal::NETBANKING)
                   ->default(0);
 
+            $table->boolean(Terminal::UPI)
+                  ->default(0);
+
             $table->boolean(Terminal::EMI)
                   ->default(0);
 

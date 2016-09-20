@@ -297,4 +297,33 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
     ],
+
+    'testRefundOfMultipleAuthorizedPaymentsForOrder' => [
+        'request' => [
+            'method'    => 'post',
+            'url'       => '/orders/payments/refund',
+            'content'   => [],
+        ],
+        'response' => [
+            'content' => [
+                'total_orders' => 2,
+                'order_level_details' => [
+                    [
+                        'total_payments' => 2,
+                        'total_captured_payments' => 0,
+                        'refund_details' => [],
+                    ],
+                    [
+                        'total_payments' => 3,
+                        'total_captured_payments' => 1,
+                        'refund_details' => [
+                            'total_authorized_payments' => 2,
+                            'total_refunded_payments' => 2,
+                            'total_failed_refunds' => 0,
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
 ];

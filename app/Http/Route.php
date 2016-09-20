@@ -18,6 +18,7 @@ final class Route
         'merchant_checkout_preferences'           => ['get',      'preferences',                              'MerchantController@getCheckoutPreferences'                         ],
         'payment_create'                          => ['post',     'payments',                                 'PaymentCreateController@postCreatePayment'                         ],
         'payment_create_private'                  => ['post',     'payments/create',                          'PaymentCreateController@postCreatePayment'                         ],
+        'payment_create_private_old'              => ['post',     'payments/create/redirect',                 'PaymentCreateController@postCreatePayment'                         ],
         'payment_create_checkout'                 => ['post',     'payments/create/checkout',                 'PaymentCreateController@postCreatePaymentCheckoutCallback'         ],
         'payment_create_jsonp'                    => ['get',      'payments/create/jsonp',                    'PaymentCreateController@getCreatePaymentJsonp'                     ],
         'payment_create_ajax'                     => ['post',     'payments/create/ajax',                     'PaymentCreateController@postAJAX'                                  ],
@@ -27,11 +28,12 @@ final class Route
         'payment_callback_get'                    => ['get',      'payments/{id}/callback/{hash}',            'PaymentCreateController@postCallback'                              ],
         'payment_callback_with_key_post'          => ['post',     'payments/{id}/callback/{hash}/{key}',      'PaymentCreateController@postCallback'                              ],
         'payment_callback_with_key_get'           => ['get',      'payments/{id}/callback/{hash}/{key}',      'PaymentCreateController@postCallback'                              ],
+        'payment_get_status'                      => ['get',      'payments/{id}/status',                     'PaymentController@getPaymentStatusForAsyncPayments'                ],
         'payment_otp_submit'                      => ['post',     'payments/{id}/otp_submit/{hash}',          'PaymentCreateController@postOtpSubmit'                             ],
         'payment_otp_resend'                      => ['post',     'payments/{id}/otp_resend',                 'PaymentCreateController@postOtpResend'                             ],
         'payment_topup_ajax'                      => ['post',     'payments/{id}/topup/ajax',                 'PaymentCreateController@postTopupAjax'                             ],
         'payment_topup_post'                      => ['post',     'payments/{id}/topup',                      'PaymentCreateController@postTopup'                                 ],
-        'payment_redirect'                        => ['post',     'payments/{id}/redirect',                   'PaymentCreateController@postRedirect'                              ],
+        'payment_redirect_callback'               => ['post',     'payments/{id}/redirect_callback',          'PaymentCreateController@postRedirectCallback'                      ],
         'payment_refund'                          => ['post',     'payments/{id}/refund',                     'PaymentController@postRefund'                                      ],
         'payment_upload_refund_file'              => ['post',     'payments/batch_refunds/upload_file',       'PaymentController@uploadRefundFile'                                ],
         'payment_process_refund_file'             => ['post',     'payments/batch_refunds/process_file',      'PaymentController@processRefundFile'                               ],
@@ -56,7 +58,7 @@ final class Route
         'payment_auto_capture_email'              => ['get',      'payments/autocapture/email',               'PaymentController@getAutoCaptureEmail'                             ],
         'payment_verify_multiple'                 => ['get',      'payments/verify/{filter}',                 'PaymentController@getVerifyPayments'                               ],
         'payment_capture_reminder'                => ['get',      'payments/all/reminder',                    'PaymentController@sendReminderMailForAuthorizedPayments'           ],
-        'payment_refund_authorized'               => ['post',     'payments/refund/authorized',               'PaymentController@postRefundOldAUthorizedPayments'                 ],
+        'payment_refund_authorized'               => ['post',     'payments/refund/authorized',               'PaymentController@postRefundOldAuthorizedPayments'                 ],
         'refund_fetch_by_id'                      => ['get',      'refunds/{id}',                             'PaymentController@getRefund'                                       ],
         'refund_fetch_multiple'                   => ['get',      'refunds',                                  'PaymentController@getRefunds'                                      ],
         'refund_netbanking_generate_excel'        => ['post',     'refunds/netbanking/excel',                 'PaymentController@generateNetbankingRefunds'                       ],
@@ -193,6 +195,7 @@ final class Route
         'mock_wallet_payment'                     => ['post',     'gateway/mock/wallet/{wallet}',             'MockGatewayController@walletPayment'                               ],
         'mock_wallet_payment_get'                 => ['get',      'gateway/mock/wallet/{wallet}',             'MockGatewayController@walletPayment'                               ],
         'mock_wallet_payment_with_paymentid'      => ['post',     'gateway/mock/wallet/{wallet}/{paymentId}', 'MockGatewayController@walletPayment'                               ],
+        'mock_upi_icici_payment'                  => ['post',     'gateway/mock/upi/{bank}',                  'MockGatewayController@postUpiPayment'                              ],
         'admin_fetch_entity_multiple'             => ['get',      'admin/{type}',                             'AdminController@getEntityMultiple'                                 ],
         'admin_fetch_entity_by_id'                => ['get',      'admin/{type}/{id}',                        'AdminController@getEntityById'                                     ],
         'send_test_newsletter'                    => ['post',     'admin/newsletter/test',                    'AdminController@postSendTestNewsletter'                            ],
@@ -245,6 +248,7 @@ final class Route
         'sms_callback'                            => ['post',     'sms/{id}/callback',                        'CustomerController@updateSmsStatus'                                ],
         'es_migrate_entity'                       => ['post',     'es/migrate/{entityName}',                  'EsController@migrateEntity'                                        ],
         'refund_gateway_manual'                   => ['post',     'refunds/{ids}/gateway',                    'PaymentController@postManualGatewayRefund'                         ],
+        'order_refund_multiple_authorized'        => ['post',     'orders/payments/refund',                   'PaymentController@postRefundMultipleAuthorizedPaymentsForOrders'   ],
     );
 
     public static $public = array(
@@ -258,9 +262,10 @@ final class Route
         'payment_otp_resend',
         'payment_topup_ajax',
         'payment_topup_post',
-        'payment_redirect',
+        'payment_redirect_callback',
         'payment_cancel',
         'payment_add_metadata',
+        'payment_get_status',
         'merchant_public_get_banks',
         'merchant_methods',
         'merchant_checkout_preferences',
@@ -283,6 +288,7 @@ final class Route
         'mock_sbiepay_payment',
         'mock_wallet_payment',
         'mock_wallet_payment_get',
+        'mock_upi_icici_payment',
         'mock_wallet_payment_with_paymentid',
         'dummy_return_callback',
         'get_emi_plans',
@@ -300,6 +306,8 @@ final class Route
     );
 
     public static $private = array(
+        'payment_create_private',
+        'payment_create_private_old',
         'payment_create_wallet',
         'payment_refund',
         'payment_capture',
@@ -307,7 +315,6 @@ final class Route
         'payment_fetch_multiple',
         'payment_fetch_refunds',
         'payment_fetch_refund_by_id',
-        'payment_create_private',
         'refund_fetch_by_id',
         'refund_fetch_multiple',
         'card_fetch_by_id',
@@ -436,6 +443,7 @@ final class Route
         'credits_delete',
         'refund_gateway_manual',
         'payment_process_refund_file',
+        'order_refund_multiple_authorized',
     );
 
     public static $proxy = array(
@@ -489,6 +497,7 @@ final class Route
         'transparent_redirect_post',
         'gateway_payment_callback_kotak',
         'gateway_payment_callback_kotak_cancel',
+        'reconciliate',
         'gateway_payment_callback_get',
         'gateway_payment_callback_post',
         'sms_callback',
@@ -523,6 +532,7 @@ final class Route
             'es_migrate_entity',
             'setl_post_details_old',
             'payment_process_refund_file',
+            'order_refund_multiple_authorized',
         ),
 
         'mailgun' => array(

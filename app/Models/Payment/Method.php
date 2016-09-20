@@ -10,11 +10,13 @@ class Method
     const NETBANKING    = 'netbanking';
     const WALLET        = 'wallet';
     const EMI           = 'emi';
+    const UPI           = 'upi';
 
     protected static $methods = array(
         self::CARD       => 'Card',
         self::NETBANKING => 'Net Banking',
         self::WALLET     => 'Wallet',
+        self::UPI        => 'UPI',
         self::EMI        => 'EMI',
     );
 

@@ -377,7 +377,7 @@
                         }
                     }
 
-                    gel('mirror').setAttribute('action', '/v1/payments/{{$data["payment_id"]}}/redirect?key_id=' + key_id);
+                    gel('mirror').setAttribute('action', '/v1/payments/{{$data["payment_id"]}}/redirect_callback?key_id=' + key_id);
                     gel('mirror').setAttribute('method', 'POST');
                     gel('mirror').submit();
                     gel('submitotp').disable = false;
