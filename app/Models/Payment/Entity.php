@@ -620,7 +620,7 @@ class Entity extends Base\PublicEntity
     }
 
     /**
-     * A payment is considered just created for 15
+     * A payment is considered just created for 5
      * minutes since creation
      * @return bool
      */
@@ -630,7 +630,7 @@ class Entity extends Base\PublicEntity
 
         $secondsSinceCreated = $currentTime - $this->getAttribute(self::CREATED_AT);
 
-        return (bool) ($secondsSinceCreated <= (60*5));
+        return (bool) ($secondsSinceCreated <= (Processor\Processor::ASYNC_PAYMENT_TIMEOUT));
     }
 
     public function isAuthorized()
@@ -943,11 +943,17 @@ class Entity extends Base\PublicEntity
             case Method::CARD:
                 return [$method, $this->getFormattedCard()];
                 break;
+            case Method::EMI:
+                return [$method, $this->getFormattedCard()];
+                break;
             case Method::NETBANKING:
                 return [$method, $this->getBankName()];
                 break;
             case Method::WALLET:
                 return [$method, ucfirst($this->getWallet())];
+                break;
+            case Method::UPI:
+                return [$method, ''];
                 break;
         }
     }

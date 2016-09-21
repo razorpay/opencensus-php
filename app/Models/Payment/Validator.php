@@ -12,11 +12,14 @@ use RZP\Models\Payment\Processor\Wallet;
 
 class Validator extends Base\Validator
 {
+
+    const PHONEPE_VPA = 'ybl';
+
     protected static $createRules = array(
         'amount'                  =>  'required|integer',
         'currency'                =>  'required|size:3',
         'method'                  =>  'custom',
-        'vpa'                     =>  'required_if:method,upi',
+        'vpa'                     =>  'required_if:method,upi|max:50|custom',
         'card'                    =>  'sometimes',
         'bank'                    =>  'required_if:method,netbanking',
         'wallet'                  =>  'required_if:method,wallet|custom',
@@ -58,6 +61,25 @@ class Validator extends Base\Validator
     protected function validateMethod($attribute, $value)
     {
        Method::validateMethod($value);
+    }
+
+    protected function validateVpa($attribute, $value)
+    {
+        $matches = null;
+        preg_match('/^(\w.+)@([a-z]+)$/', $value, $matches);
+
+        if ((count($matches) !== 3))
+        {
+            // Invalid VPA
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA);
+        }
+
+        if ($matches[2] === self::PHONEPE_VPA)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_UPI_APP_NOT_SUPPORTED);
+        }
     }
 
     protected function validateWallet($attribute, $value)

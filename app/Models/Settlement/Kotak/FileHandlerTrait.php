@@ -471,6 +471,18 @@ trait FileHandlerTrait
         return $this->getFileToWriteNameWithoutExt() . '.xlsx';
     }
 
+    protected function getCsvFileToWriteName()
+    {
+        return $this->getFileToWriteNameWithoutExt() . '.csv';
+    }
+
+    protected function getCsvFullFilePath()
+    {
+        $name = $this->getCsvFileToWriteName();
+
+        return $this->getFullFilePath($name);
+    }
+
     protected function getExcelFullFilePath()
     {
         $name = $this->getExcelFileToWriteName();

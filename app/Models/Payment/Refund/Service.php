@@ -27,7 +27,7 @@ class Service extends Base\Service
 
         switch ($method)
         {
-            case 'netbanking':
+            case Payment\Method::NETBANKING:
                 $gateways = Payment\Gateway::$netbankingToGatewayMap;
 
                 $type = Payment\Entity::BANK;
@@ -44,7 +44,7 @@ class Service extends Base\Service
                 unset($gateways[IFSC::KKBK]);
                 break;
 
-            case 'wallet':
+            case Payment\Method::WALLET:
                 $gateways = Payment\Gateway::$walletToGatewayMap;
 
                 $type = Payment\Entity::WALLET;
@@ -54,6 +54,20 @@ class Service extends Base\Service
                     $gatewayCode = $input['wallet'];
 
                     $gateway = $gateways[$gatewayCode];
+                }
+                break;
+
+            case Payment\Method::UPI:
+                $gateways = Payment\Gateway::$upiToGatewayMap;
+
+                $type = Payment\Entity::METHOD;
+                $gatewayCode = Payment\Method::UPI;
+
+                if (isset($input['bank']))
+                {
+                    $bank = $input['bank'];
+
+                    $gateway = $gateways[$bank];
                 }
                 break;
         }

@@ -134,6 +134,8 @@ trait Callback
 
         $this->processPaymentCallback($payment, $gatewayInput);
 
+        $this->autoCapturePaymentIfApplicable($payment);
+
         return ['success' => true];
     }
 
