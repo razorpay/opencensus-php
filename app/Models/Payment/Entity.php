@@ -943,11 +943,17 @@ class Entity extends Base\PublicEntity
             case Method::CARD:
                 return [$method, $this->getFormattedCard()];
                 break;
+            case Method::EMI:
+                return [$method, $this->getFormattedCard()];
+                break;
             case Method::NETBANKING:
                 return [$method, $this->getBankName()];
                 break;
             case Method::WALLET:
                 return [$method, ucfirst($this->getWallet())];
+                break;
+            case Method::UPI:
+                return [$method, ''];
                 break;
         }
     }
