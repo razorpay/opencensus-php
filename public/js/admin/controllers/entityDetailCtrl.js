@@ -287,7 +287,8 @@ app.controller('EntityDetailCtrl', [
       gateway_terminal_id: current.gateway_terminal_id,
       id: current.id,
       card: current.card,
-      gateway: current.gateway
+      gateway: current.gateway,
+      enabled: current.enabled
     };
     $scope.ok = function (terminal) {
       $modalInstance.close(terminal);
