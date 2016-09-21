@@ -13,21 +13,19 @@ class Repository extends Base\Repository
     use Base\RepositoryFetch;
 
     protected $entity = 'gateway_absence';
-    
-    public function findForGateway($gateway)
-    {
-        $results = $this->newQuery()
-                        ->where(Entity::GATEWAY, '=', $gateway->getId());
 
-        return $results->get();
-    }
+    // These are merchant allowed params to search on. These also act as default params.
+    protected $entityFetchParamRules = array(
+        Entity::GATEWAY        => 'sometimes|string|max:255',
+        Entity::BANK           => 'sometimes|string|max:255'
+    );
 
-    public function getAbsentGatewaysForTimestamp($timestamp)
-    {
-        return $this->newQuery()
-                    ->where(Absence\Entity::FROM, '<=', $timestamp)
-                    ->where(Absence\Entity::TO, '>=', $timestamp)
-                    ->get();
-    }
+    // These are proxy allowed params to search on.
+    protected $appFetchParamRules = array(
+        Entity::GATEWAY        => 'sometimes|string|max:255',
+        Entity::BANK           => 'sometimes|string|max:255',
+        Entity::FROM           => 'sometimes|integer',
+        Entity::TO             => 'sometimes|integer'
+    );
 
 }

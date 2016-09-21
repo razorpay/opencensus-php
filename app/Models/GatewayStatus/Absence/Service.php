@@ -8,10 +8,8 @@ use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
-    public function create(array $input, $gateway)
+    public function create(array $input)
     {
-        $input['gateway'] = $gateway;
-
         $downWindow = (new Absence\Core)->create($input);
 
         return $downWindow->toArrayPublic();
@@ -41,26 +39,15 @@ class Service extends Base\Service
         catch(\Exception $e)
         {
             $this->trace->error(TraceCode::GATEWAY_ABSENCE, ['Delete Error' => $e->getMessage()]);
+
             throw $e;
         }
     }
 
-    public function findAbsentGatewaysForTimestamp($timestamp)
+    public function findAbsentGateways(array $input)
     {
-        if ($timestamp === null)
-        {
-            $timestamp = time();
-        }
-        $gateways = $this->repo->gateway_absence->getAbsentGatewaysForTimestamp($timestamp);
+        $gateways = $this->repo->gateway_absence->fetch($input);
 
         return $gateways->toArrayPublic();
     }
-
-    public function getScheduleForGateway($gateway)
-    {
-        $schedule = $this->repo->gateway_absence->findForGateway($gateway);
-
-        return $schedule->toArrayPublic();
-    }
-
 }
