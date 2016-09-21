@@ -152,6 +152,26 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::METHOD);
     }
 
+    public function getTransactionId()
+    {
+        return $this->getAttribute(self::TRANSACTION_ID);
+    }
+
+    public function getStatus()
+    {
+        return $this->getAttribute(self::STATUS);
+    }
+
+    public function isStatusCreated()
+    {
+        return ($this->getStatus() === Status::CREATED);
+    }
+
+    public function isStatusFailed()
+    {
+        return ($this->getStatus() === Status::FAILED);
+    }
+
     public function setChannel($channel)
     {
         $this->setAttribute(self::CHANNEL, $channel);

@@ -125,7 +125,6 @@ class Pricing extends Base
                         'percent_rate'        => 100,
                         'fixed_rate'          => 500,
                     ),
-
                 );
 
         $this->addPricingRulesToDb($rows);
