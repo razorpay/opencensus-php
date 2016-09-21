@@ -31,10 +31,11 @@ class Server extends Base\Mock\Server
         $txndate_processed = $dateTime->format(FirstData\Codes::DATE_TIME_FORMAT);
 
         $approvalCode = $this->getApprovalCode();
-        $txnDateTime = $input['txndatetime'];
-        $chargeTotal = $input['chargetotal'];
-        $currencyCode = $input['currency'];
-        $storeId = $input['storename'];
+        $txnDateTime = $input[FirstData\ConnectRequestFields::TXN_DATE_TIME];
+        $chargeTotal = $input[FirstData\ConnectRequestFields::CHARGE_TOTAL];
+        $currencyCode = $input[FirstData\ConnectRequestFields::CURRENCY];
+        $storeId = $input[FirstData\ConnectRequestFields::STORE_NAME];
+        $cardnumber = $input[FirstData\ConnectRequestFields::CARD_NUMBER];
 
         $response_hash = $this->getHash($approvalCode, $chargeTotal, $currencyCode, $txnDateTime, $storeId);
 
@@ -43,19 +44,34 @@ class Server extends Base\Mock\Server
             $oid = $input['oid'];
 
         $content = array(
-            FirstData\Entity::APPROVAL_CODE             => $approvalCode,
-            FirstData\Entity::CC_BIN                    => '',
-            FirstData\Entity::CC_BRAND                  => '',
-            FirstData\Entity::CC_COUNTRY                => '',
-            FirstData\Entity::FAIL_RC                   => '',
-            FirstData\Entity::FAIL_REASON               => '',
-            FirstData\Entity::ORDER_ID                  => $oid,
-            FirstData\Entity::PROCESSOR_RESPONSE_CODE   => 00,
-            FirstData\Entity::REF_NUMBER                => $this->generateId('REF0000'),
-            FirstData\Entity::RESPONSE_HASH             => $response_hash,
-            FirstData\Entity::STATUS                    => FirstData\Codes::STATUS_AUTHORIZED,
-            FirstData\Entity::TDATE                     => $tdate,
-            FirstData\Entity::TXNDATE_PROCESSED         => $txndate_processed,
+            FirstData\ConnectResponseFields::APPROVAL_CODE             => $approvalCode,
+            FirstData\ConnectResponseFields::BNAME                     => $input[FirstData\ConnectRequestFields::NAME],
+            FirstData\ConnectResponseFields::CARD_NUMBER               => $cardnumber,
+            FirstData\ConnectResponseFields::CC_BIN                    => '',
+            FirstData\ConnectResponseFields::CC_BRAND                  => '',
+            FirstData\ConnectResponseFields::CC_COUNTRY                => '',
+            FirstData\ConnectResponseFields::CHARGE_TOTAL              => $chargeTotal,
+            FirstData\ConnectResponseFields::CURRENCY                  => $currencyCode,
+            FirstData\ConnectResponseFields::ENDPOINT_TRANSACTION_ID   => '',
+            FirstData\ConnectResponseFields::EXP_MONTH                 => $input[FirstData\ConnectRequestFields::EXP_MONTH],
+            FirstData\ConnectResponseFields::EXP_YEAR                  => $input[FirstData\ConnectRequestFields::EXP_YEAR],
+            FirstData\ConnectResponseFields::FAIL_RC                   => '',
+            FirstData\ConnectResponseFields::FAIL_REASON               => '',
+            FirstData\ConnectResponseFields::HASH_ALGORITHM            => $input[FirstData\ConnectRequestFields::HASH_ALGORITHM],
+            FirstData\ConnectResponseFields::INVOICE_NUMBER            => $input[FirstData\ConnectRequestFields::INVOICE_NUMBER],
+            FirstData\ConnectResponseFields::IPG_TRANSACTION_ID        => $this->generateId(),
+            FirstData\ConnectResponseFields::ORDER_ID                  => $oid,
+            FirstData\ConnectResponseFields::PAYMENT_METHOD            => '',
+            FirstData\ConnectResponseFields::PROCESSOR_RESPONSE_CODE   => 00,
+            FirstData\ConnectResponseFields::RESPONSE_CODE_3DSECURE    => '',
+            FirstData\ConnectResponseFields::RESPONSE_HASH             => $response_hash,
+            FirstData\ConnectResponseFields::STATUS                    => FirstData\Codes::STATUS_APPROVED,
+            FirstData\ConnectResponseFields::TDATE                     => $tdate,
+            FirstData\ConnectResponseFields::TERMINAL_ID               => $this->generateId(),
+            FirstData\ConnectResponseFields::TIMEZONE                  => $input[FirstData\ConnectRequestFields::TIME_ZONE],
+            FirstData\ConnectResponseFields::TXN_DATE_TIME             => $txnDateTime,
+            FirstData\ConnectResponseFields::TXNDATE_PROCESSED         => $txndate_processed,
+            FirstData\ConnectResponseFields::TXN_TYPE                   => $input[FirstData\ConnectRequestFields::TXN_TYPE],
         );
 
         $content = array_merge($content,$input);
@@ -79,25 +95,25 @@ class Server extends Base\Mock\Server
         $dateTime = Carbon::now('Asia/Kolkata');
 
         $content = array(
-            "ApprovalCode"               => $this->getApprovalCode(),
-            "AVSResponse"                => "random",
-            "Brand"                      => "MASTERCARD",
-            "Country"                    => "RANDOM_COUNTRY_CODE",
-            "CommercialServiceProvider"  => "random",
-            "OrderId"                    => $body['Transaction']['TransactionDetails']['OrderId'],
-            "IpgTransactionId"           => random_integer(10),
-            "PaymentType"                => "RANDOM_PAYMENT_TYPE",
-            "ProcessorApprovalCode"      => "007121",
-            "ProcessorResponseCode"      => "00",
-            "ProcessorResponseMessage"   => "Function performed error-free",
-            "ReferencedTDate"            => (string) $dateTime->getTimeStamp(),
-            "TDate"                      => (string) $dateTime->getTimeStamp(),
-            "TDateFormatted"             => (string) $dateTime->format("Y.m.d H:i:s (T)"),
-            "TerminalID"                 => "random_terminal_id",
-            "TransactionResult"          => "APPROVED",
-            "TransactionTime"            => (string) $dateTime->getTimeStamp(),
-            "Version"                    => "5.4.0-200",
-            "BuildTime"                  => (string) $dateTime->format("Y.m.d @ H:i:s T"),
+            FirstData\ApiResponseFields::APPROVAL_CODE               => $this->getApprovalCode(),
+            FirstData\ApiResponseFields::AVS_RESPONSE                => "random",
+            FirstData\ApiResponseFields::BRAND                       => "MASTERCARD",
+            FirstData\ApiResponseFields::BUILDTIME                   => (string) $dateTime->format("Y.m.d @ H:i:s T"),
+            FirstData\ApiResponseFields::COMMERCIAL_SERVICE_PROVIDER => "random",
+            FirstData\ApiResponseFields::COUNTRY                     => "RANDOM_COUNTRY_CODE",
+            FirstData\ApiResponseFields::IPG_TRANSACTION_ID          => random_integer(10),
+            FirstData\ApiResponseFields::ORDER_ID                    => $body['Transaction']['TransactionDetails']['OrderId'],
+            FirstData\ApiResponseFields::PAYMENT_TYPE                => "RANDOM_PAYMENT_TYPE",
+            FirstData\ApiResponseFields::PROCESSOR_APPROVAL_CODE     => "007121",
+            FirstData\ApiResponseFields::PROCESSOR_RESPONSE_CODE     => "00",
+            FirstData\ApiResponseFields::PROCESSOR_RESPONSE_MESSAGE  => "Function performed error-free",
+            FirstData\ApiResponseFields::REFERENCED_TDATE            => (string) $dateTime->getTimeStamp(),
+            FirstData\ApiResponseFields::TDATE                       => (string) $dateTime->getTimeStamp(),
+            FirstData\ApiResponseFields::TDATE_FORMATTED             => (string) $dateTime->format("Y.m.d H:i:s (T)"),
+            FirstData\ApiResponseFields::TERMINAL_ID                 => "random_terminal_id",
+            FirstData\ApiResponseFields::TRANSACTION_RESULT          => "APPROVED",
+            FirstData\ApiResponseFields::TRANSACTION_TIME            => (string) $dateTime->getTimeStamp(),
+            FirstData\ApiResponseFields::VERSION                     => "5.4.0-200",
         );
 
         $captureResponse = $this->buildIpgApiOrderResponse($content);
@@ -116,25 +132,25 @@ class Server extends Base\Mock\Server
         $dateTime = Carbon::now('Asia/Kolkata');
 
         $content = array(
-            "ApprovalCode"               => $this->getApprovalCode(),
-            "AVSResponse"                => "random",
-            "Brand"                      => "MASTERCARD",
-            "Country"                    => "RANDOM_COUNTRY_CODE",
-            "CommercialServiceProvider"  => "random",
-            "OrderId"                    => $body['Transaction']['TransactionDetails']['OrderId'],
-            "IpgTransactionId"           => random_integer(10),
-            "PaymentType"                => "RANDOM_PAYMENT_TYPE",
-            "ProcessorApprovalCode"      => "007121",
-            "ProcessorResponseCode"      => "00",
-            "ProcessorResponseMessage"   => "Function performed error-free",
-            "ReferencedTDate"            => (string) $dateTime->getTimeStamp(),
-            "TDate"                      => (string) $dateTime->getTimeStamp(),
-            "TDateFormatted"             => (string) $dateTime->format("Y.m.d H:i:s (T)"),
-            "TerminalID"                 => "random_terminal_id",
-            "TransactionResult"          => "APPROVED",
-            "TransactionTime"            => (string) $dateTime->getTimeStamp(),
-            "Version"                    => "5.4.0-200",
-            "BuildTime"                  => (string) $dateTime->format("Y.m.d @ H:i:s T"),
+            FirstData\ApiResponseFields::APPROVAL_CODE               => $this->getApprovalCode(),
+            FirstData\ApiResponseFields::AVS_RESPONSE                => "random",
+            FirstData\ApiResponseFields::BRAND                       => "MASTERCARD",
+            FirstData\ApiResponseFields::BUILDTIME                   => (string) $dateTime->format("Y.m.d @ H:i:s T"),
+            FirstData\ApiResponseFields::COMMERCIAL_SERVICE_PROVIDER => "random",
+            FirstData\ApiResponseFields::COUNTRY                     => "RANDOM_COUNTRY_CODE",
+            FirstData\ApiResponseFields::IPG_TRANSACTION_ID          => random_integer(10),
+            FirstData\ApiResponseFields::ORDER_ID                    => $body['Transaction']['TransactionDetails']['OrderId'],
+            FirstData\ApiResponseFields::PAYMENT_TYPE                => "RANDOM_PAYMENT_TYPE",
+            FirstData\ApiResponseFields::PROCESSOR_APPROVAL_CODE     => "007121",
+            FirstData\ApiResponseFields::PROCESSOR_RESPONSE_CODE     => "00",
+            FirstData\ApiResponseFields::PROCESSOR_RESPONSE_MESSAGE  => "Function performed error-free",
+            FirstData\ApiResponseFields::REFERENCED_TDATE            => (string) $dateTime->getTimeStamp(),
+            FirstData\ApiResponseFields::TDATE                       => (string) $dateTime->getTimeStamp(),
+            FirstData\ApiResponseFields::TDATE_FORMATTED             => (string) $dateTime->format("Y.m.d H:i:s (T)"),
+            FirstData\ApiResponseFields::TERMINAL_ID                 => "random_terminal_id",
+            FirstData\ApiResponseFields::TRANSACTION_RESULT          => "APPROVED",
+            FirstData\ApiResponseFields::TRANSACTION_TIME            => (string) $dateTime->getTimeStamp(),
+            FirstData\ApiResponseFields::VERSION                     => "5.4.0-200",
         );
 
 

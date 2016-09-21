@@ -15,7 +15,8 @@ class Repository extends Base\Repository
         $repo = $this->repo;
 
         return $repo::where(Entity::PAYMENT_ID, '=', $id)
-                  ->where(Entity::STATUS, '=', Codes::STATUS_CAPTURED)
+                  ->where(Entity::ACTION, '=', Base\Action::CAPTURE)
+                  ->where(Entity::STATUS, '=', Codes::STATUS_APPROVED)
                   ->first();
     }
 }

@@ -7,25 +7,17 @@ use RZP\Constants;
 
 class Entity extends Base\Entity
 {
-    const ID                        = 'id';
-    const AMOUNT                    = 'chargetotal';
-    const TXN_DATE_TIME             = 'txndatetime';
-    const HASH                      = 'hash';
-    const ORDER_ID                  = 'oid';
-    const TDATE                     = 'tdate';
-    const PAYMENT_METHOD            = 'paymentMethod';
-    const APPROVAL_CODE             = 'approval_code';
-    const REF_NUMBER                = 'refnumber';
-    const STATUS                    = 'status';
-    const TXNDATE_PROCESSED         = 'txndate_processed';
-    const RESPONSE_HASH             = 'response_hash';
-    const PROCESSOR_RESPONSE_CODE   = 'processor_response_code';
-    const FAIL_REASON               = 'fail_reason';
-    const FAIL_RC                   = 'fail_rc';
-
-    const CC_BIN                    = 'ccbin';
-    const CC_COUNTRY                = 'cccountry';
-    const CC_BRAND                  = 'ccbrand';
+    const ID                            = 'id';
+    const AMOUNT                        = 'amount';
+    const ORDER_ID                      = 'order_id';
+    const TDATE                         = 'tdate';
+    const STATUS                        = 'status';
+    const PROCESSOR_RESPONSE_CODE       = 'processor_response_code';
+    const PROCESSOR_APPROVAL_CODE       = 'processor_approval_code';
+    const PROCESSOR_RESPONSE_MESSAGE    = 'processor_response_message';
+    const TERMINAL_ID                   = 'terminal_id';
+    const FAIL_REASON                   = 'fail_reason';
+    const FAIL_RC                       = 'fail_rc';
 
     protected $fields = array(
         self::ID,
@@ -34,35 +26,34 @@ class Entity extends Base\Entity
         self::RECEIVED,
         self::ACTION,
         self::AMOUNT,
-        self::TXN_DATE_TIME,
-        self::HASH,
         self::ORDER_ID,
-        self::REF_NUMBER,
-        self::STATUS,
-        self::RESPONSE_HASH,
-        self::PROCESSOR_RESPONSE_CODE,
         self::TDATE,
-        self::PAYMENT_METHOD,
+        self::STATUS,
+        self::PROCESSOR_RESPONSE_CODE,
+        self::PROCESSOR_APPROVAL_CODE,
+        self::PROCESSOR_RESPONSE_MESSAGE,
+        self::TERMINAL_ID,
+        self::FAIL_REASON,
+        self::FAIL_RC,
         self::CREATED_AT,
         self::UPDATED_AT,
     );
 
     protected $fillable = array(
         self::PAYMENT_ID,
-        self::RECEIVED,
         self::REFUND_ID,
+        self::RECEIVED,
         self::ACTION,
         self::AMOUNT,
-        self::TXN_DATE_TIME,
-        self::HASH,
         self::ORDER_ID,
-        self::REF_NUMBER,
-        self::STATUS,
-        self::RESPONSE_HASH,
-        self::PROCESSOR_RESPONSE_CODE,
         self::TDATE,
-        self::PAYMENT_METHOD,
-        self::TXNDATE_PROCESSED,
+        self::STATUS,
+        self::PROCESSOR_RESPONSE_CODE,
+        self::PROCESSOR_APPROVAL_CODE,
+        self::PROCESSOR_RESPONSE_MESSAGE,
+        self::TERMINAL_ID,
+        self::FAIL_REASON,
+        self::FAIL_RC,
     );
 
     protected $casts = [
@@ -87,11 +78,6 @@ class Entity extends Base\Entity
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
-    }
-
-    public function getTxndatetime()
-    {
-        return $this->getAttribute(self::TXN_DATE_TIME);
     }
 
     public function setAmount($amount)

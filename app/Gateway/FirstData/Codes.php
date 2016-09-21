@@ -6,8 +6,8 @@ final class Codes
 {
     const FIRST_DATA_HASH_ALGORITHM = 'SHA1';
 
-    const ENGLISH_UK_LANG_CODE_CONNECT = 'en_GB';
-    const ENGLISH_UK_LANG_CODE_API = 'en';
+    const ENGLISH_UK_LANG_CODE_CONNECT  = 'en_GB';
+    const ENGLISH_UK_LANG_CODE_API      = 'en';
 
     const DATE_TIME_FORMAT = 'Y:m:d-H:i:s';
 
@@ -21,13 +21,7 @@ final class Codes
     const TXN_TYPE_VOID     = 'void';
     const TXN_TYPE_REFUND   = 'return';
 
-    const STATUS_AUTHORIZED                = 'authorized';
-    const STATUS_AUTHORIZE_FAILED          = 'authorize_failed';
-    const STATUS_CAPTURED                  = 'captured';
-    const STATUS_CAPTURE_FAILED            = 'capture_failed';
-    const STATUS_CREATED                   = 'created';
-    const STATUS_REFUNDED                  = 'refunded';
-    const STATUS_REFUND_FAILED             = 'refund_failed';
+    const STATUS_APPROVED                  = 'APPROVED';
 
     public static $txnTypes = array(
         self::TXN_TYPE_SALE,

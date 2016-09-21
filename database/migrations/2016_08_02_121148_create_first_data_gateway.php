@@ -23,29 +23,44 @@ class CreateFirstDataGateway extends Migration
 
             $table->char(FirstData::PAYMENT_ID, FirstData::ID_LENGTH);
 
-            $table->char(FirstData::ACTION, 10)->nullable();
+            $table->char(FirstData::ACTION, 10)
+                  ->nullable();
 
-            $table->integer(FirstData::RECEIVED)->default(0);
+            $table->integer(FirstData::RECEIVED)
+                  ->default(0);
 
-            $table->char(FirstData::REFUND_ID, FirstData::ID_LENGTH)->nullable()->default(null);
-
-            $table->char(FirstData::TXN_DATE_TIME, 20)->nullable();
-
-            $table->char(FirstData::TXNDATE_PROCESSED, 20)->nullable();
-
-            $table->char(FirstData::HASH, 64)->nullable();
+            $table->char(FirstData::REFUND_ID, FirstData::ID_LENGTH)
+                  ->nullable()
+                  ->default(null);
 
             $table->char(FirstData::AMOUNT);
 
-            $table->char(FirstData::PAYMENT_METHOD, 2)->nullable();
+            $table->char(FirstData::STATUS, 20)
+                  ->nullable();
 
-            $table->char(FirstData::STATUS, 20)->nullable();
+            $table->char(FirstData::ORDER_ID, 20)
+                  ->nullable();
 
-            $table->char(FirstData::ORDER_ID, 20)->nullable();
+            $table->char(FirstData::TDATE, 20)
+                  ->nullable();
 
-            $table->char(FirstData::TDATE, 20)->nullable();
+            $table->char(FirstData::PROCESSOR_RESPONSE_CODE, 20)
+                  ->nullable();
 
-            $table->char(FirstData::REF_NUMBER, 20)->nullable();
+            $table->char(FirstData::PROCESSOR_APPROVAL_CODE, 20)
+                  ->nullable();
+
+            $table->char(FirstData::PROCESSOR_RESPONSE_MESSAGE, 50)
+                  ->nullable();
+
+            $table->char(FirstData::TERMINAL_ID, 20)
+                  ->nullable();
+
+            $table->char(FirstData::FAIL_REASON, 20)
+                  ->nullable();
+
+            $table->char(FirstData::FAIL_RC, 20)
+                  ->nullable();
 
             $table->integer(FirstData::CREATED_AT);
 
@@ -65,8 +80,6 @@ class CreateFirstDataGateway extends Migration
             $table->index(FirstData::CREATED_AT);
 
             $table->index(FirstData::REFUND_ID);
-
-            $table->index(FirstData::REF_NUMBER);
 
             $table->index(FirstData::TDATE);
 

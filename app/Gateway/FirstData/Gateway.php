@@ -28,7 +28,9 @@ class Gateway extends Base\Gateway
 
         $content = $this->getPreauthRequestContentArray($input);
 
-        $payment = $this->createGatewayPaymentEntity($content);
+        $authorizeFields = $this->getAuthorizeFields($content);
+
+        $authorizeEntity = $this->createGatewayPaymentEntity($authorizeFields, $input);
 
         $request = $this->getStandardRequestArray($content);
 
@@ -43,22 +45,18 @@ class Gateway extends Base\Gateway
 
         $this->verifyPaymentCallbackResponse($input);
 
-        $payment = $this->repo
-                        ->findByPaymentIdAndActionOrFail($input['gateway'][Constants::ORDER_ID], Base\Action::AUTHORIZE);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $input['gateway']);
 
-        $this->verifyHash($input['gateway'],$payment);
+        $gatewayPayment = $this->repo
+                        ->findByPaymentIdAndActionOrFail($input['gateway'][ConnectResponseFields::ORDER_ID], Base\Action::AUTHORIZE);
 
-        $attributes = array(
-            Entity::RECEIVED            => true,
-            Entity::TDATE               => $input['gateway'][Entity::TDATE],
-            Entity::APPROVAL_CODE       => $input['gateway'][Entity::APPROVAL_CODE],
-            Entity::STATUS              => $input['gateway'][Entity::STATUS],
-            Entity::TXNDATE_PROCESSED   => $input['gateway'][Entity::TXNDATE_PROCESSED],
-        );
+        $this->verifyHash($input['gateway'],$gatewayPayment);
 
-        $payment->fill($attributes);
+        $attributes = $this->getCallbackFields($input['gateway']);
 
-        $this->repo->saveOrFail($payment);
+        $gatewayPayment->fill($attributes);
+
+        $this->repo->saveOrFail($gatewayPayment);
     }
 
     public function capture(array $input)
@@ -81,15 +79,9 @@ class Gateway extends Base\Gateway
         $response = $this->postOrderRequestAndParseResponse($content);
         $this->trace->info(TraceCode::GATEWAY_CAPTURE_RESPONSE, [$response]);
 
-        $payment = $this->repo->findByPaymentIdAndActionOrFail($input['payment'][Payment\Entity::ID], Base\Action::AUTHORIZE);
+        $captureFields = $this->getCaptureFields($response, $input['payment']);
 
-        $attributes = array(
-            Entity::STATUS  => $response[Constants::TRANSACTION_RESULT],
-        );
-
-        $payment->fill($attributes);
-
-        $this->repo->saveOrFail($payment);
+        $captureEntity = $this->createGatewayPaymentEntity($captureFields, $input);
     }
 
     public function refund(array $input)
@@ -102,6 +94,10 @@ class Gateway extends Base\Gateway
 
         $response = $this->postOrderRequestAndParseResponse($content);
         $this->trace->info(TraceCode::GATEWAY_REFUND_RESPONSE, [$response]);
+
+        $refundFields = $this->getRefundFields($response, $input['refund']);
+
+        $refundEntity = $this->createGatewayPaymentEntity($refundFields, $input);
     }
 
     public function verify(array $input)
@@ -111,6 +107,70 @@ class Gateway extends Base\Gateway
         $verify = new Base\Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
+    }
+
+    protected function getAuthorizeFields($authRequest)
+    {
+        $attributes = array(
+            Entity::AMOUNT            => $authRequest[ConnectRequestFields::CHARGE_TOTAL]*100,
+            Entity::ORDER_ID          => $authRequest[ConnectRequestFields::ORDER_ID],
+        );
+
+        return $attributes;
+    }
+
+    protected function getCallbackFields($callbackBody)
+    {
+        $attributes = array(
+            Entity::RECEIVED                    => true,
+            Entity::TDATE                       => $callbackBody[ConnectResponseFields::TDATE],
+            Entity::STATUS                      => $callbackBody[ConnectResponseFields::STATUS],
+            Entity::PROCESSOR_RESPONSE_CODE     => $callbackBody[ConnectResponseFields::PROCESSOR_RESPONSE_CODE],
+            Entity::TERMINAL_ID                 => $callbackBody[ConnectResponseFields::TERMINAL_ID],
+        );
+
+        if (isset($callbackBody[ConnectResponseFields::FAIL_RC]))
+        {
+            $attributes[Entity::FAIL_RC]     = $callbackBody[ConnectResponseFields::FAIL_RC];
+            $attributes[Entity::FAIL_REASON] = $callbackBody[ConnectResponseFields::FAIL_REASON];
+        }
+
+
+        return $attributes;
+    }
+
+    protected function getCaptureFields($captureResponse, $paymentInput)
+    {
+        $attributes = array(
+            Entity::RECEIVED                    => true,
+            Entity::AMOUNT                      => $paymentInput['amount'],
+            Entity::TDATE                       => $captureResponse[ApiResponseFields::TDATE],
+            Entity::STATUS                      => $captureResponse[ApiResponseFields::TRANSACTION_RESULT],
+            Entity::ORDER_ID                    => $captureResponse[ApiResponseFields::ORDER_ID],
+            Entity::PROCESSOR_APPROVAL_CODE     => $captureResponse[ApiResponseFields::PROCESSOR_APPROVAL_CODE],
+            Entity::PROCESSOR_RESPONSE_CODE     => $captureResponse[ApiResponseFields::PROCESSOR_RESPONSE_CODE],
+            Entity::PROCESSOR_RESPONSE_MESSAGE  => $captureResponse[ApiResponseFields::PROCESSOR_RESPONSE_MESSAGE],
+            Entity::TERMINAL_ID                 => $captureResponse[ApiResponseFields::TERMINAL_ID],
+        );
+
+        return $attributes;
+    }
+
+    protected function getRefundFields($refundResponse, $refundInput)
+    {
+        $attributes = array(
+            Entity::RECEIVED                    => true,
+            Entity::AMOUNT                      => $refundInput['amount'],
+            Entity::TDATE                       => $refundResponse[ApiResponseFields::TDATE],
+            Entity::STATUS                      => $refundResponse[ApiResponseFields::TRANSACTION_RESULT],
+            Entity::ORDER_ID                    => $refundResponse[ApiResponseFields::ORDER_ID],
+            Entity::PROCESSOR_APPROVAL_CODE     => $refundResponse[ApiResponseFields::PROCESSOR_APPROVAL_CODE],
+            Entity::PROCESSOR_RESPONSE_CODE     => $refundResponse[ApiResponseFields::PROCESSOR_RESPONSE_CODE],
+            Entity::PROCESSOR_RESPONSE_MESSAGE  => $refundResponse[ApiResponseFields::PROCESSOR_RESPONSE_MESSAGE],
+            Entity::TERMINAL_ID                 => $refundResponse[ApiResponseFields::TERMINAL_ID],
+        );
+
+        return $attributes;
     }
 
     protected function sendPaymentVerifyRequest($verify)
@@ -166,9 +226,9 @@ class Gateway extends Base\Gateway
     protected function getVerifyGatewayStatus($ipgApiActionResponse)
     {
         $transactionValues = $ipgApiActionResponse->children('a1',true);
-        $transactionValuesArray = (json_decode(json_encode($transactionValues), true)[Constants::TRANSACTION_VALUES]);
+        $transactionValuesArray = (json_decode(json_encode($transactionValues), true)[ApiResponseFields::TRANSACTION_VALUES]);
 
-        $latestTransactionState = end($transactionValuesArray)[Constants::TRANSACTION_STATE];
+        $latestTransactionState = end($transactionValuesArray)[ApiResponseFields::TRANSACTION_STATE];
 
         $gatewayStatus = in_array($latestTransactionState, array('AUTHORIZED','CAPTURED')) ? true : false;
 
@@ -230,7 +290,7 @@ class Gateway extends Base\Gateway
 
     protected function postOrderRequestAndParseResponse($content)
     {
-        $xml = $this->postSoapRequest($content, Constants::ORDER_REQUEST);
+        $xml = $this->postSoapRequest($content, ApiRequestFields::ORDER_REQUEST);
 
         if ($xml->children('SOAP-ENV', true)->Body->Fault->count() > 0)
         {
@@ -249,7 +309,7 @@ class Gateway extends Base\Gateway
 
     protected function postActionRequestAndParseResponse($content)
     {
-        $xml = $this->postSoapRequest($content, Constants::ACTION_REQUEST);
+        $xml = $this->postSoapRequest($content, ApiRequestFields::ACTION_REQUEST);
 
         $ipgApiActionResponse = $xml->children('SOAP-ENV', true)->Body->children('ipgapi', true);
 
@@ -298,11 +358,11 @@ class Gateway extends Base\Gateway
     {
         $content = $this->getRequestContentArray($input);
 
-        $content[Constants::TXN_TYPE] = Codes::TXN_TYPE_AUTH;
+        $content[ConnectRequestFields::TXN_TYPE] = Codes::TXN_TYPE_AUTH;
 
         $method = $input['card'][Card\Entity::NETWORK_CODE];
 
-        $content[Constants::PAYMENT_METHOD] = Mapping::PAYMENT_METHOD_CODES[$method];
+        $content[ConnectRequestFields::PAYMENT_METHOD] = Mapping::PAYMENT_METHOD_CODES[$method];
 
         $this->setCardDetails($content, $input);
         $this->setCallbackUrls($content, $input);
@@ -312,26 +372,27 @@ class Gateway extends Base\Gateway
 
     protected function setCardDetails(&$content, $input)
     {
-        $content[Constants::CARD_NUMBER] = $input['card'][Card\Entity::NUMBER];
+        $content[ConnectRequestFields::CARD_NUMBER] = $input['card'][Card\Entity::NUMBER];
 
-        $content[Constants::NAME]      = $input['card'][Card\Entity::NAME];
-        $content[Constants::EXP_MONTH] = $input['card'][Card\Entity::EXPIRY_MONTH];
-        $content[Constants::EXP_YEAR]  = $input['card'][Card\Entity::EXPIRY_YEAR];
-        $content[Constants::CVV]       = $input['card'][Card\Entity::CVV];
+        $content[ConnectRequestFields::NAME]      = $input['card'][Card\Entity::NAME];
+        $content[ConnectRequestFields::EXP_MONTH] = $input['card'][Card\Entity::EXPIRY_MONTH];
+        $content[ConnectRequestFields::EXP_YEAR]  = $input['card'][Card\Entity::EXPIRY_YEAR];
+        $content[ConnectRequestFields::CVV]       = $input['card'][Card\Entity::CVV];
     }
 
     protected function setCallbackUrls(&$content, $input)
     {
-        $content[Constants::RESPONSE_SUCCESS_URL]      = $input['callbackUrl'];
-        $content[Constants::RESPONSE_FAIL_URL]         = $input['callbackUrl'];
+        $content[ConnectRequestFields::RESPONSE_SUCCESS_URL]      = $input['callbackUrl'];
+        $content[ConnectRequestFields::RESPONSE_FAIL_URL]         = $input['callbackUrl'];
     }
 
-    protected function createGatewayPaymentEntity($content)
+    protected function createGatewayPaymentEntity($content, $input)
     {
         $payment = $this->getNewGatewayPaymentEntity();
 
         $payment->fill($content);
-        $payment->setPaymentId($content[Constants::ORDER_ID]);
+
+        $payment->setPaymentId($input['payment'][Payment\Entity::ID]);
         $payment->setAction($this->action);
 
         $this->repo->saveOrFail($payment);
@@ -381,23 +442,20 @@ class Gateway extends Base\Gateway
         $currencyCode = Mapping::ISO_NUMERIC_CODES[$currency];
 
         $content = array(
-            Constants::TIME_ZONE                 => 'Asia/Kolkata',
-            Constants::TXN_DATE_TIME             => $txnDateTime,
-            Constants::HASH_ALGORITHM            => Codes::FIRST_DATA_HASH_ALGORITHM,
-            Constants::HASH                      => $this->getRequestHash($txnDateTime, $chargeTotal, $currencyCode),
-            Constants::STORE_NAME                => $this->getStoreName(),
-            Constants::MODE                      => Codes::PAYMENT_MODE_PAYONLY,
-            Constants::CHARGE_TOTAL              => $chargeTotal,
-            Constants::CURRENCY                  => $currencyCode,
-
-            Constants::ORDER_ID                  => $input['payment'][Payment\Entity::ID],
-            Constants::INVOICE_NUMBER            => $input['payment'][Payment\Entity::ID],
-
-            Constants::CARD_FUNCTION             => $input['card'][Card\Entity::TYPE],
-            Constants::COMMENTS                  => '',
-
-            Constants::DYNAMIC_MERCHANT_NAME     => 'Razorpay Payments',
-            Constants::LANGUAGE                  => Codes::ENGLISH_UK_LANG_CODE_CONNECT,
+            ConnectRequestFields::TIME_ZONE                 => 'Asia/Kolkata',
+            ConnectRequestFields::TXN_DATE_TIME             => $txnDateTime,
+            ConnectRequestFields::HASH_ALGORITHM            => Codes::FIRST_DATA_HASH_ALGORITHM,
+            ConnectRequestFields::HASH                      => $this->getRequestHash($txnDateTime, $chargeTotal, $currencyCode),
+            ConnectRequestFields::STORE_NAME                => $this->getStoreName(),
+            ConnectRequestFields::MODE                      => Codes::PAYMENT_MODE_PAYONLY,
+            ConnectRequestFields::CHARGE_TOTAL              => $chargeTotal,
+            ConnectRequestFields::CURRENCY                  => $currencyCode,
+            ConnectRequestFields::ORDER_ID                  => $input['payment'][Payment\Entity::ID],
+            ConnectRequestFields::INVOICE_NUMBER            => $input['payment'][Payment\Entity::ID],
+            ConnectRequestFields::CARD_FUNCTION             => $input['card'][Card\Entity::TYPE],
+            ConnectRequestFields::COMMENTS                  => '',
+            ConnectRequestFields::DYNAMIC_MERCHANT_NAME     => 'Razorpay Payments',
+            ConnectRequestFields::LANGUAGE                  => Codes::ENGLISH_UK_LANG_CODE_CONNECT,
         );
 
         return $content;
@@ -412,8 +470,6 @@ class Gateway extends Base\Gateway
         $hooks->register('curl.before_send', [$this, 'setCurlSslOpts']);
         $options['hooks'] = $hooks;
 
-        // $options['verify'] = $this->getServerCertificate();
-
         return $options;
     }
 
@@ -421,6 +477,7 @@ class Gateway extends Base\Gateway
     {
         curl_setopt($curl, CURLOPT_SSLCERT, $this->getClientCertificate());
         curl_setopt($curl, CURLOPT_SSLKEY, $this->getClientCertificateKey());
+        curl_setopt($curl, CURLOPT_CAINFO, $this->getServerCertificate());
         curl_setopt($curl, CURLOPT_HTTPHEADER, array("Content-Type: text/xml"));
     }
 
@@ -428,45 +485,7 @@ class Gateway extends Base\Gateway
     {
         $gatewayPayment = $this->repo->retrieveByPaymentIdOrFail($input['payment'][Payment\Entity::ID]);
 
-        $request['a1:Action']['a1:InquiryOrder']['a1:OrderId'] = $gatewayPayment['oid'];
-
-        return $request;
-    }
-
-    protected function getCaptureRequestContentArray($input)
-    {
-        $gatewayPayment = $this->repo->retrieveByPaymentIdOrFail($input['payment'][Payment\Entity::ID]);
-
-        $currency = $input['payment'][Payment\Entity::CURRENCY];
-        $currencyCode = Mapping::ISO_NUMERIC_CODES[$currency];
-        $orderId = $gatewayPayment[Constants::ORDER_ID];
-        $amountEntity = Codes::$amountEntity[Codes::TXN_TYPE_CAPTURE];
-
-        $body['v1:CreditCardTxType']['v1:Type'] = Codes::TXN_TYPE_CAPTURE;
-        $body['v1:Payment']['v1:ChargeTotal'] = $input[$amountEntity][Payment\Entity::AMOUNT]/100;
-        $body['v1:Payment']['v1:Currency'] = $currencyCode;
-        $body['v1:TransactionDetails']['v1:OrderId'] = $gatewayPayment['oid'];
-
-        $request['v1:Transaction'] = $body;
-
-        return $request;
-    }
-
-    protected function getRefundRequestContentArray($input)
-    {
-        $gatewayPayment = $this->repo->retrieveByPaymentIdOrFail($input['payment'][Payment\Entity::ID]);
-
-        $currency = $input['payment'][Payment\Entity::CURRENCY];
-        $currencyCode = Mapping::ISO_NUMERIC_CODES[$currency];
-        $orderId = $gatewayPayment[Constants::ORDER_ID];
-        $amountEntity = Codes::$amountEntity[Codes::TXN_TYPE_REFUND];
-
-        $body['v1:CreditCardTxType']['v1:Type'] = Codes::TXN_TYPE_REFUND;
-        $body['v1:Payment']['v1:ChargeTotal'] = $input[$amountEntity][Payment\Entity::AMOUNT]/100;
-        $body['v1:Payment']['v1:Currency'] = $currencyCode;
-        $body['v1:TransactionDetails']['v1:OrderId'] = $gatewayPayment['oid'];
-
-        $request['v1:Transaction'] = $body;
+        $request[ApiRequestFields::A1_ACTION][ApiRequestFields::A1_INQUIRY_ORDER][ApiRequestFields::A1_ORDER_ID] = $gatewayPayment[Entity::ORDER_ID];
 
         return $request;
     }
@@ -477,15 +496,15 @@ class Gateway extends Base\Gateway
 
         $currency = $input['payment'][Payment\Entity::CURRENCY];
         $currencyCode = Mapping::ISO_NUMERIC_CODES[$currency];
-        $orderId = $gatewayPayment[Constants::ORDER_ID];
+        $orderId = $gatewayPayment[Entity::ORDER_ID];
         $amountEntity = Codes::$amountEntity[$txnType];
 
-        $body[Constants::V1_CREDITCARDTXTYPE][Constants::V1_TYPE]      = $txnType;
-        $body[Constants::V1_PAYMENT][Constants::V1_CHARGETOTAL]        = $input[$amountEntity][Payment\Entity::AMOUNT]/100;
-        $body[Constants::V1_PAYMENT][Constants::V1_CURRENCY]           = $currencyCode;
-        $body[Constants::V1_TRANSACTIONDETAILS][Constants::V1_ORDERID] = $gatewayPayment[Constants::ORDER_ID];
+        $body[ApiRequestFields::V1_CREDITCARDTXTYPE][ApiRequestFields::V1_TYPE]      = $txnType;
+        $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CHARGETOTAL]        = $input[$amountEntity][Payment\Entity::AMOUNT]/100;
+        $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CURRENCY]           = $currencyCode;
+        $body[ApiRequestFields::V1_TRANSACTIONDETAILS][ApiRequestFields::V1_ORDERID] = $gatewayPayment[Entity::ORDER_ID];
 
-        $request[Constants::V1_TRANSACTION] = $body;
+        $request[ApiRequestFields::V1_TRANSACTION] = $body;
 
         return $request;
     }
@@ -517,8 +536,8 @@ class Gateway extends Base\Gateway
 
     protected function verifyPaymentCallbackResponse($input)
     {
-        if ((isset($input['gateway'][Constants::APPROVAL_CODE]) === false) or
-            ($input['gateway'][Constants::APPROVAL_CODE][0] !== 'Y'))
+        if ((isset($input['gateway'][ConnectResponseFields::APPROVAL_CODE]) === false) or
+            ($input['gateway'][ConnectResponseFields::APPROVAL_CODE][0] !== 'Y'))
         {
             $this->trace->warning(
                 TraceCode::GATEWAY_AUTHORIZE_RESPONSE, [$input['gateway']]);
@@ -530,14 +549,14 @@ class Gateway extends Base\Gateway
 
     private function verifyHash($input)
     {
-        $approvalCode   = $input[Constants::APPROVAL_CODE];
-        $txnDateTime    = $input[Constants::TXN_DATE_TIME];
-        $chargeTotal    = $input[Constants::CHARGE_TOTAL];
-        $currencyCode   = $input[Constants::CURRENCY];
+        $approvalCode   = $input[ConnectResponseFields::APPROVAL_CODE];
+        $txnDateTime    = $input[ConnectResponseFields::TXN_DATE_TIME];
+        $chargeTotal    = $input[ConnectResponseFields::CHARGE_TOTAL];
+        $currencyCode   = $input[ConnectResponseFields::CURRENCY];
 
         $expectedHash  = $this->getResponseHash($approvalCode, $chargeTotal, $currencyCode, $txnDateTime);
 
-        if ($expectedHash != $input[Constants::RESPONSE_HASH])
+        if (!hash_equals($expectedHash,$input[ConnectResponseFields::RESPONSE_HASH]))
         {
             $this->trace->error(
                 TraceCode::GATEWAY_AUTHORIZE_RESPONSE, array($input,$expectedHash));

@@ -5,47 +5,45 @@ namespace RZP\Gateway\FirstData\Mock;
 use RZP\Models\Base;
 use RZP\Gateway\FirstData\Constants;
 use RZP\Gateway\FirstData\Mapping;
+use RZP\Gateway\FirstData\ConnectRequestFields;
 use RZP\Gateway\FirstData\Codes;
 
 class Validator extends Base\Validator
 {
     protected static $authRules = array(
-        Constants::TXN_TYPE                  => 'required|in:preauth',
-        Constants::TIME_ZONE                 => 'required|string',
-        Constants::TXN_DATE_TIME             => 'required|string',
-        Constants::HASH_ALGORITHM            => 'required|',
-        Constants::HASH                      => 'required|size:40|string',
-        Constants::STORE_NAME                => 'required|size:10|string',
-        Constants::MODE                      => 'sometimes|',
-        Constants::CHARGE_TOTAL              => 'required|numeric',
-        Constants::CURRENCY                  => 'required|',
-        Constants::ORDER_ID                  => 'sometimes|',
-        Constants::TDATE                     => 'sometimes|',
-        Constants::PAYMENT_METHOD            => 'required|',
-        Constants::CUSTOMER_ID               => 'sometimes|',
-        Constants::INVOICE_NUMBER            => 'sometimes|',
-        Constants::CARD_FUNCTION             => 'sometimes|in:credit,debit|string',
-        Constants::COMMENTS                  => 'sometimes|',
-        Constants::RESPONSE_SUCCESS_URL      => 'required|url',
-        Constants::RESPONSE_FAIL_URL         => 'required|url',
-        Constants::DYNAMIC_MERCHANT_NAME     => 'sometimes|string',
-        Constants::LANGUAGE                  => 'sometimes|',
-        Constants::HASH_EXTENDED             => 'sometimes|size:40|string',
-        Constants::NUMBER_OF_INSTALLMENTS    => 'sometimes|',
-        Constants::CARD_NUMBER               => 'required|numeric|digits_between:12,19',
-        Constants::NAME                      => 'sometimes|',
-        Constants::EXP_MONTH                 => 'required|size:2',
-        Constants::EXP_YEAR                  => 'required|size:4',
-        Constants::CVV                       => 'required|numeric|digits_between:2,4',
+        ConnectRequestFields::CARD_FUNCTION             => 'sometimes|in:credit,debit|string',
+        ConnectRequestFields::CARD_NUMBER               => 'required|numeric|digits_between:12,19',
+        ConnectRequestFields::CHARGE_TOTAL              => 'required|numeric',
+        ConnectRequestFields::COMMENTS                  => 'sometimes|',
+        ConnectRequestFields::CURRENCY                  => 'required|',
+        ConnectRequestFields::CVV                       => 'required|numeric|digits_between:2,4',
+        ConnectRequestFields::DYNAMIC_MERCHANT_NAME     => 'sometimes|string',
+        ConnectRequestFields::EXP_MONTH                 => 'required|size:2',
+        ConnectRequestFields::EXP_YEAR                  => 'required|size:4',
+        ConnectRequestFields::HASH                      => 'required|size:40|string',
+        ConnectRequestFields::HASH_ALGORITHM            => 'required|',
+        ConnectRequestFields::INVOICE_NUMBER            => 'sometimes|',
+        ConnectRequestFields::LANGUAGE                  => 'sometimes|',
+        ConnectRequestFields::MODE                      => 'sometimes|',
+        ConnectRequestFields::NAME                      => 'sometimes|',
+        ConnectRequestFields::NUMBER_OF_INSTALLMENTS    => 'sometimes|',
+        ConnectRequestFields::ORDER_ID                  => 'sometimes|',
+        ConnectRequestFields::PAYMENT_METHOD            => 'required|',
+        ConnectRequestFields::RESPONSE_FAIL_URL         => 'required|url',
+        ConnectRequestFields::RESPONSE_SUCCESS_URL      => 'required|url',
+        ConnectRequestFields::STORE_NAME                => 'required|size:10|string',
+        ConnectRequestFields::TIME_ZONE                 => 'required|string',
+        ConnectRequestFields::TXN_DATE_TIME             => 'required|string',
+        ConnectRequestFields::TXN_TYPE                  => 'required|in:preauth',
     );
 
     protected static $authValidators = array(
-        Constants::TXN_TYPE,
-        Constants::MODE,
-        Constants::PAYMENT_METHOD,
-        Constants::HASH_ALGORITHM,
-        Constants::CURRENCY,
-        Constants::LANGUAGE,
+        ConnectRequestFields::TXN_TYPE,
+        ConnectRequestFields::MODE,
+        ConnectRequestFields::PAYMENT_METHOD,
+        ConnectRequestFields::HASH_ALGORITHM,
+        ConnectRequestFields::CURRENCY,
+        ConnectRequestFields::LANGUAGE,
     );
 
     protected static $captureRules = array(
