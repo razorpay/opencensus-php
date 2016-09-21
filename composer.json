@@ -24,7 +24,8 @@
         "rtconner/laravel-tagging": "~2.1",
         "schuppo/password-strength": "~1.5",
         "sunra/php-simple-html-dom-parser": "v1.5.0",
-        "vipsoft/unzip": "^1.1"
+        "vipsoft/unzip": "^1.1",
+        "oriceon/oauth-5-laravel": "dev-master"
     },
     "require-dev": {
         "symfony/dom-crawler": "~3.0",

@@ -7,6 +7,11 @@ use App\Admin;
 use App\Merchant;
 use Auth;
 use Input;
+use OAuth;
+use Config;
+use App;
+use App\Admin\Entity;
+use Redirect;
 
 class AdminController extends Controller
 {
@@ -30,6 +35,53 @@ class AdminController extends Controller
 
     public function getIndex()
     {
+        // return view('admin.tmpgetIndex');
+        $code = Input::get('code');
+
+        $googleService = OAuth::consumer('Google');
+
+        // check if code is valid
+
+        // If the user is not logged in
+        if (!Auth::guard('admin')->check())
+        {
+            // if code is provided get user data and sign in
+            if ($code === null)
+            {   
+                $url = $googleService->getAuthorizationUri();
+
+                return redirect((string)$url);
+            }
+            else
+            {
+                $token = $googleService->requestAccessToken($code);
+
+                $response = $googleService->request(Config::get('oauth-5-laravel.userinfo_url'));
+
+                $result = json_decode($response);
+
+                if ($result->verified_email === false)
+                {
+                    return App::abort(404);
+                }
+
+                $admin = Admin\Entity::where('email', 'harshil@razorpay.com')->first();
+      
+                if ($admin)
+                {
+                    $admin->access_token = $token->getAccessToken();
+                    $admin->google_id = $result->id;
+                    $admin->password = '';
+      
+                    $admin->save();
+
+                    Auth::guard('admin')->loginUsingId($admin->id);
+                }
+
+                return redirect('/admin');
+            }
+        }
+
         return view('admin.tmpgetIndex');
     }
 

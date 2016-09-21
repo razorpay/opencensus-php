@@ -60,7 +60,7 @@ app.controller('AdminCtrl', [
     };
     $scope.logout = function () {
       logoutRequest().finally(function () {
-        $state.go('access.signin');
+        location.reload();
       });
     };
     $scope.$on('$keepalive', function () {

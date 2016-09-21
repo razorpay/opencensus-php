@@ -147,6 +147,7 @@ return array(
         Illuminate\Session\SessionServiceProvider::class,
         Illuminate\Translation\TranslationServiceProvider::class,
         Illuminate\View\ViewServiceProvider::class,
+        Artdarek\OAuth\OAuthServiceProvider::class,
 
         /*
          * Application Service Providers...
@@ -238,6 +239,7 @@ return array(
         'AWS'             => Aws\Laravel\AwsFacade::class,
         'Debugbar'        => Barryvdh\Debugbar\Facade::class,
         'Excel'           => Maatwebsite\Excel\Facades\Excel::class,
+        'OAuth'           => Artdarek\OAuth\Facade\OAuth::class,
         'Mailgun'         => Bogardo\Mailgun\Facades\Mailgun::class,
         'PDF'             => Nitmedia\Wkhtml2pdf\Facades\Wkhtml2pdf::class,
         'Slack'           => Maknz\Slack\Facades\Slack::class,
