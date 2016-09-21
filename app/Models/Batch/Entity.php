@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Payment\BatchRefund;
+namespace RZP\Models\Batch;
 
 use RZP\Models\Base;
 
@@ -18,15 +18,16 @@ class Entity extends Base\PublicEntity
     const AMOUNT                    = 'amount';
     const COMMENT                   = 'comment';
     const PROCESSED_AT              = 'processed_at';
+    const TYPE                      = 'type';
 
     const FILE_URL_LENGTH           = 100;
     const STATUS_LENGTH             = 20;
 
-    protected $table = \RZP\Constants\Table::BATCH_REFUND;
+    protected $table = \RZP\Constants\Table::BATCH;
 
-    protected static $sign = 'btrfnd';
+    protected static $sign = 'batch';
 
-    protected $entity = 'batch_refund';
+    protected $entity = 'batch';
 
     protected $generateIdOnCreate = true;
 
@@ -36,7 +37,8 @@ class Entity extends Base\PublicEntity
         self::UPLOAD_FILE_URL,
         self::STATUS,
         self::TOTAL_COUNT,
-        self::ATTEMPTS
+        self::ATTEMPTS,
+        self::TYPE,
     );
 
     protected $visible = array(
@@ -51,6 +53,7 @@ class Entity extends Base\PublicEntity
         self::FAILURE_COUNT,
         self::PROCESSED_AT,
         self::ATTEMPTS,
+        self::TYPE,
         self::CREATED_AT,
         self::UPDATED_AT
     );
@@ -63,20 +66,22 @@ class Entity extends Base\PublicEntity
         self::FAILURE_COUNT,
         self::ATTEMPTS,
         self::AMOUNT,
-        self::PROCESSED_AT,
         self::STATUS,
+        self::TYPE,
+        self::PROCESSED_AT,
         self::CREATED_AT
     );
 
     protected $defaults = array(
         self::ATTEMPTS                       => 0,
-        self::STATUS                         => BatchRefundStatus::CREATED,
+        self::STATUS                         => Status::CREATED,
         self::DOWNLOAD_FILE_URL              => null,
         self::SUCCESS_COUNT                  => null,
         self::FAILURE_COUNT                  => null,
         self::AMOUNT                         => null,
         self::COMMENT                        => null,
         self::PROCESSED_AT                   => null,
+        self::TYPE                           => null,
     );
 
     protected $casts = array(
@@ -132,6 +137,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ATTEMPTS);
     }
 
+    public function getType()
+    {
+        return $this->getAttribute(self::TYPE);
+    }
+
     public function getProcessedAt()
     {
         return $this->getAttribute(self::PROCESSED_AT);
@@ -172,9 +182,13 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ATTEMPTS, $attempts);
     }
 
+    public function setType($type)
+    {
+        $this->setAttribute(self::TYPE, $type);
+    }
+
     public function setProcessedAt($processedAt)
     {
         $this->setAttribute(self::PROCESSED_AT, $processedAt);
     }
-
 }

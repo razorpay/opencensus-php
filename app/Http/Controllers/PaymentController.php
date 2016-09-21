@@ -13,7 +13,6 @@ class PaymentController extends Controller
 {
     protected $payment;
     protected $refund;
-    protected $batchRefundService;
 
     public function __construct()
     {
@@ -21,7 +20,6 @@ class PaymentController extends Controller
 
         $this->payment = new Payment\Service();
         $this->refund = new Payment\Refund\Service();
-        $this->batchRefundService = new Payment\BatchRefund\Service();
     }
 
     public function getPayment($id)
@@ -60,45 +58,6 @@ class PaymentController extends Controller
         $payment = $this->payment->refund($id, $input);
 
         return ApiResponse::json($payment);
-    }
-
-    public function uploadRefundFile()
-    {
-        $input = Request::all();
-
-        $result = $this->batchRefundService->uploadRefundFile($input);
-
-        return ApiResponse::json($result);
-    }
-
-    public function processRefundFile()
-    {
-        $result = $this->batchRefundService->processRefundFile();
-
-        return ApiResponse::json($result);
-    }
-
-    public function getBatchRefunds()
-    {
-        $input = Request::all();
-
-        $result = $this->batchRefundService->getBatchRefunds($input);
-
-        return ApiResponse::json($result);
-    }
-
-    public function retryBatchRefund($id)
-    {
-        $result = $this->batchRefundService->retryBatchRefund($id);
-
-        return ApiResponse::json($result);
-    }
-
-    public function downloadBatchRefund($id)
-    {
-        $result = $this->batchRefundService->downloadBatchRefund($id);
-
-        return ApiResponse::json($result);
     }
 
     public function postRefundAuthorized($id)
@@ -339,7 +298,7 @@ class PaymentController extends Controller
 
         return ApiResponse::json($data);
     }
-    
+
     public function postRefundMultipleAuthorizedPaymentsForOrders()
     {
         $data = $this->payment->refundMultipleAuthorizedPaymentsForOrders();

@@ -4,6 +4,7 @@ namespace RZP\Models\Payment\Refund;
 
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Models\Batch;
 use RZP\Models\Base\Traits\NotesTrait;
 
 class Entity extends Base\PublicEntity
@@ -17,7 +18,7 @@ class Entity extends Base\PublicEntity
     const CURRENCY          = 'currency';
     const TRANSACTION_ID    = 'transaction_id';
     const NOTES             = 'notes';
-    const BATCH_REFUND_ID   = 'batch_refund_id';
+    const BATCH_ID          = 'batch_id';
 
     protected $table = \RZP\Constants\Table::REFUND;
 
@@ -45,7 +46,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::TRANSACTION_ID,
         self::NOTES,
-        self::BATCH_REFUND_ID,
+        self::BATCH_ID,
         self::CREATED_AT,
         self::UPDATED_AT
     );
@@ -87,9 +88,9 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
-    public function batchRefund()
+    public function batch()
     {
-        return $this->belongsTo('RZP\Models\Payment\BatchRefund\Entity', self::BATCH_REFUND_ID);
+        return $this->belongsTo('RZP\Models\Batch\Entity', self::BATCH_ID);
     }
 
     public function build(array $input = array())
@@ -149,9 +150,9 @@ class Entity extends Base\PublicEntity
         return $this->relations['payment']->getGateway();
     }
 
-    public function getBatchRefundId()
+    public function getBatchId()
     {
-        return $this->getAttribute(self::BATCH_REFUND_ID);
+        return $this->getAttribute(self::BATCH_ID);
     }
 
     /**

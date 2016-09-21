@@ -251,11 +251,11 @@ class TraceCode
     const RECON_INFO_SUMMARY                        = 'RECON_INFO_SUMMARY';
     const IIN_INSERT_FAILED                         = 'IIN_INSERT_FAILED';
 
-    const BATCH_REFUND_UPLOAD_FILE                  = 'BATCH_REFUND_UPLOAD_FILE';
-    const BATCH_REFUND_PROCESS_FILE                 = 'BATCH_REFUND_PROCESS_FILE';
-    const BATCH_REFUND_RETRY                        = 'BATCH_REFUND_RETRY';
-    const BATCH_REFUND_DOWNLOAD                     = 'BATCH_REFUND_DOWNLOAD';
-    const BATCH_REFUND_LIST                         = 'BATCH_REFUND_LIST';
+    const BATCH_UPLOAD_FILE                         = 'BATCH_UPLOAD_FILE';
+    const BATCH_PROCESS_FILE                        = 'BATCH_PROCESS_FILE';
+    const BATCH_RETRY                               = 'BATCH_RETRY';
+    const BATCH_DOWNLOAD                            = 'BATCH_DOWNLOAD';
+    const BATCH_LIST                                = 'BATCH_LIST';
 
 
     /**
@@ -347,11 +347,11 @@ class TraceCode
         self::RECON_INFO_SUMMARY                        => 'Summary of the reconciliation of the files',
         self::TRANSACTION_CREATED_IN_VERIFY_CAPTURE     => 'Transaction created for a failed capture',
 
-        self::BATCH_REFUND_UPLOAD_FILE                  => 'Uploading the batch refund file',
-        self::BATCH_REFUND_PROCESS_FILE                 => 'Processing the batch refund file',
-        self::BATCH_REFUND_RETRY                        => 'Manual retry for the batch refund file',
-        self::BATCH_REFUND_DOWNLOAD                     => 'Downloading the batch refund file',
-        self::BATCH_REFUND_LIST                         => 'Getting the batch refund files',
+        self::BATCH_UPLOAD_FILE                         => 'Uploading the batch file',
+        self::BATCH_PROCESS_FILE                        => 'Processing the batch file',
+        self::BATCH_RETRY                               => 'Manual retry for the batch file',
+        self::BATCH_DOWNLOAD                            => 'Downloading the batch file',
+        self::BATCH_LIST                                => 'Getting the batch files',
     );
 
     /**

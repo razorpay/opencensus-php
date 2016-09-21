@@ -19,10 +19,10 @@ return [
 
     'testUploadRefundFile' => [
         'request' => [
-            'url' => '/payments/batch_refunds/upload_file',
+            'url' => '/batches/upload',
             'method' => 'post',
             'content' => [
-
+                'type' => 'refund',
             ],
         ],
         'response' => [
@@ -39,7 +39,7 @@ return [
         'request' => [
             'method' => 'post',
             'content' => [
-
+                'type' => 'refund',
             ],
         ],
         'response' => [
@@ -49,30 +49,30 @@ return [
 
     'testUploadRefundFileException' => [
         'request' => [
-            'url' => '/payments/batch_refunds/upload_file',
+            'url' => '/batches/upload',
             'method' => 'post',
             'content' => [
-
+                'type' => 'refund',
             ],
         ],
         'response' => [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Refund file does not contain proper values',
+                    'description' => 'The uploaded file does not contain proper values',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_REFUND_FILE_VALIDATION,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FILE_VALIDATION,
         ],
     ],
 
     'testGetAllRefundFiles' => [
         'request' => [
-            'url' => '/payments/batch_refunds/list',
+            'url' => '/batches',
             'method' => 'get',
             'content' => [
 
@@ -116,20 +116,20 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Refund File is already processed',
+                    'description' => 'The uploaded file is already processed',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_REFUND_FILE_ALREADY_PROCESSED,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FILE_ALREADY_PROCESSED,
         ],
     ],
 
     'testProcessRefundFile' => [
         'request' => [
-            'url' => '/payments/batch_refunds/process_file',
+            'url' => '/batches/process',
             'method' => 'post',
             'content' => [
 

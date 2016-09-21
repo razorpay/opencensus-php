@@ -209,7 +209,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT                          = 'The fees calculated for payment is greater than the payment amount. Please provide higher amount';
     const BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED                               = 'Payment created long back and cannot be cancelled now';
 
-    const BAD_REQUEST_REFUND_FILE_EXCEED_LIMIT                                  = 'Refund file limit should not be more than 1000 entries';
-    const BAD_REQUEST_REFUND_FILE_VALIDATION                                    = 'Refund file does not contain proper values';
-    const BAD_REQUEST_REFUND_FILE_ALREADY_PROCESSED                             = 'Refund File is already processed';
+    const BAD_REQUEST_FILE_EXCEED_LIMIT                                         = 'The uploaded file limit should not contain more than 1000 entries';
+    const BAD_REQUEST_FILE_VALIDATION                                           = 'The uploaded file does not contain proper values';
+    const BAD_REQUEST_FILE_ALREADY_PROCESSED                                    = 'The uploaded file is already processed';
 }

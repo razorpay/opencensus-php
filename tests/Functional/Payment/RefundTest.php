@@ -8,7 +8,7 @@ use Mockery;
 use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment\Entity as PaymentEntity;
-use RZP\Models\Payment\BatchRefund\BatchRefundStatus;
+use RZP\Models\Batch\Status;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Settlement\Kotak\FileHandlerTrait;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -81,11 +81,10 @@ class RefundTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals(BatchRefundStatus::CREATED, $content['entity']['status']);
-
+        $this->assertEquals(Status::CREATED, $content['status']);
 
         $testData = $this->testData['testDownloadRefundFile'];
-        $testData['request']['url'] = '/payments/batch_refunds/' . substr($content['entity']['id'], 7) .'/download';
+        $testData['request']['url'] = '/batches/' . substr($content['id'], 6) .'/download';
 
         $content = $this->makeRequestAndGetContent($testData['request']);
     }
@@ -137,11 +136,11 @@ class RefundTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $refundId = $content['entity']['id'];
+        $refundId = $content['id'];
 
-        $url = $this->writeToExcelFile($paymentEntry, substr($refundId, 7));
+        $url = $this->writeToExcelFile($paymentEntry, substr($refundId, 6));
 
-        $this->assertEquals(BatchRefundStatus::CREATED, $content['entity']['status']);
+        $this->assertEquals(Status::CREATED, $content['status']);
 
         $testData = $this->testData['testGetAllRefundFiles'];
 
@@ -149,15 +148,15 @@ class RefundTest extends TestCase
 
         $items = $content['items'];
         $this->assertEquals(1, count($items));
-        $this->assertEquals(BatchRefundStatus::CREATED, $items[0]['status']);
+        $this->assertEquals(Status::CREATED, $items[0]['status']);
 
 
         $testData = $this->testData['testRetryRefundFiles'];
-        $testData['request']['url'] = '/payments/batch_refunds/' . substr($refundId, 7) .'/retry';
+        $testData['request']['url'] = '/batches/' . substr($refundId, 6) .'/retry';
 
         $content = $this->makeRequestAndGetContent($testData['request']);
 
-        $this->assertEquals(BatchRefundStatus::IN_PROGRESS, $content['status']);
+        $this->assertEquals(Status::IN_PROGRESS, $content['status']);
 
     }
 
@@ -183,19 +182,20 @@ class RefundTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $refundId = $content['entity']['id'];
+        $refundId = $content['id'];
 
-        $url = $this->writeToExcelFile($paymentEntry, substr($refundId, 7));
+        $url = $this->writeToExcelFile($paymentEntry, substr($refundId, 6));
 
-        $this->assertEquals(BatchRefundStatus::CREATED, $content['entity']['status']);
+        $this->assertEquals(Status::CREATED, $content['status']);
 
         $testData = $this->testData['testProcessRefundFile'];
 
         $this->ba->appAuthTest();
+
         $content = $this->makeRequestAndGetContent($testData['request']);
 
         $resultBody = $content['items'][0];
-        $this->assertEquals(BatchRefundStatus::PROCESSED, $resultBody['status']);
+        $this->assertEquals(Status::PROCESSED, $resultBody['status']);
         $this->assertEquals(4000, $resultBody['amount']);
         $this->assertEquals(0, $resultBody['failure_count']);
 
@@ -222,11 +222,11 @@ class RefundTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $refundId = $content['entity']['id'];
+        $refundId = $content['id'];
 
-        $url = $this->writeToExcelFile($paymentEntry, substr($refundId, 7));
+        $url = $this->writeToExcelFile($paymentEntry, substr($refundId, 6));
 
-        $this->assertEquals(BatchRefundStatus::CREATED, $content['entity']['status']);
+        $this->assertEquals(Status::CREATED, $content['status']);
 
         $testData = $this->testData['testProcessRefundFile'];
 
@@ -234,14 +234,14 @@ class RefundTest extends TestCase
         $content = $this->makeRequestAndGetContent($testData['request']);
 
         $resultBody = $content['items'][0];
-        $this->assertEquals(BatchRefundStatus::FAILURE, $resultBody['status']);
+        $this->assertEquals(Status::FAILURE, $resultBody['status']);
         $this->assertEquals(null, $resultBody['amount']);
         $this->assertEquals(1, $resultBody['failure_count']);
         $this->assertEquals(1, $resultBody['attempts']);
 
         $content = $this->makeRequestAndGetContent($testData['request']);
         $resultBody = $content['items'][0];
-        $this->assertEquals(BatchRefundStatus::FAILURE, $resultBody['status']);
+        $this->assertEquals(Status::FAILURE, $resultBody['status']);
         $this->assertEquals(null, $resultBody['amount']);
         $this->assertEquals(2, $resultBody['attempts']);
 
@@ -251,12 +251,12 @@ class RefundTest extends TestCase
         $this->ba->appAuth();
         $content = $this->makeRequestAndGetContent($testData['request']);
         $resultBody = $content['items'][0];
-        $this->assertEquals(BatchRefundStatus::PROCESSED, $resultBody['status']);
+        $this->assertEquals(Status::PROCESSED, $resultBody['status']);
         $this->assertEquals(5000, $resultBody['amount']);
         $this->assertEquals(3, $resultBody['attempts']);
 
         $testData = $this->testData['testRetryRefundFilesWithException'];
-        $testData['request']['url'] = '/payments/batch_refunds/' . substr($refundId, 7) .'/retry';
+        $testData['request']['url'] = '/batches/' . substr($refundId, 6) .'/retry';
 
         $request = $testData['request'];
         $this->runRequestResponseFlow($testData, function() use ($request) {
@@ -290,11 +290,11 @@ class RefundTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $refundId = $content['entity']['id'];
+        $refundId = $content['id'];
 
-        $url = $this->writeToExcelFile($paymentEntry, substr($refundId, 7));
+        $url = $this->writeToExcelFile($paymentEntry, substr($refundId, 6));
 
-        $this->assertEquals(BatchRefundStatus::CREATED, $content['entity']['status']);
+        $this->assertEquals(Status::CREATED, $content['status']);
 
         $testData = $this->testData['testProcessRefundFile'];
 
@@ -304,20 +304,20 @@ class RefundTest extends TestCase
         $content = $this->makeRequestAndGetContent($testData['request']);
 
         $resultBody = $content['items'][0];
-        $this->assertEquals(BatchRefundStatus::FAILURE, $resultBody['status']);
+        $this->assertEquals(Status::FAILURE, $resultBody['status']);
         $this->assertEquals(null, $resultBody['amount']);
         $this->assertEquals(1, $resultBody['failure_count']);
         $this->assertEquals(1, $resultBody['attempts']);
 
         $content = $this->makeRequestAndGetContent($testData['request']);
         $resultBody = $content['items'][0];
-        $this->assertEquals(BatchRefundStatus::FAILURE, $resultBody['status']);
+        $this->assertEquals(Status::FAILURE, $resultBody['status']);
         $this->assertEquals(null, $resultBody['amount']);
         $this->assertEquals(2, $resultBody['attempts']);
 
         $content = $this->makeRequestAndGetContent($testData['request']);
         $resultBody = $content['items'][0];
-        $this->assertEquals(BatchRefundStatus::FAILED, $resultBody['status']);
+        $this->assertEquals(Status::FAILED, $resultBody['status']);
         $this->assertEquals(null, $resultBody['amount']);
         $this->assertEquals(3, $resultBody['attempts']);
     }
@@ -330,7 +330,7 @@ class RefundTest extends TestCase
 
         $excel = $this->createExcelObject($data, $name, $columnFormat);
 
-        $fileMetadata = $excel->store('xlsx', storage_path('files/refund_file_download'), true);
+        $fileMetadata = $excel->store('xlsx', storage_path('files/batch_file_download'), true);
         $fullpath = $fileMetadata['full'];
 
         $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';

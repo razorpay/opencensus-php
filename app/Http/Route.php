@@ -35,11 +35,11 @@ final class Route
         'payment_topup_post'                      => ['post',     'payments/{id}/topup',                      'PaymentCreateController@postTopup'                                 ],
         'payment_redirect_callback'               => ['post',     'payments/{id}/redirect_callback',          'PaymentCreateController@postRedirectCallback'                      ],
         'payment_refund'                          => ['post',     'payments/{id}/refund',                     'PaymentController@postRefund'                                      ],
-        'payment_upload_refund_file'              => ['post',     'payments/batch_refunds/upload_file',       'PaymentController@uploadRefundFile'                                ],
-        'payment_process_refund_file'             => ['post',     'payments/batch_refunds/process_file',      'PaymentController@processRefundFile'                               ],
-        'payment_list_refund_file'                => ['get',      'payments/batch_refunds/list',              'PaymentController@getBatchRefunds'                                 ],
-        'payment_batch_refund_retry'              => ['post',     'payments/batch_refunds/{id}/retry',        'PaymentController@retryBatchRefund'                                ],
-        'payment_batch_refund_download'           => ['post',     'payments/batch_refunds/{id}/download',     'PaymentController@downloadBatchRefund'                             ],
+        'batch_upload_file'                       => ['post',     'batches/upload',                           'BatchController@uploadBatchFile'                                   ],
+        'batch_process_file'                      => ['post',     'batches/process',                          'BatchController@processBatchFiles'                                 ],
+        'batch_list_files'                        => ['get',      'batches',                                  'BatchController@getBatchFiles'                                     ],
+        'batch_retry'                             => ['post',     'batches/{id}/retry',                       'BatchController@retryBatchFile'                                    ],
+        'batch_download_file'                     => ['post',     'batches/{id}/download',                    'BatchController@downloadBatchFile'                                 ],
         'payment_capture'                         => ['post',     'payments/{id}/capture',                    'PaymentController@postCapture'                                     ],
         'payment_verify'                          => ['get',      'payments/{id}/verify',                     'PaymentController@getVerify'                                       ],
         'payment_force_authorize'                 => ['post',     'payments/{id}/force_authorize',            'PaymentController@postForceAuthorize'                              ],
@@ -442,7 +442,7 @@ final class Route
         'credits_edit',
         'credits_delete',
         'refund_gateway_manual',
-        'payment_process_refund_file',
+        'batch_process_file',
         'order_refund_multiple_authorized',
     );
 
@@ -481,10 +481,10 @@ final class Route
         'app_fetch_tokens',
         'credits_fetch_multiple',
         'credits_fetch_by_id',
-        'payment_upload_refund_file',
-        'payment_list_refund_file',
-        'payment_batch_refund_retry',
-        'payment_batch_refund_download'
+        'batch_upload_file',
+        'batch_list_files',
+        'batch_retry',
+        'batch_download_file'
     );
 
     public static $direct = array(
@@ -531,7 +531,7 @@ final class Route
             'emi_generate_excel',
             'es_migrate_entity',
             'setl_post_details_old',
-            'payment_process_refund_file',
+            'batch_process_file',
             'order_refund_multiple_authorized',
         ),
 
