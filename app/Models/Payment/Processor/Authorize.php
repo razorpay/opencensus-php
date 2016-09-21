@@ -1260,14 +1260,6 @@ trait Authorize
 
     protected function runOtpPaymentFlow($gatewayInput, $payment)
     {
-        // OtpResend API is used in freecharge
-        // In most gateways, otpResend is similar to otpGenerate.
-        // TODO Instead of wallet, Check if gateway has a separate OTP_RESEND
-        // URL
-        if (($payment->getOtpCount() > 0) and ($payment['wallet'] === Wallet::FREECHARGE))
-        {
-            return $this->callGatewayOtpResend($gatewayInput, $payment);
-        }
         return $this->callGatewayOtpGenerate($gatewayInput, $payment);
     }
 

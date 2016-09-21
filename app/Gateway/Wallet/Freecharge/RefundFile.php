@@ -4,7 +4,7 @@ namespace RZP\Gateway\Wallet\Freecharge;
 
 use Carbon\Carbon;
 
-use RZP\Gateway\Wallet\Base;
+use RZP\Gateway\Base;
 
 class RefundFile extends Base\RefundFile
 {

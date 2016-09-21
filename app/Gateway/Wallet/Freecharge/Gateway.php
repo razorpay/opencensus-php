@@ -59,7 +59,7 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        throw new Exception\BaseException(
+        throw new Exception\LogicException(
             'It is a Power Wallet, It should not go here');
     }
 
@@ -141,7 +141,7 @@ class Gateway extends Base\Gateway
      */
     public function otpResend(array $input)
     {
-        $this->action($input, Action::OTP_RESEND);
+        parent::otpResend($input);
 
         $this->domainType = Url::LOGIN;
 

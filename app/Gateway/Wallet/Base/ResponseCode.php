@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Wallet\Base;
 
 use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorDescription;
 
 class ResponseCode
 {
@@ -14,9 +15,7 @@ class ResponseCode
         {
             return static::$codes[$code];
         }
-        else
-        {
-            return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
-        }
+
+        return PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED;
     }
 }

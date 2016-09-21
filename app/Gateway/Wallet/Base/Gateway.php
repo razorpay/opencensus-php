@@ -95,4 +95,10 @@ class Gateway extends Base\Gateway
 
         return $phoneBook->format(PhoneBook::DOMESTIC);
     }
+
+    protected function otpResend(array $input)
+    {
+        $this->input = $input;
+        $this->action = Action::OTP_RESEND;
+    }
 }
