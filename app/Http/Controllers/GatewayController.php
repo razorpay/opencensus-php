@@ -190,11 +190,11 @@ class GatewayController extends Controller
      * @param string $gateway
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function postCreateGatewayAbsence($gateway)
+    public function postCreateGatewayAbsence()
     {
         $input = Request::all();
 
-        $data = (new Absence\Service)->create($input, $gateway);
+        $data = (new Absence\Service)->create($input);
 
         return ApiResponse::json($data);
     }
@@ -225,14 +225,16 @@ class GatewayController extends Controller
         return ApiResponse::json($data);
     }
 
+
     /**
-     * Method to find the list of gateways absent given a unix epoch timestamp.
-     * @param integer $timestamp
+     * Method to get absent gateways across multiple search params
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function getAbsentGatewaysForTimestamp($timestamp)
+    public function getAbsentGateways()
     {
-        $data = (new Absence\Service)->findAbsentGatewaysForTimestamp($timestamp);
+        $input = Request::all();
+
+        $data = (new Absence\Service)->findAbsentGateways($input);
 
         return ApiResponse::json($data);
     }
