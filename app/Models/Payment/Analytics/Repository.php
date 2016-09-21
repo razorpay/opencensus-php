@@ -10,6 +10,23 @@ class Repository extends Base\Repository
 
     protected $entity = 'payment_analytics';
 
+    // These are admin allowed params to search on.
+    protected $appFetchParamRules = array(
+        Entity::PAYMENT_ID      => 'sometimes|alpha_num',
+        Entity::TERMINAL_ID     => 'sometimes|alpha_num',
+    );
+
+    public function getRecentMerchantPaymentsForCheckoutId($checkoutId)
+    {
+        $timestamp = time() - Entity::PAYMENT_WINDOW;
+
+        return $this->newQuery()
+                    ->where(Entity::CHECKOUT_ID, '=', $checkoutId)
+                    ->where(Entity::CREATED_AT, '>=', $timestamp)
+                    ->latest()
+                    ->get();
+    }
+
     public function findForTerminal($id)
     {
         $repo = $this->repo;

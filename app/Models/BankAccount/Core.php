@@ -1,10 +1,10 @@
 <?php
 
-namespace RZP\Models\Merchant\BankAccount;
+namespace RZP\Models\BankAccount;
 
 use RZP\Constants\Mode;
 use RZP\Models\Base;
-use RZP\Models\Merchant\BankAccount;
+use RZP\Models\BankAccount;
 use Mail;
 use RZP\Trace\TraceCode;
 
@@ -34,6 +34,34 @@ class Core extends Base\Core
         }
 
         return $this->changeBankAccount($input, $merchant, $oldBankAccount);
+    }
+
+    public function addOrUpdateBankAccountForCustomer($input, $customer)
+    {
+        $currentAccounts = $this->repo->bank_account->getBankAccountsForCustomer($customer);
+
+        $newBankAccount = $this->buildBankAccount($input, $customer->merchant, $this->mode);
+
+        $newBankAccount->associateCustomer($customer);
+
+        foreach ($currentAccounts as $existingAccount)
+        {
+            if ($newBankAccount->equals($existingAccount))
+            {
+                $this->trace->info(
+                    TraceCode::MISC_TRACE_CODE,
+                    [
+                        'new' => $newBankAccount->toArray(),
+                        'old' => $existingAccount->toArray(),
+                    ]);
+
+                return $existingAccount;
+            }
+        }
+
+        $this->repo->saveOrFail($newBankAccount);
+
+        return $newBankAccount;
     }
 
     /**
@@ -88,6 +116,8 @@ class Core extends Base\Core
     protected function createBankAccount($input, $merchant, $mode)
     {
         $ba = $this->buildBankAccount($input, $merchant, $mode);
+
+        $ba->associateMerchant($merchant);
 
         $this->repo->saveOrFail($ba);
 

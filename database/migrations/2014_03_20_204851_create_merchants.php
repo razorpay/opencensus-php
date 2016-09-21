@@ -69,12 +69,10 @@ class CreateMerchants extends Migration
                   ->default(FeeBearer::getValueForBearerString(FeeBearer::PLATFORM));
 
             $table->char(Merchant::BRAND_COLOR, 6)
-                  ->nullable()
-                  ->default(null);
+                  ->nullable();
 
             $table->text(Merchant::LOGO_URL)
-                  ->nullable()
-                  ->default(null);
+                  ->nullable();
 
             $table->tinyInteger(Merchant::RISK_RATING);
 
@@ -84,7 +82,12 @@ class CreateMerchants extends Migration
             $table->integer(Merchant::MAX_PAYMENT_AMOUNT)
                   ->nullable();
 
+            // Columns for Method and Gateway Based Categories
+            $table->string(Merchant::CATEGORY2)
+                  ->nullable();
+
             $table->integer(Merchant::CREATED_AT);
+
             $table->integer(Merchant::UPDATED_AT);
 
             $table->index(Merchant::ACTIVATED_AT);

@@ -42,7 +42,7 @@ class Gateway extends Base\Gateway
 
         $this->verifySecureHash($input);
 
-        $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
+        $payment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['gateway']['ORDERID'], Action::AUTHORIZE);
 
         $values = $this->lowerArrayKeys($input['gateway']);
@@ -58,7 +58,7 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
+        $payment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
 
         $content = array(

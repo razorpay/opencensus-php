@@ -2,10 +2,11 @@
 
 namespace RZP\Models\Settlement\Kotak;
 
+use App;
 use Carbon\Carbon;
 use RZP\Exception;
 use Excel;
-use RZP\Trace;
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
@@ -23,14 +24,21 @@ class ReconciliationGenerator
     protected static $fileToWriteName = 'Kotak_Settlement_Reconciliation';
 
     protected static $extraHeadings = array(
-        'Success',
-        'UTR',
-        'Failure Reason',
-        'Date');
+        'Status Of transaction',
+        'UTR number',
+        'Reject Reason',
+        'DateTime',
+        'Int.ref no.',
+        'Dummy',
+    );
 
-    public function _construct()
+    public function __construct()
     {
-        $this->mode = \App::getFacadeRoot()['rzp.mode'];
+        $this->app = App::getFacadeRoot();
+
+        $this->mode = $this->app['rzp.mode'];
+
+        $this->trace = $this->app['trace'];
 
         if ($this->mode !== 'test')
         {
@@ -53,7 +61,7 @@ class ReconciliationGenerator
 
         $file = $this->writeToTextFile($txt);
 
-        Trace::info(TraceCode::SETTLEMENT_KOTAK_RECONCILE_FILE_GENERATED);
+        $this->trace->info(TraceCode::SETTLEMENT_KOTAK_RECONCILE_FILE_GENERATED);
 
         return $file;
     }
@@ -70,11 +78,19 @@ class ReconciliationGenerator
         foreach ($data as &$row)
         {
             $utr = random_integer(10);
+
             $newFields = array(
-                'Success'           => 'P',
-                'UTR'               => 'KKBKH1' . $utr,
-                'Failure Reason'    => '',
-                'Date'              => $date);
+                'Status Of transaction' => 'P',
+                'UTR number'            => 'KKBKH1' . $utr,
+                'Reject Reason'         => '',
+                'DateTime'              => $date,
+                'Int.ref no.'           => 'kotak',
+                'Dummy'                 => ''
+            );
+
+            $date = Carbon::createFromFormat('d/m/Y', $row['Payment_Date']);
+
+            $row['Payment_Date'] = $date->format('d-M-y');
 
             $row = array_merge($row, $newFields);
         }

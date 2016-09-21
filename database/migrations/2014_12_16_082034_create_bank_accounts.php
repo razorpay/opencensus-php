@@ -5,7 +5,7 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
-use RZP\Models\Merchant\BankAccount\Entity as BankAccount;
+use RZP\Models\BankAccount\Entity as BankAccount;
 use RZP\Models\Settlement\Entity as Settlement;
 
 class CreateBankAccounts extends Migration
@@ -24,6 +24,10 @@ class CreateBankAccounts extends Migration
                   ->primary();
 
             $table->char(BankAccount::MERCHANT_ID, BankAccount::ID_LENGTH);
+
+            $table->char(BankAccount::ENTITY_ID, BankAccount::ID_LENGTH);
+
+            $table->char(BankAccount::TYPE, 8);
 
             $table->char(BankAccount::IFSC_CODE, BankAccount::IFSC_CODE_LENGTH);
 
@@ -56,6 +60,10 @@ class CreateBankAccounts extends Migration
             $table->integer(BankAccount::DELETED_AT)
                   ->nullable();
 
+            $table->index(BankAccount::ENTITY_ID);
+
+            $table->index(BankAccount::TYPE);
+
             $table->foreign(BankAccount::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)
@@ -65,7 +73,7 @@ class CreateBankAccounts extends Migration
         Schema::table(Table::SETTLEMENT, function($table)
         {
             $table->foreign(Settlement::BANK_ACCOUNT_ID)
-                  ->references(Merchant\BankAccount\Entity::ID)
+                  ->references(BankAccount::ID)
                   ->on(Table::BANK_ACCOUNT)
                   ->on_delete('restrict');
         });

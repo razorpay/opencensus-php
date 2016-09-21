@@ -6,6 +6,7 @@ use Crypt;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Models\Terminal\Recurring;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Entity extends Base\PublicEntity
@@ -29,15 +30,17 @@ class Entity extends Base\PublicEntity
     const CARD                          = 'card';
     const NETBANKING                    = 'netbanking';
     const EMI                           = 'emi';
+    const UPI                           = 'upi';
     const EMI_DURATION                  = 'emi_duration';
+    const RECURRING                     = 'recurring';
 
     const SHARED                        = 'shared';
+
+    const NETWORK_CATEGORY              = 'network_category';
 
     const DELETED_AT                    = 'deleted_at';
 
     const MAX_TERMINALS_COUNT           = 25;
-
-    const STATUS                        = 'status';
 
     //const PRIORITY                      = 'priority';
 
@@ -46,6 +49,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY,
         self::CARD,
         self::CATEGORY,
+        self::UPI,
         self::EMI,
         self::EMI_DURATION,
         self::SHARED,
@@ -66,6 +70,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY,
         self::CARD,
         self::CATEGORY,
+        self::UPI,
         self::EMI,
         self::EMI_DURATION,
         self::SHARED,
@@ -111,6 +116,16 @@ class Entity extends Base\PublicEntity
         self::EMI                       => false,
         self::EMI_DURATION              => null,
         self::GATEWAY_ACQUIRER          => null,
+        self::RECURRING                 => Recurring::NON_RECURRING,
+    );
+
+    protected $casts = array(
+        self::CARD                      => 'boolean',
+        self::EMI                       => 'boolean',
+        self::NETBANKING                => 'boolean',
+        self::RECURRING                 => 'int',
+        self::SHARED                    => 'boolean',
+        self::UPI                       => 'boolean',
     );
 
     public function generateMethod($input)
@@ -164,11 +179,6 @@ class Entity extends Base\PublicEntity
         $usedCount = $this->getUsedCount() + 1;
 
         $this->setAttribute(self::USED_COUNT, $usedCount);
-    }
-
-    public function getMerchantId()
-    {
-        return $this->attributes[self::MERCHANT_ID];
     }
 
     public function getGatewayMerchantId()
@@ -269,6 +279,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SHARED);
     }
 
+    public function getRecurring()
+    {
+        return $this->getAttribute(self::RECURRING);
+    }
+
     protected function getUsedCountAttribute()
     {
         return (int) $this->attributes[self::USED_COUNT];
@@ -303,21 +318,6 @@ class Entity extends Base\PublicEntity
         return $emiDuration;
     }
 
-    protected function getCardAttribute()
-    {
-        return (bool) $this->attributes[self::CARD];
-    }
-
-    protected function getNetbankingAttribute()
-    {
-        return (bool) $this->attributes[self::NETBANKING];
-    }
-
-    protected function getSharedAttribute()
-    {
-        return (bool) $this->attributes[self::SHARED];
-    }
-
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');
@@ -340,6 +340,11 @@ class Entity extends Base\PublicEntity
     public function isNetbankingEnabled()
     {
         return $this->getAttribute(self::NETBANKING);
+    }
+
+    public function isUpiTerminal()
+    {
+        return (substr($this->gateway, 0, 3) === 'upi');
     }
 
     public function isEmiEnabled()
@@ -396,5 +401,15 @@ class Entity extends Base\PublicEntity
         }
 
         return false;
+    }
+
+    public function getNetworkCategory()
+    {
+        return $this->getAttribute(self::NETWORK_CATEGORY);
+    }
+
+    public function setNetworkCategory($category)
+    {
+        $this->setAttribute(self::NETWORK_CATEGORY, $category);
     }
 }

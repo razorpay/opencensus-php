@@ -243,6 +243,19 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::EXPIRY_YEAR);
     }
 
+    public function getTypeElseDefault()
+    {
+        // Fee based on the method type
+        $cardType = $this->getType();
+
+        if ($cardType === Card\Type::UNKNOWN)
+        {
+            $cardType = Card\Type::DEBIT;
+        }
+
+        return $cardType;
+    }
+
     public function setCountry($country)
     {
         $this->setAttribute(self::COUNTRY, $country);
@@ -372,6 +385,30 @@ class Entity extends Base\PublicEntity
         $network = $this->getNetwork();
 
         return ($network === Card\Network::$fullName[Card\Network::AMEX]);
+    }
+
+    public function isRuPay()
+    {
+        $network = $this->getNetwork();
+
+        return ($network === Card\Network::$fullName[Card\Network::RUPAY]);
+    }
+
+    public function isBlocked()
+    {
+        $iin = $this->getIin();
+
+        $last4 = $this->getLast4();
+
+        $blackList = Card\BlackList::BLOCKED_IIN_LAST4;
+
+        if ((isset($blackList[$iin]) === true) and
+            (in_array($last4, $blackList[$iin])))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function getTokenRelevantAttributes()

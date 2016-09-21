@@ -10,9 +10,16 @@ class MerchantFluid extends Base
 
     protected $repo = null;
 
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->repo = $this->getRepo();
+    }
+
     public function getMerchant($id = '10000000000000')
     {
-        $merchant = $this->getRepo()->findOrFail($id);
+        $merchant = $this->repo->findOrFail($id);
 
         $this->setMerchant($merchant);
 
@@ -56,7 +63,7 @@ class MerchantFluid extends Base
     {
         $this->merchant->setPricingPlan($planId);
 
-        $this->getRepo()->saveOrFail($merchant);
+        $this->repo->saveOrFail($merchant);
 
         return $this;
     }
@@ -98,7 +105,7 @@ class MerchantFluid extends Base
     {
         $merchant->activated = 1;
 
-        $this->getRepo()->saveOrFail($merchant);
+        $this->repo->saveOrFail($merchant);
 
         return $this;
     }

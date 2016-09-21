@@ -47,9 +47,9 @@ class Gateway extends Base\Gateway
 
     public function capture(array $input)
     {
-        parent::callback($input);
+        parent::capture($input);
 
-        $payment = $this->getRepo()->findByPaymentIdAndAction(
+        $payment = $this->repo->findByPaymentIdAndAction(
                         $input['payment']['id'], Action::AUTHORIZE);
 
         // We should ensure once that AuthStatus is 0300 and
@@ -76,7 +76,7 @@ class Gateway extends Base\Gateway
                     '');
         }
 
-        $payment = $this->getRepo()->findByPaymentIdAndAction(
+        $payment = $this->repo->findByPaymentIdAndAction(
                         $content['CustomerID'], Action::AUTHORIZE);
 
         $content['received'] = 1;
@@ -99,7 +99,7 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        $payment = $this->getRepo()->findByPaymentIdAndAction(
+        $payment = $this->repo->findByPaymentIdAndAction(
                                 $input['payment']['id'], Action::AUTHORIZE);
 
         $content = $this->getPaymentRefundRequestContent($payment, $input);
@@ -463,7 +463,7 @@ class Gateway extends Base\Gateway
         $content = array_combine($fields, $content);
 
         $this->trace->info(
-            TraceCode::GATEWAY_CHECKSUM_VERIFY,
+            TraceCode::GATEWAY_PAYMENT_CALLBACK,
             [$content]);
 
         $this->verifySecureHash($content);
@@ -538,10 +538,14 @@ class Gateway extends Base\Gateway
         if ($generatedHash !== $hash)
         {
             $this->trace->info(
-                TraceCode::GATEWAY_CHECKSUM_VERIFY,
-                [$content, $hash, $generatedHash]);
+                TraceCode::GATEWAY_CHECKSUM_VERIFY_FAILED,
+                [
+                    'content'           => $content,
+                    'hash'              => $hash,
+                    'generated_hash'    => $generatedHash
+                ]);
 
-            throw new Exception\BadRequestValidationFailureException(
+            throw new Exception\RuntimeException(
                 'Failed checksum verification');
         }
     }
@@ -591,7 +595,7 @@ class Gateway extends Base\Gateway
         $msg = $this->getMessageStringWithHash($content);
 
         $this->trace->info(
-            TraceCode::GATEWAY_CHECKSUM_VERIFY,
+            TraceCode::GATEWAY_CHECKSUM_VERIFY_REQUEST,
             [$msg]);
 
         $request = array(

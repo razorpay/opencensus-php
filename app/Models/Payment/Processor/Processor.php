@@ -4,15 +4,15 @@ namespace RZP\Models\Payment\Processor;
 
 use App;
 use BasicAuth;
-use Request;
 
 use RZP\Constants\Mode;
 use RZP\Dashboard\Dashboard;
 use RZP\Models\Merchant;
-use RZP\Models\Merchant\BankAccount;
+use RZP\Models\BankAccount;
 use RZP\Models\Terminal;
 use RZP\Models\Payment;
 use RZP\Models\Order;
+use RZP\Models\Payment\Status;
 use RZP\Models\Pricing;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -29,6 +29,7 @@ class Processor
     use Verify;
     use OtpResend;
     use Topup;
+    use FraudDetector;
 
     /**
      * Callback urls can be hit multiple times by customers.
@@ -40,15 +41,36 @@ class Processor
     const CALLBACK_PROCESS_AGAIN_DURATION = 20;
 
     /**
+     * Number of days after which authorized payments
+     * are auto-refunded
+     */
+    const AUTO_REFUND_TIME_PERIOD = 5;
+
+    /**
      * If payment fails on gateway then we may retry it with a different terminal/gateway.
      */
-    const MAX_RETRY_ATTEMPTS = 3;
+    const MAX_RETRY_ATTEMPTS = 5;
 
     /**
      * If a payment gets converted to authorized from failed after 15 minutes of creation of payment,
      * we do not send a notification to the customer.
      */
     const FAILED_TO_AUTHORIZED_NOTIFY_DURATION = 900;
+
+    /**
+     * Payment can be cancelled in multiple ways, one of which being
+     * by closing the payment pop-up that.
+     * However, we only allow payment to be cancelled within a certain duration.
+     * A payment created today can only be cancelled within few minutes and
+     * not on next day.
+     */
+    const PAYMENT_CANCEL_TIME_DURATION = 1800;  // 30 min * 60 sec
+
+    /**
+     * If a payment is async, it can receive a callback for 5 mins after which it is converted to a
+     * failed payment
+     */
+    const ASYNC_PAYMENT_TIMEOUT = 300;
 
     protected $merchant;
     protected $trace;
@@ -59,6 +81,7 @@ class Processor
     protected $orderRepo;
     protected $paymentRepo;
     protected $app;
+    protected $mutex;
     protected $request;
     protected $methods;
     protected $refund;
@@ -83,6 +106,8 @@ class Processor
         $this->orderRepo = $this->repo->order;
 
         $this->request = $this->app['request'];
+
+        $this->mutex = $this->app['api.mutex'];
 
         // Only used in hdfc verify refund flow
         $this->verifyRefundStatus = null;
@@ -179,8 +204,6 @@ class Processor
         }
 
         $this->verifySignature($input, $payment);
-
-        return true;
     }
 
     protected function verifySignature($input, $payment)
@@ -191,9 +214,7 @@ class Processor
             'merchant_order_id' => $payment->getNotes()['merchant_order_id'],
         );
 
-        $str = implode('|', $data);
-
-        $signature = $this->getSignature($str);
+        $signature = $this->getSignature($data);
 
         // use hash_equals to prevent timing attacks
         if (! hash_equals($signature, $input['signature']))
@@ -205,8 +226,12 @@ class Processor
         return true;
     }
 
-    protected function getSignature($str)
+    protected function getSignature(array $data)
     {
+        ksort($data);
+
+        $str = implode('|', $data);
+
         return $this->app['basicauth']->sign($str);
     }
 
@@ -243,66 +268,50 @@ class Processor
     /**
      * Cancels a previously created payment
      *
-     * @param  string   $id      Id of payment to be captured
-     * @param  array    $input
-     *
-     * @return $status Payment\Status
+     * @param  string $id Id of payment to be captured
+     * @return  $status Payment\Status
+     * @throws Exception\BadRequestException
      */
     public function cancel($id, $input)
     {
-        return $this->repo->transaction(function() use ($id, $input)
-        {
-            $status = null;
+        $status = null;
 
-            $payment = $this->retrieve($id);
-
-            $createdAt = $payment->getCreatedAt();
-
-            $diff = time() - $createdAt;
-
-            if ($diff > 30 * 60)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Payment created long back and cannot be cancelled now');
-            }
-
-            if (($payment->isAuthorized()) or
-                ($payment->isCaptured()))
-            {
-                return Payment\Status::AUTHORIZED;
-            }
-
-            $this->lockForUpdateAndReload($payment);
-
-            return $this->cancelPayment($payment, $input);
-        });
-    }
-
-    public function redirect($id)
-    {
         $payment = $this->retrieve($id);
 
+        $diff = time() - $payment->getCreatedAt();
+
+        if ($diff > self::PAYMENT_CANCEL_TIME_DURATION)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED);
+        }
+
+        // If payment is not in created state, then that means
+        // it's already been processed. It's possible that payment
+        // may have succeeded. In such cases, we need to send back
+        // exact same response as we would have if the payment succeeded
         if ($payment->isCreated() === false)
         {
             return $this->processPaymentCallbackSecondTime($payment);
         }
 
-        throw new Exception\RuntimeException(
-                'Should not have been hit.');
+        $errorCode = $this->repo->transaction(function() use ($payment, $input)
+        {
+            $this->lockForUpdateAndReload($payment);
+
+            $errorCode = $this->cancelPayment($payment, $input);
+
+            return $errorCode;
+        });
+
+        throw new Exception\BadRequestException($errorCode);
     }
 
-    public function callGatewayFunctionCaptureViaQueue($data, $payment)
-    {
-        $this->payment = $payment;
-
-        $this->callGatewayFunction(Payment\Action::CAPTURE, $data);
-    }
-
-    protected function cancelPayment($payment)
+    protected function cancelPayment($payment, $input)
     {
         $errorCode = null;
 
-        (new Payment\Validator)->cancelValidate($payment);
+        $payment->getValidator()->cancelValidate($payment);
 
         if ((isset($input['platform'])) and
             ($input['platform'] === 'android_sdk'))
@@ -318,7 +327,82 @@ class Processor
 
         $this->updatePaymentFailed($e->getError(), TraceCode::PAYMENT_CANCELLED);
 
-        return Payment\Status::FAILED;
+        return $errorCode;
+    }
+
+    /**
+     * Returns the proper async response for the status checks
+     * made by Checkout
+     * @param  string $id payment id
+     * @return array
+     */
+    public function getAsyncResponse($id)
+    {
+        $payment = $this->retrieve($id);
+
+        $gateway = $payment->getGateway();
+
+        // If the gateway is not async or the payment is failed
+        // we just give a generic error to not leak information
+        if ((Payment\Gateway::supportsAsync($gateway) === false) or
+            ($payment->isFailed() === true))
+        {
+            // Throw exception of invalid id
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_ID);
+        }
+
+        // Throw payment failed exception if async payment timeout (5mins)
+        // has been exceeded
+        if ($payment->justCreated() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+        }
+
+        if ($payment->isCreated() === true)
+        {
+            return [
+                Payment\Entity::STATUS => Payment\Status::CREATED
+            ];
+        }
+
+        // We don't want to reach this in case of captured|refunded payments
+        assert($payment->isAuthorized() === true);
+
+        return $this->processAsyncAuthorizeResponse($payment);
+    }
+
+    /**
+     * Returns the proper response to checkout
+     * in case of the payment is authorized
+     * @param  Payment\Entity $payment
+     * @return array
+     */
+    protected function processAsyncAuthorizeResponse($payment)
+    {
+        $returnData = [
+            'razorpay_payment_id' => $payment->getPublicId()
+        ];
+
+        if ($payment->getAutoCaptured() === true)
+        {
+            $this->fillReturnDataForAutoCaptureOrders($payment, $returnData);
+        }
+
+        if ($payment->getCallbackUrl())
+        {
+            $this->fillReturnRequestDataForMerchant($payment, $returnData);
+        }
+
+        return $returnData;
+    }
+
+    public function callGatewayFunctionCaptureViaQueue($data, $payment)
+    {
+        $this->payment = $payment;
+
+        $this->callGatewayFunction(Payment\Action::CAPTURE, $data);
     }
 
     protected function tracePaymentInfo($traceCode, $level = Trace::INFO)
@@ -337,6 +421,19 @@ class Processor
         $internalCode = $error->getInternalErrorCode();
 
         $payment = $this->payment;
+
+        $status = $payment->getStatus();
+
+        if (($status !== Status::CREATED) and ($status !== Status::AUTHORIZED))
+        {
+            throw new Exception\LogicException(
+                'Payment not in the appropriate status to be marked as failed.',
+                null,
+                [
+                    'payment_id'    => $payment->getId(),
+                    'status'        => $status
+                ]);
+        }
 
         $payment->setStatus(Payment\Status::FAILED);
 
@@ -390,8 +487,10 @@ class Processor
         $gateway = $this->payment->getGateway();
 
         $gatewayData['terminal'] = $terminal;
+
         $gatewayData['merchant'] = $this->payment->merchant;
 
+        // TODO: Shouldn't be KOTAK specific
         if ($gateway === Payment\Gateway::KOTAK)
         {
             $gatewayData['bank_account'] = $this->getMerchantBankAccount($terminal->merchant);
@@ -565,8 +664,7 @@ class Processor
 
     protected function retrieveToken($input)
     {
-        $token = (new Customer\Token\Repository)
-                        ->getByWalletTerminalAndCustomerId(
+        $token = $this->repo->token->getByWalletTerminalAndCustomerId(
                             $input['payment']['wallet'],
                             $input['payment']['terminal_id'],
                             $input['customer']->getId());
@@ -579,7 +677,7 @@ class Processor
         Payment\Entity::verifyIdAndStripSign($id);
 
         $this->payment = $this->repo->payment->findByIdAndMerchantId(
-                                                $id, $this->merchant->getKey());
+                                                $id, $this->merchant->getId());
 
         return $this->payment;
     }
@@ -662,6 +760,43 @@ class Processor
         $merchant->setRelation('bankAccount', $ba);
 
         return $ba;
+    }
+
+    protected function shouldAutoCapture($payment)
+    {
+        // If payment is not authorized or if it's late authorized,
+        // do not auto capture it, irrespective of it being a signed
+        // payment or marked for auto capture.
+        if (($payment->isAuthorized() === false) or
+            ($payment->isLateAuthorized() === true))
+        {
+            return false;
+        }
+
+        // If payment order was marked as auto capture
+        if (($payment->order !== null) and
+            ($payment->order->getPaymentCapture() === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function acquireMutexOnPayment($payment)
+    {
+        $resource = $payment->getId();
+
+        if ($this->mutex->acquire($resource) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
+        }
+    }
+
+    protected function releaseMutexOnPayment($payment)
+    {
+        $this->mutex->release($payment->getId());
     }
 
     protected function createOrUpdateToken($input, $data)

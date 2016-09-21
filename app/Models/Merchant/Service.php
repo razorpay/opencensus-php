@@ -6,7 +6,9 @@ use RZP\Constants\Mode;
 use Carbon\Carbon;
 use Mail;
 
+use RZP\Base\RuntimeManager;
 use RZP\Models\Base;
+use RZP\Models\BankAccount;
 use RZP\Models\Merchant;
 use RZP\Models\Key;
 use RZP\Models\Payment;
@@ -343,7 +345,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        $ba = (new BankAccount\Repository)->getBankAccount($merchant);
+        $ba = $this->repo->bank_account->getBankAccount($merchant);
 
         if ($ba === null)
         {
@@ -356,7 +358,7 @@ class Service extends Base\Service
 
     public function getOwnBankAccount()
     {
-        $ba = (new BankAccount\Repository)->getBankAccount($this->merchant);
+        $ba = $this->repo->bank_account->getBankAccount($this->merchant);
 
         if ($ba === null)
         {
@@ -365,41 +367,6 @@ class Service extends Base\Service
         }
 
         return $ba->toArrayPublic();
-    }
-
-    public function generateBankAccountIds()
-    {
-        $bankAccountRepo = new BankAccount\Repository();
-
-        $bankAccounts = $bankAccountRepo->bankAccountsWhereIdNullOrBlank();
-
-        $fetched = $bankAccounts->count();
-
-        $bankAccountRepo->beginTransaction();
-
-        $count = 0;
-
-        try
-        {
-            foreach ($bankAccounts as $bankAcc)
-            {
-                $bankAcc->generateIdFromCreatedAt();
-                $bankAccountRepo->save($bankAcc);
-                $count++;
-            }
-
-            $bankAccountRepo->commit();
-        }
-        catch (Exception $e)
-        {
-            $bankAccountRepo->rollback();
-            throw new Exception\RuntimeException(
-                        'Failed generating BankAccount id',
-                        $e->getTrace());
-        }
-
-        return ['fetched' => $fetched, 'processed' => $count];
-
     }
 
     public function generateTestBankAccounts()
@@ -473,7 +440,8 @@ class Service extends Base\Service
             'card'          => true,
             'netbanking'    => [],
             'wallet'        => [],
-            'emi'           => false
+            'emi'           => false,
+            'upi'           => false,
         );
 
         $methods = (new Methods\Core)->getMethods($this->merchant);
@@ -488,6 +456,7 @@ class Service extends Base\Service
             }
             $data['wallet'] = $methods->getEnabledWallets();
             $data['emi'] = $methods->isEmiEnabled();
+            $data['upi'] = $methods->isUpiEnabled();
         }
 
         if ($this->mode === Mode::TEST)
@@ -623,8 +592,14 @@ class Service extends Base\Service
      */
     public function sendDailyReportForAllMerchants()
     {
-        ini_set('memory_limit', '1024M');
-        set_time_limit(300);
+        RuntimeManager::setMemoryLimit('1024M');
+        RuntimeManager::setTimeLimit(300);
+
+        // Trace to indicate start of mailing
+        $this->trace->info(
+            TraceCode::SETTLEMENT_DAILY_REPORT_MAILING,
+            array()
+        );
 
         $merchants = $this->repo->merchant->fetchAllLiveMerchants()
                                             ->select(Entity::ID)
@@ -696,8 +671,8 @@ class Service extends Base\Service
 
     public function notifyMerchantsHoliday($input)
     {
-        ini_set('memory_limit', '1024M');
-        set_time_limit(300);
+        RuntimeManager::setMemoryLimit('1024M');
+        RuntimeManager::setTimeLimit(300);
 
         $this->trace->info(TraceCode::MERCHANT_NOTIFY_HOLIDAY);
 

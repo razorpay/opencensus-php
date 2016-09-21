@@ -12,13 +12,17 @@ use RZP\Models\Payment\Processor\Wallet;
 
 class Validator extends Base\Validator
 {
+
+    const PHONEPE_VPA = 'ybl';
+
     protected static $createRules = array(
-        'amount'                  =>  'required|integer|max:50000000',
+        'amount'                  =>  'required|integer',
         'currency'                =>  'required|size:3',
-        'method'                  =>  'in:card,netbanking,wallet,emi',
+        'method'                  =>  'custom',
+        'vpa'                     =>  'required_if:method,upi|max:50|custom',
         'card'                    =>  'sometimes',
         'bank'                    =>  'required_if:method,netbanking',
-        'wallet'                  =>  'sometimes',
+        'wallet'                  =>  'required_if:method,wallet|custom',
         'emi_duration'            =>  'required_if:method,emi|integer|in:3,6,9,12,18,24',
         'description'             =>  'sometimes',
         'email'                   =>  'required|email',
@@ -52,29 +56,39 @@ class Validator extends Base\Validator
         'currency',
         'description',
         'fee',
-        'contact',
-        'wallet');
+        'contact');
 
-    protected function validateWallet($input)
+    protected function validateMethod($attribute, $value)
     {
-        if ($input['method'] !== Payment\Method::WALLET)
+       Method::validateMethod($value);
+    }
+
+    protected function validateVpa($attribute, $value)
+    {
+        $matches = null;
+        preg_match('/^(\w.+)@([a-z]+)$/', $value, $matches);
+
+        if ((count($matches) !== 3))
         {
-            return true;
+            // Invalid VPA
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA);
         }
 
-        if (isset($input['wallet']) === false)
+        if ($matches[2] === self::PHONEPE_VPA)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_PROVIDED);
+                ErrorCode::BAD_REQUEST_PAYMENT_UPI_APP_NOT_SUPPORTED);
         }
+    }
 
-        if (Wallet::exists($input['wallet']) === false)
+    protected function validateWallet($attribute, $value)
+    {
+        if (Wallet::exists($value) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_SUPPORTED);
         }
-
-        return true;
     }
 
     protected function validateCardKey($input)
@@ -110,7 +124,16 @@ class Validator extends Base\Validator
                 'amount');
         }
 
-        if (($input['method'] === Payment\Method::EMI) and ($amount < 300000))
+        if (($input['method'] === Payment\Method::WALLET) and
+            ($input['wallet'] === Wallet::AIRTELMONEY) and
+            ($amount < 1000))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_10_MIN_AMOUNT,
+                'amount');
+        }
+
+        if (($input['method'] === Payment\Method::EMI) and ($amount < 200000))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT_FOR_EMI,
@@ -122,7 +145,8 @@ class Validator extends Base\Validator
         if ($amount > $maxAmountAllowed)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Amount exceeds maximum amount allowed.');
+                'Amount exceeds maximum amount allowed.',
+                'amount');
         }
     }
 
@@ -250,15 +274,13 @@ class Validator extends Base\Validator
         }
     }
 
-    public function captureValidate($payment, $input)
+    public function captureValidate($payment, $amount)
     {
         $this->failIfCaptured($payment);
 
         $this->failIfNotAuthorized($payment);
 
-        $this->validateInput('capture', $input);
-
-        $this->captureAmountValidate($payment, $input);
+        $this->captureAmountValidate($payment, $amount);
     }
 
     public function cancelValidate($payment)
@@ -266,17 +288,16 @@ class Validator extends Base\Validator
         $this->failIfNotCreated($payment);
     }
 
-    public function captureAmountValidate($payment, $input)
+    public function captureAmountValidate($payment, $amount)
     {
-        $amount = (int) $input['amount'];
+        $amount = (int) $amount;
 
         if ($amount !== $payment->getAmount())
         {
             $e = new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_AMOUNT_NOT_EQUAL_TO_AUTH,
-                Payment\Entity::AMOUNT);
-
-            $e->setData(['amount' => $input['amount']]);
+                Payment\Entity::AMOUNT,
+                ['amount' => $amount]);
 
             throw $e;
         }
@@ -309,43 +330,6 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_ONLY_AUTHORIZED);
-        }
-    }
-
-    // protected function processValidationFailure($messages, $operation, $input)
-    // {
-    //     $bag = $messages;
-
-    //     $this->checkValidationFailureEmail($bag);
-
-    //     $this->checkValidationFailureContact($bag);
-
-    //     parent::processValidationFailure($messages, $operation, $input);
-    // }
-
-    protected function checkValidationFailureEmail($bag)
-    {
-        if ($bag->has(Entity::EMAIL))
-        {
-            $msg = $bag->first(Entity::EMAIL);
-
-            throw new Exception\FieldErrorException(
-                $msg,
-                ErrorCode::FIELD_ERROR_INVALID_EMAIL,
-                Entity::EMAIL);
-        }
-    }
-
-    protected function checkValidationFailureContact($bag)
-    {
-        if ($bag->has(Entity::CONTACT))
-        {
-            $msg = $bag->first(Entity::CONTACT);
-
-            throw new Exception\FieldErrorException(
-                $msg,
-                ErrorCode::FIELD_ERROR_INVALID_CONTACT,
-                Entity::CONTACT);
         }
     }
 }

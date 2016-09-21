@@ -20,6 +20,12 @@ class Gateway
     const TIMEOUT = 30;
 
     /**
+     * Default payment timeout duration in mins.
+     * @var  integer
+     */
+    const PAYMENT_TTL = 20;
+
+    /**
      * Default OTP attempts limit
      * @var integer
      */
@@ -226,7 +232,7 @@ class Gateway
             return $row['payment']['id'];
         }, $input['data']);
 
-        $payments = $this->getRepo()->fetchByPaymentIdsAndAction(
+        $payments = $this->repo->fetchByPaymentIdsAndAction(
                                 $paymentIds, Action::AUTHORIZE);
 
         $payments = $payments->getDictionaryByAttribute(Entity::PAYMENT_ID);
@@ -342,6 +348,11 @@ class Gateway
         return $verify->getDataToTrace();
     }
 
+    public function preProcessS2SResponse($input)
+    {
+        return $input;
+    }
+
     protected function shouldReturnIfPaymentNullInVerifyFlow($verify)
     {
         if (($verify->input['payment']['status'] === 'failed') or
@@ -366,7 +377,7 @@ class Gateway
 
     protected function getPaymentToVerify($input, $verify)
     {
-        $payment = $this->getRepo()->findByPaymentIdAndAction(
+        $payment = $this->repo->findByPaymentIdAndAction(
                     $input['payment']['id'], Action::AUTHORIZE);
 
         $verify->payment = $payment;
@@ -444,11 +455,6 @@ class Gateway
         $class = $this->getGatewayNamespace() . '\Entity';
 
         return new $class;
-    }
-
-    protected function getRepo()
-    {
-        return $this->getRepository();
     }
 
     protected function getStringToHash($content, $glue = '')
@@ -622,5 +628,45 @@ class Gateway
         $gateway = $this->gateway;
 
         return $this->app['repo']->$gateway;
+    }
+
+    protected function getMappedAttributes($attributes)
+    {
+        $attr = [];
+
+        $map = $this->map;
+
+        foreach ($attributes as $key => $value)
+        {
+            if (isset($map[$key]))
+            {
+                $newKey = $map[$key];
+                $attr[$newKey] = $value;
+            }
+        }
+
+        return $attr;
+    }
+
+    protected function xmlToArray($xml)
+    {
+        $e = null;
+        $res = null;
+
+        try
+        {
+            $res = simplexml_load_string($xml);
+
+            return (array) $res;
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e);
+
+            throw new Exception\RuntimeException(
+                'Failed to convert xml to array',
+                ['xml' => $xml],
+                $e);
+        }
     }
 }

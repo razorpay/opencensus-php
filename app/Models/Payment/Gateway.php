@@ -13,28 +13,29 @@ use RZP\Models\Payment\Processor\Netbanking;
 
 class Gateway
 {
-    const AMEX              = 'amex';
-    const ATOM              = 'atom';
-    const AXIS_GENIUS       = 'axis_genius';
-    const AXIS_MIGS         = 'axis_migs';
-    const BILLDESK          = 'billdesk';
-    const EBS               = 'ebs';
-    const HDFC              = 'hdfc';
-    const KOTAK             = 'kotak';
-    const AXIS              = 'axis';
-    const MOBIKWIK          = 'mobikwik';
-    const PAYTM             = 'paytm';
-    const SBIEPAY           = 'sbiepay';
-    const SHARP             = 'sharp';
-    const NETBANKING_HDFC   = 'netbanking_hdfc';
-    const NETBANKING_KOTAK  = 'netbanking_kotak';
-    const WALLET_OLAMONEY   = 'wallet_olamoney';
-    const WALLET_PAYZAPP    = 'wallet_payzapp';
-    const WALLET_PAYUMONEY  = 'wallet_payumoney';
-    const CYBERSOURCE       = 'cybersource';
+    const AMEX               = 'amex';
+    const ATOM               = 'atom';
+    const AXIS_GENIUS        = 'axis_genius';
+    const AXIS_MIGS          = 'axis_migs';
+    const BILLDESK           = 'billdesk';
+    const EBS                = 'ebs';
+    const HDFC               = 'hdfc';
+    const KOTAK              = 'kotak';
+    const MOBIKWIK           = 'mobikwik';
+    const PAYTM              = 'paytm';
+    const SBIEPAY            = 'sbiepay';
+    const SHARP              = 'sharp';
+    const NETBANKING_HDFC    = 'netbanking_hdfc';
+    const NETBANKING_KOTAK   = 'netbanking_kotak';
+    const UPI_ICICI          = 'upi_icici';
+    const WALLET_OLAMONEY    = 'wallet_olamoney';
+    const WALLET_PAYZAPP     = 'wallet_payzapp';
+    const WALLET_PAYUMONEY   = 'wallet_payumoney';
+    const WALLET_AIRTELMONEY = 'wallet_airtelmoney';
+    const CYBERSOURCE        = 'cybersource';
 
-    const NOT_SUPPORTED     = 'not_supported';
-    const SUPPORTED         = 'supported';
+    const NOT_SUPPORTED      = 'not_supported';
+    const SUPPORTED          = 'supported';
 
     const POWER_WALLETS = array(
         Wallet::MOBIKWIK,
@@ -48,24 +49,26 @@ class Gateway
     );
 
     public static $channels = array(
-        self::AMEX              => Settlement\Channel::KOTAK,
-        self::ATOM              => Settlement\Channel::ATOM,
-        self::AXIS_GENIUS       => Settlement\Channel::KOTAK,
-        self::AXIS_MIGS         => Settlement\Channel::KOTAK,
-        self::BILLDESK          => Settlement\Channel::KOTAK,
-        self::EBS               => Settlement\Channel::KOTAK,
-        self::HDFC              => Settlement\Channel::KOTAK,
-        self::KOTAK             => Settlement\Channel::KOTAK,
-        self::MOBIKWIK          => Settlement\Channel::KOTAK,
-        self::PAYTM             => Settlement\Channel::KOTAK,
-        self::SBIEPAY           => Settlement\Channel::KOTAK,
-        self::SHARP             => Settlement\Channel::KOTAK,
-        self::NETBANKING_HDFC   => Settlement\Channel::KOTAK,
-        self::NETBANKING_KOTAK  => Settlement\Channel::KOTAK,
-        self::WALLET_PAYZAPP    => Settlement\Channel::KOTAK,
-        self::WALLET_PAYUMONEY  => Settlement\Channel::KOTAK,
-        self::WALLET_OLAMONEY   => Settlement\Channel::KOTAK,
-        self::CYBERSOURCE       => Settlement\Channel::KOTAK,
+        self::AMEX               => Settlement\Channel::KOTAK,
+        self::ATOM               => Settlement\Channel::ATOM,
+        self::AXIS_GENIUS        => Settlement\Channel::KOTAK,
+        self::AXIS_MIGS          => Settlement\Channel::KOTAK,
+        self::BILLDESK           => Settlement\Channel::KOTAK,
+        self::EBS                => Settlement\Channel::KOTAK,
+        self::HDFC               => Settlement\Channel::KOTAK,
+        self::KOTAK              => Settlement\Channel::KOTAK,
+        self::MOBIKWIK           => Settlement\Channel::KOTAK,
+        self::PAYTM              => Settlement\Channel::KOTAK,
+        self::SBIEPAY            => Settlement\Channel::KOTAK,
+        self::SHARP              => Settlement\Channel::KOTAK,
+        self::NETBANKING_HDFC    => Settlement\Channel::KOTAK,
+        self::NETBANKING_KOTAK   => Settlement\Channel::KOTAK,
+        self::WALLET_PAYZAPP     => Settlement\Channel::KOTAK,
+        self::WALLET_PAYUMONEY   => Settlement\Channel::KOTAK,
+        self::WALLET_OLAMONEY    => Settlement\Channel::KOTAK,
+        self::WALLET_AIRTELMONEY => Settlement\Channel::KOTAK,
+        self::CYBERSOURCE        => Settlement\Channel::KOTAK,
+        self::UPI_ICICI          => Settlement\Channel::KOTAK,
     );
 
     /**
@@ -78,7 +81,7 @@ class Gateway
         Method::CARD => array(
             self::HDFC,
             self::ATOM,
-            self::AXIS_MIGS,
+            // self::AXIS_MIGS,
             self::AXIS_GENIUS,
             self::KOTAK,
             self::PAYTM,
@@ -101,11 +104,16 @@ class Gateway
             self::WALLET_OLAMONEY,
             self::WALLET_PAYZAPP,
             self::WALLET_PAYUMONEY,
+            self::WALLET_AIRTELMONEY,
         ),
 
         Method::EMI => array(
             self::AMEX,
             self::HDFC,
+        ),
+
+        Method::UPI => array(
+            self::UPI_ICICI
         ),
     );
 
@@ -121,6 +129,18 @@ class Gateway
         ],
         self::AMEX => [],
         self::CYBERSOURCE => [],
+    );
+
+
+    /**
+     * For async gateways, we mark the payment as created and return
+     * the response immediately. The payment is authorized over a webhook
+     * or some other async medium. Checkout currently long-polls for
+     * the payment to be authorized.
+     * @var array
+     */
+    public static $asynchronous = array(
+        self::UPI_ICICI
     );
 
     /**
@@ -173,6 +193,7 @@ class Gateway
         Wallet::MOBIKWIK    => Gateway::MOBIKWIK,
         Wallet::PAYZAPP     => Gateway::WALLET_PAYZAPP,
         Wallet::PAYUMONEY   => Gateway::WALLET_PAYUMONEY,
+        Wallet::AIRTELMONEY => Gateway::WALLET_AIRTELMONEY,
     );
 
     /**
@@ -202,7 +223,9 @@ class Gateway
      */
     public static $s2sCallbackGateways = array(
         Gateway::BILLDESK,
-        Gateway::WALLET_OLAMONEY);
+        Gateway::UPI_ICICI,
+        Gateway::WALLET_OLAMONEY
+    );
 
     /**
      * Card gateways which support international payments
@@ -211,7 +234,7 @@ class Gateway
      */
     public static $internationalCardGateways = array(
         Gateway::HDFC,
-        Gateway::AXIS_MIGS,
+        // Gateway::AXIS_MIGS,
         Gateway::AMEX,
         Gateway::CYBERSOURCE,
     );
@@ -223,7 +246,7 @@ class Gateway
      */
     public static $domesticCardGateways = array(
         Gateway::HDFC,
-        Gateway::AXIS_MIGS,
+        // Gateway::AXIS_MIGS,
         Gateway::AMEX,
         Gateway::CYBERSOURCE,
     );
@@ -344,16 +367,13 @@ class Gateway
         IFSC::HDFC,
         IFSC::KKBK,
         IFSC::UTIB,
+        IFSC::INDB,
     );
 
     public static $emiBanksUsingCardTerminals = array(
         IFSC::KKBK,
         IFSC::UTIB,
-    );
-
-    public static $emiFileBanks = array(
-        self::KOTAK     => IFSC::KKBK,
-        self::AXIS      => IFSC::UTIB,
+        IFSC::INDB,
     );
 
     public static $emiBankToGatewayMap = array(
@@ -409,7 +429,7 @@ class Gateway
     {
         $arrayKeys = array_keys(self::$authAndCapture);
 
-        $supportsAuthAndCapture = in_array($gateway, $arrayKeys);
+        $supportsAuthAndCapture = in_array($gateway, $arrayKeys, true);
 
         if ($supportsAuthAndCapture === false)
         {
@@ -426,6 +446,16 @@ class Gateway
                 return self::supportsAuthAndCaptureForNetwork($gateway, $networkCode);
             }
         }
+    }
+
+    /**
+     * Whether the gateway supports async payments
+     * @param  string $gateway
+     * @return boolean
+     */
+    public static function supportsAsync($gateway)
+    {
+        return in_array($gateway, self::$asynchronous, true);
     }
 
     public static function supportsAuthAndCaptureForNetwork($gateway, $networkCode)

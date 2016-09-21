@@ -44,7 +44,7 @@ class Core extends Base\Core
 
             $terminal->edit($input);
 
-            (new Terminal\Repository)->saveOrFail($terminal);
+            $this->repo->saveOrFail($terminal);
         }
 
         return $terminal;

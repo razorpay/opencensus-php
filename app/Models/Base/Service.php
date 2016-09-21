@@ -3,6 +3,7 @@
 namespace RZP\Models\Base;
 
 use App;
+use RZP\Models\Merchant;
 
 class Service
 {
@@ -24,7 +25,7 @@ class Service
      * The merchant making the request.
      * If merchant isn't making the request, then
      * it's null
-     * @var RZP\Models\Merchant\Entity
+     * @var Merchant\Entity
      */
     protected $merchant;
 
@@ -36,7 +37,7 @@ class Service
 
     /**
      * Trace instance used for tracing
-     * @var Trace\Trace
+     * @var \RZP\Trace\Trace
      */
     protected $trace;
 

@@ -9,6 +9,7 @@ use RZP\Exception;
 
 use RZP\Constants\Mode;
 use RZP\Models\Base;
+use RZP\Base\RuntimeManager;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
@@ -149,16 +150,11 @@ class Settler
 
             if ($settlements->count() !== 0)
             {
-                list($urlText, $urlExcel) = $this->createSettlementFile($settlements, $txns);
-
                 $this->updateDailySettlementAttributes(
-                    $urlText,
-                    $urlExcel,
+                    null,
+                    null,
                     $settlements->count(),
                     $txns->count());
-
-                $data['settlement_text_file'] = $urlText;
-                $data['settlement_excel_file'] = $urlExcel;
             }
             else
             {
@@ -172,6 +168,15 @@ class Settler
             $this->repo->rollback();
 
             $this->settlementFailure('kotak', $e);
+        }
+
+        if ($settlements->count() !== 0)
+        {
+            list($urlText, $urlExcel) = $this->createSettlementFile($settlements, $txns);
+
+            $data['settlement_text_file'] = $urlText;
+
+            $data['settlement_excel_file'] = $urlExcel;
         }
 
         $this->successNotification($data, $settlements);
@@ -307,7 +312,8 @@ class Settler
                 $i++;
             }
 
-            if ($setlAmount <= 0)
+            //settle only if settlement amount is more than INR 1
+            if ($setlAmount <= 100)
             {
                 $setlAmount = 0;
                 continue;
@@ -389,8 +395,10 @@ class Settler
                          ($merchant->holdFunds() === false));
 
 
+        assert ($merchant->bankAccount !== null);
+
         if (($this->mode !== Mode::TEST) and
-            ($merchant->bankAccount->getCreatedTimestamp() > $lastWorkingDay->timestamp))
+            ($merchant->bankAccount->getCreatedAt() > $lastWorkingDay->timestamp))
         {
             $shouldSettle = false;
         }
@@ -401,8 +409,6 @@ class Settler
     protected function createSettlementFile($settlements, $txns)
     {
         $urls = (new Kotak\NodalAccount)->generateSettlementFile($settlements, $txns);
-
-        $urls1 = (new Kotak\NodalAccount)->generateSettlementFile2($settlements, $txns);
 
         $this->trace->info(TraceCode::SETTLEMENT_FILE_GENERATED_KOTAK);
 
@@ -567,7 +573,7 @@ class Settler
 
     protected function increaseAllowedSystemLimits()
     {
-        ini_set('memory_limit', '1024M');
-        set_time_limit(300);
+        RuntimeManager::setMemoryLimit('1024M');
+        RuntimeManager::setTimeLimit(300);
     }
 }

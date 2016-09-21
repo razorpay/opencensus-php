@@ -113,6 +113,17 @@ trait FileHandlerTrait
         return $url;
     }
 
+    public function getH2HFileFromAws($key)
+    {
+        $bucket = 'h2h_bucket';
+
+        $name = $this->getFileToWriteName();
+
+        $fullPath = $this->getFullFilePath($name);
+
+        return $this->getFileFromAws($bucket, $key, $fullPath);
+    }
+
     protected function createExcelObject($data, $name, $columnFormat = [])
     {
         $excel = Excel::create($name, function($excel) use ($data, $columnFormat)
@@ -279,6 +290,34 @@ trait FileHandlerTrait
         $this->fileAwsUrl = $url;
 
         return $url;
+    }
+
+    protected function getFileFromAws($bucket, $key, $filePath)
+    {
+        $config =  \Config::get('aws');
+
+        $s3 = AWS::createClient('s3');
+
+        try
+        {
+            $request = array(
+                'Bucket'    => $config[$bucket],
+                'Key'       => $key,
+                'SaveAs'    => $filePath
+            );
+
+            $result = $s3->getObject($request);
+
+            $this->trace()->info(TraceCode::AWS_FILE_DOWNLOAD, $request);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace()->traceException($e);
+
+            throw $e;
+        }
+
+        return $filePath;
     }
 
     protected function saveLocally($name, $txt)

@@ -46,6 +46,51 @@ return [
         ],
     ],
 
+    'testUploadPricingPlan' => [
+        'request' => [
+            'content' => [
+                [
+                    'plan_name'      => 'TestUploadPlan2',
+                    'payment_method' => 'netbanking',
+                    'percent_rate'   => 1000,
+                ],
+                [
+                    'payment_method' => 'card',
+                    'percent_rate'   => 1000,
+                ]
+            ],
+            'url' => '/pricing',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'name' => 'TestUploadPlan2',
+                'entity' => 'pricing',
+                'count' => 2,
+                'rules' => array(
+                    array(
+                        'plan_name' => 'TestUploadPlan2',
+                        'payment_method' => 'card',
+                        'percent_rate' => 1000,
+                        'international' => false,
+                        'amount_range_active' => false,
+                        'amount_range_min' => null,
+                        'amount_range_max' => null,
+                    ),
+                    array(
+                        'plan_name' => 'TestUploadPlan2',
+                        'payment_method' => 'netbanking',
+                        'percent_rate' => 1000,
+                        'international' => false,
+                        'amount_range_active' => false,
+                        'amount_range_min' => null,
+                        'amount_range_max' => null,
+                    )
+                ),
+            ],
+        ],
+    ],
+
     'testAddPricingPlanRule' => [
         'request' => [
             'content' => [
@@ -321,7 +366,7 @@ return [
                     array(
                         'name' => 'testDefaultPlan',
                         'entity' => 'pricing',
-                        'count' => 7,
+                        'count' => 8,
                         'rules' => array(
                             array(),
                         ),
@@ -423,7 +468,7 @@ return [
                     array(
                         'name' => 'testDefaultPlan',
                         'entity' => 'pricing',
-                        'count' => 7,
+                        'count' => 8,
                         'rules' => array(
                             array(),
                         ),

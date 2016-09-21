@@ -269,13 +269,6 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postGenerateBankAccountIds()
-    {
-        $data = (new Merchant\Service)->generateBankAccountIds();
-
-        return ApiResponse::json($data);
-    }
-
     public function postGenerateTestBankAccounts()
     {
         $data = (new Merchant\Service)->generateTestBankAccounts();
@@ -477,7 +470,7 @@ class MerchantController extends Controller
         $data['checkout'] = $url;
         $data['framejs'] = $url . $framejs;
         $data['css'] = $url . $css;
-        $data['font'] = 'https://cdn.razorpay.com/lato3';
+        $data['font'] = 'https://cdn.razorpay.com/lato';
 
         return $data;
     }

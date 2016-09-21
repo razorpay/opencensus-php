@@ -67,8 +67,7 @@ class Core extends Base\Core
 
     public function sendOtp($input, $merchant)
     {
-        $input[Entity::CONTACT] = Customer\Validator::validateAndParseContact(
-            $input[Entity::CONTACT]);
+        $input[Entity::CONTACT] = Customer\Validator::validateAndParseContact($input[Entity::CONTACT]);
 
         $data = (new Customer\Raven)->sendOtp($input, $merchant);
 
@@ -77,11 +76,11 @@ class Core extends Base\Core
 
     public function verifyOtp($input, $merchant)
     {
+        // Currently, the validator does not have any mandatory field.
         Customer\Validator::validateGlobalCustomerCreateInput($input);
 
         // Parse contact
-        $input[Entity::CONTACT] = Customer\Validator::validateAndParseContact(
-            $input[Entity::CONTACT]);
+        $input[Entity::CONTACT] = Customer\Validator::validateAndParseContact($input[Entity::CONTACT]);
 
         // Verify the otp with raven service
         $this->verifyRavenOtp($input, $merchant);
@@ -178,8 +177,6 @@ class Core extends Base\Core
                 Customer\Entity::EMAIL => $email
             ];
 
-
-
             $customer = $this->createGlobalCustomer($custCreateInput);
         }
 
@@ -204,9 +201,12 @@ class Core extends Base\Core
                 $appToken,
                 $merchant);
 
-            $customerId = $appToken->getCustomerId();
+            if ($appToken !== null)
+            {
+                $customerId = $appToken->getCustomerId();
 
-            $merchantId = Account::SHARED_ACCOUNT;
+                $merchantId = Account::SHARED_ACCOUNT;
+            }
         }
         else if (empty($input[Payment\Entity::CUSTOMER_ID]) === false)
         {
@@ -251,9 +251,6 @@ class Core extends Base\Core
             [
                 'session' => $this->app['request']->session()->all()
             ]);
-
-
-        // sd($appToken->getPublicId(), $this->app['session']->get('app_token'));
     }
 
     protected function verifyUniqueCustomer($customer, $failOnDuplicate = true)

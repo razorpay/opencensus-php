@@ -180,6 +180,8 @@ class Server extends Base\Mock\Server
             'mode' => 'test'
         );
 
+        $this->content($response);
+
         return $this->makeResponse($response);
     }
 
