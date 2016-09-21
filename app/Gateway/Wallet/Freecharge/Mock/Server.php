@@ -19,9 +19,9 @@ use RZP\Models\Payment;
 class Server extends Base\Mock\Server
 {
     protected $accessToken          = '8c31d80b-83ed-4f52-8377-71301790ccaa';
-    protected $accessTokenExpiry    = '3600';
+    protected $accessTokenExpiry    = '2017-09-21T14:18:06';
     protected $refreshToken         = '8c31d80b-83ed-4f52-8377-71301790ccaa';
-    protected $refreshTokenExpiry   = '3600';
+    protected $refreshTokenExpiry   = '2017-09-21T14:18:06';
 
     public function authorize($input)
     {

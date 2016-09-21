@@ -600,11 +600,6 @@ class Entity extends Base\PublicEntity
         return $attempts;
     }
 
-    public function getOtpAttempts()
-    {
-        return $this->getAttribute(self::OTP_ATTEMPTS);
-    }
-
     protected function getOtpCountAttribute()
     {
         $count = $this->attributes[self::OTP_COUNT];
@@ -615,11 +610,6 @@ class Entity extends Base\PublicEntity
         }
 
         return $count;
-    }
-
-    public function getOtpCount()
-    {
-        return $this->getAttribute(self::OTP_COUNT);
     }
 
     public function getMetadata()
@@ -937,6 +927,16 @@ class Entity extends Base\PublicEntity
     public function getMerchantId()
     {
         return $this->getAttribute(self::MERCHANT_ID);
+    }
+
+    public function getOtpCount()
+    {
+        return $this->getAttribute(self::OTP_COUNT);
+    }
+
+    public function getOtpAttempts()
+    {
+        return $this->getAttribute(self::OTP_ATTEMPTS);
     }
 
     /**

@@ -67,6 +67,8 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $input['gateway']);
+
         $content = $input['gateway'];
 
         if ((isset($content[ResponseFields::ERROR_CODE]) === true) and
@@ -184,7 +186,7 @@ class Gateway extends Base\Gateway
 
         $data = array();
 
-        if (isset($content[ResponseFields::ACCESS_TOKEN]))
+        if (isset($content[ResponseFields::ACCESS_TOKEN]) === true)
         {
             $data['token'] = $this->getTokenAttributes($content);
 
@@ -193,13 +195,11 @@ class Gateway extends Base\Gateway
             $content[ResponseFields::ACCESS_TOKEN]  = '';
 
             $content[ResponseFields::REFRESH_TOKEN] = '';
-
-            $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
-
-            return $data;
         }
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+
+        return $data;
     }
 
     public function debit(array $input)
@@ -266,7 +266,9 @@ class Gateway extends Base\Gateway
             Action::AUTHORIZE);
 
         // Set reference2 that a topup occurred during a transaction
-        $this->updateGatewayPaymentEntity($wallet, ['topup' => 'true']);
+        $this->updateGatewayPaymentEntity(
+            $wallet,
+            [RequestFields::TOPUP => 'true']);
 
         $token = $this->getValidWalletToken($input);
 
@@ -304,23 +306,6 @@ class Gateway extends Base\Gateway
         $refund = $this->createGatewayRefundEntity($attributes);
     }
 
-    protected function getTokenAttributes($content)
-    {
-        $input = $this->input;
-
-        $attributes = array(
-            Token\Entity::METHOD           => 'wallet',
-            Token\Entity::WALLET           => $input['payment']['wallet'],
-            Token\Entity::TERMINAL_ID      => $input['terminal']['id'],
-            Token\Entity::GATEWAY_TOKEN    => $content[ResponseFields::ACCESS_TOKEN],
-            Token\Entity::GATEWAY_TOKEN2   => $content[ResponseFields::REFRESH_TOKEN],
-            //TODO Check the format of it.
-            Token\Entity::EXPIRED_AT       => time() + $content[ResponseFields::ACCESS_TOKEN_EXPIRY],
-        );
-
-        return $attributes;
-    }
-
     public function verify(array $input)
     {
         parent::verify($input);
@@ -339,6 +324,25 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE);
         }
+    }
+
+    protected function getTokenAttributes($content)
+    {
+        $input = $this->input;
+
+        $expiryTime = $content[ResponseFields::ACCESS_TOKEN_EXPIRY];
+        $expiryTime = Carbon::parse($expiryTime)->timestamp;
+
+        $attributes = array(
+            Token\Entity::METHOD           => 'wallet',
+            Token\Entity::WALLET           => $input['payment']['wallet'],
+            Token\Entity::TERMINAL_ID      => $input['terminal']['id'],
+            Token\Entity::GATEWAY_TOKEN    => $content[ResponseFields::ACCESS_TOKEN],
+            Token\Entity::GATEWAY_TOKEN2   => $content[ResponseFields::REFRESH_TOKEN],
+            Token\Entity::EXPIRED_AT       => $expiryTime,
+        );
+
+        return $attributes;
     }
 
     protected function getMerchantId($terminal)
@@ -421,13 +425,6 @@ class Gateway extends Base\Gateway
         return parent::getHashOfArray($content);
     }
 
-    /*
-     * Creates a login token for freecharge topup
-     * 1. Encrypt accessToken with first 16 chars of merchantId
-     * 2. Convert to hex format and return it
-     *
-     * @return string
-     */
     protected function strToHex($cipherText)
     {
         $hex = '';
@@ -442,6 +439,13 @@ class Gateway extends Base\Gateway
         return strtoupper($hex);
     }
 
+    /**
+     * Creates a login token for freecharge topup
+     * 1. Encrypt accessToken with first 16 chars of secretKey
+     * 2. Convert to hex format and return it
+     *
+     * @return string
+     */
     protected function generateLoginToken($accessToken)
     {
         $secret = $this->getSecret();
@@ -571,7 +575,6 @@ class Gateway extends Base\Gateway
 
     protected function getValidWalletToken($input)
     {
-
         $token = (New Token\Repository)->getByWalletTerminalAndCustomerId(
             $input['payment']['wallet'],
             $input['terminal']['id'],
@@ -665,12 +668,6 @@ class Gateway extends Base\Gateway
 
         $content = $this->jsonToArray($response->body);
 
-        if ((isset($content[ResponseFields::STATUS]) === true) and
-            ($content[ResponseFields::STATUS] === Status::TRANSACTION_SUCCESS))
-        {
-            $this->verifyCheckSumForResponse($content);
-        }
-
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY,
             [
@@ -678,6 +675,12 @@ class Gateway extends Base\Gateway
                 'gateway' => $this->gateway,
                 'payment_id' => $input['payment']['id'],
             ]);
+
+        if ((isset($content[ResponseFields::STATUS]) === true) and
+            ($content[ResponseFields::STATUS] === Status::TRANSACTION_SUCCESS))
+        {
+            $this->verifyCheckSumForResponse($content);
+        }
 
         $verify->verifyResponse = $this->response;
 
@@ -722,8 +725,8 @@ class Gateway extends Base\Gateway
         // Gateway payment is not created and payment status is not marked
         // as authorized.
         if (($payment === null) or
-            (($input['payment']['status'] === 'failed') or
-                ($input['payment']['status'] === 'created')))
+            ($input['payment']['status'] === 'failed') or
+            ($input['payment']['status'] === 'created'))
         {
             $verify->apiSuccess = false;
         }
@@ -762,8 +765,8 @@ class Gateway extends Base\Gateway
     {
         $this->action = Action::AUTHORIZE;
 
-        if ((isset($content[ResponseFields::STATUS]))
-              and ($content[ResponseFields::STATUS] === Status::TRANSACTION_SUCCESS))
+        if ((isset($content[ResponseFields::STATUS])) and
+            ($content[ResponseFields::STATUS] === Status::TRANSACTION_SUCCESS))
         {
             $walletAttributes = $this->getWalletContentFromVerify($payment, $content);
 
@@ -830,6 +833,10 @@ class Gateway extends Base\Gateway
         return true;
     }
 
+    /**
+     * Not used since otp register flow is presently disabled.
+     * TODO Once freecharge gives us a simpler flow, integrate it
+     */
     protected function getOtpRedirectRequestArray(array $input)
     {
         $this->action = Action::OTP_REDIRECT;
@@ -854,8 +861,6 @@ class Gateway extends Base\Gateway
      */
     protected function callbackTopupFlow($input)
     {
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_TOPUP_CALLBACK, $input['gateway']);
-
         $content = $input['gateway'];
 
         if ((isset($content[ResponseFields::STATUS]) === true) and

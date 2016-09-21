@@ -190,15 +190,6 @@ trait Callback
         else
         {
             $data = $this->callGatewayFunction(Payment\Action::CALLBACK, $input);
-
-            // For register user flow
-            if ((isset($data['token']) === true) and
-                ($payment->getGateway() === Gateway::WALLET_FREECHARGE))
-            {
-                $this->postPaymentOtpCallbackProcessing($input, $data);
-
-                $this->callGatewayFunction('checkBalance', $input);
-            }
         }
 
         $this->callGatewayFunction(Payment\Action::DEBIT, $input);
