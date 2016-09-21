@@ -60,6 +60,9 @@ final class Route
         'refund_generate_excel'                   => ['post',     'refunds/excel',                            'PaymentController@generateRefunds'                                 ],
         'refund_verify'                           => ['post',     'refunds/{ids}/verify',                     'PaymentController@postRefundVerify'                                ],
         'payment_capture_verify'                  => ['post',     'payments/{id}/verify/capture',             'PaymentController@postCaptureVerify'                               ],
+        'payout_fetch_by_id'                      => ['get',      'payouts/{id}',                             'PayoutController@getPayout'                                        ],
+        'payout_fetch_multiple'                   => ['get',      'payouts',                                  'PayoutController@getPayouts'                                       ],
+        'payout_create'                           => ['post',     'payouts',                                  'PayoutController@postPayout'                                       ],
         'card_fetch_by_id'                        => ['get',      'cards/{id}',                               'PaymentController@getCard'                                         ],
         'card_fetch_multiple'                     => ['get',      'cards',                                    'PaymentController@getCards'                                        ],
         'iin_fetch_by_iin'                        => ['get',      'iins/{id}',                                'CardController@getIin'                                             ],
@@ -327,6 +330,9 @@ final class Route
         'customer_add_bank_account',
         'customer_fetch_bank_account',
         'setl_combined_report',
+        'payout_fetch_by_id',
+        'payout_fetch_multiple',
+        'payout_create',
     );
 
     public static $internal = array(
@@ -566,6 +572,9 @@ final class Route
         'app_delete_token'          => 'cardsaving',
         'otp_post'                  => 'cardsaving',
         'otp_verify'                => 'cardsaving',
+        'payout_fetch_by_id'        => 'payout',
+        'payout_fetch_multiple'     => 'payout',
+        'payout_create'             => 'payout',
     );
 
     protected static $router;
