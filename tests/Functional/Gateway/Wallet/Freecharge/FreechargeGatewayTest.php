@@ -50,7 +50,7 @@ class FreechargeGatewayTest extends TestCase
 
     public function testOtpRetryPayment()
     {
-        $payment = $this->getDefaultWalletPaymentArray('freecharge');
+        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
 
         $data = $this->testData[__FUNCTION__];
 
@@ -70,7 +70,7 @@ class FreechargeGatewayTest extends TestCase
 
     public function testOtpRetrySuccessPayment()
     {
-        $payment = $this->getDefaultWalletPaymentArray('freecharge');
+        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
 
         $data = $this->testData[__FUNCTION__];
 
@@ -200,6 +200,8 @@ class FreechargeGatewayTest extends TestCase
             $content = [
                 'status'        => 'COMPLETED',
                 'walletBalance' => '1234',
+                'errorCode'     => 'E000',
+                'errorMessage'  => 'SUCCESS',
                 'metadata'      => 'dummy',
                 'key_id'        => $this->ba->getKey(),
             ];

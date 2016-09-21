@@ -71,8 +71,7 @@ class Gateway extends Base\Gateway
 
         $content = $input['gateway'];
 
-        if ((isset($content[ResponseFields::ERROR_CODE]) === true) and
-            ($content[ResponseFields::ERROR_CODE] !== ResponseCode::SUCCESS_CODE))
+        if ($content[ResponseFields::ERROR_CODE] !== ResponseCode::SUCCESS_CODE)
         {
             throw new Exception\GatewayErrorException(
                 ResponseCodeMap::getApiErrorCode($content[ResponseFields::ERROR_CODE]),
@@ -117,16 +116,12 @@ class Gateway extends Base\Gateway
             RequestFields::AMOUNT        => $input['payment']['amount'],
         ];
 
-        $this->action = Action::AUTHORIZE;
-
         if ($code === Status::OTP_SENT)
         {
             $contentToSave['otpId'] = $content[ResponseFields::OTP_ID];
         }
 
-        $this->createGatewayPaymentEntity($contentToSave);
-
-        $this->action = Action::OTP_GENERATE;
+        $this->createGatewayPaymentEntity($contentToSave, Action::AUTHORIZE);
 
         if ($code === Status::OTP_REDIRECT)
         {

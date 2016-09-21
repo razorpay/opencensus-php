@@ -8,6 +8,12 @@ use Lib\PhoneBook;
 
 class Gateway extends Base\Gateway
 {
+    protected function otpResend(array $input)
+    {
+        $this->input = $input;
+        $this->action = Action::OTP_RESEND;
+    }
+
     protected function createGatewayPaymentEntity($attributes, $action = null)
     {
         $attr = $this->getMappedAttributes($attributes);
@@ -29,6 +35,17 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
+    protected function createGatewayRefundEntity($attributes)
+    {
+        $refund = $this->getNewGatewayPaymentEntity();
+
+        $refund->fill($attributes);
+
+        $refund->saveOrFail();
+
+        return $refund;
+    }
+
     /*
      * Updates the gateway payment entity
      *
@@ -45,17 +62,6 @@ class Gateway extends Base\Gateway
         $this->repo->saveOrFail($wallet);
 
         return $wallet;
-    }
-
-    protected function createGatewayRefundEntity($attributes)
-    {
-        $refund = $this->getNewGatewayPaymentEntity();
-
-        $refund->fill($attributes);
-
-        $refund->saveOrFail();
-
-        return $refund;
     }
 
     protected function getNewGatewayPaymentEntity()
@@ -94,11 +100,5 @@ class Gateway extends Base\Gateway
         $phoneBook = new PhoneBook($contact, true);
 
         return $phoneBook->format(PhoneBook::DOMESTIC);
-    }
-
-    protected function otpResend(array $input)
-    {
-        $this->input = $input;
-        $this->action = Action::OTP_RESEND;
     }
 }
