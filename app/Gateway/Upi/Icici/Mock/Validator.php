@@ -19,4 +19,11 @@ class Validator extends Base\Validator
         'note'              => 'sometimes|string|max:50',
         'collectByDate'     => 'sometimes|string|max:255'
     ];
+
+    protected static $verifyRules = array(
+        'merchantId'        => 'numeric|max:9999999999',
+        'merchantTranId'    => 'required|alpha_num|max:20',
+        'subMerchantId'     => 'sometimes|alpha_num|max:10',
+        'terminalId'        => 'sometimes|digits_between:1,10'
+    );
 }

@@ -71,7 +71,13 @@ class PaymentCreateController extends Controller
     {
         $input = Request::all();
 
-        if (empty($input['callback_url']) === false)
+        //
+        // For payment creation via api and s2s call, if it's on private
+        // auth then we should return json response instead of redirecting
+        // to callback url.
+        //
+        if ((empty($input['callback_url']) === false) and
+            ($this->app['basicauth']->isPublicAuth()))
         {
             $this->app['rzp.merchant_callback_url'] = $input['callback_url'];
         }

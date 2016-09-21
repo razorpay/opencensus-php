@@ -3,17 +3,13 @@
 namespace RZP\Models\Terminal\Sorters;
 
 use RZP\Models\Terminal;
+use RZP\Models\Terminal\Category;
 
 class MerchantSorter extends Terminal\Sorter
 {
     protected $properties = [
         'category',
     ];
-
-    // Specific category terminals should be placed
-    // above the generic category terminals
-    // Place the terminals of the same category as the merchant above
-    // generic terminals
 
     /**
      * Specific category terminals should be placed
@@ -27,26 +23,46 @@ class MerchantSorter extends Terminal\Sorter
      */
     public function categorySorter($terminals, array $input)
     {
-        $merchantCategory = $input['merchant']->getCategory();
-
         $specificCategoryTerminals = [];
-        $genericCategoryTerminals = [];
+
+        $genericCategoryTerminals  = [];
+
+        $nonCategoryTerminals      = [];
+
+        $method = $input['payment']->getMethod();
+
+        $network = $input['payment']->isMethodCardOrEmi() ? $input['payment']->card->getNetworkCode() : null;
+
+        $category = $input['merchant']->getCategory2();
+
+        $defaultCategory = Category::getDefaultForMethodAndNetwork($method, $network);
+
+        $merchantTerminalCategory = Category::getCategoryForMethodAndNetwork($method, $network, $category);
 
         // As the terminals are from the priority list
         // append to the terminal
         foreach ($terminals as $terminal)
         {
-            if ($terminal->getCategory() === $merchantCategory)
+            $terminalCategory = $terminal->getNetworkCategory();
+
+            if ($merchantTerminalCategory === $terminalCategory)
             {
                 $specificCategoryTerminals[] = $terminal;
             }
-            else
+            else if ($defaultCategory === $terminalCategory)
             {
                 $genericCategoryTerminals[] = $terminal;
             }
+            else if (empty($terminalCategory) === true)
+            {
+                $nonCategoryTerminals[] = $terminal;
+            }
         }
 
-        $sortedTerminals = array_merge($specificCategoryTerminals, $genericCategoryTerminals);
+        $sortedTerminals = array_merge(
+                                $specificCategoryTerminals,
+                                $genericCategoryTerminals,
+                                $nonCategoryTerminals);
 
         return $sortedTerminals;
     }

@@ -12,6 +12,7 @@ class ResponseFields
     const MESSAGE                   = "message";
     const MERCHANT_TRAN_ID          = "merchantTranId";
     const BANK_RRN                  = "BankRRN";
+    const ORIGINAL_BANK_RRN         = "OriginalBankRRN";
     const PAYER_AMOUNT              = "PayerAmount";
     const PAYER_MOBILE              = "PayerMobile";
     const PAYER_NAME                = "PayerName";

@@ -140,7 +140,6 @@ trait SettlementTrait
         $request = [
             'url' => '/settlements/reconcile/generate',
             'files' => [
-//                'setlFile' => $uploadedFile
                 'file' => $uploadedFile,
             ],
         ];
@@ -161,9 +160,8 @@ trait SettlementTrait
         $uploadedFile = $this->createUploadedFile($setlReconciliationFile);
 
         $request = [
-            'url' => '/settlements/reconcile',
+            'url' => '/settlements/h2hreconcile',
             'files' => [
-//                'setlReconciliationFile' => $uploadedFile
                 'file' => $uploadedFile
             ],
         ];

@@ -2,7 +2,11 @@
 
 namespace RZP\Models\Order;
 
+use DB;
+
+use RZP\Constants\Table;
 use RZP\Models\Base;
+use RZP\Models\Payment;
 
 class Repository extends Base\Repository
 {
@@ -33,5 +37,37 @@ class Repository extends Base\Repository
         }
 
         return $order;
+    }
+
+    /**
+     * Gets all the orders which have more than 1 payment in authorized or captured state.
+     *
+     * @return Base\Collection
+     */
+    public function getOrdersWithMultipleAuthorizedOrCapturedPayments()
+    {
+        // select count(*), orders.id
+        // from `orders` inner join `payments` on `payments`.`order_id` = `orders`.`id`
+        // where `payments`.`status` in (?, ?)
+        // group by `orders`.`id`
+        // having count(*) > 1
+
+        $paymentOrderId = Payment\Entity::getAttributeWithTableName(Payment\Entity::ORDER_ID);
+        $paymentStatus = Payment\Entity::getAttributeWithTableName(Payment\Entity::STATUS);
+        $orderId = Entity::getAttributeWithTableName(Entity::ID);
+        $paymentStatusArray = [Payment\Status::AUTHORIZED, Payment\Status::CAPTURED];
+
+        $results = $this->newQuery()
+            ->join(
+                Table::PAYMENT,
+                $paymentOrderId, '=', $orderId)
+            ->selectRaw('count(*), ' . $orderId)
+            ->whereIn($paymentStatus, $paymentStatusArray)
+            ->groupBy($orderId)
+            ->havingRaw('count(*) > 1')
+            ->with('payments')
+            ->get();
+
+        return $results;
     }
 }

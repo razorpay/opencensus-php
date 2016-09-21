@@ -4,8 +4,6 @@ namespace RZP\Reconciliator\Axis;
 
 use RZP\Exception\ReconciliationException;
 use RZP\Models\Bank\IFSC;
-use RZP\Models\Bank\Name;
-use RZP\Models\Payment\Gateway;
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 use RZP\Reconciliator\Messenger;

@@ -134,6 +134,8 @@ trait Callback
 
         $this->processPaymentCallback($payment, $gatewayInput);
 
+        $this->autoCapturePaymentIfApplicable($payment);
+
         return ['success' => true];
     }
 
@@ -278,5 +280,13 @@ trait Callback
         }
 
         throw $e;
+    }
+
+    protected function checkForMerchantCallbackUrl($payment)
+    {
+        if ($payment->getCallbackUrl() !== null)
+        {
+            $this->app['rzp.merchant_callback_url'] = $payment->getCallbackUrl();
+        }
     }
 }

@@ -2,10 +2,12 @@
 
 namespace RZP\Gateway\Upi\Icici\Mock;
 
+use App;
 use Carbon\Carbon;
 use Gateway\Upi\Icici;
 use phpseclib\Crypt\RSA;
 use RZP\Gateway\Base;
+use RZP\Gateway\Utility;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Upi\Base\Entity as UPIEntity;
 use Models\Payment;
@@ -14,6 +16,8 @@ class Server extends Base\Mock\Server
 {
     public function __construct()
     {
+        parent::__construct();
+
         if (defined('CRYPT_RSA_PKCS15_COMPAT') === false)
         {
             define('CRYPT_RSA_PKCS15_COMPAT', true);
@@ -40,6 +44,7 @@ class Server extends Base\Mock\Server
     public function authorize($input)
     {
         $input = $this->parseInput($input);
+
         parent::authorize($input);
 
         $this->validateAuthorizeInput($input);
@@ -55,7 +60,57 @@ class Server extends Base\Mock\Server
             'BankRRN'           => '1234567',
         );
 
-        return $this->makeResponse($content);
+        $dontEncrypt = ($this->input['payerVa'] === 'dontencrypt@icici');
+
+        $this->content($content);
+
+        return $this->makeResponse($content, $dontEncrypt);
+    }
+
+    public function verify($input)
+    {
+        $input = $this->parseInput($input);
+
+        parent::verify($input);
+
+        $this->validateActionInput($input);
+
+        $app = App::getFacadeRoot();
+
+        $payment = $app['repo']->payment->find($input['merchantTranId']);
+
+        $status = 'SUCCESS';
+        $message = 'Transaction Successful';
+
+        if (isset($payment['notes']['status']) === true)
+        {
+            if ($payment['notes']['status'] === 'created')
+            {
+                $status = 'PENDING';
+                $message = 'Transaction Initiated';
+            }
+            else if ($payment['notes']['status'] === 'failed')
+            {
+                $status = 'FAILURE';
+                $message = 'Transaction failed';
+            }
+        }
+
+        $response = array(
+            'response'          => '0',
+            'merchantId'        => $input['merchantId'],
+            'subMerchantId'     => '1234',
+            'terminalId'        => '1234',
+            'success'           => 'true',
+            'message'           => $message,
+            'merchantTranId'    => $input['merchantTranId'],
+            'OriginalBankRRN'   => (string) mt_rand(1111111, 9999999),
+            'status'            => $status
+        );
+
+        $encrypt = (isset($payment['notes']['encrypt']) and ($payment['notes']['encrypt'] === 'true'));
+
+        return $this->makeResponse($response, $encrypt);
     }
 
     /**
@@ -71,7 +126,7 @@ class Server extends Base\Mock\Server
         switch($this->input['payerVa'])
         {
             // Just make sure that this doesn't return 92
-            case 'unknown@icici':
+            case 'unknownresponse@icici':
                 return mt_rand(93, 500);
                 break;
             default:
@@ -79,22 +134,24 @@ class Server extends Base\Mock\Server
         }
     }
 
-    protected function makeResponse($data)
+    protected function makeResponse($data, $dontEncrypt = false)
     {
-        $json = json_encode($data);
+        if ((is_string($data) === true) and
+            (Utility::isXml($data) === true))
+        {
+            $response = parent::makeResponse($data);
 
-        // The ICICI Gateway inconsistently
-        // does encrypted responses, and we
-        // handle both the cases using
-        // special values for VPA
-        if ($this->input['payerVa'] === 'shk@icici')
-        {
-            $content = $json;
+            return $response;
         }
-        else
+
+        $content = json_encode($data);
+
+        // We encrypt content by default
+        if ($dontEncrypt === true)
         {
-            $encryptedData = $this->encrypt($json);
+            $encryptedData = $this->encrypt($content);
             assert($encryptedData !== false);
+
             $content = base64_encode($encryptedData);
         }
 
