@@ -271,6 +271,20 @@ $factory(\RZP\Models\Customer\AppToken\Entity::class, [
     'merchant_id'  => '10000000000000'
 ]);
 
+$factory(\RZP\Models\Payout\Entity::class, [
+    'id'          => $faker->uniqueid,
+    'customer_id' => '100000customer',
+    'destination' => '1000000lcustba',
+    'method'      => 'fund_transfer',
+    'amount'      => 100,
+    'currency'    => 'INR',
+    'merchant_id' => '10000000000000',
+    'status'      => 'created',
+    'channel'     => 'kotak',
+    'created_at'  => $faker->timestamp,
+    'updated_at'  => $faker->timestamp,
+]);
+
 $factory(\RZP\Models\Merchant\Credits\Entity::class, [
     'id'            => $faker->uniqueid,
     'merchant_id'   => '10000000000000',
