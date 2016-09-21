@@ -526,6 +526,13 @@ class Processor
             TraceCode::PAYMENT_METADATA,
             ['metadata' => $metadata, 'payment_id' => $payment->getId()]);
 
+        if (isset($metadata['checkout_id']) === false)
+        {
+             $this->trace->warning(
+                 TraceCode::PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND,
+                 ['metadata' => $metadata, 'payment_id' => $payment->getId()]);
+        }
+
         $this->payment = $payment;
 
         return $payment;
