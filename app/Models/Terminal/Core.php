@@ -33,7 +33,6 @@ class Core extends Base\Core
         {
             $terminal->restoreOrFail();
         }
-
         else
         {
             $terminalStatusTrace = null;
@@ -42,7 +41,12 @@ class Core extends Base\Core
             {
                 $status = (bool) $input['enabled'];
 
-                $terminalStatusTrace = ($status === true) ? TraceCode::TERMINAL_ENABLE : TraceCode::TERMINAL_DISABLE;
+                $terminalStatusTrace = TraceCode::TERMINAL_DISABLE;
+
+                if ($status === true)
+                {
+                    $terminalStatusTrace = TraceCode::TERMINAL_ENABLE;
+                }
             }
 
             $this->trace->info(

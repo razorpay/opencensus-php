@@ -380,7 +380,7 @@ class Entity extends Base\PublicEntity
 
     public function isEnabled()
     {
-        return (bool) $this->getAttribute(self::ENABLED);
+        return $this->getAttribute(self::ENABLED);
     }
 
     public function isDeleted()
@@ -429,9 +429,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::NETWORK_CATEGORY, $category);
     }
 
-    protected function setEnabled($status)
+    public function setEnabled($status)
     {
-        $this->setEnabledAttribute($status);
+        $this->setAttribute(self::ENABLED, $status);
     }
 
     protected function setEnabledAttribute($status)
