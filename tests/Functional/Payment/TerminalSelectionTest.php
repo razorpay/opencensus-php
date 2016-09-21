@@ -262,28 +262,12 @@ class TerminalSelectionTest extends TestCase
     {
         $this->fixtures->merchant->editCategory2('corporate');
 
-        // disable this terminal
+        //Enables both terminals
         $this->fixtures->create('terminal:netbanking_kotak_terminal',
-            ['id' => 'DDrpNbKtkTrmnl', 'network_category' => 'corporate', 'enabled' => false]);
-
-        // enable this terminal - which is by default
-        $this->fixtures->create('terminal:netbanking_kotak_terminal',
-            ['id' => 'DErpNbKtkTrmnl', 'network_category' => 'corporate']);
+            ['id' => 'DCrpNbKtkTmnl1', 'network_category' => 'corporate']);
 
         $this->fixtures->create('terminal:netbanking_kotak_terminal',
-            ['id' => 'DEduNbKtkTrmnl', 'network_category' => 'education']);
-
-        $this->fixtures->create('terminal:netbanking_kotak_terminal',
-            ['id' => 'DrctNbKtkTrmnl']);
-
-        $this->fixtures->create('terminal:shared_netbanking_kotak_terminal',
-            ['id' => 'SCorNbKtkTrmnl','network_category' => 'corporate']);
-
-        $this->fixtures->create('terminal:shared_netbanking_kotak_terminal',
-            ['id' => 'SEduNbKtkTrmnl','network_category' => 'education']);
-
-        $this->fixtures->create('terminal:shared_netbanking_kotak_terminal',
-            ['id' => 'SharNbKtkTrmnl']);
+            ['id' => 'DCrpNbKtkTmnl2', 'network_category' => 'corporate']);
 
         $payment = $this->getDefaultNetbankingPaymentArray();
 
@@ -291,18 +275,28 @@ class TerminalSelectionTest extends TestCase
 
         $this->doAuthAndCapturePayment($payment);
 
-        $payment = $this->getLastEntity('payment', true);
+        $payment1 = $this->getLastEntity('payment', true);
 
-        $this->assertEquals('DErpNbKtkTrmnl', $payment['terminal_id']);
+        $this->assertEquals('DCrpNbKtkTmnl1', $payment1['terminal_id']);
+
+        // Disables terminal 1
+        $this->fixtures->terminal->edit('DCrpNbKtkTmnl1',['enabled' => false]);
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment2 = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('DCrpNbKtkTmnl2', $payment2['terminal_id']);
     }
 
     public function testDisableSharedTerminal()
     {
+        //Enables both terminals
         $this->fixtures->create('terminal:shared_netbanking_kotak_terminal',
-            ['id' => 'SharNbDtkTrmnl', 'enabled' => false]);
+             ['id' => 'SharNbKtkTmnl1']);
 
         $this->fixtures->create('terminal:shared_netbanking_kotak_terminal',
-            ['id' => 'SharNbEtkTrmnl']);
+             ['id' => 'SharNbKtkTmnl2']);
 
         $payment = $this->getDefaultNetbankingPaymentArray();
 
@@ -310,8 +304,17 @@ class TerminalSelectionTest extends TestCase
 
         $this->doAuthAndCapturePayment($payment);
 
-        $payment = $this->getLastEntity('payment', true);
+        $payment1 = $this->getLastEntity('payment', true);
 
-        $this->assertEquals($payment['terminal_id'], 'SharNbEtkTrmnl');
+        $this->assertEquals('SharNbKtkTmnl1', $payment1['terminal_id']);
+
+        // Disables terminal 1
+        $this->fixtures->terminal->edit('SharNbKtkTmnl1',['enabled' => false]);
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment2 = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('SharNbKtkTmnl2', $payment2['terminal_id']);
     }
 }
