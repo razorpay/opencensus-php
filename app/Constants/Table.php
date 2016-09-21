@@ -10,6 +10,7 @@ class Table
     const CARD                  = 'cards';
     const ORDER                 = 'orders';
     const TOKEN                 = 'tokens';
+    const PAYOUT                = 'payouts';
     const REFUND                = 'refunds';
     const BALANCE               = 'balance';
     const METHODS               = 'merchant_banks';

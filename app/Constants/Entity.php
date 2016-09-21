@@ -22,6 +22,7 @@ class Entity
     const CARD                  = 'card';
     const ORDER                 = 'order';
     const TOKEN                 = 'token';
+    const PAYOUT                = 'payout';
     const REFUND                = 'refund';
     const BALANCE               = 'balance';
     const CREDITS               = 'credits';
