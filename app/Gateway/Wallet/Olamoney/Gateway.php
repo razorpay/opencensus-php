@@ -210,7 +210,7 @@ class Gateway extends Base\Gateway
         $userBalance = 0;
 
         if (($content[ResponseFields::STATUS] === Status::SUCCESS) and
-            isset($content[ResponseFields::AMOUNT]))
+            (isset($content[ResponseFields::AMOUNT]) === true))
         {
             $userBalance = (int) ($content[ResponseFields::AMOUNT]) * 100;
         }
