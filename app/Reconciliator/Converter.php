@@ -147,7 +147,10 @@ class Converter
                 // on which we run this code block.
                 //
 
-                if (strpos(strtolower($ex->getMessage()), 'undefined variable: index') !== false)
+                $exceptionMessage = strtolower($ex->getMessage());
+
+                if ((strpos($exceptionMessage, 'undefined variable: index') !== false) or
+                    (strpos($exceptionMessage, 'the actual number of sheets is 0') !== false))
                 {
                     continue;
                 }

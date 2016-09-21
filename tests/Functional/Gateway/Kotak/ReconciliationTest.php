@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Tests\Functional\Gateway\Hdfc;
+namespace RZP\Tests\Functional\Gateway\Kotak;
 
 use Carbon\Carbon;
 use Config;
@@ -10,43 +10,26 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Tests\Functional\TestCase;
 
-class HdfcGatewayMprTest extends TestCase
+class ReconciliationTest extends TestCase
 {
     use RequestResponseFlowTrait;
     use SettlementTrait;
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/helpers/MprTestData.php';
+        $this->testDataFilePath = __DIR__.'/ReconciliationTestData.php';
 
         parent::setUp();
-
-        $this->ba->publicAuth();
     }
 
-    public function testUploadMpr()
+    public function testReconciliation()
     {
-        $this->markTestSkipped();
-
-        //$this->mockSlack(5);
-
-        $this->mockDashboardRequest(2);
-
         // Create payments and refunds with timestamps two days back
         $prEntities = $this->createPaymentAndRefundEntities();
 
+        // delete Existing files
         $this->deleteSetlFiles();
 
-        // Generate the mpr file for above payments and refunds
-        $from = Carbon::yesterday('Asia/Kolkata')->subDay(1)->timestamp;
-        $to = Carbon::yesterday('Asia/Kolkata')->timestamp;
-        $mprFile = $this->generateMpr($from, $to);
-
-        // Upload the generate mpr file for reconciliation
-        $settledAt = Carbon::today('Asia/Kolkata')->timestamp;
-        $this->reconcileMpr($mprFile, $settledAt);
-
-        // Check the txns corresponding to above payments after
         // reconciliation
         $txns = $this->matchTransactions($prEntities);
 
@@ -59,14 +42,7 @@ class HdfcGatewayMprTest extends TestCase
         // Reconcile settlements
         $data = $this->reconcileSettlements($setlReconciliationFile);
 
-        // Generate settlement return file
-        $setlReturnFile = $this->generateSetlReturnFile($data);
-
-        // Reconcile settlement return file
-        $this->processSetlReturns($setlReturnFile);
-
-//        $this->matchSetlEntities();
-
+        // Validate daily settlement entity
         $this->fetchAndMatchDailySettlement();
     }
 
@@ -108,7 +84,7 @@ class HdfcGatewayMprTest extends TestCase
                 'currency' => 'INR',
                 'debit' => 0,
                 'entity_id' => $prEntity->getPublicId(),
-                'type' => 'payment');
+                'type' => $prEntity->getEntity());
 
             array_push($txns, $txn);
         }
@@ -128,8 +104,8 @@ class HdfcGatewayMprTest extends TestCase
 
         $r = range(1,5);
 
-        $createdAt = Carbon::today('Asia/Kolkata')->subDays(2)->timestamp + 5;
-        $capturedAt = Carbon::today('Asia/Kolkata')->subDays(2)->timestamp + 10;
+        $createdAt = Carbon::today('Asia/Kolkata')->subDays(4)->timestamp + 5;
+        $capturedAt = Carbon::today('Asia/Kolkata')->subDays(4)->timestamp + 10;
 
         foreach ($r as $i)
         {
@@ -165,13 +141,13 @@ class HdfcGatewayMprTest extends TestCase
                     'entity' => 'daily_settlement',
                     'date' => Carbon::today('Asia/Kolkata')->timestamp,
                     'channel' => 'kotak',
-                    'amount' => 4414500,
-                    'fees' => 114500,
-                    'service_tax' => 14500,
-                    'api_fee' => 29000,
-                    'gateway_fee' => 85500,
-                    'settlement_count' => 2,
-                    'transaction_count' => 11,
+                    'amount' => 4385000,
+                    'fees' => 115000,
+                    'service_tax' => 15000,
+                    'api_fee' => 0,
+                    'gateway_fee' => 0,
+                    'settlement_count' => 1,
+                    'transaction_count' => 10,
                 ],
             ]
         );
@@ -185,43 +161,5 @@ class HdfcGatewayMprTest extends TestCase
         $this->assertGreaterThanOrEqual($item['returned_at'], $time);
 
         $content = $this->getEntities('settlement', array(), true);
-
-        $this->assertArraySelectiveEquals($this->testData['testUploadMprSettlementData'], $content);
-    }
-
-    protected function mockSlack($times)
-    {
-        $slackPretend = $this->config->get('slack.mock');
-
-        if ($slackPretend === false)
-        {
-            return;
-        }
-
-        $slack = Mockery::mock('RZP\Services\Slack');
-
-        $this->app->instance('slack', $slack);
-
-        $slack->shouldReceive('send')
-              ->times($times)
-              ->with(Mockery::type('string'), '#settlements', 'settlements');
-    }
-
-    protected function mockDashboardRequest($times)
-    {
-        $config = $this->config->get('applications.dashboard');
-
-        if ($config['pretend'] === false)
-        {
-            return;
-        }
-
-        $dashboard = Mockery::mock('Dashboard\DashboardServiceProvider');
-
-        $this->app->instance('dashboard', $dashboard);
-
-        $dashboard->shouldReceive('queueRecord')
-              ->times($times)
-              ->with('settlement', Mockery::type('Models\\Base\\PublicEntity'));
     }
 }
