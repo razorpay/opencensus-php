@@ -15,29 +15,9 @@ final class Codes
     const PAYMENT_MODE_PAYPLUS = 'payplus';
     const PAYMENT_MODE_FULLPAY = 'fullpay';
 
-    const TXN_TYPE_SALE     = 'sale';
-    const TXN_TYPE_AUTH     = 'preauth';
-    const TXN_TYPE_CAPTURE  = 'postauth';
-    const TXN_TYPE_VOID     = 'void';
-    const TXN_TYPE_REFUND   = 'return';
-
-    const STATUS_APPROVED                  = 'APPROVED';
-
-    public static $txnTypes = array(
-        self::TXN_TYPE_SALE,
-        self::TXN_TYPE_AUTH,
-        self::TXN_TYPE_CAPTURE,
-        self::TXN_TYPE_VOID,
-    );
-
     public static $paymentModes = array(
         self::PAYMENT_MODE_PAYONLY,
         self::PAYMENT_MODE_PAYPLUS,
         self::PAYMENT_MODE_FULLPAY,
-    );
-
-    public static $amountEntity = array(
-        self::TXN_TYPE_CAPTURE     =>  'payment',
-        self::TXN_TYPE_REFUND      =>  'refund',
     );
 }

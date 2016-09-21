@@ -6,6 +6,7 @@ use RZP\Models\Base;
 use RZP\Gateway\FirstData\Constants;
 use RZP\Gateway\FirstData\Mapping;
 use RZP\Gateway\FirstData\ConnectRequestFields;
+use RZP\Gateway\FirstData\TxnType;
 use RZP\Gateway\FirstData\Codes;
 
 class Validator extends Base\Validator
@@ -68,7 +69,7 @@ class Validator extends Base\Validator
     protected function validateTxntype($input)
     {
         if ((isset($input['txntype']) === false) or
-            (in_array($input['txntype'], Codes::$txnTypes) === false))
+            (in_array($input['txntype'], TxnType::$list) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid txntype');

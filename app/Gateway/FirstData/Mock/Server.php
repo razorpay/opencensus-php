@@ -65,7 +65,7 @@ class Server extends Base\Mock\Server
             FirstData\ConnectResponseFields::PROCESSOR_RESPONSE_CODE   => 00,
             FirstData\ConnectResponseFields::RESPONSE_CODE_3DSECURE    => '',
             FirstData\ConnectResponseFields::RESPONSE_HASH             => $response_hash,
-            FirstData\ConnectResponseFields::STATUS                    => FirstData\Codes::STATUS_APPROVED,
+            FirstData\ConnectResponseFields::STATUS                    => FirstData\Status::APPROVED,
             FirstData\ConnectResponseFields::TDATE                     => $tdate,
             FirstData\ConnectResponseFields::TERMINAL_ID               => $this->generateId(),
             FirstData\ConnectResponseFields::TIMEZONE                  => $input[FirstData\ConnectRequestFields::TIME_ZONE],
@@ -111,7 +111,7 @@ class Server extends Base\Mock\Server
             FirstData\ApiResponseFields::TDATE                       => (string) $dateTime->getTimeStamp(),
             FirstData\ApiResponseFields::TDATE_FORMATTED             => (string) $dateTime->format("Y.m.d H:i:s (T)"),
             FirstData\ApiResponseFields::TERMINAL_ID                 => "random_terminal_id",
-            FirstData\ApiResponseFields::TRANSACTION_RESULT          => "APPROVED",
+            FirstData\ApiResponseFields::TRANSACTION_RESULT          => FirstData\Status::APPROVED,
             FirstData\ApiResponseFields::TRANSACTION_TIME            => (string) $dateTime->getTimeStamp(),
             FirstData\ApiResponseFields::VERSION                     => "5.4.0-200",
         );
