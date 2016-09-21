@@ -93,12 +93,23 @@ class FeeCalculator
         {
             $rule = $this->getRelevantPaymentPricingRule($rules, $method);
         }
+        else if ($feature === Pricing\Feature::PAYOUT)
+        {
+            $rule = $this->getRelevantPayoutPricingRule($rules, $method);
+        }
 
         if ($rule === null)
         {
             throw new Exception\LogicException(
                 'No appropriate pricing rule found', null, ['entity' => $entity->toArray()]);
         }
+
+        return $rule;
+    }
+
+    protected function getRelevantPayoutPricingRule($rules, $method)
+    {
+        $rule = $this->getRelevantPricingRuleForMethod($rules);
 
         return $rule;
     }

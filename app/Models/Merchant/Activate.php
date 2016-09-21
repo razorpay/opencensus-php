@@ -272,6 +272,11 @@ class Activate extends Base\Core
         $merchantMethods = (new Methods\Core)->getMethods($merchant);
 
         foreach ($rules as $rule) {
+            // Don't add rules other than payment
+            if ($rule[Pricing\Entity::FEATURE] !== Pricing\Feature::PAYMENT)
+            {
+                continue;
+            }
 
             // Don't add international rule if merchant international not active
             if (($merchant->isInternational() === false) and

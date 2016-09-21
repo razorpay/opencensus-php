@@ -68,6 +68,7 @@ class Validator extends Base\Validator
         if ($feature === Pricing\FEATURE::PAYOUT)
         {
             //add payout validator
+            Payout\Method::validateMethod($input[Pricing\Entity::PAYMENT_METHOD]);
         }
     }
 

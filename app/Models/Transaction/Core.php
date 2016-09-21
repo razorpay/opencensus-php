@@ -8,6 +8,7 @@ use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
+use RZP\Models\Payout;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Pricing;
 use RZP\Models\Terminal;
@@ -129,6 +130,22 @@ class Core extends Base\Core
 
         if ($oldTransaction === true)
         {
+            $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($payment);
+
+            $fee = 0;
+            $serviceTax = 0;
+            $credit = $amount;
+        }
+        else if ($freeCredits > 0)
+        {
+            $this->trace->info(
+                TraceCode::TRANSACTION_FREE_CREDITS,
+                [
+                    'payment_id' => $payment->getId(),
+                    'amount' => $amount,
+                    'free_credits' => $freeCredits,
+                ]
+            );
             $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($payment);
 
             $fee = 0;
@@ -325,6 +342,44 @@ class Core extends Base\Core
         $adj->transaction()->associate($txn);
 
         $this->updateBalances($txn, $updateEscrow);
+
+        return $txn;
+    }
+
+    public function createFromPayout(Payout\Entity $payout)
+    {
+        $txn = new Transaction\Entity;
+
+        $amount = $payout->getAmount();
+
+        list($fee, $serviceTax, $ruleId) =
+            (new Pricing\Fee)->calculateMerchantFees($payout, false);
+
+        $settledAt = time();
+
+        $values = array(
+            Transaction\Entity::DEBIT               => abs($amount + $fee),
+            Transaction\Entity::CREDIT              => 0,
+            Transaction\Entity::CURRENCY            => 'INR',
+            Transaction\Entity::GATEWAY_FEE         => 0,
+            Transaction\Entity::GATEWAY_SERVICE_TAX => 0,
+            Transaction\Entity::API_FEE             => $fee,
+            Transaction\Entity::RECONCILED_AT       => time(),
+            Transaction\Entity::SETTLED             => 0,
+            Transaction\Entity::SETTLED_AT          => $settledAt,
+            Transaction\Entity::FEE                 => $fee,
+            Transaction\Entity::SERVICE_TAX         => $serviceTax,
+            Transaction\Entity::PRICING_RULE_ID     => $ruleId,
+            Transaction\Entity::AMOUNT              => abs($amount + $fee),
+            Transaction\Entity::TYPE                => Transaction\Type::PAYOUT,
+            Transaction\Entity::CHANNEL             => Transaction\Channel::KOTAK,
+        );
+
+        $txn->fillAndGenerateId($values);
+
+        $txn->merchant()->associate($payout->merchant);
+
+        $txn->sourceAssociate($payout);
 
         return $txn;
     }

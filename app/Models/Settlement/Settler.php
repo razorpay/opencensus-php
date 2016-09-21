@@ -424,7 +424,7 @@ class Settler
 
         $feeAccount = $this->repo->merchant->findOrFail(Merchant\Account::API_FEE_ACCOUNT);
 
-        list($setl, $adjTxn) = (new Settlement\Merchant($feeAccount, $channel))->collectApiFees($apiFee);
+        list($setl, $adjTxn) = (new Settlement\Merchant($feeAccount, $channel, $this->repo))->collectApiFees($apiFee);
 
         return [$setl, $adjTxn];
     }
