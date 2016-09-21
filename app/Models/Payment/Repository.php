@@ -240,6 +240,13 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchPaymentsForOrderId($orderId)
+    {
+        return $this->newQuery()
+                    ->where(Payment\Entity::ORDER_ID, '=', $orderId)
+                    ->get();
+    }
+
     protected function addQueryParamBank($query, $params)
     {
         if (Payment\Processor\Netbanking::isSupportedBank($params['bank']) === false)

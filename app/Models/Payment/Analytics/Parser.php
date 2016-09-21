@@ -7,6 +7,7 @@ use RZP\Http\RequestHeader;
 use RZP\Models\Base;
 use RZP\Models\Payment\Analytics;
 use RZP\Models\Payment\Analytics\Metadata;
+use RZP\Models\Order;
 use RZP\Trace\TraceCode;
 
 class Parser extends Base\Core
@@ -33,13 +34,13 @@ class Parser extends Base\Core
         // get data from request
         $this->setHttpRequestData($log);
 
+        $this->setLogAttempts($rawData, $log);
+
         $metadata = $this->getCheckoutMetadata($rawData);
 
         if ($metadata !== null)
         {
             $this->setLogFromMetadata($metadata, $log);
-
-            $this->setLogAttempts($metadata, $log);
 
             $this->updateLogFromMetadata($metadata, $log);
         }
@@ -112,16 +113,48 @@ class Parser extends Base\Core
         }
     }
 
-    protected function setLogAttempts($metadata, & $log)
+    protected function setLogAttempts($rawData, & $log)
     {
-        if (isset($metadata[Entity::CHECKOUT_ID]) === false)
+        $orderId = isset($rawData['order_id']) ? $rawData['order_id'] : null;
+
+        if ($orderId !== null)
         {
+            $orderId = (new Order\Entity)->verifyIdAndSilentlyStripSign($rawData['order_id']);
+
+            $payments = $this->repo->payment->fetchPaymentsForOrderId($orderId);
+
+            $log[Entity::ATTEMPTS] = $payments->count();
+
             return;
         }
 
-        $checkoutId = $metadata[Entity::CHECKOUT_ID];
+        $metadata = $this->getCheckoutMetadata($rawData);
 
-        $log[Entity::ATTEMPTS] = $this->calculatePaymentAttempts($checkoutId);
+        $checkoutId = isset($metadata['checkout_id']) ? $metadata['checkout_id'] : null;
+
+        if ($checkoutId !== null)
+        {
+            // get from checkout id
+            $oldPayments = $this->repo->payment_analytics->getRecentMerchantPaymentsForCheckoutId($checkoutId);
+
+            $count = $oldPayments->count();
+
+            if (($count > 0) and
+                ($count !== $oldPayments->first()->getAttempts()))
+            {
+                $this->trace->warning(
+                    TraceCode::PAYMENT_CHECKOUT_INVALID_ID,
+                    [
+                        'checkout_id' => $checkoutId
+                    ]);
+
+                return null;
+            }
+
+            $log[Entity::ATTEMPTS] = $count + 1;
+        }
+
+        return;
     }
 
     protected function updateLogFromMetadata($metadata, & $log)

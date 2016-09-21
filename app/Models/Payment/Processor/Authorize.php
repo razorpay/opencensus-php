@@ -101,9 +101,10 @@ trait Authorize
 
             // data for payment analytics
             $rawData = [
-                            'payment_id' => $payment['id'],
-                            'input' => $input,
-                            'terminal_id' => $payment['terminal_id']
+                            'payment_id'    => $payment['id'],
+                            'input'         => $input,
+                            'terminal_id'   => $payment['terminal_id'],
+                            'order_id'      => (isset($payment['order_id']) ? $payment['order_id'] : null),
                         ];
 
             if ($this->canRunOtpPaymentFlow($payment, $input))

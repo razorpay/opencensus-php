@@ -72,6 +72,7 @@ class TraceCode
     const MANUAL_GATEWAY_REFUND_INITIATED           = 'MANUAL_GATEWAY_REFUND_INITIATED';
     const REFUND_GATEWAY_REQUIRED                   = 'REFUND_GATEWAY_REQUIRED';
     const PAYMENT_AUTO_REFUND_FAILURE               = 'PAYMENT_AUTO_REFUND_FAILURE';
+    const PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND     = 'PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND';
 
     const ORDER_MULTIPLE_CAPTURED_PAYMENTS          = 'ORDER_MULTIPLE_CAPTURED_PAYMENTS';
 
@@ -270,7 +271,7 @@ class TraceCode
         self::PAYMENT_CAPTURE_FAILURE                   => 'Payment capture failed',
         self::PAYMENT_VERIFY_FAILED                     => 'Payment verification with gateway failed',
         self::PAYMENT_FAILED_TO_AUTHORIZED              => 'Payment failed but which succeded on gateway, converting it to authorized',
-        self::PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND     => 'Payment request does not have checkout id'
+        self::PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND     => 'Payment request does not have checkout id',
         self::PAYMENT_QUEUE_CAPTURE_REQUEST             => 'Payment capture request via queue',
         self::PAYMENT_QUEUE_CAPTURE_SUCCESS             => 'Payment captured successfully via queue',
         self::PAYMENT_QUEUE_CAPTURE_FAILURE             => 'Payment failed to capture via queue',
