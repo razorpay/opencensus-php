@@ -30,7 +30,6 @@ class Validator extends Base\Validator
         Entity::SHARED                      => 'sometimes|boolean',
         Entity::GATEWAY_ACQUIRER            => 'sometimes|string|max:30',
         Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
-        Entity::ENABLED                     => 'sometimes|boolean'
     );
 
     protected static $editTerminalGateways = array(
@@ -50,20 +49,17 @@ class Validator extends Base\Validator
         Entity::EMI                         => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
         Entity::GATEWAY_RECON_PASSWORD      => 'sometimes|alpha_num',
-        Entity::ENABLED                     => 'sometimes|boolean'
     );
 
     protected static $billdeskTerminalRules = array(
         Entity::GATEWAY                     => 'required|in:billdesk',
         Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|min:2',
-        Entity::ENABLED                     => 'sometimes|boolean'
     );
 
     protected static $ebsTerminalRules = array(
         Entity::GATEWAY                     => 'required|in:ebs',
         Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|max:5',
         Entity::GATEWAY_SECURE_SECRET       => 'required|alpha_num|max:32',
-        Entity::ENABLED                     => 'sometimes|boolean'
     );
 
     protected static $axisGeniusTerminalRules = array(
@@ -71,7 +67,6 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|size:15',
         Entity::GATEWAY_SECURE_SECRET       => 'required|alpha_num|size:32',
         Entity::GATEWAY_ACCESS_CODE         => 'required|alhpa_num|size:8',
-        Entity::ENABLED                     => 'sometimes|boolean'
     );
 
     protected static $amexTerminalRules = array(
@@ -83,7 +78,6 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'required',
         Entity::EMI                         => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12',
-        Entity::ENABLED                     => 'sometimes|boolean'
     );
 
     protected static $axisMigsTerminalRules = array(
@@ -93,7 +87,6 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACCESS_CODE         => 'required|alpha_num|size:8',
         Entity::GATEWAY_TERMINAL_ID         => 'required',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'required',
-        Entity::ENABLED                     => 'sometimes|boolean'
     );
 
     protected static $cybersourceTerminalRules = array(
@@ -103,7 +96,6 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID         => 'required|string|max:20',
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
         Entity::GATEWAY_ACQUIRER            => 'required|string',
-        Entity::ENABLED                     => 'sometimes|boolean'
     );
 
     protected static $axisMigsEditTerminalRules = array(
@@ -111,21 +103,18 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_ID         => 'sometimes',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
         Entity::CARD                        => 'sometimes|boolean|in:1',
-        Entity::ENABLED                     => 'sometimes|boolean'
     );
 
     protected static $hdfcEditTerminalRules = array(
         Entity::GATEWAY_RECON_PASSWORD      => 'sometimes|alpha_num',
         Entity::GATEWAY                     => 'sometimes|in:hdfc',
         Entity::CARD                        => 'sometimes|boolean|in:1',
-        Entity::ENABLED                     => 'sometimes|boolean'
     );
 
     protected static $upiIciciEditTerminalRules = array(
         Entity::GATEWAY                     => 'sometimes|in:upi_icici',
         Entity::UPI                         => 'sometimes|boolean|in:1',
         Entity::GATEWAY_TERMINAL_ID         => 'sometimes',
-        Entity::ENABLED                     => 'sometimes|boolean'
     );
 
     protected static $walletPayzappTerminalRules = array(
@@ -136,7 +125,6 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET       => 'required|string|size:21',
         Entity::GATEWAY_ACCESS_CODE         => 'required|integer|digits:4',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|alpha_num|size:16',
-        Entity::ENABLED                     => 'sometimes|boolean'
     );
 
     protected static $walletPayumoneyTerminalRules = array(
@@ -145,20 +133,17 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID2        => 'required|string',
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
         Entity::GATEWAY_ACCESS_CODE         => 'required|string',
-        Entity::ENABLED                     => 'sometimes|boolean'
     );
 
     protected static $walletOlamoneyTerminalRules = array(
         Entity::GATEWAY                     => 'required|in:wallet_olamoney',
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
         Entity::GATEWAY_ACCESS_CODE         => 'required|string',
-        Entity::ENABLED                     => 'sometimes|boolean'
     );
 
     protected static $walletAirtelmoneyTerminalRules = array(
         Entity::GATEWAY                     => 'required|in:wallet_airtelmoney',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
-        Entity::ENABLED                     => 'sometimes|boolean'
     );
 
     protected function validateGateway($input)
