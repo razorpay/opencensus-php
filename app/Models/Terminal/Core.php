@@ -35,20 +35,6 @@ class Core extends Base\Core
         }
         else
         {
-            $terminalStatusTrace = null;
-
-            if (isset($input['enabled']))
-            {
-                $status = (bool) $input['enabled'];
-
-                $terminalStatusTrace = TraceCode::TERMINAL_DISABLE;
-
-                if ($status === true)
-                {
-                    $terminalStatusTrace = TraceCode::TERMINAL_ENABLE;
-                }
-            }
-
             $this->trace->info(
                 TraceCode::TERMINAL_EDIT,
                 [
@@ -56,21 +42,27 @@ class Core extends Base\Core
                     'fields' => array_keys($input),
                 ]);
 
-            // this trace logging below is only
-            // used here for fine grained checks
-            // on terminal enabling and disabling
-            if ($terminalStatusTrace !== null)
-            {
-                $this->trace->info(
-                    $terminalStatusTrace,
-                    ['terminal_id' => $terminal->getId()]
-                );
-            }
-
             $terminal->edit($input);
 
             $this->repo->saveOrFail($terminal);
         }
+
+        return $terminal;
+    }
+
+    public function toggle($terminal, $toggle)
+    {
+        $isEnabled = $terminal->isEnabled();
+
+        $terminalStatusTrace = ($toggle) ? TraceCode::TERMINAL_ENABLE : TraceCode::TERMINAL_DISABLE;
+
+        $this->trace->info(
+            $terminalStatusTrace,
+            ['terminal_id' => $terminal->getId(), 'isEnabled' => $isEnabled]);
+
+        $terminal->setEnabled($toggle);
+
+        $this->repo->saveOrFail($terminal);
 
         return $terminal;
     }
