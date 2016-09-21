@@ -232,6 +232,8 @@ class ErrorCode
     const BAD_REQUEST_REFUND_FAILED                                                 = 'BAD_REQUEST_REFUND_FAILED';
     const BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE                                     = 'BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE';
 
+    const BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE                                     = 'BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE';
+
     const BAD_REQUEST_URL_NOT_FOUND                                                 = 'BAD_REQUEST_URL_NOT_FOUND';
     const BAD_REQUEST_NOTES_SHOULD_BE_ARRAY                                         = 'BAD_REQUEST_NOTES_SHOULD_BE_ARRAY';
     const BAD_REQUEST_NOTES_TOO_MANY_KEYS                                           = 'BAD_REQUEST_NOTES_TOO_MANY_KEYS';
