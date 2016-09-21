@@ -539,7 +539,7 @@
     <span class="text-danger"><strong>
     Warning: The terminal once assigned can not be changed.
     </strong></span>
-    <form class="form-horizontal" ng-init="terminal={gateway:'hdfc', mode:'live', card:1, category:1234}">
+    <form class="form-horizontal" ng-init="terminal={gateway:'hdfc', mode:'live', card:1,}">
       <div class="form-group">
         <label class="col-lg-3 control-label">Mode:</label>
         <div class="col-lg-9" >
@@ -588,6 +588,12 @@
         <label for="category" class="col-lg-3 control-label">Terminal Category:</label>
         <div class="col-lg-9" >
           <input type="number" max="9999" min="0742" class="form-control m-b" name="category" ng-model="terminal.category" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="network_category" class="col-lg-3 control-label">Terminal Network Category:</label>
+        <div class="col-lg-9" >
+          <input type="text" class="form-control m-b" name="network_category" ng-model="terminal.network_category" />
         </div>
       </div>
       <div class="form-group">
@@ -769,7 +775,8 @@
     <h3 class="modal-title">Edit Merchant</h3>
   </div>
   <div class="modal-body merchant-modal">
-    <form class="form-horizontal" ng-init="merchant={international:current.international, category:current.category, website:current.website, billing_label:current.billing_label, transaction_report_email: current.transaction_report_email.join(), settlement_schedule: current.settlement_schedule, risk_rating: current.risk_rating, fee_bearer: current.fee_bearer, name: current.name}">
+    <form class="form-horizontal" ng-init="merchant={international:current.international, category:current.category,
+    category2:current.category2, website:current.website, billing_label:current.billing_label, transaction_report_email: current.transaction_report_email.join(), settlement_schedule: current.settlement_schedule, risk_rating: current.risk_rating, fee_bearer: current.fee_bearer, name: current.name}">
       <div class="form-group">
         <label for="Name" class="col-lg-2 control-label">Name:</label>
         <div class="col-lg-10" >
@@ -780,6 +787,20 @@
         <label for="category" class="col-lg-2 control-label">MCC:</label>
         <div class="col-lg-10" >
           <input type="text" class="form-control m-b" name="category" ng-model="merchant.category" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="category2" class="col-lg-2 control-label">Category 2:</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b" name="category2" ng-model="merchant.category2">
+          <option value="grocery">Grocery</option>
+          <option value="ecommerce">Ecommerce</option>
+          <option value="govt_education">Govt Education</option>
+          <option value="pvt_education">Pvt Education</option>
+          <option value="utilities">Utilities</option>
+          <option value="corporate">Corporate</option>
+          <option value="insurance">Insurance</option>
+          </select>
         </div>
       </div>
       <div class="form-group">
