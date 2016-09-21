@@ -219,7 +219,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Terminal\Service)->toggleTerminal($tid);
+        $data = (new Terminal\Service)->toggleTerminal($tid, $input);
 
         return ApiResponse::json($data);
     }

@@ -159,4 +159,18 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ],
+
+    'testToggleTerminal' => [
+        'request' => [
+            'content' => [
+                'toggle' => '0'
+            ],
+        'method' => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                'enabled' => false
+            ]
+        ]
+    ]
 ];

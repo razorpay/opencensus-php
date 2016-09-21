@@ -366,6 +366,7 @@ final class Route
         'terminal_delete',
         'terminal_edit',
         'terminal_restore',
+        'terminal_toggle',
         'terminal_check_encrypted_value',
         'key_fetch_by_id',
         'key_fetch_multiple',
