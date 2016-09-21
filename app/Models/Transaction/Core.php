@@ -148,22 +148,6 @@ class Core extends Base\Core
             );
             $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($payment);
 
-            $fee = 0;
-            $serviceTax = 0;
-            $credit = $amount;
-        }
-        else if ($freeCredits > 0)
-        {
-            $this->trace->info(
-                TraceCode::TRANSACTION_FREE_CREDITS,
-                [
-                    'payment_id' => $payment->getId(),
-                    'amount' => $amount,
-                    'free_credits' => $freeCredits,
-                ]
-            );
-            $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($payment);
-
             $credit = $amount;
             $fee = 0;
             $serviceTax = 0;
