@@ -54,16 +54,7 @@ class Core extends Base\Core
     {
         $isEnabled = $terminal->isEnabled();
 
-        $terminalStatusTrace = null;
-
-        if ($toggle)
-        {
-            $terminalStatusTrace = TraceCode::TERMINAL_ENABLE;
-        }
-        else
-        {
-            $terminalStatusTrace = TraceCode::TERMINAL_DISABLE;
-        }
+        $terminalStatusTrace = ($toggle) ? TraceCode::TERMINAL_ENABLE : TraceCode::TERMINAL_DISABLE;
 
         $this->trace->info(
             $terminalStatusTrace,
