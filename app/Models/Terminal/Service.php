@@ -103,9 +103,7 @@ class Service extends Base\Service
 
         $toggle = (bool) $input['toggle'];
 
-        $terminal->setEnabled($toggle);
-
-        $this->repo->saveOrFail($terminal);
+        (new Terminal\Core)->toggle($terminal, $toggle);
 
         return $terminal->toArrayPublic();
     }
