@@ -8,7 +8,6 @@ use RZP\Models\BankAccount;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
-use RZP\Models\BankAccount;
 use RZP\Models\Payout;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Settlement;
