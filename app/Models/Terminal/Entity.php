@@ -42,6 +42,8 @@ class Entity extends Base\PublicEntity
 
     const MAX_TERMINALS_COUNT           = 25;
 
+    const ENABLED                       = 'enabled';
+
     //const PRIORITY                      = 'priority';
 
     protected $fillable = array(
@@ -61,6 +63,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_TERMINAL_PASSWORD,
         self::GATEWAY_RECON_PASSWORD,
         self::GATEWAY_ACQUIRER,
+        self::ENABLED
     );
 
     protected $public = array(
@@ -82,6 +85,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
+        self::ENABLED
     );
 
     protected $table = 'terminals';
@@ -117,6 +121,7 @@ class Entity extends Base\PublicEntity
         self::EMI_DURATION              => null,
         self::GATEWAY_ACQUIRER          => null,
         self::RECURRING                 => Recurring::NON_RECURRING,
+        self::ENABLED                   => true,
     );
 
     protected $casts = array(
@@ -126,6 +131,7 @@ class Entity extends Base\PublicEntity
         self::RECURRING                 => 'int',
         self::SHARED                    => 'boolean',
         self::UPI                       => 'boolean',
+        self::ENABLED                   => 'enabled',
     );
 
     public function generateMethod($input)

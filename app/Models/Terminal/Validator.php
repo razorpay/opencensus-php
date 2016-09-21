@@ -30,6 +30,7 @@ class Validator extends Base\Validator
         Entity::SHARED                      => 'sometimes|boolean',
         Entity::GATEWAY_ACQUIRER            => 'sometimes|string|max:30',
         Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
+        Entity::ENABLED                     => 'sometimes|boolean'
     );
 
     protected static $editTerminalGateways = array(
