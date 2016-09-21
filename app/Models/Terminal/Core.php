@@ -33,14 +33,35 @@ class Core extends Base\Core
         {
             $terminal->restoreOrFail();
         }
+
         else
         {
+            $terminalStatusTrace = null;
+
+            if (isset($input['enabled']))
+            {
+                $status = (bool) $input['enabled'];
+
+                $terminalStatusTrace = ($status === true) ? TraceCode::TERMINAL_ENABLE : TraceCode::TERMINAL_DISABLE;
+            }
+
             $this->trace->info(
                 TraceCode::TERMINAL_EDIT,
                 [
                     'terminal_id' => $terminal->getId(),
                     'fields' => array_keys($input),
                 ]);
+
+            // this trace logging below is only
+            // used here for fine grained checks
+            // on terminal enabling and disabling
+            if ($terminalStatusTrace !== null)
+            {
+                $this->trace->info(
+                    $terminalStatusTrace,
+                    ['terminal_id' => $terminal->getId()]
+                );
+            }
 
             $terminal->edit($input);
 

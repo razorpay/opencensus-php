@@ -98,9 +98,11 @@ class TerminalTest extends TestCase
             'terminal:shared_axis_terminal', ['used_count' => 2]);
 
         $tid = $terminal['id'];
+
         $data = array('gateway_terminal_id' => 'random', 'gateway_terminal_password' => 'random');
 
         $content = $this->editTerminal($tid, $data);
+
         $this->assertEquals($content['gateway_terminal_id'], 'random');
     }
 
@@ -130,6 +132,34 @@ class TerminalTest extends TestCase
         $content = $this->editTerminal($tid, $data);
 
         $this->assertEquals(true, $terminal->reload()->upi);
+    }
+
+    public function testEditDisableTerminal()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal:shared_axis_terminal', ['used_count' => 2]);
+
+        $tid = $terminal['id'];
+
+        $data = array('gateway_terminal_id' => 'random', 'gateway_terminal_password' => 'random');
+
+        $content = $this->editTerminal($tid, $data);
+
+        $this->assertEquals($content['gateway_terminal_id'], 'random');
+
+        $this->assertEquals($content['gateway_terminal_id'], 'random');
+
+        $this->assertEquals($content['enabled'], true);
+
+        $data = array('enabled' => 0);
+
+        $content = $this->editTerminal($tid, $data);
+
+        $this->assertEquals($content['enabled'], false);
+
+        // ensure rest of the content hasn't changed
+        $this->assertEquals($content['gateway_terminal_id'], 'random');
+
     }
 
     public function startTest($testDataToReplace = [])

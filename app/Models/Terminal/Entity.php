@@ -131,7 +131,7 @@ class Entity extends Base\PublicEntity
         self::RECURRING                 => 'int',
         self::SHARED                    => 'boolean',
         self::UPI                       => 'boolean',
-        self::ENABLED                   => 'enabled',
+        self::ENABLED                   => 'boolean',
     );
 
     public function generateMethod($input)
@@ -324,6 +324,11 @@ class Entity extends Base\PublicEntity
         return $emiDuration;
     }
 
+    public function getEnabled()
+    {
+        return $this->getAttribute(self::ENABLED);
+    }
+
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');
@@ -373,6 +378,11 @@ class Entity extends Base\PublicEntity
         return (bool) $this->getAttribute(self::SHARED);
     }
 
+    public function isEnabled()
+    {
+        return (bool) $this->getAttribute(self::ENABLED);
+    }
+
     public function isDeleted()
     {
         return ($this->getAttribute(self::DELETED_AT) !== null);
@@ -417,5 +427,15 @@ class Entity extends Base\PublicEntity
     public function setNetworkCategory($category)
     {
         $this->setAttribute(self::NETWORK_CATEGORY, $category);
+    }
+
+    protected function setEnabled($status)
+    {
+        $this->setEnabledAttribute($status);
+    }
+
+    protected function setEnabledAttribute($status)
+    {
+        $this->attributes[self::ENABLED] = (bool) $status;
     }
 }
