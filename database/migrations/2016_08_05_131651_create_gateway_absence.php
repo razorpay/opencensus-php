@@ -2,7 +2,6 @@
 
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
-
 use RZP\Constants\Table;
 use RZP\Models\GatewayStatus\Absence\Entity as DowntimeTrace;
 

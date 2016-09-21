@@ -21,13 +21,15 @@ class Entity extends Base\PublicEntity
         self::GATEWAY,
         self::FROM,
         self::TO,
-        self::REASON
+        self::REASON,
+        self::BANK
     );
 
     protected $public = array(
         self::ID,
         self::GATEWAY,
         self::FROM,
+        self::BANK,
         self::TO,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -39,10 +41,6 @@ class Entity extends Base\PublicEntity
     protected $table = Table::GATEWAYSTATUS_ABSENCE;
 
     protected $entity = 'gateway_absence';
-
-    protected static $sign = '';
-
-    protected static $delimiter = '';
 
     protected $generateIdOnCreate = true;
 

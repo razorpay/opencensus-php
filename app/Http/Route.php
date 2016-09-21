@@ -443,7 +443,7 @@ final class Route
         'gateway_create_absence',
         'gateway_update_absence',
         'gateway_delete_absence',
-        'gateway_fetch_timestamp_absence',
+        'gateway_fetch_absence',
         'refund_gateway_manual',
         'order_refund_multiple_authorized',
     );

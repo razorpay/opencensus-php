@@ -3,10 +3,6 @@
 namespace RZP\Models\GatewayStatus\Absence;
 
 use RZP\Models\Base;
-use RZP\Models\Terminal\Entity as TerminalEntity;
-use RZP\Exception;
-use RZP\Models\GatewayStatus\Absence;
-
 
 class Repository extends Base\Repository
 {
@@ -27,5 +23,4 @@ class Repository extends Base\Repository
         Entity::FROM           => 'sometimes|integer',
         Entity::TO             => 'sometimes|integer'
     );
-
 }
