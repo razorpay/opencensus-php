@@ -96,6 +96,11 @@ class Entity extends Base\PublicEntity
         return ($this->getStatus() === Status::FAILED);
     }
 
+    public function isPendingReconciliation()
+    {
+        return $this->isStatusCreated();
+    }
+
     public function setlTransactions()
     {
         return $this->hasMany('RZP\Models\Transaction\Entity');

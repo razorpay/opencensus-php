@@ -177,6 +177,16 @@ class Entity extends Base\PublicEntity
         return ($this->getStatus() === Status::FAILED);
     }
 
+    public function isStatusInitiated()
+    {
+        return ($this->getStatus() === Status::INITIATED);
+    }
+
+    public function isPendingReconciliation()
+    {
+        return $this->isStatusInitiated();
+    }
+
     public function setChannel($channel)
     {
         $this->setAttribute(self::CHANNEL, $channel);

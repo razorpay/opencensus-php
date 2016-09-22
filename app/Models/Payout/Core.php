@@ -42,15 +42,23 @@ class Core extends Base\Core
 
     public function initiatePayouts($input, $channel)
     {
-        $timestamp = Carbon::today('Asia/Kolkata')->timestamp;
+        return $this->repo->transaction(function() use ($input, $channel)
+        {
+            $timestamp = Carbon::today('Asia/Kolkata')->timestamp;
 
-        $payouts = $this->repo->payout->fetchCreatedPayouts($timestamp, Method::FUND_TRANSFER);
+            $payouts = $this->repo->payout->fetchCreatedPayouts($timestamp, Method::FUND_TRANSFER);
 
-        $payouts = $this->repo->payout->fetchAssociatedRelations($payouts, 'dest', 'destination', 'type');
+            $payouts = $this->repo->payout->fetchAssociatedRelations($payouts, 'dest', 'destination', 'type');
 
-        $data['kotak'] = $this->processBankPayoutsForKotak($payouts);
+            $this->updatePayoutStatus($payouts);
 
-        return $data;
+            $data['kotak'] = $this->processBankPayoutsForKotak($payouts);
+
+            $this->saveEntitiesToDb($payouts);
+
+            return $data;
+
+        });
     }
 
     protected function processBankPayoutsForKotak($payouts)
@@ -71,6 +79,22 @@ class Core extends Base\Core
         }
 
         return $data;
+    }
+
+    protected function updatePayoutStatus($payouts)
+    {
+        foreach ($payouts as $payout)
+        {
+            $payout->setStatus(Payout\Status::INITIATED);
+        }
+    }
+
+    protected function saveEntitiesToDb($payouts)
+    {
+        foreach ($payouts as $payout)
+        {
+            $this->repo->saveOrFail($payout);
+        }
     }
 
     protected function createPayoutEntity($input, $merchant)

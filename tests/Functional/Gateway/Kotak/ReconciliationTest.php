@@ -53,19 +53,16 @@ class ReconciliationTest extends TestCase
         // Create payments and refunds with timestamps two days back
         $payoutEntities = $this->createPayoutEntities();
 
-        // // delete Existing files
-        // $this->deleteSetlFiles();
-
         // reconciliation
         $txns = $this->matchTransactions($payoutEntities);
 
         // Generate settlements for above transactions
         $payoutFiles = $this->initiatePayoutsAndAssertSuccess();
 
-        // Generate settlement reconciliation file
+        // Generate reconciliation file, settlement and payout have common implementation
         $payoutReconciliationFile = $this->generateSetlReconciliationFile($payoutFiles);
 
-        // Reconcile settlements
+        // Reconcile settlements, same route is being used as both are h2h
         $data = $this->reconcileSettlements($payoutReconciliationFile);
     }
 

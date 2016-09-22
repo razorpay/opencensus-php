@@ -169,7 +169,7 @@ class Reconciler3
         }
 
         // if already processed
-        if ($entity->isStatusCreated() === false)
+        if ($entity->isPendingReconciliation() === false)
         {
             $oldStatus = $entity->getStatus();
 
