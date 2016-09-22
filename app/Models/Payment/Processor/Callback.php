@@ -42,6 +42,13 @@ trait Callback
      */
     public function callback($id, $hash, array $gatewayInput)
     {
+        $this->trace->info(
+            TraceCode::PAYMENT_CALLBACK_REQUEST,
+            [
+                'gateway_input' => $gatewayInput,
+                'payment_id'    => $id,
+            ]);
+        
         $payment = $this->retrieve($id);
 
         // For redirect flow
