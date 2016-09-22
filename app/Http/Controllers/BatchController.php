@@ -19,7 +19,7 @@ class BatchController extends Controller
         $this->batchService = new Batch\Service();
     }
 
-    public function uploadBatchFile()
+    public function createBatch()
     {
         $input = Request::all();
 
@@ -28,14 +28,7 @@ class BatchController extends Controller
         return ApiResponse::json($result);
     }
 
-    public function processBatchFiles()
-    {
-        $result = $this->batchService->processBatchFiles();
-
-        return ApiResponse::json($result);
-    }
-
-    public function getBatchFiles()
+    public function getBatches()
     {
         $input = Request::all();
 
@@ -44,7 +37,21 @@ class BatchController extends Controller
         return ApiResponse::json($result);
     }
 
-    public function retryBatchFile($id)
+    public function getBatchById($id)
+    {
+        $result = $this->batchService->getBatchById($id);
+
+        return ApiResponse::json($result);
+    }
+
+    public function processBatches()
+    {
+        $result = $this->batchService->processBatchFiles();
+
+        return ApiResponse::json($result);
+    }
+
+    public function retryBatch($id)
     {
         $result = $this->batchService->retryBatchFile($id);
 

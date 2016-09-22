@@ -32,16 +32,11 @@ class Service extends Base\Service
         $this->validator = new Validator();
     }
 
-    public function uploadBatchFile($input)
+    public function createBatch($input)
     {
-        $this->validator->validateInputFile($input);
+        $batch = (new Batch\Core)->create($input);
 
-        $entries = $this->parseExcelFile($input['file']);
-
-        $this->validator->validateEntries($entries, $input['type']);
-
-        $uploadFunction = 'upload' .ucfirst($input['type']);
-        return $this->$uploadFunction($input['file'], $entries);
+        return $batch->toArrayPublic();
     }
 
     public function getBatchFiles($input)
@@ -231,62 +226,6 @@ class Service extends Base\Service
 
             $message->attach($data['refundFile']);
         });
-    }
-
-    private function uploadRefund($file, $entries)
-    {
-        $totalAmountToBeRefunded = 0;
-        $totalEntries = count($entries);
-
-        $headers = array('payment_id', 'refund_amount');
-
-        foreach ($entries as $entry)
-        {
-            $entryMap = array_combine($headers, $entry);
-
-            $amount = $entryMap['refund_amount'];
-            $totalAmountToBeRefunded += $amount;
-        }
-
-        $merchant = $this->merchant;
-        $balance = $this->repo->balance->getMerchantBalance($merchant);
-        $balanceAmount = $balance->getBalance();
-
-        if ($totalAmountToBeRefunded > $balanceAmount)
-        {
-            $this->trace->info(
-                TraceCode::BATCH_UPLOAD_FILE,
-                [
-                    'message'            => 'The merchant balance is lesser than the total refund amount.',
-                    'merchantBalance'    => $balanceAmount,
-                    'totalRefundAmount'  => $totalAmountToBeRefunded,
-                ]);
-        }
-
-        $batchRefund = [
-            'total_count'           => $totalEntries,
-            'type'                  => Type::REFUND,
-        ];
-
-        return $this->saveBatch($batchRefund, $file, $merchant);
-    }
-
-    private function saveBatch($batchRefund, $file, $merchant)
-    {
-        $batchRefund = (new Entity)->build($batchRefund);
-
-        $batchRefund->merchant()->associate($merchant);
-
-        $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-        $url = $this->saveToAws($batchRefund->getId().'.xlsx',$file, $xlsxMimeType, 'batch_file_upload_bucket');
-
-        $batchRefund->setUploadFileUrl($url);
-
-        $this->repo->saveOrFail($batchRefund);
-
-        $this->trace->info(TraceCode::BATCH_UPLOAD_FILE, $batchRefund->toArrayPublic());
-
-        return $batchRefund->toArrayPublic();
     }
 
     private function processRefund($batch, $entries)

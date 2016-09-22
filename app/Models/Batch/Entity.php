@@ -69,7 +69,7 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::TYPE,
         self::PROCESSED_AT,
-        self::CREATED_AT
+        self::CREATED_AT,
     );
 
     protected $defaults = array(

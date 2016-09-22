@@ -22,8 +22,8 @@ class Entity
     const CARD                  = 'card';
     const ORDER                 = 'order';
     const TOKEN                 = 'token';
-    const REFUND                = 'refund';
     const BATCH                 = 'batch';
+    const REFUND                = 'refund';
     const BALANCE               = 'balance';
     const CREDITS               = 'credits';
     const METHODS               = 'methods';
