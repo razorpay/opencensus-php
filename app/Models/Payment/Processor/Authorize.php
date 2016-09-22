@@ -1566,7 +1566,6 @@ trait Authorize
         return Crypt::encrypt($gateway . '__' . time());
     }
 
-
     protected function verifyHash($inputHash, $paymentPublicId)
     {
         $expectedHash = $this->getHashOf($paymentPublicId);

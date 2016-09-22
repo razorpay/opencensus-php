@@ -16,6 +16,8 @@ class Gateway extends Base\Gateway
 {
     protected $gateway = 'kotak';
 
+    const CHECKSUM_ATTRIBUTE = 'SecureHash';
+
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -61,7 +63,7 @@ class Gateway extends Base\Gateway
 
         // s($input['gateway']);
 
-        $this->verifySecureHash($input);
+        $this->verifySecureHash($input['gateway']);
 
         $payment = $this->repo->findByTxnRefAndType(
             $input['gateway']['TxnRefNo'], Type::PURCHASE);
@@ -143,19 +145,6 @@ class Gateway extends Base\Gateway
             $content['MerchantId'] = $this->config['test_merchant_id'];
             $content['PassCode'] = $this->config['test_access_code'];
             $content['TerminalId'] = $this->config['test_terminal_id'];
-        }
-    }
-
-    protected function verifySecureHash($input)
-    {
-        $inputHash = $input['gateway']['SecureHash'];
-        unset($input['gateway']['SecureHash']);
-
-        $expectedHash = $this->generateHash($input['gateway']);
-
-        if (hash_equals($expectedHash, $inputHash)  !== true)
-        {
-            throw new Exception\BadRequestValidationFailureException('Failed checksum verification');
         }
     }
 

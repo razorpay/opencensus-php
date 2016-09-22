@@ -225,17 +225,13 @@ class Gateway extends Base\Gateway
             ResponseFields::TIMESTAMP,
         );
 
-        $inputHash = $content[ResponseFields::HASH];
+        $actual = $content[ResponseFields::HASH];
 
         $content = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
 
-        $expectedHash = $this->getHashOfArray($content);
+        $generated = $this->getHashOfArray($content);
 
-        if (hash_equals($expectedHash, $inputHash)  !== true)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Failed checksum verification');
-        }
+        $this->compareHashes($actual, $generated);
     }
 
     protected function getBillGeneratorRequest($input)

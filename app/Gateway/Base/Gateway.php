@@ -32,6 +32,13 @@ class Gateway
     const OTP_ATTEMPTS_LIMIT = 3;
 
     /**
+     * In gateway responses one particular field contains
+     * hash or checksum. This variable will contain that field
+     * name.
+     */
+    const CHECKSUM_ATTRIBUTE = '';
+
+    /**
      * The application instance.
      *
      * @var \Illuminate\Foundation\Application
@@ -223,6 +230,37 @@ class Gateway
         assert (is_bool($mock));
 
         $this->mock = $mock;
+    }
+
+    protected function getHashValueFromContent(array $content)
+    {
+        return $content[static::CHECKSUM_ATTRIBUTE];
+    }
+
+    protected function verifySecureHash(array $content)
+    {
+        $actual = $this->getHashValueFromContent($content);
+
+        unset($content[static::CHECKSUM_ATTRIBUTE]);
+
+        $generated = $this->generateHash($content);
+
+        $this->compareHashes($actual, $generated);
+    }
+
+    protected function compareHashes($actual, $generated)
+    {
+        if (hash_equals($actual, $generated) === false)
+        {
+            $this->trace->info(
+                TraceCode::GATEWAY_CHECKSUM_VERIFY_FAILED,
+                [
+                    'actual'    => $hash,
+                    'generated' => $generated
+                ]);
+
+            throw new Exception\RuntimeException('Failed checksum verification');
+        }
     }
 
     public function generateRefunds($input)

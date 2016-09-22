@@ -518,7 +518,7 @@ class Gateway extends Base\Gateway
         return $this->getHashOfArray($content);
     }
 
-    protected function verifySecureHash($content)
+    protected function verifySecureHash(array $content)
     {
         $fieldsInOrder = array(
             'statuscode',
@@ -529,16 +529,13 @@ class Gateway extends Base\Gateway
             'refid'
         );
 
-        $inputHash = $content['checksum'];
+        $actual = $content['checksum'];
 
         $content = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
 
-        $expectedHash = $this->getHashOfArray($content);
-        if (hash_equals($expectedHash, $inputHash)  !== true)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Failed checksum verification');
-        }
+        $generated = $this->getHashOfArray($content);
+
+        $this->compareHashes($actual, $generated);
     }
 
     protected function verifySecureHashForQueryRequest($content)
