@@ -1151,6 +1151,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Order\Entity');
     }
 
+    public function analytics()
+    {
+        return $this->hasOne('RZP\Models\Payment\Analytics\Entity');
+    }
+
     public function customer()
     {
         return $this->belongsTo('RZP\Models\Customer\Entity');

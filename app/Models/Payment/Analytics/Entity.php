@@ -91,6 +91,13 @@ class Entity extends Base\PublicEntity
         self::ATTEMPTS               => 'int',
     );
 
+    // ----------------------- Relations -------------------------------------------
+
+    public function payment()
+    {
+        return $this->hasOne('RZP\Models\Payment\Entity');
+    }
+
     // ----------------------- Getters ---------------------------------------------
 
     public function getPaymentId()
