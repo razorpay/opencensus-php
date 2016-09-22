@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Trace\Trace;
 use RZP\Constants\Mode;
+use RZP\Models\Payment;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
@@ -16,7 +17,6 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\HashAlgo;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Wallet\Base;
-use RZP\Models\Payment\Core;
 use RZP\Models\Customer\Token;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Wallet\Base\Action;
@@ -634,6 +634,12 @@ class Gateway extends Base\Gateway
             'totalAmount'   => ceil($amount),
             'client_id'     => $this->getClientId($input['terminal']),
         );
+
+        if ((isset($input['analytics']) === true) and
+            ($input['analytics']['device'] === Payment\Analytics\Metadata::MOBILE))
+        {
+            $content['isMobile'] = '2';
+        }
 
         $content['hash'] = $this->getHashForTopupWallet($content);
 
