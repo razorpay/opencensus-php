@@ -46,7 +46,7 @@ class TokenEx
 
         $this->baseUrl = $this->config['url'];
 
-        $this->proxy = $app['proxy_address'];
+        $this->proxy = $app['config']->get('app.proxy_address');
     }
 
     public function tokenize($data)
