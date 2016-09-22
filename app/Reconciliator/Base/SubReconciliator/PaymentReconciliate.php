@@ -90,6 +90,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         try
         {
+            $this->runPreReconciledAtCheckRecon($rowDetails);
+
             $reconciled = $this->checkIfAlreadyReconciled($this->payment);
 
             if ($reconciled === true)
@@ -142,6 +144,11 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
             //return;
         }
+    }
+
+    protected function runPreReconciledAtCheckRecon($rowDetails)
+    {
+        $this->persistGatewaySettledAt($this->payment, $rowDetails);
     }
 
     protected function validatePaymentStatus($row)
@@ -296,6 +303,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $this->persistCardDetailsIfAbsent($rowDetails);
 
+        $this->persistGatewaySettledAt($this->payment, $rowDetails);
+
         return $recordSuccess;
     }
 
@@ -322,10 +331,13 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $fee = $this->getGatewayFee($row);
 
+        $gatewaySettledAt = $this->getGatewaySettledAt($row);
+
         $rowDetails = [
-            BaseReconciliate::PAYMENT_ID          => $paymentId,
-            BaseReconciliate::GATEWAY_SERVICE_TAX => $serviceTax,
-            BaseReconciliate::GATEWAY_FEE         => $fee,
+            BaseReconciliate::PAYMENT_ID            => $paymentId,
+            BaseReconciliate::GATEWAY_SERVICE_TAX   => $serviceTax,
+            BaseReconciliate::GATEWAY_FEE           => $fee,
+            BaseReconciliate::GATEWAY_SETTLED_AT    => $gatewaySettledAt,
         ];
 
         // For wallets and netbanking, $cardDetails would be empty.

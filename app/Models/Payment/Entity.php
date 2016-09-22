@@ -962,7 +962,7 @@ class Entity extends Base\PublicEntity
                 return [$method, ucfirst($this->getWallet())];
                 break;
             case Method::UPI:
-                return [$method, ''];
+                return [$method, $this->getVpa()];
                 break;
         }
     }
