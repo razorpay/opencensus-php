@@ -27,7 +27,7 @@ class Server extends Base\Mock\Server
 
         $dateTime = Carbon::now('Asia/Kolkata');
 
-        $tdate = $dateTime->format('YmdHis').random_integer(5);
+        $tdate = $dateTime->getTimeStamp().random_integer(5);
         $txndate_processed = $dateTime->format(FirstData\Codes::DATE_TIME_FORMAT);
 
         $approvalCode = $this->getApprovalCode();
@@ -108,7 +108,7 @@ class Server extends Base\Mock\Server
             FirstData\ApiResponseFields::PROCESSOR_RESPONSE_CODE     => "00",
             FirstData\ApiResponseFields::PROCESSOR_RESPONSE_MESSAGE  => "Function performed error-free",
             FirstData\ApiResponseFields::REFERENCED_TDATE            => (string) $dateTime->getTimeStamp(),
-            FirstData\ApiResponseFields::TDATE                       => (string) $dateTime->getTimeStamp(),
+            FirstData\ApiResponseFields::TDATE                       => (string) $dateTime->getTimeStamp().random_integer(5),
             FirstData\ApiResponseFields::TDATE_FORMATTED             => (string) $dateTime->format("Y.m.d H:i:s (T)"),
             FirstData\ApiResponseFields::TERMINAL_ID                 => "random_terminal_id",
             FirstData\ApiResponseFields::TRANSACTION_RESULT          => FirstData\Status::APPROVED,
@@ -145,7 +145,7 @@ class Server extends Base\Mock\Server
             FirstData\ApiResponseFields::PROCESSOR_RESPONSE_CODE     => "00",
             FirstData\ApiResponseFields::PROCESSOR_RESPONSE_MESSAGE  => "Function performed error-free",
             FirstData\ApiResponseFields::REFERENCED_TDATE            => (string) $dateTime->getTimeStamp(),
-            FirstData\ApiResponseFields::TDATE                       => (string) $dateTime->getTimeStamp(),
+            FirstData\ApiResponseFields::TDATE                       => (string) $dateTime->getTimeStamp().random_integer(5),
             FirstData\ApiResponseFields::TDATE_FORMATTED             => (string) $dateTime->format("Y.m.d H:i:s (T)"),
             FirstData\ApiResponseFields::TERMINAL_ID                 => "random_terminal_id",
             FirstData\ApiResponseFields::TRANSACTION_RESULT          => "APPROVED",
@@ -165,13 +165,25 @@ class Server extends Base\Mock\Server
         $xmlBody = $xml->children('SOAP-ENV', true)->Body->children('ipgapi', true)->children('a1', true);
         $body = json_decode(json_encode($xmlBody), true);
 
-        $oid = $body['Action']['InquiryOrder']['OrderId'];
+        $inquiryOrder = $body[FirstData\ApiRequestFields::ACTION][FirstData\ApiRequestFields::INQUIRY_ORDER];
+
+        $oid = $inquiryOrder[FirstData\ApiRequestFields::ORDER_ID];
+
         $dateTime = Carbon::now('Asia/Kolkata');
+
+
+        $authGatewayPayment = (new FirstData\Repository)->findByPaymentIdAndActionOrFail($oid, Base\Action::AUTHORIZE);
+        $tdates['auth'] = $authGatewayPayment->getTdate();
+        $captureGatewayPayment = (new FirstData\Repository)->findByPaymentIdAndActionOrFail($oid, Base\Action::CAPTURE);
+        $tdates['capture'] = $captureGatewayPayment->getTdate();
+        $refundGatewayPayment = (new FirstData\Repository)->findByPaymentIdAndActionOrFail($oid, Base\Action::REFUND);
+        $tdates['refund'] = $refundGatewayPayment->getTdate();
+
         $tdate = (string) $dateTime->getTimeStamp();
         $approvalCode = $this->getApprovalCode();
         $tdateformatted = (string) $dateTime->format("Y.m.d H:i:s (T)");
 
-        $soapContent = FirstData\SoapWrapper::verifyResponseWrapper($oid, $dateTime, $tdate, $approvalCode, $tdateformatted);
+        $soapContent = FirstData\SoapWrapper::verifyResponseWrapper($oid, $dateTime, $tdates, $approvalCode, $tdateformatted);
 
         return $this->prepareResponse($soapContent);
     }
@@ -179,30 +191,6 @@ class Server extends Base\Mock\Server
     protected function getApprovalCode()
     {
         return 'Y'.':'.random_integer(6).':'.random_integer(10).':PPX :'.random_integer(12);
-    }
-
-    private function arrayToXml($array, $wrap=null)
-    {
-        // set initial value for XML string
-        $xml = '';
-        foreach ($array as $key => $value)
-        {
-            if ( is_array($value) == true )
-            {
-                $xml .= $this->arrayToXml($value, $key);
-            }
-            else
-            {
-                $xml .= "<$key>" . htmlspecialchars(trim($value)) . "</$key>";
-            }
-        }
-        // wrap XML with $wrap TAG
-        if ($wrap != null)
-        {
-            $xml = "<$wrap>".$xml."</$wrap>";
-        }
-
-        return $xml;
     }
 
     protected function buildIpgApiOrderResponse($array)

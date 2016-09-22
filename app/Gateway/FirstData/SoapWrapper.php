@@ -27,8 +27,12 @@ class SoapWrapper
         return $soapWrapper;
     }
 
-    public static function verifyResponseWrapper($oid, $timestamp, $tdate, $approvalCode, $tdateformatted)
+    public static function verifyResponseWrapper($oid, $timestamp, $tdates, $approvalCode, $tdateformatted)
     {
+        $authTdate = $tdates['auth'];
+        $refundTdate = $tdates['refund'];
+        $captureTdate = $tdates['capture'];
+
         $soapContent = "
             <SOAP-ENV:Envelope xmlns:SOAP-ENV='http://schemas.xmlsoap.org/soap/envelope/'>
             <SOAP-ENV:Header/>
@@ -58,7 +62,7 @@ class SoapWrapper
                             <v1:InvoiceNumber>$oid</v1:InvoiceNumber>
                             <v1:OrderId>$oid</v1:OrderId>
                             <v1:Ip>182.74.201.50</v1:Ip>
-                            <v1:TDate>$tdate</v1:TDate>
+                            <v1:TDate>$authTdate</v1:TDate>
                             <v1:TransactionOrigin>ECI</v1:TransactionOrigin>
                         </v1:TransactionDetails>
                         <ipgapi:IPGApiOrderResponse>
@@ -70,8 +74,8 @@ class SoapWrapper
                             <ipgapi:PaymentType>CREDITCARD</ipgapi:PaymentType>
                             <ipgapi:ProcessorApprovalCode>014932</ipgapi:ProcessorApprovalCode>
                             <ipgapi:ProcessorCCVResponse/>
-                            <ipgapi:ReferencedTDate>$tdate</ipgapi:ReferencedTDate>
-                            <ipgapi:TDate>$tdate</ipgapi:TDate>
+                            <ipgapi:ReferencedTDate>$authTdate</ipgapi:ReferencedTDate>
+                            <ipgapi:TDate>$authTdate</ipgapi:TDate>
                             <ipgapi:TDateFormatted>$tdateformatted</ipgapi:TDateFormatted>
                             <ipgapi:TerminalID>44000025</ipgapi:TerminalID>
                         </ipgapi:IPGApiOrderResponse>
@@ -97,7 +101,7 @@ class SoapWrapper
                             <v1:InvoiceNumber>$oid</v1:InvoiceNumber>
                             <v1:OrderId>$oid</v1:OrderId>
                             <v1:Ip>182.74.201.50</v1:Ip>
-                            <v1:TDate>1473952020</v1:TDate>
+                            <v1:TDate>$captureTdate</v1:TDate>
                             <v1:TransactionOrigin>ECI</v1:TransactionOrigin>
                         </v1:TransactionDetails>
                         <ipgapi:IPGApiOrderResponse>
@@ -109,8 +113,8 @@ class SoapWrapper
                             <ipgapi:PaymentType>CREDITCARD</ipgapi:PaymentType>
                             <ipgapi:ProcessorApprovalCode>014932</ipgapi:ProcessorApprovalCode>
                             <ipgapi:ProcessorCCVResponse/>
-                            <ipgapi:ReferencedTDate>$tdate</ipgapi:ReferencedTDate>
-                            <ipgapi:TDate>1473952020</ipgapi:TDate>
+                            <ipgapi:ReferencedTDate>$captureTdate</ipgapi:ReferencedTDate>
+                            <ipgapi:TDate>$captureTdate</ipgapi:TDate>
                             <ipgapi:TDateFormatted>$tdateformatted</ipgapi:TDateFormatted>
                             <ipgapi:TerminalID>44000025</ipgapi:TerminalID>
                         </ipgapi:IPGApiOrderResponse>
@@ -137,7 +141,7 @@ class SoapWrapper
                             <v1:InvoiceNumber>$oid</v1:InvoiceNumber>
                             <v1:OrderId>$oid</v1:OrderId>
                             <v1:Ip>182.74.201.50</v1:Ip>
-                            <v1:TDate>$tdate</v1:TDate>
+                            <v1:TDate>$refundTdate</v1:TDate>
                             <v1:TransactionOrigin>ECI</v1:TransactionOrigin>
                         </v1:TransactionDetails>
                         <ipgapi:IPGApiOrderResponse>
@@ -148,13 +152,13 @@ class SoapWrapper
                             <ipgapi:PaymentType>CREDITCARD</ipgapi:PaymentType>
                             <ipgapi:ProcessorApprovalCode>014932</ipgapi:ProcessorApprovalCode>
                             <ipgapi:ProcessorCCVResponse/>
-                            <ipgapi:ReferencedTDate>$tdate</ipgapi:ReferencedTDate>
-                            <ipgapi:TDate>$tdate</ipgapi:TDate>
+                            <ipgapi:ReferencedTDate>$refundTdate</ipgapi:ReferencedTDate>
+                            <ipgapi:TDate>$refundTdate</ipgapi:TDate>
                             <ipgapi:TDateFormatted>$tdateformatted</ipgapi:TDateFormatted>
                             <ipgapi:TerminalID>44000025</ipgapi:TerminalID>
                         </ipgapi:IPGApiOrderResponse>
                         <a1:TraceNumber>625915</a1:TraceNumber>
-                        <a1:TransactionState>CAPTURED</a1:TransactionState>
+                        <a1:TransactionState>SETTLED</a1:TransactionState>
                         <a1:UserID>1</a1:UserID>
                         <a1:SubmissionComponent>API</a1:SubmissionComponent>
                     </a1:TransactionValues>

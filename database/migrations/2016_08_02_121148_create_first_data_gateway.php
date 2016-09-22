@@ -38,6 +38,9 @@ class CreateFirstDataGateway extends Migration
             $table->char(FirstData::STATUS, 20)
                   ->nullable();
 
+            $table->char(FirstData::TRANSACTION_RESULT, 20)
+                  ->nullable();
+
             $table->char(FirstData::ORDER_ID, 20)
                   ->nullable();
 
@@ -56,7 +59,7 @@ class CreateFirstDataGateway extends Migration
             $table->char(FirstData::TERMINAL_ID, 20)
                   ->nullable();
 
-            $table->char(FirstData::FAIL_REASON, 20)
+            $table->char(FirstData::FAIL_REASON, 50)
                   ->nullable();
 
             $table->char(FirstData::FAIL_RC, 20)

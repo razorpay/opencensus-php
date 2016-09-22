@@ -20,4 +20,8 @@ class ApiRequestFields
     const A1_ACTION                         = 'a1:Action';
     const A1_INQUIRY_ORDER                  = 'a1:InquiryOrder';
     const A1_ORDER_ID                       = 'a1:OrderId';
+
+    const ACTION                            = 'Action';
+    const INQUIRY_ORDER                     = 'InquiryOrder';
+    const ORDER_ID                          = 'OrderId';
 }

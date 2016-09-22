@@ -19,4 +19,13 @@ class Repository extends Base\Repository
                   ->where(Entity::STATUS, '=', FirstData\Status::APPROVED)
                   ->first();
     }
+
+    public function retrieveByOrderIdAndTdate($orderId, $tdate)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Entity::TDATE, '=', $tdate)
+                  ->where(Entity::ORDER_ID, '=', $orderId)
+                  ->first();
+    }
 }

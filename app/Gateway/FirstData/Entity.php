@@ -12,6 +12,7 @@ class Entity extends Base\Entity
     const ORDER_ID                      = 'order_id';
     const TDATE                         = 'tdate';
     const STATUS                        = 'status';
+    const TRANSACTION_RESULT            = 'transaction_result';
     const PROCESSOR_RESPONSE_CODE       = 'processor_response_code';
     const PROCESSOR_APPROVAL_CODE       = 'processor_approval_code';
     const PROCESSOR_RESPONSE_MESSAGE    = 'processor_response_message';
@@ -29,6 +30,7 @@ class Entity extends Base\Entity
         self::ORDER_ID,
         self::TDATE,
         self::STATUS,
+        self::TRANSACTION_RESULT,
         self::PROCESSOR_RESPONSE_CODE,
         self::PROCESSOR_APPROVAL_CODE,
         self::PROCESSOR_RESPONSE_MESSAGE,
@@ -48,6 +50,7 @@ class Entity extends Base\Entity
         self::ORDER_ID,
         self::TDATE,
         self::STATUS,
+        self::TRANSACTION_RESULT,
         self::PROCESSOR_RESPONSE_CODE,
         self::PROCESSOR_APPROVAL_CODE,
         self::PROCESSOR_RESPONSE_MESSAGE,
@@ -75,9 +78,29 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::ID);
     }
 
+    public function getStatus()
+    {
+        return $this->getAttribute(self::STATUS);
+    }
+
+    public function getOrderId()
+    {
+        return $this->getAttribute(self::ORDER_ID);
+    }
+
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getTdate()
+    {
+        return $this->getAttribute(self::TDATE);
+    }
+
+    public function setStatus($status)
+    {
+        return $this->setAttribute(self::STATUS, $status);
     }
 
     public function setAmount($amount)

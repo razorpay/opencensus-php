@@ -46,6 +46,8 @@ class FirstDataGatewayTest extends TestCase
     {
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
+        $this->refundPayment($payment['id']);
+
         $this->verifyPayment($payment['id']);
 
         $payment = $this->getLastEntity('payment', true);

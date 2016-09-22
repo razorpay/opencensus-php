@@ -45,12 +45,12 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $input['gateway']);
 
-        $gatewayPayment = $this->repo
-                        ->findByPaymentIdAndActionOrFail($input['gateway'][ConnectResponseFields::ORDER_ID], Base\Action::AUTHORIZE);
-
-        $this->verifyResponseHash($input['gateway'], $gatewayPayment);
+        $this->verifyResponseHash($input['gateway']);
 
         $this->verifyPaymentCallbackResponse($input);
+
+        $gatewayPayment = $this->repo
+                        ->findByPaymentIdAndActionOrFail($input['gateway'][ConnectResponseFields::ORDER_ID], Base\Action::AUTHORIZE);
 
         $attributes = $this->getCallbackFields($input['gateway']);
 
@@ -126,10 +126,21 @@ class Gateway extends Base\Gateway
         $attributes = array(
             Entity::RECEIVED                    => true,
             Entity::TDATE                       => $callbackBody[ConnectResponseFields::TDATE],
-            Entity::STATUS                      => $callbackBody[ConnectResponseFields::STATUS],
-            Entity::PROCESSOR_RESPONSE_CODE     => $callbackBody[ConnectResponseFields::PROCESSOR_RESPONSE_CODE],
-            Entity::TERMINAL_ID                 => $callbackBody[ConnectResponseFields::TERMINAL_ID],
+            Entity::TRANSACTION_RESULT          => $callbackBody[ConnectResponseFields::STATUS],
         );
+
+        if ( $attributes[Entity::TRANSACTION_RESULT] === STATUS::APPROVED)
+        {
+            $attributes[Entity::STATUS] = Status::AUTHORIZED;
+        }
+        if (isset($callbackBody[ConnectResponseFields::PROCESSOR_RESPONSE_CODE]))
+        {
+            $attributes[Entity::PROCESSOR_RESPONSE_CODE] = $callbackBody[ConnectResponseFields::PROCESSOR_RESPONSE_CODE];
+        }
+        if (isset($callbackBody[ConnectResponseFields::TERMINAL_ID]))
+        {
+            $attributes[Entity::TERMINAL_ID] = $callbackBody[ConnectResponseFields::TERMINAL_ID];
+        }
 
         if (isset($callbackBody[ConnectResponseFields::FAIL_RC]))
         {
@@ -147,7 +158,8 @@ class Gateway extends Base\Gateway
             Entity::RECEIVED                    => true,
             Entity::AMOUNT                      => $paymentInput['amount'],
             Entity::TDATE                       => $captureResponse[ApiResponseFields::TDATE],
-            Entity::STATUS                      => $captureResponse[ApiResponseFields::TRANSACTION_RESULT],
+            Entity::STATUS                      => Status::CAPTURED,
+            Entity::TRANSACTION_RESULT          => $captureResponse[ApiResponseFields::TRANSACTION_RESULT],
             Entity::ORDER_ID                    => $captureResponse[ApiResponseFields::ORDER_ID],
             Entity::PROCESSOR_APPROVAL_CODE     => $captureResponse[ApiResponseFields::PROCESSOR_APPROVAL_CODE],
             Entity::PROCESSOR_RESPONSE_CODE     => $captureResponse[ApiResponseFields::PROCESSOR_RESPONSE_CODE],
@@ -164,24 +176,8 @@ class Gateway extends Base\Gateway
             Entity::RECEIVED                    => true,
             Entity::AMOUNT                      => $refundInput['amount'],
             Entity::TDATE                       => $refundResponse[ApiResponseFields::TDATE],
-            Entity::STATUS                      => $refundResponse[ApiResponseFields::TRANSACTION_RESULT],
-            Entity::ORDER_ID                    => $refundResponse[ApiResponseFields::ORDER_ID],
-            Entity::PROCESSOR_APPROVAL_CODE     => $refundResponse[ApiResponseFields::PROCESSOR_APPROVAL_CODE],
-            Entity::PROCESSOR_RESPONSE_CODE     => $refundResponse[ApiResponseFields::PROCESSOR_RESPONSE_CODE],
-            Entity::PROCESSOR_RESPONSE_MESSAGE  => $refundResponse[ApiResponseFields::PROCESSOR_RESPONSE_MESSAGE],
-            Entity::TERMINAL_ID                 => $refundResponse[ApiResponseFields::TERMINAL_ID],
-        );
-
-        return $attributes;
-    }
-
-    protected function getVerifyFields($refundResponse, $refundInput)
-    {
-        $attributes = array(
-            Entity::RECEIVED                    => true,
-            Entity::AMOUNT                      => $refundInput['amount'],
-            Entity::TDATE                       => $refundResponse[ApiResponseFields::TDATE],
-            Entity::STATUS                      => $refundResponse[ApiResponseFields::TRANSACTION_RESULT],
+            Entity::STATUS                      => Status::SETTLED,
+            Entity::TRANSACTION_RESULT          => $refundResponse[ApiResponseFields::TRANSACTION_RESULT],
             Entity::ORDER_ID                    => $refundResponse[ApiResponseFields::ORDER_ID],
             Entity::PROCESSOR_APPROVAL_CODE     => $refundResponse[ApiResponseFields::PROCESSOR_APPROVAL_CODE],
             Entity::PROCESSOR_RESPONSE_CODE     => $refundResponse[ApiResponseFields::PROCESSOR_RESPONSE_CODE],
@@ -224,88 +220,53 @@ class Gateway extends Base\Gateway
     {
         $input = $verify->input;
         $gatewayPayment = $verify->payment;
-        $content = $verify->verifyResponseContent;
+        $ipgApiActionResponse = $verify->verifyResponseContent;
+
+        $transactionValues = $ipgApiActionResponse->children('a1', true);
+
+        $orderId = $gatewayPayment->getOrderId();
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
-        $verify->gatewaySuccess = $this->getVerifyGatewayStatus($content);
-
-        $verify->apiSuccess = $this->getVerifyApiStatus($gatewayPayment, $input);
-
-        if ($verify->apiSuccess !== $verify->gatewaySuccess)
+        foreach ( $ipgApiActionResponse->children('a1', true) as $transactionValue )
         {
-            $verify->status = VerifyResult::STATUS_MISMATCH;
+            $tdate = ($transactionValue->children('v1', true)->TransactionDetails->TDate->__toString());
+            $state = ($transactionValue->children('a1', true)->TransactionState->__toString());
+            $states[$tdate] = $state;
+
+            $gatewayPayment = $this->repo->retrieveByOrderIdAndTdate($orderId, $tdate);
+
+            if ($gatewayPayment === null)
+            {
+                $verify->status = VerifyResult::STATUS_MISMATCH;
+            }
+
+            if ( $gatewayPayment->getStatus() != $state )
+            {
+                $verify->status = VerifyResult::STATUS_MISMATCH;
+            }
         }
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
 
-        $verify->payment = $this->saveVerifyContentIfNeeded($gatewayPayment, $content);
+        $verify->payment = $this->saveVerifyContentIfNeeded($orderId, $states);
 
         return $verify->status;
     }
 
-    protected function saveVerifyContentIfNeeded($gatewayPayment, $response)
+    protected function saveVerifyContentIfNeeded($orderId, $states)
     {
-        // s($gatewayPayment->toArray());
-        // s($response->children('a1', true));
+        foreach ( $states as $tdate => $state )
+        {
+            $gatewayPayment = $this->repo->retrieveByOrderIdAndTdate($orderId, $tdate);
+
+            $gatewayPayment->setStatus($state);
+
+            $this->repo->saveOrFail($gatewayPayment);
+        }
     }
 
-    protected function getVerifyGatewayStatus($ipgApiActionResponse)
-    {
-        $transactionValues = $ipgApiActionResponse->children('a1', true);
-
-        foreach ( $ipgApiActionResponse->children('a1', true) as $hi )
-        {
-            s($hi->children('v1', true));
-        }
-
-        $transactionValuesArray = (json_decode(json_encode($transactionValues), true)[ApiResponseFields::TRANSACTION_VALUES]);
-
-        $latestTransactionState = end($transactionValuesArray)[ApiResponseFields::TRANSACTION_STATE];
-
-        $gatewayStatus = in_array($latestTransactionState, array(Status::SETTLED, Status::CAPTURED)) ? true : false;
-
-        return $gatewayStatus;
-    }
-
-    protected function getVerifyApiStatus($gatewayPayment, $input)
-    {
-        if (($input['payment'][Payment\Entity::STATUS] === 'failed') or
-            ($input['payment'][Payment\Entity::STATUS] === 'created'))
-        {
-            $apiStatus = false;
-
-            if (($gatewayPayment[Entity::RECEIVED] === true) or
-                ($gatewayPayment[Entity::STATUS] === 'APPROVED'))
-            {
-                $this->trace->info(
-                    TraceCode::GATEWAY_PAYMENT_VERIFY_UNEXPECTED,
-                    [
-                        'gateway_payment'   => $gatewayPayment,
-                        'payment'           => $input['payment']
-                    ]);
-            }
-        }
-        else
-        {
-            $apiStatus = true;
-
-            if (($gatewayPayment[Entity::RECEIVED] === false) or
-                ($gatewayPayment[Entity::STATUS] !== 'APPROVED'))
-            {
-                $this->trace->info(
-                    TraceCode::GATEWAY_PAYMENT_VERIFY_UNEXPECTED,
-                    [
-                        'gateway_payment'   => $gatewayPayment,
-                        'payment'           => $input['payment']
-                    ]);
-            }
-        }
-
-        return $apiStatus;
-    }
-
-    protected function postSoapRequest($content, $requestType = Constants::ORDER_REQUEST)
+    protected function postSoapRequest($content, $requestType)
     {
         $xmlRequest = $this->arrayToXml($content);
 
@@ -537,7 +498,6 @@ class Gateway extends Base\Gateway
 
         $currency     = $input['payment'][Payment\Entity::CURRENCY];
         $currencyCode = Mapping::ISO_NUMERIC_CODES[$currency];
-        $orderId      = $gatewayPayment[Entity::ORDER_ID];
         $amountEntity = TxnType::$amountEntity[$txnType];
 
         $body[ApiRequestFields::V1_CREDITCARDTXTYPE][ApiRequestFields::V1_TYPE]      = $txnType;
