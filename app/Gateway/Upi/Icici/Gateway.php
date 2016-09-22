@@ -111,7 +111,7 @@ class Gateway extends Base\Gateway
     protected function getGatewayEntityAttributes(array $input)
     {
         return [
-            Entity::VPA     => $input['vpa'],
+            Entity::VPA     => $input['payment']['vpa'],
         ];
     }
 
@@ -313,7 +313,7 @@ class Gateway extends Base\Gateway
             'merchantTranId'    => $payment['id'],
             'merchantName'      => 'Razorpay',
             'note'              => $this->getPaymentRemark($input),
-            'payerVa'           => $input['vpa'],
+            'payerVa'           => $input['payment']['vpa'],
             'subMerchantId'     => $this->getSubMerchantId($input),
             'subMerchantName'   => $input['merchant']->getBillingLabelElseName(),
             'terminalId'        => '1234',
@@ -580,14 +580,5 @@ class Gateway extends Base\Gateway
 
         // Authorization was successful
         $this->updateGatewayPaymentResponse($gatewayPayment, $content);
-    }
-
-    public function refund(array $input)
-    {
-        parent::refund($input);
-
-        throw new Exception\GatewayErrorException(
-            ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED
-        );
     }
 }

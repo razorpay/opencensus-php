@@ -41,6 +41,7 @@ class Entity extends Base\PublicEntity
     const TOKEN                 = 'token';
     const TOKEN_ID              = 'token_id';
     const GLOBAL_TOKEN_ID       = 'global_token_id';
+    const VPA                   = 'vpa';
     const EMAIL                 = 'email';
     const CONTACT               = 'contact';
     const NOTES                 = 'notes';
@@ -89,6 +90,7 @@ class Entity extends Base\PublicEntity
         self::WALLET,
         self::CURRENCY,
         self::DESCRIPTION,
+        self::VPA,
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
@@ -117,6 +119,7 @@ class Entity extends Base\PublicEntity
         self::APP_TOKEN,
         self::TOKEN_ID,
         self::GLOBAL_TOKEN_ID,
+        self::VPA,
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
@@ -160,6 +163,7 @@ class Entity extends Base\PublicEntity
         self::CARD_ID,
         self::BANK,
         self::WALLET,
+        self::VPA,
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
@@ -827,6 +831,11 @@ class Entity extends Base\PublicEntity
     public function getEmail()
     {
         return $this->getAttribute(self::EMAIL);
+    }
+
+    public function getVpa()
+    {
+        return $this->getAttribute(self::VPA);
     }
 
     public function getContact()

@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Gateway\Upi\Icici;
 
 use Closure;
+use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -92,7 +93,7 @@ EOT;
     {
         $payment = $this->getDefaultUpiPaymentArray();
 
-        $payment['vpa'] = 'thisisaverylongvpathisisaverylongvpathisisaverylongvpa@icici';
+        $payment['vpa'] = 'thisisaverylongvpathisisaverylongvpathisisaverylongvpathisisaverylongvpathisisaverylongvpathisisaverylongvpa@icici';
 
         $data = $this->testData['testLongVPA'];
 
@@ -196,11 +197,7 @@ EOT;
 
         $this->capturePayment($payment['id'], 50000);
 
-        $data = $this->testData[__FUNCTION__];
-
-        $this->runRequestResponseFlow($data, function() use ($payment) {
-            $this->refundPayment($payment['id']);
-        });
+        $this->refundPayment($payment['id']);
     }
 
     public function testVerifyPayment()
@@ -274,6 +271,60 @@ EOT;
         $upi = $this->getLastEntity('upi', true);
         $this->assertTestResponse($upi, 'testPaymentUpiEntity');
         $this->assertArrayHasKey('gateway_payment_id', $upi);
+    }
+
+    public function testRefundExcelFile()
+    {
+        $payment = $this->testPaymentWithS2S();
+        $this->capturePayment($payment['id'], 50000);
+
+        $refund = $this->refundPayment($payment['id']);
+
+        $payment = $this->testPaymentWithS2S();
+        $this->capturePayment($payment['id'], 50000);
+        $refund = $this->refundPayment($payment['id'], 10000);
+        $refund = $this->refundPayment($payment['id']);
+
+        $refunds = $this->getEntities('refund', [], true);
+
+        // Convert the created_at dates to yesterday's so that they are picked
+        // up during refund excel generation
+        foreach ($refunds['items'] as $refund)
+        {
+            $createdAt = Carbon::yesterday('Asia/Kolkata')->timestamp + 5;
+            $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
+        }
+
+        $payment = $this->testPaymentWithS2S();
+        $this->capturePayment($payment['id'], 50000);
+        $this->refundPayment($payment['id']);
+
+        $data = $this->generateRefundsExcelForIciciUpi();
+
+        $this->assertEquals(3, $data['upi_icici']['count']);
+        $this->assertTrue(file_exists($data['upi_icici']['file']));
+    }
+
+    protected function generateRefundsExcelForIciciUpi($date = false)
+    {
+        $this->ba->appAuth();
+
+        $request = array(
+            'url' => '/refunds/excel',
+            'method' => 'post',
+            'content' => [
+                'method'    => 'upi',
+                'bank'      => 'icici',
+                'frequency' => 'daily'
+            ],
+        );
+
+        if ($date)
+        {
+            $request['content']['on'] = Carbon::now()->format('Y-m-d');
+        }
+
+        return $this->makeRequestAndGetContent($request);
     }
 
     protected function setContent(Closure $closure)
