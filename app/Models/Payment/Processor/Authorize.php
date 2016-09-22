@@ -547,11 +547,6 @@ trait Authorize
             $this->setBankAndEmiPlanDetails($payment, $cardNumber, $emiDuration);
         }
 
-        if ($payment->isUpi() === true)
-        {
-            $gatewayInput['vpa'] = $input['vpa'];
-        }
-
         $payment->setInternational();
     }
 

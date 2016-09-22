@@ -6,6 +6,22 @@ use RZP\Error\PublicErrorDescription;
 use Gateway\Hdfc;
 
 return [
+   'testCreatePaymentWithInvalidMethod' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid payment method given: invalid',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+   ],
+
    'testIntlPaymentWhenNotAllowed' => [
         'response' => [
             'content' => [
