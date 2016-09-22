@@ -50,6 +50,7 @@ class PaymentController extends Controller
 
     /**
      * Refund a payment.
+     * @param $id
      */
     public function postRefund($id)
     {
@@ -298,7 +299,7 @@ class PaymentController extends Controller
 
         return ApiResponse::json($data);
     }
-    
+
     public function postRefundMultipleAuthorizedPaymentsForOrders()
     {
         $data = $this->payment->refundMultipleAuthorizedPaymentsForOrders();

@@ -288,6 +288,17 @@ class Inferno
         $this->job->delete();
     }
 
+    /**
+     * If the number of job attempts is greater than the max attempts,
+     * we delete the job.
+     * If the last successful webhook hit was more than 24 hours ago,
+     * We deactivate the webhook. We send a deactivation email.
+     * We do not send any failure email in this case.
+     *
+     * In every other case, we send a failure email.
+     *
+     * @param $webhook
+     */
     protected function webhookFailure($webhook)
     {
         $job = $this->job;
@@ -306,7 +317,7 @@ class Inferno
 
         if ($lastSuccessfulAt !== null)
         {
-            $differenceHours = ($currentTime - $lastSuccessfulAt)/3600;
+            $differenceHours = ($currentTime - $lastSuccessfulAt) / 3600;
 
             // If (LSA - current time) > 24hrs, mark deactivated.
             if (($differenceHours > self::WEBHOOK_FAILURE_HOURS))
