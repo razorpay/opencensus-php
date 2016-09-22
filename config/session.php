@@ -16,7 +16,7 @@ return array(
     |
     */
 
-    'driver' => 'database',
+    'driver' => 'custom_database',
     'encrypt' => false,
 
     /*
