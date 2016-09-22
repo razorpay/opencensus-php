@@ -19,7 +19,7 @@ class Validator extends Base\Validator
         'amount'                  =>  'required|integer',
         'currency'                =>  'required|size:3',
         'method'                  =>  'custom',
-        'vpa'                     =>  'required_if:method,upi|max:50|custom',
+        'vpa'                     =>  'required_if:method,upi|max:100|custom',
         'card'                    =>  'sometimes',
         'bank'                    =>  'required_if:method,netbanking',
         'wallet'                  =>  'required_if:method,wallet|custom',
@@ -60,7 +60,7 @@ class Validator extends Base\Validator
 
     protected function validateMethod($attribute, $method)
     {
-        if (defined(Method::class . '::' . strtoupper($method)) === false)
+        if (Method::isValid($method) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid payment method given: ' . $method);
