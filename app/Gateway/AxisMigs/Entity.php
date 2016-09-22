@@ -107,6 +107,22 @@ class Entity extends Base\Entity
 
     public function setVpcTransactionNo($txnNo)
     {
-        $this->attributes['vpc_TransactionNo'] = $txnNo;
+        $this->setAttribute('vpc_TransactionNo', $txnNo);
+    }
+
+    /**
+     * Under any circumstance we should not reset vpc_TransactionNo.
+     * This happened couple of times in the past so
+     * now we check for null explicitly before setting it.
+     * @param string $txnNo
+     */
+    public function setVpcTransactionNoAttribute($txnNo)
+    {
+        $oldTxnNo = $this->attributes['vpc_TransactionNo'];
+
+        if ($oldTxnNo === null)
+        {
+            $this->attributes['vpc_TransactionNo'] = $txnNo;
+        }
     }
 }
