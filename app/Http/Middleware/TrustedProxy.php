@@ -23,7 +23,7 @@ class TrustedProxy
         {
             $request->setTrustedHeaderName($headerKey, $headerName);
         }
-        $request->setTrustedProxies($this->getTrustedProxies($request->getClientIps()));
+        $request->setTrustedProxies($this->getTrustedProxies());
 
         return $next($request);
     }
@@ -35,7 +35,7 @@ class TrustedProxy
      *
      * @return array
      */
-    protected function getTrustedProxies(array $clientIpAddresses = [])
+    protected function getTrustedProxies()
     {
         $trustedProxies = Config::get('trustedproxy.proxies');
 
