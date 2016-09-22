@@ -76,6 +76,17 @@ class ReconciliationTest extends TestCase
         return $content['kotak']['payout_text_file'];
     }
 
+    protected function initiateSettlementsAndAssertSuccess()
+    {
+        $content = $this->initiateSettlements();
+
+        $this->assertArrayHasKey('kotak', $content);
+        $this->assertArrayHasKey('settlement_text_file', $content['kotak']);
+        $this->assertArrayHasKey('settlement_excel_file', $content['kotak']);
+
+        return $content['kotak']['settlement_text_file'];
+    }
+
     protected function matchTransactions($prEntities)
     {
         $count = count($prEntities);
