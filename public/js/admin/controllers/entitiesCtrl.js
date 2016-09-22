@@ -193,6 +193,7 @@ app.controller('EntitiesCtrl', [
         vault: ['Vault'],
         vault_token: ['Vault Token'],
       },
+      credits: {},
       customer: {
         merchant_id: ['Merchant Id'],
         email: ['Email'],
@@ -268,7 +269,7 @@ app.controller('EntitiesCtrl', [
         payment_id: ['Payment Id'],
         received: booleanList
       },
-      order:{
+      order: {
         merchant_id: ['Merchant Id'],
         status: [
           'all',
@@ -277,8 +278,9 @@ app.controller('EntitiesCtrl', [
           'paid',
         ],
         authorized: booleanList,
-        receipt_id: ['Receipt Id']
+        receipt: ['Receipt']
       },
+      payment_analytics: {},
       payment: {
         app_token: ['App Token'],
         bank: ['Bank Code'],

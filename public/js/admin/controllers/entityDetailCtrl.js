@@ -243,6 +243,7 @@ app.controller('EntityDetailCtrl', [
           'mobikwik',
           'netbanking',
           'payment',
+          'payment_analytics',
           'pricing',
           'refund',
           'settlement',
