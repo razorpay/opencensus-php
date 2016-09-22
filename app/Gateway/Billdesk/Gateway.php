@@ -575,7 +575,7 @@ class Gateway extends Base\Gateway
     {
         $request = $this->getRequestArray($content);
 
-        $request['options']['proxy'] = 'https://splunk.razorpay.com:8888';
+        $request['options']['proxy'] = $this->proxy;
 
         return $request;
     }

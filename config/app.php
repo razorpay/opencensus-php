@@ -250,5 +250,8 @@ return array(
     'context' => env('CONTEXT'),
 
     'checkout' => 'https://checkout.razorpay.com',
+
+    'proxy_address' => env('PROXY_ADDRESS'),
+
     'throw_exception_in_testing' => env('THROW_EXCEPTION_IN_TESTING', true),
 );

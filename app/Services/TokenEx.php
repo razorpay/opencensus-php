@@ -45,6 +45,8 @@ class TokenEx
         $this->tokenScheme = $this->config['scheme'];
 
         $this->baseUrl = $this->config['url'];
+
+        $this->proxy = $app['proxy_address'];
     }
 
     public function tokenize($data)
@@ -111,7 +113,7 @@ class TokenEx
         $headers['Accept'] = 'application/json';
 
         $options = array(
-            'proxy' => 'https://splunk.razorpay.com:8888'
+            'proxy' => $this->proxy,
         );
 
         $request = array(

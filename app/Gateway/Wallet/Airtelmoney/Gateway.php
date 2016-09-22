@@ -191,7 +191,7 @@ class Gateway extends Base\Gateway
 
         if ($this->mode === Mode::LIVE)
         {
-            $request['options']['proxy'] = 'https://splunk.razorpay.com:8888';
+            $request['options']['proxy'] = $this->proxy;
         }
 
         return $request;
@@ -584,7 +584,7 @@ class Gateway extends Base\Gateway
 
         if ($this->mode === Mode::LIVE)
         {
-            $request['options']['proxy'] = 'https://splunk.razorpay.com:8888';
+            $request['options']['proxy'] = $this->proxy;
         }
 
         return $request;

@@ -52,7 +52,7 @@ trait Enroll
         // Only required in case of Rupay
         if ($network === Card\Network::RUPAY)
         {
-            $this->enrollRequest['options']['proxy'] = 'https://splunk.razorpay.com:8888';
+            $this->enrollRequest['options']['proxy'] = $this->proxy;
         }
 
         //

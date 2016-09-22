@@ -180,5 +180,5 @@ return array(
     ),
 
 
-    'proxy_address' => 'https://splunk.razorpay.com:8888',
+    'proxy_address' => env('PROXY_ADDRESS'),
 );
