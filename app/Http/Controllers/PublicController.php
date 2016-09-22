@@ -11,7 +11,7 @@ class PublicController extends Controller
         $data = [
             'static'    => 'https://cdn.razorpay.com/account',
             'checkout'  => 'https://checkout.razorpay.com',
-            'api'       => 'https://api.razorpay.com/',
+            'api'       => $this->config->get('app.url'),
         ];
 
         return View::make('public.account', $data);

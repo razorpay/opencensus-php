@@ -4,7 +4,7 @@
             <link HREF="/css/RS_eng.css" TYPE="text/css" REL="STYLESHEET">
                 <script language="javascript">
 
-var url = "https://api.razorpay.com/?ClientCode=cuteprakash2006yahoocom&MerchantCode=RAZPRAZORPAY&TxnAmount=7999.00&MerchantRefNo=3lGLlo5CFtSIkz&SuccessStaticFlag=N&FailureStaticFlag=N&Date=13/08/2015 16:08:07&TransactionId=XTXTV01&flgVerify=Y&BankRefNo=&flgSuccess=F&Message=";
+var url = "https://<?= $redirectUrl ?>/?ClientCode=cuteprakash2006yahoocom&MerchantCode=RAZPRAZORPAY&TxnAmount=7999.00&MerchantRefNo=3lGLlo5CFtSIkz&SuccessStaticFlag=N&FailureStaticFlag=N&Date=13/08/2015 16:08:07&TransactionId=XTXTV01&flgVerify=Y&BankRefNo=&flgSuccess=F&Message=";
 //-----------------------------------------------------------------------------
 function is_space1 (
     p_string
