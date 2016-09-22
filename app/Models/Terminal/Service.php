@@ -97,6 +97,17 @@ class Service extends Base\Service
         return $terminal->toArrayPublic();
     }
 
+    public function toggleTerminal($id, $input)
+    {
+        $terminal = $this->repo->terminal->getById($id);
+
+        $toggle = (bool) $input['toggle'];
+
+        (new Terminal\Core)->toggle($terminal, $toggle);
+
+        return $terminal->toArrayPublic();
+    }
+
     public function checkTerminalEncryptedValue($id, $input)
     {
         $terminal = $this->repo->terminal->findOrFail($id);
