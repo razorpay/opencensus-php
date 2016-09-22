@@ -19,6 +19,10 @@ use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class PaymentReconciliate extends Foundation\SubReconciliate
 {
+    const GATEWAY_FEES_ABSENT_GATEWAYS = [
+        Orchestrator::KOTAK
+    ];
+
     /*******************
      * Instance objects
      *******************/
@@ -86,6 +90,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         try
         {
+            $this->runPreReconciledAtCheckRecon($rowDetails);
+
             $reconciled = $this->checkIfAlreadyReconciled($this->payment);
 
             if ($reconciled === true)
@@ -138,6 +144,11 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
             //return;
         }
+    }
+
+    protected function runPreReconciledAtCheckRecon($rowDetails)
+    {
+        $this->persistGatewaySettledAt($this->payment, $rowDetails);
     }
 
     protected function validatePaymentStatus($row)
@@ -292,6 +303,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $this->persistCardDetailsIfAbsent($rowDetails);
 
+        $this->persistGatewaySettledAt($this->payment, $rowDetails);
+
         return $recordSuccess;
     }
 
@@ -318,10 +331,13 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $fee = $this->getGatewayFee($row);
 
+        $gatewaySettledAt = $this->getGatewaySettledAt($row);
+
         $rowDetails = [
-            BaseReconciliate::PAYMENT_ID          => $paymentId,
-            BaseReconciliate::GATEWAY_SERVICE_TAX => $serviceTax,
-            BaseReconciliate::GATEWAY_FEE         => $fee,
+            BaseReconciliate::PAYMENT_ID            => $paymentId,
+            BaseReconciliate::GATEWAY_SERVICE_TAX   => $serviceTax,
+            BaseReconciliate::GATEWAY_FEE           => $fee,
+            BaseReconciliate::GATEWAY_SETTLED_AT    => $gatewaySettledAt,
         ];
 
         // For wallets and netbanking, $cardDetails would be empty.
@@ -346,6 +362,30 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     protected function getCardDetails($row)
     {
         return [];
+    }
+
+    /**
+     * A few netbanking gateways do not provide us with
+     * gateway service tax in their reconciliation files.
+     * For them, we mark the gateway service tax as null.
+     *
+     * @return null
+     */
+    protected function getGatewayServiceTax($row)
+    {
+        return null;
+    }
+
+    /**
+     * A few netbanking gateways do not provide us with
+     * gateway fees in their reconciliation files.
+     * For them, we mark the gateway fees as null.
+     *
+     * @return null
+     */
+    protected function getGatewayFee($row)
+    {
+        return null;
     }
 
     protected function setPaymentAndTransaction($row, $paymentId)
@@ -647,7 +687,12 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         $reconGatewayFee = $rowDetails[BaseReconciliate::GATEWAY_FEE];
         $reconGatewayServiceTax = $rowDetails[BaseReconciliate::GATEWAY_SERVICE_TAX];
 
-        if (($reconGatewayFee === null) or ($reconGatewayServiceTax === null))
+        $calledClass = get_called_class();
+
+        $nullTaxAndFeesAllowed = $this->isNullGatewayFeesAndTaxAllowed($calledClass);
+
+        if ((($reconGatewayFee === null) or ($reconGatewayServiceTax === null)) and
+            ($nullTaxAndFeesAllowed === false))
         {
             return false;
         }
@@ -686,6 +731,21 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             if ($recordGatewayServiceTaxSuccess === true)
             {
                 $this->paymentTransaction->saveOrFail();
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function isNullGatewayFeesAndTaxAllowed($calledClass)
+    {
+        foreach (self::GATEWAY_FEES_ABSENT_GATEWAYS as $gatewayFeesAbsentGateway)
+        {
+            $checkClass = 'RZP\\Reconciliator\\' . studly_case($gatewayFeesAbsentGateway) . '\\PaymentReconciliate';
+
+            if ($calledClass === $checkClass)
+            {
                 return true;
             }
         }

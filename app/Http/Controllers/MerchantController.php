@@ -215,6 +215,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function toggleTerminal($tid)
+    {
+        $input = Request::all();
+
+        $data = (new Terminal\Service)->toggleTerminal($tid, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postCheckTerminalEncryptedValue($id)
     {
         $input = Request::all();
@@ -470,7 +479,7 @@ class MerchantController extends Controller
         $data['checkout'] = $url;
         $data['framejs'] = $url . $framejs;
         $data['css'] = $url . $css;
-        $data['font'] = 'https://cdn.razorpay.com/lato3';
+        $data['font'] = 'https://cdn.razorpay.com/lato';
 
         return $data;
     }

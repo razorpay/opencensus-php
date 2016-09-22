@@ -30,14 +30,19 @@ class Entity extends Base\PublicEntity
     const CARD                          = 'card';
     const NETBANKING                    = 'netbanking';
     const EMI                           = 'emi';
+    const UPI                           = 'upi';
     const EMI_DURATION                  = 'emi_duration';
     const RECURRING                     = 'recurring';
 
     const SHARED                        = 'shared';
 
+    const NETWORK_CATEGORY              = 'network_category';
+
     const DELETED_AT                    = 'deleted_at';
 
     const MAX_TERMINALS_COUNT           = 25;
+
+    const ENABLED                       = 'enabled';
 
     //const PRIORITY                      = 'priority';
 
@@ -46,6 +51,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY,
         self::CARD,
         self::CATEGORY,
+        self::UPI,
         self::EMI,
         self::EMI_DURATION,
         self::SHARED,
@@ -57,6 +63,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_TERMINAL_PASSWORD,
         self::GATEWAY_RECON_PASSWORD,
         self::GATEWAY_ACQUIRER,
+        self::ENABLED
     );
 
     protected $public = array(
@@ -66,6 +73,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY,
         self::CARD,
         self::CATEGORY,
+        self::UPI,
         self::EMI,
         self::EMI_DURATION,
         self::SHARED,
@@ -77,6 +85,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
+        self::ENABLED
     );
 
     protected $table = 'terminals';
@@ -112,10 +121,17 @@ class Entity extends Base\PublicEntity
         self::EMI_DURATION              => null,
         self::GATEWAY_ACQUIRER          => null,
         self::RECURRING                 => Recurring::NON_RECURRING,
+        self::ENABLED                   => true,
     );
 
     protected $casts = array(
-        self::RECURRING                 => 'int'
+        self::CARD                      => 'boolean',
+        self::EMI                       => 'boolean',
+        self::NETBANKING                => 'boolean',
+        self::RECURRING                 => 'int',
+        self::SHARED                    => 'boolean',
+        self::UPI                       => 'boolean',
+        self::ENABLED                   => 'boolean',
     );
 
     public function generateMethod($input)
@@ -308,19 +324,9 @@ class Entity extends Base\PublicEntity
         return $emiDuration;
     }
 
-    protected function getCardAttribute()
+    public function getEnabled()
     {
-        return (bool) $this->attributes[self::CARD];
-    }
-
-    protected function getNetbankingAttribute()
-    {
-        return (bool) $this->attributes[self::NETBANKING];
-    }
-
-    protected function getSharedAttribute()
-    {
-        return (bool) $this->attributes[self::SHARED];
+        return $this->getAttribute(self::ENABLED);
     }
 
     public function merchant()
@@ -347,6 +353,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::NETBANKING);
     }
 
+    public function isUpiTerminal()
+    {
+        return (substr($this->gateway, 0, 3) === 'upi');
+    }
+
     public function isEmiEnabled()
     {
         return (bool) $this->getAttribute(self::EMI);
@@ -365,6 +376,11 @@ class Entity extends Base\PublicEntity
     public function isShared()
     {
         return (bool) $this->getAttribute(self::SHARED);
+    }
+
+    public function isEnabled()
+    {
+        return $this->getAttribute(self::ENABLED);
     }
 
     public function isDeleted()
@@ -401,5 +417,25 @@ class Entity extends Base\PublicEntity
         }
 
         return false;
+    }
+
+    public function getNetworkCategory()
+    {
+        return $this->getAttribute(self::NETWORK_CATEGORY);
+    }
+
+    public function setNetworkCategory($category)
+    {
+        $this->setAttribute(self::NETWORK_CATEGORY, $category);
+    }
+
+    public function setEnabled($status)
+    {
+        $this->setAttribute(self::ENABLED, $status);
+    }
+
+    protected function setEnabledAttribute($status)
+    {
+        $this->attributes[self::ENABLED] = (bool) $status;
     }
 }

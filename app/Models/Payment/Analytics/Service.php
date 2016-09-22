@@ -11,9 +11,11 @@ use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
-    public function createAuditLog($input)
+    public function createAuditLog($log, $rawData)
     {
-        $action = (new Analytics\Core)->create($input);
+        (new Analytics\Parser)->recordPaymentRequestData($rawData, $log);
+
+        $action = (new Analytics\Core)->create($log);
 
         return $action->toArrayPublic();
     }

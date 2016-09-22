@@ -40,6 +40,9 @@ class CreatePayments  extends Migration
             $table->char(Payment::ORDER_ID, Payment::ID_LENGTH)
                   ->nullable();
 
+            $table->boolean(Payment::INTERNATIONAL)
+                  ->nullable();
+
             $table->integer(Payment::AMOUNT_AUTHORIZED)
                   ->unsigned()
                   ->default(0);
@@ -63,6 +66,9 @@ class CreatePayments  extends Migration
                   ->nullable();
 
             $table->string(Payment::WALLET, 15)
+                  ->nullable();
+
+            $table->string(Payment::VPA, 100)
                   ->nullable();
 
             $table->char(Payment::EMI_PLAN_ID, 14)

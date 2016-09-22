@@ -66,6 +66,12 @@ class Processor
      */
     const PAYMENT_CANCEL_TIME_DURATION = 1800;  // 30 min * 60 sec
 
+    /**
+     * If a payment is async, it can receive a callback for 5 mins after which it is converted to a
+     * failed payment
+     */
+    const ASYNC_PAYMENT_TIMEOUT = 300;
+
     protected $merchant;
     protected $trace;
     protected $payment;
@@ -289,6 +295,8 @@ class Processor
             return $this->processPaymentCallbackSecondTime($payment);
         }
 
+        $this->trace->info(TraceCode::PAYMENT_CANCELLED, (array) $input);
+
         $errorCode = $this->repo->transaction(function() use ($payment, $input)
         {
             $this->lockForUpdateAndReload($payment);
@@ -324,16 +332,72 @@ class Processor
         return $errorCode;
     }
 
-    public function redirect($id)
+    /**
+     * Returns the proper async response for the status checks
+     * made by Checkout
+     * @param  string $id payment id
+     * @return array
+     */
+    public function getAsyncResponse($id)
     {
         $payment = $this->retrieve($id);
 
-        if ($payment->isCreated() === false)
+        $gateway = $payment->getGateway();
+
+        // If the gateway is not async or the payment is failed
+        // we just give a generic error to not leak information
+        if ((Payment\Gateway::supportsAsync($gateway) === false) or
+            ($payment->isFailed() === true))
         {
-            return $this->processPaymentCallbackSecondTime($payment);
+            // Throw exception of invalid id
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_ID);
         }
 
-        throw new Exception\LogicException('Should not have been hit.');
+        // Throw payment failed exception if async payment timeout (5mins)
+        // has been exceeded
+        if ($payment->justCreated() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+        }
+
+        if ($payment->isCreated() === true)
+        {
+            return [
+                Payment\Entity::STATUS => Payment\Status::CREATED
+            ];
+        }
+
+        // We don't want to reach this in case of captured|refunded payments
+        assert($payment->isAuthorized() === true);
+
+        return $this->processAsyncAuthorizeResponse($payment);
+    }
+
+    /**
+     * Returns the proper response to checkout
+     * in case of the payment is authorized
+     * @param  Payment\Entity $payment
+     * @return array
+     */
+    protected function processAsyncAuthorizeResponse($payment)
+    {
+        $returnData = [
+            'razorpay_payment_id' => $payment->getPublicId()
+        ];
+
+        if ($payment->getAutoCaptured() === true)
+        {
+            $this->fillReturnDataForAutoCaptureOrders($payment, $returnData);
+        }
+
+        if ($payment->getCallbackUrl())
+        {
+            $this->fillReturnRequestDataForMerchant($payment, $returnData);
+        }
+
+        return $returnData;
     }
 
     public function callGatewayFunctionCaptureViaQueue($data, $payment)
@@ -425,8 +489,10 @@ class Processor
         $gateway = $this->payment->getGateway();
 
         $gatewayData['terminal'] = $terminal;
+
         $gatewayData['merchant'] = $this->payment->merchant;
 
+        // TODO: Shouldn't be KOTAK specific
         if ($gateway === Payment\Gateway::KOTAK)
         {
             $gatewayData['bank_account'] = $this->getMerchantBankAccount($terminal->merchant);
@@ -461,6 +527,13 @@ class Processor
         $this->trace->info(
             TraceCode::PAYMENT_METADATA,
             ['metadata' => $metadata, 'payment_id' => $payment->getId()]);
+
+        if (isset($metadata['checkout_id']) === false)
+        {
+             $this->trace->warning(
+                 TraceCode::PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND,
+                 ['metadata' => $metadata, 'payment_id' => $payment->getId()]);
+        }
 
         $this->payment = $payment;
 
@@ -613,7 +686,7 @@ class Processor
         Payment\Entity::verifyIdAndStripSign($id);
 
         $this->payment = $this->repo->payment->findByIdAndMerchantId(
-                                                $id, $this->merchant->getKey());
+                                                $id, $this->merchant->getId());
 
         return $this->payment;
     }

@@ -4,6 +4,7 @@ namespace RZP\Services;
 
 use CreditCardFraudDetection;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Mode;
 use RZP\Trace\Trace;
 use RZP\Models\Card;
 
@@ -23,6 +24,8 @@ class MaxMind
 
     public function __construct($app)
     {
+        $this->mode = $app['rzp.mode'];
+
         $this->trace = $app['trace'];
 
         $this->request = $app['request'];
@@ -36,6 +39,11 @@ class MaxMind
 
     public function query($payment)
     {
+        if ($this->mode === Mode::TEST)
+        {
+            return;
+        }
+
         $card = $payment->card;
 
         $input = array(
@@ -65,6 +73,7 @@ class MaxMind
                 'input' => $input,
                 'payment_id' => $payment->getId(),
                 'merchant_id' => $payment->getMerchantId(),
+                'merchant' => $payment->merchant->getBillingLabelElseName(),
                 'response' => $response]);
 
         return $response;
@@ -72,7 +81,7 @@ class MaxMind
 
     protected function getFormattedAmount($payment)
     {
-        $amount = $payment->getAmount();
+        $amount = $payment->getAmount() / 100;
 
         return number_format($amount, 2, '.', '');
     }

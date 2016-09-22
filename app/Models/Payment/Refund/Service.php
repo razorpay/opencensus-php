@@ -27,23 +27,47 @@ class Service extends Base\Service
 
         switch ($method)
         {
-            case 'netbanking':
+            case Payment\Method::NETBANKING:
                 $gateways = Payment\Gateway::$netbankingToGatewayMap;
+
                 $type = Payment\Entity::BANK;
 
                 if (isset($input['bank']))
                 {
                     $gatewayCode = $input['bank'];
+
+                    $gateway = $gateways[$gatewayCode];
                 }
+
+                // Removing kotak from gateways list/
+                // Should not be run along with others.
+                unset($gateways[IFSC::KKBK]);
                 break;
 
-            case 'wallet':
+            case Payment\Method::WALLET:
                 $gateways = Payment\Gateway::$walletToGatewayMap;
+
                 $type = Payment\Entity::WALLET;
 
                 if (isset($input['wallet']))
                 {
                     $gatewayCode = $input['wallet'];
+
+                    $gateway = $gateways[$gatewayCode];
+                }
+                break;
+
+            case Payment\Method::UPI:
+                $gateways = Payment\Gateway::$upiToGatewayMap;
+
+                $type = Payment\Entity::METHOD;
+                $gatewayCode = Payment\Method::UPI;
+
+                if (isset($input['bank']))
+                {
+                    $bank = $input['bank'];
+
+                    $gateway = $gateways[$bank];
                 }
                 break;
         }
@@ -57,8 +81,6 @@ class Service extends Base\Service
         }
         else
         {
-            $gateway = $gateways[$gatewayCode];
-
             $returnValue[$gateway] = $this->generateRefundFileForGateway($type, $gatewayCode, $from, $to, $gateway);
         }
 
@@ -199,8 +221,62 @@ class Service extends Base\Service
 
             $merchant = $this->repo->merchant->getMerchantFromEntity($refund);
 
-            $data[] = $this->processor($merchant)->verifyRefund($refund);
+            $data[] = $this->getNewProcessor($merchant)->verifyRefund($refund);
         }
+
+        return $data;
+    }
+
+    /**
+     * USE WITH EXTREME CAUTION
+     * This calls the gateway for refund and does nothing on the api side.
+     *
+     * @param $refundIds
+     * @return array
+     */
+    public function manualGatewayRefund($refundIds)
+    {
+        $refundIds = explode(',', $refundIds);
+
+        $data = [];
+
+        foreach ($refundIds as $refundId)
+        {
+            $refund = $this->repo->refund->findOrFail($refundId);
+            $merchantId = $refund->getMerchantId();
+            $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+            try
+            {
+                $response = $this->getNewProcessor($merchant)->manualGatewayRefund($refund);
+            }
+            catch(\Exception $ex)
+            {
+                $response = [
+                    'refund_id'     => $refundId,
+                    'payment_id'    => $refund->getPaymentId(),
+                    'error_message' => $ex->getMessage(),
+                ];
+
+                $this->trace->traceException($ex);
+            }
+
+            $this->trace->info(
+                TraceCode::MANUAL_GATEWAY_REFUND_RESPONSE,
+                [
+                    'refund_id'  => $refundId,
+                    'payment_id' => $refund->getPaymentId(),
+                    'response'   => $response
+                ]
+            );
+
+            $data[] = $response;
+        }
+
+        $this->trace->info(
+            TraceCode::MANUAL_GATEWAY_ALL_REFUNDS_RESPONSE,
+            $data
+        );
 
         return $data;
     }
@@ -231,7 +307,7 @@ class Service extends Base\Service
 
                 $this->repo->transaction(function() use($refundWithoutTransaction, $payment)
                 {
-                    $transaction = $this->processor($refundWithoutTransaction->merchant)
+                    $transaction = $this->getNewProcessor($refundWithoutTransaction->merchant)
                                         ->createTransactionForRefund(
                                             $refundWithoutTransaction, $payment);
 
@@ -267,7 +343,7 @@ class Service extends Base\Service
         ];
     }
 
-    protected function processor($merchant)
+    protected function getNewProcessor($merchant)
     {
         $processor = new Payment\Processor\Processor($merchant);
 

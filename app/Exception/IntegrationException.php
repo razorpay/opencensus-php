@@ -16,7 +16,7 @@ class IntegrationException extends ServerErrorException
 
         if ($message === null)
         {
-            $message = 'Error occured with one of the service integrations';
+            $message = 'Error occurred with one of the service integrations';
         }
 
         parent::__construct($message, $code, $data, $previous);
