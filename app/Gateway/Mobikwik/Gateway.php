@@ -547,15 +547,11 @@ class Gateway extends Base\Gateway
             "'" . $content['statusmessage'] . "'" .
             "'" . $content['ordertype'] . "'";
 
-        $expectedHash = $this->getHashOfString($str);
+        $generated = $this->getHashOfString($str);
 
-        $inputHash = $content['checksum'];
+        $actual = $content['checksum'];
 
-        if (hash_equals($expectedHash, $inputHash)  !== true)
-        {
-            throw new Exception\GatewayErrorException(
-                Error\ErrorCode::BAD_REQUEST_ERROR);
-        }
+        $this->compareHashes($actual, $generated);
     }
 
     protected function shouldReturnIfPaymentNullInVerifyFlow($verify)

@@ -210,7 +210,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function verifySecureHash($content)
+    protected function verifySecureHash(array $content)
     {
         $fieldsInOrder = array(
             ResponseFields::TYPE,

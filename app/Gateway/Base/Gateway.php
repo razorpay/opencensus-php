@@ -255,7 +255,7 @@ class Gateway
             $this->trace->info(
                 TraceCode::GATEWAY_CHECKSUM_VERIFY_FAILED,
                 [
-                    'actual'    => $hash,
+                    'actual'    => $actual,
                     'generated' => $generated
                 ]);
 
