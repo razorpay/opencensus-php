@@ -8,8 +8,10 @@ class PublicController extends Controller
 {
     public function getAccount()
     {
+        $prodCdnUrl = $this->config->get('url.cdn')['production'];
+
         $data = [
-            'static'    => $this->config->get('url.cdn')['production'].'/account',
+            'static'    => $prodCdnUrl.'/account',
             'checkout'  => $this->config->get('app.checkout'),
             'api'       => $this->config->get('app.url'),
         ];
