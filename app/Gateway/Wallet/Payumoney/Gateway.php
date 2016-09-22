@@ -29,6 +29,10 @@ class Gateway extends Base\Gateway
 
     const BALANCE_KEY = 'payumoney_balance_%s';
 
+    const DEVICES = [
+        Payment\Analytics\Metadata::MOBILE => '2',
+    ];
+
     protected $gateway = 'wallet_payumoney';
 
     protected $sortRequestContent = false;
@@ -635,10 +639,10 @@ class Gateway extends Base\Gateway
             'client_id'     => $this->getClientId($input['terminal']),
         );
 
-        if ((isset($input['analytics']) === true) and
+        if ((isset($input['analytics']['device']) === true) and
             ($input['analytics']['device'] === Payment\Analytics\Metadata::MOBILE))
         {
-            $content['isMobile'] = '2';
+            $content['isMobile'] = self::DEVICES[Payment\Analytics\Metadata::MOBILE];
         }
 
         $content['hash'] = $this->getHashForTopupWallet($content);
