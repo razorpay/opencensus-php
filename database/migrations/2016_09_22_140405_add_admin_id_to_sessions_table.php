@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class AddAdminToSessionsTable extends Migration
+class AddAdminIdToSessionsTable extends Migration
 {
     /**
      * Run the migrations.
