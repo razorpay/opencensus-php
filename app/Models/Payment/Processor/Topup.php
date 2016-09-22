@@ -96,6 +96,11 @@ trait Topup
 
         $gatewayInput['customer'] = $payment->globalCustomer;
 
+        if ($payment->analytics !== null)
+        {
+            $gatewayInput['analytics'] = $payment->analytics->toArray();
+        }
+
         $gatewayInput['callbackUrl'] = $this->getCallbackUrl();
     }
 }
