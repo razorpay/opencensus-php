@@ -18,7 +18,7 @@ class Core extends Base\Core
     {
         $batch = (new Batch\Entity)->build($input);
 
-        $batch->merchant->associate($this->merchant);
+        $batch->merchant()->associate($this->merchant);
 
         $entries = $this->parseExcelFile($input['file']);
 

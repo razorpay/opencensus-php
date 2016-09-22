@@ -9,7 +9,7 @@ use RZP\Error\ErrorCode;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        Entity::FILE => 'requried|file',
+        Entity::FILE => 'required|file',
         Entity::TYPE => 'required|string|max:100|custom'
     );
 
@@ -47,11 +47,11 @@ class Validator extends Base\Validator
             $amount = $entryMap['refund_amount'];
             $paymentId = $entryMap['payment_id'];
 
-            if (!isset($paymentId))
+            if (isset($paymentId) === false)
             {
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FILE_VALIDATION);
             }
-            elseif (!isset($amount))
+            elseif (isset($amount) === false)
             {
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FILE_VALIDATION);
             }

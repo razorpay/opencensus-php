@@ -146,7 +146,7 @@ class Service extends Base\Service
                 $filePath = $this->getFileFromAws('batch_file_upload_bucket', $batch->getId().'.xlsx', $filePath);
             }
 
-            elseif ($batch->getStatus() === Status::FAILURE)
+            else if ($batch->getStatus() === Status::FAILURE)
             {
                 $filePath = $this->getFileFromAws('batch_file_download_bucket', $batch->getId().'.xlsx', $filePath);
             }
