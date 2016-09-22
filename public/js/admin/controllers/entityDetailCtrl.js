@@ -102,6 +102,34 @@ app.controller('EntityDetailCtrl', [
         }).error(function () {
           alert('There was an error while editing the terminal');
         });
+      },
+      disable: function (id) {
+        var data = {toggle : 0};
+        var request = $http.put('/admin/' + $scope.mode + '/terminal/' + id + '/toggle', data);
+        request.success(function (data) {
+          if (data.success) {
+            alert('Terminal disabled');
+            window.location.reload();
+          } else {
+            alert(data.errors);
+          }
+        }).error(function () {
+          alert('There was an error while disabling the terminal');
+        });
+      },
+      enable: function (id) {
+        var data = {toggle : 1};
+        var request = $http.put('/admin/' + $scope.mode + '/terminal/' + id + '/toggle', data);
+        request.success(function (data) {
+          if (data.success) {
+            alert('Terminal enabled');
+            window.location.reload();
+          } else {
+            alert(data.errors);
+          }
+        }).error(function () {
+          alert('There was an error while enabling the terminal');
+        });
       }
     };
 
@@ -287,8 +315,7 @@ app.controller('EntityDetailCtrl', [
       gateway_terminal_id: current.gateway_terminal_id,
       id: current.id,
       card: current.card,
-      gateway: current.gateway,
-      enabled: current.enabled
+      gateway: current.gateway
     };
     $scope.ok = function (terminal) {
       $modalInstance.close(terminal);

@@ -1667,6 +1667,20 @@ class Service extends Base\Service
         }
     }
 
+    public function toggleTerminal($mode, $terminalId, $input)
+    {
+        $this->setApiCredentials(null, $mode);
+        try
+        {
+            $response = $this->api->terminal->toggle($terminalId, $input);
+            return [null, $response->toArray()];
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            return [$e->getMessage(), null];
+        }
+    }
+
     public function verifyAllPayments()
     {
         $this->setApiCredentials(null, 'live');
