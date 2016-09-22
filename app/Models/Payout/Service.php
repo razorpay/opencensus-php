@@ -31,4 +31,11 @@ class Service extends Base\Service
 
         return $payout->toArrayPublic();
     }
+
+    public function initiatePayouts($input, $channel = null)
+    {
+        $data = (new Payout\Core)->initiatePayouts($input, $channel);
+
+        return $data;
+    }
 }

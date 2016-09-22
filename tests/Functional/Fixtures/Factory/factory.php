@@ -272,6 +272,7 @@ $factory(\RZP\Models\Payout\Entity::class, [
     'id'                        => $faker->uniqueid,
     'customer_id'               => '100000customer',
     'destination'               => '1000000lcustba',
+    'type'                      => 'bank_account',
     'method'                    => 'fund_transfer',
     'amount'                    => 100,
     'currency'                  => 'INR',

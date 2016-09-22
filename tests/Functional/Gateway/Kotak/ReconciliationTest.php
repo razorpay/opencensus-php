@@ -8,12 +8,14 @@ use Mockery;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
+use RZP\Tests\Functional\Payout\PayoutTrait;
 use RZP\Tests\Functional\TestCase;
 
 class ReconciliationTest extends TestCase
 {
     use RequestResponseFlowTrait;
     use SettlementTrait;
+    use PayoutTrait;
 
     public function setUp()
     {
@@ -22,7 +24,7 @@ class ReconciliationTest extends TestCase
         parent::setUp();
     }
 
-    public function testReconciliation()
+    public function testSettlementReconciliation()
     {
         // Create payments and refunds with timestamps two days back
         $prEntities = $this->createPaymentAndRefundEntities();
@@ -46,15 +48,35 @@ class ReconciliationTest extends TestCase
         $this->fetchAndMatchDailySettlement();
     }
 
-    protected function initiateSettlementsAndAssertSuccess()
+    public function testPayoutReconciliation()
     {
-        $content = $this->initiateSettlements();
+        // Create payments and refunds with timestamps two days back
+        $payoutEntities = $this->createPayoutEntities();
+
+        // // delete Existing files
+        // $this->deleteSetlFiles();
+
+        // reconciliation
+        $txns = $this->matchTransactions($payoutEntities);
+
+        // Generate settlements for above transactions
+        $payoutFiles = $this->initiatePayoutsAndAssertSuccess();
+
+        // Generate settlement reconciliation file
+        $payoutReconciliationFile = $this->generateSetlReconciliationFile($payoutFiles);
+
+        // Reconcile settlements
+        $data = $this->reconcileSettlements($payoutReconciliationFile);
+    }
+
+    protected function initiatePayoutsAndAssertSuccess()
+    {
+        $content = $this->initiatePayouts();
 
         $this->assertArrayHasKey('kotak', $content);
-        $this->assertArrayHasKey('settlement_text_file', $content['kotak']);
-        $this->assertArrayHasKey('settlement_excel_file', $content['kotak']);
+        $this->assertArrayHasKey('payout_text_file', $content['kotak']);
 
-        return $content['kotak']['settlement_text_file'];
+        return $content['kotak']['payout_text_file'];
     }
 
     protected function matchTransactions($prEntities)
@@ -124,6 +146,28 @@ class ReconciliationTest extends TestCase
 
             array_push($prEntities, $payment);
             array_push($prEntities, $refund);
+        }
+
+        return $prEntities;
+    }
+
+    protected function createPayoutEntities()
+    {
+        $prEntities = array();
+
+        $r = range(1,5);
+
+        $createdAt = Carbon::today('Asia/Kolkata')->subDays(4)->timestamp + 5;
+
+        foreach ($r as $i)
+        {
+            $payout = $this->fixtures->create('payout',
+                [
+                    'amount' => 1000,
+                    'created_at' => $createdAt
+                ]);
+
+            array_push($prEntities, $payout);
         }
 
         return $prEntities;

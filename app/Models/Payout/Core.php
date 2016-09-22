@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payout;
 
+use Carbon\Carbon;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\BankAccount;
@@ -10,7 +11,9 @@ use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Payout;
 use RZP\Models\Payout\Entity;
+use RZP\Models\Payout\Method;
 use RZP\Models\Settlement;
+use RZP\Models\Settlement\Kotak;
 use RZP\Models\Transaction;
 
 class Core extends Base\Core
@@ -37,16 +40,53 @@ class Core extends Base\Core
         }
     }
 
+    public function initiatePayouts($input, $channel)
+    {
+        $timestamp = Carbon::today('Asia/Kolkata')->timestamp;
+
+        $payouts = $this->repo->payout->fetchCreatedPayouts($timestamp, Method::FUND_TRANSFER);
+
+        $payouts = $this->repo->payout->fetchAssociatedRelations($payouts, 'dest', 'destination', 'type');
+
+        $data['kotak'] = $this->processBankPayoutsForKotak($payouts);
+
+        return $data;
+    }
+
+    protected function processBankPayoutsForKotak($payouts)
+    {
+        $data['channel'] = 'kotak';
+
+        $data['count'] = $payouts->count();
+
+        if ($payouts->count() > 0)
+        {
+            $urlText = (new Kotak\NodalAccount)->getPayoutsFile($payouts);
+
+            $data['payout_text_file'] = $urlText;
+        }
+        else
+        {
+            $data['message'] = 'no payout to process';
+        }
+
+        return $data;
+    }
+
     protected function createPayoutEntity($input, $merchant)
     {
         $customer = $this->getCustomer($input, $merchant);
 
         $destination = $this->getPayoutDestination($input, $merchant, $customer);
 
+        $type = Payout\Method::getEntityName($input[Payout\Entity::METHOD]);
+
         //create payout entity
         $payout = (new Payout\Entity)->build($input);
 
         $payout->setChannel(Settlement\Channel::KOTAK);
+
+        $payout->setType($type);
 
         //set relations
         $payout->merchant()->associate($merchant);

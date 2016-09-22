@@ -34,7 +34,6 @@ trait SettlementTrait
     protected function deleteSetlFiles()
     {
         $deleteUrls = [
-            '/settlements/file/hdfc_mpr',
             '/settlements/file/setl_initiate',
             '/settlements/file/reconcile',
             '/settlements/file/return',

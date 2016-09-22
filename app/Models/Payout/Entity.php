@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payout;
 
+use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -18,6 +19,7 @@ class Entity extends Base\PublicEntity
     const CUSTOMER_ID       = 'customer_id';
     const METHOD            = 'method';
     const DESTINATION       = 'destination';
+    const TYPE              = 'type';
     const AMOUNT            = 'amount';
     const CURRENCY          = 'currency';
     const NOTES             = 'notes';
@@ -32,11 +34,11 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'payout';
 
-    protected $table  = \RZP\Constants\Table::PAYOUT;
+    protected $table  = Table::PAYOUT;
 
     protected $generateIdOnCreate = true;
 
-    protected static $sign      = 'pout';
+    protected static $sign = 'pout';
 
     protected static $generators = array(self::ID);
 
@@ -54,6 +56,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::CUSTOMER_ID,
         self::DESTINATION,
+        self::TYPE,
         self::AMOUNT,
         self::CURRENCY,
         self::NOTES,
@@ -65,7 +68,9 @@ class Entity extends Base\PublicEntity
         self::CHANNEL,
         self::UTR,
         self::FAILURE_REASON,
-        self::RETURN_UTR
+        self::RETURN_UTR,
+        self::CREATED_AT,
+        self::UPDATED_AT
     );
 
     protected $public = array(
@@ -177,6 +182,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CHANNEL, $channel);
     }
 
+    public function setType($type)
+    {
+        $this->setAttribute(self::TYPE, $type);
+    }
+
     public function setServiceTax($serviceTax)
     {
         $this->setAttribute(self::SERVICE_TAX, $serviceTax);
@@ -200,6 +210,11 @@ class Entity extends Base\PublicEntity
     public function setUtr($utr)
     {
         $this->setAttribute(self::UTR, $utr);
+    }
+
+    public function setFailureReason($reason)
+    {
+        $this->setAttribute(self::FAILURE_REASON, $reason);
     }
 
     public function setPublicDestinationAttribute(array & $array)

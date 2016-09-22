@@ -392,7 +392,7 @@ class NodalAccount
         return [$urlText, $urlExcel];
     }
 
-    public function getPayoutsFile($payouts, $txns)
+    public function getPayoutsFile($payouts)
     {
         $textData = array();
 
@@ -402,7 +402,7 @@ class NodalAccount
         {
             $merchant = $payout->merchant;
 
-            $ba = $payout->destination;
+            $ba = $payout->dest;
 
             $amount = $payout->getAmount() / 100;
 
@@ -436,9 +436,13 @@ class NodalAccount
 
         $count['total'] = $payouts->count();
 
-        $urlText = $this->writeToTextFileH2H($txt);
+        $txt = $this->generateText($textData);
 
-        $this->sendKotakPayoutsMail($count, $amounts);
+        $name = $this->getH2HFileName();
+
+        $urlText = $this->writeToTextFileH2H($name, $txt);
+
+        $this->sendKotakRefundsMail($count, $amounts);
 
         return $urlText;
     }
@@ -488,11 +492,11 @@ class NodalAccount
 
         $data['file'] = $fullpath;
 
-        Mail::send('emails.admin.settlement', $data, function($message) use ($data)
+        Mail::send('emails.admin.refund', $data, function($message) use ($data)
         {
             $emails = ['settlements@razorpay.com'];
 
-            $message->from('settlement@razorpay.com', 'Kotak Settlement');
+            $message->from('settlement@razorpay.com', 'Kotak Payouts');
 
             $message->subject($data['subject']);
 
@@ -502,7 +506,6 @@ class NodalAccount
 
             $message->attach($file);
         });
-
     }
 
     protected function sendKotakSettlementMail($count, $amounts)
