@@ -186,7 +186,7 @@ class PublicErrorDescription
     const BAD_REQUEST_CUSTOMER_WALLET_ALREADY_EXISTS                            = 'Wallet already exists for the customer';
 
     const BAD_REQUEST_OTP_MAXIMUM_ATTEMPTS_REACHED                              = 'OTP verification failed because attempt threshold has been reached';
-    const BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED                                 = 'SMS sending failed because threshold has been reached.';
+    const BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED                                 = 'SMS sending failed because threshold has been reached. Please try again later.';
     const BAD_REQUEST_INCORRECT_OTP                                             = 'Verification failed because of incorrect OTP.';
     const BAD_REQUEST_SMS_FAILED                                                = 'SMS sending failed.';
 

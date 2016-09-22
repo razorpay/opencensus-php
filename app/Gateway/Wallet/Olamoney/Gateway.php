@@ -23,12 +23,13 @@ class Gateway extends Base\Gateway
 {
     use AuthorizeFailed;
 
+    // 8 hours - 8 * 60 * 60 = 28
+    const WALLET_ACCESS_TOKEN_EXPIRY = 28800;
+
     protected $gateway = 'wallet_olamoney';
 
     protected $topup = true;
 
-    // 8 hours - 8 * 60 * 60 = 28
-    protected $walletAccessTokenExpiry = 28800;
 
     protected $map = array(
         Entity::EMAIL                   => Entity::EMAIL,
@@ -116,7 +117,7 @@ class Gateway extends Base\Gateway
         if ($response->status_code === 429)
         {
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_OTP_EXPIRED);
+                ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED);
         }
 
         $content = $this->jsonToArray($response->body);
@@ -151,7 +152,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->jsonToArray($response->body);
 
-        if (isset($content[ResponseFields::ACCESS_TOKEN]))
+        if (isset($content[ResponseFields::ACCESS_TOKEN]) === true)
         {
             $data['token'] = $this->getTokenAttributes($content);
 
@@ -171,7 +172,7 @@ class Gateway extends Base\Gateway
 
             $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
 
-            if (isset($message))
+            if (isset($message) === true)
             {
                 $errorCode = ResponseCode::getApiErrorCode($message);
             }
@@ -191,11 +192,9 @@ class Gateway extends Base\Gateway
 
         $content[RequestFields::USER_ACCESS_TOKEN] = $this->accessToken;
 
-        $request = [
-            'url'       => $this->getUrl(),
-            'method'    => 'post',
-            'headers'   => $this->getRequestHeaders(),
-        ];
+        $request = $this->getStandardRequestArray();
+
+        $request['headers'] = $this->getRequestHeaders();
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
 
@@ -241,21 +240,16 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
 
-        if (isset($content[ResponseFields::STATUS]) === false)
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
-        }
-
-        if ($content[ResponseFields::STATUS] !== Status::SUCCESS)
+        if ((isset($content[ResponseFields::STATUS]) === false) or
+            ($content[ResponseFields::STATUS] !== Status::SUCCESS))
         {
             $code = null;
 
-            if (isset($content[ResponseFields::MESSAGE]))
+            if (isset($content[ResponseFields::MESSAGE]) === true)
             {
                 $code = $content[ResponseFields::MESSAGE];
             }
-            else if (isset($content[ResponseFields::COMMENTS]))
+            else if (isset($content[ResponseFields::COMMENTS]) === true)
             {
                 $code = $content[ResponseFields::COMMENTS];
             }
@@ -269,9 +263,7 @@ class Gateway extends Base\Gateway
 
         $gatewayPaymentAttrs = $this->getCreateWalletAttributes($input, $content);
 
-        $this->action = Action::AUTHORIZE;
-
-        $this->createGatewayPaymentEntity($gatewayPaymentAttrs);
+        $this->createGatewayPaymentEntity($gatewayPaymentAttrs, Action::AUTHORIZE);
 
         $this->action = Action::DEBIT_WALLET;
     }
@@ -294,7 +286,7 @@ class Gateway extends Base\Gateway
 
     protected function getDebitRequestAttributes($input)
     {
-        $amount = (string) number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $amount = number_format($input['payment']['amount'] / 100, 2, '.', '');
 
         $udf = [RequestFields::MERCHANT_DISPLAY_NAME => $input['merchant']->getBillingLabelElseName()];
         $udf = json_encode($udf);
@@ -415,17 +407,13 @@ class Gateway extends Base\Gateway
     {
         $content = $this->getBillGeneratorAttributes($input);
 
-        $queryArray[RequestFields::BILL] = base64_encode(json_encode($content));
-
-        $query = http_build_query($queryArray);
+        $query = http_build_query($content);
 
         $request = [
             'method'  => 'get',
             'url'     => $this->getUrl(). '?' . $query,
             'content' => [],
         ];
-
-        // find a good way to trace this
 
         return $request;
     }
@@ -463,7 +451,9 @@ class Gateway extends Base\Gateway
 
         $content[RequestFields::HASH] = $this->getHashForBill($content);
 
-        return $content;
+        $requestContent[RequestFields::BILL] = base64_encode(json_encode($content));
+
+        return $requestContent;
     }
 
     protected function getOtpGenerateRequestArray($input)
@@ -955,7 +945,7 @@ class Gateway extends Base\Gateway
                             $input['terminal']['id'],
                             $input['customer']['id']);
 
-        if ($token !== null and ($token->getExpiredAt() > time()))
+        if (($token !== null) and ($token->getExpiredAt() > time()))
         {
             return $token;
         }
@@ -971,7 +961,7 @@ class Gateway extends Base\Gateway
             Token\Entity::TERMINAL_ID      => $input['terminal']['id'],
             Token\Entity::GATEWAY_TOKEN    => $content[ResponseFields::ACCESS_TOKEN],
             Token\Entity::GATEWAY_TOKEN2   => $content[ResponseFields::REFRESH_TOKEN],
-            Token\Entity::EXPIRED_AT       => time() + $this->walletAccessTokenExpiry,
+            Token\Entity::EXPIRED_AT       => time() + self::WALLET_ACCESS_TOKEN_EXPIRY,
         );
 
         return $attributes;
