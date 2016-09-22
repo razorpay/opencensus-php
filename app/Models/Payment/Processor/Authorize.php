@@ -547,11 +547,6 @@ trait Authorize
             $this->setBankAndEmiPlanDetails($payment, $cardNumber, $emiDuration);
         }
 
-        if ($payment->isUpi() === true)
-        {
-            $gatewayInput['vpa'] = $input['vpa'];
-        }
-
         $payment->setInternational();
     }
 
@@ -1175,24 +1170,35 @@ trait Authorize
                 AnalyticsEntity::TERMINAL_ID    => $rawData['terminal_id'],
             ];
 
-            (new Analytics\Service)->createAuditLog($log, $rawData);
+            $row = (new Analytics\Service)->createAuditLog($log, $rawData);
+
+            // log invalid data
+            $invalidData = [];
+
+            foreach ($row as $key => $value) {
+                if (Analytics\Metadata::isInvalidValue($value))
+                {
+                    $invalidData[$key] = $value;
+                }
+            }
+
+            if (empty($invalidData) === false)
+            {
+                $checkoutMetadataToLog = null;
+
+                if (isset($rawData['input']) and isset($rawData['input']['_']))
+                {
+                    $checkoutMetadataToLog = $rawData['input']['_'];
+                }
+
+                $this->trace->warning(TraceCode::PAYMENT_ANALYTICS_UNRECOGNIZED_DATA,
+                    ['invalid_data' => $invalidData,
+                     'raw_data'     => $checkoutMetadataToLog]);
+            }
         }
         catch (\Exception $e)
         {
-            $checkoutMetadata = null;
-
-            if (isset($rawData['input']) and isset($rawData['input']['_']))
-            {
-                $checkoutMetadata = $rawData['input']['_'];
-            }
-
-            $this->trace->error(
-                TraceCode::PAYMENT_ANALYTICS_SAVE_FAILED,
-                [
-                    'raw_data' => $checkoutMetadata
-                ]);
-
-            $this->trace->traceException($e);
+            $this->trace->traceException($e, Trace::WARNING, TraceCode::PAYMENT_ANALYTICS_SAVE_FAILED);
         }
     }
 

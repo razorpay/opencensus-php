@@ -78,6 +78,8 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
         try
         {
+            $this->runPreReconciledAtCheckRecon($rowDetails);
+
             $reconciled = $this->checkIfAlreadyReconciled($this->refund);
 
             if ($reconciled === true)
@@ -130,6 +132,11 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
             //return;
         }
+    }
+
+    protected function runPreReconciledAtCheckRecon($rowDetails)
+    {
+        $this->persistGatewaySettledAt($this->refund, $rowDetails);
     }
 
     protected function validatePaymentStatus()

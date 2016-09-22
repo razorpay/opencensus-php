@@ -82,6 +82,9 @@ class CreateTerminals extends Migration
             $table->boolean(Terminal::SHARED)
                   ->default(0);
 
+            $table->string(Terminal::NETWORK_CATEGORY)
+                  ->nullable();
+
             $table->integer(Terminal::CREATED_AT);
 
             $table->integer(Terminal::UPDATED_AT);
@@ -89,6 +92,9 @@ class CreateTerminals extends Migration
             $table->integer(Terminal::DELETED_AT)
                   ->unsigned()
                   ->nullable();
+
+            $table->boolean(Terminal::ENABLED)
+                  ->default(1);
 
             $table->foreign(Terminal::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
@@ -102,6 +108,7 @@ class CreateTerminals extends Migration
             $table->index(Terminal::CATEGORY);
             $table->index(Terminal::GATEWAY);
             $table->index(Terminal::DELETED_AT);
+            $table->index(Terminal::ENABLED);
         });
     }
 

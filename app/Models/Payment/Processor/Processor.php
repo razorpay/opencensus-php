@@ -66,6 +66,12 @@ class Processor
      */
     const PAYMENT_CANCEL_TIME_DURATION = 1800;  // 30 min * 60 sec
 
+    /**
+     * If a payment is async, it can receive a callback for 5 mins after which it is converted to a
+     * failed payment
+     */
+    const ASYNC_PAYMENT_TIMEOUT = 300;
+
     protected $merchant;
     protected $trace;
     protected $payment;
@@ -289,6 +295,8 @@ class Processor
             return $this->processPaymentCallbackSecondTime($payment);
         }
 
+        $this->trace->info(TraceCode::PAYMENT_CANCELLED, (array) $input);
+
         $errorCode = $this->repo->transaction(function() use ($payment, $input)
         {
             $this->lockForUpdateAndReload($payment);
@@ -336,19 +344,22 @@ class Processor
 
         $gateway = $payment->getGateway();
 
+        // If the gateway is not async or the payment is failed
+        // we just give a generic error to not leak information
         if ((Payment\Gateway::supportsAsync($gateway) === false) or
-            ($payment->justCreated() === false))
+            ($payment->isFailed() === true))
         {
             // Throw exception of invalid id
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_ID);
         }
 
-        // If it failed recently, then throw relevant exception
-        // directly for the failure.
-        if ($payment->isFailed() === true)
+        // Throw payment failed exception if async payment timeout (5mins)
+        // has been exceeded
+        if ($payment->justCreated() === false)
         {
-            $this->rethrowFailedPaymentErrorException($payment);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
         }
 
         if ($payment->isCreated() === true)
@@ -358,6 +369,7 @@ class Processor
             ];
         }
 
+        // We don't want to reach this in case of captured|refunded payments
         assert($payment->isAuthorized() === true);
 
         return $this->processAsyncAuthorizeResponse($payment);
@@ -515,6 +527,13 @@ class Processor
         $this->trace->info(
             TraceCode::PAYMENT_METADATA,
             ['metadata' => $metadata, 'payment_id' => $payment->getId()]);
+
+        if (isset($metadata['checkout_id']) === false)
+        {
+             $this->trace->warning(
+                 TraceCode::PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND,
+                 ['metadata' => $metadata, 'payment_id' => $payment->getId()]);
+        }
 
         $this->payment = $payment;
 

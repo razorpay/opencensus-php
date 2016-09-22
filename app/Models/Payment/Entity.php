@@ -41,6 +41,7 @@ class Entity extends Base\PublicEntity
     const TOKEN                 = 'token';
     const TOKEN_ID              = 'token_id';
     const GLOBAL_TOKEN_ID       = 'global_token_id';
+    const VPA                   = 'vpa';
     const EMAIL                 = 'email';
     const CONTACT               = 'contact';
     const NOTES                 = 'notes';
@@ -89,6 +90,7 @@ class Entity extends Base\PublicEntity
         self::WALLET,
         self::CURRENCY,
         self::DESCRIPTION,
+        self::VPA,
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
@@ -117,6 +119,7 @@ class Entity extends Base\PublicEntity
         self::APP_TOKEN,
         self::TOKEN_ID,
         self::GLOBAL_TOKEN_ID,
+        self::VPA,
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
@@ -160,6 +163,7 @@ class Entity extends Base\PublicEntity
         self::CARD_ID,
         self::BANK,
         self::WALLET,
+        self::VPA,
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
@@ -620,7 +624,7 @@ class Entity extends Base\PublicEntity
     }
 
     /**
-     * A payment is considered just created for 15
+     * A payment is considered just created for 5
      * minutes since creation
      * @return bool
      */
@@ -630,7 +634,7 @@ class Entity extends Base\PublicEntity
 
         $secondsSinceCreated = $currentTime - $this->getAttribute(self::CREATED_AT);
 
-        return (bool) ($secondsSinceCreated <= (60*5));
+        return (bool) ($secondsSinceCreated <= (Processor\Processor::ASYNC_PAYMENT_TIMEOUT));
     }
 
     public function isAuthorized()
@@ -829,6 +833,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::EMAIL);
     }
 
+    public function getVpa()
+    {
+        return $this->getAttribute(self::VPA);
+    }
+
     public function getContact()
     {
         return $this->getAttribute(self::CONTACT);
@@ -943,11 +952,17 @@ class Entity extends Base\PublicEntity
             case Method::CARD:
                 return [$method, $this->getFormattedCard()];
                 break;
+            case Method::EMI:
+                return [$method, $this->getFormattedCard()];
+                break;
             case Method::NETBANKING:
                 return [$method, $this->getBankName()];
                 break;
             case Method::WALLET:
                 return [$method, ucfirst($this->getWallet())];
+                break;
+            case Method::UPI:
+                return [$method, $this->getVpa()];
                 break;
         }
     }
@@ -1134,6 +1149,11 @@ class Entity extends Base\PublicEntity
     public function order()
     {
         return $this->belongsTo('RZP\Models\Order\Entity');
+    }
+
+    public function analytics()
+    {
+        return $this->hasOne('RZP\Models\Payment\Analytics\Entity');
     }
 
     public function customer()

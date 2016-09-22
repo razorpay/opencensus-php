@@ -36,9 +36,13 @@ class Entity extends Base\PublicEntity
 
     const SHARED                        = 'shared';
 
+    const NETWORK_CATEGORY              = 'network_category';
+
     const DELETED_AT                    = 'deleted_at';
 
     const MAX_TERMINALS_COUNT           = 25;
+
+    const ENABLED                       = 'enabled';
 
     //const PRIORITY                      = 'priority';
 
@@ -59,6 +63,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_TERMINAL_PASSWORD,
         self::GATEWAY_RECON_PASSWORD,
         self::GATEWAY_ACQUIRER,
+        self::ENABLED
     );
 
     protected $public = array(
@@ -80,6 +85,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
+        self::ENABLED
     );
 
     protected $table = 'terminals';
@@ -115,6 +121,7 @@ class Entity extends Base\PublicEntity
         self::EMI_DURATION              => null,
         self::GATEWAY_ACQUIRER          => null,
         self::RECURRING                 => Recurring::NON_RECURRING,
+        self::ENABLED                   => true,
     );
 
     protected $casts = array(
@@ -124,6 +131,7 @@ class Entity extends Base\PublicEntity
         self::RECURRING                 => 'int',
         self::SHARED                    => 'boolean',
         self::UPI                       => 'boolean',
+        self::ENABLED                   => 'boolean',
     );
 
     public function generateMethod($input)
@@ -316,6 +324,11 @@ class Entity extends Base\PublicEntity
         return $emiDuration;
     }
 
+    public function getEnabled()
+    {
+        return $this->getAttribute(self::ENABLED);
+    }
+
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');
@@ -365,6 +378,11 @@ class Entity extends Base\PublicEntity
         return (bool) $this->getAttribute(self::SHARED);
     }
 
+    public function isEnabled()
+    {
+        return $this->getAttribute(self::ENABLED);
+    }
+
     public function isDeleted()
     {
         return ($this->getAttribute(self::DELETED_AT) !== null);
@@ -399,5 +417,25 @@ class Entity extends Base\PublicEntity
         }
 
         return false;
+    }
+
+    public function getNetworkCategory()
+    {
+        return $this->getAttribute(self::NETWORK_CATEGORY);
+    }
+
+    public function setNetworkCategory($category)
+    {
+        $this->setAttribute(self::NETWORK_CATEGORY, $category);
+    }
+
+    public function setEnabled($status)
+    {
+        $this->setAttribute(self::ENABLED, $status);
+    }
+
+    protected function setEnabledAttribute($status)
+    {
+        $this->attributes[self::ENABLED] = (bool) $status;
     }
 }

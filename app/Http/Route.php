@@ -53,7 +53,7 @@ final class Route
         'payment_auto_capture_email'              => ['get',      'payments/autocapture/email',               'PaymentController@getAutoCaptureEmail'                             ],
         'payment_verify_multiple'                 => ['get',      'payments/verify/{filter}',                 'PaymentController@getVerifyPayments'                               ],
         'payment_capture_reminder'                => ['get',      'payments/all/reminder',                    'PaymentController@sendReminderMailForAuthorizedPayments'           ],
-        'payment_refund_authorized'               => ['post',     'payments/refund/authorized',               'PaymentController@postRefundOldAUthorizedPayments'                 ],
+        'payment_refund_authorized'               => ['post',     'payments/refund/authorized',               'PaymentController@postRefundOldAuthorizedPayments'                 ],
         'refund_fetch_by_id'                      => ['get',      'refunds/{id}',                             'PaymentController@getRefund'                                       ],
         'refund_fetch_multiple'                   => ['get',      'refunds',                                  'PaymentController@getRefunds'                                      ],
         'refund_netbanking_generate_excel'        => ['post',     'refunds/netbanking/excel',                 'PaymentController@generateNetbankingRefunds'                       ],
@@ -120,7 +120,8 @@ final class Route
         'key_fetch_multiple'                      => ['get',      'keys',                                     'KeyController@getKeys'                                             ],
         'terminal_delete'                         => ['delete',   'terminals/{id}',                           'MerchantController@deleteTerminal2'                                ],
         'terminal_edit'                           => ['put',      'terminals/{id}',                           'MerchantController@putTerminal2'                                   ],
-        'terminal_restore'                        => ['put',      'terminals/{id}/restore',                   'MerchantController@restoreTerminal',                               ],
+        'terminal_restore'                        => ['put',      'terminals/{id}/restore',                   'MerchantController@restoreTerminal'                                ],
+        'terminal_toggle'                         => ['put',      'terminals/{id}/toggle',                    'MerchantController@toggleTerminal'                                 ],
         'terminal_check_encrypted_value'          => ['post',     'terminals/{id}/secret',                    'MerchantController@postCheckTerminalEncryptedValue'                ],
         'webhook_create'                          => ['post',     'webhooks',                                 'MerchantController@postWebhook'                                    ],
         'webhook_edit'                            => ['put',      'webhooks/{id}',                            'MerchantController@putWebhook'                                     ],
@@ -243,6 +244,7 @@ final class Route
         'sms_callback'                            => ['post',     'sms/{id}/callback',                        'CustomerController@updateSmsStatus'                                ],
         'es_migrate_entity'                       => ['post',     'es/migrate/{entityName}',                  'EsController@migrateEntity'                                        ],
         'refund_gateway_manual'                   => ['post',     'refunds/{ids}/gateway',                    'PaymentController@postManualGatewayRefund'                         ],
+        'order_refund_multiple_authorized'        => ['post',     'orders/payments/refund',                   'PaymentController@postRefundMultipleAuthorizedPaymentsForOrders'   ],
     );
 
     public static $public = array(
@@ -364,6 +366,7 @@ final class Route
         'terminal_delete',
         'terminal_edit',
         'terminal_restore',
+        'terminal_toggle',
         'terminal_check_encrypted_value',
         'key_fetch_by_id',
         'key_fetch_multiple',
@@ -436,6 +439,7 @@ final class Route
         'credits_edit',
         'credits_delete',
         'refund_gateway_manual',
+        'order_refund_multiple_authorized',
     );
 
     public static $proxy = array(
@@ -519,6 +523,7 @@ final class Route
             'emi_generate_excel',
             'es_migrate_entity',
             'setl_post_details_old',
+            'order_refund_multiple_authorized',
         ),
 
         'mailgun' => array(
