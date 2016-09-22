@@ -295,6 +295,8 @@ class Processor
             return $this->processPaymentCallbackSecondTime($payment);
         }
 
+        $this->trace->info(TraceCode::PAYMENT_CANCELLED, (array) $input);
+
         $errorCode = $this->repo->transaction(function() use ($payment, $input)
         {
             $this->lockForUpdateAndReload($payment);
