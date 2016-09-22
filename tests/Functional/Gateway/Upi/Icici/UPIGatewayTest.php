@@ -93,7 +93,7 @@ EOT;
     {
         $payment = $this->getDefaultUpiPaymentArray();
 
-        $payment['vpa'] = 'thisisaverylongvpathisisaverylongvpathisisaverylongvpa@icici';
+        $payment['vpa'] = 'thisisaverylongvpathisisaverylongvpathisisaverylongvpathisisaverylongvpathisisaverylongvpathisisaverylongvpa@icici';
 
         $data = $this->testData['testLongVPA'];
 
