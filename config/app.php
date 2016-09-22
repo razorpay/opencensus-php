@@ -249,7 +249,7 @@ return array(
 
     'context' => env('CONTEXT'),
 
-    'checkout' => 'https://checkout.razorpay.com',
+    'checkout' => env('CHECKOUT_URL'),
 
     'proxy_address' => env('PROXY_ADDRESS'),
 

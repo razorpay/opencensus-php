@@ -442,18 +442,19 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $app = \App::getFacadeRoot();
+        $context = $this->config->get('app.context');
 
-        $context = $app['config']->get('app.context');
+        $url = $this->config->get('app.checkout');
 
-        $url = $app['config']->get('app.checkout');
+        $urlMap = $this->config->get('url.checkout');
 
-        $urlMap = array(
-            'production'    => 'https://checkout.razorpay.com',
-            'beta'          => 'https://betacheckout.razorpay.com');
+        $cdnUrlMap = $this->config->get('url.cdn');
 
         $framejs = '/v1/checkout-frame.js';
+
         $css = '/v1/css/checkout.css';
+
+        $font = '/lato';
 
         $data = [];
 
@@ -461,7 +462,6 @@ class MerchantController extends Controller
         {
             $url = $urlMap[$context];
         }
-
         else if (isset($input['checkout']))
         {
             $url = $input['checkout'];
@@ -470,7 +470,7 @@ class MerchantController extends Controller
         $data['checkout'] = $url;
         $data['framejs'] = $url . $framejs;
         $data['css'] = $url . $css;
-        $data['font'] = 'https://cdn.razorpay.com/lato';
+        $data['font'] = $cdnUrlMap['production'].$font;
 
         return $data;
     }
