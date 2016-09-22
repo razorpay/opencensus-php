@@ -20,6 +20,7 @@ class Payment extends Validator
         Entity::CARD_ID             => 'sometimes|',
         Entity::BANK                => 'sometimes|',
         Entity::WALLET              => 'sometimes|',
+        Entity::VPA                 => 'sometimes|max:100',
         Entity::EMAIL               => 'sometimes|email',
         Entity::CONTACT             => 'sometimes|',
         Entity::NOTES               => 'sometimes|',

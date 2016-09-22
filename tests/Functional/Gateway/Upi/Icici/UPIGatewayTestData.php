@@ -34,7 +34,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The vpa may not be greater than 50 characters.'
+                    'description' => 'The vpa may not be greater than 100 characters.'
                 ],
             ],
             'status_code' => 400,
