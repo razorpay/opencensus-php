@@ -132,6 +132,14 @@ EOT;
         });
     }
 
+    public function testSingleWordVPA()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+        $payment['vpa'] = 's@dcb';
+
+        $this->doAuthPayment($payment);
+    }
+
     public function testInvalidResponsePayment()
     {
         $payment = $this->getDefaultUpiPaymentArray();
