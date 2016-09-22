@@ -70,9 +70,9 @@ class Validator extends Base\Validator
     protected function validateVpa($attribute, $value)
     {
         $matches = null;
-        preg_match('/^(\w.+)@([a-z]+)$/', $value, $matches);
+        preg_match('/^(\w+)@([a-z]+)$/', $value, $matches);
 
-        if ((count($matches) !== 3))
+        if (count($matches) !== 3)
         {
             // Invalid VPA
             throw new Exception\BadRequestException(
