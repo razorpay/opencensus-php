@@ -57,6 +57,7 @@ class Repository extends Base\Repository
 
         return $this->newQuery()
                     ->whereIn(Terminal\Entity::MERCHANT_ID, $merchantIds)
+                    ->where(Terminal\Entity::ENABLED, '=', '1')
                     ->get();
     }
 
@@ -67,6 +68,7 @@ class Repository extends Base\Repository
                     ->where(Terminal\Entity::GATEWAY_TERMINAL_ID, '=', $gatewayTerminalId)
                     ->where(Terminal\Entity::GATEWAY, '=', $gateway)
                     ->whereNotNull(Terminal\Entity::GATEWAY_RECON_PASSWORD)
+                    ->where(Terminal\Entity::ENABLED, '=', '1')
                     ->first();
     }
 
@@ -91,6 +93,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Terminal\Entity::GATEWAY, '=', $gateway)
                     ->where(Terminal\Entity::SHARED, '=', '1')
+                    ->where(Terminal\Entity::ENABLED, '=', '1')
                     ->get();
     }
 
@@ -100,6 +103,7 @@ class Repository extends Base\Repository
                     ->where(Terminal\Entity::GATEWAY, '=', $gateway)
                     ->where(Terminal\Entity::SHARED, '=', '1')
                     ->where(Terminal\Entity::CATEGORY, '=', $category)
+                    ->where(Terminal\Entity::ENABLED, '=', '1')
                     ->first();
     }
 
@@ -111,6 +115,7 @@ class Repository extends Base\Repository
                     ->where(Terminal\Entity::SHARED, '=', '1')
                     ->where(Terminal\Entity::EMI, '=', '1')
                     ->where(Terminal\Entity::EMI_DURATION, '=', $duration)
+                    ->where(Terminal\Entity::ENABLED, '=', '1')
                     ->first();
     }
 
@@ -118,6 +123,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where(Terminal\Entity::MERCHANT_ID, '=', Merchant\Account::SHARED_ACCOUNT)
+                    ->where(Terminal\Entity::ENABLED, '=', '1')
                     ->get();
     }
 
@@ -129,6 +135,7 @@ class Repository extends Base\Repository
 
         return $this->newQuery()
                     ->whereIn(Terminal\Entity::ID, $sharedTerminalIds)
+                    ->where(Terminal\Entity::ENABLED, '=', '1')
                     ->get();
     }
 
