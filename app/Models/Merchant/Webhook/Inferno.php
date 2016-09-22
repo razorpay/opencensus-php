@@ -318,6 +318,8 @@ class Inferno
 
                 $webhook->deactivate();
 
+                $this->repo->saveOrFail($webhook);
+
                 $this->sendEmail($webhook,'deactivate');
 
                 // Webhook is now inactive
