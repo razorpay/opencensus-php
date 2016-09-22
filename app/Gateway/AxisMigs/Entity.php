@@ -118,7 +118,12 @@ class Entity extends Base\Entity
      */
     public function setVpcTransactionNoAttribute($txnNo)
     {
-        $oldTxnNo = $this->attributes['vpc_TransactionNo'];
+        $oldTxnNo = null;
+
+        if (isset($this->attributes['vpc_TransactionNo']))
+        {
+            $oldTxnNo = $this->attributes['vpc_TransactionNo'];
+        }
 
         if ($oldTxnNo === null)
         {
