@@ -67,19 +67,18 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateVpa($attribute, $value)
+    protected function validateVpa($attribute, $vpa)
     {
-        $matches = null;
-        preg_match('/^(\w+)@([a-z]+)$/', $value, $matches);
+        $vpaParts = explode('@', $vpa);
 
-        if (count($matches) !== 3)
+        if (count($vpaParts) !== 2)
         {
             // Invalid VPA
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA);
         }
 
-        if ($matches[2] === self::PHONEPE_VPA)
+        if ($vpaParts[1] === self::PHONEPE_VPA)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_UPI_APP_NOT_SUPPORTED);

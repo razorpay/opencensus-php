@@ -122,7 +122,7 @@ EOT;
         $payment = $this->getDefaultUpiPaymentArray();
 
         // Emails are not VPAs
-        $payment['vpa'] = 'nemo@razorpay.com';
+        $payment['vpa'] = 'nemo@razorpay@com';
 
         $data = $this->testData['testInvalidVPA'];
 
