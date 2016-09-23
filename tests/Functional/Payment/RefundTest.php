@@ -264,9 +264,7 @@ class RefundTest extends TestCase
             $content = $this->makeRequestAndGetContent($request);
 
         });
-
     }
-
 
     public function testProcessRefundFileWithFailureAfterAttempts()
     {

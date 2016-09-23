@@ -580,7 +580,6 @@ trait FileHandlerTrait
         $data = Excel::load($filePath)
                       ->formatDates(false)
                       ->toArray();
-
         return $data;
     }
 

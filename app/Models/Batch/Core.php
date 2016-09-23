@@ -226,11 +226,7 @@ class Core extends Base\Core
 
             array_push($batchRefundEntry, $paymentId, $amount);
 
-            $refundRequest = [
-                'amount' => (int) $amount,
-            ];
-
-            list($batchEntry, $isSuccess, $refundAmount) = $this->processRefundRequest($batch, $paymentId, $refundRequest, $batchRefundEntry);
+            list($batchEntry, $isSuccess, $refundAmount) = $this->processRefundRequest($batch, $paymentId, $amount, $batchRefundEntry);
 
             if($isSuccess === true)
             {
@@ -248,10 +244,14 @@ class Core extends Base\Core
         return array($totalRefundedAmount, $totalSuccessCount, $totalFailureCount, $processedFile);
     }
 
-    protected function processRefundRequest($batch, $paymentId, $refundRequest, $batchRefundEntry)
+    protected function processRefundRequest($batch, $paymentId, $amount, $batchRefundEntry)
     {
         try
         {
+            $refundRequest = [
+                'amount' => (string) $amount,
+            ];
+
             $merchant = $batch->merchant;
 
             $refund = $this->getNewProcessor($merchant)->refundCapturedPayment($paymentId, $refundRequest);
@@ -270,7 +270,7 @@ class Core extends Base\Core
                 [
                     'message'            => 'Refund was not successfull',
                     'payemntId'          => $paymentId,
-                    'amount'             => $refundRequest,
+                    'amount'             => $amount,
                     'errorMessage'       => $e->getCode(),
                 ]);
 

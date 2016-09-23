@@ -9,7 +9,7 @@ use RZP\Error\ErrorCode;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        Entity::FILE => 'sometimes',
+        Entity::FILE => 'required|file',
         Entity::TYPE => 'required|string|max:100|custom'
     );
 
