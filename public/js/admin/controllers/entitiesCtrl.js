@@ -85,6 +85,10 @@ app.controller('EntitiesCtrl', [
       'airtelmoney',
       'ezeclick',
     ];
+    var upiBankList = [
+      'all',
+      'icici',
+    ];
     var booleanList = [
       'all',
       0,
@@ -108,7 +112,8 @@ app.controller('EntitiesCtrl', [
       'card',
       'emi',
       'netbanking',
-      'wallet'
+      'wallet',
+      'upi',
     ];
     // This is the list of available filters
     // len==1 means a text input, rest are drop-downs
@@ -188,6 +193,7 @@ app.controller('EntitiesCtrl', [
         vault: ['Vault'],
         vault_token: ['Vault Token'],
       },
+      credits: {},
       customer: {
         merchant_id: ['Merchant Id'],
         email: ['Email'],
@@ -263,7 +269,7 @@ app.controller('EntitiesCtrl', [
         payment_id: ['Payment Id'],
         received: booleanList
       },
-      order:{
+      order: {
         merchant_id: ['Merchant Id'],
         status: [
           'all',
@@ -272,8 +278,9 @@ app.controller('EntitiesCtrl', [
           'paid',
         ],
         authorized: booleanList,
-        receipt_id: ['Receipt Id']
+        receipt: ['Receipt']
       },
+      payment_analytics: {},
       payment: {
         app_token: ['App Token'],
         bank: ['Bank Code'],
@@ -363,6 +370,10 @@ app.controller('EntitiesCtrl', [
       wallet: {
         payment_id: ['Payment Id'],
         wallet: walletList
+      },
+      upi: {
+        payment_id: ['Payment Id'],
+        bank: upiBankList
       },
       webhook: {
         merchant_id: ['Merchant Id'],
