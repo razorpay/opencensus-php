@@ -32,7 +32,6 @@ class Gateway extends Base\Gateway
         Entity::RECEIVED                  => Entity::RECEIVED,
         ResponseFields::PAYER_VA          => Entity::VPA,
         ResponseFields::PAYER_NAME        => Entity::NAME,
-        ResponseFields::PAYER_AMOUNT      => Entity::AMOUNT,
         ResponseFields::PAYER_MOBILE      => Entity::CONTACT,
         ResponseFields::RESPONSE          => Entity::STATUS_CODE,
         ResponseFields::BANK_RRN          => Entity::GATEWAY_PAYMENT_ID,
