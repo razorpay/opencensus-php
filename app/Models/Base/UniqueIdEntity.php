@@ -229,7 +229,16 @@ class UniqueIdEntity extends Entity
 
     protected static function getNanotimeInteger()
     {
-        exec('date +%s%N', $nanotime, $status);
+        $cmd = '';
+
+        if (PHP_OS === 'Darwin')
+        {
+            $cmd = '/usr/local/opt/coreutils/libexec/gnubin/';
+        }
+
+        $cmd .= 'date +%s%N';
+        exec($cmd, $nanotime, $status);
+
         return $nanotime[0];
     }
 
