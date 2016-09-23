@@ -375,32 +375,7 @@ class Processor
         // We don't want to reach this in case of captured|refunded payments
         assert($payment->isAuthorized() === true);
 
-        return $this->processAsyncAuthorizeResponse($payment);
-    }
-
-    /**
-     * Returns the proper response to checkout
-     * in case of the payment is authorized
-     * @param  Payment\Entity $payment
-     * @return array
-     */
-    protected function processAsyncAuthorizeResponse($payment)
-    {
-        $returnData = [
-            'razorpay_payment_id' => $payment->getPublicId()
-        ];
-
-        if ($payment->getAutoCaptured() === true)
-        {
-            $this->fillReturnDataForAutoCaptureOrders($payment, $returnData);
-        }
-
-        if ($payment->getCallbackUrl())
-        {
-            $this->fillReturnRequestDataForMerchant($payment, $returnData);
-        }
-
-        return $returnData;
+        return $this->processAuthorizeResponse($payment);
     }
 
     public function callGatewayFunctionCaptureViaQueue($data, $payment)
