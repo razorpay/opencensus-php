@@ -210,7 +210,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function verifySecureHash($content)
+    protected function verifySecureHash(array $content)
     {
         $fieldsInOrder = array(
             ResponseFields::TYPE,
@@ -225,17 +225,13 @@ class Gateway extends Base\Gateway
             ResponseFields::TIMESTAMP,
         );
 
-        $hash = $content[ResponseFields::HASH];
+        $actual = $content[ResponseFields::HASH];
 
         $content = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
 
-        $generatedHash = $this->getHashOfArray($content);
+        $generated = $this->getHashOfArray($content);
 
-        if ($generatedHash !== $hash)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Failed checksum verification');
-        }
+        $this->compareHashes($actual, $generated);
     }
 
     protected function getBillGeneratorRequest($input)

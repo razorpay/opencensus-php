@@ -217,7 +217,7 @@ class Processor
         $signature = $this->getSignature($data);
 
         // use hash_equals to prevent timing attacks
-        if (! hash_equals($signature, $input['signature']))
+        if (hash_equals($signature, $input['signature']) !== true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Signature does not match', 'signature');
@@ -295,7 +295,10 @@ class Processor
             return $this->processPaymentCallbackSecondTime($payment);
         }
 
-        $this->trace->info(TraceCode::PAYMENT_CANCELLED, (array) $input);
+        if (empty($input) === false)
+        {
+            $this->trace->info(TraceCode::PAYMENT_CANCELLED_METADATA, (array) $input);
+        }
 
         $errorCode = $this->repo->transaction(function() use ($payment, $input)
         {
