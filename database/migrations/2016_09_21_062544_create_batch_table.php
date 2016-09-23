@@ -45,7 +45,10 @@ class CreateBatchTable extends Migration
             $table->integer(Batch::ATTEMPTS)
                   ->default(0);
 
-            $table->integer(Batch::AMOUNT)
+            $table->bigInteger(Batch::AMOUNT)
+                  ->nullable();
+
+            $table->bigInteger(Batch::PROCESSED_AMOUNT)
                   ->nullable();
 
             $table->text(Batch::COMMENT)

@@ -40,7 +40,7 @@ final class Route
         'batch_fetch_by_id'                       => ['get',      'batches/{id}',                             'BatchController@getBatchById'                                      ],
         'batch_process_file'                      => ['post',     'batches/process',                          'BatchController@processBatches'                                    ],
         'batch_retry'                             => ['post',     'batches/{id}/retry',                       'BatchController@retryBatch'                                        ],
-        'batch_download_file'                     => ['get',      'batches/{id}/download',                    'BatchController@downloadBatchFile'                                 ],
+        'batch_download_file'                     => ['get',      'batches/{id}/download',                    'BatchController@downloadBatch'                                     ],
         'payment_capture'                         => ['post',     'payments/{id}/capture',                    'PaymentController@postCapture'                                     ],
         'payment_verify'                          => ['get',      'payments/{id}/verify',                     'PaymentController@getVerify'                                       ],
         'payment_force_authorize'                 => ['post',     'payments/{id}/force_authorize',            'PaymentController@postForceAuthorize'                              ],

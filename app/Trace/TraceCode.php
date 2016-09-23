@@ -257,6 +257,7 @@ class TraceCode
     const BATCH_RETRY                               = 'BATCH_RETRY';
     const BATCH_DOWNLOAD                            = 'BATCH_DOWNLOAD';
     const BATCH_LIST                                = 'BATCH_LIST';
+    const BATCH_GET                                 = 'BATCH_GET';
 
 
     /**
@@ -354,6 +355,7 @@ class TraceCode
         self::BATCH_RETRY                               => 'Manual retry for the batch file',
         self::BATCH_DOWNLOAD                            => 'Downloading the batch file',
         self::BATCH_LIST                                => 'Getting the batch files',
+        self::BATCH_GET                                 => 'Get Batch by given id',
     );
 
     /**

@@ -23,15 +23,6 @@ class Service extends Base\Service
 
     protected $merchant;
 
-    protected $validator;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->validator = new Validator();
-    }
-
     public function createBatch($input)
     {
         $batch = (new Batch\Core)->create($input);
@@ -39,97 +30,34 @@ class Service extends Base\Service
         return $batch->toArrayPublic();
     }
 
-    public function getBatchFiles($input)
+    public function getBatches($input)
     {
-        /*
-        $this->validator->validateType($input);
-
-        $skip = 0;
-        if (empty($input['skip']) === false)
-        {
-            $skip = $input['skip'];
-        }
-
-        $take = 10;
-        if (empty($input['take']) === false)
-        {
-            $take = $input['take'];
-        }
-
-        $merchant = $this->merchant;
-        $batches = $this->repo->batch->getBatches($merchant->getId(), $input['type'], $skip, $take);
-
-        */
-
-        $merchant = $this->merchant;
-        $batches = $this->repo->batch->fetch($input, $merchant->getId());
-        $this->trace->info(TraceCode::BATCH_LIST, $batches->toArrayPublic());
+        $batches = (new Batch\Core)->getBatches($input);
 
         return $batches->toArrayPublic();
     }
 
-    public function downloadBatchFile($id)
+    public function getBatchById($id)
     {
-        $batch = $this->repo->batch->findOrFail($id);
-
-        $publicUrl = '';
-
-        $storagePath = storage_path('files/batch_file_download');
-        $filePath = $storagePath . '/' . $batch->getId() . '.xlsx';
-
-        if ($batch->getStatus() === Status::CREATED)
-        {
-            $publicUrl = $this->getPreSignedUrlFromAws('batch_file_download_bucket', $id.'.xlsx', $filePath);
-        }
-        else
-        {
-            $publicUrl = $this->getPreSignedUrlFromAws('batch_file_upload_bucket', $id.'.xlsx', $filePath);
-        }
-
-        $response = [
-            'url' => $publicUrl,
-        ];
-
-        $this->trace->info(
-            TraceCode::BATCH_DOWNLOAD,
-            [
-                'message'       => 'Downloading the batch file',
-                'batch'         => $batch->toArrayPublic(),
-                'url'           => $publicUrl,
-            ]);
-
-        return $response;
-    }
-
-    public function retryBatchFile($id)
-    {
-        $batch = $this->repo->batch->findOrFail($id);
-
-        if ($batch->getStatus() === Status::PROCESSED)
-        {
-            $this->trace->error(
-                TraceCode::BATCH_RETRY,
-                [
-                    'message'       => 'Retry cannot be done for the already processed file',
-                    'batch'         => $batch->toArrayPublic(),
-                ]);
-
-            throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_FILE_ALREADY_PROCESSED);
-        }
-
-        $batch->setStatus(Status::IN_PROGRESS);
-        $batch->setAttempts(0);
-        $this->repo->saveOrFail($batch);
-
-        $this->trace->info(
-            TraceCode::BATCH_RETRY,
-            [
-                'message'       => 'Submitted batch file for retry',
-                'batch'         => $batch->toArrayPublic(),
-            ]);
+        $batch = (new Batch\Core)->getBatchById($id);
 
         return $batch->toArrayPublic();
+    }
+
+    public function retryBatch($id)
+    {
+        $batch = (new Batch\Core)->retryBatch($id);
+
+        return $batch->toArrayPublic();
+    }
+
+    public function downloadBatch($id)
+    {
+        $awsPublicUrl = (new Batch\Core)->downloadBatch($id);
+
+        return array [
+            'url' => $awsPublicUrl;
+        ];
     }
 
     public function processBatchFiles()

@@ -340,7 +340,9 @@ trait FileHandlerTrait
 
         $s3 = AWS::createClient('s3');
 
-        $url = $s3->getObjectUrl($bucket, $key,
+        $awsBucket = $config[$bucket];
+
+        $url = $s3->getObjectUrl($awsBucket, $key,
                 '+10 minutes', [
                     'https'     => true
             ]);

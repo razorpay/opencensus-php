@@ -37,4 +37,9 @@ class Type
     {
         return self::INPUT_HEADERS[strtoupper($type)];
     }
+
+    public static function getOutputHeaders($type)
+    {
+        return self::OUTPUT_HEADERS[strtoupper($type)];
+    }
 }

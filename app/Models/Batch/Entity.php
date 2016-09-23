@@ -16,12 +16,14 @@ class Entity extends Base\PublicEntity
     const FAILURE_COUNT             = 'failure_count';
     const ATTEMPTS                  = 'attempts';
     const AMOUNT                    = 'amount';
+    const PROCESSED_AMOUNT          = 'processed_amount';
     const COMMENT                   = 'comment';
     const PROCESSED_AT              = 'processed_at';
     const TYPE                      = 'type';
 
     const FILE_URL_LENGTH           = 100;
     const STATUS_LENGTH             = 20;
+    const FILE                      ='file';
 
     protected $table = \RZP\Constants\Table::BATCH;
 
@@ -48,6 +50,7 @@ class Entity extends Base\PublicEntity
         self::DOWNLOAD_FILE_URL,
         self::STATUS,
         self::AMOUNT,
+        self::PROCESSED_AMOUNT,
         self::TOTAL_COUNT,
         self::SUCCESS_COUNT,
         self::FAILURE_COUNT,
@@ -66,6 +69,7 @@ class Entity extends Base\PublicEntity
         self::FAILURE_COUNT,
         self::ATTEMPTS,
         self::AMOUNT,
+        self::PROCESSED_AMOUNT,
         self::STATUS,
         self::TYPE,
         self::PROCESSED_AT,
@@ -79,6 +83,7 @@ class Entity extends Base\PublicEntity
         self::SUCCESS_COUNT                  => null,
         self::FAILURE_COUNT                  => null,
         self::AMOUNT                         => null,
+        self::PROCESSED_AMOUNT               => null,
         self::COMMENT                        => null,
         self::PROCESSED_AT                   => null,
         self::TYPE                           => null,
@@ -89,6 +94,7 @@ class Entity extends Base\PublicEntity
         self::SUCCESS_COUNT                  => 'int',
         self::FAILURE_COUNT                  => 'int',
         self::AMOUNT                         => 'int',
+        self::PROCESSED_AMOUNT               => 'int',
         self::ATTEMPTS                       => 'int',
     );
 
@@ -100,6 +106,11 @@ class Entity extends Base\PublicEntity
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getProcessedAmount()
+    {
+        return $this->getAttribute(self::PROCESSED_AMOUNT);
     }
 
     public function getUploadFileUrl()
@@ -170,6 +181,11 @@ class Entity extends Base\PublicEntity
     public function setAmount($amount)
     {
         $this->setAttribute(self::AMOUNT, $amount);
+    }
+
+    public function setProcessedAmount($amount)
+    {
+        $this->setAttribute(self::PROCESSED_AMOUNT, $amount);
     }
 
     public function setStatus($status)
