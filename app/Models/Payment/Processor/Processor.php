@@ -217,7 +217,7 @@ class Processor
         $signature = $this->getSignature($data);
 
         // use hash_equals to prevent timing attacks
-        if (! hash_equals($signature, $input['signature']))
+        if (hash_equals($signature, $input['signature']) !== true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Signature does not match', 'signature');
