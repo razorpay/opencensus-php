@@ -1,6 +1,7 @@
 <?php
 
 $baseurl = $_SERVER['HTTP_HOST'] . '/v1';
+$baseurl = 'api.razorpay.com' . '/v1';
 
 $key_id = 'rzp_live_ILgsfZCZoFIKMb';
 $secret = 'thisissupersecret';

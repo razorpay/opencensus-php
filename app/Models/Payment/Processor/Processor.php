@@ -66,6 +66,12 @@ class Processor
      */
     const PAYMENT_CANCEL_TIME_DURATION = 1800;  // 30 min * 60 sec
 
+    /**
+     * If a payment is async, it can receive a callback for 5 mins after which it is converted to a
+     * failed payment
+     */
+    const ASYNC_PAYMENT_TIMEOUT = 300;
+
     protected $merchant;
     protected $trace;
     protected $payment;
@@ -211,7 +217,7 @@ class Processor
         $signature = $this->getSignature($data);
 
         // use hash_equals to prevent timing attacks
-        if (! hash_equals($signature, $input['signature']))
+        if (hash_equals($signature, $input['signature']) !== true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Signature does not match', 'signature');
@@ -289,6 +295,11 @@ class Processor
             return $this->processPaymentCallbackSecondTime($payment);
         }
 
+        if (empty($input) === false)
+        {
+            $this->trace->info(TraceCode::PAYMENT_CANCELLED_METADATA, (array) $input);
+        }
+
         $errorCode = $this->repo->transaction(function() use ($payment, $input)
         {
             $this->lockForUpdateAndReload($payment);
@@ -319,7 +330,7 @@ class Processor
 
         $e = new Exception\BadRequestException($errorCode);
 
-        $this->updatePaymentFailed($e->getError(), TraceCode::PAYMENT_CANCELLED);
+        $this->updatePaymentFailed($e, TraceCode::PAYMENT_CANCELLED);
 
         return $errorCode;
     }
@@ -336,19 +347,22 @@ class Processor
 
         $gateway = $payment->getGateway();
 
+        // If the gateway is not async or the payment is failed
+        // we just give a generic error to not leak information
         if ((Payment\Gateway::supportsAsync($gateway) === false) or
-            ($payment->justCreated() === false))
+            ($payment->isFailed() === true))
         {
             // Throw exception of invalid id
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_ID);
         }
 
-        // If it failed recently, then throw relevant exception
-        // directly for the failure.
-        if ($payment->isFailed() === true)
+        // Throw payment failed exception if async payment timeout (5mins)
+        // has been exceeded
+        if ($payment->justCreated() === false)
         {
-            $this->rethrowFailedPaymentErrorException($payment);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
         }
 
         if ($payment->isCreated() === true)
@@ -358,34 +372,10 @@ class Processor
             ];
         }
 
+        // We don't want to reach this in case of captured|refunded payments
         assert($payment->isAuthorized() === true);
 
-        return $this->processAsyncAuthorizeResponse($payment);
-    }
-
-    /**
-     * Returns the proper response to checkout
-     * in case of the payment is authorized
-     * @param  Payment\Entity $payment
-     * @return array
-     */
-    protected function processAsyncAuthorizeResponse($payment)
-    {
-        $returnData = [
-            'razorpay_payment_id' => $payment->getPublicId()
-        ];
-
-        if ($payment->getAutoCaptured() === true)
-        {
-            $this->fillReturnDataForAutoCaptureOrders($payment, $returnData);
-        }
-
-        if ($payment->getCallbackUrl())
-        {
-            $this->fillReturnRequestDataForMerchant($payment, $returnData);
-        }
-
-        return $returnData;
+        return $this->processAuthorizeResponse($payment);
     }
 
     public function callGatewayFunctionCaptureViaQueue($data, $payment)
@@ -402,8 +392,10 @@ class Processor
         $this->trace->addRecord($level, $traceCode, $data);
     }
 
-    protected function updatePaymentFailed($error, $traceCode)
+    protected function updatePaymentFailed($exception, $traceCode)
     {
+        $error = $exception->getError();
+
         $code = $error->getPublicErrorCode();
 
         $desc = $error->getDescription();
@@ -515,6 +507,13 @@ class Processor
         $this->trace->info(
             TraceCode::PAYMENT_METADATA,
             ['metadata' => $metadata, 'payment_id' => $payment->getId()]);
+
+        if (isset($metadata['checkout_id']) === false)
+        {
+             $this->trace->warning(
+                 TraceCode::PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND,
+                 ['metadata' => $metadata, 'payment_id' => $payment->getId()]);
+        }
 
         $this->payment = $payment;
 

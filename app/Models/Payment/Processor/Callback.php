@@ -42,6 +42,13 @@ trait Callback
      */
     public function callback($id, $hash, array $gatewayInput)
     {
+        $this->trace->info(
+            TraceCode::PAYMENT_CALLBACK_REQUEST,
+            [
+                'gateway_input' => $gatewayInput,
+                'payment_id'    => $id,
+            ]);
+
         $payment = $this->retrieve($id);
 
         // For redirect flow
@@ -133,6 +140,8 @@ trait Callback
         }
 
         $this->processPaymentCallback($payment, $gatewayInput);
+
+        $this->autoCapturePaymentIfApplicable($payment);
 
         return ['success' => true];
     }
@@ -260,9 +269,7 @@ trait Callback
 
         if (Error\Error::hasAction($code) === false)
         {
-            $this->updatePaymentFailed(
-                $e->getError(),
-                TraceCode::PAYMENT_AUTH_FAILURE);
+            $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
         }
         else
         {
@@ -278,5 +285,13 @@ trait Callback
         }
 
         throw $e;
+    }
+
+    protected function checkForMerchantCallbackUrl($payment)
+    {
+        if ($payment->getCallbackUrl() !== null)
+        {
+            $this->app['rzp.merchant_callback_url'] = $payment->getCallbackUrl();
+        }
     }
 }

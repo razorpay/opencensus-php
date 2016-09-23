@@ -262,6 +262,30 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function doS2SPrivateAuthPayment($payment = null)
+    {
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $request = array(
+            'method' => 'POST',
+            'url' => '/payments/create/redirect',
+            'content' => $payment);
+
+        if (isset($server))
+        {
+            $request['server'] = $server;
+        }
+
+        $this->ba->privateAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
     protected function doAuthWalletPayment($payment = null, $wallet = 'paytm')
     {
         if ($payment === null)

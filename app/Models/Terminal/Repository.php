@@ -47,7 +47,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->withTrashed()
-                    ->where(Terminal\Entity::MERCHANT_ID, '=', $mid)
+                    ->merchantId($mid)
                     ->get();
     }
 
@@ -57,6 +57,7 @@ class Repository extends Base\Repository
 
         return $this->newQuery()
                     ->whereIn(Terminal\Entity::MERCHANT_ID, $merchantIds)
+                    ->enabled()
                     ->get();
     }
 
@@ -67,6 +68,7 @@ class Repository extends Base\Repository
                     ->where(Terminal\Entity::GATEWAY_TERMINAL_ID, '=', $gatewayTerminalId)
                     ->where(Terminal\Entity::GATEWAY, '=', $gateway)
                     ->whereNotNull(Terminal\Entity::GATEWAY_RECON_PASSWORD)
+                    ->enabled()
                     ->first();
     }
 
@@ -74,14 +76,14 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->withTrashed()
-                    ->where(Terminal\Entity::MERCHANT_ID, '=', $mid)
+                    ->merchantId($mid)
                     ->findOrFailPublic($tid);
     }
 
-    public function getByMerchantIdAndGateway($id, $gateway)
+    public function getByMerchantIdAndGateway($mid, $gateway)
     {
         return $this->newQuery()
-                    ->where(Terminal\Entity::MERCHANT_ID, '=', $id)
+                    ->merchantId($mid)
                     ->where(Terminal\Entity::GATEWAY, '=', $gateway)
                     ->first();
     }
@@ -90,7 +92,8 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where(Terminal\Entity::GATEWAY, '=', $gateway)
-                    ->where(Terminal\Entity::SHARED, '=', '1')
+                    ->shared()
+                    ->enabled()
                     ->get();
     }
 
@@ -98,26 +101,29 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where(Terminal\Entity::GATEWAY, '=', $gateway)
-                    ->where(Terminal\Entity::SHARED, '=', '1')
+                    ->shared()
                     ->where(Terminal\Entity::CATEGORY, '=', $category)
+                    ->enabled()
                     ->first();
     }
 
     public function getEmiTerminal($mId, $gateway, $duration)
     {
         return $this->newQuery()
-                    ->where(Terminal\Entity::MERCHANT_ID, '=', $mId)
+                    ->merchantId($mId)
                     ->where(Terminal\Entity::GATEWAY, '=', $gateway)
-                    ->where(Terminal\Entity::SHARED, '=', '1')
+                    ->shared()
                     ->where(Terminal\Entity::EMI, '=', '1')
                     ->where(Terminal\Entity::EMI_DURATION, '=', $duration)
+                    ->enabled()
                     ->first();
     }
 
     public function getSharedTerminalsOnCommonAccount()
     {
         return $this->newQuery()
-                    ->where(Terminal\Entity::MERCHANT_ID, '=', Merchant\Account::SHARED_ACCOUNT)
+                    ->merchantId(Merchant\Account::SHARED_ACCOUNT)
+                    ->enabled()
                     ->get();
     }
 
@@ -129,6 +135,7 @@ class Repository extends Base\Repository
 
         return $this->newQuery()
                     ->whereIn(Terminal\Entity::ID, $sharedTerminalIds)
+                    ->enabled()
                     ->get();
     }
 
