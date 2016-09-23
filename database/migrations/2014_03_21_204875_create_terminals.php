@@ -93,7 +93,7 @@ class CreateTerminals extends Migration
                   ->unsigned()
                   ->nullable();
 
-            $table->boolean(Terminal::ENABLED)
+            $table->tinyInteger(Terminal::ENABLED)
                   ->default(1);
 
             $table->foreign(Terminal::MERCHANT_ID)
