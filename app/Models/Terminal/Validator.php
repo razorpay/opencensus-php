@@ -53,7 +53,7 @@ class Validator extends Base\Validator
 
     protected static $billdeskTerminalRules = array(
         Entity::GATEWAY                     => 'required|in:billdesk',
-        Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|min:2'
+        Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|min:2',
     );
 
     protected static $ebsTerminalRules = array(

@@ -27,9 +27,7 @@ trait Topup
         }
         catch (Exception\BaseException $e)
         {
-            $this->updatePaymentFailed(
-                    $e->getError(),
-                    TraceCode::PAYMENT_TOPUP_FAILURE);
+            $this->updatePaymentFailed($e, TraceCode::PAYMENT_TOPUP_FAILURE);
 
             throw $e;
         }
@@ -95,6 +93,11 @@ trait Topup
         $gatewayInput['payment']  = $payment->toArray();
 
         $gatewayInput['customer'] = $payment->globalCustomer;
+
+        if ($payment->analytics !== null)
+        {
+            $gatewayInput['analytics'] = $payment->analytics->toArray();
+        }
 
         $gatewayInput['callbackUrl'] = $this->getCallbackUrl();
     }

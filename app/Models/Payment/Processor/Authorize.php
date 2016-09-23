@@ -189,9 +189,7 @@ trait Authorize
 
     protected function updatePaymentAuthFailedAndThrowException($e)
     {
-        $this->updatePaymentFailed(
-            $e->getError(),
-            TraceCode::PAYMENT_AUTH_FAILURE);
+        $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
 
         throw $e;
     }
@@ -452,9 +450,7 @@ trait Authorize
             $e = new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED);
 
-            $this->updatePaymentFailed(
-                $e->getError(),
-                TraceCode::PAYMENT_AUTH_FAILURE);
+            $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
 
             throw $e;
         }
@@ -467,9 +463,7 @@ trait Authorize
             $e = new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD);
 
-            $this->updatePaymentFailed(
-                $e->getError(),
-                TraceCode::PAYMENT_AUTH_FAILURE);
+            $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
 
             throw $e;
         }
@@ -545,11 +539,6 @@ trait Authorize
             $emiDuration = $input['emi_duration'];
 
             $this->setBankAndEmiPlanDetails($payment, $cardNumber, $emiDuration);
-        }
-
-        if ($payment->isUpi() === true)
-        {
-            $gatewayInput['vpa'] = $input['vpa'];
         }
 
         $payment->setInternational();
@@ -1283,9 +1272,7 @@ trait Authorize
         }
         catch (Exception\BaseException $e)
         {
-            $this->updatePaymentFailed(
-                    $e->getError(),
-                    TraceCode::PAYMENT_AUTH_FAILURE);
+            $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
 
             throw $e;
         }

@@ -89,6 +89,9 @@ class CreateTransactions extends Migration
 
             $table->integer(Transaction::RECONCILED_AT)
                   ->nullable();
+            
+            $table->integer(Transaction::GATEWAY_SETTLED_AT)
+                  ->nullable();
 
             // Adds created_at and updated_at columns to the table
             $table->integer(Transaction::CREATED_AT);
@@ -103,6 +106,8 @@ class CreateTransactions extends Migration
             $table->index(Transaction::SETTLED);
 
             $table->index(Transaction::RECONCILED_AT);
+            
+            $table->index(Transaction::GATEWAY_SETTLED_AT);
 
             $table->index(Transaction::CHANNEL);
 

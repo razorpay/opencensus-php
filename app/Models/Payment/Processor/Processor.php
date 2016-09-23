@@ -295,6 +295,11 @@ class Processor
             return $this->processPaymentCallbackSecondTime($payment);
         }
 
+        if (empty($input) === false)
+        {
+            $this->trace->info(TraceCode::PAYMENT_CANCELLED_METADATA, (array) $input);
+        }
+
         $errorCode = $this->repo->transaction(function() use ($payment, $input)
         {
             $this->lockForUpdateAndReload($payment);
@@ -325,7 +330,7 @@ class Processor
 
         $e = new Exception\BadRequestException($errorCode);
 
-        $this->updatePaymentFailed($e->getError(), TraceCode::PAYMENT_CANCELLED);
+        $this->updatePaymentFailed($e, TraceCode::PAYMENT_CANCELLED);
 
         return $errorCode;
     }
@@ -412,8 +417,10 @@ class Processor
         $this->trace->addRecord($level, $traceCode, $data);
     }
 
-    protected function updatePaymentFailed($error, $traceCode)
+    protected function updatePaymentFailed($exception, $traceCode)
     {
+        $error = $exception->getError();
+
         $code = $error->getPublicErrorCode();
 
         $desc = $error->getDescription();
@@ -525,6 +532,13 @@ class Processor
         $this->trace->info(
             TraceCode::PAYMENT_METADATA,
             ['metadata' => $metadata, 'payment_id' => $payment->getId()]);
+
+        if (isset($metadata['checkout_id']) === false)
+        {
+             $this->trace->warning(
+                 TraceCode::PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND,
+                 ['metadata' => $metadata, 'payment_id' => $payment->getId()]);
+        }
 
         $this->payment = $payment;
 
