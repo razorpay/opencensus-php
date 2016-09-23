@@ -190,7 +190,8 @@ class Server extends Base\Mock\Server
 
     protected function getApprovalCode()
     {
-        return 'Y'.':'.random_integer(6).':'.random_integer(10).':PPX :'.random_integer(12);
+        $code=random_integer(6);
+        return 'Y'.':'.$code.':'.random_integer(10).':PPX :'.random_integer(12);
     }
 
     protected function scrub($cardnumber, $paymentMethod)

@@ -13,12 +13,8 @@ class Entity extends Base\Entity
     const TDATE                         = 'tdate';
     const STATUS                        = 'status';
     const TRANSACTION_RESULT            = 'transaction_result';
-    const PROCESSOR_RESPONSE_CODE       = 'processor_response_code';
-    const PROCESSOR_APPROVAL_CODE       = 'processor_approval_code';
-    const PROCESSOR_RESPONSE_MESSAGE    = 'processor_response_message';
-    const TERMINAL_ID                   = 'terminal_id';
-    const FAIL_REASON                   = 'fail_reason';
-    const FAIL_RC                       = 'fail_rc';
+    const APPROVAL_CODE                 = 'approval_code';
+    const ERROR_MESSAGE                 = 'error_message';
 
     protected $fields = array(
         self::ID,
@@ -31,12 +27,8 @@ class Entity extends Base\Entity
         self::TDATE,
         self::STATUS,
         self::TRANSACTION_RESULT,
-        self::PROCESSOR_RESPONSE_CODE,
-        self::PROCESSOR_APPROVAL_CODE,
-        self::PROCESSOR_RESPONSE_MESSAGE,
-        self::TERMINAL_ID,
-        self::FAIL_REASON,
-        self::FAIL_RC,
+        self::APPROVAL_CODE,
+        self::ERROR_MESSAGE,
         self::CREATED_AT,
         self::UPDATED_AT,
     );
@@ -51,12 +43,8 @@ class Entity extends Base\Entity
         self::TDATE,
         self::STATUS,
         self::TRANSACTION_RESULT,
-        self::PROCESSOR_RESPONSE_CODE,
-        self::PROCESSOR_APPROVAL_CODE,
-        self::PROCESSOR_RESPONSE_MESSAGE,
-        self::TERMINAL_ID,
-        self::FAIL_REASON,
-        self::FAIL_RC,
+        self::APPROVAL_CODE,
+        self::ERROR_MESSAGE,
     );
 
     protected $casts = [
@@ -88,6 +76,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::ORDER_ID);
     }
 
+    public function getApprovalCode()
+    {
+        return $this->getAttribute(self::APPROVAL_CODE);
+    }
+
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
@@ -106,6 +99,16 @@ class Entity extends Base\Entity
     public function setStatus($status)
     {
         return $this->setAttribute(self::STATUS, $status);
+    }
+
+    public function setErrorMessage($msg)
+    {
+        return $this->setAttribute(self::ERROR_MESSAGE, $msg);
+    }
+
+    public function setApprovalCode($code)
+    {
+        return $this->setAttribute(self::APPROVAL_CODE, $code);
     }
 
     public function setAmount($amount)

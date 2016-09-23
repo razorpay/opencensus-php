@@ -8,6 +8,11 @@ class PublicErrorDescription
     const SERVER_ERROR                                                          = 'The server encountered an error. The incident has been reported to admins';
     const GATEWAY_ERROR_REQUEST_TIMEOUT                                         = 'The gateway request to submit payment information timed out. Please submit your details again';
     const GATEWAY_ERROR_PROCESSING_DECLINED                                     = 'Payment failed due to processing error on gateway';
+    const GATEWAY_ERROR_SYSTEM_BUSY                                             = 'Gateway system is busy, please retry.';
+    const GATEWAY_ERROR_COMMUNICATION_ERROR                                     = 'Gateway experienced a communication error.';
+    const GATEWAY_ERROR_CARD_HOLDER_DIDNT_RETURN_FROM_RUPAY                     = 'Cardholder did not return from RuPay.';
+    const GATEWAY_ERROR_USER_INACTIVE                                           = 'User is inactive.';
+    const GATEWAY_ERROR_PAYMENT_BIN_CHECK_FAILED                                = 'Card bin check has failed.';
 
     const BAD_REQUEST_URL_NOT_FOUND                                             = 'The requested URL was not found on the server.';
     const BAD_REQUEST_ONLY_HTTPS_ALLOWED                                        = 'Razorpay API is only available over HTTPS.';
@@ -161,9 +166,27 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_OTP_EXPIRED                                       = 'Payment processing failed because of expired OTP';
     const BAD_REQUEST_PAYMENT_ABORTED                                           = 'Payment processing aborted';
     const BAD_REQUEST_PAYMENT_MISSING_DATA                                      = 'One or more required fields are missing';
+    const BAD_REQUEST_PAYMENT_AMOUNT_GREATER_THAN_REFUNDED                      = 'Total amount passed is more than the Return/Void amount.';
+    const BAD_REQUEST_PAYMENT_CARD_HOLDER_NOT_PERMITTED_TXN                     = 'Transaction not permitted to cardholder';
+    const BAD_REQUEST_PAYMENT_CARD_TYPE_INVALID                                 = 'Invalid card type.';
+    const BAD_REQUEST_PAYMENT_INVALID_AMOUNT_OR_CURRENCY                        = 'Invalid amount or currency.';
+    const BAD_REQUEST_PAYMENT_INVALID_CAPTURE                                   = 'No approved preauth transaction was found.';
+    const BAD_REQUEST_PAYMENT_INVALID_FORMAT                                    = 'Format error.';
+    const BAD_REQUEST_PAYMENT_INVALID_TRANSACTION_DATE                          = 'Invalid transaction date.';
+    const BAD_REQUEST_PAYMENT_MAX_TRANSACTIONS_PER_ORDER_EXCEEDED               = 'The maximum number of transactions per order has been exceeded';
+    const BAD_REQUEST_PAYMENT_PIN_ATTEMPTS_EXCEEDED                             = 'Max number of PIN retries exceeded.';
+    const BAD_REQUEST_PAYMENT_PIN_INCORRECT                                     = 'Incorrect Pin';
+    const BAD_REQUEST_PAYMENT_TERMINAL_STATE_CODE_EXCEEDED_LENGTH               = 'The terminal_state_code field has exceeded the maximum length of 2';
+    const BAD_REQUEST_PAYMENT_TXN_NOT_PUSHED_TO_NET_BANKING                     = 'Transaction was not posted to Net Banking.';
+    const BAD_REQUEST_PAYMENT_TXN_REJECTED_FROM_NET_BANKING                     = 'Transaction was not posted to Net Banking.';
+    const BAD_REQUEST_PAYMENT_VOID_NOT_SUPPORTED                                = 'Void is not supported for refund transaction on this endpoint.';
     const BAD_REQUEST_INVALID_PARAMETERS                                        = 'One or more fields have invalid data';
     const BAD_REQUEST_PAYMENT_PARTIAL_AMOUNT_APPROVED                           = 'Payment declined because partial amount was approved';
+    const BAD_REQUEST_ORDER_DOES_NOT_EXIST                                      = 'Order does not exist.';
+    const BAD_REQUEST_ORDER_EXISTS                                              = 'This order already exists in the gateway database.';
     const BAD_REQUEST_UNSUPPORTED_CHARACTER_SET                                 = 'Error occurred because of invalid data';
+    const BAD_REQUEST_UNAUTHORIZED_INVALID_HASH                                 = 'Hash Data is invald.';
+    const BAD_REQUEST_UNAUTHORIZED_UNABLE_TO_ATHORIZE                           = 'Unable to authorize.';
 
     const BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD                                    = 'Payment declined because it didn\'t pass all risk checks';
     const BAD_REQUEST_CARD_AVS_FAILED                                           = 'Payment processing failed because address validation failed';
