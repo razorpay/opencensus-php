@@ -344,12 +344,7 @@ class Gateway extends Base\Gateway
     {
         $description = $input['merchant']->getBillingLabelElseName();
 
-        if (isset($input['payment']['description']) === true)
-        {
-            $description = $input['payment']['description'];
-        }
-
-        return ($description ? substr($description, 0, 50) : 'Pay');
+        return ($description ? substr($description, 0, 50) : 'Pay via Razorpay');
     }
 
     /**

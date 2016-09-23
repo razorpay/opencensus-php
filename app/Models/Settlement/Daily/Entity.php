@@ -58,6 +58,10 @@ class Entity extends Base\PublicEntity
         self::RECONCILED_AT,
         self::RETURNED_AT);
 
+    protected $casts = array(
+        self::DATE => 'int'
+    );
+
     public static function newForToday()
     {
         $entity = new static;

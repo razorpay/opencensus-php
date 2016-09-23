@@ -215,6 +215,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function toggleTerminal($tid)
+    {
+        $input = Request::all();
+
+        $data = (new Terminal\Service)->toggleTerminal($tid, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postCheckTerminalEncryptedValue($id)
     {
         $input = Request::all();

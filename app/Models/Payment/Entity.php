@@ -962,7 +962,7 @@ class Entity extends Base\PublicEntity
                 return [$method, ucfirst($this->getWallet())];
                 break;
             case Method::UPI:
-                return [$method, ''];
+                return [$method, $this->getVpa()];
                 break;
         }
     }
@@ -1149,6 +1149,11 @@ class Entity extends Base\PublicEntity
     public function order()
     {
         return $this->belongsTo('RZP\Models\Order\Entity');
+    }
+
+    public function analytics()
+    {
+        return $this->hasOne('RZP\Models\Payment\Analytics\Entity');
     }
 
     public function customer()

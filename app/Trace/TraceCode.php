@@ -15,6 +15,7 @@ class TraceCode
     const PAYMENT_CREATE_FAILED                     = 'PAYMENT_CREATE_FAILED';
     const PAYMENT_AUTH_SUCCESS                      = 'PAYMENT_AUTH_SUCCESS';
     const PAYMENT_AUTH_FAILURE                      = 'PAYMENT_AUTH_FAILURE';
+    const PAYMENT_CALLBACK_REQUEST                  = 'PAYMENT_CALLBACK_REQUEST';
     const PAYMENT_REFUND_REQUEST                    = 'PAYMENT_REFUND_REQUEST';
     const PAYMENT_REFUND_SUCCESS                    = 'PAYMENT_REFUND_SUCCESS';
     const PAYMENT_REFUND_FAILURE                    = 'PAYMENT_REFUND_FAILURE';
@@ -83,6 +84,8 @@ class TraceCode
     const TERMINAL_SELECTION_MISMATCH               = 'TERMINAL_SELECTION_MISMATCH';
     const TERMINAL_FAILURE                          = 'TERMINAL_FAILURE';
     const TERMINAL_EDIT                             = 'TERMINAL_EDIT';
+    const TERMINAL_ENABLE                           = 'TERMINAL_ENABLE';
+    const TERMINAL_DISABLE                          = 'TERMINAL_DISABLE';
     const MERCHANT_EDIT                             = 'MERCHANT_EDIT';
     const CUSTOMER_EDIT                             = 'CUSTOMER_EDIT';
     const CUSTOMER_TOKEN_EDIT                       = 'CUSTOMER_TOKEN_EDIT';

@@ -93,6 +93,9 @@ class CreateTerminals extends Migration
                   ->unsigned()
                   ->nullable();
 
+            $table->boolean(Terminal::ENABLED)
+                  ->default(1);
+
             $table->foreign(Terminal::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)
@@ -105,6 +108,7 @@ class CreateTerminals extends Migration
             $table->index(Terminal::CATEGORY);
             $table->index(Terminal::GATEWAY);
             $table->index(Terminal::DELETED_AT);
+            $table->index(Terminal::ENABLED);
         });
     }
 
