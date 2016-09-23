@@ -12,14 +12,12 @@ use View;
 class PaymentController extends Controller
 {
     protected $payment;
-    protected $refund;
 
     public function __construct()
     {
         parent::__construct();
 
         $this->payment = new Payment\Service();
-        $this->refund = new Payment\Refund\Service();
     }
 
     public function getPayment($id)
@@ -107,16 +105,6 @@ class PaymentController extends Controller
         return ApiResponse::json($payment);
     }
 
-    /**
-     * Creates transactions for all refunds if not present.
-     */
-    public function postRefundsTransactions()
-    {
-        $summary = $this->refund->createMissingTransactions();
-
-        return ApiResponse::json($summary);
-    }
-
     public function getPaymentStatusForAsyncPayments($id)
     {
         $data = $this->payment->fetchStatus($id);
@@ -154,48 +142,11 @@ class PaymentController extends Controller
         return ApiResponse::json($refunds);
     }
 
-    public function getRefund($id)
-    {
-        $refunds = $this->refund->fetch($id);
-
-        return ApiResponse::json($refunds);
-    }
-
-    public function getRefunds()
-    {
-        $input = Request::all();
-
-        $refunds = $this->refund->fetchMultiple($input);
-
-        return ApiResponse::json($refunds);
-    }
-
     public function getRefundByRefundAndPaymentId($paymentId, $rfndId)
     {
         $refunds = $this->payment->retrieveRefundByIdAndPaymentId($paymentId, $rfndId);
 
         return ApiResponse::json($refunds);
-    }
-
-    public function generateNetbankingRefunds()
-    {
-        $input = Request::all();
-        // Just a hack, will be shifted to the /refunds/excel route
-        // once properly deployed
-        $input['method'] = 'netbanking';
-
-        $refundExcel = $this->refund->getRefundsFile($input);
-
-        return ApiResponse::json($refundExcel);
-    }
-
-    public function generateRefunds()
-    {
-        $input = Request::all();
-
-        $refundExcel = $this->refund->getRefundsFile($input);
-
-        return ApiResponse::json($refundExcel);
     }
 
     public function postTimeout()
@@ -279,23 +230,9 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postRefundVerify($ids)
-    {
-        $data = $this->refund->verify($ids);
-
-        return ApiResponse::json($data);
-    }
-
     public function postCaptureVerify($id)
     {
         $data = $this->payment->verifyCapture($id);
-
-        return ApiResponse::json($data);
-    }
-
-    public function postManualGatewayRefund($refundIds)
-    {
-        $data = $this->refund->manualGatewayRefund($refundIds);
 
         return ApiResponse::json($data);
     }
