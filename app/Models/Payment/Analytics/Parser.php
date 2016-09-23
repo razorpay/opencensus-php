@@ -26,6 +26,7 @@ class Parser extends Base\Core
         Entity::OS,
         Entity::OS_VERSION,
         Entity::DEVICE,
+        Entity::REFERER,
     ];
 
     public function recordPaymentRequestData($rawData, array & $log)
@@ -68,9 +69,18 @@ class Parser extends Base\Core
 
         $log[Entity::IP] = $request->getRealClientIp();
 
-        if ($request->header(RequestHeader::REFERER) !== null)
+        $reqReferer = $request->header(RequestHeader::REFERER);
+
+        if ($reqReferer !== null)
         {
-            $log[Entity::REFERER] = $request->header(RequestHeader::REFERER);
+            // blacklist razorpay referer URLs
+            $parsedUrl = parse_url($reqReferer);
+
+            if ((isset($parsedUrl['host'])) and
+                (strtolower($parsedUrl['host']) !== 'razorpay.com'))
+            {
+                $log[Entity::REFERER] = $reqReferer;
+            }
         }
 
         if ($request->header(RequestHeader::USER_AGENT) !== null)
