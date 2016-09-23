@@ -327,7 +327,7 @@ class Processor
 
         $e = new Exception\BadRequestException($errorCode);
 
-        $this->updatePaymentFailed($e->getError(), TraceCode::PAYMENT_CANCELLED);
+        $this->updatePaymentFailed($e, TraceCode::PAYMENT_CANCELLED);
 
         return $errorCode;
     }
@@ -414,8 +414,10 @@ class Processor
         $this->trace->addRecord($level, $traceCode, $data);
     }
 
-    protected function updatePaymentFailed($error, $traceCode)
+    protected function updatePaymentFailed($exception, $traceCode)
     {
+        $error = $exception->getError();
+
         $code = $error->getPublicErrorCode();
 
         $desc = $error->getDescription();
