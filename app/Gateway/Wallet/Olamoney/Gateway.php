@@ -600,7 +600,7 @@ class Gateway extends Base\Gateway
                  (($gatewayPayment === null) or
                   ($gatewayPayment['status_code'] !== Status::SUCCESS)))
         {
-            $gatewayPaymentStatus = isset($walletPayment) ? $gatewayPayment['status_code'] : '';
+            $gatewayPaymentStatus = isset($gatewayPayment) ? $gatewayPayment['status_code'] : '';
 
             $this->trace->info(
                     TraceCode::GATEWAY_PAYMENT_VERIFY_UNEXPECTED,
