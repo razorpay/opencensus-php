@@ -49,7 +49,7 @@ class CreateBatchTable extends Migration
                   ->nullable();
 
             $table->bigInteger(Batch::PROCESSED_AMOUNT)
-                  ->nullable();
+                  ->default(0);
 
             $table->text(Batch::COMMENT)
                   ->nullable();

@@ -9,20 +9,20 @@ use RZP\Error\ErrorCode;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        Entity::FILE => 'required|file',
+        Entity::FILE => 'sometimes',
         Entity::TYPE => 'required|string|max:100|custom'
     );
 
     protected function validateType($attribute, $type)
     {
-        if (Batch\Type::exists($type) === false)
+        if (Type::exists($type) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'invalid batch type');
         }
     }
 
-    protected function validateEntries($entries)
+    public function validateEntries($entries, $type)
     {
         $totalEntries = count($entries);
 
@@ -31,9 +31,9 @@ class Validator extends Base\Validator
            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FILE_EXCEED_LIMIT);
         }
 
-        // $validator = 'validate' .ucfirst($this->entity->getType());
+        $validator = 'validate' .ucfirst($type);
 
-        // $this->$validator($entries);
+        $this->$validator($entries);
     }
 
     protected function validateRefund($entries)

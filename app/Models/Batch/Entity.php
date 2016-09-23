@@ -83,7 +83,7 @@ class Entity extends Base\PublicEntity
         self::SUCCESS_COUNT                  => null,
         self::FAILURE_COUNT                  => null,
         self::AMOUNT                         => null,
-        self::PROCESSED_AMOUNT               => null,
+        self::PROCESSED_AMOUNT               => 0,
         self::COMMENT                        => null,
         self::PROCESSED_AT                   => null,
         self::TYPE                           => null,
@@ -206,5 +206,10 @@ class Entity extends Base\PublicEntity
     public function setProcessedAt($processedAt)
     {
         $this->setAttribute(self::PROCESSED_AT, $processedAt);
+    }
+
+    public function setTotalCount($totalCount)
+    {
+        $this->setAttribute(self::TOTAL_COUNT, $totalCount);
     }
 }

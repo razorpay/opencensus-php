@@ -156,7 +156,7 @@ class RefundTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($testData['request']);
 
-        $this->assertEquals(Status::IN_PROGRESS, $content['status']);
+        $this->assertEquals(Status::PROCESSING, $content['status']);
 
     }
 
@@ -234,15 +234,15 @@ class RefundTest extends TestCase
         $content = $this->makeRequestAndGetContent($testData['request']);
 
         $resultBody = $content['items'][0];
-        $this->assertEquals(Status::FAILURE, $resultBody['status']);
-        $this->assertEquals(null, $resultBody['amount']);
+        $this->assertEquals(Status::PROCESSING, $resultBody['status']);
+        $this->assertEquals(0, $resultBody['processed_amount']);
         $this->assertEquals(1, $resultBody['failure_count']);
         $this->assertEquals(1, $resultBody['attempts']);
 
         $content = $this->makeRequestAndGetContent($testData['request']);
         $resultBody = $content['items'][0];
-        $this->assertEquals(Status::FAILURE, $resultBody['status']);
-        $this->assertEquals(null, $resultBody['amount']);
+        $this->assertEquals(Status::PROCESSING, $resultBody['status']);
+        $this->assertEquals(0, $resultBody['processed_amount']);
         $this->assertEquals(2, $resultBody['attempts']);
 
         $this->ba->privateAuth();
@@ -252,7 +252,7 @@ class RefundTest extends TestCase
         $content = $this->makeRequestAndGetContent($testData['request']);
         $resultBody = $content['items'][0];
         $this->assertEquals(Status::PROCESSED, $resultBody['status']);
-        $this->assertEquals(5000, $resultBody['amount']);
+        $this->assertEquals(5000, $resultBody['processed_amount']);
         $this->assertEquals(3, $resultBody['attempts']);
 
         $testData = $this->testData['testRetryRefundFilesWithException'];
@@ -304,21 +304,21 @@ class RefundTest extends TestCase
         $content = $this->makeRequestAndGetContent($testData['request']);
 
         $resultBody = $content['items'][0];
-        $this->assertEquals(Status::FAILURE, $resultBody['status']);
-        $this->assertEquals(null, $resultBody['amount']);
+        $this->assertEquals(Status::PROCESSING, $resultBody['status']);
+        $this->assertEquals(0, $resultBody['processed_amount']);
         $this->assertEquals(1, $resultBody['failure_count']);
         $this->assertEquals(1, $resultBody['attempts']);
 
         $content = $this->makeRequestAndGetContent($testData['request']);
         $resultBody = $content['items'][0];
-        $this->assertEquals(Status::FAILURE, $resultBody['status']);
-        $this->assertEquals(null, $resultBody['amount']);
+        $this->assertEquals(Status::PROCESSING, $resultBody['status']);
+        $this->assertEquals(0, $resultBody['processed_amount']);
         $this->assertEquals(2, $resultBody['attempts']);
 
         $content = $this->makeRequestAndGetContent($testData['request']);
         $resultBody = $content['items'][0];
-        $this->assertEquals(Status::FAILED, $resultBody['status']);
-        $this->assertEquals(null, $resultBody['amount']);
+        $this->assertEquals(Status::PROCESSED, $resultBody['status']);
+        $this->assertEquals(0, $resultBody['processed_amount']);
         $this->assertEquals(3, $resultBody['attempts']);
     }
 

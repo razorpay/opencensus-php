@@ -20,10 +20,9 @@ class Repository extends Base\Repository
 
     public function findUnprocessedEntries($limit = 10)
     {
-        $status = array(Status::CREATED, Status::FAILURE, Status::IN_PROGRESS);
+        $status = array(Status::CREATED, Status::PROCESSING);
         return $this->newQuery()
                     ->whereIn(Batch::STATUS, $status)
-                    ->where(Batch::ATTEMPTS, '<=', 3)
                     ->oldest()
                     ->limit($limit)
                     ->get();

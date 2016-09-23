@@ -19,7 +19,7 @@ return [
 
     'testUploadRefundFile' => [
         'request' => [
-            'url' => '/batches/upload',
+            'url' => '/batches',
             'method' => 'post',
             'content' => [
                 'type' => 'refund',
@@ -49,7 +49,7 @@ return [
 
     'testUploadRefundFileException' => [
         'request' => [
-            'url' => '/batches/upload',
+            'url' => '/batches',
             'method' => 'post',
             'content' => [
                 'type' => 'refund',

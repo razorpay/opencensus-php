@@ -35,11 +35,11 @@ class Type
 
     public static function getInputHeaders($type)
     {
-        return self::INPUT_HEADERS[strtoupper($type)];
+        return self::INPUT_HEADERS[$type];
     }
 
     public static function getOutputHeaders($type)
     {
-        return self::OUTPUT_HEADERS[strtoupper($type)];
+        return self::OUTPUT_HEADERS[$type];
     }
 }

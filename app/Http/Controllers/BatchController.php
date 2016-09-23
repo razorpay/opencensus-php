@@ -46,7 +46,7 @@ class BatchController extends Controller
 
     public function processBatches()
     {
-        $result = $this->batchService->processBatchFiles();
+        $result = $this->batchService->processBatch();
 
         return ApiResponse::json($result);
     }
