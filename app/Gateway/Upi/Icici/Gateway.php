@@ -119,21 +119,24 @@ class Gateway extends Base\Gateway
      * @param  string $response
      * @return array response as associative array
      */
-    protected function parseGatewayResponse($response)
+    protected function parseGatewayResponse($response, $forceDecryption = false)
     {
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, [
-            'body'      =>  $response,
-            'encrypted' =>  true,
-            'gateway'   =>  $this->gateway
-        ]);
-
-        $decodedJson = json_decode($response, true);
-
-        // The response is encrypted sometimes,
-        // but not in all cases (usually errors are unencrypted)
-        if ($decodedJson !== null)
+        if ($forceDecryption === false)
         {
-            return $decodedJson;
+            $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, [
+                'body'      =>  $response,
+                'encrypted' =>  true,
+                'gateway'   =>  $this->gateway
+            ]);
+
+            $decodedJson = json_decode($response, true);
+
+            // The response is encrypted sometimes,
+            // but not in all cases (usually errors are unencrypted)
+            if ($decodedJson !== null)
+            {
+                return $decodedJson;
+            }
         }
 
         // The gateway response is encrypted, but wrapped
@@ -524,7 +527,7 @@ class Gateway extends Base\Gateway
      */
     public function preProcessS2SResponse($body)
     {
-        $response = $this->parseGatewayResponse($body);
+        $response = $this->parseGatewayResponse($body, true);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
