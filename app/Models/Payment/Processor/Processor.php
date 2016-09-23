@@ -295,7 +295,10 @@ class Processor
             return $this->processPaymentCallbackSecondTime($payment);
         }
 
-        $this->trace->info(TraceCode::PAYMENT_CANCELLED, (array) $input);
+        if (empty($input) === false)
+        {
+            $this->trace->info(TraceCode::PAYMENT_CANCELLED_METADATA, (array) $input);
+        }
 
         $errorCode = $this->repo->transaction(function() use ($payment, $input)
         {
