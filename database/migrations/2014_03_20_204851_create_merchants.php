@@ -10,7 +10,6 @@ use RZP\Models\Merchant\FeeBearer;
 
 class CreateMerchants extends Migration
 {
-
     /**
      * Make changes to the database.
      *
