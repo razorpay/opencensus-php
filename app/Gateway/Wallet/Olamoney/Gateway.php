@@ -264,8 +264,6 @@ class Gateway extends Base\Gateway
         $gatewayPaymentAttrs = $this->getCreateWalletAttributes($input, $content);
 
         $this->createGatewayPaymentEntity($gatewayPaymentAttrs, Action::AUTHORIZE);
-
-        $this->action = Action::DEBIT_WALLET;
     }
 
     protected function getDebitRequestArray($input)

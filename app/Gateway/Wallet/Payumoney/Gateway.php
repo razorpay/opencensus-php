@@ -381,7 +381,11 @@ class Gateway extends Base\Gateway
             'received' => true
         );
 
-        $this->createGatewayPaymentEntity($contentToSave, Action::AUTHORIZE;);
+        $this->action = Action::AUTHORIZE;
+
+        $this->createGatewayPaymentEntity($contentToSave);
+
+        $this->action = Action::DEBIT_WALLET;
     }
 
     public function checkBalance(array $input)
