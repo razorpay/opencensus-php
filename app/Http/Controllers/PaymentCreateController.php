@@ -81,11 +81,6 @@ class PaymentCreateController extends Controller
         {
             $this->app['rzp.merchant_callback_url'] = $input['callback_url'];
         }
-        else
-        {
-            // It could be just blank or an empty array. Hence unset it here only.
-            unset($input['callback_url']);
-        }
 
         $data = $this->payment->process($input);
 
