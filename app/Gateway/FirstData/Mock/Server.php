@@ -36,6 +36,8 @@ class Server extends Base\Mock\Server
         $currencyCode = $input[FirstData\ConnectRequestFields::CURRENCY];
         $storeId = $input[FirstData\ConnectRequestFields::STORE_NAME];
         $cardnumber = $input[FirstData\ConnectRequestFields::CARD_NUMBER];
+        $paymentMethod = $input[FirstData\ConnectRequestFields::PAYMENT_METHOD];
+        $scrubbed_cardnumber = $this->scrub($cardnumber, $paymentMethod);
 
         $response_hash = $this->getHash($approvalCode, $chargeTotal, $currencyCode, $txnDateTime, $storeId);
 
@@ -46,7 +48,7 @@ class Server extends Base\Mock\Server
         $content = array(
             FirstData\ConnectResponseFields::APPROVAL_CODE             => $approvalCode,
             FirstData\ConnectResponseFields::BNAME                     => $input[FirstData\ConnectRequestFields::NAME],
-            FirstData\ConnectResponseFields::CARD_NUMBER               => $cardnumber,
+            FirstData\ConnectResponseFields::CARD_NUMBER               => $scrubbed_cardnumber,
             FirstData\ConnectResponseFields::CC_BIN                    => '',
             FirstData\ConnectResponseFields::CC_BRAND                  => '',
             FirstData\ConnectResponseFields::CC_COUNTRY                => '',
@@ -71,10 +73,8 @@ class Server extends Base\Mock\Server
             FirstData\ConnectResponseFields::TIMEZONE                  => $input[FirstData\ConnectRequestFields::TIME_ZONE],
             FirstData\ConnectResponseFields::TXN_DATE_TIME             => $txnDateTime,
             FirstData\ConnectResponseFields::TXNDATE_PROCESSED         => $txndate_processed,
-            FirstData\ConnectResponseFields::TXN_TYPE                   => $input[FirstData\ConnectRequestFields::TXN_TYPE],
+            FirstData\ConnectResponseFields::TXN_TYPE                  => $input[FirstData\ConnectRequestFields::TXN_TYPE],
         );
-
-        $content = array_merge($content,$input);
 
         $this->content($content);
 
@@ -191,6 +191,11 @@ class Server extends Base\Mock\Server
     protected function getApprovalCode()
     {
         return 'Y'.':'.random_integer(6).':'.random_integer(10).':PPX :'.random_integer(12);
+    }
+
+    protected function scrub($cardnumber, $paymentMethod)
+    {
+        return '('.array_flip(FirstData\Mapping::PAYMENT_METHOD_CODES)[$paymentMethod].') ... '.substr($cardnumber,-4);
     }
 
     protected function buildIpgApiOrderResponse($array)

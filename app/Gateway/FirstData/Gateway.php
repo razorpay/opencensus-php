@@ -222,48 +222,42 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $verify->payment;
         $ipgApiActionResponse = $verify->verifyResponseContent;
 
-        $transactionValues = $ipgApiActionResponse->children('a1', true);
-
         $orderId = $gatewayPayment->getOrderId();
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
         foreach ( $ipgApiActionResponse->children('a1', true) as $transactionValue )
         {
-            $tdate = ($transactionValue->children('v1', true)->TransactionDetails->TDate->__toString());
-            $state = ($transactionValue->children('a1', true)->TransactionState->__toString());
-            $states[$tdate] = $state;
+            $tdate  = ($transactionValue->children('v1', true)->TransactionDetails->TDate->__toString());
+            $type   = ($transactionValue->children('v1', true)->CreditCardTxType->Type->__toString());
+            $state  = ($transactionValue->children('a1', true)->TransactionState->__toString());
 
-            $gatewayPayment = $this->repo->retrieveByOrderIdAndTdate($orderId, $tdate);
-
-            if ($gatewayPayment === null)
+            if ($type === TxnType::AUTH)
             {
-                $verify->status = VerifyResult::STATUS_MISMATCH;
-            }
+                $gatewayPayment = $this->repo->findByPaymentIdAndAction($orderId, Base\Action::AUTHORIZE);
 
-            if ( $gatewayPayment->getStatus() != $state )
-            {
-                $verify->status = VerifyResult::STATUS_MISMATCH;
+                if (($gatewayPayment === null) or
+                    ($gatewayPayment->getStatus() != $state))
+                {
+                    $verify->status = VerifyResult::STATUS_MISMATCH;
+                    $verify->payment = $this->saveVerifyContentIfNeeded($orderId, $status, $tdate);
+                }
             }
         }
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
 
-        $verify->payment = $this->saveVerifyContentIfNeeded($orderId, $states);
-
         return $verify->status;
     }
 
-    protected function saveVerifyContentIfNeeded($orderId, $states)
+    protected function saveVerifyContentIfNeeded($orderId, $status, $tdate)
     {
-        foreach ( $states as $tdate => $state )
-        {
-            $gatewayPayment = $this->repo->retrieveByOrderIdAndTdate($orderId, $tdate);
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction($orderId, Base\Action::AUTHORIZE);
 
-            $gatewayPayment->setStatus($state);
+        $gatewayPayment->setStatus($status);
+        $gatewayPayment->setTdate($tdate);
 
-            $this->repo->saveOrFail($gatewayPayment);
-        }
+        $this->repo->saveOrFail($gatewayPayment);
     }
 
     protected function postSoapRequest($content, $requestType)
@@ -534,7 +528,6 @@ class Gateway extends Base\Gateway
         return $xml;
     }
 
-
     protected function verifyPaymentCallbackResponse($input)
     {
         if ((isset($input['gateway'][ConnectResponseFields::APPROVAL_CODE]) === false) or
@@ -570,6 +563,14 @@ class Gateway extends Base\Gateway
 
             throw new Exception\BadRequestValidationFailureException('Failed response_hash verification');
         }
+    }
+
+    protected function traceGatewayPaymentRequest($request, $input)
+    {
+        unset($request['content'][ConnectRequestFields::CARD_NUMBER]);
+        unset($request['content'][ConnectRequestFields::CVV]);
+
+        parent::traceGatewayPaymentRequest($request, $input);
     }
 
     protected function getStoreName()

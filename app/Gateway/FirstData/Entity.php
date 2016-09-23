@@ -98,6 +98,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::TDATE);
     }
 
+    public function setTdate($tdate)
+    {
+        return $this->setAttribute(self::TDATE, $tdate);
+    }
+
     public function setStatus($status)
     {
         return $this->setAttribute(self::STATUS, $status);
