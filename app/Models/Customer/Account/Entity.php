@@ -121,11 +121,9 @@ class Entity extends Base\PublicEntity
     {
         $input[Address\Entity::TYPE] = Address\Type::SHIPPING_ADDRESS;
 
-        $customerId = $this->getAttribute(self::ID);
-
         $app = App::getFacadeRoot();
 
-        $shippingAddresses = $app['repo']->address->fetchAddressesForEntity($customerId, $input);
+        $shippingAddresses = $app['repo']->address->fetchAddressesForEntity($this, $input);
 
         if ($shippingAddresses->count() === 0)
         {

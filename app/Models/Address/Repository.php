@@ -18,46 +18,46 @@ class Repository extends Base\Repository
         Entity::COUNTRY     => 'sometimes|string|max:64',
     ];
 
-    public function fetchCurrentPrimaryAddressOfEntity($entityId, $type)
+    public function fetchCurrentPrimaryAddressOfEntity(Base\Entity $entity, Entity $address)
     {
         $currentPrimaryAddresses = $this->newQuery()
-                                        ->where(Entity::ENTITY_ID, '=', $entityId)
-                                        ->where(Entity::TYPE, '=', $type)
+                                        ->where(Entity::ENTITY_ID, '=', $entity->getId())
+                                        ->where(Entity::TYPE, '=', $address->getType())
                                         ->where(Entity::PRIMARY, '=', '1')
                                         ->get();
 
         return $currentPrimaryAddresses;
     }
 
-    public function findByEntityAndId($addressId, $entityId)
+    public function findByEntityAndId($addressId, Base\Entity $entity)
     {
         return $this->newQuery()
-                    ->where(Entity::ENTITY_ID, '=', $entityId)
+                    ->where(Entity::ENTITY_ID, '=', $entity->getId())
                     ->findOrFail($addressId);
     }
 
     /**
-     * Gets the latest address. If $exceptAddress parameter is sent,
+     * Gets the latest address. If $except parameter is sent as true,
      * we exclude that address while fetching the latest address.
      *
-     * @param $entityId
-     * @param $type
-     * @param null $exceptAddressId
+     * @param Base\Entity $entity
+     * @param Entity $address
+     * @param null|boolean $except
      * @return Entity
      */
-    public function fetchLatestAddressForEntity($entityId, $type, $exceptAddressId = null)
+    public function fetchLatestAddressForEntity(Base\Entity $entity, Entity $address, $except = false)
     {
         // NOTE: except works on a collection and not on an entity.
 
         $latestAddress = $this->newQuery()
-                              ->where(Entity::ENTITY_ID, '=', $entityId)
-                              ->where(Entity::TYPE, '=', $type)
+                              ->where(Entity::ENTITY_ID, '=', $entity->getId())
+                              ->where(Entity::TYPE, '=', $address->getType())
                               ->latest()
                               ->get();
 
-        if ($exceptAddressId !== null)
+        if ($except === true)
         {
-            return $latestAddress->except($exceptAddressId)->first();
+            return $latestAddress->except($address->getId())->first();
         }
         else
         {
@@ -65,10 +65,10 @@ class Repository extends Base\Repository
         }
     }
 
-    public function fetchAddressesForEntity($entityId, array $input)
+    public function fetchAddressesForEntity(Base\Entity $entity, array $input)
     {
         $addresses = $this->newQuery()
-                          ->where(Entity::ENTITY_ID, '=', $entityId);
+                          ->where(Entity::ENTITY_ID, '=', $entity->getId());
 
         if (empty($input[Entity::TYPE]) === false)
         {

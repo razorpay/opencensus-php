@@ -33,7 +33,7 @@ class Core extends Base\Core
         $address = (new Entity)->build($input);
 
         $currentAddresses = $this->repo->address->fetchAddressesForEntity(
-            $entity->getId(), [Entity::TYPE => $input[Entity::TYPE]]);
+            $entity, [Entity::TYPE => $input[Entity::TYPE]]);
 
         if ($currentAddresses->count() >= self::MAX_ALLOWED_ADDRESSES)
         {
@@ -79,7 +79,7 @@ class Core extends Base\Core
      */
     public function delete(Entity $address)
     {
-        $entity = $address->getAssociatedEntityFromAddress();
+        $entity = $address->source()->getRelated();
 
         $this->trace->info(
             TraceCode::ADDRESS_DELETE_REQUEST,
@@ -100,8 +100,7 @@ class Core extends Base\Core
 
                 // We are passing the address ID here because we want the latest address, excluding the current one
                 // since we are going to delete this one.
-                $latestAddress = $this->repo->address->fetchLatestAddressForEntity(
-                    $entity->getId(), $address->getType(), $address->getId());
+                $latestAddress = $this->repo->address->fetchLatestAddressForEntity($entity, $address, true);
 
                 if ($latestAddress !== null)
                 {
@@ -130,10 +129,9 @@ class Core extends Base\Core
      */
     protected function handlePrimaryAddressSwitch(Entity $address)
     {
-        $entity = $address->getAssociatedEntityFromAddress();
+        $entity = $address->source()->getRelated();
 
-        $currentPrimaryAddress = $this->repo->address->fetchCurrentPrimaryAddressOfEntity(
-            $entity->getId(), $address->getType());
+        $currentPrimaryAddress = $this->repo->address->fetchCurrentPrimaryAddressOfEntity($entity, $address);
 
         if ($currentPrimaryAddress->count() > 1)
         {

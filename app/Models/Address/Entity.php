@@ -106,9 +106,10 @@ class Entity extends Base\PublicEntity
         $country = & $input[self::COUNTRY];
 
         $country = strtolower($country);
+        // Remove dots
         $country = str_replace('.', '', $country);
-        $country = str_replace('-', ' ', $country);
-        $country = str_replace('_', ' ', $country);
+        // Replace hyphens and underscores with a space
+        $country = str_replace(['-', '_'], ' ', $country);
     }
 
     // ----------------------------------- END MODIFIERS -----------------------------------
@@ -179,7 +180,7 @@ class Entity extends Base\PublicEntity
 
     // ----------------------------------- RELATIONS -----------------------------------
 
-    protected function source()
+    public function source()
     {
         $entityType = $this->getAttribute(self::ENTITY_TYPE);
 
@@ -192,58 +193,10 @@ class Entity extends Base\PublicEntity
 
     public function sourceAssociate(Base\Entity $entity)
     {
-        $entityType = $this->getEntityTypeFromEntity($entity);
-
-        $this->setEntityType($entityType);
+        $this->setEntityType($entity->getEntityName());
 
         $this->source()->associate($entity);
     }
 
-    public function customer()
-    {
-        return $this->belongsTo('RZP\Models\Customer\Entity', self::ENTITY_ID);
-    }
-
     // ----------------------------------- END RELATIONS -----------------------------------
-
-    public function getAssociatedEntityFromAddress()
-    {
-        $entityType = $this->getAttribute(self::ENTITY_TYPE);
-
-        $entity = $this->{$entityType};
-
-        return $entity;
-    }
-
-    public static function getCountryCode($value)
-    {
-        $countryCodesMappingFile = storage_path('countries/names.json');
-
-        $names = json_decode(file_get_contents($countryCodesMappingFile), true);
-
-        if (isset($names[$value]) === true)
-        {
-            return $value;
-        }
-
-        $countryCode = array_search($value, $names);
-
-        if ($countryCode === false)
-        {
-            return null;
-        }
-
-        return $countryCode;
-    }
-
-    protected function getEntityTypeFromEntity(Base\Entity $entity)
-    {
-        $entityNamespace = Constants\Entity::getEntityNamespace($entity->getEntityName());
-
-        $namespaceArray = explode('\\', $entityNamespace);
-        $entityType = $namespaceArray[count($namespaceArray) - 1];
-        $entityType = strtolower($entityType);
-
-        return $entityType;
-    }
 }
