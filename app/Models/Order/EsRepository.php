@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Payment;
+namespace RZP\Models\Order;
 
 use RZP\Models\Base;
 use RZP\Constants\Table;
@@ -9,13 +9,13 @@ class EsRepository extends Base\EsRepository
 {
     public function fetch($params, $merchantId)
     {
-        $payments = new Base\PublicCollection;
+        $orders = new Base\PublicCollection;
 
         if (isset($params['notes']))
         {
-            $payments = $this->fetchNotes(Table::PAYMENT, $params, $merchantId);
+            $orders = $this->fetchNotes(Table::ORDER, $params, $merchantId);
         }
 
-        return $payments;
+        return $orders;
     }
 }

@@ -40,7 +40,7 @@ class EsRepository extends \Razorpay\Spine\Repository
         // Returns all the entity IDs matching the notes search.
         $entityIds = $this->esDao->getNotes($typeName, $params);
 
-        if (empty($entityIds) !== true)
+       if (empty($entityIds) === false)
         {
             // Get the entity data from MySQL.
             $entities = $this->newQuery()->findOrFailPublic($entityIds, array('*'));

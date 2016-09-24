@@ -7,11 +7,6 @@ use RZP\Models\Base;
 
 class EsRepository extends Base\EsRepository
 {
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
     public function fetch($params, $merchantId)
     {
         $refunds = new Base\PublicCollection;;
