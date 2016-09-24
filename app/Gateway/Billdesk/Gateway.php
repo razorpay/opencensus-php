@@ -92,7 +92,7 @@ class Gateway extends Base\Gateway
                     '');
         }
 
-        assert($content['CustomerID'] === $input['payment']['id']);
+        rzpAssert($content['CustomerID'] === $input['payment']['id']);
     }
 
     public function refund(array $input)

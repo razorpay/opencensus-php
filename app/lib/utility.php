@@ -171,3 +171,11 @@ if (! function_exists('flatten_array'))
         return $result;
     }
 }
+
+if(! function_exists('rzpAssert'))
+{
+    function rzpAssert($assertion)
+    {
+        assert($assertion, new RZP\Exception\AssertionException());
+    }
+}

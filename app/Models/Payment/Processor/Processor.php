@@ -370,7 +370,7 @@ class Processor
         }
 
         // We don't want to reach this in case of captured|refunded payments
-        assert($payment->isAuthorized() === true);
+        rzpAssert($payment->isAuthorized() === true);
 
         return $this->processAsyncAuthorizeResponse($payment);
     }

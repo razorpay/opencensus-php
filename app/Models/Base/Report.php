@@ -278,8 +278,8 @@ class Report extends Service
         {
             $month = (int) $input['month'];
 
-            assert($month > 0);
-            assert($month <= 12);
+            rzpAssert($month > 0);
+            rzpAssert($month <= 12);
 
             $from = Carbon::today('Asia/Kolkata')
                                   ->month($month)

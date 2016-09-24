@@ -136,7 +136,7 @@ class Generator
         $fileMetadata = $excel->store('xlsx', storage_path('files/settlement'), true);
         $fullFileName = $fileMetadata['full'];
 
-        assert($fullFileName === $this->getFullFilePath());
+        rzpAssert($fullFileName === $this->getFullFilePath());
 
         $this->trace->info(TraceCode::MPR_HDFC_FILE_GENERATED);
 

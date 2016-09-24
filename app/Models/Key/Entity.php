@@ -161,7 +161,7 @@ class Entity extends Base\PublicEntity
         $hash = Crypt::encrypt($secret);
         $this->setAttribute(self::SECRET, $hash);
 
-        assert(strlen($secret) === self::SECRET_LENGTH);
+        rzpAssert(strlen($secret) === self::SECRET_LENGTH);
 
         return $secret;
     }
@@ -185,7 +185,7 @@ class Entity extends Base\PublicEntity
 
         $id = substr($id, -1 * $len);
 
-        assert(strlen($id) === self::ID_LENGTH);
+        rzpAssert(strlen($id) === self::ID_LENGTH);
 
         return $id;
     }

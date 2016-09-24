@@ -15,7 +15,7 @@ class Entity extends Base\PublicEntity
     //Dummy functions to make tests pass
     public function getAuthCode()
     {
-        assert($this->mode === NULL);
+        rzpAssert($this->mode === NULL);
 
         return '000000';
     }
@@ -23,7 +23,7 @@ class Entity extends Base\PublicEntity
     //Dummy functions to make tests pass
     public function getTransactionId()
     {
-        assert($this->mode === NULL);
+        rzpAssert($this->mode === NULL);
 
         return '123456';
     }

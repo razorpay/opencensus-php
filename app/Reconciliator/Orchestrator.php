@@ -389,7 +389,7 @@ class Orchestrator
         if ($gateway === self::ADMIN)
         {
             $gateway = $this->emailDetails['subject'];
-            assert(in_array($gateway, array_keys(self::GATEWAY_SENDER_MAPPING)),
+            rzpAssert(in_array($gateway, array_keys(self::GATEWAY_SENDER_MAPPING)),
                     "[Admin] Invalid/Unrecognized gateway sent in the subject line.");
         }
 

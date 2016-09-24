@@ -225,7 +225,7 @@ class Entity extends Base\PublicEntity
 
         $beneficiaryCode = $first7 . $last3;
 
-        assert(strlen($beneficiaryCode) === 10);
+        rzpAssert(strlen($beneficiaryCode) === 10);
 
         return $beneficiaryCode;
     }

@@ -20,7 +20,7 @@ class Core extends Base\Core
 
     public function createGlobalCustomer($input)
     {
-        assert(isset($input[Customer\Entity::CONTACT]));
+        rzpAssert(isset($input[Customer\Entity::CONTACT]));
 
         return $this->create($input, $this->getSharedAccount());
     }

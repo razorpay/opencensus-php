@@ -73,7 +73,7 @@ class Core extends Base\Core
             return null;
         }
 
-        assert(($apps->count() > 1) === false);
+        rzpAssert(($apps->count() > 1) === false);
 
         return $apps[0];
     }

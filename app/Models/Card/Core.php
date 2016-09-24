@@ -201,7 +201,7 @@ class Core extends Base\Core
 
         if ($cards->count() > 0)
         {
-            assert($cards->count() === 1);
+            rzpAssert($cards->count() === 1);
 
             return $cards[0];
         }

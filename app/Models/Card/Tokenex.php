@@ -16,7 +16,7 @@ class Tokenex
         {
             $cardNumber = $app['card.tokenex']->detokenize($vaultToken);
 
-            assert(empty($cardNumber) === false);
+            rzpAssert(empty($cardNumber) === false);
 
             $cardNumber = strval($cardNumber);
 

@@ -58,7 +58,7 @@ class Service extends Base\Service
 
             $dailyFees = 0;
 
-            assert($daily->getSettlementCountAttribute() === $settlements->count());
+            rzpAssert($daily->getSettlementCountAttribute() === $settlements->count());
 
             foreach ($settlements as $setl)
             {
@@ -101,7 +101,7 @@ class Service extends Base\Service
 
                 $dailyServiceTax = 0;
 
-                assert($daily->getSettlementCount() === $settlements->count());
+                rzpAssert($daily->getSettlementCount() === $settlements->count());
 
                 foreach ($settlements as $setl)
                 {

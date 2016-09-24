@@ -162,7 +162,7 @@ class Holidays
     public static function getSpecifiedBankHolidaysBetween($fromDate, $toDate)
     {
         // fromDate should be less than or equal to (lte) than toDate
-        assert($fromDate->lte($toDate));
+        rzpAssert($fromDate->lte($toDate));
 
         $date = $fromDate->copy();
 
@@ -223,7 +223,7 @@ class Holidays
      */
     public static function isWorkingSaturday($day)
     {
-        assert($day->dayOfWeek === Carbon::SATURDAY);
+        rzpAssert($day->dayOfWeek === Carbon::SATURDAY);
 
         return ($day->weekOfMonth % 2 !== 0);
     }

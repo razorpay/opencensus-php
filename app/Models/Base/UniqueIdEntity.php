@@ -164,7 +164,7 @@ class UniqueIdEntity extends Entity
 
     public static function verifyArrayUid($id, $key = self::ID)
     {
-        assert(is_array($id) === true);
+        rzpAssert(is_array($id) === true);
 
         if (isset($id[$key]) === false)
         {
@@ -222,7 +222,7 @@ class UniqueIdEntity extends Entity
         // and create a unique identifier
         $id = $b62 . $rand;
 
-        assert(strlen($id) === 14);
+        rzpAssert(strlen($id) === 14);
 
         return $id;
     }

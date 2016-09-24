@@ -144,7 +144,7 @@ class PaymentCreateController extends Controller
             return ApiResponse::json($data);
         }
 
-        assert(false, 'Shouldn\'t reach here');
+        rzpAssert(false, 'Shouldn\'t reach here');
     }
 
     /**
@@ -321,7 +321,7 @@ class PaymentCreateController extends Controller
             }
             else
             {
-                assert(false, 'Should not reach here');
+                rzpAssert(false, 'Should not reach here');
             }
         }
         else

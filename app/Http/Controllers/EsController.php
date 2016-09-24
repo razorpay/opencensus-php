@@ -28,8 +28,8 @@ class EsController extends Controller
     public function migrateEntity($entityName)
     {
         // Currently, the entity migration is supported for only payments and refunds.
-        assert(defined("RZP\Constants\\Table::". strtoupper($entityName)));
-        assert(in_array($entityName, ['payment', 'refund']));
+        rzpAssert(defined("RZP\Constants\\Table::". strtoupper($entityName)));
+        rzpAssert(in_array($entityName, ['payment', 'refund']));
 
         $this->entityName = $entityName;
 

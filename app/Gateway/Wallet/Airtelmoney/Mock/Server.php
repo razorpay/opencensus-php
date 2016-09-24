@@ -147,7 +147,7 @@ class Server extends Base\Mock\Server
 
         $hash = $this->getHashOfString($hashString);
 
-        assert($hash === $content['HASH']);
+        rzpAssert($hash === $content['HASH']);
     }
 
     protected function getHashOfString($hashString)
