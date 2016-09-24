@@ -43,7 +43,7 @@ class UPIGatewayTest extends TestCase
 
     public function testPaymentWithXmlResponse()
     {
-        $this->setContent(function (& $content)
+        $this->mockServerContentFunction(function (& $content)
         {
             $content = <<<EOT
 <?xml version="1.0" encoding="UTF-8"?>
@@ -145,7 +145,7 @@ EOT;
     {
         $payment = $this->getDefaultUpiPaymentArray();
 
-        $this->setContent(function (& $content)
+        $this->mockServerContentFunction(function (& $content)
         {
             $content = null;
         });
@@ -325,9 +325,10 @@ EOT;
     protected function makeAsyncCallbackAndGetContent($upiEntity, $payment, Closure $closure = null)
     {
         $server = $this->mockServer();
+
         if ($closure !== null)
         {
-            $server = $this->setContent($closure);
+            $server = $this->mockServerContentFunction($closure);
         }
 
         $content = $server->getAsyncCallbackContent($upiEntity, $payment);
@@ -341,17 +342,5 @@ EOT;
         $response = $this->makeRequestAndGetContent($request);
 
         return $response;
-    }
-
-    protected function setContent(Closure $closure)
-    {
-        $server = $this->mockServer()
-                        ->shouldReceive('content')
-                        ->andReturnUsing($closure)
-                        ->mock();
-
-        $this->setMockServer($server);
-
-        return $server;
     }
 }
