@@ -176,8 +176,17 @@ if(! function_exists('rzpAssert'))
 {
     function rzpAssert($assertion, $message = null)
     {
-        $e = new RZP\Exception\AssertionException($message);
+        if (version_compare(phpversion(), '7.0.0', '<'))
+        {
+            $message = $message ?: '';
 
-        assert($assertion, $e);
+            assert($assertion, $message);
+        }
+        else
+        {
+            $e = new RZP\Exception\AssertionException($message);
+
+            assert($assertion, $e);
+        }
     }
 }
