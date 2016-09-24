@@ -174,8 +174,10 @@ if (! function_exists('flatten_array'))
 
 if(! function_exists('rzpAssert'))
 {
-    function rzpAssert($assertion)
+    function rzpAssert($assertion, $message = null)
     {
-        assert($assertion, new RZP\Exception\AssertionException());
+        $e = new RZP\Exception\AssertionException($message);
+
+        assert($assertion, $e);
     }
 }
