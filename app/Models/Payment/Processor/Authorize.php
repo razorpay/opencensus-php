@@ -976,6 +976,17 @@ trait Authorize
         // Auto capture payment, if applicable
         $this->autoCapturePaymentIfApplicable($payment);
 
+        return $this->processAuthorizeResponse($payment);
+    }
+
+    /**
+     * Returns the proper response to checkout
+     * in case of the payment is authorized
+     * @param  Payment\Entity $payment
+     * @return array
+     */
+    protected function processAuthorizeResponse($payment)
+    {
         //
         // If callback url has been set, then we need to redirect
         // to the callback url and prepare data using coproto protocol.
@@ -983,7 +994,9 @@ trait Authorize
         // Otherwise we simply return 'razorpay_payment_id' as is normal.
         //
 
-        $returnData = ['razorpay_payment_id' => $payment->getPublicId()];
+        $returnData = [
+            'razorpay_payment_id' => $payment->getPublicId()
+        ];
 
         if ($payment->getAutoCaptured() === true)
         {
@@ -1558,12 +1571,11 @@ trait Authorize
         return Crypt::encrypt($gateway . '__' . time());
     }
 
-
-    protected function verifyHash($hash, $paymentPublicId)
+    protected function verifyHash($inputHash, $paymentPublicId)
     {
         $expectedHash = $this->getHashOf($paymentPublicId);
 
-        if ($expectedHash !== $hash)
+        if (hash_equals($expectedHash, $inputHash) !== true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Callback payment hash does not match. Please notify the admin of this error.');

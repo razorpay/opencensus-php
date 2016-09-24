@@ -68,7 +68,7 @@ class CreateTransactions extends Migration
             $table->integer(Transaction::API_FEE)
                   ->nullable();
 
-            $table->boolean(Transaction::GRATIS)
+            $table->tinyInteger(Transaction::GRATIS)
                   ->default(0);
 
             $table->bigInteger(Transaction::ESCROW_BALANCE)
@@ -76,7 +76,7 @@ class CreateTransactions extends Migration
 
             $table->string(Transaction::CHANNEL, 8);
 
-            $table->boolean(Transaction::SETTLED)
+            $table->tinyInteger(Transaction::SETTLED)
                   ->default(0);
 
             $table->integer(Transaction::SETTLED_AT)

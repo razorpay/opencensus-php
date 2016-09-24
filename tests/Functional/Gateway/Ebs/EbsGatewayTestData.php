@@ -180,8 +180,8 @@ return [
             'status_code' => 500,
         ],
         'exception' => [
-            'class'                 => 'RZP\Exception\LogicException',
-            'internal_error_code'   => ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
+            'class'                 => 'RZP\Exception\RuntimeException',
+            'internal_error_code'   => ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
         ],
     ],
 

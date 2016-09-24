@@ -26,7 +26,7 @@ class CreateTerminalAnalytics extends Migration
 
             $table->char(Analytics::TERMINAL_ID, Analytics::ID_LENGTH);
 
-            $table->boolean(Analytics::TERMINAL_STATUS)
+            $table->tinyInteger(Analytics::TERMINAL_STATUS)
                 ->default(1);
 
             // this is recorded in milliseconds

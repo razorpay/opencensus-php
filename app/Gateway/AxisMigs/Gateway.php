@@ -22,6 +22,8 @@ class Gateway extends Base\Gateway
 
     protected $authorize = false;
 
+    const CHECKSUM_ATTRIBUTE = 'vpc_SecureHash';
+
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -562,17 +564,9 @@ class Gateway extends Base\Gateway
         return strtoupper(md5($str));
     }
 
-    protected function verifySecureHash($input)
+    protected function getHashValueFromContent(array $input)
     {
-        $hash = strtoupper($input['vpc_SecureHash']);
-        unset($input['vpc_SecureHash']);
-
-        $generatedHash = $this->generateHash($input);
-
-        if ($generatedHash !== $hash)
-        {
-            throw new Exception\BadRequestValidationFailureException('Failed checksum verification');
-        }
+        return strtoupper(parent::getHashValueFromContent($input));
     }
 
     protected function addMerchantIdAndAccessCode(array & $content, $terminal)
