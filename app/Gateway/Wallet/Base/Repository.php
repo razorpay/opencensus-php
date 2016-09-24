@@ -13,7 +13,7 @@ class Repository extends Base\Repository
 
     protected $appFetchParamRules = array(
         Entity::PAYMENT_ID    => 'sometimes|string|min:14|max:18',
-        Entity::WALLET        => 'sometimes|custom',
+        Entity::WALLET        => 'sometimes|in:payzapp,payumoney,olamoney,airtelmoney',
     );
 
     protected function validateWallet($attribute, $value)
