@@ -388,6 +388,21 @@ trait PaymentTrait
         return $this->getJsonContentFromResponse($response);
     }
 
+    protected function getPaymentStatus($id)
+    {
+        $request = [
+            'method'    => 'GET',
+            'url'       => '/payments/'.$id.'/status',
+            'content'   => []
+        ];
+
+        $this->ba->publicAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
     protected function getOtp()
     {
         return $this->otp ?: '123456';
