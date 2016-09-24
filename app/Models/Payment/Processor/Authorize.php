@@ -441,8 +441,6 @@ trait Authorize
 
     protected function validateInternationalAllowed($payment)
     {
-        $card = $payment->card;
-
         $merchant = $payment->merchant;
 
         if ($merchant->isInternational() === false)

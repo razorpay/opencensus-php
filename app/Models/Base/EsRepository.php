@@ -2,10 +2,11 @@
 
 namespace RZP\Models\Base;
 
-use RZP\Trace\TraceCode;
+use App;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
-use App;
+use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 
 class EsRepository extends \Razorpay\Spine\Repository
 {
@@ -13,6 +14,8 @@ class EsRepository extends \Razorpay\Spine\Repository
     protected $indexName;
 
     protected $trace;
+
+    protected static $table;
 
     const MAX_JOB_ATTEMPTS = 10;
     // This is in seconds
@@ -29,6 +32,18 @@ class EsRepository extends \Razorpay\Spine\Repository
         $this->indexName = $app['config']->get('database.es_index');
 
         $this->esDao = new EsDao();
+    }
+
+    public function fetch($params, $merchantId)
+    {
+        $entities = new Base\PublicCollection;
+
+        if (isset($params['notes']))
+        {
+            $entities = $this->fetchNotes(static::$table, $params, $merchantId);
+        }
+
+        return $entities;
     }
 
     public function fetchNotes($typeName, $params, $merchantId)
@@ -72,7 +87,6 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $esDao->storeNotes($typeName, $params);
     }
-
 
     // Called through queue
     // Called through the entity repository
