@@ -63,10 +63,10 @@ class Server extends Base\Mock\Server
     {
         $this->validateActionInput($input, 'verify');
 
-        rzpAssert(isset($this->mockRequest['options']['auth'][0]) and
+        assertTrue(isset($this->mockRequest['options']['auth'][0]) and
                 is_string($this->mockRequest['options']['auth'][0]));
 
-        rzpAssert(isset($this->mockRequest['options']['auth'][1]) and
+        assertTrue(isset($this->mockRequest['options']['auth'][1]) and
                 is_string($this->mockRequest['options']['auth'][1]));
 
         $verifyResponseBody = $this->createVerifyResponse($input);

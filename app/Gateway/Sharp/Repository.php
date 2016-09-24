@@ -11,7 +11,7 @@ class Repository extends Base\Repository
 
     public function findByPaymentId()
     {
-        rzpAssert($this->mode === 'test');
+        assertTrue($this->mode === 'test');
 
         return array();
     }

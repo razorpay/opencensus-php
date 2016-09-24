@@ -397,7 +397,7 @@ class Core extends Base\Core
 
         $freeCredits = $merchantBalance->getCredits();
 
-        rzpAssert($freeCredits > 0);
+        assertTrue($freeCredits > 0);
 
         if ($freeCredits < $amount)
         {

@@ -172,9 +172,9 @@ if (! function_exists('flatten_array'))
     }
 }
 
-if(! function_exists('rzpAssert'))
+if(! function_exists('assertTrue'))
 {
-    function rzpAssert($assertion, $message = null)
+    function assertTrue($assertion, $message = null)
     {
         if (version_compare(phpversion(), '7.0.0', '<'))
         {

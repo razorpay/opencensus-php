@@ -356,7 +356,7 @@ class Entity extends Base\PublicEntity
 
     public function setEmi($emi)
     {
-        rzpAssert($this->isCardEnabled(), "Cannot enable emi without Card method");
+        assertTrue($this->isCardEnabled(), "Cannot enable emi without Card method");
 
         $this->setAttribute(self::EMI, $emi);
     }

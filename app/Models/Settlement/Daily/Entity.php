@@ -132,7 +132,7 @@ class Entity extends Base\PublicEntity
 
     public function setServiceTax($servicetax)
     {
-        rzpAssert($servicetax >= 0);
+        assertTrue($servicetax >= 0);
 
         $this->setAttribute(self::SERVICE_TAX, $servicetax);
     }

@@ -197,7 +197,7 @@ trait Support
 
     protected function setSupportPaymentType($type)
     {
-        rzpAssert(($type === 'capture') or
+        assertTrue(($type === 'capture') or
                ($type === 'refund'));
 
         $this->supportPaymentRequest['type'] = $type;
@@ -604,8 +604,8 @@ trait Support
 
     protected function assertPaymentRefundedWithoutCapture($input)
     {
-        rzpAssert($input['payment'][PaymentModel\Entity::STATUS] === PaymentModel\Status::REFUNDED);
+        assertTrue($input['payment'][PaymentModel\Entity::STATUS] === PaymentModel\Status::REFUNDED);
 
-        rzpAssert($input['payment'][PaymentModel\Entity::CAPTURED] === false);
+        assertTrue($input['payment'][PaymentModel\Entity::CAPTURED] === false);
     }
 }

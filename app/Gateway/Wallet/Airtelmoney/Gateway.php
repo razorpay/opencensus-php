@@ -385,7 +385,7 @@ class Gateway extends Base\Gateway
             return $this->config['test_merchant_id'];
         }
 
-        rzpAssert($this->mode === Mode::LIVE);
+        assertTrue($this->mode === Mode::LIVE);
 
         // We are fetching merchant id from config
         // as it's common across all the merchants
@@ -399,7 +399,7 @@ class Gateway extends Base\Gateway
             return $this->config['test_end_mid'];
         }
 
-        rzpAssert($this->mode === Mode::LIVE);
+        assertTrue($this->mode === Mode::LIVE);
 
         return $terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
     }
@@ -489,8 +489,8 @@ class Gateway extends Base\Gateway
 
         $this->action = Action::CALLBACK;
 
-        rzpAssert($verifyContent[ResponseFields::STATUS] === Status::SUCCESS);
-        rzpAssert((float) $verifyContent[ResponseFields::TXN_AMT] === (float) $content[ResponseFields::TRAN_AMT]);
+        assertTrue($verifyContent[ResponseFields::STATUS] === Status::SUCCESS);
+        assertTrue((float) $verifyContent[ResponseFields::TXN_AMT] === (float) $content[ResponseFields::TRAN_AMT]);
     }
 
     /**

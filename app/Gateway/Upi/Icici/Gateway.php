@@ -362,7 +362,7 @@ class Gateway extends Base\Gateway
         $data = $this->encrypt($json);
 
         // RSA::encrypt returns false if encryption failed
-        rzpAssert($data !== false);
+        assertTrue($data !== false);
 
         return base64_encode($data);
     }
@@ -561,9 +561,9 @@ class Gateway extends Base\Gateway
         // and we are not revealing Bank RRN, this gives us a bit of
         // extra security for fake callbacks
 
-        rzpAssert($content[ResponseFields::MERCHANT_ID] === $gatewayPayment->getMerchantId());
-        rzpAssert($content[ResponseFields::MERCHANT_TRAN_ID] === $gatewayPayment->getPaymentId());
-        rzpAssert($content[ResponseFields::BANK_RRN] === $gatewayPayment->getGatewayPaymentId());
+        assertTrue($content[ResponseFields::MERCHANT_ID] === $gatewayPayment->getMerchantId());
+        assertTrue($content[ResponseFields::MERCHANT_TRAN_ID] === $gatewayPayment->getPaymentId());
+        assertTrue($content[ResponseFields::BANK_RRN] === $gatewayPayment->getGatewayPaymentId());
 
         if ($status !== Status::SUCCESS)
         {

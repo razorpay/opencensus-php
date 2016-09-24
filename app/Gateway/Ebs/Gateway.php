@@ -68,7 +68,7 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $this->repo->findByPaymentIdAndAction(
             $input['payment'][Payment\Entity::ID], Action::AUTHORIZE);
 
-        rzpAssert(($gatewayPayment[Entity::ERROR_CODE] === null) or
+        assertTrue(($gatewayPayment[Entity::ERROR_CODE] === null) or
                ($gatewayPayment[Entity::ERROR_CODE] === '0'));
     }
 

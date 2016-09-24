@@ -50,10 +50,10 @@ class MigrateNotesToEs extends Command
         $this->databaseMode = $this->option('mode');
         $this->entityType = $this->option('entity');
 
-        rzpAssert(in_array($this->entityType, ['payments', 'refunds']));
-        rzpAssert(in_array($this->databaseMode, [Mode::LIVE, Mode::TEST]));
-        rzpAssert(!empty($this->databaseMode));
-        rzpAssert(!empty($this->entityType));
+        assertTrue(in_array($this->entityType, ['payments', 'refunds']));
+        assertTrue(in_array($this->databaseMode, [Mode::LIVE, Mode::TEST]));
+        assertTrue(!empty($this->databaseMode));
+        assertTrue(!empty($this->entityType));
 
         // TODO: Change to setSlaveDb later
         \Database\DefaultConnection::set($this->databaseMode);
