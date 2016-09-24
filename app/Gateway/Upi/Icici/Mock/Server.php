@@ -150,7 +150,7 @@ class Server extends Base\Mock\Server
         if ($dontEncrypt === true)
         {
             $encryptedData = $this->encrypt($content);
-            assert($encryptedData !== false);
+            assertTrue($encryptedData !== false);
 
             $content = base64_encode($encryptedData);
         }

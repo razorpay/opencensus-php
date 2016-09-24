@@ -171,3 +171,44 @@ if (! function_exists('flatten_array'))
         return $result;
     }
 }
+
+if(! function_exists('assertTrue'))
+{
+    function assertTrue($assertion, $message = null)
+    {
+        if (version_compare(phpversion(), '7.0.0', '<'))
+        {
+            $message = $message ?: '';
+
+            assert($assertion, $message);
+        }
+        else
+        {
+            $e = new RZP\Exception\AssertionException($message);
+
+            assert($assertion, $e);
+        }
+    }
+}
+
+
+/**
+ * We do not check for whether this function is defined already
+ * If it is defined already by some other library (like phpunit)
+ * then we want this definition to be the correct one.
+ */
+function assertTrue($assertion, $message = null)
+{
+    if (version_compare(phpversion(), '7.0.0', '<'))
+    {
+        $message = $message ?: '';
+
+        assert($assertion, $message);
+    }
+    else
+    {
+        $e = new RZP\Exception\AssertionException($message);
+
+        assert($assertion, $e);
+    }
+}
