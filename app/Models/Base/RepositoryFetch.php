@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Base;
 
+use RZP\Constants;
 use RZP\Exception;
 
 trait RepositoryFetch
@@ -137,8 +138,13 @@ trait RepositoryFetch
 
     protected function getEsRepoClass()
     {
-        $esRepoClassPath = join('\\', explode('\\', get_called_class(), -1)) . '\\' . 'EsRepository';
-        $esRepo = new $esRepoClassPath;
+        $entity = explode('\\', get_called_class(), -1);
+
+        $entity = $entity[count($entity) - 1];
+
+        $esRepoClass = Constants\Entity::getEntityEsRepository($entity);
+
+        $esRepo = new $esRepoClass;
 
         return $esRepo;
     }
@@ -205,7 +211,7 @@ trait RepositoryFetch
         $esRepo = new $this->getEsRepoClass();
         foreach ($params as $key => $value)
         {
-            $func = 'validateParam'.studly_case($key);
+            $func = 'validateParam' . studly_case($key);
 
             if (method_exists($esRepo, $func))
             {
