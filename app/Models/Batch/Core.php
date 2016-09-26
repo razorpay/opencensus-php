@@ -18,7 +18,16 @@ class Core extends Base\Core
 {
     use FileHandlerTrait;
 
+    protected $mutex;
+
     protected static $fileToReadName = 'Batch_File';
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->mutex = $this->app['api.mutex'];
+    }
 
     public function create($input)
     {
@@ -115,37 +124,50 @@ class Core extends Base\Core
 
         foreach ($batches as $batch)
         {
-            $filePath = $this->getBatchFileFromAws($batch);
-
-            $entries = $this->parseExcelFile($filePath);
-
-            list($batch, $shouldSendMail, $processedFile) = $this->processBatch($batch, $entries);
-
-            $excel = $this->createExcelObject($processedFile, $batch->getId());
-
-            $fileMetadata = $excel->store('xlsx', storage_path('files/batch_file_download'), true);
-            $fullpath = $fileMetadata['full'];
-
-            $downloadUrl = $this->saveBatchFileToAws($batch, $fullpath);
-
-            $batch->setDownloadFileUrl($downloadUrl);
-
-            $processedAt = Carbon::today('Asia/Kolkata')->timestamp;
-            $batch->setProcessedAt($processedAt);
-
-            $this->repo->saveOrFail($batch);
-
-            if ($shouldSendMail)
+            try
             {
-                $this->sendMail($fullpath, $batch->merchant);
-            }
+                $this->acquireMutexOnBatch($batch);
 
-            $this->trace->info(
-                TraceCode::BATCH_PROCESS_FILE,
-                [
-                    'message'            => 'Processed Batch Refund',
-                    'batch'              => $batch->toArrayPublic(),
-                ]);
+                $filePath = $this->getBatchFileFromAws($batch);
+
+                $entries = $this->parseExcelFile($filePath);
+
+                list($batch, $shouldSendMail, $processedFile) = $this->processBatch($batch, $entries);
+
+                $excel = $this->createExcelObject($processedFile, $batch->getId());
+
+                $fileMetadata = $excel->store('xlsx', storage_path('files/batch_file_download'), true);
+                $fullpath = $fileMetadata['full'];
+
+                $downloadUrl = $this->saveBatchFileToAws($batch, $fullpath);
+
+                $batch->setDownloadFileUrl($downloadUrl);
+
+                $processedAt = Carbon::today('Asia/Kolkata')->timestamp;
+                $batch->setProcessedAt($processedAt);
+
+                $this->repo->saveOrFail($batch);
+
+                if ($shouldSendMail)
+                {
+                    $this->sendMail($fullpath, $batch->merchant);
+                }
+
+                $this->trace->info(
+                    TraceCode::BATCH_PROCESS_FILE,
+                    [
+                        'message'            => 'Processed Batch Refund',
+                        'batch'              => $batch->toArrayPublic(),
+                    ]);
+            }
+            catch (Exception\BadRequestException $ex)
+            {
+                throw $ex;
+            }
+            finally
+            {
+                $this->releaseMutexOnBatch($batch);
+            }
         }
 
         return $batches;
@@ -378,5 +400,21 @@ class Core extends Base\Core
 
             $message->attach($data['refundFile']);
         });
+    }
+
+    protected function acquireMutexOnBatch($batch)
+    {
+        $resource = $batch->getId();
+
+        if ($this->mutex->acquire($resource) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_BATCH_ANOTHER_OPERATION_IN_PROGRESS);
+        }
+    }
+
+    protected function releaseMutexOnBatch($batch)
+    {
+        $this->mutex->release($batch->getId());
     }
 }

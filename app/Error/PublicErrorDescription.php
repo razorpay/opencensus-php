@@ -214,4 +214,6 @@ class PublicErrorDescription
     const BAD_REQUEST_FILE_EXCEED_LIMIT                                         = 'The uploaded file limit should not contain more than 1000 entries';
     const BAD_REQUEST_FILE_VALIDATION                                           = 'The uploaded file does not contain proper values';
     const BAD_REQUEST_FILE_ALREADY_PROCESSED                                    = 'The uploaded file is already processed';
+    const BAD_REQUEST_BATCH_ANOTHER_OPERATION_IN_PROGRESS                       = 'Request failed because another batch operation is in progress';
+
 }

@@ -11,7 +11,7 @@ use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Batch\Status;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Settlement\Kotak\FileHandlerTrait;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Illuminate\Http\UploadedFile;
 
 /**
  * Tests for refund payments
@@ -35,7 +35,7 @@ class RefundTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__ . '/helpers/refund.php';
+        $this->testDataFilePath = __DIR__ . '/helpers/RefundTestData.php';
 
         parent::setUp();
 
@@ -75,7 +75,7 @@ class RefundTest extends TestCase
 
         $uploadedFile = $this->createTempFile($url);
 
-        $request['content']['file'] = $url;
+        $request['files']['file'] = $uploadedFile;
 
         $this->ba->proxyAuth();
 
@@ -105,7 +105,7 @@ class RefundTest extends TestCase
 
         $uploadedFile = $this->createTempFile($url);
 
-        $request['content']['file'] = $url;
+        $request['files']['file'] = $uploadedFile;
 
         $this->runRequestResponseFlow($testData, function() use ($request) {
             $this->ba->proxyAuth();
@@ -130,7 +130,7 @@ class RefundTest extends TestCase
 
         $uploadedFile = $this->createTempFile($url);
 
-        $request['content']['file'] = $url;
+        $request['files']['file'] = $uploadedFile;
 
         $this->ba->proxyAuth();
 
@@ -176,7 +176,7 @@ class RefundTest extends TestCase
 
         $uploadedFile = $this->createTempFile($url);
 
-        $request['content']['file'] = $url;
+        $request['files']['file'] = $uploadedFile;
 
         $this->ba->proxyAuth();
 
@@ -216,7 +216,7 @@ class RefundTest extends TestCase
 
         $uploadedFile = $this->createTempFile($url);
 
-        $request['content']['file'] = $url;
+        $request['files']['file'] = $uploadedFile;
 
         $this->ba->proxyAuth();
 
@@ -282,7 +282,7 @@ class RefundTest extends TestCase
 
         $uploadedFile = $this->createTempFile($url);
 
-        $request['content']['file'] = $url;
+        $request['files']['file'] = $uploadedFile;
 
         $this->ba->proxyAuth();
 
@@ -291,12 +291,13 @@ class RefundTest extends TestCase
         $refundId = $content['id'];
 
         $url = $this->writeToExcelFile($paymentEntry, substr($refundId, 6));
+        $uploadedFile = $this->createTempFile($url);
 
         $this->assertEquals(Status::CREATED, $content['status']);
 
         $testData = $this->testData['testProcessRefundFile'];
 
-        $testData['request']['content']['file'] = $url;
+        $testData['request']['files']['file'] = $uploadedFile;
 
         $this->ba->appAuth();
         $content = $this->makeRequestAndGetContent($testData['request']);
@@ -320,7 +321,7 @@ class RefundTest extends TestCase
         $this->assertEquals(3, $resultBody['attempts']);
     }
 
-    public function writeToExcelFile($data, $name)
+    protected function writeToExcelFile($data, $name)
     {
         \Config::set('excel::export.calculate', true);
 
@@ -329,6 +330,7 @@ class RefundTest extends TestCase
         $excel = $this->createExcelObject($data, $name, $columnFormat);
 
         $fileMetadata = $excel->store('xlsx', storage_path('files/batch_file_download'), true);
+
         $fullpath = $fileMetadata['full'];
 
         $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
@@ -337,19 +339,17 @@ class RefundTest extends TestCase
         return $url;
     }
 
-
     protected function createTempFile($url)
     {
         $mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
         $uploadedFile = new UploadedFile(
                                $url,
-                               $url,
+                               'file',
                                $mimeType,
                                filesize($url),
                                null,
                                true);
-
        return $uploadedFile;
     }
 
