@@ -14,6 +14,10 @@ class Repository extends Base\Repository
 
     protected $entity = 'refund';
 
+    protected $entityFetchParamRules = array(
+        Entity::PAYMENT_ID      => 'sometimes|alpha_num',
+    );
+
     protected $proxyFetchParamRules = [
         Entity::NOTES           => 'sometimes|string|max:500',
     ];
