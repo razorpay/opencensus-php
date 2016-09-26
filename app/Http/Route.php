@@ -245,6 +245,7 @@ final class Route
         'es_migrate_entity'                       => ['post',     'es/migrate/{entityName}',                  'EsController@migrateEntity'                                        ],
         'refund_gateway_manual'                   => ['post',     'refunds/{ids}/gateway',                    'RefundController@postManualGatewayRefund'                          ],
         'order_refund_multiple_authorized'        => ['post',     'orders/payments/refund',                   'PaymentController@postRefundMultipleAuthorizedPaymentsForOrders'   ],
+        'scorecard'                               => ['get',      'scorecard',                                'AdminController@getScorecard'                                      ],
     );
 
     public static $public = array(
@@ -440,6 +441,7 @@ final class Route
         'credits_delete',
         'refund_gateway_manual',
         'order_refund_multiple_authorized',
+        'scorecard',
     );
 
     public static $proxy = array(
@@ -511,6 +513,7 @@ final class Route
             'setl_return_generate',
             'payment_auth_notify',
             'payment_timeout',
+            'scorecard',
             'merchant_daily_report',
             'merchant_post_beneficiary_file',
             'merchant_notify_holiday',
