@@ -245,6 +245,8 @@ final class Route
         'es_migrate_entity'                       => ['post',     'es/migrate/{entityName}',                  'EsController@migrateEntity'                                        ],
         'refund_gateway_manual'                   => ['post',     'refunds/{ids}/gateway',                    'RefundController@postManualGatewayRefund'                          ],
         'order_refund_multiple_authorized'        => ['post',     'orders/payments/refund',                   'PaymentController@postRefundMultipleAuthorizedPaymentsForOrders'   ],
+        'refund_create_gateway_record'            => ['post',     'refunds/{gateway}/create_record',          'PaymentController@postGatewayRefundRecord'                         ],
+
     );
 
     public static $public = array(
@@ -440,6 +442,7 @@ final class Route
         'credits_delete',
         'refund_gateway_manual',
         'order_refund_multiple_authorized',
+        'refund_create_gateway_record',
     );
 
     public static $proxy = array(
@@ -524,6 +527,7 @@ final class Route
             'es_migrate_entity',
             'setl_post_details_old',
             'order_refund_multiple_authorized',
+            'refund_create_gateway_record',
         ),
 
         'mailgun' => array(

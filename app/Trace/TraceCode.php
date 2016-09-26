@@ -76,6 +76,9 @@ class TraceCode
     const REFUND_GATEWAY_REQUIRED                   = 'REFUND_GATEWAY_REQUIRED';
     const PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND     = 'PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND';
     const PAYMENT_AUTO_REFUND_FAILURE               = 'PAYMENT_AUTO_REFUND_FAILURE';
+    const CREATE_GATEWAY_REFUND_RECORD_FAILED       = 'CREATE_GATEWAY_REFUND_RECORD_FAILED';
+    const GATEWAY_REFUND_RECORD_CREATED             = 'GATEWAY_REFUND_RECORD_CREATED';
+    const GATEWAY_REFUND_ABSENT                     = 'GATEWAY_REFUND_ABSENT';
 
     const ORDER_MULTIPLE_CAPTURED_PAYMENTS          = 'ORDER_MULTIPLE_CAPTURED_PAYMENTS';
 
@@ -301,6 +304,7 @@ class TraceCode
         self::REFUND_GATEWAY_REQUIRED                   => 'Traces whether the gateway refund is required or not',
         self::ORDER_MULTIPLE_CAPTURED_PAYMENTS          => 'Found more than one captured payment for an order.',
         self::PAYMENT_AUTO_REFUND_FAILURE               => 'Refund failed while trying to auto-refund',
+        self::GATEWAY_REFUND_ABSENT                     => 'Refund not done on the gateway side.',
 
         self::BAD_REQUEST_INVALID_API_KEY               => 'The api key provided is invalid',
 

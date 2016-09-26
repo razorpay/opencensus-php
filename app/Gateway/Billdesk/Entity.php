@@ -80,6 +80,13 @@ class Entity extends Base\Entity
 
     protected $appends = array('status', 'refund_status');
 
+    public function findByRefundId($refundId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::REFUND_ID, '=', $refundId)
+                    ->first();
+    }
+
     protected function getStatusAttribute()
     {
         $code = $this->attributes['AuthStatus'];
