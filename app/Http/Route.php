@@ -439,11 +439,7 @@ final class Route
         'credits_edit',
         'credits_delete',
         'refund_gateway_manual',
-<<<<<<< HEAD
-        'refund_create_gateway_record',
-=======
         'order_refund_multiple_authorized',
->>>>>>> master
     );
 
     public static $proxy = array(
@@ -527,11 +523,7 @@ final class Route
             'emi_generate_excel',
             'es_migrate_entity',
             'setl_post_details_old',
-<<<<<<< HEAD
-            'refund_timeouts_gateway_create',
-=======
             'order_refund_multiple_authorized',
->>>>>>> master
         ),
 
         'mailgun' => array(
