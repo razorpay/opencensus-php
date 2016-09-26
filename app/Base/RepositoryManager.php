@@ -138,10 +138,8 @@ class RepositoryManager extends \Illuminate\Support\Manager
     /**
      * Execute a callable within a transaction.
      *
-     * @param  Closure  $callback
+     * @param callable $callback
      * @return mixed
-     *
-     * @throws \Exception
      */
     public function transaction(callable $callback)
     {

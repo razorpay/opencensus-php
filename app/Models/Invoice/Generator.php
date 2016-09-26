@@ -48,9 +48,6 @@ class Generator
         $customerDetails = $input[Entity::CUSTOMER];
         $lineItemsDetails = $input[Entity::LINE_ITEMS];
 
-        unset($input[Entity::CUSTOMER]);
-        unset($input[Entity::LINE_ITEMS]);
-
         $this->invoice->build($input);
 
         $this->repo->transaction(

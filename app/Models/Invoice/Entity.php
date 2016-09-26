@@ -150,6 +150,26 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::LINE_ITEMS_DETAILS,
     ];
+    
+    public function build(array $input = array())
+    {
+        $this->input = $input;
+
+        $this->modify($input);
+
+        unset($input[Entity::CUSTOMER]);
+        unset($input[Entity::LINE_ITEMS]);
+
+        $this->validateInput('create', $input);
+
+        $this->generate($input);
+
+        $this->unsetInput('create', $input);
+
+        $this->fill($input);
+
+        return $this;
+    }
 
     // -------------------------------------- Getters --------------------------------------
 

@@ -222,14 +222,6 @@ trait Authorize
 
         $payment = $this->payment;
 
-        // TODO: Should we do it separately for invoice payments? The invoice payments will also
-        // be signed from hosted. So, this flow should ideally suffice.
-        if ($payment->isSigned())
-        {
-            // If payment is signed, then we capture it in this step only.
-            $payment = $this->capturePayment($payment, $payment->getAmount());
-        }
-
         return $this->postPaymentAuthorizeProcessing($payment);
     }
 

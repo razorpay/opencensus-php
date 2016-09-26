@@ -111,11 +111,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CONTACT);
     }
 
-    public function getAddress()
-    {
-        return $this->getAttribute(self::ADDRESS);
-    }
-
     public function isActive()
     {
         return $this->getAttribute(self::ACTIVE);
