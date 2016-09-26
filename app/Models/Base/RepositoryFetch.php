@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Base;
 
+use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
@@ -39,8 +40,11 @@ trait RepositoryFetch
 
     /**
      * Retrieves the entities according to given fetch params
-     * @params array        $params
-     * @return Collection   A collection of entities
+     *
+     * @param array $params
+     * @param $merchantId
+     * @return Collection A collection of entities
+     * @throws Exception\InvalidArgumentException
      */
     public function fetch(array $params, $merchantId = null)
     {
@@ -105,7 +109,7 @@ trait RepositoryFetch
 
         if (isset($this->defaultFetchParams) === true)
         {
-            // array_flip is not required here since defaultFetchparams will be an associative array.
+            // array_flip is not required here since defaultFetchParams will be an associative array.
             // array_diff_key is used when only the key needs to be considered and not the value.
             $rawParams = array_diff_key($rawParams, $this->defaultFetchParams);
         }
@@ -136,8 +140,13 @@ trait RepositoryFetch
 
     protected function getEsRepoClass()
     {
-        $esRepoClassPath = join('\\', explode('\\', get_called_class(), -1)) . '\\' . 'EsRepository';
-        $esRepo = new $esRepoClassPath;
+        $entity = explode('\\', get_called_class(), -1);
+
+        $entity = $entity[count($entity) - 1];
+
+        $esRepoClass = Constants\Entity::getEntityEsRepository($entity);
+
+        $esRepo = new $esRepoClass;
 
         return $esRepo;
     }
@@ -204,7 +213,7 @@ trait RepositoryFetch
         $esRepo = new $this->getEsRepoClass();
         foreach ($params as $key => $value)
         {
-            $func = 'validateParam'.studly_case($key);
+            $func = 'validateParam' . studly_case($key);
 
             if (method_exists($esRepo, $func))
             {

@@ -161,15 +161,15 @@ class Entity
         return new $class;
     }
 
-    public static function getEntityRepository($entity)
+    public static function getEntityRepository($entity, $repositoryType = 'Repository')
     {
-        $class = self::getEntityNamespace($entity) . '\Repository';
+        $class = self::getEntityNamespace($entity) . '\\' . $repositoryType;
 
         if (class_exists($class) === false)
         {
             if (isset(self::$repository[$entity]))
             {
-                $class = self::$repository[$entity] . '\Repository';
+                $class = self::$repository[$entity] . '\\' . $repositoryType;
             }
             else
             {
@@ -179,6 +179,11 @@ class Entity
         }
 
         return $class;
+    }
+
+    public static function getEntityEsRepository($entity)
+    {
+        return self::getEntityRepository($entity, 'EsRepository');
     }
 
     public static function validateIsEntity($entity)

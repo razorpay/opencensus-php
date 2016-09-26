@@ -656,7 +656,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             $this->paymentIin->setCountry($countryCode);
 
             // Make sure that international returns true in this case, after the country code is set.
-            assert($this->paymentIin->isInternational());
+            assertTrue($this->paymentIin->isInternational());
 
             $this->app['trace']->info(
                 TraceCode::RECON_INFO_ALERT,
@@ -802,7 +802,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
     protected function createMissingPaymentTransaction()
     {
-        assert($this->payment->transaction === null);
+        assertTrue($this->payment->transaction === null);
 
         $this->app['trace']->info(
             TraceCode::RECON_INFO_ALERT,

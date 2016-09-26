@@ -27,7 +27,7 @@ class CreateUpi extends Migration
             $table->string('bank');
             $table->string('contact')->nullable();
             $table->string('name')->nullable();
-            $table->boolean('received')->default(0);
+            $table->tinyInteger('received')->default(0);
             $table->string('gateway_merchant_id')->nullable();
             $table->string('gateway_payment_id')->nullable();
             $table->string('email')->nullable();

@@ -571,6 +571,37 @@ class SavedCardsPaymentCreateTest extends TestCase
         $this->assertEquals($payments['count'], 0);
     }
 
+    /**
+     * test card multiple payments with save card local, only one card should be saved
+     */
+    public function testPaymentsInvalidApp()
+    {
+        // create payments and fetch on public auth
+        $this->testPaymentCreateAndSaveCardGlobal();
+
+        $this->mockSession('capp_ksjdfkjsaf');
+
+        $this->ba->publicAuth();
+
+        $data = [
+            'request' => [
+                'url' => '/preferences',
+                'method' => 'get',
+            ],
+            'response' => [
+                'content' => [
+                    'http_status_code' => 200,
+                    'version' => 1
+                ],
+            ],
+        ];
+
+        $this->fixtures->merchant->editFeatures('cardsaving');
+
+        $this->runRequestResponseFlow($data);
+
+    }
+
     protected function mockSession($appToken = 'capp_1000000custapp')
     {
         $data = [ 'test_app_token' => $appToken ];
