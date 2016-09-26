@@ -68,7 +68,7 @@ class CreateTransactions extends Migration
             $table->integer(Transaction::API_FEE)
                   ->nullable();
 
-            $table->boolean(Transaction::GRATIS)
+            $table->tinyInteger(Transaction::GRATIS)
                   ->default(0);
 
             $table->bigInteger(Transaction::ESCROW_BALANCE)
@@ -76,7 +76,7 @@ class CreateTransactions extends Migration
 
             $table->string(Transaction::CHANNEL, 8);
 
-            $table->boolean(Transaction::SETTLED)
+            $table->tinyInteger(Transaction::SETTLED)
                   ->default(0);
 
             $table->integer(Transaction::SETTLED_AT)
@@ -88,6 +88,9 @@ class CreateTransactions extends Migration
                   ->nullable();
 
             $table->integer(Transaction::RECONCILED_AT)
+                  ->nullable();
+            
+            $table->integer(Transaction::GATEWAY_SETTLED_AT)
                   ->nullable();
 
             // Adds created_at and updated_at columns to the table
@@ -103,6 +106,8 @@ class CreateTransactions extends Migration
             $table->index(Transaction::SETTLED);
 
             $table->index(Transaction::RECONCILED_AT);
+            
+            $table->index(Transaction::GATEWAY_SETTLED_AT);
 
             $table->index(Transaction::CHANNEL);
 

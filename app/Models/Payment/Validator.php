@@ -12,10 +12,13 @@ use RZP\Models\Payment\Processor\Wallet;
 
 class Validator extends Base\Validator
 {
+    const PHONEPE_VPA = 'ybl';
+
     protected static $createRules = array(
         'amount'                  =>  'required|integer',
         'currency'                =>  'required|size:3',
-        'method'                  =>  'in:card,netbanking,wallet,emi',
+        'method'                  =>  'custom',
+        'vpa'                     =>  'required_if:method,upi|max:100|custom',
         'card'                    =>  'sometimes',
         'bank'                    =>  'required_if:method,netbanking',
         'wallet'                  =>  'required_if:method,wallet|custom',
@@ -53,6 +56,43 @@ class Validator extends Base\Validator
         'description',
         'fee',
         'contact');
+
+    protected function validateMethod($attribute, $method)
+    {
+        if (Method::isValid($method) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid payment method given: ' . $method);
+        }
+    }
+
+    protected function validateVpa($attribute, $vpa, $parameter)
+    {
+        $vpaParts = explode('@', $vpa);
+
+        if (count($vpaParts) !== 2)
+        {
+            // Invalid VPA
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA);
+        }
+
+        $merchantId = null;
+
+        if ($this->entity->getMerchantId() !== null)
+        {
+            $merchantId = $this->entity->merchant->getId();
+        }
+
+        // @HACK
+        // Disabling phonepe for all the merchants except for the UPI demo
+        if (($vpaParts[1] === self::PHONEPE_VPA) and
+            ($merchantId !== '4izmfM9TFCAgFN'))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_UPI_APP_NOT_SUPPORTED);
+        }
+    }
 
     protected function validateWallet($attribute, $value)
     {
@@ -93,6 +133,15 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT,
+                'amount');
+        }
+
+        if (($input['method'] === Payment\Method::WALLET) and
+            ($input['wallet'] === Wallet::AIRTELMONEY) and
+            ($amount < 1000))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_10_MIN_AMOUNT,
                 'amount');
         }
 

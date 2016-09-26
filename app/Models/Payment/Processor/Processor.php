@@ -19,7 +19,6 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer;
-use RZP\Models\Base\Lock;
 
 class Processor
 {
@@ -30,6 +29,7 @@ class Processor
     use Verify;
     use OtpResend;
     use Topup;
+    use FraudDetector;
 
     /**
      * Callback urls can be hit multiple times by customers.
@@ -66,6 +66,12 @@ class Processor
      */
     const PAYMENT_CANCEL_TIME_DURATION = 1800;  // 30 min * 60 sec
 
+    /**
+     * If a payment is async, it can receive a callback for 5 mins after which it is converted to a
+     * failed payment
+     */
+    const ASYNC_PAYMENT_TIMEOUT = 300;
+
     protected $merchant;
     protected $trace;
     protected $payment;
@@ -75,7 +81,7 @@ class Processor
     protected $orderRepo;
     protected $paymentRepo;
     protected $app;
-    protected $lock;
+    protected $mutex;
     protected $request;
     protected $methods;
     protected $refund;
@@ -101,7 +107,7 @@ class Processor
 
         $this->request = $this->app['request'];
 
-        $this->lock = $this->app['api.lock'];
+        $this->mutex = $this->app['api.mutex'];
 
         // Only used in hdfc verify refund flow
         $this->verifyRefundStatus = null;
@@ -211,7 +217,7 @@ class Processor
         $signature = $this->getSignature($data);
 
         // use hash_equals to prevent timing attacks
-        if (! hash_equals($signature, $input['signature']))
+        if (hash_equals($signature, $input['signature']) !== true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Signature does not match', 'signature');
@@ -262,10 +268,9 @@ class Processor
     /**
      * Cancels a previously created payment
      *
-     * @param  string   $id      Id of payment to be captured
-     * @param  array    $input
-     *
-     * @return $status Payment\Status
+     * @param  string $id Id of payment to be captured
+     * @return  $status Payment\Status
+     * @throws Exception\BadRequestException
      */
     public function cancel($id, $input)
     {
@@ -290,11 +295,16 @@ class Processor
             return $this->processPaymentCallbackSecondTime($payment);
         }
 
-        $errorCode = $this->repo->transaction(function() use ($payment)
+        if (empty($input) === false)
+        {
+            $this->trace->info(TraceCode::PAYMENT_CANCELLED_METADATA, (array) $input);
+        }
+
+        $errorCode = $this->repo->transaction(function() use ($payment, $input)
         {
             $this->lockForUpdateAndReload($payment);
 
-            $errorCode = $this->cancelPayment($payment);
+            $errorCode = $this->cancelPayment($payment, $input);
 
             return $errorCode;
         });
@@ -302,7 +312,7 @@ class Processor
         throw new Exception\BadRequestException($errorCode);
     }
 
-    protected function cancelPayment($payment)
+    protected function cancelPayment($payment, $input)
     {
         $errorCode = null;
 
@@ -320,21 +330,55 @@ class Processor
 
         $e = new Exception\BadRequestException($errorCode);
 
-        $this->updatePaymentFailed($e->getError(), TraceCode::PAYMENT_CANCELLED);
+        $this->updatePaymentFailed($e, TraceCode::PAYMENT_CANCELLED);
 
         return $errorCode;
     }
 
-    public function redirect($id)
+    /**
+     * Returns the proper async response for the status checks
+     * made by Checkout
+     * @param  string $id payment id
+     * @return array
+     */
+    public function getAsyncResponse($id)
     {
         $payment = $this->retrieve($id);
 
-        if ($payment->isCreated() === false)
+        $gateway = $payment->getGateway();
+
+        // If the gateway is not async we just give a generic
+        // error to not leak information
+        if (Payment\Gateway::supportsAsync($gateway) === false)
         {
-            return $this->processPaymentCallbackSecondTime($payment);
+            // Throw exception of invalid id
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_ID);
         }
 
-        throw new Exception\LogicException('Should not have been hit.');
+        // If it failed recently, then throw relevant exception
+        // directly for the failure.
+        $this->checkForRecentFailedPayment($payment);
+
+        // Throw payment failed exception if async payment timeout (5mins)
+        // has been exceeded
+        if ($payment->justCreated() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+        }
+
+        if ($payment->isCreated() === true)
+        {
+            return [
+                Payment\Entity::STATUS => Payment\Status::CREATED
+            ];
+        }
+
+        // We don't want to reach this in case of captured|refunded payments
+        assertTrue($payment->isAuthorized() === true);
+
+        return $this->processAuthorizeResponse($payment);
     }
 
     public function callGatewayFunctionCaptureViaQueue($data, $payment)
@@ -351,8 +395,10 @@ class Processor
         $this->trace->addRecord($level, $traceCode, $data);
     }
 
-    protected function updatePaymentFailed($error, $traceCode)
+    protected function updatePaymentFailed($exception, $traceCode)
     {
+        $error = $exception->getError();
+
         $code = $error->getPublicErrorCode();
 
         $desc = $error->getDescription();
@@ -426,8 +472,10 @@ class Processor
         $gateway = $this->payment->getGateway();
 
         $gatewayData['terminal'] = $terminal;
+
         $gatewayData['merchant'] = $this->payment->merchant;
 
+        // TODO: Shouldn't be KOTAK specific
         if ($gateway === Payment\Gateway::KOTAK)
         {
             $gatewayData['bank_account'] = $this->getMerchantBankAccount($terminal->merchant);
@@ -462,6 +510,13 @@ class Processor
         $this->trace->info(
             TraceCode::PAYMENT_METADATA,
             ['metadata' => $metadata, 'payment_id' => $payment->getId()]);
+
+        if (isset($metadata['checkout_id']) === false)
+        {
+             $this->trace->warning(
+                 TraceCode::PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND,
+                 ['metadata' => $metadata, 'payment_id' => $payment->getId()]);
+        }
 
         $this->payment = $payment;
 
@@ -614,7 +669,7 @@ class Processor
         Payment\Entity::verifyIdAndStripSign($id);
 
         $this->payment = $this->repo->payment->findByIdAndMerchantId(
-                                                $id, $this->merchant->getKey());
+                                                $id, $this->merchant->getId());
 
         return $this->payment;
     }
@@ -710,12 +765,6 @@ class Processor
             return false;
         }
 
-        // If payment is signed
-        if ($payment->isSigned() === true)
-        {
-            return true;
-        }
-
         // If payment order was marked as auto capture
         if (($payment->order !== null) and
             ($payment->order->getPaymentCapture() === true))
@@ -726,20 +775,20 @@ class Processor
         return false;
     }
 
-    protected function acquireLockOnPayment($payment)
+    protected function acquireMutexOnPayment($payment)
     {
         $resource = $payment->getId();
 
-        if ($this->lock->acquire($resource) === false)
+        if ($this->mutex->acquire($resource) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
         }
     }
 
-    protected function releaseLockOnPayment($payment)
+    protected function releaseMutexOnPayment($payment)
     {
-        $this->lock->release($this->payment->getId());
+        $this->mutex->release($payment->getId());
     }
 
     protected function createOrUpdateToken($input, $data)

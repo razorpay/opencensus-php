@@ -71,14 +71,15 @@ class PaymentCreateController extends Controller
     {
         $input = Request::all();
 
-        if (empty($input['callback_url']) === false)
+        //
+        // For payment creation via api and s2s call, if it's on private
+        // auth then we should return json response instead of redirecting
+        // to callback url.
+        //
+        if ((empty($input['callback_url']) === false) and
+            ($this->app['basicauth']->isPublicAuth()))
         {
             $this->app['rzp.merchant_callback_url'] = $input['callback_url'];
-        }
-        else
-        {
-            // It could be just blank or an empty array. Hence unset it here only.
-            unset($input['callback_url']);
         }
 
         $data = $this->payment->process($input);
@@ -143,7 +144,7 @@ class PaymentCreateController extends Controller
             return ApiResponse::json($data);
         }
 
-        assert(false, 'Shouldn\'t reach here');
+        assertTrue(false, 'Shouldn\'t reach here');
     }
 
     /**
@@ -252,9 +253,9 @@ class PaymentCreateController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postRedirect($id)
+    public function postRedirectCallback($id)
     {
-        $data = $this->payment->redirect($id);
+        $data = $this->payment->redirectCallback($id);
 
         return $this->returnCallbackResponse($data);
     }
@@ -314,9 +315,13 @@ class PaymentCreateController extends Controller
             {
                 return $this->returnMerchantFullRedirectView($data);
             }
+            else if ($data['type'] === 'async')
+            {
+                return $data;
+            }
             else
             {
-                assert(false, 'Should not reach here');
+                assertTrue(false, 'Should not reach here');
             }
         }
         else

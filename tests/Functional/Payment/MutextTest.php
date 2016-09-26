@@ -23,7 +23,7 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
  * instead of utilizing the default created payment entity.
  */
 
-class LockTest extends TestCase
+class MutexTest extends TestCase
 {
     use PaymentTrait;
 
@@ -31,20 +31,27 @@ class LockTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__ . '/helpers/lockTestData.php';
+        $this->testDataFilePath = __DIR__ . '/helpers/MutexTestData.php';
 
         parent::setUp();
 
         $this->ba->privateAuth();
     }
 
-    public function testLockAcquiredCaptureRequest()
+    public function testMutexAcquiredCaptureRequest()
     {
         $payment = $this->defaultAuthPayment();
 
         Redis::shouldReceive('set')
             ->once()
             ->andReturn(null);
+
+        Redis::shouldReceive('get')
+                ->once()
+                ->andReturnUsing(function()
+                {
+                    return null;
+                });
 
         $data = $this->testData[__FUNCTION__];
 
@@ -58,20 +65,26 @@ class LockTest extends TestCase
         $this->assertSame('authorized', $paymentEntity['status']);
     }
 
-    public function testLockAcquiredRefundRequest()
+    public function testMutexAcquiredRefundRequest()
     {
-        $payment = $this->defaultAuthPayment();
-        $payment = $this->capturePayment($payment['id'], $payment['amount']);
-
         Redis::shouldReceive('set')
                 ->once()
                 ->andReturn(null);
+
+        Redis::shouldReceive('get')
+                ->once()
+                ->andReturnUsing(function()
+                {
+                    return null;
+                });
+
+        $payment = $this->fixtures->create('payment:captured');
 
         $data = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow($data, function() use ($payment)
         {
-            $this->refundPayment($payment['id']);
+            $this->refundPayment($payment->getPublicId());
         });
     }
 
@@ -97,16 +110,39 @@ class LockTest extends TestCase
                     throw new \Predis\Response\ServerException('Internal Error');
                 });
 
+        Redis::shouldReceive('get')
+                ->once()
+                ->andReturnUsing(function()
+                {
+                    return 'false_id';
+                });
+
         $this->capturePayment($payment['id'], $payment['amount']);
     }
 
-    public function testLockCaptureRequestWithDiffRedisResponse()
+    public function testMutexCaptureRequestWithDiffRedisResponse()
     {
         $payment = $this->defaultAuthPayment();
 
         Redis::shouldReceive('set')
                 ->once()
-                ->andReturn(\Predis\Response\Status::get('QUEUED'));
+                ->andReturnUsing(function ($resource, $requestId)
+                    {
+                        $this->requestId = $requestId;
+
+                        return \Predis\Response\Status::get('QUEUED');
+                    });
+
+        Redis::shouldReceive('get')
+                ->once()
+                ->andReturnUsing(function()
+                {
+                    return $this->requestId;
+                });
+
+        Redis::shouldReceive('del')
+                ->once()
+                ->andReturn(true);
 
         $this->capturePayment($payment['id'], $payment['amount']);
     }

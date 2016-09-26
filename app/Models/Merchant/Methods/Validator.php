@@ -23,11 +23,13 @@ class Validator extends Base\Validator
         Entity::PAYTM       => 'sometimes|boolean',
         Entity::PAYZAPP     => 'sometimes|boolean',
         Entity::PAYUMONEY   => 'sometimes|boolean',
+        Entity::AIRTELMONEY => 'sometimes|boolean',
         Entity::OLAMONEY    => 'sometimes|boolean',
         Entity::MOBIKWIK    => 'sometimes|boolean',
         Entity::EMI         => 'sometimes|boolean',
         Entity::CREDIT_CARD => 'sometimes_if:card,1|required_with:debit_card|boolean',
         Entity::DEBIT_CARD  => 'sometimes_if:card,1|required_with:credit_card|boolean',
+        Entity::UPI         => 'sometimes|boolean',
     );
 
     protected static $setMethodsValidators = array(

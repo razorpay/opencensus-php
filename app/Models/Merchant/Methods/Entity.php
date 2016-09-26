@@ -17,9 +17,11 @@ class Entity extends Base\PublicEntity
     const PAYTM             = 'paytm';
     const PAYZAPP           = 'payzapp';
     const PAYUMONEY         = 'payumoney';
+    const AIRTELMONEY       = 'airtelmoney';
     const EMI               = 'emi';
     const DEBIT_CARD        = 'debit_card';
     const CREDIT_CARD       = 'credit_card';
+    const UPI               = 'upi';
 
     const METHODS           = 'methods';
 
@@ -39,10 +41,14 @@ class Entity extends Base\PublicEntity
         self::PAYTM,
         self::PAYZAPP,
         self::PAYUMONEY,
+        self::AIRTELMONEY,
         self::MOBIKWIK,
         self::OLAMONEY,
         self::EMI,
+        self::UPI,
         self::NETBANKING,
+        self::DEBIT_CARD,
+        self::CREDIT_CARD,
     );
 
     protected $visible = array(
@@ -53,10 +59,14 @@ class Entity extends Base\PublicEntity
         self::PAYTM,
         self::PAYZAPP,
         self::PAYUMONEY,
+        self::AIRTELMONEY,
         self::MOBIKWIK,
         self::OLAMONEY,
         self::EMI,
+        self::UPI,
         self::NETBANKING,
+        self::DEBIT_CARD,
+        self::CREDIT_CARD,
     );
 
     protected $public = array(
@@ -70,9 +80,11 @@ class Entity extends Base\PublicEntity
         self::MOBIKWIK      => false,
         self::PAYZAPP       => false,
         self::PAYUMONEY     => false,
+        self::AIRTELMONEY   => false,
         self::OLAMONEY      => false,
         self::BANKS         => [],
         self::EMI           => false,
+        self::UPI           => false,
         self::NETBANKING    => true,
         self::CREDIT_CARD   => true,
         self::DEBIT_CARD    => true,
@@ -84,7 +96,13 @@ class Entity extends Base\PublicEntity
         self::PAYZAPP,
         self::PAYUMONEY,
         self::OLAMONEY,
+        self::AIRTELMONEY,
     );
+
+    // Casts the attributes to native types
+    protected $casts = [
+        self::AIRTELMONEY => 'boolean',
+    ];
 
     public function setMethods(array $input = array())
     {
@@ -114,6 +132,11 @@ class Entity extends Base\PublicEntity
     public function isNetbankingEnabled()
     {
         return $this->getNetbankingAttribute();
+    }
+
+    public function isUpiEnabled()
+    {
+        return $this->getUpiAttribute();
     }
 
     public function isWalletEnabled($wallet = null)
@@ -157,6 +180,11 @@ class Entity extends Base\PublicEntity
     public function isOlamoneyEnabled()
     {
         return $this->getOlamoneyAttribute();
+    }
+
+    public function isAirtelmoneyEnabled()
+    {
+        return $this->getAirtelmoneyAttribute();
     }
 
     public function isPayumoneyEnabled()
@@ -222,13 +250,17 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::PAYUMONEY);
     }
-
     public function getOlamoney()
     {
         return $this->getAttribute(self::OLAMONEY);
     }
 
-    public function getEMi()
+    public function getAirtelmoney()
+    {
+        return $this->getAttribute(self::AIRTELMONEY);
+    }
+
+    public function getEmi()
     {
         return $this->getAttribute(self::EMI);
     }
@@ -297,6 +329,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::OLAMONEY, $value);
     }
 
+    public function setAirtelmoney($value)
+    {
+        $this->setAttribute(self::Airtelmoney, $value);
+    }
+
     public function setCard($card)
     {
         $this->setAttribute(self::CARD, $card);
@@ -319,7 +356,7 @@ class Entity extends Base\PublicEntity
 
     public function setEmi($emi)
     {
-        assert($this->isCardEnabled(), "Cannot enable emi without Card method");
+        assertTrue($this->isCardEnabled(), "Cannot enable emi without Card method");
 
         $this->setAttribute(self::EMI, $emi);
     }
@@ -364,6 +401,11 @@ class Entity extends Base\PublicEntity
         return (bool) $this->attributes[self::OLAMONEY];
     }
 
+    protected function getAirtelmoneyAttribute()
+    {
+        return $this->attributes[self::AIRTELMONEY];
+    }
+
     protected function getPayzappAttribute()
     {
         return (bool) $this->attributes[self::PAYZAPP];
@@ -372,6 +414,11 @@ class Entity extends Base\PublicEntity
     protected function getPayumoneyAttribute()
     {
         return (bool) $this->attributes[self::PAYUMONEY];
+    }
+
+    public function getUpiAttribute()
+    {
+        return (bool) $this->attributes[self::UPI];
     }
 
     protected function getBanksAttribute()
@@ -421,7 +468,9 @@ class Entity extends Base\PublicEntity
             self::PAYZAPP,
             self::PAYUMONEY,
             self::OLAMONEY,
-            self::EMI
+            self::AIRTELMONEY,
+            self::EMI,
+            self::UPI,
         );
     }
 }

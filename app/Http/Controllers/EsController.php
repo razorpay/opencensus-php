@@ -2,6 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
+use RZP\Base\RuntimeManager;
 use RZP\Models\Base\EsDao;
 use RZP\Trace\TraceCode;
 use Request;
@@ -27,8 +28,8 @@ class EsController extends Controller
     public function migrateEntity($entityName)
     {
         // Currently, the entity migration is supported for only payments and refunds.
-        assert(defined("RZP\Constants\\Table::". strtoupper($entityName)));
-        assert(in_array($entityName, ['payment', 'refund']));
+        assertTrue(defined("RZP\Constants\\Table::". strtoupper($entityName)));
+        assertTrue(in_array($entityName, ['payment', 'refund']));
 
         $this->entityName = $entityName;
 
@@ -181,7 +182,7 @@ class EsController extends Controller
 
     protected function increaseAllowedSystemLimits()
     {
-        ini_set('memory_limit', '1024M');
-        set_time_limit(1800);
+        RuntimeManager::setMemoryLimit('1024M');
+        RuntimeManager::setTimeLimit(1800);
     }
 }

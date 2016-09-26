@@ -181,45 +181,11 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function deleteTerminal2($id)
-    {
-        $data = (new Terminal\Service)->deleteTerminal2($id);
-
-        return ApiResponse::json($data);
-    }
-
     public function putTerminal($mid, $tid)
     {
         $input = Request::all();
 
         $data = (new Terminal\Service)->modifyTerminal($mid, $tid, $input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function putTerminal2($tid)
-    {
-        $input = Request::all();
-
-        $data = (new Terminal\Service)->editTerminal($tid, $input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function restoreTerminal($tid)
-    {
-        $input = Request::all();
-
-        $data = (new Terminal\Service)->restoreTerminal($tid);
-
-        return ApiResponse::json($data);
-    }
-
-    public function postCheckTerminalEncryptedValue($id)
-    {
-        $input = Request::all();
-
-        $data = (new Terminal\Service)->checkTerminalEncryptedValue($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -470,7 +436,7 @@ class MerchantController extends Controller
         $data['checkout'] = $url;
         $data['framejs'] = $url . $framejs;
         $data['css'] = $url . $css;
-        $data['font'] = 'https://cdn.razorpay.com/lato3';
+        $data['font'] = 'https://cdn.razorpay.com/lato';
 
         return $data;
     }

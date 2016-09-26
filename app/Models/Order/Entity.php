@@ -96,7 +96,7 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
-    public function payment()
+    public function payments()
     {
         return $this->hasMany('RZP\Models\Payment\Entity');
     }

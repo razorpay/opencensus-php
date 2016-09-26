@@ -2,12 +2,14 @@
 
 namespace RZP\Constants;
 
+use App;
+
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Gateway;
-use RZP\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models;
+use Trace;
 
 class Entity
 {
@@ -28,6 +30,7 @@ class Entity
     const PAYMENT               = 'payment';
     const WEBHOOK               = 'webhook';
     const INVOICE               = 'invoice';
+    const ADDRESS               = 'address';
     const EMI_PLAN              = 'emi_plan';
     const MERCHANT              = 'merchant';
     const TERMINAL              = 'terminal';
@@ -44,14 +47,16 @@ class Entity
     const DAILY_SETTLEMENT      = 'daily_settlement';
     const PAYMENT_ANALYTICS     = 'payment_analytics';
     const SETTLEMENT_DETAILS    = 'settlement_details';
+    const TERMINAL_ANALYTICS    = 'terminal_analytics';
 
     //
     // Gateway entities
     //
 
+    const EBS                   = 'ebs';
+    const UPI                   = 'upi';
     const ATOM                  = 'atom';
     const HDFC                  = 'hdfc';
-    const EBS                   = 'ebs';
     const AMEX                  = 'amex';
     const PAYTM                 = 'paytm';
     const SHARP                 = 'sharp';
@@ -59,16 +64,20 @@ class Entity
     const BILLDESK              = 'billdesk';
     const MOBIKWIK              = 'mobikwik';
     const AXIS_MIGS             = 'axis_migs';
-    const AXIS_GENIUS           = 'axis_genius';
+    const UPI_ICICI             = 'upi_icici';
     const NETBANKING            = 'netbanking';
+    const AXIS_GENIUS           = 'axis_genius';
     const CYBERSOURCE           = 'cybersource';
     const WALLET_PAYZAPP        = 'wallet_payzapp';
-    const NETBANKING_HDFC       = 'netbanking_hdfc';
-    const NETBANKING_KOTAK      = 'netbanking_kotak';
-    const WALLET_PAYUMONEY      = 'wallet_payumoney';
     const WALLET_OLAMONEY       = 'wallet_olamoney';
+    const NETBANKING_HDFC       = 'netbanking_hdfc';
+    const WALLET_PAYUMONEY      = 'wallet_payumoney';
+    const NETBANKING_KOTAK      = 'netbanking_kotak';
+    const WALLET_AIRTELMONEY    = 'wallet_airtelmoney';
 
     public static $namespace = array(
+        self::UPI                   => \RZP\Gateway\Upi\Base::class,
+        self::EBS                   => \RZP\Gateway\Ebs::class,
         self::IIN                   => \RZP\Models\Card\IIN::class,
         self::ATOM                  => \RZP\Gateway\Atom::class,
         self::AMEX                  => \RZP\Gateway\Amex::class,
@@ -85,10 +94,10 @@ class Entity
         self::PRICING               => \RZP\Models\Pricing::class,
         self::WEBHOOK               => \RZP\Models\Merchant\Webhook::class,
         self::BILLDESK              => \RZP\Gateway\Billdesk::class,
-        self::EBS                   => \RZP\Gateway\Ebs::class,
         self::CUSTOMER              => \RZP\Models\Customer::class,
         self::EMI_PLAN              => \RZP\Models\Emi::class,
         self::MOBIKWIK              => \RZP\Gateway\Mobikwik::class,
+        self::UPI_ICICI             => \RZP\Gateway\Upi\Icici::class,
         self::AXIS_MIGS             => \RZP\Gateway\AxisMigs::class,
         self::APP_TOKEN             => \RZP\Models\Customer\AppToken::class,
         self::NETBANKING            => \RZP\Gateway\Netbanking\Base::class,
@@ -98,22 +107,27 @@ class Entity
         self::BANK_ACCOUNT          => \RZP\Models\BankAccount::class,
         self::WALLET_PAYZAPP        => \RZP\Gateway\Wallet\Payzapp::class,
         self::TERMINAL_ACTION       => \RZP\Models\Terminal\Action::class,
+        self::GATEWAY_ABSENCE       => \RZP\Models\GatewayStatus\Absence::class,
         self::NETBANKING_HDFC       => \RZP\Gateway\Netbanking\Hdfc::class,
+        self::WALLET_OLAMONEY       => \RZP\Gateway\Wallet\Olamoney::class,
         self::GATEWAY_ABSENCE       => \RZP\Models\GatewayStatus\Absence::class,
         self::DAILY_SETTLEMENT      => \RZP\Models\Settlement\Daily::class,
         self::NETBANKING_KOTAK      => \RZP\Gateway\Netbanking\Kotak::class,
         self::WALLET_PAYUMONEY      => \RZP\Gateway\Wallet\Payumoney::class,
-        self::WALLET_OLAMONEY       => \RZP\Gateway\Wallet\Olamoney::class,
         self::PAYMENT_ANALYTICS     => \RZP\Models\Payment\Analytics::class,
+        self::WALLET_AIRTELMONEY    => \RZP\Gateway\Wallet\Airtelmoney::class,
         self::SETTLEMENT_DETAILS    => \RZP\Models\Settlement\Details::class,
+        self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
     );
 
     protected static $repository = array(
-        self::WALLET_PAYZAPP    => \RZP\Gateway\Wallet\Base::class,
-        self::NETBANKING_HDFC   => \RZP\Gateway\Netbanking\Base::class,
-        self::NETBANKING_KOTAK  => \RZP\Gateway\Netbanking\Base::class,
-        self::WALLET_PAYUMONEY  => \RZP\Gateway\Wallet\Base::class,
-        self::WALLET_OLAMONEY   => \RZP\Gateway\Wallet\Base::class,
+        self::UPI_ICICI          => \RZP\Gateway\Upi\Base::class,
+        self::WALLET_PAYZAPP     => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_OLAMONEY    => \RZP\Gateway\Wallet\Base::class,
+        self::NETBANKING_HDFC    => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_KOTAK   => \RZP\Gateway\Netbanking\Base::class,
+        self::WALLET_PAYUMONEY   => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_AIRTELMONEY => \RZP\Gateway\Wallet\Base::class,
     );
 
     public static function getEntityNamespace($entity)
@@ -152,15 +166,15 @@ class Entity
         return new $class;
     }
 
-    public static function getEntityRepository($entity)
+    public static function getEntityRepository($entity, $repositoryType = 'Repository')
     {
-        $class = self::getEntityNamespace($entity) . '\Repository';
+        $class = self::getEntityNamespace($entity) . '\\' . $repositoryType;
 
         if (class_exists($class) === false)
         {
             if (isset(self::$repository[$entity]))
             {
-                $class = self::$repository[$entity] . '\Repository';
+                $class = self::$repository[$entity] . '\\' . $repositoryType;
             }
             else
             {
@@ -172,11 +186,16 @@ class Entity
         return $class;
     }
 
+    public static function getEntityEsRepository($entity)
+    {
+        return self::getEntityRepository($entity, 'EsRepository');
+    }
+
     public static function validateIsEntity($entity)
     {
         if (self::isValidEntity($entity) === false)
         {
-            Trace::error(
+            App::getFacadeRoot()['trace']->error(
                 TraceCode::ERROR_INVALID_ARGUMENT,
                 ['entity' => $entity]);
 

@@ -10,11 +10,11 @@ use libphonenumber\PhoneNumberFormat;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        Entity::CONTACT         => 'sometimes|contact_syntax',
-        Entity::NAME            => 'sometimes|alpha_space_num|max:50',
-        Entity::EMAIL           => 'sometimes|email',
-        Entity::NOTES           => 'sometimes|notes',
-        Entity::ADDRESS         => 'sometimes',
+        Entity::CONTACT             => 'sometimes|contact_syntax',
+        Entity::NAME                => 'sometimes|alpha_space_num|max:50',
+        Entity::EMAIL               => 'sometimes|email',
+        Entity::NOTES               => 'sometimes|notes',
+        Entity::SHIPPING_ADDRESS    => 'sometimes',
     );
 
     protected static $editRules = array(

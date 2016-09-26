@@ -27,6 +27,8 @@ use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Status;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Payment\Analytics;
+use RZP\Models\Payment\Analytics\Entity as AnalyticsEntity;
+use RZP\Models\Payment\TerminalAnalytics;
 
 use RZP\Error;
 use RZP\Exception;
@@ -77,6 +79,16 @@ trait Authorize
 
         $request = null;
 
+        $retry = false;
+
+        // We are attempting to rotate across multiple terminals to get a successful payment here.
+        // For each of the terminals tried, we want to record the terminal metrics using recordTerminalAudit()
+        // At the end of a successful/failed payment, we want to record the payment details
+        // using createAnalyticsLog. There could be cases where terminal #1 failed and terminal #2 succeeded.
+        // In the above scenario, we will have 2 records in terminal analytics, but only one record
+        // for the entire payment in payment analytics. The terminal chosen here in payment analytics
+        // will be the last terminal tried.
+
         while ($retryAttempts < $maxRetryAttempts)
         {
             $terminalGatewayInput = $gatewayInput;
@@ -87,7 +99,7 @@ trait Authorize
 
             $this->runPostGatewaySelectionPreProcessing($payment, $terminalGatewayInput);
 
-            // data for analytics
+            // data for payment analytics
             $rawData = [
                             'payment_id' => $payment['id'],
                             'input' => $input,
@@ -103,22 +115,22 @@ trait Authorize
                 return $request;
             }
 
-            $start = microtime();
+            $terminalData = $rawData;
 
-            $terminalData = ['start' => $start];
-
-            $rawData['terminal_data'] = $terminalData;
+            $terminalData['start'] = microtime(true);
 
             try
             {
                 $request = $this->callGatewayAuthorize($terminalGatewayInput);
+
+                $retry = false;
 
                 break;
             }
             catch (Exception\GatewayRequestException $e)
             {
                 // record a failed payment for given terminal and continue
-                $rawData['terminal_data']['exception'] = $e;
+                $terminalData['exception'] = $e;
 
                 $retryAttempts += 1;
 
@@ -138,16 +150,21 @@ trait Authorize
                 // An error occurred on gateway due to user or gateway.
                 // We need to record this and mark payment as failed.
                 //
-                $rawData['terminal_data']['exception'] = $e;
+                $terminalData['exception'] = $e;
 
                 $this->updatePaymentAuthFailedAndThrowException($e);
             }
             finally
             {
-                // record a successful payment here for the given terminal id
-                $rawData['terminal_data']['end'] = microtime();
+                $terminalData['end'] = microtime(true);
 
-                $this->createAnalyticsLog($rawData);
+                $this->recordTerminalAudit($terminalData);
+
+                if (($retry === false) or
+                    ($retryAttempts >= $maxRetryAttempts))
+                {
+                    $this->createAnalyticsLog($rawData);
+                }
             }
         }
 
@@ -157,7 +174,7 @@ trait Authorize
     protected function logAndCheckForAuthRetry($e, $payment)
     {
         $traceData = array(
-            'errorcode'     => $e->getCode(),
+            'error_code'    => $e->getCode(),
             'message'       => $e->getMessage(),
             'payment_id'    => $payment->getId(),
             'terminal_id'   => $payment->terminal->getId()
@@ -167,14 +184,12 @@ trait Authorize
 
         // retry only if it is safe to do so
         return ((property_exists($e, 'safeRetry') === true) and
-                ($e->safeRetry === true));
+                ($e->getSafeRetry() === true));
     }
 
     protected function updatePaymentAuthFailedAndThrowException($e)
     {
-        $this->updatePaymentFailed(
-            $e->getError(),
-            TraceCode::PAYMENT_AUTH_FAILURE);
+        $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
 
         throw $e;
     }
@@ -222,7 +237,7 @@ trait Authorize
     {
         if ($this->shouldAutoCapture($payment) === true)
         {
-            // If payment is signed or capture was sent as true in order,
+            // If payment_capture was sent as true in order,
             // then we capture it in this step only.
             $this->autoCapturePayment($payment);
         }
@@ -337,7 +352,7 @@ trait Authorize
         // International card validation happens here because we want to save the failure.
         // For payment creation, gateway is compulsory field which is only finalized in
         // previous step.
-        $this->validateInternationalAllowed($payment);
+        $this->runInternationalChecks($payment);
 
         // Fees validation can only happen after international validation has gone through
         // otherwise can cause issues with international pricing rule being not available when
@@ -416,25 +431,45 @@ trait Authorize
         return $phoneBook;
     }
 
-    protected function validateInternationalAllowed($payment)
+    protected function runInternationalChecks($payment)
     {
-        if ($payment->getMethod() !== Method::CARD)
+        // return if method is not card or card is not international
+        if (($payment->getMethod() !== Method::CARD) or
+            ($payment->card->isInternational() === false))
         {
             return;
         }
 
-        $card = $payment->card;
+        $this->validateInternationalAllowed($payment);
+
+        $this->validateFraudDetection($payment);
+
+        $this->validateBlockedInternationalCard($payment->card);
+    }
+
+    protected function validateInternationalAllowed($payment)
+    {
         $merchant = $payment->merchant;
 
-        if (($card->isInternational() === true) and
-            ($merchant->isInternational() === false))
+        if ($merchant->isInternational() === false)
         {
             $e = new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED);
 
-            $this->updatePaymentFailed(
-                    $e->getError(),
-                    TraceCode::PAYMENT_AUTH_FAILURE);
+            $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
+
+            throw $e;
+        }
+    }
+
+    protected function validateBlockedInternationalCard($card)
+    {
+        if ($card->isBlocked())
+        {
+            $e = new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD);
+
+            $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
 
             throw $e;
         }
@@ -503,7 +538,7 @@ trait Authorize
             $this->preProcessPaymentForGlobalCustomer($customer, $customerApp, $payment, $input, $gatewayInput);
         }
 
-        if ($payment->isEmi())
+        if ($payment->isEmi() === true)
         {
             $cardNumber = $gatewayInput['card']['number'];
 
@@ -511,6 +546,8 @@ trait Authorize
 
             $this->setBankAndEmiPlanDetails($payment, $cardNumber, $emiDuration);
         }
+
+        $payment->setInternational();
     }
 
     protected function preProcessPaymentWithoutSaving($payment, & $input, array & $gatewayInput)
@@ -759,6 +796,10 @@ trait Authorize
                 $this->verifyEmiEnabled($input);
                 break;
 
+            case Payment\Method::UPI:
+                $this->verifyUpiEnabled();
+                break;
+
             default:
                 throw new Exception\LogicException(
                     'Should not reach here.',
@@ -840,6 +881,35 @@ trait Authorize
 
     protected function getPaymentGatewayRequestData($request, $payment)
     {
+        if (Payment\Gateway::supportsAsync($payment->getGateway()))
+        {
+            return $this->getAsyncPaymentCreatedResponse($request, $payment);
+        }
+
+        return $this->getFirstPaymentCreatedResponse($request, $payment);
+    }
+
+    /**
+     * @see  CoProto supports async payments https://github.com/razorpay/api/wiki/COPROTO
+     * @return array payment response
+     */
+    protected function getAsyncPaymentCreatedResponse($request, Payment\Entity $payment)
+    {
+        $id = $payment->getPublicId();
+
+        return [
+            'type'          => 'async',
+            'version'       => 1,
+            'payment_id'    => $id,
+            'request'       => [
+                'url'    => Route::getUrl('payment_get_status', ['id' => $id]),
+                'method' => 'GET',
+            ]
+        ];
+    }
+
+    protected function getFirstPaymentCreatedResponse($request, Payment\Entity $payment)
+    {
         $data['type'] = 'first';
 
         $data['request'] = $request;
@@ -857,6 +927,26 @@ trait Authorize
         $data['image'] = $payment->merchant->getFullLogoUrlWithSize(Merchant\Logo::MEDIUM_SIZE);
 
         return $data;
+    }
+
+    protected function updateTokenOnAuthorized()
+    {
+        $payment = $this->payment;
+
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
+        // update token stats, assuming same token is not getting used in
+        // multiple payments, actually we should locking
+        if ($token !== null)
+        {
+            $createdAt = $payment->getCreatedAt();
+
+            $token->setUsedAt($createdAt);
+
+            $token->incrementUsedCount();
+
+            $this->repo->saveOrFail($token);
+        }
     }
 
     protected function updateAndNotifyPaymentAuthorized($wasFailed = false)
@@ -892,9 +982,17 @@ trait Authorize
         // Auto capture payment, if applicable
         $this->autoCapturePaymentIfApplicable($payment);
 
-        //
-        // If it's signed payment, then we return signed data from our
-        // end as well.
+        return $this->processAuthorizeResponse($payment);
+    }
+
+    /**
+     * Returns the proper response to checkout
+     * in case of the payment is authorized
+     * @param  Payment\Entity $payment
+     * @return array
+     */
+    protected function processAuthorizeResponse($payment)
+    {
         //
         // If callback url has been set, then we need to redirect
         // to the callback url and prepare data using coproto protocol.
@@ -902,18 +1000,11 @@ trait Authorize
         // Otherwise we simply return 'razorpay_payment_id' as is normal.
         //
 
-        // @todo: Remove this code once hosted integration
-        //        using order and receipt goes live.
-        if ($payment->isSigned())
-        {
-            return $this->getReturnDataForSignedPayment($payment);
-        }
+        $returnData = [
+            'razorpay_payment_id' => $payment->getPublicId()
+        ];
 
-        $returnData = ['razorpay_payment_id' => $payment->getPublicId()];
-
-        // @todo: Shift to using auto-capture flag in payment
-        if (($payment->order !== null) and
-            ($payment->order->getPaymentCapture() === true))
+        if ($payment->getAutoCaptured() === true)
         {
             $this->fillReturnDataForAutoCaptureOrders($payment, $returnData);
         }
@@ -924,20 +1015,6 @@ trait Authorize
         }
 
         return $returnData;
-    }
-
-    protected function getReturnDataForSignedPayment($payment)
-    {
-        $data = array(
-            'razorpay_payment_id' => $payment->getPublicId(),
-            'amount'              => $payment->getAmount(),
-            'currency'            => $payment->getCurrency(),
-            'merchant_order_id'   => $payment->getNotes()['merchant_order_id'],
-        );
-
-        $data['signature'] = $this->getSignature($data);
-
-        return $data;
     }
 
     protected function fillReturnDataForAutoCaptureOrders($payment, & $data)
@@ -1048,19 +1125,24 @@ trait Authorize
             ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
     }
 
-    protected function recordTerminalAudit(array $rawData, array & $log)
+
+    protected function recordTerminalAudit($terminalData)
     {
-        if (isset($rawData['terminal_data']))
+        try
         {
-            $terminalData = $rawData['terminal_data'];
+            $log = [
+                TerminalAnalytics\Entity::PAYMENT_ID    => $terminalData['payment_id'],
+                TerminalAnalytics\Entity::TERMINAL_ID   => $terminalData['terminal_id']
+            ];
 
-            $responseTime = $terminalData['end'] - $terminalData['start'];
+            // convert difference to milliseconds to record as integer
+            $responseTime = (int) (($terminalData['end'] - $terminalData['start']) * 1000);
 
-            $log['terminal_response_time'] = $responseTime;
+            $log[TerminalAnalytics\Entity::TERMINAL_RESPONSE_TIME] = $responseTime;
 
-            $log['payment_type'] = 1;
+            $log[TerminalAnalytics\Entity::PAYMENT_TYPE] = 1;
 
-            $log['terminal_status'] = 1;
+            $log[TerminalAnalytics\Entity::TERMINAL_STATUS] = 1;
 
             $errorCode = null;
 
@@ -1070,14 +1152,25 @@ trait Authorize
             {
                 $e = $terminalData['exception'];
 
-                $log['terminal_status'] = 0;
+                $log[TerminalAnalytics\Entity::TERMINAL_STATUS] = 0;
 
                 // we care about this exception, since its an indicator of
                 // terminal failure
-                $log['terminal_status_code'] = $e->getError()->getHttpStatusCode();
+                $log[TerminalAnalytics\Entity::TERMINAL_STATUS_CODE] = $e->getError()->getHttpStatusCode();
 
-                $log['terminal_status_msg'] = $e->getError()->getDescription();
+                $log[TerminalAnalytics\Entity::TERMINAL_STATUS_MSG] = $e->getError()->getDescription();
             }
+
+            (new TerminalAnalytics\Core)->create($log);
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->warning(
+                TraceCode::TERMINAL_ANALYTICS_SAVE_FAILED,
+                ['terminalData' => $terminalData]
+            );
+
+            $this->trace->traceException($e);
         }
     }
 
@@ -1086,28 +1179,39 @@ trait Authorize
         try
         {
             $log = [
-                'payment_id'    => $rawData['payment_id'],
-                'terminal_id'   => $rawData['terminal_id'],
+                AnalyticsEntity::PAYMENT_ID     => $rawData['payment_id'],
+                AnalyticsEntity::TERMINAL_ID    => $rawData['terminal_id'],
             ];
 
-            // 1. Record terminal data
-            $this->recordTerminalAudit($rawData, $log);
+            $row = (new Analytics\Service)->createAuditLog($log, $rawData);
 
-            // 2. Record payment actions
-            (new Analytics\Parser)->recordPaymentRequestData($rawData, $log);
+            // log invalid data
+            $invalidData = [];
 
-            // Create log
-            (new Analytics\Service)->createAuditLog($log);
+            foreach ($row as $key => $value) {
+                if (Analytics\Metadata::isInvalidValue($value))
+                {
+                    $invalidData[$key] = $value;
+                }
+            }
+
+            if (empty($invalidData) === false)
+            {
+                $checkoutMetadataToLog = null;
+
+                if (isset($rawData['input']) and isset($rawData['input']['_']))
+                {
+                    $checkoutMetadataToLog = $rawData['input']['_'];
+                }
+
+                $this->trace->warning(TraceCode::PAYMENT_ANALYTICS_UNRECOGNIZED_DATA,
+                    ['invalid_data' => $invalidData,
+                     'raw_data'     => $checkoutMetadataToLog]);
+            }
         }
         catch (\Exception $e)
         {
-            $this->trace->error(
-                TraceCode::PAYMENT_ANALYTICS_SAVE_FAILED,
-                [
-                    'raw_data' => $rawData
-                ]);
-
-            $this->trace->traceException($e);
+            $this->trace->traceException($e, Trace::WARNING, TraceCode::PAYMENT_ANALYTICS_SAVE_FAILED);
         }
     }
 
@@ -1187,9 +1291,7 @@ trait Authorize
         }
         catch (Exception\BaseException $e)
         {
-            $this->updatePaymentFailed(
-                    $e->getError(),
-                    TraceCode::PAYMENT_AUTH_FAILURE);
+            $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
 
             throw $e;
         }
@@ -1318,6 +1420,18 @@ trait Authorize
         $this->checkAndValidateAmexIfNotEnabled($merchantMethods, $input['card']);
     }
 
+    protected function verifyUpiEnabled()
+    {
+        $merchantMethods = $this->methods;
+
+        if (($merchantMethods === null) or
+            ($merchantMethods->isUPIEnabled() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_UPI_NOT_ENABLED_FOR_MERCHANT);
+        }
+    }
+
     protected function verifyCardEnabledInLive($payment, $input)
     {
         $card = $payment->card;
@@ -1379,14 +1493,6 @@ trait Authorize
         }
     }
 
-    protected function checkForMerchantCallbackUrl($payment)
-    {
-        if ($payment->getCallbackUrl() !== null)
-        {
-            $this->app['rzp.merchant_callback_url'] = $payment->getCallbackUrl();
-        }
-    }
-
     protected function savePaymentAndCard()
     {
         $this->repo->saveOrFail($this->payment->card);
@@ -1417,17 +1523,9 @@ trait Authorize
 
             $payment->terminal->incrementUsedCount();
 
-            if ($wasFailed === true)
-            {
-                $payment->setLateAuthorized(true);
-            }
-            else
-            {
-                $payment->setLateAuthorized(false);
-            }
-
-            $this->repo->saveOrFail($payment);
-            $this->repo->saveOrFail($payment->terminal);
+            // If payment was earlier failed, then that means it's
+            // getting authorized late.
+            $payment->setLateAuthorized($wasFailed);
 
             //
             // If gateway is authorizing the payment (basically, no authAndCapture support), create transaction.
@@ -1441,6 +1539,9 @@ trait Authorize
             }
 
             $this->repo->saveOrFail($payment);
+            $this->repo->saveOrFail($payment->terminal);
+
+            $this->updateTokenOnAuthorized();
 
             // If payment has an associated order
             // set the order to be paid
@@ -1476,12 +1577,11 @@ trait Authorize
         return Crypt::encrypt($gateway . '__' . time());
     }
 
-
-    protected function verifyHash($hash, $paymentPublicId)
+    protected function verifyHash($inputHash, $paymentPublicId)
     {
         $expectedHash = $this->getHashOf($paymentPublicId);
 
-        if ($expectedHash !== $hash)
+        if (hash_equals($expectedHash, $inputHash) !== true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Callback payment hash does not match. Please notify the admin of this error.');

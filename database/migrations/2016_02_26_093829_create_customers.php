@@ -41,7 +41,7 @@ class CreateCustomers extends Migration {
 
             $table->text(Customer::NOTES);
 
-            $table->boolean(Customer::ACTIVE)
+            $table->tinyInteger(Customer::ACTIVE)
                   ->default(1);
 
             $table->integer(Customer::CREATED_AT);

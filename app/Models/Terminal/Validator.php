@@ -5,6 +5,7 @@ namespace RZP\Models\Terminal;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base;
+use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 
@@ -24,18 +25,21 @@ class Validator extends Base\Validator
         Entity::CARD                        => 'sometimes|boolean',
         Entity::NETBANKING                  => 'sometimes|boolean',
         Entity::EMI                         => 'sometimes|boolean',
+        Entity::UPI                         => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
         Entity::SHARED                      => 'sometimes|boolean',
-        Entity::GATEWAY_ACQUIRER            => 'sometimes|string',
+        Entity::GATEWAY_ACQUIRER            => 'sometimes|string|max:30',
+        Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
     );
 
     protected static $editTerminalGateways = array(
         Payment\Gateway::HDFC,
         Payment\Gateway::AXIS_MIGS,
+        Payment\Gateway::UPI_ICICI,
     );
 
     protected static $createValidators = array(
-        Entity::GATEWAY, Entity::EMI);
+        Entity::GATEWAY, Entity::EMI, Entity::NETWORK_CATEGORY);
 
     protected static $hdfcTerminalRules = array(
         Entity::GATEWAY                     => 'required|in:hdfc',
@@ -49,7 +53,7 @@ class Validator extends Base\Validator
 
     protected static $billdeskTerminalRules = array(
         Entity::GATEWAY                     => 'required|in:billdesk',
-        Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|min:2'
+        Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|min:2',
     );
 
     protected static $ebsTerminalRules = array(
@@ -107,6 +111,12 @@ class Validator extends Base\Validator
         Entity::CARD                        => 'sometimes|boolean|in:1',
     );
 
+    protected static $upiIciciEditTerminalRules = array(
+        Entity::GATEWAY                     => 'sometimes|in:upi_icici',
+        Entity::UPI                         => 'sometimes|boolean|in:1',
+        Entity::GATEWAY_TERMINAL_ID         => 'sometimes',
+    );
+
     protected static $walletPayzappTerminalRules = array(
         Entity::GATEWAY                     => 'required|in:wallet_payzapp',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string|size:21',
@@ -131,6 +141,11 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACCESS_CODE         => 'required|string',
     );
 
+    protected static $walletAirtelmoneyTerminalRules = array(
+        Entity::GATEWAY                     => 'required|in:wallet_airtelmoney',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+    );
+
     protected function validateGateway($input)
     {
         if (Payment\Gateway::isValidGateway($input['gateway']) === false)
@@ -145,7 +160,8 @@ class Validator extends Base\Validator
             $input['shared'],
             $input['netbanking'],
             $input['merchant_id'],
-            $input['category']);
+            $input['category'],
+            $input[Entity::NETWORK_CATEGORY]);
 
         $op = $input['gateway'] . '_terminal';
 
@@ -199,6 +215,28 @@ class Validator extends Base\Validator
                 $this->matchGatewayForNewTerminal($this->entity, $existing);
             }
         }
+    }
+
+    /**
+     * Does not use custom validator as the other parameters of input are required
+     * to decide validity.
+     *
+     * @param array $input
+     * @return void
+     * */
+    public function validateNetworkCategory($input)
+    {
+        if (empty($input[Entity::NETWORK_CATEGORY]) === true)
+        {
+            return;
+        }
+
+        if (Category::isNetworkCategoryValid($input) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Category provided invalid for gateway',
+                Entity::NETWORK_CATEGORY);
+            }
     }
 
     protected function matchGatewayForNewTerminal($new, $existing)

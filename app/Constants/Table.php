@@ -17,6 +17,7 @@ class Table
     const PRICING                   = 'pricing';
     const PAYMENT                   = 'payments';
     const WEBHOOK                   = 'webhooks';
+    const ADDRESS                   = 'addresses';
     const MERCHANT                  = 'merchants';
     const TERMINAL                  = 'terminals';
     const CUSTOMER                  = 'customers';
@@ -33,6 +34,7 @@ class Table
 
     // Gateway related
 
+    const UPI                       = 'upi';
     const EBS                       = 'ebs';
     const ATOM                      = 'atom';
     const HDFC                      = 'hdfc';
@@ -52,9 +54,9 @@ class Table
 
     // Terminal Performance
     const TERMINAL_ACTION           = 'terminal_action_logs';
-    // TODO: Confirm with vv if it's okay to change the table now at this point of time.
     const GATEWAY_STATUS_ABSENCE    = 'gatewaystatus_absence';
 
     // Payment Analytics
     const PAYMENT_ANALYTICS         = 'payment_analytics';
+    const TERMINAL_ANALYTICS        = 'terminal_analytics';
 }

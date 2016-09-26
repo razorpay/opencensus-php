@@ -58,7 +58,7 @@ class AnalyticsTest extends TestCase
 
         $requestServer = [
                             'HTTP_USER_AGENT'   => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
-                            'HTTP_REFERER'      => 'https://razorpay.com/demo'
+                            'HTTP_REFERER'      => 'https://pay.com/demo'
                         ];
 
         $payment['_'][AnalyticsEntity::LIBRARY] = 'checkoutjs';
@@ -96,7 +96,7 @@ class AnalyticsTest extends TestCase
 
         $requestServer = [
                             'HTTP_USER_AGENT'   => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
-                            'HTTP_REFERER'      => 'https://razorpay.com/demo'
+                            'HTTP_REFERER'      => 'https://pay.com/demo'
                         ];
 
         $payment['_'][AnalyticsEntity::LIBRARY] = 'checkoutjs';
@@ -141,5 +141,28 @@ class AnalyticsTest extends TestCase
         $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
 
         $this->assertTestResponse($paymentAnalytic, 'testDataForUserAgentAnomaly');
+    }
+
+    public function testHttpRequestDataForInvalidData()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['_'][AnalyticsEntity::LIBRARY] = 'unknown_library';
+
+        $payment['_'][AnalyticsEntity::PLATFORM] = 'unknown_platform';
+
+        $payment['_'][AnalyticsEntity::INTEGRATION] = 'unknown_integration';
+
+        $payment['_'][AnalyticsEntity::BROWSER] = 'unknown_browser';
+
+        $payment['_'][AnalyticsEntity::OS] = 'unknown_os';
+
+        $payment['_'][AnalyticsEntity::DEVICE] = 'unknown_device';
+
+        $payment = $this->doAuthPayment($payment);//, $requestServer);
+
+        $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
+
+        $this->assertTestResponse($paymentAnalytic, 'testHttpRequestDataForInvalidData');
     }
 }

@@ -101,6 +101,18 @@ class Pricing extends Base
                         'percent_rate'        => 250,
                         'fixed_rate'          => 0,
                     ),
+                    array(
+                        'id' => '1zE3CYqf1zbyaF',
+                        'plan_id' => '1hDYlICobzOCYt',
+                        'plan_name' => 'testDefaultPlan',
+                        'feature'   =>  'payment',
+                        'payment_method' => 'upi',
+                        'payment_method_type' => null,
+                        'payment_network' => null,
+                        'payment_issuer' => null,
+                        'percent_rate' => 250,
+                        'fixed_rate' => 0,
+                    ),
 
                 );
 
