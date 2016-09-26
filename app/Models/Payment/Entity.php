@@ -25,6 +25,7 @@ class Entity extends Base\PublicEntity
     const AMOUNT_REFUNDED       = 'amount_refunded';
     const STATUS                = 'status';
     const ORDER_ID              = 'order_id';
+    const INTERNATIONAL         = 'international';
     const METHOD                = 'method';
     const REFUND_STATUS         = 'refund_status';
     const CAPTURED              = 'captured';
@@ -40,6 +41,7 @@ class Entity extends Base\PublicEntity
     const TOKEN                 = 'token';
     const TOKEN_ID              = 'token_id';
     const GLOBAL_TOKEN_ID       = 'global_token_id';
+    const VPA                   = 'vpa';
     const EMAIL                 = 'email';
     const CONTACT               = 'contact';
     const NOTES                 = 'notes';
@@ -89,6 +91,7 @@ class Entity extends Base\PublicEntity
         self::WALLET,
         self::CURRENCY,
         self::DESCRIPTION,
+        self::VPA,
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
@@ -118,6 +121,7 @@ class Entity extends Base\PublicEntity
         self::APP_TOKEN,
         self::TOKEN_ID,
         self::GLOBAL_TOKEN_ID,
+        self::VPA,
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
@@ -133,6 +137,7 @@ class Entity extends Base\PublicEntity
         self::TRANSACTION_ID,
         self::AUTO_CAPTURED,
         self::ORDER_ID,
+        self::INTERNATIONAL,
         self::SIGNED,
         self::VERIFIED,
         self::CALLBACK_URL,
@@ -153,6 +158,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::STATUS,
         self::ORDER_ID,
+        self::INTERNATIONAL,
         self::METHOD,
         self::AMOUNT_REFUNDED,
         self::REFUND_STATUS,
@@ -161,6 +167,7 @@ class Entity extends Base\PublicEntity
         self::CARD_ID,
         self::BANK,
         self::WALLET,
+        self::VPA,
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
@@ -202,6 +209,7 @@ class Entity extends Base\PublicEntity
         self::EMI_PLAN_ID       => null,
         self::LATE_AUTHORIZED   => null,
         self::RECURRING         => false,
+        self::INTERNATIONAL     => null,
     );
 
     protected $amounts = array(
@@ -222,6 +230,7 @@ class Entity extends Base\PublicEntity
         self::FEE               => 'int',
         self::SERVICE_TAX       => 'int',
         self::SAVE              => 'bool',
+        self::INTERNATIONAL     => 'bool',
     ];
 
 // --------------------- Generators --------------------------------------------
@@ -319,6 +328,13 @@ class Entity extends Base\PublicEntity
 // --------------------- Modifiers Ends ----------------------------------------
 
 // ----------------------- Setters ---------------------------------------------
+
+    public function setInternational()
+    {
+        $isInternational = $this->isMethodCardOrEmi() ? $this->card->isInternational() : false;
+
+        $this->setAttribute(self::INTERNATIONAL, $isInternational);
+    }
 
     public function setCaptureAmount($amount)
     {
@@ -582,9 +598,28 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::STATUS) == Status::CREATED);
     }
 
+    /**
+     * A payment is considered just created for 5
+     * minutes since creation
+     * @return bool
+     */
+    public function justCreated()
+    {
+        $currentTime = time();
+
+        $secondsSinceCreated = $currentTime - $this->getAttribute(self::CREATED_AT);
+
+        return (bool) ($secondsSinceCreated <= (Processor\Processor::ASYNC_PAYMENT_TIMEOUT));
+    }
+
     public function isAuthorized()
     {
         return ($this->getAttribute(self::STATUS) === Status::AUTHORIZED);
+    }
+
+    public function isCreatedOrAuthorized()
+    {
+        return ($this->isCreated() or $this->isAuthorized());
     }
 
     public function hasBeenAuthorized()
@@ -663,6 +698,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::METHOD) === Payment\Method::EMI);
     }
 
+    public function isUpi()
+    {
+        return ($this->getAttribute(self::METHOD) === Payment\Method::UPI);
+    }
+
     public function isGateway($gateway)
     {
         return ($this->getAttribute(self::GATEWAY) === $gateway);
@@ -686,6 +726,7 @@ class Entity extends Base\PublicEntity
 
     public function isInternational()
     {
+        // return $this->getAttribute(self::INTERNATIONAL);
         return $this->card->isInternational();
     }
 
@@ -770,6 +811,11 @@ class Entity extends Base\PublicEntity
     public function getEmail()
     {
         return $this->getAttribute(self::EMAIL);
+    }
+
+    public function getVpa()
+    {
+        return $this->getAttribute(self::VPA);
     }
 
     public function getContact()
@@ -857,6 +903,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CARD_ID);
     }
 
+    public function getMerchantId()
+    {
+        return $this->getAttribute(self::MERCHANT_ID);
+    }
+
     /**
      * This function returns the current payment method
      * and a detail string for that particular method
@@ -881,11 +932,17 @@ class Entity extends Base\PublicEntity
             case Method::CARD:
                 return [$method, $this->getFormattedCard()];
                 break;
+            case Method::EMI:
+                return [$method, $this->getFormattedCard()];
+                break;
             case Method::NETBANKING:
                 return [$method, $this->getBankName()];
                 break;
             case Method::WALLET:
                 return [$method, ucfirst($this->getWallet())];
+                break;
+            case Method::UPI:
+                return [$method, $this->getVpa()];
                 break;
         }
     }
@@ -1071,6 +1128,11 @@ class Entity extends Base\PublicEntity
     public function order()
     {
         return $this->belongsTo('RZP\Models\Order\Entity');
+    }
+
+    public function analytics()
+    {
+        return $this->hasOne('RZP\Models\Payment\Analytics\Entity');
     }
 
     public function customer()

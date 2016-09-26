@@ -26,6 +26,7 @@ return array(
         'sharp',
         'sbiepay',
         'wallet_olamoney',
+        'upi_icici',
         'wallet_payzapp',
         'wallet_payumoney',
         'wallet_airtelmoney',
@@ -49,6 +50,7 @@ return array(
     'mock_wallet_payzapp'     => env('PAYZAPP_MOCK'),
     'mock_wallet_payumoney'   => env('PAYUMONEY_MOCK'),
     'mock_wallet_airtelmoney' => env('AIRTELMONEY_MOCK'),
+    'mock_upi_icici'          => env('UPI_ICICI_MOCK'),
 
     'hdfc' => array(
         'test_terminal_id'  => env('HDFC_GATEWAY_TEST_TERMINAL_ID'),
@@ -119,6 +121,15 @@ return array(
         'test_hash_secret'  => env('PAYTM_GATEWAY_TEST_HASH_SECRET'),
     ),
 
+    'upi_icici' =>  array(
+        'test_merchant_id'       => env('UPI_ICICI_GATEWAY_TEST_MERCHANT_ID'),
+        'test_public_key'        => env('UPI_ICICI_TEST_PUBLIC_KEY'),
+        'test_private_key'       => env('UPI_ICICI_TEST_PRIVATE_KEY'),
+        'live_merchant_id'       => env('UPI_ICICI_GATEWAY_LIVE_MERCHANT_ID'),
+        'live_public_key'        => env('UPI_ICICI_LIVE_PUBLIC_KEY'),
+        'live_private_key'       => env('UPI_ICICI_LIVE_PRIVATE_KEY'),
+    ),
+
     'wallet_payzapp' => array(
         'pg_merchant_login_id'      => env('PAYZAPP_WALLET_PG_MERCHANT_LOGIN_ID'),
         'test_merchant_id'          => env('PAYZAPP_WALLET_TEST_MERCHANT_ID'),
@@ -147,8 +158,8 @@ return array(
         'test_hash_secret' => env('AIRTELMONEY_WALLET_TEST_HASH_SECRET'),
         'test_merchant_id' => env('AIRTELMONEY_WALLET_TEST_MERCHANT_ID'),
         'test_end_mid'     => env('AIRTELMONEY_WALLET_TEST_END_MID'),
-        'live_merchant_id' => env('AIRTELMONEY_WALLET_TEST_MERCHANT_ID'),
-        'live_hash_secret' => env('AIRTELMONEY_WALLET_TEST_HASH_SECRET'),
+        'live_merchant_id' => env('AIRTELMONEY_WALLET_LIVE_MERCHANT_ID'),
+        'live_hash_secret' => env('AIRTELMONEY_WALLET_LIVE_HASH_SECRET'),
     ),
 
     'netbanking_hdfc' => array(

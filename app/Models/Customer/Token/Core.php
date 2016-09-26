@@ -67,7 +67,7 @@ class Core extends Base\Core
 
             $token = $this->repo->token->findByIdAndMerchantId($id, $customer->merchant->getId());
 
-            assert($token->customer->getId() === $customer->getId());
+            assertTrue($token->customer->getId() === $customer->getId());
         }
 
         return $token;

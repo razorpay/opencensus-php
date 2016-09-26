@@ -25,6 +25,19 @@ class PaymentCreateTest extends TestCase
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
     }
 
+    public function testCreatePaymentWithInvalidMethod()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['method'] = 'invalid';
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testCreatePaymentCheckoutCallbackNo3dSecure()
     {
         $this->payment['card']['number'] = '555555555555558';
@@ -140,6 +153,22 @@ class PaymentCreateTest extends TestCase
 
             $response = $this->submitPaymentCallbackData($callbackUrl, 'get', []);
         });
+    }
+
+    public function testPaymentS2SOnPrivateAuth()
+    {
+        $this->ba->privateAuth();
+
+        $this->config['app.throw_exception_in_testing'] = false;
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['cvv'] = '1';
+        $content = $this->doS2SPrivateAuthPayment($payment);
+
+        $error = $content['error'];
+        $this->assertEquals($error['field'], 'cvv');
+        $this->assertEquals($error['code'], 'BAD_REQUEST_ERROR');
+        $this->assertEquals($error['description'], 'The cvv must be between 3 and 4 digits.');
     }
 
     protected function mockEsClient()

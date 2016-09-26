@@ -261,6 +261,30 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function doS2SPrivateAuthPayment($payment = null)
+    {
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $request = array(
+            'method' => 'POST',
+            'url' => '/payments/create/redirect',
+            'content' => $payment);
+
+        if (isset($server))
+        {
+            $request['server'] = $server;
+        }
+
+        $this->ba->privateAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
     protected function doAuthWalletPayment($payment = null, $wallet = 'paytm')
     {
         if ($payment === null)
@@ -342,7 +366,7 @@ trait PaymentTrait
     {
         $request = [
             'method'    => 'POST',
-            'url'       => '/payments/'.$id.'/redirect',
+            'url'       => '/payments/'.$id.'/redirect_callback',
             'content'   => []
         ];
 
@@ -362,6 +386,21 @@ trait PaymentTrait
         }
 
         return $this->getJsonContentFromResponse($response);
+    }
+
+    protected function getPaymentStatus($id)
+    {
+        $request = [
+            'method'    => 'GET',
+            'url'       => '/payments/'.$id.'/status',
+            'content'   => []
+        ];
+
+        $this->ba->publicAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
     }
 
     protected function getOtp()
@@ -625,7 +664,7 @@ trait PaymentTrait
         return $payment;
     }
 
-    protected function getDefaultPaymentArray()
+    protected function getDefaultPaymentArrayNeutral()
     {
         //
         // default payment object
@@ -633,13 +672,6 @@ trait PaymentTrait
         $payment = [
             'amount'          =>  '50000',
             'currency'        =>  'INR',
-            'card' => array(
-                'number'            => '4012001038443335',
-                'name'              => 'Harshil',
-                'expiry_month'      => '12',
-                'expiry_year'       => '2017',
-                'cvv'               => '566',
-            ),
             'email'             => 'a@b.com',
             'contact'           => '9918899029',
             'notes'             => array(
@@ -651,7 +683,22 @@ trait PaymentTrait
         return $payment;
     }
 
-    protected function getDefaultPaymentArrayEmi($saved)
+    protected function getDefaultPaymentArray()
+    {
+        $payment = $this->getDefaultPaymentArrayNeutral();
+
+        $payment['card'] = array(
+            'number'            => '4012001038443335',
+            'name'              => 'Harshil',
+            'expiry_month'      => '12',
+            'expiry_year'       => '2017',
+            'cvv'               => '566',
+        );
+
+        return $payment;
+    }
+
+    protected function getDefaultEmiPaymentArray($saved)
     {
         $card = null;
 
@@ -670,19 +717,27 @@ trait PaymentTrait
                 'cvv'               => '566');
         }
 
-        $payment = [
+        $payment = $this->getDefaultPaymentArrayNeutral();
+
+        $attributes = [
             'amount'            =>  '300000',
-            'currency'          =>  'INR',
             'method'            =>  'emi',
             'emi_duration'      =>  '9',
             'card'              => $card,
-            'email'             => 'a@b.com',
-            'contact'           => '9918899029',
-            'notes'             => array(
-                'merchant_order_id' => 'random order id'),
-            'description'       => 'random description',
             'bank'              => 'ICIC',
         ];
+
+        $payment = array_merge($payment, $attributes);
+
+        return $payment;
+    }
+
+    protected function getDefaultUpiPaymentArray()
+    {
+        $payment = $this->getDefaultPaymentArrayNeutral();
+
+        $payment['method'] = 'upi';
+        $payment['vpa'] = 'shk@hdfc';
 
         return $payment;
     }
@@ -994,6 +1049,8 @@ trait PaymentTrait
                        ->mock();
 
         $this->setMockServer($server);
+
+        return $server;
     }
 
     protected function mockServer()
@@ -1016,6 +1073,32 @@ trait PaymentTrait
     protected function resetGatewayDriver()
     {
         return $this->app['gateway']->resetDriver($this->gateway);
+    }
+
+    protected function mockMaxmind()
+    {
+        $maxmind = Mockery::mock('RZP\Services\Mock\MaxMind')->makePartial();
+
+        $maxmind->shouldReceive('query')
+              ->with(Mockery::type('RZP\Models\Payment\Entity'))
+              ->andReturnUsing(function ($payment)
+                    {
+                        $bin = $payment->card->getIin();
+
+                        $binRiskMapping = [
+                            '510510' => '22.0',
+                            '401201' => '60.3',
+                        ];
+
+                        if (isset($binRiskMapping[$bin]) === true)
+                        {
+                            return ['riskScore' => $binRiskMapping[$bin]];
+                        }
+
+                        return null;
+                    });
+
+        $this->app->instance('maxmind', $maxmind);
     }
 
     protected function mockTokenex()

@@ -4,8 +4,10 @@ namespace RZP\Models\Merchant;
 
 use Config;
 use Carbon\Carbon;
-use RZP\Exception;
 use Mail;
+
+use RZP\Base\RuntimeManager;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Settlement;
@@ -250,7 +252,7 @@ class DailyReport extends Base\Core
 
     protected function increaseAllowedSystemLimits()
     {
-        ini_set('memory_limit', '1024M');
-        set_time_limit(3000);
+        RuntimeManager::setMemoryLimit('1024M');
+        RuntimeManager::setTimeLimit(3000);
     }
 }

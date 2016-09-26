@@ -94,7 +94,7 @@ class SavedCardsPaymentCreateTest extends TestCase
         // set emi payment data
         $this->fixtures->merchant->enableEmi();
 
-        $this->payment = $this->getDefaultPaymentArrayEmi(true);
+        $this->payment = $this->getDefaultEmiPaymentArray(true);
 
         $this->payment['token'] = '10000cardtoken';
 
@@ -193,7 +193,7 @@ class SavedCardsPaymentCreateTest extends TestCase
 
         $this->fixtures->merchant->enableEmi();
 
-        $this->payment = $this->getDefaultPaymentArrayEmi(true);
+        $this->payment = $this->getDefaultEmiPaymentArray(true);
 
         $this->payment['token'] = '1000gcardtoken';
 
@@ -290,7 +290,7 @@ class SavedCardsPaymentCreateTest extends TestCase
         // sets payment data
         $this->fixtures->merchant->enableEmi();
 
-        $this->payment = $this->getDefaultPaymentArrayEmi(false);
+        $this->payment = $this->getDefaultEmiPaymentArray(false);
 
         $this->payment['save'] = 1;
 
@@ -426,7 +426,7 @@ class SavedCardsPaymentCreateTest extends TestCase
 
         $this->fixtures->merchant->enableEmi();
 
-        $this->payment = $this->getDefaultPaymentArrayEmi(false);
+        $this->payment = $this->getDefaultEmiPaymentArray(false);
 
         $this->payment['save'] = 1;
 
@@ -566,10 +566,69 @@ class SavedCardsPaymentCreateTest extends TestCase
         });
    }
 
-
-    protected function mockSession()
+    /**
+     * test card multiple payments with save card local, only one card should be saved
+     */
+    public function testCustomerFetchPaymentsInvalidApp()
     {
-        $data = [ 'test_app_token' => 'capp_1000000custapp' ];
+        // create payments and fetch on public auth
+        $this->testPaymentCreateAndSaveCardGlobal();
+
+        $this->mockSession('capp_ksjdfkjsaf');
+
+        $this->ba->publicAuth();
+
+        $request = array(
+            'url'     => '/apps/payments',
+            'method'  => 'get',
+            'content' => [
+                'skip'  => 1
+            ]);
+
+        $payments = $this->makeRequestAndGetContent($request);
+
+        // validations
+        $this->assertEquals(empty($payments), false);
+
+        $this->assertEquals($payments['entity'], 'collection');
+
+        $this->assertEquals($payments['count'], 0);
+    }
+
+    /**
+     * test card multiple payments with save card local, only one card should be saved
+     */
+    public function testPaymentsInvalidApp()
+    {
+        // create payments and fetch on public auth
+        $this->testPaymentCreateAndSaveCardGlobal();
+
+        $this->mockSession('capp_ksjdfkjsaf');
+
+        $this->ba->publicAuth();
+
+        $data = [
+            'request' => [
+                'url' => '/preferences',
+                'method' => 'get',
+            ],
+            'response' => [
+                'content' => [
+                    'http_status_code' => 200,
+                    'version' => 1
+                ],
+            ],
+        ];
+
+        $this->fixtures->merchant->editFeatures('cardsaving');
+
+        $this->runRequestResponseFlow($data);
+
+    }
+
+    protected function mockSession($appToken = 'capp_1000000custapp')
+    {
+        $data = [ 'test_app_token' => $appToken ];
 
         $this->session($data);
     }

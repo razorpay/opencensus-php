@@ -21,6 +21,7 @@ class Entity extends Base\PublicEntity
     const EMI               = 'emi';
     const DEBIT_CARD        = 'debit_card';
     const CREDIT_CARD       = 'credit_card';
+    const UPI               = 'upi';
 
     const METHODS           = 'methods';
 
@@ -44,7 +45,10 @@ class Entity extends Base\PublicEntity
         self::MOBIKWIK,
         self::OLAMONEY,
         self::EMI,
+        self::UPI,
         self::NETBANKING,
+        self::DEBIT_CARD,
+        self::CREDIT_CARD,
     );
 
     protected $visible = array(
@@ -59,7 +63,10 @@ class Entity extends Base\PublicEntity
         self::MOBIKWIK,
         self::OLAMONEY,
         self::EMI,
+        self::UPI,
         self::NETBANKING,
+        self::DEBIT_CARD,
+        self::CREDIT_CARD,
     );
 
     protected $public = array(
@@ -77,6 +84,7 @@ class Entity extends Base\PublicEntity
         self::OLAMONEY      => false,
         self::BANKS         => [],
         self::EMI           => false,
+        self::UPI           => false,
         self::NETBANKING    => true,
         self::CREDIT_CARD   => true,
         self::DEBIT_CARD    => true,
@@ -105,6 +113,7 @@ class Entity extends Base\PublicEntity
         self::PAYUMONEY   => 'bool',
         self::AIRTELMONEY => 'bool',
         self::EMI         => 'bool',
+        self::UPI         => 'bool',
     ];
 
     public function setMethods(array $input = array())
@@ -135,6 +144,11 @@ class Entity extends Base\PublicEntity
     public function isNetbankingEnabled()
     {
         return $this->getAttribute(self::NETBANKING);
+    }
+
+    public function isUpiEnabled()
+    {
+        return $this->getAttribute(self::UPI);
     }
 
     public function isWalletEnabled($wallet = null)
@@ -248,7 +262,6 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::PAYUMONEY);
     }
-
     public function getOlamoney()
     {
         return $this->getAttribute(self::OLAMONEY);
@@ -355,7 +368,7 @@ class Entity extends Base\PublicEntity
 
     public function setEmi($emi)
     {
-        assert($this->isCardEnabled(), "Cannot enable emi without Card method");
+        assertTrue($this->isCardEnabled(), "Cannot enable emi without Card method");
 
         $this->setAttribute(self::EMI, $emi);
     }
@@ -404,6 +417,8 @@ class Entity extends Base\PublicEntity
             self::PAYUMONEY,
             self::OLAMONEY,
             self::AIRTELMONEY,
+            self::EMI,
+            self::UPI,
         );
     }
 }

@@ -23,14 +23,14 @@ class Service extends Base\Service
 
     public function reconcileH2HSettlements($input)
     {
-        $collection = (new Kotak\Reconciler3)->process($input);
+        $data = (new Kotak\Reconciler3)->process($input);
 
-        return $collection->toArray();
+        return $data;
     }
 
     public function generateSettlementReconciliation($input)
     {
-        $filename = (new Kotak\ReconciliationGenerator2)->generateReconcileFile($input);
+        $filename = (new Kotak\ReconciliationGenerator)->generateReconcileFile($input);
 
         return ['setlReconciliationFile' => $filename];
     }

@@ -4,21 +4,21 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "1f71dfb77762d5fa6fa66c840602d916",
-    "content-hash": "ba3f1d3a989e85d5fa13cc44fbfd27aa",
+    "hash": "17e44c8378fe98354869573bba8e1a23",
+    "content-hash": "3f5e2dee7172e95a4ff401a30f2ca1a9",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.19.7",
+            "version": "3.19.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "33e8f7083fcb54fd926a8569cb81a0795e8c2633"
+                "reference": "4e976ef6750bb177f493f3b01476136213b8d0b9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/33e8f7083fcb54fd926a8569cb81a0795e8c2633",
-                "reference": "33e8f7083fcb54fd926a8569cb81a0795e8c2633",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/4e976ef6750bb177f493f3b01476136213b8d0b9",
+                "reference": "4e976ef6750bb177f493f3b01476136213b8d0b9",
                 "shasum": ""
             },
             "require": {
@@ -85,7 +85,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2016-09-13 20:35:16"
+            "time": "2016-09-15 21:43:53"
         },
         {
             "name": "aws/aws-sdk-php-laravel",
@@ -1335,16 +1335,16 @@
         },
         {
             "name": "maatwebsite/excel",
-            "version": "2.1.4",
+            "version": "2.1.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Maatwebsite/Laravel-Excel.git",
-                "reference": "b5c91156f6bd29f68f4f2c51186faae4310a5a68"
+                "reference": "700eba02f76f2971c81726a4f6a04121c1977e64"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Maatwebsite/Laravel-Excel/zipball/b5c91156f6bd29f68f4f2c51186faae4310a5a68",
-                "reference": "b5c91156f6bd29f68f4f2c51186faae4310a5a68",
+                "url": "https://api.github.com/repos/Maatwebsite/Laravel-Excel/zipball/700eba02f76f2971c81726a4f6a04121c1977e64",
+                "reference": "700eba02f76f2971c81726a4f6a04121c1977e64",
                 "shasum": ""
             },
             "require": {
@@ -1398,7 +1398,7 @@
                 "import",
                 "laravel"
             ],
-            "time": "2016-08-28 20:25:51"
+            "time": "2016-09-15 21:03:21"
         },
         {
             "name": "mailgun/mailgun-php",
@@ -1496,6 +1496,47 @@
                 "issues": "https://github.com/razorpay/slack/issues"
             },
             "time": "2016-08-03 16:13:57"
+        },
+        {
+            "name": "minfraud/http",
+            "version": "v1.70",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/maxmind/ccfd-api-php.git",
+                "reference": "941e9345f9c237a253be8b908ecef951698a1a99"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/maxmind/ccfd-api-php/zipball/941e9345f9c237a253be8b908ecef951698a1a99",
+                "reference": "941e9345f9c237a253be8b908ecef951698a1a99",
+                "shasum": ""
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "src/HTTPBase.php",
+                    "src/CreditCardFraudDetection.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "LGPL-2.1+"
+            ],
+            "authors": [
+                {
+                    "name": "MaxMind, Inc.",
+                    "email": "support@maxmind.com",
+                    "homepage": "http://www.maxmind.com/"
+                }
+            ],
+            "description": "MaxMind minFraud HTTP API",
+            "homepage": "https://github.com/maxmind/ccfd-api-php",
+            "keywords": [
+                "fraud",
+                "maxmind",
+                "minfraud"
+            ],
+            "time": "2015-07-21 14:49:48"
         },
         {
             "name": "mobiledetect/mobiledetectlib",
@@ -1777,16 +1818,16 @@
         },
         {
             "name": "nikic/php-parser",
-            "version": "v2.1.0",
+            "version": "v2.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nikic/PHP-Parser.git",
-                "reference": "47b254ea51f1d6d5dc04b9b299e88346bf2369e3"
+                "reference": "4dd659edadffdc2143e4753df655d866dbfeedf0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/47b254ea51f1d6d5dc04b9b299e88346bf2369e3",
-                "reference": "47b254ea51f1d6d5dc04b9b299e88346bf2369e3",
+                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/4dd659edadffdc2143e4753df655d866dbfeedf0",
+                "reference": "4dd659edadffdc2143e4753df655d866dbfeedf0",
                 "shasum": ""
             },
             "require": {
@@ -1824,7 +1865,7 @@
                 "parser",
                 "php"
             ],
-            "time": "2016-04-19 13:41:41"
+            "time": "2016-09-16 12:04:44"
         },
         {
             "name": "paragonie/random_compat",
@@ -2330,6 +2371,98 @@
                 "xlsx"
             ],
             "time": "2015-05-01 07:00:55"
+        },
+        {
+            "name": "phpseclib/phpseclib",
+            "version": "2.0.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phpseclib/phpseclib.git",
+                "reference": "41f85e9c2582b3f6d1b7d20395fb40c687ad5370"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/41f85e9c2582b3f6d1b7d20395fb40c687ad5370",
+                "reference": "41f85e9c2582b3f6d1b7d20395fb40c687ad5370",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.3"
+            },
+            "require-dev": {
+                "phing/phing": "~2.7",
+                "phpunit/phpunit": "~4.0",
+                "sami/sami": "~2.0",
+                "squizlabs/php_codesniffer": "~2.0"
+            },
+            "suggest": {
+                "ext-gmp": "Install the GMP (GNU Multiple Precision) extension in order to speed up arbitrary precision integer arithmetic operations.",
+                "ext-libsodium": "SSH2/SFTP can make use of some algorithms provided by the libsodium-php extension.",
+                "ext-mcrypt": "Install the Mcrypt extension in order to speed up a few other cryptographic operations.",
+                "ext-openssl": "Install the OpenSSL extension in order to speed up a wide variety of cryptographic operations."
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "phpseclib/bootstrap.php"
+                ],
+                "psr-4": {
+                    "phpseclib\\": "phpseclib/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Jim Wigginton",
+                    "email": "terrafrost@php.net",
+                    "role": "Lead Developer"
+                },
+                {
+                    "name": "Patrick Monnerat",
+                    "email": "pm@datasphere.ch",
+                    "role": "Developer"
+                },
+                {
+                    "name": "Andreas Fischer",
+                    "email": "bantu@phpbb.com",
+                    "role": "Developer"
+                },
+                {
+                    "name": "Hans-Jürgen Petrich",
+                    "email": "petrich@tronic-media.com",
+                    "role": "Developer"
+                },
+                {
+                    "name": "Graham Campbell",
+                    "email": "graham@alt-three.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "PHP Secure Communications Library - Pure-PHP implementations of RSA, AES, SSH2, SFTP, X.509 etc.",
+            "homepage": "http://phpseclib.sourceforge.net",
+            "keywords": [
+                "BigInteger",
+                "aes",
+                "asn.1",
+                "asn1",
+                "blowfish",
+                "crypto",
+                "cryptography",
+                "encryption",
+                "rsa",
+                "security",
+                "sftp",
+                "signature",
+                "signing",
+                "ssh",
+                "twofish",
+                "x.509",
+                "x509"
+            ],
+            "time": "2016-08-18 18:49:14"
         },
         {
             "name": "predis/predis",
@@ -4174,16 +4307,16 @@
         },
         {
             "name": "myclabs/deep-copy",
-            "version": "1.5.3",
+            "version": "1.5.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/myclabs/DeepCopy.git",
-                "reference": "94e5ca3e90aa5b34663780393e10914f7438f991"
+                "reference": "ea74994a3dc7f8d2f65a06009348f2d63c81e61f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/myclabs/DeepCopy/zipball/94e5ca3e90aa5b34663780393e10914f7438f991",
-                "reference": "94e5ca3e90aa5b34663780393e10914f7438f991",
+                "url": "https://api.github.com/repos/myclabs/DeepCopy/zipball/ea74994a3dc7f8d2f65a06009348f2d63c81e61f",
+                "reference": "ea74994a3dc7f8d2f65a06009348f2d63c81e61f",
                 "shasum": ""
             },
             "require": {
@@ -4212,7 +4345,7 @@
                 "object",
                 "object graph"
             ],
-            "time": "2016-09-07 15:34:10"
+            "time": "2016-09-16 13:37:59"
         },
         {
             "name": "orchestra/database",

@@ -146,8 +146,11 @@ class Converter
                 // a possible list of sheets that can be present in the given file, hardcoded
                 // on which we run this code block.
                 //
-                
-                if (strpos(strtolower($ex->getMessage()), 'undefined variable: index') !== false)
+
+                $exceptionMessage = strtolower($ex->getMessage());
+
+                if ((strpos($exceptionMessage, 'undefined variable: index') !== false) or
+                    (strpos($exceptionMessage, 'the actual number of sheets is 0') !== false))
                 {
                     continue;
                 }
@@ -165,12 +168,13 @@ class Converter
         return $rows;
     }
 
-    public function convertCsvToArray($fileDetails)
+    public function convertCsvToArray($fileDetails, $columnHeaders = [])
     {
         $filePath = $fileDetails[FileProcessor::FILE_PATH];
 
-        $columnHeaders = [];
         $data = [];
+
+        $columnHeadersCount = count($columnHeaders);
 
         $handle = fopen($filePath, 'r');
 
@@ -182,14 +186,13 @@ class Converter
 
         try
         {
-            $columnHeadersCount = 0;
-
             while (($row = fgetcsv($handle)) !== false)
             {
                 // If headers are empty, get headers from the first row.
                 if (empty($columnHeaders) === true)
                 {
                     $columnHeaders = array_map('trim', $row);
+
                     $columnHeadersCount = count($columnHeaders);
                 }
                 else

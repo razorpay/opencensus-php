@@ -187,7 +187,14 @@ class Gateway extends Base\Gateway
             RequestFields::DATE       => $requestDate,
         ];
 
-        return $this->getStandardRequestArray($content);
+        $request = $this->getStandardRequestArray($content);
+
+        if ($this->mode === Mode::LIVE)
+        {
+            $request['options']['proxy'] = 'https://splunk.razorpay.com:8888';
+        }
+
+        return $request;
     }
 
     protected function verifyPayment($verify)
@@ -378,9 +385,11 @@ class Gateway extends Base\Gateway
             return $this->config['test_merchant_id'];
         }
 
-        assert($this->mode === Mode::LIVE);
+        assertTrue($this->mode === Mode::LIVE);
 
-        return $this->config['gateway_merchant_id'];
+        // We are fetching merchant id from config
+        // as it's common across all the merchants
+        return $this->config['live_merchant_id'];
     }
 
     protected function getEndMerchantId($terminal)
@@ -390,9 +399,9 @@ class Gateway extends Base\Gateway
             return $this->config['test_end_mid'];
         }
 
-        assert($this->mode === Mode::LIVE);
+        assertTrue($this->mode === Mode::LIVE);
 
-        return $terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2];
+        return $terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
     }
 
     protected function shouldReturnIfPaymentNullInVerifyFlow($verify)
@@ -480,8 +489,8 @@ class Gateway extends Base\Gateway
 
         $this->action = Action::CALLBACK;
 
-        assert($verifyContent[ResponseFields::STATUS] === Status::SUCCESS);
-        assert((float) $verifyContent[ResponseFields::TXN_AMT] === (float) $content[ResponseFields::TRAN_AMT]);
+        assertTrue($verifyContent[ResponseFields::STATUS] === Status::SUCCESS);
+        assertTrue((float) $verifyContent[ResponseFields::TXN_AMT] === (float) $content[ResponseFields::TRAN_AMT]);
     }
 
     /**
@@ -571,7 +580,14 @@ class Gateway extends Base\Gateway
             RequestFields::REMARKS => 'Razorpay Refund',
         ];
 
-        return $this->getStandardRequestArray($content);
+        $request = $this->getStandardRequestArray($content);
+
+        if ($this->mode === Mode::LIVE)
+        {
+            $request['options']['proxy'] = 'https://splunk.razorpay.com:8888';
+        }
+
+        return $request;
     }
 
     protected function getLiveSecret()

@@ -7,6 +7,11 @@ use RZP\Error\ErrorCode;
 
 class Metadata
 {
+    const OTHERS = 'others';
+
+    // Randomly picked a large number
+    const OTHERS_VALUE = 99;
+
     // Platform values
     const BROWSER       = 'browser';
     const MOBILE_SDK    = 'mobile_sdk';
@@ -17,7 +22,7 @@ class Metadata
         self::BROWSER       => 1,
         self::MOBILE_SDK    => 2,
         self::CORDOVA       => 3,
-        self::SERVER        => 4
+        self::SERVER        => 4,
     );
 
     // Device values
@@ -97,19 +102,26 @@ class Metadata
         self::PRESTASHOP    => 8,
     );
 
+    public static function getStringForValue($value, array $map)
+    {
+        if ($value === null)
+        {
+            return null;
+        }
+
+        $values = array_flip($map);
+
+        return array_key_exists($value, $values) ? $values[$value] : self::OTHERS;
+    }
+
+    public static function isInvalidValue($value)
+    {
+        return $value === self::OTHERS_VALUE;
+    }
+
     public static function isValidIntegration($integration)
     {
         return array_key_exists($integration, self::INTEGRATION_VALUES);
-    }
-
-    public static function validateIntegration($integration)
-    {
-        $integration = strtolower($integration);
-
-        if (self::isValidIntegration($integration) === false)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_INTEGRATION);
-        }
     }
 
     public static function getValueForIntegration($integration)
@@ -121,29 +133,12 @@ class Metadata
             return self::INTEGRATION_VALUES[$integration];
         }
 
-        return null;
-    }
-
-    public static function getStringForIntegrationValue($value)
-    {
-        $values = array_flip(self::INTEGRATION_VALUES);
-
-        return $values[$value];
+        return self::OTHERS_VALUE;
     }
 
     public static function isValidPlatform($platform)
     {
         return array_key_exists($platform, self::PLATFORM_VALUES);
-    }
-
-    public static function validatePlatform($platform)
-    {
-        $platform = strtolower($platform);
-
-        if (self::isValidPlatform($platform) === false)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_PLATFORM);
-        }
     }
 
     public static function getValueForPlatform($platform)
@@ -155,29 +150,12 @@ class Metadata
             return self::PLATFORM_VALUES[$platform];
         }
 
-        return null;
-    }
-
-    public static function getStringForPlatformValue($value)
-    {
-        $values = array_flip(self::PLATFORM_VALUES);
-
-        return $values[$value];
+        return self::OTHERS_VALUE;
     }
 
     public static function isValidOs($os)
     {
         return array_key_exists($os, self::OS_VALUES);
-    }
-
-    public static function validateOs($os)
-    {
-        $os = strtolower($os);
-
-        if (self::isValidOs($os) === false)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_OS);
-        }
     }
 
     public static function getValueForOs($os)
@@ -189,29 +167,12 @@ class Metadata
             return self::OS_VALUES[$os];
         }
 
-        return null;
-    }
-
-    public static function getStringForOsValue($value)
-    {
-        $values = array_flip(self::OS_VALUES);
-
-        return $values[$value];
+        return self::OTHERS_VALUE;
     }
 
     public static function isValidLibrary($library)
     {
         return array_key_exists($library, self::LIBRARY_VALUES);
-    }
-
-    public static function validateLibrary($library)
-    {
-        $library = strtolower($library);
-
-        if (self::isValidLibrary($library) === false)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_LIBRARY);
-        }
     }
 
     public static function getValueForLibrary($library)
@@ -223,14 +184,7 @@ class Metadata
             return self::LIBRARY_VALUES[$library];
         }
 
-        return null;
-    }
-
-    public static function getStringForLibraryValue($value)
-    {
-        $values = array_flip(self::LIBRARY_VALUES);
-
-        return $values[$value];
+        return self::OTHERS_VALUE;
     }
 
     public static function isValidBrowser($browser)
@@ -238,7 +192,7 @@ class Metadata
         return array_key_exists($browser, self::BROWSER_VALUES);
     }
 
-    public static function validatebrowser($browser)
+    public static function validateBrowser($browser)
     {
         $browser = strtolower($browser);
 
@@ -248,7 +202,7 @@ class Metadata
         }
     }
 
-    public static function getValueForbrowser($browser)
+    public static function getValueForBrowser($browser)
     {
         $browser = strtolower($browser);
 
@@ -257,14 +211,7 @@ class Metadata
             return self::BROWSER_VALUES[$browser];
         }
 
-        return null;
-    }
-
-    public static function getStringForBrowserValue($value)
-    {
-        $values = array_flip(self::BROWSER_VALUES);
-
-        return $values[$value];
+        return self::OTHERS_VALUE;
     }
 
     public static function isValidDevice($device)
@@ -272,7 +219,7 @@ class Metadata
         return array_key_exists($device, self::DEVICE_VALUES);
     }
 
-    public static function validatedevice($device)
+    public static function validateDevice($device)
     {
         $device = strtolower($device);
 
@@ -291,13 +238,6 @@ class Metadata
             return self::DEVICE_VALUES[$device];
         }
 
-        return null;
-    }
-
-    public static function getStringForDeviceValue($value)
-    {
-        $values = array_flip(self::DEVICE_VALUES);
-
-        return $values[$value];
+        return self::OTHERS_VALUE;
     }
 }

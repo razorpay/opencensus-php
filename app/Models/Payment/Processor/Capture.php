@@ -265,9 +265,7 @@ trait Capture
 
             $this->payment = $paymentCopy;
 
-            $this->updatePaymentFailed(
-                    $ex->getError(),
-                    TraceCode::PAYMENT_CAPTURE_FAILURE);
+            $this->updatePaymentFailed($ex, TraceCode::PAYMENT_CAPTURE_FAILURE);
 
             throw $ex;
         }
@@ -322,6 +320,8 @@ trait Capture
             $this->tracePaymentInfo(TraceCode::PAYMENT_CAPTURE_SUCCESS);
         });
 
+        $this->eventOrderPaid();
+
         //
         // Analytics
         //
@@ -329,6 +329,16 @@ trait Capture
 
         $notifier = new Notify($this->payment);
         $notifier->trigger(Notify::CAPTURED);
+    }
+
+    protected function eventOrderPaid()
+    {
+        $payment = $this->payment;
+
+        if ($payment->getApiOrderId() !== null)
+        {
+            $this->app['events']->fire('api.order.paid', array($payment));
+        }
     }
 
     protected function updatePaymentCaptured($payment, $autoCaptured = false)

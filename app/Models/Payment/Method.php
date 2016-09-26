@@ -10,11 +10,13 @@ class Method
     const NETBANKING    = 'netbanking';
     const WALLET        = 'wallet';
     const EMI           = 'emi';
+    const UPI           = 'upi';
 
     protected static $methods = array(
         self::CARD       => 'Card',
         self::NETBANKING => 'Net Banking',
         self::WALLET     => 'Wallet',
+        self::UPI        => 'UPI',
         self::EMI        => 'EMI',
     );
 
@@ -28,9 +30,14 @@ class Method
         return array_keys(self::$methods);
     }
 
+    public static function isValid($method)
+    {
+        return defined(__CLASS__ . '::' . strtoupper($method));
+    }
+
     public static function validateMethod($method)
     {
-        if (defined(__CLASS__ . '::' . strtoupper($method)) === false)
+        if (self::isValid($method) === false)
         {
             throw new Exception\InvalidArgumentException(
                 'Not a valid Payment method: ' . $method);

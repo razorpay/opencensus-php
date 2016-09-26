@@ -23,6 +23,7 @@ class Entity extends Base\PublicEntity
     const BALANCE             = 'balance';
     const GATEWAY_FEE         = 'gateway_fee';
     const GATEWAY_SERVICE_TAX = 'gateway_service_tax';
+    const GATEWAY_SETTLED_AT  = 'gateway_settled_at';
     const API_FEE             = 'api_fee';
     const GRATIS              = 'gratis';
     const ESCROW_BALANCE      = 'escrow_balance';
@@ -54,6 +55,7 @@ class Entity extends Base\PublicEntity
         self::API_FEE,
         self::GATEWAY_FEE,
         self::GATEWAY_SERVICE_TAX,
+        self::GATEWAY_SETTLED_AT,
         self::SERVICE_TAX,
         self::GRATIS,
         self::BALANCE,
@@ -262,10 +264,22 @@ class Entity extends Base\PublicEntity
 
         if ($settledAt === null)
         {
-            return;
+            return null;
         }
 
         return (int) $settledAt;
+    }
+
+    protected function getGatewaySettledAtAttribute()
+    {
+        $gatewaySettledAt = $this->attributes[self::GATEWAY_SETTLED_AT];
+
+        if ($gatewaySettledAt === null)
+        {
+            return null;
+        }
+
+        return (int) $gatewaySettledAt;
     }
 
     protected function getGratisAttribute()
@@ -320,6 +334,16 @@ class Entity extends Base\PublicEntity
     public function setReconciledAt($timestamp)
     {
         $this->setAttribute(self::RECONCILED_AT, $timestamp);
+    }
+
+    public function setGatewaySettledAt($timestamp)
+    {
+        $this->setAttribute(self::GATEWAY_SETTLED_AT, $timestamp);
+    }
+
+    public function getGatewaySettledAt()
+    {
+        return $this->getAttribute(self::GATEWAY_SETTLED_AT);
     }
 
     public function setGatewayFee($gatewayFee)
@@ -407,7 +431,7 @@ class Entity extends Base\PublicEntity
 
     public function setServiceTax($servicetax)
     {
-        assert($servicetax >= 0);
+        assertTrue($servicetax >= 0);
 
         $this->setAttribute(self::SERVICE_TAX, $servicetax);
     }
