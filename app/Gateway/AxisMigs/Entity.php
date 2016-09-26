@@ -85,10 +85,15 @@ class Entity extends Base\Entity
 
     public $incrementing = true;
 
-    protected $casts = [
-        'vpc_Amount'    => 'int',
-        'genius'        => 'bool',
-    ];
+    public function getGeniusAttribute()
+    {
+        return (bool) $this->attributes['genius'];
+    }
+
+    public function getVpcAmountAttribute()
+    {
+        return (int) $this->attributes['vpc_Amount'];
+    }
 
     public function getAuthCode()
     {
