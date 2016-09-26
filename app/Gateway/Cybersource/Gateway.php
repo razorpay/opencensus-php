@@ -759,6 +759,13 @@ class Gateway extends Base\Gateway
         $content['ccCreditService'][self::RUN] = 'true';
         $content['ccCreditService'][self::CAPTURE_REQUEST_ID] = $gateway->getCaptureRef();
 
+        $content['item'] = [
+            [
+                'unitPrice' => ($input['refund']['amount']/100),
+                'id'        => '1'
+            ]
+        ];
+
         $request = $this->getStandardSoapRequest($content);
 
         return $request;
