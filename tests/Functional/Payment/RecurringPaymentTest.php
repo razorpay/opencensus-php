@@ -18,7 +18,7 @@ class RecurringPaymentTest extends TestCase
 
         parent::setUp();
 
-        $this->ba->publicAuth();
+        $this->ba->privateAuth();
 
         $this->payment = $this->getDefaultPaymentArray();
 
@@ -35,7 +35,7 @@ class RecurringPaymentTest extends TestCase
 
     public function testRecurringPaymentCreateFeatureDisabled()
     {
-        $this->ba->publicAuth();
+        // $this->ba->publicAuth();
 
         $payment = $this->getDefaultPaymentArray();
 
@@ -49,14 +49,12 @@ class RecurringPaymentTest extends TestCase
         $data = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow($data, function() use ($payment) {
-            $this->doAuthPayment($payment);
+            $this->doS2SPrivateAuthPayment($payment);
         });
     }
 
     public function testRecurringPaymentCreate()
     {
-        $this->ba->publicAuth();
-
         $payment = $this->getDefaultPaymentArray();
 
         $payment['amount'] = 500000;
@@ -64,7 +62,7 @@ class RecurringPaymentTest extends TestCase
         $payment['customer_id'] = 'cust_100000customer';
         $payment['card']['number'] = '4012001038443335';
 
-        $content = $this->doAuthAndCapturePayment($payment);
+        $content = $this->doS2SPrivateAuthAndCapturePayment($payment);
 
         $paymentEntity = $this->getLastEntity('payment', true);
         $tokenEntity   = $this->getLastEntity('token', true);
@@ -79,7 +77,7 @@ class RecurringPaymentTest extends TestCase
 
         $payment['token'] = $tokenId;
 
-        $content = $this->doAuthAndCapturePayment($payment);
+        $content = $this->doS2SPrivateAuthAndCapturePayment($payment);
 
         $paymentEntity = $this->getLastEntity('payment', true);
 
@@ -88,8 +86,6 @@ class RecurringPaymentTest extends TestCase
 
     public function testRecurringPaymentFailedCardNotSupported()
     {
-        $this->ba->publicAuth();
-
         $payment = $this->getDefaultPaymentArray();
 
         $payment['amount'] = 500000;
@@ -100,14 +96,12 @@ class RecurringPaymentTest extends TestCase
         $data = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow($data, function() use ($payment) {
-            $this->doAuthPayment($payment);
+            $this->doS2SPrivateAuthAndCapturePayment($payment);
         });
     }
 
     public function testRecurringPaymentAmexCardNotSupported()
     {
-        $this->ba->publicAuth();
-
         $payment = $this->getDefaultPaymentArray();
 
         $payment['amount'] = 500000;
@@ -120,14 +114,12 @@ class RecurringPaymentTest extends TestCase
         $data = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow($data, function() use ($payment) {
-            $this->doAuthPayment($payment);
+            $this->doS2SPrivateAuthAndCapturePayment($payment);
         });
     }
 
     public function testRecurringPaymentUsingSavedCardTokenNotRecurring()
     {
-        $this->ba->publicAuth();
-
         $payment = $this->getDefaultPaymentArray();
 
         $payment['amount'] = 500000;
@@ -139,14 +131,12 @@ class RecurringPaymentTest extends TestCase
         $data = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow($data, function() use ($payment) {
-            $this->doAuthPayment($payment);
+            $this->doS2SPrivateAuthAndCapturePayment($payment);
         });
     }
 
     public function testRecurringPaymentUsingSavedCardTokenRecurring()
     {
-        $this->ba->publicAuth();
-
         $payment = $this->getDefaultPaymentArray();
 
         $payment['amount'] = 500000;
@@ -158,11 +148,11 @@ class RecurringPaymentTest extends TestCase
         $this->fixtures->base->editEntity('card', '100000000lcard', ["type" => 'credit']);
         $this->fixtures->base->editEntity('token', '100000custcard', ["recurring" => true]);
 
-        $content = $this->doAuthAndCapturePayment($payment);
+        $content = $this->doS2SPrivateAuthAndCapturePayment($payment);
 
         $payment['card'] = [];
 
-        $content = $this->doAuthAndCapturePayment($payment);
+        $content = $this->doS2SPrivateAuthAndCapturePayment($payment);
 
         $paymentEntity = $this->getLastEntity('payment', true);
 

@@ -285,6 +285,13 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function doS2SPrivateAuthAndCapturePayment($payment = null)
+    {
+        $paymentAuth = $this->doS2SPrivateAuthPayment($payment);
+
+        return $this->capturePayment($paymentAuth['razorpay_payment_id'], $payment['amount']);
+    }
+
     protected function doAuthWalletPayment($payment = null, $wallet = 'paytm')
     {
         if ($payment === null)

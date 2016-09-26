@@ -1506,6 +1506,12 @@ trait Authorize
 
     protected function verifyRecurringForMerchant($merchant)
     {
+        if ($this->app['basicauth']->isPrivateAuth() === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'recurring not support on public auth');
+        }
+
         if ($merchant->isFeatureEnabled(Merchant\Features::RECURRING) === false)
         {
             throw new Exception\BadRequestException(
