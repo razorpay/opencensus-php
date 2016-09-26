@@ -14,12 +14,12 @@ use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\Action;
+use RZP\Constants;
 use Carbon\Carbon;
 
 class Gateway extends Base\Gateway
 {
-
-    protected $gateway = \RZP\Constants\Entity::FIRST_DATA;
+    protected $gateway = Constants\Entity::FIRST_DATA;
 
     public function authorize(array $input)
     {
@@ -48,8 +48,8 @@ class Gateway extends Base\Gateway
 
         $this->verifyPaymentCallbackResponse($input);
 
-        $gatewayPayment = $this->repo
-                        ->findByPaymentIdAndActionOrFail($input['gateway'][ConnectResponseFields::ORDER_ID], Base\Action::AUTHORIZE);
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+            $input['gateway'][ConnectResponseFields::ORDER_ID], Base\Action::AUTHORIZE);
 
         $attributes = $this->getCallbackFields($input['gateway']);
 
@@ -131,7 +131,7 @@ class Gateway extends Base\Gateway
     protected function getAuthorizeFields($authRequest)
     {
         $attributes = array(
-            Entity::AMOUNT            => $authRequest[ConnectRequestFields::CHARGE_TOTAL]*100,
+            Entity::AMOUNT            => $authRequest[ConnectRequestFields::CHARGE_TOTAL] * 100,
             Entity::ORDER_ID          => $authRequest[ConnectRequestFields::ORDER_ID],
         );
 
@@ -147,11 +147,10 @@ class Gateway extends Base\Gateway
             Entity::TRANSACTION_RESULT          => $callbackBody[ConnectResponseFields::STATUS],
         );
 
-        if ( $attributes[Entity::TRANSACTION_RESULT] === STATUS::APPROVED)
+        if ($attributes[Entity::TRANSACTION_RESULT] === Status::APPROVED)
         {
             $attributes[Entity::STATUS] = Status::AUTHORIZED;
         }
-
 
         return $attributes;
     }
@@ -550,12 +549,12 @@ class Gateway extends Base\Gateway
 
     protected function verifyPaymentCallbackResponse($input)
     {
-        $approvalCode = implode(array_slice(explode(':',$input['gateway'][ConnectResponseFields::APPROVAL_CODE]),0,2),':');
+        $approvalCode = implode(array_slice(explode(':', $input['gateway'][ConnectResponseFields::APPROVAL_CODE]), 0, 2), ':');
 
         if ($approvalCode[0] !== 'Y')
         {
-            $gatewayPayment = $this->repo
-                            ->findByPaymentIdAndActionOrFail($input['gateway'][ConnectResponseFields::ORDER_ID], Base\Action::AUTHORIZE);
+            $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+                $input['gateway'][ConnectResponseFields::ORDER_ID], Base\Action::AUTHORIZE);
 
             $attributes = $this->getCallbackFields($input['gateway']);
 
@@ -582,7 +581,7 @@ class Gateway extends Base\Gateway
 
         $expectedHash  = $this->getExpectedResponseHash($approvalCode, $chargeTotal, $currencyCode, $txnDateTime);
 
-        if (!hash_equals($expectedHash, $input[ConnectResponseFields::RESPONSE_HASH]))
+        if (hash_equals($expectedHash, $input[ConnectResponseFields::RESPONSE_HASH]) === false)
         {
             $this->trace->error(
                 TraceCode::GATEWAY_AUTHORIZE_RESPONSE, array($input, $expectedHash));
@@ -601,7 +600,7 @@ class Gateway extends Base\Gateway
 
     protected function getStoreName()
     {
-        if ($this->mode ===Mode::TEST)
+        if ($this->mode === Mode::TEST)
         {
             return $this->config[Constants::TEST_STORE_ID];
         }
