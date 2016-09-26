@@ -1,6 +1,7 @@
 <?php
 
 $baseurl = $_SERVER['HTTP_HOST'] . '/v1';
+$baseurl = 'api.razorpay.com' . '/v1';
 
 $key_id = 'rzp_live_ILgsfZCZoFIKMb';
 $secret = 'thisissupersecret';
@@ -36,6 +37,7 @@ $private_url = $key_id.':'.$secret.'@'.$baseurl;
                 <option value="card" selected>Card</option>
                 <option value="wallet">Wallet</option>
                 <option value="emi">Emi</option>
+                <option value="upi">UPI</option>
             </select>
         </td>
     </tr>
@@ -111,6 +113,10 @@ $private_url = $key_id.':'.$secret.'@'.$baseurl;
     <tr>
         <td colspan='40'>Order Id:</td>
         <td><input type="text" name="notes[order_id]" size="25" value="3453"></td>
+    </tr>
+    <tr>
+        <td colspan='40'>VPA:</td>
+        <td><input type="text" name="vpa" size="25" value="razorpay@ybl"></td>
     </tr>
     <tr>
         <td colspan="100" align="center"><input type="submit" value="  Submit  "></td>

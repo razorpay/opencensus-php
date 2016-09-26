@@ -22,6 +22,7 @@ class Gateway extends Base\Gateway
     protected $gateway = 'billdesk';
 
     protected $response;
+    const CHECKSUM_ATTRIBUTE = 'Checksum';
 
     public function authorize(array $input)
     {
@@ -98,7 +99,7 @@ class Gateway extends Base\Gateway
                     '');
         }
 
-        assert($content['CustomerID'] === $input['payment']['id']);
+        assertTrue($content['CustomerID'] === $input['payment']['id']);
     }
 
     public function refund(array $input)
@@ -674,8 +675,8 @@ class Gateway extends Base\Gateway
         $content = array_combine($fields, $content);
 
         $this->trace->info(
-            TraceCode::GATEWAY_CHECKSUM_VERIFY,
-            $content);
+            TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            [$content]);
 
         $this->verifySecureHash($content);
 
@@ -739,24 +740,6 @@ class Gateway extends Base\Gateway
         return $payment;
     }
 
-    protected function verifySecureHash($content)
-    {
-        $hash = $content['Checksum'];
-        unset($content['Checksum']);
-
-        $generatedHash = $this->getHashOfArray($content);
-
-        if ($generatedHash !== $hash)
-        {
-            $this->trace->info(
-                TraceCode::GATEWAY_CHECKSUM_VERIFY_FAILED,
-                [$content, $hash, $generatedHash]);
-
-            throw new Exception\BadRequestValidationFailureException(
-                'Failed checksum verification');
-        }
-    }
-
     public function getMessageStringWithHash($content)
     {
         $str = $this->getStringToHash($content, '|');
@@ -802,7 +785,7 @@ class Gateway extends Base\Gateway
         $msg = $this->getMessageStringWithHash($content);
 
         $this->trace->info(
-            TraceCode::GATEWAY_CHECKSUM_VERIFY,
+            TraceCode::GATEWAY_CHECKSUM_VERIFY_REQUEST,
             [$msg]);
 
         $request = array(

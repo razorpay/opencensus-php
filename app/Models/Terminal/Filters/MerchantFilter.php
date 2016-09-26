@@ -18,6 +18,7 @@ class MerchantFilter extends Terminal\Filter
     protected $properties = [
         'tpv',
         // 'risk',
+        'category',
     ];
 
     /**
@@ -72,4 +73,41 @@ class MerchantFilter extends Terminal\Filter
         // Else allow - By default allow all transactions
         return true;
     }
+
+    public function categoryFilter($terminal, $input)
+    {
+        $category = $terminal->getNetworkCategory();
+
+        // If the terminal's category is null, pass though.
+        // When all the terminals are without category, this
+        // will pass them all through.
+        if (empty($category) === true)
+        {
+            return true;
+        }
+
+        $method = $input['payment']->getMethod();
+
+        $network = $input['payment']->isMethodCardOrEmi() ? $input['payment']->card->getNetworkCode() : null;
+
+        $defaultCategory = Terminal\Category::getDefaultForMethodAndNetwork($method, $network);
+
+        // If category is a defaultCategory allow,
+        // no need to compute merchant category
+        if ($category === $defaultCategory)
+        {
+            return true;
+        }
+
+        $merchantTerminalCategory = $input['merchant']->getCategory2();
+
+        // Use Merchant specific category for method, network or maybe overridden for gateway
+        $merchantTerminalCategory = Terminal\Category::getCategoryForMethodAndNetwork(
+                                                                        $method,
+                                                                        $network,
+                                                                        $merchantTerminalCategory);
+
+        return ($category === $merchantTerminalCategory);
+    }
+
 }

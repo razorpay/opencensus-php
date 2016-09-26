@@ -1,4 +1,5 @@
-box: razorpay/docker:latest
+box:
+  id:  razorpay/docker:php7
 dev:
   steps:
     - internal/shell:
@@ -17,22 +18,13 @@ build:
       - script:
           name: copy env file
           code: cp ./environment/.env.wercker ./environment/.env.testing
-      - script:
-          name: set composer to use github oauth token
-          code: composer config -g github-oauth.github.com $github_token
       - add-ssh-key:
           keyname: RZP_API
-      - script:
-          name: enable composer cache
-          code: export COMPOSER_CACHE_DIR="$WERCKER_CACHE_DIR/composer" && mkdir -p $COMPOSER_CACHE_DIR
       - create-file:
           name: Create api_sqlite.db
           filename: api_sqlite.db
           overwrite: true
           content:
-      - script:
-          name: install dependencies
-          code: composer install --no-interaction
       - script:
           name: Export wercker DB env var to API environment variables
           code: >
@@ -43,10 +35,19 @@ build:
           code: >
               export REDIS_HOST="$REDIS_PORT_6379_TCP_ADDR"
               export REDIS_PORT="6379"
+      - create-file:
+          name: Create assertion.ini
+          filename: /etc/php7/conf.d/assertion.ini
+          overwrite: true
+          content: |
+              zend.assertions=1
+              assert.exception=On
       - script:
-          name: Increase PHP memory limit to 2G
-          code: >
-              echo "memory_limit=2048M" > /usr/local/etc/php/conf.d/memory-limit.ini
+          name: Composer set-up
+          code: |
+              composer config -g github-oauth.github.com $github_token
+              export COMPOSER_CACHE_DIR="$WERCKER_CACHE_DIR/composer" && mkdir -p $COMPOSER_CACHE_DIR
+              composer install --no-interaction
       - script:
           name: Run unit tests
           code: php -d memory_limit=2G vendor/phpunit/phpunit/phpunit --debug --verbose

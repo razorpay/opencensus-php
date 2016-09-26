@@ -318,7 +318,7 @@ class Gateway extends Base\Gateway
 
     protected function postAuthEnrolledRequest($input)
     {
-        assert($this->model->getReasonCode() === Result::ENROLLED);
+        assertTrue($this->model->getReasonCode() === Result::ENROLLED);
 
         $request = $this->createAuthEnrolledRequestFields($input);
 

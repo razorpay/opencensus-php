@@ -189,9 +189,7 @@ trait Authorize
 
     protected function updatePaymentAuthFailedAndThrowException($e)
     {
-        $this->updatePaymentFailed(
-            $e->getError(),
-            TraceCode::PAYMENT_AUTH_FAILURE);
+        $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
 
         throw $e;
     }
@@ -443,8 +441,6 @@ trait Authorize
 
     protected function validateInternationalAllowed($payment)
     {
-        $card = $payment->card;
-
         $merchant = $payment->merchant;
 
         if ($merchant->isInternational() === false)
@@ -452,9 +448,7 @@ trait Authorize
             $e = new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED);
 
-            $this->updatePaymentFailed(
-                $e->getError(),
-                TraceCode::PAYMENT_AUTH_FAILURE);
+            $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
 
             throw $e;
         }
@@ -467,9 +461,7 @@ trait Authorize
             $e = new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD);
 
-            $this->updatePaymentFailed(
-                $e->getError(),
-                TraceCode::PAYMENT_AUTH_FAILURE);
+            $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
 
             throw $e;
         }
@@ -538,7 +530,7 @@ trait Authorize
             $this->preProcessPaymentForGlobalCustomer($customer, $customerApp, $payment, $input, $gatewayInput);
         }
 
-        if ($payment->isEmi())
+        if ($payment->isEmi() === true)
         {
             $cardNumber = $gatewayInput['card']['number'];
 
@@ -796,6 +788,10 @@ trait Authorize
                 $this->verifyEmiEnabled($input);
                 break;
 
+            case Payment\Method::UPI:
+                $this->verifyUpiEnabled();
+                break;
+
             default:
                 throw new Exception\LogicException(
                     'Should not reach here.',
@@ -877,6 +873,35 @@ trait Authorize
 
     protected function getPaymentGatewayRequestData($request, $payment)
     {
+        if (Payment\Gateway::supportsAsync($payment->getGateway()))
+        {
+            return $this->getAsyncPaymentCreatedResponse($request, $payment);
+        }
+
+        return $this->getFirstPaymentCreatedResponse($request, $payment);
+    }
+
+    /**
+     * @see  CoProto supports async payments https://github.com/razorpay/api/wiki/COPROTO
+     * @return array payment response
+     */
+    protected function getAsyncPaymentCreatedResponse($request, Payment\Entity $payment)
+    {
+        $id = $payment->getPublicId();
+
+        return [
+            'type'          => 'async',
+            'version'       => 1,
+            'payment_id'    => $id,
+            'request'       => [
+                'url'    => Route::getUrl('payment_get_status', ['id' => $id]),
+                'method' => 'GET',
+            ]
+        ];
+    }
+
+    protected function getFirstPaymentCreatedResponse($request, Payment\Entity $payment)
+    {
         $data['type'] = 'first';
 
         $data['request'] = $request;
@@ -949,6 +974,17 @@ trait Authorize
         // Auto capture payment, if applicable
         $this->autoCapturePaymentIfApplicable($payment);
 
+        return $this->processAuthorizeResponse($payment);
+    }
+
+    /**
+     * Returns the proper response to checkout
+     * in case of the payment is authorized
+     * @param  Payment\Entity $payment
+     * @return array
+     */
+    protected function processAuthorizeResponse($payment)
+    {
         //
         // If callback url has been set, then we need to redirect
         // to the callback url and prepare data using coproto protocol.
@@ -956,7 +992,9 @@ trait Authorize
         // Otherwise we simply return 'razorpay_payment_id' as is normal.
         //
 
-        $returnData = ['razorpay_payment_id' => $payment->getPublicId()];
+        $returnData = [
+            'razorpay_payment_id' => $payment->getPublicId()
+        ];
 
         if ($payment->getAutoCaptured() === true)
         {
@@ -1137,24 +1175,35 @@ trait Authorize
                 AnalyticsEntity::TERMINAL_ID    => $rawData['terminal_id'],
             ];
 
-            (new Analytics\Service)->createAuditLog($log, $rawData);
+            $row = (new Analytics\Service)->createAuditLog($log, $rawData);
+
+            // log invalid data
+            $invalidData = [];
+
+            foreach ($row as $key => $value) {
+                if (Analytics\Metadata::isInvalidValue($value))
+                {
+                    $invalidData[$key] = $value;
+                }
+            }
+
+            if (empty($invalidData) === false)
+            {
+                $checkoutMetadataToLog = null;
+
+                if (isset($rawData['input']) and isset($rawData['input']['_']))
+                {
+                    $checkoutMetadataToLog = $rawData['input']['_'];
+                }
+
+                $this->trace->warning(TraceCode::PAYMENT_ANALYTICS_UNRECOGNIZED_DATA,
+                    ['invalid_data' => $invalidData,
+                     'raw_data'     => $checkoutMetadataToLog]);
+            }
         }
         catch (\Exception $e)
         {
-            $checkoutMetadata = null;
-
-            if (isset($rawData['input']) and isset($rawData['input']['_']))
-            {
-                $checkoutMetadata = $rawData['input']['_'];
-            }
-
-            $this->trace->error(
-                TraceCode::PAYMENT_ANALYTICS_SAVE_FAILED,
-                [
-                    'raw_data' => $checkoutMetadata
-                ]);
-
-            $this->trace->traceException($e);
+            $this->trace->traceException($e, Trace::WARNING, TraceCode::PAYMENT_ANALYTICS_SAVE_FAILED);
         }
     }
 
@@ -1234,9 +1283,7 @@ trait Authorize
         }
         catch (Exception\BaseException $e)
         {
-            $this->updatePaymentFailed(
-                    $e->getError(),
-                    TraceCode::PAYMENT_AUTH_FAILURE);
+            $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
 
             throw $e;
         }
@@ -1365,6 +1412,18 @@ trait Authorize
         $this->checkAndValidateAmexIfNotEnabled($merchantMethods, $input['card']);
     }
 
+    protected function verifyUpiEnabled()
+    {
+        $merchantMethods = $this->methods;
+
+        if (($merchantMethods === null) or
+            ($merchantMethods->isUPIEnabled() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_UPI_NOT_ENABLED_FOR_MERCHANT);
+        }
+    }
+
     protected function verifyCardEnabledInLive($payment, $input)
     {
         $card = $payment->card;
@@ -1423,14 +1482,6 @@ trait Authorize
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED,
                 'number');
-        }
-    }
-
-    protected function checkForMerchantCallbackUrl($payment)
-    {
-        if ($payment->getCallbackUrl() !== null)
-        {
-            $this->app['rzp.merchant_callback_url'] = $payment->getCallbackUrl();
         }
     }
 
@@ -1518,12 +1569,11 @@ trait Authorize
         return Crypt::encrypt($gateway . '__' . time());
     }
 
-
-    protected function verifyHash($hash, $paymentPublicId)
+    protected function verifyHash($inputHash, $paymentPublicId)
     {
         $expectedHash = $this->getHashOf($paymentPublicId);
 
-        if ($expectedHash !== $hash)
+        if (hash_equals($expectedHash, $inputHash) !== true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Callback payment hash does not match. Please notify the admin of this error.');

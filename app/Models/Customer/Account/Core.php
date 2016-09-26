@@ -20,7 +20,7 @@ class Core extends Base\Core
 
     public function createGlobalCustomer($input)
     {
-        assert(isset($input[Customer\Entity::CONTACT]));
+        assertTrue(isset($input[Customer\Entity::CONTACT]));
 
         return $this->create($input, $this->getSharedAccount());
     }
@@ -201,9 +201,12 @@ class Core extends Base\Core
                 $appToken,
                 $merchant);
 
-            $customerId = $appToken->getCustomerId();
+            if ($appToken !== null)
+            {
+                $customerId = $appToken->getCustomerId();
 
-            $merchantId = Account::SHARED_ACCOUNT;
+                $merchantId = Account::SHARED_ACCOUNT;
+            }
         }
         else if (empty($input[Payment\Entity::CUSTOMER_ID]) === false)
         {

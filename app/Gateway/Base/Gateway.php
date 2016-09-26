@@ -32,6 +32,13 @@ class Gateway
     const OTP_ATTEMPTS_LIMIT = 3;
 
     /**
+     * In gateway responses one particular field contains
+     * hash or checksum. This variable will contain that field
+     * name.
+     */
+    const CHECKSUM_ATTRIBUTE = '';
+
+    /**
      * The application instance.
      *
      * @var \Illuminate\Foundation\Application
@@ -225,6 +232,37 @@ class Gateway
         $this->mock = $mock;
     }
 
+    protected function getHashValueFromContent(array $content)
+    {
+        return $content[static::CHECKSUM_ATTRIBUTE];
+    }
+
+    protected function verifySecureHash(array $content)
+    {
+        $actual = $this->getHashValueFromContent($content);
+
+        unset($content[static::CHECKSUM_ATTRIBUTE]);
+
+        $generated = $this->generateHash($content);
+
+        $this->compareHashes($actual, $generated);
+    }
+
+    protected function compareHashes($actual, $generated)
+    {
+        if (hash_equals($actual, $generated) === false)
+        {
+            $this->trace->info(
+                TraceCode::GATEWAY_CHECKSUM_VERIFY_FAILED,
+                [
+                    'actual'    => $actual,
+                    'generated' => $generated
+                ]);
+
+            throw new Exception\RuntimeException('Failed checksum verification');
+        }
+    }
+
     public function generateRefunds($input)
     {
         $paymentIds = array_map(function($row)
@@ -346,6 +384,11 @@ class Gateway
         }
 
         return $verify->getDataToTrace();
+    }
+
+    public function preProcessS2SResponse($input)
+    {
+        return $input;
     }
 
     protected function shouldReturnIfPaymentNullInVerifyFlow($verify)
@@ -625,6 +668,24 @@ class Gateway
         $gateway = $this->gateway;
 
         return $this->app['repo']->$gateway;
+    }
+
+    protected function getMappedAttributes($attributes)
+    {
+        $attr = [];
+
+        $map = $this->map;
+
+        foreach ($attributes as $key => $value)
+        {
+            if (isset($map[$key]))
+            {
+                $newKey = $map[$key];
+                $attr[$newKey] = $value;
+            }
+        }
+
+        return $attr;
     }
 
     protected function xmlToArray($xml)

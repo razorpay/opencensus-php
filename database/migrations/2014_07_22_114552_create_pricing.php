@@ -43,10 +43,10 @@ class CreatePricing extends Migration
             $table->string(Pricing::PAYMENT_ISSUER)
                   ->nullable();
 
-            $table->boolean(Pricing::INTERNATIONAL)
+            $table->tinyInteger(Pricing::INTERNATIONAL)
                   ->default(0);
 
-            $table->boolean(Pricing::AMOUNT_RANGE_ACTIVE)
+            $table->tinyInteger(Pricing::AMOUNT_RANGE_ACTIVE)
                   ->default(0);
 
             $table->integer(Pricing::AMOUNT_RANGE_MIN)

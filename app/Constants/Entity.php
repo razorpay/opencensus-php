@@ -55,6 +55,7 @@ class Entity
     const AMEX                  = 'amex';
     const PAYTM                 = 'paytm';
     const SHARP                 = 'sharp';
+    const UPI                   = 'upi';
     const WALLET                = 'wallet';
     const BILLDESK              = 'billdesk';
     const MOBIKWIK              = 'mobikwik';
@@ -62,14 +63,16 @@ class Entity
     const AXIS_GENIUS           = 'axis_genius';
     const NETBANKING            = 'netbanking';
     const CYBERSOURCE           = 'cybersource';
-    const WALLET_PAYZAPP        = 'wallet_payzapp';
     const NETBANKING_HDFC       = 'netbanking_hdfc';
     const NETBANKING_KOTAK      = 'netbanking_kotak';
+    const UPI_ICICI             = 'upi_icici';
+    const WALLET_PAYZAPP        = 'wallet_payzapp';
     const WALLET_PAYUMONEY      = 'wallet_payumoney';
     const WALLET_OLAMONEY       = 'wallet_olamoney';
     const WALLET_AIRTELMONEY    = 'wallet_airtelmoney';
 
     public static $namespace = array(
+        self::UPI                   => \RZP\Gateway\Upi\Base::class,
         self::IIN                   => \RZP\Models\Card\IIN::class,
         self::ATOM                  => \RZP\Gateway\Atom::class,
         self::AMEX                  => \RZP\Gateway\Amex::class,
@@ -95,6 +98,7 @@ class Entity
         self::NETBANKING            => \RZP\Gateway\Netbanking\Base::class,
         self::AXIS_GENIUS           => \RZP\Gateway\AxisGenius::class,
         self::CYBERSOURCE           => \RZP\Gateway\Cybersource::class,
+        self::UPI_ICICI             => \RZP\Gateway\Upi\Icici::class,
         self::BANK_ACCOUNT          => \RZP\Models\BankAccount::class,
         self::WALLET_PAYZAPP        => \RZP\Gateway\Wallet\Payzapp::class,
         self::NETBANKING_HDFC       => \RZP\Gateway\Netbanking\Hdfc::class,
@@ -111,12 +115,13 @@ class Entity
     );
 
     protected static $repository = array(
-        self::WALLET_PAYZAPP     => \RZP\Gateway\Wallet\Base::class,
         self::NETBANKING_HDFC    => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_KOTAK   => \RZP\Gateway\Netbanking\Base::class,
-        self::WALLET_PAYUMONEY   => \RZP\Gateway\Wallet\Base::class,
-        self::WALLET_OLAMONEY    => \RZP\Gateway\Wallet\Base::class,
+        self::UPI_ICICI          => \RZP\Gateway\Upi\Base::class,
         self::WALLET_AIRTELMONEY => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_OLAMONEY    => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_PAYUMONEY   => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_PAYZAPP     => \RZP\Gateway\Wallet\Base::class,
     );
 
     public static function getEntityNamespace($entity)
@@ -155,15 +160,15 @@ class Entity
         return new $class;
     }
 
-    public static function getEntityRepository($entity)
+    public static function getEntityRepository($entity, $repositoryType = 'Repository')
     {
-        $class = self::getEntityNamespace($entity) . '\Repository';
+        $class = self::getEntityNamespace($entity) . '\\' . $repositoryType;
 
         if (class_exists($class) === false)
         {
             if (isset(self::$repository[$entity]))
             {
-                $class = self::$repository[$entity] . '\Repository';
+                $class = self::$repository[$entity] . '\\' . $repositoryType;
             }
             else
             {
@@ -173,6 +178,11 @@ class Entity
         }
 
         return $class;
+    }
+
+    public static function getEntityEsRepository($entity)
+    {
+        return self::getEntityRepository($entity, 'EsRepository');
     }
 
     public static function validateIsEntity($entity)
