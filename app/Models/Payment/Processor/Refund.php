@@ -154,8 +154,8 @@ trait Refund
         // Though, there are some edge cases where refund transaction was created even though the payment has not
         // been captured. Check PR #905 and #909.
         assert (($payment->hasBeenCaptured() === true) or
-            (in_array($payment->card->getNetworkCode(),
-                    [Card\Network::MAES, Card\Network::RUPAY, Card\Network::DICL]) === true));
+                (in_array($payment->card->getNetworkCode(),
+                          [Card\Network::MAES, Card\Network::RUPAY, Card\Network::DICL]) === true));
 
         $data = array(
             'payment'   => $payment->toArray(),
@@ -372,24 +372,6 @@ trait Refund
         try
         {
             $this->callGatewayFunction(Payment\Action::REFUND, $data);
-        }
-        catch (Exception\GatewayTimeoutException $ex)
-        {
-            // Currently, we are running this experiment only for Billdesk.
-            // Billdesk gives us a way to find out how much amount has been refunded.
-            // We are not aware of any other gateway which provides us this feature, currently.
-            if ($this->payment->getGateway() !== Payment\Gateway::BILLDESK)
-            {
-                throw $ex;
-            }
-
-            $this->trace->traceException($ex);
-
-            // We just ignore the timeout and mark it as refunded on the api side.
-            // Later we would run verify for these refunds and create appropriate entries on the gateway side.
-            $this->trace->info(
-                TraceCode::PAYMENT_REFUND_TIMEOUT_SKIP, ['payment_id' => $this->payment->getId()]
-            );
         }
         catch (Exception\BaseException $e)
         {
