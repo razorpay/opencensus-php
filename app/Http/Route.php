@@ -245,6 +245,7 @@ final class Route
         'es_migrate_entity'                       => ['post',     'es/migrate/{entityName}',                  'EsController@migrateEntity'                                        ],
         'refund_gateway_manual'                   => ['post',     'refunds/{ids}/gateway',                    'RefundController@postManualGatewayRefund'                          ],
         'order_refund_multiple_authorized'        => ['post',     'orders/payments/refund',                   'PaymentController@postRefundMultipleAuthorizedPaymentsForOrders'   ],
+        'payment_authorize_time_out'              => ['post',     'payments/authorize/timeout/{ids}',         'PaymentController@postAuthorizeLockTimeOut'                        ],
     );
 
     public static $public = array(
@@ -440,6 +441,7 @@ final class Route
         'credits_delete',
         'refund_gateway_manual',
         'order_refund_multiple_authorized',
+        'payment_authorize_time_out',
     );
 
     public static $proxy = array(

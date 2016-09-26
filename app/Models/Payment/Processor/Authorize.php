@@ -267,7 +267,7 @@ trait Authorize
      * @return array $payment
      * @throws Exception\BadRequestValidationFailureException
      */
-    public function forceAuthorizeFailedPayment($payment, $input)
+    public function forceAuthorizeFailedPayment(Payment\Entity $payment, array $input = [])
     {
         $this->setPayment($payment);
 
@@ -313,7 +313,6 @@ trait Authorize
         // TODO: Remove reload once the branch hotfix/authorize-transaction-save is merged.
         return $payment->reload()->toArrayAdmin();
     }
-
 
     /**
      * It does the following -
