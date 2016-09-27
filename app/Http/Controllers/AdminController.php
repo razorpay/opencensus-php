@@ -65,4 +65,13 @@ class AdminController extends Controller
     {
         $input = Request::all();
     }
+
+    public function getScorecard()
+    {
+        $input = Request::all();
+
+        $data = (new Admin\Scorecard)->generateScorecard($input);
+
+        return ApiResponse::json($data);
+    }
 }
