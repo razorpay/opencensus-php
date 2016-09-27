@@ -42,6 +42,11 @@ class Validator extends Base\Validator
 
         foreach ($entries as $entry)
         {
+            if (count($headers) !== count($entry))
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FILE_VALIDATION);
+            }
+
             $entryMap = array_combine($headers, $entry);
 
             $amount = $entryMap['refund_amount'];
