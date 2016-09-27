@@ -194,7 +194,6 @@ class Gateway
         self::FIRST_DATA => array(
             Network::MC,
             Network::VISA,
-            Network::AMEX,
             Network::DICL,
             Network::JCB,
             Network::MAES,

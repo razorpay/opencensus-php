@@ -15,12 +15,22 @@ use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\Action;
 use RZP\Constants\HashAlgo;
-use RZP\Constants\Entity as ConstantEntity;
+use RZP\Constants;
 use Carbon\Carbon;
 
 class Gateway extends Base\Gateway
 {
-    protected $gateway = ConstantEntity::FIRST_DATA;
+    const TEST_STORE_ID                     = 'test_store_id';
+    const TEST_HASH_SECRET                  = 'test_hash_secret';
+
+    const SERVER_CERTIFICATE_PATH           = 'server_certificate_path';
+    const CLIENT_CERTIFICATE_PATH           = 'client_certificate_path';
+    const CLIENT_CERTIFICATE_KEY_PATH       = 'client_certificate_key_path';
+
+    const PROCESSING                        = 'PROCESSING';
+    const SERVICES                          = 'SERVICES';
+
+    protected $gateway = Constants\Entity::FIRST_DATA;
 
     public function authorize(array $input)
     {
@@ -351,11 +361,11 @@ class Gateway extends Base\Gateway
 
         if (in_array($this->action, $servicesApiActionList))
         {
-            $type = Constants::SERVICES;
+            $type = self::SERVICES;
         }
         else
         {
-            $type = Constants::PROCESSING;
+            $type = self::PROCESSING;
         }
 
         $ns = $this->getGatewayNamespace();
@@ -611,7 +621,7 @@ class Gateway extends Base\Gateway
     {
         if ($this->mode === Mode::TEST)
         {
-            return $this->config[Constants::TEST_STORE_ID];
+            return $this->config[self::TEST_STORE_ID];
         }
 
         return $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
@@ -639,24 +649,24 @@ class Gateway extends Base\Gateway
 
     protected function getServerCertificate()
     {
-        return storage_path() . '/' . $this->config[Constants::SERVER_CERTIFICATE_PATH];
+        return storage_path() . '/' . $this->config[self::SERVER_CERTIFICATE_PATH];
     }
 
     protected function getClientCertificate()
     {
-        return storage_path() . '/' . $this->config[Constants::CLIENT_CERTIFICATE_PATH];
+        return storage_path() . '/' . $this->config[self::CLIENT_CERTIFICATE_PATH];
     }
 
     protected function getClientCertificateKey()
     {
-        return storage_path() . '/' . $this->config[Constants::CLIENT_CERTIFICATE_KEY_PATH];
+        return storage_path() . '/' . $this->config[self::CLIENT_CERTIFICATE_KEY_PATH];
     }
 
     protected function getSharedSecret()
     {
         if ($this->mode === Mode::TEST)
         {
-            return $this->config[Constants::TEST_HASH_SECRET];
+            return $this->config[self::TEST_HASH_SECRET];
         }
 
         return $this->terminal[Terminal\Entity::GATEWAY_SECURE_SECRET];
