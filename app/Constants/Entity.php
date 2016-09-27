@@ -34,6 +34,7 @@ class Entity
     const TERMINAL              = 'terminal';
     const CUSTOMER              = 'customer';
     const APP_TOKEN             = 'app_token';
+    const ADDRESS               = 'address';
     const ADJUSTMENT            = 'adjustment';
     const SETTLEMENT            = 'settlement';
     const TRANSACTION           = 'transaction';
