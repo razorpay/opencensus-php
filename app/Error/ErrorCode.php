@@ -124,6 +124,8 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_CAPTURE_AMOUNT_NOT_EQUAL_TO_AUTH                      = 'BAD_REQUEST_PAYMENT_CAPTURE_AMOUNT_NOT_EQUAL_TO_AUTH';
     const BAD_REQUEST_PAYMENT_NET_BANKING_NOT_ENABLED                               = 'BAD_REQUEST_PAYMENT_NET_BANKING_NOT_ENABLED';
     const BAD_REQUEST_PAYMENT_UPI_NOT_ENABLED_FOR_MERCHANT                          = 'BAD_REQUEST_PAYMENT_UPI_NOT_ENABLED_FOR_MERCHANT';
+    const BAD_REQUEST_PAYMENT_UPI_INVALID_VPA                                       = 'BAD_REQUEST_PAYMENT_UPI_INVALID_VPA';
+    const BAD_REQUEST_PAYMENT_UPI_APP_NOT_SUPPORTED                                 = 'BAD_REQUEST_PAYMENT_UPI_APP_NOT_SUPPORTED';
     const BAD_REQUEST_PAYMENT_BANK_NOT_PROVIDED                                     = 'BAD_REQUEST_PAYMENT_BANK_NOT_PROVIDED';
     const BAD_REQUEST_PAYMENT_INVALID_BANK_CODE                                     = 'BAD_REQUEST_PAYMENT_INVALID_BANK_CODE';
     const BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT                           = 'BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT';
@@ -292,6 +294,7 @@ class ErrorCode
     const SERVER_ERROR_INTEGRATION_ERROR                                            = 'SERVER_ERROR_INTEGRATION_ERROR';
     const SERVER_ERROR_SETTLEMENTS_FAILED                                           = 'SERVER_ERROR_SETTLEMENTS_FAILED';
     const SERVER_ERROR_RUNTIME_ERROR                                                = 'SERVER_ERROR_RUNTIME_ERROR';
+    const SERVER_ERROR_ASSERTION_ERROR                                              = 'SERVER_ERROR_ASSERTION_ERROR';
     const SERVER_ERROR_PAYMENT_ABORTED                                              = 'SERVER_ERROR_PAYMENT_ABORTED';
     const SERVER_ERROR_TO_STRING_EXCEPTION                                          = 'SERVER_ERROR_TO_STRING_EXCEPTION';
     const SERVER_ERROR_MYSQL_ENTRY_NOT_FOUND                                        = 'SERVER_ERROR_MYSQL_ENTRY_NOT_FOUND';
@@ -311,4 +314,5 @@ class ErrorCode
     const BAD_REQUEST_OTP_MAXIMUM_ATTEMPTS_REACHED                                  = 'BAD_REQUEST_OTP_MAXIMUM_ATTEMPTS_REACHED';
     const BAD_REQUEST_INCORRECT_OTP                                                 = 'BAD_REQUEST_INCORRECT_OTP';
     const BAD_REQUEST_SMS_FAILED                                                    = 'BAD_REQUEST_SMS_FAILED';
+    const BAD_REQUEST_INVALID_COUNTRY                                               = 'BAD_REQUEST_INVALID_COUNTRY';
 }

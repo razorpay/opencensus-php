@@ -116,7 +116,8 @@ class EbsGatewayTest extends TestCase
 
         $data = $this->testData['testHackedPayment'];
 
-        $this->runRequestResponseFlow($data, function() use ($payment) {
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
             $payment = $this->doAuthPayment($payment);
         });
     }

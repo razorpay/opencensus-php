@@ -5,6 +5,7 @@ namespace RZP\Models\Terminal;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base;
+use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 
@@ -27,7 +28,8 @@ class Validator extends Base\Validator
         Entity::UPI                         => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
         Entity::SHARED                      => 'sometimes|boolean',
-        Entity::GATEWAY_ACQUIRER            => 'sometimes|string',
+        Entity::GATEWAY_ACQUIRER            => 'sometimes|string|max:30',
+        Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
     );
 
     protected static $editTerminalGateways = array(
@@ -37,7 +39,7 @@ class Validator extends Base\Validator
     );
 
     protected static $createValidators = array(
-        Entity::GATEWAY, Entity::EMI);
+        Entity::GATEWAY, Entity::EMI, Entity::NETWORK_CATEGORY);
 
     protected static $hdfcTerminalRules = array(
         Entity::GATEWAY                     => 'required|in:hdfc',
@@ -51,7 +53,7 @@ class Validator extends Base\Validator
 
     protected static $billdeskTerminalRules = array(
         Entity::GATEWAY                     => 'required|in:billdesk',
-        Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|min:2'
+        Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|min:2',
     );
 
     protected static $ebsTerminalRules = array(
@@ -158,7 +160,8 @@ class Validator extends Base\Validator
             $input['shared'],
             $input['netbanking'],
             $input['merchant_id'],
-            $input['category']);
+            $input['category'],
+            $input[Entity::NETWORK_CATEGORY]);
 
         $op = $input['gateway'] . '_terminal';
 
@@ -212,6 +215,28 @@ class Validator extends Base\Validator
                 $this->matchGatewayForNewTerminal($this->entity, $existing);
             }
         }
+    }
+
+    /**
+     * Does not use custom validator as the other parameters of input are required
+     * to decide validity.
+     *
+     * @param array $input
+     * @return void
+     * */
+    public function validateNetworkCategory($input)
+    {
+        if (empty($input[Entity::NETWORK_CATEGORY]) === true)
+        {
+            return;
+        }
+
+        if (Category::isNetworkCategoryValid($input) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Category provided invalid for gateway',
+                Entity::NETWORK_CATEGORY);
+            }
     }
 
     protected function matchGatewayForNewTerminal($new, $existing)

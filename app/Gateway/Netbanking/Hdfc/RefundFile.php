@@ -3,7 +3,7 @@
 namespace RZP\Gateway\Netbanking\Hdfc;
 
 use Carbon\Carbon;
-use RZP\Gateway\Netbanking\Base;
+use RZP\Gateway\Base;
 
 class RefundFile extends Base\RefundFile
 {
@@ -25,12 +25,12 @@ class RefundFile extends Base\RefundFile
 
         $urlExcel = $this->writeToExcelFile($data, $this->getFileToWriteNameWithoutExt());
 
-        $this->sendHdfcNbRefundEmail();
+        $this->sendRefundEmail();
 
         return $urlExcel;
     }
 
-    protected function sendHdfcNbRefundEmail()
+    protected function sendRefundEmail()
     {
         $fullpath = $this->getExcelFullFilePath();
 

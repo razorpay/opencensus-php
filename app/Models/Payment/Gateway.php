@@ -8,6 +8,7 @@ use RZP\Models\Bank\IFSC;
 use RZP\Models\Card\Network;
 use RZP\Models\Settlement;
 use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Processor\Upi;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Processor\Netbanking;
 
@@ -194,6 +195,10 @@ class Gateway
         Wallet::PAYZAPP     => Gateway::WALLET_PAYZAPP,
         Wallet::PAYUMONEY   => Gateway::WALLET_PAYUMONEY,
         Wallet::AIRTELMONEY => Gateway::WALLET_AIRTELMONEY,
+    );
+
+    public static $upiToGatewayMap = array(
+        Upi::ICICI  => Gateway::UPI_ICICI,
     );
 
     /**
