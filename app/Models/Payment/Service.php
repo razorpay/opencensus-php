@@ -165,7 +165,7 @@ class Service extends Base\Service
 
         foreach ($paymentIds as $paymentId)
         {
-            $payment = $this->repo->findOrFail($paymentId);
+            $payment = $this->repo->payment->findOrFail($paymentId);
 
             $merchant = $payment->merchant;
 
