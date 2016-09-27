@@ -31,7 +31,6 @@ class CreateFirstDataGateway extends Migration
 
             $table->char(FirstData::REFUND_ID, FirstData::ID_LENGTH)
                   ->nullable()
-                  ->default(null);
 
             $table->char(FirstData::AMOUNT);
 
@@ -41,7 +40,7 @@ class CreateFirstDataGateway extends Migration
             $table->char(FirstData::TRANSACTION_RESULT, 20)
                   ->nullable();
 
-            $table->char(FirstData::ORDER_ID, 20)
+            $table->char(FirstData::GATEWAY_PAYMENT_ID, 20)
                   ->nullable();
 
             $table->char(FirstData::TDATE, 20)
@@ -74,7 +73,7 @@ class CreateFirstDataGateway extends Migration
 
             $table->index(FirstData::TDATE);
 
-            $table->index(FirstData::ORDER_ID);
+            $table->index(FirstData::GATEWAY_PAYMENT_ID);
         });
     }
 
@@ -87,7 +86,7 @@ class CreateFirstDataGateway extends Migration
     {
         Schema::table(Table::FIRST_DATA, function($table)
         {
-            $table->dropForeign(Table::FIRST_DATA.'_'.FirstData::PAYMENT_ID.'_foreign');
+            $table->dropForeign(Table::FIRST_DATA . '_' . FirstData::PAYMENT_ID . '_foreign');
         });
 
         Schema::drop(Table::FIRST_DATA);

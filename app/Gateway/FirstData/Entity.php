@@ -9,7 +9,7 @@ class Entity extends Base\Entity
 {
     const ID                            = 'id';
     const AMOUNT                        = 'amount';
-    const ORDER_ID                      = 'order_id';
+    const GATEWAY_PAYMENT_ID            = 'gateway_payment_id';
     const TDATE                         = 'tdate';
     const STATUS                        = 'status';
     const TRANSACTION_RESULT            = 'transaction_result';
@@ -23,7 +23,7 @@ class Entity extends Base\Entity
         self::RECEIVED,
         self::ACTION,
         self::AMOUNT,
-        self::ORDER_ID,
+        self::GATEWAY_PAYMENT_ID,
         self::TDATE,
         self::STATUS,
         self::TRANSACTION_RESULT,
@@ -39,7 +39,7 @@ class Entity extends Base\Entity
         self::RECEIVED,
         self::ACTION,
         self::AMOUNT,
-        self::ORDER_ID,
+        self::GATEWAY_PAYMENT_ID,
         self::TDATE,
         self::STATUS,
         self::TRANSACTION_RESULT,
@@ -61,29 +61,19 @@ class Entity extends Base\Entity
 
     protected $guarded = array();
 
-    public function getId()
-    {
-        return $this->getAttribute(self::ID);
-    }
-
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
     }
 
-    public function getOrderId()
+    public function getGatewayPaymentId()
     {
-        return $this->getAttribute(self::ORDER_ID);
+        return $this->getAttribute(self::GATEWAY_PAYMENT_ID);
     }
 
     public function getApprovalCode()
     {
         return $this->getAttribute(self::APPROVAL_CODE);
-    }
-
-    public function getAmount()
-    {
-        return $this->getAttribute(self::AMOUNT);
     }
 
     public function getTdate()

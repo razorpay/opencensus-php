@@ -395,8 +395,8 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'       => 'demo_merchant_first_data',
                 'gateway_terminal_id'       => 'shared_terminal_first_data',
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_first_data_terminal_pass'),
-                'created_at'                =>  time(),
-                'updated_at'                =>  time(),
+                'created_at'                => time(),
+                'updated_at'                => time(),
                 )
             );
 

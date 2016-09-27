@@ -25,7 +25,7 @@ class Repository extends Base\Repository
         $repo = $this->repo;
 
         return $repo::where(Entity::TDATE, '=', $tdate)
-                  ->where(Entity::ORDER_ID, '=', $orderId)
+                  ->where(Entity::GATEWAY_PAYMENT_ID, '=', $orderId)
                   ->first();
     }
 }

@@ -229,6 +229,6 @@ class ErrorCodes
             return self::$reasonCodes[$code];
         }
 
-        return '';
+        return null;
     }
 }

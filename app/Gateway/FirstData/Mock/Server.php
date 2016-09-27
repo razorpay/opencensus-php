@@ -9,6 +9,7 @@ use RZP\Gateway\FirstData;
 use RZP\Gateway\Base;
 use RZP\Models\Card;
 use RZP\Models\Payment;
+use RZP\Constants\HashAlgo;
 
 class Server extends Base\Mock\Server
 {
@@ -42,7 +43,7 @@ class Server extends Base\Mock\Server
         $response_hash = $this->getHash($approvalCode, $chargeTotal, $currencyCode, $txnDateTime, $storeId);
 
         $oid = $this->generateId('ORD0000');
-        if (isset($input['oid']) == true)
+        if (isset($input['oid']) === true)
             $oid = $input['oid'];
 
         $content = array(
@@ -153,7 +154,6 @@ class Server extends Base\Mock\Server
             FirstData\ApiResponseFields::VERSION                     => "5.4.0-200",
         );
 
-
         $captureResponse = $this->buildIpgApiOrderResponse($content);
 
         return $this->prepareResponse($captureResponse);
@@ -171,7 +171,6 @@ class Server extends Base\Mock\Server
 
         $dateTime = Carbon::now('Asia/Kolkata');
 
-
         $authGatewayPayment = (new FirstData\Repository)->findByPaymentIdAndActionOrFail($oid, Base\Action::AUTHORIZE);
         $tdates['auth'] = $authGatewayPayment->getTdate();
         $captureGatewayPayment = (new FirstData\Repository)->findByPaymentIdAndActionOrFail($oid, Base\Action::CAPTURE);
@@ -181,9 +180,9 @@ class Server extends Base\Mock\Server
 
         $tdate = (string) $dateTime->getTimeStamp();
         $approvalCode = $this->getApprovalCode();
-        $tdateformatted = (string) $dateTime->format("Y.m.d H:i:s (T)");
+        $tdateFormatted = (string) $dateTime->format("Y.m.d H:i:s (T)");
 
-        $soapContent = FirstData\SoapWrapper::verifyResponseWrapper($oid, $dateTime, $tdates, $approvalCode, $tdateformatted);
+        $soapContent = FirstData\SoapWrapper::verifyResponseWrapper($oid, $dateTime, $tdates, $approvalCode, $tdateFormatted);
 
         return $this->prepareResponse($soapContent);
     }
@@ -191,12 +190,13 @@ class Server extends Base\Mock\Server
     protected function getApprovalCode()
     {
         $code=random_integer(6);
-        return 'Y'.':'.$code.':'.random_integer(10).':PPX :'.random_integer(12);
+
+        return 'Y' . ':' . $code . ':' . random_integer(10) . ':PPX :' . random_integer(12);
     }
 
     protected function scrub($cardnumber, $paymentMethod)
     {
-        return '('.array_flip(FirstData\Mapping::PAYMENT_METHOD_CODES)[$paymentMethod].') ... '.substr($cardnumber,-4);
+        return '(' . array_flip(FirstData\Codes::PAYMENT_METHODS)[$paymentMethod] . ')  ... ' . substr($cardnumber,-4);
     }
 
     protected function buildIpgApiOrderResponse($array)
@@ -226,9 +226,8 @@ class Server extends Base\Mock\Server
         $sharedSecret = $this->getGatewayInstance()->getSecret();
 
         $stringToHash = $sharedSecret . $approvalCode . $chargeTotal . $currencyCode . $txnDateTime . $storeId;
-        $hash_algorithm = strtolower(FirstData\Codes::FIRST_DATA_HASH_ALGORITHM);
 
-        $hash = hash($hash_algorithm, bin2hex($stringToHash));
+        $hash = hash(HashAlgo::SHA1, bin2hex($stringToHash));
 
         return $hash;
     }

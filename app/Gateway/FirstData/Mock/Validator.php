@@ -8,6 +8,7 @@ use RZP\Gateway\FirstData\Mapping;
 use RZP\Gateway\FirstData\ConnectRequestFields;
 use RZP\Gateway\FirstData\TxnType;
 use RZP\Gateway\FirstData\Codes;
+use RZP\Constants\HashAlgo;
 
 class Validator extends Base\Validator
 {
@@ -69,7 +70,7 @@ class Validator extends Base\Validator
     protected function validateTxntype($input)
     {
         if ((isset($input['txntype']) === false) or
-            (in_array($input['txntype'], TxnType::$list) === false))
+            (in_array($input['txntype'], TxnType::$typeList) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid txntype');
@@ -89,7 +90,7 @@ class Validator extends Base\Validator
     protected function validatePaymentMethod($input)
     {
         if ((isset($input['paymentMethod']) === false) or
-            (in_array($input['paymentMethod'], array_values(Mapping::PAYMENT_METHOD_CODES)) === false))
+            (in_array($input['paymentMethod'], array_values(Codes::PAYMENT_METHODS)) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid paymentMethod');
@@ -109,7 +110,7 @@ class Validator extends Base\Validator
     protected function validateCurrency($input)
     {
         if ((isset($input['currency']) === false) or
-            ($input['currency'] !== Mapping::ISO_NUMERIC_CODES['INR']))
+            ($input['currency'] !== Codes::ISO_NUMERIC_CURRENCY['INR']))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Unsupported currency');
@@ -119,7 +120,7 @@ class Validator extends Base\Validator
     protected function validateHashAlgorithm($input)
     {
         if ((isset($input['hash_algorithm']) === false) or
-            ($input['hash_algorithm'] !== Codes::FIRST_DATA_HASH_ALGORITHM))
+            ($input['hash_algorithm'] !== strtoupper(HashAlgo::SHA1)))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Unsupported hash_algorithm');
