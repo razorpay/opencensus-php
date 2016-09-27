@@ -28,15 +28,16 @@ class Reconciliate
      * Internal Header Names
      *************************/
 
-    const PAYMENT_ID          = 'payment_id';
-    const REFUND_ID           = 'refund_id';
-    const CARD_TYPE           = 'card_type';
-    const CARD_LOCALE         = 'card_locale';
-    const CARD_TRIVIA         = 'card_trivia';
-    const CARD_DETAILS        = 'card_details';
-    const GATEWAY_SERVICE_TAX = 'gateway_service_tax';
-    const GATEWAY_FEE         = 'gateway_fee';
-    const ISSUER              = 'issuer';
+    const PAYMENT_ID            = 'payment_id';
+    const REFUND_ID             = 'refund_id';
+    const CARD_TYPE             = 'card_type';
+    const CARD_LOCALE           = 'card_locale';
+    const CARD_TRIVIA           = 'card_trivia';
+    const CARD_DETAILS          = 'card_details';
+    const GATEWAY_SERVICE_TAX   = 'gateway_service_tax';
+    const GATEWAY_FEE           = 'gateway_fee';
+    const GATEWAY_SETTLED_AT    = 'gateway_settled_at';
+    const ISSUER                = 'issuer';
 
     /*************************
      * Card types

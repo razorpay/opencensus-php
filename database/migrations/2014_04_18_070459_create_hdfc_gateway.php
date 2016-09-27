@@ -33,7 +33,7 @@ class CreateHdfcGateway extends Migration
 
             $table->string('action', 1);
 
-            $table->boolean('received')->nullable();
+            $table->tinyInteger('received')->nullable();
 
             $table->string('amount', 10);
 
