@@ -35,12 +35,12 @@ class Scorecard extends Base\Core
 
         foreach ($yesterdayMerchantVolume as $m)
         {
+            $message .= '<br />';
+
             foreach ($m as $key => $value)
             {
                 $message .= str_pad($m[$key], $pads[$key]);
             }
-
-            $message .= '<br />';
         }
 
         $data['body'] = $message;
