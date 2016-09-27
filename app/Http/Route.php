@@ -235,6 +235,10 @@ final class Route
         'customer_delete_token'                   => ['delete',   'customers/{id}/tokens/{token}',            'CustomerController@deleteToken'                                    ],
         'customer_get_saved_status'               => ['get',      'customers/status/{contact}',               'CustomerController@fetchGlobalCustomerStatus'                      ],
         'customer_logout_global'                  => ['delete',   'apps/logout',                              'CustomerController@logoutCustomer'                                 ],
+        'customer_create_address'                 => ['post',     'customers/{id}/addresses',                 'CustomerController@postCreateAddress'                              ],
+        'customer_delete_address'                 => ['delete',   'customers/{id}/addresses/{address_id}',    'CustomerController@deleteAddress'                                  ],
+        'customer_fetch_addresses'                => ['get',      'customers/{id}/addresses',                 'CustomerController@getAddresses'                                   ],
+        'customer_set_primary_address'            => ['put',      'customers/{id}/addresses/{address_id}/primary', 'CustomerController@putPrimaryAddress'                         ],
         'app_delete_token'                        => ['delete',   'apps/tokens/{token}',                      'CustomerController@deleteTokenForGlobalCustomer'                   ],
         'app_fetch_tokens'                        => ['get',      'apps/tokens',                              'CustomerController@fetchTokensForGlobalCustomer'                   ],
         'app_fetch_payments'                      => ['get',      'apps/payments',                            'CustomerController@fetchPaymentsForGlobalCustomer'                 ],
@@ -246,6 +250,7 @@ final class Route
         'refund_gateway_manual'                   => ['post',     'refunds/{ids}/gateway',                    'RefundController@postManualGatewayRefund'                          ],
         'order_refund_multiple_authorized'        => ['post',     'orders/payments/refund',                   'PaymentController@postRefundMultipleAuthorizedPaymentsForOrders'   ],
         'scorecard'                               => ['get',      'scorecard',                                'AdminController@getScorecard'                                      ],
+        'payment_authorize_time_out'              => ['post',     'payments/authorize/timeout/{ids}',         'PaymentController@postAuthorizeLockTimeOut'                        ],
     );
 
     public static $public = array(
@@ -329,6 +334,10 @@ final class Route
         'customer_add_bank_account',
         'customer_fetch_bank_account',
         'setl_combined_report',
+        'customer_create_address',
+        'customer_delete_address',
+        'customer_fetch_addresses',
+        'customer_set_primary_address',
     );
 
     public static $internal = array(
@@ -442,6 +451,7 @@ final class Route
         'refund_gateway_manual',
         'order_refund_multiple_authorized',
         'scorecard',
+        'payment_authorize_time_out',
     );
 
     public static $proxy = array(
@@ -558,9 +568,6 @@ final class Route
     public static $routeNameToFeatureMap = array(
         'dummy_feature'             => 'dummy',
         'submerchant_create'        => 'aggregator',
-        'customer_create'           => 'tokens',
-        'customer_update'           => 'tokens',
-        'customer_get'              => 'tokens',
         'customer_delete'           => 'tokens',
         'customer_delete_token'     => 'tokens',
         'customer_fetch_tokens'     => 'tokens',
