@@ -4,7 +4,7 @@ namespace RZP\Models\Batch;
 
 class Status
 {
-    const CREATED                   = 'CREATED';
-    const PROCESSING                = 'PROCESSING';
-    const PROCESSED                 = 'PROCESSED';
+    const CREATED                   = 'created';
+    const PROCESSING                = 'processing';
+    const PROCESSED                 = 'processed';
 }
