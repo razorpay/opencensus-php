@@ -365,7 +365,12 @@ class Repository extends Base\Repository
                        "SUM(amount) / 100 AS volume" . ','.
                        'COUNT(*) AS count')
                     ->betweenTime($from, $to)
-                    ->groupBy(Payment\Entity::MERCHANT_ID)
+                    ->groupBy(
+                        Payment\Entity::MERCHANT_ID,
+                        Merchant\Entity::NAME,
+                        Merchant\Entity::WEBSITE,
+                        'volume',
+                        'count')
                     ->orderBy('volume', 'desc')
                     ->limit(30)
                     ->get();
