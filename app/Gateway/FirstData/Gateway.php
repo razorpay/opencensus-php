@@ -15,12 +15,12 @@ use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\Action;
 use RZP\Constants\HashAlgo;
+use RZP\Constants\Entity as ConstantEntity;
 use Carbon\Carbon;
 
 class Gateway extends Base\Gateway
 {
-
-    protected $gateway = \RZP\Constants\Entity::FIRST_DATA;
+    protected $gateway = ConstantEntity::FIRST_DATA;
 
     public function authorize(array $input)
     {
@@ -156,7 +156,7 @@ class Gateway extends Base\Gateway
             Entity::TRANSACTION_RESULT          => $callbackBody[ConnectResponseFields::STATUS],
         );
 
-        if ( $attributes[Entity::TRANSACTION_RESULT] === STATUS::APPROVED)
+        if ($attributes[Entity::TRANSACTION_RESULT] === Status::APPROVED)
         {
             $attributes[Entity::STATUS] = Status::AUTHORIZED;
         }
@@ -590,7 +590,7 @@ class Gateway extends Base\Gateway
 
         $expectedHash  = $this->getExpectedResponseHash($approvalCode, $chargeTotal, $currencyCode, $txnDateTime);
 
-        if (!hash_equals($expectedHash, $input[ConnectResponseFields::RESPONSE_HASH]))
+        if (hash_equals($expectedHash, $input[ConnectResponseFields::RESPONSE_HASH]) === false)
         {
             $this->trace->error(
                 TraceCode::GATEWAY_CHECKSUM_VERIFY_FAILED, ['auth_response' => $input, 'expected_hash' => $expectedHash]);

@@ -30,7 +30,7 @@ class CreateFirstDataGateway extends Migration
                   ->default(0);
 
             $table->char(FirstData::REFUND_ID, FirstData::ID_LENGTH)
-                  ->nullable()
+                  ->nullable();
 
             $table->char(FirstData::AMOUNT);
 

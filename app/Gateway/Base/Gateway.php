@@ -114,6 +114,8 @@ class Gateway
      */
     protected $config;
 
+    protected $terminal;
+
     /**
      * Some gateways whitelist our IP and requests to them can only
      * be sent from those IP.
