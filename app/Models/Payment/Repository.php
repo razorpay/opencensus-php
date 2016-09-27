@@ -368,9 +368,7 @@ class Repository extends Base\Repository
                     ->groupBy(
                         Payment\Entity::MERCHANT_ID,
                         Merchant\Entity::NAME,
-                        Merchant\Entity::WEBSITE,
-                        'volume',
-                        'count')
+                        Merchant\Entity::WEBSITE)
                     ->orderBy('volume', 'desc')
                     ->limit(30)
                     ->get();
