@@ -99,11 +99,6 @@ class Entity extends Base\PublicEntity
         self::AIRTELMONEY,
     );
 
-    // Casts the attributes to native types
-    protected $casts = [
-        self::AIRTELMONEY => 'boolean',
-    ];
-
     public function setMethods(array $input = array())
     {
         $this->edit($input, 'setMethods');
@@ -403,7 +398,7 @@ class Entity extends Base\PublicEntity
 
     protected function getAirtelmoneyAttribute()
     {
-        return $this->attributes[self::AIRTELMONEY];
+        return (bool) $this->attributes[self::AIRTELMONEY];
     }
 
     protected function getPayzappAttribute()
