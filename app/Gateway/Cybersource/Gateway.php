@@ -766,6 +766,8 @@ class Gateway extends Base\Gateway
             ]
         ];
 
+        $content['purchaseTotals']['grandTotalAmount'] = ($input['refund']['amount']/100);
+
         $request = $this->getStandardSoapRequest($content);
 
         return $request;
