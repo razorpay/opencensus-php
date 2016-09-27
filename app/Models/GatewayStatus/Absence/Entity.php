@@ -46,27 +46,27 @@ class Entity extends Base\PublicEntity
 
     public function getGateway()
     {
-        return $this->getAttributes(self::GATEWAY);
+        return $this->getAttribute(self::GATEWAY);
     }
 
     public function getDowntimeFrom()
     {
-        return $this->getAttributes(self::FROM);
+        return $this->getAttribute(self::FROM);
     }
 
     public function getDowntimeTo()
     {
-        return $this->getAttributes(self::TO);
+        return $this->getAttribute(self::TO);
     }
 
     public function getReason()
     {
-        return $this->getAttributes(self::REASON);
+        return $this->getAttribute(self::REASON);
     }
 
     public function getBank()
     {
-        return $this->getAttributes(self::BANK);
+        return $this->getAttribute(self::BANK);
     }
 
 }
