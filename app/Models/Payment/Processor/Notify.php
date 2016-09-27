@@ -39,6 +39,7 @@ class Notify
      */
     protected static $receiptEmails = [
         self::AUTHORIZED,
+        self::REFUNDED,
         self::FAILED_TO_AUTHORIZED
     ];
 

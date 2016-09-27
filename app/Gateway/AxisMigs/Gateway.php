@@ -22,6 +22,8 @@ class Gateway extends Base\Gateway
 
     protected $authorize = false;
 
+    const CHECKSUM_ATTRIBUTE = 'vpc_SecureHash';
+
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -108,8 +110,15 @@ class Gateway extends Base\Gateway
     {
         $repo = $this->repo;
 
-        $payment = $repo->findByPaymentIdAndCommand(
-                                $input['payment']['id'], Command::PAY);
+        $gatewayPayment = $repo->findByPaymentIdAndCommand($input['payment']['id'], Command::PAY);
+
+        // If it's already authorized on axis side, there's nothing to do here. We just return back.
+        if (($gatewayPayment->getVpcTransactionNo() !== null) and
+            ($gatewayPayment->getReceived() === true) and
+            ($gatewayPayment->getVpcTransactionCode() === '0'))
+        {
+            return true;
+        }
 
         // assert ($payment['received'] === false);
         // assert ($payment['vpc_TxnResponseCode'] !== '0');
@@ -135,10 +144,10 @@ class Gateway extends Base\Gateway
                 'No migs payments with nearby vpc_TransactionNo found');
         }
 
-        $payment->setVpcTransactionNo($txnNo, $terminalId);
-        $payment['vpc_TxnResponseCode'] = '0';
+        $gatewayPayment->setVpcTransactionNo($txnNo, $terminalId);
+        $gatewayPayment['vpc_TxnResponseCode'] = '0';
 
-        $repo->saveOrFail($payment);
+        $repo->saveOrFail($gatewayPayment);
 
         return true;
     }
@@ -562,17 +571,9 @@ class Gateway extends Base\Gateway
         return strtoupper(md5($str));
     }
 
-    protected function verifySecureHash($input)
+    protected function getHashValueFromContent(array $input)
     {
-        $hash = strtoupper($input['vpc_SecureHash']);
-        unset($input['vpc_SecureHash']);
-
-        $generatedHash = $this->generateHash($input);
-
-        if ($generatedHash !== $hash)
-        {
-            throw new Exception\BadRequestValidationFailureException('Failed checksum verification');
-        }
+        return strtoupper(parent::getHashValueFromContent($input));
     }
 
     protected function addMerchantIdAndAccessCode(array & $content, $terminal)

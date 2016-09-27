@@ -12,9 +12,6 @@ use RZP\Models\Payment\Processor\Wallet;
 
 class Validator extends Base\Validator
 {
-
-    const PHONEPE_VPA = 'ybl';
-
     protected static $createRules = array(
         'amount'                  =>  'required|integer',
         'currency'                =>  'required|size:3',
@@ -67,22 +64,22 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateVpa($attribute, $value)
+    protected function validateVpa($attribute, $vpa, $parameter)
     {
-        $matches = null;
-        preg_match('/^(\w+)@([a-z]+)$/', $value, $matches);
+        $vpaParts = explode('@', $vpa);
 
-        if (count($matches) !== 3)
+        if (count($vpaParts) !== 2)
         {
             // Invalid VPA
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA);
         }
 
-        if ($matches[2] === self::PHONEPE_VPA)
+        $merchantId = null;
+
+        if ($this->entity->getMerchantId() !== null)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_UPI_APP_NOT_SUPPORTED);
+            $merchantId = $this->entity->merchant->getId();
         }
     }
 

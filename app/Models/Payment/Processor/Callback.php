@@ -48,7 +48,7 @@ trait Callback
                 'gateway_input' => $gatewayInput,
                 'payment_id'    => $id,
             ]);
-        
+
         $payment = $this->retrieve($id);
 
         // For redirect flow
@@ -269,9 +269,7 @@ trait Callback
 
         if (Error\Error::hasAction($code) === false)
         {
-            $this->updatePaymentFailed(
-                $e->getError(),
-                TraceCode::PAYMENT_AUTH_FAILURE);
+            $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
         }
         else
         {

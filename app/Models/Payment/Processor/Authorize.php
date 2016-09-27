@@ -189,9 +189,7 @@ trait Authorize
 
     protected function updatePaymentAuthFailedAndThrowException($e)
     {
-        $this->updatePaymentFailed(
-            $e->getError(),
-            TraceCode::PAYMENT_AUTH_FAILURE);
+        $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
 
         throw $e;
     }
@@ -269,7 +267,7 @@ trait Authorize
      * @return array $payment
      * @throws Exception\BadRequestValidationFailureException
      */
-    public function forceAuthorizeFailedPayment($payment, $input)
+    public function forceAuthorizeFailedPayment(Payment\Entity $payment, array $input = [])
     {
         $this->setPayment($payment);
 
@@ -315,7 +313,6 @@ trait Authorize
         // TODO: Remove reload once the branch hotfix/authorize-transaction-save is merged.
         return $payment->reload()->toArrayAdmin();
     }
-
 
     /**
      * It does the following -
@@ -443,8 +440,6 @@ trait Authorize
 
     protected function validateInternationalAllowed($payment)
     {
-        $card = $payment->card;
-
         $merchant = $payment->merchant;
 
         if ($merchant->isInternational() === false)
@@ -452,9 +447,7 @@ trait Authorize
             $e = new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED);
 
-            $this->updatePaymentFailed(
-                $e->getError(),
-                TraceCode::PAYMENT_AUTH_FAILURE);
+            $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
 
             throw $e;
         }
@@ -467,9 +460,7 @@ trait Authorize
             $e = new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD);
 
-            $this->updatePaymentFailed(
-                $e->getError(),
-                TraceCode::PAYMENT_AUTH_FAILURE);
+            $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
 
             throw $e;
         }
@@ -982,6 +973,17 @@ trait Authorize
         // Auto capture payment, if applicable
         $this->autoCapturePaymentIfApplicable($payment);
 
+        return $this->processAuthorizeResponse($payment);
+    }
+
+    /**
+     * Returns the proper response to checkout
+     * in case of the payment is authorized
+     * @param  Payment\Entity $payment
+     * @return array
+     */
+    protected function processAuthorizeResponse($payment)
+    {
         //
         // If callback url has been set, then we need to redirect
         // to the callback url and prepare data using coproto protocol.
@@ -989,7 +991,9 @@ trait Authorize
         // Otherwise we simply return 'razorpay_payment_id' as is normal.
         //
 
-        $returnData = ['razorpay_payment_id' => $payment->getPublicId()];
+        $returnData = [
+            'razorpay_payment_id' => $payment->getPublicId()
+        ];
 
         if ($payment->getAutoCaptured() === true)
         {
@@ -1278,9 +1282,7 @@ trait Authorize
         }
         catch (Exception\BaseException $e)
         {
-            $this->updatePaymentFailed(
-                    $e->getError(),
-                    TraceCode::PAYMENT_AUTH_FAILURE);
+            $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
 
             throw $e;
         }
@@ -1566,12 +1568,11 @@ trait Authorize
         return Crypt::encrypt($gateway . '__' . time());
     }
 
-
-    protected function verifyHash($hash, $paymentPublicId)
+    protected function verifyHash($inputHash, $paymentPublicId)
     {
         $expectedHash = $this->getHashOf($paymentPublicId);
 
-        if ($expectedHash !== $hash)
+        if (hash_equals($expectedHash, $inputHash) !== true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Callback payment hash does not match. Please notify the admin of this error.');

@@ -256,8 +256,11 @@ class RefundReconciliate extends Foundation\SubReconciliate
             //return null;
         }
 
+        $gatewaySettledAt = $this->getGatewaySettledAt($row);
+        
         $rowDetails = [
-            BaseReconciliate::REFUND_ID => $refundId,
+            BaseReconciliate::REFUND_ID             => $refundId,
+            BaseReconciliate::GATEWAY_SETTLED_AT    => $gatewaySettledAt,
         ];
 
         return $rowDetails;

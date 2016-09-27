@@ -153,6 +153,49 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function authorizeLockTimeOutPayments($paymentIds)
+    {
+        $paymentIds = explode(',', $paymentIds);
+
+        $failurePayments = [];
+
+        $successes = $failures = 0;
+
+        $total = count($paymentIds);
+
+        foreach ($paymentIds as $paymentId)
+        {
+            $payment = $this->repo->findOrFail($paymentId);
+
+            $merchant = $payment->merchant;
+
+            try
+            {
+                $this->getNewProcessor($merchant)->forceAuthorizeFailedPayment($payment);
+                $successes++;
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException($ex);
+                $failures++;
+                $failurePayments[] = $paymentId;
+            }
+        }
+
+        $data = [
+            'success_count'     => $successes,
+            'failure_count'     => $failures,
+            'failure_payments'  => $failurePayments,
+            'total'             => $total,
+        ];
+
+        $this->trace->info(
+            TraceCode::FORCE_AUTHORIZE_TIMEOUT_PAYMENTS_RESPONSE,
+            $data);
+
+        return $data;
+    }
+
     public function authorizeFailed($id)
     {
         $payment = $this->core->retrieveById($id);
