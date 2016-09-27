@@ -150,7 +150,7 @@ class Server extends Base\Mock\Server
         if ($dontEncrypt === true)
         {
             $encryptedData = $this->encrypt($content);
-            assert($encryptedData !== false);
+            assertTrue($encryptedData !== false);
 
             $content = base64_encode($encryptedData);
         }
@@ -208,36 +208,40 @@ class Server extends Base\Mock\Server
         return $rsa;
     }
 
-    public function makeS2SRequest(array $upiEntity, array $payment)
+    public function getAsyncCallbackContent(array $upiEntity, array $payment)
     {
-        $data = $this->S2SRequestContent($upiEntity, $payment);
+        $content = $this->S2SRequestContent($upiEntity, $payment);
 
-        $json = json_encode($data, JSON_PRETTY_PRINT);
+        $json = json_encode($content, JSON_PRETTY_PRINT);
 
         $encrypted = $this->encrypt($json);
 
         return base64_encode($encrypted);
     }
 
-    protected function S2SRequestContent(array $entity, array $payment)
+    protected function S2SRequestContent(array $upiEntity, array $payment)
     {
         // Format is 20160830152240
-        $initDate = Carbon::createFromTimestampUTC($entity['created_at'], 'Asia/Kolkata');
+        $initDate = Carbon::createFromTimestampUTC($upiEntity['created_at'], 'Asia/Kolkata');
         $completeDate = $initDate->copy()->addMinutes(1);
 
-        return [
-            'merchantId'        => $entity['gateway_merchant_id'],
-            'subMerchantId'     => $payment['merchant_id'],
-            'terminalId'        => "1234",
-            'BankRRN'           => $entity['gateway_payment_id'],
-            'merchantTranId'    => $entity['payment_id'],
-            'PayerName'         => "payer name not available",
+        $response = [
+            'merchantId'        => $upiEntity['gateway_merchant_id'],
+            'subMerchantId'     => '1234',
+            'terminalId'        => '1234',
+            'BankRRN'           => $upiEntity['gateway_payment_id'],
+            'merchantTranId'    => $upiEntity['payment_id'],
+            'PayerName'         => 'payer name not available',
             'PayerMobile'       => $payment['contact'],
-            'PayerVA'           => $entity['vpa'],
-            'PayerAmount'       => number_format($payment['amount']/100, 2),
-            'TxnStatus'         => "SUCCESS",
+            'PayerVA'           => $upiEntity['vpa'],
+            'PayerAmount'       => number_format($payment['amount']/100, 2, '.', ''),
+            'TxnStatus'         => 'SUCCESS',
             'TxnInitDate'       => $initDate->format('Ymdhis'),
             'TxnCompletionDate' => $completeDate->format('Ymdhis'),
         ];
+
+        $this->content($response);
+
+        return $response;
     }
 }

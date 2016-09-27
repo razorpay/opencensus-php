@@ -41,6 +41,7 @@ class Entity extends Base\PublicEntity
     const TOKEN                 = 'token';
     const TOKEN_ID              = 'token_id';
     const GLOBAL_TOKEN_ID       = 'global_token_id';
+    const VPA                   = 'vpa';
     const EMAIL                 = 'email';
     const CONTACT               = 'contact';
     const NOTES                 = 'notes';
@@ -89,6 +90,7 @@ class Entity extends Base\PublicEntity
         self::WALLET,
         self::CURRENCY,
         self::DESCRIPTION,
+        self::VPA,
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
@@ -117,6 +119,7 @@ class Entity extends Base\PublicEntity
         self::APP_TOKEN,
         self::TOKEN_ID,
         self::GLOBAL_TOKEN_ID,
+        self::VPA,
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
@@ -152,6 +155,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::STATUS,
         self::ORDER_ID,
+        self::INTERNATIONAL,
         self::METHOD,
         self::AMOUNT_REFUNDED,
         self::REFUND_STATUS,
@@ -160,6 +164,7 @@ class Entity extends Base\PublicEntity
         self::CARD_ID,
         self::BANK,
         self::WALLET,
+        self::VPA,
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
@@ -829,6 +834,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::EMAIL);
     }
 
+    public function getVpa()
+    {
+        return $this->getAttribute(self::VPA);
+    }
+
     public function getContact()
     {
         return $this->getAttribute(self::CONTACT);
@@ -953,7 +963,7 @@ class Entity extends Base\PublicEntity
                 return [$method, ucfirst($this->getWallet())];
                 break;
             case Method::UPI:
-                return [$method, ''];
+                return [$method, $this->getVpa()];
                 break;
         }
     }
@@ -1140,6 +1150,11 @@ class Entity extends Base\PublicEntity
     public function order()
     {
         return $this->belongsTo('RZP\Models\Order\Entity');
+    }
+
+    public function analytics()
+    {
+        return $this->hasOne('RZP\Models\Payment\Analytics\Entity');
     }
 
     public function customer()

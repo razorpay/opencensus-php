@@ -257,4 +257,64 @@ class TerminalSelectionTest extends TestCase
 
         $this->fixtures->merchant->disableRisky();
     }
+
+    public function testDisableDirectTerminalForCategory()
+    {
+        $this->fixtures->merchant->editCategory2('corporate');
+
+        //Enables both terminals
+        $this->fixtures->create('terminal:netbanking_kotak_terminal',
+            ['id' => 'DCrpNbKtkTmnl1', 'network_category' => 'corporate']);
+
+        $this->fixtures->create('terminal:netbanking_kotak_terminal',
+            ['id' => 'DCrpNbKtkTmnl2', 'network_category' => 'corporate']);
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment['bank'] = 'KKBK';
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment1 = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('DCrpNbKtkTmnl1', $payment1['terminal_id']);
+
+        // Disables terminal 1
+        $this->fixtures->terminal->edit('DCrpNbKtkTmnl1',['enabled' => false]);
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment2 = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('DCrpNbKtkTmnl2', $payment2['terminal_id']);
+    }
+
+    public function testDisableSharedTerminal()
+    {
+        //Enables both terminals
+        $this->fixtures->create('terminal:shared_netbanking_kotak_terminal',
+             ['id' => 'SharNbKtkTmnl1']);
+
+        $this->fixtures->create('terminal:shared_netbanking_kotak_terminal',
+             ['id' => 'SharNbKtkTmnl2']);
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment['bank'] = 'KKBK';
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment1 = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('SharNbKtkTmnl1', $payment1['terminal_id']);
+
+        // Disables terminal 1
+        $this->fixtures->terminal->edit('SharNbKtkTmnl1',['enabled' => false]);
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment2 = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('SharNbKtkTmnl2', $payment2['terminal_id']);
+    }
 }

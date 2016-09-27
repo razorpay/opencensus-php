@@ -21,7 +21,8 @@ return [
             'content' => [
                 'gateway_merchant_id' => '12345',
                 'gateway_terminal_id' => '12345678',
-                'category'            => 4567
+                'category'            => 4567,
+                'enabled'             => true
             ]
         ]
     ],
@@ -35,7 +36,7 @@ return [
                 'gateway_terminal_password' => '12345678',
                 'category'  => '4567',
                 'emi'   => '1',
-                'shared'    => '1'
+                'shared'    => '1',
             ],
             'method' => 'POST'
         ],
@@ -43,7 +44,8 @@ return [
             'content' => [
                 'gateway_merchant_id' => '12345',
                 'gateway_terminal_id' => '12345678',
-                'category'            => 4567
+                'category'            => 4567,
+                'enabled'             => true
             ]
         ]
     ],
@@ -91,6 +93,7 @@ return [
                 'gateway' => 'atom',
                 'gateway_merchant_id' => '12345',
                 'gateway_terminal_id' => '12345678',
+                'enabled'             => true,
             ]
         ],
     ],
@@ -123,7 +126,8 @@ return [
             'content' => [
                 'gateway_merchant_id' => '12345',
                 'gateway_terminal_id' => '12345678',
-                'category'            => 4567
+                'category'            => 4567,
+                'enabled'             => true,
             ]
         ]
     ],
@@ -155,4 +159,18 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ],
+
+    'testToggleTerminal' => [
+        'request' => [
+            'content' => [
+                'toggle' => '0'
+            ],
+        'method' => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                'enabled' => false
+            ]
+        ]
+    ]
 ];

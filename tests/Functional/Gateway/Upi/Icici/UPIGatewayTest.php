@@ -29,11 +29,12 @@ class UPIGatewayTest extends TestCase
     public function testPayment($status = 'created')
     {
         unset($this->payment['description']);
-        $res = $this->doAuthPayment($this->payment);
-        $paymentId = $res['payment_id'];
+
+        $response = $this->doAuthPayment($this->payment);
+        $paymentId = $response['payment_id'];
 
         // Co Proto must be working
-        $this->assertEquals('async', $res['type']);
+        $this->assertEquals('async', $response['type']);
 
         $this->checkPaymentStatus($paymentId, $status);
 
@@ -42,7 +43,7 @@ class UPIGatewayTest extends TestCase
 
     public function testPaymentWithXmlResponse()
     {
-        $this->setContent(function (& $content)
+        $this->mockServerContentFunction(function (& $content)
         {
             $content = <<<EOT
 <?xml version="1.0" encoding="UTF-8"?>
@@ -93,7 +94,7 @@ EOT;
     {
         $payment = $this->getDefaultUpiPaymentArray();
 
-        $payment['vpa'] = 'thisisaverylongvpathisisaverylongvpathisisaverylongvpa@icici';
+        $payment['vpa'] = 'thisisaverylongvpathisisaverylongvpathisisaverylongvpathisisaverylongvpathisisaverylongvpathisisaverylongvpa@icici';
 
         $data = $this->testData['testLongVPA'];
 
@@ -122,7 +123,7 @@ EOT;
         $payment = $this->getDefaultUpiPaymentArray();
 
         // Emails are not VPAs
-        $payment['vpa'] = 'nemo@razorpay.com';
+        $payment['vpa'] = 'nemo@razorpay@com';
 
         $data = $this->testData['testInvalidVPA'];
 
@@ -132,11 +133,19 @@ EOT;
         });
     }
 
+    public function testSingleWordVPA()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+        $payment['vpa'] = 's@dcb';
+
+        $this->doAuthPayment($payment);
+    }
+
     public function testInvalidResponsePayment()
     {
         $payment = $this->getDefaultUpiPaymentArray();
 
-        $this->setContent(function (& $content)
+        $this->mockServerContentFunction(function (& $content)
         {
             $content = null;
         });
@@ -155,17 +164,7 @@ EOT;
         $upiEntity = $this->getLastEntity('upi_icici', true);
         $payment = $this->getEntityById('payment', $paymentId, true);
 
-        $mockServer = $this->mockServer();
-
-        $content = $mockServer->makeS2SRequest($upiEntity, $payment);
-
-        $request = [
-            'raw'      => $content,
-            'url'       => '/callback/upi_icici',
-            'method'    => 'post'
-        ];
-
-        $response = $this->makeRequestAndGetContent($request);
+        $response = $this->makeAsyncCallbackAndGetContent($upiEntity, $payment);
 
         if ($assert)
         {
@@ -175,18 +174,34 @@ EOT;
         return $payment;
     }
 
+    public function testRejectedPayment($assert = true)
+    {
+        $paymentId = $this->testPayment();
+
+        $upiEntity = $this->getLastEntity('upi_icici', true);
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function () use ($upiEntity, $payment) {
+            $this->makeAsyncCallbackAndGetContent($upiEntity, $payment, function (&$content)
+            {
+                $content['TxnStatus'] = 'REJECT';
+            });
+        });
+
+        $data = $this->testData['testStatusRejectPayment'];
+
+        $this->runRequestResponseFlow($data, function () use ($payment) {
+            $this->getPaymentStatus($payment['id']);
+        });
+    }
+
     protected function checkPaymentStatus($id, $expectedStatus)
     {
-        $request = [
-            'url'       => "/payments/$id/status",
-            'method'    => 'get'
-        ];
+        $response = $this->getPaymentStatus($id);
 
-        $this->ba->publicAuth();
-
-        $data = $this->makeRequestAndGetContent($request);
-
-        $status = $data['status'];
+        $status = $response['status'];
 
         $this->assertEquals($expectedStatus, $status);
     }
@@ -209,17 +224,7 @@ EOT;
         $upiEntity = $this->getLastEntity('upi', true);
         $payment = $this->getEntityById('payment', $authPayment['payment_id'], true);
 
-        $mockServer = $this->mockServer();
-
-        $content = $mockServer->makeS2SRequest($upiEntity, $payment);
-
-        $request = [
-            'raw'      => $content,
-            'url'       => '/callback/upi_icici',
-            'method'    => 'post'
-        ];
-
-        $response = $this->makeRequestAndGetContent($request);
+        $response = $this->makeAsyncCallbackAndGetContent($upiEntity, $payment);
 
         $this->payment = $this->verifyPayment($payment['id']);
 
@@ -236,17 +241,7 @@ EOT;
         $upiEntity = $this->getLastEntity('upi', true);
         $payment = $this->getEntityById('payment', $authPayment['payment_id'], true);
 
-        $mockServer = $this->mockServer();
-
-        $content = $mockServer->makeS2SRequest($upiEntity, $payment);
-
-        $request = [
-            'raw'      => $content,
-            'url'       => '/callback/upi_icici',
-            'method'    => 'post'
-        ];
-
-        $response = $this->makeRequestAndGetContent($request);
+        $response = $this->makeAsyncCallbackAndGetContent($upiEntity, $payment);
 
         $this->payment = $this->verifyPayment($payment['id']);
 
@@ -327,13 +322,25 @@ EOT;
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function setContent(Closure $closure)
+    protected function makeAsyncCallbackAndGetContent($upiEntity, $payment, Closure $closure = null)
     {
-        $server = $this->mockServer()
-                        ->shouldReceive('content')
-                        ->andReturnUsing($closure)
-                        ->mock();
+        $server = $this->mockServer();
 
-        $this->setMockServer($server);
+        if ($closure !== null)
+        {
+            $server = $this->mockServerContentFunction($closure);
+        }
+
+        $content = $server->getAsyncCallbackContent($upiEntity, $payment);
+
+        $request = [
+            'url'    => '/callback/upi_icici',
+            'method' => 'post',
+            'raw'    => $content
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
     }
 }

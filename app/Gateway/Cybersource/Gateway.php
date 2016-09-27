@@ -318,7 +318,7 @@ class Gateway extends Base\Gateway
 
     protected function postAuthEnrolledRequest($input)
     {
-        assert($this->model->getReasonCode() === Result::ENROLLED);
+        assertTrue($this->model->getReasonCode() === Result::ENROLLED);
 
         $request = $this->createAuthEnrolledRequestFields($input);
 
@@ -758,6 +758,15 @@ class Gateway extends Base\Gateway
 
         $content['ccCreditService'][self::RUN] = 'true';
         $content['ccCreditService'][self::CAPTURE_REQUEST_ID] = $gateway->getCaptureRef();
+
+        $content['item'] = [
+            [
+                'unitPrice' => ($input['refund']['amount']/100),
+                'id'        => '1'
+            ]
+        ];
+
+        $content['purchaseTotals']['grandTotalAmount'] = ($input['refund']['amount']/100);
 
         $request = $this->getStandardSoapRequest($content);
 

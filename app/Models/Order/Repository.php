@@ -14,16 +14,20 @@ class Repository extends Base\Repository
 
     protected $entity = 'order';
 
-    protected $appFetchParamRules = array(
+    protected $appFetchParamRules = [
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
         Entity::STATUS          => 'sometimes|in:created,attempted,paid',
         Entity::AUTHORIZED      => 'sometimes|in:0,1',
-    );
+    ];
 
-    protected $entityFetchParamRules = array(
+    protected $entityFetchParamRules = [
         Entity::AUTHORIZED      => 'sometimes|in:0,1',
         Entity::RECEIPT         => 'sometimes|string|max:40',
-    );
+    ];
+
+    protected $esWhitelistedParams = [
+        Entity::NOTES
+    ];
 
     public function getOrderForPayment($payment)
     {

@@ -17,6 +17,7 @@ class Table
     const PRICING               = 'pricing';
     const PAYMENT               = 'payments';
     const WEBHOOK               = 'webhooks';
+    const ADDRESS               = 'addresses';
     const MERCHANT              = 'merchants';
     const TERMINAL              = 'terminals';
     const CUSTOMER              = 'customers';
