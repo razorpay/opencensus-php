@@ -79,6 +79,19 @@ class AnalyticsTest extends TestCase
         // $this->assertEquals(2, $paymentAnalytic[AnalyticsEntity::ATTEMPTS]);
     }
 
+    public function testAttemptsWithoutCheckoutIdOrderId()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment = $this->doAuthPayment($payment);
+
+        $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
+
+        $this->assertNull($paymentAnalytic[AnalyticsEntity::CHECKOUT_ID]);
+
+        $this->assertEquals(1, $paymentAnalytic[AnalyticsEntity::ATTEMPTS]);
+    }
+
     public function testHttpRequestDataForNonOtpBasedPayment()
     {
         $payment = $this->getDefaultPaymentArray();

@@ -137,34 +137,40 @@ class Parser extends Base\Core
 
             return;
         }
-
-        $metadata = $this->getCheckoutMetadata($rawData);
-
-        $checkoutId = isset($metadata['checkout_id']) ? $metadata['checkout_id'] : null;
-
-        if ($checkoutId !== null)
+        else
         {
-            // get from checkout id
-            $oldPayments = $this->repo->payment_analytics->getRecentMerchantPaymentsForCheckoutId($checkoutId);
+            $metadata = $this->getCheckoutMetadata($rawData);
 
-            $count = $oldPayments->count();
+            $checkoutId = isset($metadata['checkout_id']) ? $metadata['checkout_id'] : null;
 
-            if (($count > 0) and
-                ($count !== $oldPayments->first()->getAttempts()))
+            if ($checkoutId !== null)
             {
-                $this->trace->warning(
-                    TraceCode::PAYMENT_CHECKOUT_INVALID_ID,
-                    [
-                        'checkout_id' => $checkoutId
-                    ]);
+                // get from checkout id
+                $oldPayments = $this->repo->payment_analytics->getRecentMerchantPaymentsForCheckoutId($checkoutId);
 
-                return null;
+                $count = $oldPayments->count();
+
+                if (($count > 0) and
+                    ($count !== $oldPayments->first()->getAttempts()))
+                {
+                    $this->trace->warning(
+                        TraceCode::PAYMENT_CHECKOUT_INVALID_ID,
+                        [
+                            'checkout_id' => $checkoutId
+                        ]);
+
+                    return;
+                }
+
+                $log[Entity::ATTEMPTS] = $count + 1;
+            }
+            else
+            {
+                $log[Entity::ATTEMPTS] = 1;
             }
 
-            $log[Entity::ATTEMPTS] = $count + 1;
+            return;
         }
-
-        return;
     }
 
     protected function updateLogFromMetadata($metadata, & $log)
