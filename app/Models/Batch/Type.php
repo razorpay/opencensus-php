@@ -6,10 +6,6 @@ class Type
 {
     const REFUND = 'refund';
 
-    // const TYPES = [
-    //     self::REFUND,
-    // ];
-
     const INPUT_HEADERS = [
         self::REFUND => [
             'Payment Id',
