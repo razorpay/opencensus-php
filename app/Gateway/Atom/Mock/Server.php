@@ -67,19 +67,19 @@ class Server extends Base\Mock\Server
 
     protected function getSecondRequestUrl($ttype)
     {
-        return Route::getUrlWithPublicAuth('mockatom_choose_org');
+        return Route::getUrlWithPublicAuth('mock_atom_choose_org');
     }
 
     protected function getRzpPaymentPageUrl()
     {
-        $url = Route::getUrlWithPublicAuth('mockatom_rzp_payment');
+        $url = Route::getUrlWithPublicAuth('mock_atom_rzp_payment');
 
         return $url;
     }
 
     protected function getRzpPaymentPageSubmitUrl()
     {
-        $url = Route::getUrlWithPublicAuth('mockatom_rzp_payment_submit');
+        $url = Route::getUrlWithPublicAuth('mock_atom_rzp_payment_submit');
 
         return $url;
     }
