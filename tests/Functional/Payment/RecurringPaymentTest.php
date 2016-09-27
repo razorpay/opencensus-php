@@ -33,6 +33,28 @@ class RecurringPaymentTest extends TestCase
         $this->mockTokenex();
     }
 
+    public function testRecurringPaymentCreatePublicAuth()
+    {
+         $this->ba->publicAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = 500000;
+        $payment['recurring'] = true;
+        $payment['customer_id'] = 'cust_100000customer';
+        $payment['card']['number'] = '4012001038443335';
+
+        $this->fixtures->merchant->editFeatures('');
+
+        $data = $this->testData[__FUNCTION__];
+
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testRecurringPaymentCreateFeatureDisabled()
     {
         // $this->ba->publicAuth();
