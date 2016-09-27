@@ -24,22 +24,23 @@ class Scorecard extends Base\Core
             Monthly Volume till now - ' . $monthVolume . ' <br />
             Yesterday Top Merchants By Volume - <br />';
 
-        $pads = [14, 100, 80, 12, 5];
+        // Padding for each column
+        $pads = ['merchant_id' => 14, 'name' => 100, 'website' => 80, 'volume' => 12, 'count' => 5];
 
-        $message =  str_pad('MerchantId', $pads[0]) .
-                    str_pad('Name', $pads[1]) .
-                    str_pad('Website', $pads[2]) .
-                    str_pad('Volume', $pads[3]) .
-                    str_pad('Count', $pads[4]);
+        $message .= str_pad('MerchantId', $pads['merchant_id']) .
+                    str_pad('Name', $pads['name']) .
+                    str_pad('Website', $pads['website']) .
+                    str_pad('Volume', $pads['volume']) .
+                    str_pad('Count', $pads['count']);
 
         foreach ($yesterdayMerchantVolume as $m)
         {
-            $message .=
-                str_pad($m['merchant_id'], $pads[0]) .
-                str_pad($m['name'], $pads[1]) .
-                str_pad($m['website'], $pads[2]) .
-                str_pad($m['volume'], $pads[3]) .
-                str_pad($m['count'], $pads[4]);
+            foreach ($m as $key => $value)
+            {
+                $message .= str_pad($m[$key], $pads[$key]);
+            }
+
+            $message .= '<br />';
         }
 
         $data['body'] = $message;

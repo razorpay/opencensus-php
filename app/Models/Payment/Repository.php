@@ -350,7 +350,7 @@ class Repository extends Base\Repository
 
     public function getYesterdayTopMerchantVolumeWise()
     {
-        $from = Carbon::today('Asia/Kolkata')->startOfMonth()->timestamp;
+        $from = Carbon::yesterday('Asia/Kolkata')->timestamp;
         $to = Carbon::today('Asia/Kolkata')->timestamp;
 
         $pid = Payment\Entity::getAttributeWithTableName(Payment\Entity::MERCHANT_ID);
