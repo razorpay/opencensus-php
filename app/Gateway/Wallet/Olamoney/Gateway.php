@@ -170,12 +170,7 @@ class Gateway extends Base\Gateway
         {
             $message = isset($content[ResponseFields::MESSAGE]) ? $content[ResponseFields::MESSAGE] : null;
 
-            $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
-
-            if (isset($message) === true)
-            {
-                $errorCode = ResponseCode::getApiErrorCode($message);
-            }
+            $errorCode = ResponseCode::getApiErrorCode($message);
 
             throw new Exception\GatewayErrorException(
                 $errorCode,
@@ -297,7 +292,7 @@ class Gateway extends Base\Gateway
             RequestFields::COMMAND              => Command::DEBIT,
             RequestFields::ACCESS_TOKEN         => $this->getAccessToken($input['terminal']),
             RequestFields::UNIQUE_ID            => $input['payment']['id'],
-            RequestFields::COMMENTS             => 'Razorpay_payment',
+            RequestFields::COMMENTS             => $input['payment']['public_id'],
             RequestFields::UDF                  => $udf,
             RequestFields::RETURN_URL           => 'NA',
             RequestFields::NOTIFICATION_URL     => $notificationUrl,
@@ -338,7 +333,7 @@ class Gateway extends Base\Gateway
 
         if ($token === null)
         {
-            throw new Exception\BaseException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
         }
 
         $this->accessToken = $token->getGatewayToken();
@@ -418,7 +413,7 @@ class Gateway extends Base\Gateway
 
         if ($token === null)
         {
-            throw new Exception\BaseException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
         }
 
         $this->accessToken = $token->getGatewayToken();
