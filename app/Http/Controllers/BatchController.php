@@ -16,7 +16,7 @@ class BatchController extends Controller
     {
         parent::__construct();
 
-        $this->batchService = new Batch\Service();
+        $this->batchService = new Batch\Service;
     }
 
     public function createBatch()
@@ -32,7 +32,7 @@ class BatchController extends Controller
     {
         $input = Request::all();
 
-        $result = $this->batchService->getBatches($input);
+        $result = $this->batchService->fetchMultiple($input);
 
         return ApiResponse::json($result);
     }

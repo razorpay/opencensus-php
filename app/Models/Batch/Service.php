@@ -31,23 +31,29 @@ class Service extends Base\Service
         return $batch->toArrayPublic();
     }
 
-    public function getBatches($input)
+    public function fetchMultiple($input)
     {
-        $batches = (new Batch\Core)->getBatches($input);
+        $batches = $this->repo->batch->fetch($input, $this->merchant->getId());
+
+        $this->trace->info(TraceCode::BATCH_LIST, $batches->toArrayPublic());
 
         return $batches->toArrayPublic();
     }
 
     public function getBatchById($id)
     {
-        $batch = (new Batch\Core)->getBatchById($id);
+        $batch = $this->repo->batch->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $this->trace->info(TraceCode::BATCH_GET, $batch->toArrayPublic());
 
         return $batch->toArrayPublic();
     }
 
     public function retryBatch($id)
     {
-        $batch = (new Batch\Core)->retryBatch($id);
+        $batch = $this->repo->batch->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $batch = (new Batch\Core)->retryBatch($batch);
 
         return $batch->toArrayPublic();
     }
