@@ -134,8 +134,6 @@ class Parser extends Base\Core
             $payments = $this->repo->payment->fetchPaymentsForOrderId($orderId);
 
             $log[Entity::ATTEMPTS] = $payments->count();
-
-            return;
         }
         else
         {
@@ -168,9 +166,9 @@ class Parser extends Base\Core
             {
                 $log[Entity::ATTEMPTS] = 1;
             }
-
-            return;
         }
+
+        return;
     }
 
     protected function updateLogFromMetadata($metadata, & $log)
