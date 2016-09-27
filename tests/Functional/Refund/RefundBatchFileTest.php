@@ -123,9 +123,9 @@ class RefundBatchFileTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $refundId = $content['id'];
+        $batchId = $content['id'];
 
-        $url = $this->writeToExcelFile($paymentEntry, substr($refundId, 6));
+        $url = $this->writeToExcelFile($paymentEntry, substr($batchId, 6));
 
         $this->assertEquals(Status::CREATED, $content['status']);
 
@@ -157,7 +157,7 @@ class RefundBatchFileTest extends TestCase
         $this->assertEquals(3, $resultBody['attempts']);
 
         $testData = $this->testData['testRetryRefundFilesWithException'];
-        $testData['request']['url'] = '/batches/' . substr($refundId, 6) .'/retry';
+        $testData['request']['url'] = '/batches/' . $batchId  .'/retry';
 
         $request = $testData['request'];
         $this->runRequestResponseFlow($testData, function() use ($request) {
