@@ -30,20 +30,40 @@ class Parser extends Base\Core
         Entity::REFERER,
     ];
 
-    public function recordPaymentRequestData($rawData, array & $log)
+    public function recordPaymentRequestData(array & $input, $payment)
     {
-        // get data from request
-        $this->setHttpRequestData($log);
+        $input[Entity::PAYMENT_ID] = $payment->getId();
 
-        $this->setLogAttempts($rawData, $log);
+        $this->setHttpRequestData($input);
 
-        $metadata = $this->getCheckoutMetadata($rawData);
+        $this->setAttempts($input, $payment);
 
-        if ($metadata !== null)
+        $this->setLogFromMetadata($input, $payment);
+
+        $this->updateLogFromMetadata($input, $payment);
+
+        return;
+    }
+
+    public function traceUnrecognizedData($paymentAnalytics)
+    {
+        $pa = $paymentAnalytics->toArrayPublic();
+
+        $invalidData = [];
+
+        foreach ($pa as $key => $value) {
+
+            if (Analytics\Metadata::isInvalidValue($value))
+            {
+                $invalidData[$key] = $value;
+            }
+        }
+
+        if (empty($invalidData) === false)
         {
-            $this->setLogFromMetadata($metadata, $log);
-
-            $this->updateLogFromMetadata($metadata, $log);
+            $this->trace->warning(TraceCode::PAYMENT_ANALYTICS_UNRECOGNIZED_DATA,
+                ['invalid_data' => $invalidData,
+                 'payment_id'   => $paymentAnalytics->getPaymentId()]);
         }
     }
 
@@ -90,56 +110,40 @@ class Parser extends Base\Core
         }
     }
 
-    protected function getCheckoutMetadata($rawData)
-    {
-        // get data from frontend
-        if ((isset($rawData['input']) === false) or
-            (isset($rawData['input']['_']) === false))
-        {
-            return null;
-        }
-
-        $metadata = $rawData['input']['_'];
-
-        $this->trace->info(
-            TraceCode::PAYMENT_METADATA,
-            [
-                'metadata'   => $metadata,
-                'payment_id' => $rawData['payment_id']
-            ]);
-
-        return $metadata;
-    }
-
     // set analytics data from metadata
-    protected function setLogFromMetadata($metadata, & $log)
+    protected function setLogFromMetadata(array & $log, $payment)
     {
-        foreach (self::$setKeys as $key)
+        $metadata = $payment->getMetadata();
+
+        if (isset($metadata))
         {
-            if (empty($metadata[$key]) === false)
+            foreach (self::$setKeys as $key)
             {
-                $log[$key] = $metadata[$key];
+                if (empty($metadata[$key]) === false)
+                {
+                    $log[$key] = $metadata[$key];
+                }
             }
         }
     }
 
-    protected function setLogAttempts($rawData, & $log)
+    protected function setAttempts(array & $log, $payment)
     {
-        $orderId = isset($rawData['order_id']) ? $rawData['order_id'] : null;
+        $orderId = $payment->getApiOrderId();
 
         if ($orderId !== null)
         {
-            $orderId = (new Order\Entity)->verifyIdAndSilentlyStripSign($rawData['order_id']);
+            // $orderId = (new Order\Entity)->verifyIdAndSilentlyStripSign($orderId);
 
             $payments = $this->repo->payment->fetchPaymentsForOrderId($orderId);
 
-            $log[Entity::ATTEMPTS] = $payments->count();
+            $attempts = $payments->count();
         }
         else
         {
-            $metadata = $this->getCheckoutMetadata($rawData);
+            $metadata = $payment->getMetadata();
 
-            $checkoutId = isset($metadata['checkout_id']) ? $metadata['checkout_id'] : null;
+            $checkoutId = ((isset($metadata) and isset($metadata['checkout_id']))) ? $metadata['checkout_id'] : null;
 
             if ($checkoutId !== null)
             {
@@ -160,38 +164,45 @@ class Parser extends Base\Core
                     return;
                 }
 
-                $log[Entity::ATTEMPTS] = $count + 1;
+                $attempts = $count + 1;
             }
             else
             {
-                $log[Entity::ATTEMPTS] = 1;
+                $attempts = 1;
             }
         }
+
+        $log[Entity::ATTEMPTS] = $attempts;
 
         return;
     }
 
-    protected function updateLogFromMetadata($metadata, & $log)
+    protected function updateLogFromMetadata(array & $log, $payment)
     {
-        $anomalies = [];
+        $metadata = $payment->getMetadata();
 
-        // Give preference to value passed from frontend over that parsed from user-agent
-        foreach (self::$updateKeys as $key)
+        if (isset($metadata))
         {
-            if ((isset($metadata[$key]) === true) and
-                (isset($log[$key]) === true))
+            $anomalies = [];
+
+            // Give preference to value passed from frontend over that parsed from user-agent
+            foreach (self::$updateKeys as $key)
             {
-                // collect anomalies
-                $this->collectMismatch($log[$key], $metadata[$key], $key, $anomalies);
+                if ((isset($metadata[$key]) === true) and
+                    (isset($log[$key]) === true))
+                {
+                    // collect anomalies
+                    $this->collectMismatch($log[$key], $metadata[$key], $key, $anomalies);
 
-                $log[$key] = $metadata[$key];
+                    $log[$key] = $metadata[$key];
+                }
             }
-        }
 
-        // log anomalies
-        if (empty($anomalies) === false)
-        {
-            $this->trace->info(TraceCode::PAYMENT_USER_AGENT_ANOMALY, $anomalies);
+            // log anomalies
+            if (empty($anomalies) === false)
+            {
+                $this->trace->info(TraceCode::PAYMENT_USER_AGENT_ANOMALY, $anomalies);
+            }
         }
     }
 

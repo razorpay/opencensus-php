@@ -7,12 +7,20 @@ use RZP\Models\Payment\Analytics;
 
 class Core extends Base\Core
 {
-    public function create($input)
+    public function create($payment)
     {
-        $auditLog = (new Analytics\Entity)->build($input);
+        $input = [];
 
-        $this->repo->saveOrFail($auditLog);
+        // parse, and set data in $paymentAnalytics object
+        (new Analytics\Parser)->recordPaymentRequestData($input, $payment);
 
-        return $auditLog;
+        $paymentAnalytics = (new Analytics\Entity)->build($input);
+
+        $this->repo->saveOrFail($paymentAnalytics);
+
+        // trace unrecognized data in $paymentAnalytics object
+        $parser->traceUnrecognizedData($paymentAnalytics);
+
+        return $paymentAnalytics;
     }
 }
