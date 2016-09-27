@@ -64,14 +64,14 @@ class Entity extends Base\PublicEntity
     protected $public = array(
         self::ID,
         self::ENTITY,
+        self::TYPE,
+        self::STATUS,
         self::TOTAL_COUNT,
         self::SUCCESS_COUNT,
         self::FAILURE_COUNT,
         self::ATTEMPTS,
         self::AMOUNT,
         self::PROCESSED_AMOUNT,
-        self::STATUS,
-        self::TYPE,
         self::PROCESSED_AT,
         self::CREATED_AT,
     );
@@ -86,7 +86,6 @@ class Entity extends Base\PublicEntity
         self::PROCESSED_AMOUNT               => 0,
         self::COMMENT                        => null,
         self::PROCESSED_AT                   => null,
-        self::TYPE                           => null,
     );
 
     protected $casts = array(
