@@ -3,12 +3,9 @@
 return array(
 
     /**
-     * This url is used when sending requests directly to rzp backend
-     * without using rzp-php api.
-     * Mostly used for endpoints not exposed by rzp-php
+     * This is used for automatic
+     * cron requests
      */
-    'url'       =>  env('API_URL'),
-    'auth_user' =>  'rzp_api',
-    'auth_pass' =>  env('API_AUTH_PASS'),
-    'mock'      =>  env('API_MOCK')
+    'auth_user' =>  'cron',
+    'auth_pass' =>  env('CRON_PASS')
 );
