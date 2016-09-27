@@ -200,30 +200,30 @@ class Service extends Base\Service
         $error = [];
         try
         {
-            foreach ($paymentsByMerchant as $key => $paymentByMerchant)
+            foreach ($paymentsByMerchant as $merchantId => $paymentByMerchant)
             {
-                $inputByMerchant[$key]['count'] = count($paymentByMerchant);
-                $inputByMerchant[$key]['amount'] = 0;
-                $inputByMerchant[$key]['created_at'] = $paymentByMerchant[0]['created_at'];
+                $inputByMerchant[$merchantId]['count'] = count($paymentByMerchant);
+                $inputByMerchant[$merchantId]['amount'] = 0;
+                $inputByMerchant[$merchantId]['created_at'] = $paymentByMerchant[0]['created_at'];
 
                 foreach ($paymentByMerchant as $value)
                 {
-                    $inputByMerchant[$key]['amount'] += $value['amount'];
+                    $inputByMerchant[$merchantId]['amount'] += $value['amount'];
                 }
             }
 
             // $app = \App::getFacadeRoot();
             // $trace = $app['trace'];
 
-            foreach ($inputByMerchant as $key => $value)
+            foreach ($inputByMerchant as $merchantId => $value)
             {
-                // $trace->info(TraceCode::MISC_TRACE_CODE, [$key, $value]);
+                // $trace->info(TraceCode::MISC_TRACE_CODE, [$merchantId, $value]);
 
                 $createdAt = strtotime(date('j F Y', $value['created_at']));
 
                 $type = 'day';
 
-                $this->createOrUpdate($key, $value, $type, $createdAt, $mode);
+                $this->createOrUpdate($merchantId, $value, $type, $createdAt, $mode);
             }
         }
         catch (\Exception $e)
@@ -235,17 +235,17 @@ class Service extends Base\Service
         return array($error, null);
     }
 
-    protected function createOrUpdate($key, $inputByMerchant, $type, $createdAt, $mode)
+    protected function createOrUpdate($merchantId, $inputByMerchant, $type, $createdAt, $mode)
     {
         $app = \App::getFacadeRoot();
         $trace = $app['trace'];
-        $trace->info(TraceCode::MISC_TRACE_CODE, [$key, $inputByMerchant]);
+        $trace->info(TraceCode::MISC_TRACE_CODE, [$merchantId, $inputByMerchant]);
 
-        $obj = Transaction\Entity::retrieveByTypeAndCreatedAt($key, $type, $createdAt, $mode);
+        $obj = Transaction\Entity::retrieveByTypeAndCreatedAt($merchantId, $type, $createdAt, $mode);
 
         if ($obj === null)
         {
-            $this->createAggregate($key, $inputByMerchant, $type, $mode);
+            $this->createAggregate($merchantId, $inputByMerchant, $type, $mode);
         }
         else
         {
@@ -260,13 +260,13 @@ class Service extends Base\Service
         {
             foreach ($data as $merchant_aggregate)
             {
-                $key = $merchant_aggregate->merchant_id;
+                $merchantId = $merchant_aggregate->merchant_id;
                 $input = [];
                 $input['updated_at'] = time();
                 $input['amount'] = $merchant_aggregate->amount;
                 $input['count'] = $merchant_aggregate->count;
-                $input['merchant_id'] = $key;
-                $this->createOrUpdate($key, $input, $type, $createdAt, $mode);
+                $input['merchant_id'] = $merchantId;
+                $this->createOrUpdate($merchantId, $input, $type, $createdAt, $mode);
             }
         }
         catch(\Exception $e)

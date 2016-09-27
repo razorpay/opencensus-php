@@ -293,6 +293,7 @@ class TransactionController extends Controller
     {
         $input = Input::all();
 
+        date_default_timezone_set('Asia/Kolkata');
         $created_at = (new Transaction\Service)->getCreatedAtFromInputAndType(strtotime($input['date']), $type);
 
         $data = (new Transaction\Service)->getTimelyTransactionsForTheType($created_at, $mode, $type);
