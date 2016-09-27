@@ -8,6 +8,7 @@
 * `sudo chmod -R o+wx storage/`
 * Copy over `environment/env.sample.php` to `environment/env.php`
 * Copy `environment/.env.example` to `environment/.env.dev` and edit it accordingly
+* Make sure `SECURE_SESSION=false` in `.env.dev`
 * Run `php composer.phar install` to install laravel
 * Run `php artisan migrate --seed` to migrate and seed the db. If you face problem regarding null fields, turn off strict SQL mode.
 * `npm install`

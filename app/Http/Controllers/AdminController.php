@@ -47,6 +47,31 @@ class AdminController extends Controller
         return AppResponse::jsonResponse([], $this->admin->toArray());
     }
 
+    public function getAdminActivity()
+    {
+        $id = Auth::guard('admin')->user()->id;
+
+        $activity = (new Admin\Service)->getAdminActivity($id);
+
+        return AppResponse::jsonResponse([], $activity);
+    }
+
+    public function deleteOtherAdminActivity()
+    {
+        $id = Auth::guard('admin')->user()->id;
+
+        (new Admin\Service)->deleteAllOtherAdminSessions($id);
+
+        return AppResponse::jsonResponse([]);
+    }
+
+    public function deleteAdminActivity($sessionId)
+    {
+        (new Admin\Service)->deleteOneAdminSessions($sessionId);
+
+        return AppResponse::jsonResponse([]);
+    }
+
     public function getLogout()
     {
         Auth::guard('admin')->logout();
@@ -534,6 +559,13 @@ class AdminController extends Controller
     {
         $input = Input::all();
         list($error, $data) = (new Admin\Service)->editTerminal($mode, $terminalId, $input);
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function toggleTerminal($mode, $terminalId)
+    {
+        $input = Input::all();
+        list($error, $data) = (new Admin\Service)->toggleTerminal($mode, $terminalId, $input);
         return AppResponse::jsonResponse($error, $data);
     }
 

@@ -65,6 +65,7 @@ app.controller('PricingsCtrl', [
         case 'emi':
           networks = $scope.networks.card;
           break;
+
         default:
           networks = $scope.networks[method];
       }

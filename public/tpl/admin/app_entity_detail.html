@@ -43,6 +43,16 @@
         <button class="btn btn-info" ng-click="open.terminalEdit(entity)">
           Edit Terminal
         </button>
+        <button ng-show="entity.enabled" class="btn btn-warning" ng-click="terminal.disable(entity.id)"
+          ng-confirm-click="Are you sure you want to disable this terminal?"
+        >
+          Disable Terminal
+        </button>
+        <button ng-show="!entity.enabled" class="btn btn-success" ng-click="terminal.enable(entity.id)"
+          ng-confirm-click="Are you sure you want to disable this terminal?"
+        >
+          Enable Terminal
+        </button>
       </div>
     </div>
     <div class="panel-footer row" ng-show="entity.entity == 'iin'">
