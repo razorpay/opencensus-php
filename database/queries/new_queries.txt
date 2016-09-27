@@ -1,0 +1,10 @@
+update settlements set status = 'failed' where id = '6IvkeDrStxAkKl';
+update settlements set status = 'failed' where id = '6JKIVhAOglWEzd';
+update settlements set status = 'failed' where id = '6KVt8W16z9wM2S';
+update settlements set status = 'failed' where id = '6KuQGTmk6bp0TM';
+update settlements set status = 'failed' where id = '6LhURyIav2Irt5';
+
+ALTER TABLE payments
+    ADD CONSTRAINT payments_token_id_foreign FOREIGN KEY(token_id) REFERENCES tokens(id) ON DELETE RESTRICT,
+    ADD CONSTRAINT payments_global_token_id_foreign FOREIGN KEY(global_token_id) REFERENCES tokens(id) ON DELETE RESTRICT;
+
