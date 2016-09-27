@@ -101,7 +101,9 @@ class Gateway extends Ebs\Gateway
 
     protected function getHeader()
     {
-        return ['location'=> $this->app['config']->get('app.url')];
+        return [
+            'location' => $this->app['config']->get('app.url')
+        ];
     }
 
     protected function setHeader($response, $headerValue)
