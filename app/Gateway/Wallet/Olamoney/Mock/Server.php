@@ -87,7 +87,6 @@ class Server extends Base\Mock\Server
                 ResponseFields::MESSAGE     => 'Invalid OTP',
             );
         }
-
         else if ($input[RequestFields::OTP] === Otp::INSUFFICIENT_BALANCE)
         {
             $responseContent = array(
@@ -115,10 +114,10 @@ class Server extends Base\Mock\Server
         }
 
         $responseContent = array(
-                ResponseFields::STATUS          => 'success',
-                ResponseFields::COMMENTS        => 'olaComments',
-                ResponseFields::AMOUNT          => $balance,
-                ResponseFields::BALANCE_TYPE    => 'olaBalanceType',
+            ResponseFields::STATUS          => 'success',
+            ResponseFields::COMMENTS        => 'olaComments',
+            ResponseFields::AMOUNT          => $balance,
+            ResponseFields::BALANCE_TYPE    => 'olaBalanceType',
         );
 
         return $this->makeResponse($responseContent);

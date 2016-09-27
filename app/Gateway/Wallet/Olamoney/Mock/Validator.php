@@ -46,12 +46,12 @@ class Validator extends Base\Validator
         RequestFields::AMOUNT               => 'required|numeric',
         RequestFields::UDF                  => 'required|string',
         RequestFields::CURRENCY             => 'required|in:INR',
-        RequestFields::NOTIFICATION_URL     => 'required',
+        RequestFields::NOTIFICATION_URL     => 'required|url',
         RequestFields::RETURN_URL           => 'required',
         RequestFields::COMMENTS             => 'required|string',
         RequestFields::COUPON_CODE          => 'required|string',
         RequestFields::USER_ACCESS_TOKEN    => 'required|string',
-        RequestFields::HASH                 => 'required|string',
+        RequestFields::HASH                 => 'required|regex:"^[a-f0-9]+$"',
     );
 
     protected static $refundRules = array(
@@ -60,7 +60,7 @@ class Validator extends Base\Validator
         RequestFields::UNIQUE_ID        => 'required|string',
         RequestFields::COMMENTS         => 'required|string',
         RequestFields::UDF              => 'required|string',
-        RequestFields::HASH             => 'required|string',
+        RequestFields::HASH             => 'required|regex:"^[a-f0-9]+$"',
         RequestFields::RETURN_URL       => 'sometimes',
         RequestFields::NOTIFICATION_URL => 'sometimes',
         RequestFields::AMOUNT           => 'required|numeric',
@@ -74,6 +74,6 @@ class Validator extends Base\Validator
         RequestFields::UNIQUE_BILL_ID   => 'required|string',
         RequestFields::ACCESS_TOKEN     => 'required|string',
         RequestFields::TIMESTAMP        => 'required|date_format:Y-m-d H:i:s',
-        RequestFields::HASH             => 'required|string',
+        RequestFields::HASH             => 'required|regex:"^[a-f0-9]+$"',
     );
 }
