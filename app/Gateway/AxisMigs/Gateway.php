@@ -110,8 +110,15 @@ class Gateway extends Base\Gateway
     {
         $repo = $this->repo;
 
-        $payment = $repo->findByPaymentIdAndCommand(
-                                $input['payment']['id'], Command::PAY);
+        $gatewayPayment = $repo->findByPaymentIdAndCommand($input['payment']['id'], Command::PAY);
+
+        // If it's already authorized on axis side, there's nothing to do here. We just return back.
+        if (($gatewayPayment->getVpcTransactionNo() !== null) and
+            ($gatewayPayment->getReceived() === true) and
+            ($gatewayPayment->getVpcTransactionCode() === '0'))
+        {
+            return true;
+        }
 
         // assert ($payment['received'] === false);
         // assert ($payment['vpc_TxnResponseCode'] !== '0');
@@ -137,10 +144,10 @@ class Gateway extends Base\Gateway
                 'No migs payments with nearby vpc_TransactionNo found');
         }
 
-        $payment->setVpcTransactionNo($txnNo, $terminalId);
-        $payment['vpc_TxnResponseCode'] = '0';
+        $gatewayPayment->setVpcTransactionNo($txnNo, $terminalId);
+        $gatewayPayment['vpc_TxnResponseCode'] = '0';
 
-        $repo->saveOrFail($payment);
+        $repo->saveOrFail($gatewayPayment);
 
         return true;
     }
