@@ -20,7 +20,7 @@ $factory('App\Admin\Entity', [
     'name'  => $faker->word,
     'username'  => $faker->word,
     'password'  => $password,
-    'email' => $faker->email,
+    'email' => 'testoauth@testcases.com',
     'superadmin'    => '1'
 ]);
 

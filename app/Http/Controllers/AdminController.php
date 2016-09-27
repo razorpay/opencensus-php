@@ -35,18 +35,14 @@ class AdminController extends Controller
 
     public function getIndex()
     {
-        // return view('admin.tmpgetIndex');
         $code = Input::get('code');
-
-        $googleService = OAuth::consumer('Google');
-
-        // check if code is valid
+        $googleService = (new OAuth)->consumer('Google');
 
         // If the user is not logged in
         if (!Auth::guard('admin')->check())
         {
             // if code is provided get user data and sign in
-            if ($code === null)
+            if (getenv('APP_ENV') !== 'testing' && $code === null)
             {   
                 $url = $googleService->getAuthorizationUri();
 
@@ -65,8 +61,8 @@ class AdminController extends Controller
                     return App::abort(404);
                 }
 
-                $admin = Admin\Entity::where('email', 'harshil@razorpay.com')->first();
-      
+                $admin = Admin\Entity::where('email', $result->email)->first();
+
                 if ($admin)
                 {
                     $admin->access_token = $token->getAccessToken();

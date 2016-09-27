@@ -13,6 +13,7 @@ class ConfigServiceProvider extends ServiceProvider {
 	 *
 	 * @return void
 	 */
+
 	public function register()
 	{
 		config([
