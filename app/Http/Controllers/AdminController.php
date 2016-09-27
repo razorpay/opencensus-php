@@ -725,6 +725,9 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $response);
     }
 
+    /**
+    * Expects date input in format "3 august 2016"
+    */
     public function updateDayAggregations($mode)
     {
         $input = Input::all();

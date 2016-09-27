@@ -69,7 +69,7 @@ class Service extends Base\Service
 
     protected function createAggregate($mid, $data, $type, $mode)
     {
-        $data['created_at'] = $this->getCreatedAtFromInputAndType($data['updated_at'], $type);
+        $data['created_at'] = $this->getCreatedAtFromInputAndType($data['created_at'], $type);
         $data['type'] = $type;
         $data['mode'] = $mode;
         $data['merchant_id'] = $mid;
@@ -204,26 +204,26 @@ class Service extends Base\Service
             {
                 $inputByMerchant[$key]['count'] = count($paymentByMerchant);
                 $inputByMerchant[$key]['amount'] = 0;
+                $inputByMerchant[$key]['created_at'] = $paymentByMerchant[0]['created_at'];
 
                 foreach ($paymentByMerchant as $value)
                 {
                     $inputByMerchant[$key]['amount'] += $value['amount'];
                 }
-                $inputByMerchant[$key]['updated_at'] = time();
             }
 
-            $app = \App::getFacadeRoot();
-            $trace = $app['trace'];
+            // $app = \App::getFacadeRoot();
+            // $trace = $app['trace'];
 
             foreach ($inputByMerchant as $key => $value)
             {
-                $trace->info(TraceCode::MISC_TRACE_CODE, [$key, $value]);
+                // $trace->info(TraceCode::MISC_TRACE_CODE, [$key, $value]);
 
-                $createdAt = strtotime(date('j F Y', $value['updated_at']));
+                $createdAt = strtotime(date('j F Y', $value['created_at']));
 
                 $type = 'day';
 
-                // $this->createOrUpdate($key, $value, $type, $createdAt, $mode);
+                $this->createOrUpdate($key, $value, $type, $createdAt, $mode);
             }
         }
         catch (\Exception $e)
@@ -237,14 +237,13 @@ class Service extends Base\Service
 
     protected function createOrUpdate($key, $inputByMerchant, $type, $createdAt, $mode)
     {
-        // $app = \App::getFacadeRoot();
-        // $trace = $app['trace'];
-        // $trace->info(TraceCode::MISC_TRACE_CODE, [$key, $inputByMerchant]);
+        $app = \App::getFacadeRoot();
+        $trace = $app['trace'];
+        $trace->info(TraceCode::MISC_TRACE_CODE, [$key, $inputByMerchant]);
 
         $obj = Transaction\Entity::retrieveByTypeAndCreatedAt($key, $type, $createdAt, $mode);
 
-        if (($obj === null) or
-            ($obj->created_at->timestamp + self::$timeIntervals[$type] <= $inputByMerchant['updated_at']))
+        if ($obj === null)
         {
             $this->createAggregate($key, $inputByMerchant, $type, $mode);
         }
@@ -263,11 +262,7 @@ class Service extends Base\Service
             {
                 $key = $merchant_aggregate->merchant_id;
                 $input = [];
-                $input['updated_at'] = $createdAt + self::$timeIntervals[$type];
-                if ($type === 'year')
-                {
-                    $input['updated_at'] = time();
-                }
+                $input['updated_at'] = time();
                 $input['amount'] = $merchant_aggregate->amount;
                 $input['count'] = $merchant_aggregate->count;
                 $input['merchant_id'] = $key;
@@ -314,7 +309,7 @@ class Service extends Base\Service
         $data = Transaction\Entity::select('merchant_id', DB::raw('sum(count) as count'), DB::raw('sum(amount) as amount'))
             ->where('type','=',$type)
             ->where('created_at','>=',$createdAt)
-            ->where('created_at','<=',$endDate)
+            ->where('created_at','<',$endDate)
             ->where('mode', '=', $mode)
             ->groupBy('merchant_id')
             ->get();

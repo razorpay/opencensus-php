@@ -2001,7 +2001,7 @@ class Service extends Base\Service
 
     protected function cleanUpPayment($payment)
     {
-        $minimal_keys = ['merchant_id', 'amount', 'updated_at'];
+        $minimal_keys = ['merchant_id', 'amount', 'created_at', 'updated_at'];
 
         $minimal_payment = array_filter($payment, function($key) use($minimal_keys) {
             return in_array($key, $minimal_keys);
