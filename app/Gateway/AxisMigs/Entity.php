@@ -112,7 +112,7 @@ class Entity extends Base\Entity
 
     public function getVpcTransactionCode()
     {
-        $this->getAttribute('vpc_TxnResponseCode');
+        return $this->getAttribute('vpc_TxnResponseCode');
     }
 
     /**
