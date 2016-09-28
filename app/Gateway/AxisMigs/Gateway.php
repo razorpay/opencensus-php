@@ -113,7 +113,7 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $repo->findByPaymentIdAndCommand($input['payment']['id'], Command::PAY);
 
         // If it's already authorized on axis side, there's nothing to do here. We just return back.
-        if (($gatewayPayment->getVpcTransactionNo() !== null) and
+        if (($gatewayPayment->getTransactionId() !== null) and
             ($gatewayPayment->getReceived() === true) and
             ($gatewayPayment->getVpcTransactionCode() === '0'))
         {

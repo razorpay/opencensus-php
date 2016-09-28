@@ -219,11 +219,6 @@ class ApiResponse
 
     protected static function generateCheckoutView($data)
     {
-        if (isset($data['font']) === false)
-        {
-            $data['font'] = 'https://cdn.razorpay.com/lato2';
-        }
-
         return \View::make('checkout.checkout')
                     ->with($data);
     }

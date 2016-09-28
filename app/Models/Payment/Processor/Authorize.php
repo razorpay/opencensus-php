@@ -977,6 +977,14 @@ trait Authorize
     {
         $payment = $this->payment;
 
+        $this->trace->info(
+            TraceCode::PAYMENT_UPDATE_TOKEN,
+            [
+                'payment_id'      => $payment->getId(),
+                'token_id'        => $payment->getTokenId(),
+                'global_token_id' => $payment->getGlobalTokenId()
+            ]);
+
         $token = $payment->getGlobalOrLocalTokenEntity();
 
         // update token stats, assuming same token is not getting used in
