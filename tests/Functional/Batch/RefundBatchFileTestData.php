@@ -16,7 +16,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'batch',
-                'status' =>  'created',
+                'status' => 'created',
             ],
         ],
     ],

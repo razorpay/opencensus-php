@@ -197,12 +197,16 @@ class RefundBatchFileTest extends TestCase
             $entries = $this->getDefaultRefundFileEntries();
         }
 
+        $entryWithHeaders = array();
+        array_push($entryWithHeaders, array('Payment Id', 'Amount'));
+        array_push($entryWithHeaders, $entries[0]);
+
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
         $name = $trace[1]['function'];
 
         $request = & $this->testData[$name]['request'];
 
-        $url = $this->writeToExcelFile($entries, 'upload_refund_test');
+        $url = $this->writeToExcelFile($entryWithHeaders, 'upload_refund_test');
 
         $uploadedFile = $this->createTempFile($url);
 

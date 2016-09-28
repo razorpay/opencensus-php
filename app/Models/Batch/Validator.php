@@ -40,6 +40,18 @@ class Validator extends Base\Validator
     {
         $headers = array('payment_id', 'refund_amount');
 
+        // Skipping the first row: This would be templatized headers
+        $headerValues = $entries[0];
+        $headerMap = array_combine($headers, $headerValues);
+
+        if($headerMap['payment_id'] !== 'Payment Id' ||
+            $headerMap['refund_amount'] !== 'Amount')
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FILE_VALIDATION);
+        }
+
+        array_shift($entries);
+
         $existingPaymentIds = array();
 
         foreach ($entries as $entry)
