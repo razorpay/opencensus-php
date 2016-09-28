@@ -71,11 +71,4 @@ class Repository extends Base\Repository
                     ->where(Entity::PAYMENT_ID, '=', $paymentId)
                     ->firstOrFail();
     }
-
-    public function retrieveByPaymentId($paymentId)
-    {
-        return $this->newQuery()
-                    ->where(Entity::PAYMENT_ID, '=', $paymentId)
-                    ->first();
-    }
 }

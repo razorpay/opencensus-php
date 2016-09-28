@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Gateway\Wallet\Base;
+namespace RZP\Gateway\Base;
 
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorDescription;

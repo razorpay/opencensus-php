@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Wallet\Freecharge;
 
-use RZP\Gateway\Wallet\Base;
+use RZP\Gateway\Base;
 
 class ResponseCode extends Base\ResponseCode
 {

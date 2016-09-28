@@ -69,6 +69,8 @@ class Server extends Base\Mock\Server
 
     public function refund($input)
     {
+        $input = json_decode($input, true);
+
         parent::refund($input);
 
         $this->validateActionInput($input, 'refund');
@@ -89,6 +91,8 @@ class Server extends Base\Mock\Server
 
     public function otpGenerate($input)
     {
+        $input = json_decode($input, true);
+
         $this->validateActionInput($input, 'otpGenerate');
 
         $mobile = $input[RequestFields::MOBILE_NUMBER];
@@ -105,6 +109,8 @@ class Server extends Base\Mock\Server
 
     public function otpResend($input)
     {
+        $input = json_decode($input, true);
+
         $this->validateActionInput($input, 'otpResend');
 
         $response = [
@@ -127,6 +133,8 @@ class Server extends Base\Mock\Server
 
     public function otpSubmit($input)
     {
+        $input = json_decode($input, true);
+
         $this->validateActionInput($input, 'otpSubmit');
 
         if ($input[RequestFields::OTP] === Otp::EXPIRED)
@@ -169,9 +177,11 @@ class Server extends Base\Mock\Server
 
     public function debitWallet($input)
     {
+        $input = json_decode($input, true);
+
         $this->validateActionInput($input, 'debitWallet');
 
-        if ($this->mockRequest['content']['accessToken'] === $this->accessToken)
+        if ($input['accessToken'] === $this->accessToken)
         {
             $response = array(
                 ResponseFields::TXN_ID          => $this->getTxnId(),

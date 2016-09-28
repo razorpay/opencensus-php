@@ -413,6 +413,17 @@ class Gateway
             ]);
     }
 
+    protected function traceGatewayPaymentResponse($response, $input)
+    {
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_RESPONSE,
+            [
+                'response'   => $response,
+                'gateway'    => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+            ]);
+    }
+
     protected function getPaymentToVerify($input, $verify)
     {
         $payment = $this->repo->findByPaymentIdAndAction(

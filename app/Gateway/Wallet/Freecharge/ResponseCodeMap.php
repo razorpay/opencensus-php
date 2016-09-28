@@ -4,8 +4,9 @@ namespace RZP\Gateway\Wallet\Freecharge;
 
 use RZP\Error;
 use RZP\Error\ErrorCode;
+use RZP\Gateway\Base;
 
-class ResponseCodeMap
+class ResponseCodeMap extends Base\ResponseCodeMap
 {
     public static $codes = array(
         'E001'  => ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_ID,
@@ -31,31 +32,4 @@ class ResponseCodeMap
         'E701'  => ErrorCode::BAD_REQUEST_PAYMENT_OTP_EXPIRED,
         'E702'  => ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
     );
-
-    public static function getResponseMessage($code)
-    {
-        $codes = self::$codes;
-
-        return $codes[$code];
-    }
-
-    public static function getApiErrorCode($code)
-    {
-        $class = 'RZP\Error\ErrorCode::';
-
-        if ((empty($code) === true) or
-              (isset(self::$codes[$code]) === false))
-        {
-            return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
-        }
-
-        $apiCode = self::$codes[$code];
-
-        if (defined($class . $apiCode))
-        {
-            return $apiCode;
-        }
-
-        return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
-    }
 }

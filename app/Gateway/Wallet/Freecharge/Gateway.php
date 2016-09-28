@@ -39,8 +39,6 @@ class Gateway extends Base\Gateway
 
     protected $topup = true;
 
-    protected $action = null;
-
     protected $map = array(
         RequestFields::EMAIL         => 'email',
         RequestFields::MOBILE_NUMBER => 'contact',
@@ -240,12 +238,8 @@ class Gateway extends Base\Gateway
             RequestFields::RECEIVED      => true
         );
 
-        //  Changing action to AUTHORIZE to keep the action consistent
-        $this->action = Action::AUTHORIZE;
-
         $wallet = $this->repo->findByPaymentIdAndActionOrFail(
-            $input['payment']['id'],
-            $this->action);
+            $input['payment']['id'], Action::AUTHORIZE);
 
         $this->updateGatewayPaymentEntity($wallet, $contentToSave);
 
@@ -326,7 +320,8 @@ class Gateway extends Base\Gateway
         $input = $this->input;
 
         $expiryTime = $content[ResponseFields::ACCESS_TOKEN_EXPIRY];
-        $expiryTime = Carbon::parse($expiryTime)->timestamp;
+        $expiryTime = Carbon::createFromFormat(
+            'Y-m-d\TH:i:s', $expiryTime)->timestamp;
 
         $attributes = array(
             Token\Entity::METHOD           => 'wallet',
@@ -375,18 +370,9 @@ class Gateway extends Base\Gateway
 
     protected function getCustomRequestArray($content = [], $method = 'post')
     {
+        $content = json_encode($content);
+
         $request = $this->getStandardRequestArray($content, $method);
-
-        $content = json_encode($request['content']);
-
-        if ($this->mock === true)
-        {
-            $request['raw'] = $content;
-        }
-        else
-        {
-            $request['content'] = $content;
-        }
 
         $request['headers'] = [
             'Content-Type' => 'application/json',
@@ -419,7 +405,7 @@ class Gateway extends Base\Gateway
     {
         foreach ($content as $key => $value)
         {
-            if (($value === null) or ($value === ""))
+            if (empty($value) === true)
             {
                 unset($content[$key]);
             }
@@ -564,13 +550,14 @@ class Gateway extends Base\Gateway
 
     protected function getOtpSubmitRequestArray($input)
     {
-        $wallet = $this->repo->retrieveByPaymentIdOrFail($input['payment']['id']);
+        $wallet = $this->repo->findByPaymentIdAndActionOrFail(
+            $input['payment']['id'], Action::AUTHORIZE);
 
         $content = array(
             RequestFields::OTP_ID                  => $wallet['reference1'],
             RequestFields::OTP                     => $input['gateway']['otp'],
             RequestFields::USER_MACHINE_IDENTIFIER => $input['payment']['id'],
-            RequestFields::MERCHANT_ID             => $this->getMerchantId($this->input['terminal']),
+            RequestFields::MERCHANT_ID             => $this->getMerchantId($input['terminal']),
         );
 
         $content[RequestFields::CHECKSUM] = $this->getHashOfArray($content);
@@ -602,10 +589,10 @@ class Gateway extends Base\Gateway
             RequestFields::CHANNEL      => self::DEFAULT_TXN_CHANNEL,
             RequestFields::LOGIN_TOKEN  => '',
             RequestFields::MERCHANT_ID  => $this->getMerchantId($input['terminal']),
-            RequestFields::METADATA     => 'dummy',
+            RequestFields::METADATA     => $input['payment']['public_id'],
         );
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $content);
+        $this->trace->info(TraceCode::PAYMENT_TOPUP_REQUEST, $content);
 
         $content[RequestFields::LOGIN_TOKEN] = $this->generateLoginToken($this->accessToken);
 
@@ -617,14 +604,15 @@ class Gateway extends Base\Gateway
             'Accept' => 'application/x-www-form-urlencoded',
         ];
 
-        $this->trace->info(TraceCode::PAYMENT_TOPUP_REQUEST, $request);
-
         return $request;
     }
 
     protected function getRefundRequestArray($input)
     {
-        $wallet = $this->repo->retrieveByPaymentIdOrFail($input['payment']['id']);
+        $wallet = $this->repo->findByPaymentIdAndActionOrFail(
+            $input['payment']['id'],
+            Action::AUTHORIZE
+        );
 
         $content = [
             RequestFields::MERCHANT_ID            => $this->getMerchantId($input['terminal']),
@@ -819,7 +807,8 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyRequestArray($input)
     {
-        $wallet = $this->repo->retrieveByPaymentId($input['payment']['id']);
+        $wallet = $this->repo->findByPaymentIdAndActionOrFail(
+            $input['payment']['id'], Action::AUTHORIZE);
 
         $content = [
             RequestFields::MERCHANT_ID     => $this->getMerchantId($input['terminal']),
