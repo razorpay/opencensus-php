@@ -377,8 +377,16 @@ class Gateway extends Base\Gateway
     {
         $request = $this->getStandardRequestArray($content, $method);
 
-        if (!$this->mock)
-            $request['content'] = json_encode($request['content']);
+        $content = json_encode($request['content']);
+
+        if ($this->mock === true)
+        {
+            $request['raw'] = $content;
+        }
+        else
+        {
+            $request['content'] = $content;
+        }
 
         $request['headers'] = [
             'Content-Type' => 'application/json',
