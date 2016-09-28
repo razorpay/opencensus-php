@@ -261,7 +261,7 @@ class AdminTest extends TestCase
         $this->waitUntilContainsByCss('body', 'Merchant Detail');
         $this->clickByLinkText('Login as Merchant');
         $this->window($this->windowHandles()[2]);
-        // $this->waitUntilContainsByCss('body', 'Welcome to Razorpay');
+        $this->waitUntilContainsByCss('body', 'Welcome to Razorpay');
 
         // Logout is currently broken
         // TODO: Uncomment this
