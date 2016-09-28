@@ -31,6 +31,8 @@ class Gateway extends Base\Gateway
 
     const DEFAULT_TXN_TYPE    = 'CUSTOMER_PAYMENT';
 
+    const ENCRYPTION_MODE     = 'aes-128-ecb';
+
     protected $gateway = 'wallet_freecharge';
 
     protected $sortRequestContent = true;
@@ -371,7 +373,9 @@ class Gateway extends Base\Gateway
 
     protected function getStringToHash($content, $glue = '')
     {
-        return json_encode($content, JSON_UNESCAPED_SLASHES).$this->getSecret();
+        // If JSON_UNESCAPED_SLASHES not used, wrong checksum will be created due to
+        // escaped slashes.
+        return json_encode($content, JSON_UNESCAPED_SLASHES) . $this->getSecret();
     }
 
     protected function getCustomRequestArray($content = [], $method = 'post')
@@ -420,20 +424,6 @@ class Gateway extends Base\Gateway
         return parent::getHashOfArray($content);
     }
 
-    protected function strToHex($cipherText)
-    {
-        $hex = '';
-
-        for ($i = 0; $i < strlen($cipherText); $i++)
-        {
-            $ord = ord($cipherText[$i]);
-            $hexCode = dechex($ord);
-            $hex .= substr('0'.$hexCode, -2);
-        }
-
-        return strtoupper($hex);
-    }
-
     /**
      * Creates a login token for freecharge topup
      * 1. Encrypt accessToken with first 16 chars of secretKey
@@ -448,9 +438,12 @@ class Gateway extends Base\Gateway
         $key = substr($secret, 0, 16);
 
         // Encrypt accesstoken using AES 128 bit, ECB, PKCS7 padding
-        $cipherText = openssl_encrypt($accessToken, 'aes-128-ecb', $key, OPENSSL_RAW_DATA);
+        $cipherText = openssl_encrypt(
+            $accessToken, self::ENCRYPTION_MODE, $key, OPENSSL_RAW_DATA);
 
-        return $this->strToHex($cipherText);
+        assert($cipherText !== false);
+
+        return bin2hex($cipherText);
     }
 
     protected function getUserWalletBalance($input)
@@ -542,7 +535,7 @@ class Gateway extends Base\Gateway
             $input['payment']['id'], Action::AUTHORIZE);
 
         $content = array(
-            RequestFields::CHANNEL     => 'THROUGH_SMS',
+            RequestFields::CHANNEL     => OtpChannel::THROUGH_SMS,
             RequestFields::MERCHANT_ID => $this->getMerchantId($input['terminal']),
             RequestFields::OTP_ID      => $wallet['reference1'],
         );
@@ -653,10 +646,7 @@ class Gateway extends Base\Gateway
             'contact'               =>  $this->getFormattedContact($input['payment']['contact']),
             'gateway_merchant_id'   =>  $this->getMerchantId($input['terminal']),
             'refund_id'             =>  $input['refund']['id'],
-            'response_code'         =>  '',
-            'response_description'  =>  '',
             'status_code'           =>  $response['status'],
-            'error_message'         =>  '',
             'gateway_refund_id'     =>  $response['refundTxnId'],
         );
 
@@ -746,8 +736,8 @@ class Gateway extends Base\Gateway
             $verify->apiSuccess = false;
         }
         else if (($payment['received'] === false) and
-                    (($payment['status_code'] === null) or
-                    ($payment['status_code'] !== Status::SUCCESS)))
+                 (($payment['status_code'] === null) or
+                  ($payment['status_code'] !== Status::SUCCESS)))
         {
             $verify->apiSuccess = false;
         }
@@ -764,8 +754,8 @@ class Gateway extends Base\Gateway
         $verify->gatewaySuccess = true;
 
         if (($input['payment']['status'] !== 'created') and
-                ($input['payment']['status'] !== 'failed') and
-                $payment['received'] === true)
+            ($input['payment']['status'] !== 'failed') and
+            ($payment['received'] === true))
         {
             $verify->apiSuccess = true;
         }
@@ -813,7 +803,7 @@ class Gateway extends Base\Gateway
             'received'                   => true
         );
 
-        if (!isset($payment['amount']))
+        if (isset($payment['amount']) === false)
         {
             $contentToSave['amount'] = $this->input['payment']['amount'];
         }

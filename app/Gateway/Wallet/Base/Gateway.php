@@ -49,19 +49,19 @@ class Gateway extends Base\Gateway
     /*
      * Updates the gateway payment entity
      *
-     * @param wallet        Wallet\Base\Entity      Gateway Payment Entity
-     * @param attributes    array
+     * @param gatewayPayment Wallet\Base\Entity      Gateway Payment Entity
+     * @param attributes     array
      */
-    protected function updateGatewayPaymentEntity($wallet, $attributes)
+    protected function updateGatewayPaymentEntity($gatewayPayment, $attributes)
     {
-        // wallet is gateway payment entity
+        // gatewayPayment is gateway payment entity
         $attr = $this->getMappedAttributes($attributes);
 
-        $wallet->fill($attr);
+        $gatewayPayment->fill($attr);
 
-        $this->repo->saveOrFail($wallet);
+        $this->repo->saveOrFail($gatewayPayment);
 
-        return $wallet;
+        return $gatewayPayment;
     }
 
     protected function getNewGatewayPaymentEntity()

@@ -29,13 +29,6 @@ class ResponseCodeMap
             return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
         }
 
-        $apiCode = static::$codes[$code];
-
-        if (defined($class . $apiCode))
-        {
-            return $apiCode;
-        }
-
-        return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
+        return static::$codes[$code];
     }
 }

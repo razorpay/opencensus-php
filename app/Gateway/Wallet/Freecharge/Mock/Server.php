@@ -19,9 +19,9 @@ use RZP\Models\Payment;
 class Server extends Base\Mock\Server
 {
     const ACCESS_TOKEN          = '8c31d80b-83ed-4f52-8377-71301790ccaa';
-    const ACCESS_TOKEN_EXPIRY   = '2017-09-21T14:18:06';
+    const ACCESS_TOKEN_EXPIRY   = '2025-09-21T14:18:06';
     const REFRESH_TOKEN         = '8c31d80b-83ed-4f52-8377-71301790ccaa';
-    const REFRESH_TOKEN_EXPIRY  = '2017-09-21T14:18:06';
+    const REFRESH_TOKEN_EXPIRY  = '2025-09-21T14:18:06';
 
     public function authorize($input)
     {
@@ -52,7 +52,7 @@ class Server extends Base\Mock\Server
                 ResponseFields::STATUS          => Freecharge\Status::TRANSACTION_SUCCESS,
             ];
 
-            $response['checksum'] = $this->sortKeysAndGenerateHash($response);
+            $response['checksum'] = $this->generateHash($response);
         }
         else
         {
@@ -84,7 +84,7 @@ class Server extends Base\Mock\Server
             ResponseFields::ERROR_MESSAGE          => null,
         );
 
-        $response['checksum'] = $this->sortKeysAndGenerateHash($response);
+        $response['checksum'] = $this->generateHash($response);
 
         return $this->makeResponse($response);
     }
@@ -192,7 +192,7 @@ class Server extends Base\Mock\Server
                 ResponseFields::ERROR_MESSAGE   => null,
             );
 
-            $response[ResponseFields::CHECKSUM] = $this->sortKeysAndGenerateHash($response);
+            $response[ResponseFields::CHECKSUM] = $this->generateHash($response);
 
             return $this->makeResponse($response);
         }
@@ -207,17 +207,17 @@ class Server extends Base\Mock\Server
 
     protected function getTxnId()
     {
-        return mt_rand(1000000000, 2567890123);
+        return random_integer(11);
     }
 
     protected function getMerchantTxnId()
     {
-        return mt_rand(10000, 35000);
+        return random_integer(11);
     }
 
     protected function getRefundMerchantTxnId()
     {
-        return mt_rand(5000, 10000);
+        return random_integer(5);
     }
 
     protected function makeResponse($json)
@@ -227,25 +227,6 @@ class Server extends Base\Mock\Server
         $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
 
         return $response;
-    }
-
-    protected function sortKeysAndGenerateHash(array $response)
-    {
-        foreach ($response as $key => $value)
-        {
-            if ($value === null or $value === "")
-            {
-                unset($response[$key]);
-            }
-        }
-
-        ksort($response);
-
-        $secretKey = $this->app->config['gateway']['wallet_freecharge']['test_hash_secret'];
-
-        $hashString = json_encode($response).$secretKey;
-
-        return hash(HashAlgo::SHA256, $hashString);
     }
 
     /*

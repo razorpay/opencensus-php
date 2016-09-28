@@ -1304,25 +1304,10 @@ trait Authorize
         {
             $this->type = 'otp_generate';
 
-            $request = $this->callGatewayFunction('otpGenerate', $data);
+            $this->callGatewayFunction('otpGenerate', $data);
 
             $payment->incrementOtpCount();
             $payment->save();
-
-            // OtpGenerate has sent us a request asking us to redirect to
-            // For Example: Register a user for a wallet
-            // Presently, limiting this flow to freecharge wallet only.
-            //
-            // TODO Define a static variable for all gateways that asks if
-            // gateway supports registration of new user.
-            if (($request !== null) and ($payment['wallet'] === Wallet::FREECHARGE))
-            {
-                $gatewayRequest = $this->getPaymentGatewayRequestData($request, $payment);
-
-                $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $gatewayRequest);
-
-                return $gatewayRequest;
-            }
 
             return array(
                 'type' => 'otp',

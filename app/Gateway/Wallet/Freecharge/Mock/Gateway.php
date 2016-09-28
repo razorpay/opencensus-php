@@ -17,25 +17,12 @@ class Gateway extends Freecharge\Gateway
         $request = parent::topup($input);
 
         $url = Route::getUrlWithPublicAuth(
-                    'mock_wallet_payment_with_paymentid',
-                    ['wallet' => $input['payment']['wallet'],
-                     'paymentId' => $input['payment']['id']]);
+            'mock_wallet_payment_with_paymentid',
+            ['wallet' => $input['payment']['wallet'],
+            'paymentId' => $input['payment']['id']]);
 
         $request['url'] = $url;
 
         return $request;
-    }
-
-    protected function sendGatewayRequest($request)
-    {
-        // Redirect the request internally
-        $serverResponse = $this->callGatewayRequestFunctionInternally($request);
-
-        $response = $this->prepareInternalResponse($serverResponse);
-
-        // Handle API Request Failure and throw exception
-        $this->handleRequestFailed($response);
-
-        return $response;
     }
 }

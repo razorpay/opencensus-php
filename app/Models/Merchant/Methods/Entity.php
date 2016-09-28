@@ -270,7 +270,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FREECHARGE);
     }
 
-    public function getEMi()
+    public function getEmi()
     {
         return $this->getAttribute(self::EMI);
     }
@@ -438,7 +438,7 @@ class Entity extends Base\PublicEntity
 
     protected function getFreechargeAttribute()
     {
-        return $this->attributes[self::FREECHARGE];
+        return (bool) $this->attributes[self::FREECHARGE];
     }
 
     protected function getBanksAttribute()
