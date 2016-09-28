@@ -127,18 +127,16 @@ class Core extends Base\Core
         }
     }
 
-
     protected function saveBatchFileToAws($batch, $file)
     {
         $bucket = $this->getBucketName($batch);
 
         $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
-        $url = $this->saveToAws($batch->getId().'.xlsx', $file->getPathName(), $xlsxMimeType, $bucket);
+        $url = $this->saveToAws($batch->getId() . '.xlsx', $file->getPathName(), $xlsxMimeType, $bucket);
 
         return $url;
     }
-
 
     protected function getBucketName($batch)
     {

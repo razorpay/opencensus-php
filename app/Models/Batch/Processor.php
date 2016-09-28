@@ -26,7 +26,6 @@ class Processor extends Base\Core
         parent::__construct();
 
         $this->mutex = $this->app['api.mutex'];
-
     }
 
     public function process($batch)
@@ -41,7 +40,7 @@ class Processor extends Base\Core
 
             list($batch, $shouldSendMail, $processedFile) = $this->processBatch($batch, $entries);
 
-            $excel = $this->createExcelObject($processedFile, $batch->getId());
+            $excel = $this->createExcelObject($processedFile, $batch->getId(), [], $batch->getType());
 
             $fileMetadata = $excel->store('xlsx', storage_path('files/batch_file_download'), true);
             $fullpath = $fileMetadata['full'];
@@ -75,12 +74,11 @@ class Processor extends Base\Core
         {
             $this->releaseMutexOnBatch($batch);
         }
-
     }
 
     protected function processBatch($batch, $entries)
     {
-        $function = 'process' .ucfirst($batch->getType()) .'Entries';
+        $function = 'process' . ucfirst($batch->getType()) . 'Entries';
         list($totalProcessedAmount, $totalSuccessCount, $totalFailureCount, $processedFile) = $this->$function($batch, $entries);
 
         $totalProcessedAmount += $batch->getProcessedAmount();
@@ -248,7 +246,7 @@ class Processor extends Base\Core
 
         $bucket = $this->getBucketName($batch);
 
-        return $this->getFileFromAws($bucket, $batch->getId().'.xlsx', $filePath);
+        return $this->getFileFromAws($bucket, $batch->getId() . '.xlsx', $filePath);
     }
 
     protected function getBucketName($batch)

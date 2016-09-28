@@ -17,8 +17,7 @@ class Validator extends Base\Validator
     {
         if (Type::exists($type) === false)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'invalid batch type');
+            throw new Exception\BadRequestValidationFailureException('Invalid batch type');
         }
     }
 
@@ -31,7 +30,7 @@ class Validator extends Base\Validator
            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FILE_EXCEED_LIMIT);
         }
 
-        $validator = 'validate' .ucfirst($type);
+        $validator = 'validate' . ucfirst($type);
 
         $this->$validator($entries);
     }

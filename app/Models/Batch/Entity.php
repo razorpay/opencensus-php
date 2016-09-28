@@ -3,6 +3,7 @@
 namespace RZP\Models\Batch;
 
 use RZP\Models\Base;
+use RZP\Constants\Table;
 
 class Entity extends Base\PublicEntity
 {
@@ -25,7 +26,7 @@ class Entity extends Base\PublicEntity
     const STATUS_LENGTH             = 20;
     const FILE                      ='file';
 
-    protected $table = \RZP\Constants\Table::BATCH;
+    protected $table = Table::BATCH;
 
     protected static $sign = 'batch';
 
