@@ -6,6 +6,7 @@ use RZP\Http\ApiResponse;
 use RZP\Models\Payment;
 use RZP\Models\Card;
 use RZP\Trace\TraceCode;
+use RZP\Http\Route;
 use Redirect;
 use Response;
 use Request;
@@ -81,6 +82,18 @@ class PaymentCreateController extends Controller
         {
             $this->app['rzp.merchant_callback_url'] = $input['callback_url'];
         }
+
+        // set the payment request as s2s for analytics
+        if (isset($input['_']) === false)
+        {
+            $input['_'] = [];
+        }
+
+        $libraryKey = Payment\Analytics\Entity::LIBRARY;
+
+        $libraryValue = Payment\Analytics\Metadata::DIRECT;
+
+        $input['_'][$libraryKey] = isset($input['_'][$libraryKey]) ? $input['_'][$libraryKey] : $libraryValue;
 
         $data = $this->payment->process($input);
 
