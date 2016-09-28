@@ -2,10 +2,7 @@
 
 namespace RZP\Models\Payment\Analytics;
 
-// use RZP\Exception;
-// use RZP\Error\ErrorCode;
 use RZP\Models\Base;
-// use RZP\Models\Payment\Analytics\Metadata;
 
 class Validator extends Base\Validator
 {

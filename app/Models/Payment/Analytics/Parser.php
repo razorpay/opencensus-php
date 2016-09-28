@@ -38,9 +38,9 @@ class Parser extends Base\Core
 
         $this->setAttempts($input, $payment);
 
-        $this->setLogFromMetadata($input, $payment);
+        $this->setMetadataFromPayment($input, $payment);
 
-        $this->updateLogFromMetadata($input, $payment);
+        $this->updateMetadataFromPayment($input, $payment);
 
         return;
     }
@@ -111,7 +111,7 @@ class Parser extends Base\Core
     }
 
     // set analytics data from metadata
-    protected function setLogFromMetadata(array & $log, $payment)
+    protected function setMetadataFromPayment(array & $log, $payment)
     {
         $metadata = $payment->getMetadata();
 
@@ -177,7 +177,7 @@ class Parser extends Base\Core
         return;
     }
 
-    protected function updateLogFromMetadata(array & $log, $payment)
+    protected function updateMetadataFromPayment(array & $log, $payment)
     {
         $metadata = $payment->getMetadata();
 

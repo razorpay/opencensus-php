@@ -99,13 +99,6 @@ trait Authorize
 
             $this->runPostGatewaySelectionPreProcessing($payment, $terminalGatewayInput);
 
-            // data for terminal analytics
-            $terminalData = [
-                            'payment_id'    => $payment['id'],
-                            'input'         => $input,
-                            'terminal_id'   => $payment['terminal_id'],
-                        ];
-
             if ($this->canRunOtpPaymentFlow($payment, $input))
             {
                 $this->createAnalyticsLog($payment);
