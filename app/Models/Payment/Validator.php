@@ -12,8 +12,6 @@ use RZP\Models\Payment\Processor\Wallet;
 
 class Validator extends Base\Validator
 {
-    const PHONEPE_VPA = 'ybl';
-
     protected static $createRules = array(
         'amount'                  =>  'required|integer',
         'currency'                =>  'required|size:3',
@@ -82,15 +80,6 @@ class Validator extends Base\Validator
         if ($this->entity->getMerchantId() !== null)
         {
             $merchantId = $this->entity->merchant->getId();
-        }
-
-        // @HACK
-        // Disabling phonepe for all the merchants except for the UPI demo
-        if (($vpaParts[1] === self::PHONEPE_VPA) and
-            ($merchantId !== '4izmfM9TFCAgFN'))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_UPI_APP_NOT_SUPPORTED);
         }
     }
 
