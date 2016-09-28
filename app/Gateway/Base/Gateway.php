@@ -407,8 +407,8 @@ class Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_REQUEST,
             [
-                'request' => $request,
-                'gateway' => $this->gateway,
+                'request'    => $request,
+                'gateway'    => $this->gateway,
                 'payment_id' => $input['payment']['id'],
             ]);
     }

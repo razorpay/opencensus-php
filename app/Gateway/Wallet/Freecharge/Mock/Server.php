@@ -18,10 +18,10 @@ use RZP\Models\Payment;
 
 class Server extends Base\Mock\Server
 {
-    protected $accessToken          = '8c31d80b-83ed-4f52-8377-71301790ccaa';
-    protected $accessTokenExpiry    = '2017-09-21T14:18:06';
-    protected $refreshToken         = '8c31d80b-83ed-4f52-8377-71301790ccaa';
-    protected $refreshTokenExpiry   = '2017-09-21T14:18:06';
+    const ACCESS_TOKEN          = '8c31d80b-83ed-4f52-8377-71301790ccaa';
+    const ACCESS_TOKEN_EXPIRY   = '2017-09-21T14:18:06';
+    const REFRESH_TOKEN         = '8c31d80b-83ed-4f52-8377-71301790ccaa';
+    const REFRESH_TOKEN_EXPIRY  = '2017-09-21T14:18:06';
 
     public function authorize($input)
     {
@@ -166,10 +166,10 @@ class Server extends Base\Mock\Server
         }
 
         $response = [
-            ResponseFields::ACCESS_TOKEN         => $this->accessToken,
-            ResponseFields::ACCESS_TOKEN_EXPIRY  => $this->accessTokenExpiry,
-            ResponseFields::REFRESH_TOKEN        => $this->refreshToken,
-            ResponseFields::REFRESH_TOKEN_EXPIRY => $this->refreshTokenExpiry,
+            ResponseFields::ACCESS_TOKEN         => self::ACCESS_TOKEN,
+            ResponseFields::ACCESS_TOKEN_EXPIRY  => self::ACCESS_TOKEN_EXPIRY,
+            ResponseFields::REFRESH_TOKEN        => self::REFRESH_TOKEN,
+            ResponseFields::REFRESH_TOKEN_EXPIRY => self::REFRESH_TOKEN_EXPIRY,
         ];
 
         return $this->makeResponse($response);
@@ -181,7 +181,7 @@ class Server extends Base\Mock\Server
 
         $this->validateActionInput($input, 'debitWallet');
 
-        if ($input['accessToken'] === $this->accessToken)
+        if ($input['accessToken'] === self::ACCESS_TOKEN)
         {
             $response = array(
                 ResponseFields::TXN_ID          => $this->getTxnId(),
