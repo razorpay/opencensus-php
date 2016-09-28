@@ -119,7 +119,7 @@ class TokenEx
 
         if ($this->proxyEnabled === true)
         {
-            $options = ['proxy' => $this->proxy];
+            $options['proxy'] = $this->proxy;
         }
 
         $request = [

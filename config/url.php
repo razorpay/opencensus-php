@@ -1,6 +1,11 @@
 <?php
 
 return [
+    'api_host'  => [
+        'production' =>  env('APP_HOST'),
+        'beta'       =>  env('BETA_APP_HOST'),
+        'alpha'      =>  env('ALPHA_APP_HOST'),
+    ],
     'api' => [
         'production' =>  env('APP_URL'),
         'beta'       =>  env('BETA_APP_URL'),

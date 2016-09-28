@@ -10,12 +10,6 @@ use RZP\Http\ApiResponse;
 
 class VerifyHttps
 {
-    const PRODUCTION_ENVS = [
-        'alpha',
-        'beta',
-        'production',
-    ];
-
     protected function getProductionHosts()
     {
         $app = App::getFacadeRoot();
@@ -24,12 +18,7 @@ class VerifyHttps
 
         $productionHosts = [];
 
-        $productionUrls = $config->get('url.api');
-
-        foreach (self::PRODUCTION_ENVS as $env)
-        {
-            $productionHosts[] = parse_url($productionUrls[$env], PHP_URL_HOST);
-        }
+        $productionHosts = $config->get('url.api_hosts');
 
         return $productionHosts;
     }
