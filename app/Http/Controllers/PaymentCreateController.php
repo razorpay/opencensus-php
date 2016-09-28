@@ -48,6 +48,22 @@ class PaymentCreateController extends Controller
     }
 
     /**
+     * Creates an S2S payment
+     */
+    public function postCreateS2SPayment()
+    {
+        $ret = $this->createPayment();
+
+        if ((is_array($ret)) and
+            (isset($ret['request']) === false))
+        {
+            return ApiResponse::json($ret);
+        }
+
+        return $ret;
+    }
+
+    /**
      * In this case, we ensure that for direct response cases like
      * international credit cards with no 3dsecure, we give back the
      * parent callback page instead of just json.
@@ -81,18 +97,10 @@ class PaymentCreateController extends Controller
         {
             $this->app['rzp.merchant_callback_url'] = $input['callback_url'];
         }
-
-        // set the payment request as s2s for analytics
-        if (isset($input['_']) === false)
+        else if ($this->app['basicauth']->isPrivateAuth())
         {
-            $input['_'] = [];
+            $input = (new Payment\Analytics\Service)->setMetadataForS2SPayment($input);
         }
-
-        $libraryKey = Payment\Analytics\Entity::LIBRARY;
-
-        $libraryValue = Payment\Analytics\Metadata::DIRECT;
-
-        $input['_'][$libraryKey] = isset($input['_'][$libraryKey]) ? $input['_'][$libraryKey] : $libraryValue;
 
         $data = $this->payment->process($input);
 
