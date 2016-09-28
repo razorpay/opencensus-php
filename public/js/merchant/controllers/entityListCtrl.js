@@ -27,7 +27,9 @@ app.controller('EntityListCtrl', [
       contact: '',
       email: '',
       amount: '',
-      notes: ''
+      notes: '',
+      receipt: '',
+      payment_id: ''
     };
 
     $scope.generate = function (entity) {
