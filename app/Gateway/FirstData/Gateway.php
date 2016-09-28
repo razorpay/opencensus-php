@@ -132,12 +132,7 @@ class Gateway extends Base\Gateway
     {
         if ($gatewayEntity->getApprovalCode()[0] !== 'Y')
         {
-            // Approval Code is sent as a concatenation of the code ('N:224')
-            // and the reason ('Timed out') separated by a ':'.
-            // Break it using the ':' separator.
-            $approvalCodeArray = explode(':',$gatewayEntity->getApprovalCode());
-            // Retrieve actual approval code
-            $approvalCode = implode(array_slice($approvalCodeArray, 0, 2),':');
+            $approvalCode = $this->getActualCodeFromApprovalCode($gatewayEntity->getApprovalCode());
 
             $desc = ErrorCodes::getErrorDesc($approvalCode);
 
@@ -145,6 +140,18 @@ class Gateway extends Base\Gateway
 
             throw new Exception\GatewayErrorException($errorCode, $approvalCode, $desc);
         }
+    }
+
+    protected function getActualCodeFromApprovalCode($approvalCode)
+    {
+        // Approval Code is sent as a concatenation of the code ('N:224')
+        // and the reason ('Timed out') separated by a ':'.
+        // Break it using the ':' separator.
+        $approvalCodeArray = explode(':',$approvalCode);
+        // Retrieve actual approval code
+        $code = implode(array_slice($approvalCodeArray, 0, 2),':');
+
+        return $code;
     }
 
     protected function getAuthorizeFields($authRequest)
@@ -190,12 +197,7 @@ class Gateway extends Base\Gateway
 
         if ($approvalCode[0] !== 'Y')
         {
-            // Approval Code is sent as a concatenation of the code ('N:224')
-            // and the reason ('Timed out') separated by a ':'.
-            // Break it using the ':' separator.
-            $approvalCodeArray = explode(':',$approvalCode);
-            // Retrieve actual approval code
-            $approvalCode = implode(array_slice($approvalCodeArray, 0, 2),':');
+            $approvalCode = $this->getActualCodeFromApprovalCode($approvalCode);
 
             $desc = ErrorCodes::getErrorDesc($approvalCode);
 
@@ -314,15 +316,11 @@ class Gateway extends Base\Gateway
             $ipgApiOrderResponse = $soapEnvBody->Fault->children()
                                                 ->detail->children('ipgapi', true)
                                                 ->IPGApiOrderResponse;
-
-            $gatewayCode = $ipgApiOrderResponse->ApprovalCode->__toString();
-
-            $desc = $ipgApiOrderResponse->ErrorMessage->__toString();
-
-            throw new Exception\GatewayErrorException(Error\ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED, $gatewayCode, $desc);
         }
-
-        $ipgApiOrderResponse = $soapEnvBody->children('ipgapi', true);
+        else
+        {
+            $ipgApiOrderResponse = $soapEnvBody->children('ipgapi', true);
+        }
 
         $xmlBody = $ipgApiOrderResponse->children('ipgapi', true);
 
@@ -344,8 +342,7 @@ class Gateway extends Base\Gateway
 
         if ($successful === 'false')
         {
-            throw new Exception\GatewayErrorException(
-                        Error\ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
+            throw new Exception\GatewayErrorException(Error\ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED, null, 'Verification failed');
         }
 
         return $ipgApiActionResponse;
@@ -566,12 +563,7 @@ class Gateway extends Base\Gateway
 
     protected function verifyPaymentCallbackResponse($input, $gatewayPayment)
     {
-        // Approval Code is sent as a concatenation of the code ('N:224')
-        // and the reason ('Timed out') separated by a ':'.
-        // Break it using the ':' separator.
-        $approvalCodeArray = explode(':',$input['gateway'][ConnectResponseFields::APPROVAL_CODE]);
-        // Retrieve actual approval code
-        $approvalCode = implode(array_slice($approvalCodeArray, 0, 2),':');
+        $approvalCode = $this->getActualCodeFromApprovalCode($input['gateway'][ConnectResponseFields::APPROVAL_CODE]);
 
         if ($approvalCode[0] !== 'Y')
         {

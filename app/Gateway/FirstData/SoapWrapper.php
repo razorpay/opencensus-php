@@ -13,6 +13,33 @@ class SoapWrapper
         </SOAP-ENV:Envelope>
     ";
 
+    const ERROR_SOAP_SKELETON = "
+        <SOAP-ENV:Envelope xmlns:SOAP-ENV='http://schemas.xmlsoap.org/soap/envelope/'>
+            <SOAP-ENV:Header/>
+            <SOAP-ENV:Body>
+                <SOAP-ENV:Fault>
+                    <faultcode>SOAP-ENV:Client</faultcode>
+                    <faultstring xml:lang='en'>ProcessingException</faultstring>
+                    <detail>
+                        <ipgapi:IPGApiOrderResponse xmlns:a1='http://ipg-online.com/ipgapi/schemas/a1' xmlns:ipgapi='http://ipg-online.com/ipgapi/schemas/ipgapi' xmlns:pay_1_0_0='http://api.clickandbuy.com/webservices/pay_1_0_0/' xmlns:v1='http://ipg-online.com/ipgapi/schemas/v1'/>
+                    </detail>
+                </SOAP-ENV:Fault>
+            </SOAP-ENV:Body>
+        </SOAP-ENV:Envelope>
+    ";
+
+    const ERROR_ACTION_RESPONSE = "
+        <SOAP-ENV:Envelope
+            xmlns:SOAP-ENV='http://schemas.xmlsoap.org/soap/envelope/'>
+            <SOAP-ENV:Header/>
+            <SOAP-ENV:Body>
+                <ipgapi:IPGApiActionResponse xmlns:ipgapi='http://ipg-online.com/ipgapi/schemas/ipgapi' xmlns:a1='http://ipg-online.com/ipgapi/schemas/a1' xmlns:pay_1_0_0='http://api.clickandbuy.com/webservices/pay_1_0_0/' xmlns:v1='http://ipg-online.com/ipgapi/schemas/v1'>
+                    <ipgapi:successfully>false</ipgapi:successfully>
+                </ipgapi:IPGApiActionResponse>
+            </SOAP-ENV:Body>
+        </SOAP-ENV:Envelope>
+    ";
+
     public static function defaultWrapper($content, $requestType)
     {
         $soapWrapper = "
@@ -27,12 +54,8 @@ class SoapWrapper
         return $soapWrapper;
     }
 
-    public static function verifyResponseWrapper($oid, $timestamp, $tdates, $approvalCode, $tdateformatted)
+    public static function verifyResponseWrapper($oid, $timestamp, $tdate, $approvalCode, $tdateformatted)
     {
-        $authTdate = $tdates['auth'];
-        $refundTdate = $tdates['refund'];
-        $captureTdate = $tdates['capture'];
-
         $soapContent = "
             <SOAP-ENV:Envelope xmlns:SOAP-ENV='http://schemas.xmlsoap.org/soap/envelope/'>
             <SOAP-ENV:Header/>
@@ -62,7 +85,7 @@ class SoapWrapper
                             <v1:InvoiceNumber>$oid</v1:InvoiceNumber>
                             <v1:OrderId>$oid</v1:OrderId>
                             <v1:Ip>182.74.201.50</v1:Ip>
-                            <v1:TDate>$authTdate</v1:TDate>
+                            <v1:TDate>$tdate</v1:TDate>
                             <v1:TransactionOrigin>ECI</v1:TransactionOrigin>
                         </v1:TransactionDetails>
                         <ipgapi:IPGApiOrderResponse>
@@ -74,8 +97,8 @@ class SoapWrapper
                             <ipgapi:PaymentType>CREDITCARD</ipgapi:PaymentType>
                             <ipgapi:ProcessorApprovalCode>014932</ipgapi:ProcessorApprovalCode>
                             <ipgapi:ProcessorCCVResponse/>
-                            <ipgapi:ReferencedTDate>$authTdate</ipgapi:ReferencedTDate>
-                            <ipgapi:TDate>$authTdate</ipgapi:TDate>
+                            <ipgapi:ReferencedTDate>$tdate</ipgapi:ReferencedTDate>
+                            <ipgapi:TDate>$tdate</ipgapi:TDate>
                             <ipgapi:TDateFormatted>$tdateformatted</ipgapi:TDateFormatted>
                             <ipgapi:TerminalID>44000025</ipgapi:TerminalID>
                         </ipgapi:IPGApiOrderResponse>
@@ -101,7 +124,7 @@ class SoapWrapper
                             <v1:InvoiceNumber>$oid</v1:InvoiceNumber>
                             <v1:OrderId>$oid</v1:OrderId>
                             <v1:Ip>182.74.201.50</v1:Ip>
-                            <v1:TDate>$captureTdate</v1:TDate>
+                            <v1:TDate>$tdate</v1:TDate>
                             <v1:TransactionOrigin>ECI</v1:TransactionOrigin>
                         </v1:TransactionDetails>
                         <ipgapi:IPGApiOrderResponse>
@@ -113,8 +136,8 @@ class SoapWrapper
                             <ipgapi:PaymentType>CREDITCARD</ipgapi:PaymentType>
                             <ipgapi:ProcessorApprovalCode>014932</ipgapi:ProcessorApprovalCode>
                             <ipgapi:ProcessorCCVResponse/>
-                            <ipgapi:ReferencedTDate>$captureTdate</ipgapi:ReferencedTDate>
-                            <ipgapi:TDate>$captureTdate</ipgapi:TDate>
+                            <ipgapi:ReferencedTDate>$tdate</ipgapi:ReferencedTDate>
+                            <ipgapi:TDate>$tdate</ipgapi:TDate>
                             <ipgapi:TDateFormatted>$tdateformatted</ipgapi:TDateFormatted>
                             <ipgapi:TerminalID>44000025</ipgapi:TerminalID>
                         </ipgapi:IPGApiOrderResponse>
@@ -141,7 +164,7 @@ class SoapWrapper
                             <v1:InvoiceNumber>$oid</v1:InvoiceNumber>
                             <v1:OrderId>$oid</v1:OrderId>
                             <v1:Ip>182.74.201.50</v1:Ip>
-                            <v1:TDate>$refundTdate</v1:TDate>
+                            <v1:TDate>$tdate</v1:TDate>
                             <v1:TransactionOrigin>ECI</v1:TransactionOrigin>
                         </v1:TransactionDetails>
                         <ipgapi:IPGApiOrderResponse>
@@ -152,8 +175,8 @@ class SoapWrapper
                             <ipgapi:PaymentType>CREDITCARD</ipgapi:PaymentType>
                             <ipgapi:ProcessorApprovalCode>014932</ipgapi:ProcessorApprovalCode>
                             <ipgapi:ProcessorCCVResponse/>
-                            <ipgapi:ReferencedTDate>$refundTdate</ipgapi:ReferencedTDate>
-                            <ipgapi:TDate>$refundTdate</ipgapi:TDate>
+                            <ipgapi:ReferencedTDate>$tdate</ipgapi:ReferencedTDate>
+                            <ipgapi:TDate>$tdate</ipgapi:TDate>
                             <ipgapi:TDateFormatted>$tdateformatted</ipgapi:TDateFormatted>
                             <ipgapi:TerminalID>44000025</ipgapi:TerminalID>
                         </ipgapi:IPGApiOrderResponse>

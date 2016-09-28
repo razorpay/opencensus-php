@@ -212,7 +212,7 @@ class ErrorCodes
         'N:T8'     => ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND,
     );
 
-    public static function getMappedCode($code)
+    public static function getMappedCode($code = null)
     {
         if (isset(self::$errorCodeMap[$code]))
         {
@@ -222,7 +222,7 @@ class ErrorCodes
         return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
     }
 
-    public static function getErrorDesc($code)
+    public static function getErrorDesc($code = null)
     {
         if (isset(self::$reasonCodes[$code]))
         {

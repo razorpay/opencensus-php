@@ -25,20 +25,18 @@ class FirstDataGatewayTest extends TestCase
         $this->payment = $this->getDefaultPaymentArray();
     }
 
-    public function testPayment()
+    public function testPaymentAuthAndCapture()
     {
         $authResponse = $this->doAuthPayment($this->payment);
 
         $payment = $this->getLastEntity('payment', true);
-        $this->assertEquals($payment['transaction_id'], null);
-        $this->assertEquals($payment['status'], 'authorized');
 
-        $txn = $this->getEntities('transaction', [], true);
-        $this->assertEquals(0, $txn['count']);
+        $this->assertEquals($payment['status'], 'authorized');
 
         $this->capturePayment($authResponse['razorpay_payment_id'], $payment['amount']);
 
         $payment = $this->getLastEntity('payment', true);
+
         $this->assertEquals($payment['status'], 'captured');
     }
 
@@ -60,6 +58,7 @@ class FirstDataGatewayTest extends TestCase
         $this->doAuthAndCapturePayment($this->payment);
 
         $txn = $this->getLastEntity('transaction', true);
+
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals('txn_'.$payment['transaction_id'], $txn['id']);
@@ -67,6 +66,97 @@ class FirstDataGatewayTest extends TestCase
         $this->refundPayment($payment['id']);
 
         $payment = $this->getLastEntity('payment', true);
+
         $this->assertEquals($payment['status'], 'refunded');
+    }
+
+    public function testPaymentPartialRefund()
+    {
+        $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $amount = (int) ($payment['amount'] / 3);
+
+        $this->refundPayment($payment['id'], $amount);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals($payment['status'], 'captured');
+
+        $this->assertEquals($refund['payment_id'], $payment['public_id']);
+
+        $this->assertEquals($refund['amount'], $amount);
+    }
+
+    public function testPaymentRefundWithoutCapture()
+    {
+        $this->doAuthPayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->refundpayment($payment['id']);
+        });
+    }
+
+    public function testFailedAuthPayment()
+    {
+        $this->getErrorInAuth();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() {
+            $this->doAuthPayment($this->payment);
+        });
+    }
+
+    public function testFailedRefund()
+    {
+        $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->getErrorInReturn();
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->refundpayment($payment['id']);
+        });
+    }
+
+    public function testFailedCapture()
+    {
+        $this->doAuthPayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->getErrorInCapture();
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->capturePayment($payment['id'], $payment['amount']);
+        });
+    }
+
+    public function testFailedVerify()
+    {
+        $this->doAuthPayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->getErrorInInquiry();
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->verifyPayment($payment['id']);
+        });
     }
 }

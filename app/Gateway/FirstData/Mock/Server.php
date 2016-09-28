@@ -40,7 +40,6 @@ class Server extends Base\Mock\Server
         $paymentMethod = $input[FirstData\ConnectRequestFields::PAYMENT_METHOD];
         $scrubbed_cardnumber = $this->scrub($cardnumber, $paymentMethod);
 
-        $response_hash = $this->getHash($approvalCode, $chargeTotal, $currencyCode, $txnDateTime, $storeId);
 
         $oid = $this->generateId('ORD0000');
         if (isset($input['oid']) === true)
@@ -67,7 +66,6 @@ class Server extends Base\Mock\Server
             FirstData\ConnectResponseFields::PAYMENT_METHOD            => '',
             FirstData\ConnectResponseFields::PROCESSOR_RESPONSE_CODE   => 00,
             FirstData\ConnectResponseFields::RESPONSE_CODE_3DSECURE    => '',
-            FirstData\ConnectResponseFields::RESPONSE_HASH             => $response_hash,
             FirstData\ConnectResponseFields::STATUS                    => FirstData\Status::APPROVED,
             FirstData\ConnectResponseFields::TDATE                     => $tdate,
             FirstData\ConnectResponseFields::TERMINAL_ID               => $this->generateId(),
@@ -78,6 +76,8 @@ class Server extends Base\Mock\Server
         );
 
         $this->content($content);
+
+        $this->setResponseHash($input, $content);
 
         $url = $input['responseSuccessURL'];
         $url .= '?' . http_build_query($content);
@@ -117,6 +117,8 @@ class Server extends Base\Mock\Server
             FirstData\ApiResponseFields::VERSION                     => "5.4.0-200",
         );
 
+        $this->content($content);
+
         $captureResponse = $this->buildIpgApiOrderResponse($content);
 
         return $this->prepareResponse($captureResponse);
@@ -154,9 +156,11 @@ class Server extends Base\Mock\Server
             FirstData\ApiResponseFields::VERSION                     => "5.4.0-200",
         );
 
-        $captureResponse = $this->buildIpgApiOrderResponse($content);
+        $this->content($content);
 
-        return $this->prepareResponse($captureResponse);
+        $refundResponse = $this->buildIpgApiOrderResponse($content);
+
+        return $this->prepareResponse($refundResponse);
     }
 
     public function verify($input)
@@ -171,25 +175,33 @@ class Server extends Base\Mock\Server
 
         $dateTime = Carbon::now('Asia/Kolkata');
 
-        $authGatewayPayment = (new FirstData\Repository)->findByPaymentIdAndActionOrFail($oid, Base\Action::AUTHORIZE);
-        $tdates['auth'] = $authGatewayPayment->getTdate();
-        $captureGatewayPayment = (new FirstData\Repository)->findByPaymentIdAndActionOrFail($oid, Base\Action::CAPTURE);
-        $tdates['capture'] = $captureGatewayPayment->getTdate();
-        $refundGatewayPayment = (new FirstData\Repository)->findByPaymentIdAndActionOrFail($oid, Base\Action::REFUND);
-        $tdates['refund'] = $refundGatewayPayment->getTdate();
-
         $tdate = (string) $dateTime->getTimeStamp();
         $approvalCode = $this->getApprovalCode();
         $tdateFormatted = (string) $dateTime->format("Y.m.d H:i:s (T)");
 
-        $soapContent = FirstData\SoapWrapper::verifyResponseWrapper($oid, $dateTime, $tdates, $approvalCode, $tdateFormatted);
+        $soapContent = FirstData\SoapWrapper::verifyResponseWrapper($oid, $dateTime, $tdate, $approvalCode, $tdateFormatted);
+
+        $this->content($soapContent);
 
         return $this->prepareResponse($soapContent);
     }
 
+    protected function setResponseHash($input, & $content)
+    {
+        $approvalCode   = $content[FirstData\ConnectResponseFields::APPROVAL_CODE];
+        $txnDateTime    = $content[FirstData\ConnectResponseFields::TXN_DATE_TIME];
+        $chargeTotal    = $input[FirstData\ConnectRequestFields::CHARGE_TOTAL];
+        $currencyCode   = $input[FirstData\ConnectRequestFields::CURRENCY];
+        $storeName      = $input[FirstData\ConnectRequestFields::STORE_NAME];
+
+        $response_hash = $this->getHash($approvalCode, $chargeTotal, $currencyCode, $txnDateTime, $storeName);
+
+        $content[FirstData\ConnectResponseFields::RESPONSE_HASH] = $response_hash;
+    }
+
     protected function getApprovalCode()
     {
-        $code=random_integer(6);
+        $code = random_integer(6);
 
         return 'Y' . ':' . $code . ':' . random_integer(10) . ':PPX :' . random_integer(12);
     }
@@ -200,6 +212,31 @@ class Server extends Base\Mock\Server
     }
 
     protected function buildIpgApiOrderResponse($array)
+    {
+        if ($array[FirstData\ApiResponseFields::APPROVAL_CODE][0] === 'Y')
+        {
+            return $this->buildFairOrderResponse($array);
+        }
+        else
+        {
+            return $this->buildFaultOrderResponse($array);
+        }
+    }
+
+    protected function buildFaultOrderResponse($array)
+    {
+        $xml = new \SimpleXMLElement(FirstData\SoapWrapper::ERROR_SOAP_SKELETON);
+
+        foreach ($array as $key => $value)
+        {
+            $xml->children('SOAP-ENV', true)->Body->Fault->children()
+                ->detail->children('ipgapi',true)->addChild($key,$value);
+        }
+
+        return $xml->asXML();
+    }
+
+    protected function buildFairOrderResponse($array)
     {
         $xml = new \SimpleXMLElement(FirstData\SoapWrapper::SOAP_SKELETON);
 
