@@ -469,8 +469,6 @@ class Gateway extends Base\Gateway
 
         $request = $this->getUserWalletBalanceRequestArray($input);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
-
         $response = $this->sendGatewayRequest($request);
 
         $this->handleRequestFailed($response);
@@ -490,11 +488,15 @@ class Gateway extends Base\Gateway
     protected function getUserWalletBalanceRequestArray($input)
     {
         $content = [
-            'accessToken'   => $this->accessToken,
-            'merchantId'    => $this->getMerchantId($input['terminal']),
+            RequestFields::ACCESS_TOKEN   => '',
+            RequestFields::MERCHANT_ID    => $this->getMerchantId($input['terminal']),
         ];
 
-        $content[ResponseFields::CHECKSUM] = $this->getHashOfArray($content);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $content);
+
+        $content[RequestFields::ACCESS_TOKEN] = $this->accessToken;
+
+        $content[RequestFields::CHECKSUM] = $this->getHashOfArray($content);
 
         $request = $this->getCustomRequestArray($content, $method = 'GET');
 
@@ -508,13 +510,17 @@ class Gateway extends Base\Gateway
     protected function getDebitRequestArray($input)
     {
         $content = array(
-            RequestFields::ACCESS_TOKEN    => $this->accessToken,
+            RequestFields::ACCESS_TOKEN    => '',
             RequestFields::AMOUNT          => (string) ($input['payment']['amount'] / 100),
             RequestFields::CHANNEL         => self::DEFAULT_TXN_CHANNEL,
-            RequestFields::CURRENCY        => 'INR',
+            RequestFields::CURRENCY        => $input['payment']['currency'],
             RequestFields::MERCHANT_ID     => $this->getMerchantId($input['terminal']),
             RequestFields::MERCHANT_TXN_ID => $input['payment']['public_id'],
         );
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $content);
+
+        $content[RequestFields::ACCESS_TOKEN] = $this->accessToken;
 
         $content[ResponseFields::CHECKSUM] = $this->getHashOfArray($content);
 
@@ -571,8 +577,6 @@ class Gateway extends Base\Gateway
 
         $request = $this->getCustomRequestArray($content);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
-
         return $request;
     }
 
@@ -596,10 +600,14 @@ class Gateway extends Base\Gateway
             RequestFields::AMOUNT       => (string) ($input['payment']['amount'] / 100),
             RequestFields::CALLBACK_URL => $input['callbackUrl'],
             RequestFields::CHANNEL      => self::DEFAULT_TXN_CHANNEL,
-            RequestFields::LOGIN_TOKEN  => $this->generateLoginToken($this->accessToken),
+            RequestFields::LOGIN_TOKEN  => '',
             RequestFields::MERCHANT_ID  => $this->getMerchantId($input['terminal']),
             RequestFields::METADATA     => 'dummy',
         );
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $content);
+
+        $content[RequestFields::LOGIN_TOKEN] = $this->generateLoginToken($this->accessToken);
 
         $content[RequestFields::CHECKSUM] = $this->getHashOfArray($content);
 
