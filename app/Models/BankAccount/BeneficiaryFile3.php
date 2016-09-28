@@ -108,22 +108,23 @@ class BeneficiaryFile3
     {
         $data['body'] = 'Please find attached updated beneficiary file for ' .
                         'Razorpay and kindly update it on your end.' .
-                        'Beneficiaries Count is '. $merchantsCount .'.' .
-                        'Forward the files to aanchal.wadhwani@kotak.com and '.
-                        'cc:uphendra.bn@kotak.com,Abhijit.B.Joshi@kotak.com,'.
-                        'anupam.namdeo@kotak.com';
+                        'Beneficiaries Count is '. $merchantsCount .'.';
 
         $data['file'] = $fullpath;
 
         $this->mail->queue('emails.message', $data, function($message) use ($data)
         {
-            $emails = ['settlements@razorpay.com'];
+            $emails = ['aanchal.wadhwani@kotak.com', 'settlements@razorpay.com'];
+
+            $cc = ['uphendra.bn@kotak.com', 'Abhijit.B.Joshi@kotak.com', 'anupam.namdeo@kotak.com'];
 
             $message->from('kotak_beneficiary_file@razorpay.com', 'Razorpay Kotak Beneficiary File');
 
             $message->subject('Razorpay updated beneficiary file for Kotak');
 
             $message->to($emails);
+
+            $message->cc($cc);
 
             $message->attach($data['file']);
         });

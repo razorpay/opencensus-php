@@ -997,7 +997,7 @@ class Entity extends Base\PublicEntity
 
         if ($this->getTokenId() !== null)
         {
-            $token = $this->token;
+            $token = $this->token()->first();
         }
         else if ($this->getGlobalTokenId() !== null)
         {

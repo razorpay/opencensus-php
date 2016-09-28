@@ -400,7 +400,7 @@ class MerchantController extends Controller
     {
         $data = $this->getCheckoutCommon();
 
-        return \View::make('checkout.checkout-public')
+        return \View::make('checkout.checkout')
                     ->with($data);
     }
 
