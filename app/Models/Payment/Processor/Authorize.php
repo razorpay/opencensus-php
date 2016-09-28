@@ -931,8 +931,7 @@ trait Authorize
             [
                 'payment_id'      => $payment->getId(),
                 'token_id'        => $payment->getTokenId(),
-                'global_token_id' => $payment->getGlobalTokenId(),
-                'token'           => $token
+                'global_token_id' => $payment->getGlobalTokenId()
             ]);
 
         // update token stats, assuming same token is not getting used in
