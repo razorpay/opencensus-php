@@ -200,6 +200,7 @@ class Service extends Base\Service
         $error = [];
         try
         {
+            $inputByMerchant = [];
             foreach ($paymentsByMerchant as $merchantId => $paymentByMerchant)
             {
                 $inputByMerchant[$merchantId]['count'] = count($paymentByMerchant);
