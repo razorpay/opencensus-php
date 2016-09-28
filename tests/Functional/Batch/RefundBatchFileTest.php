@@ -25,8 +25,6 @@ class RefundBatchFileTest extends TestCase
 
         parent::setUp();
 
-        $this->payment = $this->fixtures->create('payment:captured');
-
         $this->ba->privateAuth();
     }
 
@@ -55,170 +53,99 @@ class RefundBatchFileTest extends TestCase
 
     public function testGetRefundFiles()
     {
+        $entries = $this->getDefaultRefundFileEntries();
+
+        $batch = $this->fixtures->create('batch:refund', $entries);
+
         $this->ba->proxyAuth();
-
-        $this->createAndUploadBatchRefundFile();
-
         $this->startTest();
     }
 
     public function testProcessRefundFile()
     {
-        $payment = $this->doAuthAndCapturePayment();
+        $entries = $this->getDefaultRefundFileEntries();
 
-        $testData = $this->testData['testUploadRefundFile'];
-        $request = $testData['request'];
+        $batch = $this->fixtures->create('batch:refund', $entries);
 
-        $paymentEntry = array();
-        $payemntObj = array($payment['id'], (int) 4000);
-        array_push($paymentEntry, $payemntObj);
+        $payment = $this->capturePayment($entries[0][0], 50000);
 
-        $url = $this->writeToExcelFile($paymentEntry, $payment['id']);
-
-        $uploadedFile = $this->createTempFile($url);
-
-        $request['files']['file'] = $uploadedFile;
-
-        $this->ba->proxyAuth();
-
-        $content = $this->makeRequestAndGetContent($request);
-
-        $refundId = $content['id'];
-
-        $url = $this->writeToExcelFile($paymentEntry, substr($refundId, 6));
-
-        $this->assertEquals(Status::CREATED, $content['status']);
-
-        $testData = $this->testData['testProcessRefundFile'];
-
-        $this->ba->appAuthTest();
-
-        $content = $this->makeRequestAndGetContent($testData['request']);
-
-        $resultBody = $content['items'][0];
-        $this->assertEquals(Status::PROCESSED, $resultBody['status']);
-        $this->assertEquals(4000, $resultBody['amount']);
-        $this->assertEquals(0, $resultBody['failure_count']);
-
+        $this->ba->appAuth();
+        $this->startTest();
     }
 
-    public function testProcessRefundFileWithSuccessAfterAttempts()
+    public function testProcessRefundWithOneAttempt()
     {
-        $payment = $this->defaultAuthPayment();
+        $entries = $this->getDefaultRefundFileEntries();
 
-        $testData = $this->testData['testUploadRefundFile'];
-        $request = $testData['request'];
-
-        $paymentEntry = array();
-        $payemntObj = array($payment['id'], (int) 5000);
-        array_push($paymentEntry, $payemntObj);
-
-        $url = $this->writeToExcelFile($paymentEntry, $payment['id']);
-
-        $uploadedFile = $this->createTempFile($url);
-
-        $request['files']['file'] = $uploadedFile;
-
-        $this->ba->proxyAuth();
-
-        $content = $this->makeRequestAndGetContent($request);
-
-        $batchId = $content['id'];
-
-        $url = $this->writeToExcelFile($paymentEntry, substr($batchId, 6));
-
-        $this->assertEquals(Status::CREATED, $content['status']);
-
-        $testData = $this->testData['testProcessRefundFile'];
+        $batch = $this->fixtures->create('batch:refund_with_one_attempt', $entries);
 
         $this->ba->appAuth();
-        $content = $this->makeRequestAndGetContent($testData['request']);
 
-        $resultBody = $content['items'][0];
-        $this->assertEquals(Status::PROCESSING, $resultBody['status']);
-        $this->assertEquals(0, $resultBody['processed_amount']);
-        $this->assertEquals(1, $resultBody['failure_count']);
-        $this->assertEquals(1, $resultBody['attempts']);
-
-        $content = $this->makeRequestAndGetContent($testData['request']);
-        $resultBody = $content['items'][0];
-        $this->assertEquals(Status::PROCESSING, $resultBody['status']);
-        $this->assertEquals(0, $resultBody['processed_amount']);
-        $this->assertEquals(2, $resultBody['attempts']);
-
-        $this->ba->privateAuth();
-        $payment = $this->capturePayment($payment['id'], $payment['amount']);
-
-        $this->ba->appAuth();
-        $content = $this->makeRequestAndGetContent($testData['request']);
-        $resultBody = $content['items'][0];
-        $this->assertEquals(Status::PROCESSED, $resultBody['status']);
-        $this->assertEquals(5000, $resultBody['processed_amount']);
-        $this->assertEquals(3, $resultBody['attempts']);
-
-        $testData = $this->testData['testRetryRefundFilesWithException'];
-        $testData['request']['url'] = '/batches/' . $batchId  .'/retry';
-
-        $request = $testData['request'];
-        $this->runRequestResponseFlow($testData, function() use ($request) {
-            $this->ba->proxyAuth();
-            $content = $this->makeRequestAndGetContent($request);
-
-        });
+        $this->startTest();
     }
 
-    public function testProcessRefundFileWithFailureAfterAttempts()
+    public function testProcessRefundWithTwoAttempt()
     {
-        $payment = $this->doAuthAndCapturePayment();
+        $entries = $this->getDefaultRefundFileEntries();
 
-        $testData = $this->testData['testUploadRefundFile'];
-        $request = $testData['request'];
-
-        $paymentEntry = array();
-        $payemntObj = array($payment['id'], (int) 100000);
-        array_push($paymentEntry, $payemntObj);
-
-        $url = $this->writeToExcelFile($paymentEntry, $payment['id']);
-
-        $uploadedFile = $this->createTempFile($url);
-
-        $request['files']['file'] = $uploadedFile;
-
-        $this->ba->proxyAuth();
-
-        $content = $this->makeRequestAndGetContent($request);
-
-        $refundId = $content['id'];
-
-        $url = $this->writeToExcelFile($paymentEntry, substr($refundId, 6));
-        $uploadedFile = $this->createTempFile($url);
-
-        $this->assertEquals(Status::CREATED, $content['status']);
-
-        $testData = $this->testData['testProcessRefundFile'];
-
-        $testData['request']['files']['file'] = $uploadedFile;
+        $batch = $this->fixtures->create('batch:refund_with_two_attempt', $entries);
 
         $this->ba->appAuth();
-        $content = $this->makeRequestAndGetContent($testData['request']);
 
-        $resultBody = $content['items'][0];
-        $this->assertEquals(Status::PROCESSING, $resultBody['status']);
-        $this->assertEquals(0, $resultBody['processed_amount']);
-        $this->assertEquals(1, $resultBody['failure_count']);
-        $this->assertEquals(1, $resultBody['attempts']);
+        $this->startTest();
+    }
 
-        $content = $this->makeRequestAndGetContent($testData['request']);
-        $resultBody = $content['items'][0];
-        $this->assertEquals(Status::PROCESSING, $resultBody['status']);
-        $this->assertEquals(0, $resultBody['processed_amount']);
-        $this->assertEquals(2, $resultBody['attempts']);
+    public function testProcessRefundWithThreeAttempt()
+    {
+        $entries = $this->getDefaultRefundFileEntries();
 
-        $content = $this->makeRequestAndGetContent($testData['request']);
-        $resultBody = $content['items'][0];
-        $this->assertEquals(Status::PROCESSED, $resultBody['status']);
-        $this->assertEquals(0, $resultBody['processed_amount']);
-        $this->assertEquals(3, $resultBody['attempts']);
+        $batch = $this->fixtures->create('batch:refund_with_three_attempt', $entries);
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testProcessRefundRetryAfterProccessed()
+    {
+        $entries = $this->getDefaultRefundFileEntries();
+
+        $batch = $this->fixtures->create('batch:refund_with_three_attempt', $entries);
+
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/batches/' . 'batch_'.$batch->getId()  .'/retry';
+
+        $this->ba->proxyAuth();
+        $this->startTest();
+    }
+
+    public function testProcessRefundWithThreeAttemptSuccess()
+    {
+        $entries = $this->getDefaultRefundFileEntries();
+
+        $batch = $this->fixtures->create('batch:refund_with_three_attempt', $entries);
+
+        $payment = $this->capturePayment($entries[0][0], 50000);
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testProcessRetryRefundWithThreeAttempt()
+    {
+        $entries = $this->getDefaultRefundFileEntries();
+
+        $batch = $this->fixtures->create('batch:refund_with_three_attempt', $entries);
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/batches/' . 'batch_'.$batch->getId()  .'/retry';
+
+        $this->ba->proxyAuth();
+        $this->startTest();
     }
 
     protected function writeToExcelFile($data, $name)
@@ -286,7 +213,8 @@ class RefundBatchFileTest extends TestCase
     {
         $entries = $this->getDefaultRefundFileEntries();
 
-        $url = $this->writeToExcelFile($entries, 'upload_refund_test');
+        $paymentId = $entries[0][0];
+        $url = $this->writeToExcelFile($entries, $paymentId .'xlsx');
 
         $uploadedFile = $this->createTempFile($url);
 
@@ -301,7 +229,8 @@ class RefundBatchFileTest extends TestCase
 
         $this->ba->proxyAuth();
 
-        return $this->makeRequestAndGetContent($request);
+        return array($this->makeRequestAndGetContent($request), $entries);
+
     }
 
     protected function getDefaultRefundFileEntries()
@@ -309,8 +238,10 @@ class RefundBatchFileTest extends TestCase
         $payment = $this->defaultAuthPayment();
 
         $entries = array();
-        $row = array($payment['id'], (int) 2000);
+        $row = array($payment['id'], (int) 4000);
 
         array_push($entries, $row);
+
+        return $entries;
     }
 }

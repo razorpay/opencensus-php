@@ -9,6 +9,7 @@ use RZP\Models\Batch;
 use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorDescription;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -25,6 +26,7 @@ class Processor extends Base\Core
         parent::__construct();
 
         $this->mutex = $this->app['api.mutex'];
+
     }
 
     public function process($batch)
@@ -137,8 +139,9 @@ class Processor extends Base\Core
             }
 
             // The complete refund for the payment has already been done
-            if (isset($entryMap['Status']) === true && $entryMap['Status'] === Status::PROCESSING &&
-                ($entryMap['Comment'] === 'BAD_REQUEST_PAYMENT_FULLY_REFUNDED' || $entryMap['Comment'] === 'BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_CAPTURED'))
+            if (isset($entryMap['Status']) === true && $entryMap['Status'] === Status::FAILURE &&
+                ($entryMap['Error Description'] === PublicErrorDescription::BAD_REQUEST_PAYMENT_FULLY_REFUNDED ||
+                    $entryMap['Error Description'] === PublicErrorDescription::BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_CAPTURED))
             {
                 $totalFailureCount++;
 
@@ -171,6 +174,27 @@ class Processor extends Base\Core
 
     protected function processRefundRequest($batch, $paymentId, $amount, $batchRefundEntry)
     {
+        // This ensure that if that batch entity is already processed, we update the refund id
+        $refunds = $this->repo->refund->fetchByBatchIdPaymentIdMerchantIdAmount($batch->getId(), $paymentId, $batch->getMerchantId(), $amount);
+
+        if(count($refunds) > 0)
+        {
+            $this->trace->error(
+                TraceCode::BATCH_PROCESS_FILE,
+                [
+                    'message'            => 'Batch entry already processed',
+                    'payemntId'          => $paymentId,
+                    'amount'             => $amount,
+                    'refunds'            => $refunds->toArrayPublic()
+                ]);
+
+            $refund = $refunds[0];
+
+            array_push($batchRefundEntry, $refund->getId(), $refund->getAmount(), Status::SUCCESS, '', '');
+
+            return array($batchRefundEntry, true, $refund->getAmount());
+        }
+
         try
         {
             $refundRequest = [
@@ -184,7 +208,7 @@ class Processor extends Base\Core
             $refund->batch()->associate($batch);
             $this->repo->saveOrFail($refund);
 
-            array_push($batchRefundEntry, $refund->getId(), $refund->getAmount(), Status::PROCESSED, Status::PROCESSED);
+            array_push($batchRefundEntry, $refund->getId(), $refund->getAmount(), Status::SUCCESS, '', '');
 
             return array($batchRefundEntry, true, $refund->getAmount());
         }
@@ -199,7 +223,8 @@ class Processor extends Base\Core
                     'errorMessage'       => $e->getCode(),
                 ]);
 
-            array_push($batchRefundEntry, '', '', Status::PROCESSING, $e->getCode());
+            $error = $e->getError();
+            array_push($batchRefundEntry, '', '', Status::FAILURE, $error->getPublicErrorCode(), $error->getDescription());
 
             return array($batchRefundEntry, false, 0);
         }

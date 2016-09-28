@@ -134,4 +134,14 @@ class Repository extends Base\Repository
 
         return $refunds;
     }
+
+    public function fetchByBatchIdPaymentIdMerchantIdAmount($batchId, $paymentId, $merchantId, $amount)
+    {
+        return $this->newQuery()
+                    ->where(Refund\Entity::PAYMENT_ID, '=', $paymentId)
+                    ->where(Refund\Entity::MERCHANT_ID, '=', $merchantId)
+                    ->where(Refund\Entity::BATCH_ID, '=', $batchId)
+                    ->where(Refund\Entity::AMOUNT, '=', $amount)
+                    ->get();
+    }
 }

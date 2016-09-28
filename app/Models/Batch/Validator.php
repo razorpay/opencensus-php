@@ -40,6 +40,8 @@ class Validator extends Base\Validator
     {
         $headers = array('payment_id', 'refund_amount');
 
+        $existingPaymentIds = array();
+
         foreach ($entries as $entry)
         {
             if (count($headers) !== count($entry))
@@ -60,6 +62,14 @@ class Validator extends Base\Validator
             {
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FILE_VALIDATION);
             }
+
+            // Batch File should not contain multiple entries for the same payment id
+            if(in_array($paymentId, $existingPaymentIds))
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FILE_VALIDATION);
+            }
+
+            array_push($existingPaymentIds, $paymentId);
         }
     }
 }

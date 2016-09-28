@@ -20,7 +20,8 @@ class Type
             'Refund Id',
             'Refunded Amount',
             'Status',
-            'Comment'
+            'Error Code',
+            'Error Description'
         ]
     ];
 

@@ -157,6 +157,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PROCESSED_AT);
     }
 
+    public function getMerchantId()
+    {
+        return $this->getAttribute(self::MERCHANT_ID);
+    }
+
     public function setUploadFileUrl($url)
     {
         $this->setAttribute(self::UPLOAD_FILE_URL, $url);

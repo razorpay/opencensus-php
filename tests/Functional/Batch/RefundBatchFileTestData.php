@@ -21,18 +21,6 @@ return [
         ],
     ],
 
-    'testDownloadRefundFile' => [
-        'request' => [
-            'method' => 'post',
-            'content' => [
-                'type' => 'refund',
-            ],
-        ],
-        'response' => [
-
-        ],
-    ],
-
     'testUploadRefundFileException' => [
         'request' => [
             'url' => '/batches',
@@ -77,7 +65,7 @@ return [
         ],
     ],
 
-    'testRetryRefundFiles' => [
+    'testProcessRefundRetryAfterProccessed' => [
         'request' => [
             'method' => 'post',
             'content' => [
@@ -86,33 +74,7 @@ return [
         ],
         'response' => [
             'content' => [
-                    'id' => 'rfnd_file_6JaB3AUIkCh9kL',
-                    'entity' => 'refund_file',
-                    'status' =>  'created',
-                    'created_at' => 1474032787,
-            ],
-        ],
-    ],
-
-    'testRetryRefundFilesWithException' => [
-        'request' => [
-            'method' => 'post',
-            'content' => [
-
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The uploaded file is already processed',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_FILE_ALREADY_PROCESSED,
+            ]
         ],
     ],
 
@@ -126,11 +88,149 @@ return [
         ],
         'response' => [
             'content' => [
-                    'id' => 'rfnd_file_6JaB3AUIkCh9kL',
-                    'entity' => 'refund_file',
-                    'status' =>  'created',
-                    'created_at' => 1474032787,
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'entity'            => 'batch',
+                        'status'            => 'processed',
+                        'amount'            =>  4000,
+                        'processed_amount'  =>  4000,
+                        'success_count'     =>  1,
+                        'failure_count'     =>  0,
+                        'attempts'          =>  1,
+                    ],
+                ]
             ],
         ],
     ],
+
+    'testProcessRefundWithOneAttempt' => [
+        'request' => [
+            'url' => '/batches/process',
+            'method' => 'post',
+            'content' => [
+
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'entity'            => 'batch',
+                        'status'            => 'processing',
+                        'amount'            =>  4000,
+                        'processed_amount'  =>  0,
+                        'success_count'     =>  0,
+                        'failure_count'     =>  1,
+                        'attempts'          =>  1,
+                    ],
+                ]
+            ],
+        ],
+    ],
+
+    'testProcessRefundWithTwoAttempt' => [
+        'request' => [
+            'url' => '/batches/process',
+            'method' => 'post',
+            'content' => [
+
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'entity'            => 'batch',
+                        'status'            => 'processing',
+                        'amount'            =>  4000,
+                        'processed_amount'  =>  0,
+                        'success_count'     =>  0,
+                        'failure_count'     =>  1,
+                        'attempts'          =>  2,
+                    ],
+                ]
+            ],
+        ],
+    ],
+
+    'testProcessRefundWithThreeAttempt' => [
+        'request' => [
+            'url' => '/batches/process',
+            'method' => 'post',
+            'content' => [
+
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'entity'            => 'batch',
+                        'status'            => 'processed',
+                        'amount'            =>  4000,
+                        'processed_amount'  =>  0,
+                        'success_count'     =>  0,
+                        'failure_count'     =>  1,
+                        'attempts'          =>  3,
+                    ],
+                ]
+            ],
+        ],
+    ],
+
+    'testProcessRefundWithThreeAttemptSuccess' => [
+        'request' => [
+            'url' => '/batches/process',
+            'method' => 'post',
+            'content' => [
+
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'entity'            => 'batch',
+                        'status'            => 'processed',
+                        'amount'            =>  4000,
+                        'processed_amount'  =>  4000,
+                        'success_count'     =>  1,
+                        'failure_count'     =>  0,
+                        'attempts'          =>  3,
+                    ],
+                ]
+            ],
+        ],
+    ],
+
+    'testProcessRetryRefundWithThreeAttempt' => [
+        'request' => [
+            'method' => 'post',
+            'content' => [
+
+            ],
+        ],
+        'response' => [
+            'content' => [
+                        'entity'            => 'batch',
+                        'status'            => 'processing',
+                        'amount'            =>  4000,
+                        'processed_amount'  =>  0,
+                        'success_count'     =>  0,
+                        'failure_count'     =>  1,
+                        'attempts'          =>  2,
+            ],
+        ],
+    ],
+
 ];
