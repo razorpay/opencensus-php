@@ -21,10 +21,8 @@ class ResponseCodeMap
 
     public static function getApiErrorCode($code)
     {
-        $class = 'RZP\Error\ErrorCode::';
-
         if ((empty($code) === true) or
-              (isset(static::$codes[$code]) === false))
+            (isset(static::$codes[$code]) === false))
         {
             return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
         }

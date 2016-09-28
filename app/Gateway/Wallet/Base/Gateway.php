@@ -54,7 +54,6 @@ class Gateway extends Base\Gateway
      */
     protected function updateGatewayPaymentEntity($gatewayPayment, $attributes)
     {
-        // gatewayPayment is gateway payment entity
         $attr = $this->getMappedAttributes($attributes);
 
         $gatewayPayment->fill($attr);

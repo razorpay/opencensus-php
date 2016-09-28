@@ -10,6 +10,7 @@ use RZP\Exception;
 use RZP\Http\Route;
 use RZP\Gateway\Base;
 use RZP\Gateway\Base\Action;
+use RZP\Gateway\Wallet\Base as WalletBase;
 use RZP\Gateway\Wallet\Base\Otp;
 use RZP\Gateway\Wallet\Freecharge;
 use RZP\Gateway\Wallet\Freecharge\ResponseFields;
@@ -40,15 +41,20 @@ class Server extends Base\Mock\Server
 
         $this->validateActionInput($input, 'verify');
 
+        $merchantTxnId = $input[RequestFields::MERCHANT_TXN_ID];
+
+        $wallet = (new WalletBase\Repository)->fetchWalletByPaymentId(
+            $merchantTxnId);
+
         // We send Freecharge Transaction ID if it exists,
         // It exists if freecharge acknowledged our TxnId
         // It can mark our transaction as failure later though
         if (isset($input[RequestFields::TXN_ID]) === true)
         {
             $response = [
-                ResponseFields::MERCHANT_TXN_ID => $input[RequestFields::MERCHANT_TXN_ID],
+                ResponseFields::MERCHANT_TXN_ID => $merchantTxnId,
                 ResponseFields::TXN_ID          => $input[RequestFields::TXN_ID],
-                ResponseFields::AMOUNT          => '50000',
+                ResponseFields::AMOUNT          => $wallet['amount'],
                 ResponseFields::STATUS          => Freecharge\Status::TRANSACTION_SUCCESS,
             ];
 
@@ -79,7 +85,7 @@ class Server extends Base\Mock\Server
             ResponseFields::STATUS                 => Freecharge\Status::REFUND_SUCCESS,
             ResponseFields::REFUND_TXN_ID          => $this->getRefundTxnId(),
             ResponseFIelds::REFUND_MERCHANT_TXN_ID => $this->getRefundMerchantTxnId(),
-            ResponseFields::REFUNDED_AMOUNT        => '100',
+            ResponseFields::REFUNDED_AMOUNT        => $input[RequestFields::REFUND_AMOUNT],
             ResponseFields::ERROR_CODE             => null,
             ResponseFields::ERROR_MESSAGE          => null,
         );
@@ -186,7 +192,7 @@ class Server extends Base\Mock\Server
             $response = array(
                 ResponseFields::TXN_ID          => $this->getTxnId(),
                 ResponseFields::MERCHANT_TXN_ID => $this->getMerchantTxnId(),
-                ResponseFields::AMOUNT          => '123',
+                ResponseFields::AMOUNT          => $input[RequestFields::AMOUNT],
                 ResponseFields::STATUS          => Freecharge\Status::DEBIT_SUCCESS,
                 ResponseFields::ERROR_CODE      => null,
                 ResponseFields::ERROR_MESSAGE   => null,

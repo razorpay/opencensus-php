@@ -223,6 +223,17 @@ return [
         'entity'                => 'wallet',
     ],
 
+    'testPartialRefundPayment'       => [
+        'action'                => 'refund',
+        'wallet'                => 'freecharge',
+        'email'                 => 'a@b.com',
+        'amount'                => 25000,
+        'contact'               => '9918899029',
+        'gateway_merchant_id'   => 'random_id',
+        'status_code'           => 'Success',
+        'entity'                => 'wallet',
+    ],
+
     'otpRetryRequest' => [
         'request'   => [
             'method'    => 'POST',

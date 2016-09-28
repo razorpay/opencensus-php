@@ -362,6 +362,21 @@ class FreechargeGatewayTest extends TestCase
         $this->assertTestResponse($refund);
     }
 
+    public function testPartialRefundPayment()
+    {
+        $payment = $this->getDefaultWalletPaymentArray('freecharge');
+
+        $authPayment = $this->doAuthPayment($payment);
+
+        $capturePayment = $this->capturePayment($authPayment['razorpay_payment_id'], $payment['amount']);
+
+        $this->refundPayment($capturePayment['id'], $capturePayment['amount']/2);
+
+        $refund = $this->getLastEntity('wallet', true);
+
+        $this->assertTestResponse($refund);
+    }
+
     public function testRefundExcelFile()
     {
         $defaultPayment = $this->getDefaultWalletPaymentArray('freecharge');

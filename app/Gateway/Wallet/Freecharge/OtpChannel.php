@@ -4,6 +4,6 @@ namespace RZP\Gateway\Wallet\Freecharge;
 
 class OtpChannel
 {
-    const THROUGH_SMS  = 'THROUGH_SMS';
-    const THROUGH_CALL = 'THROUGH_CALL';
+    const SMS  = 'THROUGH_SMS';
+    const CALL = 'THROUGH_CALL';
 }

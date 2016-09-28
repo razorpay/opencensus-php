@@ -29,8 +29,6 @@ class Gateway extends Base\Gateway
 
     const DEFAULT_TXN_CHANNEL = 'WEB';
 
-    const DEFAULT_TXN_TYPE    = 'CUSTOMER_PAYMENT';
-
     const ENCRYPTION_MODE     = 'aes-128-ecb';
 
     protected $gateway = 'wallet_freecharge';
@@ -535,7 +533,7 @@ class Gateway extends Base\Gateway
             $input['payment']['id'], Action::AUTHORIZE);
 
         $content = array(
-            RequestFields::CHANNEL     => OtpChannel::THROUGH_SMS,
+            RequestFields::CHANNEL     => OtpChannel::SMS,
             RequestFields::MERCHANT_ID => $this->getMerchantId($input['terminal']),
             RequestFields::OTP_ID      => $wallet['reference1'],
         );
@@ -820,7 +818,7 @@ class Gateway extends Base\Gateway
             RequestFields::MERCHANT_ID     => $this->getMerchantId($input['terminal']),
             RequestFields::MERCHANT_TXN_ID => $input['payment']['public_id'],
             RequestFields::TXN_ID          => $wallet['gateway_payment_id'],
-            RequestFields::TXN_TYPE        => self::DEFAULT_TXN_TYPE,
+            RequestFields::TXN_TYPE        => TxnType::CUSTOMER_PAYMENT,
         ];
 
         $content[RequestFields::CHECKSUM] = $this->getHashOfArray($content);
@@ -948,6 +946,16 @@ class Gateway extends Base\Gateway
                 ErrorCode::GATEWAY_ERROR_FATAL_ERROR);
         }
         else if ($response->status_code === 202)
+        {
+            $content = $this->jsonToArray($response->body);
+
+            throw new Exception\GatewayErrorException(
+                ResponseCodeMap::getApiErrorCode($content[ResponseFields::ERROR_CODE]),
+                $content[ResponseFields::ERROR_CODE],
+                $content[ResponseFields::ERROR_MESSAGE]);
+        }
+        else if ((isset($content[ResponseFields::ERROR_CODE]) === true) and
+                 (isset($content[ResponseFields::ERROR_CODE]) !== ResponseCode::SUCCESS_CODE))
         {
             $content = $this->jsonToArray($response->body);
 
