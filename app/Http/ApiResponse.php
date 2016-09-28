@@ -175,7 +175,7 @@ class ApiResponse
         }
         else if (self::isCheckoutRoute($route))
         {
-            return self::generateCheckoutView($data, $app);
+            return self::generateCheckoutView($data);
         }
 
         return self::json($data, $status);
@@ -217,7 +217,7 @@ class ApiResponse
         return $response;
     }
 
-    protected static function generateCheckoutView($data, $app)
+    protected static function generateCheckoutView($data)
     {
         return \View::make('checkout.checkout')
                     ->with($data);
