@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'api_host'  => [
+    'api_hosts'  => [
         'production' =>  env('APP_HOST'),
         'beta'       =>  env('BETA_APP_HOST'),
         'alpha'      =>  env('ALPHA_APP_HOST'),
