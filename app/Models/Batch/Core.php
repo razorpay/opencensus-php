@@ -18,8 +18,6 @@ class Core extends Base\Core
 {
     use FileHandlerTrait;
 
-    protected $mutex;
-
     protected static $fileToReadName = 'Batch_File';
 
     public function create($input)
@@ -49,22 +47,6 @@ class Core extends Base\Core
         return $batch;
     }
 
-    public function getBatches($input)
-    {
-        $merchant = $this->merchant;
-
-        $batches = $this->repo->batch->fetch($input, $merchant->getId());
-
-        return $batches;
-    }
-
-    public function getBatchById($id)
-    {
-        $batch = $this->repo->batch->findOrFail($id);
-
-        return $batch;
-    }
-
     public function retryBatch($batch)
     {
         if ($batch->getStatus() === Status::PROCESSED)
@@ -84,10 +66,8 @@ class Core extends Base\Core
         return $batch;
     }
 
-    public function downloadBatch($id)
+    public function downloadBatch($batch)
     {
-        $batch = $this->repo->batch->findOrFail($id);
-
         $storagePath = storage_path('files/batch_download');
         $filePath = $storagePath . '/' . $batch->getId() . '.xlsx';
 
@@ -154,7 +134,7 @@ class Core extends Base\Core
 
         $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
-        $url = $this->saveToAws($batch->getId().'.xlsx', $file, $xlsxMimeType, $bucket);
+        $url = $this->saveToAws($batch->getId().'.xlsx', $file->getPathName(), $xlsxMimeType, $bucket);
 
         return $url;
     }

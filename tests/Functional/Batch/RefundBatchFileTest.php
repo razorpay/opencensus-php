@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Tests\Functional\Payment;
+namespace RZP\Tests\Functional\Batch;
 
 use DB;
 use Mockery;

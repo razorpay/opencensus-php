@@ -18,6 +18,8 @@ class Processor extends Base\Core
 {
     use FileHandlerTrait;
 
+    protected $mutex;
+
     public function __construct()
     {
         parent::__construct();

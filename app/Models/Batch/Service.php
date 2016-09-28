@@ -60,7 +60,9 @@ class Service extends Base\Service
 
     public function downloadBatch($id)
     {
-        $awsPublicUrl = (new Batch\Core)->downloadBatch($id);
+        $batch = $this->repo->batch->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $awsPublicUrl = (new Batch\Core)->downloadBatch($batch);
 
         $responseObj = [
             'url' => $awsPublicUrl,
