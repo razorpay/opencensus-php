@@ -97,17 +97,22 @@ class Entity extends Base\Entity
 
     public function getAuthCode()
     {
-        return $this->attributes['vpc_AuthorizeId'];
+        return $this->getAttribute('vpc_AuthorizeId');
     }
 
     public function getTransactionId()
     {
-        return $this->attributes['vpc_TransactionNo'];
+        return $this->getAttribute('vpc_TransactionNo');
     }
 
     public function setVpcTransactionNo($txnNo)
     {
         $this->setAttribute('vpc_TransactionNo', $txnNo);
+    }
+
+    public function getVpcTransactionCode()
+    {
+        return $this->getAttribute('vpc_TxnResponseCode');
     }
 
     /**
