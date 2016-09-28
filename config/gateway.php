@@ -54,6 +54,8 @@ return array(
     'mock_wallet_airtelmoney' => env('AIRTELMONEY_MOCK'),
     'mock_upi_icici'          => env('UPI_ICICI_MOCK'),
 
+    'certificate_path'        => env('CERTIFICATE_DIR_PATH'),
+
     'hdfc' => array(
         'test_terminal_id'  => env('HDFC_GATEWAY_TEST_TERMINAL_ID'),
         'test_terminal_pwd' => env('HDFC_GATEWAY_TEST_TERMINAL_PASSWORD'),
@@ -72,9 +74,10 @@ return array(
         'test_hash_secret'                  => env('FIRST_DATA_TEST_HASH_SECRET'),
         'test_user_id'                      => env('FIRST_DATA_TEST_USER_ID'),
         'test_password'                     => env('FIRST_DATA_TEST_PASSWORD'),
-        'server_certificate_path'           => env('FIRST_DATA_SERVER_CERTIFICATE_PATH'),
-        'client_certificate_path'           => env('FIRST_DATA_CLIENT_CERTIFICATE_PATH'),
-        'client_certificate_key_path'       => env('FIRST_DATA_CLIENT_CERTIFICATE_KEY_PATH'),
+        'cert_dir_name'                     => env('FIRST_DATA_CERT_DIR_NAME'),
+        'server_certificate'                => env('FIRST_DATA_SERVER_CERTIFICATE'),
+        'client_certificate'                => env('FIRST_DATA_CLIENT_CERTIFICATE'),
+        'client_certificate_key'            => env('FIRST_DATA_CLIENT_CERTIFICATE_KEY'),
     ),
 
     'amex' => array(

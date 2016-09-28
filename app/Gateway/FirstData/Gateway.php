@@ -23,9 +23,10 @@ class Gateway extends Base\Gateway
     const TEST_STORE_ID                     = 'test_store_id';
     const TEST_HASH_SECRET                  = 'test_hash_secret';
 
-    const SERVER_CERTIFICATE_PATH           = 'server_certificate_path';
-    const CLIENT_CERTIFICATE_PATH           = 'client_certificate_path';
-    const CLIENT_CERTIFICATE_KEY_PATH       = 'client_certificate_key_path';
+    const CERT_DIR_NAME                     = 'cert_dir_name';
+    const SERVER_CERTIFICATE_PATH           = 'server_certificate';
+    const CLIENT_CERTIFICATE_PATH           = 'client_certificate';
+    const CLIENT_CERTIFICATE_KEY_PATH       = 'client_certificate_key';
 
     const PROCESSING                        = 'PROCESSING';
     const SERVICES                          = 'SERVICES';
@@ -639,19 +640,30 @@ class Gateway extends Base\Gateway
         return $auth;
     }
 
+    protected function getGatewayCertDirName()
+    {
+        return $this->config[self::CERT_DIR_NAME];
+    }
+
     protected function getServerCertificate()
     {
-        return storage_path() . '/' . $this->config[self::SERVER_CERTIFICATE_PATH];
+        $gatewayCertPath = $this->getGatewayCertDirPath();
+
+        return $gatewayCertPath . '/' . $this->config[self::SERVER_CERTIFICATE_PATH];
     }
 
     protected function getClientCertificate()
     {
-        return storage_path() . '/' . $this->config[self::CLIENT_CERTIFICATE_PATH];
+        $gatewayCertPath = $this->getGatewayCertDirPath();
+
+        return $gatewayCertPath . '/' . $this->config[self::CLIENT_CERTIFICATE_PATH];
     }
 
     protected function getClientCertificateKey()
     {
-        return storage_path() . '/' . $this->config[self::CLIENT_CERTIFICATE_KEY_PATH];
+        $gatewayCertPath = $this->getGatewayCertDirPath();
+
+        return $gatewayCertPath . '/' . $this->config[self::CLIENT_CERTIFICATE_KEY_PATH];
     }
 
     protected function getSharedSecret()

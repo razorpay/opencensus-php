@@ -663,6 +663,15 @@ class Gateway
         }
     }
 
+    protected function getGatewayCertDirPath()
+    {
+        $certificatePath = $this->app['config']->get('gateway.certificate_path');
+
+        $gatewayCertPath = $certificatePath . '/' . $this->getGatewayCertDirName();
+
+        return $gatewayCertPath;
+    }
+
     protected function getRepository()
     {
         $gateway = $this->gateway;
