@@ -11,8 +11,10 @@ class Core extends Base\Core
     {
         $input = [];
 
+        $parser = new Analytics\Parser;
+
         // parse, and set data in $paymentAnalytics object
-        (new Analytics\Parser)->recordPaymentRequestData($input, $payment);
+        $parser->recordPaymentRequestData($input, $payment);
 
         $paymentAnalytics = (new Analytics\Entity)->build($input);
 
