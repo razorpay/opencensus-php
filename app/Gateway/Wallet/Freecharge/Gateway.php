@@ -95,6 +95,11 @@ class Gateway extends Base\Gateway
 
     public function otpGenerate(array $input)
     {
+        if ((isset($input['otp_resend'])) and ($input['otp_resend'] === true))
+        {
+            return $this->otpResend($input);
+        }
+
         $this->action($input, Action::OTP_GENERATE);
 
         $this->domainType = Url::LOGIN;
@@ -130,7 +135,7 @@ class Gateway extends Base\Gateway
         if ($code === Status::OTP_REDIRECT)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_WALLET_USER_DOES_NOT_EXIST);
+                ErrorCode::BAD_REQUEST_PAYMENT_WALLET_USER_DOES_NOT_EXIST);
         }
     }
 
@@ -326,8 +331,8 @@ class Gateway extends Base\Gateway
         $input = $this->input;
 
         $expiryTime = $content[ResponseFields::ACCESS_TOKEN_EXPIRY];
-        $expiryTime = Carbon::createFromFormat(
-            'Y-m-d\TH:i:s', $expiryTime)->timestamp;
+        $expiryTime = Carbon::createFromFormat('Y-m-d\TH:i:s', $expiryTime)
+                        ->timestamp;
 
         $attributes = array(
             Token\Entity::METHOD           => 'wallet',
