@@ -12,6 +12,8 @@ class Options
 
     protected $hasMultiple = false;
 
+    protected $exclusionList = array();
+
     public function __construct()
     {
         $this->setChance();
@@ -45,6 +47,16 @@ class Options
         }
 
         $this->chance = $chance;
+    }
+
+    public function setExclusionList(array $exclude)
+    {
+        $this->exclusionList = $exclude;
+    }
+
+    public function getExclusionList()
+    {
+        return $this->exclusionList;
     }
 
     public static function setTestChance($testChance = 0)

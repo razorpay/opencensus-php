@@ -88,6 +88,13 @@ class Selector
         //
         $filteredTerminals = $terminals->all();
 
+        $exclusionList = $options->getExclusionList();
+
+        if (count($exclusionList) > 0 && (count($exclusionList) <= count($filteredTerminals)))
+        {
+            $this->input['exclude'] = $exclusionList;
+        }
+
         foreach (self::$filters as $filter)
         {
             $filteredTerminals = (new $filter)->filter($filteredTerminals, $this->input, $verbose);
@@ -185,9 +192,15 @@ class Selector
      * a bunch of terminals, in case the terminal fails
      * @return Entity
      */
-    public function selectTerminals()
+    public function selectTerminals($opts = array())
     {
         $options = new Terminal\Options();
+
+        if ((isset($opts['exclude']) === true) &&
+            is_array($opts['exclude']));
+        {
+            $options->setExclusionList($opts['exclude']);
+        }
 
         $terminalsSelected = $this->select($options);
 

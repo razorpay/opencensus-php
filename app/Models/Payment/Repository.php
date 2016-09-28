@@ -74,6 +74,13 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchPaymentsForOrderId($orderId)
+    {
+        return $this->newQuery()
+                ->where(Entity::ORDER_ID, '=', $orderId)
+                ->get();
+    }
+
     /**
      * Returns the captured payments
      * between the given timestamps (using CAPTURED_AT)
