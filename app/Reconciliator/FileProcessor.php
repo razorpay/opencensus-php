@@ -60,7 +60,7 @@ class FileProcessor
 
     public function getFileDetails($file, $type = self::UPLOADED)
     {
-        assert(in_array($type, [self::STORAGE, self::UPLOADED]), "Wrong file type [Uploaded/Storage]");
+        assertTrue(in_array($type, [self::STORAGE, self::UPLOADED]), "Wrong file type [Uploaded/Storage]");
 
         if ($type === self::UPLOADED)
         {

@@ -219,13 +219,6 @@ class ApiResponse
 
     protected static function generateCheckoutView($data, $app)
     {
-        if (isset($data['font']) === false)
-        {
-            $prodCdnUrl = $app['config']->get('url.cdn')['production'];
-
-            $data['font'] = $prodCdnUrl.'/lato2';
-        }
-
         return \View::make('checkout.checkout')
                     ->with($data);
     }

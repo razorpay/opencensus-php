@@ -80,7 +80,7 @@ class Checkout
         {
             list($customer, $appToken) = (new Customer\Core)->getCustomerAndApp($input, $merchant);
 
-            assert($customer !== null);
+            assertTrue($customer !== null);
 
             if ($customer->isLocal() === true)
             {

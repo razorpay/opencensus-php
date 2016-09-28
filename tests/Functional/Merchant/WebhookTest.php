@@ -181,7 +181,7 @@ class WebhookTest extends TestCase
         $inferno = $this->mockInferno();
 
         $this->fixtures->edit(
-            'webhook', $webhook['id'], ['last_successful_at' => (time()-(25*3600)), 'active' => 1]);
+            'webhook', $webhook['id'], ['last_successful_at' => (time() - (25 * 3600)), 'active' => 1]);
 
         $inferno->shouldReceive('sendRequest')
             ->once()
@@ -194,6 +194,24 @@ class WebhookTest extends TestCase
         $this->doAuthPayment();
     }
 
+    public function testWebhookDeactivation()
+    {
+        $webhook = $this->createWebhook();
+        $inferno = $this->mockInferno();
+
+        $this->fixtures->edit(
+            'webhook', $webhook['id'], ['last_successful_at' => (time() - (25 * 3600)), 'active' => 1]);
+
+        $inferno->shouldReceive('sendRequest')
+                ->once()
+                ->andReturn(false);
+
+        $this->doAuthPayment();
+
+        $webhook = $this->getLastEntity('webhook', true);
+
+        $this->assertEquals($webhook['active'], false);
+    }
     public function testWebhookHittingTheDefinedRoute()
     {
         $this->markTestSkipped();

@@ -60,16 +60,16 @@ class CreateTerminals extends Migration
             $table->string(Terminal::GATEWAY_ACQUIRER)
                   ->nullable();
 
-            $table->boolean(Terminal::CARD)
+            $table->tinyInteger(Terminal::CARD)
                   ->default(0);
 
-            $table->boolean(Terminal::NETBANKING)
+            $table->tinyInteger(Terminal::NETBANKING)
                   ->default(0);
 
-            $table->boolean(Terminal::UPI)
+            $table->tinyInteger(Terminal::UPI)
                   ->default(0);
 
-            $table->boolean(Terminal::EMI)
+            $table->tinyInteger(Terminal::EMI)
                   ->default(0);
 
             $table->integer(Terminal::EMI_DURATION)
@@ -79,7 +79,7 @@ class CreateTerminals extends Migration
                   ->unsigned()
                   ->default(Recurring::NON_RECURRING);
 
-            $table->boolean(Terminal::SHARED)
+            $table->tinyInteger(Terminal::SHARED)
                   ->default(0);
 
             $table->string(Terminal::NETWORK_CATEGORY)
@@ -93,6 +93,9 @@ class CreateTerminals extends Migration
                   ->unsigned()
                   ->nullable();
 
+            $table->tinyInteger(Terminal::ENABLED)
+                  ->default(1);
+
             $table->foreign(Terminal::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)
@@ -105,6 +108,7 @@ class CreateTerminals extends Migration
             $table->index(Terminal::CATEGORY);
             $table->index(Terminal::GATEWAY);
             $table->index(Terminal::DELETED_AT);
+            $table->index(Terminal::ENABLED);
         });
     }
 
