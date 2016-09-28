@@ -44,6 +44,12 @@ class Service extends Base\Service
     // This is the Admin\Logger trait
     use Logger;
 
+    public function __construct()
+    {
+        $app = \App::getFacadeRoot();
+        $this->trace = $app['trace'];
+    }
+
     public function login(array $input)
     {
         $error = (new Admin\Validator)->validateInput('login', $input)->messages();
@@ -1988,9 +1994,7 @@ class Service extends Base\Service
     {
         $total_payments = $this->fetchPaymentsToAggregate($input, $mode);
 
-        $app = \App::getFacadeRoot();
-        $trace = $app['trace'];
-        $trace->info(TraceCode::MISC_TRACE_CODE, array_keys($total_payments));
+        $this->trace->info(TraceCode::MISC_TRACE_CODE, array_keys($total_payments));
 
         list($error, $response) = (new Transaction\Service)->processDayAggregations($total_payments, $mode);
 

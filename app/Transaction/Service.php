@@ -285,18 +285,19 @@ class Service extends Base\Service
         switch($type)
         {
             case 'day':
-                $createdAt = strtotime(date('j F Y', $date)); //2 January 2011
+                $createdAt = Carbon::parse(date('j F Y', $date), 'Asia/Kolkata')->timestamp;//strtotime(date('j F Y', $date)); //2 January 2011
                 break;
             case 'week':
-                $createdAt = strtotime(date('o-\\WW', $date)); //2011-W52
+                $createdAt = Carbon::parse(date('o-\\WW', $date), 'Asia/Kolkata')->timestamp; //2011-W52
                 break;
             case 'month':
-                $createdAt = strtotime(date('M Y', $date)); //Jan 2011
+                $createdAt = Carbon::parse(date('M Y', $date), 'Asia/Kolkata')->timestamp; //Jan 2011
                 break;
             case 'year':
-                $createdAt = strtotime("1 Jan " . date('Y', $date)); //1 Jan 2011
+                $createdAt = Carbon::parse("1 Jan " . date('Y', $date), 'Asia/Kolkata')->timestamp; //1 Jan 2011
                 break;
         }
+        sd($createdAt);
 
         return $createdAt;
     }
