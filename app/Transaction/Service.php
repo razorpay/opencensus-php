@@ -5,18 +5,25 @@ namespace App\Transaction;
 use App\Base;
 use App\Transaction;
 use App\Merchant;
+use Carbon\Carbon;
 use App\MerchantDetails;
 use DB;
 use App\Trace\TraceCode;
 
 class Service extends Base\Service
 {
-    public static $timeIntervals = array(
+    const TIME_INTERVALS = [
         'day'   =>  86400, // 24 * 60 * 60
         'week'  =>  604800, // 7 * 24 * 60 * 60
         'month' =>  2678400, // 31 * 24 * 60 * 60
         'year'  =>  31536000 // 365 * 24 * 60 * 60
-    );
+    ];
+
+    public function __construct()
+    {
+        $app = \App::getFacadeRoot();
+        $this->trace = $app['trace'];
+    }
 
     /**
      * Processes incoming transaction records to generate analytics.
@@ -39,7 +46,7 @@ class Service extends Base\Service
         {
             $this->aggregatePayment($input, $mode);
 
-            foreach (static::$timeIntervals as $type => $interval)
+            foreach (self::TIME_INTERVALS as $type => $interval)
             {
                 $obj = Transaction\Entity::retrieveLastByType($input['merchant_id'], $type, $mode);
 
@@ -213,14 +220,11 @@ class Service extends Base\Service
                 }
             }
 
-            // $app = \App::getFacadeRoot();
-            // $trace = $app['trace'];
-
             foreach ($inputByMerchant as $merchantId => $value)
             {
-                // $trace->info(TraceCode::MISC_TRACE_CODE, [$merchantId, $value]);
+                $date = date('j F Y', $value['created_at']);
 
-                $createdAt = strtotime(date('j F Y', $value['created_at']));
+                $createdAt = Carbon::parse($date, 'Asia/Kolkata')->timestamp;
 
                 $type = 'day';
 
@@ -238,9 +242,7 @@ class Service extends Base\Service
 
     protected function createOrUpdate($merchantId, $inputByMerchant, $type, $createdAt, $mode)
     {
-        $app = \App::getFacadeRoot();
-        $trace = $app['trace'];
-        $trace->info(TraceCode::MISC_TRACE_CODE, [$merchantId, $inputByMerchant]);
+        $this->trace->info(TraceCode::MISC_TRACE_CODE, [$merchantId, $inputByMerchant]);
 
         $obj = Transaction\Entity::retrieveByTypeAndCreatedAt($merchantId, $type, $createdAt, $mode);
 
@@ -283,16 +285,16 @@ class Service extends Base\Service
         switch($type)
         {
             case 'day':
-                $createdAt = strtotime(date('j F Y', $date));
+                $createdAt = strtotime(date('j F Y', $date)); //2 January 2011
                 break;
             case 'week':
-                $createdAt = strtotime(date('o-\\WW', $date));
+                $createdAt = strtotime(date('o-\\WW', $date)); //2011-W52
                 break;
             case 'month':
-                $createdAt = strtotime(date('M Y', $date));
+                $createdAt = strtotime(date('M Y', $date)); //Jan 2011
                 break;
             case 'year':
-                $createdAt = strtotime("1 Jan " . date('Y', $date));
+                $createdAt = strtotime("1 Jan " . date('Y', $date)); //1 Jan 2011
                 break;
         }
 
@@ -305,7 +307,7 @@ class Service extends Base\Service
     */
     public function getTimelyTransactionsForTheType($createdAt, $mode, $type)
     {
-        $endDate = $createdAt + self::$timeIntervals[$type];
+        $endDate = $createdAt + self::TIME_INTERVALS[$type];
 
         $data = Transaction\Entity::select('merchant_id', DB::raw('sum(count) as count'), DB::raw('sum(amount) as amount'))
             ->where('type','=',$type)

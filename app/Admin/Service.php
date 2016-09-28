@@ -1999,10 +1999,9 @@ class Service extends Base\Service
 
     protected function fetchPaymentsToAggregate($input, $mode)
     {
-        date_default_timezone_set('Asia/Kolkata');
-        $dateFrom = strtotime(date('j F Y', strtotime($input['date'])));
+        $dateFrom = Carbon::parse($input['date'], 'Asia/Kolkata')->timestamp;
 
-        $dateTo = $dateFrom + TransactionService::$timeIntervals['day'];
+        $dateTo = $dateFrom + TransactionService::TIME_INTERVALS['day'];
 
         $count_done = 0;
 
