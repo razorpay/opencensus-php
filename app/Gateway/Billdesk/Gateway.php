@@ -555,7 +555,10 @@ class Gateway extends Base\Gateway
     {
         $request = $this->getRequestArray($content);
 
-        $request['options']['proxy'] = $this->proxy;
+        if ($this->proxyEnabled === true)
+        {
+            $request['options']['proxy'] = $this->proxy;
+        }
 
         return $request;
     }

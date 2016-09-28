@@ -251,6 +251,8 @@ return array(
 
     'checkout' => env('CHECKOUT_URL'),
 
+    'proxy_enabled' => env('PROXY_ENABLED'),
+
     'proxy_address' => env('PROXY_ADDRESS'),
 
     'throw_exception_in_testing' => env('THROW_EXCEPTION_IN_TESTING', true),

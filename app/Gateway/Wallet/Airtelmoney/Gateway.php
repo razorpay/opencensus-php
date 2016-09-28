@@ -189,10 +189,7 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
-        if ($this->mode === Mode::LIVE)
-        {
-            $request['options']['proxy'] = $this->proxy;
-        }
+        $this->setProxy($request);
 
         return $request;
     }
@@ -582,12 +579,18 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
-        if ($this->mode === Mode::LIVE)
+        $this->setProxy($request);
+
+        return $request;
+    }
+
+    protected function setProxy(&$request)
+    {
+        if (($this->mode === Mode::LIVE) and
+            ($this->proxyEnabled === true))
         {
             $request['options']['proxy'] = $this->proxy;
         }
-
-        return $request;
     }
 
     protected function getLiveSecret()
