@@ -29,6 +29,7 @@ class Table
     const ADJUSTMENT            = 'adjustment';
     const SETTLEMENT            = 'settlements';
     const TRANSACTION           = 'transactions';
+    const FILE_HANDLER          = 'file_handler';
     const BANK_ACCOUNT          = 'bank_accounts';
     const DAILY_SETTLEMENT      = 'daily_settlements';
     const SETTLEMENT_DETAILS    = 'settlement_details';
