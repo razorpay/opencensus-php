@@ -160,7 +160,7 @@ class Server extends Base\Mock\Server
                 $response['reasonCode'] = Cybersource\Result::ENROLLED;
 
                 $params = array('gateway' => 'cybersource');
-                $response['payerAuthEnrollReply']['acsURL'] = Http\Route::getUrl('mockcybersource_acs', $params);
+                $response['payerAuthEnrollReply']['acsURL'] = Http\Route::getUrl('mock_cybersource_acs', $params);
                 $response['payerAuthEnrollReply']['paReq'] = 'eNpVUttygjAQfc9XMP0AkiAw';
                 $response['payerAuthEnrollReply']['xid'] = 'cGdKQXF5STA1TFl3OUtueHJnWDA';
                 $response['payerAuthEnrollReply']['veresEnrolled'] = 'Y';
@@ -171,7 +171,7 @@ class Server extends Base\Mock\Server
                 $response['reasonCode'] = Cybersource\Result::ENROLLED;
 
                 $params = array('gateway' => 'cybersource');
-                $response['payerAuthEnrollReply']['acsURL'] = Http\Route::getUrl('mockcybersource_acs', $params);
+                $response['payerAuthEnrollReply']['acsURL'] = Http\Route::getUrl('mock_cybersource_acs', $params);
                 $response['payerAuthEnrollReply']['paReq'] = 'eNpVUttygjAQfc9XMP0AkiAw';
                 $response['payerAuthEnrollReply']['xid'] = 'cGdKQXF5STA1TFl3OUtueHJnWDA';
                 $response['payerAuthEnrollReply']['veresEnrolled'] = 'Y';

@@ -244,4 +244,11 @@ class PaymentController extends Controller
 
         return ApiResponse::json($data);
     }
+    
+    public function postAuthorizeLockTimeOut($paymentIds)
+    {
+        $data = $this->payment->authorizeLockTimeOutPayments($paymentIds);
+        
+        return ApiResponse::json($data);
+    }
 }
