@@ -6,7 +6,6 @@ use RZP\Http\ApiResponse;
 use RZP\Models\Payment;
 use RZP\Models\Card;
 use RZP\Trace\TraceCode;
-use RZP\Http\Route;
 use Redirect;
 use Response;
 use Request;
