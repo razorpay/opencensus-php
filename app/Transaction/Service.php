@@ -74,9 +74,9 @@ class Service extends Base\Service
         Transaction\Entity::createOrFail($data);
     }
 
-    protected function createAggregate($mid, $data, $type, $mode)
+    protected function createAggregate($mid, $data, $type, $mode, $createdAt)
     {
-        $data['created_at'] = $this->getCreatedAtFromInputAndType($data['created_at'], $type);
+        $data['created_at'] = $createdAt;
         $data['type'] = $type;
         $data['mode'] = $mode;
         $data['merchant_id'] = $mid;
@@ -248,7 +248,7 @@ class Service extends Base\Service
 
         if ($obj === null)
         {
-            $this->createAggregate($merchantId, $inputByMerchant, $type, $mode);
+            $this->createAggregate($merchantId, $inputByMerchant, $type, $mode, $createdAt);
         }
         else
         {
@@ -265,6 +265,7 @@ class Service extends Base\Service
             {
                 $merchantId = $merchant_aggregate->merchant_id;
                 $input = [];
+                $input['created_at'] = $merchant_aggregate->created_at;
                 $input['updated_at'] = time();
                 $input['amount'] = $merchant_aggregate->amount;
                 $input['count'] = $merchant_aggregate->count;
@@ -297,7 +298,6 @@ class Service extends Base\Service
                 $createdAt = Carbon::parse("1 Jan " . date('Y', $date), 'Asia/Kolkata')->timestamp; //1 Jan 2011
                 break;
         }
-        sd($createdAt);
 
         return $createdAt;
     }
@@ -308,10 +308,28 @@ class Service extends Base\Service
     */
     public function getTimelyTransactionsForTheType($createdAt, $mode, $type)
     {
+        $searchType = '';
+        switch ($type)
+        {
+            case 'week':
+                $searchType = 'day';
+                break;
+
+            case 'month':
+                $searchType = 'week';
+                break;
+
+            case 'year':
+                $searchType = 'month';
+                break;
+
+            default:
+                break;
+        }
         $endDate = $createdAt + self::TIME_INTERVALS[$type];
 
         $data = Transaction\Entity::select('merchant_id', DB::raw('sum(count) as count'), DB::raw('sum(amount) as amount'))
-            ->where('type','=',$type)
+            ->where('type','=',$searchType)
             ->where('created_at','>=',$createdAt)
             ->where('created_at','<',$endDate)
             ->where('mode', '=', $mode)
