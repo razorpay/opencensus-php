@@ -373,12 +373,14 @@ class Gateway
         IFSC::KKBK,
         IFSC::UTIB,
         IFSC::INDB,
+        IFSC::RATN
     );
 
     public static $emiBanksUsingCardTerminals = array(
         IFSC::KKBK,
         IFSC::UTIB,
         IFSC::INDB,
+        IFSC::RATN
     );
 
     public static $emiBankToGatewayMap = array(
