@@ -155,7 +155,7 @@ class RecurringPaymentTest extends TestCase
         $data = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow($data, function() use ($payment) {
-            $this->doS2SPrivateAuthAndCapturePayment($payment);
+            $this->doAuthPayment($payment);
         });
     }
 
@@ -169,7 +169,7 @@ class RecurringPaymentTest extends TestCase
         $data = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow($data, function() use ($payment) {
-            $this->doS2SPrivateAuthAndCapturePayment($payment);
+            $this->doAuthPayment($payment);
         });
     }
 
@@ -184,7 +184,7 @@ class RecurringPaymentTest extends TestCase
         $data = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow($data, function() use ($payment) {
-            $this->doS2SPrivateAuthAndCapturePayment($payment);
+            $this->doAuthPayment($payment);
         });
     }
 
@@ -197,15 +197,14 @@ class RecurringPaymentTest extends TestCase
         unset($payment['card']);
 
         $this->fixtures->base->editEntity('card', '100000000lcard', ["type" => 'credit']);
+
         $this->fixtures->base->editEntity('token', '100000custcard', ["recurring" => true]);
 
-//        $this->fixtures->merchant->editFeatures('s2s');
-
-        $content = $this->doS2SPrivateAuthAndCapturePayment($payment);
+        $content = $this->doS2SRecurringPayment($payment);
 
         $payment['card'] = [];
 
-        $content = $this->doS2SPrivateAuthAndCapturePayment($payment);
+        $content = $this->doS2SRecurringPayment($payment);
 
         $paymentEntity = $this->getLastEntity('payment', true);
 

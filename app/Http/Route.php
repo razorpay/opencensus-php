@@ -568,18 +568,20 @@ final class Route
     );
 
     public static $routeNameToFeatureMap = array(
-        'feature_dummy'             => 'dummy',
-        'merchant_sub_create'       => 'aggregator',
-        'customer_delete'           => 'tokens',
-        'customer_delete_token'     => 'tokens',
-        'customer_fetch_tokens'     => 'tokens',
-        'payment_create_wallet'     => 's2swallet',
-        'setl_combined_report'      => 'setl_report',
-        'customer_get_saved_status' => 'cardsaving',
-        'customer_logout_global'    => 'cardsaving',
-        'app_delete_token'          => 'cardsaving',
-        'otp_post'                  => 'cardsaving',
-        'otp_verify'                => 'cardsaving',
+        'feature_dummy'              => 'dummy',
+        'merchant_sub_create'        => 'aggregator',
+        'customer_delete'            => 'tokens',
+        'customer_delete_token'      => 'tokens',
+        'customer_fetch_tokens'      => 'tokens',
+        'payment_create_wallet'      => 's2swallet',
+        'payment_create_recurring'   => 'recurring',
+        'payment_create_private_old' => 's2s',
+        'setl_combined_report'       => 'setl_report',
+        'customer_get_saved_status'  => 'cardsaving',
+        'customer_logout_global'     => 'cardsaving',
+        'app_delete_token'           => 'cardsaving',
+        'otp_post'                   => 'cardsaving',
+        'otp_verify'                 => 'cardsaving',
     );
 
     protected static $router;

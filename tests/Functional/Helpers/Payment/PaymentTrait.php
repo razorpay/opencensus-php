@@ -294,7 +294,7 @@ trait PaymentTrait
 
         $request = array(
             'method' => 'POST',
-            'url' => '/payments/create/redirect',
+            'url' => '/payments/create/recurring',
             'content' => $payment);
 
         if (isset($server))
