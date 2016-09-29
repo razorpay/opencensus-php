@@ -60,6 +60,8 @@ class Core extends Base\Core
 
         $awsUrl = $this->processor->saveBatchFileToAws($batch, $input['file']);
 
+        $this->processor->deleteFile($input['file']->getRealPath());
+
         $batch->setUploadFileUrl($awsUrl);
 
         $this->repo->saveOrFail($batch);

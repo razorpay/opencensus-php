@@ -36,6 +36,8 @@ class Processor extends Base\Core
 
             $entries = $this->parseExcelFile($filePath);
 
+            $this->deleteFile($filePath);
+
             list($batch, $shouldSendMail, $processedFile) = $this->processBatch($batch, $entries);
 
             $excel = $this->createExcelObject($processedFile, $batch->getId(), [], $batch->getType());
@@ -64,6 +66,8 @@ class Processor extends Base\Core
             {
                 $this->sendMail($fullpath, $batch->merchant);
             }
+
+            $this->deleteFile($fullpath);
         });
     }
 
@@ -257,6 +261,23 @@ class Processor extends Base\Core
         return $batch->getId() .'.xlsx';
     }
 
+    public function deleteFile($filePath)
+    {
+        if (file_exists($filePath))
+        {
+            $success = unlink($filePath);
+
+            if ($success === true)
+            {
+                $this->trace->info(TraceCode::BATCH_FILE_DELETE_SUCCESS, array($filePath));
+            }
+            else
+            {
+                $this->trace->info(TraceCode::BATCH_FILE_DELETE_FAILURE, $filePath);
+            }
+        }
+    }
+
     protected function getNewProcessor(Merchant\Entity $merchant = null)
     {
         if ($merchant === null)
@@ -292,4 +313,5 @@ class Processor extends Base\Core
 
             $message->attach($data['refundFile']);
         });
-    }}
+    }
+}
