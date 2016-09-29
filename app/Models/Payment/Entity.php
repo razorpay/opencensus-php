@@ -912,7 +912,7 @@ class Entity extends Base\PublicEntity
     {
         return (($this->isRecurring() === true) and
                 ($this->getTokenId() !== null) and
-                ($this->token()->first()->isRecurring() === true));
+                ($this->localToken->isRecurring() === true));
     }
 
     /**
@@ -1004,7 +1004,7 @@ class Entity extends Base\PublicEntity
 
         if ($this->getTokenId() !== null)
         {
-            $token = $this->token()->first();
+            $token = $this->localToken;
         }
         else if ($this->getGlobalTokenId() !== null)
         {
@@ -1152,7 +1152,7 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Customer\Entity', self::GLOBAL_CUSTOMER_ID);
     }
 
-    public function token()
+    public function localToken()
     {
         return $this->belongsTo('RZP\Models\Customer\Token\Entity', self::TOKEN_ID);
     }

@@ -372,7 +372,7 @@ trait Authorize
         // set token for local card saving in gateway input
         if ($payment->getTokenId() !== null)
         {
-            $gatewayInput['token'] = $payment->token;
+            $gatewayInput['token'] = $payment->localToken;
         }
     }
 
@@ -648,7 +648,7 @@ trait Authorize
 
         if ($payment->isMethodCardOrEmi())
         {
-            $payment->token()->associate($token);
+            $payment->localToken()->associate($token);
 
             $gatewayInput['card'] = $this->getCardArrayForSavedToken($token, $input);
         }
@@ -736,7 +736,7 @@ trait Authorize
 
         if ($token !== null)
         {
-            $this->payment->token()->associate($token);
+            $this->payment->localToken()->associate($token);
         }
 
         $this->validateRecurringPayment($payment, $input);
@@ -1560,7 +1560,7 @@ trait Authorize
         // if not recurring, validate card data
         if (($payment->isRecurring() === false) and
             ($payment->getTokenId() !== null) and
-            ($payment->token->isRecurring() === false))
+            ($payment->localToken->isRecurring() === false))
         {
             $payment->getValidator()->validateCardAndCvv($input);
         }
