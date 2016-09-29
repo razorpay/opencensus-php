@@ -28,4 +28,10 @@ class Terminal extends Entity
         $relativeUrl = $this->getEntityUrl() . $id;
         return $this->request('PUT', $relativeUrl, $params);
     }
+
+    public function toggle($id, $params)
+    {
+        $relativeUrl = $this->getEntityUrl() . $id . '/toggle';
+        return $this->request('PUT', $relativeUrl, $params);
+    }
 }

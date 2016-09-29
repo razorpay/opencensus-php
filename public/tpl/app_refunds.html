@@ -13,13 +13,19 @@
         <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
     </div>
     <div class="row wrapper">
+      <div class="col-xs-2 col-sm-pull-8">
+        Payment Id:
+        <input type="text" class="form-control input-sm w-sm inline" ng-model="query.payment_id" placeholder="Payment Id"
+          name="payment_id" ng-enter="regenerate();"
+        >
+      </div>
       <div class="col-xs-1 col-sm-pull-8">
         Count:
         <input type="number" class="form-control inline w-xxs"
           ng-model="query.count" placeholder="20" name="count" ng-enter="regenerate()"
         >
       </div>
-      <div class="col-sm-3">
+      <div class="col-sm-3 col-sm-push-8">
         <div class="input-group">
           <input type="text" class="input-sm form-control" placeholder="Search Refund Id" ng-model="entity.id">
           <span class="input-group-btn">

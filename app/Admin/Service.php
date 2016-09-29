@@ -9,6 +9,7 @@ use App\MerchantDetails;
 use App\Trace\TraceCode;
 use App\Transaction;
 use App\User;
+use App\Session as SessionTable;
 
 use Auth;
 use Config;
@@ -16,6 +17,7 @@ use Hash;
 use Requests;
 use Queue;
 use Session;
+use Crypt;
 
 use Aws\Laravel\AwsFacade as AWS;
 use Carbon\Carbon;
@@ -24,6 +26,8 @@ use Illuminate\Support\Facades\App as App;
 use Razorpay\Api\Errors\BadRequestError as BadRequestError;
 use Razorpay\Api\Errors\Error as ApiError;
 use Razorpay\Api\Request as ApiRequest;
+
+use UAParser\Parser;
 
 class Service extends Base\Service
 {
@@ -256,6 +260,35 @@ class Service extends Base\Service
     public function getAdmins()
     {
         return Admin\Entity::get()->toArray();
+    }
+
+    public function getAdminActivity($id)
+    {
+        $sessionsCollection = (new SessionTable\Entity)->getAllSessionsForAdmin($id);
+
+        foreach ($sessionsCollection as $session)
+        {
+            $session->id = Crypt::encrypt($session->id);
+            $parser = Parser::create();
+            $session->parsed_user_agent = $parser->parse($session->user_agent);
+            $session->parsed_last_activity = Carbon::createFromTimeStamp(time(), "Asia/Kolkata")->format('j M Y h:i a');
+            $sessions[] = $session;
+        }
+
+        return $sessions;
+    }
+
+    public function deleteAllOtherAdminSessions($id)
+    {
+        $currentSessionId = Session::getId();
+
+        (new SessionTable\Entity)->deleteAllOtherSessionsForAdmin($id, $currentSessionId);
+    }
+
+    public function deleteOneAdminSessions($sessionId)
+    {
+        $sessionId = Crypt::decrypt($sessionId);
+        (new SessionTable\Entity)->deleteOneSessionForAdmin($sessionId);
     }
 
     public function deleteAdmin($id)
@@ -1693,6 +1726,20 @@ class Service extends Base\Service
         try
         {
             $response = $this->api->terminal->edit($terminalId, $input);
+            return [null, $response->toArray()];
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            return [$e->getMessage(), null];
+        }
+    }
+
+    public function toggleTerminal($mode, $terminalId, $input)
+    {
+        $this->setApiCredentials(null, $mode);
+        try
+        {
+            $response = $this->api->terminal->toggle($terminalId, $input);
             return [null, $response->toArray()];
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)

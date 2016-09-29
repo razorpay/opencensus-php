@@ -145,6 +145,7 @@ return array(
         Illuminate\Redis\RedisServiceProvider::class,
         Illuminate\Auth\Passwords\PasswordResetServiceProvider::class,
         Illuminate\Session\SessionServiceProvider::class,
+        App\Providers\CustomSessionServiceProvider::class,
         Illuminate\Translation\TranslationServiceProvider::class,
         Illuminate\View\ViewServiceProvider::class,
         Artdarek\OAuth\OAuthServiceProvider::class,

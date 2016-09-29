@@ -96,6 +96,59 @@ app.controller('AdminCtrl', [
         });
       });
     });
+    $scope.showActivity = function () {
+      if ($scope.activity)
+      {
+        $scope.activity = null;
+        return;
+      }
+      $http({
+        method: 'get',
+        url: '/admin/activity',
+      }).success(function (data) {
+        if (data.success) {
+          $scope.activity = data.data
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+    $scope.deleteSession = function(id) {
+      $http({
+        method: 'delete',
+        url: '/admin/activity/'+id,
+      }).success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Session deleted successfully.', true);
+          location.reload();
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+    $scope.deleteAllOtherSessions = function(adminId) {
+      $http({
+        method: 'delete',
+        url: '/admin/activity/',
+      }).success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Sessions deleted successfully.', true);
+          location.reload();
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
     function passwordChangeRequest(data) {
       var request = $http({
         method: 'post',
