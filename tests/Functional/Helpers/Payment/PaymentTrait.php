@@ -348,6 +348,19 @@ trait PaymentTrait
         return $this->sendRequest($request);
     }
 
+    protected function makeS2SCallbackAndGetContent($content)
+    {
+        $request = [
+            'url'    => '/callback/' . $this->gateway,
+            'method' => 'post',
+            'raw'    => $content
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
     protected function topupPayment($id)
     {
         $request = array(
@@ -387,6 +400,21 @@ trait PaymentTrait
         }
 
         return $this->getJsonContentFromResponse($response);
+    }
+
+    protected function getPaymentStatus($id)
+    {
+        $request = [
+            'method'    => 'GET',
+            'url'       => '/payments/'.$id.'/status',
+            'content'   => []
+        ];
+
+        $this->ba->publicAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
     }
 
     protected function getOtp()
@@ -1035,6 +1063,8 @@ trait PaymentTrait
                        ->mock();
 
         $this->setMockServer($server);
+
+        return $server;
     }
 
     protected function mockServer()
