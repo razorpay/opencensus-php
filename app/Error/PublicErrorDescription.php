@@ -215,6 +215,10 @@ class PublicErrorDescription
     const BAD_REQUEST_FILE_TOO_BIG                                              = 'Size of the file is too big. Upload a smaller file size.';
     const BAD_REQUEST_FILE_NOT_EXCEL                                            = 'The file type is not xlsx.';
     const BAD_REQUEST_FILE_EXCEED_LIMIT                                         = 'The uploaded file limit should not contain more than 1000 entries';
+    const BAD_REQUEST_FILE_INVALID_TYPE                                         = 'Incorrect type is used for the uploaded file';
+    const BAD_REQUEST_FILE_INVALID_PAYMENT_ID                                   = 'Payment Id is not set in the uploaded file';
+    const BAD_REQUEST_FILE_INVALID_AMOUNT                                       = 'Amount is not set in the uploaded file';
+    const BAD_REQUEST_FILE_DUPLICATE_PAYMENT_ID                                 = 'The file should not have multiple entries for the same Payment Id';
     const BAD_REQUEST_FILE_VALIDATION                                           = 'The uploaded file does not contain proper values';
     const BAD_REQUEST_FILE_ALREADY_PROCESSED                                    = 'The uploaded file is already processed';
     const BAD_REQUEST_BATCH_ANOTHER_OPERATION_IN_PROGRESS                       = 'Request failed because another batch operation is in progress';

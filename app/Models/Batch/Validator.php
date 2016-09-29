@@ -42,7 +42,7 @@ class Validator extends Base\Validator
     {
         if (Type::exists($type) === false)
         {
-            throw new Exception\BadRequestValidationFailureException('Invalid batch type');
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FILE_INVALID_TYPE);
         }
     }
 
@@ -71,23 +71,23 @@ class Validator extends Base\Validator
 
             if (empty($paymentId) === true)
             {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FILE_VALIDATION);
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FILE_INVALID_PAYMENT_ID);
             }
 
             if (empty($amount) === true)
             {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FILE_VALIDATION);
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FILE_INVALID_AMOUNT);
             }
 
             if ((is_numeric($amount) === false) or ($amount <= 0))
             {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FILE_VALIDATION);
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FILE_INVALID_AMOUNT);
             }
 
             // Batch File should not contain multiple entries for the same payment id
             if(in_array($paymentId, $existingPaymentIds))
             {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FILE_VALIDATION);
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FILE_DUPLICATE_PAYMENT_ID);
             }
 
             array_push($existingPaymentIds, $paymentId);

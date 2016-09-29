@@ -235,6 +235,10 @@ class ErrorCode
     const BAD_REQUEST_FILE_TOO_BIG                                                  = 'BAD_REQUEST_FILE_TOO_BIG';
     const BAD_REQUEST_FILE_NOT_EXCEL                                                = 'BAD_REQUEST_FILE_NOT_EXCEL';
     const BAD_REQUEST_FILE_EXCEED_LIMIT                                             = 'BAD_REQUEST_FILE_EXCEED_LIMIT';
+    const BAD_REQUEST_FILE_INVALID_TYPE                                             = 'BAD_REQUEST_FILE_INVALID_TYPE';
+    const BAD_REQUEST_FILE_INVALID_PAYMENT_ID                                       = 'BAD_REQUEST_FILE_INVALID_PAYMENT_ID';
+    const BAD_REQUEST_FILE_INVALID_AMOUNT                                           = 'BAD_REQUEST_FILE_INVALID_AMOUNT';
+    const BAD_REQUEST_FILE_DUPLICATE_PAYMENT_ID                                     = 'BAD_REQUEST_FILE_DUPLICATE_PAYMENT_ID';
     const BAD_REQUEST_FILE_VALIDATION                                               = 'BAD_REQUEST_FILE_VALIDATION';
     const BAD_REQUEST_FILE_ALREADY_PROCESSED                                        = 'BAD_REQUEST_FILE_ALREADY_PROCESSED';
     const BAD_REQUEST_BATCH_ANOTHER_OPERATION_IN_PROGRESS                           = 'BAD_REQUEST_BATCH_ANOTHER_OPERATION_IN_PROGRESS';

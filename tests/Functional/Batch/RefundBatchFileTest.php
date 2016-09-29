@@ -42,7 +42,7 @@ class RefundBatchFileTest extends TestCase
         $entries = $this->getDefaultRefundFileEntries();
 
         // Put improper format data
-        $entries[1]['Amount'] = '';
+        $entries[0]['Amount'] = '';
 
         $this->putBatchFileInTestRequestData($entries);
 

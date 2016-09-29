@@ -18,8 +18,17 @@ class Core extends Base\Core
 {
     use FileHandlerTrait;
 
-
     protected static $fileToReadName = 'Batch_File';
+
+    protected $processor;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->processor = new Processor;
+        $this->mutex = $this->app['api.mutex'];
+    }
 
     public function create($input)
     {
@@ -39,7 +48,7 @@ class Core extends Base\Core
 
         $entries = $this->parseExcelSheets($input['file']);
 
-        $this->trace->info(TraceCode::BATCH_UPLOAD_FILE, $entries);
+        $this->trace->info(TraceCode::BATCH_UPLOAD_FILE_ENTRIES, $entries);
 
         $batch->getValidator()->validateEntries($entries, $batch->getType());
 
@@ -49,7 +58,7 @@ class Core extends Base\Core
 
         $batch->setTotalCount($totalCount);
 
-        $awsUrl = $this->saveBatchFileToAws($batch, $input['file']);
+        $awsUrl = $this->processor->saveBatchFileToAws($batch, $input['file']);
 
         $batch->setUploadFileUrl($awsUrl);
 
@@ -64,7 +73,7 @@ class Core extends Base\Core
     {
         if ($batch->getStatus() === Status::PROCESSED)
         {
-            $this->trace->error(TraceCode::BATCH_RETRY, $batch->toArrayPublic());
+            $this->trace->error(TraceCode::BATCH_RETRY_FAILURE, $batch->toArrayPublic());
 
             throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_FILE_ALREADY_PROCESSED);
@@ -82,11 +91,12 @@ class Core extends Base\Core
     public function downloadBatch($batch)
     {
         $storagePath = storage_path('files/batch_download');
-        $filePath = $storagePath . '/' . $batch->getId() . '.xlsx';
+        $filename = $this->processor->getFileName($batch);
+        $filePath = $storagePath . '/' . $filename;
 
-        $bucket = $this->getBucketName($batch);
+        $bucket = $this->processor->getBucketName($batch);
 
-        $publicUrl = $this->getPreSignedUrlFromAws($bucket, $batch->getId().'.xlsx', $filePath);
+        $publicUrl = $this->getPreSignedUrlFromAws($bucket, $filename, $filePath);
 
         $this->trace->info(
             TraceCode::BATCH_DOWNLOAD,
@@ -104,7 +114,7 @@ class Core extends Base\Core
 
         foreach ($batches as $batch)
         {
-            (new Processor)->process($batch);
+            $this->processor->process($batch);
         }
 
         return $batches;
@@ -122,29 +132,6 @@ class Core extends Base\Core
         }
 
         return array($totalEntries, $totalAmount);
-    }
-
-    protected function saveBatchFileToAws($batch, $file)
-    {
-        $bucket = $this->getBucketName($batch);
-
-        $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-
-        $url = $this->saveToAws($batch->getId() . '.xlsx', $file->getPathName(), $xlsxMimeType, $bucket);
-
-        return $url;
-    }
-
-    protected function getBucketName($batch)
-    {
-        if ($batch->getStatus() === Status::CREATED)
-        {
-            return 'batch_upload_bucket';
-        }
-        else
-        {
-            return 'batch_download_bucket';
-        }
     }
 
     /**

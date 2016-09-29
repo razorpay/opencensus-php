@@ -33,14 +33,14 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The uploaded file does not contain proper values',
+                    'description' => 'Amount is not set in the uploaded file',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_FILE_VALIDATION,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FILE_INVALID_AMOUNT,
         ],
     ],
 

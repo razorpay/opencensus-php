@@ -64,13 +64,6 @@ class Processor extends Base\Core
             {
                 $this->sendMail($fullpath, $batch->merchant);
             }
-
-            $this->trace->info(
-                TraceCode::BATCH_PROCESS_FILE,
-                [
-                    'message'            => 'Processed Batch Refund',
-                    'batch'              => $batch->toArrayPublic(),
-                ]);
         });
     }
 
@@ -169,10 +162,10 @@ class Processor extends Base\Core
         // This ensure that if that batch entity is already processed, we update the refund id
         $refunds = $this->repo->refund->fetchByBatchIdPaymentIdMerchantIdAmount($batch->getId(), $paymentId, $batch->getMerchantId(), $amount);
 
-        if(count($refunds) > 0)
+        if (count($refunds) > 0)
         {
-            $this->trace->error(
-                TraceCode::BATCH_PROCESS_FILE,
+            $this->trace->error (
+                TraceCode::BATCH_ALREADY_PROCESSED,
                 [
                     'message'            => 'Batch entry already processed',
                     'payemntId'          => $paymentId,
@@ -207,7 +200,7 @@ class Processor extends Base\Core
         catch (\Exception $e)
         {
             $this->trace->error(
-                TraceCode::BATCH_PROCESS_FILE,
+                TraceCode::BATCH_PROCESSING_ERROR,
                 [
                     'message'            => 'Refund was not successfull',
                     'payemntId'          => $paymentId,
@@ -222,13 +215,15 @@ class Processor extends Base\Core
         }
     }
 
-    protected function saveBatchFileToAws($batch, $file)
+    public function saveBatchFileToAws($batch, $file)
     {
         $bucket = $this->getBucketName($batch);
 
         $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
-        $url = $this->saveToAws($batch->getId().'.xlsx', $file, $xlsxMimeType, $bucket);
+        $filename = $this->getFileName($batch);
+
+        $url = $this->saveToAws($filename, $file, $xlsxMimeType, $bucket);
 
         return $url;
     }
@@ -236,14 +231,16 @@ class Processor extends Base\Core
     protected function getBatchFileFromAws($batch)
     {
         $storagePath = storage_path('files/batch_file_download');
-        $filePath = $storagePath . '/' . $batch->getId() . '.xlsx';
+        $filename = $this->getFileName($batch);
+
+        $filePath = $storagePath . '/' . $filename;
 
         $bucket = $this->getBucketName($batch);
 
-        return $this->getFileFromAws($bucket, $batch->getId() . '.xlsx', $filePath);
+        return $this->getFileFromAws($bucket, $filename, $filePath);
     }
 
-    protected function getBucketName($batch)
+    public function getBucketName($batch)
     {
         if ($batch->getStatus() === Status::CREATED)
         {
@@ -253,6 +250,11 @@ class Processor extends Base\Core
         {
             return 'batch_download_bucket';
         }
+    }
+
+    public function getFileName($batch)
+    {
+        return $batch->getId() .'.xlsx';
     }
 
     protected function getNewProcessor(Merchant\Entity $merchant = null)
@@ -265,22 +267,6 @@ class Processor extends Base\Core
         $processor = new Payment\Processor\Processor($merchant);
 
         return $processor;
-    }
-
-    protected function acquireMutexOnBatch($batch)
-    {
-        $resource = $batch->getId();
-
-        if ($this->mutex->acquire($resource) === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_BATCH_ANOTHER_OPERATION_IN_PROGRESS);
-        }
-    }
-
-    protected function releaseMutexOnBatch($batch)
-    {
-        $this->mutex->release($batch->getId());
     }
 
     protected function sendMail($filePath, $merchant)
