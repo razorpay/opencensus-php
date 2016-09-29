@@ -184,11 +184,11 @@ class Service extends Base\Service
         {
             $flag = false;
 
-            $i = $this->getCreatedAtFromInputAndType($i, $input['type']);
+            $j = $this->getCreatedAtFromInputAndType($i, $input['type']);
 
             foreach ($array as $obj)
             {
-                if ((int)($obj->created_at->timestamp) == $i)
+                if ((int)($obj->created_at->timestamp) == $j)
                 {
                     $data[] = $obj->toArray();
                     $flag = true;
@@ -197,7 +197,9 @@ class Service extends Base\Service
             }
 
             if ($flag == false)
-                $data[] = ['amount' => '0', 'count' => '0', 'created_at' => "$i"];
+            {
+                $data[] = ['amount' => '0', 'count' => '0', 'created_at' => "$j"];
+            }
         }
         return $data;
     }
