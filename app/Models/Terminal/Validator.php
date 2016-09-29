@@ -71,10 +71,10 @@ class Validator extends Base\Validator
 
     protected static $firstDataTerminalRules = array(
         Entity::GATEWAY                     => 'required|in:first_data',
-        Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|size:10',
-        Entity::GATEWAY_SECURE_SECRET       => 'required|alpha_num|size:10',
-        Entity::GATEWAY_TERMINAL_ID         => 'required|alpha_num|size:16',
-        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|alpha_num|size:10',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|min:5',
+        Entity::GATEWAY_SECURE_SECRET       => 'required|alpha_num|min:5',
+        Entity::GATEWAY_TERMINAL_ID         => 'required|string|min:5',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|alpha_num|min:5',
     );
 
     protected static $amexTerminalRules = array(
