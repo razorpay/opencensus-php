@@ -79,7 +79,6 @@ Route::group(['middleware'  =>  'auth:user'], function()
 
     // Invite Administration (Owners)
     Route::post('settings/invitations', 'InvitationsController@postSendMerchantInvitation');
-    Route::delete('settings/invitations/{invite}', 'InvitationsController@deleteMerchantInvitation');
     Route::put('settings/invitations/{invite}', 'InvitationsController@updateMerchantInvitation');
     Route::delete('settings/invitations/{invite}', 'InvitationsController@deleteMerchantInvitationForUser');
 
