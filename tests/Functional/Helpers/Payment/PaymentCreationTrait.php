@@ -83,6 +83,7 @@ trait PaymentCreationTrait
             '/payments/create/ajax',
             '/payments/create/checkout',
             '/payments/create/redirect',
+            '/payments/create/recurring',
             '/payments');
 
         return in_array($url, $urls);
