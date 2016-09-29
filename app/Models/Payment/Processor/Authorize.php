@@ -527,7 +527,8 @@ trait Authorize
             $this->verifyFeatureForMerchant($merchant, Merchant\Features::RECURRING);
         }
 
-        if ($payment->isSecondRecurring() === true)
+        if ((isset($input[Payment\Entity::TOKEN]) === true) and
+            ($payment->isSecondRecurring() === true))
         {
             $this->verifyPrivateAuth();
         }
