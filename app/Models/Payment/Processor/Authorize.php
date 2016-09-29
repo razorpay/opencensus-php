@@ -522,14 +522,6 @@ trait Authorize
     {
         $merchant = $payment->merchant;
 
-        // if card data is present in input for private auth request, validate s2s enabled
-        if (($payment->isMethodCardOrEmi() === true) and
-            (empty($input['card']) === false) and
-            ($this->app['basicauth']->isPrivateAuth()))
-        {
-            $this->verifyFeatureForMerchant($merchant, Merchant\Features::S2S);
-        }
-
         if ($payment->isRecurring() === true)
         {
             $this->verifyFeatureForMerchant($merchant, Merchant\Features::RECURRING);
@@ -538,6 +530,17 @@ trait Authorize
         if ($payment->isSecondRecurring() === true)
         {
             $this->verifyPrivateAuth();
+        }
+        else if ($this->app['basicauth']->isPrivateAuth() === true)
+        {
+            if($payment->isWallet())
+            {
+                $this->verifyFeatureForMerchant($merchant, Merchant\Features::S2SWALLET);
+            }
+            else
+            {
+                $this->verifyFeatureForMerchant($merchant, Merchant\Features::S2S);
+            }
         }
     }
 
