@@ -6,6 +6,9 @@ use RZP\Models\Base;
 use RZP\Gateway\FirstData\Constants;
 use RZP\Gateway\FirstData\Mapping;
 use RZP\Gateway\FirstData\ConnectRequestFields;
+use RZP\Gateway\FirstData\PaymentMode;
+use RZP\Gateway\FirstData\PaymentMethod;
+use RZP\Gateway\FirstData\Currency;
 use RZP\Gateway\FirstData\TxnType;
 use RZP\Gateway\FirstData\Codes;
 use RZP\Constants\HashAlgo;
@@ -72,7 +75,7 @@ class Validator extends Base\Validator
     protected function validateMode($input)
     {
         if ((isset($input['mode']) === true) and
-            (in_array($input['mode'], Codes::PAYMENT_MODES) === false))
+            (in_array($input['mode'], PaymentMode::MODE_LIST) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid mode');
@@ -82,7 +85,7 @@ class Validator extends Base\Validator
     protected function validatePaymentMethod($input)
     {
         if ((isset($input['paymentMethod']) === false) or
-            (in_array($input['paymentMethod'], array_values(Codes::PAYMENT_METHODS)) === false))
+            (in_array($input['paymentMethod'], array_values(PaymentMethod::METHOD_MAP)) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid paymentMethod');
@@ -102,7 +105,7 @@ class Validator extends Base\Validator
     protected function validateCurrency($input)
     {
         if ((isset($input['currency']) === false) or
-            ($input['currency'] !== Codes::ISO_NUMERIC_CURRENCY['INR']))
+            ($input['currency'] !== Currency::ISO_NUMERIC_CODES['INR']))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Unsupported currency');

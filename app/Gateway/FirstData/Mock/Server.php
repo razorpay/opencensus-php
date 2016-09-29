@@ -227,7 +227,7 @@ class Server extends Base\Mock\Server
 
     protected function scrub($cardnumber, $paymentMethod)
     {
-        return '(' . array_flip(FirstData\Codes::PAYMENT_METHODS)[$paymentMethod] . ')  ... ' . substr($cardnumber,-4);
+        return '(' . array_flip(FirstData\PaymentMethod::METHOD_MAP)[$paymentMethod] . ')  ... ' . substr($cardnumber,-4);
     }
 
     protected function buildIpgApiOrderResponse($array)

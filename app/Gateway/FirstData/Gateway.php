@@ -463,7 +463,7 @@ class Gateway extends Base\Gateway
 
         $currency = $input['payment'][Payment\Entity::CURRENCY];
 
-        $currencyCode = Codes::ISO_NUMERIC_CURRENCY[$currency];
+        $currencyCode = Currency::ISO_NUMERIC_CODES[$currency];
 
         $method = $input['card'][Card\Entity::NETWORK_CODE];
 
@@ -473,7 +473,7 @@ class Gateway extends Base\Gateway
             ConnectRequestFields::HASH_ALGORITHM            => strtoupper(HashAlgo::SHA1),
             ConnectRequestFields::HASH                      => $this->getRequestHash($txnDateTime, $chargeTotal, $currencyCode),
             ConnectRequestFields::STORE_NAME                => $this->getStoreId(),
-            ConnectRequestFields::MODE                      => Codes::PAYMENT_MODE_PAYONLY,
+            ConnectRequestFields::MODE                      => PaymentMode::PAYONLY,
             ConnectRequestFields::CHARGE_TOTAL              => $chargeTotal,
             ConnectRequestFields::CURRENCY                  => $currencyCode,
             ConnectRequestFields::ORDER_ID                  => $input['payment'][Payment\Entity::ID],
@@ -490,7 +490,7 @@ class Gateway extends Base\Gateway
             ConnectRequestFields::RESPONSE_SUCCESS_URL      => $input['callbackUrl'],
             ConnectRequestFields::RESPONSE_FAIL_URL         => $input['callbackUrl'],
             ConnectRequestFields::TXN_TYPE                  => TxnType::AUTH,
-            ConnectRequestFields::PAYMENT_METHOD            => Codes::PAYMENT_METHODS[$method],
+            ConnectRequestFields::PAYMENT_METHOD            => PaymentMethod::METHOD_MAP[$method],
         );
 
         return $content;
@@ -536,7 +536,7 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $this->repo->retrieveByPaymentIdOrFail($input['payment'][Payment\Entity::ID]);
 
         $currency     = $input['payment'][Payment\Entity::CURRENCY];
-        $currencyCode = Codes::ISO_NUMERIC_CURRENCY[$currency];
+        $currencyCode = Currency::ISO_NUMERIC_CODES[$currency];
         $amountEntity = TxnType::$amountEntity[$txnType];
 
         $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_TYPE]      = $txnType;
