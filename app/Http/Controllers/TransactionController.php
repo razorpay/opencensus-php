@@ -297,7 +297,8 @@ class TransactionController extends Controller
         $timestamp = Carbon::parse($input['date'])->timestamp;
         $created_at = (new Transaction\Service)->getCreatedAtFromInputAndType($timestamp, $type);
 
-        $data = (new Transaction\Service)->getTimelyTransactionsForTheType($created_at, $mode, $type, $input['merchant_id']);
+        $merchantId = isset($input['merchant_id']) ? $input['merchant_id'] : null; 
+        $data = (new Transaction\Service)->getTimelyTransactionsForTheType($created_at, $mode, $type, $merchantId);
 
         list($error, $data) = (new Transaction\Service)->updateTypeAggregations($data, $created_at, $mode, $type);
 

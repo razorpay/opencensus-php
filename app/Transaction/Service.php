@@ -308,7 +308,7 @@ class Service extends Base\Service
     * This gets the transactions of the days for a week, of the weeks for a month and so on.
     * These transactions are then aggregated upon for the week, month and so on.
     */
-    public function getTimelyTransactionsForTheType($createdAt, $mode, $type, $merchantId)
+    public function getTimelyTransactionsForTheType($createdAt, $mode, $type, $merchantId = null)
     {
         $searchType = '';
         switch ($type)
@@ -330,14 +330,19 @@ class Service extends Base\Service
         }
         $endDate = $createdAt + self::TIME_INTERVALS[$type];
 
-        $data = Transaction\Entity::select('merchant_id', DB::raw('sum(count) as count'), DB::raw('sum(amount) as amount'))
+        $query = Transaction\Entity::select('merchant_id', DB::raw('sum(count) as count'), DB::raw('sum(amount) as amount'))
             ->where('type','=',$searchType)
             ->where('created_at','>=',$createdAt)
             ->where('created_at','<',$endDate)
             ->where('mode', '=', $mode)
-            ->where('merchant_id', '=', $merchantId)
-            ->groupBy('merchant_id')
-            ->get();
+            ->groupBy('merchant_id');
+
+        if ($merchantId !== null)
+        {
+            $query = $query->where('merchant_id', '=', $merchantId);
+        }
+
+        $data = $query->get();
 
         return $data;
     }

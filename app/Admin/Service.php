@@ -2013,7 +2013,10 @@ class Service extends Base\Service
         $params['from'] = $dateFrom;
         $params['count'] = self::PAGE_SIZE;
         $params['to'] = $dateTo;
-        $params['merchant_id'] = $input['merchant_id'];
+        if (isset($input['merchant_id']))
+        {
+            $params['merchant_id'] = $input['merchant_id'];
+        }
 
         $total_payments = [];
 
