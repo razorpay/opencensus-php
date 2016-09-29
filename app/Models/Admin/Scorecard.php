@@ -19,6 +19,7 @@ class Scorecard extends Base\Core
         $monthVolume = $this->repo->payment->getCurrentMonthVolume();
 
         $yesterdayMerchantVolume = $this->repo->payment->getYesterdayTopMerchantVolumeWise();
+        $yesterdayMerchantVolume = $yesterdayVolume->toArray();
 
         $this->trace->info(TraceCode::MISC_TRACE_CODE, $yesterdayMerchantVolume);
 

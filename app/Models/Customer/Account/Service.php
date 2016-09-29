@@ -162,7 +162,7 @@ class Service extends Base\Service
 
         $customer = $this->repo->customer->findByContactAndMerchant($contact, $merchant);
 
-        $checkCookie = $this->app['request']->session()->get('checkCookie');
+        $checkCookie = $this->app['request']->session()->get('checkcookie');
 
         if ($checkCookie === null)
         {
