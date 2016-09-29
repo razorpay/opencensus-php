@@ -112,7 +112,7 @@ class RecurringPaymentTest extends TestCase
 
         $this->fixtures->merchant->editFeatures('recurring');
 
-        $content = $this->doS2SPrivateAuthAndCapturePayment($payment);
+        $content = $this->doS2SRecurringPayment($payment);
 
         $paymentEntity = $this->getLastEntity('payment', true);
 
@@ -148,11 +148,8 @@ class RecurringPaymentTest extends TestCase
 
     public function testRecurringPaymentFailedCardNotSupported()
     {
-        $payment = $this->getDefaultPaymentArray();
+        $payment = $this->getDefaultRecurringPaymentArray();
 
-        $payment['amount'] = 500000;
-        $payment['recurring'] = true;
-        $payment['customer_id'] = 'cust_100000customer';
         $payment['card']['number'] = '4000000000000002';
 
         $data = $this->testData[__FUNCTION__];
@@ -164,11 +161,7 @@ class RecurringPaymentTest extends TestCase
 
     public function testRecurringPaymentAmexCardNotSupported()
     {
-        $payment = $this->getDefaultPaymentArray();
-
-        $payment['amount'] = 500000;
-        $payment['recurring'] = true;
-        $payment['customer_id'] = 'cust_100000customer';
+        $payment = $this->getDefaultRecurringPaymentArray();
 
         $payment['card']['number'] = '341111111111111';
         $payment['card']['cvv'] = '8888';
@@ -182,12 +175,10 @@ class RecurringPaymentTest extends TestCase
 
     public function testRecurringPaymentUsingSavedCardTokenNotRecurring()
     {
-        $payment = $this->getDefaultPaymentArray();
+        $payment = $this->getDefaultRecurringPaymentArray();
 
-        $payment['amount'] = 500000;
-        $payment['recurring'] = true;
         $payment['token'] = '10000cardtoken';
-        $payment['customer_id'] = 'cust_100000customer';
+
         unset($payment['card']);
 
         $data = $this->testData[__FUNCTION__];
@@ -199,12 +190,10 @@ class RecurringPaymentTest extends TestCase
 
     public function testRecurringPaymentUsingSavedCardTokenRecurring()
     {
-        $payment = $this->getDefaultPaymentArray();
+        $payment = $this->getDefaultRecurringPaymentArray();
 
-        $payment['amount'] = 500000;
-        $payment['recurring'] = true;
         $payment['token'] = '10000cardtoken';
-        $payment['customer_id'] = 'cust_100000customer';
+
         unset($payment['card']);
 
         $this->fixtures->base->editEntity('card', '100000000lcard', ["type" => 'credit']);
