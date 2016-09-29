@@ -197,15 +197,19 @@ class Validator extends Base\Validator
 
     public function validateExistingTerminalsCount($existingTerminals)
     {
+        $newTerminal = $this->entity;
+
         $count = $existingTerminals->count();
 
         // Check count does not exceed max terminals count
-        if ($count > Entity::MAX_TERMINALS_COUNT)
+        if (($newTerminal->getMerchantId() !== Merchant\Account::SHARED_ACCOUNT) and
+            ($count > Entity::MAX_TERMINALS_COUNT))
         {
             throw new Exception\LogicException(
                 'Terminal count should not exceed max count');
         }
-        else if ($count === Entity::MAX_TERMINALS_COUNT)
+        else if (($newTerminal->getMerchantId() !== Merchant\Account::SHARED_ACCOUNT) and
+                 ($count === Entity::MAX_TERMINALS_COUNT))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_GATEWAY_TERMINAL_MAX_LIMIT_REACHED);
