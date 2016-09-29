@@ -589,16 +589,13 @@ trait FileHandlerTrait
         Config::set('excel.import.force_sheets_collection', true);
         $sheets = $this->parseExcelFile($filePath);
 
-        if(count($sheets) === 1)
-            return $sheets[0];
+        $finalEntries = [];
 
-        $finalEntries = array();
-        foreach ($sheets as $sheet) {
-            foreach ($sheet as $entry)
-            {
-                array_push($finalEntries, $entry);
-            }
+        foreach ($sheets as $sheet)
+        {
+            $finalEntries = array_merge($finalEntries, $sheet);
         }
+
         return $finalEntries;
     }
 

@@ -62,40 +62,24 @@ class Validator extends Base\Validator
 
     protected function validateRefundEntries($entries)
     {
-        $headers = array('payment_id', 'refund_amount');
-
-        // Skipping the first row: This would be templatized headers
-        // $headerValues = $entries[0];
-        // $headerMap = array_combine($headers, $headerValues);
-
-        // if($headerMap['payment_id'] !== 'Payment Id' ||
-        //     $headerMap['refund_amount'] !== 'Amount')
-        // {
-        //     throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FILE_VALIDATION);
-        // }
-
-        // array_shift($entries);
-
         $existingPaymentIds = array();
 
         foreach ($entries as $entry)
         {
-            if (count($headers) !== count($entry))
-            {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FILE_VALIDATION);
-            }
-
-            $entryMap = array_combine($headers, $entry);
-
-            $amount = $entryMap['refund_amount'];
-            $paymentId = $entryMap['payment_id'];
+            $amount = $entry['amount'];
+            $paymentId = $entry['payment_id'];
 
             if (empty($paymentId) === true)
             {
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FILE_VALIDATION);
             }
 
-            elseif (empty($amount) === true)
+            if (empty($amount) === true)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FILE_VALIDATION);
+            }
+
+            if ((is_numeric($amount) === false) or ($amount <= 0))
             {
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FILE_VALIDATION);
             }

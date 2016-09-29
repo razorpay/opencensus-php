@@ -27,11 +27,7 @@ class Core extends Base\Core
 
         $file = $input['file'];
 
-        $extension = $file->getClientOriginalExtension();
-        if(empty($extension) === true)
-        {
-            $extension = pathinfo($file)['extension'];
-        }
+        $extension = $this->getExtension($file);
 
         $mimeType = $file->getMimeType();
 
@@ -42,6 +38,8 @@ class Core extends Base\Core
         $batch->merchant()->associate($this->merchant);
 
         $entries = $this->parseExcelSheets($input['file']);
+
+        $this->trace->info(TraceCode::BATCH_UPLOAD_FILE, $entries);
 
         $batch->getValidator()->validateEntries($entries, $batch->getType());
 
@@ -88,7 +86,7 @@ class Core extends Base\Core
 
         $bucket = $this->getBucketName($batch);
 
-        $publicUrl = $this->getPreSignedUrlFromAws($bucket, $id.'.xlsx', $filePath);
+        $publicUrl = $this->getPreSignedUrlFromAws($bucket, $batch->getId().'.xlsx', $filePath);
 
         $this->trace->info(
             TraceCode::BATCH_DOWNLOAD,
@@ -118,28 +116,12 @@ class Core extends Base\Core
 
         $totalEntries = count($entries);
 
-        $headers = $this->getHeaders($batch);
-
         foreach ($entries as $entry)
         {
-            $entryMap = array_combine($headers, $entry);
-
-            $totalAmount += $entryMap['Amount'];
+            $totalAmount += $entry[Entity::AMOUNT];
         }
 
         return array($totalEntries, $totalAmount);
-    }
-
-    protected function getHeaders($batch)
-    {
-        if ($batch->getStatus() === Status::CREATED)
-        {
-            return Batch\Type::getInputHeaders($batch->getType());
-        }
-        else
-        {
-            return Batch\Type::getOutputHeaders($batch->getType());
-        }
     }
 
     protected function saveBatchFileToAws($batch, $file)
@@ -163,5 +145,20 @@ class Core extends Base\Core
         {
             return 'batch_download_bucket';
         }
+    }
+
+    /**
+    * This functions get the extension of the file. In case of test case, the getClientOriginalExtension() gives empty string
+    */
+    protected function getExtension($file)
+    {
+        $extension = $file->getClientOriginalExtension();
+
+        if (empty($extension) === true)
+        {
+            $extension = $file->getExtension();
+        }
+
+        return $extension;
     }
 }

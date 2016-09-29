@@ -35,29 +35,7 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $fillable = array(
-        self::UPLOAD_FILE_URL,
-        self::STATUS,
-        self::TOTAL_COUNT,
-        self::ATTEMPTS,
         self::TYPE,
-    );
-
-    protected $visible = array(
-        self::ID,
-        self::MERCHANT_ID,
-        self::UPLOAD_FILE_URL,
-        self::DOWNLOAD_FILE_URL,
-        self::STATUS,
-        self::AMOUNT,
-        self::PROCESSED_AMOUNT,
-        self::TOTAL_COUNT,
-        self::SUCCESS_COUNT,
-        self::FAILURE_COUNT,
-        self::PROCESSED_AT,
-        self::ATTEMPTS,
-        self::TYPE,
-        self::CREATED_AT,
-        self::UPDATED_AT
     );
 
     protected $public = array(

@@ -15,7 +15,7 @@ class Batch extends Base
         $url = $this->writeToExcelFile($attributes, 'uploaded_file', 'files/batch_file_download');
 
         $params = [
-            'upload_file_url' => $url,
+            'upload_file_url'   => $url,
             'type'              => Type::REFUND,
             'total_count'       => count($attributes),
             'amount'            => $this->getTotalAmount($attributes)
@@ -83,24 +83,6 @@ class Batch extends Base
         return $batch;
     }
 
-    // protected function writeToExcelFile($data, $name)
-    // {
-    //     \Config::set('excel::export.calculate', true);
-
-    //     $columnFormat = $this->getColumnFormatForExcel();
-
-    //     $excel = $this->createExcelObject($data, $name, $columnFormat);
-
-    //     $fileMetadata = $excel->store('xlsx', storage_path('files/batch_file_download'), true);
-
-    //     $fullpath = $fileMetadata['full'];
-
-    //     $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-    //     $url = $this->saveToAws($name.'.xlsx', $fullpath, $xlsxMimeType);
-
-    //     return $url;
-    // }
-
     protected function createTempFile($url)
     {
         $mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
@@ -117,14 +99,19 @@ class Batch extends Base
 
     protected function createProcessedAttributes(array $attributes = array())
     {
-        $processedttributes = array();
-        $headers = array('payment_id', 'refund_amount');
+        $processedttributes = [];
 
         foreach ($attributes as $attribute)
         {
-            $valueMap = array_combine($headers, $attribute);
-
-            $entry = array($valueMap['payment_id'], $valueMap['refund_amount'], '', 0, Status::FAILURE, '', '');
+            $entry = [
+                'Payment Id'        => $attribute['Payment Id'],
+                'Amount'            => $attribute['Amount'],
+                'Refund Id'         => '',
+                'Refunded Amount'   => 0,
+                'Status'            => Status::FAILURE,
+                'Error Code'        => '',
+                'Error Description' => '',
+            ];
 
             array_push($processedttributes, $entry);
         }

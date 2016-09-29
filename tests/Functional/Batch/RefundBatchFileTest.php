@@ -42,7 +42,7 @@ class RefundBatchFileTest extends TestCase
         $entries = $this->getDefaultRefundFileEntries();
 
         // Put improper format data
-        $entries[0][1] = '';
+        $entries[1]['Amount'] = '';
 
         $this->putBatchFileInTestRequestData($entries);
 
@@ -67,7 +67,7 @@ class RefundBatchFileTest extends TestCase
 
         $batch = $this->fixtures->create('batch:refund', $entries);
 
-        $payment = $this->capturePayment($entries[0][0], 50000);
+        $payment = $this->capturePayment($entries[0]['Payment Id'], 50000);
 
         $this->ba->appAuth();
         $this->startTest();
@@ -127,7 +127,7 @@ class RefundBatchFileTest extends TestCase
 
         $batch = $this->fixtures->create('batch:refund_with_three_attempt', $entries);
 
-        $payment = $this->capturePayment($entries[0][0], 50000);
+        $payment = $this->capturePayment($entries[0]['Payment Id'], 50000);
 
         $this->ba->appAuth();
 
@@ -147,24 +147,6 @@ class RefundBatchFileTest extends TestCase
         $this->ba->proxyAuth();
         $this->startTest();
     }
-
-    // protected function writeToExcelFile($data, $name)
-    // {
-    //     \Config::set('excel::export.calculate', true);
-
-    //     $columnFormat = $this->getColumnFormatForExcel();
-
-    //     $excel = $this->createExcelObject($data, $name, $columnFormat);
-
-    //     $fileMetadata = $excel->store('xlsx', storage_path('files/batch_file_download'), true);
-
-    //     $fullpath = $fileMetadata['full'];
-
-    //     $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-    //     $url = $this->saveToAws($name.'.xlsx', $fullpath, $xlsxMimeType);
-
-    //     return $url;
-    // }
 
     protected function createTempFile($url)
     {
@@ -196,10 +178,6 @@ class RefundBatchFileTest extends TestCase
         {
             $entries = $this->getDefaultRefundFileEntries();
         }
-
-        // $entryWithHeaders = array();
-        // array_push($entryWithHeaders, array('Payment Id', 'Amount'));
-        // array_push($entryWithHeaders, $entries[0]);
 
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
         $name = $trace[1]['function'];
@@ -241,10 +219,13 @@ class RefundBatchFileTest extends TestCase
     {
         $payment = $this->defaultAuthPayment();
 
-        $entries = array();
-        $row = array($payment['id'], (int) 4000);
+        $entries = [
+            [
+            'Payment Id' => $payment['id'],
+            'Amount'    => 4000
+            ]
+        ];
 
-        array_push($entries, $row);
         return $entries;
     }
 }

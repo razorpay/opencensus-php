@@ -30,10 +30,8 @@ class Processor extends Base\Core
 
     public function process($batch)
     {
-        try
+        $this->mutex->acquireAndRelease($batch->getId(), function() use ($batch)
         {
-            $this->acquireMutexOnBatch($batch);
-
             $filePath = $this->getBatchFileFromAws($batch);
 
             $entries = $this->parseExcelFile($filePath);
@@ -73,15 +71,7 @@ class Processor extends Base\Core
                     'message'            => 'Processed Batch Refund',
                     'batch'              => $batch->toArrayPublic(),
                 ]);
-        }
-        catch (Exception\BadRequestException $ex)
-        {
-            throw $ex;
-        }
-        finally
-        {
-            $this->releaseMutexOnBatch($batch);
-        }
+        });
     }
 
     protected function processBatch($batch, $entries)
@@ -129,25 +119,21 @@ class Processor extends Base\Core
         $totalFailureCount = 0;
         $processedFile = array();
 
-        $headers = $this->getHeaders($batch);
-
         foreach ($entries as $entry)
         {
             $batchRefundEntry = array();
 
-            $entryMap = array_combine($headers, $entry);
-
             // Refund has already been made and the refund id is set
-            if (empty($entryMap['Refund Id']) === false)
+            if (empty($entry['refund_id']) === false)
             {
                 array_push($processedFile, $entry);
                 continue;
             }
 
             // The complete refund for the payment has already been done
-            if ((isset($entryMap['Status']) === true) and ($entryMap['Status'] === Status::FAILURE) and
-                (($entryMap['Error Description'] === PublicErrorDescription::BAD_REQUEST_PAYMENT_FULLY_REFUNDED) or
-                    ($entryMap['Error Description'] === PublicErrorDescription::BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_CAPTURED)))
+            if ((isset($entry['status']) === true) and ($entry['status'] === Status::FAILURE) and
+                (($entry['error_description'] === PublicErrorDescription::BAD_REQUEST_PAYMENT_FULLY_REFUNDED) or
+                    ($entry['error_description'] === PublicErrorDescription::BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_CAPTURED)))
             {
                 $totalFailureCount++;
 
@@ -155,8 +141,8 @@ class Processor extends Base\Core
                 continue;
             }
 
-            $paymentId = $entryMap['Payment Id'];
-            $amount = $entryMap['Amount'];
+            $paymentId = $entry['payment_id'];
+            $amount = $entry['amount'];
 
             array_push($batchRefundEntry, $paymentId, $amount);
 
@@ -266,18 +252,6 @@ class Processor extends Base\Core
         else
         {
             return 'batch_download_bucket';
-        }
-    }
-
-    protected function getHeaders($batch)
-    {
-        if ($batch->getStatus() === Status::CREATED)
-        {
-            return Batch\Type::getInputHeaders($batch->getType());
-        }
-        else
-        {
-            return Batch\Type::getOutputHeaders($batch->getType());
         }
     }
 
