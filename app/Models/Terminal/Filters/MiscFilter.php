@@ -20,7 +20,7 @@ class MiscFilter extends Terminal\Filter
     {
         if(isset($input['exclude']))
         {
-            if(in_array($terminal, $input['exclude']) === true)
+            if(in_array($terminal->getId(), $input['exclude']) === true)
             {
                 return false;
             }

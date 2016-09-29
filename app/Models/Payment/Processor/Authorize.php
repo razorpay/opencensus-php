@@ -30,6 +30,7 @@ use RZP\Models\Payment\Analytics;
 use RZP\Models\Payment\Analytics\Entity as AnalyticsEntity;
 use RZP\Models\Payment\TerminalAnalytics;
 
+
 use RZP\Error;
 use RZP\Exception;
 use RZP\Trace\Trace;
@@ -43,9 +44,6 @@ trait Authorize
      */
     protected $type;
 
-    protected $terminalSelector;
-
-    protected $terminalsSelected;
 
     public function authorize($payment, $input)
     {
@@ -57,70 +55,11 @@ trait Authorize
         // Adds callback url, payment and card info to $gatewayInput
         $this->prePaymentAuthorizeProcessing($payment, $input, $gatewayInput);
 
-        // In case of a reattempt, remove the terminals that were used, since
-        // these can be treated as failures from the list of terminals
-        // to be selected
-
-        $terminalsToExclude = $this->getTerminalsToExclude($payment);
-
-        $this->getTerminalsForPayment($payment, $terminalsToExclude);
+        $this->terminalsSelected = $this->terminalSelector->getTerminalsForPayment($payment);
 
         return $this->authorizeAcrossTerminals($gatewayInput, $payment, $input);
     }
 
-    /**
-     * Method to extract the terminals to exclude. We first get the past payments
-     * for a given payment flow, and get the terminals that were used as part of the
-     * payment flow. We will exclude all the terminals that were already tried before
-     * to increase the payment efficacy
-     * @param $payment
-     * @return array
-     */
-    protected function getTerminalsToExclude($payment)
-    {
-        $metadata = $payment->getMetadata();
-
-        $pastPayments = array();
-
-        $orderId = $payment->getApiOrderId();
-
-        //TODO: should we do a join on these queries instead of multiple queries
-
-        if ($orderId != null)
-        {
-            $pastPayments = $this->repo->payment->fetchPaymentsForOrderId($orderId);
-        }
-        elseif (isset($metadata[AnalyticsEntity::CHECKOUT_ID]) === true)
-        {
-            $checkoutId = $metadata[AnalyticsEntity::CHECKOUT_ID];
-
-            $pastPayments = $this->repo->payment_analytics->getRecentMerchantPaymentsForCheckoutId($checkoutId);
-        }
-
-        $usedTerminals = array();
-
-        if (count($pastPayments) > 0)
-        {
-            $terminalAnalytics = $this->repo->terminal_analytics-fetTerminalAnalyticsForPayments($pastPayments);
-
-            foreach($terminalAnalytics as $tAnalytics)
-            {
-                $usedTerminals = $tAnalytics->getTerminalId();
-            }
-        }
-
-        return $usedTerminals;
-    }
-
-    protected function getTerminalsForPayment($payment, $terminalsToExclude)
-    {
-        $this->terminalSelector = new Terminal\Selector($payment, $this->mode);
-
-        // TODO: add trace here to say that we are excluding these terminals
-        $opts = array('exclude' => $terminalsToExclude);
-
-        $this->terminalsSelected = $this->terminalSelector->selectTerminals($opts);
-    }
 
     protected function authorizeAcrossTerminals($gatewayInput, $payment, $input)
     {

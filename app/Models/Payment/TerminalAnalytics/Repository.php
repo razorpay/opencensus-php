@@ -16,15 +16,8 @@ class Repository extends Base\Repository
         Entity::TERMINAL_ID     => 'sometimes|alpha_num',
     );
 
-    public function fetTerminalAnalyticsForPayments($payments = array())
+    public function fetchTerminalAnalyticsForPaymentIds($paymentIds = array())
     {
-        $paymentIds = array();
-
-        foreach($payments as $payment)
-        {
-            $paymentIds[] = $payment->getId();
-        }
-
         return $this->newQuery()
             ->whereIn(Entity::PAYMENT_ID, $paymentIds)
             ->get();
