@@ -18,6 +18,7 @@ final class Route
         'merchant_checkout_preferences'           => ['get',      'preferences',                              'MerchantController@getCheckoutPreferences'                         ],
         'payment_create'                          => ['post',     'payments',                                 'PaymentCreateController@postCreatePayment'                         ],
         'payment_create_private'                  => ['post',     'payments/create',                          'PaymentCreateController@postCreateS2SPayment'                      ],
+        'payment_create_private_recurring'        => ['post',     'payments/create/recurring',                'PaymentCreateController@postCreateS2SPayment'                      ],
         'payment_create_private_old'              => ['post',     'payments/create/redirect',                 'PaymentCreateController@postCreateS2SPayment'                      ],
         'payment_create_checkout'                 => ['post',     'payments/create/checkout',                 'PaymentCreateController@postCreatePaymentCheckoutCallback'         ],
         'payment_create_jsonp'                    => ['get',      'payments/create/jsonp',                    'PaymentCreateController@getCreatePaymentJsonp'                     ],
@@ -310,6 +311,7 @@ final class Route
     public static $private = array(
         'payment_create_private',
         'payment_create_private_old',
+        'payment_create_recurring',
         'payment_create_wallet',
         'payment_refund',
         'payment_capture',

@@ -675,6 +675,7 @@ return [
             'url' => '/payments/create/wallet',
             'method' => 'POST',
             'content' => [
+                'card'          => null,
                 'wallet'        => 'payumoney',
                 'amount'        => 10000,
                 'currency'      => 'INR',
@@ -701,6 +702,7 @@ return [
             'url' => '/payments/create/wallet',
             'method' => 'POST',
             'content' => [
+                'card'      => null,
                 'wallet'    => 'mobikwik',
                 'amount'    => 10000,
                 'currency'  => 'INR',
