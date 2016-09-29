@@ -2003,7 +2003,7 @@ class Service extends Base\Service
 
     protected function fetchPaymentsToAggregate($input, $mode)
     {
-        $dateFrom = Carbon::parse($input['date'], 'Asia/Kolkata')->timestamp;
+        $dateFrom = Carbon::parse($input['date'])->timestamp;
 
         $dateTo = $dateFrom + TransactionService::TIME_INTERVALS['day'];
 
@@ -2013,6 +2013,7 @@ class Service extends Base\Service
         $params['from'] = $dateFrom;
         $params['count'] = self::PAGE_SIZE;
         $params['to'] = $dateTo;
+        $params['merchant_id'] = $input['merchant_id'];
 
         $total_payments = [];
 

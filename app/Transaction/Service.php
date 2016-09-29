@@ -226,7 +226,7 @@ class Service extends Base\Service
             {
                 $date = date('j F Y', $value['created_at']);
 
-                $createdAt = Carbon::parse($date, 'Asia/Kolkata')->timestamp;
+                $createdAt = Carbon::parse($date)->timestamp;
 
                 $type = 'day';
 
@@ -288,16 +288,16 @@ class Service extends Base\Service
         switch($type)
         {
             case 'day':
-                $createdAt = Carbon::parse(date('j F Y', $date), 'Asia/Kolkata')->timestamp;//strtotime(date('j F Y', $date)); //2 January 2011
+                $createdAt = Carbon::parse(date('j F Y', $date))->timestamp;//strtotime(date('j F Y', $date)); //2 January 2011
                 break;
             case 'week':
-                $createdAt = Carbon::parse(date('o-\\WW', $date), 'Asia/Kolkata')->timestamp; //2011-W52
+                $createdAt = Carbon::parse(date('o-\\WW', $date))->timestamp; //2011-W52
                 break;
             case 'month':
-                $createdAt = Carbon::parse(date('M Y', $date), 'Asia/Kolkata')->timestamp; //Jan 2011
+                $createdAt = Carbon::parse(date('M Y', $date))->timestamp; //Jan 2011
                 break;
             case 'year':
-                $createdAt = Carbon::parse("1 Jan " . date('Y', $date), 'Asia/Kolkata')->timestamp; //1 Jan 2011
+                $createdAt = Carbon::parse("1 Jan " . date('Y', $date))->timestamp; //1 Jan 2011
                 break;
         }
 
@@ -308,7 +308,7 @@ class Service extends Base\Service
     * This gets the transactions of the days for a week, of the weeks for a month and so on.
     * These transactions are then aggregated upon for the week, month and so on.
     */
-    public function getTimelyTransactionsForTheType($createdAt, $mode, $type)
+    public function getTimelyTransactionsForTheType($createdAt, $mode, $type, $merchantId)
     {
         $searchType = '';
         switch ($type)
@@ -335,6 +335,7 @@ class Service extends Base\Service
             ->where('created_at','>=',$createdAt)
             ->where('created_at','<',$endDate)
             ->where('mode', '=', $mode)
+            ->where('merchant_id', '=', $merchantId)
             ->groupBy('merchant_id')
             ->get();
 

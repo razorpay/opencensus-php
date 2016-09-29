@@ -294,10 +294,10 @@ class TransactionController extends Controller
     {
         $input = Input::all();
 
-        $timestamp = Carbon::parse($input['date'], 'Asia/Kolkata')->timestamp;
+        $timestamp = Carbon::parse($input['date'])->timestamp;
         $created_at = (new Transaction\Service)->getCreatedAtFromInputAndType($timestamp, $type);
 
-        $data = (new Transaction\Service)->getTimelyTransactionsForTheType($created_at, $mode, $type);
+        $data = (new Transaction\Service)->getTimelyTransactionsForTheType($created_at, $mode, $type, $input['merchant_id']);
 
         list($error, $data) = (new Transaction\Service)->updateTypeAggregations($data, $created_at, $mode, $type);
 
