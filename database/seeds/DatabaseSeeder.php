@@ -182,6 +182,8 @@ class DatabaseSeeder extends Seeder
             if ($name === Mode::TEST)
             {
                 $this->createTestTerminals();
+
+                $this->createLocalCustomer();
             }
 
             DB::table(Table::METHODS)->insert(
@@ -232,6 +234,47 @@ class DatabaseSeeder extends Seeder
                 )
             );
         });
+    }
+
+    protected function createLocalCustomer()
+    {
+        DB::table(Table::CUSTOMER)->insert(
+            array(
+                array(
+                    'id'                    => '64UtLHKtfc7Nn1',
+                    'merchant_id'           => Account::TEST_ACCOUNT,
+                    'name'                  => 'User Name',
+                    'contact'               => '+919988776655',
+                    'email'                 => 'test@razorpay.com',
+                    'notes'                 => '{}',
+                    'active'                => true,
+                    'created_at'            => time(),
+                    'updated_at'            => time(),
+                ),
+                array(
+                    'id'                    => '64UtWc2MICesZc',
+                    'merchant_id'           => Account::TEST_ACCOUNT,
+                    'name'                  => 'Username',
+                    'contact'               => '+919988776644',
+                    'email'                 => 'test2@razorpay.com',
+                    'notes'                 => '{}',
+                    'active'                => true,
+                    'created_at'            => time(),
+                    'updated_at'            => time(),
+                ),
+                array(
+                    'id'                    => '64UtcV0BN2RVsW',
+                    'merchant_id'           => Account::TEST_ACCOUNT,
+                    'name'                  => 'User name',
+                    'contact'               => '+919988776633',
+                    'email'                 => 'test3@razorpay.com',
+                    'notes'                 => '{}',
+                    'active'                => true,
+                    'created_at'            => time(),
+                    'updated_at'            => time(),
+                ),
+            )
+        );
     }
 
     protected function createTestTerminals()

@@ -28,6 +28,7 @@ class Validator extends Base\Validator
         Entity::UPI                         => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
         Entity::SHARED                      => 'sometimes|boolean',
+        Entity::RECURRING                   => 'sometimes|in:0,2',
         Entity::GATEWAY_ACQUIRER            => 'sometimes|string|max:30',
         Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
     );
@@ -104,6 +105,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID         => 'required|string|max:20',
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
         Entity::GATEWAY_ACQUIRER            => 'required|string',
+        Entity::RECURRING                   => 'sometimes|in:0,1,2',
     );
 
     protected static $axisMigsEditTerminalRules = array(
@@ -253,7 +255,8 @@ class Validator extends Base\Validator
         if (($new->getGateway() === $existing->getGateway()) and
             ($new->getId() !== $existing->getId()) and
             ($new->isEmiEnabled() === $existing->isEmiEnabled()) and
-            ($new->getEmiDuration() === $existing->getEmiDuration()))
+            ($new->getEmiDuration() === $existing->getEmiDuration()) and
+            ($new->getRecurring() === $existing->getRecurring()))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY);
