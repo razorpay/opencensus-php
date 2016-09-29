@@ -31,14 +31,65 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
-    protected $public = [];
+    protected $public = [
+        self::ID,
+        self::FORMAT,
+        self::SIZE,
+        self::ENCRYPTION_METHOD,
+        self::LOCATION,
+        self::SERVICE,
+        self::NAME,
+        self::ENTITY_NAME,
+        self::ENTITY_ID,
+        self::MERCHANT_ID,
+        self::PERMISSION,
+        self::METADATA,
+        self::COMMENTS,
+        self::DOCUMENT_TYPE,
+        self::CREATED_AT,
+        self::UPDATED_AT,
+        self::DELETED_AT
+    ];
 
-    protected $fillable = [];
+    protected $fillable = [
+        self::FORMAT,
+        self::SIZE,
+        self::ENCRYPTION_METHOD,
+        self::LOCATION,
+        self::SERVICE,
+        self::NAME,
+        self::ENTITY_NAME,
+        self::ENTITY_ID,
+        self::MERCHANT_ID,
+        self::PERMISSION,
+        self::METADATA,
+        self::COMMENTS,
+        self::DOCUMENT_TYPE
+    ];
 
-    protected $visible = [];
+    protected $visible = [
+        self::ID,
+        self::FORMAT,
+        self::SIZE,
+        self::ENCRYPTION_METHOD,
+        self::LOCATION,
+        self::SERVICE,
+        self::NAME,
+        self::ENTITY_NAME,
+        self::ENTITY_ID,
+        self::MERCHANT_ID,
+        self::PERMISSION,
+        self::METADATA,
+        self::COMMENTS,
+        self::DOCUMENT_TYPE,
+        self::CREATED_AT,
+        self::UPDATED_AT,
+        self::DELETED_AT
+    ];
 
-    protected $hidden = array(
-        self::PASSWORD);
+    protected $hidden = [
+        self::PASSWORD
+    ];
 
     protected $defaults = [];
 }

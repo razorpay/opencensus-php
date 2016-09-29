@@ -54,6 +54,18 @@ class CreateFileHandler extends Migration
             $table->string(FileHandler::UPDATED_AT);
 
             $table->string(FileHandler::DELETED_AT);
+
+            $table->index([FileHandler::ENTITY_ID, FileHandler::ENTITY_NAME]);
+
+            $table->index(FileHandler::MERCHANT_ID);
+
+            $table->index(FileHandler::DOCUMENT_TYPE);
+
+            $table->index(FileHandler::CREATED_AT);
+
+            $table->index(FileHandler::UPDATED_AT);
+
+            $table->index(FileHandler::DELETED_AT);
         });
     }
 
