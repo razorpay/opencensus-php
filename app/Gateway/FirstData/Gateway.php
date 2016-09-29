@@ -249,35 +249,20 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             ['gateway_verify_response' => $ipgApiActionResponse->asXML()]);
 
-        $content = $this->getPaymentVerifyResponse($ipgApiActionResponse);
-
         $verify->verifyResponseContent = $ipgApiActionResponse;
-
-        return $content;
-    }
-
-    protected function getPaymentVerifyResponse($verifyResponse)
-    {
-        return array(
-            Entity::TDATE   => $verifyResponse->children('a1', true)->children('ipgapi', true)
-                                                  ->IPGApiOrderResponse->TDate->__toString(),
-
-            Entity::STATUS  => $verifyResponse->children('a1', true)->TransactionValues
-                                                  ->TransactionState->__tostring(),
-        );
     }
 
     protected function verifyPayment($verify)
     {
         $gatewayPayment = $verify->payment;
 
-        $ipgApiActionResponse = $verify->verifyResponseContent;
+        $verifyResponse = $verify->verifyResponseContent;
 
         $gatewayPaymentId = $gatewayPayment->getGatewayPaymentId();
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
-        foreach ( $ipgApiActionResponse->children('a1', true) as $transactionValue )
+        foreach ($verifyResponse->children('a1', true) as $transactionValue)
         {
             $type   = $transactionValue->children('v1', true)->CreditCardTxType->Type->__toString();
 
@@ -294,10 +279,7 @@ class Gateway extends Base\Gateway
 
                 $state  = $transactionValue->children('a1', true)->TransactionState->__toString();
 
-                $gatewayPayment = $this->repo->findByPaymentIdAndAction($gatewayPaymentId, Base\Action::AUTHORIZE);
-
-                if (($gatewayPayment === null) or
-                    ($gatewayPayment->getStatus() !== $state))
+                if ($gatewayPayment->getStatus() !== $state)
                 {
                     $verify->status = VerifyResult::STATUS_MISMATCH;
 
