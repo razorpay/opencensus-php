@@ -5,11 +5,13 @@ namespace RZP\Tests\Functional\CustomerToken;
 use Mockery;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
 class CustomerTokenTest extends TestCase
 {
-    use RequestResponseFlowTrait;
+    use PaymentTrait;
+    use InteractsWithSession;
 
     public function setUp()
     {
