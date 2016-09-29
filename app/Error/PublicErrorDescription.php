@@ -12,7 +12,8 @@ class PublicErrorDescription
     const GATEWAY_ERROR_COMMUNICATION_ERROR                                     = 'Gateway experienced a communication error.';
     const GATEWAY_ERROR_CARD_HOLDER_DIDNT_RETURN_FROM_RUPAY                     = 'Cardholder did not return from RuPay.';
     const GATEWAY_ERROR_USER_INACTIVE                                           = 'User is inactive.';
-    const GATEWAY_ERROR_PAYMENT_BIN_CHECK_FAILED                                = 'Card bin check has failed.';
+    const GATEWAY_ERROR_PAYMENT_BIN_CHECK_FAILED                                = 'Card rejected by bank.';
+    const GATEWAY_ERROR_PAYMENT_NETBANKING_CANCELLED_BY_BANK                    = 'Payment was cancelled by the bank.';
 
     const BAD_REQUEST_URL_NOT_FOUND                                             = 'The requested URL was not found on the server.';
     const BAD_REQUEST_ONLY_HTTPS_ALLOWED                                        = 'Razorpay API is only available over HTTPS.';

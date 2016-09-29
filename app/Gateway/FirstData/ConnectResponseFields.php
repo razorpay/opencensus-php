@@ -29,7 +29,7 @@ class ConnectResponseFields
     const TIMEZONE                = 'timezone';
     const TXNDATE_PROCESSED       = 'txndate_processed';
     const TXN_DATE_TIME           = 'txndatetime';
-    const TXN_TYPE                 = 'txntype';
+    const TXN_TYPE                = 'txntype';
     const FAIL_REASON             = 'fail_reason';
     const FAIL_RC                 = 'fail_rc';
 }

@@ -32,14 +32,20 @@ class Server extends Base\Mock\Server
         $txndate_processed = $dateTime->format(FirstData\Codes::DATE_TIME_FORMAT);
 
         $approvalCode = $this->getApprovalCode();
-        $txnDateTime = $input[FirstData\ConnectRequestFields::TXN_DATE_TIME];
-        $chargeTotal = $input[FirstData\ConnectRequestFields::CHARGE_TOTAL];
-        $currencyCode = $input[FirstData\ConnectRequestFields::CURRENCY];
-        $storeId = $input[FirstData\ConnectRequestFields::STORE_NAME];
-        $cardnumber = $input[FirstData\ConnectRequestFields::CARD_NUMBER];
-        $paymentMethod = $input[FirstData\ConnectRequestFields::PAYMENT_METHOD];
-        $scrubbed_cardnumber = $this->scrub($cardnumber, $paymentMethod);
 
+        $txnDateTime = $input[FirstData\ConnectRequestFields::TXN_DATE_TIME];
+
+        $chargeTotal = $input[FirstData\ConnectRequestFields::CHARGE_TOTAL];
+
+        $currencyCode = $input[FirstData\ConnectRequestFields::CURRENCY];
+
+        $storeId = $input[FirstData\ConnectRequestFields::STORE_NAME];
+
+        $cardnumber = $input[FirstData\ConnectRequestFields::CARD_NUMBER];
+
+        $paymentMethod = $input[FirstData\ConnectRequestFields::PAYMENT_METHOD];
+
+        $scrubbed_cardnumber = $this->scrub($cardnumber, $paymentMethod);
 
         $oid = $this->generateId('ORD0000');
         if (isset($input['oid']) === true)
@@ -80,6 +86,7 @@ class Server extends Base\Mock\Server
         $this->setResponseHash($input, $content);
 
         $url = $input['responseSuccessURL'];
+
         $url .= '?' . http_build_query($content);
 
         return $url;
@@ -90,7 +97,9 @@ class Server extends Base\Mock\Server
         parent::capture($input);
 
         $xml   = simplexml_load_string($input);
+
         $xmlBody = $xml->children('SOAP-ENV', true)->Body->children('ipgapi', true)->children('v1', true);
+
         $body = json_decode(json_encode($xmlBody), true);
 
         $dateTime = Carbon::now('Asia/Kolkata');
@@ -129,7 +138,9 @@ class Server extends Base\Mock\Server
         parent::refund($input);
 
         $xml   = simplexml_load_string($input);
+
         $xmlBody = $xml->children('SOAP-ENV', true)->Body->children('ipgapi', true)->children('v1', true);
+
         $body = json_decode(json_encode($xmlBody), true);
 
         $dateTime = Carbon::now('Asia/Kolkata');
@@ -166,7 +177,9 @@ class Server extends Base\Mock\Server
     public function verify($input)
     {
         $xml   = simplexml_load_string($input);
+
         $xmlBody = $xml->children('SOAP-ENV', true)->Body->children('ipgapi', true)->children('a1', true);
+
         $body = json_decode(json_encode($xmlBody), true);
 
         $inquiryOrder = $body[FirstData\ApiRequestFields::ACTION][FirstData\ApiRequestFields::INQUIRY_ORDER];
@@ -176,7 +189,9 @@ class Server extends Base\Mock\Server
         $dateTime = Carbon::now('Asia/Kolkata');
 
         $tdate = (string) $dateTime->getTimeStamp();
+
         $approvalCode = $this->getApprovalCode();
+
         $tdateFormatted = (string) $dateTime->format("Y.m.d H:i:s (T)");
 
         $soapContent = FirstData\SoapWrapper::verifyResponseWrapper($oid, $dateTime, $tdate, $approvalCode, $tdateFormatted);
@@ -189,9 +204,13 @@ class Server extends Base\Mock\Server
     protected function setResponseHash($input, & $content)
     {
         $approvalCode   = $content[FirstData\ConnectResponseFields::APPROVAL_CODE];
+
         $txnDateTime    = $content[FirstData\ConnectResponseFields::TXN_DATE_TIME];
+
         $chargeTotal    = $input[FirstData\ConnectRequestFields::CHARGE_TOTAL];
+
         $currencyCode   = $input[FirstData\ConnectRequestFields::CURRENCY];
+
         $storeName      = $input[FirstData\ConnectRequestFields::STORE_NAME];
 
         $response_hash = $this->getHash($approvalCode, $chargeTotal, $currencyCode, $txnDateTime, $storeName);
@@ -253,6 +272,7 @@ class Server extends Base\Mock\Server
         $response = \Response::make($content);
 
         $response->headers->set('Content-Type', 'text/xml');
+
         $response->headers->set('Cache-Control', 'no-cache');
 
         return $response;

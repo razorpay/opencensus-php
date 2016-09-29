@@ -61,6 +61,8 @@ class Entity extends Base\Entity
 
     protected $guarded = array();
 
+    // ----------------------- Getters ---------------------------------------------
+
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
@@ -80,6 +82,8 @@ class Entity extends Base\Entity
     {
         return $this->getAttribute(self::TDATE);
     }
+
+    // ----------------------- Setters ---------------------------------------------
 
     public function setTdate($tdate)
     {

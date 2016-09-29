@@ -48,14 +48,6 @@ class Validator extends Base\Validator
         ConnectRequestFields::LANGUAGE,
     );
 
-    protected static $captureRules = array(
-        'Transaction'                                => 'required|',
-        );
-
-    protected static $captureValidators = array(
-        'Transaction',
-        );
-
     protected function validateTransaction($input)
     {
         if ((in_array($input['Transaction'], 'CreditCardTxType') === false) or
@@ -80,7 +72,7 @@ class Validator extends Base\Validator
     protected function validateMode($input)
     {
         if ((isset($input['mode']) === true) and
-            (in_array($input['mode'], Codes::$paymentModes) === false))
+            (in_array($input['mode'], Codes::PAYMENT_MODES) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid mode');

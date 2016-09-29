@@ -15,7 +15,7 @@ class Codes
     const PAYMENT_MODE_PAYPLUS = 'payplus';
     const PAYMENT_MODE_FULLPAY = 'fullpay';
 
-    public static $paymentModes = array(
+    const PAYMENT_MODES = array(
         self::PAYMENT_MODE_PAYONLY,
         self::PAYMENT_MODE_PAYPLUS,
         self::PAYMENT_MODE_FULLPAY,
