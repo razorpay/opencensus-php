@@ -523,7 +523,8 @@ trait Authorize
         $merchant = $payment->merchant;
 
         // if card data is present in input for private auth request, validate s2s enabled
-        if ((empty($input['card']) === false) and
+        if (($payment->isMethodCardOrEmi() === true) and
+            (empty($input['card']) === false) and
             ($this->app['basicauth']->isPrivateAuth()))
         {
             $this->verifyFeatureForMerchant($merchant, Merchant\Features::S2S);
