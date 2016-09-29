@@ -125,11 +125,11 @@ trait FileHandlerTrait
         return $this->getFileFromAws($bucket, $key, $fullPath);
     }
 
-    protected function createExcelObject($data, $name, $columnFormat = [])
+    protected function createExcelObject($data, $name, $columnFormat = [], $sheetName = 'Sheet 1')
     {
-        $excel = Excel::create($name, function($excel) use ($data, $columnFormat)
+        $excel = Excel::create($name, function($excel) use ($data, $columnFormat, $sheetName)
         {
-            $excel->sheet('Sheet 1', function($sheet) use ($data, $columnFormat)
+            $excel->sheet($sheetName, function($sheet) use ($data, $columnFormat)
                 {
                     // If a columnFormat variable is specified.
                     // Use it.

@@ -42,8 +42,7 @@ class Validator extends Base\Validator
     {
         if (Type::exists($type) === false)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'invalid batch type');
+            throw new Exception\BadRequestValidationFailureException('Invalid batch type');
         }
     }
 

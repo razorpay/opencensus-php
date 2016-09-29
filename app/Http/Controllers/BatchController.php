@@ -4,7 +4,6 @@ namespace RZP\Http\Controllers;
 
 use RZP\Http\ApiResponse;
 use RZP\Models\Batch;
-use RZP\Trace\TraceCode;
 use Request;
 use View;
 

@@ -27,7 +27,7 @@ class Type
 
     public static function exists($type)
     {
-        return defined(get_class().'::'.strtoupper($type));
+        return defined(get_class() . '::' . strtoupper($type));
     }
 
     public static function getInputHeaders($type)
