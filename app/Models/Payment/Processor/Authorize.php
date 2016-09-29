@@ -334,7 +334,7 @@ trait Authorize
 
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
 
-        $this->verifyMerchantFeatures($payment);
+        $this->verifyMerchantFeatures($payment, $input);
 
         $this->verifyPaymentMethodEnabled($payment);
 
@@ -518,11 +518,34 @@ trait Authorize
         });
     }
 
-    protected function verifyMerchantFeatures($payment)
+    protected function verifyMerchantFeatures($payment, $input)
     {
+        $merchant = $payment->merchant;
+
+        // if card data is present in input for private auth request, validate s2s enabled
+        if ((empty($input['card']) === false) and
+            ($this->app['basicauth']->isPrivateAuth()))
+        {
+            $this->verifyFeatureForMerchant($merchant, Merchant\Features::S2S);
+        }
+
         if ($payment->isRecurring() === true)
         {
-            $this->verifyRecurringForMerchant($payment->merchant);
+            $this->verifyFeatureForMerchant($merchant, Merchant\Features::RECURRING);
+        }
+
+        if ($payment->isSecondRecurring() === true)
+        {
+            $this->verifyPrivateAuth();
+        }
+    }
+
+    protected function verifyPrivateAuth()
+    {
+        if ($this->app['basicauth']->isPrivateAuth() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_RECURRING_AUTH_NOT_SUPPORTED);
         }
     }
 
@@ -1511,18 +1534,12 @@ trait Authorize
         }
     }
 
-    protected function verifyRecurringForMerchant($merchant)
+    protected function verifyFeatureForMerchant($merchant, $feature)
     {
-        if ($this->app['basicauth']->isPrivateAuth() === false)
+        if ($merchant->isFeatureEnabled($feature) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'recurring not support on public auth');
-        }
-
-        if ($merchant->isFeatureEnabled(Merchant\Features::RECURRING) === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_RECURRING_NOT_ENABLED);
+                    "$feature is not supported");
         }
     }
 

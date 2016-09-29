@@ -41,6 +41,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_WALLET_NOT_SUPPORTED                              = 'Wallet is not supported';
     const BAD_REQUEST_PAYMENT_WALLET_NOT_PROVIDED                               = 'Wallet is not provided';
     const BAD_REQUEST_PAYMENT_RECURRING_NOT_ENABLED                             = 'Recurring payment is not enabled for the merchant';
+    const BAD_REQUEST_PAYMENT_RECURRING_AUTH_NOT_SUPPORTED                      = 'recurring payment is not supported on public auth';
     const BAD_REQUEST_PAYMENT_WALLET_NOT_ENALBED_FOR_MERCHANT                   = 'Wallet is not enabled for the merchant';
     const BAD_REQUEST_PAYMENT_CARD_NOT_ENALBED_FOR_MERCHANT                     = 'Card transactions are not enabled for the merchant';
     const BAD_REQUEST_PAYMENT_EMI_NOT_ENALBED_FOR_MERCHANT                      = 'Emi transactions are not enabled for the merchant';

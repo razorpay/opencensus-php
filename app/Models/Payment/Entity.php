@@ -908,6 +908,13 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MERCHANT_ID);
     }
 
+    public function isSecondRecurring()
+    {
+        return (($this->isRecurring() === true) and
+                ($this->getTokenId() !== null) and
+                ($this->token()->first()->isRecurring() === true));
+    }
+
     /**
      * This function returns the current payment method
      * and a detail string for that particular method

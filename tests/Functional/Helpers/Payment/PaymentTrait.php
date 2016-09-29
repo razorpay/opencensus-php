@@ -705,6 +705,17 @@ trait PaymentTrait
         return $payment;
     }
 
+    protected function getDefaultRecurringPaymentArray()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['recurring'] = true;
+
+        $payment['customer_id'] = 'cust_100000customer';
+
+        return $payment;
+    }
+
     protected function getDefaultEmiPaymentArray($saved)
     {
         $card = null;
