@@ -347,6 +347,19 @@ trait PaymentTrait
         return $this->sendRequest($request);
     }
 
+    protected function makeS2SCallbackAndGetContent($content)
+    {
+        $request = [
+            'url'    => '/callback/' . $this->gateway,
+            'method' => 'post',
+            'raw'    => $content
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
     protected function topupPayment($id)
     {
         $request = array(
