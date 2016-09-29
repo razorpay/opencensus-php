@@ -28,6 +28,8 @@ class Gateway extends Base\Gateway
     const PROCESSING                        = 'PROCESSING';
     const SERVICES                          = 'SERVICES';
 
+    const CHECKSUM_ATTRIBUTE = ConnectResponseFields::RESPONSE_HASH;
+
     protected $gateway = Constants\Entity::FIRST_DATA;
 
     public function authorize(array $input)
@@ -56,7 +58,7 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $this->repo
                             ->findByPaymentIdAndActionOrFail($input['gateway'][ConnectResponseFields::ORDER_ID], Base\Action::AUTHORIZE);
 
-        $this->verifyResponseHash($input['gateway']);
+        $this->verifySecureHash($input['gateway']);
 
         $attributes = $this->getCallbackFields($input['gateway']);
 
@@ -181,9 +183,7 @@ class Gateway extends Base\Gateway
 
         if ($approvalCode[0] !== 'Y')
         {
-            $desc = ErrorCodes::getErrorDesc($approvalCode);
-
-            $attributes[Entity::ERROR_MESSAGE] = $desc;
+            $attributes[Entity::ERROR_MESSAGE] = ErrorCodes::getErrorDesc($approvalCode);
         }
 
         return $attributes;
@@ -207,9 +207,7 @@ class Gateway extends Base\Gateway
         {
             $approvalCode = $this->getActualCodeFromApprovalCode($approvalCode);
 
-            $desc = ErrorCodes::getErrorDesc($approvalCode);
-
-            $attributes[Entity::ERROR_MESSAGE] = $desc;
+            $attributes[Entity::ERROR_MESSAGE] = ErrorCodes::getErrorDesc($approvalCode);
         }
 
         return $attributes;
@@ -429,25 +427,28 @@ class Gateway extends Base\Gateway
         return $hash;
     }
 
-    /**
-     * Get SHA1 hash using the given fields
-     * sharedsecret + approvalcode + chargetotal + currency + txndatetime + storename.
-     * @param  $approvalCode
-     * @param  $chargeTotal
-     * @param  $currencyCode
-     * @param  $txnDateTime
-     * @return $hash
-     */
-    protected function getExpectedResponseHash($approvalCode, $chargeTotal, $currencyCode, $txnDateTime)
+    protected function getStringToHash($content, $_glue = '')
     {
+        $approvalCode   = $content[ConnectResponseFields::APPROVAL_CODE];
+
+        $txnDateTime    = $content[ConnectResponseFields::TXN_DATE_TIME];
+
+        $chargeTotal    = $content[ConnectResponseFields::CHARGE_TOTAL];
+
+        $currencyCode   = $content[ConnectResponseFields::CURRENCY];
+
         $storeId = $this->getStoreId();
+
         $sharedSecret = $this->getSecret();
 
         $stringToHash = $sharedSecret . $approvalCode . $chargeTotal . $currencyCode . $txnDateTime . $storeId;
 
-        $hash = hash(HashAlgo::SHA1, bin2hex($stringToHash));
+        return $stringToHash;
+    }
 
-        return $hash;
+    protected function getHashOfString($str)
+    {
+        return hash(HashAlgo::SHA1, bin2hex($str));
     }
 
     protected function getPreAuthRequestContentArray($input)
@@ -571,27 +572,6 @@ class Gateway extends Base\Gateway
         }
 
         return $xml;
-    }
-
-    private function verifyResponseHash($gatewayInput)
-    {
-        $approvalCode   = $gatewayInput[ConnectResponseFields::APPROVAL_CODE];
-
-        $txnDateTime    = $gatewayInput[ConnectResponseFields::TXN_DATE_TIME];
-
-        $chargeTotal    = $gatewayInput[ConnectResponseFields::CHARGE_TOTAL];
-
-        $currencyCode   = $gatewayInput[ConnectResponseFields::CURRENCY];
-
-        $expectedHash  = $this->getExpectedResponseHash($approvalCode, $chargeTotal, $currencyCode, $txnDateTime);
-
-        if (hash_equals($expectedHash, $gatewayInput[ConnectResponseFields::RESPONSE_HASH]) === false)
-        {
-            $this->trace->error(
-                TraceCode::GATEWAY_CHECKSUM_VERIFY_FAILED, ['auth_response' => $gatewayInput, 'expected_hash' => $expectedHash]);
-
-            throw new Exception\BadRequestValidationFailureException('Failed response_hash verification');
-        }
     }
 
     protected function traceGatewayPaymentRequest($request, $input)
