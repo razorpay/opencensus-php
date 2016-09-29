@@ -14,7 +14,6 @@ use RZP\Models\Payment\Processor\Netbanking;
 
 class Gateway
 {
-
     const AMEX               = 'amex';
     const ATOM               = 'atom';
     const AXIS_GENIUS        = 'axis_genius';

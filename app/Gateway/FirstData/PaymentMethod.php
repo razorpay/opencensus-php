@@ -19,7 +19,7 @@ class PaymentMethod
         Card\Network::JCB   => 'J',
         // Maestro
         Card\Network::MAES  => 'MA',
-        //RuPay
+        // RuPay
         Card\Network::RUPAY => 'RU',
     );
 }

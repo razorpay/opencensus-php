@@ -16,23 +16,6 @@ class Entity extends Base\Entity
     const APPROVAL_CODE                 = 'approval_code';
     const ERROR_MESSAGE                 = 'error_message';
 
-    protected $fields = array(
-        self::ID,
-        self::PAYMENT_ID,
-        self::REFUND_ID,
-        self::RECEIVED,
-        self::ACTION,
-        self::AMOUNT,
-        self::GATEWAY_PAYMENT_ID,
-        self::TDATE,
-        self::STATUS,
-        self::TRANSACTION_RESULT,
-        self::APPROVAL_CODE,
-        self::ERROR_MESSAGE,
-        self::CREATED_AT,
-        self::UPDATED_AT,
-    );
-
     protected $fillable = array(
         self::PAYMENT_ID,
         self::REFUND_ID,
@@ -55,11 +38,9 @@ class Entity extends Base\Entity
 
     protected $primaryKey = self::ID;
 
-    protected $entity = Constants\Table::FIRST_DATA;
+    protected $entity = Constants\Entity::FIRST_DATA;
 
     public $incrementing = true;
-
-    protected $guarded = array();
 
     // ----------------------- Getters ---------------------------------------------
 
@@ -90,6 +71,11 @@ class Entity extends Base\Entity
         return $this->setAttribute(self::TDATE, $tdate);
     }
 
+    public function setGatewayPaymentId($gatewayPaymentId)
+    {
+        return $this->setAttribute(self::GATEWAY_PAYMENT_ID, $gatewayPaymentId);
+    }
+
     public function setStatus($status)
     {
         return $this->setAttribute(self::STATUS, $status);
@@ -109,5 +95,4 @@ class Entity extends Base\Entity
     {
         $this->setAttribute(self::AMOUNT, $amount);
     }
-
 }

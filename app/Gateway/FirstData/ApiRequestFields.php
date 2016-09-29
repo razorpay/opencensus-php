@@ -7,6 +7,7 @@ class ApiRequestFields
     // Requests to FirstData API are of two types, Order and Action
     // PostAuth (Capture) and Return (Refund) are of type Order
     // Inquiry (Verify) is of type Action
+
     const ORDER_REQUEST                     = 'IPGApiOrderRequest';
     const ACTION_REQUEST                    = 'IPGApiActionRequest';
 

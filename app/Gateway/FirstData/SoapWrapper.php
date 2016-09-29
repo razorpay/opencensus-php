@@ -8,7 +8,10 @@ class SoapWrapper
         <SOAP-ENV:Envelope xmlns:SOAP-ENV='http://schemas.xmlsoap.org/soap/envelope/'>
             <SOAP-ENV:Header/>
             <SOAP-ENV:Body>
-                <ipgapi:IPGApiOrderResponse xmlns:a1='http://ipg-online.com/ipgapi/schemas/a1' xmlns:ipgapi='http://ipg-online.com/ipgapi/schemas/ipgapi' xmlns:pay_1_0_0='http://api.clickandbuy.com/webservices/pay_1_0_0/' xmlns:v1='http://ipg-online.com/ipgapi/schemas/v1'/>
+                <ipgapi:IPGApiOrderResponse xmlns:a1='http://ipg-online.com/ipgapi/schemas/a1'
+                    xmlns:ipgapi='http://ipg-online.com/ipgapi/schemas/ipgapi'
+                    xmlns:pay_1_0_0='http://api.clickandbuy.com/webservices/pay_1_0_0/'
+                    xmlns:v1='http://ipg-online.com/ipgapi/schemas/v1'/>
             </SOAP-ENV:Body>
         </SOAP-ENV:Envelope>
     ";
@@ -21,7 +24,11 @@ class SoapWrapper
                     <faultcode>SOAP-ENV:Client</faultcode>
                     <faultstring xml:lang='en'>ProcessingException</faultstring>
                     <detail>
-                        <ipgapi:IPGApiOrderResponse xmlns:a1='http://ipg-online.com/ipgapi/schemas/a1' xmlns:ipgapi='http://ipg-online.com/ipgapi/schemas/ipgapi' xmlns:pay_1_0_0='http://api.clickandbuy.com/webservices/pay_1_0_0/' xmlns:v1='http://ipg-online.com/ipgapi/schemas/v1'/>
+                        <ipgapi:IPGApiOrderResponse
+                            xmlns:a1='http://ipg-online.com/ipgapi/schemas/a1'
+                            xmlns:ipgapi='http://ipg-online.com/ipgapi/schemas/ipgapi'
+                            xmlns:pay_1_0_0='http://api.clickandbuy.com/webservices/pay_1_0_0/'
+                            xmlns:v1='http://ipg-online.com/ipgapi/schemas/v1'/>
                     </detail>
                 </SOAP-ENV:Fault>
             </SOAP-ENV:Body>
@@ -33,7 +40,11 @@ class SoapWrapper
             xmlns:SOAP-ENV='http://schemas.xmlsoap.org/soap/envelope/'>
             <SOAP-ENV:Header/>
             <SOAP-ENV:Body>
-                <ipgapi:IPGApiActionResponse xmlns:ipgapi='http://ipg-online.com/ipgapi/schemas/ipgapi' xmlns:a1='http://ipg-online.com/ipgapi/schemas/a1' xmlns:pay_1_0_0='http://api.clickandbuy.com/webservices/pay_1_0_0/' xmlns:v1='http://ipg-online.com/ipgapi/schemas/v1'>
+                <ipgapi:IPGApiActionResponse
+                    xmlns:ipgapi='http://ipg-online.com/ipgapi/schemas/ipgapi'
+                    xmlns:a1='http://ipg-online.com/ipgapi/schemas/a1'
+                    xmlns:pay_1_0_0='http://api.clickandbuy.com/webservices/pay_1_0_0/'
+                    xmlns:v1='http://ipg-online.com/ipgapi/schemas/v1'>
                     <ipgapi:successfully>false</ipgapi:successfully>
                 </ipgapi:IPGApiActionResponse>
             </SOAP-ENV:Body>
@@ -46,7 +57,11 @@ class SoapWrapper
             <SOAP-ENV:Envelope xmlns:SOAP-ENV='http://schemas.xmlsoap.org/soap/envelope/'>
                 <SOAP-ENV:Header/>
                 <SOAP-ENV:Body>
-                    <ipgapi:$requestType xmlns:a1='http://ipg-online.com/ipgapi/schemas/a1' xmlns:ipgapi='http://ipg-online.com/ipgapi/schemas/ipgapi' xmlns:pay_1_0_0='http://api.clickandbuy.com/webservices/pay_1_0_0/' xmlns:v1='http://ipg-online.com/ipgapi/schemas/v1'>$content</ipgapi:$requestType>
+                    <ipgapi:$requestType
+                        xmlns:a1='http://ipg-online.com/ipgapi/schemas/a1'
+                        xmlns:ipgapi='http://ipg-online.com/ipgapi/schemas/ipgapi'
+                        xmlns:pay_1_0_0='http://api.clickandbuy.com/webservices/pay_1_0_0/'
+                        xmlns:v1='http://ipg-online.com/ipgapi/schemas/v1'>$content</ipgapi:$requestType>
                 </SOAP-ENV:Body>
             </SOAP-ENV:Envelope>
         ";
