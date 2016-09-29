@@ -142,6 +142,11 @@ class TransactionFilter extends Terminal\Filter
 
     public function recurringFilter($terminal, $input)
     {
+        if ($terminal->getGateway() !== Gateway::CYBERSOURCE)
+        {
+            return false;
+        }
+
         $value = Terminal\Recurring::NON_RECURRING;
 
         $payment = $input['payment'];
