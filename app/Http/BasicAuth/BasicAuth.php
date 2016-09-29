@@ -738,6 +738,11 @@ class BasicAuth
         return ($this->type === Type::PUBLIC_AUTH);
     }
 
+    public function isPrivateAuth()
+    {
+        return ($this->type === Type::PRIVATE_AUTH);
+    }
+
     public function isPrivilegeAuth()
     {
         return ($this->type === Type::PRIVILEGE_AUTH);

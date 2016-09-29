@@ -916,6 +916,8 @@ trait Authorize
     {
         $payment = $this->payment;
 
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
         $this->trace->info(
             TraceCode::PAYMENT_UPDATE_TOKEN,
             [
@@ -923,8 +925,6 @@ trait Authorize
                 'token_id'        => $payment->getTokenId(),
                 'global_token_id' => $payment->getGlobalTokenId()
             ]);
-
-        $token = $payment->getGlobalOrLocalTokenEntity();
 
         // update token stats, assuming same token is not getting used in
         // multiple payments, actually we should locking
