@@ -68,6 +68,12 @@ class FirstDataGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals($payment['status'], 'refunded');
+
+        $gatewayPayment = $this->getLastEntity('first_data', true);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('rfnd_' . $gatewayPayment['refund_id'], $refund['id']);
     }
 
     public function testPaymentPartialRefund()

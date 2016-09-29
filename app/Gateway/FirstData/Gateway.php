@@ -216,9 +216,18 @@ class Gateway extends Base\Gateway
             Entity::GATEWAY_PAYMENT_ID          => $response[ApiResponseFields::ORDER_ID],
         );
 
+        $this->setRefundIdIfNeeded($attributes, $input);
         $this->setErrorMessageIfNeeded($attributes);
 
         return $attributes;
+    }
+
+    protected function setRefundIdIfNeeded(& $attributes, $refundInput)
+    {
+        if ($this->action == Base\Action::REFUND)
+        {
+            $attributes[Entity::REFUND_ID] = $refundInput['id'];
+        }
     }
 
     protected function setErrorMessageIfNeeded(& $attributes)
