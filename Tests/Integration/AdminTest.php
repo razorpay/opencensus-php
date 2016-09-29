@@ -405,6 +405,6 @@ class AdminTest extends TestCase
         $this->waitUntilDisplayedByClassName('user-dropdown');
         $this->clickByClassName('user-dropdown');
         $this->clickByLinkText('Logout');
-        $this->waitUntilDisplayedByXPath('form', 'name', 'signin');
+        $this->waitUntilDisplayedByCss('body', 'You are successfully logged out');
     }
 }

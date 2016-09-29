@@ -138,7 +138,10 @@ var app = angular.module('app', [
     }).state('access.lockme', {
       url: '/lockme/:username',
       templateUrl: 'tpl/page_lockme.html'
-    })  //other
+    }).state('access.logout', {
+      url: '/logout',
+      templateUrl: 'tpl/admin/page_logout.html'
+    }) //other
 .state('404', {
       url: '/404',
       templateUrl: 'tpl/page_404.html'

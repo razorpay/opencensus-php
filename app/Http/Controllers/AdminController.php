@@ -44,40 +44,22 @@ class AdminController extends Controller
             // if code is provided get user data and sign in
             if (getenv('APP_ENV') !== 'testing' && $code === null)
             {   
-                $url = $googleService->getAuthorizationUri();
-
-                return redirect((string)$url);
+                return redirect((string)$googleService->getAuthorizationUri());
             }
             else
             {
-                $token = $googleService->requestAccessToken($code);
+                $error = (new Admin\Service)->loginWithGoogle($code, $googleService);
 
-                $response = $googleService->request(Config::get('oauth-5-laravel.userinfo_url'));
-
-                $result = json_decode($response);
-
-                if ($result->verified_email === false)
+                if (empty($error))
                 {
-                    return App::abort(404);
+                    return redirect('/admin');
                 }
-
-                $admin = Admin\Entity::where('email', $result->email)->first();
-
-                if ($admin)
+                else
                 {
-                    $admin->access_token = $token->getAccessToken();
-                    $admin->google_id = $result->id;
-                    $admin->password = '';
-      
-                    $admin->save();
-
-                    Auth::guard('admin')->loginUsingId($admin->id);
+                    return AppResponse::jsonResponse($error, []);
                 }
-
-                return redirect('/admin');
             }
         }
-
         return view('admin.tmpgetIndex');
     }
 
