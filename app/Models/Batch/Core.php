@@ -18,15 +18,30 @@ class Core extends Base\Core
 {
     use FileHandlerTrait;
 
+
     protected static $fileToReadName = 'Batch_File';
 
     public function create($input)
     {
         $batch = (new Batch\Entity)->build($input);
 
+        $file = $input['file'];
+
+        $extension = $file->getClientOriginalExtension();
+        if(empty($extension) === true)
+        {
+            $extension = pathinfo($file)['extension'];
+        }
+
+        $mimeType = $file->getMimeType();
+
+        $batch->getValidator()->validateExtension($mimeType, $extension);
+
+        $batch->getValidator()->validateSize($file);
+
         $batch->merchant()->associate($this->merchant);
 
-        $entries = $this->parseExcelFile($input['file']);
+        $entries = $this->parseExcelSheets($input['file']);
 
         $batch->getValidator()->validateEntries($entries, $batch->getType());
 

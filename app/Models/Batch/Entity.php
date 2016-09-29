@@ -8,7 +8,7 @@ class Entity extends Base\PublicEntity
 {
     const ID                        = 'id';
     const MERCHANT_ID               = 'merchant_id';
-    const UPLOAD_FILE_URL           = 'uploaded_file_url';
+    const UPLOAD_FILE_URL           = 'upload_file_url';
     const DOWNLOAD_FILE_URL         = 'download_file_url';
     const STATUS                    = 'status';
     const TOTAL_COUNT               = 'total_count';
@@ -23,7 +23,7 @@ class Entity extends Base\PublicEntity
 
     const FILE_URL_LENGTH           = 100;
     const STATUS_LENGTH             = 20;
-    const FILE                      ='file';
+    const FILE                      = 'file';
 
     protected $table = \RZP\Constants\Table::BATCH;
 
@@ -32,8 +32,6 @@ class Entity extends Base\PublicEntity
     protected $entity = 'batch';
 
     protected $generateIdOnCreate = true;
-
-    protected static $generators = array(self::ID);
 
     protected $fillable = array(
         self::UPLOAD_FILE_URL,
@@ -102,6 +100,7 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
+    // ----------------------- Getters ---------------------------------------------
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
@@ -162,6 +161,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MERCHANT_ID);
     }
 
+    // ----------------------- Setters ---------------------------------------------
     public function setUploadFileUrl($url)
     {
         $this->setAttribute(self::UPLOAD_FILE_URL, $url);

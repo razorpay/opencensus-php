@@ -47,10 +47,12 @@ class CreateBatchTable extends Migration
             $table->integer(Batch::ATTEMPTS)
                   ->default(0);
 
-            $table->bigInteger(Batch::AMOUNT)
+            $table->integer(Batch::AMOUNT)
+                  ->unsigned()
                   ->nullable();
 
-            $table->bigInteger(Batch::PROCESSED_AMOUNT)
+            $table->integer(Batch::PROCESSED_AMOUNT)
+                  ->unsigned()
                   ->default(0);
 
             $table->text(Batch::COMMENT)
@@ -91,12 +93,12 @@ class CreateBatchTable extends Migration
     {
         Schema::table(Table::REFUND, function($table)
         {
-            $table->dropForeign(Table::REFUND.'_'.Payment::BATCH_ID.'_foreign');
+            $table->dropForeign(Table::REFUND .'_' .Refund\Entity::BATCH_ID .'_foreign');
         });
 
         Schema::table(Table::BATCH, function($table)
         {
-            $table->dropForeign(Table::BATCH.'_'.Batch::MERCHANT_ID.'_foreign');
+            $table->dropForeign(Table::BATCH .'_' .Batch::MERCHANT_ID .'_foreign');
         });
 
         Schema::drop(Table::BATCH);

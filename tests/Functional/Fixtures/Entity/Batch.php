@@ -12,10 +12,10 @@ class Batch extends Base
 
     public function createRefund(array $attributes = array())
     {
-        $url = $this->writeToExcelFile($attributes, 'uploaded_file');
+        $url = $this->writeToExcelFile($attributes, 'uploaded_file', 'files/batch_file_download');
 
         $params = [
-            'uploaded_file_url' => $url,
+            'upload_file_url' => $url,
             'type'              => Type::REFUND,
             'total_count'       => count($attributes),
             'amount'            => $this->getTotalAmount($attributes)
@@ -23,7 +23,7 @@ class Batch extends Base
 
         $batch = $this->fixtures->create('batch', $params);
 
-        $newUrl = $this->writeToExcelFile($attributes, $batch->getId());
+        $newUrl = $this->writeToExcelFile($attributes, $batch->getId(), 'files/batch_file_download');
 
         $batch->setUploadFileUrl($newUrl);
         $batch->saveOrFail();
@@ -70,7 +70,7 @@ class Batch extends Base
         $batch = $this->fixtures->create('batch:refund', $attributes);
 
         $processedttributes = $this->createProcessedAttributes($attributes);
-        $newUrl = $this->writeToExcelFile($processedttributes, $batch->getId());
+        $newUrl = $this->writeToExcelFile($processedttributes, $batch->getId(), 'files/batch_file_download');
 
         $batch->setStatus($status);
         $batch->setAttempts($attempts);
@@ -83,23 +83,23 @@ class Batch extends Base
         return $batch;
     }
 
-    protected function writeToExcelFile($data, $name)
-    {
-        \Config::set('excel::export.calculate', true);
+    // protected function writeToExcelFile($data, $name)
+    // {
+    //     \Config::set('excel::export.calculate', true);
 
-        $columnFormat = $this->getColumnFormatForExcel();
+    //     $columnFormat = $this->getColumnFormatForExcel();
 
-        $excel = $this->createExcelObject($data, $name, $columnFormat);
+    //     $excel = $this->createExcelObject($data, $name, $columnFormat);
 
-        $fileMetadata = $excel->store('xlsx', storage_path('files/batch_file_download'), true);
+    //     $fileMetadata = $excel->store('xlsx', storage_path('files/batch_file_download'), true);
 
-        $fullpath = $fileMetadata['full'];
+    //     $fullpath = $fileMetadata['full'];
 
-        $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-        $url = $this->saveToAws($name.'.xlsx', $fullpath, $xlsxMimeType);
+    //     $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    //     $url = $this->saveToAws($name.'.xlsx', $fullpath, $xlsxMimeType);
 
-        return $url;
-    }
+    //     return $url;
+    // }
 
     protected function createTempFile($url)
     {

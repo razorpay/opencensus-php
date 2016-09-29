@@ -8,10 +8,35 @@ use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
+    const maxImageSize = 1024*1024;
     protected static $createRules = array(
         Entity::FILE => 'required|file',
         Entity::TYPE => 'required|string|max:100|custom'
     );
+
+    const extensionMimeMap = array(
+        "xlsx"  => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    );
+
+    public function validateExtension($mimeType, $extension)
+    {
+        $acceptedMimeArray = self::extensionMimeMap;
+
+        // Checks if extension is defined in the array and if the extension and mime type match.
+        if ((!isset($acceptedMimeArray[$extension])) or
+            ($acceptedMimeArray[$extension] !== $mimeType))
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FILE_NOT_EXCEL);
+        }
+    }
+
+    public function validateSize($file)
+    {
+        if ($file->getClientSize() > self::maxImageSize)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FILE_TOO_BIG);
+        }
+    }
 
     protected function validateType($attribute, $type)
     {
@@ -31,26 +56,26 @@ class Validator extends Base\Validator
            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FILE_EXCEED_LIMIT);
         }
 
-        $validator = 'validate' .ucfirst($type);
+        $validator = 'validate' .ucfirst($type) .'Entries';
 
         $this->$validator($entries);
     }
 
-    protected function validateRefund($entries)
+    protected function validateRefundEntries($entries)
     {
         $headers = array('payment_id', 'refund_amount');
 
         // Skipping the first row: This would be templatized headers
-        $headerValues = $entries[0];
-        $headerMap = array_combine($headers, $headerValues);
+        // $headerValues = $entries[0];
+        // $headerMap = array_combine($headers, $headerValues);
 
-        if($headerMap['payment_id'] !== 'Payment Id' ||
-            $headerMap['refund_amount'] !== 'Amount')
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FILE_VALIDATION);
-        }
+        // if($headerMap['payment_id'] !== 'Payment Id' ||
+        //     $headerMap['refund_amount'] !== 'Amount')
+        // {
+        //     throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FILE_VALIDATION);
+        // }
 
-        array_shift($entries);
+        // array_shift($entries);
 
         $existingPaymentIds = array();
 
@@ -66,11 +91,12 @@ class Validator extends Base\Validator
             $amount = $entryMap['refund_amount'];
             $paymentId = $entryMap['payment_id'];
 
-            if (isset($paymentId) === false)
+            if (empty($paymentId) === true)
             {
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FILE_VALIDATION);
             }
-            elseif (isset($amount) === false)
+
+            elseif (empty($amount) === true)
             {
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FILE_VALIDATION);
             }

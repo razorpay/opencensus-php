@@ -84,7 +84,6 @@ class Entity
         self::SHARP                 => \RZP\Gateway\Sharp::class,
         self::TOKEN                 => \RZP\Models\Customer\Token::class,
         self::REFUND                => \RZP\Models\Payment\Refund::class,
-        self::BATCH                 => \RZP\Models\Batch::class,
         self::WALLET                => \RZP\Gateway\Wallet\Base::class,
         self::BALANCE               => \RZP\Models\Merchant\Balance::class,
         self::CREDITS               => \RZP\Models\Merchant\Credits::class,

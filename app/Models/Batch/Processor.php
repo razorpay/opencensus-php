@@ -50,10 +50,18 @@ class Processor extends Base\Core
 
             $batch->setDownloadFileUrl($downloadUrl);
 
-            $processedAt = Carbon::today('Asia/Kolkata')->timestamp;
+            $processedAt = Carbon::now('Asia/Kolkata')->timestamp;
             $batch->setProcessedAt($processedAt);
 
             $this->repo->saveOrFail($batch);
+
+            $this->trace->info(
+                TraceCode::BATCH_PROCESS_FILE,
+                [
+                    'message'            => 'Processed Batch Refund',
+                    'batch'              => $batch->toArrayPublic(),
+                    'Sending Email'      => $shouldSendMail
+                ]);
 
             if ($shouldSendMail)
             {
@@ -113,7 +121,7 @@ class Processor extends Base\Core
             $shouldSendMail = true;
         }
 
-        return array($batch,$shouldSendMail,$processedFile);
+        return array($batch, $shouldSendMail, $processedFile);
     }
 
     protected function processRefundEntries($batch, $entries)
@@ -139,9 +147,9 @@ class Processor extends Base\Core
             }
 
             // The complete refund for the payment has already been done
-            if (isset($entryMap['Status']) === true && $entryMap['Status'] === Status::FAILURE &&
-                ($entryMap['Error Description'] === PublicErrorDescription::BAD_REQUEST_PAYMENT_FULLY_REFUNDED ||
-                    $entryMap['Error Description'] === PublicErrorDescription::BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_CAPTURED))
+            if ((isset($entryMap['Status']) === true) and ($entryMap['Status'] === Status::FAILURE) and
+                (($entryMap['Error Description'] === PublicErrorDescription::BAD_REQUEST_PAYMENT_FULLY_REFUNDED) or
+                    ($entryMap['Error Description'] === PublicErrorDescription::BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_CAPTURED)))
             {
                 $totalFailureCount++;
 

@@ -4,6 +4,7 @@ namespace RZP\Models\Settlement\Kotak;
 
 use AWS;
 use Excel;
+use Config;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
@@ -73,7 +74,7 @@ trait FileHandlerTrait
         return $url;
     }
 
-    public function writeToExcelFile($data, $name)
+    public function writeToExcelFile($data, $name, $dir = 'files/settlement')
     {
         \Config::set('excel::export.calculate', true);
 
@@ -81,7 +82,7 @@ trait FileHandlerTrait
 
         $excel = $this->createExcelObject($data, $name, $columnFormat);
 
-        $fileMetadata = $excel->store('xlsx', storage_path('files/settlement'), true);
+        $fileMetadata = $excel->store('xlsx', storage_path($dir), true);
         $fullpath = $fileMetadata['full'];
 
         $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
@@ -581,6 +582,24 @@ trait FileHandlerTrait
                       ->formatDates(false)
                       ->toArray();
         return $data;
+    }
+
+    protected function parseExcelSheets($filePath)
+    {
+        Config::set('excel.import.force_sheets_collection', true);
+        $sheets = $this->parseExcelFile($filePath);
+
+        if(count($sheets) === 1)
+            return $sheets[0];
+
+        $finalEntries = array();
+        foreach ($sheets as $sheet) {
+            foreach ($sheet as $entry)
+            {
+                array_push($finalEntries, $entry);
+            }
+        }
+        return $finalEntries;
     }
 
     protected function getFileLines($file)

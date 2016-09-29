@@ -35,7 +35,7 @@ class Service extends Base\Service
     {
         $batches = $this->repo->batch->fetch($input, $this->merchant->getId());
 
-        $this->trace->info(TraceCode::BATCH_LIST, $batches->toArrayPublic());
+        // $this->trace->info(TraceCode::BATCH_LIST, $batches->toArrayPublic());
 
         return $batches->toArrayPublic();
     }
@@ -44,7 +44,7 @@ class Service extends Base\Service
     {
         $batch = $this->repo->batch->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $this->trace->info(TraceCode::BATCH_GET, $batch->toArrayPublic());
+        // $this->trace->info(TraceCode::BATCH_GET, $batch->toArrayPublic());
 
         return $batch->toArrayPublic();
     }
@@ -71,7 +71,7 @@ class Service extends Base\Service
         return $responseObj;
     }
 
-    public function processBatch()
+    public function processBatches()
     {
         $batches = (new Batch\Core)->processBatches();
 

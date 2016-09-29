@@ -148,23 +148,23 @@ class RefundBatchFileTest extends TestCase
         $this->startTest();
     }
 
-    protected function writeToExcelFile($data, $name)
-    {
-        \Config::set('excel::export.calculate', true);
+    // protected function writeToExcelFile($data, $name)
+    // {
+    //     \Config::set('excel::export.calculate', true);
 
-        $columnFormat = $this->getColumnFormatForExcel();
+    //     $columnFormat = $this->getColumnFormatForExcel();
 
-        $excel = $this->createExcelObject($data, $name, $columnFormat);
+    //     $excel = $this->createExcelObject($data, $name, $columnFormat);
 
-        $fileMetadata = $excel->store('xlsx', storage_path('files/batch_file_download'), true);
+    //     $fileMetadata = $excel->store('xlsx', storage_path('files/batch_file_download'), true);
 
-        $fullpath = $fileMetadata['full'];
+    //     $fullpath = $fileMetadata['full'];
 
-        $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-        $url = $this->saveToAws($name.'.xlsx', $fullpath, $xlsxMimeType);
+    //     $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    //     $url = $this->saveToAws($name.'.xlsx', $fullpath, $xlsxMimeType);
 
-        return $url;
-    }
+    //     return $url;
+    // }
 
     protected function createTempFile($url)
     {
@@ -197,16 +197,16 @@ class RefundBatchFileTest extends TestCase
             $entries = $this->getDefaultRefundFileEntries();
         }
 
-        $entryWithHeaders = array();
-        array_push($entryWithHeaders, array('Payment Id', 'Amount'));
-        array_push($entryWithHeaders, $entries[0]);
+        // $entryWithHeaders = array();
+        // array_push($entryWithHeaders, array('Payment Id', 'Amount'));
+        // array_push($entryWithHeaders, $entries[0]);
 
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
         $name = $trace[1]['function'];
 
         $request = & $this->testData[$name]['request'];
 
-        $url = $this->writeToExcelFile($entryWithHeaders, 'upload_refund_test');
+        $url = $this->writeToExcelFile($entries, 'upload_refund_test', 'files/batch_file_download');
 
         $uploadedFile = $this->createTempFile($url);
 
@@ -218,7 +218,7 @@ class RefundBatchFileTest extends TestCase
         $entries = $this->getDefaultRefundFileEntries();
 
         $paymentId = $entries[0][0];
-        $url = $this->writeToExcelFile($entries, $paymentId .'xlsx');
+        $url = $this->writeToExcelFile($entries, $paymentId .'xlsx', 'files/batch_file_download');
 
         $uploadedFile = $this->createTempFile($url);
 
@@ -245,7 +245,6 @@ class RefundBatchFileTest extends TestCase
         $row = array($payment['id'], (int) 4000);
 
         array_push($entries, $row);
-
         return $entries;
     }
 }

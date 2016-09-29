@@ -212,6 +212,8 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT                          = 'The fees calculated for payment is greater than the payment amount. Please provide higher amount';
     const BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED                               = 'Payment created long back and cannot be cancelled now';
 
+    const BAD_REQUEST_FILE_TOO_BIG                                              = 'Size of the file is too big. Upload a smaller file size.';
+    const BAD_REQUEST_FILE_NOT_EXCEL                                            = 'The file type is not xlsx.';
     const BAD_REQUEST_FILE_EXCEED_LIMIT                                         = 'The uploaded file limit should not contain more than 1000 entries';
     const BAD_REQUEST_FILE_VALIDATION                                           = 'The uploaded file does not contain proper values';
     const BAD_REQUEST_FILE_ALREADY_PROCESSED                                    = 'The uploaded file is already processed';
