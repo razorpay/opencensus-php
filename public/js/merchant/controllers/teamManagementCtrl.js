@@ -158,8 +158,6 @@ app.controller('TeamManagementCtrl', [
 
     $scope.sendInvitation = function() {
 
-      console.log($scope.team);
-
       var request = $http({
         method: 'post',
         url: '/settings/invitations',
