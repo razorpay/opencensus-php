@@ -187,7 +187,8 @@ class Server extends Base\Mock\Server
 
         $this->validateActionInput($input, 'debitWallet');
 
-        if ($input['accessToken'] === self::ACCESS_TOKEN and $input['amount'] != '199.99')
+        if (($input['accessToken'] === self::ACCESS_TOKEN) and
+            ($input['amount'] != '199.99'))
         {
             $response = array(
                 ResponseFields::TXN_ID          => random_integer(11),
@@ -215,6 +216,7 @@ class Server extends Base\Mock\Server
         $response[ResponseFields::CHECKSUM] = $this->generateHash($response);
 
         $response = $this->makeResponse($response);
+
         $response->setStatusCode(202);
 
         return $response;
