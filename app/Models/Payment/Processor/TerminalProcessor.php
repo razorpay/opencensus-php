@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use App;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Analytics\Entity as AnalyticsEntity;
 use RZP\Models\Terminal;
@@ -10,20 +11,21 @@ use RZP\Trace\TraceCode;
 
 class TerminalProcessor
 {
-
     protected $repo;
 
     protected $mode;
 
     protected $trace;
 
-    public function __construct($repo, $mode, $trace)
+    public function __construct()
     {
-        $this->repo = $repo;
+        $app = App::getFacadeRoot();
 
-        $this->mode = $mode;
+        $this->repo = $app['repo'];
 
-        $this->trace = $trace;
+        $this->mode = $app['rzp.mode'];
+
+        $this->trace = $app['trace'];
     }
 
     /**
@@ -46,35 +48,34 @@ class TerminalProcessor
 
         if ($orderId !== null)
         {
-            $orderId = Order\Entity::getIdPrefix() . $orderId;
+            $orderId = Order\Entity::getSignedId($orderId);
 
-            $fetchParams = [Payment\Entity::ORDER_ID => $orderId];
+            $pastPayments = $this->repo->payment->getCreatedPaymentsForOrder($orderId);
 
-            $pastPayments = $this->repo->payment->fetch($fetchParams, $payment->merchant->getId());
-
-            foreach($pastPayments as $p)
+            foreach($pastPayments as $pastPayment)
             {
-                $pastPaymentIds[] = $p->getId();
+                $pastPaymentIds[] = $pastPayment->getId();
             }
         }
-        elseif (isset($metadata[AnalyticsEntity::CHECKOUT_ID]) === true)
+        else if (isset($metadata[AnalyticsEntity::CHECKOUT_ID]) === true)
         {
             $checkoutId = $metadata[AnalyticsEntity::CHECKOUT_ID];
 
             $checkouts = $this->repo->payment_analytics->getRecentMerchantPaymentsForCheckoutId($checkoutId);
 
-            foreach($checkouts as $c)
+            foreach($checkouts as $checkout)
             {
-                $pastPaymentIds[] = $c->getPaymentId();
+                $pastPaymentIds[] = $checkout->getPaymentId();
             }
         }
+
         $usedTerminals = [];
 
         if (count($pastPaymentIds) > 0)
         {
             $terminalAnalytics = $this->repo->terminal_analytics->fetchTerminalAnalyticsForPaymentIds($pastPaymentIds);
 
-            foreach($terminalAnalytics as $tAnalytics)
+            foreach ($terminalAnalytics as $tAnalytics)
             {
                 $usedTerminals[] = $tAnalytics->getTerminalId();
             }
@@ -91,7 +92,7 @@ class TerminalProcessor
      * @param $payment
      * @return Terminal\Entity
      */
-    public function getTerminalsForPayment($payment)
+    public function getTerminalsForPayment(Payment\Entity $payment)
     {
         $terminalsToExclude = $this->getTerminalsToExclude($payment);
 

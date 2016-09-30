@@ -43,7 +43,7 @@ trait Authorize
      */
     protected $type;
 
-    public function authorize($payment, $input)
+    public function authorize(Payment\Entity $payment, array $input)
     {
         $this->verifyMerchantIsLiveForLiveRequest();
 
@@ -53,13 +53,12 @@ trait Authorize
         // Adds callback url, payment and card info to $gatewayInput
         $this->prePaymentAuthorizeProcessing($payment, $input, $gatewayInput);
 
-        $this->selectedTerminals = $this->terminalProcessor->getTerminalsForPayment($payment);
+        $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
 
-        return $this->authorizeAcrossTerminals($gatewayInput, $payment, $input);
+        return $this->authorizeAcrossTerminals($payment, $input, $gatewayInput);
     }
 
-
-    protected function authorizeAcrossTerminals($gatewayInput, $payment, $input)
+    protected function authorizeAcrossTerminals(Payment\Entity $payment, array $input, array $gatewayInput)
     {
         $totalTerminals = count($this->selectedTerminals);
 
@@ -737,11 +736,11 @@ trait Authorize
             $saveMethodInput[Token\Entity::WALLET] = $payment->getWallet();
         }
 
+        $token = null;
+
         try
         {
             $token = (new Token\Core)->create($customer, $saveMethodInput);
-
-            return $token;
         }
         catch (Exception\RecoverableException $e)
         {

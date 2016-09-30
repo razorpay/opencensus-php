@@ -190,7 +190,10 @@ class Selector
      * Methods selects a list of terminals for payment. We are
      * selecting a list here since, we want to iterate through
      * a bunch of terminals, in case the terminal fails
+     *
+     * @param array $opts
      * @return Entity
+     * @throws Exception\RuntimeException
      */
     public function selectTerminals($opts = [])
     {

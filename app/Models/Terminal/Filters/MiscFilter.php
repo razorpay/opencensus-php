@@ -18,15 +18,16 @@ class MiscFilter extends Terminal\Filter
      */
     public function excludeFilter(Terminal\Entity $terminal, array $input)
     {
-        if(isset($input['exclude']))
+        if (isset($input['exclude']))
         {
-            if(in_array($terminal->getId(), $input['exclude']) === true)
+            if (in_array($terminal->getId(), $input['exclude']) === true)
             {
                 return false;
             }
 
             return true;
         }
+
         return true;
     }
 }

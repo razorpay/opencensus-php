@@ -77,7 +77,6 @@ class Processor
     protected $payment;
     protected $terminal;
     protected $selectedTerminals;
-    protected $terminalProcessor;
     protected $mode;
     protected $repo;
     protected $orderRepo;
@@ -113,8 +112,6 @@ class Processor
 
         // Only used in hdfc verify refund flow
         $this->verifyRefundStatus = null;
-
-        $this->terminalProcessor = new TerminalProcessor($this->repo, $this->mode, $this->trace);
     }
 
     public function process($input)
