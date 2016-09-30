@@ -15,7 +15,7 @@ use RZP\Constants\HashAlgo;
 
 class Validator extends Base\Validator
 {
-    protected static $authRules = array(
+    protected static $authRules = [
         ConnectRequestFields::CARD_FUNCTION             => 'sometimes|in:credit,debit|string',
         ConnectRequestFields::CARD_NUMBER               => 'required|numeric|digits_between:12,19',
         ConnectRequestFields::CHARGE_TOTAL              => 'required|numeric',
@@ -40,16 +40,16 @@ class Validator extends Base\Validator
         ConnectRequestFields::TIME_ZONE                 => 'required|string',
         ConnectRequestFields::TXN_DATE_TIME             => 'required|string',
         ConnectRequestFields::TXN_TYPE                  => 'required|in:preauth',
-    );
+    ];
 
-    protected static $authValidators = array(
+    protected static $authValidators = [
         ConnectRequestFields::TXN_TYPE,
         ConnectRequestFields::MODE,
         ConnectRequestFields::PAYMENT_METHOD,
         ConnectRequestFields::HASH_ALGORITHM,
         ConnectRequestFields::CURRENCY,
         ConnectRequestFields::LANGUAGE,
-    );
+    ];
 
     protected function validateTxntype($input)
     {

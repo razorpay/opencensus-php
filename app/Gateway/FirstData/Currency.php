@@ -6,7 +6,7 @@ use RZP\Models\Card;
 
 class Currency
 {
-    const ISO_NUMERIC_CODES = array(
+    const ISO_NUMERIC_CODES = [
         //Brazilian Real
         'BRL' => '986',
         //Euro
@@ -69,5 +69,5 @@ class Currency
         'TRY' => '949',
         //UAE Dirham
         'AED' => '784',
-    );
+    ];
 }

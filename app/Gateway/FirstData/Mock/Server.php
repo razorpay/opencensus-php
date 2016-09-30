@@ -29,6 +29,7 @@ class Server extends Base\Mock\Server
         $dateTime = Carbon::now('Asia/Kolkata');
 
         $tdate = $dateTime->getTimeStamp().random_integer(5);
+
         $txndate_processed = $dateTime->format(FirstData\Codes::DATE_TIME_FORMAT);
 
         $approvalCode = $this->getApprovalCode();
@@ -48,10 +49,13 @@ class Server extends Base\Mock\Server
         $scrubbed_cardnumber = $this->scrub($cardnumber, $paymentMethod);
 
         $oid = $this->generateId('ORD0000');
-        if (isset($input['oid']) === true)
-            $oid = $input['oid'];
 
-        $content = array(
+        if (isset($input['oid']) === true)
+        {
+            $oid = $input['oid'];
+        }
+
+        $content = [
             FirstData\ConnectResponseFields::APPROVAL_CODE             => $approvalCode,
             FirstData\ConnectResponseFields::BNAME                     => $input[FirstData\ConnectRequestFields::NAME],
             FirstData\ConnectResponseFields::CARD_NUMBER               => $scrubbed_cardnumber,
@@ -79,7 +83,7 @@ class Server extends Base\Mock\Server
             FirstData\ConnectResponseFields::TXN_DATE_TIME             => $txnDateTime,
             FirstData\ConnectResponseFields::TXNDATE_PROCESSED         => $txndate_processed,
             FirstData\ConnectResponseFields::TXN_TYPE                  => $input[FirstData\ConnectRequestFields::TXN_TYPE],
-        );
+        ];
 
         $this->content($content);
 
@@ -104,7 +108,7 @@ class Server extends Base\Mock\Server
 
         $dateTime = Carbon::now('Asia/Kolkata');
 
-        $content = array(
+        $content = [
             FirstData\ApiResponseFields::APPROVAL_CODE               => $this->getApprovalCode(),
             FirstData\ApiResponseFields::AVS_RESPONSE                => "random",
             FirstData\ApiResponseFields::BRAND                       => "MASTERCARD",
@@ -124,7 +128,7 @@ class Server extends Base\Mock\Server
             FirstData\ApiResponseFields::TRANSACTION_RESULT          => FirstData\Status::APPROVED,
             FirstData\ApiResponseFields::TRANSACTION_TIME            => (string) $dateTime->getTimeStamp(),
             FirstData\ApiResponseFields::VERSION                     => "5.4.0-200",
-        );
+        ];
 
         $this->content($content);
 
@@ -145,7 +149,7 @@ class Server extends Base\Mock\Server
 
         $dateTime = Carbon::now('Asia/Kolkata');
 
-        $content = array(
+        $content = [
             FirstData\ApiResponseFields::APPROVAL_CODE               => $this->getApprovalCode(),
             FirstData\ApiResponseFields::AVS_RESPONSE                => "random",
             FirstData\ApiResponseFields::BRAND                       => "MASTERCARD",
@@ -165,7 +169,7 @@ class Server extends Base\Mock\Server
             FirstData\ApiResponseFields::TRANSACTION_RESULT          => "APPROVED",
             FirstData\ApiResponseFields::TRANSACTION_TIME            => (string) $dateTime->getTimeStamp(),
             FirstData\ApiResponseFields::VERSION                     => "5.4.0-200",
-        );
+        ];
 
         $this->content($content);
 

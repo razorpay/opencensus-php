@@ -8,9 +8,9 @@ class PaymentMode
     const PAYPLUS = 'payplus';
     const FULLPAY = 'fullpay';
 
-    const MODE_LIST = array(
+    const MODE_LIST = [
         self::PAYONLY,
         self::PAYPLUS,
         self::FULLPAY,
-    );
+    ];
 }

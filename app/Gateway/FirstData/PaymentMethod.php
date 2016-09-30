@@ -6,7 +6,7 @@ use RZP\Models\Card;
 
 class PaymentMethod
 {
-    const METHOD_MAP = array(
+    const METHOD_MAP = [
         // MasterCard
         Card\Network::MC    => 'M',
         // Visa
@@ -21,5 +21,5 @@ class PaymentMethod
         Card\Network::MAES  => 'MA',
         // RuPay
         Card\Network::RUPAY => 'RU',
-    );
+    ];
 }

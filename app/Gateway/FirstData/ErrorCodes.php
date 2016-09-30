@@ -6,7 +6,7 @@ use RZP\Error\ErrorCode;
 
 class ErrorCodes
 {
-    protected static $reasonCodes = array(
+    protected static $reasonCodes = [
         'N:'       => 'Unknown error has occurred.',
         'N:-10501' => 'PostAuth already performed',
         'N:-10503' => 'Invalid amount or currency',
@@ -91,9 +91,9 @@ class ErrorCodes
         'N:T5'     => 'CAF status = 0 or 9',
         'N:T8'     => 'Invalid account',
         'N:tmout'  => 'Gateway timed out',
-    );
+    ];
 
-    protected static $errorCodeMap = array(
+    protected static $errorCodeMap = [
         'N:'       => ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
         'N:-10501' => ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_CAPTURED,
         'N:-10503' => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_AMOUNT_OR_CURRENCY,
@@ -178,7 +178,7 @@ class ErrorCodes
         'N:T5'     => ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
         'N:T8'     => ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND,
         'N:tmout'  => ErrorCode::GATEWAY_ERROR_TIMED_OUT,
-    );
+    ];
 
     public static function getMappedCode($code = null)
     {

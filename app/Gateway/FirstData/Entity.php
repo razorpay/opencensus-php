@@ -16,7 +16,7 @@ class Entity extends Base\Entity
     const APPROVAL_CODE                 = 'approval_code';
     const ERROR_MESSAGE                 = 'error_message';
 
-    protected $fillable = array(
+    protected $fillable = [
         self::PAYMENT_ID,
         self::REFUND_ID,
         self::RECEIVED,
@@ -28,7 +28,7 @@ class Entity extends Base\Entity
         self::TRANSACTION_RESULT,
         self::APPROVAL_CODE,
         self::ERROR_MESSAGE,
-    );
+    ];
 
     protected $casts = [
         self::AMOUNT => 'int',
