@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Key;
+namespace RZP\Models\FileHandler;
 
 use RZP\Models\Base;
 
