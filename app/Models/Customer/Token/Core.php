@@ -33,9 +33,11 @@ class Core extends Base\Core
         }
 
         $token->customer()->associate($customer);
+
         $token->merchant()->associate($customer->merchant);
 
         $token->build($input);
+
         $existingToken = $this->validateExistingToken($token);
 
         if ($existingToken !== null)

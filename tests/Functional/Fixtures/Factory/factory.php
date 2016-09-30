@@ -275,6 +275,7 @@ $factory(\RZP\Models\Customer\Token\Entity::class, [
     'method'      => 'wallet',
     'bank'        => null,
     'card_id'     => null,
+    'recurring'   => false,
     'used_count'  => 0,
 ]);
 

@@ -250,7 +250,7 @@ return [
             'url' => '/customers/cust_100000customer/tokens',
             'method' => 'post',
             'content' => [
-                'method' => 'card',
+                'method'  => 'card',
                 'card_id' => '10000savedcard',
             ],
         ],
