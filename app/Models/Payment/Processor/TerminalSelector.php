@@ -64,6 +64,7 @@ class TerminalSelector
                 $pastPaymentIds[] = $c->getPaymentId();
             }
         }
+
         $usedTerminals = array();
 
         if (count($pastPaymentIds) > 0)

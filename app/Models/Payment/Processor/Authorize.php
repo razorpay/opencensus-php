@@ -44,7 +44,6 @@ trait Authorize
      */
     protected $type;
 
-
     public function authorize($payment, $input)
     {
         $this->verifyMerchantIsLiveForLiveRequest();
