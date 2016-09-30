@@ -265,16 +265,32 @@ class OlamoneyGatewayTest extends TestCase
         $this->assertTestResponse($refund, 'testAuthPaymentRefund');
     }
 
-    public function testFailedPayment()
+    public function testRefundFailed()
     {
-        $this->failOlamoneyAuthorizePayment();
+        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
 
-        $payment = $this->getLastEntity('payment', true);
+        // amount for error in refund -- mocked the server accordingly
+        $payment['amount'] = 13 * 100;
 
-        $this->assertEquals('failed', $payment['status']);
+        $input = ['amount' => $payment['amount']];
+
+        $payment = $this->doAuthPayment($payment);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $paymentId = $payment['razorpay_payment_id'];
+
+        $this->runRequestResponseFlow($data, function() use ($paymentId, $input)
+        {
+            $this->refundAuthorizedPayment($paymentId, $input);
+        });
+
+        $refund = $this->getLastEntity('wallet', true);
+
+        $this->assertSame($refund['status_code'], 'Error');
     }
 
-    public function testPaymentWithRedirection()
+    public function testFailedPayment()
     {
         $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
 
@@ -327,47 +343,4 @@ class OlamoneyGatewayTest extends TestCase
 
         return null;
     }
-
-    // public function testOlaServerToServerCallback()
-    // {
-    //     $server = $this->mockServer()
-    //                     ->shouldReceive('content')
-    //                     ->andReturnUsing(function (& $content)
-    //                     {
-    //                         $request = array(
-    //                             'content' => $content,
-    //                             'url' => '/callback/wallet_olamoney',
-    //                             'method' => 'post');
-
-    //                         // Fire s2s callback request
-    //                         $response = $this->makeRequestAndGetContent($request);
-
-    //                         $this->assertEquals($response['success'], true);
-
-    //                         // Stop the progress here.
-    //                         throw new Exception\RuntimeException(
-    //                             'Stop here.');
-
-    //                     })->mock();
-
-    //     $this->setMockServer($server);
-
-    //     try
-    //     {
-    //         $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
-    //         $payment = $this->doAuthPayment($payment);
-    //     }
-    //     catch (Exception\RuntimeException $e)
-    //     {
-    //         ;
-    //     }
-
-    //     $payment = $this->getLastEntity('payment', true);
-
-    //     $this->assertTestResponse($payment, 'testPayment');
-
-    //     $wallet = $this->getLastEntity('wallet', true);
-
-    //     $this->assertTestResponse($wallet, 'testPaymentWalletEntity');
-    // }
 }

@@ -173,15 +173,24 @@ class Server extends Base\Mock\Server
         $this->validateActionInput($input, Command::REFUND);
 
         $responseContent = array(
-            ResponseFields::TYPE              => 'refund',
-            ResponseFields::STATUS            => 'success',
-            ResponseFields::TRANSACTION_ID    => 'bgho5botne16',
-            ResponseFields::MERCHANT_BILL_ID  => 'cd1501cea88e4654898d8b2a266bc467',
-            ResponseFields::AMOUNT            => '20.0',
-            ResponseFields::TIMESTAMP         => '1439473847354',
-            ResponseFields::COMMENTS          => 'test',
-            ResponseFields::UDF               => 'test',
-        );
+                ResponseFields::TYPE              => 'refund',
+                ResponseFields::TRANSACTION_ID    => 'bgho5botne16',
+                ResponseFields::MERCHANT_BILL_ID  => 'cd1501cea88e4654898d8b2a266bc467',
+                ResponseFields::AMOUNT            => '20.0',
+                ResponseFields::TIMESTAMP         => '1439473847354',
+                ResponseFields::COMMENTS          => 'test',
+                ResponseFields::UDF               => 'test',
+            );
+
+        // error amount
+        if ($input[RequestFields::AMOUNT] === '13.00')
+        {
+            $responseContent[ResponseFields::STATUS] = 'Error';
+        }
+        else
+        {
+            $responseContent[ResponseFields::STATUS] = 'success';
+        }
 
         return $this->makeResponse($responseContent);
     }
