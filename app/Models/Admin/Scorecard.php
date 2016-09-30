@@ -8,6 +8,7 @@ use RZP\Constants\Entity;
 use RZP\Models\Base;
 use RZP\Models;
 use RZP\Exception;
+use RZP\Trace\TraceCode;
 
 class Scorecard extends Base\Core
 {
@@ -18,6 +19,9 @@ class Scorecard extends Base\Core
         $monthVolume = $this->repo->payment->getCurrentMonthVolume();
 
         $yesterdayMerchantVolume = $this->repo->payment->getYesterdayTopMerchantVolumeWise();
+        $yesterdayMerchantVolume = $yesterdayVolume->toArray();
+
+        $this->trace->info(TraceCode::MISC_TRACE_CODE, $yesterdayMerchantVolume);
 
         $message = '
             Yesterday Volume        - ' . $yesterdayVolume . ' <br />

@@ -284,11 +284,9 @@ class Repository extends Base\Repository
 
     protected function addQueryParamInternational($query, $params)
     {
-        $this->joinQueryCard($query);
+        $international = Payment\Entity::getAttributeWithTableName(Entity::INTERNATIONAL);
 
-        $query->where(Card\Entity::INTERNATIONAL, '=', $params[Card\Entity::INTERNATIONAL]);
-
-        $query->select($query->getModel()->getTable().'.*');
+        $query->where($international, '=', $params[Entity::INTERNATIONAL]);
     }
 
     protected function addQueryCaptured($query, $params)
@@ -365,7 +363,10 @@ class Repository extends Base\Repository
                        "SUM(amount) / 100 AS volume" . ','.
                        'COUNT(*) AS count')
                     ->betweenTime($from, $to)
-                    ->groupBy(Payment\Entity::MERCHANT_ID)
+                    ->groupBy(
+                        Payment\Entity::MERCHANT_ID,
+                        Merchant\Entity::NAME,
+                        Merchant\Entity::WEBSITE)
                     ->orderBy('volume', 'desc')
                     ->limit(30)
                     ->get();

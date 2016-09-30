@@ -109,10 +109,12 @@ class TraceCode
     const PAYMENT_GET_CUSTOMER                      = 'PAYMENT_GET_CUSTOMER';
     const CUSTOMER_SESSION                          = 'CUSTOMER_SESSION';
     const CUSTOMER_CREATE_APP_TOKEN                 = 'CUSTOMER_CREATE_APP_TOKEN';
+    const CUSTOMER_CHECKCOOKIE_STATUS               = 'CUSTOMER_CHECKCOOKIE_STATUS';
     const PAYMENT_PROCESS_FROM_SAVED_LOCAL          = 'PAYMENT_PROCESS_FROM_SAVED_LOCAL';
     const PAYMENT_PROCESS_FROM_SAVED_GLOBAL         = 'PAYMENT_PROCESS_FROM_SAVED_GLOBAL';
     const PAYMENT_SAVE_METHOD                       = 'PAYMENT_SAVE_METHOD';
     const PAYMENT_APP_TOKEN_NOT_FOUND               = 'PAYMENT_APP_TOKEN_NOT_FOUND';
+    const PAYMENT_UPDATE_TOKEN                      = 'PAYMENT_UPDATE_TOKEN';
 
     //Pricing
     const PRICING_RULE_SELECTION                    = 'PRICING_RULE_SELECTION';
@@ -173,6 +175,7 @@ class TraceCode
     const GATEWAY_HDFC_CALLBACK_EMPTY               = 'GATEWAY_HDFC_CALLBACK_EMPTY';
     const GATEWAY_UNSUPPORTED_CARD_NETWORK          = 'GATEWAY_UNSUPPORTED_CARD_NETWORK';
     const GATEWAY_PAYMENT_VERIFY_UNEXPECTED         = 'GATEWAY_PAYMENT_VERIFY_UNEXPECTED';
+    const GATEWAY_VERIFY_INVALID_HEADER             = 'GATEWAY_VERIFY_INVALID_HEADER';
 
     const MPR_HDFC_GEN_INITIATED                    = 'MPR_HDFC_GEN_INITIATED';
     const MPR_HDFC_FILE_GENERATED                   = 'MPR_HDFC_FILE_GENERATED';
@@ -328,6 +331,7 @@ class TraceCode
         self::GATEWAY_UNKNOWN_ERROR                     => 'Unknown gateway error',
         self::GATEWAY_PAYMENT_VERIFY_UNEXPECTED         => 'Unexpected state of events in verify flow',
         self::GATEWAY_UNSUPPORTED_CARD_NETWORK          => 'Card network not supported',
+        self::GATEWAY_VERIFY_INVALID_HEADER             => 'Gateway Verify invalid header',
 
         self::ERROR_EXCEPTION                           => 'Unhandled critical exception occured',
         self::RECOVERABLE_EXCEPTION                     => 'Recoverable exception occurred',
