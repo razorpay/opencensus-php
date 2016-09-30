@@ -58,7 +58,7 @@ class AnalyticsTest extends TestCase
 
         $requestServer = [
                             'HTTP_USER_AGENT'   => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
-                            'HTTP_REFERER'      => 'https://razorpay.com/demo'
+                            'HTTP_REFERER'      => 'https://pay.com/demo'
                         ];
 
         $payment['_'][AnalyticsEntity::LIBRARY] = 'checkoutjs';
@@ -96,7 +96,7 @@ class AnalyticsTest extends TestCase
 
         $requestServer = [
                             'HTTP_USER_AGENT'   => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
-                            'HTTP_REFERER'      => 'https://razorpay.com/demo'
+                            'HTTP_REFERER'      => 'https://pay.com/demo'
                         ];
 
         $payment['_'][AnalyticsEntity::LIBRARY] = 'checkoutjs';

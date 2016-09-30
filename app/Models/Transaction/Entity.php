@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Transaction;
 
+use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Transaction;
@@ -37,7 +38,7 @@ class Entity extends Base\PublicEntity
 
     const RECONCILED        = 'reconciled';
 
-    protected $table = \RZP\Constants\Table::TRANSACTION;
+    protected $table = Table::TRANSACTION;
 
     protected static $sign = 'txn';
 
@@ -143,11 +144,12 @@ class Entity extends Base\PublicEntity
 
     /**
      * Associates the entity id and validates that the entity id is unique.
+     * @param $entity
      */
     public function sourceAssociate($entity)
     {
         $this->source()->associate($entity);
-        $this->validateEntityIdUnique($entity->getId());
+        $this->validateEntityIdUnique();
         $entity->transaction()->associate($this);
     }
 
@@ -431,7 +433,7 @@ class Entity extends Base\PublicEntity
 
     public function setServiceTax($servicetax)
     {
-        assert($servicetax >= 0);
+        assertTrue($servicetax >= 0);
 
         $this->setAttribute(self::SERVICE_TAX, $servicetax);
     }

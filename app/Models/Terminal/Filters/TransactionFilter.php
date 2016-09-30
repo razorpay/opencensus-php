@@ -142,16 +142,29 @@ class TransactionFilter extends Terminal\Filter
 
     public function recurringFilter($terminal, $input)
     {
-        $value = Terminal\Recurring::NON_RECURRING;
-
         $payment = $input['payment'];
+
+        // if payment is not recurring, terminal is valid
+        if ($payment->isRecurring() === false)
+        {
+            return true;
+        }
+
+        // for recurring payment, terminal must be cybersource
+        if ($terminal->getGateway() !== Gateway::CYBERSOURCE)
+        {
+            return false;
+        }
+
+        // for cybersource, check get the terminal based on recurring type
+        $value = Terminal\Recurring::NON_RECURRING;
 
         if ($payment->isRecurring() === true)
         {
-            $value = Terminal\Recurring::RECURRING_3DS;
+            //$value = Terminal\Recurring::RECURRING_3DS;
 
-            if (($payment->token !== null) and
-                ($payment->token->isRecurring() === true))
+            if (($payment->getTokenId() !== null) and
+                ($payment->localToken->isRecurring() === true))
             {
                 $value = Terminal\Recurring::RECURRING_N3DS;
             }

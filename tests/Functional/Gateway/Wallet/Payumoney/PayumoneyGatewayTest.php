@@ -215,7 +215,7 @@ class PayumoneyGatewayTest extends TestCase
 
         $this->setOtp(Otp::WALLET_LIMIT_EXCEEDED);
 
-        $this->setContent(function(&$content)
+        $this->mockServerContentFunction(function(&$content)
         {
             $content['result']['maxLimit'] = 0;
             $content['result']['availableBalance'] = 0;
@@ -482,16 +482,6 @@ class PayumoneyGatewayTest extends TestCase
         }
 
         return $this->makeRequestAndGetContent($request);
-    }
-
-    protected function setContent(Closure $closure)
-    {
-        $server = $this->mockServer()
-                        ->shouldReceive('content')
-                        ->andReturnUsing($closure)
-                        ->mock();
-
-        $this->setMockServer($server);
     }
 
     protected function runPaymentCallbackFlowWalletPayumoney($response, &$callback = null)

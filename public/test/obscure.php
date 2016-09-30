@@ -139,6 +139,10 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
         <td><input type="checkbox" name="save" value="1">save</td>
     </tr>
     <tr>
+        <td colspan='40'>Recurring:</td>
+        <td><input type="checkbox" name="recurring" value="1"></td>
+    </tr>
+    <tr>
         <td colspan="100" align="center">
             <input type="submit" value="  Submit  " >
         </td>

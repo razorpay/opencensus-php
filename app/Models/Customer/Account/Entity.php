@@ -2,8 +2,10 @@
 
 namespace RZP\Models\Customer;
 
+use App;
 use RZP\Models\Base;
 use RZP\Constants\Table;
+use RZP\Models\Address;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Base\Traits\NotesTrait;
 
@@ -20,6 +22,8 @@ class Entity extends Base\PublicEntity
     const CREATED_AT            = 'created_at';
     const UPDATED_AT            = 'updated_at';
     const DELETED_AT            = 'deleted_at';
+
+    const SHIPPING_ADDRESS      = 'shipping_address';
 
     protected static $sign      = 'cust';
 
@@ -46,6 +50,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::ACTIVE,
         self::CONTACT,
+        self::SHIPPING_ADDRESS,
         self::NOTES,
         self::MERCHANT_ID,
         self::CREATED_AT,
@@ -59,6 +64,7 @@ class Entity extends Base\PublicEntity
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
+        self::SHIPPING_ADDRESS,
         self::CREATED_AT,
     );
 
@@ -67,14 +73,19 @@ class Entity extends Base\PublicEntity
         self::NOTES     => [],
     );
 
-    public function merchant()
-    {
-        return $this->belongsTo('RZP\Models\Merchant\Entity');
-    }
+    protected $appends = array(
+        self::SHIPPING_ADDRESS);
 
-    public function tokens()
+    protected $publicSetters = array(
+        self::ID,
+        self::ENTITY,
+        self::SHIPPING_ADDRESS);
+
+    // ----------------------------------- GETTERS -----------------------------------
+
+    public function isLocal()
     {
-        return $this->hasMany('RZP\Models\Customer\Token\Entity');
+        return ($this->getMerchantId() !== Account::SHARED_ACCOUNT);
     }
 
     public function getName()
@@ -94,13 +105,49 @@ class Entity extends Base\PublicEntity
 
     public function isActive()
     {
-        return (bool)$this->getAttribute(self::ACTIVE);
+        return $this->getAttribute(self::ACTIVE);
     }
+
+    // ----------------------------------- END GETTERS -----------------------------------
+
+    // ----------------------------------- ACCESSORS -----------------------------------
 
     protected function getActiveAttribute()
     {
-        return (bool)$this->attributes[self::ACTIVE];
+        return (bool) $this->attributes[self::ACTIVE];
     }
+
+    protected function getShippingAddressAttribute()
+    {
+        $input[Address\Entity::TYPE] = Address\Type::SHIPPING_ADDRESS;
+
+        $app = App::getFacadeRoot();
+
+        $shippingAddresses = $app['repo']->address->fetchAddressesForEntity($this, $input);
+
+        if ($shippingAddresses->count() === 0)
+        {
+            return null;
+        }
+
+        return $shippingAddresses->toArrayPublic();
+    }
+
+    // ----------------------------------- END ACCESSORS -----------------------------------
+
+    // ----------------------------------- PUBLIC SETTERS -----------------------------------
+
+    public function setPublicShippingAddressAttribute(array & $array)
+    {
+        if (empty($array[self::SHIPPING_ADDRESS]) === true)
+        {
+            unset($array[self::SHIPPING_ADDRESS]);
+        }
+    }
+
+    // ----------------------------------- END PUBLIC SETTERS -----------------------------------
+
+    // ----------------------------------- MUTATORS -----------------------------------
 
     protected function setEmailAttribute($email)
     {
@@ -108,8 +155,19 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::EMAIL] = mb_strtolower($email);
     }
 
-    public function isLocal()
+    // ----------------------------------- END MUTATORS -----------------------------------
+
+    // ----------------------------------- RELATIONS -----------------------------------
+
+    public function merchant()
     {
-        return ($this->getMerchantId() !== Account::SHARED_ACCOUNT);
+        return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
+
+    public function tokens()
+    {
+        return $this->hasMany('RZP\Models\Customer\Token\Entity');
+    }
+
+    // ----------------------------------- END RELATIONS -----------------------------------
 }
