@@ -90,7 +90,7 @@ class Selector
 
         $exclusionList = $options->getExclusionList();
 
-        if ((count($exclusionList)) > 0 and (count($exclusionList) <= count($filteredTerminals)))
+        if ((count($exclusionList)) > 0 and (count($exclusionList) < count($filteredTerminals)))
         {
             $this->input['exclude'] = $exclusionList;
         }

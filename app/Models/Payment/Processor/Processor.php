@@ -114,7 +114,7 @@ class Processor
         // Only used in hdfc verify refund flow
         $this->verifyRefundStatus = null;
 
-        $this->terminalProcessor = new TerminalProcessor($this->repo, $this->mode);
+        $this->terminalProcessor = new TerminalProcessor($this->repo, $this->mode, $this->trace);
     }
 
     public function process($input)

@@ -15,11 +15,15 @@ class TerminalProcessor
 
     protected $mode;
 
-    public function __construct($repo, $mode)
+    protected $trace;
+
+    public function __construct($repo, $mode, $trace)
     {
         $this->repo = $repo;
 
         $this->mode = $mode;
+
+        $this->trace = $trace;
     }
 
     /**

@@ -196,6 +196,46 @@ class TerminalRotatorTest extends TestCase
         $this->assertEquals(count($intersection), count($terminalsUsed));
     }
 
+    public function testMultipleFailAttemptsWithSameTerminals()
+    {
+        // first fail the payment and on next attempt with
+        // only a order id, enusre the same terminals are picked up
+        // not excluded and the payment fails again with the
+        // same exception that it failed before.
+        $order = $this->createOrder();
+
+        $this->fixtures->create('terminal:shared_hdfc_terminal');
+
+        $payment1 = $this->getPaymentArray();
+
+        $payment1['order_id'] = $order['id'];
+
+        $this->ba->publicAuth();
+
+        try
+        {
+            $this->doAuthPayment($payment1);
+        }
+        catch(\Exception $e)
+        {
+            $this->assertExceptionClass($e, GatewayTimeoutException::CLASS);
+        }
+
+        $payment2 = $this->getPaymentArray();
+
+        $payment2['order_id'] = $order['id'];
+
+        try
+        {
+            $this->doAuthPayment($payment2);
+        }
+        catch(\Exception $e)
+        {
+            $this->assertExceptionClass($e, GatewayTimeoutException::CLASS);
+        }
+
+    }
+
 
 
     //-- helpers----
