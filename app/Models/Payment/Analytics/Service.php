@@ -2,15 +2,20 @@
 
 namespace RZP\Models\Payment\Analytics;
 
+use RZP\Http\RequestHeader;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment\Analytics;
+use RZP\Models\Payment\Analytics\Metadata;
+use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
-    public function createAuditLog($input)
+    public function createAuditLog($log, $rawData)
     {
-        $action = (new Analytics\Core)->create($input);
+        (new Analytics\Parser)->recordPaymentRequestData($rawData, $log);
+
+        $action = (new Analytics\Core)->create($log);
 
         return $action->toArrayPublic();
     }
@@ -41,5 +46,18 @@ class Service extends Base\Service
         $audits = $this->repo->payment_analytics->findBetweenTimestampsForTerminal($from, $to, $id);
 
         return $audits->toArrayPublic();
+    }
+
+    // set the payment request as s2s for analytics
+    public function setMetadataForS2SPayment($input)
+    {
+        $input['_'] = isset($input['_']) ? $input['_'] : [];
+
+        if (isset($input['_'][Entity::LIBRARY]) === false)
+        {
+            $input['_'][Entity::LIBRARY] = Metadata::DIRECT;
+        }
+
+        return $input;
     }
 }

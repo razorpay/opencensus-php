@@ -18,14 +18,14 @@ class Core extends Base\Core
 
         if (isset($input[Token\Entity::CARD_ID]))
         {
-            $card = (new Card\Repository)->findOrFailPublic($input[Token\Entity::CARD_ID]);
+            $card = $this->repo->card->findOrFailPublic($input[Token\Entity::CARD_ID]);
 
             $token->card()->associate($card);
         }
 
         if (isset($input[Token\Entity::TERMINAL_ID]))
         {
-            $terminal = (new Terminal\Repository)->findOrFail($input[Token\Entity::TERMINAL_ID]);
+            $terminal = $this->repo->terminal->findOrFail($input[Token\Entity::TERMINAL_ID]);
 
             $token->terminal()->associate($terminal);
 
@@ -33,9 +33,11 @@ class Core extends Base\Core
         }
 
         $token->customer()->associate($customer);
+
         $token->merchant()->associate($customer->merchant);
 
         $token->build($input);
+
         $existingToken = $this->validateExistingToken($token);
 
         if ($existingToken !== null)
@@ -48,6 +50,27 @@ class Core extends Base\Core
 
             return $token;
         }
+    }
+
+    /**
+     * Get the token entity for local/global customer. $id can be token or
+     * token id for now.
+     */
+    public function getByTokenAndCustomer($id, $customer)
+    {
+        // TODO: remove this once merchants shifts to token_id
+        $token = $this->repo->token->getByTokenAndCustomerId($id, $customer->getId());
+
+        if ($token === null)
+        {
+            Token\Entity::verifyIdAndStripSign($id);
+
+            $token = $this->repo->token->findByIdAndMerchantId($id, $customer->merchant->getId());
+
+            assertTrue($token->customer->getId() === $customer->getId());
+        }
+
+        return $token;
     }
 
     public function fetchTokensByCustomer($customer)

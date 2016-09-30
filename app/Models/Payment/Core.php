@@ -31,7 +31,7 @@ class Core extends Base\Core
 
         Refund\Entity::verifyIdAndStripSign($refundId);
 
-        return (new Refund\Repository)->findOrFailPublicByParams($refundId, $merchantId, $paymentId);
+        return $this->repo->refund->findOrFailPublicByParams($refundId, $merchantId, $paymentId);
     }
 
     public function retrieveById($id)
@@ -50,6 +50,6 @@ class Core extends Base\Core
 
     public function retrieveRefundById($refundId)
     {
-        return (new Refund\Repository)->findOrFail($refundId);
+        return $this->repo->refund->findOrFail($refundId);
     }
 }

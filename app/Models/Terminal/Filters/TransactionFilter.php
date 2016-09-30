@@ -24,6 +24,7 @@ class TransactionFilter extends Terminal\Filter
         'international',
         'bank',
         'maestro',
+        'recurring',
     ];
 
     public function methodFilter($terminal, $input)
@@ -48,6 +49,9 @@ class TransactionFilter extends Terminal\Filter
                 $gateway = Gateway::getGatewayForWallet($wallet);
 
                 return ($gateway === $terminal->getGateway());
+
+            case Method::UPI:
+                return $terminal->isUPITerminal();
 
             default:
                 throw new Exception\LogicException('Unknown payment method passed.', null, ['method' => $method]);
@@ -134,6 +138,41 @@ class TransactionFilter extends Terminal\Filter
         }
 
         return true;
+    }
+
+    public function recurringFilter($terminal, $input)
+    {
+        $payment = $input['payment'];
+
+        // if payment is not recurring, terminal is valid
+        if ($payment->isRecurring() === false)
+        {
+            return true;
+        }
+
+        // for recurring payment, terminal must be cybersource
+        if ($terminal->getGateway() !== Gateway::CYBERSOURCE)
+        {
+            return false;
+        }
+
+        // for cybersource, check get the terminal based on recurring type
+        $value = Terminal\Recurring::NON_RECURRING;
+
+        if ($payment->isRecurring() === true)
+        {
+            //$value = Terminal\Recurring::RECURRING_3DS;
+
+            if (($payment->getTokenId() !== null) and
+                ($payment->localToken->isRecurring() === true))
+            {
+                $value = Terminal\Recurring::RECURRING_N3DS;
+            }
+        }
+
+        $isValidTerminal = ($terminal->getRecurring() === $value);
+
+        return $isValidTerminal;
     }
 
     protected function isValidEmiTerminal($terminal, $input)

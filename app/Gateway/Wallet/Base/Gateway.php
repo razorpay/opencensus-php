@@ -8,23 +8,25 @@ use Lib\PhoneBook;
 
 class Gateway extends Base\Gateway
 {
-    protected function createGatewayPaymentEntity($attributes)
+    protected function createGatewayPaymentEntity($attributes, $action = null)
     {
         $attr = $this->getMappedAttributes($attributes);
 
-        $payment = $this->getNewGatewayPaymentEntity();
+        $action = $action ? $action : $this->action;
 
-        $payment->setPaymentId($this->input['payment']['id']);
+        $gatewayPayment = $this->getNewGatewayPaymentEntity();
 
-        $payment->setAction($this->action);
+        $gatewayPayment->setPaymentId($this->input['payment']['id']);
 
-        $payment->setWallet($this->input['payment']['wallet']);
+        $gatewayPayment->setAction($action);
 
-        $payment->fill($attr);
+        $gatewayPayment->setWallet($this->input['payment']['wallet']);
 
-        $payment->saveOrFail();
+        $gatewayPayment->fill($attr);
 
-        return $payment;
+        $gatewayPayment->saveOrFail();
+
+        return $gatewayPayment;
     }
 
     protected function createGatewayRefundEntity($attributes)
@@ -38,27 +40,20 @@ class Gateway extends Base\Gateway
         return $refund;
     }
 
+    protected function updateGatewayPaymentEntity($gatewayPayment, $attributes)
+    {
+        $attr = $this->getMappedAttributes($attributes);
+
+        $gatewayPayment->fill($attr);
+
+        $gatewayPayment->saveOrFail();
+
+        return $gatewayPayment;
+    }
+
     protected function getNewGatewayPaymentEntity()
     {
         return new Wallet\Base\Entity;
-    }
-
-    protected function getMappedAttributes($attributes)
-    {
-        $attr = [];
-
-        $map = $this->map;
-
-        foreach ($attributes as $key => $value)
-        {
-            if (isset($map[$key]))
-            {
-                $newKey = $map[$key];
-                $attr[$newKey] = $value;
-            }
-        }
-
-        return $attr;
     }
 
     protected function getReverseMappedAttributes($attributes)
@@ -79,9 +74,11 @@ class Gateway extends Base\Gateway
         return $attr;
     }
 
-    protected function getRepo()
+    protected function getRepository()
     {
-        return new Repository();
+        $gateway = 'wallet';
+
+        return $this->app['repo']->$gateway;
     }
 
     protected function getFormattedContact($contact)

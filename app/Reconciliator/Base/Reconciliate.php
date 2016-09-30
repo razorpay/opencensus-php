@@ -28,15 +28,16 @@ class Reconciliate
      * Internal Header Names
      *************************/
 
-    const PAYMENT_ID          = 'payment_id';
-    const REFUND_ID           = 'refund_id';
-    const CARD_TYPE           = 'card_type';
-    const CARD_LOCALE         = 'card_locale';
-    const CARD_TRIVIA         = 'card_trivia';
-    const CARD_DETAILS        = 'card_details';
-    const GATEWAY_SERVICE_TAX = 'gateway_service_tax';
-    const GATEWAY_FEE         = 'gateway_fee';
-    const ISSUER              = 'issuer';
+    const PAYMENT_ID            = 'payment_id';
+    const REFUND_ID             = 'refund_id';
+    const CARD_TYPE             = 'card_type';
+    const CARD_LOCALE           = 'card_locale';
+    const CARD_TRIVIA           = 'card_trivia';
+    const CARD_DETAILS          = 'card_details';
+    const GATEWAY_SERVICE_TAX   = 'gateway_service_tax';
+    const GATEWAY_FEE           = 'gateway_fee';
+    const GATEWAY_SETTLED_AT    = 'gateway_settled_at';
+    const ISSUER                = 'issuer';
 
     /*************************
      * Card types
@@ -88,12 +89,7 @@ class Reconciliate
 
             $this->setSubReconciliator($reconciliationType);
 
-            $summary = [];
-
-            $this->repo->transactionOnLiveAndTest(function() use ($fileContents, & $summary)
-            {
-                $summary = $this->subReconciliator->startReconciliation($fileContents);
-            });
+            $summary = $this->subReconciliator->startReconciliation($fileContents);
 
             $allSummaries[] = $summary;
         }
@@ -158,7 +154,7 @@ class Reconciliate
         }
 
         $fileName = strtolower($fileName);
-        
+
         // The method is present in child class since different gateways have
         // different sheet names/file names for reconciliation types.
         $reconciliationType = $this->getTypeName($fileName);
@@ -182,10 +178,19 @@ class Reconciliate
         return $reconciliationType;
     }
 
+    public function getReconciliationTypeFromFileName($fileName)
+    {
+        $fileName = strtolower($fileName);
+
+        return $this->getTypeName($fileName);
+    }
+
     protected function setSubReconciliator($reconciliationType)
     {
         $subReconciliatorClassName = $this->getSubReconciliatorClassName($reconciliationType);
+
         $this->subReconciliator = new $subReconciliatorClassName;
+
     }
 
     protected function getSubReconciliatorClassName($reconciliationType)
@@ -205,5 +210,10 @@ class Reconciliate
     {
         // Gets the namespace from the called class, by removing the last part of the FQCN.
         return join('\\', explode('\\', get_called_class(), -1));
+    }
+
+    public function getColumnHeadersForType($type)
+    {
+        return [];
     }
 }

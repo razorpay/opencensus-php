@@ -16,6 +16,7 @@ class Table
     const PRICING               = 'pricing';
     const PAYMENT               = 'payments';
     const WEBHOOK               = 'webhooks';
+    const ADDRESS               = 'addresses';
     const MERCHANT              = 'merchants';
     const TERMINAL              = 'terminals';
     const CUSTOMER              = 'customers';
@@ -38,6 +39,7 @@ class Table
     const BILLDESK              = 'billdesk';
     const MOBIKWIK              = 'mobikwik';
     const NETBANKING            = 'netbanking';
+    const UPI                   = 'upi';
     const WALLET                = 'wallet';
 
     // Sessions table
@@ -52,4 +54,5 @@ class Table
 
     // Payment Analytics
     const PAYMENT_ANALYTICS     = 'payment_analytics';
+    const TERMINAL_ANALYTICS    = 'terminal_analytics';
 }

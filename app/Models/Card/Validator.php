@@ -12,7 +12,7 @@ class Validator extends Base\Validator
         Entity::NUMBER             => 'required|numeric|luhn|digits_between:12,19',
         Entity::EXPIRY_MONTH       => 'required|integer|digits_between:1,2|max:12|min:1',
         Entity::EXPIRY_YEAR        => 'required|integer|digits:4|non_past_year',
-        Entity::CVV                => 'required|numeric|digits_between:3,4',
+        Entity::CVV                => 'sometimes|numeric|digits_between:3,4',
         Entity::NAME               => 'required|alpha_space|max:100',
         Entity::VAULT_TOKEN        => 'sometimes|string',
         Entity::VAULT              => 'required_with:vault_token|in:tokenex'
@@ -20,13 +20,15 @@ class Validator extends Base\Validator
 
     protected static $editRules = array(
         Entity::NUMBER             => 'required|numeric|luhn|digits_between:12,19',
-        Entity::CVV                => 'required|numeric|digits_between:3,4',
+        Entity::CVV                => 'sometimes|numeric|digits_between:3,4',
         Entity::NAME               => 'sometimes|alpha_space|max:100',
         Entity::VAULT_TOKEN        => 'sometimes|string',
         Entity::VAULT              => 'required_with:vault_token|in:tokenex'
     );
 
-    protected static $createValidators = array('expiry_date');
+    protected static $createValidators = array(
+        'expiry_date'
+    );
 
     protected function validateExpiryDate($input)
     {

@@ -93,7 +93,7 @@ class Gateway extends Base\Gateway
         // is different than what we sent
         unset($content['DateTimeInGMT']);
 
-        $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
+        $payment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
 
         $attrs['received'] = true;
@@ -171,7 +171,7 @@ class Gateway extends Base\Gateway
      */
     protected function fillStatusAndBankPaymentId($input, $content)
     {
-        $payment = $this->getRepo()->retrieveByPaymentIdOrFail(
+        $payment = $this->repo->retrieveByPaymentIdOrFail(
             $input['payment']['id']);
 
         $attrs['received'] = true;
@@ -185,13 +185,13 @@ class Gateway extends Base\Gateway
 
     protected function validateCallbackChecksum($content)
     {
-        $expectedHash = $content['Checksum'];
+        $inputHash = $content['Checksum'];
 
         unset($content['Checksum']);
 
-        $generatedHash = $this->getHashOfArray($content);
+        $expectedHash = $this->getHashOfArray($content);
 
-        if ($expectedHash !== $generatedHash)
+        if (hash_equals($expectedHash, $inputHash)  !== true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Failed checksum verification');
@@ -335,7 +335,7 @@ class Gateway extends Base\Gateway
             return $row['payment']['id'];
         }, $input['data']);
 
-        $payments = $this->getRepo()->fetchByPaymentIdsAndAction(
+        $payments = $this->repo->fetchByPaymentIdsAndAction(
                                 $paymentIds, Action::AUTHORIZE);
 
         $payments = $payments->getDictionaryByAttribute(Entity::PAYMENT_ID);

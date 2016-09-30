@@ -197,6 +197,20 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testAddCategory2()
+    {
+        $this->createMerchant();
+
+        $this->startTest();
+    }
+
+    public function testAddInvalidCategory2()
+    {
+        $this->createMerchant();
+
+        $this->startTest();
+    }
+
     public function testGetAccountConfig()
     {
         $this->ba->proxyAuth();

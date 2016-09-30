@@ -42,6 +42,13 @@ trait Callback
      */
     public function callback($id, $hash, array $gatewayInput)
     {
+        $this->trace->info(
+            TraceCode::PAYMENT_CALLBACK_REQUEST,
+            [
+                'gateway_input' => $gatewayInput,
+                'payment_id'    => $id,
+            ]);
+
         $payment = $this->retrieve($id);
 
         // For redirect flow
@@ -62,13 +69,19 @@ trait Callback
 
         $this->processPaymentCallback($payment, $gatewayInput);
 
-        if ($this->shouldAutoCapture($payment) === true)
+        return $this->postPaymentAuthorizeProcessing($payment);
+    }
+
+    public function redirectCallback($id)
+    {
+        $payment = $this->retrieve($id);
+
+        if ($payment->isCreated() === false)
         {
-            // If payment is signed or capture was sent as true in order, then we capture it in this step only.
-            $payment = $this->capturePayment($payment, $payment->getAmount());
+            return $this->processPaymentCallbackSecondTime($payment);
         }
 
-        return $this->postPaymentAuthorizeProcessing($payment);
+        throw new Exception\LogicException('Should not have been hit.');
     }
 
     /**
@@ -104,9 +117,8 @@ trait Callback
 
     public function s2sCallback($payment, array $gatewayInput)
     {
-        // Return if payments is signed to allow for payments to be captured
-        // which come signed via shopify route.
-        if ($payment->isSigned())
+        // Return if payment is auto captured
+        if ($payment->getAutoCaptured())
         {
             return ['success' => false];
         }
@@ -128,6 +140,8 @@ trait Callback
         }
 
         $this->processPaymentCallback($payment, $gatewayInput);
+
+        $this->autoCapturePaymentIfApplicable($payment);
 
         return ['success' => true];
     }
@@ -170,6 +184,7 @@ trait Callback
 
             $this->postPaymentOtpCallbackProcessing($input, $data);
 
+            // Send a request to topup if balance is insufficient
             $this->callGatewayFunction('checkBalance', $input);
         }
         else
@@ -202,9 +217,9 @@ trait Callback
         {
             $contact = $this->parseContact($input['payment']['contact']);
 
-            $sharedAccount = (new Merchant\Repository)->getSharedAccount();
+            $sharedAccount = $this->repo->merchant->getSharedAccount();
 
-            $customer = (new Customer\Repository)->findByContactAndMerchant(
+            $customer = $this->repo->customer->findByContactAndMerchant(
                                     $contact->format(), $sharedAccount);
 
             if ($customer === null)
@@ -227,7 +242,7 @@ trait Callback
         {
             $token = $this->createOrUpdateToken($input, $data);
 
-            $payment->setGlobalToken($token->getToken());
+            $payment->globalToken()->associate($token);
         }
 
         $this->repo->saveOrFail($payment);
@@ -254,9 +269,7 @@ trait Callback
 
         if (Error\Error::hasAction($code) === false)
         {
-            $this->updatePaymentFailed(
-                $e->getError(),
-                TraceCode::PAYMENT_AUTH_FAILURE);
+            $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
         }
         else
         {
@@ -272,5 +285,13 @@ trait Callback
         }
 
         throw $e;
+    }
+
+    protected function checkForMerchantCallbackUrl($payment)
+    {
+        if ($payment->getCallbackUrl() !== null)
+        {
+            $this->app['rzp.merchant_callback_url'] = $payment->getCallbackUrl();
+        }
     }
 }

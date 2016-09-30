@@ -87,9 +87,21 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
+        if ($this->isRecurringPaymentRequest($input) === true)
+        {
+            return $this->recurring($input);
+        }
+
         $response = $this->enroll($input);
 
         return $this->decideAuthStepAfterEnroll($response, $input);
+    }
+
+    public function recurring(array $input)
+    {
+        $response = $this->authorizeRecurring($input);
+
+        $this->persistAfterAuthorizeRecurring($input, $response);
     }
 
     public function callback(array $input)
@@ -113,7 +125,7 @@ class Gateway extends Base\Gateway
     {
         parent::capture($input);
 
-        $gatewayPayment = $this->getRepo()->retrieveCapturedByPaymentId(
+        $gatewayPayment = $this->repo->retrieveCapturedByPaymentId(
             $input['payment']['id']);
 
         if (($gatewayPayment !== null) and
@@ -165,6 +177,53 @@ class Gateway extends Base\Gateway
         {
             $this->handleSoapFault($exception, "Refund request failed");
         }
+    }
+
+    protected function isRecurringPaymentRequest($input)
+    {
+        if (($input['payment']['recurring'] === true) and
+            ($input['token']->isRecurring() === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function authorizeRecurring($input)
+    {
+        $request = $this->createRecurringAuthorizeRequestFields($input);
+
+        $this->traceGatewayRequest(TraceCode::GATEWAY_AUTHORIZE_REQUEST, $request);
+
+        return $this->postRequest($request);
+    }
+
+    protected function createRecurringAuthorizeRequestFields($input)
+    {
+        $content = [
+            'merchantID' => $this->getMerchantID($input['terminal']),
+            'merchantReferenceCode' => $input['payment']['id'],
+            'purchaseTotals' => [
+                'currency' => $input['payment']['currency'],
+                'grandTotalAmount' => ($input['payment']['amount'] / 100)
+            ],
+            'card' => [
+                'accountNumber' => $input['card']['number'],
+                'expirationMonth' => $input['card']['expiry_month'],
+                'expirationYear' => $input['card']['expiry_year']
+            ],
+            'ccAuthService' => [
+                'run' => 'true',
+                'commerceIndicator' => 'recurring'
+            ]
+        ];
+
+        $this->setBillingInfo($content, $input);
+
+        $request = $this->getStandardSoapRequest($content);
+
+        return $request;
     }
 
     public function sendPaymentVerifyRequest($verify)
@@ -318,7 +377,7 @@ class Gateway extends Base\Gateway
 
     protected function postAuthEnrolledRequest($input)
     {
-        assert($this->model->getReasonCode() === Result::ENROLLED);
+        assertTrue($this->model->getReasonCode() === Result::ENROLLED);
 
         $request = $this->createAuthEnrolledRequestFields($input);
 
@@ -504,7 +563,7 @@ class Gateway extends Base\Gateway
 
     protected function persistAfterAuthorize($input, $response, $request)
     {
-        $gateway = $this->getRepo()->retrieveByPaymentIdOrFail($input['payment']['id']);
+        $gateway = $this->repo->retrieveByPaymentIdOrFail($input['payment']['id']);
 
         $this->trace->info(TraceCode::GATEWAY_AUTHORIZE_RESPONSE, $response);
 
@@ -535,6 +594,38 @@ class Gateway extends Base\Gateway
         $gateway->fill($attributes);
 
         $gateway->saveOrFail();
+    }
+
+    protected function persistAfterAuthorizeRecurring($input, $response)
+    {
+        $this->trace->info(TraceCode::GATEWAY_AUTHORIZE_RESPONSE, $response);
+
+        if ($response['reasonCode'] !== Result::SUCCESS)
+        {
+            $attributes = array(
+                Entity::STATUS      => Status::AUTHORIZE_FAILED,
+                Entity::REASON_CODE => $response['reasonCode'],
+                Entity::AMOUNT      => $input['payment']['amount']
+            );
+
+            if (isset($response[self::REQUEST_ID]) === true)
+            {
+                $attributes[Entity::REF] = $response[self::REQUEST_ID];
+            }
+
+            $gatewayPayment = $this->createGatewayPaymentEntity($attributes, $input);
+
+            $this->throwException($response);
+        }
+
+        $attributes = [
+            Entity::REF         => $response[self::REQUEST_ID],
+            Entity::REASON_CODE => $response['reasonCode'],
+            Entity::AMOUNT      => $input['payment']['amount'],
+            Entity::STATUS      => Status::AUTHORIZED
+        ];
+
+        $gatewayPayment = $this->createGatewayPaymentEntity($attributes, $input);
     }
 
     protected function persistAfterEnroll($input, $response, $request)
@@ -733,7 +824,7 @@ class Gateway extends Base\Gateway
     {
         $content = $this->getCommonRequestData($input);
 
-        $gatewayPayment = $this->getRepo()->retrieveByPaymentIdOrFail($input['payment']['id']);
+        $gatewayPayment = $this->repo->retrieveByPaymentIdOrFail($input['payment']['id']);
 
         $content['ccCaptureService'] = [
             self::RUN => 'true',
@@ -754,10 +845,19 @@ class Gateway extends Base\Gateway
     {
         $content = $this->getCommonRequestData($input);
 
-        $gateway = $this->getRepo()->retrieveByPaymentIdAndStatus($input['payment']['id'], Status::CAPTURED);
+        $gateway = $this->repo->retrieveByPaymentIdAndStatus($input['payment']['id'], Status::CAPTURED);
 
         $content['ccCreditService'][self::RUN] = 'true';
         $content['ccCreditService'][self::CAPTURE_REQUEST_ID] = $gateway->getCaptureRef();
+
+        $content['item'] = [
+            [
+                'unitPrice' => ($input['refund']['amount']/100),
+                'id'        => '1'
+            ]
+        ];
+
+        $content['purchaseTotals']['grandTotalAmount'] = ($input['refund']['amount']/100);
 
         $request = $this->getStandardSoapRequest($content);
 
@@ -1079,7 +1179,7 @@ class Gateway extends Base\Gateway
     {
         if ($this->model === null)
         {
-            $this->model = $this->getRepo()->retrieveByPaymentIdOrFail($paymentId);
+            $this->model = $this->repo->retrieveByPaymentIdOrFail($paymentId);
         }
 
         return $this->model;

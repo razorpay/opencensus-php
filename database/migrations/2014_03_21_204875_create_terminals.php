@@ -6,10 +6,10 @@ use Illuminate\Database\Migrations\Migration;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal\Entity as Terminal;
+use RZP\Models\Terminal\Recurring;
 
 class CreateTerminals extends Migration
 {
-
     /**
      * Run the migrations.
      *
@@ -60,20 +60,30 @@ class CreateTerminals extends Migration
             $table->string(Terminal::GATEWAY_ACQUIRER)
                   ->nullable();
 
-            $table->boolean(Terminal::CARD)
+            $table->tinyInteger(Terminal::CARD)
                   ->default(0);
 
-            $table->boolean(Terminal::NETBANKING)
+            $table->tinyInteger(Terminal::NETBANKING)
                   ->default(0);
 
-            $table->boolean(Terminal::EMI)
+            $table->tinyInteger(Terminal::UPI)
+                  ->default(0);
+
+            $table->tinyInteger(Terminal::EMI)
                   ->default(0);
 
             $table->integer(Terminal::EMI_DURATION)
                   ->nullable();
 
-            $table->boolean(Terminal::SHARED)
+            $table->tinyInteger(Terminal::RECURRING)
+                  ->unsigned()
+                  ->default(Recurring::NON_RECURRING);
+
+            $table->tinyInteger(Terminal::SHARED)
                   ->default(0);
+
+            $table->string(Terminal::NETWORK_CATEGORY)
+                  ->nullable();
 
             $table->integer(Terminal::CREATED_AT);
 
@@ -83,13 +93,13 @@ class CreateTerminals extends Migration
                   ->unsigned()
                   ->nullable();
 
+            $table->tinyInteger(Terminal::ENABLED)
+                  ->default(1);
+
             $table->foreign(Terminal::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
-
-            $table->enum(Terminal::STATUS, ['ACTIVE','INACTIVE', 'SUSPENDED'])
-                    ->default('ACTIVE');
 
             // Needed for future
             //$table->integer(Terminal::PRIORITY)
@@ -98,6 +108,7 @@ class CreateTerminals extends Migration
             $table->index(Terminal::CATEGORY);
             $table->index(Terminal::GATEWAY);
             $table->index(Terminal::DELETED_AT);
+            $table->index(Terminal::ENABLED);
         });
     }
 

@@ -40,9 +40,9 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        $this->verifySecureHash($input);
+        $this->verifySecureHash($input['gateway']);
 
-        $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
+        $payment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['gateway']['ORDERID'], Action::AUTHORIZE);
 
         $values = $this->lowerArrayKeys($input['gateway']);
@@ -58,7 +58,7 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
+        $payment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
 
         $content = array(
@@ -406,27 +406,27 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function verifySecureHash($input)
+    protected function verifySecureHash(array $content)
     {
         $res = false;
 
-        if (isset($input['gateway']['CHECKSUMHASH']) === false)
+        if (isset($content['CHECKSUMHASH']) === false)
         {
-            $this->trace->error(TraceCode::GATEWAY_PAYMENT_ERROR, $input['gateway']);
+            $this->trace->error(TraceCode::GATEWAY_PAYMENT_ERROR, $content);
 
-            if ($input['gateway']['STATUS'] === Status::FAILURE)
+            if ($content['STATUS'] === Status::FAILURE)
             {
                 return;
             }
         }
         else
         {
-            $checksum = $input['gateway']['CHECKSUMHASH'];
-            unset($input['gateway']['CHECKSUMHASH']);
+            $checksum = $content['CHECKSUMHASH'];
+            unset($content['CHECKSUMHASH']);
 
             $secret = $this->getSecret();
 
-            $res = Checksum::verifychecksum_e($input['gateway'], $secret, $checksum);
+            $res = Checksum::verifychecksum_e($content, $secret, $checksum);
         }
 
         if ($res === false)

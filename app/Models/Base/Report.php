@@ -2,11 +2,14 @@
 
 namespace RZP\Models\Base;
 
-use RZP\Constants\Entity as E;
 use Carbon\Carbon;
-use RZP\Trace\TraceCode;
+
+use RZP\Base\RuntimeManager;
+use RZP\Constants\Entity as E;
 use RZP\Exception;
 use RZP\Models\Transaction;
+use RZP\Trace\TraceCode;
+
 
 class Report extends Service
 {
@@ -141,12 +144,12 @@ class Report extends Service
         {
             // Gets the total fees and service tax of transactions of the merchants
             // before 15th november and after 15th november.
-            $dataBefore15Nov = (new Transaction\Repository)->fetchDataForInvoice(
+            $dataBefore15Nov = $this->repo->transaction->fetchDataForInvoice(
                 $merchantId,
                 $from,
                 self::SWACH_BHARAT_CUTOFF_TIMESTAMP);
 
-            $dataAfter15Nov  = (new Transaction\Repository)->fetchDataForInvoice(
+            $dataAfter15Nov  = $this->repo->transaction->fetchDataForInvoice(
                 $merchantId,
                 self::SWACH_BHARAT_CUTOFF_TIMESTAMP,
                 $to);
@@ -162,7 +165,7 @@ class Report extends Service
         }
         else
         {
-            $data = (new Transaction\Repository)->fetchDataForInvoice($merchantId, $from, $to);
+            $data = $this->repo->transaction->fetchDataForInvoice($merchantId, $from, $to);
 
             $sbCessApplied = $this->isCessApplicable($input, $this->SBCessMonth);
 
@@ -275,8 +278,8 @@ class Report extends Service
         {
             $month = (int) $input['month'];
 
-            assert($month > 0);
-            assert($month <= 12);
+            assertTrue($month > 0);
+            assertTrue($month <= 12);
 
             $from = Carbon::today('Asia/Kolkata')
                                   ->month($month)
@@ -309,7 +312,7 @@ class Report extends Service
 
     protected function increaseAllowedSystemLimits()
     {
-        ini_set('memory_limit', '1024M');
-        set_time_limit(501);
+        RuntimeManager::setMemoryLimit('1024M');
+        RuntimeManager::setTimeLimit(501);
     }
 }

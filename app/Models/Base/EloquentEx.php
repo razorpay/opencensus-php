@@ -88,8 +88,7 @@ class EloquentEx extends \Razorpay\Spine\Entity
 
     public function scopeMerchantId($query, $merchantId)
     {
-        $table = $this->getTable();
-        $merchantIdColumn = $table . '.' . Common::MERCHANT_ID;
+        $merchantIdColumn = $this->getAttributeWithTableName(Common::MERCHANT_ID);
 
         $query->where($merchantIdColumn, '=', $merchantId);
     }
@@ -99,5 +98,10 @@ class EloquentEx extends \Razorpay\Spine\Entity
         $desc = ($desc) ? 'desc' : 'asc';
 
         $query->orderBy(Entity::CREATED_AT, $desc);
+    }
+
+    public static function createOrFail(array $attributes)
+    {
+        throw new Exception\RuntimeException('Use createOrFail via Repository');
     }
 }

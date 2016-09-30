@@ -25,6 +25,7 @@ class Entity extends Base\PublicEntity
     const AMOUNT_REFUNDED       = 'amount_refunded';
     const STATUS                = 'status';
     const ORDER_ID              = 'order_id';
+    const INTERNATIONAL         = 'international';
     const METHOD                = 'method';
     const REFUND_STATUS         = 'refund_status';
     const CAPTURED              = 'captured';
@@ -38,7 +39,9 @@ class Entity extends Base\PublicEntity
     const APP_ID                = 'app_id';
     const APP_TOKEN             = 'app_token';
     const TOKEN                 = 'token';
-    const GLOBAL_TOKEN          = 'global_token';
+    const TOKEN_ID              = 'token_id';
+    const GLOBAL_TOKEN_ID       = 'global_token_id';
+    const VPA                   = 'vpa';
     const EMAIL                 = 'email';
     const CONTACT               = 'contact';
     const NOTES                 = 'notes';
@@ -60,6 +63,7 @@ class Entity extends Base\PublicEntity
     const OTP_ATTEMPTS          = 'otp_attempts';
     const OTP_COUNT             = 'otp_count';
     const FEE                   = 'fee';
+    const RECURRING             = 'recurring';
     const SAVE                  = 'save';
     const LATE_AUTHORIZED       = 'late_authorized';
 
@@ -87,13 +91,14 @@ class Entity extends Base\PublicEntity
         self::WALLET,
         self::CURRENCY,
         self::DESCRIPTION,
-        self::TOKEN,
+        self::VPA,
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
         self::CALLBACK_URL,
         self::FEE,
         self::SERVICE_TAX,
+        self::RECURRING,
         self::SAVE);
 
     protected $visible = array(
@@ -114,9 +119,9 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_ID,
         self::GLOBAL_CUSTOMER_ID,
         self::APP_TOKEN,
-        self::APP_ID,
-        self::TOKEN,
-        self::GLOBAL_TOKEN,
+        self::TOKEN_ID,
+        self::GLOBAL_TOKEN_ID,
+        self::VPA,
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
@@ -132,9 +137,11 @@ class Entity extends Base\PublicEntity
         self::TRANSACTION_ID,
         self::AUTO_CAPTURED,
         self::ORDER_ID,
+        self::INTERNATIONAL,
         self::SIGNED,
         self::VERIFIED,
         self::CALLBACK_URL,
+        self::RECURRING,
         self::SAVE,
         self::FEE,
         self::SERVICE_TAX,
@@ -151,6 +158,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::STATUS,
         self::ORDER_ID,
+        self::INTERNATIONAL,
         self::METHOD,
         self::AMOUNT_REFUNDED,
         self::REFUND_STATUS,
@@ -159,6 +167,7 @@ class Entity extends Base\PublicEntity
         self::CARD_ID,
         self::BANK,
         self::WALLET,
+        self::VPA,
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
@@ -199,6 +208,8 @@ class Entity extends Base\PublicEntity
         self::OTP_COUNT         => null,
         self::EMI_PLAN_ID       => null,
         self::LATE_AUTHORIZED   => null,
+        self::RECURRING         => false,
+        self::INTERNATIONAL     => null,
     );
 
     protected $amounts = array(
@@ -209,13 +220,25 @@ class Entity extends Base\PublicEntity
         self::SERVICE_TAX
     );
 
+    protected $casts = [
+        self::RECURRING         => 'bool',
+        self::AMOUNT_AUTHORIZED => 'int',
+        self::AMOUNT_REFUNDED   => 'int',
+        self::AUTO_CAPTURED     => 'bool',
+        self::SIGNED            => 'bool',
+        self::AMOUNT            => 'int',
+        self::FEE               => 'int',
+        self::SERVICE_TAX       => 'int',
+        self::SAVE              => 'bool',
+        self::INTERNATIONAL     => 'bool',
+    ];
+
 // --------------------- Generators --------------------------------------------
 
 // --------------------- Generators Ends ---------------------------------------
 
 // --------------------- Modifiers ---------------------------------------------
 
-    // TODO: This function doesn't seem to be doing anything at all. Can I remove it?
     protected function modifyContact(& $input)
     {
         if (isset($input['contact']) === false)
@@ -305,6 +328,13 @@ class Entity extends Base\PublicEntity
 // --------------------- Modifiers Ends ----------------------------------------
 
 // ----------------------- Setters ---------------------------------------------
+
+    public function setInternational()
+    {
+        $isInternational = $this->isMethodCardOrEmi() ? $this->card->isInternational() : false;
+
+        $this->setAttribute(self::INTERNATIONAL, $isInternational);
+    }
 
     public function setCaptureAmount($amount)
     {
@@ -406,6 +436,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::FEE, $fee);
     }
 
+    public function setRecurring($recurring)
+    {
+        $this->setAttribute(self::RECURRING, $recurring);
+    }
+
     public function setErrorNull()
     {
         $this->setAttribute(self::ERROR_CODE, null);
@@ -436,16 +471,6 @@ class Entity extends Base\PublicEntity
     public function setMetadata($metadata)
     {
         $this->metadata = $metadata;
-    }
-
-    public function setToken($token)
-    {
-        $this->setAttribute(self::TOKEN, $token);
-    }
-
-    public function setGlobalToken($globalToken)
-    {
-        $this->setAttribute(self::GLOBAL_TOKEN, $globalToken);
     }
 
     public function setSave($save)
@@ -509,11 +534,6 @@ class Entity extends Base\PublicEntity
 
 // ----------------------- Accessor --------------------------------------------
 
-    protected function getAmountAttribute()
-    {
-        return (int) $this->attributes[self::AMOUNT];
-    }
-
     // TODO: Return a phonebook instance (like carbon) instead of string
     protected function getContactAttribute()
     {
@@ -524,25 +544,6 @@ class Entity extends Base\PublicEntity
         return (string) $phoneBook;
     }
 
-    protected function getAmountAuthorizedAttribute()
-    {
-        return (int) $this->attributes[self::AMOUNT_AUTHORIZED];
-    }
-
-    protected function getAmountRefundedAttribute()
-    {
-        return (int) $this->attributes[self::AMOUNT_REFUNDED];
-    }
-
-    protected function getAutoCapturedAttribute()
-    {
-        return (bool) $this->attributes[self::AUTO_CAPTURED];
-    }
-
-    protected function getSignedAttribute()
-    {
-        return (bool) $this->attributes[self::SIGNED];
-    }
 
     protected function getVerifiedAttribute()
     {
@@ -559,26 +560,6 @@ class Entity extends Base\PublicEntity
     protected function getCapturedAttribute()
     {
         return ($this->attributes[self::CAPTURED_AT] !== null);
-    }
-
-    protected function getFeeAttribute()
-    {
-        return (int) $this->attributes[self::FEE];
-    }
-
-    protected function getServiceTaxAttribute()
-    {
-        return (int) $this->attributes[self::SERVICE_TAX];
-    }
-
-    protected function getEmiPlanIdAttribute()
-    {
-        return $this->attributes[self::EMI_PLAN_ID];
-    }
-
-    protected function getSaveAttribute()
-    {
-        return (bool) $this->attributes[self::SAVE];
     }
 
     protected function getOtpAttemptsAttribute()
@@ -617,14 +598,38 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::STATUS) == Status::CREATED);
     }
 
+    /**
+     * A payment is considered just created for 5
+     * minutes since creation
+     * @return bool
+     */
+    public function justCreated()
+    {
+        $currentTime = time();
+
+        $secondsSinceCreated = $currentTime - $this->getAttribute(self::CREATED_AT);
+
+        return (bool) ($secondsSinceCreated <= (Processor\Processor::ASYNC_PAYMENT_TIMEOUT));
+    }
+
     public function isAuthorized()
     {
         return ($this->getAttribute(self::STATUS) === Status::AUTHORIZED);
     }
 
+    public function isCreatedOrAuthorized()
+    {
+        return ($this->isCreated() or $this->isAuthorized());
+    }
+
     public function hasBeenAuthorized()
     {
-        return ($this->getAttribute(self::AUTHORIZED_AT) !== null);
+        return ($this->isAttributeNull(self::AUTHORIZED_AT));
+    }
+
+    public function hasTransaction()
+    {
+        return ($this->isAttributeNull(self::TRANSACTION_ID));
     }
 
     public function isCaptured()
@@ -673,6 +678,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::CAPTURED_AT) !== null);
     }
 
+    public function isCard()
+    {
+        return ($this->getAttribute(self::METHOD) === Payment\Method::CARD);
+    }
+
     public function isNetbanking()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::NETBANKING);
@@ -686,6 +696,11 @@ class Entity extends Base\PublicEntity
     public function isEmi()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::EMI);
+    }
+
+    public function isUpi()
+    {
+        return ($this->getAttribute(self::METHOD) === Payment\Method::UPI);
     }
 
     public function isGateway($gateway)
@@ -706,34 +721,30 @@ class Entity extends Base\PublicEntity
 
     public function isSigned()
     {
-        return ((bool)$this->getAttribute(self::SIGNED) === true);
+        return ($this->getAttribute(self::SIGNED) === true);
     }
 
     public function isInternational()
     {
+        // return $this->getAttribute(self::INTERNATIONAL);
         return $this->card->isInternational();
     }
 
 // ----------------------- Getters ---------------------------------------------
 
-    public function getMerchantId()
-    {
-        return $this->getAttribute(self::MERCHANT_ID);
-    }
-
     public function getAmount()
     {
-        return (int) $this->getAttribute(self::AMOUNT);
+        return $this->getAttribute(self::AMOUNT);
     }
 
     public function getAmountRefunded()
     {
-        return (int) $this->getAttribute(self::AMOUNT_REFUNDED);
+        return $this->getAttribute(self::AMOUNT_REFUNDED);
     }
 
     public function getAmountUnrefunded()
     {
-        return (int) $this->getAmount() - $this->getAmountRefunded();
+        return $this->getAmount() - $this->getAmountRefunded();
     }
 
     public function getCurrency()
@@ -802,6 +813,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::EMAIL);
     }
 
+    public function getVpa()
+    {
+        return $this->getAttribute(self::VPA);
+    }
+
     public function getContact()
     {
         return $this->getAttribute(self::CONTACT);
@@ -842,9 +858,14 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SERVICE_TAX);
     }
 
-    public function getCreatedTimestamp()
+    public function getTokenId()
     {
-        return $this->getAttribute(self::CREATED_AT);
+        return $this->getAttribute(self::TOKEN_ID);
+    }
+
+    public function getGlobalTokenId()
+    {
+        return $this->getAttribute(self::GLOBAL_TOKEN_ID);
     }
 
     public function getDescription()
@@ -869,17 +890,29 @@ class Entity extends Base\PublicEntity
 
     public function getSave()
     {
-        return (bool) $this->getAttribute(self::SAVE);
+        return $this->getAttribute(self::SAVE);
     }
 
-    public function getGlobalToken()
+    public function isRecurring()
     {
-        return $this->getAttribute(self::GLOBAL_TOKEN);
+        return $this->getAttribute(self::RECURRING);
     }
 
     public function getCardId()
     {
         return $this->getAttribute(self::CARD_ID);
+    }
+
+    public function getMerchantId()
+    {
+        return $this->getAttribute(self::MERCHANT_ID);
+    }
+
+    public function isSecondRecurring()
+    {
+        return (($this->isRecurring() === true) and
+                ($this->getTokenId() !== null) and
+                ($this->localToken->isRecurring() === true));
     }
 
     /**
@@ -906,11 +939,17 @@ class Entity extends Base\PublicEntity
             case Method::CARD:
                 return [$method, $this->getFormattedCard()];
                 break;
+            case Method::EMI:
+                return [$method, $this->getFormattedCard()];
+                break;
             case Method::NETBANKING:
                 return [$method, $this->getBankName()];
                 break;
             case Method::WALLET:
                 return [$method, ucfirst($this->getWallet())];
+                break;
+            case Method::UPI:
+                return [$method, $this->getVpa()];
                 break;
         }
     }
@@ -959,6 +998,22 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ORDER_ID);
     }
 
+    public function getGlobalOrLocalTokenEntity()
+    {
+        $token = null;
+
+        if ($this->getTokenId() !== null)
+        {
+            $token = $this->localToken;
+        }
+        else if ($this->getGlobalTokenId() !== null)
+        {
+            $token = $this->globalToken;
+        }
+
+        return $token;
+    }
+
     public function setPublicOrderIdAttribute(Array & $array)
     {
         if (isset($array[self::ORDER_ID]))
@@ -990,7 +1045,6 @@ class Entity extends Base\PublicEntity
 
         $this->setGateway($terminal->getGateway());
     }
-
 
 // ----------------------- Getters Ends-----------------------------------------
 
@@ -1083,6 +1137,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Order\Entity');
     }
 
+    public function analytics()
+    {
+        return $this->hasOne('RZP\Models\Payment\Analytics\Entity');
+    }
+
     public function customer()
     {
         return $this->belongsTo('RZP\Models\Customer\Entity');
@@ -1091,6 +1150,16 @@ class Entity extends Base\PublicEntity
     public function globalCustomer()
     {
         return $this->belongsTo('RZP\Models\Customer\Entity', self::GLOBAL_CUSTOMER_ID);
+    }
+
+    public function localToken()
+    {
+        return $this->belongsTo('RZP\Models\Customer\Token\Entity', self::TOKEN_ID);
+    }
+
+    public function globalToken()
+    {
+        return $this->belongsTo('RZP\Models\Customer\Token\Entity', self::GLOBAL_TOKEN_ID);
     }
 
     public function app()
@@ -1164,11 +1233,6 @@ class Entity extends Base\PublicEntity
     public function scopeCreatedAtLessThan($query, $ts)
     {
         return $query->where(Payment\Entity::CREATED_AT, '<', $ts);
-    }
-
-    public function scopeMerchantId($query, $merchantId)
-    {
-        return $query->where(self::MERCHANT_ID,'=',$merchantId);
     }
 
 // --------------------- Query scopes section ends -----------------------------

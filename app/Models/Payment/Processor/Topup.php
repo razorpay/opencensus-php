@@ -17,17 +17,17 @@ trait Topup
 
         $gatewayInput = [];
 
+        $this->validateTopupFlow($payment, $input);
+
+        $this->fillTopupGatewayInput($payment, $input, $gatewayInput);
+
         try
         {
-            $this->prePaymentTopupProcessing($payment, $input, $gatewayInput);
-
             return $this->callGatewayTopup($payment, $gatewayInput);
         }
         catch (Exception\BaseException $e)
         {
-            $this->updatePaymentFailed(
-                    $e->getError(),
-                    TraceCode::PAYMENT_TOPUP_FAILURE);
+            $this->updatePaymentFailed($e, TraceCode::PAYMENT_TOPUP_FAILURE);
 
             throw $e;
         }
@@ -44,10 +44,10 @@ trait Topup
             return $this->getPaymentGatewayRequestData($request, $payment);
         }
 
-        assert(false, 'Should not reach here.');
+        assertTrue(false, 'Should not reach here.');
     }
 
-    protected function prePaymentTopupProcessing($payment, $input, array & $gatewayInput)
+    protected function validateTopupFlow($payment, $input)
     {
         $gateway = $payment->getGateway();
 
@@ -71,6 +71,7 @@ trait Topup
         // Slight hack for mobikwik as we are falling back on traditional redirection
         // flow for mobikwik as we are not using their topup flow right now
         //
+
         if (($gateway !== Payment\Gateway::SHARP) and
             ($payment->getWallet() !== Wallet::MOBIKWIK) and
             ($payment->globalCustomer === null))
@@ -78,6 +79,11 @@ trait Topup
             throw new Exception\LogicException(
                 'Customer does not exist', null, $input);
         }
+    }
+
+    protected function fillTopupGatewayInput($payment, $input, array & $gatewayInput)
+    {
+        $gateway = $payment->getGateway();
 
         //
         // Call gateway input
@@ -87,6 +93,11 @@ trait Topup
         $gatewayInput['payment']  = $payment->toArray();
 
         $gatewayInput['customer'] = $payment->globalCustomer;
+
+        if ($payment->analytics !== null)
+        {
+            $gatewayInput['analytics'] = $payment->analytics->toArray();
+        }
 
         $gatewayInput['callbackUrl'] = $this->getCallbackUrl();
     }

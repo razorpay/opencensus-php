@@ -24,7 +24,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
      * Instance objects
      *******************/
 
-    protected $refundRepo;
+    protected $repo;
 
     protected $payment;
     protected $refund;
@@ -35,9 +35,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
-        $repo = $this->app['repo'];
-
-        $this->refundRepo = $repo->refund;
+        $this->repo = $this->app['repo'];
 
         $this->messenger = new Messenger();
     }
@@ -58,7 +56,10 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
         foreach ($fileContents as $row)
         {
-            $this->runReconciliate($row, $extraDetails);
+            $this->repo->transactionOnLiveAndTest(function() use ($row, $extraDetails)
+            {
+                $this->runReconciliate($row, $extraDetails);
+            });
         }
 
         return $this->getSummary();
@@ -77,6 +78,8 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
         try
         {
+            $this->runPreReconciledAtCheckRecon($rowDetails);
+
             $reconciled = $this->checkIfAlreadyReconciled($this->refund);
 
             if ($reconciled === true)
@@ -129,6 +132,11 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
             //return;
         }
+    }
+
+    protected function runPreReconciledAtCheckRecon($rowDetails)
+    {
+        $this->persistGatewaySettledAt($this->refund, $rowDetails);
     }
 
     protected function validatePaymentStatus()
@@ -205,7 +213,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
         try
         {
-            $this->refund = $this->refundRepo->findOrFail($refundId);
+            $this->refund = $this->repo->refund->findOrFail($refundId);
         }
         catch (\Exception $ex)
         {
@@ -248,8 +256,11 @@ class RefundReconciliate extends Foundation\SubReconciliate
             //return null;
         }
 
+        $gatewaySettledAt = $this->getGatewaySettledAt($row);
+        
         $rowDetails = [
-            BaseReconciliate::REFUND_ID => $refundId,
+            BaseReconciliate::REFUND_ID             => $refundId,
+            BaseReconciliate::GATEWAY_SETTLED_AT    => $gatewaySettledAt,
         ];
 
         return $rowDetails;

@@ -32,6 +32,8 @@ class BasicAuth
      *
      */
 
+    const HMAC_ALGO = 'sha256';
+
     /**
      * The application instance.
      *
@@ -736,6 +738,11 @@ class BasicAuth
         return ($this->type === Type::PUBLIC_AUTH);
     }
 
+    public function isPrivateAuth()
+    {
+        return ($this->type === Type::PRIVATE_AUTH);
+    }
+
     public function isPrivilegeAuth()
     {
         return ($this->type === Type::PRIVILEGE_AUTH);
@@ -826,6 +833,6 @@ class BasicAuth
 
         $secret = Crypt::decrypt($this->key->getSecret());
 
-        return hash_hmac('sha1', $str, $secret);
+        return hash_hmac(self::HMAC_ALGO, $str, $secret);
     }
 }

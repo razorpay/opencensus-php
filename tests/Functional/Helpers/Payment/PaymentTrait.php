@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Helpers\Payment;
 
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Exception\BaseException;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -172,16 +173,6 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function signPayment(array $payment, $secret = '')
-    {
-        $data = array(
-            'amount'            => $payment['amount'],
-            'currency'          => 'INR',
-            'merchant_order_id' => $payment['notes']['merchant_order_id']);
-
-        return $this->getSignature($data, $secret);
-    }
-
     protected function getSignature(array $data, $secret = '')
     {
         if ($secret === '')
@@ -191,24 +182,7 @@ trait PaymentTrait
 
         $str = implode('|', $data);
 
-        return hash_hmac('sha1', $str, $secret);
-    }
-
-    protected function assertSignatureMatches(array $content, $secret)
-    {
-        $this->assertArrayHasKey('signature', $content);
-
-        $data = array(
-            'amount'                => $content['amount'],
-            'currency'              => $content['currency'],
-            'merchant_order_id'     => $content['merchant_order_id'],
-            'razorpay_payment_id'   => $content['razorpay_payment_id']);
-
-        $str = implode('|', $data);
-
-        $signature = hash_hmac('sha1', $str, $secret);
-
-        $this->assertEquals($signature, $content['signature']);
+        return hash_hmac(BasicAuth::HMAC_ALGO, $str, $secret);
     }
 
     protected function getPaymentJsonFromCallback($content)
@@ -257,16 +231,13 @@ trait PaymentTrait
 
         $this->assertArrayHasKey('razorpay_payment_id', $content);
 
-        $this->assertLessThanOrEqual(2, count($content));
-        if (count($content) === 2)
-        {
-            $this->assertEquals(200, $content['http_status_code']);
-        }
+        $count = count($content);
+        $this->assertLessThanOrEqual(4, $count);
 
         return $content;
     }
 
-    protected function doAuthPayment($payment = null)
+    protected function doAuthPayment($payment = null, $server = null)
     {
         if ($payment === null)
         {
@@ -278,11 +249,71 @@ trait PaymentTrait
             'url' => '/payments',
             'content' => $payment);
 
+        if (isset($server))
+        {
+            $request['server'] = $server;
+        }
+
         $this->ba->publicAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 
         return $content;
+    }
+
+    protected function doS2SPrivateAuthPayment($payment = null)
+    {
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $request = array(
+            'method' => 'POST',
+            'url' => '/payments/create/redirect',
+            'content' => $payment);
+
+        if (isset($server))
+        {
+            $request['server'] = $server;
+        }
+
+        $this->ba->privateAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
+    protected function doS2SRecurringPayment($payment = null)
+    {
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $request = array(
+            'method' => 'POST',
+            'url' => '/payments/create/recurring',
+            'content' => $payment);
+
+        if (isset($server))
+        {
+            $request['server'] = $server;
+        }
+
+        $this->ba->privateAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
+    protected function doS2SPrivateAuthAndCapturePayment($payment = null)
+    {
+        $paymentAuth = $this->doS2SPrivateAuthPayment($payment);
+
+        return $this->capturePayment($paymentAuth['razorpay_payment_id'], $payment['amount']);
     }
 
     protected function doAuthWalletPayment($payment = null, $wallet = 'paytm')
@@ -347,6 +378,19 @@ trait PaymentTrait
         return $this->sendRequest($request);
     }
 
+    protected function makeS2SCallbackAndGetContent($content)
+    {
+        $request = [
+            'url'    => '/callback/' . $this->gateway,
+            'method' => 'post',
+            'raw'    => $content
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
     protected function topupPayment($id)
     {
         $request = array(
@@ -366,7 +410,7 @@ trait PaymentTrait
     {
         $request = [
             'method'    => 'POST',
-            'url'       => '/payments/'.$id.'/redirect',
+            'url'       => '/payments/'.$id.'/redirect_callback',
             'content'   => []
         ];
 
@@ -386,6 +430,21 @@ trait PaymentTrait
         }
 
         return $this->getJsonContentFromResponse($response);
+    }
+
+    protected function getPaymentStatus($id)
+    {
+        $request = [
+            'method'    => 'GET',
+            'url'       => '/payments/'.$id.'/status',
+            'content'   => []
+        ];
+
+        $this->ba->publicAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
     }
 
     protected function getOtp()
@@ -447,10 +506,10 @@ trait PaymentTrait
             'url' => '/payments/'.$id.'/cancel');
 
         $this->ba->publicAuth();
-        $content = $this->makeRequestAndGetContent($request);
+        return $this->makeRequestAndGetContent($request);
 
-        $this->assertArrayHasKey('status', $content);
-        $this->assertEquals($content['status'], 'failed');
+        // $this->assertArrayHasKey('status', $content);
+        // $this->assertEquals($content['status'], 'failed');
     }
 
     protected function addPaymentMetadata($id, $content)
@@ -649,7 +708,7 @@ trait PaymentTrait
         return $payment;
     }
 
-    protected function getDefaultPaymentArray()
+    protected function getDefaultPaymentArrayNeutral()
     {
         //
         // default payment object
@@ -657,13 +716,6 @@ trait PaymentTrait
         $payment = [
             'amount'          =>  '50000',
             'currency'        =>  'INR',
-            'card' => array(
-                'number'            => '4012001038443335',
-                'name'              => 'Harshil',
-                'expiry_month'      => '12',
-                'expiry_year'       => '2017',
-                'cvv'               => '566',
-            ),
             'email'             => 'a@b.com',
             'contact'           => '9918899029',
             'notes'             => array(
@@ -675,7 +727,33 @@ trait PaymentTrait
         return $payment;
     }
 
-    protected function getDefaultPaymentArrayEmi($saved)
+    protected function getDefaultPaymentArray()
+    {
+        $payment = $this->getDefaultPaymentArrayNeutral();
+
+        $payment['card'] = array(
+            'number'            => '4012001038443335',
+            'name'              => 'Harshil',
+            'expiry_month'      => '12',
+            'expiry_year'       => '2017',
+            'cvv'               => '566',
+        );
+
+        return $payment;
+    }
+
+    protected function getDefaultRecurringPaymentArray()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['recurring'] = true;
+
+        $payment['customer_id'] = 'cust_100000customer';
+
+        return $payment;
+    }
+
+    protected function getDefaultEmiPaymentArray($saved)
     {
         $card = null;
 
@@ -694,19 +772,27 @@ trait PaymentTrait
                 'cvv'               => '566');
         }
 
-        $payment = [
+        $payment = $this->getDefaultPaymentArrayNeutral();
+
+        $attributes = [
             'amount'            =>  '300000',
-            'currency'          =>  'INR',
             'method'            =>  'emi',
             'emi_duration'      =>  '9',
             'card'              => $card,
-            'email'             => 'a@b.com',
-            'contact'           => '9918899029',
-            'notes'             => array(
-                'merchant_order_id' => 'random order id'),
-            'description'       => 'random description',
             'bank'              => 'ICIC',
         ];
+
+        $payment = array_merge($payment, $attributes);
+
+        return $payment;
+    }
+
+    protected function getDefaultUpiPaymentArray()
+    {
+        $payment = $this->getDefaultPaymentArrayNeutral();
+
+        $payment['method'] = 'upi';
+        $payment['vpa'] = 'shk@hdfc';
 
         return $payment;
     }
@@ -1018,6 +1104,8 @@ trait PaymentTrait
                        ->mock();
 
         $this->setMockServer($server);
+
+        return $server;
     }
 
     protected function mockServer()
@@ -1040,6 +1128,32 @@ trait PaymentTrait
     protected function resetGatewayDriver()
     {
         return $this->app['gateway']->resetDriver($this->gateway);
+    }
+
+    protected function mockMaxmind()
+    {
+        $maxmind = Mockery::mock('RZP\Services\Mock\MaxMind')->makePartial();
+
+        $maxmind->shouldReceive('query')
+              ->with(Mockery::type('RZP\Models\Payment\Entity'))
+              ->andReturnUsing(function ($payment)
+                    {
+                        $bin = $payment->card->getIin();
+
+                        $binRiskMapping = [
+                            '510510' => '22.0',
+                            '401201' => '60.3',
+                        ];
+
+                        if (isset($binRiskMapping[$bin]) === true)
+                        {
+                            return ['riskScore' => $binRiskMapping[$bin]];
+                        }
+
+                        return null;
+                    });
+
+        $this->app->instance('maxmind', $maxmind);
     }
 
     protected function mockTokenex()

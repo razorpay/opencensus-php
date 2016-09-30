@@ -3,6 +3,9 @@
 namespace RZP\Models\Customer\Token;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant\Account;
+use RZP\Constants\Table;
+
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Entity extends Base\PublicEntity
@@ -20,6 +23,9 @@ class Entity extends Base\PublicEntity
     const WALLET                = 'wallet';
     const GATEWAY_TOKEN         = 'gateway_token';
     const GATEWAY_TOKEN2        = 'gateway_token2';
+    const RECURRING             = 'recurring';
+    const USED_COUNT            = 'used_count';
+    const USED_AT               = 'used_at';
     const EXPIRED_AT            = 'expired_at';
     const CREATED_AT            = 'created_at';
     const UPDATED_AT            = 'updated_at';
@@ -29,7 +35,7 @@ class Entity extends Base\PublicEntity
 
     protected $entity           = 'token';
 
-    protected $table            = \RZP\Constants\Table::TOKEN;
+    protected $table            = Table::TOKEN;
 
     protected $generateIdOnCreate = true;
 
@@ -41,6 +47,7 @@ class Entity extends Base\PublicEntity
         self::TOKEN,
         self::GATEWAY_TOKEN,
         self::GATEWAY_TOKEN2,
+        self::RECURRING,
         self::EXPIRED_AT,
     );
 
@@ -57,17 +64,24 @@ class Entity extends Base\PublicEntity
         self::TERMINAL_ID,
         self::GATEWAY_TOKEN,
         self::GATEWAY_TOKEN2,
+        self::RECURRING,
+        self::USED_COUNT,
+        self::USED_AT,
         self::EXPIRED_AT,
         self::CREATED_AT,
         self::UPDATED_AT,
     );
 
     protected $public = array(
+        self::ID,
+        self::ENTITY,
         self::TOKEN,
         self::BANK,
         self::WALLET,
         self::METHOD,
         self::CARD,
+        self::RECURRING,
+        self::USED_AT,
     );
 
     protected $defaults = array(
@@ -75,13 +89,21 @@ class Entity extends Base\PublicEntity
         self::BANK           => null,
         self::CARD_ID        => null,
         self::GATEWAY_TOKEN2 => null,
-        self::EXPIRED_AT     => null
+        self::RECURRING      => false,
+        self::USED_AT        => null,
+        self::USED_COUNT     => 0,
+        self::EXPIRED_AT     => null,
     );
 
     protected $publicSetters = array(
         self::ID,
         self::ENTITY,
-        self::CARD);
+        self::CARD,
+        self::RECURRING);
+
+    protected $casts = array(
+        self::RECURRING     => 'bool',
+    );
 
     protected static $generators = array(
         self::TOKEN
@@ -137,9 +159,29 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::GATEWAY_TOKEN2);
     }
 
+    public function isRecurring()
+    {
+        return $this->getAttribute(self::RECURRING);
+    }
+
+    public function getUsedAt()
+    {
+        return $this->getAttribute(self::USED_AT);
+    }
+
     public function getExpiredAt()
     {
         return $this->getAttribute(self::EXPIRED_AT);
+    }
+
+    public function getMerchantId()
+    {
+        return $this->getAttribute(self::MERCHANT_ID);
+    }
+
+    public function isLocal()
+    {
+        return ($this->getMerchantId() !== Account::SHARED_ACCOUNT);
     }
 
     public function isExpired()
@@ -154,11 +196,44 @@ class Entity extends Base\PublicEntity
         return ($expiredAt <= time());
     }
 
+    public function setRecurring($recurring)
+    {
+        $this->setAttribute(self::RECURRING, $recurring);
+    }
+
+    public function setUsedAt($time)
+    {
+        $this->setAttribute(self::USED_AT, $time);
+    }
+
+    public function incrementUsedCount()
+    {
+        $this->increment(self::USED_COUNT);
+    }
+
+    protected function setUsedAtAttribute($time)
+    {
+        $usedAt = $this->getAttribute(self::USED_AT);
+
+        if ($time > $usedAt)
+        {
+            $this->attributes[self::USED_AT] = $time;
+        }
+    }
+
     protected function setPublicCardAttribute(array & $array)
     {
         if ($this->card !== null)
         {
             $array[self::CARD] = $this->card->toArrayToken();
+        }
+    }
+
+    protected function setPublicRecurringAttribute(array & $array)
+    {
+        if ($this->isRecurring() === false)
+        {
+            unset($array[self::RECURRING]);
         }
     }
 

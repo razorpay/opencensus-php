@@ -99,12 +99,12 @@ class Gateway extends Base\Gateway
 
         assert ($input['gateway']['merTxnId'] === $input['payment']['id']);
 
-        $payment = $this->getRepo()->findByPaymentIdAndAction(
+        $payment = $this->repo->findByPaymentIdAndAction(
                     $input['gateway']['merTxnId'], Action::AUTHORIZE);
 
         $mappedPayment = $this->getReverseMappedAttributes($payment->toArray());
 
-        $this->verifySecureHash($input, $mappedPayment);
+        $this->verifyGatewaySecureHash($input, $mappedPayment);
 
         $attrs = $this->getMappedAttributes($input['gateway']);
         $attrs['received'] = true;
@@ -135,7 +135,7 @@ class Gateway extends Base\Gateway
         $content = array(
             'merchantInfo' => array(
                 'merId'                 => $input['terminal']['gateway_merchant_id'],
-                'merAppId'              => $input['terminal']['gateway_terminal_id'],
+                'merAppId'              => $this->getMerchantAppId($input),
                 'merCountryCode'        => 'IN',
                 'merName'               => 'RazorPay',
             ),
@@ -228,7 +228,7 @@ class Gateway extends Base\Gateway
 
     protected function getRefundRequestContent($input)
     {
-        $wallet = $this->getRepo()->fetchWalletByPaymentId($input['payment']['id']);
+        $wallet = $this->repo->fetchWalletByPaymentId($input['payment']['id']);
 
         $originalTransactionId = $wallet['gateway_payment_id_2'];
 
@@ -570,14 +570,13 @@ class Gateway extends Base\Gateway
         return $secret;
     }
 
-
-    protected function verifySecureHash($input, $payment)
+    protected function verifyGatewaySecureHash(array $input, $payment)
     {
-        $generatedHash = $this->generateCallbackSecureHash($input, $payment);
+        $generated = $this->generateCallbackSecureHash($input, $payment);
 
         if (isset($input['gateway']['msgHash']))
         {
-            $hash = $input['gateway']['msgHash'];
+            $actual = $input['gateway']['msgHash'];
         }
         else
         {
@@ -591,11 +590,7 @@ class Gateway extends Base\Gateway
             );
         }
 
-        if ($generatedHash !== $hash)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                                    'Failed checksum verification');
-        }
+        $this->compareHashes($actual, $generated);
     }
 
     protected function generateCallbackSecureHash($input, $payment)
@@ -606,9 +601,7 @@ class Gateway extends Base\Gateway
         $content['merAppData'] = '';
         $content['txnCurrency'] = '356';
 
-        $generatedHash = $this->getHashForAuthorizeResponse($content);
-
-        return $generatedHash;
+        return $this->getHashForAuthorizeResponse($content);
     }
 
     /**
@@ -786,6 +779,6 @@ class Gateway extends Base\Gateway
             return $this->config['test_merchant_app_id'];
         }
 
-        return $input['terminal']['gateway_terminal_id'];
+        return $input['terminal']['gateway_access_code'];
     }
 }

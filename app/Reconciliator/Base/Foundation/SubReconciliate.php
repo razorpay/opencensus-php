@@ -2,8 +2,10 @@
 
 namespace RZP\Reconciliator\Base\Foundation;
 
+use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 use RZP\Exception\LogicException;
 use RZP\Models\Payment;
+use RZP\Models\Base;
 use App;
 
 class SubReconciliate
@@ -46,6 +48,39 @@ class SubReconciliate
 
         // Increment the success count for the summary.
         $this->setSummaryCount(self::SUCCESSES_SUMMARY, $entity->getKey());
+    }
+
+    protected function persistGatewaySettledAt(Base\Entity $entity, array $rowDetails)
+    {
+        $gatewaySettledAt = $rowDetails[BaseReconciliate::GATEWAY_SETTLED_AT];
+
+        if (empty($gatewaySettledAt) === true)
+        {
+            return;
+        }
+
+        $transaction = $entity->transaction;
+
+        // Since we might be running this before the actual recon process,
+        // it's possible that the transaction for this particular entity is
+        // not even present.
+        // We will be running this in the last step of recon process too.
+        // So, it will get recorded in that step, if not in the first step.
+        if ($transaction === null)
+        {
+            return;
+        }
+
+        // If this is already recorded, no need to record it again.
+        // This could have got recorded in pre-recon-process itself.
+        if ($transaction->getGatewaySettledAt() !== null)
+        {
+            return;
+        }
+
+        $transaction->setGatewaySettledAt($gatewaySettledAt);
+
+        $transaction->saveOrFail();
     }
 
     protected function checkIfAlreadyReconciled($entity)
@@ -96,7 +131,19 @@ class SubReconciliate
         {
             $summary['failures'] = $this->failures;
         }
-        
+
         return $summary;
+    }
+
+    /**
+     * Not all gateways provide us with gateway_settled_at.
+     * Hence, we send back null for these gateways.
+     *
+     * @param $row
+     * @return null
+     */
+    protected function getGatewaySettledAt($row)
+    {
+        return null;
     }
 }

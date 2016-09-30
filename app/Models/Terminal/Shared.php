@@ -26,6 +26,8 @@ class Shared
     const SHARP_RAZORPAY_TERMINAL           = '1000SharpTrmnl';
     const CYBERSOURCE_HDFC_TERMINAL         = '1000CybrsTrmnl';
     const CYBERSOURCE_AXIS_TERMINAL         = '1000CybAxTrmnl';
+    const UPI_ICICI_RAZORPAY_TERMINAL       = '100UPIICICITml';
+    const AIRTELMONEY_RAZORPAY_TERMINAL     = '100ArtlMnyTmnl';
 
     protected static $shared = array(
         self::ATOM_RAZORPAY_TERMINAL,
@@ -46,6 +48,8 @@ class Shared
         self::SBIEPAY_RAZORPAY_TERMINAL,
         self::CYBERSOURCE_HDFC_TERMINAL,
         self::CYBERSOURCE_AXIS_TERMINAL,
+        self::UPI_ICICI_RAZORPAY_TERMINAL,
+        self::AIRTELMONEY_RAZORPAY_TERMINAL,
     );
 
     // NOTE: No two shared terminal should be present for same gateway
@@ -67,8 +71,10 @@ class Shared
         self::PAYTM_RAZORPAY_TERMINAL       => Gateway::PAYTM,
         self::PAYZAPP_RAZORPAY_TERMINAL     => Gateway::WALLET_PAYZAPP,
         self::PAYUMONEY_RAZORPAY_TERMINAL   => Gateway::WALLET_PAYUMONEY,
+        self::AIRTELMONEY_RAZORPAY_TERMINAL => Gateway::WALLET_AIRTELMONEY,
         self::SBIEPAY_RAZORPAY_TERMINAL     => Gateway::SBIEPAY,
         self::SHARP_RAZORPAY_TERMINAL       => Gateway::SHARP,
+        self::UPI_ICICI_RAZORPAY_TERMINAL   => Gateway::UPI_ICICI,
     );
 
     public static function isSharedTerminal($terminal)

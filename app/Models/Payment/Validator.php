@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use Lib\PhoneBook;
 use RZP\Models\Base;
+use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\Processor\Wallet;
@@ -15,10 +16,11 @@ class Validator extends Base\Validator
     protected static $createRules = array(
         'amount'                  =>  'required|integer',
         'currency'                =>  'required|size:3',
-        'method'                  =>  'in:card,netbanking,wallet,emi',
+        'method'                  =>  'custom',
+        'vpa'                     =>  'required_if:method,upi|max:100|custom',
         'card'                    =>  'sometimes',
         'bank'                    =>  'required_if:method,netbanking',
-        'wallet'                  =>  'required_if:method,wallet|in:paytm,payzapp,mobikwik,payumoney,olamoney',
+        'wallet'                  =>  'required_if:method,wallet|custom',
         'emi_duration'            =>  'required_if:method,emi|integer|in:3,6,9,12,18,24',
         'description'             =>  'sometimes',
         'email'                   =>  'required|email',
@@ -32,6 +34,7 @@ class Validator extends Base\Validator
         'app_token'               =>  'sometimes',
         'token'                   =>  'sometimes',
         'save'                    =>  'sometimes|in:0,1',
+        'recurring'               =>  'sometimes_if:method,card|in:0,1',
         'fee'                     =>  'sometimes|integer|max:50000000',
         'service_tax'             =>  'sometimes|integer|max:50000000',
         '_'                       =>  'sometimes');
@@ -52,35 +55,56 @@ class Validator extends Base\Validator
         'currency',
         'description',
         'fee',
-        'contact',
-        'wallet');
+        'contact');
 
-    protected function validateWallet($input)
+    protected function validateMethod($attribute, $method)
     {
-        if ($input['method'] !== Payment\Method::WALLET)
+        if (Method::isValid($method) === false)
         {
-            return true;
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid payment method given: ' . $method);
         }
+    }
 
-        if (isset($input['wallet']) === false)
+    protected function validateVpa($attribute, $vpa, $parameter)
+    {
+        $vpaParts = explode('@', $vpa);
+
+        if (count($vpaParts) !== 2)
         {
+            // Invalid VPA
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_PROVIDED);
+                ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA);
         }
 
-        if (Wallet::exists($input['wallet']) === false)
+        $merchantId = null;
+
+        if ($this->entity->getMerchantId() !== null)
+        {
+            $merchantId = $this->entity->merchant->getId();
+        }
+    }
+
+    protected function validateWallet($attribute, $value)
+    {
+        if (Wallet::exists($value) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_SUPPORTED);
         }
-
-        return true;
     }
 
     protected function validateCardKey($input)
     {
         if (($input['method'] !== Payment\Method::CARD) and
             ($input['method'] !== Payment\Method::EMI))
+        {
+            return;
+        }
+
+        if ((isset($input['recurring']) === true) and
+            ($input['recurring'] === '1') and
+            (empty($input['token']) === false))
         {
             return;
         }
@@ -110,6 +134,15 @@ class Validator extends Base\Validator
                 'amount');
         }
 
+        if (($input['method'] === Payment\Method::WALLET) and
+            ($input['wallet'] === Wallet::AIRTELMONEY) and
+            ($amount < 1000))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_10_MIN_AMOUNT,
+                'amount');
+        }
+
         if (($input['method'] === Payment\Method::EMI) and ($amount < 200000))
         {
             throw new Exception\BadRequestException(
@@ -124,6 +157,21 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'Amount exceeds maximum amount allowed.',
                 'amount');
+        }
+    }
+
+    public function validateCardAndCvv($input)
+    {
+        if (isset($input['card']) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_NOT_PROVIDED);
+        }
+
+        if (isset($input['card']['cvv']) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_CVV_NOT_PROVIDED);
         }
     }
 
@@ -251,15 +299,13 @@ class Validator extends Base\Validator
         }
     }
 
-    public function captureValidate($payment, $input)
+    public function captureValidate($payment, $amount)
     {
         $this->failIfCaptured($payment);
 
         $this->failIfNotAuthorized($payment);
 
-        $this->validateInput('capture', $input);
-
-        $this->captureAmountValidate($payment, $input);
+        $this->captureAmountValidate($payment, $amount);
     }
 
     public function cancelValidate($payment)
@@ -267,17 +313,16 @@ class Validator extends Base\Validator
         $this->failIfNotCreated($payment);
     }
 
-    public function captureAmountValidate($payment, $input)
+    public function captureAmountValidate($payment, $amount)
     {
-        $amount = (int) $input['amount'];
+        $amount = (int) $amount;
 
         if ($amount !== $payment->getAmount())
         {
             $e = new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_AMOUNT_NOT_EQUAL_TO_AUTH,
-                Payment\Entity::AMOUNT);
-
-            $e->setData(['amount' => $input['amount']]);
+                Payment\Entity::AMOUNT,
+                ['amount' => $amount]);
 
             throw $e;
         }

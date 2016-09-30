@@ -75,7 +75,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->getContent($decryptedContent);
 
-        $payment = $this->getRepo()->findByPaymentIdAndAction(
+        $payment = $this->repo->findByPaymentIdAndAction(
             $content['MerchantOrderNo'], Action::AUTHORIZE);
 
         $content['received'] = 1;
@@ -97,7 +97,7 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        $payment = $this->getRepo()->findByPaymentIdAndAction(
+        $payment = $this->repo->findByPaymentIdAndAction(
             $input['payment']['id'], Action::AUTHORIZE);
 
         $params = array(

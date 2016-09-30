@@ -51,7 +51,7 @@ class Gateway extends Base\Gateway
 
         $this->verifySecureHash($input['gateway']);
 
-        $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
+        $payment = $this->repo->findByPaymentIdAndActionOrFail(
                             $input['gateway']['orderid'], Action::AUTHORIZE);
 
         $input['gateway']['received'] = 1;
@@ -435,7 +435,7 @@ class Gateway extends Base\Gateway
 
         $this->addTestMerchantIdIfTestMode($content);
 
-        // $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
+        // $payment = $this->repo->findByPaymentIdAndActionOrFail(
         //                         $input['payment']['id'], Action::AUTHORIZE);
 
         $content['txid'] = $input['payment']['id'];
@@ -518,7 +518,7 @@ class Gateway extends Base\Gateway
         return $this->getHashOfArray($content);
     }
 
-    protected function verifySecureHash($content)
+    protected function verifySecureHash(array $content)
     {
         $fieldsInOrder = array(
             'statuscode',
@@ -529,16 +529,13 @@ class Gateway extends Base\Gateway
             'refid'
         );
 
-        $hash = $content['checksum'];
+        $actual = $content['checksum'];
 
         $content = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
 
-        $generatedHash = $this->getHashOfArray($content);
-        if ($generatedHash !== $hash)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Failed checksum verification');
-        }
+        $generated = $this->getHashOfArray($content);
+
+        $this->compareHashes($actual, $generated);
     }
 
     protected function verifySecureHashForQueryRequest($content)
@@ -550,15 +547,11 @@ class Gateway extends Base\Gateway
             "'" . $content['statusmessage'] . "'" .
             "'" . $content['ordertype'] . "'";
 
-        $generatedHash = $this->getHashOfString($str);
+        $generated = $this->getHashOfString($str);
 
-        $hash = $content['checksum'];
+        $actual = $content['checksum'];
 
-        if ($generatedHash !== $hash)
-        {
-            throw new Exception\GatewayErrorException(
-                Error\ErrorCode::BAD_REQUEST_ERROR);
-        }
+        $this->compareHashes($actual, $generated);
     }
 
     protected function shouldReturnIfPaymentNullInVerifyFlow($verify)

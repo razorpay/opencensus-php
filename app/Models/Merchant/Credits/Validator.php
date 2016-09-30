@@ -9,7 +9,7 @@ use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
-    const MAX_CREDITS = 1000000;
+    const MAX_CREDITS = 100000000;
     const MIN_CREDITS = 100;
 
     protected static $createRules = array(

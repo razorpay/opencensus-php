@@ -20,10 +20,23 @@ class Gateway
     const TIMEOUT = 30;
 
     /**
+     * Default payment timeout duration in mins.
+     * @var  integer
+     */
+    const PAYMENT_TTL = 20;
+
+    /**
      * Default OTP attempts limit
      * @var integer
      */
     const OTP_ATTEMPTS_LIMIT = 3;
+
+    /**
+     * In gateway responses one particular field contains
+     * hash or checksum. This variable will contain that field
+     * name.
+     */
+    const CHECKSUM_ATTRIBUTE = '';
 
     /**
      * The application instance.
@@ -219,6 +232,37 @@ class Gateway
         $this->mock = $mock;
     }
 
+    protected function getHashValueFromContent(array $content)
+    {
+        return $content[static::CHECKSUM_ATTRIBUTE];
+    }
+
+    protected function verifySecureHash(array $content)
+    {
+        $actual = $this->getHashValueFromContent($content);
+
+        unset($content[static::CHECKSUM_ATTRIBUTE]);
+
+        $generated = $this->generateHash($content);
+
+        $this->compareHashes($actual, $generated);
+    }
+
+    protected function compareHashes($actual, $generated)
+    {
+        if (hash_equals($actual, $generated) === false)
+        {
+            $this->trace->info(
+                TraceCode::GATEWAY_CHECKSUM_VERIFY_FAILED,
+                [
+                    'actual'    => $actual,
+                    'generated' => $generated
+                ]);
+
+            throw new Exception\RuntimeException('Failed checksum verification');
+        }
+    }
+
     public function generateRefunds($input)
     {
         $paymentIds = array_map(function($row)
@@ -226,7 +270,7 @@ class Gateway
             return $row['payment']['id'];
         }, $input['data']);
 
-        $payments = $this->getRepo()->fetchByPaymentIdsAndAction(
+        $payments = $this->repo->fetchByPaymentIdsAndAction(
                                 $paymentIds, Action::AUTHORIZE);
 
         $payments = $payments->getDictionaryByAttribute(Entity::PAYMENT_ID);
@@ -342,6 +386,11 @@ class Gateway
         return $verify->getDataToTrace();
     }
 
+    public function preProcessS2SResponse($input)
+    {
+        return $input;
+    }
+
     protected function shouldReturnIfPaymentNullInVerifyFlow($verify)
     {
         if (($verify->input['payment']['status'] === 'failed') or
@@ -366,7 +415,7 @@ class Gateway
 
     protected function getPaymentToVerify($input, $verify)
     {
-        $payment = $this->getRepo()->findByPaymentIdAndAction(
+        $payment = $this->repo->findByPaymentIdAndAction(
                     $input['payment']['id'], Action::AUTHORIZE);
 
         $verify->payment = $payment;
@@ -446,11 +495,6 @@ class Gateway
         return new $class;
     }
 
-    protected function getRepo()
-    {
-        return $this->getRepository();
-    }
-
     protected function getStringToHash($content, $glue = '')
     {
         return implode($glue, $content);
@@ -507,6 +551,8 @@ class Gateway
         $this->config = $this->app['config']->get($configGatewayStr);
 
         $this->proxy = $this->app['config']->get('gateway.proxy_address');
+
+        $this->proxyEnabled = $this->app['config']->get('gateway.proxy_enabled');
     }
 
     protected function getFormValues($form, $url)
@@ -622,5 +668,45 @@ class Gateway
         $gateway = $this->gateway;
 
         return $this->app['repo']->$gateway;
+    }
+
+    protected function getMappedAttributes($attributes)
+    {
+        $attr = [];
+
+        $map = $this->map;
+
+        foreach ($attributes as $key => $value)
+        {
+            if (isset($map[$key]))
+            {
+                $newKey = $map[$key];
+                $attr[$newKey] = $value;
+            }
+        }
+
+        return $attr;
+    }
+
+    protected function xmlToArray($xml)
+    {
+        $e = null;
+        $res = null;
+
+        try
+        {
+            $res = simplexml_load_string($xml);
+
+            return (array) $res;
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e);
+
+            throw new Exception\RuntimeException(
+                'Failed to convert xml to array',
+                ['xml' => $xml],
+                $e);
+        }
     }
 }

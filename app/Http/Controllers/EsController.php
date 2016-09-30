@@ -2,6 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
+use RZP\Base\RuntimeManager;
 use RZP\Models\Base\EsDao;
 use RZP\Trace\TraceCode;
 use Request;
@@ -175,7 +176,7 @@ class EsController extends Controller
 
     protected function increaseAllowedSystemLimits()
     {
-        ini_set('memory_limit', '1024M');
-        set_time_limit(1800);
+        RuntimeManager::setMemoryLimit('1024M');
+        RuntimeManager::setTimeLimit(1800);
     }
 }

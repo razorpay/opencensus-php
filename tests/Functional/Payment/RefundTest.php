@@ -2,10 +2,12 @@
 
 namespace RZP\Tests\Functional\Payment;
 
-use Carbon\Carbon;
-use Mockery;
 use DB;
+use Redis;
+use Mockery;
+use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 /**
@@ -141,6 +143,27 @@ class RefundTest extends TestCase
         $this->assertEquals(2, $content['refunded']);
         $this->assertArrayHasKey('authorized', $content);
         $this->assertEquals(2, $content['authorized']);
+    }
+
+    public function testRefundOfMultipleAuthorizedPaymentsForOrder()
+    {
+        $this->ba->appAuth();
+        $orders = $this->fixtures->times(2)->create('order');
+
+        $orderIdOne = $orders[0]->getId();
+        $orderIdTwo = $orders[1]->getId();
+
+        // Card not getting created properly when using ->times(x)
+        $this->fixtures->payment->createAuthorized(['order_id' => $orderIdOne]);
+        $this->fixtures->payment->createAuthorized(['order_id' => $orderIdOne]);
+
+        $this->fixtures->payment->createAuthorized(['order_id' => $orderIdTwo]);
+        $this->fixtures->payment->createAuthorized(['order_id' => $orderIdTwo]);
+        $this->fixtures->payment->createCaptured(['order_id' => $orderIdTwo]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData);
     }
 
     public function testRefundCalledOnPurchaseWithoutCapture()

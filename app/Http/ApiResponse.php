@@ -32,7 +32,7 @@ class ApiResponse
         $response = self::generateJsonErrorResponse(
             ErrorCode::BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED);
 
-        $response->header('WWW-Authenticate', 'Basic realm="Razorpay"');
+        $response->header(ResponseHeader::WWW_AUTHENTICATE, 'Basic realm="Razorpay"');
 
         return $response;
     }
@@ -70,14 +70,14 @@ class ApiResponse
         //
         // Ask browser not to cache
         //
-        $response->headers->set('Cache-Control','nocache, no-store, max-age=0, must-revalidate');
+        $response->headers->set(ResponseHeader::CACHE_CONTROL,'nocache, no-store, max-age=0, must-revalidate');
 
-        $response->headers->set('Pragma','no-cache');
+        $response->headers->set(ResponseHeader::PRAGMA,'no-cache');
 
         //
         // Put old time so that any browser cache gets expired
         //
-        $response->headers->set('Expires','Fri, 01 Jan 1990 00:00:00 GMT');
+        $response->headers->set(ResponseHeader::EXPIRES,'Fri, 01 Jan 1990 00:00:00 GMT');
     }
 
     /**
@@ -96,7 +96,7 @@ class ApiResponse
         {
             $response->setCallback($callback);
         }
-        catch(\InvalidArgumentException $e)
+        catch (\InvalidArgumentException $e)
         {
             $response->setCallback(self::JSONP_FALLBACK_CALLBACK);
         }
@@ -219,11 +219,6 @@ class ApiResponse
 
     protected static function generateCheckoutView($data)
     {
-        if (isset($data['font']) === false)
-        {
-            $data['font'] = 'https://cdn.razorpay.com/lato2';
-        }
-
         return \View::make('checkout.checkout')
                     ->with($data);
     }
@@ -290,7 +285,7 @@ class ApiResponse
             // because on android 2.* json content is not being read on form
             // post for cards with no 3d-secure.
             //
-            $response->headers->set('content-type', 'text/html; charset=UTF-8');
+            $response->headers->set(ResponseHeader::CONTENT_TYPE, 'text/html; charset=UTF-8');
         }
     }
 
@@ -311,7 +306,7 @@ class ApiResponse
             // otherwise these routes will not work there. Read furhter on CORS
             // to understand better.
             //
-            $response->headers->set('Access-Control-Allow-Origin', '*');
+            $response->headers->set(ResponseHeader::ACCESS_CONTROL_ALLOW_ORIGIN, '*');
         }
     }
 
@@ -322,7 +317,7 @@ class ApiResponse
             return;
         }
 
-        $response->headers->set('X-Frame-Options', 'SAMEORIGIN', false);
+        $response->headers->set(ResponseHeader::X_FRAME_OPTIONS, 'SAMEORIGIN', false);
     }
 
     protected static function mustNotSetSameOriginHeaders($route)

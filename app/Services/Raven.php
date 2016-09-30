@@ -13,6 +13,8 @@ class Raven
 {
     const SMS_ID = 'sms_id';
 
+    const REQUEST_TIMEOUT = 30;
+
     protected $baseUrl;
 
     protected $key;
@@ -104,12 +106,11 @@ class Raven
             $data = '';
         }
 
-        $authHeader = 'Basic '. base64_encode($this->key . ':' . $this->secret);
-
         $headers['Accept'] = 'application/json';
-        $headers['Authorization'] = $authHeader;
 
         $options = array(
+            'timeout' => self::REQUEST_TIMEOUT,
+            'auth'    => [$this->key, $this->secret],
             // 'proxy' => $this->proxy
         );
 
@@ -123,9 +124,11 @@ class Raven
 
         $response = $this->sendRavenRequest($request);
 
-        $decodedResponse = json_decode($response->body, true);
+        $this->trace->info(TraceCode::RAVEN_RESPONSE, [
+                    'response' => $response->body
+                ]);
 
-        $this->trace->info(TraceCode::RAVEN_RESPONSE, $decodedResponse);
+        $decodedResponse = json_decode($response->body, true);
 
         $this->checkErrors($decodedResponse);
 
@@ -134,7 +137,7 @@ class Raven
 
     protected function sendRavenRequest($request)
     {
-        $this->trace->info(TraceCode::RAVEN_REQUEST, $request);
+        $this->traceRequest($request);
 
         $method = $request['method'];
 
@@ -152,6 +155,13 @@ class Raven
         }
 
         return $response;
+    }
+
+    protected function traceRequest($request)
+    {
+        unset($request['options']['auth']);
+
+        $this->trace->info(TraceCode::RAVEN_REQUEST, $request);
     }
 
     protected function checkErrors($response)
