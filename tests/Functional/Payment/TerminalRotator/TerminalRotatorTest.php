@@ -7,6 +7,7 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Exception\GatewayTimeoutException;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Payment\Analytics\Entity as AnalyticsEntity;
+use RZP\Models\Payment;
 
 class TerminalRotatorTest extends TestCase
 {
@@ -64,7 +65,7 @@ class TerminalRotatorTest extends TestCase
 
         $payment1  = $this->getLastPayment(true);
 
-        $this->stripSign($payment1['id']);
+        Payment\Entity::verifyIdAndStripSign($payment1['id']);
 
         $analytics = $this->getEntities('terminal_analytics', array('payment_id' => $payment1['id']), true);
 
@@ -80,7 +81,7 @@ class TerminalRotatorTest extends TestCase
 
         $payment = $this->getLastPayment(true);
 
-        $this->stripSign($payment['id']);
+        Payment\Entity::verifyIdAndStripSign($payment['id']);
 
         $analytics = $this->getEntities('terminal_analytics', array('payment_id' => $payment['id']), true);
 
@@ -117,7 +118,7 @@ class TerminalRotatorTest extends TestCase
 
         $payment1  = $this->getLastPayment(true);
 
-        $this->stripSign($payment1['id']);
+        Payment\Entity::verifyIdAndStripSign($payment1['id']);
 
         $analytics = $this->getEntities('terminal_analytics', array('payment_id' => $payment1['id']), true);
 
@@ -133,7 +134,7 @@ class TerminalRotatorTest extends TestCase
 
         $payment = $this->getLastPayment(true);
 
-        $this->stripSign($payment['id']);
+        Payment\Entity::verifyIdAndStripSign($payment['id']);
 
         $analytics = $this->getEntities('terminal_analytics', array('payment_id' => $payment['id']), true);
 
@@ -164,7 +165,9 @@ class TerminalRotatorTest extends TestCase
             $this->assertExceptionClass($e, GatewayTimeoutException::CLASS);
         }
 
-        $this->stripSign($payment1['id']);
+        $payment1 = $this->getLastPayment(true);
+        
+        Payment\Entity::verifyIdAndStripSign($payment1['id']);
 
         $analytics = $this->getEntities('terminal_analytics', array('payment_id' => $payment1['id']), true);
 
@@ -185,7 +188,7 @@ class TerminalRotatorTest extends TestCase
 
         $payment = $this->getLastPayment(true);
 
-        $this->stripSign($payment['id']);
+        Payment\Entity::verifyIdAndStripSign($payment['id']);
 
         $analytics = $this->getEntities('terminal_analytics', array('payment_id' => $payment['id']), true);
 
@@ -233,10 +236,7 @@ class TerminalRotatorTest extends TestCase
         {
             $this->assertExceptionClass($e, GatewayTimeoutException::CLASS);
         }
-
     }
-
-
 
     //-- helpers----
 
@@ -250,7 +250,6 @@ class TerminalRotatorTest extends TestCase
         $payment = array();
 
         $payment = array_merge($defaultPayment, $payment);
-
 
         return $payment;
     }
