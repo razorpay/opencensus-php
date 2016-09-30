@@ -44,16 +44,6 @@ class Entity extends Base\Entity
 
     // ----------------------- Getters ---------------------------------------------
 
-    public function getStatus()
-    {
-        return $this->getAttribute(self::STATUS);
-    }
-
-    public function getGatewayPaymentId()
-    {
-        return $this->getAttribute(self::GATEWAY_PAYMENT_ID);
-    }
-
     public function getApprovalCode()
     {
         return $this->getAttribute(self::APPROVAL_CODE);
@@ -74,10 +64,5 @@ class Entity extends Base\Entity
     public function setStatus($status)
     {
         return $this->setAttribute(self::STATUS, $status);
-    }
-
-    public function setErrorMessage($msg)
-    {
-        return $this->setAttribute(self::ERROR_MESSAGE, $msg);
     }
 }

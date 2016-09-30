@@ -110,9 +110,33 @@ class FirstDataGatewayTest extends TestCase
         });
     }
 
+    public function testPaymentDoubleCapture()
+    {
+        $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->capturePayment($payment['id'], $payment['amount']);
+        });
+    }
+
     public function testFailedAuthPayment()
     {
         $this->getErrorInAuth();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() {
+            $this->doAuthPayment($this->payment);
+        });
+    }
+
+    public function testFailedAuthUnknownError()
+    {
+        $this->getUnknownErrorInAuth();
 
         $data = $this->testData[__FUNCTION__];
 
@@ -163,6 +187,19 @@ class FirstDataGatewayTest extends TestCase
 
         $this->runRequestResponseFlow($data, function() use ($payment) {
             $this->verifyPayment($payment['id']);
+        });
+    }
+
+    public function testMismatchVerify()
+    {
+        $authResponse = $this->doAuthPayment($this->payment);
+
+        $this->fixtures->edit('payment', $authResponse['razorpay_payment_id'], ['status' => 'failed']);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($authResponse) {
+            $this->verifyPayment($authResponse['razorpay_payment_id']);
         });
     }
 

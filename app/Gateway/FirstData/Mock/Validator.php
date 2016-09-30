@@ -51,17 +51,6 @@ class Validator extends Base\Validator
         ConnectRequestFields::LANGUAGE,
     );
 
-    protected function validateTransaction($input)
-    {
-        if ((in_array($input['Transaction'], 'CreditCardTxType') === false) or
-            (in_array($input['Transaction'], 'Payment') === false) or
-            (in_array($input['Transaction'], 'TransactionDetails') === false))
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Invalid Transaction Body');
-        }
-    }
-
     protected function validateTxntype($input)
     {
         if ((isset($input['txntype']) === false) or

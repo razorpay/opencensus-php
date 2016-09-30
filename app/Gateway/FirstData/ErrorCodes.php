@@ -187,7 +187,7 @@ class ErrorCodes
             return self::$errorCodeMap[$code];
         }
 
-        return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
+        return ErrorCode::GATEWAY_ERROR_REQUEST_ERROR;
     }
 
     public static function getErrorDesc($code = null)

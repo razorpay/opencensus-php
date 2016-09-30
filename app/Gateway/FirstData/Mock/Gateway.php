@@ -15,11 +15,4 @@ class Gateway extends FirstData\Gateway
     {
         return $this->authorizeMock($input);
     }
-
-    protected function getServer()
-    {
-        $app = App::getFacadeRoot();
-
-        return $app['gateway']->server($this->gateway);
-    }
 }

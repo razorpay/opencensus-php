@@ -373,9 +373,9 @@ class Gateway
             return null;
         }
 
-        $content = $this->sendPaymentVerifyRequest($verify);
+        $this->sendPaymentVerifyRequest($verify);
 
-        $status = $this->verifyPayment($verify);
+        $this->verifyPayment($verify);
 
         if (($verify->match === false) and
             ($verify->throwExceptionOnMismatch))

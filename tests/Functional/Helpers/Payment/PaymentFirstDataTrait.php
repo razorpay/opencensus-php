@@ -35,6 +35,19 @@ trait PaymentFirstDataTrait
         $this->setMockServer($server);
     }
 
+    protected function getUnknownErrorInAuth()
+    {
+        $server = $this->mockServer()
+            ->shouldReceive('content')
+            ->andReturnUsing(function (& $content)
+            {
+                $content['approval_code'] = "N:666:Devil's Own Error";
+                $content['status'] = 'DECLINED';
+            })->mock();
+
+        $this->setMockServer($server);
+    }
+
     protected function getErrorInReturn()
     {
         $server = $this->mockServer()

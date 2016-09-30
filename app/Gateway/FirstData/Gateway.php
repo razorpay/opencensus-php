@@ -297,7 +297,7 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             ['gateway_verify_response' => $ipgApiActionResponse->asXML()]);
 
-        $verify->verifyResponseContent = $ipgApiActionResponse;
+        $verify->setVerifyResponseContent($ipgApiActionResponse);
     }
 
     protected function verifyPayment($verify)
@@ -306,7 +306,7 @@ class Gateway extends Base\Gateway
 
         $verifyResponse = $verify->verifyResponseContent;
 
-        $gatewayPaymentId = $gatewayPayment->getGatewayPaymentId();
+        $input = $verify->input;
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
@@ -318,27 +318,70 @@ class Gateway extends Base\Gateway
             // We're only interested in the preauth transaction state, so loop to that one, and check status.
             if ($type === TxnType::AUTH)
             {
-                // A example of the verify response structure can be found
-                // in the verifyResponseWrapper method of SoapWrapper class.
-                //
-                // As tdate and state are structed under different
-                // namespaces, their parsing logic is also distinct.
-                $tdate  = $transactionValue->children('v1', true)->TransactionDetails->TDate->__toString();
-
-                $state  = $transactionValue->children('a1', true)->TransactionState->__toString();
-
-                if ($gatewayPayment->getStatus() !== $state)
-                {
-                    $verify->status = VerifyResult::STATUS_MISMATCH;
-
-                    $verify->payment = $this->saveVerifyContent($gatewayPayment, $gatewayPaymentId, $state, $tdate);
-                }
+                $verifyAuthResponse = $transactionValue;
             }
         }
 
-        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
+        // A example of the verify response structure can be found
+        // in the verifyResponseWrapper method of SoapWrapper class.
+        //
+        // As tdate, order_ID and state are structed under different
+        // namespaces, their parsing logic is also distinct.
+        $authTdate  = $verifyAuthResponse->children('v1', true)->TransactionDetails->TDate->__toString();
 
-        return $verify->status;
+        $authGatewayPaymentId = $verifyAuthResponse->children('v1', true)->TransactionDetails->OrderId->__toString();
+
+        $authGatewayStatus  = $verifyAuthResponse->children('a1', true)->TransactionState->__toString();
+
+        $verify->gatewaySuccess = ($authGatewayStatus === Status::AUTHORIZED);
+
+        $verify->apiSuccess = $this->getVerifyApiStatus($gatewayPayment, $input['payment']);
+
+        if ($verify->apiSuccess !== $verify->gatewaySuccess)
+        {
+            $verify->status = VerifyResult::STATUS_MISMATCH;
+        }
+
+        $verify->payment = $this->saveVerifyContent($gatewayPayment, $authGatewayPaymentId, $authGatewayStatus, $authTdate);
+
+        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
+    }
+
+    protected function getVerifyApiStatus($gatewayPayment, $payment)
+    {
+        if (($payment['status'] === 'failed') or
+            ($payment['status'] === 'created'))
+        {
+            $apiStatus = false;
+
+            if (($gatewayPayment['received'] === true) or
+                ($gatewayPayment['status'] === Status::AUTHORIZED))
+            {
+                $this->trace->info(
+                    TraceCode::GATEWAY_PAYMENT_VERIFY_UNEXPECTED,
+                    [
+                        'gateway_payment'   => $gatewayPayment,
+                        'payment'           => $payment
+                    ]);
+            }
+        }
+        else
+        {
+            $apiStatus = true;
+
+            if (($gatewayPayment['status'] !== Status::AUTHORIZED) or
+                ($gatewayPayment['received'] === false))
+            {
+                $this->trace->info(
+                    TraceCode::GATEWAY_PAYMENT_VERIFY_UNEXPECTED,
+                    [
+                        'gateway_payment'   => $gatewayPayment,
+                        'payment'           => $payment
+                    ]);
+            }
+        }
+
+        return $apiStatus;
     }
 
     protected function saveVerifyContent($gatewayPayment, $gatewayPaymentId, $status, $tdate)
