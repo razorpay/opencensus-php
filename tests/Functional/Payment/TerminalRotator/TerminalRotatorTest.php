@@ -166,7 +166,7 @@ class TerminalRotatorTest extends TestCase
         }
 
         $payment1 = $this->getLastPayment(true);
-        
+
         Payment\Entity::verifyIdAndStripSign($payment1['id']);
 
         $analytics = $this->getEntities('terminal_analytics', array('payment_id' => $payment1['id']), true);
