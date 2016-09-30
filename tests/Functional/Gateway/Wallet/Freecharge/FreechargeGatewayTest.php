@@ -28,7 +28,7 @@ class FreechargeGatewayTest extends TestCase
 
         $this->gateway = 'wallet_freecharge';
 
-        $this->fixtures->merchant->enableWallet($this->merchantId, 'freecharge');
+        $this->fixtures->merchant->enableWallet($this->merchantId, self::WALLET);
     }
 
     public function testPayment()
@@ -46,6 +46,24 @@ class FreechargeGatewayTest extends TestCase
         $wallet = $this->getLastEntity('wallet', true);
 
         $this->assertTestResponse($wallet, 'testPaymentWalletEntity');
+    }
+
+    public function testDebitFailedPayment()
+    {
+        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+
+        $payment['amount'] = 19999;
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $capturePayment = $this->doAuthAndCapturePayment($payment);
+        });
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $this->assertTestResponse($wallet, 'testFailedPaymentWalletEntity');
     }
 
     public function testOtpRetryPayment()
@@ -110,7 +128,7 @@ class FreechargeGatewayTest extends TestCase
 
         $payment = $this->fixtures->create('payment', [
                             'method'        => 'wallet',
-                            'wallet'        => 'freecharge',
+                            'wallet'        => self::WALLET,
                             'gateway'       => 'wallet_freecharge',
                             'otp_attempts'  => 3,
                             'terminal_id'   => $this->sharedTerminal->id
@@ -131,7 +149,7 @@ class FreechargeGatewayTest extends TestCase
 
         $payment = $this->fixtures->create('payment', [
                             'method'        => 'wallet',
-                            'wallet'        => 'freecharge',
+                            'wallet'        => self::WALLET,
                             'gateway'       => 'wallet_freecharge',
                             'contact'       => '9111111111',
                             'otp_attempts'  => 2,
@@ -142,7 +160,7 @@ class FreechargeGatewayTest extends TestCase
         $wallet = $this->fixtures->create('wallet', [
             'payment_id'    => $payment->getId(),
             'amount'        => $payment->getAmount(),
-            'wallet'        => 'freecharge',
+            'wallet'        => self::WALLET,
             'reference1'    => '1asda2345',
             'action'        => 'authorize',
         ]);
@@ -164,7 +182,8 @@ class FreechargeGatewayTest extends TestCase
 
     public function testInsufficientBalancePayment()
     {
-        $payment = $this->getDefaultWalletPaymentArray('freecharge');
+        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+
         $payment['amount'] = 100000;
 
         $data = $this->testData[__FUNCTION__];
@@ -274,7 +293,7 @@ class FreechargeGatewayTest extends TestCase
                             'amount'        => 50000,
                             'contact'       => '9918899029',
                             'method'        => 'wallet',
-                            'wallet'        => 'freecharge',
+                            'wallet'        => self::WALLET,
                             'gateway'       => 'wallet_freecharge',
                             'card_id'       => null,
                             'terminal_id'   => $this->sharedTerminal->getId()
@@ -292,7 +311,7 @@ class FreechargeGatewayTest extends TestCase
 
     public function testVerifyPayment()
     {
-        $payment = $this->getDefaultWalletPaymentArray('freecharge');
+        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
 
         $authPayment = $this->doAuthPayment($payment);
 
@@ -312,7 +331,7 @@ class FreechargeGatewayTest extends TestCase
                             'amount'        => 50000,
                             'contact'       => '9918899029',
                             'method'        => 'wallet',
-                            'wallet'        => 'freecharge',
+                            'wallet'        => self::WALLET,
                             'gateway'       => 'wallet_freecharge',
                             'card_id'       => null,
                             'terminal_id'   => $this->sharedTerminal->id
@@ -323,7 +342,7 @@ class FreechargeGatewayTest extends TestCase
             [
                 'payment_id'          => $payment->getId(),
                 'amount'              => $payment->getAmount(),
-                'wallet'              => 'freecharge',
+                'wallet'              => self::WALLET,
                 'gateway_merchant_id' => 'random_id',
                 'reference1'          => '1asda2345',
                 'action'              => 'authorize',
@@ -347,9 +366,55 @@ class FreechargeGatewayTest extends TestCase
         $this->assertTestResponse($wallet, 'testPaymentWalletEntity');
     }
 
+    public function testVerifyFailedPaymentOnGatewayFailure()
+    {
+        $this->ba->publicAuth();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->fixtures->create('payment:failed', [
+                            'email'         => 'a@b.com',
+                            'amount'        => 50000,
+                            'contact'       => '9918899029',
+                            'status'        => 'captured',
+                            'method'        => 'wallet',
+                            'wallet'        => self::WALLET,
+                            'gateway'       => 'wallet_freecharge',
+                            'card_id'       => null,
+                            'terminal_id'   => $this->sharedTerminal->id
+                        ]);
+
+        // Causes the failure, gateway_payment_id is not set if payment
+        // failed
+        $wallet = $this->fixtures->create(
+            'wallet',
+            [
+                'payment_id'          => $payment->getId(),
+                'amount'              => $payment->getAmount(),
+                'wallet'              => self::WALLET,
+                'gateway_merchant_id' => 'random_id',
+                'reference1'          => '1asda2345',
+                'action'              => 'authorize',
+                'status_code'         => 'SUCCESS',
+                'received'            => true,
+            ]
+        );
+
+        $id = $payment->getPublicId();
+
+        $this->runRequestResponseFlow($data, function() use ($id)
+        {
+            $this->verifyPayment($id);
+        });
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        //$this->assertTestResponse($wallet, 'testPaymentWalletEntity');
+    }
+
     public function testRefundPayment()
     {
-        $payment = $this->getDefaultWalletPaymentArray('freecharge');
+        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
 
         $authPayment = $this->doAuthPayment($payment);
 
@@ -364,7 +429,7 @@ class FreechargeGatewayTest extends TestCase
 
     public function testPartialRefundPayment()
     {
-        $payment = $this->getDefaultWalletPaymentArray('freecharge');
+        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
 
         $authPayment = $this->doAuthPayment($payment);
 
@@ -375,98 +440,6 @@ class FreechargeGatewayTest extends TestCase
         $refund = $this->getLastEntity('wallet', true);
 
         $this->assertTestResponse($refund);
-    }
-
-    public function testRefundExcelFile()
-    {
-        $defaultPayment = $this->getDefaultWalletPaymentArray('freecharge');
-
-        $payment = $this->doAuthAndCapturePayment($defaultPayment);
-
-        $refund = $this->refundPayment($payment['id']);
-
-        $payment = $this->doAuthAndCapturePayment($defaultPayment);
-        $refund = $this->refundPayment($payment['id'], 10000);
-        $refund = $this->refundPayment($payment['id']);
-
-        $refunds = $this->getEntities('refund', [], true);
-
-        // Convert the created_at dates to yesterday's so that they are picked
-        // up during refund excel generation
-        foreach ($refunds['items'] as $refund)
-        {
-            $createdAt = Carbon::yesterday('Asia/Kolkata')->timestamp + 5;
-            $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
-        }
-
-        $payment = $this->doAuthAndCapturePayment($defaultPayment);
-        $this->refundPayment($payment['id']);
-
-        $data = $this->generateRefundsExcelForFreechargeWallet();
-
-        $this->assertEquals(4, $data['wallet_freecharge']['count']);
-        $this->assertTrue(file_exists($data['wallet_freecharge']['file']));
-    }
-
-    public function testRefundExcelFileForAParticularMonth()
-    {
-        $knownDate = Carbon::create(2016, 5, 21);
-        Carbon::setTestNow($knownDate);
-
-        $defaultPayment = $this->getDefaultWalletPaymentArray('freecharge');
-
-        $payment = $this->doAuthAndCapturePayment($defaultPayment);
-
-        $refund = $this->refundPayment($payment['id']);
-
-        $payment = $this->doAuthAndCapturePayment($defaultPayment);
-        $refund = $this->refundPayment($payment['id'], 10000);
-        $refund = $this->refundPayment($payment['id']);
-
-        $refunds = $this->getEntities('refund', [], true);
-
-        // Convert the created_at dates to yesterday's so that they are picked
-        // up during refund excel generation
-        foreach ($refunds['items'] as $refund)
-        {
-            $createdAt = Carbon::yesterday('Asia/Kolkata')->timestamp + 5;
-            $this->fixtures->edit('refund', $refund['id'], [
-                'created_at' => $createdAt,
-                'updated_at' => $createdAt
-            ]);
-        }
-
-        $payment = $this->doAuthAndCapturePayment($defaultPayment);
-        $this->refundPayment($payment['id']);
-
-        $data = $this->generateRefundsExcelForFreechargeWallet(true);
-
-        $this->assertEquals(3, $data['wallet_freecharge']['count']);
-        $this->assertTrue(file_exists($data['wallet_freecharge']['file']));
-
-        Carbon::setTestNow();
-    }
-
-    protected function generateRefundsExcelForFreechargeWallet($date = false)
-    {
-        $this->ba->appAuth();
-
-        $request = array(
-            'url' => '/refunds/excel',
-            'method' => 'post',
-            'content' => [
-                'method'    => 'wallet',
-                'wallet'    => 'freecharge',
-                'frequency' => 'monthly'
-            ],
-        );
-
-        if ($date)
-        {
-            $request['content']['on'] = Carbon::now()->format('Y-m-d');
-        }
-
-        return $this->makeRequestAndGetContent($request);
     }
 
     protected function runPaymentCallbackFlowWalletFreecharge($response, &$callback = null)

@@ -33,6 +33,22 @@ return [
         'otp_attempts'      => null
     ],
 
+    'testDebitFailedPayment'     => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => PublicErrorDescription::GATEWAY_ERROR,
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_AMOUNT,
+        ],
+    ],
+
     'testPaymentWithOtpAttempts' => [
         'merchant_id'       => '10000000000000',
         'amount'            => 50000,
@@ -182,6 +198,17 @@ return [
         'entity'                => 'wallet',
     ],
 
+    'testFailedPaymentWalletEntity' => [
+        'action'                => 'authorize',
+        'amount'                => 19999,
+        'wallet'                => 'freecharge',
+        'received'              => false,
+        'email'                 => 'a@b.com',
+        'contact'               => '9918899029',
+        'gateway_merchant_id'   => 'random_id',
+        'entity'                => 'wallet',
+    ],
+
     'testTopupPayment'               => [
         'action'                => 'authorize',
         'amount'                => 100000,
@@ -197,6 +224,22 @@ return [
     ],
 
     'testVerifyFailedPayment'   => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\PaymentVerificationException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED
+        ],
+    ],
+
+    'testVerifyFailedPaymentOnGatewayFailure'   => [
         'response'  => [
             'content'     => [
                 'error' => [

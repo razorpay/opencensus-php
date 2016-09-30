@@ -83,8 +83,8 @@ class Server extends Base\Mock\Server
 
         $response = array(
             ResponseFields::STATUS                 => Freecharge\Status::REFUND_SUCCESS,
-            ResponseFields::REFUND_TXN_ID          => $this->getRefundTxnId(),
-            ResponseFIelds::REFUND_MERCHANT_TXN_ID => $this->getRefundMerchantTxnId(),
+            ResponseFields::REFUND_TXN_ID          => random_integer(5),
+            ResponseFIelds::REFUND_MERCHANT_TXN_ID => uniqid(),
             ResponseFields::REFUNDED_AMOUNT        => $input[RequestFields::REFUND_AMOUNT],
             ResponseFields::ERROR_CODE             => null,
             ResponseFields::ERROR_MESSAGE          => null,
@@ -187,11 +187,11 @@ class Server extends Base\Mock\Server
 
         $this->validateActionInput($input, 'debitWallet');
 
-        if ($input['accessToken'] === self::ACCESS_TOKEN)
+        if ($input['accessToken'] === self::ACCESS_TOKEN and $input['amount'] != '199.99')
         {
             $response = array(
-                ResponseFields::TXN_ID          => $this->getTxnId(),
-                ResponseFields::MERCHANT_TXN_ID => $this->getMerchantTxnId(),
+                ResponseFields::TXN_ID          => random_integer(11),
+                ResponseFields::MERCHANT_TXN_ID => random_integer(11),
                 ResponseFields::AMOUNT          => $input[RequestFields::AMOUNT],
                 ResponseFields::STATUS          => Freecharge\Status::DEBIT_SUCCESS,
                 ResponseFields::ERROR_CODE      => null,
@@ -204,26 +204,20 @@ class Server extends Base\Mock\Server
         }
 
         $response = array(
-            'error'              => 'invalid_token',
-            'error_description'  => 'Invalid access token: ' . $this->mockRequest['headers']['Authorization'],
+            ResponseFields::TXN_ID          => random_integer(11),
+            ResponseFields::MERCHANT_TXN_ID => random_integer(11),
+            ResponseFields::AMOUNT          => $input[RequestFields::AMOUNT],
+            ResponseFields::STATUS          => Freecharge\Status::DEBIT_FAILED,
+            ResponseFields::ERROR_CODE      => 'E104',
+            ResponseFields::ERROR_MESSAGE   => 'Amount not parsable',
         );
 
-        return $this->makeResponse($response);
-    }
+        $response[ResponseFields::CHECKSUM] = $this->generateHash($response);
 
-    protected function getTxnId()
-    {
-        return random_integer(11);
-    }
+        $response = $this->makeResponse($response);
+        $response->setStatusCode(202);
 
-    protected function getMerchantTxnId()
-    {
-        return random_integer(11);
-    }
-
-    protected function getRefundMerchantTxnId()
-    {
-        return random_integer(5);
+        return $response;
     }
 
     protected function makeResponse($json)
@@ -233,14 +227,5 @@ class Server extends Base\Mock\Server
         $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
 
         return $response;
-    }
-
-    /*
-     * Freecharge requires us to create a refund entity and send its Id before it initiates a refund.
-     * Mocks presently generates a unique Id/
-     */
-    protected function getRefundTxnId()
-    {
-        return uniqid();
     }
 }

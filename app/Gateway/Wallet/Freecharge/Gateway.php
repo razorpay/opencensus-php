@@ -745,7 +745,7 @@ class Gateway extends Base\Gateway
             $verify->apiSuccess = false;
         }
         // Gateway declared it as false but we marked it as true.
-        else if ($payment['status_code'] === Status::SUCCESS)
+        else if ($payment['status_code'] === Status::TRANSACTION_SUCCESS)
         {
             $verify->status = VerifyResult::STATUS_MISMATCH;
             $verify->apiSuccess = true;
