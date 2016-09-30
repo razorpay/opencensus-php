@@ -1312,7 +1312,7 @@ trait Authorize
         return $this->callGatewayOtpGenerate($gatewayInput, $payment);
     }
 
-    protected function callGatewayOtpGenerate($data, $payment, $otpResend=false)
+    protected function callGatewayOtpGenerate($data, $payment, $otpResend = false)
     {
         try
         {

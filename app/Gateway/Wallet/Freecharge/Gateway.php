@@ -303,7 +303,7 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getRefundAttributesFromRefundResponse($input, $content);
 
-        $refund = $this->createGatewayRefundEntity($attributes);
+        $this->createGatewayRefundEntity($attributes);
     }
 
     public function verify(array $input)
@@ -835,11 +835,6 @@ class Gateway extends Base\Gateway
         $request['content'] = [];
 
         return $request;
-    }
-
-    protected function shouldReturnIfPaymentNullInVerifyFlow($verify)
-    {
-        return true;
     }
 
     /**

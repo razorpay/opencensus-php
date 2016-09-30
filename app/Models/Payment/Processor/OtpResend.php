@@ -37,9 +37,7 @@ trait OtpResend
 
     protected function runOtpResendFlow($gatewayInput, $payment)
     {
-        // For other gateways - otpResend === otpGenerate
-        return $this->callGatewayOtpGenerate(
-            $gatewayInput, $payment, true);
+        return $this->callGatewayOtpGenerate($gatewayInput, $payment, true);
     }
 
     protected function prePaymentOtpResendProcessing($payment, $input, array & $gatewayInput)
