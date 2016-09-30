@@ -8,4 +8,5 @@ class Status
     const AUTHORIZED = 'AUTHORIZED';
     const CAPTURED   = 'CAPTURED';
     const SETTLED    = 'SETTLED';
+    const FAILED     = 'FAILED';
 }

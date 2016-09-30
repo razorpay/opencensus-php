@@ -3,8 +3,8 @@
 namespace RZP\Tests\Functional\Helpers\Payment;
 
 use Requests;
-use Symfony\Component\DomCrawler\Crawler;
 use RZP\Gateway\FirstData\SoapWrapper;
+use RZP\Exception;
 
 trait PaymentFirstDataTrait
 {
@@ -68,6 +68,18 @@ trait PaymentFirstDataTrait
             ->andReturnUsing(function (& $content)
             {
                 $content = SoapWrapper::ERROR_ACTION_RESPONSE;
+            })->mock();
+
+        $this->setMockServer($server);
+    }
+
+    protected function getTimeoutInCapture()
+    {
+        $server = $this->mockServer()
+            ->shouldReceive('content')
+            ->andReturnUsing(function (& $content)
+            {
+                throw new Exception\GatewayTimeoutException('Gateway request timed out');
             })->mock();
 
         $this->setMockServer($server);

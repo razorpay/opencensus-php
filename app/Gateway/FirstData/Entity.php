@@ -59,11 +59,6 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::APPROVAL_CODE);
     }
 
-    public function getTdate()
-    {
-        return $this->getAttribute(self::TDATE);
-    }
-
     // ----------------------- Setters ---------------------------------------------
 
     public function setTdate($tdate)
@@ -84,15 +79,5 @@ class Entity extends Base\Entity
     public function setErrorMessage($msg)
     {
         return $this->setAttribute(self::ERROR_MESSAGE, $msg);
-    }
-
-    public function setApprovalCode($code)
-    {
-        return $this->setAttribute(self::APPROVAL_CODE, $code);
-    }
-
-    public function setAmount($amount)
-    {
-        $this->setAttribute(self::AMOUNT, $amount);
     }
 }

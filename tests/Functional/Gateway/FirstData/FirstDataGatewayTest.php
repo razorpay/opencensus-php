@@ -165,4 +165,29 @@ class FirstDataGatewayTest extends TestCase
             $this->verifyPayment($payment['id']);
         });
     }
+
+    public function testCaptureTimeout()
+    {
+        $this->doAuthPayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->getTimeoutInCapture();
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->capturePayment($payment['id'], $payment['amount']);
+        });
+
+        $gatewayPayment = $this->getLastEntity('first_data', true);
+
+        $this->assertEquals($gatewayPayment['gateway_payment_id'], null);
+
+        $this->assertEquals($gatewayPayment['received'], false);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['status'], 'failed');
+    }
 }

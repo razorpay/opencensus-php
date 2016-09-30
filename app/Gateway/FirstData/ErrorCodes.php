@@ -90,6 +90,7 @@ class ErrorCodes
         'N:T2'     => 'Invalid transaction date',
         'N:T5'     => 'CAF status = 0 or 9',
         'N:T8'     => 'Invalid account',
+        'N:tmout'  => 'Gateway timed out',
     );
 
     protected static $errorCodeMap = array(
@@ -176,6 +177,7 @@ class ErrorCodes
         'N:T2'     => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_TRANSACTION_DATE,
         'N:T5'     => ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
         'N:T8'     => ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND,
+        'N:tmout'  => ErrorCode::GATEWAY_ERROR_TIMED_OUT,
     );
 
     public static function getMappedCode($code = null)
@@ -196,5 +198,10 @@ class ErrorCodes
         }
 
         return null;
+    }
+
+    public static function getTimeoutCode()
+    {
+        return 'N:tmout';
     }
 }
