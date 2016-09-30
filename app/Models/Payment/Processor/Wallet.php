@@ -10,6 +10,7 @@ class Wallet
     const PAYUMONEY   = 'payumoney';
     const OLAMONEY    = 'olamoney';
     const AIRTELMONEY = 'airtelmoney';
+    const FREECHARGE  = 'freecharge';
 
     public static $fullName = array(
         self::MOBIKWIK      => 'Mobikwik',
@@ -18,6 +19,7 @@ class Wallet
         self::PAYUMONEY     => 'Payumoney',
         self::PAYZAPP       => 'Payzapp',
         self::AIRTELMONEY   => 'Airtelmoney',
+        self::FREECHARGE    => 'Freecharge',
     );
 
     public static function exists($wallet)
@@ -27,6 +29,6 @@ class Wallet
 
     public static function getWalletNetworkNamesMap()
     {
-    	return self::$fullName;
+        return self::$fullName;
     }
 }

@@ -12,6 +12,7 @@ use RZP\Models\Customer;
 use RZP\Models\Customer\Token;
 use RZP\Models\Emi;
 use RZP\Models\Payment;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Status;
 use RZP\Models\Transaction;
@@ -59,7 +60,6 @@ trait Callback
         // Kinda weird! And it's always null.
         //
         unset($gatewayInput['csrf']);
-
         $this->verifyHash($hash, $payment->getPublicId());
 
         if ($payment->isCreated() === false)

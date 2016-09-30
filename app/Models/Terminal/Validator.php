@@ -148,6 +148,12 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
     );
 
+    protected static $walletFreechargeTerminalRules = array(
+        Entity::GATEWAY                     => 'required|in:wallet_freecharge',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET       => 'required|string',
+    );
+
     protected function validateGateway($input)
     {
         if (Payment\Gateway::isValidGateway($input['gateway']) === false)

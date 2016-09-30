@@ -90,10 +90,10 @@ trait Authorize
 
             // data for payment analytics
             $rawData = [
-                            'payment_id' => $payment['id'],
-                            'input' => $input,
-                            'terminal_id' => $payment['terminal_id']
-                        ];
+                'payment_id' => $payment['id'],
+                'input' => $input,
+                'terminal_id' => $payment['terminal_id']
+            ];
 
             if ($this->canRunOtpPaymentFlow($payment, $input))
             {
@@ -1312,11 +1312,13 @@ trait Authorize
         return $this->callGatewayOtpGenerate($gatewayInput, $payment);
     }
 
-    protected function callGatewayOtpGenerate($data, $payment)
+    protected function callGatewayOtpGenerate($data, $payment, $otpResend = false)
     {
         try
         {
             $this->type = 'otp_generate';
+
+            $data['otp_resend'] = $otpResend;
 
             $this->callGatewayFunction('otpGenerate', $data);
 
