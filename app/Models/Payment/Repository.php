@@ -351,7 +351,7 @@ class Repository extends Base\Repository
         $ts = time() - Analytics\Entity::PAYMENT_WINDOW;
 
         return $this->newQuery()
-                    ->status(Payment\Status::CREATED)
+                    ->wherein(Entity::STATUS, [Status::CREATED, Status::FAILED])
                     ->where(Payment\Entity::ORDER_ID, '=', $orderId)
                     ->where(Payment\Entity::CREATED_AT, '>', $ts)
                     ->get();

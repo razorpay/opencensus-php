@@ -8,6 +8,7 @@ use RZP\Models\Payment\Analytics\Entity as AnalyticsEntity;
 use RZP\Models\Terminal;
 use RZP\Models\Order;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payment\Analytics;
 
 class TerminalProcessor
 {
@@ -48,7 +49,6 @@ class TerminalProcessor
 
         if ($orderId !== null)
         {
-            $orderId = Order\Entity::getSignedId($orderId);
 
             $pastPayments = $this->repo->payment->getCreatedPaymentsForOrder($orderId);
 
