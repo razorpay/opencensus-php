@@ -8,6 +8,7 @@ use RZP\Models\Address;
 use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
@@ -160,6 +161,19 @@ class Service extends Base\Service
         $contact = Customer\Validator::validateAndParseContact($contact);
 
         $customer = $this->repo->customer->findByContactAndMerchant($contact, $merchant);
+
+        $checkCookie = $this->app['request']->session()->get('checkcookie');
+
+        if ($checkCookie === null)
+        {
+            $this->trace->info(TraceCode::CUSTOMER_CHECKCOOKIE_STATUS,
+                [
+                    'cookie' => $checkCookie
+                ]);
+
+            // return once this matches the mismatch cases.
+            // return $data;
+        }
 
         if ($customer !== null)
         {

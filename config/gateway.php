@@ -179,6 +179,7 @@ return array(
         'test_hash_secret'  => env('SBIEPAY_GATEWAY_TEST_HASH_SECRET'),
     ),
 
+    'proxy_enabled' => env('PROXY_ENABLED'),
 
-    'proxy_address' => 'https://splunk.razorpay.com:8888',
+    'proxy_address' => env('PROXY_ADDRESS'),
 );

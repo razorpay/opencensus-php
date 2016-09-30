@@ -291,11 +291,9 @@ class Repository extends Base\Repository
 
     protected function addQueryParamInternational($query, $params)
     {
-        $this->joinQueryCard($query);
+        $international = Payment\Entity::getAttributeWithTableName(Entity::INTERNATIONAL);
 
-        $query->where(Card\Entity::INTERNATIONAL, '=', $params[Card\Entity::INTERNATIONAL]);
-
-        $query->select($query->getModel()->getTable().'.*');
+        $query->where($international, '=', $params[Entity::INTERNATIONAL]);
     }
 
     protected function addQueryCaptured($query, $params)

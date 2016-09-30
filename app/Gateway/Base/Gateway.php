@@ -551,6 +551,8 @@ class Gateway
         $this->config = $this->app['config']->get($configGatewayStr);
 
         $this->proxy = $this->app['config']->get('gateway.proxy_address');
+
+        $this->proxyEnabled = $this->app['config']->get('gateway.proxy_enabled');
     }
 
     protected function getFormValues($form, $url)

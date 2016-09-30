@@ -151,6 +151,9 @@ class CreatePayments  extends Migration
                   ->nullable()
                   ->default(null);
 
+            $table->tinyInteger(Payment::RECURRING)
+                  ->default(0);
+
             $table->tinyInteger(Payment::SAVE)
                   ->default(0);
 

@@ -17,4 +17,17 @@ class Service extends Base\Service
 
         return $audits->toArrayPublic();
     }
+
+    // set the payment request as s2s for analytics
+    public function setMetadataForS2SPayment($input)
+    {
+        $input['_'] = isset($input['_']) ? $input['_'] : [];
+
+        if (isset($input['_'][Entity::LIBRARY]) === false)
+        {
+            $input['_'][Entity::LIBRARY] = Metadata::DIRECT;
+        }
+
+        return $input;
+    }
 }

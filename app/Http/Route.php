@@ -17,8 +17,9 @@ final class Route
         'merchant_methods'                        => ['get',      'methods',                                  'MerchantController@getPaymentMethods'                              ],
         'merchant_checkout_preferences'           => ['get',      'preferences',                              'MerchantController@getCheckoutPreferences'                         ],
         'payment_create'                          => ['post',     'payments',                                 'PaymentCreateController@postCreatePayment'                         ],
-        'payment_create_private'                  => ['post',     'payments/create',                          'PaymentCreateController@postCreatePayment'                         ],
-        'payment_create_private_old'              => ['post',     'payments/create/redirect',                 'PaymentCreateController@postCreatePayment'                         ],
+        'payment_create_private'                  => ['post',     'payments/create',                          'PaymentCreateController@postCreateS2SPayment'                      ],
+        'payment_create_recurring'                => ['post',     'payments/create/recurring',                'PaymentCreateController@postCreateS2SPayment'                      ],
+        'payment_create_private_old'              => ['post',     'payments/create/redirect',                 'PaymentCreateController@postCreateS2SPayment'                      ],
         'payment_create_checkout'                 => ['post',     'payments/create/checkout',                 'PaymentCreateController@postCreatePaymentCheckoutCallback'         ],
         'payment_create_jsonp'                    => ['get',      'payments/create/jsonp',                    'PaymentCreateController@getCreatePaymentJsonp'                     ],
         'payment_create_ajax'                     => ['post',     'payments/create/ajax',                     'PaymentCreateController@postAJAX'                                  ],
@@ -310,6 +311,7 @@ final class Route
     public static $private = array(
         'payment_create_private',
         'payment_create_private_old',
+        'payment_create_recurring',
         'payment_create_wallet',
         'payment_refund',
         'payment_capture',
@@ -566,18 +568,20 @@ final class Route
     );
 
     public static $routeNameToFeatureMap = array(
-        'feature_dummy'             => 'dummy',
-        'merchant_sub_create'       => 'aggregator',
-        'customer_delete'           => 'tokens',
-        'customer_delete_token'     => 'tokens',
-        'customer_fetch_tokens'     => 'tokens',
-        'payment_create_wallet'     => 's2swallet',
-        'setl_combined_report'      => 'setl_report',
-        'customer_get_saved_status' => 'cardsaving',
-        'customer_logout_global'    => 'cardsaving',
-        'app_delete_token'          => 'cardsaving',
-        'otp_post'                  => 'cardsaving',
-        'otp_verify'                => 'cardsaving',
+        'feature_dummy'              => 'dummy',
+        'merchant_sub_create'        => 'aggregator',
+        'customer_delete'            => 'tokens',
+        'customer_delete_token'      => 'tokens',
+        'customer_fetch_tokens'      => 'tokens',
+        'payment_create_wallet'      => 's2swallet',
+        'payment_create_recurring'   => 'recurring',
+        'payment_create_private_old' => 's2s',
+        'setl_combined_report'       => 'setl_report',
+        'customer_get_saved_status'  => 'cardsaving',
+        'customer_logout_global'     => 'cardsaving',
+        'app_delete_token'           => 'cardsaving',
+        'otp_post'                   => 'cardsaving',
+        'otp_verify'                 => 'cardsaving',
     );
 
     protected static $router;
