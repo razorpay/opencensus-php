@@ -18,7 +18,7 @@ class EmiFile extends Base\EmiFile
 
     protected $bankName  = 'Kotak';
 
-    protected static $headers = array(
+    protected static $headers = [
         'EMI ID',
         'Card Pan',
         'Issuer',
@@ -36,7 +36,7 @@ class EmiFile extends Base\EmiFile
         'Interest Rate',
         'Discount / Cashback %',
         'Discount / Cashback Amount',
-    );
+    ];
 
     public function generate($input)
     {
@@ -44,37 +44,11 @@ class EmiFile extends Base\EmiFile
 
         $urlExcel = $this->writeToExcelFile($txt, $this->getFileToWriteNameWithoutExt());
 
-        $this->sendKotakEmiFile();
-
-        return $urlExcel;
-    }
-
-    protected function sendKotakEmiFile()
-    {
-        $this->fetchAndSendPassword();
-
         $fullPath = $this->getExcelFullFilePath();
 
-        $zipFile = $this->getZippedFile($fullPath);
+        $this->sendEmiFile($fullPath);
 
-        $data['file'] = $zipFile;
-
-        $data['body'] = 'Please process the attached EMI file';
-
-        $this->mail->queue('emails.message', $data, function ($message) use ($data)
-        {
-            $emails = ['kotakcards.emi@razorpay.com', 'settlements@razorpay.com'];
-
-            $message->from('emifiles@razorpay.com', 'Kotak Emi File');
-
-            $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
-            $message->subject('Kotak Emi File for ' . $today);
-
-            $message->to($emails);
-
-            $message->attach($data['file']);
-        });
+        return $urlExcel;
     }
 
     protected function getEmiData($input)
@@ -93,7 +67,7 @@ class EmiFile extends Base\EmiFile
 
             $authCode = $this->getAuthCode($emiPayment);
 
-            $data[] = array(
+            $data[] = [
             'EMI ID'                     => $emiPayment->getId(),
             'Card Pan'                   => $this->getCardNumber($emiPayment->card),
             'Issuer'                     => 'Kotak',
@@ -111,7 +85,7 @@ class EmiFile extends Base\EmiFile
             'Interest Rate'              => '', // Non Mandatory
             'Discount / Cashback %'      => '0.00%',
             'Discount / Cashback Amount' => '0'
-            );
+            ];
         }
 
         return $data;

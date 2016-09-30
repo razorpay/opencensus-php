@@ -19,7 +19,7 @@ class EmiFile extends Base\EmiFile
 
     protected $bankName  = 'Rbl';
 
-    protected static $headers = array(
+    protected static $headers = [
         'EMI ID',
         'RBL Card no',
         'Issuer',
@@ -59,7 +59,7 @@ class EmiFile extends Base\EmiFile
         'Additional Cashback',
         'Bonus Reward Points',
         'EMI Model',
-    );
+    ];
 
     public function generate($input)
     {
@@ -67,39 +67,11 @@ class EmiFile extends Base\EmiFile
 
         $urlExcel = $this->writeToExcelFile($txt, $this->getFileToWriteNameWithoutExt());
 
-        $this->sendRblEmiFile();
-
-        return $urlExcel;
-    }
-
-    protected function sendRblEmiFile()
-    {
-        $this->fetchAndSendPassword();
-
         $fullPath = $this->getExcelFullFilePath();
 
-        $zipFile = $this->getZippedFile($fullPath);
+        $this->sendEmiFile($fullPath);
 
-        $data['file'] = $zipFile;
-
-        $data['body'] = 'Please process the attached EMI file';
-
-        $data['emails'] = $this->emailIdsToSendTo;
-
-        $this->mail->queue('emails.message', $data, function ($message) use ($data)
-        {
-            $emails = array_merge($data['emails'], ['settlement']);
-
-            $message->from('emifiles@razorpay.com', 'Rbl Emi File');
-
-            $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
-            $message->subject('Rbl Emi File for ' . $today);
-
-            $message->to($data['emails']);
-
-            $message->attach($data['file']);
-        });
+        return $urlExcel;
     }
 
     protected function getEmiData($input)
@@ -168,6 +140,6 @@ class EmiFile extends Base\EmiFile
 
     private function formattedDateFromTimestamp($timestamp)
     {
-        return Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata')->format('d-M-Y');
+        return Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata')->format('d-M-y');
     }
 }
