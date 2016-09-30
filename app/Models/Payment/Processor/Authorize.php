@@ -802,6 +802,8 @@ trait Authorize
         {
             $this->trace->traceException($e);
         }
+
+        return $token;
     }
 
     protected function verifyPaymentMethodEnabled($payment)
