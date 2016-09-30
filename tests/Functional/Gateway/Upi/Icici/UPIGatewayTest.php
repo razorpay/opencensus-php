@@ -150,7 +150,9 @@ EOT;
         $upiEntity = $this->getLastEntity('upi_icici', true);
         $payment = $this->getEntityById('payment', $paymentId, true);
 
-        $response = $this->makeAsyncCallbackAndGetContent($upiEntity, $payment);
+        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
+
+        $response = $this->makeS2SCallbackAndGetContent($content);
 
         if ($assert)
         {
@@ -169,11 +171,15 @@ EOT;
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function () use ($upiEntity, $payment) {
-            $this->makeAsyncCallbackAndGetContent($upiEntity, $payment, function (&$content)
-            {
-                $content['TxnStatus'] = 'REJECT';
-            });
+        $server = $this->mockServerContentFunction(function (&$content)
+        {
+            $content['TxnStatus'] = 'REJECT';
+        });
+
+        $content = $server->getAsyncCallbackContent($upiEntity, $payment);
+
+        $this->runRequestResponseFlow($data, function () use ($content) {
+            $this->makeS2SCallbackAndGetContent($content);
         });
 
         $data = $this->testData['testStatusRejectPayment'];
@@ -210,7 +216,8 @@ EOT;
         $upiEntity = $this->getLastEntity('upi', true);
         $payment = $this->getEntityById('payment', $authPayment['payment_id'], true);
 
-        $response = $this->makeAsyncCallbackAndGetContent($upiEntity, $payment);
+        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
+        $response = $this->makeS2SCallbackAndGetContent($content);
 
         $this->payment = $this->verifyPayment($payment['id']);
 
@@ -227,7 +234,8 @@ EOT;
         $upiEntity = $this->getLastEntity('upi', true);
         $payment = $this->getEntityById('payment', $authPayment['payment_id'], true);
 
-        $response = $this->makeAsyncCallbackAndGetContent($upiEntity, $payment);
+        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
+        $response = $this->makeS2SCallbackAndGetContent($content);
 
         $this->payment = $this->verifyPayment($payment['id']);
 
@@ -306,27 +314,5 @@ EOT;
         }
 
         return $this->makeRequestAndGetContent($request);
-    }
-
-    protected function makeAsyncCallbackAndGetContent($upiEntity, $payment, Closure $closure = null)
-    {
-        $server = $this->mockServer();
-
-        if ($closure !== null)
-        {
-            $server = $this->mockServerContentFunction($closure);
-        }
-
-        $content = $server->getAsyncCallbackContent($upiEntity, $payment);
-
-        $request = [
-            'url'    => '/callback/upi_icici',
-            'method' => 'post',
-            'raw'    => $content
-        ];
-
-        $response = $this->makeRequestAndGetContent($request);
-
-        return $response;
     }
 }

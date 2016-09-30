@@ -163,6 +163,9 @@ class PaymentCreateTest extends TestCase
 
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['cvv'] = '1';
+
+        $this->fixtures->merchant->editFeatures('s2s');
+
         $content = $this->doS2SPrivateAuthPayment($payment);
 
         $error = $content['error'];
