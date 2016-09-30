@@ -93,12 +93,14 @@ class Core extends Base\Core
     public function downloadBatch($batch)
     {
         $storagePath = storage_path('files/batch_download');
+
         $filename = $this->processor->getFileName($batch);
+
         $filePath = $storagePath . '/' . $filename;
 
-        $bucket = $this->processor->getBucketName($batch);
+        $awsKey = $this->processor->getAwsKey($batch);
 
-        $publicUrl = $this->getPreSignedUrlFromAws($bucket, $filename, $filePath);
+        $publicUrl = $this->getPreSignedUrlFromAws($awsKey, $filePath);
 
         $this->trace->info(
             TraceCode::BATCH_DOWNLOAD,

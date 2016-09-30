@@ -122,7 +122,7 @@ trait FileHandlerTrait
 
         $fullPath = $this->getFullFilePath($name);
 
-        return $this->getFileFromAws($bucket, $key, $fullPath);
+        return $this->getFileFromAws($key, $fullPath, $bucket);
     }
 
     protected function createExcelObject($data, $name, $columnFormat = [], $sheetName = 'Sheet 1')
@@ -293,7 +293,7 @@ trait FileHandlerTrait
         return $url;
     }
 
-    protected function getFileFromAws($bucket, $key, $filePath)
+    protected function getFileFromAws($key, $filePath, $bucket = 'settlement_bucket')
     {
         $config =  \Config::get('aws');
 
@@ -328,7 +328,7 @@ trait FileHandlerTrait
         return $filePath;
     }
 
-    protected function getPreSignedUrlFromAws($bucket, $key, $filePath)
+    protected function getPreSignedUrlFromAws($key, $filePath, $bucket = 'settlement_bucket')
     {
         $config =  \Config::get('aws');
 

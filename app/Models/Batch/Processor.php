@@ -221,13 +221,11 @@ class Processor extends Base\Core
 
     public function saveBatchFileToAws($batch, $file)
     {
-        $bucket = $this->getBucketName($batch);
-
         $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
-        $filename = $this->getFileName($batch);
+        $awsKey = $this->getAwsKey($batch);
 
-        $url = $this->saveToAws($filename, $file, $xlsxMimeType, $bucket);
+        $url = $this->saveToAws($awsKey, $file, $xlsxMimeType);
 
         return $url;
     }
@@ -235,16 +233,17 @@ class Processor extends Base\Core
     protected function getBatchFileFromAws($batch)
     {
         $storagePath = storage_path('files/batch_file_download');
+
         $filename = $this->getFileName($batch);
 
         $filePath = $storagePath . '/' . $filename;
 
-        $bucket = $this->getBucketName($batch);
+        $awsKey = $this->getAwsKey($batch);
 
-        return $this->getFileFromAws($bucket, $filename, $filePath);
+        return $this->getFileFromAws($awsKey, $filePath);
     }
 
-    public function getBucketName($batch)
+    public function getBucketFilePath($batch)
     {
         if ($batch->getStatus() === Status::CREATED)
         {
@@ -259,6 +258,17 @@ class Processor extends Base\Core
     public function getFileName($batch)
     {
         return $batch->getId() .'.xlsx';
+    }
+
+    public function getAwsKey($batch)
+    {
+        $bucketFilePath = $this->getBucketFilePath($batch);
+
+        $filename =$this->getFileName($batch);
+
+        $awsKey = $bucketFilePath .'/' .$filename;
+
+        return $awsKey;
     }
 
     public function deleteFile($filePath)

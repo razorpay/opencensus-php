@@ -26,8 +26,6 @@ return [
     'settlement_bucket'     => env('AWS_S3_SETTLEMENT_BUCKET'),
     'logo_bucket'           => env('AWS_S3_LOGO_BUCKET'),
     'h2h_bucket'            => env('AWS_H2H_BUCKET'),
-    'batch_upload_bucket'   => env('AWS_BATCH_UPLOAD_BUCKET'),
-    'batch_download_bucket' => env('AWS_BATCH_DOWNLOAD_BUCKET'),
 
     'mock' => env('AWS_S3_MOCK')
 ];
