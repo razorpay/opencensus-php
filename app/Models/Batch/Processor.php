@@ -295,7 +295,7 @@ class Processor extends Base\Core
         $data = [
             'refundFile' => $filePath,
             'body' => 'Please find attached processed Refunds File',
-            'emails' => array_merge($merchant->getTransactionReportEmailAttribute(), array('settlements@razorpay.com')),
+            'emails' => $merchant->getTransactionReportEmailAttribute(),
         ];
 
         Mail::send('emails.message', $data, function($message) use ($data)
