@@ -93,6 +93,27 @@ class EmiPaymentTest extends TestCase
             'updated_at' => $yesterdayAtTen + 2,
         ]);
 
+        //IndusInd Card
+        $this->makeEmiPaymentOnCard('4147720000000009', 9);
+        $payment = $this->getLastEntity('payment', true);
+        $this->fixtures->edit('payment', $payment['id'], [
+            'created_at'  => $yesterdayAtTen - 2,
+            'authorized_at' => $yesterdayAtTen,
+            'captured_at' => $yesterdayAtTen + 2,
+            'updated_at' => $yesterdayAtTen + 2,
+        ]);
+
+        //RBL Card
+        $this->makeEmiPaymentOnCard('5243730000000008', 9);
+        $payment = $this->getLastEntity('payment', true);
+        $this->fixtures->edit('payment', $payment['id'], [
+            'created_at'  => $yesterdayAtTen - 2,
+            'authorized_at' => $yesterdayAtTen,
+            'captured_at' => $yesterdayAtTen + 2,
+            'updated_at' => $yesterdayAtTen + 2,
+        ]);
+
+
         $request = array(
             'method' => 'POST',
             'url' => '/emi/generate/excel',
@@ -102,12 +123,17 @@ class EmiPaymentTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals(count($content), 3);
+        $this->assertEquals(count($content), 4);
+
         $this->assertEquals(File::exists($this->zipFileName($content['KKBK'])), true);
         $this->assertEquals(File::exists($this->zipFileName($content['UTIB'])), true);
+        $this->assertEquals(File::exists($this->zipFileName($content['INDB'])), true);
+        $this->assertEquals(File::exists($this->zipFileName($content['RATN'])), true);
 
         $this->checkPasswordProtectedZip($this->zipFileName($content['KKBK']));
         $this->checkPasswordProtectedZip($this->zipFileName($content['UTIB']));
+        $this->checkPasswordProtectedZip($this->zipFileName($content['INDB']));
+        $this->checkPasswordProtectedZip($this->zipFileName($content['RATN']));
 
         $this->fixtures->merchant->disableEmi();
     }

@@ -12,8 +12,11 @@ use Carbon\Carbon;
 
 class EmiFile extends Base\EmiFile
 {
-
     protected static $fileToWriteName = 'Kotak_Emi_File';
+
+    protected $emailIdsToSendTo = ['kotakcards.emi@razorpay.com'];
+
+    protected $bankName  = 'Kotak';
 
     protected static $headers = array(
         'EMI ID',
@@ -112,22 +115,5 @@ class EmiFile extends Base\EmiFile
         }
 
         return $data;
-    }
-
-    protected function sendEmiPassword()
-    {
-        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-        $data['body'] = 'Kotak Emi File Password for ' . $today . " is " . $this->emiFilePassword;
-
-        $this->mail->queue('emails.message', $data, function ($message) use ($data, $today)
-        {
-            $emails = ['kotakcards.emi@razorpay.com'];
-
-            $message->from('emifiles@razorpay.com', 'Kotak Emi File Password');
-
-            $message->subject('Kotak Emi File Password for ' . $today);
-
-            $message->to($emails);
-        });
     }
 }

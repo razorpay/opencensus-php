@@ -14,6 +14,10 @@ class EmiFile extends Base\EmiFile
 {
     protected static $fileToWriteName = 'Axis_Emi_File';
 
+    protected $emailIdsToSendTo = ['axiscards.emi@razorpay.com'];
+
+    protected $bankName  = 'Axis';
+
     protected static $headers = array(
         'Card Number',
         'Transaction Amount',
@@ -94,22 +98,5 @@ class EmiFile extends Base\EmiFile
     private function formattedDateFromTimestamp($timestamp)
     {
         return Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata')->format('d-M-Y');
-    }
-
-    protected function sendEmiPassword()
-    {
-        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-        $data['body'] = 'Axis Emi File Password for ' . $today . " is " . $this->emiFilePassword;
-
-        $this->mail->queue('emails.message', $data, function ($message) use ($data, $today)
-        {
-            $emails = ['axiscards.emi@razorpay.com'];
-
-            $message->from('emifiles@razorpay.com', 'Axis Emi File Password');
-
-            $message->subject('Axis Emi File Password for ' . $today);
-
-            $message->to($emails);
-        });
     }
 }
