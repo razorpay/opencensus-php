@@ -68,6 +68,15 @@ class CustomerTokenTest extends TestCase
         $this->startTest();
     }
 
+    public function testDeleteCustomerTokenById()
+    {
+        $this->mockSession();
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     public function testGetCustomerTokensByAppToken()
     {
         $this->mockSession();
