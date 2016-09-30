@@ -169,6 +169,7 @@ class Service extends Base\Service
                         ->where('created_at','>=',$input['from'])
                         ->where('created_at','<=',$input['to'])
                         ->where('mode', '=', $mode)
+                        ->orderBy('updated_at', 'desc')
                         ->get();
 
         $data = $this->fillMissing($input, $data);
