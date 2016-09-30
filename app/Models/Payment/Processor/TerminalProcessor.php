@@ -6,10 +6,10 @@ use RZP\Models\Payment;
 use RZP\Models\Payment\Analytics\Entity as AnalyticsEntity;
 use RZP\Models\Terminal;
 use RZP\Models\Order;
+use RZP\Trace\TraceCode;
 
-class TerminalSelector
+class TerminalProcessor
 {
-    protected $terminalSelector;
 
     protected $repo;
 
@@ -34,17 +34,17 @@ class TerminalSelector
     {
         $metadata = $payment->getMetadata();
 
-        $pastPaymentIds = array();
+        $pastPaymentIds = [];
 
         $orderId = $payment->getApiOrderId();
 
         //TODO: should we do a join on these queries instead of multiple queries
 
-        if ($orderId != null)
+        if ($orderId !== null)
         {
             $orderId = Order\Entity::getIdPrefix() . $orderId;
 
-            $fetchParams = array(Payment\Entity::ORDER_ID => $orderId);
+            $fetchParams = [Payment\Entity::ORDER_ID => $orderId];
 
             $pastPayments = $this->repo->payment->fetch($fetchParams, $payment->merchant->getId());
 
@@ -64,7 +64,7 @@ class TerminalSelector
                 $pastPaymentIds[] = $c->getPaymentId();
             }
         }
-        $usedTerminals = array();
+        $usedTerminals = [];
 
         if (count($pastPaymentIds) > 0)
         {
@@ -91,13 +91,23 @@ class TerminalSelector
     {
         $terminalsToExclude = $this->getTerminalsToExclude($payment);
 
-        $this->terminalSelector = new Terminal\Selector($payment, $this->mode);
+        // add trace to tell that we are excluding terminals
+        if (count($terminalsToExclude) > 0)
+        {
+            $traceData = array(
+                'excluded_terminals'       => $terminalsToExclude,
+                'payment_id'               => $payment->getId(),
+            );
 
-        // TODO: add trace here to say that we are excluding these terminals
-        $opts = array('exclude' => $terminalsToExclude);
+            $this->trace->info(TraceCode::TERMINAL_EXCLUDE, $traceData);
+        }
 
-        $this->terminalsSelected = $this->terminalSelector->selectTerminals($opts);
+        $terminalSelector = new Terminal\Selector($payment, $this->mode);
 
-        return $this->terminalsSelected;
+        $opts = ['exclude' => $terminalsToExclude];
+
+        $terminalsSelected = $terminalSelector->selectTerminals($opts);
+
+        return $terminalsSelected;
     }
 }

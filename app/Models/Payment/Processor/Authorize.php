@@ -19,7 +19,6 @@ use RZP\Constants\Mode;
 use RZP\Models\Card\IIN;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
-use RZP\Models\Terminal;
 use RZP\Models\Transaction;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Action;
@@ -55,7 +54,7 @@ trait Authorize
         // Adds callback url, payment and card info to $gatewayInput
         $this->prePaymentAuthorizeProcessing($payment, $input, $gatewayInput);
 
-        $this->terminalsSelected = $this->terminalSelector->getTerminalsForPayment($payment);
+        $this->selectedTerminals = $this->terminalProcessor->getTerminalsForPayment($payment);
 
         return $this->authorizeAcrossTerminals($gatewayInput, $payment, $input);
     }
@@ -63,7 +62,7 @@ trait Authorize
 
     protected function authorizeAcrossTerminals($gatewayInput, $payment, $input)
     {
-        $totalTerminals = count($this->terminalsSelected);
+        $totalTerminals = count($this->selectedTerminals);
 
         $maxRetryAttempts = min($totalTerminals, self::MAX_RETRY_ATTEMPTS);
 
@@ -85,7 +84,7 @@ trait Authorize
         {
             $terminalGatewayInput = $gatewayInput;
 
-            $currentTerminal = $this->terminalsSelected[$retryAttempts];
+            $currentTerminal = $this->selectedTerminals[$retryAttempts];
 
             $payment->associateTerminal($currentTerminal);
 

@@ -12,7 +12,7 @@ class Options
 
     protected $hasMultiple = false;
 
-    protected $exclusionList = array();
+    protected $exclusionList = [];
 
     public function __construct()
     {

@@ -19,7 +19,6 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer;
-use RZP\Models\Payment\Processor\TerminalSelector;
 
 class Processor
 {
@@ -77,8 +76,8 @@ class Processor
     protected $trace;
     protected $payment;
     protected $terminal;
-    protected $terminalsSelected;
-    protected $terminalSelector;
+    protected $selectedTerminals;
+    protected $terminalProcessor;
     protected $mode;
     protected $repo;
     protected $orderRepo;
@@ -115,7 +114,7 @@ class Processor
         // Only used in hdfc verify refund flow
         $this->verifyRefundStatus = null;
 
-        $this->terminalSelector = new TerminalSelector($this->repo, $this->mode);
+        $this->terminalProcessor = new TerminalProcessor($this->repo, $this->mode);
     }
 
     public function process($input)
