@@ -13,6 +13,8 @@ class SavedCardsPaymentCreateTest extends TestCase
 
     public function setUp()
     {
+        $this->testDataFilePath = __DIR__.'/helpers/SavedCardsPaymentTestData.php';
+
         parent::setUp();
 
         $this->ba->publicAuth();
@@ -541,6 +543,28 @@ class SavedCardsPaymentCreateTest extends TestCase
 
         $this->assertEquals($payments['count'], 1);
     }
+
+    /**
+     * test card payment creation using a local saved card and token without cvv
+     */
+    public function testLocalSavedCardPaymentCreateNoCvv()
+    {
+        // set payment data using token
+        $this->payment = $this->getDefaultPaymentArray();
+
+        $this->payment['card'] = [];
+
+        $this->payment['token'] = '10000cardtoken';
+
+        $this->payment['customer_id'] = 'cust_100000customer';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function()
+        {
+            $this->doAuthPayment($this->payment);
+        });
+   }
 
     /**
      * test card multiple payments with save card local, only one card should be saved
