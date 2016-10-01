@@ -95,8 +95,6 @@ class Activate extends Base\Core
             'subject'   =>  $subject,
         ];
 
-        sd($data);
-
         $config = $this->app->config->get('applications.mailgun');
 
         // Send the activation email
@@ -168,7 +166,7 @@ class Activate extends Base\Core
             {
                 if ($rule[Pricing\Entity::PAYMENT_NETWORK] !== null)
                 {
-                    $display = $rule[Pricing\Entity::PAYMENT_NETWORK] . ' Net Banking';
+                    $display = $rule[Pricing\Entity::PAYMENT_NETWORK_NAME] . ' Net Banking';
                 }
             }
 
