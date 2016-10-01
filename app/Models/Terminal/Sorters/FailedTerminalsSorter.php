@@ -23,9 +23,9 @@ class FailedTerminalsSorter extends Terminal\Sorter
 
         if (isset($input['failed_terminals']))
         {
-            $nonExcluded = [];
+            $nonFailedTerminals = [];
 
-            $excluded = [];
+            $failedTerminals = [];
 
             $flipped = array_flip($input['failed_terminals']);
 
@@ -35,15 +35,17 @@ class FailedTerminalsSorter extends Terminal\Sorter
 
                 if (isset($flipped[$terminalId]) === true)
                 {
-                    $excluded[] = $terminal;
+                    $failedTerminals[] = $terminal;
                 }
                 else
                 {
-                    $nonExcluded[] = $terminal;
+                    $nonFailedTerminals[] = $terminal;
                 }
             }
-            $sortedTerminals = array_merge($nonExcluded, $excluded);
+
+            $sortedTerminals = array_merge($nonFailedTerminals, $failedTerminals);
         }
+
         return $sortedTerminals;
     }
 }
