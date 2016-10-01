@@ -93,9 +93,7 @@ class TerminalProcessor
      */
     public function getTerminalsForPayment(Payment\Entity $payment)
     {
-        // revoking exclusion as a hotfix. Relook with proper
-        // exclusion filtering and sorting.
-        /*$terminalsToExclude = $this->getTerminalsToExclude($payment);
+        $terminalsToExclude = $this->getTerminalsToExclude($payment);
 
         // add trace to tell that we are excluding terminals
         if (count($terminalsToExclude) > 0)
@@ -106,11 +104,9 @@ class TerminalProcessor
             );
 
             $this->trace->info(TraceCode::TERMINAL_EXCLUDE, $traceData);
-        }*/
+        }
 
         $terminalSelector = new Terminal\Selector($payment, $this->mode);
-
-        $terminalsToExclude = [];
 
         $opts = ['exclude' => $terminalsToExclude];
 

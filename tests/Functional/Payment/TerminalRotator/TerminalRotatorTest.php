@@ -43,7 +43,6 @@ class TerminalRotatorTest extends TestCase
 
     public function testCheckoutMultipleAttempts()
     {
-        $this->markTestSkipped();
 
         // first fail the payment and on next attempt with
         // only a checkout id, ensure the payment goes through
@@ -99,7 +98,6 @@ class TerminalRotatorTest extends TestCase
         // first fail the payment and on next attempt with
         // only a order id, ensure the payment goes through
         // the other terminal
-        $this->markTestSkipped();
 
         $order = $this->createOrder();
 
