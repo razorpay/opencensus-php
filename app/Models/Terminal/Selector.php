@@ -24,7 +24,6 @@ class Selector
     protected static $filters = [
         Filters\TransactionFilter::class,
         Filters\MerchantFilter::class,
-        Filters\MiscFilter::class,
     ];
 
     /**
@@ -37,6 +36,7 @@ class Selector
         Sorters\NetbankingSorter::class,
         Sorters\MerchantSorter::class,
         Sorters\InternationalCardSorter::class,
+        Sorters\FailedTerminalsSorter::class
     ];
 
     public function __construct(Payment\Entity $payment, $mode)
@@ -88,20 +88,13 @@ class Selector
         //
         $filteredTerminals = $terminals->all();
 
-        $exclusionList = $options->getExclusionList();
-
-        if ((count($exclusionList)) > 0 and (count($exclusionList) < count($filteredTerminals)))
-        {
-            $this->input['exclude'] = $exclusionList;
-        }
-
         foreach (self::$filters as $filter)
         {
             $filteredTerminals = (new $filter)->filter($filteredTerminals, $this->input, $verbose);
             $this->traceTerminals($filteredTerminals, 'Terminals after ' . $filter, $verbose);
         }
 
-        $this->traceTerminals($filteredTerminals, 'Terminals after filtration', $verbose);
+        $this->traceTerminals($filteredTerminals, 'Terminals after filtration', true);
 
         //
         // Sorting is done on the final list of filtered terminals.
@@ -109,13 +102,25 @@ class Selector
         //
         $sortedTerminals = $filteredTerminals;
 
+        // In case there are failed terminals, this comes in as an exclusion list from the
+        // payment. We want to now place the excluded terminals at the bottom of the sorted
+        // list thereby hoping a successful payment through the non failed terminals
+
+        $failedTerminals = $options->getFailedTerminals();
+
+        if ((count($failedTerminals) > 0))
+        {
+            $this->input['failed_terminals'] = $failedTerminals;
+
+        }
+
         foreach (self::$sorters as $sorter)
         {
             $sortedTerminals = (new $sorter)->sort($sortedTerminals, $this->input, $verbose);
             $this->traceTerminals($sortedTerminals, 'Terminals after ' . $sorter, $verbose);
         }
 
-        $this->traceTerminals($sortedTerminals, 'Terminals after sorting', $verbose);
+        $this->traceTerminals($sortedTerminals, 'Terminals after sorting', true);
 
         $terminal = null;
 
@@ -165,11 +170,6 @@ class Selector
 
     protected function traceTerminals($terminals, $msg, $verbose = false)
     {
-        if ($this->merchant->getId() === '4izmfM9TFCAgFN')
-        {
-            $verbose = true;
-        }
-
         if (($verbose === true) and (empty($terminals) === false))
         {
             $terminalIds = [];
@@ -197,12 +197,12 @@ class Selector
      */
     public function selectTerminals($opts = [])
     {
-        $options = new Terminal\Options();
+        $options = new Terminal\Options;
 
-        if ((isset($opts['exclude']) === true) and
-            (is_array($opts['exclude']) == true))
+        if ((isset($opts['failed']) === true) and
+            (is_array($opts['failed']) === true))
         {
-            $options->setExclusionList($opts['exclude']);
+            $options->setFailedTerminals($opts['failed']);
         }
 
         $terminalsSelected = $this->select($options);

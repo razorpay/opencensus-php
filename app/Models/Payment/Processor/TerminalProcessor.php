@@ -30,14 +30,14 @@ class TerminalProcessor
     }
 
     /**
-     * Method to extract the terminals to exclude. We first get the past payments
+     * Method to extract the terminals that failed. We first get the past payments
      * for a given payment flow, and get the terminals that were used as part of the
-     * payment flow. We will exclude all the terminals that were already tried before
+     * payment flow. We will sort the failed terminals as the last in the sorted terminals
      * to increase the payment efficacy
      * @param $payment
      * @return array
      */
-    protected function getTerminalsToExclude($payment)
+    protected function getFailedTerminals($payment)
     {
         $metadata = $payment->getMetadata();
 
@@ -49,7 +49,6 @@ class TerminalProcessor
 
         if ($orderId !== null)
         {
-
             $pastPayments = $this->repo->payment->getCreatedPaymentsForOrder($orderId);
 
             foreach($pastPayments as $pastPayment)
@@ -94,22 +93,22 @@ class TerminalProcessor
      */
     public function getTerminalsForPayment(Payment\Entity $payment)
     {
-        $terminalsToExclude = $this->getTerminalsToExclude($payment);
+        $failedTerminals = $this->getFailedTerminals($payment);
 
         // add trace to tell that we are excluding terminals
-        if (count($terminalsToExclude) > 0)
+        if (count($failedTerminals) > 0)
         {
             $traceData = array(
-                'excluded_terminals'       => $terminalsToExclude,
-                'payment_id'               => $payment->getId(),
+                'failed_terminals'       => $failedTerminals,
+                'payment_id'             => $payment->getId(),
             );
 
-            $this->trace->info(TraceCode::TERMINAL_EXCLUDE, $traceData);
+            $this->trace->info(TraceCode::TERMINAL_FAIL_SORT, $traceData);
         }
 
         $terminalSelector = new Terminal\Selector($payment, $this->mode);
 
-        $opts = ['exclude' => $terminalsToExclude];
+        $opts = ['failed' => $failedTerminals];
 
         $terminalsSelected = $terminalSelector->selectTerminals($opts);
 
