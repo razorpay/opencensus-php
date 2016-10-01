@@ -22,9 +22,10 @@ use Carbon\Carbon;
 class Gateway extends Base\Gateway
 {
     const CERT_DIR_NAME                     = 'cert_dir_name';
-    const SERVER_CERTIFICATE_PATH           = 'server_certificate';
-    const CLIENT_CERTIFICATE_PATH           = 'client_certificate';
-    const CLIENT_CERTIFICATE_KEY_PATH       = 'client_certificate_key';
+    const SERVER_CERTIFICATE                = 'server_certificate';
+    const CLIENT_CERTIFICATE                = 'client_certificate';
+    const CLIENT_CERTIFICATE_KEY_FILE       = 'client_certificate_key_file';
+    const CLIENT_CERTIFICATE_KEY            = 'client_certificate_key';
 
     const PROCESSING                        = 'PROCESSING';
     const SERVICES                          = 'SERVICES';
@@ -730,8 +731,8 @@ class Gateway extends Base\Gateway
         }
 
         $auth = [
-            'username' => $this->terminal[Terminal\Entity::GATEWAY_TERMINAL_ID],
-            'password' => $this->terminal[Terminal\Entity::GATEWAY_TERMINAL_PASSWORD]
+            'username' => $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2],
+            'password' => $this->terminal[Terminal\Entity::GATEWAY_ACCESS_CODE]
         ];
 
         return $auth;
@@ -746,21 +747,45 @@ class Gateway extends Base\Gateway
     {
         $gatewayCertPath = $this->getGatewayCertDirPath();
 
-        return $gatewayCertPath . '/' . $this->config[self::SERVER_CERTIFICATE_PATH];
+        return $gatewayCertPath . '/' . $this->config[self::SERVER_CERTIFICATE];
     }
 
     protected function getClientCertificate()
     {
         $gatewayCertPath = $this->getGatewayCertDirPath();
 
-        return $gatewayCertPath . '/' . $this->config[self::CLIENT_CERTIFICATE_PATH];
+        return $gatewayCertPath . '/' . $this->config[self::CLIENT_CERTIFICATE];
     }
 
     protected function getClientCertificateKey()
     {
         $gatewayCertPath = $this->getGatewayCertDirPath();
 
-        return $gatewayCertPath . '/' . $this->config[self::CLIENT_CERTIFICATE_KEY_PATH];
+        $clientCertKeyPath = $gatewayCertPath . '/' . $this->config[self::CLIENT_CERTIFICATE_KEY_FILE];
+
+        if (file_exists($clientCertKeyPath) === false)
+        {
+            $clientCertKeyFile = fopen($clientCertKeyPath, 'w');
+
+            if ($this->mode === Mode::TEST)
+            {
+                $encodedKey = $this->config[self::CLIENT_CERTIFICATE_KEY];
+            }
+            else
+            {
+                $encodedKey = $this->terminal[Terminal\Entity::GATEWAY_TERMINAL_PASSWORD];
+            }
+
+            $key = trim(str_replace('\n', "\n", base64_decode($encodedKey)));
+
+            fwrite($clientCertKeyFile, $key);
+
+            $this->trace->info(
+                        TraceCode::CLIENT_CERTIFICATE_KEY_FILE_GENERATED,
+                        ['clientCertKeyPath' => $clientCertKeyPath]);
+        }
+
+        return $clientCertKeyPath;
     }
 
     protected function getSharedSecret()

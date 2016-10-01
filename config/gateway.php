@@ -80,6 +80,7 @@ return array(
         'server_certificate'                => env('FIRST_DATA_SERVER_CERTIFICATE'),
         'client_certificate'                => env('FIRST_DATA_CLIENT_CERTIFICATE'),
         'client_certificate_key'            => env('FIRST_DATA_CLIENT_CERTIFICATE_KEY'),
+        'client_certificate_key_file'       => env('FIRST_DATA_CLIENT_CERTIFICATE_KEY_FILE'),
     ),
 
     'amex' => array(
