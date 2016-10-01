@@ -4,7 +4,7 @@ namespace RZP\Models\Terminal\Filters;
 
 use RZP\Models\Terminal;
 
-class MiscFilter extends Terminal\Filter
+class ExclusionFilter extends Terminal\Filter
 {
     protected $properties = [
         'exclude',

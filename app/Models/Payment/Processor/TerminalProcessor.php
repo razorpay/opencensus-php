@@ -49,7 +49,6 @@ class TerminalProcessor
 
         if ($orderId !== null)
         {
-
             $pastPayments = $this->repo->payment->getCreatedPaymentsForOrder($orderId);
 
             foreach($pastPayments as $pastPayment)

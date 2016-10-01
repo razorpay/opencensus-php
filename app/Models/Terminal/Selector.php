@@ -24,7 +24,6 @@ class Selector
     protected static $filters = [
         Filters\TransactionFilter::class,
         Filters\MerchantFilter::class,
-        Filters\MiscFilter::class,
     ];
 
     /**
@@ -88,20 +87,22 @@ class Selector
         //
         $filteredTerminals = $terminals->all();
 
-        $exclusionList = $options->getExclusionList();
-
-        if ((count($exclusionList)) > 0 and (count($exclusionList) < count($filteredTerminals)))
-        {
-            $this->input['exclude'] = $exclusionList;
-        }
-
         foreach (self::$filters as $filter)
         {
             $filteredTerminals = (new $filter)->filter($filteredTerminals, $this->input, $verbose);
             $this->traceTerminals($filteredTerminals, 'Terminals after ' . $filter, $verbose);
         }
 
-        $this->traceTerminals($filteredTerminals, 'Terminals after filtration', $verbose);
+        $exclusionList = $options->getExclusionList();
+
+        if ((count($exclusionList) > 0) and (count($exclusionList) < count($filteredTerminals)))
+        {
+            $this->input['exclude'] = $exclusionList;
+
+            $filteredTerminals = (new Filters\ExclusionFilter)->filter($filteredTerminals, $this->input, $verbose);
+        }
+
+        $this->traceTerminals($filteredTerminals, 'Terminals after filtration', true);
 
         //
         // Sorting is done on the final list of filtered terminals.
@@ -115,7 +116,7 @@ class Selector
             $this->traceTerminals($sortedTerminals, 'Terminals after ' . $sorter, $verbose);
         }
 
-        $this->traceTerminals($sortedTerminals, 'Terminals after sorting', $verbose);
+        $this->traceTerminals($sortedTerminals, 'Terminals after sorting', true);
 
         $terminal = null;
 
@@ -165,11 +166,6 @@ class Selector
 
     protected function traceTerminals($terminals, $msg, $verbose = false)
     {
-        if ($this->merchant->getId() === '4izmfM9TFCAgFN')
-        {
-            $verbose = true;
-        }
-
         if (($verbose === true) and (empty($terminals) === false))
         {
             $terminalIds = [];
@@ -197,10 +193,10 @@ class Selector
      */
     public function selectTerminals($opts = [])
     {
-        $options = new Terminal\Options();
+        $options = new Terminal\Options;
 
         if ((isset($opts['exclude']) === true) and
-            (is_array($opts['exclude']) == true))
+            (is_array($opts['exclude']) === true))
         {
             $options->setExclusionList($opts['exclude']);
         }
