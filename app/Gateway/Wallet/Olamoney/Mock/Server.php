@@ -61,12 +61,30 @@ class Server extends Base\Mock\Server
     {
         $this->validateActionInput($input, 'otpGenerate');
 
-        $responseContent = array(
-            ResponseFields::STATUS    => 'success',
-            ResponseFields::MESSAGE   => '',
-        );
+        if ($input['phone'] === '9008119029')
+        {
+            $responseContent = [ResponseFields::STATUS => 'Error'];
+        }
+        else if ($input['phone'] === '9022219029')
+        {
+            $responseContent = [ResponseFields::STATUS => 'Error'];
+        }
+        else
+        {
+            $responseContent = array(
+                ResponseFields::STATUS    => 'success',
+                ResponseFields::MESSAGE   => '',
+            );
+        }
 
-        return $this->makeResponse($responseContent);
+        $response = $this->makeResponse($responseContent);
+
+        if ($input['phone'] === '9022219029')
+        {
+            $response->setStatusCode(429);
+        }
+
+        return $response;
     }
 
     public function otpSubmit($input)

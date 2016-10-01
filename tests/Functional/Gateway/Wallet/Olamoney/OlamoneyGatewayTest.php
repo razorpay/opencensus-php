@@ -51,6 +51,34 @@ class OlamoneyGatewayTest extends TestCase
         $this->assertTestResponse($wallet, 'testPaymentWalletEntity');
     }
 
+    public function testErrorPayment()
+    {
+        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+
+        $payment['contact'] = '9008119029';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testThrottlingOnOtpGenerate()
+    {
+        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+
+        $payment['contact'] = '9022219029';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testOtpRetryPayment()
     {
         $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
