@@ -221,7 +221,7 @@ class TerminalRotatorTest extends TestCase
         }
         catch(\Exception $e)
         {
-            $this->assertExceptionClass($e, GatewayTimeoutException::CLASS);
+            $this->assertExceptionClass($e, GatewayTimeoutException::class);
         }
 
         $payment2 = $this->getPaymentArray();
@@ -234,8 +234,51 @@ class TerminalRotatorTest extends TestCase
         }
         catch(\Exception $e)
         {
-            $this->assertExceptionClass($e, GatewayTimeoutException::CLASS);
+            $this->assertExceptionClass($e, GatewayTimeoutException::class);
         }
+    }
+
+    public function testExclusionWithMultipleAvailableTerminals()
+    {
+        $order = $this->createOrder();
+
+        $this->fixtures->create('terminal:shared_hdfc_terminal');
+
+        $this->fixtures->create('terminal:shared_billdesk_terminal');
+
+        $payment1 = $this->getPaymentArray();
+
+        $payment1['order_id'] = $order['id'];
+
+        $this->ba->publicAuth();
+
+        try
+        {
+            $this->doAuthPayment($payment1);
+        }
+        catch(\Exception $e)
+        {
+            $this->assertExceptionClass($e, GatewayTimeoutException::class);
+        }
+
+        $payment2 = $this->getPaymentArray();
+
+        $payment2['order_id'] = $order['id'];
+
+        try
+        {
+            $this->doAuthPayment($payment2);
+        }
+        catch (\Exception $e)
+        {
+            $this->assertExceptionClass($e, GatewayTimeoutException::class);
+        }
+
+        $payment = $this->getLastPayment(true);
+
+        $this->assertEquals($payment['terminal_id'], '1000HdfcShared');
+
+        $this->assertEquals($payment['order_id'], $order['id']);
     }
 
     //-- helpers----
