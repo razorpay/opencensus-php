@@ -156,15 +156,13 @@ class Service extends Base\Service
     {
         $data = ['saved' => false];
 
-        $merchant = $this->repo->merchant->getSharedAccount();
+        $key = $this->mode . '_checkcookie';
 
-        $contact = Customer\Validator::validateAndParseContact($contact);
+        $checkCookie = $this->app['request']->session()->get($key);
 
-        $customer = $this->repo->customer->findByContactAndMerchant($contact, $merchant);
-
-        $checkCookie = $this->app['request']->session()->get('checkcookie');
-
-        if ($checkCookie === null)
+        // send otp is true when called from the checkout, false if called from
+        // preferences, we need to find out for first case only
+        if ($sendOtp === true)
         {
             $this->trace->info(TraceCode::CUSTOMER_CHECKCOOKIE_STATUS,
                 [
@@ -174,6 +172,12 @@ class Service extends Base\Service
             // return once this matches the mismatch cases.
             // return $data;
         }
+
+        $merchant = $this->repo->merchant->getSharedAccount();
+
+        $contact = Customer\Validator::validateAndParseContact($contact);
+
+        $customer = $this->repo->customer->findByContactAndMerchant($contact, $merchant);
 
         if ($customer !== null)
         {
