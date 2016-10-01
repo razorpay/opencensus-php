@@ -12,7 +12,7 @@ class Options
 
     protected $hasMultiple = false;
 
-    protected $exclusionList = [];
+    protected $failedTerminals = [];
 
     public function __construct()
     {
@@ -49,14 +49,14 @@ class Options
         $this->chance = $chance;
     }
 
-    public function setExclusionList(array $exclude)
+    public function setFailedTerminals(array $exclude)
     {
-        $this->exclusionList = $exclude;
+        $this->failedTerminals = $exclude;
     }
 
-    public function getExclusionList()
+    public function getFailedTerminals()
     {
-        return $this->exclusionList;
+        return $this->failedTerminals;
     }
 
     public static function setTestChance($testChance = 0)
