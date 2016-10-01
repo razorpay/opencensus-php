@@ -17,7 +17,7 @@ return [
         'error_code'                => null,
         'error_description'         => null,
         'email'                     => 'a@b.com',
-        'contact'                   => '+919918999029',
+        'contact'                   => '+919918899029',
         'notes'                     => [
             'merchant_order_id'     => 'random order id',
         ],
