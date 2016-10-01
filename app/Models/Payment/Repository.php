@@ -305,9 +305,9 @@ class Repository extends Base\Repository
 
     protected function addQueryParamOrderId($query, $params)
     {
-        $order_id = (new Order\Entity)->verifyIdAndSilentlyStripSign($params[Entity::ORDER_ID]);
+        $orderId = (new Order\Entity)->verifyIdAndSilentlyStripSign($params[Entity::ORDER_ID]);
 
-        $query->where(Entity::ORDER_ID, '=', $order_id);
+        $query->where(Entity::ORDER_ID, '=', $orderId);
     }
 
     protected function joinQueryCard($query)
@@ -344,6 +344,17 @@ class Repository extends Base\Repository
         $to = Carbon::today('Asia/Kolkata')->timestamp;
 
         return $this->getPaymentVolumeBetweenTimestamp($from, $to);
+    }
+
+    public function getCreatedPaymentsForOrder($orderId)
+    {
+        $ts = time() - Analytics\Entity::PAYMENT_WINDOW;
+
+        return $this->newQuery()
+                    ->whereIn(Entity::STATUS, [Status::CREATED, Status::FAILED])
+                    ->where(Payment\Entity::ORDER_ID, '=', $orderId)
+                    ->where(Payment\Entity::CREATED_AT, '>', $ts)
+                    ->get();
     }
 
     public function getYesterdayTopMerchantVolumeWise()

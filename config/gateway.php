@@ -31,6 +31,7 @@ return array(
         'wallet_payzapp',
         'wallet_payumoney',
         'wallet_airtelmoney',
+        'wallet_freecharge',
     ),
 
     'mock_amex'               => env('AMEX_MOCK'),
@@ -53,6 +54,7 @@ return array(
     'mock_wallet_payumoney'   => env('PAYUMONEY_MOCK'),
     'mock_wallet_airtelmoney' => env('AIRTELMONEY_MOCK'),
     'mock_upi_icici'          => env('UPI_ICICI_MOCK'),
+    'mock_wallet_freecharge'  => env('FREECHARGE_MOCK'),
 
     'certificate_path'        => env('CERTIFICATE_DIR_PATH'),
 
@@ -175,6 +177,11 @@ return array(
         'test_end_mid'     => env('AIRTELMONEY_WALLET_TEST_END_MID'),
         'live_merchant_id' => env('AIRTELMONEY_WALLET_LIVE_MERCHANT_ID'),
         'live_hash_secret' => env('AIRTELMONEY_WALLET_LIVE_HASH_SECRET'),
+    ),
+
+    'wallet_freecharge' => array(
+        'test_hash_secret'      => env('FREECHARGE_WALLET_TEST_HASH_SECRET'),
+        'test_merchant_id'      => env('FREECHARGE_WALLET_TEST_MERCHANT_ID'),
     ),
 
     'netbanking_hdfc' => array(

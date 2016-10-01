@@ -22,6 +22,7 @@ class Shared
     const PAYTM_RAZORPAY_TERMINAL           = '1000PaytmTrmnl';
     const PAYZAPP_RAZORPAY_TERMINAL         = '100PayzappTmnl';
     const PAYUMONEY_RAZORPAY_TERMINAL       = '100PayumnyTmnl';
+    const FREECHARGE_RAZORPAY_TERMINAL      = '100FrchrgeTmnl';
     const SBIEPAY_RAZORPAY_TERMINAL         = '10000SbiEpayTl';
     const SHARP_RAZORPAY_TERMINAL           = '1000SharpTrmnl';
     const CYBERSOURCE_HDFC_TERMINAL         = '1000CybrsTrmnl';
@@ -45,6 +46,7 @@ class Shared
         self::NETBANKING_KOTAK_TERMINAL,
         self::PAYZAPP_RAZORPAY_TERMINAL,
         self::PAYUMONEY_RAZORPAY_TERMINAL,
+        self::FREECHARGE_RAZORPAY_TERMINAL,
         self::SHARP_RAZORPAY_TERMINAL,
         self::SBIEPAY_RAZORPAY_TERMINAL,
         self::CYBERSOURCE_HDFC_TERMINAL,
@@ -74,6 +76,7 @@ class Shared
         self::PAYZAPP_RAZORPAY_TERMINAL     => Gateway::WALLET_PAYZAPP,
         self::PAYUMONEY_RAZORPAY_TERMINAL   => Gateway::WALLET_PAYUMONEY,
         self::AIRTELMONEY_RAZORPAY_TERMINAL => Gateway::WALLET_AIRTELMONEY,
+        self::FREECHARGE_RAZORPAY_TERMINAL  => Gateway::WALLET_FREECHARGE,
         self::SBIEPAY_RAZORPAY_TERMINAL     => Gateway::SBIEPAY,
         self::SHARP_RAZORPAY_TERMINAL       => Gateway::SHARP,
         self::FIRST_DATA_RAZORPAY_TERMINAL  => Gateway::FIRST_DATA,

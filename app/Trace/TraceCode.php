@@ -89,6 +89,7 @@ class TraceCode
     const TERMINAL_EDIT                             = 'TERMINAL_EDIT';
     const TERMINAL_ENABLE                           = 'TERMINAL_ENABLE';
     const TERMINAL_DISABLE                          = 'TERMINAL_DISABLE';
+    const TERMINAL_EXCLUDE                          = 'TERMINAL_EXCLUDE';
     const MERCHANT_EDIT                             = 'MERCHANT_EDIT';
     const CUSTOMER_EDIT                             = 'CUSTOMER_EDIT';
     const CUSTOMER_TOKEN_EDIT                       = 'CUSTOMER_TOKEN_EDIT';
