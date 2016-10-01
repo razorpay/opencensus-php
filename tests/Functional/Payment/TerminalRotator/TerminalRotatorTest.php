@@ -8,6 +8,7 @@ use RZP\Exception\GatewayTimeoutException;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Payment\Analytics\Entity as AnalyticsEntity;
 use RZP\Models\Payment;
+use RZP\Models\Merchant\Account;
 
 class TerminalRotatorTest extends TestCase
 {
@@ -15,13 +16,13 @@ class TerminalRotatorTest extends TestCase
 
     public function setUp()
     {
-        //$this->testDataFilePath = __DIR__.'/AnalyticsTestData.php';
-
         parent::setUp();
 
         $this->ba->publicAuth();
 
         $this->payment = $this->getDefaultPaymentArray();
+
+        $this->sharedMerchantAccount = Account::SHARED_ACCOUNT;
     }
 
     public function testTerminalRotator()
@@ -43,11 +44,13 @@ class TerminalRotatorTest extends TestCase
 
     public function testCheckoutMultipleAttempts()
     {
+        $this->fixtures->times(5)->create('terminal:dynamic_shared_hdfc_terminal');
+
+        $this->fixtures->times(5)->create('terminal:dynamic_shared_cybersource_hdfc_terminal');
 
         // first fail the payment and on next attempt with
         // only a checkout id, ensure the payment goes through
         // the other terminal
-        $this->fixtures->create('terminal:shared_hdfc_terminal');
 
         $payment1 = $this->getPaymentArray();
 
@@ -55,38 +58,13 @@ class TerminalRotatorTest extends TestCase
 
         $payment1['_'][AnalyticsEntity::CHECKOUT_ID] = $checkoutId;
 
-        try
-        {
-            $this->doAuthPayment($payment1);
-        }
-        catch(\Exception $e)
-        {
-            $this->assertExceptionClass($e, GatewayTimeoutException::CLASS);
-        }
-
-        $payment1  = $this->getLastPayment(true);
-
-        Payment\Entity::verifyIdAndStripSign($payment1['id']);
-
-        $analytics = $this->getEntities('terminal_analytics', array('payment_id' => $payment1['id']), true);
-
-        $terminalsUsed = $this->fetchUsedTerminals($analytics);
+        $terminalsUsed = $this->doPaymentAndFetchUsedTerminals($payment1);
 
         $payment2 = $this->getPaymentArray();
 
-        $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal');
-
         $payment2['_'][AnalyticsEntity::CHECKOUT_ID] = $checkoutId;
 
-        $this->doAuthPayment($payment2);
-
-        $payment = $this->getLastPayment(true);
-
-        Payment\Entity::verifyIdAndStripSign($payment['id']);
-
-        $analytics = $this->getEntities('terminal_analytics', array('payment_id' => $payment['id']), true);
-
-        $newTerminalsUsed = $this->fetchUsedTerminals($analytics);
+        $newTerminalsUsed = $this->doPaymentAndFetchUsedTerminals($payment2);
 
         $intersection = array_intersect($terminalsUsed, $newTerminalsUsed);
 
@@ -101,7 +79,9 @@ class TerminalRotatorTest extends TestCase
 
         $order = $this->createOrder();
 
-        $this->fixtures->create('terminal:shared_hdfc_terminal');
+        $this->fixtures->times(5)->create('terminal:dynamic_shared_hdfc_terminal');
+
+        $this->fixtures->times(5)->create('terminal:dynamic_shared_cybersource_hdfc_terminal');
 
         $payment1 = $this->getPaymentArray();
 
@@ -109,39 +89,16 @@ class TerminalRotatorTest extends TestCase
 
         $this->ba->publicAuth();
 
-        try
-        {
-            $this->doAuthPayment($payment1);
-        }
-        catch(\Exception $e)
-        {
-            $this->assertExceptionClass($e, GatewayTimeoutException::CLASS);
-        }
+        $terminalsUsed = $this->doPaymentAndFetchUsedTerminals($payment1);
 
-        $payment1  = $this->getLastPayment(true);
-
-        Payment\Entity::verifyIdAndStripSign($payment1['id']);
-
-        $analytics = $this->getEntities('terminal_analytics', array('payment_id' => $payment1['id']), true);
-
-        $terminalsUsed = $this->fetchUsedTerminals($analytics);
+        $payment = $this->getLastPayment();
 
         $payment2 = $this->getPaymentArray();
 
         $payment2['order_id'] = $order['id'];
 
-        $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal');
-
-        $this->doAuthPayment($payment2);
-
-        $payment = $this->getLastPayment(true);
-
-        Payment\Entity::verifyIdAndStripSign($payment['id']);
-
-        $analytics = $this->getEntities('terminal_analytics', array('payment_id' => $payment['id']), true);
-
-        $newTerminalsUsed = $this->fetchUsedTerminals($analytics);
-
+        $newTerminalsUsed = $this->doPaymentAndFetchUsedTerminals($payment2);
+        
         $intersection = array_intersect($terminalsUsed, $newTerminalsUsed);
 
         $this->assertEquals(count($intersection), 0);
@@ -155,47 +112,17 @@ class TerminalRotatorTest extends TestCase
         // payment simply fails here since neither checkout id not order
         // id is provided here.
 
-        $this->fixtures->create('terminal:shared_hdfc_terminal');
+        $this->fixtures->times(5)->create('terminal:dynamic_shared_hdfc_terminal');
+
+        $this->fixtures->times(5)->create('terminal:dynamic_shared_cybersource_hdfc_terminal');
 
         $payment1 = $this->getPaymentArray();
 
-        try
-        {
-            $this->doAuthPayment($payment1);
-        }
-        catch(\Exception $e)
-        {
-            $this->assertExceptionClass($e, GatewayTimeoutException::CLASS);
-        }
-
-        $payment1 = $this->getLastPayment(true);
-
-        Payment\Entity::verifyIdAndStripSign($payment1['id']);
-
-        $analytics = $this->getEntities('terminal_analytics', array('payment_id' => $payment1['id']), true);
-
-        $terminalsUsed = $this->fetchUsedTerminals($analytics);
-
-        $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal');
+        $terminalsUsed = $this->doPaymentAndFetchUsedTerminals($payment1);
 
         $payment2 = $this->getPaymentArray();
 
-        try
-        {
-            $this->doAuthPayment($payment2);
-        }
-        catch(\Exception $e)
-        {
-            $this->assertExceptionClass($e, GatewayTimeoutException::CLASS);
-        }
-
-        $payment = $this->getLastPayment(true);
-
-        Payment\Entity::verifyIdAndStripSign($payment['id']);
-
-        $analytics = $this->getEntities('terminal_analytics', array('payment_id' => $payment['id']), true);
-
-        $newTerminalsUsed = $this->fetchUsedTerminals($analytics);
+        $newTerminalsUsed = $this->doPaymentAndFetchUsedTerminals($payment2);
 
         $intersection = array_intersect($terminalsUsed, $newTerminalsUsed);
 
@@ -341,5 +268,25 @@ class TerminalRotatorTest extends TestCase
         return $order;
     }
 
+    protected function doPaymentAndFetchUsedTerminals($payment)
+    {
+        try
+        {
+            $this->doAuthPayment($payment);
+        }
+        catch(\Exception $e)
+        {
+            $this->assertExceptionClass($e, GatewayTimeoutException::CLASS);
+        }
 
+        $payment  = $this->getLastPayment(true);
+
+        Payment\Entity::verifyIdAndStripSign($payment['id']);
+
+        $analytics = $this->getEntities('terminal_analytics', array('payment_id' => $payment['id']), true);
+
+        $terminalsUsed = $this->fetchUsedTerminals($analytics);
+
+        return $terminalsUsed;
+    }
 }

@@ -36,7 +36,7 @@ class Selector
         Sorters\NetbankingSorter::class,
         Sorters\MerchantSorter::class,
         Sorters\InternationalCardSorter::class,
-        Sorters\ExclusionSorter::class,
+        Sorters\FailedTerminalsSorter::class
     ];
 
     public function __construct(Payment\Entity $payment, $mode)
@@ -106,11 +106,11 @@ class Selector
         // payment. We want to now place the excluded terminals at the bottom of the sorted
         // list thereby hoping a successful payment through the non failed terminals
 
-        $exclusionList = $options->getExclusionList();
+        $failedTerminals = $options->getFailedTerminals();
 
-        if ((count($exclusionList) > 0) and (count($exclusionList) < count($filteredTerminals)))
+        if ((count($failedTerminals) > 0) and (count($failedTerminals) < count($filteredTerminals)))
         {
-            $this->input['exclude'] = $exclusionList;
+            $this->input['failed_terminals'] = $failedTerminals;
 
         }
 
@@ -199,10 +199,10 @@ class Selector
     {
         $options = new Terminal\Options;
 
-        if ((isset($opts['exclude']) === true) and
-            (is_array($opts['exclude']) === true))
+        if ((isset($opts['failed']) === true) and
+            (is_array($opts['failed']) === true))
         {
-            $options->setExclusionList($opts['exclude']);
+            $options->setFailedTerminals($opts['failed']);
         }
 
         $terminalsSelected = $this->select($options);

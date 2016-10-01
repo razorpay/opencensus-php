@@ -4,10 +4,10 @@ namespace RZP\Models\Terminal\Sorters;
 
 use RZP\Models\Terminal;
 
-class ExclusionSorter extends Terminal\Sorter
+class FailedTerminalsSorter extends Terminal\Sorter
 {
     protected $properties = [
-        'exclude',
+        'failed',
     ];
 
     /**
@@ -17,17 +17,17 @@ class ExclusionSorter extends Terminal\Sorter
      * @param $terminals
      * @param $input
      */
-    public function excludeSorter($terminals, $input)
+    public function failedSorter($terminals, $input)
     {
         $sortedTerminals = $terminals;
 
-        if (isset($input['exclude']))
+        if (isset($input['failed_terminals']))
         {
             $nonExcluded = [];
 
             $excluded = [];
 
-            $flipped = array_flip($input['exclude']);
+            $flipped = array_flip($input['failed_terminals']);
 
             foreach($terminals as $terminal)
             {
