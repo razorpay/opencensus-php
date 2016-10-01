@@ -156,14 +156,14 @@ class Service extends Base\Service
     {
         $data = ['saved' => false];
 
-        $key = $this->mode . '_checkcookie';
-
-        $checkCookie = $this->app['request']->session()->get($key);
-
         // send otp is true when called from the checkout, false if called from
         // preferences, we need to find out for first case only
         if ($sendOtp === true)
         {
+            $key = $this->mode . '_checkcookie';
+
+            $checkCookie = $this->app['request']->session()->get($key);
+
             $this->trace->info(TraceCode::CUSTOMER_CHECKCOOKIE_STATUS,
                 [
                     'cookie' => $checkCookie
