@@ -66,7 +66,7 @@ class PaymentCreateConvenienceFeeTest extends TestCase
 
         assert($payment['fee'] === 1150);
 
-        assert($payment['service_tax'] === 150);
+        assert($payment['service_tax'] === 154);
     }
 
     public function testAmountMismatch()
@@ -125,7 +125,7 @@ class PaymentCreateConvenienceFeeTest extends TestCase
 
         assert($payment['fee'] === 1150);
 
-        assert($payment['service_tax'] === 150);
+        assert($payment['service_tax'] === 154);
     }
 
     // TODO Fail tests for create with order

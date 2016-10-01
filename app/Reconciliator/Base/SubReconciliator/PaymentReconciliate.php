@@ -813,9 +813,23 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                 'gateway'                           => get_called_class()
             ]);
 
-        $txn = (new Transaction\Core)->createFromPaymentAuthorized($this->payment);
+        list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentAuthorized($this->payment);
 
         $this->repo->saveOrFail($txn);
+
+        $this->saveFeeDetails($txn, $feesSplit);
+    }
+
+    protected function saveFeeDetails($txn, $feesSplit)
+    {
+        foreach ($feesSplit as $feeSplit)
+        {
+            $feeSplit->transaction()->associate($txn);
+
+            $this->repo->fee_breakup->saveOrFail($feeSplit);
+
+            s($feeSplit->toArrayPublic());
+        }
     }
 
     protected function recordGatewayFee($reconGatewayFee, $currentGatewayFee)

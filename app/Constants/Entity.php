@@ -38,7 +38,9 @@ class Entity
     const ADJUSTMENT            = 'adjustment';
     const SETTLEMENT            = 'settlement';
     const TRANSACTION           = 'transaction';
+    const FEE_BREAKUP           = 'fee_breakup';
     const BANK_ACCOUNT          = 'bank_account';
+
     const DAILY_SETTLEMENT      = 'daily_settlement';
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const TERMINAL_ACTION       = 'terminal_action';
@@ -115,6 +117,7 @@ class Entity
         self::GATEWAY_ABSENCE       => \RZP\Models\GatewayStatus\Absence::class,
         self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
         self::WALLET_FREECHARGE     => \RZP\Gateway\Wallet\Freecharge::class,
+        self::FEE_BREAKUP           => \RZP\Models\Pricing\FeeBreakup::class,
     );
 
     protected static $repository = array(

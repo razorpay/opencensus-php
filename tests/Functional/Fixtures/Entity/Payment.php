@@ -102,11 +102,12 @@ class Payment extends Base
 
         $payment->saveOrFail();
 
-        $txn = $this->createTransactionForPaymentAuthorized($payment);
+        list($txn, $feesSplit) = $this->createTransactionForPaymentAuthorized($payment);
         $txn->saveOrFail();
 
         $payment->saveOrFail();
 
+        $this->saveFeeDetails($feesSplit, $txn);
         return $payment;
     }
 
@@ -164,10 +165,13 @@ class Payment extends Base
                 'updated_at' => $payment->created_at,
             ));
 
-        $txn = $this->createTransactionForPaymentAuthorized($payment);
+        list($txn, $feesSplit) = $this->createTransactionForPaymentAuthorized($payment);
+
         $txn->saveOrFail();
 
         $payment->saveOrFail();
+
+        $this->saveFeeDetails($feesSplit, $txn);
 
         return $payment;
     }
@@ -202,10 +206,12 @@ class Payment extends Base
                 'updated_at' => $payment->created_at,
             ));
 
-        $txn = $this->createTransactionForPaymentAuthorized($payment);
+        list($txn, $feesSplit) = $this->createTransactionForPaymentAuthorized($payment);
         $txn->saveOrFail();
 
         $payment->saveOrFail();
+
+        $this->saveFeeDetails($feesSplit, $txn);
 
         return $payment;
     }
@@ -229,5 +235,29 @@ class Payment extends Base
     {
         $this->edit(
             $id, ['status' => 'failed', 'error_code' => 'BAD_REQUEST_PAYMENT_FAILED']);
+    }
+
+    protected function saveFeeDetails($feesSplit, $txn)
+    {
+        if(empty($feesSplit) === true)
+        {
+            return;
+        }
+
+        $feesBreakup = array();
+
+        foreach ($feesSplit as $feeSplit)
+        {
+            $params = [
+                'transaction_id'        => $txn->getId(),
+                'name'                  => $feeSplit->getName(),
+                'percentage'            => $feeSplit->getPercentage(),
+                'amount'                => $feeSplit->getAmount(),
+                'type'                  => $feeSplit->getType(),
+            ];
+
+            $feeBreakup = $this->fixtures->create('fee_breakup', $params);
+            array_push($feesBreakup, $feeBreakup);
+        }
     }
 }

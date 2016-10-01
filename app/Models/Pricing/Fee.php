@@ -54,7 +54,7 @@ class Fee
         return $calculator->calculate($pricing, $preCalculationOfFees);
     }
 
-    public function calculateServiceTaxFromFees($fee)
+    public function calculateServiceTaxFromFees($entity, $fee)
     {
         // Solving these
         // rzpFee + servTax = totFee;
@@ -62,13 +62,8 @@ class Fee
         //         = ST_PERC * (totFee - servTax);
 
         // servTax = ( ST_PERC * totFee ) / ( 100 + ST_PERC ) ;
-        $serviceTax = FeeCalculator::getServiceTaxRate();
 
-        $numerator = $serviceTax * $fee ;
-
-        $denominator = 100 + $serviceTax ;
-
-        return ceil($numerator / $denominator);
+        return (new FeeCalculator($entity))->calculateServiceTaxesFromFees($fee);
     }
 
     protected function getPricingPlanId($merchant)

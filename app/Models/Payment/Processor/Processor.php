@@ -163,7 +163,7 @@ class Processor
 
         $preCalculationOfFees = true;
 
-        list($fee, $serviceTax, $ruleKey) =
+        list($fee, $serviceTax, $ruleKey, $feesSplit) =
                             (new Pricing\Fee)->calculateMerchantFees($payment, $preCalculationOfFees);
 
         $data = array(
@@ -813,5 +813,20 @@ class Processor
     protected function getFormattedContact($contact)
     {
         return substr($contact, -10);
+    }
+
+    protected function saveFeeDetails($txn, $feesSplit)
+    {
+        if (empty($feesSplit) == true)
+        {
+            return;
+        }
+
+        foreach ($feesSplit as $feeSplit)
+        {
+            $feeSplit->transaction()->associate($txn);
+
+            $this->repo->fee_breakup->saveOrFail($feeSplit);
+        }
     }
 }

@@ -186,7 +186,7 @@ trait Authorize
     protected function verifyFeesLessThanAmount($payment)
     {
         // Ignore the pricing rule not found exception for authorization.
-        list($fee, $serviceTax, $ruleKey) = (new Pricing\Fee)->calculateMerchantFees($payment);
+        list($fee, $serviceTax, $ruleKey, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
 
         if ($payment->getAmount() < $fee)
         {
@@ -1613,9 +1613,11 @@ trait Authorize
             if ($this->isGatewayActuallyAuthorizingPayment($payment) === false)
             {
                 // Also sets the transaction association with the payment.
-                $txn = (new Transaction\Core)->createFromPaymentAuthorized($payment);
+                list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentAuthorized($payment);
 
                 $this->repo->saveOrFail($txn);
+
+                $this->saveFeeDetails($txn, $feesSplit);
             }
 
             $this->repo->saveOrFail($payment);

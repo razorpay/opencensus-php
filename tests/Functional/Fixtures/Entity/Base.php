@@ -47,6 +47,7 @@ class Base
         'credits'       => \RZP\Models\Merchant\Credits\Entity::class,
         'address'       => \RZP\Models\Address\Entity::class,
         'wallet'        => \RZP\Gateway\Wallet\Base\Entity::class,
+        'fee_breakup'   => \RZP\Models\Pricing\FeeBreakup\Entity::class,
     );
 
     protected static $liveAndTest = array(
