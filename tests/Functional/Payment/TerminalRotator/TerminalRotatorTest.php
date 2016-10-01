@@ -43,6 +43,8 @@ class TerminalRotatorTest extends TestCase
 
     public function testCheckoutMultipleAttempts()
     {
+        $this->markTestSkipped();
+
         // first fail the payment and on next attempt with
         // only a checkout id, ensure the payment goes through
         // the other terminal
@@ -97,6 +99,8 @@ class TerminalRotatorTest extends TestCase
         // first fail the payment and on next attempt with
         // only a order id, ensure the payment goes through
         // the other terminal
+        $this->markTestSkipped();
+
         $order = $this->createOrder();
 
         $this->fixtures->create('terminal:shared_hdfc_terminal');
@@ -152,6 +156,7 @@ class TerminalRotatorTest extends TestCase
     {
         // payment simply fails here since neither checkout id not order
         // id is provided here.
+
         $this->fixtures->create('terminal:shared_hdfc_terminal');
 
         $payment1 = $this->getPaymentArray();
@@ -205,6 +210,7 @@ class TerminalRotatorTest extends TestCase
         // only a order id, enusre the same terminals are picked up
         // not excluded and the payment fails again with the
         // same exception that it failed before.
+        
         $order = $this->createOrder();
 
         $this->fixtures->create('terminal:shared_hdfc_terminal');
