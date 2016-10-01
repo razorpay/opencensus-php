@@ -310,14 +310,7 @@ class Terminal extends Base
 
     public function createDynamicSharedCybersourceHdfcTerminal(array $attributes = [])
     {
-        $uniqIdGenerator = new UniqueIdEntity();
-
-        $uniqIdGenerator->generateId();
-
-        $id = $uniqIdGenerator->getId();
-
         $defaultValues = array(
-            'id'                        => $id,
             'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'cybersource',
             'card'                      => 1,
@@ -624,14 +617,7 @@ class Terminal extends Base
 
     public function createDynamicSharedHdfcTerminal(array $attributes=[])
     {
-        $uniqIdGenerator = new UniqueIdEntity();
-
-        $uniqIdGenerator->generateId();
-
-        $id = $uniqIdGenerator->getId();
-
         $defaultValues = array(
-            'id'                        => $id,
             'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'hdfc',
             'card'                      => 1,

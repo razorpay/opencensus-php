@@ -66,6 +66,7 @@ class TerminalRotatorTest extends TestCase
 
         $newTerminalsUsed = $this->doPaymentAndFetchUsedTerminals($payment2);
 
+
         $intersection = array_intersect($terminalsUsed, $newTerminalsUsed);
 
         $this->assertEquals(count($intersection), 0);

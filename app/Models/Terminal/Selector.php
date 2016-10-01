@@ -108,7 +108,7 @@ class Selector
 
         $failedTerminals = $options->getFailedTerminals();
 
-        if ((count($failedTerminals) > 0) and (count($failedTerminals) < count($filteredTerminals)))
+        if ((count($failedTerminals) > 0))
         {
             $this->input['failed_terminals'] = $failedTerminals;
 
