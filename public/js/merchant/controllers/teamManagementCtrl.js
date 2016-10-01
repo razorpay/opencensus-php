@@ -10,7 +10,7 @@ app.controller('TeamManagementCtrl', [
   function ($scope, $http, alertsFactory, user, uiLoad, transformRequestAsFormPost) {
     $scope.alerts = alertsFactory.getHandler();
 
-    $scope.roles = ['owner', 'manager', 'operations', 'finance'];
+    $scope.roles = ['owner', 'manager', 'operations', 'finance', 'admin'];
 
     $scope.team = {
       role: 'manager'
@@ -52,7 +52,8 @@ app.controller('TeamManagementCtrl', [
         $scope.roleOptions = $scope.roleOptions.concat([
           { name: 'Operations', id: 'operations' },
           { name: 'Finance', id: 'finance' },
-          { name: 'Support', id: 'support'}
+          { name: 'Support', id: 'support'},
+          { name: 'Admin', id: 'admin'}
         ]);
       }
     });

@@ -56,7 +56,7 @@ class Validator extends Base\Validator
     );
 
     protected static $updateTeamMemberRules = array(
-        'role'  => 'required|in:owner,manager,operations,finance,support'
+        'role'  => 'required|in:owner,manager,operations,finance,support,admin'
     );
 
     protected static $api_dashboard_mappings = array(
