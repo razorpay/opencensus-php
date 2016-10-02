@@ -46,10 +46,10 @@ class CreateFirstDataGateway extends Migration
             $table->char(FirstData::TDATE, 20)
                   ->nullable();
 
-            $table->char(FirstData::APPROVAL_CODE, 50)
+            $table->char(FirstData::APPROVAL_CODE, 90)
                   ->nullable();
 
-            $table->char(FirstData::ERROR_MESSAGE, 50)
+            $table->char(FirstData::ERROR_MESSAGE, 90)
                   ->nullable();
 
             $table->integer(FirstData::CREATED_AT);
