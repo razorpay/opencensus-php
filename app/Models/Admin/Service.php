@@ -39,48 +39,31 @@ class Service extends Base\Service
 
     public function sendTestNewsletter($input)
     {
-        $errors = (new Validator)->validateInput('send_test_newsletter', $input);
+        (new Validator)->validateInput('send_test_newsletter', $input);
 
-        if (empty($errors))
-        {
-            //
-            // Now we send the newsletter
-            //
-            $mailer = new Newsletter(
-                $input['subject'],
-                $input['msg'],
-                $input['template']
-            );
+        $mailer = new Newsletter(
+            $input['subject'],
+            $input['msg'],
+            $input['template']
+        );
 
-            $mailer->setTestEmail($input['email']);
+        $mailer->setTestEmail($input['email']);
 
-            return $mailer->send();
-        }
-        else
-        {
-            return $errors;
-        }
+        return $mailer->send();
     }
 
     public function sendNewsletter($input)
     {
-        $errors = (new Validator)->validateInput('send_newsletter', $input);
+        (new Validator)->validateInput('send_newsletter', $input);
 
-        if (empty($errors))
-        {
-            $mailer = new Newsletter(
-                $input['subject'],
-                $input['msg'],
-                $input['template']
-            );
+        $mailer = new Newsletter(
+            $input['subject'],
+            $input['msg'],
+            $input['template']
+        );
 
-            $mailer->setRecipient($input['lists']);
+        $mailer->setRecipient($input['lists']);
 
-            return $mailer->send();
-        }
-        else
-        {
-            return $errors;
-        }
+        return $mailer->send();
     }
 }
