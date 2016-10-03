@@ -152,7 +152,7 @@ class MerchantTest extends TestCase
         $this->waitUntilContainsByCss('body', self::$merchant->id);
         $this->waitUntilContainsByCss('body', 'Merchant Detail');
         $this->keys(Keys::PAGEDOWN);
-        $this->clickByLinkText('Tag Merchant');
+        $this->execScript('$(".tag-merchant").click()');
         $this->setValueByName('merchant-tags', 'Roles');
         $this->clickByClassName('modal-ok');
         $this->waitUntilContainsByCss('body', 'Roles');
