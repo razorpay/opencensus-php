@@ -11,6 +11,7 @@ use RZP\Gateway\Wallet\Olamoney;
 use RZP\Gateway\Wallet\Olamoney\Command;
 use RZP\Gateway\Wallet\Olamoney\RequestFields;
 use RZP\Gateway\Wallet\Olamoney\ResponseFields;
+use RZP\Gateway\Wallet\Olamoney\Status;
 
 
 class Server extends Base\Mock\Server
@@ -29,7 +30,7 @@ class Server extends Base\Mock\Server
 
         $content = array(
             ResponseFields::TYPE              => 'credit',
-            ResponseFields::STATUS            => 'success',
+            ResponseFields::STATUS            => Status::SUCCESS,
             ResponseFields::MERCHANT_BILL_ID  => $bill[RequestFields::MERCHANT_REFERENCE_ID],
             ResponseFields::TRANSACTION_ID    => 'ola_txn_id',
             ResponseFields::AMOUNT            => $bill[RequestFields::AMOUNT],
@@ -61,18 +62,14 @@ class Server extends Base\Mock\Server
     {
         $this->validateActionInput($input, 'otpGenerate');
 
-        if ($input['phone'] === '9008119029')
+        if (in_array($input['phone'], ['9008119029', '9022219029']))
         {
-            $responseContent = [ResponseFields::STATUS => 'Error'];
-        }
-        else if ($input['phone'] === '9022219029')
-        {
-            $responseContent = [ResponseFields::STATUS => 'Error'];
+            $responseContent = [ResponseFields::STATUS => Status::ERROR];
         }
         else
         {
             $responseContent = array(
-                ResponseFields::STATUS    => 'success',
+                ResponseFields::STATUS    => Status::SUCCESS,
                 ResponseFields::MESSAGE   => '',
             );
         }
@@ -92,7 +89,7 @@ class Server extends Base\Mock\Server
         $this->validateActionInput($input, 'otpSubmit');
 
         $responseContent = array(
-            ResponseFields::STATUS          => 'success',
+            ResponseFields::STATUS          => Status::SUCCESS,
             ResponseFields::MESSAGE         => '',
             ResponseFields::ACCESS_TOKEN    => 'success_access_token',
             ResponseFields::REFRESH_TOKEN   => 'success_refresh_token',
@@ -108,7 +105,7 @@ class Server extends Base\Mock\Server
         else if ($input[RequestFields::OTP] === Otp::INSUFFICIENT_BALANCE)
         {
             $responseContent = array(
-                ResponseFields::STATUS          => 'success',
+                ResponseFields::STATUS          => Status::SUCCESS,
                 ResponseFields::MESSAGE         => '',
                 ResponseFields::ACCESS_TOKEN    => 'insufficient_balance_access_token',
                 ResponseFields::REFRESH_TOKEN   => 'insufficient_balance_refresh_token',
@@ -132,7 +129,7 @@ class Server extends Base\Mock\Server
         }
 
         $responseContent = array(
-            ResponseFields::STATUS          => 'success',
+            ResponseFields::STATUS          => Status::SUCCESS,
             ResponseFields::COMMENTS        => 'olaComments',
             ResponseFields::AMOUNT          => $balance,
             ResponseFields::BALANCE_TYPE    => 'olaBalanceType',
@@ -141,6 +138,7 @@ class Server extends Base\Mock\Server
         return $this->makeResponse($responseContent);
     }
 
+    // Not being used right now as topup is a redirection flow
     public function topupWallet($input)
     {
         $this->validateActionInput($input, 'topupWallet');
@@ -164,7 +162,7 @@ class Server extends Base\Mock\Server
 
         $responseContent = array(
             ResponseFields::TYPE                    => 'debit',
-            ResponseFields::STATUS                  => 'success',
+            ResponseFields::STATUS                  => Status::SUCCESS,
             ResponseFields::MERCHANT_BILL_ID        => $input[RequestFields::UNIQUE_ID],
             ResponseFields::TRANSACTION_ID          => 'olaUniqTxnId',
             ResponseFields::AMOUNT                  => $input[RequestFields::AMOUNT],
@@ -203,11 +201,11 @@ class Server extends Base\Mock\Server
         // error amount
         if ($input[RequestFields::AMOUNT] === '13.00')
         {
-            $responseContent[ResponseFields::STATUS] = 'Error';
+            $responseContent[ResponseFields::STATUS] = Status::ERROR;
         }
         else
         {
-            $responseContent[ResponseFields::STATUS] = 'success';
+            $responseContent[ResponseFields::STATUS] = Status::SUCCESS;
         }
 
         return $this->makeResponse($responseContent);

@@ -315,7 +315,7 @@ class OlamoneyGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('wallet', true);
 
-        $this->assertSame($refund['status_code'], 'Error');
+        $this->assertSame($refund['status_code'], 'error');
     }
 
     public function testFailedPayment()
