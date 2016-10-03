@@ -13,19 +13,19 @@ class Mailgun extends BaseMailgun
     {
         $class = MgClient::class;
 
-        // $key = $this->app['config']->get('applications.mailgun')['key'];
-
         $instance = Mockery::mock($class, ['', new GuzzleClient])->makePartial();
 
         $instance->shouldReceive('post')
                 ->andReturn(null);
 
         $object = new \stdClass();
+
         $object->http_response_body = new \stdClass();
+
         $object->http_response_body->total_count = 0;
 
         $instance->shouldReceive('get')
-                ->andReturn($object);
+                 ->andReturn($object);
 
         return $instance;
     }

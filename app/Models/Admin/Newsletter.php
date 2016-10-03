@@ -27,7 +27,7 @@ class Newsletter
     const WAIT_BEFORE_RETRY = 10;
 
     function __construct(
-        $subject = 'Razorpay Newsletter',
+        $subject,
         $msg,
         $template = 'newsletter')
     {
@@ -35,7 +35,7 @@ class Newsletter
 
         $this->config = Config::get('applications.mailgun');
 
-        $this->data = $this->setupData($subject, $msg);
+        $this->data = $this->setupData($msg, $subject);
 
         $this->template = $template;
 
@@ -44,7 +44,7 @@ class Newsletter
         $this->count = 0;
     }
 
-    protected function setupData($subject, $msg)
+    protected function setupData($msg, $subject = 'Razorpay Newsletter')
     {
         return [
             'subject'   =>  $subject,
