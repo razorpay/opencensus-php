@@ -688,7 +688,7 @@ class Gateway extends Base\Gateway
             RequestFields::UNIQUE_BILL_ID   => $input['payment']['id'],
             RequestFields::ACCESS_TOKEN     => $this->getAccessToken($input['terminal']),
             RequestFields::TIMESTAMP        => Carbon::now('Asia/Kolkata')->format('Y-m-d H:i:s'),
-            );
+        );
 
         $content[RequestFields::HASH] = $this->getHashForVerifyRequest($content);
 
@@ -911,9 +911,9 @@ class Gateway extends Base\Gateway
     protected function getRequestHeaders()
     {
         return [
-                    'Content-Type'  => 'application/json',
-                    'Authorization' => 'Basic '. $this->getBasicAuthToken()
-                ];
+            'Content-Type'  => 'application/json',
+            'Authorization' => 'Basic '. $this->getBasicAuthToken()
+        ];
     }
 
     protected function getBasicAuthToken()
