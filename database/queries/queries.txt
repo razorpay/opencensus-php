@@ -900,3 +900,9 @@ ALTER TABLE payments
 
 ALTER TABLE tokens
     ADD COLUMN recurring TINYINT(1) DEFAULT 0 AFTER gateway_token2;
+
+update settlements set status = 'failed' where id = '6IvkeDrStxAkKl';
+update settlements set status = 'failed' where id = '6JKIVhAOglWEzd';
+update settlements set status = 'failed' where id = '6KVt8W16z9wM2S';
+update settlements set status = 'failed' where id = '6KuQGTmk6bp0TM';
+update settlements set status = 'failed' where id = '6LhURyIav2Irt5';
