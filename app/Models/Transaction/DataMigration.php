@@ -55,7 +55,7 @@ class DataMigration extends Base\Service
     protected function calculateServiceTaxes($fee, $feesSplit, $capturedTime)
     {
         // Checking the capture time with the ST cutoff time
-        if ($capturedTime < 1433097000)
+        if ($capturedTime < self::SERVICE_TAX_CUTOFF_TIMESTAMP)
         {
             $serviceTaxValue = (int) ceil(($fee * self::SERVICE_TAX_PERCENTAGE_BEFORE_CUTOFF)/10000);
             $serviceTaxFeeBreakup = $this->createFeeBreakup(FeeBreakupName::SERVICE_TAX, self::SERVICE_TAX_PERCENTAGE_BEFORE_CUTOFF, $serviceTaxValue, FeeBreakupType::PERCENTAGE);
@@ -69,7 +69,7 @@ class DataMigration extends Base\Service
         array_push($feesSplit, $serviceTaxFeeBreakup);
 
         // Checking the capture time with the SB cutoff time
-        if ($capturedTime >= 1447525800)
+        if ($capturedTime >= self::SWACH_BHARAT_CUTOFF_TIMESTAMP)
         {
             $swachhBharatCessValue = (int) ceil(($fee * self::SWACHH_BHARAT_CESS_PERCENTAGE)/10000);
             $swachhBharatCessFeeBreakup = $this->createFeeBreakup(FeeBreakupName::SWACHH_BHARAT_CESS, self::SWACHH_BHARAT_CESS_PERCENTAGE, $swachhBharatCessValue, FeeBreakupType::PERCENTAGE);
@@ -78,7 +78,7 @@ class DataMigration extends Base\Service
         }
 
         // Checking the capture time with the KK cutoff time
-        if ($capturedTime >= 1464719400)
+        if ($capturedTime >= self::KRISHI_KALYAN_CUTOFF_TIMESTAMP)
         {
             $krishiKalyanCessValue = (int) ceil(($fee * self::KRISHI_KALYAN_CESS_PERCENTAGE)/10000);
             $krishiKalyanCessFeeBreakup = $this->createFeeBreakup(FeeBreakupName::KRISHI_KALYAN_CESS, self::KRISHI_KALYAN_CESS_PERCENTAGE, $krishiKalyanCessValue, FeeBreakupType::PERCENTAGE);

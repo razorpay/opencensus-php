@@ -17,24 +17,24 @@ class Repository extends Base\Repository
         $txnIds = (new Transaction\Repository)->getTransactionForReport($merchantId, $from, $to);
 
         $rzpFees = $this->newQuery()
-                         ->whereIn('fees_breakup.transaction_id', $txnIds)
-                         ->where('fees_breakup.name', '=', 'razorpay')
-                         ->sum('fees_breakup.amount');
+                         ->whereIn(Entity::TRANSACTION_ID, $txnIds)
+                         ->where(Entity::NAME, '=', Name::RZP)
+                         ->sum(Entity::AMOUNT);
 
         $serviceTax = $this->newQuery()
-                         ->whereIn('fees_breakup.transaction_id', $txnIds)
-                         ->where('fees_breakup.name', '=', 'service_tax')
-                         ->sum('fees_breakup.amount');
+                         ->whereIn(Entity::TRANSACTION_ID, $txnIds)
+                         ->where(Entity::NAME, '=', Name::SERVICE_TAX)
+                         ->sum(Entity::AMOUNT);
 
         $swachhBharatCess = $this->newQuery()
-                         ->whereIn('fees_breakup.transaction_id', $txnIds)
-                         ->where('fees_breakup.name', '=', 'swachh_bharat_cess')
-                         ->sum('fees_breakup.amount');
+                         ->whereIn(Entity::TRANSACTION_ID, $txnIds)
+                         ->where(Entity::NAME, '=', Name::SWACHH_BHARAT_CESS)
+                         ->sum(Entity::AMOUNT);
 
         $krishiKalyanCess = $this->newQuery()
-                         ->whereIn('fees_breakup.transaction_id', $txnIds)
-                         ->where('fees_breakup.name', '=', 'krishi_kalyan_cess')
-                         ->sum('fees_breakup.amount');
+                         ->whereIn(Entity::TRANSACTION_ID, $txnIds)
+                         ->where(Entity::NAME, '=', Name::KRISHI_KALYAN_CESS)
+                         ->sum(Entity::AMOUNT);
 
         return [
             'rzp_fee'                          =>  (int) $rzpFees,

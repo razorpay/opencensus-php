@@ -254,7 +254,7 @@ class Repository extends Base\Repository
                     ->where(Entity::TYPE, 'payment')
                     ->join(Table::PAYMENT, Entity::ENTITY_ID, '=', 'payments.id')
                     ->whereNotNull(Payment\Entity::CAPTURED_AT)
-                    ->whereNotIn('transactions.id', function($query)
+                    ->whereNotIn(Entity::ID, function($query)
                         {
                             $query->select(FeeBreakup\Entity::TRANSACTION_ID)
                                   ->from(TABLE::FEE_BREAKUP);
@@ -268,10 +268,10 @@ class Repository extends Base\Repository
     public function getTransactionForReport($merchantId, $from, $to)
     {
         $txnIds = $this->newQuery()
-                       ->where('transactions.merchant_id', $merchantId)
-                       ->where('type', 'payment')
-                       ->join('payments', 'transactions.entity_id', '=', 'payments.id')
-                       ->whereNotNull('payments.captured_at')
+                       ->where("transactions.merchant_id", $merchantId)
+                       ->where(Entity::TYPE, 'payment')
+                       ->join(Table::PAYMENT, Entity::ENTITY_ID, '=', 'payments.id')
+                       ->whereNotNull(Payment\Entity::CAPTURED_AT)
                        ->betweenTime($from, $to)
                        ->select("transactions.id")
                        ->get();
