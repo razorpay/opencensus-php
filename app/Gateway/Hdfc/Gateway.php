@@ -550,6 +550,10 @@ class Gateway extends Base\Gateway
         {
             Hdfc\ErrorHandler::setGatewayWrongContentType($response, $contentType);
 
+            $this->trace->info(
+                TraceCode::GATEWAY_VERIFY_INVALID_HEADER,
+                $contentType);
+
             $this->error = true;
         }
     }

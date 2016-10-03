@@ -44,7 +44,7 @@ trait Topup
             return $this->getPaymentGatewayRequestData($request, $payment);
         }
 
-        assert(false, 'Should not reach here.');
+        assertTrue(false, 'Should not reach here.');
     }
 
     protected function validateTopupFlow($payment, $input)

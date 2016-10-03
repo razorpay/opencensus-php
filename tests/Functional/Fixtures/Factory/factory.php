@@ -222,6 +222,20 @@ $factory(\RZP\Models\Merchant\Webhook\Entity::class, [
     'active' => true,
 ]);
 
+$factory(\RZP\Models\Address\Entity::class,
+    [
+        'line1'         => 'some line one',
+        'line2'         => 'some line two',
+        'city'          => 'Bangalore',
+        'state'         => 'Karnataka',
+        'zipcode'       => '560078',
+        'country'       => 'in',
+        'type'          => 'shipping_address',
+        'primary'       => true,
+        'entity_id'     => '100000customer',
+        'entity_type'   => 'customer',
+    ]);
+
 $factory(\RZP\Models\Emi\Entity::class, [
     'id' => 10101010101010,
     'duration' => 9,
@@ -261,6 +275,7 @@ $factory(\RZP\Models\Customer\Token\Entity::class, [
     'method'      => 'wallet',
     'bank'        => null,
     'card_id'     => null,
+    'recurring'   => false,
     'used_count'  => 0,
 ]);
 

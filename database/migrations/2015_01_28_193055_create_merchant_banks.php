@@ -21,44 +21,44 @@ class CreateMerchantBanks extends Migration {
             $table->char(Methods::MERCHANT_ID, Methods::ID_LENGTH)
                   ->primary();
 
-            $table->boolean(Methods::CARD)
+            $table->tinyInteger(Methods::CARD)
                   ->default(1);
 
-            $table->boolean(Methods::NETBANKING)
+            $table->tinyInteger(Methods::NETBANKING)
                   ->default(1);
 
-            $table->boolean(Methods::AMEX)
+            $table->tinyInteger(Methods::AMEX)
                   ->default(0);
 
             $table->text(Methods::BANKS);
 
-            $table->boolean(Methods::PAYTM)
+            $table->tinyInteger(Methods::PAYTM)
                   ->default(0);
 
-            $table->boolean(Methods::MOBIKWIK)
+            $table->tinyInteger(Methods::MOBIKWIK)
                   ->default(0);
 
-            $table->boolean(Methods::OLAMONEY)
+            $table->tinyInteger(Methods::OLAMONEY)
                   ->default(0);
 
-            $table->boolean(Methods::PAYZAPP)
+            $table->tinyInteger(Methods::PAYZAPP)
                   ->default(0);
 
-            $table->boolean(Methods::PAYUMONEY)
+            $table->tinyInteger(Methods::PAYUMONEY)
                   ->default(0);
 
-            $table->boolean(Methods::AIRTELMONEY)
+            $table->tinyInteger(Methods::AIRTELMONEY)
                   ->default(0);
 
-            $table->boolean(Methods::EMI)
+            $table->tinyInteger(Methods::EMI)
                   ->default(0);
 
-            $table->boolean(Methods::CREDIT_CARD)
+            $table->tinyInteger(Methods::CREDIT_CARD)
                   ->default(1);
 
-            $table->boolean(Methods::DEBIT_CARD)
+            $table->tinyInteger(Methods::DEBIT_CARD)
                   ->default(1);
-            $table->boolean(Methods::UPI)
+            $table->tinyInteger(Methods::UPI)
                   ->default(0);
 
             $table->integer(Methods::CREATED_AT);

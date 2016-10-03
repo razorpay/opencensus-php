@@ -58,7 +58,7 @@ trait Refund
             $data['card'] = $refund->payment->card->toArray();
         }
 
-        $this->mutex->acquireAndRelease($payment, function() use ($data, $payment, $refund)
+        $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment, $refund)
         {
             if (($payment->getTransactionId() !== null) or
                 ($payment->isAuthorized() === false))
@@ -94,7 +94,7 @@ trait Refund
             $data['card'] = $refund->payment->card->toArray();
         }
 
-        $msg = $this->mutex->acquireAndRelease($payment, function() use ($data, $payment, $refund)
+        $msg = $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment, $refund)
         {
             $verify = $this->callGatewayForVerifyRefund($data);
 

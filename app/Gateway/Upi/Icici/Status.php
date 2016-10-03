@@ -11,4 +11,6 @@ class Status
     const PENDING = 'PENDING';
 
     const FAILURE = 'FAILURE';
+
+    const REJECT  = 'REJECT';
 }

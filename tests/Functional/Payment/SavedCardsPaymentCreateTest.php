@@ -13,6 +13,8 @@ class SavedCardsPaymentCreateTest extends TestCase
 
     public function setUp()
     {
+        $this->testDataFilePath = __DIR__.'/helpers/SavedCardsPaymentTestData.php';
+
         parent::setUp();
 
         $this->ba->publicAuth();
@@ -543,6 +545,28 @@ class SavedCardsPaymentCreateTest extends TestCase
     }
 
     /**
+     * test card payment creation using a local saved card and token without cvv
+     */
+    public function testLocalSavedCardPaymentCreateNoCvv()
+    {
+        // set payment data using token
+        $this->payment = $this->getDefaultPaymentArray();
+
+        $this->payment['card'] = [];
+
+        $this->payment['token'] = '10000cardtoken';
+
+        $this->payment['customer_id'] = 'cust_100000customer';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function()
+        {
+            $this->doAuthPayment($this->payment);
+        });
+   }
+
+    /**
      * test card multiple payments with save card local, only one card should be saved
      */
     public function testCustomerFetchPaymentsInvalidApp()
@@ -569,6 +593,37 @@ class SavedCardsPaymentCreateTest extends TestCase
         $this->assertEquals($payments['entity'], 'collection');
 
         $this->assertEquals($payments['count'], 0);
+    }
+
+    /**
+     * test card multiple payments with save card local, only one card should be saved
+     */
+    public function testPaymentsInvalidApp()
+    {
+        // create payments and fetch on public auth
+        $this->testPaymentCreateAndSaveCardGlobal();
+
+        $this->mockSession('capp_ksjdfkjsaf');
+
+        $this->ba->publicAuth();
+
+        $data = [
+            'request' => [
+                'url' => '/preferences',
+                'method' => 'get',
+            ],
+            'response' => [
+                'content' => [
+                    'http_status_code' => 200,
+                    'version' => 1
+                ],
+            ],
+        ];
+
+        $this->fixtures->merchant->editFeatures('cardsaving');
+
+        $this->runRequestResponseFlow($data);
+
     }
 
     protected function mockSession($appToken = 'capp_1000000custapp')

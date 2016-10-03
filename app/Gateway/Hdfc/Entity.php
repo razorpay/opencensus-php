@@ -86,11 +86,6 @@ class Entity extends Base\Entity
         return $this->getAttribute('enroll_result');
     }
 
-    public function getReceived()
-    {
-        return $this->getAttribute('received');
-    }
-
     public function getReceivedAttribute()
     {
         $received = $this->attributes['received'];
