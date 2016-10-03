@@ -59,7 +59,7 @@ class Scorecard extends Base\Core
 
             $message->from('scorecard@razorpay.com', 'Razorpay Scorecard');
 
-            $dt = Carbon::today('Asia/Kolkata')->format('d-m-y');
+            $dt = Carbon::yesterday('Asia/Kolkata')->format('d-m-y');
 
             $subject = 'Razorpay | Scorecard for ' . $dt;
 

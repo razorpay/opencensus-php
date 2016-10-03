@@ -99,6 +99,7 @@ class Repository extends Base\Repository
                     ->where(Entity::BANK, '=', $bank)
                     ->where(Entity::METHOD, '=', Method::EMI)
                     ->with('card.globalCard')
+                    ->with('emiPlan')
                     ->get();
     }
 
@@ -374,6 +375,7 @@ class Repository extends Base\Repository
                        "SUM(amount) / 100 AS volume" . ','.
                        'COUNT(*) AS count')
                     ->betweenTime($from, $to)
+                    ->statusSuccess()
                     ->groupBy(
                         Payment\Entity::MERCHANT_ID,
                         Merchant\Entity::NAME,
@@ -387,7 +389,7 @@ class Repository extends Base\Repository
     {
         $vol = $this->newQuery()
                     ->betweenTime($from, $to)
-                    ->whereNotIn(Entity::STATUS, [Status::FAILED, Status::CREATED])
+                    ->statusSuccess()
                     ->sum(Entity::AMOUNT);
 
         return $vol;

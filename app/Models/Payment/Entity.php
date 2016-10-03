@@ -1240,6 +1240,11 @@ class Entity extends Base\PublicEntity
         return $query->where(Payment\Entity::STATUS, '=', $status);
     }
 
+    public function scopeStatusSuccess($query)
+    {
+        return $query->whereNotIn(Entity::STATUS, [Status::FAILED, Status::CREATED]);
+    }
+
     public function scopeCreatedAtLessThan($query, $ts)
     {
         return $query->where(Payment\Entity::CREATED_AT, '<', $ts);
