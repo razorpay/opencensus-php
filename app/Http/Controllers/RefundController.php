@@ -97,6 +97,8 @@ class RefundController extends Controller
     {
         $data = $this->refund->createGatewayRefundRecords($gateway);
 
+        sd($data);
+        
         return ApiResponse::json($data);
     }
 }

@@ -231,7 +231,7 @@ class Gateway extends Base\Gateway
             'refund_id'     => $refundId,
             'payment_id'    => $input['payment'][Payment\Entity::ID]
         ];
-     }
+    }
 
     /**
      * Conditions which we use to determine if a payment has been refunded by Billdesk
@@ -271,7 +271,9 @@ class Gateway extends Base\Gateway
 
         $gatewayRefundAmount = (int) ($verifyResponse['RefAmount'] * 100);
 
-        return [($gatewayRefundAmount === $input['payment']['refunded_amount']), $verifyResponse];
+        $totalApiRefundAmount = $input['payment'][Payment\Entity::AMOUNT_REFUNDED] + $input['refund'][Payment\Refund\Entity::AMOUNT];
+
+        return [($gatewayRefundAmount === $totalApiRefundAmount), $verifyResponse];
     }
 
     /**
