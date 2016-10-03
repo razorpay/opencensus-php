@@ -306,9 +306,9 @@ class Repository extends Base\Repository
 
     protected function addQueryParamOrderId($query, $params)
     {
-        $order_id = (new Order\Entity)->verifyIdAndSilentlyStripSign($params[Entity::ORDER_ID]);
+        $orderId = (new Order\Entity)->verifyIdAndSilentlyStripSign($params[Entity::ORDER_ID]);
 
-        $query->where(Entity::ORDER_ID, '=', $order_id);
+        $query->where(Entity::ORDER_ID, '=', $orderId);
     }
 
     protected function joinQueryCard($query)
@@ -347,6 +347,17 @@ class Repository extends Base\Repository
         return $this->getPaymentVolumeBetweenTimestamp($from, $to);
     }
 
+    public function getCreatedPaymentsForOrder($orderId)
+    {
+        $ts = time() - Analytics\Entity::PAYMENT_WINDOW;
+
+        return $this->newQuery()
+                    ->whereIn(Entity::STATUS, [Status::CREATED, Status::FAILED])
+                    ->where(Payment\Entity::ORDER_ID, '=', $orderId)
+                    ->where(Payment\Entity::CREATED_AT, '>', $ts)
+                    ->get();
+    }
+
     public function getYesterdayTopMerchantVolumeWise()
     {
         $from = Carbon::yesterday('Asia/Kolkata')->timestamp;
@@ -364,6 +375,7 @@ class Repository extends Base\Repository
                        "SUM(amount) / 100 AS volume" . ','.
                        'COUNT(*) AS count')
                     ->betweenTime($from, $to)
+                    ->statusSuccess()
                     ->groupBy(
                         Payment\Entity::MERCHANT_ID,
                         Merchant\Entity::NAME,
@@ -377,7 +389,7 @@ class Repository extends Base\Repository
     {
         $vol = $this->newQuery()
                     ->betweenTime($from, $to)
-                    ->whereNotIn(Entity::STATUS, [Status::FAILED, Status::CREATED])
+                    ->statusSuccess()
                     ->sum(Entity::AMOUNT);
 
         return $vol;
