@@ -88,8 +88,7 @@ class EloquentEx extends \Razorpay\Spine\Entity
 
     public function scopeMerchantId($query, $merchantId)
     {
-        $table = $this->getTable();
-        $merchantIdColumn = $table . '.' . Common::MERCHANT_ID;
+        $merchantIdColumn = $this->getAttributeWithTableName(Common::MERCHANT_ID);
 
         $query->where($merchantIdColumn, '=', $merchantId);
     }

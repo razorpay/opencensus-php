@@ -189,10 +189,7 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
-        if ($this->mode === Mode::LIVE)
-        {
-            $request['options']['proxy'] = 'https://splunk.razorpay.com:8888';
-        }
+        $this->setProxy($request);
 
         return $request;
     }
@@ -385,7 +382,7 @@ class Gateway extends Base\Gateway
             return $this->config['test_merchant_id'];
         }
 
-        assert($this->mode === Mode::LIVE);
+        assertTrue($this->mode === Mode::LIVE);
 
         // We are fetching merchant id from config
         // as it's common across all the merchants
@@ -399,7 +396,7 @@ class Gateway extends Base\Gateway
             return $this->config['test_end_mid'];
         }
 
-        assert($this->mode === Mode::LIVE);
+        assertTrue($this->mode === Mode::LIVE);
 
         return $terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
     }
@@ -489,8 +486,8 @@ class Gateway extends Base\Gateway
 
         $this->action = Action::CALLBACK;
 
-        assert($verifyContent[ResponseFields::STATUS] === Status::SUCCESS);
-        assert((float) $verifyContent[ResponseFields::TXN_AMT] === (float) $content[ResponseFields::TRAN_AMT]);
+        assertTrue($verifyContent[ResponseFields::STATUS] === Status::SUCCESS);
+        assertTrue((float) $verifyContent[ResponseFields::TXN_AMT] === (float) $content[ResponseFields::TRAN_AMT]);
     }
 
     /**
@@ -582,12 +579,18 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
-        if ($this->mode === Mode::LIVE)
-        {
-            $request['options']['proxy'] = 'https://splunk.razorpay.com:8888';
-        }
+        $this->setProxy($request);
 
         return $request;
+    }
+
+    protected function setProxy(&$request)
+    {
+        if (($this->mode === Mode::LIVE) and
+            ($this->proxyEnabled === true))
+        {
+            $request['options']['proxy'] = $this->proxy;
+        }
     }
 
     protected function getLiveSecret()

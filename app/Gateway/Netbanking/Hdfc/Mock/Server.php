@@ -114,10 +114,18 @@ class Server extends Base\Mock\Server
         return $this->generateHash($data);
     }
 
+    protected function getHostname($url)
+    {
+        return parse_url($url, PHP_URL_HOST);
+    }
+
     protected function prepareVerifyResponseHtml($content)
     {
         $content = http_build_query($content);
-        $redirectUrl = 'api.razorpay.com' . '?' . $content;
+
+        $appUrl = $this->app['config']->get('app.url');
+
+        $redirectUrl = $this->getHostname($appUrl) . '?' . $content;
 
         ob_start();
 

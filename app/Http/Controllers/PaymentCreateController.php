@@ -48,6 +48,22 @@ class PaymentCreateController extends Controller
     }
 
     /**
+     * Creates an S2S payment
+     */
+    public function postCreateS2SPayment()
+    {
+        $ret = $this->createPayment();
+
+        if ((is_array($ret)) and
+            (isset($ret['request']) === false))
+        {
+            return ApiResponse::json($ret);
+        }
+
+        return $ret;
+    }
+
+    /**
      * In this case, we ensure that for direct response cases like
      * international credit cards with no 3dsecure, we give back the
      * parent callback page instead of just json.
@@ -80,6 +96,10 @@ class PaymentCreateController extends Controller
             ($this->app['basicauth']->isPublicAuth()))
         {
             $this->app['rzp.merchant_callback_url'] = $input['callback_url'];
+        }
+        else if ($this->app['basicauth']->isPrivateAuth())
+        {
+            $input = (new Payment\Analytics\Service)->setMetadataForS2SPayment($input);
         }
 
         $data = $this->payment->process($input);
@@ -144,7 +164,7 @@ class PaymentCreateController extends Controller
             return ApiResponse::json($data);
         }
 
-        assert(false, 'Shouldn\'t reach here');
+        assertTrue(false, 'Shouldn\'t reach here');
     }
 
     /**
@@ -321,7 +341,7 @@ class PaymentCreateController extends Controller
             }
             else
             {
-                assert(false, 'Should not reach here');
+                assertTrue(false, 'Should not reach here');
             }
         }
         else
