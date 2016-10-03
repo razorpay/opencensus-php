@@ -42,12 +42,14 @@ class Gateway
     const POWER_WALLETS = array(
         Wallet::MOBIKWIK,
         Wallet::PAYUMONEY,
+        Wallet::OLAMONEY,
         Wallet::FREECHARGE,
     );
 
     const TOPUP_GATEWAYS = array(
         self::MOBIKWIK,
         self::WALLET_PAYUMONEY,
+        self::WALLET_OLAMONEY,
         self::WALLET_FREECHARGE,
         self::SHARP,
     );
