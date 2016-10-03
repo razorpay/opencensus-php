@@ -12,7 +12,7 @@ class Validator extends Base\Validator
      */
     protected static $sendInvitationRules = array(
         'email' => 'required|max:255|email',
-        'role'  => 'required|in:manager,operations,finance,support',
+        'role'  => 'required|in:manager,operations,finance,support,admin',
     );
 
     /**
@@ -20,6 +20,6 @@ class Validator extends Base\Validator
      * @var array $roles
      */
     protected static $updateInvitationRules = array(
-        'role' => 'required|in:manager',
+        'role' => 'required|in:manager,operations,finance,support,admin',
     );
 }

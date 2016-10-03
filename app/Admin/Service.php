@@ -24,6 +24,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\App as App;
 
 use Razorpay\Api\Errors\BadRequestError as BadRequestError;
+use App\Transaction\Service as TransactionService;
 use Razorpay\Api\Errors\Error as ApiError;
 use Razorpay\Api\Request as ApiRequest;
 
@@ -38,9 +39,16 @@ class Service extends Base\Service
     const INVALID_CREDENTIALS = 'Username or password is invalid.';
     const PRIMARY_LOGIN_ERROR = "There is no user associated with this account.";
     const SELF_DELETE_ERROR = 'You can not delete yourself.';
+    const PAGE_SIZE = 1000;
 
     // This is the Admin\Logger trait
     use Logger;
+
+    public function __construct()
+    {
+        $app = \App::getFacadeRoot();
+        $this->trace = $app['trace'];
+    }
 
     public function login(array $input)
     {
@@ -2014,6 +2022,80 @@ class Service extends Base\Service
         $data = $this->api->pricing->fetchPaymentNetworks();
 
         return $data;
+    }
+
+    public function updateMerchantDayAggregations($mode, $input)
+    {
+        $total_payments = $this->fetchPaymentsToAggregate($input, $mode);
+
+        $this->trace->info(TraceCode::MISC_TRACE_CODE, array_keys($total_payments));
+
+        list($error, $response) = (new Transaction\Service)->processDayAggregations($total_payments, $mode);
+
+        return array($error, $response);
+    }
+
+    protected function fetchPaymentsToAggregate($input, $mode)
+    {
+        $dateFrom = Carbon::parse($input['date'])->timestamp;
+
+        $dateTo = $dateFrom + TransactionService::TIME_INTERVALS['day'];
+
+        $count_done = 0;
+
+        $params['status'] = 'captured,refunded';
+        $params['from'] = $dateFrom;
+        $params['count'] = self::PAGE_SIZE;
+        $params['to'] = $dateTo;
+        if (isset($input['merchant_id']))
+        {
+            $params['merchant_id'] = $input['merchant_id'];
+        }
+
+        $total_payments = [];
+
+        while (1)
+        {
+            $params['skip'] = $count_done;
+
+            list($error, $payments) = $this->fetchMultipleEntities($mode, 'payment', $params);
+
+            $count = $payments['count'];
+
+            $payments = $payments['items'];
+
+            foreach ($payments as $payment)
+            {
+                if ($payment['captured_at'] === NULL)
+                {
+                    continue;
+                }
+
+                $payment = $this->cleanUpPayment($payment);
+
+                $total_payments[$payment['merchant_id']][] = $payment;
+            }
+
+            if ($count < self::PAGE_SIZE)
+            {
+                break;
+            }
+
+            $count_done += self::PAGE_SIZE;
+        }
+
+        return $total_payments;
+    }
+
+    protected function cleanUpPayment($payment)
+    {
+        $minimal_keys = ['merchant_id', 'amount', 'created_at', 'updated_at'];
+
+        $minimal_payment = array_filter($payment, function($key) use($minimal_keys) {
+            return in_array($key, $minimal_keys);
+        }, ARRAY_FILTER_USE_KEY);
+
+        return $minimal_payment;
     }
 
     // ----- Credits -----

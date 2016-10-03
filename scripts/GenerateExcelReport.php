@@ -1,4 +1,5 @@
 <?php
+
 use App\Api\Service;
 
 // This can be run via `php artisan tinker`.
@@ -9,19 +10,16 @@ class GenerateExcelReport
 
     protected $file;
 
-
     public function __construct($filePath)
     {
         $this->filePath = $filePath;
     }
-
 
     public function generateExcelFile()
     {
         $data = $this->getJsonData();
         $this->file = (new Service)->generateTransactionReportAsExcel($data);
     }
-
 
     public function getJsonData()
     {

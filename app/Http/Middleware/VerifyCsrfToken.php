@@ -23,10 +23,16 @@ class VerifyCsrfToken extends BaseVerifier
         '/live/transactions/*',
 
         // Aggregation requests
-        '/test/analytics/aggregations',
+        '/test/analytics/aggregations/day',
+        '/test/analytics/aggregations/week',
+        '/test/analytics/aggregations/month',
+        '/test/analytics/aggregations/year',
         '/test/analytics/payment/aggregations',
 
-        '/live/analytics/aggregations',
+        '/live/analytics/aggregations/day',
+        '/live/analytics/aggregations/week',
+        '/live/analytics/aggregations/month',
+        '/live/analytics/aggregations/year',
         '/live/analytics/payment/aggregations'
     ];
 

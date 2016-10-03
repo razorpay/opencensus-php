@@ -9,6 +9,7 @@ use App\Http\AppResponse;
 use App\Transaction;
 use Input;
 use Response;
+use Carbon\Carbon;
 
 class TransactionController extends Controller
 {
@@ -285,5 +286,22 @@ class TransactionController extends Controller
         {
             return AppResponse::validationErrorResponse($error);
         }
+    }
+    /**
+    * Expects date input in format "3 august 2016"
+    */
+    public function updateTypeAggregations($mode, $type)
+    {
+        $input = Input::all();
+
+        $timestamp = Carbon::parse($input['date'])->timestamp;
+        $created_at = (new Transaction\Service)->getCreatedAtFromInputAndType($timestamp, $type);
+
+        $merchantId = isset($input['merchant_id']) ? $input['merchant_id'] : null; 
+        $data = (new Transaction\Service)->getTimelyTransactionsForTheType($created_at, $mode, $type, $merchantId);
+
+        list($error, $data) = (new Transaction\Service)->updateTypeAggregations($data, $created_at, $mode, $type);
+
+        return AppResponse::jsonResponse($error, $data);
     }
 }

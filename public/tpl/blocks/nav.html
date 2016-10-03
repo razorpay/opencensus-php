@@ -3,7 +3,7 @@
     <li ng-show="merchant" class="hidden-folded padder m-t m-b-sm text-muted text-xs">
       <span>Features</span>
     </li>
-    <li class="active" ng-show="merchant" my-role="owner manager operations finance">
+    <li class="active" ng-show="merchant" my-role="owner manager operations finance admin">
       <a id="dashboardNav" ui-sref="app.dashboard">
         <i class="fa fa-area-chart text-info"></i>
         <span>Dashboard</span>
@@ -28,7 +28,7 @@
         <span>Refunds</span>
       </a>
     </li>
-    <li ng-show="merchant" my-role="owner manager operations finance">
+    <li ng-show="merchant" my-role="owner manager operations finance admin">
       <a id="settlementsNav" ui-sref="app.settlements.list">
         <i class="fa  fa-check-square-o icon text-success"></i>
         <span>Settlements</span>
@@ -47,7 +47,7 @@
         <span>Add Funds</span>
       </a>
     </li>
-    <li ng-show="merchant" my-role="owner manager operations finance">
+    <li ng-show="merchant" my-role="owner manager operations finance admin">
       <a id="generateReportNav" ui-sref="app.generatereport">
         <i class="fa fa-file-excel-o icon text-danger-lter"></i>
         <!-- <b class="badge bg-success dk pull-right ng-binding">beta</b> -->
@@ -76,20 +76,20 @@
     <li class="hidden-folded padder m-t m-b-sm text-muted text-xs">
       <span>Settings</span>
     </li>
-    <li ng-show="merchant" my-role="owner">
+    <li ng-show="merchant" my-role="owner admin">
       <a id="keysNav" ui-sref="app.keys">
         <i class="icon-key icon text-success-lter"></i>
         <span>Api Keys</span>
       </a>
     </li>
-    <li ng-show="merchant" my-role="owner manager">
+    <li ng-show="merchant" my-role="owner manager admin">
       <a id="activationNav" ui-sref="app.activation">
         <i class="icon-question icon text-success-lter"></i>
         <b class="badge bg-success dk pull-right">{{user.activation_progress}}%</b>
         <span>Activation</span>
       </a>
     </li>
-    <li ng-show="merchant" my-role="owner manager">
+    <li ng-show="merchant" my-role="owner manager admin">
       <a id="webhookNav" ui-sref="app.webhooks">
         <i class="icon-share icon text-success-lter"></i>
         <span>Webhook</span>
@@ -101,7 +101,7 @@
         <span>Profile</span>
       </a>
     </li>
-    <li ng-show="merchant" my-role="owner manager">
+    <li ng-show="merchant" my-role="owner manager admin">
       <a id="configNav" ui-sref="app.config">
         <i class="icon-settings icon text-warning-lter"></i>
         <span>Configuration</span>

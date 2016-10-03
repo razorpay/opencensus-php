@@ -787,6 +787,17 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $response);
     }
 
+    /**
+    * Expects date input in format "3 august 2016"
+    */
+    public function updateDayAggregations($mode)
+    {
+        $input = Input::all();
+
+        list($error, $response) = (new Admin\Service)->updateMerchantDayAggregations($mode, $input);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
     // ----- Credits -----
 
     // Get log of merchant's credit entries

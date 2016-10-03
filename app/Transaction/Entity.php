@@ -34,6 +34,17 @@ class Entity extends Base\Entity
         return $data;
     }
 
+    public static function retrieveByTypeAndCreatedAt($merchant_id, $type, $created_at, $mode)
+    {
+        $data = self::where('merchant_id','=',$merchant_id)
+                        ->where('type','=',$type)
+                        ->where('mode', '=', $mode)
+                        ->where('created_at', '=', $created_at)
+                        ->orderBy('updated_at','desc')
+                        ->first();
+        return $data;
+    }
+
     public function updateAmount($amount)
     {
         $this->amount = (int)$this->amount + $amount;
@@ -42,6 +53,16 @@ class Entity extends Base\Entity
     public function updateCount($count = 1)
     {
         $this->count = (int)$this->count + $count;
+    }
+
+    public function forceUpdateAmount($amount)
+    {
+        $this->amount = $amount;
+    }
+
+    public function forceUpdateCount($count = 1)
+    {
+        $this->count = $count;
     }
 
     public static function getAllTransactionsGrouped($mode, $type, $from, $to)
