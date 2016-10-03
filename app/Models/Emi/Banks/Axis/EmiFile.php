@@ -52,7 +52,7 @@ class EmiFile extends Base\EmiFile
 
         foreach ($input as $emiPayment)
         {
-            $emiTenure = (new Service)->fetch($emiPayment->getEmiPlanId())['duration'];
+            $emiTenure = $emiPayment->emiPlan['duration'];
 
             $data[] = [
                 'Card Number'                  => $this->getCardNumber($emiPayment->card),

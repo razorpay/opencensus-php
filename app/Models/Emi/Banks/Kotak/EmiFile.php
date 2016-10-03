@@ -61,7 +61,7 @@ class EmiFile extends Base\EmiFile
         {
             $date = Carbon::createFromTimestamp($emiPayment->getCaptureTimestamp(), 'Asia/Kolkata')->format('M d,Y h:i:s A');
 
-            $emiPlan = (new Emi\Service)->fetch($emiPayment->getEmiPlanId());
+            $emiPlan = $emiPayment->emiPlan;
 
             $emiPercent = $emiPlan['rate']/100;
 

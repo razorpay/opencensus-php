@@ -78,7 +78,7 @@ class EmiFile extends Base\EmiFile
 
         foreach ($input as $emiPayment)
         {
-            $emiPlan = (new Service)->fetch($emiPayment->getEmiPlanId());
+            $emiPlan = $emiPayment->emiPlan;
 
             $emiTenure = $emiPlan['duration'];
 
