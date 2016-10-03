@@ -191,12 +191,11 @@ class AdminTest extends TestCase
 
         // Lock Activation Form
         $this->execScript('$(".lock-form").click()');
-        //$this->waitAndClickByLinkText('Lock Activation Form');
         $this->waitUntilDisplayedByClassName('alert-success');
         $this->waitUntilContainsByCss('body', 'Merchant Form locked successfully');
 
         // Unlock Activation Form
-        $this->clickByLinkText('Unlock Activation Form');
+        $this->execScript('$(".unlock-form").click()');
         $this->waitUntilDisplayedByClassName('alert-success');
         $this->waitUntilContainsByCss('body', 'Merchant Form unlocked successfully');
 
@@ -290,7 +289,7 @@ class AdminTest extends TestCase
         $this->waitUntilDisplayedByClassName('merchant-wrapper');
         $this->waitUntilContainsByCss('body', $this->merchant->id);
         $this->waitUntilContainsByCss('body', 'Merchant Detail');
-        $this->clickByLinkText('See Activation Form Details');
+        $this->execScript('$(".see-activation-form").click()');
         $this->waitUntilDisplayedByClassName('activation-wrapper');
         $this->waitUntilDisplayedByXPath('form', 'name', 'step1');
         $this->clickByLinkText('Business Details');
@@ -322,8 +321,7 @@ class AdminTest extends TestCase
         $this->waitUntilContainsByCss('body', $this->merchant->id);
         $this->waitUntilContainsByCss('body', 'Merchant Detail');
         $this->keys(Keys::PAGEDOWN);
-        $this->clickByLinkText('Tag Merchant');
-        //$this->waitUntilDisplayedByClassName('merchant-tag-modal');
+        $this->execScript('$(".tag-merchant").click()');
         $this->setValueByName('merchant-tags', 'international,webhook,random_tag');
         $this->clickByClassName('modal-ok');
         $this->waitUntilContainsByCss('body', 'Random_Tag');
