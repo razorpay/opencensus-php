@@ -511,16 +511,20 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected function getContentAfterChecksumVerification($msg)
+    protected function getContentAfterChecksumVerification($responseBody)
     {
         $fields = $this->getFieldsForAction($this->action);
 
-        $content = explode('|', $msg);
+        $this->trace->info(
+            TraceCode::GATEWAY_CHECKSUM_VERIFY,
+            [$responseBody]);
+
+        $content = explode('|', $responseBody);
 
         $content = array_combine($fields, $content);
 
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            TraceCode::GATEWAY_CHECKSUM_VERIFY,
             [$content]);
 
         $this->verifySecureHash($content);
@@ -610,7 +614,10 @@ class Gateway extends Base\Gateway
     {
         $request = $this->getRequestArray($content);
 
-        $request['options']['proxy'] = 'https://splunk.razorpay.com:8888';
+        if ($this->proxyEnabled === true)
+        {
+            $request['options']['proxy'] = $this->proxy;
+        }
 
         return $request;
     }

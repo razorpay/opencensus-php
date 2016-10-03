@@ -4,6 +4,8 @@ namespace RZP\Models\Base;
 
 use RZP\Constants;
 use RZP\Exception;
+use RZP\Models\Merchant;
+use RZP\Models\Customer;
 
 trait RepositoryFetch
 {
@@ -273,7 +275,7 @@ trait RepositoryFetch
         return $this->findByIdAndMerchant($id, $merchant);
     }
 
-    public function findByIdAndMerchant($id, $merchant)
+    public function findByIdAndMerchant($id, Merchant\Entity $merchant)
     {
         return $this->newQuery()
                     ->merchantId($merchant->getId())

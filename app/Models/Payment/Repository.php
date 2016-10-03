@@ -2,11 +2,12 @@
 
 namespace RZP\Models\Payment;
 
+use Carbon\Carbon;
 use RZP\Models\Base;
-use RZP\Models\Merchant\Methods;
-use RZP\Models\Payment;
 use RZP\Models\Card;
+use RZP\Models\Merchant;
 use RZP\Models\Order;
+use RZP\Models\Payment;
 use RZP\Models\Transaction;
 use RZP\Constants\Table;
 use RZP\Exception;
@@ -98,6 +99,7 @@ class Repository extends Base\Repository
                     ->where(Entity::BANK, '=', $bank)
                     ->where(Entity::METHOD, '=', Method::EMI)
                     ->with('card.globalCard')
+                    ->with('emiPlan')
                     ->get();
     }
 
@@ -283,11 +285,9 @@ class Repository extends Base\Repository
 
     protected function addQueryParamInternational($query, $params)
     {
-        $this->joinQueryCard($query);
+        $international = Payment\Entity::getAttributeWithTableName(Entity::INTERNATIONAL);
 
-        $query->where(Card\Entity::INTERNATIONAL, '=', $params[Card\Entity::INTERNATIONAL]);
-
-        $query->select($query->getModel()->getTable().'.*');
+        $query->where($international, '=', $params[Entity::INTERNATIONAL]);
     }
 
     protected function addQueryCaptured($query, $params)
@@ -306,9 +306,9 @@ class Repository extends Base\Repository
 
     protected function addQueryParamOrderId($query, $params)
     {
-        $order_id = (new Order\Entity)->verifyIdAndSilentlyStripSign($params[Entity::ORDER_ID]);
+        $orderId = (new Order\Entity)->verifyIdAndSilentlyStripSign($params[Entity::ORDER_ID]);
 
-        $query->where(Entity::ORDER_ID, '=', $order_id);
+        $query->where(Entity::ORDER_ID, '=', $orderId);
     }
 
     protected function joinQueryCard($query)
@@ -331,4 +331,67 @@ class Repository extends Base\Repository
         $query->join(Card\Entity::getTableName(), $paymentCardId, '=', $cardId);
     }
 
+    public function getYesterdayVolume()
+    {
+        $yesterday = Carbon::yesterday('Asia/Kolkata')->timestamp;
+        $today = Carbon::today('Asia/Kolkata')->timestamp;
+
+        return $this->getPaymentVolumeBetweenTimestamp($yesterday, $today);
+    }
+
+    public function getCurrentMonthVolume()
+    {
+        $from = Carbon::today('Asia/Kolkata')->startOfMonth()->timestamp;
+        $to = Carbon::today('Asia/Kolkata')->timestamp;
+
+        return $this->getPaymentVolumeBetweenTimestamp($from, $to);
+    }
+
+    public function getCreatedPaymentsForOrder($orderId)
+    {
+        $ts = time() - Analytics\Entity::PAYMENT_WINDOW;
+
+        return $this->newQuery()
+                    ->whereIn(Entity::STATUS, [Status::CREATED, Status::FAILED])
+                    ->where(Payment\Entity::ORDER_ID, '=', $orderId)
+                    ->where(Payment\Entity::CREATED_AT, '>', $ts)
+                    ->get();
+    }
+
+    public function getYesterdayTopMerchantVolumeWise()
+    {
+        $from = Carbon::yesterday('Asia/Kolkata')->timestamp;
+        $to = Carbon::today('Asia/Kolkata')->timestamp;
+
+        $pid = Payment\Entity::getAttributeWithTableName(Payment\Entity::MERCHANT_ID);
+        $mid = Merchant\Entity::getAttributeWithTableName(Merchant\Entity::ID);
+
+        return $this->newQuery()
+                    ->join(Merchant\Entity::getTableName(), $pid, '=', $mid)
+                    ->selectRaw(
+                       Payment\Entity::MERCHANT_ID . ','.
+                       Merchant\Entity::NAME . ','.
+                       Merchant\Entity::WEBSITE . ','.
+                       "SUM(amount) / 100 AS volume" . ','.
+                       'COUNT(*) AS count')
+                    ->betweenTime($from, $to)
+                    ->statusSuccess()
+                    ->groupBy(
+                        Payment\Entity::MERCHANT_ID,
+                        Merchant\Entity::NAME,
+                        Merchant\Entity::WEBSITE)
+                    ->orderBy('volume', 'desc')
+                    ->limit(30)
+                    ->get();
+    }
+
+    protected function getPaymentVolumeBetweenTimestamp($from, $to)
+    {
+        $vol = $this->newQuery()
+                    ->betweenTime($from, $to)
+                    ->statusSuccess()
+                    ->sum(Entity::AMOUNT);
+
+        return $vol;
+    }
 }

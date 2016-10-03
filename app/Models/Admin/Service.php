@@ -41,16 +41,13 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput('send_test_newsletter', $input);
 
-        //
-        // Now we send the newsletter
-        //
         $mailer = new Newsletter(
-            $input['email'],
             $input['subject'],
             $input['msg'],
-            $input['template'],
-            true // Test Email to self
+            $input['template']
         );
+
+        $mailer->setTestEmail($input['email']);
 
         return $mailer->send();
     }
@@ -60,10 +57,12 @@ class Service extends Base\Service
         (new Validator)->validateInput('send_newsletter', $input);
 
         $mailer = new Newsletter(
-            $input['lists'],
             $input['subject'],
             $input['msg'],
-            $input['template']);
+            $input['template']
+        );
+
+        $mailer->setRecipient($input['lists']);
 
         return $mailer->send();
     }
