@@ -97,7 +97,7 @@ class EmiFile extends Base\EmiFile
                 'RBL Card no'                      => $this->getCardNumber($emiPayment->card),
                 'Issuer'                           => 'RBL Bank',
                 'Acquirer'                         => '',
-                'Aggregator Merchant Name'         => $emiPayment->merchant->getBillingLabelElseName(),
+                'Aggregator Merchant Name'         => 'RAZORPAY',
                 'Manufacturer'                     => '',
                 'Auth Code'                        => $this->getAuthCode($emiPayment),
                 'Tx Amount'                        => $principalAmount,
