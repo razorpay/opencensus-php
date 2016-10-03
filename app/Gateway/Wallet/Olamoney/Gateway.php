@@ -574,7 +574,7 @@ class Gateway extends Base\Gateway
         $refundAttributes = array(
             Entity::PAYMENT_ID              => $input['payment']['id'],
             Entity::ACTION                  => $this->action,
-            Entity::AMOUNT                  => $input['payment']['amount'],
+            Entity::AMOUNT                  => $input['refund']['amount'],
             Entity::RECEIVED                => 1,
             Entity::WALLET                  => $input['payment']['wallet'],
             Entity::EMAIL                   => $input['payment']['email'],
