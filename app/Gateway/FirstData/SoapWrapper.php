@@ -87,7 +87,7 @@ class SoapWrapper
                             <v1:Type>preauth</v1:Type>
                         </v1:CreditCardTxType>
                         <v1:CreditCardData>
-                            <v1:CardNumber>card_number</v1:CardNumber>
+                            <v1:CardNumber>scrubbed_card_number</v1:CardNumber>
                             <v1:ExpMonth>12</v1:ExpMonth>
                             <v1:ExpYear>18</v1:ExpYear>
                             <v1:Brand>VISA</v1:Brand>
@@ -126,7 +126,7 @@ class SoapWrapper
                             <v1:Type>postauth</v1:Type>
                         </v1:CreditCardTxType>
                         <v1:CreditCardData>
-                            <v1:CardNumber>card_number</v1:CardNumber>
+                            <v1:CardNumber>scrubbed_card_number</v1:CardNumber>
                             <v1:ExpMonth>12</v1:ExpMonth>
                             <v1:ExpYear>18</v1:ExpYear>
                             <v1:Brand>VISA</v1:Brand>
@@ -166,7 +166,7 @@ class SoapWrapper
                             <v1:Type>credit</v1:Type>
                         </v1:CreditCardTxType>
                         <v1:CreditCardData>
-                            <v1:CardNumber>card_number</v1:CardNumber>
+                            <v1:CardNumber>scrubbed_card_number</v1:CardNumber>
                             <v1:ExpMonth>12</v1:ExpMonth>
                             <v1:ExpYear>18</v1:ExpYear>
                             <v1:Brand>VISA</v1:Brand>

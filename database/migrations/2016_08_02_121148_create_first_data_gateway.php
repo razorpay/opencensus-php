@@ -23,33 +23,33 @@ class CreateFirstDataGateway extends Migration
 
             $table->char(FirstData::PAYMENT_ID, FirstData::ID_LENGTH);
 
-            $table->char(FirstData::ACTION, 10)
+            $table->string(FirstData::ACTION, 10)
                   ->nullable();
 
-            $table->integer(FirstData::RECEIVED)
+            $table->tinyInteger(FirstData::RECEIVED)
                   ->default(0);
 
-            $table->char(FirstData::REFUND_ID, FirstData::ID_LENGTH)
+            $table->string(FirstData::REFUND_ID, FirstData::ID_LENGTH)
                   ->nullable();
 
-            $table->char(FirstData::AMOUNT);
+            $table->integer(FirstData::AMOUNT);
 
-            $table->char(FirstData::STATUS, 20)
+            $table->string(FirstData::STATUS, 20)
                   ->nullable();
 
-            $table->char(FirstData::TRANSACTION_RESULT, 20)
+            $table->string(FirstData::TRANSACTION_RESULT)
                   ->nullable();
 
-            $table->char(FirstData::GATEWAY_PAYMENT_ID, 20)
+            $table->string(FirstData::GATEWAY_PAYMENT_ID, 20)
                   ->nullable();
 
-            $table->char(FirstData::TDATE, 20)
+            $table->string(FirstData::TDATE, 20)
                   ->nullable();
 
-            $table->char(FirstData::APPROVAL_CODE, 90)
+            $table->string(FirstData::APPROVAL_CODE, 100)
                   ->nullable();
 
-            $table->char(FirstData::ERROR_MESSAGE, 90)
+            $table->string(FirstData::ERROR_MESSAGE, 90)
                   ->nullable();
 
             $table->integer(FirstData::CREATED_AT);

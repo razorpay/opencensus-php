@@ -55,9 +55,7 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_CALLBACK,
-            $input['gateway']);
+        $this->traceGatewayCallback($input['gateway']);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['gateway'][ConnectResponseFields::ORDER_ID], Base\Action::AUTHORIZE);
@@ -406,9 +404,7 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content, 'post', $options);
 
-        $this->trace->info(
-            TraceCode::GATEWAY_SOAP_REQUEST,
-            ['gateway_soap_request' => $request]);
+        $this->traceSoapRequest($request);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -700,12 +696,44 @@ class Gateway extends Base\Gateway
         return $xml;
     }
 
+    protected function traceSoapRequest($request)
+    {
+        unset($request['options']['auth']);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_SOAP_REQUEST,
+            ['gateway_soap_request' => $request]);
+    }
+
     protected function traceGatewayPaymentRequest($request, $input)
     {
-        unset($request['content'][ConnectRequestFields::CARD_NUMBER]);
-        unset($request['content'][ConnectRequestFields::CVV]);
+        $this->scrubCardInfo($request['content']);
 
         parent::traceGatewayPaymentRequest($request, $input);
+    }
+
+    protected function traceGatewayCallback($gatewayCallback)
+    {
+        $this->scrubCardInfo($gatewayCallback);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            $gatewayCallback);
+    }
+
+    protected function scrubCardInfo(& $content)
+    {
+        $scrubFields = [ConnectRequestFields::CARD_NUMBER, ConnectRequestFields::CVV,
+                        ConnectRequestFields::EXP_MONTH, ConnectRequestFields::EXP_YEAR];
+
+        foreach ($scrubFields as $scrubField)
+        {
+            unset($content[$scrubField]);
+        }
+
+        $this->trace->info(
+            TraceCode::CARD_NUMBER_SCRUBBED,
+            ['scrubbed_fields' => $scrubFields]);
     }
 
     protected function getStoreId()
