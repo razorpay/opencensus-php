@@ -19,7 +19,6 @@ use RZP\Constants\Mode;
 use RZP\Models\Card\IIN;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
-use RZP\Models\Terminal;
 use RZP\Models\Transaction;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Action;
@@ -29,6 +28,7 @@ use RZP\Models\Merchant\Methods;
 use RZP\Models\Payment\Analytics;
 use RZP\Models\Payment\Analytics\Entity as AnalyticsEntity;
 use RZP\Models\Payment\TerminalAnalytics;
+
 
 use RZP\Error;
 use RZP\Exception;
@@ -43,11 +43,7 @@ trait Authorize
      */
     protected $type;
 
-    protected $terminalSelector;
-
-    protected $terminalsSelected;
-
-    public function authorize($payment, $input)
+    public function authorize(Payment\Entity $payment, array $input)
     {
         $this->verifyMerchantIsLiveForLiveRequest();
 
@@ -57,21 +53,14 @@ trait Authorize
         // Adds callback url, payment and card info to $gatewayInput
         $this->prePaymentAuthorizeProcessing($payment, $input, $gatewayInput);
 
-        $this->getTerminalsForPayment($payment);
+        $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
 
-        return $this->authorizeAcrossTerminals($gatewayInput, $payment, $input);
+        return $this->authorizeAcrossTerminals($payment, $input, $gatewayInput);
     }
 
-    protected function getTerminalsForPayment($payment)
+    protected function authorizeAcrossTerminals(Payment\Entity $payment, array $input, array $gatewayInput)
     {
-        $this->terminalSelector = new Terminal\Selector($payment, $this->mode);
-
-        $this->terminalsSelected = $this->terminalSelector->selectTerminals();
-    }
-
-    protected function authorizeAcrossTerminals($gatewayInput, $payment, $input)
-    {
-        $totalTerminals = count($this->terminalsSelected);
+        $totalTerminals = count($this->selectedTerminals);
 
         $maxRetryAttempts = min($totalTerminals, self::MAX_RETRY_ATTEMPTS);
 
@@ -93,7 +82,7 @@ trait Authorize
         {
             $terminalGatewayInput = $gatewayInput;
 
-            $currentTerminal = $this->terminalsSelected[$retryAttempts];
+            $currentTerminal = $this->selectedTerminals[$retryAttempts];
 
             $payment->associateTerminal($currentTerminal);
 
@@ -796,11 +785,11 @@ trait Authorize
             $saveMethodInput[Token\Entity::WALLET] = $payment->getWallet();
         }
 
+        $token = null;
+
         try
         {
             $token = (new Token\Core)->create($customer, $saveMethodInput);
-
-            return $token;
         }
         catch (Exception\RecoverableException $e)
         {
@@ -810,6 +799,8 @@ trait Authorize
         {
             $this->trace->traceException($e);
         }
+
+        return $token;
     }
 
     protected function verifyPaymentMethodEnabled($payment)
@@ -1290,11 +1281,13 @@ trait Authorize
         return $this->callGatewayOtpGenerate($gatewayInput, $payment);
     }
 
-    protected function callGatewayOtpGenerate($data, $payment)
+    protected function callGatewayOtpGenerate($data, $payment, $otpResend = false)
     {
         try
         {
             $this->type = 'otp_generate';
+
+            $data['otp_resend'] = $otpResend;
 
             $this->callGatewayFunction('otpGenerate', $data);
 
