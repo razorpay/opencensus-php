@@ -16,12 +16,6 @@ use RZP\Models\Transaction;
 
 class Service extends Base\Service
 {
-    /**
-     * We get the last 24 hours refunds created of a gateway.
-     * We run the cron for this once a day.
-     */
-    const GATEWAY_REFUND_RECORDS_TIME_LIMIT = 86400;
-
     public function getRefundsFile(array $input = array())
     {
         list($from, $to) = $this->getTimestamps($input);
@@ -286,57 +280,6 @@ class Service extends Base\Service
         );
 
         return $data;
-    }
-
-    public function createGatewayRefundRecords($gateway)
-    {
-        // Currently, we are running this for billdesk refund timeouts only.
-        assert ($gateway === Payment\Gateway::BILLDESK);
-
-        $createdAfter = time() - self::GATEWAY_REFUND_RECORDS_TIME_LIMIT;
-
-        $repoFunction = 'fetch' . studly_case($gateway) . 'Refunds';
-        $billdeskRefunds = $this->repo->payment->$repoFunction($createdAfter);
-
-        $data = [];
-
-        // we get all the billdesk refunds. we return back data for applicable and if success.
-
-        foreach ($billdeskRefunds as $billdeskRefund)
-        {
-            $merchant = $this->repo->merchant->getMerchantFromEntity($billdeskRefund);
-
-            $data[] = $this->processor($merchant)->createGatewayRefundRecord($billdeskRefund);
-        }
-
-        $applicable = $success = 0;
-        $successRefundData = [];
-
-        foreach ($data as $refundData)
-        {
-            if ($refundData['applicable'] === true)
-            {
-                $applicable++;
-            }
-
-            if ($refundData['success'] === true)
-            {
-                $success++;
-                $successRefundData[] = $refundData;
-            }
-        }
-
-        $summary = [
-            'total_applicable_refunds'  => $applicable,
-            'total_success_refunds'     => $success,
-            'success_refund_data'       => $successRefundData,
-        ];
-
-        $message = "Gateway refund records creation";
-
-        $this->app['slack']->queue($message, $summary, ['channel' => Config::get('slack.channels.tech_logs')]);
-
-        return $summary;
     }
 
     public function createMissingTransactions()

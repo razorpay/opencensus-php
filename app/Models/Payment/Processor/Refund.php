@@ -194,29 +194,6 @@ trait Refund
         ];
     }
 
-    public function createGatewayRefundRecord(Payment\Refund\Entity $refund)
-    {
-        $payment = $refund->payment;
-
-        $this->setPaymentAndRefundInfo($refund, $payment);
-
-        // The refund should have already been successful and everything on the api side.
-        // Because on timeout, we would have ignored it and created a refund as it was successful.
-        assert ($refund->getTransactionId() !== null);
-
-        // Just making sure that the payment also has the transaction id. Refund will not have a transaction
-        // if payment does not have a transaction, anyway.
-        assert ($payment->getTransactionId() !== null);
-
-        $data = [
-            'payment'   => $payment->toArray(),
-            'refund'    => $refund->toArray(),
-            'amount'    => $refund->getAmount()
-        ];
-
-        return $this->callGatewayForCreateRefundRecord($data);
-    }
-
     protected function setPaymentAndRefundInfo($refund, $payment)
     {
         $this->merchant = $payment->merchant;
@@ -348,23 +325,6 @@ trait Refund
         }
 
         return $manualGatewayRefundResult;
-    }
-
-    protected function callGatewayForCreateRefundRecord(array $data)
-    {
-        try
-        {
-            return $this->callGatewayFunction(Payment\Action::CREATE_REFUND_RECORD, $data);
-        }
-        catch (Exception\BaseException $ex)
-        {
-            $this->tracePaymentFailed(
-                $ex->getError(),
-                TraceCode::CREATE_GATEWAY_REFUND_RECORD_FAILED
-            );
-
-            throw $ex;
-        }
     }
 
     protected function refundOnGateway($data)

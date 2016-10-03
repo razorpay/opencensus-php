@@ -26,13 +26,6 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
-    public function findByRefundId($refundId)
-    {
-        return $this->newQuery()
-                    ->where(Entity::REFUND_ID, '=', $refundId)
-                    ->first();
-    }
-
     public function getSuccessfulRefundRecordForThePayment($paymentId)
     {
         return $this->newQuery()

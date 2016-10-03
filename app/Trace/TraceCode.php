@@ -75,7 +75,6 @@ class TraceCode
     const MANUAL_GATEWAY_REFUND_INITIATED           = 'MANUAL_GATEWAY_REFUND_INITIATED';
     const REFUND_GATEWAY_REQUIRED                   = 'REFUND_GATEWAY_REQUIRED';
     const PAYMENT_REFUND_TIMEOUT_SKIP               = 'PAYMENT_REFUND_TIMEOUT_SKIP';
-    const CREATE_GATEWAY_REFUND_RECORD_FAILED       = 'CREATE_GATEWAY_REFUND_RECORD_FAILED';
     const PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND     = 'PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND';
     const PAYMENT_AUTO_REFUND_FAILURE               = 'PAYMENT_AUTO_REFUND_FAILURE';
 
@@ -170,8 +169,6 @@ class TraceCode
     const GATEWAY_HDFC_CALLBACK_EMPTY               = 'GATEWAY_HDFC_CALLBACK_EMPTY';
     const GATEWAY_UNSUPPORTED_CARD_NETWORK          = 'GATEWAY_UNSUPPORTED_CARD_NETWORK';
     const GATEWAY_PAYMENT_VERIFY_UNEXPECTED         = 'GATEWAY_PAYMENT_VERIFY_UNEXPECTED';
-    const GATEWAY_REFUND_RECORD_CREATED             = 'GATEWAY_REFUND_RECORD_CREATED';
-    const GATEWAY_REFUND_ABSENT                     = 'GATEWAY_REFUND_ABSENT';
 
     const MPR_HDFC_GEN_INITIATED                    = 'MPR_HDFC_GEN_INITIATED';
     const MPR_HDFC_FILE_GENERATED                   = 'MPR_HDFC_FILE_GENERATED';
@@ -325,7 +322,6 @@ class TraceCode
         self::GATEWAY_UNKNOWN_ERROR                     => 'Unknown gateway error',
         self::GATEWAY_PAYMENT_VERIFY_UNEXPECTED         => 'Unexpected state of events in verify flow',
         self::GATEWAY_UNSUPPORTED_CARD_NETWORK          => 'Card network not supported',
-        self::GATEWAY_REFUND_ABSENT                     => 'Refund not done on the gateway side.',
 
         self::ERROR_EXCEPTION                           => 'Unhandled critical exception occured',
         self::RECOVERABLE_EXCEPTION                     => 'Recoverable exception occurred',

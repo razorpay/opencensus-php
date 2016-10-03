@@ -218,15 +218,6 @@ class Repository extends Base\Repository
                         $merchantId, $from, $to, ['card']);
     }
 
-    public function fetchBilldeskRefunds($ts)
-    {
-        return $this->newQuery()
-                    ->where(Payment\Entity::GATEWAY, '=', Payment\Gateway::BILLDESK)
-                    ->where(Payment\Entity::STATUS, '=', Payment\Status::REFUNDED)
-                    ->where(Payment\Entity::CREATED_AT, '>', $ts)
-                    ->get();
-    }
-
     public function fetchReconciledPaymentsForGateway($from, $to, $gateway, $status)
     {
         $paymentAttrs = Entity::getAttributeWithTableName('*');
