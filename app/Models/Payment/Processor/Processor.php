@@ -822,11 +822,14 @@ class Processor
             return;
         }
 
-        foreach ($feesSplit as $feeSplit)
+        $this->repo->transaction(function() use ($txn, $feesSplit)
         {
-            $feeSplit->transaction()->associate($txn);
+            foreach ($feesSplit as $feeSplit)
+            {
+                $feeSplit->transaction()->associate($txn);
 
-            $this->repo->fee_breakup->saveOrFail($feeSplit);
-        }
+                $this->repo->fee_breakup->saveOrFail($feeSplit);
+            }
+        });
     }
 }
