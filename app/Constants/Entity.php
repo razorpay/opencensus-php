@@ -72,6 +72,7 @@ class Entity
     const WALLET_PAYUMONEY      = 'wallet_payumoney';
     const WALLET_OLAMONEY       = 'wallet_olamoney';
     const WALLET_AIRTELMONEY    = 'wallet_airtelmoney';
+    const WALLET_FREECHARGE     = 'wallet_freecharge';
 
     public static $namespace = array(
         self::UPI                   => \RZP\Gateway\Upi\Base::class,
@@ -114,6 +115,7 @@ class Entity
         self::PAYMENT_ANALYTICS     => \RZP\Models\Payment\Analytics::class,
         self::GATEWAY_ABSENCE       => \RZP\Models\GatewayStatus\Absence::class,
         self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
+        self::WALLET_FREECHARGE     => \RZP\Gateway\Wallet\Freecharge::class,
     );
 
     protected static $repository = array(
@@ -124,6 +126,7 @@ class Entity
         self::WALLET_OLAMONEY    => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_PAYUMONEY   => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_PAYZAPP     => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_FREECHARGE  => \RZP\Gateway\Wallet\Base::class,
     );
 
     public static function getEntityNamespace($entity)

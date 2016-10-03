@@ -908,6 +908,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MERCHANT_ID);
     }
 
+    public function getOtpCount()
+    {
+        return $this->getAttribute(self::OTP_COUNT);
+    }
+
+    public function getOtpAttempts()
+    {
+        return $this->getAttribute(self::OTP_ATTEMPTS);
+    }
+
     public function isSecondRecurring()
     {
         return (($this->isRecurring() === true) and
@@ -1228,6 +1238,11 @@ class Entity extends Base\PublicEntity
     public function scopeStatus($query, $status)
     {
         return $query->where(Payment\Entity::STATUS, '=', $status);
+    }
+
+    public function scopeStatusSuccess($query)
+    {
+        return $query->whereNotIn(Entity::STATUS, [Status::FAILED, Status::CREATED]);
     }
 
     public function scopeCreatedAtLessThan($query, $ts)

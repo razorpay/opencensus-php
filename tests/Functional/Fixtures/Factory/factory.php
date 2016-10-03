@@ -298,3 +298,10 @@ $factory(\RZP\Models\Batch\Entity::class, [
     'merchant_id'   => '10000000000000',
     'status'        => 'created'
 ]);
+
+$factory(\RZP\Gateway\Wallet\Base\Entity::class, [
+    'id'            => '12345',
+    'amount'        => 0,
+    'contact'       => '9918899029',
+    'email'         => 'a@b.com',
+]);

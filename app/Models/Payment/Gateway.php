@@ -33,19 +33,22 @@ class Gateway
     const WALLET_PAYZAPP     = 'wallet_payzapp';
     const WALLET_PAYUMONEY   = 'wallet_payumoney';
     const WALLET_AIRTELMONEY = 'wallet_airtelmoney';
+    const WALLET_FREECHARGE  = 'wallet_freecharge';
     const CYBERSOURCE        = 'cybersource';
 
-    const NOT_SUPPORTED      = 'not_supported';
-    const SUPPORTED          = 'supported';
+    const NOT_SUPPORTED     = 'not_supported';
+    const SUPPORTED         = 'supported';
 
     const POWER_WALLETS = array(
         Wallet::MOBIKWIK,
         Wallet::PAYUMONEY,
+        Wallet::FREECHARGE,
     );
 
     const TOPUP_GATEWAYS = array(
         self::MOBIKWIK,
         self::WALLET_PAYUMONEY,
+        self::WALLET_FREECHARGE,
         self::SHARP,
     );
 
@@ -67,9 +70,10 @@ class Gateway
         self::WALLET_PAYZAPP     => Settlement\Channel::KOTAK,
         self::WALLET_PAYUMONEY   => Settlement\Channel::KOTAK,
         self::WALLET_OLAMONEY    => Settlement\Channel::KOTAK,
+        self::WALLET_FREECHARGE  => Settlement\Channel::KOTAK,
         self::WALLET_AIRTELMONEY => Settlement\Channel::KOTAK,
-        self::CYBERSOURCE        => Settlement\Channel::KOTAK,
         self::UPI_ICICI          => Settlement\Channel::KOTAK,
+        self::CYBERSOURCE        => Settlement\Channel::KOTAK
     );
 
     /**
@@ -106,6 +110,7 @@ class Gateway
             self::WALLET_PAYZAPP,
             self::WALLET_PAYUMONEY,
             self::WALLET_AIRTELMONEY,
+            self::WALLET_FREECHARGE,
         ),
 
         Method::EMI => array(
@@ -195,6 +200,7 @@ class Gateway
         Wallet::PAYZAPP     => Gateway::WALLET_PAYZAPP,
         Wallet::PAYUMONEY   => Gateway::WALLET_PAYUMONEY,
         Wallet::AIRTELMONEY => Gateway::WALLET_AIRTELMONEY,
+        Wallet::FREECHARGE  => Gateway::WALLET_FREECHARGE,
     );
 
     public static $upiToGatewayMap = array(

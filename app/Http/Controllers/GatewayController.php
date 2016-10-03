@@ -84,9 +84,9 @@ class GatewayController extends Controller
         {
             case 'billdesk':
             case 'wallet_olamoney':
+            case 'wallet_freecharge':
                 $data = $this->processS2SCallback($input, $gateway);
                 break;
-
             case 'upi':
             case 'upi_icici':
                 $input = Request::getContent();
