@@ -197,11 +197,7 @@ class Gateway
             Network::VISA),
         self::FIRST_DATA => array(
             Network::MC,
-            Network::VISA,
-            Network::DICL,
-            Network::JCB,
-            Network::MAES,
-            Network::RUPAY),
+            Network::VISA),
     );
 
     public static $walletToGatewayMap = array(
