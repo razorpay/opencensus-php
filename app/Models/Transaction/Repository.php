@@ -254,7 +254,7 @@ class Repository extends Base\Repository
                     ->where(Entity::TYPE, 'payment')
                     ->join(Table::PAYMENT, Entity::ENTITY_ID, '=', 'payments.id')
                     ->whereNotNull(Payment\Entity::CAPTURED_AT)
-                    ->whereNotIn(Entity::ID, function($query)
+                    ->whereNotIn("transactions.id", function($query)
                         {
                             $query->select(FeeBreakup\Entity::TRANSACTION_ID)
                                   ->from(TABLE::FEE_BREAKUP);
