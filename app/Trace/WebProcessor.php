@@ -54,7 +54,7 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
             'request_id'    => $this->request->getId(),
             'uri'           => $this->request->path(),
             'url'           => $this->request->fullUrl(),
-            'route'         => $this->request->route()->getName(),
+            'route'         => $this->request->route() ? $this->request->route()->getName() : null,
             'method'        => $this->request->method(),
             'ajax'          => $this->request->ajax(),
             'origin'        => $this->request->header('origin'),
