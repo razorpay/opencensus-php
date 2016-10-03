@@ -14,15 +14,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_SERVICE_TAX = 'ServiceTax';
     const COLUMN_FEE         = 'Fee';
 
-    protected $messenger;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->messenger = new Messenger();
-    }
-
     protected function getPaymentId($row)
     {
         $paymentId = $row[self::COLUMN_PAYMENT_ID];
