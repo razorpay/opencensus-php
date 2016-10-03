@@ -100,6 +100,23 @@ class OlamoneyGatewayTest extends TestCase
         $this->assertTestResponse($refund, 'testAuthPaymentRefund');
     }
 
+    public function testPaymentPartialRefund()
+    {
+        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+
+        $input = ['amount' => $payment['amount']];
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $amount = (int) ($payment['amount'] / 3);
+
+        $this->refundPayment($payment['id'], $amount);
+
+        $refund = $this->getLastEntity('wallet', true);
+
+        $this->assertTestResponse($refund, 'testPaymentPartialRefund');
+    }
+
     public function testFailedPayment()
     {
         $this->failOlamoneyAuthorizePayment();
