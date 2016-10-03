@@ -366,34 +366,6 @@ class AdminTest extends TestCase
     }
 
     /**
-     * Tests Profile Panel Display
-     */
-    // public function testProfilePanel()
-    // {
-    //     $this->currentWindow()->size(array(
-    //       'width' => 2560,
-    //       'height' => 1600,
-    //     ));
-    //     // Testing profile display
-    //     $this->waitUntilDisplayedById('profileNav');
-    //     $this->clickById('profileNav');
-    //     $this->waitUntilDisplayedByClassName('profile-wrapper');
-    //     $this->waitUntilContainsByCss('body', $this->admin->name);
-    //     $this->waitUntilContainsByCss('body', $this->admin->username);
-
-    //     // Test Change Password
-    //     $this->clickByClassName('btn-change-pwd');
-    //     $this->waitUntilDisplayedByClassName('change-pwd-modal');
-    //     $this->setValueByName('old_password', '123456');
-    //     $this->setValueByName('password', '1234567');
-    //     $this->setValueByName('password_confirmation', '1234567');
-    //     $this->clickByClassName('modal-ok');
-    //     $this->waitUntilAbsentByCss('.change-pwd-modal');
-
-    //     $this->waitUntilContainsByCss('body', 'Password changed successfully');
-    // }
-
-    /**
      * Tests admin logout
      */
     public function testLogout()

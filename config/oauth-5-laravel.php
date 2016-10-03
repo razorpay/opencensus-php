@@ -11,7 +11,7 @@ return [
 	/**
 	 * Storage
 	 */
-	'storage' => '\\OAuth\\Common\\Storage\\Session',
+	'storage' => "\OAuth\Common\Storage\Session",
 
 	/**
 	 * Consumers
@@ -19,9 +19,11 @@ return [
 	'consumers' => [
 
 		'Google' => [
-			'client_id'     => '938088475836-cf2sa26m5nhr7uv058l017t2ucpnt9mu.apps.googleusercontent.com',
-			'client_secret' => 'DwBJFjYIYInl7xolmTu29tRg',
-			'scope'         => ['userinfo_email', 'userinfo_profile'],
+			'client_id'     => env('OAUTH_CLIENT_ID', ''),
+			'client_secret' => env('OAUTH_CLIENT_SECRET', ''),
+			'scope'         => [
+					'userinfo_email', 'userinfo_profile'
+			],
 		],
 
 	],
