@@ -45,10 +45,13 @@ class Entity
 
     const DAILY_SETTLEMENT      = 'daily_settlement';
     const SETTLEMENT_DETAILS    = 'settlement_details';
+    const FILE_HANDLER          = 'file_handler';
     const TERMINAL_ACTION       = 'terminal_action';
-    const PAYMENT_ANALYTICS     = 'payment_analytics';
     const GATEWAY_ABSENCE       = 'gateway_absence';
+    const DAILY_SETTLEMENT      = 'daily_settlement';
+    const PAYMENT_ANALYTICS     = 'payment_analytics';
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
+    const SETTLEMENT_DETAILS    = 'settlement_details';
 
     //
     // Gateway entities

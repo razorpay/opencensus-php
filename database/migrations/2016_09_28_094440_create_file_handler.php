@@ -19,7 +19,8 @@ class CreateFileHandler extends Migration
         {
             $table->engine = 'InnoDB';
 
-            $table->increments(FileHandler::ID);
+            $table->char(FileHandler::ID, FileHandler::ID_LENGTH)
+                  ->primary();
 
             $table->string(FileHandler::FORMAT);
 
@@ -31,21 +32,23 @@ class CreateFileHandler extends Migration
 
             $table->string(FileHandler::SERVICE);
 
+            $table->string(FileHandler::BUCKET)->nullable();
+
             $table->string(FileHandler::NAME);
 
-            $table->string(FileHandler::PASSWORD);
+            $table->string(FileHandler::PASSWORD)->nullable();
 
-            $table->string(FileHandler::ENTITY_NAME);
+            $table->string(FileHandler::ENTITY_NAME)->nullable();
 
-            $table->string(FileHandler::ENTITY_ID);
+            $table->string(FileHandler::ENTITY_ID)->nullable();
 
-            $table->string(FileHandler::MERCHANT_ID);
+            $table->string(FileHandler::MERCHANT_ID)->nullable();
 
-            $table->string(FileHandler::PERMISSION);
+            $table->string(FileHandler::PERMISSION)->nullable();
 
-            $table->string(FileHandler::COMMENTS);
+            $table->string(FileHandler::COMMENTS)->nullable();
 
-            $table->string(FileHandler::METADATA);
+            $table->string(FileHandler::METADATA)->nullable();
 
             $table->string(FileHandler::DOCUMENT_TYPE);
 
@@ -53,7 +56,7 @@ class CreateFileHandler extends Migration
 
             $table->string(FileHandler::UPDATED_AT);
 
-            $table->string(FileHandler::DELETED_AT);
+            $table->string(FileHandler::DELETED_AT)->nullable();
 
             $table->index([FileHandler::ENTITY_ID, FileHandler::ENTITY_NAME]);
 

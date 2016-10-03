@@ -12,6 +12,7 @@ class Entity extends Base\PublicEntity
     const ENCRYPTION_METHOD     = 'encryption_method';
     const LOCATION              = 'location';
     const SERVICE               = 'service';
+    const BUCKET                = 'bucket';
     const NAME                  = 'name';
     const PASSWORD              = 'password';
     const ENTITY_NAME           = 'entity_name';

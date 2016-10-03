@@ -9,4 +9,10 @@ class Helper
         //TODO dummy fn implememt this
         return 'mime';
     }
+
+    public function getFileSize($file)
+    {
+        //TODO implement this
+        return '1024';
+    }
 }

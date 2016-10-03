@@ -15,6 +15,7 @@ class Service extends Base\Service
     public function __construct()
     {
         $this->core = new Core;
+        $this->helper = new Helper;
     }
 
     protected function getStorageHandle($service)
@@ -29,8 +30,9 @@ class Service extends Base\Service
                 case 's3':
                     $class  = $class . 'AwsS3' . '\Handler';
                     break;
+
                 case 'default':
-                    throw new Exception\InvalidArgumentException('Invalid storage service' . $service);
+                    throw new Exception\InvalidArgumentException('Invalid storage service ' . $service);
             }
 
             $this->storageHandler = (new $class);
@@ -43,27 +45,24 @@ class Service extends Base\Service
     {
         $filePath = $input['filePath'];
 
-        unset($input['filePath']);
-
         // TODO : add handler if multiple service provider are added in future
         $this->getStorageHandle('s3');
 
         if (in_array('mime', $input) === false)
         {
-            $input['mime'] = (new Helper)->getMimeType($filePath);
+            $input['mime'] = $this->helper->getMimeType($filePath);
         }
 
         //TODO : choose proper bucket depending on entity type
         $bucket = 'rzp-test-bucket';
 
-        $url = $this->storageHandler->save($bucket, 'name', $filePath, $input['mime'], []);
+        $input['url'] = $this->storageHandler->save($bucket, 'name', $filePath, $input['mime'], []);
 
-        $input['url'] = $url;
+        $fileHandlerInput = $this->getFileHandlerData($input);
 
-        //TODO add prcoessing for other fields like entity id name and document_type
-        $fileHandler = $this->core->create($input);
+        $fileHandler = $this->core->create($fileHandlerInput);
 
-        if (in_array($input, 'expiryTime') === true)
+        if (in_array('expiryTime', $input) === true)
         {
             $fileHandler->url = $this->storageHandler->getTemporaryUrl(
                 $bucket,
@@ -73,6 +72,52 @@ class Service extends Base\Service
         }
 
         return $fileHandler->toArrayPublic();
+    }
+
+    protected function getFileHandlerData($input)
+    {
+        //TODO : this is for testing only, refactor and make it better
+        $fileHandlerInput = [];
+
+        $size = $this->helper->getFileSize($input['filePath']);
+
+        $password = (isset($input['password']) === true) ? $input['password'] : '';
+
+        $encryptionMethod = 'none';
+
+        $service = 's3';
+
+        $entityName = (isset($input['entityName']) === true) ? $input['entityName'] : '';
+        $entityId = (isset($input['entityId']) === true) ? $input['entityId'] : '';
+        $merchantId = (isset($input['merchantId']) === true) ? $input['merchantId'] : '';
+        $bucket = '';
+        $permission = '';
+        $metaData = '';
+        $comments = '';
+        $documentType = '';
+
+        $fileHandlerInput[Entity::FORMAT] = $input['mime'];
+
+        $fileHandlerInput[Entity::SIZE] = $size;
+
+        $fileHandlerInput[Entity::ENCRYPTION_METHOD] = $encryptionMethod;
+        $fileHandlerInput[Entity::LOCATION] = $input['url'];
+        $fileHandlerInput[Entity::SERVICE] = $service;
+        $fileHandlerInput[Entity::BUCKET] = $bucket;
+
+        $fileHandlerInput[Entity::NAME] = $input['filePath'];
+
+        $fileHandlerInput[Entity::PASSWORD] = $password;
+
+        $fileHandlerInput[Entity::ENTITY_NAME] = $entityName;
+        $fileHandlerInput[Entity::ENTITY_ID] = $entityId;
+        $fileHandlerInput[Entity::MERCHANT_ID] = $merchantId;
+        $fileHandlerInput[Entity::PERMISSION] = $permission ;
+        $fileHandlerInput[Entity::METADATA] = $metaData;
+        $fileHandlerInput[Entity::COMMENTS] = $comments;
+        $fileHandlerInput[Entity::DOCUMENT_TYPE] = $documentType;
+
+        return $fileHandlerInput;
     }
 
     public function fetch($id)
