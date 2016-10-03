@@ -119,6 +119,18 @@ return [
         'entity'                => 'wallet',
     ],
 
+    'testPartialRefundPayment'       => [
+        'action'                => 'refund',
+        'wallet'                => 'airtelmoney',
+        'email'                 => 'a@b.com',
+        'amount'                => 25000,
+        'contact'               => '9918899029',
+        'gateway_merchant_id'   => 'random_id',
+        'response_description'  => 'SUCCESS',
+        'status_code'           => 'SUC',
+        'entity'                => 'wallet',
+    ],
+
     'testRefundFailedPaymentEntity' => [
         'action'                => 'refund',
         'wallet'                => 'airtelmoney',
