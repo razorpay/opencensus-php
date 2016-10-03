@@ -166,6 +166,15 @@ class RefundTest extends TestCase
         $this->runRequestResponseFlow($testData);
     }
 
+    public function testRefundCreateOnGatewayForMissingRefunds()
+    {
+        $this->ba->appAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData);
+    }
+
     public function testRefundCalledOnPurchaseWithoutCapture()
     {
         $authorizedAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp;

@@ -197,4 +197,15 @@ return [
             ],
         ],
     ],
+
+    'testRefundCreateOnGatewayForMissingRefunds' => [
+        'request' => [
+            'method'    => 'post',
+            'url'       => '/refunds/billdesk/create_record',
+            'content'   => [],
+        ],
+        'response' => [
+            'content'   => []
+        ]
+    ],
 ];

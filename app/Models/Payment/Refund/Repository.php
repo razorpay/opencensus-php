@@ -134,4 +134,66 @@ class Repository extends Base\Repository
 
         return $refunds;
     }
+
+    public function fetchRefundsForGateway2($gateway, $ts)
+    {
+        return $this->newQuery()
+            ->where(Payment\Entity::GATEWAY, '=', $gateway)
+            ->where(Payment\Entity::STATUS, '=', Payment\Status::REFUNDED)
+            ->where(Payment\Entity::CREATED_AT, '>', $ts)
+            ->get();
+    }
+
+    /**
+     * Join with the corresponding gateway and check that this particular payment
+     * has no gateway entity for the refund.
+     * We send the
+     *
+     * @param $gateway
+     * @param $ts
+     * @return mixed
+     */
+    public function fetchMissingRefundsOfGateway($gateway, $ts)
+    {
+        // SELECT *
+        // FROM refunds
+        // JOIN payments ON refunds.payment_id = payments.id
+        // WHERE refunds.id NOT IN
+        //      (SELECT refunds.id
+        //       FROM refunds
+        //       JOIN $gateway ON refunds.id = refund_id)
+        // AND payments.gateway = '$gateway'
+        // AND payments.refund_status IS NOT NULL
+        // AND refunds.created_at > '$ts';
+
+        $paymentTable = Table::PAYMENT;
+        $refundTable = Table::REFUND;
+        $gatewayTable = constant(Table::class . '::' . strtoupper($gateway));
+
+        $refundId = Entity::getAttributeWithTableName(Entity::ID);
+        $refundPaymentId = Entity::getAttributeWithTableName(Entity::PAYMENT_ID);
+        $refundCreatedAt = Entity::getAttributeWithTableName(Entity::CREATED_AT);
+
+        $paymentId = Payment\Entity::getAttributeWithTableName(Payment\Entity::ID);
+        $paymentGateway = Payment\Entity::getAttributeWithTableName(Payment\Entity::GATEWAY);
+        $paymentRefundStatus = Payment\Entity::getAttributeWithTableName(Payment\Entity::REFUND_STATUS);
+
+        $gatewayRefundId = 'refund_id';
+
+        $response = $this->newQuery()
+                         ->join($paymentTable, $refundPaymentId, '=', $paymentId)
+                         ->where($paymentGateway, '=', $paymentGateway)
+                         ->whereNotNull($paymentRefundStatus)
+                         ->where($refundCreatedAt, '>', $ts)
+                         ->whereRaw($refundId . ' NOT IN ' .
+                                 '(' .
+                                     ' SELECT ' . $refundId .
+                                     ' FROM ' . $refundTable .
+                                     ' JOIN ' . $gatewayTable . ' ON ' . $refundId . ' = ' . $gatewayRefundId .
+                                 ')'
+                         )
+                         ->toSql();
+
+        return $response;
+    }
 }

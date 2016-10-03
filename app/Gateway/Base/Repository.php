@@ -52,6 +52,13 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function findByRefundId($refundId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::REFUND_ID, '=', $refundId)
+                    ->first();
+    }
+
     protected function addQueryParamPaymentId($query, $params)
     {
         $paymentId = $params[Entity::PAYMENT_ID];

@@ -360,18 +360,17 @@ class Service extends Base\Service
 
         $createdAfter = time() - self::GATEWAY_REFUND_RECORDS_TIME_LIMIT;
 
-        $repoFunction = 'fetch' . studly_case($gateway) . 'Refunds';
-        $billdeskRefunds = $this->repo->payment->$repoFunction($createdAfter);
+        $refunds = $this->repo->refund->fetchMissingRefundsOfGateway($gateway, $createdAfter);
 
         $data = [];
 
          // we get all the billdesk refunds. we return back data for applicable and if success.
 
-        foreach ($billdeskRefunds as $billdeskRefund)
+        foreach ($refunds as $refund)
         {
-            $merchant = $this->repo->merchant->getMerchantFromEntity($billdeskRefund);
+            $merchant = $this->repo->merchant->getMerchantFromEntity($refund);
 
-            $data[] = $this->getNewProcessor($merchant)->createGatewayRefundRecord($billdeskRefund);
+            $data[] = $this->getNewProcessor($merchant)->createGatewayRefundRecord($refund);
         }
 
         $applicable = $success = 0;

@@ -269,7 +269,7 @@ class Gateway extends Base\Gateway
             return [false, $verifyResponse];
         }
 
-        $gatewayRefundAmount = (int) $verifyResponse['RefAmount'] * 100;
+        $gatewayRefundAmount = (int) ($verifyResponse['RefAmount'] * 100);
 
         return [($gatewayRefundAmount === $input['payment']['refunded_amount']), $verifyResponse];
     }
@@ -296,8 +296,8 @@ class Gateway extends Base\Gateway
 
         $refundContent = [
             'payment_id'        => $input['payment'][Payment\Entity::ID],
-            'refund_id'         => $input['refund'][Payment\Entity::ID],
-            'received'          => 1,
+            'refund_id'         => $input['refund'][Payment\Refund\Entity::ID],
+            'received'          => 0,
             'CurrencyType'      => 'INR',
             'CustomerID'        => $verifyResponse['CustomerID'],
             'MerchantID'        => $verifyResponse['MerchantID'],
@@ -308,13 +308,13 @@ class Gateway extends Base\Gateway
             'RequestType'       => '0410',
             'TxnAmount'         => $verifyResponse['TxnAmount'],
             'TxnReferenceNo'    => $verifyResponse['TxnReferenceNo'],
-            'RefAmount'         => $verifyResponse['RefAmount'],
+            'RefAmount'         => $input['refund'][Payment\Refund\Entity::AMOUNT],
             // The below two fields are not sent as part of refund response, but we get it in the verify response.
             //'ErrorStatus'       => $verifyResponse['ErrorStatus'],
             //'ErrorDescription'  => $verifyResponse['ErrorDescription'],
             'ProcessStatus'     => $verifyResponse['ProcessStatus'],
             'TxnDate'           => $txnDate,
-            'RefDataTime'       => $refDate,
+            'RefDateTime'       => $refDate,
         ];
 
         return $refundContent;
