@@ -263,6 +263,7 @@ app.controller('EntityDetailCtrl', [
           'customer',
           'daily_settlement',
           'ebs',
+          'first_data',
           'emi_plan',
           'hdfc',
           'iin',

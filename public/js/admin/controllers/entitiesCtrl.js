@@ -61,6 +61,7 @@ app.controller('EntitiesCtrl', [
       'billdesk',
       'ebs',
       'cybersource',
+      'first_data',
       'ezeclick',
       'hdfc',
       'kotak',
@@ -207,6 +208,14 @@ app.controller('EntitiesCtrl', [
         received: booleanList,
         ref: ['Reference'],
         capture_ref: ['Capture Reference']
+      },
+      first_data: {
+        payment_id: ['Payment ID'],
+        action: ['Action'],
+        received: ['Received'],
+        refund_id: ['Refund ID'],
+        gateway_payment_id: ['Gateway Payment ID'],
+        tdate: ['Tdate'],
       },
       daily_settlement: {},
       emi_plan: {},
