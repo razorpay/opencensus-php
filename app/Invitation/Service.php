@@ -8,6 +8,7 @@ use App\Base;
 use App\Merchant;
 use App\User;
 use App\Invitation;
+use App\Mailers\MiscMailer;
 
 class Service extends Base\Service
 {
@@ -249,15 +250,10 @@ class Service extends Base\Service
 
     protected function sendInvitationEmail($invitation)
     {
-        $loggedInUser = $this->loggedInUser->toArray();
-        $invitation_array   = $invitation->toArray();
-        $invitation_array['merchant']   = $invitation->merchant->toArray();
+        $mailer = new MiscMailer();
 
-        $view = $invitation_array['user_id'] ? 'emails.invitations.existing' : 'emails.invitations.new';
-
-        Mail::queue($view, compact('invitation_array', 'loggedInUser'), function ($m) use ($invitation)
-        {
-            $m->to($invitation->email)->subject('Invitation to join a team | Razorpay');
-        });
+        $mailer
+            ->sendMemberInvitationEmail($invitation, $this->loggedInUser->toArray())
+            ->queueAndDeliver();
     }
 }
