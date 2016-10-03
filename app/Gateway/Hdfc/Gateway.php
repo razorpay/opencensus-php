@@ -346,6 +346,18 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
+        // TODO: remove these after gateway manager driver are fixed
+
+        $this->inquiryRequest['data'] = [];
+        $this->inquiryRequest['xml'] = '';
+        $this->inquiryRequest['error'] = null;
+
+        $this->inquiryResponse['data'] = [];
+        $this->inquiryResponse['xml'] = '';
+        $this->inquiryResponse['error'] = null;
+
+        $this->error = false;
+
         $verify = new Base\Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
