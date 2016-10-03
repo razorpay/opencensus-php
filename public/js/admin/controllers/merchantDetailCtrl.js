@@ -936,6 +936,7 @@ app.controller('MerchantDetailCtrl', [
       'olamoney',
       'upi',
       'airtelmoney',
+      'freecharge',
       'emi',
       'card',
       'amex',
