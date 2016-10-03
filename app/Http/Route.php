@@ -144,6 +144,7 @@ final class Route
         'transaction_fetch_by_id'                 => ['get',      'transactions/{id}',                        'TransactionController@getTransaction'                              ],
         'transaction_fetch_multiple'              => ['get',      'transactions',                             'TransactionController@getTransactions'                             ],
         'transaction_monthly_report'              => ['get',      'transactions/report',                      'TransactionController@getMonthlyReport'                            ],
+        'migrate_transactions'                    => ['post',     'transactions/migrate',                     'TransactionController@postMigrateOlderTransactions'                ],
         'setl_fetch_by_id'                        => ['get',      'settlements/{id}',                         'SettlementController@getSettlement'                                ],
         'setl_fetch_multiple'                     => ['get',      'settlements',                              'SettlementController@getSettlements'                               ],
         'setl_fetch_transactions'                 => ['get',      'settlements/{id}/transactions',            'SettlementController@getSettlementTransactions'                    ],
@@ -224,6 +225,7 @@ final class Route
         'order_payments'                          => ['get',      'orders/{id}/payments',                     'OrderController@fetchPayments'                                     ],
         'order_refund_multiple_authorized'        => ['post',     'orders/payments/refund',                   'PaymentController@postRefundMultipleAuthorizedPaymentsForOrders'   ],
         'reports_monthly_invoice'                 => ['get',      'reports/invoice',                          'MerchantController@getInvoiceReport'                               ],
+        'reports_monthly_invoice_v2'              => ['get',      'reports/invoice/v2',                       'MerchantController@getInvoiceReportV2'                             ],
         'reports_public_entity'                   => ['get',      'reports/{entity}',                         'MerchantController@getPublicEntityReport'                          ],
         'customer_create'                         => ['post',     'customers',                                'CustomerController@createLocalCustomer'                            ],
         'customer_update'                         => ['put',      'customers/{id}',                           'CustomerController@updateCustomer'                                 ],
@@ -454,6 +456,7 @@ final class Route
         'credits_delete',
         'order_refund_multiple_authorized',
         'scorecard',
+        'migrate_transactions',
     );
 
     public static $proxy = array(
@@ -476,6 +479,7 @@ final class Route
         'webhook_fetch_multiple',
         'balance_fetch',
         'reports_monthly_invoice',
+        'reports_monthly_invoice_v2',
         'reports_public_entity',
         'bank_account_fetch',
         'merchant_edit_config',
@@ -539,6 +543,7 @@ final class Route
             'es_migrate_entity',
             'setl_post_details_old',
             'order_refund_multiple_authorized',
+            'migrate_transactions',
         ),
 
         'mailgun' => array(

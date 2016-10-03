@@ -21,6 +21,7 @@ class Report extends Service
         E::TRANSACTION,
     );
 
+
     // Corresponds to 15th November 2015 00:00
     const SWACH_BHARAT_CUTOFF_TIMESTAMP = 1447525800;
     const SWACH_BHARAT_CESS = 'Swachh Bharat Cess';
@@ -126,6 +127,43 @@ class Report extends Service
             ]);
 
         return $data;
+    }
+
+    public function getInvoiceV2($input)
+    {
+        $merchantId = $this->merchant->getId();
+
+        (new Validator)->validateInput('report', $input);
+
+        list($from, $to) = $this->getTimestamps($input);
+
+        $feesBreakup = $this->repo->fee_breakup->fetchFeesBreakupInvoice($merchantId, $from, $to);
+
+        $totalFee = $feesBreakup['rzp_fee'] + $feesBreakup['service_tax'];
+        $totalTax = $feesBreakup['service_tax'];
+
+        if (empty($feesBreakup['swachh_bharat_cess']) === false)
+        {
+            $totalFee += $feesBreakup['swachh_bharat_cess'];
+            $totalTax += $feesBreakup['swachh_bharat_cess'];
+        }
+
+        if (empty($feesBreakup['krishi_kalyan_cess']) === false)
+        {
+            $totalFee += $feesBreakup['krishi_kalyan_cess'];
+            $totalTax += $feesBreakup['krishi_kalyan_cess'];
+        }
+
+        return [
+            self::TOTAL_FEE         => $totalFee,
+            self::RAZORPAY_FEE      => $feesBreakup['rzp_fee'],
+            self::TAX               => $totalTax,
+            self::TAXES             => [
+                                            self::SERVICE_TAX           =>  $feesBreakup['service_tax'],
+                                            self::SWACH_BHARAT_CESS     =>  $feesBreakup['swachh_bharat_cess'],
+                                            self::KRISHI_KALYAN_CESS    =>  $feesBreakup['krishi_kalyan_cess'],
+                                    ],
+        ];
     }
 
     public function getInvoice($input)

@@ -6,7 +6,10 @@ use Carbon\Carbon;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base;
 use RZP\Models\Transaction;
+use RZP\Models\Payment;
+use RZP\Models\Pricing\FeeBreakup as FeeBreakup;
 use RZP\Models\Settlement;
+use RZP\Constants\Table;
 use RZP\Exception;
 
 class Repository extends Base\Repository
@@ -243,5 +246,36 @@ class Repository extends Base\Repository
         {
             $query->whereNotNull(Entity::RECONCILED_AT);
         }
+    }
+
+    public function getTransactionsToBeMigrated()
+    {
+        $txns = $this->newQuery()
+                    ->where(Entity::TYPE, 'payment')
+                    ->join(Table::PAYMENT, Entity::ENTITY_ID, '=', 'payments.id')
+                    ->whereNotNull(Payment\Entity::CAPTURED_AT)
+                    ->whereNotIn('transactions.id', function($query)
+                        {
+                            $query->select(FeeBreakup\Entity::TRANSACTION_ID)
+                                  ->from(TABLE::FEE_BREAKUP);
+                        })
+                    ->limit(10)
+                    ->select('transactions.*')
+                    ->get();
+        return $txns;
+    }
+
+    public function getTransactionForReport($merchantId, $from, $to)
+    {
+        $txnIds = $this->newQuery()
+                       ->where('transactions.merchant_id', $merchantId)
+                       ->where('type', 'payment')
+                       ->join('payments', 'transactions.entity_id', '=', 'payments.id')
+                       ->whereNotNull('payments.captured_at')
+                       ->betweenTime($from, $to)
+                       ->select("transactions.id")
+                       ->get();
+
+        return $txnIds;
     }
 }

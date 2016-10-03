@@ -828,7 +828,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
             $this->repo->fee_breakup->saveOrFail($feeSplit);
 
-            s($feeSplit->toArrayPublic());
         }
     }
 

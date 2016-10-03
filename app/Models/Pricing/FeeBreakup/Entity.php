@@ -103,4 +103,10 @@ class Entity extends Base\PublicEntity
     {
         $this->setAttribute(self::TYPE, $typ);
     }
+
+    public function setCreatedAt($createdAt)
+    {
+        $this->setAttribute(self::CREATED_AT, $createdAt);
+    }
+
 }
