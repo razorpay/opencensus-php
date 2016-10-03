@@ -108,6 +108,13 @@ class GatewayManager extends \Illuminate\Support\Manager
         return parent::driver($gateway);
     }
 
+    public function driver($driver = null)
+    {
+        $driver = $driver ?: $this->getDefaultDriver();
+
+        return $this->createDriver($driver);
+    }
+
     public function server($driver)
     {
         $servers = & $this->servers;
