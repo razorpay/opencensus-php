@@ -407,8 +407,19 @@ class Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_REQUEST,
             [
-                'request' => $request,
-                'gateway' => $this->gateway,
+                'request'    => $request,
+                'gateway'    => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+            ]);
+    }
+
+    protected function traceGatewayPaymentResponse($response, $input)
+    {
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_RESPONSE,
+            [
+                'response'   => $response,
+                'gateway'    => $this->gateway,
                 'payment_id' => $input['payment']['id'],
             ]);
     }

@@ -10,8 +10,8 @@
   </head>
   <body id='body'>
     <ul id="nav">
-      <div class="container"><i class="ham-menu">A</i>
-          <li>
+      <div class="container">
+          <li class="mininav">
               <a id="logo-link" href="https://razorpay.com/" target="_parent"></a>
           </li>
           <div id="ham">
@@ -131,13 +131,11 @@
     <script>
     Razorpay = {
       config: {
-        api: '{{$api}}',
+        api: '{{$api}}/',
         version: 'v1/'
       }
     }
     var options = {
-        // "key": "rzp_live_gC8obGlwaRlyui",
-        // "key": "rzp_test_1DP5mmOlF5G5ag",
         "key": "rzp_live_ILgsfZCZoFIKMb",
         "amount": "100", // 2000 paise = INR 20
         "name": "Razorpay",

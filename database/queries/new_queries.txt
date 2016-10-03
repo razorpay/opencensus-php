@@ -1,0 +1,7 @@
+ALTER TABLE payments
+    ADD CONSTRAINT payments_token_id_foreign FOREIGN KEY(token_id) REFERENCES tokens(id) ON DELETE RESTRICT,
+    ADD CONSTRAINT payments_global_token_id_foreign FOREIGN KEY(global_token_id) REFERENCES tokens(id) ON DELETE RESTRICT;
+
+#set terminal_id nullable in payment_analytics
+ALTER TABLE payment_analytics MODIFY COLUMN terminal_id char(14);
+

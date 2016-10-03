@@ -100,6 +100,10 @@ class GatewayController extends Controller
 
                 break;
 
+            case 'wallet_freecharge':
+                $data = $this->processS2SCallback($input, $gateway);
+                break;
+
             case 'upi':
             case 'upi_icici':
                 $input = Request::getContent();

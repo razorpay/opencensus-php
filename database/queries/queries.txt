@@ -1,0 +1,908 @@
+alter table cards add merchant_id varchar(14) after id;
+
+update cards, payments
+    set cards.merchant_id = payments.merchant_id where cards.id = payments.card_id;
+
+ALTER TABLE cards MODIFY COLUMN merchant_id VARCHAR(14) NOT NULL,
+    ADD CONSTRAINT cards_merchant_id_foreign FOREIGN KEY(merchant_id)
+    REFERENCES merchants(id) ON DELETE RESTRICT;
+ALTER TABLE `cards` ADD INDEX `cards_network_index` (`network`);
+
+alter table transactions add channel VARCHAR(8) NOT NULL after escrow_balance;
+ALTER TABLE transactions ADD INDEX transactions_channel_index (`channel`);
+
+ALTER TABLE bank_accounts
+    ADD COLUMN beneficiary_code VARCHAR(6) UNIQUE NOT NULL after account_number,
+    ADD COLUMN beneficiary_city VARCHAR(30) NOT NULL after beneficiary_address4,
+    ADD COLUMN beneficiary_state VARCHAR(2) NOT NULL after beneficiary_city,
+    ADD COLUMN beneficiary_country VARCHAR(2) NOT NULL after beneficiary_state,
+    ADD COLUMN beneficiary_pin CHAR(6) NOT NULL after beneficiary_country,
+    MODIFY COLUMN beneficiary_address1 VARCHAR(30) NOT NULL,
+    MODIFY COLUMN beneficiary_address2 VARCHAR(30),
+    MODIFY COLUMN beneficiary_address3 VARCHAR(30),
+    MODIFY COLUMN beneficiary_address4 VARCHAR(30),
+    MODIFY COLUMN beneficiary_name VARCHAR(40) NOT NULL after account_number,
+    MODIFY COLUMN beneficiary_mobile CHAR(10) NOT NULL;
+
+ALTER TABLE daily_settlements
+    ADD COLUMN api_fee INTEGER NOT NULL AFTER amount,
+    ADD COLUMN gateway_fee INTEGER NOT NULL AFTER api_fee;
+
+ALTER TABLE payments
+    ADD INDEX payments_created_at_index (created_at),
+    ADD COLUMN auto_captured TINYINT(1) NOT NULL DEFAULT 0 AFTER transaction_id,
+    ADD INDEX payments_auto_captured_index (auto_captured);
+
+INSERT INTO balance (id, balance, created_at, updated_at) VALUES ('1ApiFeeAccount', '0', '1424916694', '1424916694');
+
+ALTER TABLE daily_settlements
+    ADD COLUMN settlement_count INTEGER NOT NULL AFTER gateway_fee,
+    ADD COLUMN transaction_count INTEGER NOT NULL AFTER settlement_count;
+
+ALTER TABLE daily_settlements
+    MODIFY COLUMN settlement_count INTEGER NOT NULL,
+    MODIFY COLUMN transaction_count INTEGER NOT NULL;
+
+ALTER TABLE payments
+    ADD COLUMN verified TINYINT(1) AFTER signed,
+    MODIFY COLUMN notes TEXT,
+    ADD INDEX payments_verified_index (verified);
+
+ALTER TABLE merchants
+    ADD COLUMN activated_at INT AFTER activated,
+    ADD INDEX merchants_activated_at_index (activated_at);
+
+UPDATE merchants m1, merchants m2
+    SET m1.activated_at = m2.updated_at
+    WHERE m1.id = m2.id && m1.activated = 1;
+
+ALTER TABLE terminals
+    ADD COLUMN gateway_access_code VARCHAR(255) AFTER gateway_terminal_password,
+    ADD COLUMN gateway_secure_secret VARCHAR(255) AFTER gateway_access_code,
+    ADD COLUMN netbanking TINYINT(1) AFTER card,
+    ADD COLUMN shared TINYINT(1) AFTER netbanking,
+    MODIFY COLUMN gateway_merchant_id VARCHAR(255),
+    MODIFY COLUMN gateway_terminal_id VARCHAR(255),
+    MODIFY COLUMN gateway_terminal_password TEXT;
+
+ALTER TABLE merchants
+    ADD COLUMN website VARCHAR(255) AFTER pricing_plan_id,
+    ADD COLUMN category CHAR(4) AFTER website,
+    ADD COLUMN international TINYINT(1) DEFAULT 0 AFTER category;
+
+ALTER TABLE merchant_banks
+    MODIFY COLUMN banks TEXT NOT NULL;
+
+ALTER TABLE paytm
+    CHANGE COLUMN `respmessage` `respmsg` VARCHAR(255);
+
+ALTER TABLE axis
+    MODIFY COLUMN vpc_TxnResponseCode VARCHAR(10);
+
+ALTER TABLE paytm
+    MODIFY COLUMN payment_mode_only VARCHAR(255),
+    MODIFY COLUMN auth_mode VARCHAR(255),
+    MODIFY COLUMN payment_type_id VARCHAR(5),
+    MODIFY COLUMN banktxnid VARCHAR(15),
+    MODIFY COLUMN respcode VARCHAR(10);
+
+ALTER TABLE paytm
+    ADD COLUMN method VARCHAR(255) AFTER action;
+
+ALTER TABLE merchant_banks
+    ADD COLUMN paytm TINYINT(1) AFTER banks;
+
+ALTER TABLE payments
+    ADD COLUMN wallet varchar(8) AFTER bank;
+
+ALTER TABLE merchant_banks
+    MODIFY COLUMN paytm TINYINT(1) NOT NULL DEFAULT 0;
+
+ALTER TABLE merchant_banks
+    ADD COLUMN card TINYINT(1) NOT NULL DEFAULT 1 AFTER merchant_id;
+
+ALTER TABLE payments
+    ADD COLUMN callback_url TEXT AFTER verified;
+
+ALTER TABLE paytm
+    CHANGE COLUMN `refundamt` `refundamount` VARCHAR(255);
+
+ALTER TABLE merchants
+    ADD COLUMN billing_label VARCHAR(255) AFTER international,
+    ADD COLUMN hold_funds TINYINT(1) NOT NULL DEFAULT 0 AFTER live,
+    ADD COLUMN transaction_report_email VARCHAR(255) AFTER billing_label;
+
+UPDATE merchants
+    SET transaction_report_email=email;
+
+ALTER TABLE paytm
+    MODIFY COLUMN txnid BIGINT;
+
+ALTER TABLE payments
+    MODIFY COLUMN bank CHAR(6);
+
+ALTER TABLE payments
+    ADD COLUMN authorized_at INTEGER AFTER transaction_id;
+
+ALTER TABLE merchants
+    ADD COLUMN receipt_email_enabled TINYINT(1) AFTER transaction_report_email;
+
+ALTER TABLE payments
+    MODIFY COLUMN callback_url TEXT;
+
+ALTER TABLE axis
+    ADD COLUMN action VARCHAR(10) AFTER payment_id,
+    MODIFY COLUMN vpc_AcqResponseCode VARCHAR(3),
+    MODIFY COLUMN vpc_Command VARCHAR(7),
+    MODIFY COLUMN vpc_3DSXID VARCHAR(28),
+    MODIFY COLUMN vpc_AuthorizeId VARCHAR(6),
+    MODIFY COLUMN vpc_BatchNo VARCHAR(8),
+    MODIFY COLUMN vpc_ReceiptNo VARCHAR(12),
+    MODIFY COLUMN vpc_ShopTransactionNo VARCHAR(19),
+    MODIFY COLUMN vpc_TransactionNo VARCHAR(19),
+    MODIFY COLUMN vpc_VerToken VARCHAR(28);
+
+ALTER TABLE axis
+    ADD COLUMN vpc_AuthorisedAmount INTEGER AFTER vpc_Amount,
+    ADD COLUMN vpc_CapturedAmount INTEGER AFTER vpc_AuthorisedAmount,
+    ADD COLUMN vpc_RefundedAmount INTEGER AFTER vpc_CapturedAmount;
+
+ALTER TABLE axis
+    ADD COLUMN vpc_AcqCSCRespCode VARCHAR(20) AFTER vpc_Message;
+
+CREATE INDEX payments_authorized_at_index ON payments(authorized_at) USING BTREE;
+
+ALTER TABLE axis
+    ADD COLUMN vpc_CSCResultCode VARCHAR(20) AFTER vpc_AcqCSCRespCode;
+
+ALTER TABLE netbanking
+    ADD COLUMN date VARCHAR(255) AFTER reference1,
+    ADD COLUMN refund_id CHAR(14) AFTER date;
+
+ALTER TABLE billdesk
+    ADD COLUMN received TINYINT(1) NOT NULL DEFAULT 0 AFTER action;
+
+UPDATE billdesk set received = 1 where AuthStatus IS NOT NULL;
+
+ALTER TABLE payments
+    ADD INDEX `payments_email_index` (`email`);
+
+ALTER TABLE netbanking
+    ADD COLUMN received TINYINT(1) NOT NULL DEFAULT 0 AFTER action;
+
+UPDATE netbanking set received=1 where bank_payment_id IS NOT NULL;
+
+ALTER TABLE axis
+    ADD COLUMN received TINYINT(1) NOT NULL DEFAULT 0 AFTER action,
+    ADD INDEX `axis_received_index` (`received`);
+
+ALTER TABLE billdesk
+    ADD INDEX `billdesk_received_index` (`received`),
+    ADD INDEX `billdesk_AuthStatus_index` (`AuthStatus`);
+
+ALTER TABLE netbanking
+    ADD INDEX `netbanking_received_index` (`received`);
+
+ALTER TABLE paytm
+    ADD COLUMN received TINYINT(1) NOT NULL DEFAULT 0 after action,
+    ADD INDEX `paytm_received_index` (`received`);
+
+ALTER TABLE payments
+    ADD INDEX `payments_bank_index` (`bank`);
+
+ALTER TABLE merchant_banks
+    ADD COLUMN mobikwik TINYINT(1) NOT NULL DEFAULT 0 AFTER paytm,
+    ADD INDEX `methods_card_index` (`card`),
+    ADD INDEX `methods_paytm_index` (`paytm`),
+    ADD INDEX `methods_mobikwik_index` (`mobikwik`);
+
+UPDATE payments SET status="refunded" WHERE refund_status="full";
+
+## Only in live production test mode database
+UPDATE payments
+    JOIN terminals ON payments.terminal_id = terminals.id AND terminals.used_count=0
+    SET terminal_id="1000SharpTrmnl" AND gateway="sharp";
+
+DELETE FROM terminals WHERE used_count=0;
+UPDATE terminals set deleted_at="1442860397" WHERE id!="1000SharpTrmnl";
+
+DELETE FROM terminals
+    WHERE id NOT IN (
+        SELECT payments.terminal_id FROM payments);
+
+ALTER TABLE netbanking
+    ADD COLUMN int_payment_id BIGINT UNSIGNED AFTER payment_id,
+    ADD INDEX `netbanking_int_payment_id_index` (`int_payment_id`);
+
+ALTER TABLE balance
+    MODIFY COLUMN balance BIGINT NOT NULL DEFAULT 0,
+    MODIFY COLUMN on_hold BIGINT NOT NULL DEFAULT 0;
+
+ALTER TABLE payments
+    ADD COLUMN internal_error_code VARCHAR(255) AFTER error_code;
+
+ALTER TABLE transactions
+    MODIFY COLUMN escrow_balance BIGINT;
+
+ALTER TABLE transactions
+    MODIFY COLUMN balance BIGINT;
+
+ALTER TABLE netbanking
+    ADD COLUMN caps_payment_id CHAR(14) NOT NULL AFTER refund_id,
+    ADD INDEX `netbanking_caps_payment_id_index` (`caps_payment_id`);
+
+UPDATE netbanking SET caps_payment_id = UPPER(payment_id);
+
+ALTER TABLE merchants
+    ADD INDEX `merchants_activated_index` (`activated`),
+    ADD INDEX `merchants_live_index` (`live`),
+    ADD INDEX `merchants_hold_funds_index` (`hold_funds`),
+    ADD INDEX `merchants_category_index` (`category`),
+    ADD INDEX `merchants_international_index` (`international`),
+    ADD INDEX `merchants_receipt_email_enabled_index` (`receipt_email_enabled`);
+
+ALTER TABLE axis
+    ADD COLUMN amex TINYINT(1) AFTER received,
+    ADD INDEX `axis_amex_index` (`amex`);
+
+ALTER TABLE paytm
+    MODIFY COLUMN banktxnid VARCHAR(20);
+
+ALTER TABLE terminals
+    ADD COLUMN category INTEGER UNSIGNED AFTER used_count,
+    ADD INDEX `terminals_category_index` (`category`),
+    ADD INDEX `terminals_gateway_index` (`gateway`),
+    ADD INDEX `terminals_deleted_at_index` (`deleted_at`);
+
+ALTER TABLE cards
+    ADD INDEX `cards_last4_index` (`last4`);
+
+ALTER TABLE axis
+    MODIFY COLUMN vpc_AcqResponseCode VARCHAR(4);
+
+ALTER TABLE merchant_banks
+    ADD COLUMN payzapp TINYINT(1) NOT NULL DEFAULT 0 AFTER mobikwik,
+    ADD INDEX `methods_payzapp_index` (`payzapp`);
+
+ALTER TABLE settlements
+    ADD COLUMN fees INTEGER UNSIGNED AFTER AMOUNT;
+
+## Runs code here first to fill all fees values for settlements
+
+ALTER TABLE settlements
+    MODIFY COLUMN fees INTEGER UNSIGNED NOT NULL;
+
+ALTER TABLE daily_settlements
+    ADD COLUMN fees INTEGER UNSIGNED AFTER AMOUNT;
+
+UPDATE daily_settlements SET settlement_count = 1 WHERE id="2gjqgF27mIgFFp";
+
+## Runs code here first to fill all fees values for daily settlements
+
+ALTER TABLE daily_settlements
+    MODIFY COLUMN fees INTEGER UNSIGNED NOT NULL;
+
+ALTER TABLE merchants
+    ADD COLUMN settlement_schedule INTEGER AFTER billing_label;
+
+UPDATE merchants SET settlement_schedule=3;
+
+ALTER TABLE merchants
+    MODIFY COLUMN settlement_schedule INTEGER NOT NULL;
+
+UPDATE axis SET vpc_Command = "pay" WHERE vpc_Command = "queryDR" AND action = "authorize";
+
+ALTER TABLE balance
+    ADD COLUMN credits BIGINT NOT NULL DEFAULT 0 AFTER on_hold;
+
+ALTER TABLE transactions
+    ADD COLUMN gratis TINYINT(1) NOT NULL DEFAULT 0 AFTER api_fee,
+    ADD INDEX `transactions_gratis_index` (`gratis`);
+
+UPDATE pricing SET plan_id="10ZeroPricingP" WHERE plan_id="4Je2k4PWacyYbO";
+UPDATE pricing SET id="1ZeroPricingR1" WHERE plan_id="10ZeroPricingP" AND payment_method="card";
+UPDATE pricing SET id="1ZeroPricingR2" WHERE plan_id="10ZeroPricingP" AND payment_method="netbanking";
+UPDATE pricing SET id="1ZeroPricingR3" WHERE plan_id="10ZeroPricingP" AND payment_method="wallet";
+
+UPDATE payments SET terminal_id="3olokG2obOLrly" WHERE terminal_id="4EgXhcZuKp9eK6";
+UPDATE terminals SET id="1000HdfcShared" WHERE id="4EgXhcZuKp9eK6";
+UPDATE payments SET terminal_id="1000HdfcShared" WHERE terminal_id="3olokG2obOLrly";
+
+ALTER TABLE payments
+    ADD INDEX payments_gateway_index (gateway);
+
+ALTER TABLE pricing
+    ADD INDEX `pricing_plan_id_index` (`plan_id`);
+
+ALTER TABLE merchants
+    ADD INDEX merchants_pricing_plan_id_index (pricing_plan_id);
+
+ALTER TABLE transactions
+    ADD COLUMN service_tax INTEGER UNSIGNED AFTER fee;
+
+ALTER TABLE payments
+    ADD COLUMN fee INTEGER UNSIGNED AFTER callback_url,
+    ADD COLUMN service_tax INTEGER UNSIGNED AFTER fee;
+
+ALTER TABLE terminals
+    ADD COLUMN gateway_merchant_id2 VARCHAR(255) AFTER gateway_merchant_id;
+
+ALTER TABLE bank_accounts
+    ADD COLUMN id CHAR(14) FIRST;
+
+ALTER TABLE settlements
+    ADD COLUMN bank_account_id CHAR(14) AFTER transaction_id;
+
+ALTER TABLE settlements
+    ADD COLUMN service_tax INTEGER UNSIGNED AFTER fees;
+
+ALTER TABLE bank_accounts
+    ADD COLUMN deleted_at INTEGER UNSIGNED AFTER updated_at;
+
+ALTER TABLE bank_accounts
+    ADD INDEX bank_accounts_deleted_at_index (deleted_at);
+
+UPDATE settlements s
+    JOIN bank_accounts b ON s.merchant_id = b.merchant_id
+    SET s.bank_account_id = b.id;
+
+ALTER TABLE bank_accounts
+    ADD INDEX bank_accounts_merchant_id_foreign (merchant_id),
+    DROP PRIMARY KEY,
+    MODIFY COLUMN id CHAR(14) NOT NULL,
+    ADD PRIMARY KEY (id);
+
+ALTER TABLE settlements
+    ADD CONSTRAINT settlements_bank_account_id_foreign FOREIGN KEY (bank_account_id) REFERENCES bank_accounts(id);
+
+ALTER TABLE daily_settlements
+    ADD COLUMN service_tax INTEGER UNSIGNED AFTER fees;
+
+ALTER TABLE bank_accounts
+    MODIFY COLUMN beneficiary_mobile CHAR(11);
+
+ALTER TABLE payments
+    MODIFY COLUMN verified TINYINT(4);
+
+ALTER TABLE hdfc
+    MODIFY COLUMN error_text VARCHAR(255);
+
+ALTER TABLE merchants
+    ADD COLUMN features VARCHAR(255) AFTER transaction_report_email;
+
+ALTER TABLE hdfc
+    ADD COLUMN received TINYINT(1) AFTER action,
+    ADD INDEX hdfc_received_index (received);
+
+UPDATE merchant_banks
+    SET payzapp='1' WHERE mobikwik='1';
+
+ALTER TABLE merchant_banks
+    ADD COLUMN amex TINYINT(1) NOT NULL DEFAULT 0 AFTER card,
+    ADD COLUMN emi TINYINT(1) NOT NULL DEFAULT 0 AFTER banks,
+    ADD INDEX methods_amex_index (amex),
+    ADD INDEX methods_emi_index (emi);
+
+ALTER TABLE axis
+    ADD COLUMN ezeclick TINYINT(1) NOT NULL DEFAULT 0 AFTER amex,
+    ADD INDEX axis_ezeclick_index (ezeclick);
+
+ALTER TABLE payments
+    MODIFY COLUMN emi_plan_id VARCHAR(14);
+
+ALTER TABLE pricing
+    ADD COLUMN international TINYINT(1) NOT NULL DEFAULT 0 AFTER payment_issuer,
+    ADD INDEX pricing_international_index (international);
+
+ALTER TABLE payments
+    ADD COLUMN emi_plan_id VARCHAR(14) AFTER wallet;
+
+ALTER TABLE terminals
+    ADD COLUMN emi TINYINT(1) AFTER netbanking,
+    ADD COLUMN emi_duration INTEGER AFTER emi,
+    ADD INDEX terminals_emi_index (emi);
+
+ALTER TABLE iins
+    ADD COLUMN issuer_name VARCHAR(255) AFTER issuer,
+    ADD COLUMN emi TINYINT(1) NOT NULL DEFAULT 0 AFTER issuer_name;
+
+UPDATE iins
+    SET issuer_name=issuer;
+
+ALTER TABLE axis
+    MODIFY COLUMN vpc_Card VARCHAR(4);
+
+ALTER TABLE cards
+    ADD COLUMN issuer_name VARCHAR(255) AFTER issuer,
+    ADD COLUMN emi TINYINT(1) NOT NULL DEFAULT 0 AFTER issuer_name;
+
+ALTER TABLE netbanking
+    ADD INDEX netbanking_bank_payment_id_index (bank_payment_id);
+
+ALTER TABLE pricing
+    ADD COLUMN amount_range_active TINYINT(1) NOT NULL DEFAULT 0 AFTER international,
+    ADD COLUMN amount_range_min INTEGER UNSIGNED AFTER amount_range_active,
+    ADD COLUMN amount_range_max INTEGER UNSIGNED AFTER amount_range_min,
+    ADD INDEX pricing_amount_range_active_index (amount_range_active);
+
+UPDATE bank_accounts SET account_number="007805008260" WHERE merchant_id="4VUhFiV6029ARY";
+
+ALTER TABLE netbanking
+    ADD COLUMN status VARCHAR(255) AFTER int_payment_id;
+
+ALTER TABLE payments
+    ADD COLUMN order_id VARCHAR(14) AFTER status;
+
+UPDATE axis
+    SET vpc_Command="pay" WHERE vpc_Command="queryDR";
+ALTER TABLE payments
+    ADD CONSTRAINT payments_order_id_foreign FOREIGN KEY (order_id) REFERENCES orders(id);
+
+ALTER TABLE orders
+    MODIFY COLUMN authorized TINYINT(1) DEFAULT 0,
+    ADD INDEX orders_authorized_index (authorized);
+
+ALTER TABLE payments
+    ADD INDEX payments_method_index (method);
+
+ALTER TABLE iins
+    ADD COLUMN otp_read TINYINT(1) NOT NULL DEFAULT 0 AFTER emi,
+    ADD INDEX iins_emi_index (emi),
+    ADD INDEX iins_otp_read_index (otp_read);
+
+ALTER TABLE merchants
+    ADD COLUMN brand_color VARCHAR(6) AFTER features;
+
+ALTER TABLE cards
+    ADD COLUMN service VARCHAR(20) AFTER international,
+    ADD COLUMN token VARCHAR(50) AFTER service,
+    ADD INDEX cards_international_index (international);
+
+ALTER TABLE merchants
+    ADD COLUMN tdr_client TINYINT(1) UNSIGNED DEFAULT 0 AFTER features;
+
+ALTER TABLE merchants
+    CHANGE COLUMN tdr_client `fee_bearer` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0;
+
+ALTER TABLE merchants
+    ADD COLUMN risk_rating TINYINT(1) UNSIGNED NOT NULL AFTER brand_color,
+    ADD INDEX merchants_risk_rating_index (risk_rating);
+
+UPDATE merchants SET risk_rating = 3;
+
+UPDATE iins
+    SET type="credit" where iin in (559341, 559340, 530562, 524512, 524508, 405995);
+
+ALTER TABLE axis
+    ADD INDEX axis_vpc_ReceiptNo_index (vpc_ReceiptNo);
+
+ALTER TABLE refunds
+    ADD COLUMN notes TEXT AFTER currency;
+
+ALTER TABLE orders
+    ADD COLUMN notes TEXT AFTER receipt;
+
+ALTER TABLE merchants
+    DROP INDEX merchants_email_unique,
+    ADD INDEX merchants_email_index (email);
+
+DELETE FROM pricing
+    where id = "4jRr7VrCKEY4rY" or id="5Gd4xm6eNLP3tL";
+
+ALTER TABLE webhooks
+    ADD COLUMN secret VARCHAR(255) AFTER url;
+
+ALTER TABLE webhooks
+    MODIFY COLUMN secret TEXT;
+
+ALTER TABLE cards
+    ADD COLUMN vault VARCHAR(20) AFTER token,
+    ADD COLUMN vault_token VARCHAR(50) AFTER vault,
+    ADD INDEX cards_vault_token_index (vault_token),
+    ADD INDEX cards_vault_index (vault);
+
+UPDATE cards
+    SET vault=service, vault_token=token;
+
+ALTER TABLE payments
+    ADD COLUMN customer_id VARCHAR(14) AFTER error_description,
+    ADD COLUMN app_id VARCHAR(14) AFTER customer_id;
+
+ALTER TABLE orders
+    ADD COLUMN customer_id VARCHAR(14) AFTER receipt;
+
+ALTER TABLE payments
+    ADD COLUMN token VARCHAR(14) AFTER app_id,
+    ADD COLUMN save TINYINT(1) NOT NULL DEFAULT 0 AFTER service_tax;
+
+DELETE FROM pricing
+    WHERE id="4oSWwZchMqnDBW";
+
+ALTER TABLE orders
+    ADD COLUMN method VARCHAR(10) AFTER notes,
+    ADD COLUMN account_number VARCHAR(50) AFTER method;
+
+ALTER TABLE webhooks
+    ADD COLUMN last_successful_at INTEGER UNSIGNED AFTER failure_count;
+
+ALTER TABLE merchant_banks
+    ADD COLUMN netbanking TINYINT(1) NOT NULL DEFAULT 1 AFTER card,
+    ADD INDEX methods_netbanking_index (netbanking);
+
+ALTER TABLE cards
+    ADD COLUMN global_card_id VARCHAR(14) AFTER country,
+    ADD CONSTRAINT cards_global_card_id_foreign FOREIGN KEY (global_card_id) REFERENCES cards(id);
+
+ALTER TABLE tokens
+    ADD COLUMN terminal_id VARCHAR(14) AFTER merchant_id,
+    ADD CONSTRAINT token_terminal_id_foreign FOREIGN KEY (terminal_id) REFERENCES terminals(id);
+
+ALTER TABLE merchants
+    ADD COLUMN logo_url TEXT AFTER brand_color;
+
+ALTER TABLE transactions
+   ADD INDEX transactions_created_at_index (created_at);
+
+ALTER TABLE orders
+    ADD COLUMN bank VARCHAR(6) AFTER method;
+
+ALTER TABLE merchant_banks
+    ADD COLUMN payumoney TINYINT(1) AFTER payzapp;
+
+UPDATE merchant_banks
+    SET paytm=0, mobikwik=1, payzapp=1, payumoney=1 WHERE paytm=1;
+
+ALTER TABLE payments
+    ADD COLUMN otp_attempts TINYINT(1) AFTER service_tax,
+    ADD COLUMN otp_count TINYINT(1) AFTER otp_attempts;
+
+UPDATE cards
+    SET type = "debit" where network="RuPay" and type="unknown";
+
+UPDATE cards
+    SET type = "credit" where network="American Express" and type="unknown";
+
+UPDATE cards
+    SET type = "debit" where network="Maestro" and type="unknown";
+
+ALTER TABLE hdfc
+    MODIFY COLUMN enroll_result VARCHAR(20);
+
+ALTER TABLE settlements
+    ADD INDEX settlements_created_at_index (created_at);
+
+ALTER TABLE tokens
+    ADD COLUMN gateway_token2 VARCHAR(50) AFTER gateway_token,
+    ADD COLUMN expired_at INTEGER AFTER updated_at;
+
+UPDATE payments SET status="authorized", error_code=NULL, error_description=NULL, internal_error_code=NULL WHERE id="5WnlkFVOqZ2DZB"; # (only on live prod)
+
+ALTER TABLE customer_apps
+    CHANGE device_id device_token VARCHAR(50);
+
+ALTER TABLE payments
+    ADD COLUMN global_customer_id VARCHAR(14) AFTER customer_id,
+    ADD COLUMN app_token VARCHAR(14) AFTER app_id;
+
+ALTER TABLE terminals
+    ADD COLUMN gateway_recon_password VARCHAR(15) AFTER gateway_secure_secret;
+
+ALTER TABLE transactions
+    ADD COLUMN gateway_service_tax INTEGER AFTER gateway_fee;
+
+ALTER TABLE billdesk
+    ADD INDEX billdesk_RefundId_index (RefundId),
+    ADD INDEX billdesk_TxnReferenceNo_index (TxnReferenceNo),
+    ADD INDEX billdesk_BankReferenceNo_index (BankReferenceNo),
+    MODIFY COLUMN refund_id VARCHAR(14),
+    ADD INDEX billdesk_refund_id_index (refund_id);
+
+ALTER TABLE iins
+    ADD COLUMN created_at INTEGER,
+    ADD COLUMN updated_at INTEGER;
+
+## Set timestamp to 1st Jan 2015 here.
+
+UPDATE iins
+    SET created_at=1420070400, updated_at=1420070400;
+
+ALTER TABLE iins
+    ADD INDEX iins_created_at_index (created_at);
+
+ALTER TABLE tokens
+    ADD COLUMN deleted_at INTEGER;
+
+ALTER TABLE customers
+    ADD COLUMN deleted_at INTEGER;
+
+ALTER TABLE customer_apps
+    ADD COLUMN deleted_at INTEGER;
+
+## Syncs up test iins table with live iins table.
+use api-test;
+truncate iins;
+INSERT INTO `api-test`.iins SELECT * from api.iins;
+exit;
+
+ALTER TABLE axis
+    ADD INDEX vpc_3DSstatus_index (vpc_3DSstatus);
+
+ALTER TABLE terminals
+    MODIFY COLUMN gateway_recon_password TEXT;
+
+ALTER TABLE sessions
+    ADD COLUMN user_id INTEGER AFTER id,
+    ADD COLUMN ip_address VARCHAR(45) AFTER user_id,
+    ADD COLUMN user_agent TEXT AFTER ip_address;
+
+ALTER TABLE cybersource
+    CHANGE error_code reason_code INTEGER;
+
+DROP INDEX beneficiary_code ON bank_accounts;
+
+ALTER TABLE bank_accounts MODIFY COLUMN beneficiary_code VARCHAR(6);
+
+ALTER TABLE terminals ADD COLUMN gateway_acquirer VARCHAR(10) AFTER gateway_recon_password;
+
+ALTER TABLE transactions
+    ADD COLUMN gateway_settled_at INTEGER AFTER settled_at,
+    ADD INDEX gateway_settled_at_index (gateway_settled_at);
+
+## These payments were successful and had transactions but were erroneously marked as failed
+## due to lack of checks
+UPDATE payments SET status="captured", error_code=null, error_description=null WHERE id = "3pATJGnQjn8mTr";
+UPDATE payments SET status="captured", error_code=null, error_description=null WHERE id = "2mKynpq6sUkSmc";
+
+SELECT count(*) FROM transactions, payments, billdesk
+    WHERE transactions.entity_id = payments.id AND
+        payments.id = billdesk.payment_id AND
+        billdesk.action = "authorize" AND
+        billdesk.RefStatus = "0699" AND
+        payments.status = "refunded";
+
+UPDATE payments SET status = "captured", error_code=NULL, error_description=NULL, internal_error_code=NULL WHERE id = "5uvPsXKAB4Pl03"; # Only on live-prod
+UPDATE payments SET status = "captured", error_code=NULL, error_description=NULL, internal_error_code=NULL WHERE id = "5w7PTSGM2iPQJg"; # Only on live-prod
+
+UPDATE payments SET status = "captured", error_code=NULL, error_description=NULL, internal_error_code=NULL WHERE id = "5w5mYVbtBu14oT"; # Only on live-prod
+
+ALTER TABLE payments
+    ADD COLUMN global_token VARCHAR(14) AFTER token;
+
+ALTER TABLE mobikwik
+    MODIFY COLUMN merchantname VARCHAR(255);
+
+###    1. Saved payments with app token set but global_customer_id null
+    UPDATE payments
+    JOIN customer_apps as appTokens ON payments.app_token = appTokens.id
+    SET payments.global_customer_id=appTokens.customer_id
+    WHERE payments.app_token IS NOT NULL
+      AND payments.global_customer_id IS NULL
+      AND payments.method='card';
+
+###    2. Token to global token
+    UPDATE payments
+    JOIN tokens on tokens.token = payments.token
+    SET payments.global_token = payments.token
+    Where payments.app_token is not null
+    And payments.token is not null and payments.method='card'
+    AND tokens.merchant_id = "100000Razorpay";
+
+    UPDATE payments
+    JOIN tokens on tokens.token = payments.token
+    SET payments.token = null
+    Where payments.app_token is not null
+    And payments.token is not null and payments.method='card'
+    AND tokens.merchant_id = "100000Razorpay";
+
+###    3. Token not set for first time card save
+
+## For global card save
+    UPDATE payments
+        JOIN cards ON payments.card_id = cards.id
+        Join tokens on tokens.card_id = cards.global_card_id
+        SET payments.global_token=tokens.token
+        WHERE payments.save='1'
+          AND payments.method='card'
+          AND payments.app_token IS NOT NULL
+          AND payments.token IS NULL
+          AND payments.global_token IS NULL;
+
+## For local card save
+    UPDATE payments
+        Join tokens on tokens.card_id=payments.card_id and payments.customer_id=tokens.customer_id
+        SET payments.token=tokens.token
+        WHERE payments.save='1'
+          AND payments.method='card'
+          AND payments.customer_id IS NOT NULL
+          AND payments.token IS NULL;
+
+### 4. Global Token not set for payumoney
+    UPDATE payments
+        JOIN tokens ON tokens.customer_id=payments.global_customer_id
+        SET payments.global_token=tokens.token
+        WHERE payments.method='wallet'
+            AND payments.wallet='payumoney'
+            AND payments.global_token IS NULL
+            AND payments.global_customer_id is not null
+            AND tokens.method='wallet'
+            AND tokens.wallet='payumoney';
+
+
+UPDATE payments
+SET status = "failed",
+    authorized_at = null,
+    amount_authorized = 0,
+    error_code = "BAD_REQUEST_ERROR",
+    internal_error_code = "BAD_REQUEST_PAYMENT_DECLINED_BY_GATEWAY",
+    error_description = "Payment declined",
+    transaction_id = null
+WHERE id = "5vm1q5UUkMNCYH";
+
+# Only on prod-live
+UPDATE payments
+SET status='captured'
+WHERE id in ('5vkfFk2gMAsQQ6', '5vkhhaXpfnIP2P', '5voX4wVLTQL4Ah', '5vzwGGrIQDC1zq', '5vzy5jSwfkWT9p', '5wEya72LCrdJZt', '5wRxKnISzqvGHo');
+
+# Only on prod-live
+UPDATE payments
+SET captured_at = null
+WHERE id IN ('5wXvl50HNO3ASS', '5wd8gmtfNsbCxt', '5wFT796oZC1XYo', '5wcYDQIp8N69Xh');
+
+ALTER TABLE cybersource
+    ADD INDEX cybersource_ref_index (ref),
+    ADD INDEX cybersource_capture_ref_index (capture_ref);
+
+ALTER TABLE merchants
+    ADD COLUMN max_payment_amount INTEGER AFTER receipt_email_enabled;
+
+ALTER TABLE merchant_banks
+    ADD COLUMN debit_card TINYINT(1) DEFAULT 1 AFTER emi,
+    ADD COLUMN credit_card TINYINT(1) DEFAULT 1 AFTER debit_card;
+
+ALTER TABLE emi_plans
+    MODIFY COLUMN bank CHAR(4),
+    ADD COLUMN network VARCHAR(5) AFTER bank;
+
+ALTER TABLE merchant_banks
+    ADD COLUMN olamoney TINYINT(1) DEFAULT 0 AFTER payumoney,
+    ADD COLUMN freecharge TINYINT(1) DEFAULT 0 AFTER olamoney,
+    ADD INDEX merchant_banks_olamoney_index (olamoney),
+    ADD INDEX merchant_banks_freecharge_index (freecharge);
+
+update terminals set shared=1 where merchant_id=‘100000Razorpay’;
+
+ALTER TABLE payments
+    ADD COLUMN late_authorized TINYINT(1) AFTER save,
+    ADD INDEX payments_late_authorized_index (late_authorized);
+
+UPDATE payments
+    SET late_authorized = "1" WHERE (authorized_at - created_at) > 630;
+
+UPDATE merchant_banks
+    SET payumoney = "1" WHERE mobikwik = "1";
+
+ALTER TABLE tokens MODIFY gateway_token TEXT NULL;
+ALTER TABLE tokens MODIFY gateway_token2 TEXT NULL;
+
+ALTER TABLE bank_accounts
+    ADD COLUMN entity_id CHAR(14) AFTER merchant_id,
+    ADD COLUMN type CHAR(8) AFTER entity_id,
+    ADD INDEX bankaccounts_entity_id_index (entity_id),
+    ADD INDEX bankaccounts_type_index (type);
+
+UPDATE bank_accounts SET type = "merchant", entity_id = merchant_id;
+
+ALTER TABLE orders
+    DROP INDEX orders_receipt_index,
+    ADD INDEX orders_receipt_index (receipt(10)),
+    ADD COLUMN payment_capture TINYINT(1) DEFAULT 0 AFTER receipt;
+
+ALTER TABLE pricing
+    ADD COLUMN feature VARCHAR(20) AFTER plan_name;
+
+UPDATE pricing
+    SET feature = 'payment';
+
+ALTER TABLE pricing
+    MODIFY COLUMN feature VARCHAR(20) NOT NULL;
+
+ALTER TABLE terminals
+   ADD COLUMN recurring TINYINT(1) DEFAULT 0 AFTER emi_duration;
+
+## Only on prod
+UPDATE payments
+   SET status='captured', error_description=null, error_code=null, internal_error_code=null
+   WHERE id in ('6DUDCGfdf5A91W', '6EMWPIPIYLkOgc', '6EMb4XfFeVOdtU', '6EetvzeDKT8haB');
+
+## Only on prod
+UPDATE terminals SET category="6211" where id="6GjFUas4Aqs26l";
+
+ALTER TABLE payments
+   MODIFY COLUMN wallet VARCHAR(15);
+
+ALTER TABLE tokens
+   ADD COLUMN used_count INTEGER DEFAULT 0 AFTER gateway_token2,
+   ADD COLUMN used_at INTEGER UNSIGNED AFTER used_count;
+
+UPDATE payments
+   JOIN tokens on tokens.token = payments.token
+   SET token_id = tokens.id
+   WHERE payments.token_id IS NULL
+       AND payments.token IS NOT NULL;
+
+UPDATE payments
+   JOIN tokens on tokens.token = payments.global_token
+   SET global_token_id = tokens.id
+   WHERE payments.global_token_id IS NULL
+       AND payments.global_token IS NOT NULL;
+
+UPDATE tokens
+JOIN
+  (SELECT global_token_id AS token_id,
+          count(global_token_id) AS used_count,
+          max(created_at) AS used_at
+   FROM payments
+   WHERE global_token_id IS NOT NULL
+     AND payments.authorized_at IS NOT NULL
+   GROUP BY global_token_id) t1 ON t1.token_id=tokens.id
+SET tokens.used_count = t1.used_count,
+    tokens.used_at=t1.used_at;
+
+## Only in prod
+update payments set status='refunded' where id='6GQRe2XwaK8uLm';
+
+UPDATE tokens
+JOIN
+  (SELECT token_id,
+          count(token_id) AS used_count,
+          max(created_at) AS used_at
+   FROM payments
+   WHERE token_id IS NOT NULL
+     AND payments.authorized_at IS NOT NULL
+   GROUP BY token_id) t1 ON t1.token_id=tokens.id
+SET tokens.used_count = t1.used_count,
+    tokens.used_at=t1.used_at;
+
+ALTER TABLE payments
+    ADD COLUMN international TINYINT(1) AFTER order_id;
+
+UPDATE payments
+    JOIN cards on payments.card_id = cards.id
+    SET payments.international = cards.international
+    WHERE payments.method = 'card';
+
+ALTER TABLE merchant_banks
+    ADD COLUMN upi BOOLEAN DEFAULT 0 NOT NULL;
+
+ALTER TABLE terminals
+    ADD COLUMN upi BOOLEAN DEFAULT 0 NOT NULL;
+
+ALTER TABLE merchant_banks
+    CHANGE COLUMN upi upi TINYINT(1) DEFAULT 0 NOT NULL AFTER netbanking;
+
+ALTER TABLE terminals
+    CHANGE COLUMN upi upi TINYINT(1) DEFAULT 0 NOT NULL AFTER netbanking;
+
+ALTER TABLE `merchants`
+    ADD COLUMN `category2` VARCHAR(255) DEFAULT NULL AFTER `category`;
+
+ALTER TABLE `terminals`
+    ADD COLUMN `network_category` VARCHAR(255) DEFAULT NULL AFTER `category`;
+
+ALTER TABLE payments
+    ADD COLUMN vpa VARCHAR(100) AFTER wallet;
+
+ALTER TABLE terminals
+    ADD COLUMN enabled TINYINT(1) DEFAULT 1 NOT NULL AFTER network_category;
+
+ALTER TABLE payments
+    ADD COLUMN recurring TINYINT(1) DEFAULT 0 AFTER OTP_COUNT;
+
+ALTER TABLE tokens
+    ADD COLUMN recurring TINYINT(1) DEFAULT 0 AFTER gateway_token2;
+
+update settlements set status = 'failed' where id = '6IvkeDrStxAkKl';
+update settlements set status = 'failed' where id = '6JKIVhAOglWEzd';
+update settlements set status = 'failed' where id = '6KVt8W16z9wM2S';
+update settlements set status = 'failed' where id = '6KuQGTmk6bp0TM';
+update settlements set status = 'failed' where id = '6LhURyIav2Irt5';
