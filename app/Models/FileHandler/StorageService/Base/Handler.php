@@ -2,6 +2,8 @@
 
 namespace RZP\Models\FileHandler\StorageService\Base;
 
+use App;
+
 class Handler
 {
     protected $app;

@@ -16,11 +16,6 @@ class Handler extends Base\Handler
         $this->config = Config::get('aws');
     }
 
-    protected function getClient()
-    {
-        return AWS::createClient('s3');
-    }
-
     public function save($bucket, $name, $fullpath, $mime, $metadata = [])
     {
         $s3 = $this->getClient();
@@ -31,6 +26,7 @@ class Handler extends Base\Handler
 
             $result = $s3->putObject($s3Obj);
 
+            $this->trace()->info(TraceCode::AWS_FILE_UPLOAD, $s3Obj);
         }
         catch(\Exception $e)
         {
@@ -39,50 +35,45 @@ class Handler extends Base\Handler
             throw $e;
         }
 
-        $this->trace()->info(TraceCode::AWS_FILE_UPLOAD, $s3Obj);
 
         return $result['ObjectURL'];
     }
 
-    protected function getS3FetchObj($bucket, $key)
+    public function fetch()
     {
-        $s3Obj = [
-            'Bucket' => $bucket,
-            'Key'    => $key
-        ];
-
-        return $s3Obj;
-    }
-
-    protected function getS3SaveObj($bucket, $name, $fullpath, $mime, $metadata)
-    {
-        $s3Obj = $this->getS3FetchObj($bucket, $name);
-
-        $s3ContentObj = [
-            'ContentType' => $mime,
-            'SourceFile'  => $fullpath,
-            'Metadata'    => $metadata,
-        ];
-
-        $s3Obj = array_merge($s3Obj, $s3ContentObj);
-
-        return $s3Obj;
-    }
-
-    public function delete()
-    {
-        $s3 = $this->createClient();
+        $s3 = $this->getClient();
 
         try
         {
             $s3Obj = $this->getS3FetchObj($bucket, $key);
 
-            $this->trace()->info(TraceCode::AWS_FILE_DELETE, $s3Obj);
+            $s3Obj['SaveAs'] = $filePath;
+
+            $result = $s3->getObject($s3Obj);
+
+            $this->trace()->info(TraceCode::AWS_FILE_DOWNLOAD, $s3Obj);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace()->traceException($e);
+
+            throw $e;
+        }
+
+        return $filePath;
+    }
+
+    public function delete()
+    {
+        $s3 = $this->getClient();
+
+        try
+        {
+            $s3Obj = $this->getS3FetchObj($bucket, $key);
 
             $result = $s3->deleteObject($s3Obj);
 
-            $status = $result['DeleteMarker'];
-
+            $this->trace()->info(TraceCode::AWS_FILE_DELETE, $s3Obj);
         }
         catch(\Exception $e)
         {
@@ -91,7 +82,7 @@ class Handler extends Base\Handler
             throw $e;
         }
 
-        return $status;
+        return $result['DeleteMarker'];
     }
 
     public function getTemporaryUrl($bucket, $key, $duration = '15')
@@ -119,6 +110,36 @@ class Handler extends Base\Handler
         }
 
         return $presignedUrl;
+    }
+
+    protected function getClient()
+    {
+        return AWS::createClient('s3');
+    }
+
+    protected function getS3SaveObj($bucket, $name, $fullpath, $mime, $metadata)
+    {
+        $s3Obj = $this->getS3FetchObj($bucket, $name);
+
+        $s3ContentObj = [
+            'ContentType' => $mime,
+            'SourceFile'  => $fullpath,
+            'Metadata'    => $metadata,
+        ];
+
+        $s3Obj = array_merge($s3Obj, $s3ContentObj);
+
+        return $s3Obj;
+    }
+
+    protected function getS3FetchObj($bucket, $key)
+    {
+        $s3Obj = [
+            'Bucket' => $bucket,
+            'Key'    => $key
+        ];
+
+        return $s3Obj;
     }
 }
 ?>

@@ -10,13 +10,17 @@ class Service extends Base\Service
 
     protected $serviceProvider;
 
+    protected $core;
+
     public function __construct()
     {
-
+        $this->core = new Core;
     }
 
     protected function getStorageHandle($service)
     {
+        $class = 'RZP\Models\FileHandler\StorageService\\';
+
         if (is_null($this->serviceProvider) !== $service)
         {
             switch ($service)
@@ -37,22 +41,22 @@ class Service extends Base\Service
 
     public function create($input)
     {
-        $file = $input['file'];
+        $filePath = $input['filePath'];
 
-        unset($input['file']);
+        unset($input['filePath']);
 
         // TODO : add handler if multiple service provider are added in future
         $this->getStorageHandle('s3');
 
-        if (in_array($input, 'mime') === false)
+        if (in_array('mime', $input) === false)
         {
-            $input['mime'] = (new Helper)->getMimeType($file);
+            $input['mime'] = (new Helper)->getMimeType($filePath);
         }
 
         //TODO : choose proper bucket depending on entity type
         $bucket = 'rzp-test-bucket';
 
-        $url = $this->storageHandler->save($bucket, 'name', $file, $fileMime, []);
+        $url = $this->storageHandler->save($bucket, 'name', $filePath, $input['mime'], []);
 
         $input['url'] = $url;
 

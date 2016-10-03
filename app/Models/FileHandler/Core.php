@@ -15,7 +15,7 @@ class Core extends Base\Core
      */
     public function create($input)
     {
-        $fileHandler = (new FileHandler\Entity)->build($input);
+        $fileHandler = (new Entity)->build($input);
 
         $this->repo->saveOrFail($fileHandler);
 
