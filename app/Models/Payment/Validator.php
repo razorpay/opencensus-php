@@ -6,20 +6,18 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use Lib\PhoneBook;
 use RZP\Models\Base;
+use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\Processor\Wallet;
 
 class Validator extends Base\Validator
 {
-
-    const PHONEPE_VPA = 'ybl';
-
     protected static $createRules = array(
         'amount'                  =>  'required|integer',
         'currency'                =>  'required|size:3',
         'method'                  =>  'custom',
-        'vpa'                     =>  'required_if:method,upi|max:50|custom',
+        'vpa'                     =>  'required_if:method,upi|max:100|custom',
         'card'                    =>  'sometimes',
         'bank'                    =>  'required_if:method,netbanking',
         'wallet'                  =>  'required_if:method,wallet|custom',
@@ -36,6 +34,7 @@ class Validator extends Base\Validator
         'app_token'               =>  'sometimes',
         'token'                   =>  'sometimes',
         'save'                    =>  'sometimes|in:0,1',
+        'recurring'               =>  'sometimes_if:method,card|in:0,1',
         'fee'                     =>  'sometimes|integer|max:50000000',
         'service_tax'             =>  'sometimes|integer|max:50000000',
         '_'                       =>  'sometimes');
@@ -58,27 +57,31 @@ class Validator extends Base\Validator
         'fee',
         'contact');
 
-    protected function validateMethod($attribute, $value)
+    protected function validateMethod($attribute, $method)
     {
-       Method::validateMethod($value);
+        if (Method::isValid($method) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid payment method given: ' . $method);
+        }
     }
 
-    protected function validateVpa($attribute, $value)
+    protected function validateVpa($attribute, $vpa, $parameter)
     {
-        $matches = null;
-        preg_match('/^(\w.+)@([a-z]+)$/', $value, $matches);
+        $vpaParts = explode('@', $vpa);
 
-        if ((count($matches) !== 3))
+        if (count($vpaParts) !== 2)
         {
             // Invalid VPA
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA);
         }
 
-        if ($matches[2] === self::PHONEPE_VPA)
+        $merchantId = null;
+
+        if ($this->entity->getMerchantId() !== null)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_UPI_APP_NOT_SUPPORTED);
+            $merchantId = $this->entity->merchant->getId();
         }
     }
 
@@ -95,6 +98,13 @@ class Validator extends Base\Validator
     {
         if (($input['method'] !== Payment\Method::CARD) and
             ($input['method'] !== Payment\Method::EMI))
+        {
+            return;
+        }
+
+        if ((isset($input['recurring']) === true) and
+            ($input['recurring'] === '1') and
+            (empty($input['token']) === false))
         {
             return;
         }
@@ -147,6 +157,21 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'Amount exceeds maximum amount allowed.',
                 'amount');
+        }
+    }
+
+    public function validateCardAndCvv($input)
+    {
+        if (isset($input['card']) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_NOT_PROVIDED);
+        }
+
+        if (isset($input['card']['cvv']) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_CVV_NOT_PROVIDED);
         }
     }
 

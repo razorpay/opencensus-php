@@ -5,9 +5,7 @@ namespace RZP\Models\Admin;
 use RZP\Constants\Entity;
 use RZP\Models\Base;
 use RZP\Models;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
-use Gateway;
 
 class Service extends Base\Service
 {

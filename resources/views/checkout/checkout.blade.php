@@ -7,15 +7,11 @@
     <meta http-equiv="pragma" content="no-cache">
     <meta http-equiv="cache-control" content="no-cache">
     <meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">
-    <style>@font-face{font-family:'lato';src:url("<?= $font ?>.eot?#iefix") format('embedded-opentype'),url("<?= $font ?>.woff2") format('woff2'),url("<?= $font ?>.woff") format('woff'),url("<?= $font ?>.ttf") format('truetype'),url("<?= $font ?>.svg#lato") format('svg');font-weight:normal;font-style:normal}</style>
- </head>
-  <body>
-<?php
-if (isset($error))
-{
-?>
+  </head>
+  <body></body>
+  @if (isset($error))
     <script>
-      var error = <?= json_encode($error);?>;
+      var error = {!! json_encode($error) !!};
 
       function sendMessage(message){
         if(typeof window.CheckoutBridge == 'object'){
@@ -34,21 +30,19 @@ if (isset($error))
         })
       }
     </script>
-  </body>
-<?php
-}
-else
-{
-?>
-    <link rel="stylesheet" href="<?= $css ?>">
-  </body>
-  <script>
-    var fee_bearer  = <?= json_encode($preferences['fee_bearer']) ?>;
-    var preferences = <?= json_encode($preferences) ?>;
-  </script>
-  <script src="<?= $framejs ?>"></script>
-
-<?php
-}
-?>
+  @else
+    <style>@font-face{font-family:'lato';src:url("{{ $font }}.eot?#iefix") format('embedded-opentype'),url("{{ $font }}.woff2") format('woff2'),url("{{ $font }}.woff") format('woff'),url("{{ $font }}.ttf") format('truetype'),url("{{ $font }}.svg#lato") format('svg');font-weight:normal;font-style:normal}</style>
+    <link rel="stylesheet" href="{{ $css }}">
+    <script>
+      function appendScript(element){
+        var script = document.createElement('script');
+        script.src = element.src;
+        document.body.appendChild(script);
+      }
+      @if (isset($preferences))
+        var preferences = {!! json_encode($preferences) !!};
+      @endif
+    </script>
+    <script src="{{ $framejs }}" crossorigin onerror="appendScript(this)"></script>
+  @endif
 </html>

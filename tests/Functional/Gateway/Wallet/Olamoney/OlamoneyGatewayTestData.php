@@ -54,6 +54,16 @@ return [
         'received'              => true,
     ],
 
+    'testPaymentPartialRefund' => [
+        'amount'                => 16666,
+        'action'                => 'refund',
+        'wallet'                => 'olamoney',
+        'email'                 => 'a@b.com',
+        'contact'               => '+919918899029',
+        'status_code'           => 'success',
+        'received'              => true,
+    ],
+
     'testVerifyFailedPayment'   => [
         'response'  => [
             'content'     => [

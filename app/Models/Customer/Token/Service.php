@@ -136,9 +136,9 @@ class Service extends Base\Service
         return null;
     }
 
-    protected function deleteTokenForCustomer($token, $customer)
+    protected function deleteTokenForCustomer($tokenId, $customer)
     {
-        $token = $this->repo->token->getByTokenAndCustomerId($token, $customer->getId());
+        $token = (new Token\Core)->getByTokenAndCustomer($tokenId, $customer);;
 
         if ($token === null)
         {

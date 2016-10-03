@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
 use RZP\Models\Terminal\Shared;
+use RZP\Models\Base\UniqueIdEntity;
 
 class Terminal extends Base
 {
@@ -19,6 +20,7 @@ class Terminal extends Base
         $this->createSharedNetbankingHdfcTerminal();
         $this->createSharedNetbankingKotakTerminal();
         $this->createSharedCybersourceHdfcTerminal();
+        $this->createSharedCybersourceHdfcRecurringTerminals();
         $this->createSharedCybersourceAxisTerminal();
         $this->createSharedEbsTerminal();
     }
@@ -237,7 +239,27 @@ class Terminal extends Base
             'gateway_terminal_password' => 'razorpay_password',
             'gateway_access_code'       => 'random_access_code',
             'gateway_secure_secret'     => 'secret',
-            );
+        );
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedFreechargeTerminal(array $attributes = array())
+    {
+        $termId = \RZP\Models\Terminal\Shared::FREECHARGE_RAZORPAY_TERMINAL;
+
+        $attributes = array(
+            'id'                        => $termId,
+            'merchant_id'               => '1MercShareTerm',
+            'gateway'                   => 'wallet_freecharge',
+            'card'                      => 0,
+            'netbanking'                => 0,
+            'shared'                    => 1,
+            'gateway_merchant_id'       => 'freecharge_merchant',
+            'gateway_terminal_id'       => 'freecharge_terminal',
+            'gateway_terminal_password' => 'razorpay_password',
+            'gateway_secure_secret'     => 'secret',
+        );
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
@@ -267,7 +289,7 @@ class Terminal extends Base
     public function createSharedCybersourceHdfcTerminal(array $attributes = array())
     {
         $termId = \RZP\Models\Terminal\Shared::CYBERSOURCE_HDFC_TERMINAL;
-        $attributes = array(
+        $defaultValues = array(
             'id'                        => $termId,
             'merchant_id'               => '1MercShareTerm',
             'gateway'                   => 'cybersource',
@@ -281,7 +303,57 @@ class Terminal extends Base
             'gateway_secure_secret'     => 'secret',
         );
 
+        $attributes = array_merge($defaultValues, $attributes);
+
         return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createDynamicSharedCybersourceHdfcTerminal(array $attributes = [])
+    {
+        $defaultValues = array(
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'cybersource',
+            'card'                      => 1,
+            'netbanking'                => 0,
+            'shared'                    => 1,
+            'gateway_merchant_id'       => 'merchant_id',
+            'gateway_terminal_id'       => 'cybersource',
+            'gateway_terminal_password' => 'cybersource',
+            'gateway_access_code'       => '111111',
+            'gateway_secure_secret'     => 'secret',
+        );
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedCybersourceHdfcRecurringTerminals(array $attributes = array())
+    {
+        $attributes = array(
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'cybersource',
+            'card'                      => 1,
+            'netbanking'                => 0,
+            'shared'                    => 1,
+            'gateway_merchant_id'       => 'merchant_id',
+            'gateway_terminal_id'       => 'cybersource',
+            'gateway_terminal_password' => 'cybersource',
+            'gateway_access_code'       => '111111',
+            'gateway_secure_secret'     => 'secret',
+        );
+
+        // Add recurring 3ds terminal;
+        $attributes['id'] = '1RecurringTerm';
+        $attributes['recurring'] = 1;
+
+        $this->createEntityInTestAndLive('terminal', $attributes);
+
+        // Add recurring 3ds
+        $attributes['id'] = '2RecurringTerm';
+        $attributes['recurring'] = 2;
+
+        $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
     public function createSharedCybersourceAxisTerminal(array $attributes = array())
@@ -531,6 +603,22 @@ class Terminal extends Base
         $defaultValues = array(
             'id'                        => $termId,
             'merchant_id'               => '1MercShareTerm',
+            'gateway'                   => 'hdfc',
+            'card'                      => 1,
+            'gateway_merchant_id'       => 'razorpay hdfc',
+            'gateway_terminal_id'       => 'account hdfc',
+            'gateway_terminal_password' => 'razorpay_password',
+        );
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createDynamicSharedHdfcTerminal(array $attributes=[])
+    {
+        $defaultValues = array(
+            'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'hdfc',
             'card'                      => 1,
             'gateway_merchant_id'       => 'razorpay hdfc',
