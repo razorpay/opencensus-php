@@ -2,26 +2,20 @@
 
 namespace RZP\Reconciliator\Olamoney;
 
+use Carbon\Carbon;
 use RZP\Reconciliator\Base;
-use RZP\Reconciliator\Messenger;
+use RZP\Trace\TraceCode;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_PAYMENT_ID  = 'Unique Bill Id';
-    const COLUMN_SERVICE_TAX = 'Service Tax';
-    const COLUMN_FEE         = 'Tdr deducted in Rs';
-
-    protected $messenger;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->messenger = new Messenger();
-    }
+    const COLUMN_PAYMENT_ID         = 'Unique Bill Id';
+    const COLUMN_SERVICE_TAX        = 'Service Tax';
+    const COLUMN_FEE                = 'Tdr deducted in Rs';
+    const COLUMN_SETTLED_AT         = 'Date of Settlement';
+    const SETTLEMENT_DATE_FORMAT    = 'Y-m-d H:i:s.u';
 
     protected function getPaymentId($row)
     {
@@ -49,5 +43,37 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         $fee += $serviceTax;
 
         return round($fee);
+    }
+
+    protected function getGatewaySettledAt($row)
+    {
+        if (empty($row[self::COLUMN_SETTLED_AT]) === true)
+        {
+            return null;
+        }
+
+        $columnSettledAt = strtolower($row[self::COLUMN_SETTLED_AT]);
+
+        $gatewaySettledAt = null;
+
+        try
+        {
+            $gatewaySettledAt = Carbon::createFromFormat(self::SETTLEMENT_DATE_FORMAT, $columnSettledAt, 'Asia/Kolkata');
+            $gatewaySettledAt = $gatewaySettledAt->timestamp;
+        }
+        catch (\Exception $ex)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'    => TraceCode::RECON_INFO_ALERT,
+                    'message'       => 'Unable to parse settlement date -> ' . $ex->getMessage(),
+                    'row'           => $row,
+                    'gateway'       => get_called_class()
+                ]);
+
+            $this->app['trace']->traceException($ex);
+        }
+
+        return $gatewaySettledAt;
     }
 }
