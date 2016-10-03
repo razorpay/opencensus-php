@@ -37,7 +37,8 @@ class Entity extends Base\PublicEntity
         self::RATE,
         self::DURATION,
         self::METHODS,
-        self::MIN_AMOUNT);
+        self::MIN_AMOUNT,
+        self::ISSUER_PLAN_ID);
 
     protected $visible = array(
         self::ID,
