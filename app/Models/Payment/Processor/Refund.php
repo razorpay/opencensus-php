@@ -312,8 +312,8 @@ trait Refund
         catch (Exception\BaseException $e)
         {
             $this->tracePaymentFailed(
-                $e->getError(),
-                TraceCode::PAYMENT_VERIFY_REFUND_FAILURE);
+                    $e->getError(),
+                    TraceCode::PAYMENT_VERIFY_REFUND_FAILURE);
 
             throw $e;
         }
@@ -376,8 +376,8 @@ trait Refund
         catch (Exception\BaseException $e)
         {
             $this->tracePaymentFailed(
-                $e->getError(),
-                TraceCode::PAYMENT_REFUND_FAILURE);
+                    $e->getError(),
+                    TraceCode::PAYMENT_REFUND_FAILURE);
 
             throw $e;
         }

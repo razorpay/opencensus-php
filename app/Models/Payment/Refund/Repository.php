@@ -139,15 +139,6 @@ class Repository extends Base\Repository
         return $refunds;
     }
 
-    public function fetchRefundsForGateway2($gateway, $ts)
-    {
-        return $this->newQuery()
-            ->where(Payment\Entity::GATEWAY, '=', $gateway)
-            ->where(Payment\Entity::STATUS, '=', Payment\Status::REFUNDED)
-            ->where(Payment\Entity::CREATED_AT, '>', $ts)
-            ->get();
-    }
-
     /**
      * Join with the corresponding gateway and check that this particular payment
      * has no gateway entity for the refund.
@@ -196,7 +187,7 @@ class Repository extends Base\Repository
                                      ' JOIN ' . $gatewayTable . ' ON ' . $refundId . ' = ' . $gatewayRefundId .
                                  ')'
                          )
-                         ->toSql();
+                         ->get();
 
         return $response;
     }
