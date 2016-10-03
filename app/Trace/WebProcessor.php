@@ -54,6 +54,7 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
             'request_id'    => $this->request->getId(),
             'uri'           => $this->request->path(),
             'url'           => $this->request->fullUrl(),
+            'route'         => $this->request->route()->getName(),
             'method'        => $this->request->method(),
             'ajax'          => $this->request->ajax(),
             'origin'        => $this->request->header('origin'),
@@ -61,7 +62,8 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
             'server_ip'     => $this->request->server('SERVER_ADDR'),
             'referer'       => $this->request->headers->get('referer'),
             'user_agent'    => $this->request->server('HTTP_USER_AGENT'),
-            'console'       => $this->console);
+            'console'       => $this->console
+        );
 
         $userData = array(
             'dashboard'     => $this->request->headers->get('X-Dashboard'),
@@ -73,6 +75,8 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
 
         $this->unsetUrlForSensitiveUrls($serverData);
 
+        $this->cleanSensitiveUrls($serverData);
+
         return $serverData;
     }
 
@@ -83,6 +87,16 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
         if (in_array($serverData['uri'], $sensitiveUrls))
         {
             unset($serverData['url']);
+        }
+    }
+
+    protected function cleanSensitiveUrls(& $serverData)
+    {
+        $sensitiveRoutes = Route::getSensitiveRoutes();
+
+        if (in_array($serverData['route'], $sensitiveRoutes))
+        {
+            $serverData['url'] = explode('?', $serverData['url'], 2)[0];
         }
     }
 }
