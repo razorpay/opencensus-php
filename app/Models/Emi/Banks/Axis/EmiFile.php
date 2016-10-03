@@ -14,7 +14,11 @@ class EmiFile extends Base\EmiFile
 {
     protected static $fileToWriteName = 'Axis_Emi_File';
 
-    protected static $headers = array(
+    protected $emailIdsToSendTo = ['axiscards.emi@razorpay.com'];
+
+    protected $bankName  = 'Axis';
+
+    protected static $headers = [
         'Card Number',
         'Transaction Amount',
         'Transaction Date',
@@ -25,7 +29,7 @@ class EmiFile extends Base\EmiFile
         'Tenure',
         'Source',
         'EMI ID',
-    );
+    ];
 
     public function generate($input)
     {
@@ -34,36 +38,12 @@ class EmiFile extends Base\EmiFile
         // Axis wants the file to be in CSV format, but named with a .txt extension
         $urlExcel = $this->writeToCsvFile($txt, $this->getFileToWriteNameWithoutExt(), $this->getTextFullFilePath());
 
-        $this->sendAxisEmiFile();
-
-        return $urlExcel;
-    }
-
-    protected function sendAxisEmiFile()
-    {
-        $this->fetchAndSendPassword();
-
+        // Since the file name is in excel we use the txt f
         $fullPath = $this->getTextFullFilePath();
 
-        $zipFile = $this->getZippedFile($fullPath);
+        $this->sendEmiFile($fullPath);
 
-        $data['file'] = $zipFile;
-        $data['body'] = 'Please process the attached EMI file';
-
-        $this->mail->queue('emails.message', $data, function ($message) use ($data)
-        {
-            $emails = ['axiscards.emi@razorpay.com', 'settlements@razorpay.com'];
-
-            $message->from('emifiles@razorpay.com', 'Axis Emi File');
-
-            $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
-            $message->subject('Axis Emi File for ' . $today);
-
-            $message->to($emails);
-
-            $message->attach($data['file']);
-        });
+        return $urlExcel;
     }
 
     protected function getEmiData($input)
@@ -72,9 +52,9 @@ class EmiFile extends Base\EmiFile
 
         foreach ($input as $emiPayment)
         {
-            $emiTenure = (new Service)->fetch($emiPayment->getEmiPlanId())['duration'];
+            $emiTenure = $emiPayment->emiPlan['duration'];
 
-            $data[] = array(
+            $data[] = [
                 'Card Number'                  => $this->getCardNumber($emiPayment->card),
                 'Transaction Amount'           => $emiPayment->getAmount()/100,
                 'Transaction Date'             => $this->formattedDateFromTimestamp($emiPayment->getCaptureTimestamp()),
@@ -85,7 +65,7 @@ class EmiFile extends Base\EmiFile
                 'Tenure'                       => $emiTenure,
                 'Source'                       => 'Razorpay',
                 'EMI ID'                       => $emiPayment->getId(), // Non Mandatory, filling with our payment id
-            );
+            ];
         }
 
         return $data;
@@ -94,22 +74,5 @@ class EmiFile extends Base\EmiFile
     private function formattedDateFromTimestamp($timestamp)
     {
         return Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata')->format('d-M-Y');
-    }
-
-    protected function sendEmiPassword()
-    {
-        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-        $data['body'] = 'Axis Emi File Password for ' . $today . " is " . $this->emiFilePassword;
-
-        $this->mail->queue('emails.message', $data, function ($message) use ($data, $today)
-        {
-            $emails = ['axiscards.emi@razorpay.com'];
-
-            $message->from('emifiles@razorpay.com', 'Axis Emi File Password');
-
-            $message->subject('Axis Emi File Password for ' . $today);
-
-            $message->to($emails);
-        });
     }
 }
