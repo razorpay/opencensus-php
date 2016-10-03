@@ -126,6 +126,8 @@ class Parser extends Base\Core
     {
         if (isset($metadata[Entity::CHECKOUT_ID]) === false)
         {
+            $log[Entity::ATTEMPTS] = 1;
+
             return;
         }
 

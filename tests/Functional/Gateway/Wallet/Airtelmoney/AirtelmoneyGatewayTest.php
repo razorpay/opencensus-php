@@ -116,6 +116,20 @@ class AirtelmoneyGatewayTest extends TestCase
         $this->assertTestResponse($refund);
     }
 
+    public function testPartialRefundPayment()
+    {
+        $payment = $this->getDefaultWalletPaymentArray('airtelmoney');
+
+        $capturePayment = $this->doAuthAndCapturePayment($payment);
+
+        // Refund half the amount
+        $this->refundPayment($capturePayment['id'], $payment['amount']/2);
+
+        $refund = $this->getLastEntity('wallet', true);
+
+        $this->assertTestResponse($refund);
+    }
+
     public function testRefundFailedPayment()
     {
         $payment = $this->getDefaultWalletPaymentArray('airtelmoney');

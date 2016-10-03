@@ -136,31 +136,41 @@ class Activate extends Base\Core
             $rule['pricing_display'] = Pricing\Plan::formattedPricing($rule);
 
             // This just holds Wallet/Card/Net Banking as of now
-            $display = Payment\Method::formatted($rule['payment_method']);
+            $display = Payment\Method::formatted($rule[Pricing\Entity::PAYMENT_METHOD]);
 
             // This now holds Credit/Debit/All
-            $method = $rule['payment_method_type'] ? : 'Visa/MasterCard/Maestro';
+            $methodType = $rule[Pricing\Entity::PAYMENT_METHOD_TYPE] ? : 'Visa/MasterCard/Maestro';
 
-            // If we have a payment_network (such as AMEX/DICL)
-            if ($rule['payment_network'] !== null)
+            if ($rule[Pricing\Entity::PAYMENT_METHOD] === Payment\Method::CARD)
             {
-                // This becomes "American Express Cards"
-                $display = $rule['payment_network_name'] . ' Cards';
+                // If we have a payment_network (such as AMEX/DICL)
+                if ($rule[Pricing\Entity::PAYMENT_NETWORK] !== null)
+                {
+                    // This becomes "American Express Cards"
+                    $display = $rule[Pricing\Entity::PAYMENT_NETWORK_NAME] . ' Cards';
+                }
+                else if ($methodType !== null)
+                {
+                    $type = ' ';
+
+                    if ($rule[Pricing\Entity::INTERNATIONAL] === true)
+                    {
+                        $type .= 'International ';
+                    }
+
+                    // This is Credit/Debit/[ Visa/MasterCard/Maestro ] Cards
+                    $display = ucfirst($methodType) . $type . 'Cards';
+                }
             }
-            elseif (($method !== null) and
-                    ($rule['payment_method'] === 'card') and
-                    ($rule[Pricing\Entity::INTERNATIONAL] === true))
+            else if ($rule[Pricing\Entity::PAYMENT_METHOD] === Payment\Method::NETBANKING)
             {
-                // This is Credit/Debit/[ Visa/MasterCard/Maestro ] Cards
-                $display = ucfirst($method) . ' International Cards';
-            }
-            elseif ($method !== null and $rule['payment_method'] === 'card')
-            {
-                // This is Credit/Debit/[ Visa/MasterCard/Maestro ] Cards
-                $display = ucfirst($method) . ' Cards';
+                if ($rule[Pricing\Entity::PAYMENT_NETWORK] !== null)
+                {
+                    $display = $rule[Pricing\Entity::PAYMENT_NETWORK_NAME] . ' Net Banking';
+                }
             }
 
-            // Passing amount range rules seperately
+            // Passing amount range rules separately
             // Support currently for only one set of amountRangeRules
             if ($rule[Pricing\Entity::AMOUNT_RANGE_ACTIVE] === true)
             {
@@ -169,8 +179,8 @@ class Activate extends Base\Core
 
                 if ($amountRangeMin === 0)
                 {
-                    $amountRangeRules['low'] = $display.' Below INR '.
-                                $amountRangeMax.' - '.$rule['pricing_display'];
+                    $amountRangeRules['low'] = $display . ' Below INR ' .
+                                $amountRangeMax . ' - '.$rule['pricing_display'];
                 }
                 else
                 {

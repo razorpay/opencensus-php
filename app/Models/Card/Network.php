@@ -74,6 +74,11 @@ class Network
         self::UNP,
      );
 
+    public static $recurringNetworks = array(
+        self::VISA,
+        self::MC,
+    );
+
     public static $cvvLength = array(
         self::AMEX => 4);
 

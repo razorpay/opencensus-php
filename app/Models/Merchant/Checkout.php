@@ -32,7 +32,7 @@ class Checkout
 
         $this->checkAndFillAppTokenInputFromSession($merchant, $mode, $input);
 
-        $data = $this->getMerchantPreferencesData($merchant, $input);
+        $data = $this->getMerchantPreferencesData($merchant, $mode, $input);
 
         $data['methods'] = $this->getMethods($merchant, $input);
 
@@ -45,12 +45,14 @@ class Checkout
 
     protected function tracePreferencesRequest($merchant, $mode, $input)
     {
+        $sessionData = $this->app['request']->session()->all();
+
         $this->app['trace']->info(
             TraceCode::CHECKOUT_PREFERENCES_REQUEST,
             [
                 'merchant_id' => $merchant->getId(),
                 'mode'        => $mode,
-                'cookie'      => Session::getId(),
+                'session'     => $sessionData,
                 'input'       => $input
             ]);
     }
@@ -80,7 +82,10 @@ class Checkout
         {
             list($customer, $appToken) = (new Customer\Core)->getCustomerAndApp($input, $merchant);
 
-            assertTrue($customer !== null);
+            if ($customer === null)
+            {
+                return null;
+            }
 
             if ($customer->isLocal() === true)
             {
@@ -217,42 +222,31 @@ class Checkout
         }
      }
 
-    protected function getMerchantPreferencesData($merchant, $input)
+    protected function getMerchantPreferencesData($merchant, $mode, $input)
     {
         $data['options']['theme']['color'] = $merchant->getBrandColor();
+
         $data['options']['image'] = $merchant->getFullLogoUrlWithSize(self::CHECKOUT_LOGO_SIZE);
-        $data['options']['remember_customer'] = $this->shouldEnableCardSaving($merchant, $input);
+
+        $data['options']['remember_customer'] = $this->shouldEnableCardSaving($merchant, $mode, $input);
+
         $data['fee_bearer'] = $merchant->isFeeBearerCustomer();
+
         $data['version'] = 1;
 
         return $data;
     }
 
-    protected function shouldEnableCardSaving($merchant, $input)
+    protected function shouldEnableCardSaving($merchant, $mode, $input)
     {
         $rememberCustomer = $merchant->isFeatureEnabled(Features::CARD_SAVING);
 
-        // On few devices where browser is blocking cookies, disable card saving
-        if (isset($input['checkcookie']))
+        // if card saving is enabled, create a session and set a key
+        if ($rememberCustomer === true)
         {
-            $expectedValue = $input['checkcookie'];
+            $key = $mode . '_checkcookie';
 
-            $cookie = Request::cookie('checkcookie');
-
-            if (($expectedValue === '1') and ($expectedValue !== $cookie))
-            {
-                $this->app['trace']->info(
-                    TraceCode::CHECKOUT_PREFERENCES_COOKIE_CHECK,
-                    [
-                        'actual'           => $cookie,
-                        'expected'         => $expectedValue,
-                        'merchant_id'      => $merchant->getId(),
-                        'rememberCustomer' => $rememberCustomer,
-                    ]);
-
-                //uncomment this once we are sure its becuase of above mismatch
-                //return false;
-            }
+            $this->app['request']->session()->put($key, '1');
         }
 
         return $rememberCustomer;

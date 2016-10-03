@@ -53,6 +53,9 @@ class CreateMerchantBanks extends Migration {
             $table->tinyInteger(Methods::EMI)
                   ->default(0);
 
+            $table->boolean(Methods::FREECHARGE)
+                  ->default(0);
+
             $table->tinyInteger(Methods::CREDIT_CARD)
                   ->default(1);
 

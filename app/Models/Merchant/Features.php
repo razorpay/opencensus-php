@@ -13,6 +13,8 @@ class Features
     const S2SWALLET     = 's2swallet';
     const SETL_REPORT   = 'setl_report';
     const CARD_SAVING   = 'cardsaving';
+    const RECURRING     = 'recurring';
+    const S2S           = 's2s';
 
     const DELIMITER     = ',';
 
@@ -24,6 +26,8 @@ class Features
         self::S2SWALLET,
         self::SETL_REPORT,
         self::CARD_SAVING,
+        self::RECURRING,
+        self::S2S,
     );
 
     public static function validateFeatures($input)

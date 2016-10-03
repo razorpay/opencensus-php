@@ -514,11 +514,6 @@ class Service extends Base\Service
     {
         $file = (new BankAccount\BeneficiaryFile3)->generate();
 
-        //adding sleep to avoid overwriting of second format
-        sleep(10);
-
-        (new BankAccount\BeneficiaryFile2)->generate();
-
         return $file;
     }
 
@@ -564,11 +559,6 @@ class Service extends Base\Service
             (new BankAccount\BeneficiaryFile3)->generateBetweenTimestamps(
                                                         $from->timestamp,
                                                         $today->timestamp);
-
-            //adding sleep to avoid overwriting of second format
-            sleep(10);
-
-            (new BankAccount\BeneficiaryFile2)->generate();
         }
 
         $message = "Merchant Beneficiary file generated. Beneficiary added since".

@@ -8,6 +8,7 @@ use RZP\Models\Address;
 use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
@@ -154,6 +155,21 @@ class Service extends Base\Service
     public function fetchGlobalCustomerStatus($contact, $input, $sendOtp = false)
     {
         $data = ['saved' => false];
+
+        // send otp is true when called from the checkout, false if called from
+        // preferences, we need to find out for first case only
+        if ($sendOtp === true)
+        {
+            $sessionData = $this->app['request']->session()->all();
+
+            $this->trace->info(TraceCode::CUSTOMER_CHECKCOOKIE_STATUS,
+                [
+                    'session' => $sessionData
+                ]);
+
+            // return once this matches the mismatch cases.
+            // return $data;
+        }
 
         $merchant = $this->repo->merchant->getSharedAccount();
 
