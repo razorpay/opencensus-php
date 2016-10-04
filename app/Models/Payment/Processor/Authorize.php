@@ -1306,6 +1306,7 @@ trait Authorize
                 // TODO: Return metadata in a better format
                 'contact' => $payment->getContact(),
                 'amount'  => number_format(($payment->getAmount()/100), 2),
+                'wallet'  => $payment->getWallet()
             );
         }
         catch (Exception\BaseException $e)

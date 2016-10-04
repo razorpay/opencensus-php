@@ -1,0 +1,141 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width"/>
+  </head>
+  <body>
+    <link rel="stylesheet" type="text/css" href="ink.css">
+    <link rel="stylesheet" type="text/css" href="welcome.css">
+    <table class="row">
+      <tr>
+        <td class="wrapper">
+
+          <table class="four columns">
+            <tr>
+              <td class="center">
+                <img class="center" src="https://s3.amazonaws.com/checkout-live/logo.png">
+              </td>
+              <td class="expander"></td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+
+    <!-- Heading -->
+    <table class="row">
+      <tr>
+        <td class="wrapper last">
+
+          <table class="twelve columns">
+            <tr>
+              <td class="center">
+                <hr style="min-height:1px;height:1px;background:#d9d9d9;"><br>
+                <h1><center class="darktext lighter">
+                  {{{$subject}}}
+                </center></h1>
+              </td>
+              <td class="expander"></td>
+            </tr>
+          </table>
+
+        </td>
+      </tr>
+    </table>
+
+    <!-- Contact Us -->
+    <table class="container">
+      <tr>
+        <td>
+          <table class="row">
+            <tr>
+              <td class="wrapper offset-by-one">
+                <table class="ten columns">
+                  <tr>
+                    <td class="center">
+{!! $body !!}
+                    </td>
+                    <td class="expander"></td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+
+    <table class="row footer">
+      <tr>
+        <td class="wrapper last">
+
+          <table class="twelve columns">
+            <tr>
+              <td class="center">
+                <center>
+                  <hr>
+                  <a href="https://razorpay.com/terms/">Terms &amp; Conditions</a>
+                  |
+                  <a href="https://razorpay.com/privacy/">Privacy Policy</a>
+                  |
+                  <a href="https://razorpay.com/refund/">Refund Policy</a>
+                </center>
+              </td>
+              <td class="expander"></td>
+            </tr>
+          </table>
+
+        </td>
+      </tr>
+    </table>
+
+    <table class="row footer">
+      <tr>
+        <td class="wrapper last">
+
+          <table class="three columns offset-by-six">
+            <tr>
+              <td class="center">
+                <center>
+                  <a href="https://facebook.com/razorpay" class="logo">
+                    <img height="22" width="22" src="https://s3.amazonaws.com/checkout-live/facebook.png" alt="Facebook Icon" title="Razorpay on Facebook"/>
+                  </a>
+                  <a href="https://twitter.com/razorpay" class="logo">
+                    <img height="22" width="22" src="https://s3.amazonaws.com/checkout-live/twitter.png" alt="Twitter Icon" title="Razorpay on Twitter"/>
+                  </a>
+                  <a href="https://github.com/razorpay" class="logo">
+                    <img height="22" width="22" src="https://s3.amazonaws.com/checkout-live/github.png" alt="GitHub Icon" title="Razorpay on GitHub"/>
+                  </a>
+                </center>
+              </td>
+              <td class="expander"></td>
+            </tr>
+          </table>
+
+        </td>
+      </tr>
+    </table>
+
+    <table class="row footer">
+      <tr>
+        <td class="wrapper last">
+
+          <table class="seven columns">
+            <tr>
+              <td class="center">
+                <center>
+                  Reach out to us by replying to this email or at <a href="mailto:support@razorpay.com">
+                  support@razorpay.com</a>
+                </center>
+              </td>
+              <td class="expander"></td>
+            </tr>
+          </table>
+
+        </td>
+      </tr>
+    </table>
+
+  </body>
+</html>
