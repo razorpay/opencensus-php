@@ -8,41 +8,16 @@ use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
-    const maxImageSize = 1024*1024;
     protected static $createRules = array(
-        Entity::FILE => 'required|file',
+        Entity::FILE => 'required|file|mimes:xlsx|max:1024',
         Entity::TYPE => 'required|string|max:100|custom'
     );
-
-    const extensionMimeMap = array(
-        "xlsx"  => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    );
-
-    public function validateExtension($mimeType, $extension)
-    {
-        $acceptedMimeArray = self::extensionMimeMap;
-
-        // Checks if extension is defined in the array and if the extension and mime type match.
-        if ((!isset($acceptedMimeArray[$extension])) or
-            ($acceptedMimeArray[$extension] !== $mimeType))
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FILE_NOT_EXCEL);
-        }
-    }
-
-    public function validateSize($file)
-    {
-        if ($file->getClientSize() > self::maxImageSize)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FILE_TOO_BIG);
-        }
-    }
 
     protected function validateType($attribute, $type)
     {
         if (Type::exists($type) === false)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FILE_INVALID_TYPE);
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_TYPE);
         }
     }
 
@@ -52,7 +27,7 @@ class Validator extends Base\Validator
 
         if ($totalEntries > 1000)
         {
-           throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FILE_EXCEED_LIMIT);
+           throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BATCH_FILE_EXCEED_LIMIT);
         }
 
         $validator = 'validate' .ucfirst($type) .'Entries';
@@ -71,23 +46,23 @@ class Validator extends Base\Validator
 
             if (empty($paymentId) === true)
             {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FILE_INVALID_PAYMENT_ID);
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_PAYMENT_ID);
             }
 
             if (empty($amount) === true)
             {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FILE_INVALID_AMOUNT);
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_AMOUNT);
             }
 
             if ((is_numeric($amount) === false) or ($amount <= 0))
             {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FILE_INVALID_AMOUNT);
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_AMOUNT);
             }
 
             // Batch File should not contain multiple entries for the same payment id
             if(in_array($paymentId, $existingPaymentIds))
             {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FILE_DUPLICATE_PAYMENT_ID);
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BATCH_FILE_DUPLICATE_PAYMENT_ID);
             }
 
             array_push($existingPaymentIds, $paymentId);

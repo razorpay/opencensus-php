@@ -27,22 +27,13 @@ class Core extends Base\Core
         parent::__construct();
 
         $this->processor = new Processor;
+
         $this->mutex = $this->app['api.mutex'];
     }
 
     public function create($input)
     {
         $batch = (new Batch\Entity)->build($input);
-
-        $file = $input['file'];
-
-        $extension = $this->getExtension($file);
-
-        $mimeType = $file->getMimeType();
-
-        $batch->getValidator()->validateExtension($mimeType, $extension);
-
-        $batch->getValidator()->validateSize($file);
 
         $batch->merchant()->associate($this->merchant);
 
@@ -78,7 +69,7 @@ class Core extends Base\Core
             $this->trace->error(TraceCode::BATCH_RETRY_FAILURE, $batch->toArrayPublic());
 
             throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_FILE_ALREADY_PROCESSED);
+                    ErrorCode::BAD_REQUEST_BATCH_FILE_ALREADY_PROCESSED);
         }
 
         $batch->setStatus(Status::PROCESSING);

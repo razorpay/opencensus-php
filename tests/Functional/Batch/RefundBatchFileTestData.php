@@ -15,8 +15,10 @@ return [
         ],
         'response' => [
             'content' => [
-                'entity' => 'batch',
-                'status' => 'created',
+                'entity'      => 'batch',
+                'total_count' => 1,
+                'amount'      => 4000,
+                'status'      => 'created',
             ],
         ],
     ],
@@ -40,7 +42,7 @@ return [
         ],
         'exception' => [
             'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_FILE_INVALID_AMOUNT,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_AMOUNT,
         ],
     ],
 

@@ -24,8 +24,6 @@ class RefundBatchFileTest extends TestCase
         $this->testDataFilePath = __DIR__ . '/RefundBatchFileTestData.php';
 
         parent::setUp();
-
-        $this->ba->privateAuth();
     }
 
     public function testUploadRefundFile()
@@ -221,8 +219,8 @@ class RefundBatchFileTest extends TestCase
 
         $entries = [
             [
-            'Payment Id' => $payment['id'],
-            'Amount'    => 4000
+                'Payment Id' => $payment['id'],
+                'Amount'     => 4000
             ]
         ];
 
