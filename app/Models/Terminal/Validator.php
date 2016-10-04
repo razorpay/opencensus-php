@@ -77,6 +77,8 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID2        => 'required|string|min:5',
         Entity::GATEWAY_ACCESS_CODE         => 'required|alpha_num|min:5',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|alpha_num|min:5',
+        Entity::EMI                         => 'sometimes|boolean',
+        Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12',
     );
 
     protected static $amexTerminalRules = array(
