@@ -220,7 +220,9 @@ class Reconciler3
     {
         $msg = 'UTR File reconciled.' . PHP_EOL;
 
-        $msg .= 'Failure Count: ' . $response['failures_count'] . PHP_EOL;
+        $failureCount = $response['failures_count'];
+
+        $msg .= 'Failure Count: ' . $failureCount . PHP_EOL;
 
         if ($failureCount !== 0)
         {

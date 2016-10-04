@@ -83,7 +83,24 @@ class GatewayController extends Controller
         switch ($gateway)
         {
             case 'billdesk':
+                $data = $this->processS2SCallback($input, $gateway);
+                break;
+
             case 'wallet_olamoney':
+                $trace = $this->app['trace'];
+
+                $trace->info(
+                    TraceCode::GATEWAY_PAYMENT_CALLBACK,
+                    [
+                        'input'     => $input,
+                        'body'      => Request::getContent(),
+                        'headers'   => Request::header(),
+                        'gateway'   => $gateway,
+                    ]);
+
+                break;
+
+            case 'wallet_freecharge':
                 $data = $this->processS2SCallback($input, $gateway);
                 break;
 

@@ -34,6 +34,7 @@ class Entity
     const TERMINAL              = 'terminal';
     const CUSTOMER              = 'customer';
     const APP_TOKEN             = 'app_token';
+    const ADDRESS               = 'address';
     const ADJUSTMENT            = 'adjustment';
     const SETTLEMENT            = 'settlement';
     const TRANSACTION           = 'transaction';
@@ -70,6 +71,7 @@ class Entity
     const WALLET_PAYUMONEY      = 'wallet_payumoney';
     const WALLET_OLAMONEY       = 'wallet_olamoney';
     const WALLET_AIRTELMONEY    = 'wallet_airtelmoney';
+    const WALLET_FREECHARGE     = 'wallet_freecharge';
 
     public static $namespace = array(
         self::UPI                   => \RZP\Gateway\Upi\Base::class,
@@ -112,6 +114,7 @@ class Entity
         self::PAYMENT_ANALYTICS     => \RZP\Models\Payment\Analytics::class,
         self::GATEWAY_ABSENCE       => \RZP\Models\GatewayStatus\Absence::class,
         self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
+        self::WALLET_FREECHARGE     => \RZP\Gateway\Wallet\Freecharge::class,
     );
 
     protected static $repository = array(
@@ -122,6 +125,7 @@ class Entity
         self::WALLET_OLAMONEY    => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_PAYUMONEY   => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_PAYZAPP     => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_FREECHARGE  => \RZP\Gateway\Wallet\Base::class,
     );
 
     public static function getEntityNamespace($entity)
@@ -160,15 +164,15 @@ class Entity
         return new $class;
     }
 
-    public static function getEntityRepository($entity)
+    public static function getEntityRepository($entity, $repositoryType = 'Repository')
     {
-        $class = self::getEntityNamespace($entity) . '\Repository';
+        $class = self::getEntityNamespace($entity) . '\\' . $repositoryType;
 
         if (class_exists($class) === false)
         {
             if (isset(self::$repository[$entity]))
             {
-                $class = self::$repository[$entity] . '\Repository';
+                $class = self::$repository[$entity] . '\\' . $repositoryType;
             }
             else
             {
@@ -178,6 +182,11 @@ class Entity
         }
 
         return $class;
+    }
+
+    public static function getEntityEsRepository($entity)
+    {
+        return self::getEntityRepository($entity, 'EsRepository');
     }
 
     public static function validateIsEntity($entity)

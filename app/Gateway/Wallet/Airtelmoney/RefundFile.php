@@ -3,7 +3,7 @@
 namespace RZP\Gateway\Wallet\Airtelmoney;
 
 use Carbon\Carbon;
-use RZP\Gateway\Wallet\Base;
+use RZP\Gateway\Base;
 
 class RefundFile extends Base\RefundFile
 {

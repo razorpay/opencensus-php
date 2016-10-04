@@ -87,7 +87,7 @@ trait Authorize
         // Throw exception otherwise.
         //
 
-        assert((int) $this->model->enroll_result === Payment\Result::ENROLLED);
+        assertTrue((int) $this->model->enroll_result === Payment\Result::ENROLLED);
 
         if ($this->model->status !== Status::ENROLLED)
         {

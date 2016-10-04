@@ -265,8 +265,7 @@ trait Capture
 
             $this->payment = $paymentCopy;
 
-            $this->updatePaymentFailed(
-                    $ex, TraceCode::PAYMENT_CAPTURE_FAILURE);
+            $this->updatePaymentFailed($ex, TraceCode::PAYMENT_CAPTURE_FAILURE);
 
             throw $ex;
         }

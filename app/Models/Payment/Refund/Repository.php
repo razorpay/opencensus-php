@@ -14,6 +14,10 @@ class Repository extends Base\Repository
 
     protected $entity = 'refund';
 
+    protected $entityFetchParamRules = array(
+        Entity::PAYMENT_ID      => 'sometimes|alpha_num|max:14',
+    );
+
     protected $proxyFetchParamRules = [
         Entity::NOTES           => 'sometimes|string|max:500',
     ];
@@ -57,7 +61,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function findBetweenTimesampsForGateway($from, $to, $gateway)
+    public function findBetweenTimestampsForGateway($from, $to, $gateway)
     {
         return $this->newQuery()
                     ->join('payments', 'refunds.payment_id', '=', 'payments.id')

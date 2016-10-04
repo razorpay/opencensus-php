@@ -23,6 +23,8 @@ class Gateway extends Base\Gateway
 
     protected $gateway = 'billdesk';
 
+    const CHECKSUM_ATTRIBUTE = 'Checksum';
+
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -101,7 +103,7 @@ class Gateway extends Base\Gateway
             throw $e;
         }
 
-        assert($content['CustomerID'] === $input['payment']['id']);
+        assertTrue($content['CustomerID'] === $input['payment']['id']);
 
         return $this->getCallbackResponseData($content);
     }
@@ -475,15 +477,15 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected function getContentAfterChecksumVerification($msg)
+    protected function getContentAfterChecksumVerification($responseBody)
     {
         $fields = $this->getFieldsForAction($this->action);
 
         $this->trace->info(
             TraceCode::GATEWAY_CHECKSUM_VERIFY,
-            [$msg]);
+            [$responseBody]);
 
-        $content = explode('|', $msg);
+        $content = explode('|', $responseBody);
 
         $content = array_combine($fields, $content);
 
@@ -553,24 +555,6 @@ class Gateway extends Base\Gateway
         return $payment;
     }
 
-    protected function verifySecureHash($content)
-    {
-        $hash = $content['Checksum'];
-        unset($content['Checksum']);
-
-        $generatedHash = $this->getHashOfArray($content);
-
-        if ($generatedHash !== $hash)
-        {
-            $this->trace->info(
-                TraceCode::GATEWAY_CHECKSUM_VERIFY,
-                [$content, $hash, $generatedHash]);
-
-            throw new Exception\BadRequestValidationFailureException(
-                'Failed checksum verification');
-        }
-    }
-
     public function getMessageStringWithHash($content)
     {
         $str = $this->getStringToHash($content, '|');
@@ -596,7 +580,10 @@ class Gateway extends Base\Gateway
     {
         $request = $this->getRequestArray($content);
 
-        $request['options']['proxy'] = 'https://splunk.razorpay.com:8888';
+        if ($this->proxyEnabled === true)
+        {
+            $request['options']['proxy'] = $this->proxy;
+        }
 
         return $request;
     }
@@ -616,7 +603,7 @@ class Gateway extends Base\Gateway
         $msg = $this->getMessageStringWithHash($content);
 
         $this->trace->info(
-            TraceCode::GATEWAY_CHECKSUM_VERIFY,
+            TraceCode::GATEWAY_CHECKSUM_VERIFY_REQUEST,
             [$msg]);
 
         $request = array(

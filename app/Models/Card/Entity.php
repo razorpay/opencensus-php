@@ -394,6 +394,15 @@ class Entity extends Base\PublicEntity
         return ($network === Card\Network::$fullName[Card\Network::RUPAY]);
     }
 
+    public function isRecurringSupported()
+    {
+        $isCreditCard = ($this->getType() === Card\Type::CREDIT);
+
+        $isSupportedNetwork = in_array($this->getNetworkCode(), Card\Network::$recurringNetworks);
+
+        return (($isCreditCard == true) and ($isSupportedNetwork == true));
+    }
+
     public function isBlocked()
     {
         $iin = $this->getIin();
@@ -416,9 +425,9 @@ class Entity extends Base\PublicEntity
         $emi = $this->getAttribute(self::EMI);
 
         $attributes = array(
-            self::EXPIRY_MONTH      => $this->getAttribute(self::EXPIRY_MONTH),
-            self::EXPIRY_YEAR       => $this->getAttribute(self::EXPIRY_YEAR),
-            self::EMI               => $emi
+            self::EXPIRY_MONTH => $this->getAttribute(self::EXPIRY_MONTH),
+            self::EXPIRY_YEAR  => $this->getAttribute(self::EXPIRY_YEAR),
+            self::EMI          => $emi
         );
 
         if ($emi === true)

@@ -3,7 +3,10 @@
 namespace RZP\Models\Card\IIN\Import;
 
 use Excel;
+
+use RZP\Base\RuntimeManager;
 use RZP\Exception;
+
 /**
  * This class extracts the data from the file and return the column names
  * and the rows.
@@ -30,9 +33,10 @@ class XLSFileHandler
 
     public function getCsvData($file)
     {
-        set_time_limit(3000);
-        ini_set('max_execution_time', 6000);
-        ini_set('memory_limit', '2048M');
+        RuntimeManager::setMemoryLimit('2048M');
+        RuntimeManager::setTimeLimit(3000);
+        RuntimeManager::setMaxExecTime(6000);
+
         $fileHandler = fopen($file,"r");
         $ret = array();
         while(! feof($fileHandler))
@@ -126,9 +130,9 @@ class XLSFileHandler
      */
     protected function parse($filePath)
     {
-        set_time_limit(300);
-        ini_set('max_execution_time',600);
-        ini_set('memory_limit', '1024M');
+        RuntimeManager::setMemoryLimit('1024M');
+        RuntimeManager::setTimeLimit(300);
+        RuntimeManager::setMaxExecTime(600);
 
         // The Laravel Excel Reader crashed due to some unknown reason
         // So, using the internal PHPExecl object

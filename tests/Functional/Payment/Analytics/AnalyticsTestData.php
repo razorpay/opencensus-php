@@ -4,7 +4,7 @@ return [
 
     'testPaymentAnalytics' => [
         'user_agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
-        'referer' => 'https://razorpay.com/demo',
+        'referer' => 'https://pay.com/demo',
         'browser' => 'chrome',
         'os' => 'macos',
         'device' => 'desktop',
@@ -18,7 +18,7 @@ return [
 
     'testPaymentAnalyticsOtp' => [
         'user_agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
-        'referer' => 'https://razorpay.com/demo',
+        'referer' => 'https://pay.com/demo',
         'browser' => 'chrome',
         'os' => 'macos',
         'device' => 'desktop',
@@ -38,4 +38,13 @@ return [
         'os_version' => '11.0',
         'device' => 'mobile',
     ],
+
+    'testHttpRequestDataForInvalidData' => [
+        'browser' => 'others',
+        'os' => 'others',
+        'device' => 'others',
+        'library' => 'others',
+        'platform' => 'others',
+        'integration' => 'others',
+    ]
 ];

@@ -234,7 +234,7 @@ class ErrorCode
         Hdfc\ErrorCode::GV00001   => 'Unknown VPAS version',
         Hdfc\ErrorCode::GV00002   => 'Cardholder not enrolled',
         Hdfc\ErrorCode::GV00003   => 'Not a VPAS Card',
-        Hdfc\ErrorCode::GV00004   => 'PARes status not sucessful',
+        Hdfc\ErrorCode::GV00004   => 'PARes status not successful',
         Hdfc\ErrorCode::GV00005   => 'Certificate chain validation failed',
         Hdfc\ErrorCode::GV00006   => 'Certificate chain validation error',
         Hdfc\ErrorCode::GV00007   => 'Signature Validation failed',

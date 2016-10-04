@@ -261,6 +261,61 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function doS2SPrivateAuthPayment($payment = null)
+    {
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $request = array(
+            'method' => 'POST',
+            'url' => '/payments/create/redirect',
+            'content' => $payment);
+
+        if (isset($server))
+        {
+            $request['server'] = $server;
+        }
+
+        $this->ba->privateAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
+    protected function doS2SRecurringPayment($payment = null)
+    {
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $request = array(
+            'method' => 'POST',
+            'url' => '/payments/create/recurring',
+            'content' => $payment);
+
+        if (isset($server))
+        {
+            $request['server'] = $server;
+        }
+
+        $this->ba->privateAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
+    protected function doS2SPrivateAuthAndCapturePayment($payment = null)
+    {
+        $paymentAuth = $this->doS2SPrivateAuthPayment($payment);
+
+        return $this->capturePayment($paymentAuth['razorpay_payment_id'], $payment['amount']);
+    }
+
     protected function doAuthWalletPayment($payment = null, $wallet = 'paytm')
     {
         if ($payment === null)
@@ -323,6 +378,19 @@ trait PaymentTrait
         return $this->sendRequest($request);
     }
 
+    protected function makeS2SCallbackAndGetContent($content)
+    {
+        $request = [
+            'url'    => '/callback/' . $this->gateway,
+            'method' => 'post',
+            'raw'    => $content
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
     protected function topupPayment($id)
     {
         $request = array(
@@ -362,6 +430,21 @@ trait PaymentTrait
         }
 
         return $this->getJsonContentFromResponse($response);
+    }
+
+    protected function getPaymentStatus($id)
+    {
+        $request = [
+            'method'    => 'GET',
+            'url'       => '/payments/'.$id.'/status',
+            'content'   => []
+        ];
+
+        $this->ba->publicAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
     }
 
     protected function getOtp()
@@ -655,6 +738,17 @@ trait PaymentTrait
             'expiry_year'       => '2017',
             'cvv'               => '566',
         );
+
+        return $payment;
+    }
+
+    protected function getDefaultRecurringPaymentArray()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['recurring'] = true;
+
+        $payment['customer_id'] = 'cust_100000customer';
 
         return $payment;
     }
@@ -1010,6 +1104,8 @@ trait PaymentTrait
                        ->mock();
 
         $this->setMockServer($server);
+
+        return $server;
     }
 
     protected function mockServer()

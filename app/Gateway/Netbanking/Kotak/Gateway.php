@@ -187,13 +187,13 @@ class Gateway extends Base\Gateway
 
     protected function validateCallbackChecksum($content)
     {
-        $expectedHash = $content['Checksum'];
+        $inputHash = $content['Checksum'];
 
         unset($content['Checksum']);
 
-        $generatedHash = $this->getHashOfArray($content);
+        $expectedHash = $this->getHashOfArray($content);
 
-        if ($expectedHash !== $generatedHash)
+        if (hash_equals($expectedHash, $inputHash)  !== true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Failed checksum verification');

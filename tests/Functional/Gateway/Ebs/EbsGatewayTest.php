@@ -116,7 +116,8 @@ class EbsGatewayTest extends TestCase
 
         $data = $this->testData['testHackedPayment'];
 
-        $this->runRequestResponseFlow($data, function() use ($payment) {
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
             $payment = $this->doAuthPayment($payment);
         });
     }
@@ -139,6 +140,71 @@ class EbsGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('ebs', true);
         $this->assertTestResponse($refund);
+    }
+
+    public function testPaymentPartialRefund()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray('ANDB');
+        $payment = $this->doAuthPayment($payment);
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertArraySelectiveEquals(
+            $this->testData['testTransactionAfterAuthorize'], $txn);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('txn_'.$payment['transaction_id'], $txn['id']);
+
+        $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
+
+        $this->refundPayment($payment['id'], 40000);
+
+        $refund = $this->getLastEntity('ebs', true);
+
+        $this->assertTestResponse($refund);
+    }
+
+    public function testPaymentMultiplePartialRefund()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray('ANDB');
+        $payment = $this->doAuthPayment($payment);
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertArraySelectiveEquals(
+            $this->testData['testTransactionAfterAuthorize'], $txn);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('txn_'.$payment['transaction_id'], $txn['id']);
+
+        $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
+
+        $this->refundPayment($payment['id'], 40000);
+
+        $this->refundPayment($payment['id'], 10000);
+
+        $refund = $this->getLastEntity('ebs', true);
+
+        $this->assertTestResponse($refund);
+    }
+
+    public function testPaymentMultipleInvalidPartialRefund()
+    {
+        $data = $this->testData['testPaymentMultipleInvalidPartialRefund'];
+
+        $payment = $this->getDefaultNetbankingPaymentArray('ANDB');
+
+        $payment = $this->doAuthPayment($payment);
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('txn_'.$payment['transaction_id'], $txn['id']);
+
+        $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
+
+        $this->refundPayment($payment['id'], 40000);
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->refundPayment($payment['id'], 40000);
+        });
     }
 
     public function testPaymentRefundWithoutCapture()

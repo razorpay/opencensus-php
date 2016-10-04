@@ -32,6 +32,13 @@ class Gateway
     const OTP_ATTEMPTS_LIMIT = 3;
 
     /**
+     * In gateway responses one particular field contains
+     * hash or checksum. This variable will contain that field
+     * name.
+     */
+    const CHECKSUM_ATTRIBUTE = '';
+
+    /**
      * The application instance.
      *
      * @var \Illuminate\Foundation\Application
@@ -225,6 +232,37 @@ class Gateway
         $this->mock = $mock;
     }
 
+    protected function getHashValueFromContent(array $content)
+    {
+        return $content[static::CHECKSUM_ATTRIBUTE];
+    }
+
+    protected function verifySecureHash(array $content)
+    {
+        $actual = $this->getHashValueFromContent($content);
+
+        unset($content[static::CHECKSUM_ATTRIBUTE]);
+
+        $generated = $this->generateHash($content);
+
+        $this->compareHashes($actual, $generated);
+    }
+
+    protected function compareHashes($actual, $generated)
+    {
+        if (hash_equals($actual, $generated) === false)
+        {
+            $this->trace->info(
+                TraceCode::GATEWAY_CHECKSUM_VERIFY_FAILED,
+                [
+                    'actual'    => $actual,
+                    'generated' => $generated
+                ]);
+
+            throw new Exception\RuntimeException('Failed checksum verification');
+        }
+    }
+
     public function generateRefunds($input)
     {
         $paymentIds = array_map(function($row)
@@ -369,8 +407,19 @@ class Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_REQUEST,
             [
-                'request' => $request,
-                'gateway' => $this->gateway,
+                'request'    => $request,
+                'gateway'    => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+            ]);
+    }
+
+    protected function traceGatewayPaymentResponse($response, $input)
+    {
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_RESPONSE,
+            [
+                'response'   => $response,
+                'gateway'    => $this->gateway,
                 'payment_id' => $input['payment']['id'],
             ]);
     }
@@ -518,6 +567,8 @@ class Gateway
         $this->config = $this->app['config']->get($configGatewayStr);
 
         $this->proxy = $this->app['config']->get('gateway.proxy_address');
+
+        $this->proxyEnabled = $this->app['config']->get('gateway.proxy_enabled');
     }
 
     protected function getFormValues($form, $url)

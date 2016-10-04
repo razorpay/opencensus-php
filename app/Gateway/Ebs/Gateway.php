@@ -23,6 +23,8 @@ class Gateway extends Base\Gateway
     const MERCHANT_ID  = 'test_merchant_id';
     const HASH_SECRET  = 'test_hash_secret';
 
+    const CHECKSUM_ATTRIBUTE = Resp::SECURE_HASH;
+
     const API          = 'api';
 
     protected $gateway = 'ebs';
@@ -66,7 +68,7 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $this->repo->findByPaymentIdAndAction(
             $input['payment'][Payment\Entity::ID], Action::AUTHORIZE);
 
-        assert(($gatewayPayment[Entity::ERROR_CODE] === null) or
+        assertTrue(($gatewayPayment[Entity::ERROR_CODE] === null) or
                ($gatewayPayment[Entity::ERROR_CODE] === '0'));
     }
 
@@ -78,7 +80,7 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             ['gateway' => $input['gateway']]);
 
-        $this->validateCallbackGetSecureHash($input['gateway'], $input['terminal']);
+        $this->verifySecureHash($input['gateway']);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment'][Payment\Entity::ID], Action::AUTHORIZE);
@@ -742,22 +744,6 @@ class Gateway extends Base\Gateway
         }
 
         return parent::getUrlDomain();
-    }
-
-    protected function validateCallbackGetSecureHash(array $content, $terminal)
-    {
-        $hash = $content[Resp::SECURE_HASH];
-
-        // Remove secureHash Value to calculate Expected Hash Value
-        unset($content[Resp::SECURE_HASH]);
-
-        $expectedHash = $this->getHashOfArray($content);
-
-        if ($hash !== $expectedHash)
-        {
-            throw new Exception\LogicException(
-                'Checksum verification failed');
-        }
     }
 
     protected function getAuthorizeAttributesForPaymentEntity($content)

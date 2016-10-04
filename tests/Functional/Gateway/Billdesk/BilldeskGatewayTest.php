@@ -166,4 +166,47 @@ class BilldeskGatewayTest extends TestCase
 
         $this->assertEquals($payment['status'], 'authorized');
     }
+
+    public function testPaymentPartialRefund()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $this->refundPayment($payment['id'], 40000);
+
+        $refund = $this->getLastEntity('billdesk', true);
+
+        $this->assertTestResponse($refund);
+    }
+
+    public function testPaymentMultiplePartialRefund()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $this->refundPayment($payment['id'], 40000);
+
+        $this->refundPayment($payment['id'], 10000);
+
+        $refund = $this->getLastEntity('billdesk', true);
+
+        $this->assertTestResponse($refund);
+    }
+
+    public function testPaymentMultipleInvalidPartialRefund()
+    {
+        $data = $this->testData['testPaymentMultipleInvalidPartialRefund'];
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $this->refundPayment($payment['id'], 40000);
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->refundPayment($payment['id'], 40000);
+        });
+    }
 }

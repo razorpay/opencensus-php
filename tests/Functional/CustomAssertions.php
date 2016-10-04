@@ -22,6 +22,7 @@ trait CustomAssertions
         {
             $this->validateEntity($actual);
         }
+
         foreach ($expected as $key => $value)
         {
             if (is_array($value))

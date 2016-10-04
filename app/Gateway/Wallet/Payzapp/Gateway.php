@@ -105,7 +105,7 @@ class Gateway extends Base\Gateway
 
         $mappedPayment = $this->getReverseMappedAttributes($payment->toArray());
 
-        $this->verifySecureHash($input, $mappedPayment);
+        $this->verifyGatewaySecureHash($input, $mappedPayment);
 
         $attrs = $this->getMappedAttributes($input['gateway']);
         $attrs['received'] = true;
@@ -574,14 +574,13 @@ class Gateway extends Base\Gateway
         return $secret;
     }
 
-
-    protected function verifySecureHash($input, $payment)
+    protected function verifyGatewaySecureHash(array $input, $payment)
     {
-        $generatedHash = $this->generateCallbackSecureHash($input, $payment);
+        $generated = $this->generateCallbackSecureHash($input, $payment);
 
         if (isset($input['gateway']['msgHash']))
         {
-            $hash = $input['gateway']['msgHash'];
+            $actual = $input['gateway']['msgHash'];
         }
         else
         {
@@ -595,11 +594,7 @@ class Gateway extends Base\Gateway
             );
         }
 
-        if ($generatedHash !== $hash)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                                    'Failed checksum verification');
-        }
+        $this->compareHashes($actual, $generated);
     }
 
     protected function generateCallbackSecureHash($input, $payment)
@@ -610,9 +605,7 @@ class Gateway extends Base\Gateway
         $content['merAppData'] = '';
         $content['txnCurrency'] = '356';
 
-        $generatedHash = $this->getHashForAuthorizeResponse($content);
-
-        return $generatedHash;
+        return $this->getHashForAuthorizeResponse($content);
     }
 
     /**

@@ -12,6 +12,7 @@ use RZP\Models\Customer;
 use RZP\Models\Customer\Token;
 use RZP\Models\Emi;
 use RZP\Models\Payment;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Status;
 use RZP\Models\Transaction;
@@ -42,6 +43,13 @@ trait Callback
      */
     public function callback($id, $hash, array $gatewayInput)
     {
+        $this->trace->info(
+            TraceCode::PAYMENT_CALLBACK_REQUEST,
+            [
+                'gateway_input' => $gatewayInput,
+                'payment_id'    => $id,
+            ]);
+
         $payment = $this->retrieve($id);
 
         // For redirect flow
@@ -52,7 +60,6 @@ trait Callback
         // Kinda weird! And it's always null.
         //
         unset($gatewayInput['csrf']);
-
         $this->verifyHash($hash, $payment->getPublicId());
 
         if ($payment->isCreated() === false)
@@ -133,6 +140,8 @@ trait Callback
         }
 
         $this->processPaymentCallback($payment, $gatewayInput);
+
+        $this->autoCapturePaymentIfApplicable($payment);
 
         return ['success' => true];
     }
@@ -280,5 +289,13 @@ trait Callback
         }
 
         throw $e;
+    }
+
+    protected function checkForMerchantCallbackUrl($payment)
+    {
+        if ($payment->getCallbackUrl() !== null)
+        {
+            $this->app['rzp.merchant_callback_url'] = $payment->getCallbackUrl();
+        }
     }
 }

@@ -6,6 +6,7 @@ use RZP\Constants\Mode;
 use Carbon\Carbon;
 use Mail;
 
+use RZP\Base\RuntimeManager;
 use RZP\Models\Base;
 use RZP\Models\BankAccount;
 use RZP\Models\Merchant;
@@ -513,11 +514,6 @@ class Service extends Base\Service
     {
         $file = (new BankAccount\BeneficiaryFile3)->generate();
 
-        //adding sleep to avoid overwriting of second format
-        sleep(10);
-
-        (new BankAccount\BeneficiaryFile2)->generate();
-
         return $file;
     }
 
@@ -563,11 +559,6 @@ class Service extends Base\Service
             (new BankAccount\BeneficiaryFile3)->generateBetweenTimestamps(
                                                         $from->timestamp,
                                                         $today->timestamp);
-
-            //adding sleep to avoid overwriting of second format
-            sleep(10);
-
-            (new BankAccount\BeneficiaryFile2)->generate();
         }
 
         $message = "Merchant Beneficiary file generated. Beneficiary added since".
@@ -591,8 +582,8 @@ class Service extends Base\Service
      */
     public function sendDailyReportForAllMerchants()
     {
-        ini_set('memory_limit', '1024M');
-        set_time_limit(300);
+        RuntimeManager::setMemoryLimit('1024M');
+        RuntimeManager::setTimeLimit(300);
 
         // Trace to indicate start of mailing
         $this->trace->info(
@@ -670,8 +661,8 @@ class Service extends Base\Service
 
     public function notifyMerchantsHoliday($input)
     {
-        ini_set('memory_limit', '1024M');
-        set_time_limit(300);
+        RuntimeManager::setMemoryLimit('1024M');
+        RuntimeManager::setTimeLimit(300);
 
         $this->trace->info(TraceCode::MERCHANT_NOTIFY_HOLIDAY);
 

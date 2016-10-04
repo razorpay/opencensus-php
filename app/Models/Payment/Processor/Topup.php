@@ -27,8 +27,7 @@ trait Topup
         }
         catch (Exception\BaseException $e)
         {
-            $this->updatePaymentFailed(
-                    $e, TraceCode::PAYMENT_TOPUP_FAILURE);
+            $this->updatePaymentFailed($e, TraceCode::PAYMENT_TOPUP_FAILURE);
 
             throw $e;
         }
@@ -45,7 +44,7 @@ trait Topup
             return $this->getPaymentGatewayRequestData($request, $payment);
         }
 
-        assert(false, 'Should not reach here.');
+        assertTrue(false, 'Should not reach here.');
     }
 
     protected function validateTopupFlow($payment, $input)
@@ -94,6 +93,11 @@ trait Topup
         $gatewayInput['payment']  = $payment->toArray();
 
         $gatewayInput['customer'] = $payment->globalCustomer;
+
+        if ($payment->analytics !== null)
+        {
+            $gatewayInput['analytics'] = $payment->analytics->toArray();
+        }
 
         $gatewayInput['callbackUrl'] = $this->getCallbackUrl();
     }

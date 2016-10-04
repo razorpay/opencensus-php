@@ -30,6 +30,7 @@ return array(
         'wallet_payzapp',
         'wallet_payumoney',
         'wallet_airtelmoney',
+        'wallet_freecharge',
     ),
 
     'mock_amex'               => env('AMEX_MOCK'),
@@ -51,6 +52,7 @@ return array(
     'mock_wallet_payumoney'   => env('PAYUMONEY_MOCK'),
     'mock_wallet_airtelmoney' => env('AIRTELMONEY_MOCK'),
     'mock_upi_icici'          => env('UPI_ICICI_MOCK'),
+    'mock_wallet_freecharge'  => env('FREECHARGE_MOCK'),
 
     'hdfc' => array(
         'test_terminal_id'  => env('HDFC_GATEWAY_TEST_TERMINAL_ID'),
@@ -162,6 +164,11 @@ return array(
         'live_hash_secret' => env('AIRTELMONEY_WALLET_LIVE_HASH_SECRET'),
     ),
 
+    'wallet_freecharge' => array(
+        'test_hash_secret'      => env('FREECHARGE_WALLET_TEST_HASH_SECRET'),
+        'test_merchant_id'      => env('FREECHARGE_WALLET_TEST_MERCHANT_ID'),
+    ),
+
     'netbanking_hdfc' => array(
         'live_hash_secret'  => env('NETBANKING_HDFC_GATEWAY_LIVE_HASH_SECRET'),
     ),
@@ -179,6 +186,7 @@ return array(
         'test_hash_secret'  => env('SBIEPAY_GATEWAY_TEST_HASH_SECRET'),
     ),
 
+    'proxy_enabled' => env('PROXY_ENABLED'),
 
-    'proxy_address' => 'https://splunk.razorpay.com:8888',
+    'proxy_address' => env('PROXY_ADDRESS'),
 );

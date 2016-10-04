@@ -345,6 +345,18 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
+        // TODO: remove these after gateway manager driver are fixed
+
+        $this->inquiryRequest['data'] = [];
+        $this->inquiryRequest['xml'] = '';
+        $this->inquiryRequest['error'] = null;
+
+        $this->inquiryResponse['data'] = [];
+        $this->inquiryResponse['xml'] = '';
+        $this->inquiryResponse['error'] = null;
+
+        $this->error = false;
+
         $verify = new Base\Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
@@ -524,9 +536,9 @@ class Gateway extends Base\Gateway
 
     protected function checkResponseStatusCode(& $response)
     {
-        $status_code = (int) $response['response']->status_code;
+        $statusCode = (int) $response['response']->status_code;
 
-        if ($status_code >= 500)
+        if ($statusCode >= 500)
         {
             if ($this->checkForServiceUnavailability($response) === true)
             {
@@ -534,7 +546,7 @@ class Gateway extends Base\Gateway
             }
             else
             {
-                Hdfc\ErrorHandler::setGatewayWrongStatusCode($response, $status_code);
+                Hdfc\ErrorHandler::setGatewayWrongStatusCode($response, $statusCode);
             }
 
             $this->error = true;
@@ -548,6 +560,10 @@ class Gateway extends Base\Gateway
         if (strpos($contentType, 'application/xml') === false)
         {
             Hdfc\ErrorHandler::setGatewayWrongContentType($response, $contentType);
+
+            $this->trace->info(
+                TraceCode::GATEWAY_VERIFY_INVALID_HEADER,
+                $contentType);
 
             $this->error = true;
         }

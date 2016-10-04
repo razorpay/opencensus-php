@@ -24,9 +24,9 @@ class CreateAxisGateway extends Migration
 
             $table->char('payment_id', UniqueIdEntity::ID_LENGTH);
             $table->string('action', 10);
-            $table->boolean('received')->default(0);
-            $table->boolean('genius')->default(0);
-            $table->boolean('amex')->default(0);
+            $table->tinyInteger('received')->default(0);
+            $table->tinyInteger('genius')->default(0);
+            $table->tinyInteger('amex')->default(0);
 
             $table->integer('vpc_Amount');
             $table->string('vpc_AcqResponseCode', 4)->nullable();
