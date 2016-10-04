@@ -14,7 +14,7 @@ class CreateGatewayAbsence extends Migration
      */
     public function up()
     {
-        Schema::create(Table::GATEWAYSTATUS_ABSENCE, function(Blueprint $table) {
+        Schema::create(Table::GATEWAY_STATUS_ABSENCE, function(Blueprint $table) {
             $table->engine = 'InnoDB';
 
             $table->char(DowntimeTrace::ID, DowntimeTrace::ID_LENGTH);
@@ -22,14 +22,14 @@ class CreateGatewayAbsence extends Migration
             $table->string(DowntimeTrace::GATEWAY, 255);
 
             $table->string(DowntimeTrace::BANK, 255)
-                    ->nullable();
+                  ->nullable();
 
             $table->integer(DowntimeTrace::FROM);
 
             // TO is optional, but we still need a value here
             // keeping this to max time possible ~ Infinite time
             $table->integer(DowntimeTrace::TO)
-                    ->default(DowntimeTrace::END_OF_TIME);
+                  ->default(DowntimeTrace::END_OF_TIME);
 
             $table->integer(DowntimeTrace::CREATED_AT);
 
@@ -41,7 +41,7 @@ class CreateGatewayAbsence extends Migration
             $table->index(DowntimeTrace::GATEWAY);
 
             $table->unique(array(DowntimeTrace::GATEWAY, DowntimeTrace::FROM, DowntimeTrace::TO));
-            
+
         });
     }
 
@@ -52,6 +52,6 @@ class CreateGatewayAbsence extends Migration
      */
     public function down()
     {
-        Schema::drop(Table::GATEWAYSTATUS_ABSENCE);
+        Schema::drop(Table::GATEWAY_STATUS_ABSENCE);
     }
 }

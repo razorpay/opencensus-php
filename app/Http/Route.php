@@ -255,8 +255,6 @@ final class Route
         'gateway_update_absence'                  => ['put',      'gateway/absence/{id}',                     'GatewayController@putUpdateGatewayAbsence'                         ],
         'gateway_delete_absence'                  => ['delete',   'gateway/absence/{id}',                     'GatewayController@deleteGatewayAbsence'                            ],
         'gateway_fetch_absence'                   => ['get',      'gateway/absence',                          'GatewayController@getAbsentGateways'                               ],
-        'refund_gateway_manual'                   => ['post',     'refunds/{ids}/gateway',                    'PaymentController@postManualGatewayRefund'                         ],
-        'order_refund_multiple_authorized'        => ['post',     'orders/payments/refund',                   'PaymentController@postRefundMultipleAuthorizedPaymentsForOrders'   ],
         'scorecard'                               => ['get',      'scorecard',                                'AdminController@getScorecard'                                      ],
     );
 
@@ -462,7 +460,6 @@ final class Route
         'gateway_update_absence',
         'gateway_delete_absence',
         'gateway_fetch_absence',
-        'refund_gateway_manual',
         'order_refund_multiple_authorized',
         'scorecard',
     );

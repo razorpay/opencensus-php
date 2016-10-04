@@ -204,8 +204,8 @@ class GatewayController extends Controller
 
     /**
      * Method to create a gateway absence entity
-     * @param string $gateway
      * @return \Symfony\Component\HttpFoundation\Response
+     * @internal param string $gateway
      */
     public function postCreateGatewayAbsence()
     {

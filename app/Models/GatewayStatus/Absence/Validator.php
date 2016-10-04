@@ -27,14 +27,14 @@ class Validator extends Base\Validator
 
     public function validateGateway($input)
     {
-        $gateway = $input['gateway'];
+        $gateway = $input[Entity::GATEWAY];
 
-        $status = Gateway::isValidGateway($gateway);
+        $valid = Gateway::isValidGateway($gateway);
 
-        if($status === false)
+        if ($valid === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Gateway ['.$gateway.'] does not exist');
+                'Gateway [' . $gateway . '] does not exist');
         }
     }
 }

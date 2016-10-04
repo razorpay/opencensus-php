@@ -10,12 +10,6 @@ class Repository extends Base\Repository
 
     protected $entity = 'gateway_absence';
 
-    // These are merchant allowed params to search on. These also act as default params.
-    protected $entityFetchParamRules = array(
-        Entity::GATEWAY        => 'sometimes|string|max:255',
-        Entity::BANK           => 'sometimes|string|max:255'
-    );
-
     // These are proxy allowed params to search on.
     protected $appFetchParamRules = array(
         Entity::GATEWAY        => 'sometimes|string|max:255',

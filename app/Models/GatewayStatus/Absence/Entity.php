@@ -16,7 +16,6 @@ class Entity extends Base\PublicEntity
     const CREATED_AT                    = 'created_at';
     const UPDATED_AT                    = 'updated_at';
 
-
     protected $fillable = array(
         self::GATEWAY,
         self::FROM,
@@ -38,7 +37,7 @@ class Entity extends Base\PublicEntity
 
     const END_OF_TIME = 2147483647;
 
-    protected $table = Table::GATEWAYSTATUS_ABSENCE;
+    protected $table = Table::GATEWAY_STATUS_ABSENCE;
 
     protected $entity = 'gateway_absence';
 

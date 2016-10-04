@@ -13,7 +13,6 @@ class Service extends Base\Service
         $downWindow = (new Absence\Core)->create($input);
 
         return $downWindow->toArrayPublic();
-
     }
 
     public function edit($id, array $input)
@@ -38,7 +37,7 @@ class Service extends Base\Service
         }
         catch(\Exception $e)
         {
-            $this->trace->error(TraceCode::GATEWAY_ABSENCE, ['Delete Error' => $e->getMessage()]);
+            $this->trace->error(TraceCode::GATEWAY_ABSENCE_DELETE, ['Delete Error' => $e->getMessage()]);
 
             throw $e;
         }
