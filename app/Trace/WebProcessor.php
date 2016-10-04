@@ -82,7 +82,7 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
 
         if (in_array($serverData['uri'], $sensitiveUrls))
         {
-            unset($serverData['url']);
+            $serverData['url'] = explode('?', $serverData['url'], 2)[0];
         }
     }
 }
