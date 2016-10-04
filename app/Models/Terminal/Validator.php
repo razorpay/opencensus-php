@@ -28,6 +28,7 @@ class Validator extends Base\Validator
         Entity::UPI                         => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
         Entity::SHARED                      => 'sometimes|boolean',
+        Entity::RECURRING                   => 'sometimes|in:0,2',
         Entity::GATEWAY_ACQUIRER            => 'sometimes|string|max:30',
         Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
     );
@@ -96,6 +97,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID         => 'required|string|max:20',
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
         Entity::GATEWAY_ACQUIRER            => 'required|string',
+        Entity::RECURRING                   => 'sometimes|in:0,1,2',
     );
 
     protected static $axisMigsEditTerminalRules = array(
@@ -139,11 +141,19 @@ class Validator extends Base\Validator
         Entity::GATEWAY                     => 'required|in:wallet_olamoney',
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
         Entity::GATEWAY_ACCESS_CODE         => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
     );
 
     protected static $walletAirtelmoneyTerminalRules = array(
         Entity::GATEWAY                     => 'required|in:wallet_airtelmoney',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+    );
+
+    protected static $walletFreechargeTerminalRules = array(
+        Entity::GATEWAY                     => 'required|in:wallet_freecharge',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET       => 'required|string',
     );
 
     protected function validateGateway($input)
@@ -195,15 +205,19 @@ class Validator extends Base\Validator
 
     public function validateExistingTerminalsCount($existingTerminals)
     {
+        $newTerminal = $this->entity;
+
         $count = $existingTerminals->count();
 
         // Check count does not exceed max terminals count
-        if ($count > Entity::MAX_TERMINALS_COUNT)
+        if (($newTerminal->getMerchantId() !== Merchant\Account::SHARED_ACCOUNT) and
+            ($count > Entity::MAX_TERMINALS_COUNT))
         {
             throw new Exception\LogicException(
                 'Terminal count should not exceed max count');
         }
-        else if ($count === Entity::MAX_TERMINALS_COUNT)
+        else if (($newTerminal->getMerchantId() !== Merchant\Account::SHARED_ACCOUNT) and
+                 ($count === Entity::MAX_TERMINALS_COUNT))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_GATEWAY_TERMINAL_MAX_LIMIT_REACHED);
@@ -245,7 +259,8 @@ class Validator extends Base\Validator
         if (($new->getGateway() === $existing->getGateway()) and
             ($new->getId() !== $existing->getId()) and
             ($new->isEmiEnabled() === $existing->isEmiEnabled()) and
-            ($new->getEmiDuration() === $existing->getEmiDuration()))
+            ($new->getEmiDuration() === $existing->getEmiDuration()) and
+            ($new->getRecurring() === $existing->getRecurring()))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY);

@@ -20,15 +20,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_EDU_CESS    = 'EDUCESS';
     const COLUMN_FEE         = 'COMMISSION AMT';
 
-    protected $messenger;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->messenger = new Messenger();
-    }
-
     protected function getPaymentId($row)
     {
         $paymentId = $row[self::COLUMN_PAYMENT_ID];

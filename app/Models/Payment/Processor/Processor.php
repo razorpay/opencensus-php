@@ -76,6 +76,7 @@ class Processor
     protected $trace;
     protected $payment;
     protected $terminal;
+    protected $selectedTerminals;
     protected $mode;
     protected $repo;
     protected $orderRepo;

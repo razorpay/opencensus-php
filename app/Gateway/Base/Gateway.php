@@ -407,8 +407,19 @@ class Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_REQUEST,
             [
-                'request' => $request,
-                'gateway' => $this->gateway,
+                'request'    => $request,
+                'gateway'    => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+            ]);
+    }
+
+    protected function traceGatewayPaymentResponse($response, $input)
+    {
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_RESPONSE,
+            [
+                'response'   => $response,
+                'gateway'    => $this->gateway,
                 'payment_id' => $input['payment']['id'],
             ]);
     }
@@ -551,6 +562,8 @@ class Gateway
         $this->config = $this->app['config']->get($configGatewayStr);
 
         $this->proxy = $this->app['config']->get('gateway.proxy_address');
+
+        $this->proxyEnabled = $this->app['config']->get('gateway.proxy_enabled');
     }
 
     protected function getFormValues($form, $url)

@@ -245,12 +245,25 @@ return [
         ],
     ],
 
+    'testDeleteCustomerTokenById' => [
+        'request' => [
+            'url' => '/customers/cust_100000customer/tokens/token_1000custwallet',
+            'method' => 'delete',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testAddCustomerTokenCard' => [
         'request' => [
             'url' => '/customers/cust_100000customer/tokens',
             'method' => 'post',
             'content' => [
-                'method' => 'card',
+                'method'  => 'card',
                 'card_id' => '10000savedcard',
             ],
         ],

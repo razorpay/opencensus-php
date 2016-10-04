@@ -275,6 +275,7 @@ $factory(\RZP\Models\Customer\Token\Entity::class, [
     'method'      => 'wallet',
     'bank'        => null,
     'card_id'     => null,
+    'recurring'   => false,
     'used_count'  => 0,
 ]);
 
@@ -290,4 +291,11 @@ $factory(\RZP\Models\Merchant\Credits\Entity::class, [
     'merchant_id'   => '10000000000000',
     'value'         => 150,
     'campaign'      => 'silent-ads',
+]);
+
+$factory(\RZP\Gateway\Wallet\Base\Entity::class, [
+    'id'            => '12345',
+    'amount'        => 0,
+    'contact'       => '9918899029',
+    'email'         => 'a@b.com',
 ]);

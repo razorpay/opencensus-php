@@ -46,6 +46,7 @@ class Base
         'bank_account'  => \RZP\Models\BankAccount\Entity::class,
         'credits'       => \RZP\Models\Merchant\Credits\Entity::class,
         'address'       => \RZP\Models\Address\Entity::class,
+        'wallet'        => \RZP\Gateway\Wallet\Base\Entity::class,
     );
 
     protected static $liveAndTest = array(
