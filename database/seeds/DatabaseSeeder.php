@@ -128,8 +128,11 @@ class DatabaseSeeder extends Seeder
                     'id'            =>  Account::TEST_ACCOUNT,
                     'created_at'    =>  time(),
                     'updated_at'    =>  time(),
-                    )
-                );
+                    'balance'       =>  100000,
+                    'credits'       =>  50000,
+                    'on_hold'       =>  10000,
+                )
+            );
 
             DB::table(Table::MERCHANT)->insert(
                 array(
