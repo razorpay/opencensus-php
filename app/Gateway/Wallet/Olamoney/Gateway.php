@@ -15,7 +15,9 @@ use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Wallet\Base\Action;
 use RZP\Gateway\Wallet\Base\Entity;
 use RZP\Http\Route;
+use RZP\Models\Payment;
 use RZP\Models\Payment\Status as PaymentStatus;
+use RZP\Models\Payment\TwoFaStatus;
 use RZP\Constants\HashAlgo;
 use Carbon\Carbon;
 
@@ -172,11 +174,21 @@ class Gateway extends Base\Gateway
 
             $errorCode = ResponseCode::getApiErrorCode($message);
 
-            throw new Exception\GatewayErrorException(
+            $exception = new Exception\GatewayErrorException(
                 $errorCode,
                 $content[ResponseFields::STATUS],
                 $message);
+
+            if ($this->getTwoFaStatus($message) === Payment\TwoFaStatus::FAILED)
+            {
+                $exception->markTwoFaError();
+            }
+
+            throw $exception;
         }
+
+        // set two-fa status as passed
+        $data[Payment\Entity::TWO_FA_STATUS] = Payment\TwoFaStatus::PASSED;
 
         return $data;
     }
@@ -259,6 +271,11 @@ class Gateway extends Base\Gateway
         $gatewayPaymentAttrs = $this->getCreateWalletAttributes($input, $content);
 
         $this->createGatewayPaymentEntity($gatewayPaymentAttrs, Action::AUTHORIZE);
+    }
+
+    protected function getTwoFaStatus($message)
+    {
+        return ResponseCode::getTwoFaStatus($message);
     }
 
     protected function getDebitRequestArray($input)

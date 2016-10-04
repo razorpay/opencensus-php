@@ -92,6 +92,10 @@ class OlamoneyGatewayTest extends TestCase
             $this->doAuthPayment($payment);
         });
 
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('failed', $payment['two_fa_status']);
+
         $wallet = $this->getLastEntity('wallet', true);
 
         $this->assertNull($wallet);

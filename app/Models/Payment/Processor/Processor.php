@@ -426,7 +426,8 @@ class Processor
 
         $payment->setError($code, $desc, $internalCode);
 
-        if (($e instanceof Exception\GatewayErrorException) and ($e->hasTwoFaError()))
+
+        if (($exception instanceof Exception\GatewayErrorException) and ($exception->hasTwoFaError()))
         {
             $payment->setTwoFaStatus(Payment\TwoFaStatus::FAILED);
         }
@@ -452,6 +453,11 @@ class Processor
         $payment = $this->payment;
 
         $payment->setInternalErrorCode($internalCode);
+
+        if (($e instanceof Exception\GatewayErrorException) and ($e->hasTwoFaError()))
+        {
+            $payment->setTwoFaStatus(Payment\TwoFaStatus::FAILED);
+        }
 
         $this->repo->saveOrFail($payment);
     }

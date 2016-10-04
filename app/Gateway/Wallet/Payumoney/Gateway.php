@@ -10,6 +10,7 @@ use RZP\Exception;
 use RZP\Trace\Trace;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
+use RZP\Models\Payment\TwoFaStatus;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
