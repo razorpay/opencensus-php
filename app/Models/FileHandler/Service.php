@@ -85,9 +85,9 @@ class Service extends Base\Service
 
         if ($signedUrlFlag === true)
         {
-            $expiryTime = @$input['expiryTime'] ?: 0;
+            $expiryTime = @$input['expiryTime'] ?: '0';
 
-            if ($expiryTime <= 0)
+            if ((int)$expiryTime <= 0)
             {
                 throw new Exception\InvalidArgumentException('Give valid expiry time');
             }
@@ -128,7 +128,27 @@ class Service extends Base\Service
 
     public function fetchContent($id)
     {
+        Entity::verifyIdAndStripSign($id);
 
+        $fileHandler = $this->repo->file_handler->getByIdOrFail($id);
+
+        return $this->storageHandler->fetch(
+            $fileHandler[Entity::BUCKET],
+            $fileHandler[Entity::NAME]);
+    }
+
+    public function fetchAndSaveFile($id, $filePath)
+    {
+        Entity::verifyIdAndStripSign($id);
+
+        $fileHandler = $this->repo->file_handler->getByIdOrFail($id);
+
+        $fileHandler[Entity::LOCATION] = $this->storageHandler->fetchAndSaveFile(
+            $fileHandler[Entity::BUCKET],
+            $fileHandler[Entity::NAME],
+            $filePath);
+
+        return $fileHandlers->toArrayPublic();
     }
 
     public function fetchByEntityIdAndType($entityId, $entityType, $signedUrlFlag = true, $expiryTime = '15')

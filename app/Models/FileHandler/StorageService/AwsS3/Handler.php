@@ -39,13 +39,13 @@ class Handler extends Base\Handler
         return $result['ObjectURL'];
     }
 
-    public function fetch()
+    public function fetchAndSaveFile($bucket, $name, $filePath)
     {
         $s3 = $this->getClient();
 
         try
         {
-            $s3Obj = $this->getS3FetchObj($bucket, $key);
+            $s3Obj = $this->getS3FetchObj($bucket, $name);
 
             $s3Obj['SaveAs'] = $filePath;
 
@@ -61,6 +61,28 @@ class Handler extends Base\Handler
         }
 
         return $filePath;
+    }
+
+    public function fetchContent($bucket, $name)
+    {
+        $s3 = $this->getClient();
+
+        try
+        {
+            $s3Obj = $this->getS3FetchObj($bucket, $name);
+
+            $result = $s3->getObject($s3Obj);
+
+            $this->trace()->info(TraceCode::AWS_FILE_DOWNLOAD, $s3Obj);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace()->traceException($e);
+
+            throw $e;
+        }
+
+        return $result['Body'];
     }
 
     public function delete()
