@@ -81,7 +81,7 @@ deploy:
           region: $AWS_REGION
           application-name: api
           deployment-group-name: $WERCKER_DEPLOYTARGET_NAME
-          s3-bucket: rzp-codedeploy
+          s3-bucket: rzp-code-deploy
     after-steps:
       - slack-notifier:
           url: $SLACK_URL
