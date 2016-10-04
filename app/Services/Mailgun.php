@@ -69,6 +69,11 @@ class Mailgun
         return $res;
     }
 
+    public function setMailgunInstance($instance)
+    {
+        $this->mgClient = $instance;
+    }
+
     protected function getMode()
     {
         return $this->mode;

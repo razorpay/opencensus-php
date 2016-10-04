@@ -99,6 +99,7 @@ class Repository extends Base\Repository
                     ->where(Entity::BANK, '=', $bank)
                     ->where(Entity::METHOD, '=', Method::EMI)
                     ->with('card.globalCard')
+                    ->with('emiPlan')
                     ->get();
     }
 
@@ -238,6 +239,13 @@ class Repository extends Base\Repository
                     ->where($transactionEntityType, '=', 'payment')
                     ->whereBetween($transactionReconciledAt, [$from, $to])
                     ->whereIn(Entity::STATUS, $status)
+                    ->get();
+    }
+
+    public function fetchPaymentsForOrderId($orderId)
+    {
+        return $this->newQuery()
+                    ->where(Payment\Entity::ORDER_ID, '=', $orderId)
                     ->get();
     }
 
