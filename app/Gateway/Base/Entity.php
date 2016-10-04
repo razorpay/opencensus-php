@@ -2,26 +2,18 @@
 
 namespace RZP\Gateway\Base;
 
-class Entity extends \RZP\Models\Base\PublicEntity
+use RZP\Models\Base;
+
+class Entity extends Base\PublicEntity
 {
     const PAYMENT_ID    = 'payment_id';
     const REFUND_ID     = 'refund_id';
     const ACTION        = 'action';
     const RECEIVED      = 'received';
 
-    public function setPaymentId($paymentId)
+    public function getReceived()
     {
-        $this->attributes['payment_id'] = $paymentId;
-    }
-
-    public function setAction($action)
-    {
-        $this->setAttribute('action', $action);
-    }
-
-    public function getReceivedAttribute()
-    {
-        return (bool) $this->attributes['received'];
+        return $this->getAttribute(self::RECEIVED);
     }
 
     public function getPaymentId()
@@ -41,6 +33,21 @@ class Entity extends \RZP\Models\Base\PublicEntity
 
     public function setRefundId($refundId)
     {
-        $this->attributes['refund_id'] = $refundId;
+        $this->setAttribute('refund_id', $refundId);
+    }
+
+    public function setPaymentId($paymentId)
+    {
+        $this->setAttribute('payment_id', $paymentId);
+    }
+
+    public function setAction($action)
+    {
+        $this->setAttribute('action', $action);
+    }
+
+    protected function getReceivedAttribute()
+    {
+        return (bool) $this->attributes['received'];
     }
 }

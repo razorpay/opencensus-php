@@ -5,6 +5,7 @@ namespace RZP\Models\Terminal;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base;
+use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 
@@ -24,18 +25,22 @@ class Validator extends Base\Validator
         Entity::CARD                        => 'sometimes|boolean',
         Entity::NETBANKING                  => 'sometimes|boolean',
         Entity::EMI                         => 'sometimes|boolean',
+        Entity::UPI                         => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
         Entity::SHARED                      => 'sometimes|boolean',
-        Entity::GATEWAY_ACQUIRER            => 'sometimes|string',
+        Entity::RECURRING                   => 'sometimes|in:0,2',
+        Entity::GATEWAY_ACQUIRER            => 'sometimes|string|max:30',
+        Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
     );
 
     protected static $editTerminalGateways = array(
         Payment\Gateway::HDFC,
         Payment\Gateway::AXIS_MIGS,
+        Payment\Gateway::UPI_ICICI,
     );
 
     protected static $createValidators = array(
-        Entity::GATEWAY, Entity::EMI);
+        Entity::GATEWAY, Entity::EMI, Entity::NETWORK_CATEGORY);
 
     protected static $hdfcTerminalRules = array(
         Entity::GATEWAY                     => 'required|in:hdfc',
@@ -49,7 +54,7 @@ class Validator extends Base\Validator
 
     protected static $billdeskTerminalRules = array(
         Entity::GATEWAY                     => 'required|in:billdesk',
-        Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|min:2'
+        Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|min:2',
     );
 
     protected static $ebsTerminalRules = array(
@@ -92,6 +97,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID         => 'required|string|max:20',
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
         Entity::GATEWAY_ACQUIRER            => 'required|string',
+        Entity::RECURRING                   => 'sometimes|in:0,1,2',
     );
 
     protected static $axisMigsEditTerminalRules = array(
@@ -105,6 +111,12 @@ class Validator extends Base\Validator
         Entity::GATEWAY_RECON_PASSWORD      => 'sometimes|alpha_num',
         Entity::GATEWAY                     => 'sometimes|in:hdfc',
         Entity::CARD                        => 'sometimes|boolean|in:1',
+    );
+
+    protected static $upiIciciEditTerminalRules = array(
+        Entity::GATEWAY                     => 'sometimes|in:upi_icici',
+        Entity::UPI                         => 'sometimes|boolean|in:1',
+        Entity::GATEWAY_TERMINAL_ID         => 'sometimes',
     );
 
     protected static $walletPayzappTerminalRules = array(
@@ -131,6 +143,17 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACCESS_CODE         => 'required|string',
     );
 
+    protected static $walletAirtelmoneyTerminalRules = array(
+        Entity::GATEWAY                     => 'required|in:wallet_airtelmoney',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+    );
+
+    protected static $walletFreechargeTerminalRules = array(
+        Entity::GATEWAY                     => 'required|in:wallet_freecharge',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET       => 'required|string',
+    );
+
     protected function validateGateway($input)
     {
         if (Payment\Gateway::isValidGateway($input['gateway']) === false)
@@ -145,7 +168,8 @@ class Validator extends Base\Validator
             $input['shared'],
             $input['netbanking'],
             $input['merchant_id'],
-            $input['category']);
+            $input['category'],
+            $input[Entity::NETWORK_CATEGORY]);
 
         $op = $input['gateway'] . '_terminal';
 
@@ -179,15 +203,19 @@ class Validator extends Base\Validator
 
     public function validateExistingTerminalsCount($existingTerminals)
     {
+        $newTerminal = $this->entity;
+
         $count = $existingTerminals->count();
 
         // Check count does not exceed max terminals count
-        if ($count > Entity::MAX_TERMINALS_COUNT)
+        if (($newTerminal->getMerchantId() !== Merchant\Account::SHARED_ACCOUNT) and
+            ($count > Entity::MAX_TERMINALS_COUNT))
         {
             throw new Exception\LogicException(
                 'Terminal count should not exceed max count');
         }
-        else if ($count === Entity::MAX_TERMINALS_COUNT)
+        else if (($newTerminal->getMerchantId() !== Merchant\Account::SHARED_ACCOUNT) and
+                 ($count === Entity::MAX_TERMINALS_COUNT))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_GATEWAY_TERMINAL_MAX_LIMIT_REACHED);
@@ -201,13 +229,36 @@ class Validator extends Base\Validator
         }
     }
 
+    /**
+     * Does not use custom validator as the other parameters of input are required
+     * to decide validity.
+     *
+     * @param array $input
+     * @return void
+     * */
+    public function validateNetworkCategory($input)
+    {
+        if (empty($input[Entity::NETWORK_CATEGORY]) === true)
+        {
+            return;
+        }
+
+        if (Category::isNetworkCategoryValid($input) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Category provided invalid for gateway',
+                Entity::NETWORK_CATEGORY);
+            }
+    }
+
     protected function matchGatewayForNewTerminal($new, $existing)
     {
         // If 1 exists, then another should not be added for the same gateway for same emi periods
         if (($new->getGateway() === $existing->getGateway()) and
             ($new->getId() !== $existing->getId()) and
             ($new->isEmiEnabled() === $existing->isEmiEnabled()) and
-            ($new->getEmiDuration() === $existing->getEmiDuration()))
+            ($new->getEmiDuration() === $existing->getEmiDuration()) and
+            ($new->getRecurring() === $existing->getRecurring()))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY);

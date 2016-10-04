@@ -22,6 +22,12 @@ class GatewayController extends Controller
     {
         $gateway = $this->app['gateway']->gateway($gateway);
 
+        // Some gateways may need some preprocessing on the input
+        // to be able to call the next few methods.
+        //
+        // Eg: gateway request needs to be decrypted
+        $input = $gateway->preProcessS2SResponse($input);
+
         $paymentId = $gateway->getPaymentIdFromServerCallback($input);
 
         $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
@@ -77,22 +83,33 @@ class GatewayController extends Controller
         switch ($gateway)
         {
             case 'billdesk':
-            case 'wallet_olamoney':
                 $data = $this->processS2SCallback($input, $gateway);
                 break;
 
-            case 'upi':
+            case 'wallet_olamoney':
                 $trace = $this->app['trace'];
 
-                // check mode before search
                 $trace->info(
                     TraceCode::GATEWAY_PAYMENT_CALLBACK,
                     [
                         'input'     => $input,
                         'body'      => Request::getContent(),
                         'headers'   => Request::header(),
-                        'gateway'   => 'upi_icici',
+                        'gateway'   => $gateway,
                     ]);
+
+                break;
+
+            case 'wallet_freecharge':
+                $data = $this->processS2SCallback($input, $gateway);
+                break;
+
+            case 'upi':
+            case 'upi_icici':
+                $input = Request::getContent();
+                $gateway = 'upi_icici';
+
+                $data = $this->processS2SCallback($input, $gateway);
 
                 break;
         }
@@ -142,10 +159,10 @@ class GatewayController extends Controller
         $paymentId = $nb->getPaymentId();
         $publicPaymentId = $nb->getPublicPaymentId();
 
-
         $payment = $this->repo->payment->findOrFailPublic($paymentId);
 
-        $publicKey = $payment->merchant->keys()->first()->getPublicKey($mode);
+        $keys = $this->repo->key->getKeysForMerchant($payment->getMerchantId());
+        $publicKey = $keys->first()->getPublicKey($mode);
 
         $secret = \App::make('config')->get('app.key');
 

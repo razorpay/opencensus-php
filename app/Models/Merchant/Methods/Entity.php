@@ -17,9 +17,12 @@ class Entity extends Base\PublicEntity
     const PAYTM             = 'paytm';
     const PAYZAPP           = 'payzapp';
     const PAYUMONEY         = 'payumoney';
+    const AIRTELMONEY       = 'airtelmoney';
+    const FREECHARGE        = 'freecharge';
     const EMI               = 'emi';
     const DEBIT_CARD        = 'debit_card';
     const CREDIT_CARD       = 'credit_card';
+    const UPI               = 'upi';
 
     const METHODS           = 'methods';
 
@@ -39,10 +42,15 @@ class Entity extends Base\PublicEntity
         self::PAYTM,
         self::PAYZAPP,
         self::PAYUMONEY,
+        self::AIRTELMONEY,
+        self::FREECHARGE,
         self::MOBIKWIK,
         self::OLAMONEY,
         self::EMI,
+        self::UPI,
         self::NETBANKING,
+        self::DEBIT_CARD,
+        self::CREDIT_CARD,
     );
 
     protected $visible = array(
@@ -53,10 +61,15 @@ class Entity extends Base\PublicEntity
         self::PAYTM,
         self::PAYZAPP,
         self::PAYUMONEY,
+        self::AIRTELMONEY,
+        self::FREECHARGE,
         self::MOBIKWIK,
         self::OLAMONEY,
         self::EMI,
+        self::UPI,
         self::NETBANKING,
+        self::DEBIT_CARD,
+        self::CREDIT_CARD,
     );
 
     protected $public = array(
@@ -70,9 +83,12 @@ class Entity extends Base\PublicEntity
         self::MOBIKWIK      => false,
         self::PAYZAPP       => false,
         self::PAYUMONEY     => false,
+        self::AIRTELMONEY   => false,
         self::OLAMONEY      => false,
+        self::FREECHARGE    => false,
         self::BANKS         => [],
         self::EMI           => false,
+        self::UPI           => false,
         self::NETBANKING    => true,
         self::CREDIT_CARD   => true,
         self::DEBIT_CARD    => true,
@@ -84,7 +100,27 @@ class Entity extends Base\PublicEntity
         self::PAYZAPP,
         self::PAYUMONEY,
         self::OLAMONEY,
+        self::AIRTELMONEY,
+        self::FREECHARGE,
     );
+
+    // Casts the attributes to native types
+    protected $casts = [
+        self::AMEX        => 'bool',
+        self::PAYTM       => 'bool',
+        self::CARD        => 'bool',
+        self::CREDIT_CARD => 'bool',
+        self::DEBIT_CARD  => 'bool',
+        self::NETBANKING  => 'bool',
+        self::MOBIKWIK    => 'bool',
+        self::OLAMONEY    => 'bool',
+        self::PAYZAPP     => 'bool',
+        self::PAYUMONEY   => 'bool',
+        self::AIRTELMONEY => 'bool',
+        self::FREECHARGE  => 'bool',
+        self::EMI         => 'bool',
+        self::UPI         => 'bool',
+    ];
 
     public function setMethods(array $input = array())
     {
@@ -98,22 +134,27 @@ class Entity extends Base\PublicEntity
 
     public function isCardEnabled()
     {
-        return $this->getCardAttribute();
+        return $this->getAttribute(self::CARD);
     }
 
     public function isDebitCardEnabled()
     {
-        return $this->getDebitCardAttribute();
+        return $this->getAttribute(self::DEBIT_CARD);
     }
 
     public function isCreditCardEnabled()
     {
-        return $this->getCreditCardAttribute();
+        return $this->getAttribute(self::CREDIT_CARD);
     }
 
     public function isNetbankingEnabled()
     {
-        return $this->getNetbankingAttribute();
+        return $this->getAttribute(self::NETBANKING);
+    }
+
+    public function isUpiEnabled()
+    {
+        return $this->getAttribute(self::UPI);
     }
 
     public function isWalletEnabled($wallet = null)
@@ -141,37 +182,47 @@ class Entity extends Base\PublicEntity
 
     public function isAmexEnabled()
     {
-        return $this->getAmexAttribute();
+        return $this->getAttribute(self::AMEX);
     }
 
     public function isPaytmEnabled()
     {
-        return $this->getPaytmAttribute();
+        return $this->getAttribute(self::PAYTM);
     }
 
     public function isPayzappEnabled()
     {
-        return $this->getPayzappAttribute();
+        return $this->getAttribute(self::PAYZAPP);
     }
 
     public function isOlamoneyEnabled()
     {
-        return $this->getOlamoneyAttribute();
+        return $this->getAttribute(self::OLAMONEY);
+    }
+
+    public function isAirtelmoneyEnabled()
+    {
+        return $this->getAttribute(self::AIRTELMONEY);
     }
 
     public function isPayumoneyEnabled()
     {
-        return $this->getPayumoneyAttribute();
+        return $this->getAttribute(self::PAYUMONEY);
+    }
+
+    public function isFreechargeEnabled()
+    {
+        return $this->getAttribute(self::FREECHARGE);
     }
 
     public function isMobikwikEnabled()
     {
-        return $this->getMobikwikAttribute();
+        return $this->getAttribute(self::MOBIKWIK);
     }
 
     public function isEmiEnabled()
     {
-        return $this->getEmiAttribute();
+        return $this->getAttribute(self::EMI);
     }
 
     public function isMethodEnabled($method)
@@ -222,13 +273,22 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::PAYUMONEY);
     }
-
     public function getOlamoney()
     {
         return $this->getAttribute(self::OLAMONEY);
     }
 
-    public function getEMi()
+    public function getAirtelmoney()
+    {
+        return $this->getAttribute(self::AIRTELMONEY);
+    }
+
+    public function getFreecharge()
+    {
+        return $this->getAttribute(self::FREECHARGE);
+    }
+
+    public function getEmi()
     {
         return $this->getAttribute(self::EMI);
     }
@@ -297,6 +357,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::OLAMONEY, $value);
     }
 
+    public function setAirtelmoney($value)
+    {
+        $this->setAttribute(self::Airtelmoney, $value);
+    }
+
+    public function setFreecharge($value)
+    {
+        $this->setAttribute(self::FREECHARGE, $value);
+    }
+
     public function setCard($card)
     {
         $this->setAttribute(self::CARD, $card);
@@ -319,69 +389,14 @@ class Entity extends Base\PublicEntity
 
     public function setEmi($emi)
     {
-        assert($this->isCardEnabled(), "Cannot enable emi without Card method");
+        assertTrue($this->isCardEnabled(), "Cannot enable emi without Card method");
 
         $this->setAttribute(self::EMI, $emi);
-    }
-
-    protected function getAmexAttribute()
-    {
-        return (bool) $this->attributes[self::AMEX];
-    }
-
-    protected function getPaytmAttribute()
-    {
-        return (bool) $this->attributes[self::PAYTM];
-    }
-
-    protected function getCardAttribute()
-    {
-        return (bool) $this->attributes[self::CARD];
-    }
-
-    protected function getCreditCardAttribute()
-    {
-        return (bool) $this->attributes[self::CREDIT_CARD];
-    }
-
-    protected function getDebitCardAttribute()
-    {
-        return (bool) $this->attributes[self::DEBIT_CARD];
-    }
-
-    protected function getNetbankingAttribute()
-    {
-        return (bool) $this->attributes[self::NETBANKING];
-    }
-
-    protected function getMobikwikAttribute()
-    {
-        return (bool) $this->attributes[self::MOBIKWIK];
-    }
-
-    protected function getOlamoneyAttribute()
-    {
-        return (bool) $this->attributes[self::OLAMONEY];
-    }
-
-    protected function getPayzappAttribute()
-    {
-        return (bool) $this->attributes[self::PAYZAPP];
-    }
-
-    protected function getPayumoneyAttribute()
-    {
-        return (bool) $this->attributes[self::PAYUMONEY];
     }
 
     protected function getBanksAttribute()
     {
         return json_decode($this->attributes[self::BANKS], true);
-    }
-
-    protected function getEmiAttribute()
-    {
-        return (bool) $this->attributes[self::EMI];
     }
 
     protected function setBanksAttribute(array $banks)
@@ -414,14 +429,18 @@ class Entity extends Base\PublicEntity
     {
         return array(
             self::CARD,
-            self::NETBANKING,
+            self::EMI,
             self::AMEX,
+            self::NETBANKING,
             self::PAYTM,
             self::MOBIKWIK,
             self::PAYZAPP,
             self::PAYUMONEY,
             self::OLAMONEY,
-            self::EMI
+            self::AIRTELMONEY,
+            self::EMI,
+            self::UPI,
+            self::FREECHARGE,
         );
     }
 }

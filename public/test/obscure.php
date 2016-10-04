@@ -37,6 +37,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
                 <option value="card" selected>Card</option>
                 <option value="wallet">Wallet</option>
                 <option value="emi">Emi</option>
+                <option value="upi">UPI</option>
             </select>
         </td>
     </tr>
@@ -69,6 +70,8 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
                 <option value="payzapp">Payzapp</option>
                 <option value="payumoney">Payumoney</option>
                 <option value="olamoney">Olamoney</option>
+                <option value="airtelmoney">Airtelmoney</option>
+                <option value="freecharge">Freecharge</option>
             </select>
         </td>
     </tr>
@@ -128,9 +131,17 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
         <td><input type="text" name="app_token" size="25" value=""></td>
     </tr>
     <tr>
+        <td colspan='40'>VPA:</td>
+        <td><input type="text" name="vpa" size="25" value="nemomobile@imobile"></td>
+    </tr>
+    <tr>
         <td colspan='40'>Token:</td>
         <td><input type="text" name="token" size="25" value=""></td>
         <td><input type="checkbox" name="save" value="1">save</td>
+    </tr>
+    <tr>
+        <td colspan='40'>Recurring:</td>
+        <td><input type="checkbox" name="recurring" value="1"></td>
     </tr>
     <tr>
         <td colspan="100" align="center">

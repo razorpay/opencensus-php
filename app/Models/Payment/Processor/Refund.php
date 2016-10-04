@@ -21,18 +21,21 @@ trait Refund
 {
     /**
      * Refunds a payment
-     * @param  string   $id     Payment Id
-     * @param  array    $input  Refund input params
+     * @param  Payment\Entity   $payment     Payment Id
+     * @param  array            $input  Refund input params
      *
      * @return Payment\Refund\Entity
      */
-    protected function refund($id, $input)
+    protected function refund(Payment\Entity $payment, array $input)
     {
         $this->trace->info(
             TraceCode::PAYMENT_REFUND_REQUEST,
-            ['id' => $id, 'input' => $input]);
+            [
+                'payment_id' => $payment->getId(),
+                'input' => $input
+            ]);
 
-        $payment = $this->retrieve($id);
+        $this->setPayment($payment);
 
         $refund = (new Payment\Refund\Entity)->build($input, $payment);
 
@@ -55,7 +58,7 @@ trait Refund
             $data['card'] = $refund->payment->card->toArray();
         }
 
-        $this->mutex->acquireAndRelease($payment, function() use ($data, $payment, $refund)
+        $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment, $refund)
         {
             if (($payment->getTransactionId() !== null) or
                 ($payment->isAuthorized() === false))
@@ -91,7 +94,7 @@ trait Refund
             $data['card'] = $refund->payment->card->toArray();
         }
 
-        $msg = $this->mutex->acquireAndRelease($payment, function() use ($data, $payment, $refund)
+        $msg = $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment, $refund)
         {
             $verify = $this->callGatewayForVerifyRefund($data);
 
@@ -224,9 +227,9 @@ trait Refund
         $this->notifyDashboard('refund', $this->refund);
     }
 
-    public function refundAuthorizedPayment($id, $input)
+    public function refundAuthorizedPayment(Payment\Entity $payment, array $input = [])
     {
-        $payment = $this->retrieve($id);
+        $this->setPayment($payment);
 
         if ($this->payment->isAuthorized() === false)
         {
@@ -252,12 +255,12 @@ trait Refund
         //     }
         // }
 
-        return $this->refund($id, $input);
+        return $this->refund($payment, $input);
     }
 
-    public function refundCapturedPayment($id, $input)
+    public function refundCapturedPayment($paymentId, $input)
     {
-        $payment = $this->retrieve($id);
+        $payment = $this->retrieve($paymentId);
 
         if ($payment->isFullyRefunded())
         {
@@ -271,7 +274,7 @@ trait Refund
                 ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED);
         }
 
-        return $this->refund($id, $input);
+        return $this->refund($payment, $input);
     }
 
     protected function callGatewayForVerifyRefund($data)

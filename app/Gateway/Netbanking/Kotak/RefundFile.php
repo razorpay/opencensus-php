@@ -3,7 +3,7 @@
 namespace RZP\Gateway\Netbanking\Kotak;
 
 use Carbon\Carbon;
-use RZP\Gateway\Netbanking\Base;
+use RZP\Gateway\Base;
 
 class RefundFile extends Base\RefundFile
 {

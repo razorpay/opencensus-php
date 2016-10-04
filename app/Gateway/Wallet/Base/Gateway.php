@@ -8,23 +8,31 @@ use Lib\PhoneBook;
 
 class Gateway extends Base\Gateway
 {
-    protected function createGatewayPaymentEntity($attributes)
+    protected function otpResend(array $input)
+    {
+        $this->input = $input;
+        $this->action = Action::OTP_RESEND;
+    }
+
+    protected function createGatewayPaymentEntity($attributes, $action = null)
     {
         $attr = $this->getMappedAttributes($attributes);
 
-        $payment = $this->getNewGatewayPaymentEntity();
+        $action = $action ? $action : $this->action;
 
-        $payment->setPaymentId($this->input['payment']['id']);
+        $gatewayPayment = $this->getNewGatewayPaymentEntity();
 
-        $payment->setAction($this->action);
+        $gatewayPayment->setPaymentId($this->input['payment']['id']);
 
-        $payment->setWallet($this->input['payment']['wallet']);
+        $gatewayPayment->setAction($action);
 
-        $payment->fill($attr);
+        $gatewayPayment->setWallet($this->input['payment']['wallet']);
 
-        $payment->saveOrFail();
+        $gatewayPayment->fill($attr);
 
-        return $payment;
+        $this->repo->saveOrFail($gatewayPayment);
+
+        return $gatewayPayment;
     }
 
     protected function createGatewayRefundEntity($attributes)
@@ -38,27 +46,26 @@ class Gateway extends Base\Gateway
         return $refund;
     }
 
+    /*
+     * Updates the gateway payment entity
+     *
+     * @param gatewayPayment Wallet\Base\Entity      Gateway Payment Entity
+     * @param attributes     array
+     */
+    protected function updateGatewayPaymentEntity($gatewayPayment, $attributes)
+    {
+        $attr = $this->getMappedAttributes($attributes);
+
+        $gatewayPayment->fill($attr);
+
+        $this->repo->saveOrFail($gatewayPayment);
+
+        return $gatewayPayment;
+    }
+
     protected function getNewGatewayPaymentEntity()
     {
         return new Wallet\Base\Entity;
-    }
-
-    protected function getMappedAttributes($attributes)
-    {
-        $attr = [];
-
-        $map = $this->map;
-
-        foreach ($attributes as $key => $value)
-        {
-            if (isset($map[$key]))
-            {
-                $newKey = $map[$key];
-                $attr[$newKey] = $value;
-            }
-        }
-
-        return $attr;
     }
 
     protected function getReverseMappedAttributes($attributes)

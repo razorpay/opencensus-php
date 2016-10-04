@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant;
 use Config;
 use RZP\Models\Base;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Terminal\Category;
 use RZP\Models\Pricing\Service as PricingService;
 
 class Entity extends Base\PublicEntity
@@ -34,6 +35,11 @@ class Entity extends Base\PublicEntity
     const MAX_PAYMENT_AMOUNT        = 'max_payment_amount';
 
     /**
+     * Category for particular methods or gateways
+     */
+    const CATEGORY2                 = 'category2';
+
+    /**
      * Refers to methods relation and not a property;
      */
     const METHODS                   = 'methods';
@@ -57,6 +63,7 @@ class Entity extends Base\PublicEntity
         self::SCOPE,
         self::WEBSITE,
         self::CATEGORY,
+        self::CATEGORY2,
         self::FEATURES,
         self::LOGO_URL,
         self::FEE_BEARER,
@@ -91,6 +98,7 @@ class Entity extends Base\PublicEntity
         self::PRICING_PLAN_ID,
         self::WEBSITE,
         self::CATEGORY,
+        self::CATEGORY2,
         self::INTERNATIONAL,
         self::FEE_BEARER,
         self::BILLING_LABEL,
@@ -106,6 +114,7 @@ class Entity extends Base\PublicEntity
      );
 
     protected $defaults = array(
+        self::CATEGORY2             => null,
         self::LIVE                  => false,
         self::ACTIVATED             => false,
         self::ACTIVATED_AT          => null,
@@ -262,6 +271,16 @@ class Entity extends Base\PublicEntity
     public function setLogoUrl($logoUrl)
     {
         $this->setAttribute(self::LOGO_URL, $logoUrl);
+    }
+
+    public function setCategory2($category)
+    {
+        return $this->setAttribute(self::CATEGORY2, $category);
+    }
+
+    public function getCategory2()
+    {
+        return $this->getAttribute(self::CATEGORY2);
     }
 
     public function getBillingLabelElseName()

@@ -4,6 +4,7 @@ namespace RZP\Models\Payment\Analytics;
 
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Constants\Table;
 
 class Entity extends Base\PublicEntity
 {
@@ -24,19 +25,13 @@ class Entity extends Base\PublicEntity
     const IP                            = 'ip';
     const REFERER                       = 'referer';
     const USER_AGENT                    = 'user_agent';
-    const TERMINAL_ID                   = 'terminal_id';
-    const TERMINAL_STATUS               = 'terminal_status';
-    const TERMINAL_RESPONSE_TIME        = 'terminal_response_time';
-    const TERMINAL_STATUS_CODE          = 'terminal_status_code';
-    const TERMINAL_STATUS_MSG           = 'terminal_status_msg';
-    const PAYMENT_TYPE                  = 'payment_type';
     const CREATED_AT                    = 'created_at';
     const UPDATED_AT                    = 'updated_at';
 
     // window in secs, used to fetch payments with same checkout id
     const PAYMENT_WINDOW                = 1800;
 
-    protected $table = \RZP\Constants\Table::PAYMENT_ANALYTICS;
+    protected $table = Table::PAYMENT_ANALYTICS;
 
     protected $entity = 'payment_analytics';
 
@@ -61,19 +56,12 @@ class Entity extends Base\PublicEntity
         self::INTEGRATION_VERSION,
         self::REFERER,
         self::USER_AGENT,
-        self::TERMINAL_ID,
-        self::TERMINAL_STATUS,
-        self::TERMINAL_RESPONSE_TIME,
-        self::TERMINAL_STATUS_CODE,
-        self::TERMINAL_STATUS_MSG,
-        self::PAYMENT_TYPE,
     );
 
     protected $public = array(
         self::ID,
         self::PAYMENT_ID,
         self::CHECKOUT_ID,
-        self::TERMINAL_ID,
         self::ATTEMPTS,
         self::LIBRARY,
         self::LIBRARY_VERSION,
@@ -88,11 +76,6 @@ class Entity extends Base\PublicEntity
         self::INTEGRATION_VERSION,
         self::REFERER,
         self::USER_AGENT,
-        self::TERMINAL_STATUS,
-        self::TERMINAL_RESPONSE_TIME,
-        self::TERMINAL_STATUS_CODE,
-        self::TERMINAL_STATUS_MSG,
-        self::PAYMENT_TYPE,
         self::CREATED_AT,
         self::UPDATED_AT
     );
@@ -102,9 +85,15 @@ class Entity extends Base\PublicEntity
     );
 
     protected $casts = array(
-        self::TERMINAL_RESPONSE_TIME => 'int',
         self::ATTEMPTS               => 'int',
     );
+
+    // ----------------------- Relations -------------------------------------------
+
+    public function payment()
+    {
+        return $this->hasOne('RZP\Models\Payment\Entity');
+    }
 
     // ----------------------- Getters ---------------------------------------------
 
@@ -118,39 +107,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CHECKOUT_ID);
     }
 
-    public function getTerminalId()
-    {
-        return $this->getAttribute(self::TERMINAL_ID);
-    }
-
-    public function getTerminalStatus()
-    {
-        return $this->getAttribute(self::TERMINAL_STATUS);
-    }
-
-    public function getTerminalResponseTime()
-    {
-        return $this->getAttribute(self::TERMINAL_RESPONSE_TIME);
-    }
-
     public function getAttempts()
     {
         return $this->getAttribute(self::ATTEMPTS);
-    }
-
-    public function getTerminalStatusCode()
-    {
-        return $this->getAttribute(self::TERMINAL_STATUS_CODE);
-    }
-
-    public function getTerminalStatusMsg()
-    {
-        return $this->getAttribute(self::TERMINAL_STATUS_MSG);
-    }
-
-    public function getPaymentType()
-    {
-        return $this->getAttribute(self::PAYMENT_TYPE);
     }
 
     public function getLibrary()
@@ -252,46 +211,46 @@ class Entity extends Base\PublicEntity
     // ----------------------- Mutator ---------------------------------------------
     //
 
-    protected function getLibraryAttribure()
+    protected function getLibraryAttribute()
     {
         $value = $this->attributes[self::LIBRARY];
 
-        return Metadata::getStringForLibraryValue($value);
+        return Metadata::getStringForValue($value, Metadata::LIBRARY_VALUES);
     }
 
-    protected function getPlatformAttribure()
+    protected function getPlatformAttribute()
     {
         $value = $this->attributes[self::PLATFORM];
 
-        return Metadata::getStringForPlatformValue($value);
+        return Metadata::getStringForValue($value, Metadata::PLATFORM_VALUES);
     }
 
-    protected function getBrowserAttribure()
+    protected function getBrowserAttribute()
     {
         $value = $this->attributes[self::BROWSER];
 
-        return Metadata::getStringForBrowserValue($value);
+        return Metadata::getStringForValue($value, Metadata::BROWSER_VALUES);
     }
 
-    protected function getOsAttribure()
+    protected function getOsAttribute()
     {
         $value = $this->attributes[self::OS];
 
-        return Metadata::getStringForOsValue($value);
+        return Metadata::getStringForValue($value, Metadata::OS_VALUES);
     }
 
-    protected function getDeviceAttribure()
+    protected function getDeviceAttribute()
     {
         $value = $this->attributes[self::DEVICE];
 
-        return Metadata::getStringForDeviceValue($value);
+        return Metadata::getStringForValue($value, Metadata::DEVICE_VALUES);
     }
 
-    protected function getIntegrationAttribure()
+    protected function getIntegrationAttribute()
     {
         $value = $this->attributes[self::INTEGRATION];
 
-        return Metadata::getStringForIntegrationValue($value);
+        return Metadata::getStringForValue($value, Metadata::INTEGRATION_VALUES);
     }
 
     protected function setPlatformAttribute($platform)
@@ -341,7 +300,7 @@ class Entity extends Base\PublicEntity
 
     // ----------------------- Mutator Ends ----------------------------------------
 
-    // ----------------------- Modifieres ------------------------------------------
+    // ----------------------- Modifiers ------------------------------------------
 
     protected function modifyOs(& $input)
     {

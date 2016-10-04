@@ -8,6 +8,7 @@ use RZP\Models\Card;
 use RZP\Models\Card\IIN;
 use RZP\Models\Transaction;
 use RZP\Models\Payment\Verify;
+use RZP\Reconciliator\Messenger;
 
 use RZP\Gateway\AxisMigs;
 
@@ -19,6 +20,10 @@ use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class PaymentReconciliate extends Foundation\SubReconciliate
 {
+    const GATEWAY_FEES_ABSENT_GATEWAYS = [
+        Orchestrator::KOTAK
+    ];
+
     /*******************
      * Instance objects
      *******************/
@@ -34,11 +39,13 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
     protected $app;
     protected $repo;
+    protected $messenger;
 
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
         $this->repo = $this->app['repo'];
+        $this->messenger = new Messenger();
 
         $this->paymentRepo     = $this->repo->payment;
         $this->iinRepo         = $this->repo->iin;
@@ -86,6 +93,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         try
         {
+            $this->runPreReconciledAtCheckRecon($rowDetails);
+
             $reconciled = $this->checkIfAlreadyReconciled($this->payment);
 
             if ($reconciled === true)
@@ -138,6 +147,11 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
             //return;
         }
+    }
+
+    protected function runPreReconciledAtCheckRecon($rowDetails)
+    {
+        $this->persistGatewaySettledAt($this->payment, $rowDetails);
     }
 
     protected function validatePaymentStatus($row)
@@ -292,6 +306,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $this->persistCardDetailsIfAbsent($rowDetails);
 
+        $this->persistGatewaySettledAt($this->payment, $rowDetails);
+
         return $recordSuccess;
     }
 
@@ -318,10 +334,13 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $fee = $this->getGatewayFee($row);
 
+        $gatewaySettledAt = $this->getGatewaySettledAt($row);
+
         $rowDetails = [
-            BaseReconciliate::PAYMENT_ID          => $paymentId,
-            BaseReconciliate::GATEWAY_SERVICE_TAX => $serviceTax,
-            BaseReconciliate::GATEWAY_FEE         => $fee,
+            BaseReconciliate::PAYMENT_ID            => $paymentId,
+            BaseReconciliate::GATEWAY_SERVICE_TAX   => $serviceTax,
+            BaseReconciliate::GATEWAY_FEE           => $fee,
+            BaseReconciliate::GATEWAY_SETTLED_AT    => $gatewaySettledAt,
         ];
 
         // For wallets and netbanking, $cardDetails would be empty.
@@ -346,6 +365,30 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     protected function getCardDetails($row)
     {
         return [];
+    }
+
+    /**
+     * A few netbanking gateways do not provide us with
+     * gateway service tax in their reconciliation files.
+     * For them, we mark the gateway service tax as null.
+     *
+     * @return null
+     */
+    protected function getGatewayServiceTax($row)
+    {
+        return null;
+    }
+
+    /**
+     * A few netbanking gateways do not provide us with
+     * gateway fees in their reconciliation files.
+     * For them, we mark the gateway fees as null.
+     *
+     * @return null
+     */
+    protected function getGatewayFee($row)
+    {
+        return null;
     }
 
     protected function setPaymentAndTransaction($row, $paymentId)
@@ -616,7 +659,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             $this->paymentIin->setCountry($countryCode);
 
             // Make sure that international returns true in this case, after the country code is set.
-            assert($this->paymentIin->isInternational());
+            assertTrue($this->paymentIin->isInternational());
 
             $this->app['trace']->info(
                 TraceCode::RECON_INFO_ALERT,
@@ -647,7 +690,12 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         $reconGatewayFee = $rowDetails[BaseReconciliate::GATEWAY_FEE];
         $reconGatewayServiceTax = $rowDetails[BaseReconciliate::GATEWAY_SERVICE_TAX];
 
-        if (($reconGatewayFee === null) or ($reconGatewayServiceTax === null))
+        $calledClass = get_called_class();
+
+        $nullTaxAndFeesAllowed = $this->isNullGatewayFeesAndTaxAllowed($calledClass);
+
+        if ((($reconGatewayFee === null) or ($reconGatewayServiceTax === null)) and
+            ($nullTaxAndFeesAllowed === false))
         {
             return false;
         }
@@ -686,6 +734,21 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             if ($recordGatewayServiceTaxSuccess === true)
             {
                 $this->paymentTransaction->saveOrFail();
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function isNullGatewayFeesAndTaxAllowed($calledClass)
+    {
+        foreach (self::GATEWAY_FEES_ABSENT_GATEWAYS as $gatewayFeesAbsentGateway)
+        {
+            $checkClass = 'RZP\\Reconciliator\\' . studly_case($gatewayFeesAbsentGateway) . '\\PaymentReconciliate';
+
+            if ($calledClass === $checkClass)
+            {
                 return true;
             }
         }
@@ -742,7 +805,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
     protected function createMissingPaymentTransaction()
     {
-        assert($this->payment->transaction === null);
+        assertTrue($this->payment->transaction === null);
 
         $this->app['trace']->info(
             TraceCode::RECON_INFO_ALERT,

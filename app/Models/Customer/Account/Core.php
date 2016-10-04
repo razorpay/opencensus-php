@@ -4,6 +4,7 @@ namespace RZP\Models\Customer;
 
 use RZP\Models\Base;
 use RZP\Models\Customer;
+use RZP\Models\Address;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Payment;
@@ -20,7 +21,7 @@ class Core extends Base\Core
 
     public function createGlobalCustomer($input)
     {
-        assert(isset($input[Customer\Entity::CONTACT]));
+        assertTrue(isset($input[Customer\Entity::CONTACT]));
 
         return $this->create($input, $this->getSharedAccount());
     }
@@ -38,16 +39,29 @@ class Core extends Base\Core
             if ($failOnDuplicate === false)
             {
                 $existingCustomer->merchant->associate($merchant);
+
                 return $existingCustomer;
             }
             else
             {
                 throw new Exception\LogicException(
-                    'Should not reach here');
+                    'Customer already exists.', null, ['customer_id' => $existingCustomer->getId()]);
             }
         }
 
-        $this->repo->saveOrFail($customer);
+        $this->repo->transaction(function() use ($customer, $merchant, $input)
+        {
+            // This needs to happen here because address create associates itself with the customer.
+            // Hence, it's required that the customer is saved.
+            $this->repo->saveOrFail($customer);
+
+            if (empty($input[Entity::SHIPPING_ADDRESS]) === false)
+            {
+                $input[Entity::SHIPPING_ADDRESS][Address\Entity::TYPE] = Address\Type::SHIPPING_ADDRESS;
+
+                (new Address\Core)->create($customer, Address\Type::CUSTOMER, $input[Entity::SHIPPING_ADDRESS]);
+            }
+        });
 
         return $customer;
     }
@@ -201,9 +215,12 @@ class Core extends Base\Core
                 $appToken,
                 $merchant);
 
-            $customerId = $appToken->getCustomerId();
+            if ($appToken !== null)
+            {
+                $customerId = $appToken->getCustomerId();
 
-            $merchantId = Account::SHARED_ACCOUNT;
+                $merchantId = Account::SHARED_ACCOUNT;
+            }
         }
         else if (empty($input[Payment\Entity::CUSTOMER_ID]) === false)
         {

@@ -89,6 +89,22 @@ return [
         'error_code'                => null,
     ],
 
+    'testPaymentMultipleInvalidPartialRefund' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_UNREFUNDED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_UNREFUNDED,
+        ],
+    ],
+
     'testPaymentForFirstGatewayRequestFailure' => [
         'response'  => [
             'content'     => [
@@ -180,8 +196,8 @@ return [
             'status_code' => 500,
         ],
         'exception' => [
-            'class'                 => 'RZP\Exception\LogicException',
-            'internal_error_code'   => ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
+            'class'                 => 'RZP\Exception\RuntimeException',
+            'internal_error_code'   => ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
         ],
     ],
 
@@ -217,11 +233,32 @@ return [
         ],
     ],
 
+
+    'testPaymentMultiplePartialRefund' => [
+        'received'                  => true,
+        'action'                    => 'refund',
+        'entity'                    => 'ebs',
+        'is_flagged'                => false,
+        'amount'                    => 10000,
+        'error_code'                => null,
+    ],
+
+    'testPaymentPartialRefund'      => [
+        'received'                  => true,
+        'action'                    => 'refund',
+        'entity'                    => 'ebs',
+        'is_flagged'                => false,
+        'amount'                    => 40000,
+        'error_code'                => null,
+    ],
+
     'testPaymentRefund'             => [
         'received'                  => true,
         'action'                    => 'refund',
         'entity'                    => 'ebs',
         'is_flagged'                => false,
+        'amount'                    => 50000,
+        'error_code'                => null,
     ],
 
     'testTransactionAfterRefundingAuthorizedPayment' => [

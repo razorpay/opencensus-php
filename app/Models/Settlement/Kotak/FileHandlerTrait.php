@@ -59,6 +59,7 @@ trait FileHandlerTrait
         $excelObject = $this->createExcelObject($data, $name);
 
         $fileMetadata = $excelObject->store('csv', storage_path('files/settlement'), true);
+
         $fullpath = $fileMetadata['full'];
 
         if ($fullName != null)
@@ -82,9 +83,11 @@ trait FileHandlerTrait
         $excel = $this->createExcelObject($data, $name, $columnFormat);
 
         $fileMetadata = $excel->store('xlsx', storage_path('files/settlement'), true);
+
         $fullpath = $fileMetadata['full'];
 
         $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+
         $url = $this->saveToAws($name.'.xlsx', $fullpath, $xlsxMimeType);
 
         return $url;
@@ -296,6 +299,8 @@ trait FileHandlerTrait
     {
         $config =  \Config::get('aws');
 
+        $s3 = AWS::createClient('s3');
+
         try
         {
             $request = array(
@@ -439,6 +444,18 @@ trait FileHandlerTrait
     protected function getExcelFileToWriteName()
     {
         return $this->getFileToWriteNameWithoutExt() . '.xlsx';
+    }
+
+    protected function getCsvFileToWriteName()
+    {
+        return $this->getFileToWriteNameWithoutExt() . '.csv';
+    }
+
+    protected function getCsvFullFilePath()
+    {
+        $name = $this->getCsvFileToWriteName();
+
+        return $this->getFullFilePath($name);
     }
 
     protected function getExcelFullFilePath()

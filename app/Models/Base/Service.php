@@ -37,7 +37,7 @@ class Service
 
     /**
      * Trace instance used for tracing
-     * @var Trace\Trace
+     * @var \RZP\Trace\Trace
      */
     protected $trace;
 

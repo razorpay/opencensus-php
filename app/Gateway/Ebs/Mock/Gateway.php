@@ -32,7 +32,7 @@ class Gateway extends Ebs\Gateway
             'sid'   => 'value3',
         ];
 
-        $header = ['location'=> 'https://api.razorpay.com'];
+        $header = $this->getHeader();
 
         // For Central Bank of India Fail First Gateway Request
         if ($this->content['payment_option'] === BankCodes::getMappedCode(IFSC::CBIN))
@@ -51,12 +51,14 @@ class Gateway extends Ebs\Gateway
 
     public function sendSecondGatewayRequestForEbsAuthorize($request)
     {
-        $header = ['location'=> 'https://api.razorpay.com'];
+        $header = $this->getHeader();
 
         $response = $this->createResponse();
 
         $response = $this->setBody($response, $this->getText());
         $response = $this->setHeader($response, $header);
+
+        $response = $this->setBody($response, $this->getText($this->content));
 
         // For Canara Bank Fail Second Gateway Request
         if ($this->content['payment_option'] === BankCodes::getMappedCode(IFSC::CNRB))
@@ -75,7 +77,7 @@ class Gateway extends Ebs\Gateway
         // Redirection is done uisng Form post
         if ($this->content['payment_option'] === BankCodes::getMappedCode(IFSC::UBIN))
         {
-            $header = ['location'=> 'https://api.razorpay.com'];
+            $header = $this->getHeader();
 
             $response = $this->createResponse('302', false);
 
@@ -89,12 +91,19 @@ class Gateway extends Ebs\Gateway
         $response = $this->setBody($response, $this->getText($this->content));
 
         // For Corporation Bank Fail Third Gatteway Request,
-        if ($this->content['payment_option'] === BankCodes::getMappedCode(IFSC::CORP))
+        if ($this->content['payment_option'] === BankCodes::getMappedCode(IFSC::JAKA))
         {
             $response = $this->setBody($response, '');
         }
 
         return $response;
+    }
+
+    protected function getHeader()
+    {
+        return [
+            'location' => $this->app['config']->get('app.url')
+        ];
     }
 
     protected function setHeader($response, $headerValue)
@@ -146,7 +155,9 @@ class Gateway extends Ebs\Gateway
 
     protected function getText($content = [])
     {
-        $txt = '<form method="POST" name="payment" action = "https://api.razorpay.com">';
+        $appUrl = $this->app['config']->get('app.url');
+
+        $txt = '<form method="POST" name="payment" action = "'.$appUrl.'">';
 
         foreach ($content as $key => $value)
         {

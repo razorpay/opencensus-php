@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Pricing;
 
+use RZP\Exception\LogicException;
+use RZP\Models\Bank;
 use RZP\Models\Payment\Method;
 use RZP\Models\Card\Network;
 use RZP\Models\Base\PublicCollection;
@@ -16,8 +18,8 @@ class Plan extends PublicCollection
 
     /**
      * Get the collection of items as a plain array.
-     *
      * @return array
+     * @throws LogicException
      */
     public function toArrayPublic()
     {
@@ -34,12 +36,28 @@ class Plan extends PublicCollection
             // We need to send the human version of the payment network name
             // as well, so DICL becomes Diners Club and
             // AMEX becomes American Express
-            if (($rule[Entity::PAYMENT_METHOD] === Method::CARD) and
-                ($rule[Entity::PAYMENT_NETWORK] !== null))
+            if ($rule[Entity::PAYMENT_NETWORK] !== null)
             {
                 $network = $rule[Entity::PAYMENT_NETWORK];
-                $rule[Entity::PAYMENT_NETWORK_NAME] =
-                    Network::getFullName($network);
+
+                $method = $rule[Entity::PAYMENT_METHOD];
+
+                switch ($method)
+                {
+                    case Method::CARD:
+                        $rule[Entity::PAYMENT_NETWORK_NAME] = Network::getFullName($network);
+                        break;
+
+                    case Method::NETBANKING:
+                        $rule[Entity::PAYMENT_NETWORK_NAME] = Bank\Name::getName($network);
+                        break;
+
+                    default:
+                        throw new LogicException(
+                            'Network set for wrong method (not card/netbanking)',
+                            null,
+                            ['network' => $network, 'method' => $method]);
+                }
             }
 
             array_push($rules, $rule);

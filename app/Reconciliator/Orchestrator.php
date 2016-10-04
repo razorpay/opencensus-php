@@ -5,8 +5,10 @@ namespace RZP\Reconciliator;
 use DirectoryIterator;
 
 use App;
-use RZP\Trace\TraceCode;
+
+use RZP\Base\RuntimeManager;
 use RZP\Exception;
+use RZP\Trace\TraceCode;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class Orchestrator
@@ -18,36 +20,39 @@ class Orchestrator
      * whenever applicable. It does not contain the actual content.
      * It's all meta data.
      */
-    const EXTRA_DETAILS = 'extra_details';
-    const EMAIL_DETAILS = 'email_details';
+    const EXTRA_DETAILS    = 'extra_details';
+    const EMAIL_DETAILS    = 'email_details';
     const ATTACHMENT_COUNT = 'attachment_count';
 
     /******************
      * Bank constants
      ******************/
 
-    const HDFC  = 'HDFC';
-    const AXIS  = 'Axis';
-    const KOTAK = 'Kotak';
+    const HDFC     = 'HDFC';
+    const AXIS     = 'Axis';
+    const KOTAK    = 'Kotak';
     const BILLDESK = 'BillDesk';
-    const PAYZAPP = 'PayZapp';
+    const PAYZAPP  = 'PayZapp';
     const MOBIKWIK = 'Mobikwik';
-    const PAYTM = 'Paytm';
-    const ADMIN = 'admin';
+    const PAYTM    = 'Paytm';
+    const OLAMONEY = 'Olamoney';
+    const ADMIN    = 'admin';
 
     /**
      * The gateway names should be the same name as the directories present under 'reconciliator'
      */
     const GATEWAY_SENDER_MAPPING = [
-        self::HDFC => ['prashanth@razorpay.com'],
-        self::AXIS => ['prashanth@razorpay.com'],
+        self::HDFC     => ['prashanth@razorpay.com'],
+        self::AXIS     => ['prashanth@razorpay.com'],
         self::BILLDESK => ['prashanth@razorpay.com'],
         self::PAYZAPP  => ['prashanth@razorpay.com'],
         self::MOBIKWIK => ['prashanth@razorpay.com'],
         self::PAYTM    => ['prashanth@razorpay.com'],
+        self::KOTAK    => ['giri@razorpay.com'],
+        self::OLAMONEY => ['prashanth@razorpay.com'],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
-        self::ADMIN => ['prashanth.yv@razorpay.com'],
+        self::ADMIN    => ['prashanth.yv@razorpay.com'],
     ];
 
 
@@ -386,7 +391,7 @@ class Orchestrator
         if ($gateway === self::ADMIN)
         {
             $gateway = $this->emailDetails['subject'];
-            assert(in_array($gateway, array_keys(self::GATEWAY_SENDER_MAPPING)),
+            assertTrue(in_array($gateway, array_keys(self::GATEWAY_SENDER_MAPPING)),
                     "[Admin] Invalid/Unrecognized gateway sent in the subject line.");
         }
 
@@ -546,6 +551,7 @@ class Orchestrator
     protected function setGatewayReconciliatorObject($gateway)
     {
         $gatewayReconciliatorClassName = 'RZP\\Reconciliator' . '\\' . $gateway . '\\' . 'Reconciliate';
+
         $this->gatewayReconciliator = new $gatewayReconciliatorClassName;
     }
 
@@ -612,7 +618,9 @@ class Orchestrator
 
     protected function handleSettingCsvContent($fileDetails)
     {
-        $csvArray = $this->converter->convertCsvToArray($fileDetails);
+        $columnHeaders = $this->getColumnHeadersForGatewayIfApplicable($fileDetails);
+
+        $csvArray = $this->converter->convertCsvToArray($fileDetails, $columnHeaders);
 
         $this->setExtraDetails($csvArray, $fileDetails);
 
@@ -622,7 +630,27 @@ class Orchestrator
     protected function setExtraDetails(& $arrayContent, $fileDetails)
     {
         $arrayContent[self::EXTRA_DETAILS][FileProcessor::FILE_DETAILS] = $fileDetails;
+
         $arrayContent[self::EXTRA_DETAILS][self::EMAIL_DETAILS] = $this->emailDetails;
+    }
+
+    /**
+     * In case of some csv files, the column headers are not present in the csv.
+     * These have to be manually defined in the bank reconciliator file.
+     *
+     * @param $fileDetails
+     *
+     * @return array
+     */
+    protected function getColumnHeadersForGatewayIfApplicable($fileDetails)
+    {
+        $fileName = $fileDetails[FileProcessor::FILE_NAME];
+
+        $reconType = $this->gatewayReconciliator->getReconciliationTypeFromFileName($fileName);
+
+        $columnHeaders = $this->gatewayReconciliator->getColumnHeadersForType($reconType);
+
+        return $columnHeaders;
     }
 
     /**
@@ -682,6 +710,6 @@ class Orchestrator
      */
     protected function increaseAllowedSystemLimits()
     {
-        set_time_limit(3600);
+        RuntimeManager::setTimeLimit(3600);
     }
 }

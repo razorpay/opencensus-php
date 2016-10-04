@@ -4,7 +4,7 @@ namespace RZP\Services;
 
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use RZP\Gateway\GatewayManager;
-use RZP\Services;
+use CreditCardFraudDetection;
 use RZP;
 
 class ApiServiceProvider extends BaseServiceProvider
@@ -25,6 +25,13 @@ class ApiServiceProvider extends BaseServiceProvider
     {
         $this->app->singleton('mailgun', function($app)
         {
+            $mailgunMock = $app['config']->get('applications.mailgun.mock');
+
+            if ($mailgunMock === true)
+            {
+                return new Mock\Mailgun($app);
+            }
+
             return new Mailgun($app);
         });
 
@@ -54,10 +61,10 @@ class ApiServiceProvider extends BaseServiceProvider
 
             if ($tokenexMock === true)
             {
-                return new Services\Mock\TokenEx($app);
+                return new Mock\TokenEx($app);
             }
 
-            return new Services\TokenEx($app);
+            return new TokenEx($app);
         });
 
         $this->app->singleton('raven', function($app)
@@ -76,6 +83,8 @@ class ApiServiceProvider extends BaseServiceProvider
         });
 
         $this->registerApiMutex();
+
+        $this->registerMaxMind();
 
         $this->registerValidatorResolver();
 
@@ -100,6 +109,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'raven',
             'repo',
             'es',
+            'maxmind'
         );
     }
 
@@ -125,18 +135,33 @@ class ApiServiceProvider extends BaseServiceProvider
         });
     }
 
+    protected function registerMaxMind()
+    {
+        $this->app->singleton('maxmind', function($app)
+        {
+            $maxmindMock = $app['config']->get('applications.maxmind.mock');
+
+            if ($maxmindMock === true)
+            {
+                return new Mock\MaxMind($app);
+            }
+
+            return new MaxMind($app);
+        });
+    }
+
     protected function registerApiMutex()
     {
         $this->app->singleton('api.mutex', function($app)
         {
-             $lockMock = $app['config']->get('services.mutex.mock');
+            $lockMock = $app['config']->get('services.mutex.mock');
 
             if ($lockMock === true)
             {
-                return new Services\Mock\Mutex($app);
+                return new Mock\Mutex($app);
             }
 
-            return new Services\Mutex($app);
+            return new Mutex($app);
         });
     }
 }
