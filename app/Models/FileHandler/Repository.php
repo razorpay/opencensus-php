@@ -9,4 +9,11 @@ class Repository extends Base\Repository
     use Base\RepositoryFetch;
 
     protected $entity = 'file_handler';
+
+    public function getByIdOrFail($id)
+    {
+        return $this->newQuery()
+            ->where(Entity::ID, '=', $id)
+            ->firstOrFail();
+    }
 }

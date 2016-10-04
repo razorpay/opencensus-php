@@ -112,6 +112,16 @@ class Handler extends Base\Handler
         return $presignedUrl;
     }
 
+    public function getBucketName($entityName)
+    {
+        if ($this->mode === 'test')
+        {
+            return 'rzp-test-bucket';
+        }
+
+        return $this->config[$entityName];
+    }
+
     protected function getClient()
     {
         return AWS::createClient('s3');

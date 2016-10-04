@@ -6,6 +6,8 @@ use RZP\Models\Base;
 
 class Service extends Base\Service
 {
+    const DEFAULT_SERVICE   = 's3';
+
     protected $storageHandler;
 
     protected $serviceProvider;
@@ -14,7 +16,10 @@ class Service extends Base\Service
 
     public function __construct()
     {
+        parent::__construct();
+
         $this->core = new Core;
+
         $this->helper = new Helper;
     }
 
@@ -45,84 +50,77 @@ class Service extends Base\Service
     {
         $filePath = $input['filePath'];
 
-        // TODO : add handler if multiple service provider are added in future
-        $this->getStorageHandle('s3');
+        $handler = @$input['handler'] ?: self::DEFAULT_SERVICE;
 
-        if (in_array('mime', $input) === false)
-        {
-            $input['mime'] = $this->helper->getMimeType($filePath);
-        }
+        $this->getStorageHandle($handler);
 
-        //TODO : choose proper bucket depending on entity type
-        $bucket = 'rzp-test-bucket';
+        $input['bucket'] = $this->storageHandler->getBucketName('default');
 
-        $input['url'] = $this->storageHandler->save($bucket, 'name', $filePath, $input['mime'], []);
+        $fileDetails = $this->helper->getFileDetails($filePath, $input);
 
-        $fileHandlerInput = $this->getFileHandlerData($input);
+        $fileDetails[Entity::LOCATION] = $this->storageHandler->save(
+            $input['bucket'],
+            $fileDetails[Entity::NAME],
+            $filePath,
+            $fileDetails[Entity::FORMAT],
+            []
+        );
+
+        $fileHandlerInput = [];
+
+        $fileHandlerInput[Entity::SERVICE] = $this->serviceProvider;
+
+        $fileHandlerInput[Entity::BUCKET] = $input['bucket'];
+
+        $fileHandlerInput = array_merge($fileHandlerInput, $this->getEntityData($input));
+
+        $fileHandlerInput = array_merge($fileHandlerInput, $fileDetails);
 
         $fileHandler = $this->core->create($fileHandlerInput);
 
-        if (in_array('expiryTime', $input) === true)
+        $signedUrlFlag = @$input['signedUrl'] ?: false;
+
+        if ($signedUrlFlag === true)
         {
-            $fileHandler->url = $this->storageHandler->getTemporaryUrl(
-                $bucket,
-                $fileHandler->url,
-                $input['expiryTime']
-            );
+            $expiryTime = @$input['expiryTime'] ?: 0;
+
+            if ($expiryTime <= 0)
+            {
+                throw new Exception\InvalidArgumentException('Give valid expiry time');
+            }
+
+            $fileHandler->url = $this->updateUrl($input['bucket'], $expiryTime, $fileDetails[Entity::LOCATION]);
         }
 
         return $fileHandler->toArrayPublic();
     }
 
-    protected function getFileHandlerData($input)
+    protected function updateUrl($bucket, $expiryTime, $url)
     {
-        //TODO : this is for testing only, refactor and make it better
-        $fileHandlerInput = [];
+        $signedUrl = $this->storageHandler->getTemporaryUrl(
+            $bucket,
+            $url,
+            $expiryTime
+        );
 
-        $size = $this->helper->getFileSize($input['filePath']);
-
-        $password = (isset($input['password']) === true) ? $input['password'] : '';
-
-        $encryptionMethod = 'none';
-
-        $service = 's3';
-
-        $entityName = (isset($input['entityName']) === true) ? $input['entityName'] : '';
-        $entityId = (isset($input['entityId']) === true) ? $input['entityId'] : '';
-        $merchantId = (isset($input['merchantId']) === true) ? $input['merchantId'] : '';
-        $bucket = '';
-        $permission = '';
-        $metaData = '';
-        $comments = '';
-        $documentType = '';
-
-        $fileHandlerInput[Entity::FORMAT] = $input['mime'];
-
-        $fileHandlerInput[Entity::SIZE] = $size;
-
-        $fileHandlerInput[Entity::ENCRYPTION_METHOD] = $encryptionMethod;
-        $fileHandlerInput[Entity::LOCATION] = $input['url'];
-        $fileHandlerInput[Entity::SERVICE] = $service;
-        $fileHandlerInput[Entity::BUCKET] = $bucket;
-
-        $fileHandlerInput[Entity::NAME] = $input['filePath'];
-
-        $fileHandlerInput[Entity::PASSWORD] = $password;
-
-        $fileHandlerInput[Entity::ENTITY_NAME] = $entityName;
-        $fileHandlerInput[Entity::ENTITY_ID] = $entityId;
-        $fileHandlerInput[Entity::MERCHANT_ID] = $merchantId;
-        $fileHandlerInput[Entity::PERMISSION] = $permission ;
-        $fileHandlerInput[Entity::METADATA] = $metaData;
-        $fileHandlerInput[Entity::COMMENTS] = $comments;
-        $fileHandlerInput[Entity::DOCUMENT_TYPE] = $documentType;
-
-        return $fileHandlerInput;
+        return $signedUrl;
     }
 
-    public function fetch($id)
+    public function fetch($id, $signedUrlFlag = true, $expiryTime = '15')
     {
+        Entity::verifyIdAndStripSign($id);
 
+        $fileHandler = $this->repo->file_handler->getByIdOrFail($id);
+
+        if ($signedUrlFlag === true)
+        {
+            $fileHandler[Entity::LOCATION] = $this->updateUrl(
+                $fileHandler[Entity::BUCKET],
+                $expiryTime,
+                $fileHandler[Entity::LOCATION]);
+        }
+
+        return $fileHandler->toArrayPublic();
     }
 
     public function fetchContent($id)
@@ -153,5 +151,33 @@ class Service extends Base\Service
     public function deleteByEntityIdAndEntityType($id)
     {
 
+    }
+
+    protected function getEntityData($input)
+    {
+        $fileHandlerInput = [];
+
+        $entityName = @$input['entityName'] ?: '';
+
+        $entityId = @$input['entityId'] ?: '';
+
+        $merchantId = @$input['merchantId'] ?: '';
+
+        $fileHandlerInput[Entity::ENTITY_NAME] = $entityName;
+
+        $fileHandlerInput[Entity::ENTITY_ID] = $entityId;
+
+        $fileHandlerInput[Entity::MERCHANT_ID] = $merchantId;
+
+        $documentType = $this->getDocumentType($entityName, $entityId);
+
+        $fileHandlerInput[Entity::DOCUMENT_TYPE] = $documentType;
+
+        return $fileHandlerInput;
+    }
+
+    protected function getDocumentType($name, $id)
+    {
+        return $name . ':' . $id;
     }
 }
