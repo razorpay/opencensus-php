@@ -42,7 +42,7 @@ class AdminController extends Controller
         if (!Auth::guard('admin')->check())
         {
             // if code is provided get user data and sign in
-            if (getenv('OAUTH_MOCK') === false && $code === null)
+            if (env('OAUTH_MOCK') === false && $code === null)
             {   
                 return redirect((string) $googleService->getAuthorizationUri());
             }
