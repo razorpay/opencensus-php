@@ -19,7 +19,9 @@ use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Wallet\Base;
 use RZP\Models\Customer\Token;
 use RZP\Models\Merchant;
+use RZP\Models\Payment;
 use RZP\Models\Payment\Core;
+use RZP\Models\Payment\TwoFaStatus;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
@@ -202,6 +204,9 @@ class Gateway extends Base\Gateway
         }
 
         $this->traceGatewayPaymentResponse($content, $input);
+
+        // set two-fa status as passed
+        $data[Payment\Entity::TWO_FA_STATUS] = TwoFaStatus::PASSED;
 
         return $data;
     }
@@ -945,24 +950,30 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_FATAL_ERROR);
         }
-        else if ($response->status_code === 202)
+        else if (($response->status_code === 202) or
+                 ((isset($content[ResponseFields::ERROR_CODE]) === true) and
+                 (isset($content[ResponseFields::ERROR_CODE]) !== ResponseCode::SUCCESS_CODE)))
         {
             $content = $this->jsonToArray($response->body);
 
-            throw new Exception\GatewayErrorException(
-                ResponseCodeMap::getApiErrorCode($content[ResponseFields::ERROR_CODE]),
-                $content[ResponseFields::ERROR_CODE],
-                $content[ResponseFields::ERROR_MESSAGE]);
-        }
-        else if ((isset($content[ResponseFields::ERROR_CODE]) === true) and
-                 (isset($content[ResponseFields::ERROR_CODE]) !== ResponseCode::SUCCESS_CODE))
-        {
-            $content = $this->jsonToArray($response->body);
+            $errorCode = $content[ResponseFields::ERROR_CODE];
 
-            throw new Exception\GatewayErrorException(
-                ResponseCodeMap::getApiErrorCode($content[ResponseFields::ERROR_CODE]),
+            $ex = new Exception\GatewayErrorException(
+                ResponseCodeMap::getApiErrorCode($errorCode),
                 $content[ResponseFields::ERROR_CODE],
                 $content[ResponseFields::ERROR_MESSAGE]);
+
+            if ($this->getTwoFaStatus($errorCode) === TwoFaStatus::FAILED)
+            {
+                $ex->markTwoFaError();
+            }
+
+            throw $ex;
         }
+    }
+
+    protected function getTwoFaStatus($code)
+    {
+        return ResponseCodeMap::getTwoFaStatus($code);
     }
 }
