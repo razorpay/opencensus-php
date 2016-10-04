@@ -248,7 +248,7 @@ trait Capture
                 // is sent within a few seconds of the first capture request.
                 // Example : HDFC sends FS00002 error if capture request is sent within 20 seconds of the
                 // previous capture request.
-                $this->app['queue']->later(self::CAPTURE_QUEUE_DELAY, 'RZP\Jobs\Capture', ['data' => $data]);
+                $this->app['queue']->later(self::CAPTURE_QUEUE_DELAY, \RZP\Jobs\Capture::class, ['data' => $data]);
             }
 
             $this->recordCapture();

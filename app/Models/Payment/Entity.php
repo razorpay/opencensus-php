@@ -552,21 +552,6 @@ class Entity extends Base\PublicEntity
         return $verified;
     }
 
-    protected function getGatewayCapturedAttribute()
-    {
-        $gatewayCaptured = $this->attributes[self::GATEWAY_CAPTURED];
-
-        // If the attribute is null (which is the default value), it means that
-        // it has not been captured on gateway. If it is captured on gateway,
-        // the attribute would be updated.
-        if ($gatewayCaptured === null)
-        {
-             return null;
-        }
-
-        return $gatewayCaptured;
-    }
-
     protected function getCapturedAttribute()
     {
         return ($this->attributes[self::CAPTURED_AT] !== null);
