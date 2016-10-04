@@ -56,6 +56,7 @@ class RefundBatchFileTest extends TestCase
         $batch = $this->fixtures->create('batch:refund', $entries);
 
         $this->ba->proxyAuth();
+
         $this->startTest();
     }
 
@@ -68,6 +69,26 @@ class RefundBatchFileTest extends TestCase
         $payment = $this->capturePayment($entries[0]['Payment Id'], 50000);
 
         $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testProcessRefundFileWithRefundedBatch()
+    {
+        $entries = $this->getDefaultRefundFileEntries();
+
+        $batch = $this->fixtures->create('batch:refund', $entries);
+
+        $payment = $this->capturePayment($entries[0]['Payment Id'], 50000);
+
+        $refund = $this->refundPayment($entries[0]['Payment Id'], 4000);
+
+        $this->fixtures->base->editEntity('refund', $refund['id'], ['batch_id' => $batch['id']]);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->ba->appAuth();
+
         $this->startTest();
     }
 
@@ -182,7 +203,7 @@ class RefundBatchFileTest extends TestCase
 
         $request = & $this->testData[$name]['request'];
 
-        $url = $this->writeToExcelFile($entries, 'upload_refund_test', 'files/batch_file_download');
+        $url = $this->writeToExcelFile($entries, 'upload_refund_test', 'files/batch');
 
         $uploadedFile = $this->createTempFile($url);
 
@@ -194,7 +215,7 @@ class RefundBatchFileTest extends TestCase
         $entries = $this->getDefaultRefundFileEntries();
 
         $paymentId = $entries[0][0];
-        $url = $this->writeToExcelFile($entries, $paymentId .'xlsx', 'files/batch_file_download');
+        $url = $this->writeToExcelFile($entries, $paymentId .'xlsx', 'files/batch');
 
         $uploadedFile = $this->createTempFile($url);
 

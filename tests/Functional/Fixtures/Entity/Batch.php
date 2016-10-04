@@ -12,7 +12,7 @@ class Batch extends Base
 
     public function createRefund(array $attributes = array())
     {
-        $url = $this->writeToExcelFile($attributes, 'uploaded_file', 'files/batch_file_download');
+        $url = $this->writeToExcelFile($attributes, 'uploaded_file', 'files/batch');
 
         $params = [
             'upload_file_url'   => $url,
@@ -23,9 +23,10 @@ class Batch extends Base
 
         $batch = $this->fixtures->create('batch', $params);
 
-        $newUrl = $this->writeToExcelFile($attributes, $batch->getId(), 'files/batch_file_download');
+        $newUrl = $this->writeToExcelFile($attributes, $batch->getId(), 'files/batch');
 
         $batch->setUploadFileUrl($newUrl);
+
         $batch->saveOrFail();
 
         return $batch;
@@ -70,7 +71,7 @@ class Batch extends Base
         $batch = $this->fixtures->create('batch:refund', $attributes);
 
         $processedttributes = $this->createProcessedAttributes($attributes);
-        $newUrl = $this->writeToExcelFile($processedttributes, $batch->getId(), 'files/batch_file_download');
+        $newUrl = $this->writeToExcelFile($processedttributes, $batch->getId(), 'files/batch');
 
         $batch->setStatus($status);
         $batch->setAttempts($attempts);
@@ -122,13 +123,12 @@ class Batch extends Base
     protected function getTotalAmount(array $attributes = array())
     {
         $totalAmount = 0;
-        $headers = array('payment_id', 'refund_amount');
+
         foreach ($attributes as $attribute)
         {
-            $valueMap = array_combine($headers, $attribute);
-
-            $totalAmount += $valueMap['refund_amount'];
+            $totalAmount += $attribute['Amount'];
         }
+
         return $totalAmount;
     }
 }

@@ -12,6 +12,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Base\RuntimeManager;
 use RZP\Models\Settlement\Kotak\FileHandlerTrait;
 
 class Core extends Base\Core
@@ -83,7 +84,7 @@ class Core extends Base\Core
 
     public function downloadBatch($batch)
     {
-        $storagePath = storage_path('files/batch_download');
+        $storagePath = $this->processor->getStoragePath();
 
         $filename = $this->processor->getFileName($batch);
 
@@ -105,6 +106,8 @@ class Core extends Base\Core
 
     public function processBatches()
     {
+        $this->increaseAllowedSystemLimits();
+
         $batches = $this->repo->batch->findUnprocessedEntries();
 
         foreach ($batches as $batch)
@@ -142,5 +145,12 @@ class Core extends Base\Core
         }
 
         return $extension;
+    }
+
+    protected function increaseAllowedSystemLimits()
+    {
+        RuntimeManager::setMemoryLimit('1024M');
+
+        RuntimeManager::setTimeLimit(1000);
     }
 }

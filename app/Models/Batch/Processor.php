@@ -10,9 +10,11 @@ use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Models\Batch\Header;
 use RZP\Models\Settlement\Kotak\FileHandlerTrait;
 
 class Processor extends Base\Core
@@ -36,20 +38,16 @@ class Processor extends Base\Core
 
             $entries = $this->parseExcelFile($filePath);
 
-            $this->deleteFile($filePath);
+            $shouldSendMail = $this->processBatch($batch, $entries);
 
-            list($batch, $shouldSendMail, $processedFile) = $this->processBatch($batch, $entries);
-
-            $excel = $this->createExcelObject($processedFile, $batch->getId(), [], $batch->getType());
-
-            $fileMetadata = $excel->store('xlsx', storage_path('files/batch_file_download'), true);
-            $fullpath = $fileMetadata['full'];
+            $fullpath = $this->createProcessedExcel($batch, $entries);
 
             $downloadUrl = $this->saveBatchFileToAws($batch, $fullpath);
 
             $batch->setDownloadFileUrl($downloadUrl);
 
             $processedAt = Carbon::now('Asia/Kolkata')->timestamp;
+
             $batch->setProcessedAt($processedAt);
 
             $this->repo->saveOrFail($batch);
@@ -67,24 +65,42 @@ class Processor extends Base\Core
                 $this->sendMail($fullpath, $batch->merchant);
             }
 
-            $this->deleteFile($fullpath);
+            $this->deleteFile($filePath);
+
+            //$this->deleteFile($fullpath);
         });
     }
 
-    protected function processBatch($batch, $entries)
+    protected function processBatch($batch, & $entries)
     {
         $function = 'process' . ucfirst($batch->getType()) . 'Entries';
-        list($totalProcessedAmount, $totalSuccessCount, $totalFailureCount, $processedFile) = $this->$function($batch, $entries);
+        $this->$function($batch, $entries);
 
-        $totalProcessedAmount += $batch->getProcessedAmount();
-        $totalSuccessCount += $batch->getSuccessCount();
+        $totalProcessedAmount = 0;
+        $totalSuccessCount = 0;
+        $totalFailureCount = 0;
+
+        foreach ($entries as $entry)
+        {
+            if (empty($entry[Header::STATUS]) === false)
+            {
+                if($entry[Header::STATUS] === Status::SUCCESS)
+                {
+                    $totalSuccessCount++;
+
+                    $totalProcessedAmount += $entry[Header::REFUNDED_AMOUNT];
+                }
+                else
+                {
+                    $totalFailureCount++;
+                }
+            }
+        }
 
         $batch->setProcessedAmount($totalProcessedAmount);
         $batch->setSuccessCount($totalSuccessCount);
         $batch->setFailureCount($totalFailureCount);
-
-        $retryAttempts = $batch->getAttempts() + 1;
-        $batch->setAttempts($retryAttempts);
+        $batch->incrementAttempts();
 
         $shouldSendMail = false;
 
@@ -106,118 +122,109 @@ class Processor extends Base\Core
             $shouldSendMail = true;
         }
 
-        return array($batch, $shouldSendMail, $processedFile);
+        return $shouldSendMail;
     }
 
-    protected function processRefundEntries($batch, $entries)
+    protected function processRefundEntries($batch, & $entries)
     {
-        $totalRefundedAmount = 0;
-        $totalSuccessCount = 0;
-        $totalFailureCount = 0;
-        $processedFile = array();
-
-        foreach ($entries as $entry)
+        foreach ($entries as & $entry)
         {
-            $batchRefundEntry = array();
-
-            // Refund has already been made and the refund id is set
-            if (empty($entry['refund_id']) === false)
+            if ((empty($entry[Header::STATUS]) === false) and
+                ($this->isEntryProcessed($entry)))
             {
-                array_push($processedFile, $entry);
                 continue;
             }
 
-            // The complete refund for the payment has already been done
-            if ((isset($entry['status']) === true) and ($entry['status'] === Status::FAILURE) and
-                (($entry['error_description'] === PublicErrorDescription::BAD_REQUEST_PAYMENT_FULLY_REFUNDED) or
-                    ($entry['error_description'] === PublicErrorDescription::BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_CAPTURED)))
-            {
-                $totalFailureCount++;
+            $paymentId = $entry[Header::PAYMENT_ID];
 
-                array_push($processedFile, $entry);
-                continue;
-            }
+            Payment\Entity::verifyIdAndStripSign($paymentId);
 
-            $paymentId = $entry['payment_id'];
-            $amount = $entry['amount'];
+            $payment = $this->repo->payment->findByIdAndMerchantId($paymentId, $batch->getMerchantId());
 
-            array_push($batchRefundEntry, $paymentId, $amount);
+            $this->processRefundRequest($batch, $payment, $entry);
 
-            list($batchEntry, $isSuccess, $refundAmount) = $this->processRefundRequest($batch, $paymentId, $amount, $batchRefundEntry);
-
-            if($isSuccess === true)
-            {
-                $totalSuccessCount += 1;
-                $totalRefundedAmount += $refundAmount;
-            }
-            else
-            {
-                $totalFailureCount += 1;
-            }
-
-            array_push($processedFile, $batchEntry);
         }
-
-        return array($totalRefundedAmount, $totalSuccessCount, $totalFailureCount, $processedFile);
     }
 
-    protected function processRefundRequest($batch, $paymentId, $amount, $batchRefundEntry)
+    protected function findExistingRefund($batch, $payment)
     {
         // This ensure that if that batch entity is already processed, we update the refund id
-        $refunds = $this->repo->refund->fetchByBatchIdPaymentIdMerchantIdAmount($batch->getId(), $paymentId, $batch->getMerchantId(), $amount);
+        $refunds = $this->repo->refund->fetchRefundsByBatchAndPayment($batch, $payment);
 
-        if (count($refunds) > 0)
+        $count = count($refunds);
+
+        if ($count > 0)
         {
             $this->trace->error (
                 TraceCode::BATCH_ALREADY_PROCESSED,
                 [
-                    'message'            => 'Batch entry already processed',
-                    'payemntId'          => $paymentId,
-                    'amount'             => $amount,
-                    'refunds'            => $refunds->toArrayPublic()
+                    'message' => 'Batch entry already processed',
+                    'batch'   => $batch->getId(),
+                    'refunds' => $refunds->toArrayPublic()
                 ]);
 
-            $refund = $refunds[0];
+            assert($count === 1);
 
-            array_push($batchRefundEntry, $refund->getId(), $refund->getAmount(), Status::SUCCESS, '', '');
-
-            return array($batchRefundEntry, true, $refund->getAmount());
+            return $refunds[0];
         }
 
-        try
-        {
-            $refundRequest = [
-                'amount' => (string) $amount,
-            ];
-
-            $merchant = $batch->merchant;
-
-            $refund = $this->getNewProcessor($merchant)->refundCapturedPayment($paymentId, $refundRequest);
-
-            $refund->batch()->associate($batch);
-            $this->repo->saveOrFail($refund);
-
-            array_push($batchRefundEntry, $refund->getId(), $refund->getAmount(), Status::SUCCESS, '', '');
-
-            return array($batchRefundEntry, true, $refund->getAmount());
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->error(
-                TraceCode::BATCH_PROCESSING_ERROR,
-                [
-                    'message'            => 'Refund was not successfull',
-                    'payemntId'          => $paymentId,
-                    'amount'             => $amount,
-                    'errorMessage'       => $e->getCode(),
-                ]);
-
-            $error = $e->getError();
-            array_push($batchRefundEntry, '', '', Status::FAILURE, $error->getPublicErrorCode(), $error->getDescription());
-
-            return array($batchRefundEntry, false, 0);
-        }
+        return null;
     }
+
+    protected function processRefundRequest($batch, $payment, & $entry)
+    {
+        $refund = $this->findExistingRefund($batch, $payment);
+
+        if ($refund === null)
+        {
+            try
+            {
+                $refundRequest = [
+                    'amount' => (string) $entry[Header::AMOUNT],
+                ];
+
+                $merchant = $batch->merchant;
+
+                $refund = $this->getNewProcessor($merchant)->refundCapturedPayment(
+                    $payment->getPublicId(),
+                    $refundRequest);
+
+                $refund->batch()->associate($batch);
+
+                $this->repo->saveOrFail($refund);
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException($e, Trace::WARNING, TraceCode::BATCH_PROCESSING_ERROR);
+
+                $error = $e->getError();
+
+                $entry[Header::ERROR_CODE] = $error->getPublicErrorCode();
+                $entry[Header::ERROR_DESCRIPTION] = $error->getDescription();
+                $entry[Header::STATUS] = Status::FAILURE;
+
+                return;
+            }
+        }
+
+        $entry[Header::REFUND_ID] = $refund->getId();
+        $entry[Header::REFUNDED_AMOUNT] = $refund->getAmount();
+        $entry[Header::STATUS] = Status::SUCCESS;
+    }
+
+    protected function createProcessedExcel($batch, $entries)
+    {
+        $excel = $this->createExcelObject($entries, $batch->getId(), [], $batch->getType());
+
+        $storagePath = $this->getStoragePath();
+
+        $fileMetadata = $excel->store('xlsx', $storagePath, true);
+
+        $fullpath = $fileMetadata['full'];
+
+        return $fullpath;
+    }
+
 
     public function saveBatchFileToAws($batch, $file)
     {
@@ -232,7 +239,7 @@ class Processor extends Base\Core
 
     protected function getBatchFileFromAws($batch)
     {
-        $storagePath = storage_path('files/batch_file_download');
+        $storagePath = $this->getStoragePath();
 
         $filename = $this->getFileName($batch);
 
@@ -243,15 +250,22 @@ class Processor extends Base\Core
         return $this->getFileFromAws($awsKey, $filePath);
     }
 
+    public function getStoragePath()
+    {
+        $path = storage_path('files/batch');
+
+        return $path;
+    }
+
     public function getBucketFilePath($batch)
     {
         if ($batch->getStatus() === Status::CREATED)
         {
-            return 'batch_upload_bucket';
+            return 'batch/upload';
         }
         else
         {
-            return 'batch_download_bucket';
+            return 'batch/download';
         }
     }
 
@@ -277,14 +291,11 @@ class Processor extends Base\Core
         {
             $success = unlink($filePath);
 
-            if ($success === true)
-            {
-                $this->trace->info(TraceCode::BATCH_FILE_DELETE_SUCCESS, array($filePath));
-            }
-            else
-            {
-                $this->trace->info(TraceCode::BATCH_FILE_DELETE_FAILURE, $filePath);
-            }
+            $this->trace->info(TraceCode::BATCH_FILE_DELETE,
+                [
+                    'success' => $success,
+                    'filepath' => $filePath
+                ]);
         }
     }
 
@@ -300,17 +311,39 @@ class Processor extends Base\Core
         return $processor;
     }
 
+    protected function isEntryProcessed($entry)
+    {
+        $userErrorCodes = [
+            PublicErrorDescription::BAD_REQUEST_PAYMENT_FULLY_REFUNDED,
+            PublicErrorDescription::BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_CAPTURED,
+        ];
+
+        // Refund has already been made and the refund id is set
+        if (empty($entry[Header::STATUS]) === Status::SUCCESS)
+        {
+            return true;
+        }
+
+        // The complete refund for the payment has already been done
+        if (($entry[Header::STATUS] === Status::FAILURE) and
+            (in_array($entry[Header::ERROR_DESCRIPTION], $userErrorCodes)))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     protected function sendMail($filePath, $merchant)
     {
         $data = [
             'refundFile' => $filePath,
-            'body' => 'Please find attached processed Refunds File',
-            'emails' => $merchant->getTransactionReportEmailAttribute(),
+            'body'       => 'Please find attached processed Refunds File',
+            'emails'     => $merchant->getTransactionReportEmailAttribute(),
         ];
 
         Mail::send('emails.message', $data, function($message) use ($data)
         {
-
             $emails = $data['emails'];
 
             $message->from('refunds@razorpay.com', 'Refunds File');

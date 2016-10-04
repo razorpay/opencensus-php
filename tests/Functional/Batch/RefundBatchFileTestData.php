@@ -59,8 +59,12 @@ return [
                 'count' => 1,
                 'items' => [
                     [
-                        'entity' => 'batch',
-                        'status' =>  'created',
+                        'entity'        => 'batch',
+                        'status'        => 'created',
+                        'amount'        => 4000,
+                        'total_count'   => 1,
+                        'success_count' => null,
+                        'failure_count' => null
                     ],
                 ]
             ],
@@ -106,6 +110,34 @@ return [
             ],
         ],
     ],
+
+    'testProcessRefundFileWithRefundedBatch' => [
+        'request' => [
+            'url' => '/batches/process',
+            'method' => 'post',
+            'content' => [
+
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'entity'            => 'batch',
+                        'status'            => 'processed',
+                        'amount'            =>  4000,
+                        'processed_amount'  =>  4000,
+                        'success_count'     =>  1,
+                        'failure_count'     =>  0,
+                        'attempts'          =>  1,
+                    ],
+                ]
+            ],
+        ],
+    ],
+
 
     'testProcessRefundWithOneAttempt' => [
         'request' => [

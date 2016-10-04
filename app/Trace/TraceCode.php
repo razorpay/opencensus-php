@@ -276,9 +276,7 @@ class TraceCode
     const BATCH_DOWNLOAD                            = 'BATCH_DOWNLOAD';
     const BATCH_LIST                                = 'BATCH_LIST';
     const BATCH_GET                                 = 'BATCH_GET';
-    const BATCH_FILE_DELETE_FAILURE                 = 'BATCH_FILE_DELETE_FAILURE';
-    const BATCH_FILE_DELETE_SUCCESS                 = 'BATCH_FILE_DELETE_SUCCESS';
-
+    const BATCH_FILE_DELETE                         = 'BATCH_FILE_DELETE';
 
     /**
      * Trace code for critical info
@@ -384,8 +382,7 @@ class TraceCode
         self::BATCH_DOWNLOAD                            => 'Downloading the batch file',
         self::BATCH_LIST                                => 'Getting the batch files',
         self::BATCH_GET                                 => 'Get Batch by given id',
-        self::BATCH_FILE_DELETE_SUCCESS                 => 'Successfully deleted batch file',
-        self::BATCH_FILE_DELETE_FAILURE                 => 'Failure in deleting local batch file',
+        self::BATCH_FILE_DELETE                         => 'Batch file delete',
     );
 
     /**

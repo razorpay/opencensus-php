@@ -139,13 +139,12 @@ class Repository extends Base\Repository
         return $refunds;
     }
 
-    public function fetchByBatchIdPaymentIdMerchantIdAmount($batchId, $paymentId, $merchantId, $amount)
+    public function fetchRefundsByBatchAndPayment($batch, $payment)
     {
         return $this->newQuery()
-                    ->where(Refund\Entity::PAYMENT_ID, '=', $paymentId)
-                    ->where(Refund\Entity::MERCHANT_ID, '=', $merchantId)
-                    ->where(Refund\Entity::BATCH_ID, '=', $batchId)
-                    ->where(Refund\Entity::AMOUNT, '=', $amount)
+                    ->where(Refund\Entity::PAYMENT_ID, '=', $payment->getId())
+                    ->where(Refund\Entity::MERCHANT_ID, '=', $batch->getMerchantId())
+                    ->where(Refund\Entity::BATCH_ID, '=', $batch->getId())
                     ->get();
     }
 }

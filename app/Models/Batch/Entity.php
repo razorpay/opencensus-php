@@ -195,4 +195,9 @@ class Entity extends Base\PublicEntity
     {
         $this->setAttribute(self::TOTAL_COUNT, $totalCount);
     }
+
+    public function incrementAttempts()
+    {
+        $this->increment(self::ATTEMPTS);
+    }
 }
