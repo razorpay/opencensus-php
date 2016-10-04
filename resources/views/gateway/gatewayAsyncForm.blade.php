@@ -237,145 +237,149 @@
                     <div></div>
                 </div>
             </div>
-            <div class="center"><span class="link">Cancel Payment<span></div>
+            <div class="center"><span class="link" id='cancel_btn'>Cancel Payment<span></div>
         </div>
+        <form id='form' method="GET">
+            <input type="hidden" name="key_id" value="KEY_ID">
+        </form>
     </div>
 
     <script type="text/javascript">
+        var key_id = 'top_secret';
+        var cancel_url = '/v1/payments/{{$data["payment_id"]}}/cancel?key_id='+key_id;
         var request_url = '{{$data['request']['url']}}';
-
-        // var payment_id = '{{$data["payment_id"]}}';
-
-        var cancel_url = '/v1/payments/{{$data["payment_id"]}}/cancel?key_id=' + key_id;
-
-        var reg = new RegExp('[?&]key_id=([^&#]*)', 'i');
-        var key_id = reg.exec(request_url);
-        key_id = key_id ? key_id[1] : null;
-
+        var callback_url = '/v1/payments/{{$data["payment_id"]}}/redirect_callback';
         var gel =  document.getElementById.bind(document);
-        function enterOTP(e){
-            if(!e) { return '' }
 
-            var which = e.which;
-            if(typeof which !== 'number'){
-               which = e.keyCode;
-            }
+        var start_delay = 5000;
+        var end_delay = 1000;
+        var normalize_time = 60000;
 
-            if(e.metaKey || e.ctrlKey || e.altKey || which <= 18) {
-                return false
-            }
-            var character = String.fromCharCode(which);
-            if(/[0-9]/.test(character)){
-              return character;
-            }
-            e.preventDefault();
-            return false;
-        }
 
-        function showMessage (message) {
-            gel('overlay').className = 'shown';
-            gel('message-text').innerHTML = message.text;
-            gel('spinner').className = message.loader ? "shown" : '';
-        }
-
-        function hideMessage (prompt) {
-            if (prompt) {
-                gel('prompt').innerHTML = prompt;
-            }
-
-            gel('overlay').className = '';
-        }
-
-        function resendOTP () {
-            var xhr;
-            if (window.XMLHttpRequest) {
-                xhr = new XMLHttpRequest();
+        function each(iteratee, eachFunc, thisArg) {
+          var i;
+          if (arguments.length < 3) {
+            thisArg = this;
+          }
+          if (iteratee) {
+            if (iteratee.length) { // not using instanceof Array, to iterate over array-like objects
+              for (i = 0; i < iteratee.length; i++) {
+                eachFunc.call(thisArg, i, iteratee[i]);
+              }
             } else {
-                xhr = new ActiveXObject("Microsoft.XMLHTTP");
-            }
-
-            showMessage({
-                text: 'Resending OTP',
-                loader: true
-            })
-
-            var url = '/v1/payments/{{$data["payment_id"]}}/otp_resend?key_id=' + key_id;
-
-            xhr.onreadystatechange = function() {
-                gel('otp').value = '';
-                if (xhr.readyState == 4 && xhr.status == 200) {
-                    var res = JSON.parse(xhr.responseText);
-                    // hideMessage("An OTP has been sent to");
+              for (i in iteratee) {
+                if (iteratee.hasOwnProperty(i)) {
+                  eachFunc.call(thisArg, i, iteratee[i]);
                 }
+              }
             }
-
-            xhr.open('POST', url);
-            xhr.send();
+          }
         }
 
-        function addFunds() {
-            gel('mirror').setAttribute('action', '/v1/payments/{{$data["payment_id"]}}/topup?key_id=' + key_id);
-            gel('mirror').setAttribute('method', 'POST');
-            gel('mirror').submit();
-        }
+        function ajax (opts) {
+          var xhr = new XMLHttpRequest();
+          if (!opts.method) {
+            opts.method = 'get';
+          }
+          xhr.open(opts.method, opts.url, true);
 
-        function onSubmit(e){
-            var xhr;
-            gel('submitotp').disable = true;
-
-            if (window.XMLHttpRequest) {
-                xhr = new XMLHttpRequest();
-            } else {
-                xhr = new ActiveXObject("Microsoft.XMLHTTP");
+          each(
+            opts.headers,
+            function(header, value){
+              xhr.setRequestHeader(header, value);
             }
+          )
 
-            var url = request_url;
-
-            showMessage({
-                text: 'Verifying OTP',
-                loader: true
-            })
-
+          if(opts.callback) {
             xhr.onreadystatechange = function() {
-                try{
-                    var res = JSON.parse(xhr.responseText);
-                } catch (e){
-                }
-
-                if (xhr.readyState == 4) {
-                    gel('otp').value = '';
-                    if(xhr.status === 400) {
-                        hideMessage();
-                        if (res.error.action==='RETRY') {
-                            gel('prompt').innerHTML = '<span class="red">Entered OTP was incorrect. Re-enter to proceed. <span>'
-                            return
-                        } else if (res.error.action === 'TOPUP') {
-                            gel('prompt').innerHTML = 'Insufficient balance';
-                            gel('addfunds').className = 'shown';
-                            gel('resend').remove();
-                            gel('submitotp').remove();
-                            gel('otp').remove();
-                            return;
-                        }
+              if(xhr.readyState === 4 && xhr.status) {
+                var json;
+                try {
+                  json = JSON.parse(xhr.responseText);
+                } catch(e) {
+                  json = {
+                    xhr: {
+                      status: xhr.status,
+                      text: xhr.responseText
+                    },
+                    error: {
+                      description: 'Parsing error'
                     }
-
-                    gel('mirror').setAttribute('action', '/v1/payments/{{$data["payment_id"]}}/redirect_callback?key_id=' + key_id);
-                    gel('mirror').setAttribute('method', 'POST');
-                    gel('mirror').submit();
-                    gel('submitotp').disable = false;
+                  };
                 }
+                opts.callback(json);
+              }
             }
-
-            xhr.open('POST', url);
-            xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-            xhr.send('otp='+gel('otp').value);
-            return e.preventDefault();
+            xhr.onerror = function(){
+              opts.callback({error: {description: 'Network error'}});
+            }
+          }
+          xhr.send(opts.data || null);
+          return xhr;
         }
 
-        gel('otp').addEventListener('keydown', enterOTP);
-        gel('resend').addEventListener('click', resendOTP);
-        gel('otpform').addEventListener('submit', onSubmit);
-        gel('addfunds').addEventListener('click', addFunds);
+        function defer (func, timeout) {
+          if (arguments.length === 1) {
+            timeout = 0;
+          }
+          if (arguments.length < 3) {
+            setTimeout(func, timeout);
+          } else {
+            var args = arguments;
+            setTimeout(function(){
+              func.apply(null, Array.prototype.slice.call(args, 2));
+            }, timeout);
+          }
+        }
+
+        var delay = start_delay;
+        var delta = 400;
+
+        function recurseAjax(url, callback, continueTill, mature) {
+          defer(function() {
+            var xhr = ajax({
+              url: url,
+              callback: function(response) {
+                if (delay <= end_delay){
+                    delay = end_delay;
+                } else {
+                    delay -= delta;
+                }
+
+                if (continueTill.call(xhr, response)) {
+                  recurseAjax(url, callback, continueTill, true);
+                } else {
+                  callback(response);
+                }
+              }
+            })
+            if (!mature) {
+              continueTill.call(xhr);
+            }
+          }, delay)
+        }
+
+        recurseAjax(request_url, function(response){
+            /*
+             * Redirecting to callback_url regardless of whether payment is
+             * succesful or not
+             */
+            gel('form').setAttribute('action', callback_url);
+            gel('form').submit();
+        }, function(response){
+            return response && response.status;
+        })
+
+        gel('cancel_btn').onclick = function () {
+            ajax({
+                url: cancel_url,
+                callback: function(){
+                    gel('form').setAttribute('action', callback_url);
+                    gel('form').submit();
+                }
+            })
+        }
+
     </script>
 
 </body>
