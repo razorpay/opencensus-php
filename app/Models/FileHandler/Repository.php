@@ -16,4 +16,12 @@ class Repository extends Base\Repository
             ->where(Entity::ID, '=', $id)
             ->firstOrFail();
     }
+
+    public function getByEntityIdAndEntityType($entityId, $entityType)
+    {
+        return $this->newQuery()
+            ->where(Entity::ENTITY_ID, '=', $entityId)
+            ->where(Entity::ENTITY_TYPE, '=', $entityType)
+            ->get();
+    }
 }

@@ -15,7 +15,7 @@ class Validator extends Base\Validator
         Entity::BUCKET                => 'sometimes|',
         Entity::NAME                  => 'required|',
         Entity::PASSWORD              => 'sometimes|string',
-        Entity::ENTITY_NAME           => 'sometimes|string',
+        Entity::ENTITY_TYPE           => 'sometimes|string',
         Entity::ENTITY_ID             => 'sometimes|string',
         Entity::MERCHANT_ID           => 'sometimes|string',
         Entity::PERMISSION            => 'sometimes',

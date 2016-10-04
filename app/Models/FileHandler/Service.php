@@ -3,9 +3,12 @@
 namespace RZP\Models\FileHandler;
 
 use RZP\Models\Base;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Service extends Base\Service
 {
+    use SoftDeletes;
+
     const DEFAULT_SERVICE   = 's3';
 
     protected $storageHandler;
@@ -128,48 +131,87 @@ class Service extends Base\Service
 
     }
 
-    public function fetchByEntityIdAndType($id)
+    public function fetchByEntityIdAndType($entityId, $entityType, $signedUrlFlag = true, $expiryTime = '15')
     {
+        $fileHandlers = $this->repo->file_handler->getByEntityIdAndEntityType(
+            $entityId,
+            $entityType);
+        foreach ($fileHandlers as $fileHandler)
+        {
+            if ($signedUrlFlag === true)
+            {
+                $fileHandler[Entity::LOCATION] = $this->updateUrl(
+                    $fileHandler[Entity::BUCKET],
+                    $expiryTime,
+                    $fileHandler[Entity::LOCATION]);
+            }
+        }
 
+        return $fileHandlers->toArrayPublic();
     }
 
     public function search($input)
     {
-
+        //TODO :: Implement it when nothing else is left
     }
 
     public function update($id, $input)
     {
+        Entity::verifyIdAndStripSign($id);
 
+        $fileHandler = $this->repo->file_handler->getByIdOrFail($id);
+
+        $newFileHandler = $this->create($input);
+
+        $fileHandler->delete();
+
+        return $newFileHandler;
     }
 
     public function delete($id)
     {
+        Entity::verifyIdAndStripSign($id);
 
+        $fileHandler = $this->repo->file_handler->getByIdOrFail($id);
+
+        $fileHandler->delete();
+
+        //TODO : change the return type
+        return $fileHandler->toArrayPublic();
     }
 
     public function deleteByEntityIdAndEntityType($id)
     {
+        $fileHandlers = $this->repo->file_handler->getByEntityIdAndEntityType(
+            $entityId,
+            $entityType);
 
+        foreach ($fileHandlers as $fileHandler)
+        {
+            $fileHandler->delete();
+        }
+
+        //TODO : change the return type
+        return $fileHandler->toArrayPublic();
     }
 
     protected function getEntityData($input)
     {
         $fileHandlerInput = [];
 
-        $entityName = @$input['entityName'] ?: '';
+        $entityType = @$input['entityType'] ?: '';
 
         $entityId = @$input['entityId'] ?: '';
 
         $merchantId = @$input['merchantId'] ?: '';
 
-        $fileHandlerInput[Entity::ENTITY_NAME] = $entityName;
+        $fileHandlerInput[Entity::ENTITY_TYPE] = $entityType;
 
         $fileHandlerInput[Entity::ENTITY_ID] = $entityId;
 
         $fileHandlerInput[Entity::MERCHANT_ID] = $merchantId;
 
-        $documentType = $this->getDocumentType($entityName, $entityId);
+        $documentType = $this->getDocumentType($entityType, $entityId);
 
         $fileHandlerInput[Entity::DOCUMENT_TYPE] = $documentType;
 

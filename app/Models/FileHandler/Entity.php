@@ -15,7 +15,7 @@ class Entity extends Base\PublicEntity
     const BUCKET                = 'bucket';
     const NAME                  = 'name';
     const PASSWORD              = 'password';
-    const ENTITY_NAME           = 'entity_name';
+    const ENTITY_TYPE           = 'entity_type';
     const ENTITY_ID             = 'entity_id';
     const MERCHANT_ID           = 'merchant_id';
     const PERMISSION            = 'permission';
@@ -39,8 +39,9 @@ class Entity extends Base\PublicEntity
         self::ENCRYPTION_METHOD,
         self::LOCATION,
         self::SERVICE,
+        self::BUCKET,
         self::NAME,
-        self::ENTITY_NAME,
+        self::ENTITY_TYPE,
         self::ENTITY_ID,
         self::MERCHANT_ID,
         self::PERMISSION,
@@ -58,8 +59,9 @@ class Entity extends Base\PublicEntity
         self::ENCRYPTION_METHOD,
         self::LOCATION,
         self::SERVICE,
+        self::BUCKET,
         self::NAME,
-        self::ENTITY_NAME,
+        self::ENTITY_TYPE,
         self::ENTITY_ID,
         self::MERCHANT_ID,
         self::PERMISSION,
@@ -75,8 +77,9 @@ class Entity extends Base\PublicEntity
         self::ENCRYPTION_METHOD,
         self::LOCATION,
         self::SERVICE,
+        self::BUCKET,
         self::NAME,
-        self::ENTITY_NAME,
+        self::ENTITY_TYPE,
         self::ENTITY_ID,
         self::MERCHANT_ID,
         self::PERMISSION,

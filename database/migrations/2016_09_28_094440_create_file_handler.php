@@ -38,7 +38,7 @@ class CreateFileHandler extends Migration
 
             $table->string(FileHandler::PASSWORD)->nullable();
 
-            $table->string(FileHandler::ENTITY_NAME)->nullable();
+            $table->string(FileHandler::ENTITY_TYPE)->nullable();
 
             $table->string(FileHandler::ENTITY_ID)->nullable();
 
@@ -58,7 +58,7 @@ class CreateFileHandler extends Migration
 
             $table->string(FileHandler::DELETED_AT)->nullable();
 
-            $table->index([FileHandler::ENTITY_ID, FileHandler::ENTITY_NAME]);
+            $table->index([FileHandler::ENTITY_ID, FileHandler::ENTITY_TYPE]);
 
             $table->index(FileHandler::MERCHANT_ID);
 
