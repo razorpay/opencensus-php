@@ -10,6 +10,7 @@ use RZP\Models\Pricing;
 use RZP\Models\Pricing\FeeBreakup\Type as FeeBreakupType;
 use RZP\Models\Pricing\FeeBreakup\Name as FeeBreakupName;
 use RZP\Models\Merchant;
+use RZP\Models\Base;
 use RZP\Exception;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
@@ -485,20 +486,20 @@ class FeeCalculator
         $percentageAmount = (int) ceil(($amount * $percent)/10000);
         $totalAmount = $percentageAmount + $fixed;
 
-        $feesSplit = array();
+        $feesSplit = new Base\PublicCollection;
 
         if (empty($percent) === false)
         {
             $rzpPercentageFeeBreakup = $this->createFeeBreakup(FeeBreakupName::RZP, $percent, $percentageAmount, FeeBreakupType::PERCENTAGE);
 
-            array_push($feesSplit, $rzpPercentageFeeBreakup);
+            $feesSplit->push($rzpPercentageFeeBreakup);
         }
 
         if (empty($fixed) === false)
         {
             $rzpFixedFeeBreakup = $this->createFeeBreakup(FeeBreakupName::RZP, 0, $fixed, FeeBreakupType::FIXED);
 
-            array_push($feesSplit, $rzpFixedFeeBreakup);
+            $feesSplit->push($rzpFixedFeeBreakup);
         }
 
         return array($totalAmount, $feesSplit);
@@ -543,7 +544,9 @@ class FeeCalculator
         $swachhBharatCessValue = (int) ceil(($fee * self::SWACHH_BHARAT_CESS_PERCENTAGE)/10000);
         $swachhBharatCessFeeBreakup = $this->createFeeBreakup(FeeBreakupName::SWACHH_BHARAT_CESS, self::SWACHH_BHARAT_CESS_PERCENTAGE, $swachhBharatCessValue, FeeBreakupType::PERCENTAGE);
 
-        array_push($feesSplit, $serviceTaxFeeBreakup, $krishiKalyanCessFeeBreakup, $swachhBharatCessFeeBreakup);
+        $feesSplit->push($serviceTaxFeeBreakup);
+        $feesSplit->push($krishiKalyanCessFeeBreakup);
+        $feesSplit->push($swachhBharatCessValue);
 
         $totaltaxes = $serviceTaxValue + $krishiKalyanCessValue + $swachhBharatCessValue;
 

@@ -456,7 +456,7 @@ final class Route
         'credits_delete',
         'order_refund_multiple_authorized',
         'scorecard',
-        'migrate_transactions',
+        'migrate_transactions'
     );
 
     public static $proxy = array(

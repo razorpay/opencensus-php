@@ -107,7 +107,7 @@ class Payment extends Base
 
         $payment->saveOrFail();
 
-        $this->saveFeeDetails($feesSplit, $txn);
+        // $this->saveFeeDetails($feesSplit, $txn);
         return $payment;
     }
 
@@ -171,7 +171,7 @@ class Payment extends Base
 
         $payment->saveOrFail();
 
-        $this->saveFeeDetails($feesSplit, $txn);
+        // $this->saveFeeDetails($feesSplit, $txn);
 
         return $payment;
     }
@@ -211,7 +211,7 @@ class Payment extends Base
 
         $payment->saveOrFail();
 
-        $this->saveFeeDetails($feesSplit, $txn);
+        // $this->saveFeeDetails($feesSplit, $txn);
 
         return $payment;
     }

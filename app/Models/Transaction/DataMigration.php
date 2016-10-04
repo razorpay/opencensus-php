@@ -34,6 +34,8 @@ class DataMigration extends Base\Service
     {
         $txns = $this->repo->transaction->getTransactionsToBeMigrated();
 
+        $response = [];
+
         foreach ($txns as $txn)
         {
             $payment = $this->repo->payment->findOrFail($txn->getEntityId());
@@ -47,9 +49,11 @@ class DataMigration extends Base\Service
             $feesSplit = $this->calculateServiceTaxes($fees, $feesSplit, $payment->getCaptureTimestamp());
 
             $this->saveFeeDetails($txn, $feesSplit, $payment->getCaptureTimestamp());
+
+            $response[$txn->getId()] = $feesSplit->toArrayPublic();
         }
 
-        return $txns->toArrayPublic();
+        return $response;
     }
 
     protected function calculateServiceTaxes($fee, $feesSplit, $capturedTime)
@@ -66,7 +70,7 @@ class DataMigration extends Base\Service
             $serviceTaxFeeBreakup = $this->createFeeBreakup(FeeBreakupName::SERVICE_TAX, self::SERVICE_TAX_PERCENTAGE_AFTER_CUTOFF, $serviceTaxValue, FeeBreakupType::PERCENTAGE);
         }
 
-        array_push($feesSplit, $serviceTaxFeeBreakup);
+        $feesSplit->push($serviceTaxFeeBreakup);
 
         // Checking the capture time with the SB cutoff time
         if ($capturedTime >= self::SWACH_BHARAT_CUTOFF_TIMESTAMP)
@@ -74,7 +78,7 @@ class DataMigration extends Base\Service
             $swachhBharatCessValue = (int) ceil(($fee * self::SWACHH_BHARAT_CESS_PERCENTAGE)/10000);
             $swachhBharatCessFeeBreakup = $this->createFeeBreakup(FeeBreakupName::SWACHH_BHARAT_CESS, self::SWACHH_BHARAT_CESS_PERCENTAGE, $swachhBharatCessValue, FeeBreakupType::PERCENTAGE);
 
-            array_push($feesSplit, $swachhBharatCessFeeBreakup);
+            $feesSplit->push($swachhBharatCessFeeBreakup);
         }
 
         // Checking the capture time with the KK cutoff time
@@ -83,7 +87,7 @@ class DataMigration extends Base\Service
             $krishiKalyanCessValue = (int) ceil(($fee * self::KRISHI_KALYAN_CESS_PERCENTAGE)/10000);
             $krishiKalyanCessFeeBreakup = $this->createFeeBreakup(FeeBreakupName::KRISHI_KALYAN_CESS, self::KRISHI_KALYAN_CESS_PERCENTAGE, $krishiKalyanCessValue, FeeBreakupType::PERCENTAGE);
 
-            array_push($feesSplit, $krishiKalyanCessFeeBreakup);
+            $feesSplit->push($krishiKalyanCessFeeBreakup);
         }
 
         return $feesSplit;
@@ -94,20 +98,20 @@ class DataMigration extends Base\Service
         $percentageAmount = (int) ceil(($amount * $percent)/10000);
         $totalAmount = $percentageAmount + $fixed;
 
-        $feesSplit = array();
+        $feesSplit = new Base\PublicCollection;
 
         if (empty($percent) === false)
         {
             $rzpPercentageFeeBreakup = $this->createFeeBreakup(FeeBreakupName::RZP, $percent, $percentageAmount, FeeBreakupType::PERCENTAGE);
 
-            array_push($feesSplit, $rzpPercentageFeeBreakup);
+            $feesSplit->push($rzpPercentageFeeBreakup);
         }
 
         if (empty($fixed) === false)
         {
             $rzpFixedFeeBreakup = $this->createFeeBreakup(FeeBreakupName::RZP, 0, $fixed, FeeBreakupType::FIXED);
 
-            array_push($feesSplit, $rzpFixedFeeBreakup);
+            $feesSplit->push($rzpFixedFeeBreakup);
         }
 
         return array($totalAmount, $feesSplit);
@@ -138,6 +142,7 @@ class DataMigration extends Base\Service
         {
             foreach ($feesSplit as $feeSplit)
             {
+
                 $feeSplit->transaction()->associate($txn);
 
                 $feeSplit->setCreatedAt($captureTime);
