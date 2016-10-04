@@ -30,6 +30,7 @@ class Gateway extends Base\Gateway
 
     protected $topup = true;
 
+    protected $accessToken;
 
     protected $map = array(
         Entity::EMAIL                   => Entity::EMAIL,
@@ -151,6 +152,8 @@ class Gateway extends Base\Gateway
         $response = $this->sendGatewayRequest($request);
 
         $content = $this->jsonToArray($response->body);
+
+        $data = [];
 
         if (isset($content[ResponseFields::ACCESS_TOKEN]) === true)
         {
