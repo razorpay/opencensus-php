@@ -923,7 +923,7 @@ class Gateway extends Base\Gateway
             return $this->config['test_merchant_id'];
         }
 
-        return $terminal['gateway_merchant_id'];
+        return $this->input['terminal']['gateway_merchant_id'];
     }
 
     protected function getValidWalletToken($input)
