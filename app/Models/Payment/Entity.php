@@ -47,6 +47,7 @@ class Entity extends Base\PublicEntity
     const CONTACT               = 'contact';
     const NOTES                 = 'notes';
     const BANK                  = 'bank';
+    const CARD                  = 'card';
     const CARD_ID               = 'card_id';
     const WALLET                = 'wallet';
     const EMI_PLAN_ID           = 'emi_plan_id';
@@ -1055,8 +1056,9 @@ class Entity extends Base\PublicEntity
     {
         if (isset($array[self::CUSTOMER_ID]))
         {
-            $array[self::CUSTOMER_ID] =
-                Customer\Entity::getIdPrefix() . $this->getAttribute(self::CUSTOMER_ID);
+            $customerId = $this->getAttribute(self::CUSTOMER_ID);
+
+            $array[self::CUSTOMER_ID] = Customer\Entity::getSignedId($customerId);
         }
         else
         {
@@ -1068,8 +1070,9 @@ class Entity extends Base\PublicEntity
     {
         if (isset($array[self::TOKEN_ID]))
         {
-            $array[self::TOKEN_ID] =
-                Customer\Token\Entity::getIdPrefix() . $this->getAttribute(self::TOKEN_ID);
+            $tokenId = $this->getAttribute(self::TOKEN_ID);
+
+            $array[self::TOKEN_ID] = Customer\Token\Entity::getSignedId($tokenId);
         }
         else
         {

@@ -5,6 +5,9 @@ namespace RZP\Tests\Functional\Payment;
 use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Models\Card\Entity as Card;
+use RZP\Models\Payment\Entity as Payment;
+use RZP\Models\Customer\Token\Entity as Token;
 
 class RecurringPaymentTest extends TestCase
 {
@@ -68,15 +71,15 @@ class RecurringPaymentTest extends TestCase
 
         $tokenEntity   = $this->getLastEntity('token', true);
 
-        $this->assertEquals($paymentEntity['terminal_id'], '1000CybrsTrmnl');
+        $this->assertEquals($paymentEntity[Payment::TERMINAL_ID], '1000CybrsTrmnl');
 
-        $this->assertEquals(true, $tokenEntity['recurring']);
+        $this->assertEquals(true, $tokenEntity[Token::RECURRING]);
 
-        $tokenId = $paymentEntity['token_id'];
+        $tokenId = $paymentEntity[Payment::TOKEN_ID];
 
-        unset($payment['card']);
+        unset($payment[Payment::CARD]);
 
-        $payment['token'] = $tokenId;
+        $payment[Payment::TOKEN] = $tokenId;
 
         $data = $this->testData[__FUNCTION__];
 
@@ -98,15 +101,15 @@ class RecurringPaymentTest extends TestCase
 
         $tokenEntity   = $this->getLastEntity('token', true);
 
-        $this->assertEquals($paymentEntity['terminal_id'], '1000CybrsTrmnl');
+        $this->assertEquals($paymentEntity[Payment::TERMINAL_ID], '1000CybrsTrmnl');
 
-        $this->assertEquals(true, $tokenEntity['recurring']);
+        $this->assertEquals(true, $tokenEntity[Token::RECURRING]);
 
-        $tokenId = $paymentEntity['token_id'];
+        $tokenId = $paymentEntity[Payment::TOKEN_ID];
 
-        unset($payment['card']);
+        unset($payment[Payment::CARD]);
 
-        $payment['token'] = $tokenId;
+        $payment[Payment::TOKEN] = $tokenId;
 
         $this->ba->privateAuth();
 
@@ -116,7 +119,7 @@ class RecurringPaymentTest extends TestCase
 
         $paymentEntity = $this->getLastEntity('payment', true);
 
-        $this->assertEquals($paymentEntity['terminal_id'], '2RecurringTerm');
+        $this->assertEquals($paymentEntity[Payment::TERMINAL_ID], '2RecurringTerm');
     }
 
     public function testRecurringPaymentCreatePrivateAuth()
@@ -150,7 +153,7 @@ class RecurringPaymentTest extends TestCase
     {
         $payment = $this->getDefaultRecurringPaymentArray();
 
-        $payment['card']['number'] = '4000000000000002';
+        $payment[Payment::CARD]['number'] = '4000000000000002';
 
         $data = $this->testData[__FUNCTION__];
 
@@ -163,8 +166,8 @@ class RecurringPaymentTest extends TestCase
     {
         $payment = $this->getDefaultRecurringPaymentArray();
 
-        $payment['card']['number'] = '341111111111111';
-        $payment['card']['cvv'] = '8888';
+        $payment[Payment::CARD]['number'] = '341111111111111';
+        $payment[Payment::CARD]['cvv'] = '8888';
 
         $data = $this->testData[__FUNCTION__];
 
@@ -177,9 +180,9 @@ class RecurringPaymentTest extends TestCase
     {
         $payment = $this->getDefaultRecurringPaymentArray();
 
-        $payment['token'] = '10000cardtoken';
+        $payment[Payment::TOKEN] = '10000cardtoken';
 
-        unset($payment['card']);
+        unset($payment[Payment::CARD]);
 
         $data = $this->testData[__FUNCTION__];
 
@@ -192,9 +195,9 @@ class RecurringPaymentTest extends TestCase
     {
         $payment = $this->getDefaultRecurringPaymentArray();
 
-        $payment['token'] = '10000cardtoken';
+        $payment[Payment::TOKEN] = '10000cardtoken';
 
-        unset($payment['card']);
+        unset($payment[Payment::CARD]);
 
         $this->fixtures->base->editEntity('card', '100000000lcard', ["type" => 'credit']);
 
@@ -202,12 +205,12 @@ class RecurringPaymentTest extends TestCase
 
         $content = $this->doS2SRecurringPayment($payment);
 
-        $payment['card'] = [];
+        $payment[Payment::CARD] = [];
 
         $content = $this->doS2SRecurringPayment($payment);
 
         $paymentEntity = $this->getLastEntity('payment', true);
 
-        $this->assertEquals($paymentEntity['terminal_id'], '2RecurringTerm');
+        $this->assertEquals($paymentEntity[Payment::TERMINAL_ID], '2RecurringTerm');
     }
 }
