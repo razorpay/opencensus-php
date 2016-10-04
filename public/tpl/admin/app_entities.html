@@ -93,8 +93,7 @@
         </thead>
         <tbody>
           <tr ng-repeat="row in entity.items">
-            <td ng-repeat="key in notSorted(row) | limitTo: 11" ng-init="value = row[key]"
-            >
+            <td ng-repeat="key in notSorted(row) | limitTo: 11" ng-init="value = row[key]">
               <!-- This is the entity.id -->
               <a target="_blank" ui-sref="{{getState(row.entity, true)}}" ng-show="key==='id'">
                 <code>{{value}}</code>
