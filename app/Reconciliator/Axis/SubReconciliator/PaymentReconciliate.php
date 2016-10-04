@@ -36,14 +36,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         'Y-m-d h:i:s'
     ];
 
-    protected $messenger;
     protected $axisMigsRepo;
 
     public function __construct()
     {
         parent::__construct();
-
-        $this->messenger = new Messenger();
 
         $this->axisMigsRepo = $this->repo->axis_migs;
     }
