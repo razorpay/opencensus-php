@@ -676,7 +676,17 @@ final class Route
         $doNotLogUrls = array(
             'v1/payments/create/jsonp',
             'payments/create/jsonp',
-            self::$apiRoutes['payment_create_jsonp'][1]);
+            self::$apiRoutes['payment_create_jsonp'][1],
+            'v1/payments',
+            'v1/payments/create',
+            'v1/payments/create/recurring',
+            'v1/payments/create/redirect',
+            'v1/payments/create/checkout',
+            'v1/payments/create/jsonp',
+            'v1/payments/create/ajax',
+            'v1/payments/create/fees',
+            'v1/payments/create/wallet'
+        );
 
         return $doNotLogUrls;
     }

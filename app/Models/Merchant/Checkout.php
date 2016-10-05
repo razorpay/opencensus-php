@@ -45,12 +45,14 @@ class Checkout
 
     protected function tracePreferencesRequest($merchant, $mode, $input)
     {
+        $sessionData = $this->app['request']->session()->all();
+
         $this->app['trace']->info(
             TraceCode::CHECKOUT_PREFERENCES_REQUEST,
             [
                 'merchant_id' => $merchant->getId(),
                 'mode'        => $mode,
-                'cookie'      => Session::getId(),
+                'session'     => $sessionData,
                 'input'       => $input
             ]);
     }

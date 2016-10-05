@@ -381,7 +381,6 @@ class Gateway extends Base\Gateway
             'received' => true
         );
 
-        //  Changing action to AUTHORIZE to keep the action consistent
         $this->action = Action::AUTHORIZE;
 
         $this->createGatewayPaymentEntity($contentToSave);

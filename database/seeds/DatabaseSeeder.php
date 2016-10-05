@@ -128,8 +128,11 @@ class DatabaseSeeder extends Seeder
                     'id'            =>  Account::TEST_ACCOUNT,
                     'created_at'    =>  time(),
                     'updated_at'    =>  time(),
-                    )
-                );
+                    'balance'       =>  100000,
+                    'credits'       =>  50000,
+                    'on_hold'       =>  10000,
+                )
+            );
 
             DB::table(Table::MERCHANT)->insert(
                 array(
@@ -780,7 +783,7 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'       => 'demo_merchant_amex',
                 'gateway_terminal_id'       => 'demo_terminal_amex',
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_amex_terminal_pass'),
-                'recurring'             => 0,
+                'recurring'                 => 0,
                 'created_at'                =>  time(),
                 'updated_at'                =>  time(),
                 )
@@ -798,7 +801,7 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'       => 'test_merchant_payzapp',
                 'gateway_terminal_id'       => 'test_terminal_payzapp',
                 'gateway_terminal_password' => Crypt::encrypt('test_account_payzapp_terminal_pass'),
-                'recurring'             => 0,
+                'recurring'                 => 0,
                 'created_at'                => time(),
                 'updated_at'                => time(),
                 'category'                  => 1000,
@@ -816,7 +819,7 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'       => 'demo_merchant_payzapp',
                 'gateway_terminal_id'       => 'demo_terminal_payzapp',
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_payzapp_terminal_pass'),
-                'recurring'             => 0,
+                'recurring'                 => 0,
                 'created_at'                =>  time(),
                 'updated_at'                =>  time(),
                 )
@@ -852,7 +855,7 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'       => 'test_merchant_payumoney',
                 'gateway_terminal_id'       => 'test_terminal_payumoney',
                 'gateway_terminal_password' => Crypt::encrypt('test_account_payumoney_terminal_pass'),
-                'recurring'             => 0,
+                'recurring'                 => 0,
                 'created_at'                => time(),
                 'updated_at'                => time(),
                 'category'                  => 1000,
@@ -870,7 +873,7 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'       => 'demo_merchant_payumoney',
                 'gateway_terminal_id'       => 'demo_terminal_payumoney',
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_payumoney_terminal_pass'),
-                'recurring'             => 0,
+                'recurring'                 => 0,
                 'created_at'                =>  time(),
                 'updated_at'                =>  time(),
             )
@@ -887,7 +890,7 @@ class DatabaseSeeder extends Seeder
                 'card'                      => '0',
                 'gateway_terminal_id'       => 'test_terminal_olamoney',
                 'gateway_terminal_password' => Crypt::encrypt('test_account_olamoney_terminal_pass'),
-                'recurring'             => 0,
+                'recurring'                 => 0,
                 'created_at'                => time(),
                 'updated_at'                => time(),
                 'category'                  => 1000,
@@ -904,7 +907,7 @@ class DatabaseSeeder extends Seeder
                 'netbanking'                => '0',
                 'gateway_terminal_id'       => 'demo_terminal_olamoney',
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_olamoney_terminal_pass'),
-                'recurring'             => 0,
+                'recurring'                 => 0,
                 'created_at'                => time(),
                 'updated_at'                => time(),
             )

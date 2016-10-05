@@ -337,7 +337,8 @@ class PaymentCreateController extends Controller
             }
             else if ($data['type'] === 'async')
             {
-                return $data;
+                return View::make('gateway.gatewayAsyncForm')
+                           ->with('data', $data);
             }
             else
             {

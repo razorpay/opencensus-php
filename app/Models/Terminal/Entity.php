@@ -47,11 +47,12 @@ class Entity extends Base\PublicEntity
 
     //const PRIORITY                      = 'priority';
 
-    protected $fillable = array(
+    protected $fillable = [
         self::MERCHANT_ID,
         self::GATEWAY,
         self::CARD,
         self::CATEGORY,
+        self::NETWORK_CATEGORY,
         self::UPI,
         self::EMI,
         self::EMI_DURATION,
@@ -66,15 +67,16 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_RECON_PASSWORD,
         self::GATEWAY_ACQUIRER,
         self::ENABLED
-    );
+    ];
 
-    protected $public = array(
+    protected $public = [
         self::ID,
         self::ENTITY,
         self::MERCHANT_ID,
         self::GATEWAY,
         self::CARD,
         self::CATEGORY,
+        self::NETWORK_CATEGORY,
         self::UPI,
         self::EMI,
         self::EMI_DURATION,
@@ -89,15 +91,15 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::DELETED_AT,
         self::ENABLED
-    );
+    ];
 
     protected $table = 'terminals';
 
-    protected $hidden = array(
+    protected $hidden = [
         self::GATEWAY_TERMINAL_PASSWORD,
         self::GATEWAY_SECURE_SECRET,
         self::GATEWAY_RECON_PASSWORD,
-    );
+    ];
 
     protected $generateIdOnCreate = true;
 
@@ -111,8 +113,9 @@ class Entity extends Base\PublicEntity
 
     protected static $modifiers = array('inputRemoveBlanks');
 
-    protected $defaults = array(
+    protected $defaults = [
         self::CATEGORY                  => null,
+        self::NETWORK_CATEGORY          => null,
         self::GATEWAY_MERCHANT_ID       => null,
         self::GATEWAY_TERMINAL_ID       => null,
         self::GATEWAY_TERMINAL_PASSWORD => null,
@@ -125,9 +128,9 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_ACQUIRER          => null,
         self::RECURRING                 => Recurring::NON_RECURRING,
         self::ENABLED                   => true,
-    );
+    ];
 
-    protected $casts = array(
+    protected $casts = [
         self::CARD                      => 'boolean',
         self::EMI                       => 'boolean',
         self::NETBANKING                => 'boolean',
@@ -135,7 +138,7 @@ class Entity extends Base\PublicEntity
         self::SHARED                    => 'boolean',
         self::UPI                       => 'boolean',
         self::ENABLED                   => 'boolean',
-    );
+    ];
 
     // ---------------------- GETTERS ----------------------
 

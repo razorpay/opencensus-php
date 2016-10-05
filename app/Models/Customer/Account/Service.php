@@ -160,13 +160,11 @@ class Service extends Base\Service
         // preferences, we need to find out for first case only
         if ($sendOtp === true)
         {
-            $key = $this->mode . '_checkcookie';
-
-            $checkCookie = $this->app['request']->session()->get($key);
+            $sessionData = $this->app['request']->session()->all();
 
             $this->trace->info(TraceCode::CUSTOMER_CHECKCOOKIE_STATUS,
                 [
-                    'cookie' => $checkCookie
+                    'session' => $sessionData
                 ]);
 
             // return once this matches the mismatch cases.

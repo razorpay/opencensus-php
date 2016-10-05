@@ -14,9 +14,11 @@ class EmiFile extends Base\EmiFile
 {
     protected static $fileToWriteName = 'IndusInd_Emi_File';
 
-    protected static $emailIdsToSendTo = ['indusind.emi@razorpay.com'];
+    protected $emailIdsToSendTo = ['indusind.emi@razorpay.com'];
 
-    protected static $headers = array(
+    protected $bankName  = 'IndusInd';
+
+    protected static $headers = [
             'EMI ID',
             'Card Pan',
             'Issuer',
@@ -53,7 +55,7 @@ class EmiFile extends Base\EmiFile
             'Additional Cashback',
             'Reward Point',
             'Txn Type',
-        );
+        ];
 
     public function generate($input)
     {
@@ -61,39 +63,11 @@ class EmiFile extends Base\EmiFile
 
         $urlExcel = $this->writeToExcelFile($txt, $this->getFileToWriteNameWithoutExt());
 
-        $this->sendIndusIndEmiFile();
-
-        return $urlExcel;
-    }
-
-    protected function sendIndusIndEmiFile()
-    {
-        $this->fetchAndSendPassword();
-
         $fullPath = $this->getExcelFullFilePath();
 
-        $zipFile = $this->getZippedFile($fullPath);
+        $this->sendEmiFile($fullPath);
 
-        $data['file'] = $zipFile;
-
-        $data['body'] = 'Please process the attached EMI file';
-
-        $data['emails'] = self::$emailIdsToSendTo;
-
-        $this->mail->queue('emails.message', $data, function ($message) use ($data)
-        {
-            $emails = array_merge($data['emails'], ['settlements@razorpay.com']);
-
-            $message->from('emifiles@razorpay.com', 'IndusInd Emi File');
-
-            $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
-            $message->subject('IndusInd Emi File for ' . $today);
-
-            $message->to($emails);
-
-            $message->attach($data['file']);
-        });
+        return $urlExcel;
     }
 
     protected function getEmiData($input)
@@ -104,13 +78,13 @@ class EmiFile extends Base\EmiFile
 
         foreach ($input as $emiPayment)
         {
-            $emiPlan = (new Service)->fetch($emiPayment->getEmiPlanId());
+            $emiPlan = $emiPayment->emiPlan;
 
             $emiTenure = $emiPlan['duration'];
 
             $emiPercent = $emiPlan['rate']/100;
 
-            $data[] = array(
+            $data[] = [
                 'EMI ID'                       => $emiPayment->getId(),
                 'Card Pan'                     => $this->getCardNumber($emiPayment->card),
                 'Issuer'                       => 'INDUSIND',
@@ -147,7 +121,7 @@ class EmiFile extends Base\EmiFile
                 'Additional Cashback'          => '',
                 'Reward Point'                 => '',
                 'Txn Type'                     => '',
-            );
+            ];
         }
 
         return $data;
@@ -156,25 +130,5 @@ class EmiFile extends Base\EmiFile
     private function formattedDateFromTimestamp($timestamp)
     {
         return Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata')->format('j/n/Y');
-    }
-
-    protected function sendEmiPassword()
-    {
-        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
-        $data['emails'] = self::$emailIdsToSendTo;
-
-        $data['body'] = 'IndusInd Emi File Password for ' . $today . " is " . $this->emiFilePassword;
-
-        $this->mail->queue('emails.message', $data, function ($message) use ($data, $today)
-        {
-            $emails = $data['emails'];
-
-            $message->from('emifiles@razorpay.com', 'IndusInd Emi File Password');
-
-            $message->subject('IndusInd Emi File Password for ' . $today);
-
-            $message->to($emails);
-        });
     }
 }
