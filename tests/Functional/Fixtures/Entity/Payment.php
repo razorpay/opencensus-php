@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
+use RZP\Models\Base\PublicCollection;
+
 class Payment extends Base
 {
     use TransactionTrait;
@@ -102,7 +104,9 @@ class Payment extends Base
 
         $payment->saveOrFail();
 
-        list($txn, $feesSplit) = $this->createTransactionForPaymentAuthorized($payment);
+        $feesSplit = new PublicCollection;
+
+        $txn = $this->createTransactionForPaymentAuthorized($payment, $feesSplit);
         $txn->saveOrFail();
 
         $payment->saveOrFail();
@@ -165,7 +169,9 @@ class Payment extends Base
                 'updated_at' => $payment->created_at,
             ));
 
-        list($txn, $feesSplit) = $this->createTransactionForPaymentAuthorized($payment);
+        $feesSplit = new PublicCollection;
+
+        $txn = $this->createTransactionForPaymentAuthorized($payment, $feesSplit);
 
         $txn->saveOrFail();
 
@@ -206,7 +212,9 @@ class Payment extends Base
                 'updated_at' => $payment->created_at,
             ));
 
-        list($txn, $feesSplit) = $this->createTransactionForPaymentAuthorized($payment);
+        $feesSplit = new PublicCollection;
+
+        $txn = $this->createTransactionForPaymentAuthorized($payment, $feesSplit);
         $txn->saveOrFail();
 
         $payment->saveOrFail();

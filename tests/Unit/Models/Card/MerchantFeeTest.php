@@ -8,6 +8,7 @@ use RZP\Models\Pricing;
 use RZP\Models\Payment;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Models\Base\PublicCollection;
 
 class MerchantFeeTest extends TestCase
 {
@@ -498,7 +499,9 @@ class MerchantFeeTest extends TestCase
 
         $payment->setInternational();
 
-        list($fee, $serviceTax, $ruleKey) = $this->fee->calculateMerchantFees($payment);
+        $feesSplit = new PublicCollection;
+
+        list($fee, $serviceTax, $ruleKey) = $this->fee->calculateMerchantFees($payment, $feesSplit);
 
         $this->assertEquals($expectedRule, $ruleKey);
     }
@@ -515,7 +518,9 @@ class MerchantFeeTest extends TestCase
 
         $payment = new Payment\Entity($paymentArray);
 
-        list($fee, $serviceTax, $ruleKey) = $this->fee->calculateMerchantFees($payment);
+        $feesSplit = new PublicCollection;
+
+        list($fee, $serviceTax, $ruleKey) = $this->fee->calculateMerchantFees($payment, $feesSplit);
 
         $this->assertEquals($expectedRule, $ruleKey);
     }
@@ -530,7 +535,9 @@ class MerchantFeeTest extends TestCase
 
         $payment = new Payment\Entity($paymentArray);
 
-        list($fee, $serviceTax, $ruleKey) = $this->fee->calculateMerchantFees($payment);
+        $feesSplit = new PublicCollection;
+
+        list($fee, $serviceTax, $ruleKey) = $this->fee->calculateMerchantFees($payment, $feesSplit);
 
         $this->assertEquals($expectedRule, $ruleKey);
     }

@@ -41,35 +41,33 @@ class FeeCalculator
 
     }
 
-    public function calculate($pricing, $preCalculationOfFees = false)
+    public function calculate($pricing, & $feesSplit, $preCalculationOfFees = false)
     {
         $entity = $this->entity;
 
         $rule = $this->getRelevantPricingRule($pricing);
 
-        list($fee, $serviceTax, $feesSplit) = $this->getFees($rule, $entity->getAmount(), $preCalculationOfFees);
+        list($fee, $serviceTax) = $this->getFees($rule, $entity->getAmount(), $feesSplit, $preCalculationOfFees);
 
-        return array($fee, $serviceTax, $rule->getKey(), $feesSplit);
+        return array($fee, $serviceTax, $rule->getKey());
     }
 
 
-    protected function getFees($rule, $amount, $preCalculationOfFees = false)
+    protected function getFees($rule, $amount, & $feesSplit, $preCalculationOfFees = false)
     {
         list($percent, $fixed) = $rule->getRates();
 
-        list($fee, $feesSplit) = $this->getUnroundedFees($amount, $percent, $fixed, self::SERVICE_TAX_PERCENTAGE, $preCalculationOfFees);
+        $fee = $this->getUnroundedFees($amount, $percent, $fixed, $feesSplit, $preCalculationOfFees);
 
         $fee = (int) ceil($fee);
 
-        list($totaltaxes, $feesSplit) = $this->calculateServiceTaxes($fee, $feesSplit);
-
-
+        $totaltaxes = $this->calculateServiceTaxes($fee, $feesSplit);
 
         $totalFees = $fee + $totaltaxes;
 
         assert ($totalFees < $amount);
 
-        return  array($totalFees, $totaltaxes, $feesSplit);
+        return  array($totalFees, $totaltaxes);
     }
 
     public static function getServiceTaxRate()
@@ -455,9 +453,9 @@ class FeeCalculator
      * @param boolean $preCalculationOfFees
      * @return fees
      */
-    protected function getUnroundedFees($amount, $percent, $fixed, $serviceTaxPercentage, $preCalculationOfFees = false)
+    public function getUnroundedFees($amount, $percent, $fixed, & $feesSplit, $preCalculationOfFees = false)
     {
-        return $this->getRzpFeesUsingPercentOfOriginalAmount($amount, $percent, $fixed, $serviceTaxPercentage);
+        return $this->getRzpFeesUsingPercentOfOriginalAmount($amount, $percent, $fixed, $feesSplit);
     }
 
     /**
@@ -483,12 +481,10 @@ class FeeCalculator
      *
      * rzpFees = percent * amount + fixed
      */
-    protected function getRzpFeesUsingPercentOfOriginalAmount($amount, $percent, $fixed, $serviceTaxPercentage)
+    protected function getRzpFeesUsingPercentOfOriginalAmount($amount, $percent, $fixed, & $feesSplit)
     {
         $percentageAmount = (int) ceil(($amount * $percent)/10000);
         $totalAmount = $percentageAmount + $fixed;
-
-        $feesSplit = new Base\PublicCollection;
 
         if (empty($percent) === false)
         {
@@ -504,7 +500,7 @@ class FeeCalculator
             $feesSplit->push($rzpFixedFeeBreakup);
         }
 
-        return array($totalAmount, $feesSplit);
+        return $totalAmount;
     }
 
     protected function traceAllRules($rules)
@@ -535,16 +531,26 @@ class FeeCalculator
         return $feeBreakup;
     }
 
-    protected function calculateServiceTaxes($fee, $feesSplit)
+    public function calculateServiceTaxes($fee, & $feesSplit,
+            $serviceTaxPercentage = self::SERVICE_TAX_PERCENTAGE,
+            $swachhBharatCessPercentage = self::SWACHH_BHARAT_CESS_PERCENTAGE,
+            $krishiKalyanCessPercentage = self::KRISHI_KALYAN_CESS_PERCENTAGE)
+
     {
-        $serviceTaxValue = (int) ceil(($fee * self::SERVICE_TAX_PERCENTAGE)/10000);
-        $serviceTaxFeeBreakup = $this->createFeeBreakup(FeeBreakupName::SERVICE_TAX, self::SERVICE_TAX_PERCENTAGE, $serviceTaxValue, FeeBreakupType::PERCENTAGE);
+        $serviceTaxValue = (int) ceil(($fee * $serviceTaxPercentage)/10000);
 
-        $krishiKalyanCessValue = (int) ceil(($fee * self::KRISHI_KALYAN_CESS_PERCENTAGE)/10000);
-        $krishiKalyanCessFeeBreakup = $this->createFeeBreakup(FeeBreakupName::KRISHI_KALYAN_CESS, self::KRISHI_KALYAN_CESS_PERCENTAGE, $krishiKalyanCessValue, FeeBreakupType::PERCENTAGE);
+        $serviceTaxFeeBreakup = $this->createFeeBreakup(FeeBreakupName::SERVICE_TAX,
+            $serviceTaxPercentage, $serviceTaxValue, FeeBreakupType::PERCENTAGE);
 
-        $swachhBharatCessValue = (int) ceil(($fee * self::SWACHH_BHARAT_CESS_PERCENTAGE)/10000);
-        $swachhBharatCessFeeBreakup = $this->createFeeBreakup(FeeBreakupName::SWACHH_BHARAT_CESS, self::SWACHH_BHARAT_CESS_PERCENTAGE, $swachhBharatCessValue, FeeBreakupType::PERCENTAGE);
+        $krishiKalyanCessValue = (int) ceil(($fee * $krishiKalyanCessPercentage)/10000);
+
+        $krishiKalyanCessFeeBreakup = $this->createFeeBreakup(FeeBreakupName::KRISHI_KALYAN_CESS,
+            $krishiKalyanCessPercentage, $krishiKalyanCessValue, FeeBreakupType::PERCENTAGE);
+
+        $swachhBharatCessValue = (int) ceil(($fee * $swachhBharatCessPercentage)/10000);
+
+        $swachhBharatCessFeeBreakup = $this->createFeeBreakup(FeeBreakupName::SWACHH_BHARAT_CESS,
+            $swachhBharatCessPercentage, $swachhBharatCessValue, FeeBreakupType::PERCENTAGE);
 
         $feesSplit->push($serviceTaxFeeBreakup);
         $feesSplit->push($krishiKalyanCessFeeBreakup);
@@ -552,25 +558,36 @@ class FeeCalculator
 
         $totaltaxes = $serviceTaxValue + $krishiKalyanCessValue + $swachhBharatCessValue;
 
-        return array($totaltaxes, $feesSplit);
+        return $totaltaxes;
     }
 
-    public function calculateServiceTaxesFromFees($fee)
+    public function calculateServiceTaxesFromFees($fee, & $feesSplit,
+            $serviceTaxPercentage = self::SERVICE_TAX_PERCENTAGE,
+            $swachhBharatCessPercentage = self::SWACHH_BHARAT_CESS_PERCENTAGE,
+            $krishiKalyanCessPercentage = self::KRISHI_KALYAN_CESS_PERCENTAGE)
     {
-        $serviceTaxValue = $this->calculateTaxFromFees($fee, self::SERVICE_TAX_PERCENTAGE);
-        $serviceTaxFeeBreakup = $this->createFeeBreakup(FeeBreakupName::SERVICE_TAX, self::SERVICE_TAX_PERCENTAGE, $serviceTaxValue, FeeBreakupType::PERCENTAGE);
+        $serviceTaxValue = $this->calculateTaxFromFees($fee, $serviceTaxPercentage);
 
-        $krishiKalyanCessValue = $this->calculateTaxFromFees($fee, self::KRISHI_KALYAN_CESS_PERCENTAGE);
-        $krishiKalyanCessFeeBreakup = $this->createFeeBreakup(FeeBreakupName::KRISHI_KALYAN_CESS, self::KRISHI_KALYAN_CESS_PERCENTAGE, $krishiKalyanCessValue, FeeBreakupType::PERCENTAGE);
+        $serviceTaxFeeBreakup = $this->createFeeBreakup(FeeBreakupName::SERVICE_TAX,
+            $serviceTaxPercentage, $serviceTaxValue, FeeBreakupType::PERCENTAGE);
 
-        $swachhBharatCessValue = $this->calculateTaxFromFees($fee, self::SWACHH_BHARAT_CESS_PERCENTAGE);
-        $swachhBharatCessFeeBreakup = $this->createFeeBreakup(FeeBreakupName::SWACHH_BHARAT_CESS, self::SWACHH_BHARAT_CESS_PERCENTAGE, $swachhBharatCessValue, FeeBreakupType::PERCENTAGE);
+        $krishiKalyanCessValue = $this->calculateTaxFromFees($fee, $krishiKalyanCessPercentage);
 
-        $feesSplit = array($serviceTaxFeeBreakup, $krishiKalyanCessFeeBreakup, $swachhBharatCessFeeBreakup);
+        $krishiKalyanCessFeeBreakup = $this->createFeeBreakup(FeeBreakupName::KRISHI_KALYAN_CESS,
+            $krishiKalyanCessPercentage, $krishiKalyanCessValue, FeeBreakupType::PERCENTAGE);
+
+        $swachhBharatCessValue = $this->calculateTaxFromFees($fee, $swachhBharatCessPercentage);
+
+        $swachhBharatCessFeeBreakup = $this->createFeeBreakup(FeeBreakupName::SWACHH_BHARAT_CESS,
+            $swachhBharatCessPercentage, $swachhBharatCessValue, FeeBreakupType::PERCENTAGE);
+
+        $feesSplit->push($serviceTaxFeeBreakup);
+        $feesSplit->push($krishiKalyanCessFeeBreakup);
+        $feesSplit->push($swachhBharatCessFeeBreakup);
 
         $totaltaxes = $serviceTaxValue + $krishiKalyanCessValue + $swachhBharatCessValue;
 
-        return array($totaltaxes, $feesSplit);
+        return $totaltaxes;
     }
 
     public function calculateTaxFromFees($fee, $taxPercentage)

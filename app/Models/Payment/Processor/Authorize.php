@@ -28,7 +28,7 @@ use RZP\Models\Merchant\Methods;
 use RZP\Models\Payment\Analytics;
 use RZP\Models\Payment\Analytics\Entity as AnalyticsEntity;
 use RZP\Models\Payment\TerminalAnalytics;
-
+use RZP\Models\Base\PublicCollection;
 
 use RZP\Error;
 use RZP\Exception;
@@ -183,7 +183,9 @@ trait Authorize
     protected function verifyFeesLessThanAmount($payment)
     {
         // Ignore the pricing rule not found exception for authorization.
-        list($fee, $serviceTax, $ruleKey, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
+        $feesSplit = new PublicCollection;
+
+        list($fee, $serviceTax, $ruleKey) = (new Pricing\Fee)->calculateMerchantFees($payment, $feesSplit);
 
         if ($payment->getAmount() < $fee)
         {
@@ -1583,7 +1585,9 @@ trait Authorize
             if ($this->isGatewayActuallyAuthorizingPayment($payment) === false)
             {
                 // Also sets the transaction association with the payment.
-                list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentAuthorized($payment);
+                $feesSplit = new PublicCollection;
+
+                $txn = (new Transaction\Core)->createFromPaymentAuthorized($payment, $feesSplit);
 
                 $this->repo->saveOrFail($txn);
 

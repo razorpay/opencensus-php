@@ -14,6 +14,7 @@ use RZP\Gateway\AxisMigs;
 
 use Rzp\Trace\TraceCode;
 use App;
+use RZP\Models\Base\PublicCollection;
 
 use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
@@ -816,7 +817,9 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                 'gateway'                           => get_called_class()
             ]);
 
-        list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentAuthorized($this->payment);
+        $feesSplit = new PublicCollection;
+
+        $txn = (new Transaction\Core)->createFromPaymentAuthorized($this->payment, $feesSplit);
 
         $this->repo->saveOrFail($txn);
 
@@ -830,7 +833,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             $feeSplit->transaction()->associate($txn);
 
             $this->repo->fee_breakup->saveOrFail($feeSplit);
-
         }
     }
 

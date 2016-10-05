@@ -7,7 +7,9 @@ use Carbon\Carbon;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Transaction;
+use RZP\Models\Pricing\FeeCalculator;
 use RZP\Models\Pricing\FeeBreakup as FeeBreakup;
 use RZP\Models\Pricing\FeeBreakup\Type as FeeBreakupType;
 use RZP\Models\Pricing\FeeBreakup\Name as FeeBreakupName;
@@ -29,6 +31,7 @@ class DataMigration extends Base\Service
     const KRISHI_KALYAN_CUTOFF_TIMESTAMP                    = 1464719400;
     const KRISHI_KALYAN_CESS_PERCENTAGE                     = 50;
 
+    protected $feeCalculator;
 
     public function postMigrateOlderTransactions()
     {
@@ -38,15 +41,30 @@ class DataMigration extends Base\Service
 
         foreach ($txns as $txn)
         {
+            $merchant = $txn->merchant;
+
             $payment = $this->repo->payment->findOrFail($txn->getEntityId());
 
             $pricingRuleId = $txn->getPricingRule();
 
             $pricing = $this->repo->pricing->findOrFail($pricingRuleId);
 
-            list($fees, $feesSplit) = $this->getRzpFeesUsingPercentOfOriginalAmount($txn->getAmount(), $pricing->getPercentRate(), $pricing->getFixedRate());
+            $feesSplit = new PublicCollection;
 
-            $feesSplit = $this->calculateServiceTaxes($fees, $feesSplit, $payment->getCaptureTimestamp());
+            $this->feeCalculator = new FeeCalculator($payment);
+
+            $amount = $txn->getAmount();
+
+            // Original Amount = Payment Amount - Fee
+            // Fee = RZp Fee + ST
+            if ($merchant->isFeeBearerCustomer() === true)
+            {
+                $amount = $payment->getAmount() - $payment->getFee();
+            }
+
+            $fees = $this->feeCalculator->getUnroundedFees($amount, $pricing->getPercentRate(), $pricing->getFixedRate(), $feesSplit);
+
+            $this->calculateServiceTaxes($fees, $feesSplit, $payment->getCaptureTimestamp());
 
             $this->saveFeeDetails($txn, $feesSplit, $payment->getCaptureTimestamp());
 
@@ -56,79 +74,36 @@ class DataMigration extends Base\Service
         return $response;
     }
 
-    protected function calculateServiceTaxes($fee, $feesSplit, $capturedTime)
+    protected function calculateServiceTaxes($fee, & $feesSplit, $capturedTime)
     {
+        $serviceTaxPercentage = 0;
+        $krishiKalyanCessPercentage = 0;
+        $swachhBharatCessPercentage = 0;
+
         // Checking the capture time with the ST cutoff time
         if ($capturedTime < self::SERVICE_TAX_CUTOFF_TIMESTAMP)
         {
-            $serviceTaxValue = (int) ceil(($fee * self::SERVICE_TAX_PERCENTAGE_BEFORE_CUTOFF)/10000);
-            $serviceTaxFeeBreakup = $this->createFeeBreakup(FeeBreakupName::SERVICE_TAX, self::SERVICE_TAX_PERCENTAGE_BEFORE_CUTOFF, $serviceTaxValue, FeeBreakupType::PERCENTAGE);
+            $serviceTaxPercentage = self::SERVICE_TAX_PERCENTAGE_BEFORE_CUTOFF;
         }
         else
         {
-            $serviceTaxValue = (int) ceil(($fee * self::SERVICE_TAX_PERCENTAGE_AFTER_CUTOFF)/10000);
-            $serviceTaxFeeBreakup = $this->createFeeBreakup(FeeBreakupName::SERVICE_TAX, self::SERVICE_TAX_PERCENTAGE_AFTER_CUTOFF, $serviceTaxValue, FeeBreakupType::PERCENTAGE);
+            $serviceTaxPercentage = self::SERVICE_TAX_PERCENTAGE_AFTER_CUTOFF;
         }
-
-        $feesSplit->push($serviceTaxFeeBreakup);
 
         // Checking the capture time with the SB cutoff time
         if ($capturedTime >= self::SWACH_BHARAT_CUTOFF_TIMESTAMP)
         {
-            $swachhBharatCessValue = (int) ceil(($fee * self::SWACHH_BHARAT_CESS_PERCENTAGE)/10000);
-            $swachhBharatCessFeeBreakup = $this->createFeeBreakup(FeeBreakupName::SWACHH_BHARAT_CESS, self::SWACHH_BHARAT_CESS_PERCENTAGE, $swachhBharatCessValue, FeeBreakupType::PERCENTAGE);
-
-            $feesSplit->push($swachhBharatCessFeeBreakup);
+            $swachhBharatCessPercentage = self::SWACHH_BHARAT_CESS_PERCENTAGE;
         }
 
         // Checking the capture time with the KK cutoff time
         if ($capturedTime >= self::KRISHI_KALYAN_CUTOFF_TIMESTAMP)
         {
-            $krishiKalyanCessValue = (int) ceil(($fee * self::KRISHI_KALYAN_CESS_PERCENTAGE)/10000);
-            $krishiKalyanCessFeeBreakup = $this->createFeeBreakup(FeeBreakupName::KRISHI_KALYAN_CESS, self::KRISHI_KALYAN_CESS_PERCENTAGE, $krishiKalyanCessValue, FeeBreakupType::PERCENTAGE);
-
-            $feesSplit->push($krishiKalyanCessFeeBreakup);
+            $krishiKalyanCessPercentage = self::KRISHI_KALYAN_CESS_PERCENTAGE;
         }
 
-        return $feesSplit;
-    }
-
-    protected function getRzpFeesUsingPercentOfOriginalAmount($amount, $percent, $fixed)
-    {
-        $percentageAmount = (int) ceil(($amount * $percent)/10000);
-        $totalAmount = $percentageAmount + $fixed;
-
-        $feesSplit = new Base\PublicCollection;
-
-        if (empty($percent) === false)
-        {
-            $rzpPercentageFeeBreakup = $this->createFeeBreakup(FeeBreakupName::RZP, $percent, $percentageAmount, FeeBreakupType::PERCENTAGE);
-
-            $feesSplit->push($rzpPercentageFeeBreakup);
-        }
-
-        if (empty($fixed) === false)
-        {
-            $rzpFixedFeeBreakup = $this->createFeeBreakup(FeeBreakupName::RZP, 0, $fixed, FeeBreakupType::FIXED);
-
-            $feesSplit->push($rzpFixedFeeBreakup);
-        }
-
-        return array($totalAmount, $feesSplit);
-    }
-
-    protected function createFeeBreakup($name, $percent, $amount, $type)
-    {
-        $params = [
-            FeeBreakup\Entity::NAME         => $name,
-            FeeBreakup\Entity::PERCENTAGE   => $percent,
-            FeeBreakup\Entity::AMOUNT       => $amount,
-            FeeBreakup\Entity::TYPE         => $type,
-        ];
-
-        $feeBreakup = (new FeeBreakup\Entity)->build($params);
-
-        return $feeBreakup;
+        $this->feeCalculator->calculateServiceTaxes($fee, $feesSplit, $serviceTaxPercentage,
+                $swachhBharatCessPercentage, $krishiKalyanCessPercentage);
     }
 
     protected function saveFeeDetails($txn, $feesSplit, $captureTime)
@@ -142,6 +117,12 @@ class DataMigration extends Base\Service
         {
             foreach ($feesSplit as $feeSplit)
             {
+                // If SB or KB is 0 then we don't save it.
+                if (($feeSplit->getType() === FeeBreakupType::PERCENTAGE) and
+                    ($feeSplit->getPercentage() === 0))
+                {
+                    continue;
+                }
 
                 $feeSplit->transaction()->associate($txn);
 

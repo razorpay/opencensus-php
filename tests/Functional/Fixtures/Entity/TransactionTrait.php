@@ -4,11 +4,11 @@ namespace RZP\Tests\Functional\Fixtures\Entity;
 
 trait TransactionTrait
 {
-    protected function createTransactionForPaymentAuthorized($payment)
+    protected function createTransactionForPaymentAuthorized($payment, $feesSplit)
     {
-        return $this->transaction(function() use ($payment)
+        return $this->transaction(function() use ($payment, $feesSplit)
         {
-            return (new \RZP\Models\Transaction\Core)->createFromPaymentAuthorized($payment);
+            return (new \RZP\Models\Transaction\Core)->createFromPaymentAuthorized($payment, $feesSplit);
         });
     }
 

@@ -19,6 +19,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer;
+use RZP\Models\Base\PublicCollection;
 
 class Processor
 {
@@ -163,8 +164,10 @@ class Processor
 
         $preCalculationOfFees = true;
 
-        list($fee, $serviceTax, $ruleKey, $feesSplit) =
-                            (new Pricing\Fee)->calculateMerchantFees($payment, $preCalculationOfFees);
+        $feesSplit = new PublicCollection;
+
+        list($fee, $serviceTax, $ruleKey) =
+                            (new Pricing\Fee)->calculateMerchantFees($payment, $feesSplit, $preCalculationOfFees);
 
         $data = array(
             'originalAmount'    => $input['amount'],
@@ -815,7 +818,7 @@ class Processor
         return substr($contact, -10);
     }
 
-    protected function saveFeeDetails($txn, $feesSplit)
+    public function saveFeeDetails($txn, $feesSplit)
     {
         if (empty($feesSplit) == true)
         {

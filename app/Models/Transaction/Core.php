@@ -34,9 +34,9 @@ class Core extends Base\Core
         $this->merchant = $this->app['basicauth']->getMerchant();
     }
 
-    public function createFromPaymentAuthorized(Payment\Entity $payment)
+    public function createFromPaymentAuthorized(Payment\Entity $payment, & $feesSplit)
     {
-        list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment);
+        $txn = $this->txnCreationFromPaymentOperation($payment, $feesSplit);
 
         $this->updateFreeCredits($txn, $payment);
 
@@ -44,7 +44,7 @@ class Core extends Base\Core
 
         $this->repo->balance->updateBalance($this->merchantBalance);
 
-        return array($txn, $feesSplit);
+        return $txn;
     }
 
     public function updateOnCapture(Payment\Entity $payment)
@@ -68,9 +68,9 @@ class Core extends Base\Core
         return $txn;
     }
 
-    public function createFromPaymentCaptured(Payment\Entity $payment)
+    public function createFromPaymentCaptured(Payment\Entity $payment, & $feesSplit)
     {
-        list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment);
+        $txn = $this->txnCreationFromPaymentOperation($payment, $feesSplit);
 
         $this->trace->info(
             TraceCode::PAYMENT_CAPTURE_CREATE_TRANSACTION,
@@ -87,15 +87,15 @@ class Core extends Base\Core
 
         $this->updateBalances($txn);
 
-        return array($txn, $feesSplit);
+        return $txn;
     }
 
-    protected function txnCreationFromPaymentOperation($payment)
+    protected function txnCreationFromPaymentOperation($payment, & $feesSplit)
     {
         $txn = new Transaction\Entity;
         $txn->generateId();
 
-        list($txn, $feesSplit) = $this->fillTxnFeesAndAmount($txn, $payment);
+        $txn = $this->fillTxnFeesAndAmount($txn, $payment, $feesSplit);
 
         $txnData = array(
             Transaction\Entity::TYPE            => Transaction\Type::PAYMENT,
@@ -112,10 +112,10 @@ class Core extends Base\Core
         $txn->sourceAssociate($payment);
         $txn->merchant()->associate($payment->merchant);
 
-        return array($txn, $feesSplit);
+        return $txn;
     }
 
-    protected function fillTxnFeesAndAmount($txn, $payment)
+    protected function fillTxnFeesAndAmount($txn, $payment, & $feesSplit)
     {
         $pricingRuleId = null;
 
@@ -126,8 +126,6 @@ class Core extends Base\Core
         $amount = $payment->getAmount();
 
         $oldTransaction = $this->checkIfOldPayment($payment);
-
-        $feesSplit = null;
 
         if ($oldTransaction === true)
         {
@@ -160,12 +158,12 @@ class Core extends Base\Core
         else if (isset($this->merchant) and ($this->merchant->isFeeBearerCustomer()))
         {
             $fee                              = $payment->getFee();
-            list($serviceTax, $feesSplit)     = (new Pricing\Fee)->calculateServiceTaxFromFees($payment, $fee);
+            $serviceTax                       = (new Pricing\Fee)->calculateServiceTaxFromFees($payment, $fee, $feesSplit);
             $credit                           = $amount - $fee;
         }
         else
         {
-            list($fee, $serviceTax, $pricingRuleId, $feesSplit) = $this->calculateMerchantFees($payment);
+            list($fee, $serviceTax, $pricingRuleId) = $this->calculateMerchantFees($payment, $feesSplit);
             $credit = $amount - $fee;
         }
 
@@ -176,7 +174,7 @@ class Core extends Base\Core
         $txn->setFee($fee);
         $txn->setServiceTax($serviceTax);
 
-        return array($txn, $feesSplit);
+        return $txn;
     }
 
     protected function checkIfOldPayment($payment)
@@ -331,9 +329,9 @@ class Core extends Base\Core
         return $txn;
     }
 
-    protected function calculateMerchantFees(Payment\Entity $payment)
+    protected function calculateMerchantFees(Payment\Entity $payment, & $feesSplit)
     {
-        return (new Pricing\Fee)->calculateMerchantFees($payment);
+        return (new Pricing\Fee)->calculateMerchantFees($payment, $feesSplit);
     }
 
     public function updateBalances(Transaction\Entity $txn, $updateNodalBalance = true)
