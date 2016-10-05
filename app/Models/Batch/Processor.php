@@ -32,6 +32,7 @@ class Processor extends Base\Core
 
     public function process($batch)
     {
+        // Set the ttl to 1000 sec.
         $this->mutex->acquireAndRelease($batch->getId(), function() use ($batch)
         {
             $filePath = $this->getBatchFileFromAws($batch);
@@ -67,8 +68,8 @@ class Processor extends Base\Core
 
             $this->deleteFile($filePath);
 
-            //$this->deleteFile($fullpath);
-        });
+            $this->deleteFile($fullpath);
+        }, 1000);
     }
 
     protected function processBatch($batch, & $entries)
@@ -214,7 +215,23 @@ class Processor extends Base\Core
 
     protected function createProcessedExcel($batch, $entries)
     {
-        $excel = $this->createExcelObject($entries, $batch->getId(), [], $batch->getType());
+        $count = count(Header::REFUND_HEADERS);
+
+        $finalEntries = [];
+
+        foreach ($entries as $entry)
+        {
+            $dict = array_combine(Header::REFUND_HEADERS, array_fill(0, $count, null));
+
+            foreach ($entry as $key => $value)
+            {
+                $dict[$key] = $value;
+            }
+
+            $finalEntries[] = $dict;
+        }
+
+        $excel = $this->createExcelObject($dict, $batch->getId(), [], $batch->getType());
 
         $storagePath = $this->getStoragePath();
 

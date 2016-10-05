@@ -106,8 +106,8 @@ class Batch extends Base
         foreach ($attributes as $attribute)
         {
             $entry = [
-                Header::PAYMENT_ID        => $attribute['Payment Id'],
-                Header::AMOUNT            => $attribute['Amount'],
+                Header::PAYMENT_ID        => $attribute[Header::PAYMENT_ID],
+                Header::AMOUNT            => $attribute[Header::AMOUNT],
                 Header::REFUND_ID         => '',
                 Header::REFUNDED_AMOUNT   => 0,
                 Header::STATUS            => Status::FAILURE,
@@ -127,7 +127,7 @@ class Batch extends Base
 
         foreach ($attributes as $attribute)
         {
-            $totalAmount += $attribute['Amount'];
+            $totalAmount += $attribute[Header::AMOUNT];
         }
 
         return $totalAmount;
