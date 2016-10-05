@@ -37,7 +37,7 @@ class DailyReportTest extends TestCase
         $createdAt = Carbon::today('Asia/Kolkata')->subDays(1)->timestamp + 5;
         $this->fixtures->settlement->edit($setl['id'], ['created_at' => $createdAt]);
 
-        \Mail::shouldReceive('send')
+        \Mail::shouldReceive('queue')
               ->once()
               ->with(
                     Mockery::any(),
