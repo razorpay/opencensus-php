@@ -302,7 +302,7 @@
         </div>
         <div class="loadingcard">
             <div id='message-text' class="center">
-                Please accept collect request from <span class="bold">razorpay@icici</span> on your UPI app
+                Please accept collect request from <span class="bold">razorpay@icici</span> in your UPI app
             </div>
             <div id="spinner" class="shown">
                 <div class="spin">
