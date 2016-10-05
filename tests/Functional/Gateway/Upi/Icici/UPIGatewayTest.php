@@ -30,7 +30,7 @@ class UPIGatewayTest extends TestCase
     {
         unset($this->payment['description']);
 
-        $response = $this->doAuthPayment($this->payment);
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
         $paymentId = $response['payment_id'];
 
         // Co Proto must be working
@@ -66,7 +66,7 @@ EOT;
         $payment['vpa'] = 'dontencrypt@icici';
         $payment['notes']['status'] = 'created';
 
-        $response = $this->doAuthPayment($payment);
+        $response = $this->doAuthPaymentViaAjaxRoute($payment);
 
         $paymentId = $response['payment_id'];
 
@@ -100,7 +100,7 @@ EOT;
 
         $this->runRequestResponseFlow($data, function() use ($payment)
         {
-            $this->doAuthPayment($payment);
+            $this->doAuthPaymentViaAjaxRoute($payment);
         });
     }
 
@@ -115,7 +115,7 @@ EOT;
 
         $this->runRequestResponseFlow($data, function() use ($payment)
         {
-            $this->doAuthPayment($payment);
+            $this->doAuthPaymentViaAjaxRoute($payment);
         });
     }
 
@@ -124,7 +124,7 @@ EOT;
         $payment = $this->getDefaultUpiPaymentArray();
         $payment['vpa'] = 's@dcb';
 
-        $this->doAuthPayment($payment);
+        $this->doAuthPaymentViaAjaxRoute($payment);
     }
 
     public function testInvalidResponsePayment()
@@ -139,7 +139,7 @@ EOT;
         $data = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow($data, function() use ($payment) {
-            $this->doAuthPayment($payment);
+            $this->doAuthPaymentViaAjaxRoute($payment);
         });
     }
 
@@ -211,7 +211,7 @@ EOT;
     {
         $payment = $this->getDefaultUpiPaymentArray();
 
-        $authPayment = $this->doAuthPayment($payment);
+        $authPayment = $this->doAuthPaymentViaAjaxRoute($payment);
 
         $upiEntity = $this->getLastEntity('upi', true);
         $payment = $this->getEntityById('payment', $authPayment['payment_id'], true);
@@ -229,7 +229,7 @@ EOT;
         $payment = $this->getDefaultUpiPaymentArray();
         $payment['notes']['encrypt'] = 'true';
 
-        $authPayment = $this->doAuthPayment($payment);
+        $authPayment = $this->doAuthPaymentViaAjaxRoute($payment);
 
         $upiEntity = $this->getLastEntity('upi', true);
         $payment = $this->getEntityById('payment', $authPayment['payment_id'], true);
@@ -251,7 +251,7 @@ EOT;
         $payment = $this->getDefaultUpiPaymentArray();
         $payment['notes']['status'] = 'success';
 
-        $authPayment = $this->doAuthPayment($payment);
+        $authPayment = $this->doAuthPaymentViaAjaxRoute($payment);
 
         $payment = $this->getEntityById('payment', $authPayment['payment_id'], true);
 
