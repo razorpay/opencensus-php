@@ -23,7 +23,11 @@ class Validator extends Base\Validator
     );
 
     protected static $createValidators = array(
-        'gateway',
+        'gateway', 'to'
+    );
+
+    protected static $editValidators = array(
+        'to'
     );
 
     public function validateGateway($input)
@@ -36,6 +40,28 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Gateway [' . $gateway . '] does not exist');
+        }
+    }
+
+    public function validateTo($input)
+    {
+        $to = $input[Entity::TO];
+
+        if ($to === '')
+        {
+            $to = null;
+        }
+
+        $from = (int) $input[Entity::FROM];
+
+        if ($to !== null)
+        {
+            if ($to < $from)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'From : ' . $from . ' less than To :' . $to
+                );
+            }
         }
     }
 }

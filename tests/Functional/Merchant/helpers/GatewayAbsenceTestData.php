@@ -70,4 +70,20 @@ return [
             ]
         ]
     ],
+    'testGatewayCreateNullTo' => [
+        'request' => [
+            'content' => [
+                'gateway' => 'netbanking_hdfc',
+                'reason'  => 'Test Reason'
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/absence'
+        ],
+        'response' => [
+            'content' => [
+                'reason' => 'Test Reason',
+                'to'    => null,
+            ]
+        ]
+    ]
 ];

@@ -40,7 +40,7 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::FROM      => 'int',
-        self::TO        => 'to',
+        self::TO        => 'int',
         self::SCHEDULED => 'bool'
     ];
 
@@ -77,4 +77,14 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BANK);
     }
 
+    // ---- Modifiers -------
+    protected function setToAttribute($to)
+    {
+        if ($to == '')
+        {
+            $to = null;
+        }
+
+        $this->attributes[self::TO] = $to;
+    }
 }

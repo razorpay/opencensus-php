@@ -29,7 +29,7 @@ class CreateGatewayAbsence extends Migration
             // TO is optional, but we still need a value here
             // keeping this to max time possible ~ Infinite time
             $table->integer(DowntimeTrace::TO)
-                  ->default(DowntimeTrace::END_OF_TIME);
+                  ->nullable();
 
             $table->integer(DowntimeTrace::CREATED_AT);
 

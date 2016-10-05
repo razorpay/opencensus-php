@@ -76,6 +76,42 @@ class GatewayAbsenceTest extends TestCase
         $this->startTest();
     }
 
+    public function testGatewayCreateNullTo()
+    {
+        $this->fillDefaultsForTests(__FUNCTION__);
+
+        $this->testData[__FUNCTION__]['request']['content']['to'] = null;
+
+        $this->startTest();
+    }
+
+    public function testGatewayAbsenceFetchForNullTo()
+    {
+        $content1 = $this->createGatewayAbsence();
+
+        $this->createGatewayAbsenceNullTo('netbanking_kotak');
+
+        $from = $content1['from'];
+
+        $request = array(
+            'content' => array('from' => $from),
+            'url' => '/gateway/absence',
+            'method' => 'GET'
+        );
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($content['count'], 2);
+
+        $request['content']['gateway'] = 'netbanking_kotak';
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($content['count'], 1);
+
+        $this->assertEquals($content['items'][0]['to'], null);
+    }
+
     public function testGatewayAbsenceFetch()
     {
         $content1 = $this->createGatewayAbsence();
@@ -118,15 +154,31 @@ class GatewayAbsenceTest extends TestCase
 
     protected function createGatewayAbsence($gatewayName = 'netbanking_hdfc')
     {
-        $now = time();
+        $from = time();
 
+        $to = $from + 10;
+
+        return $this->__createGatewayAbsence($gatewayName, $from, $to);
+    }
+
+    protected function createGatewayAbsenceNullTo($gatewayName = 'netbanking_hdfc')
+    {
+        $from = time();
+
+        $to = null;
+
+        return $this->__createGatewayAbsence($gatewayName, $from, $to);
+    }
+
+    protected function __createGatewayAbsence($gatewayName, $from, $to)
+    {
         $request = array(
             'content' => array(
                 'gateway' => $gatewayName,
                 'reason'  => 'Test Reason',
                 'bank'  => 'hdfc',
-                'from'  => $now,
-                'to' => $now + 10
+                'from'  => $from,
+                'to' => $to
             ),
             'method' => 'POST',
             'url' => '/gateway/absence'
