@@ -141,6 +141,8 @@ class Validator extends Base\Validator
         Entity::GATEWAY                     => 'required|in:wallet_olamoney',
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
         Entity::GATEWAY_ACCESS_CODE         => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
     );
 
     protected static $walletAirtelmoneyTerminalRules = array(

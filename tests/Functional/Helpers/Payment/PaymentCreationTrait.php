@@ -182,6 +182,10 @@ trait PaymentCreationTrait
                         {
                             $gateway = $content['gateway'];
                         }
+                        else if ($content['type'] === 'async')
+                        {
+                            return $response;
+                        }
                     }
                 }
                 else
@@ -214,6 +218,10 @@ trait PaymentCreationTrait
                     else if ($content['type'] === 'otp')
                     {
                         $gateway = $content['gateway'];
+                    }
+                    else if ($content['type'] === 'async')
+                    {
+                        return $response;
                     }
                 }
             }
