@@ -23,7 +23,6 @@ class GatewayAbsenceTest extends TestCase
         $this->fillDefaultsForTests(__FUNCTION__);
 
         $this->startTest();
-
     }
 
     public function testCreateAbsenceWithBank()
@@ -31,7 +30,6 @@ class GatewayAbsenceTest extends TestCase
         $this->fillDefaultsForTests(__FUNCTION__);
 
         $this->startTest();
-
     }
 
     public function testCreateAbsenceInvalidGateway()
@@ -102,7 +100,6 @@ class GatewayAbsenceTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-
         $this->assertEquals($content['count'], 1);
     }
 
@@ -117,7 +114,6 @@ class GatewayAbsenceTest extends TestCase
         $this->testData[$functionName]['request']['content']['from'] = $now;
 
         $this->testData[$functionName]['request']['content']['to'] = $to;
-
     }
 
     protected function createGatewayAbsence($gatewayName = 'netbanking_hdfc')

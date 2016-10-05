@@ -27,20 +27,13 @@ class Service extends Base\Service
 
     public function delete($id)
     {
-        try
-        {
-            $downWindow = $this->repo->gateway_absence->findOrFailPublic($id);
+        $downWindow = $this->repo->gateway_absence->findOrFailPublic($id);
 
-            $this->repo->gateway_absence->delete($downWindow);
+        $this->repo->gateway_absence->deleteOrFail($downWindow);
 
-            return ['message' => 'Gateway Absence successfully deleted'];
-        }
-        catch(\Exception $e)
-        {
-            $this->trace->error(TraceCode::GATEWAY_ABSENCE_DELETE, ['Delete Error' => $e->getMessage()]);
+        $this->trace->info(TraceCode::GATEWAY_ABSENCE_DELETE, ['id' => $id]);
 
-            throw $e;
-        }
+        return ['message' => 'Gateway Absence successfully deleted'];
     }
 
     public function findAbsentGateways(array $input)

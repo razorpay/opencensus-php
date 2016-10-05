@@ -40,7 +40,9 @@ class CreateGatewayAbsence extends Migration
 
             $table->index(DowntimeTrace::GATEWAY);
 
-            $table->unique(array(DowntimeTrace::GATEWAY, DowntimeTrace::FROM, DowntimeTrace::TO));
+            $table->index(DowntimeTrace::FROM);
+
+            $table->index(DowntimeTrace::TO);
 
         });
     }
