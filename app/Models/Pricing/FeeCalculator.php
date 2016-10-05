@@ -63,6 +63,8 @@ class FeeCalculator
 
         list($totaltaxes, $feesSplit) = $this->calculateServiceTaxes($fee, $feesSplit);
 
+
+
         $totalFees = $fee + $totaltaxes;
 
         assert ($totalFees < $amount);
@@ -546,7 +548,7 @@ class FeeCalculator
 
         $feesSplit->push($serviceTaxFeeBreakup);
         $feesSplit->push($krishiKalyanCessFeeBreakup);
-        $feesSplit->push($swachhBharatCessValue);
+        $feesSplit->push($swachhBharatCessFeeBreakup);
 
         $totaltaxes = $serviceTaxValue + $krishiKalyanCessValue + $swachhBharatCessValue;
 
