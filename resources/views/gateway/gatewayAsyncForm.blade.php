@@ -24,26 +24,97 @@
 
         @font-face {
             font-family:'lato';
-            src: url("https://cdn.razorpay.com/lato3.woff2") format('woff');
+            src: -apple-system, BlinkMacSystemFont,  "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell",  "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
             font-weight:normal;
             font-style:normal
         }
 
-        @keyframes spin {
+        @-webkit-keyframes spin {
           0% {
-            transform: scale(0.5);
+            -webkit-transform: scale(0.5);
+                    transform: scale(0.5);
             opacity: 0;
             border-width: 8px;
           }
 
           20% {
-            transform: scale(0.6);
+            -webkit-transform: scale(0.6);
+                    transform: scale(0.6);
             opacity: 0.8;
             border-width: 4px;
           }
 
           90% {
-            transform: scale(1);
+            -webkit-transform: scale(1);
+                    transform: scale(1);
+            opacity: 0;
+          }
+        }
+
+        @-moz-keyframes spin {
+          0% {
+            -moz-transform: scale(0.5);
+                 transform: scale(0.5);
+            opacity: 0;
+            border-width: 8px;
+          }
+
+          20% {
+            -moz-transform: scale(0.6);
+                 transform: scale(0.6);
+            opacity: 0.8;
+            border-width: 4px;
+          }
+
+          90% {
+            -moz-transform: scale(1);
+                 transform: scale(1);
+            opacity: 0;
+          }
+        }
+
+        @-o-keyframes spin {
+          0% {
+            -o-transform: scale(0.5);
+               transform: scale(0.5);
+            opacity: 0;
+            border-width: 8px;
+          }
+
+          20% {
+            -o-transform: scale(0.6);
+               transform: scale(0.6);
+            opacity: 0.8;
+            border-width: 4px;
+          }
+
+          90% {
+            -o-transform: scale(1);
+               transform: scale(1);
+            opacity: 0;
+          }
+        }
+
+        @keyframes spin {
+          0% {
+            -webkit-transform: scale(0.5);
+               -moz-transform: scale(0.5);
+                 -o-transform: scale(0.5);
+                    transform: scale(0.5);
+            opacity: 0;
+            border-width: 8px;
+          }
+
+          20% {
+            -webkit-transform: scale(0.6);
+                    transform: scale(0.6);
+            opacity: 0.8;
+            border-width: 4px;
+          }
+
+          90% {
+            -webkit-transform: scale(1);
+                    transform: scale(1);
             opacity: 0;
           }
         }
@@ -93,7 +164,11 @@
             display: inline-block;
             border-radius: 50%;
             border: 4px solid #29b7d6;
-            animation: spin 1.3s linear infinite;
+            -webkit-animation: spin 1.3s linear infinite;
+               -moz-animation: spin 1.3s linear infinite;
+                -ms-animation: spin 1.3s linear infinite;
+                 -o-animation: spin 1.3s linear infinite;
+                    animation: spin 1.3s linear infinite;
             box-sizing: border-box;
             opacity: 0;
         }
