@@ -240,6 +240,13 @@ class Service extends Base\Service
 
     protected function getDocumentType($name, $id)
     {
-        return $name . ':' . $id;
+        $documentType = $name;
+
+        if (isset($id) === true)
+        {
+            $documentType = $documentType . ':' . $id;
+        }
+
+        return $documentType;
     }
 }
