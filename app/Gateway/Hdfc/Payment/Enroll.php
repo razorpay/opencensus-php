@@ -178,6 +178,9 @@ trait Enroll
             $data['merchantResponseUrl'] = $url;
             $data['merchantErrorUrl'] = $url;
         }
+
+        // This is crucial, please do not remove it
+        unset($this->enrollRequest['content']);
     }
 
     /**

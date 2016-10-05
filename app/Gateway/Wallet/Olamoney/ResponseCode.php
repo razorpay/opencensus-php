@@ -7,15 +7,9 @@ use RZP\Error\ErrorCode;
 class ResponseCode
 {
     public static $codes = array(
-        'hash_mismatch'     => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        'user_not_found'    => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_USER_DOES_NOT_EXIST,
-        '100'               => 'Transaction Successful',
-        '101'               => 'User not logged in',
-        '102'               => 'User has 0 balance',
-        '103'               => 'User has insufficient balance',
-        '104'               => 'Payment Failed',
-        '105'               => 'Hash verification failed',
-        '106'               => 'Duplicate transaction not allowed',
+        'hash_mismatch'                 => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        'Invalid OTP'                   => ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
+        'Invalid user access token'     => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_AUTHENTICATION_FAILED,
     );
 
     protected static $success = array(

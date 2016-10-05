@@ -14,15 +14,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_TRANSACTION_AMOUNT  = 'TXN_AMOUNT';
     const COLUMN_SETTLED_AMOUNT      = 'SETTLED AMOUNT';
 
-    protected $messenger;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->messenger = new Messenger();
-    }
-
     protected function getPaymentId($row)
     {
         $paymentId = $row[self::COLUMN_PAYMENT_ID];

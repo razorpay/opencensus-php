@@ -7,6 +7,7 @@ use RZP\Http\RequestHeader;
 use RZP\Models\Base;
 use RZP\Models\Payment\Analytics;
 use RZP\Models\Payment\Analytics\Metadata;
+use RZP\Models\Order;
 use RZP\Trace\TraceCode;
 
 class Parser extends Base\Core
@@ -29,20 +30,40 @@ class Parser extends Base\Core
         Entity::REFERER,
     ];
 
-    public function recordPaymentRequestData($rawData, array & $log)
+    public function recordPaymentRequestData(array & $input, $payment)
     {
-        // get data from request
-        $this->setHttpRequestData($log);
+        $input[Entity::PAYMENT_ID] = $payment->getId();
 
-        $metadata = $this->getCheckoutMetadata($rawData);
+        $this->setHttpRequestData($input);
 
-        if ($metadata !== null)
+        $this->setAttempts($input, $payment);
+
+        $this->setMetadataFromPayment($input, $payment);
+
+        $this->updateMetadataFromPayment($input, $payment);
+
+        return;
+    }
+
+    public function traceUnrecognizedData($paymentAnalytics)
+    {
+        $pa = $paymentAnalytics->toArrayPublic();
+
+        $invalidData = [];
+
+        foreach ($pa as $key => $value) {
+
+            if (Analytics\Metadata::isInvalidValue($value))
+            {
+                $invalidData[$key] = $value;
+            }
+        }
+
+        if (empty($invalidData) === false)
         {
-            $this->setLogFromMetadata($metadata, $log);
-
-            $this->setLogAttempts($metadata, $log);
-
-            $this->updateLogFromMetadata($metadata, $log);
+            $this->trace->warning(TraceCode::PAYMENT_ANALYTICS_UNRECOGNIZED_DATA,
+                ['invalid_data' => $invalidData,
+                 'payment_id'   => $paymentAnalytics->getPaymentId()]);
         }
     }
 
@@ -89,74 +110,99 @@ class Parser extends Base\Core
         }
     }
 
-    protected function getCheckoutMetadata($rawData)
-    {
-        // get data from frontend
-        if ((isset($rawData['input']) === false) or
-            (isset($rawData['input']['_']) === false))
-        {
-            return null;
-        }
-
-        $metadata = $rawData['input']['_'];
-
-        $this->trace->info(
-            TraceCode::PAYMENT_METADATA,
-            [
-                'metadata'   => $metadata,
-                'payment_id' => $rawData['payment_id']
-            ]);
-
-        return $metadata;
-    }
-
     // set analytics data from metadata
-    protected function setLogFromMetadata($metadata, & $log)
+    protected function setMetadataFromPayment(array & $log, $payment)
     {
-        foreach (self::$setKeys as $key)
+        $metadata = $payment->getMetadata();
+
+        if (isset($metadata))
         {
-            if (empty($metadata[$key]) === false)
+            foreach (self::$setKeys as $key)
             {
-                $log[$key] = $metadata[$key];
+                if (empty($metadata[$key]) === false)
+                {
+                    $log[$key] = $metadata[$key];
+                }
             }
         }
     }
 
-    protected function setLogAttempts($metadata, & $log)
+    protected function setAttempts(array & $log, $payment)
     {
-        if (isset($metadata[Entity::CHECKOUT_ID]) === false)
-        {
-            $log[Entity::ATTEMPTS] = 1;
+        $orderId = $payment->getApiOrderId();
 
-            return;
+        if ($orderId !== null)
+        {
+            // $orderId = (new Order\Entity)->verifyIdAndSilentlyStripSign($orderId);
+
+            $payments = $this->repo->payment->fetchPaymentsForOrderId($orderId);
+
+            $attempts = $payments->count();
         }
-
-        $checkoutId = $metadata[Entity::CHECKOUT_ID];
-
-        $log[Entity::ATTEMPTS] = $this->calculatePaymentAttempts($checkoutId);
-    }
-
-    protected function updateLogFromMetadata($metadata, & $log)
-    {
-        $anomalies = [];
-
-        // Give preference to value passed from frontend over that parsed from user-agent
-        foreach (self::$updateKeys as $key)
+        else
         {
-            if ((isset($metadata[$key]) === true) and
-                (isset($log[$key]) === true))
-            {
-                // collect anomalies
-                $this->collectMismatch($log[$key], $metadata[$key], $key, $anomalies);
+            $metadata = $payment->getMetadata();
 
-                $log[$key] = $metadata[$key];
+            $checkoutId = ((isset($metadata) and isset($metadata['checkout_id']))) ? $metadata['checkout_id'] : null;
+
+            if ($checkoutId !== null)
+            {
+                // get from checkout id
+                $oldPayments = $this->repo->payment_analytics->getRecentMerchantPaymentsForCheckoutId($checkoutId);
+
+                $count = $oldPayments->count();
+
+                if (($count > 0) and
+                    ($count !== $oldPayments->first()->getAttempts()))
+                {
+                    $this->trace->warning(
+                        TraceCode::PAYMENT_CHECKOUT_INVALID_ID,
+                        [
+                            'checkout_id' => $checkoutId
+                        ]);
+
+                    return;
+                }
+
+                $attempts = $count + 1;
+            }
+            else
+            {
+                $attempts = 1;
             }
         }
 
-        // log anomalies
-        if (empty($anomalies) === false)
+        $log[Entity::ATTEMPTS] = $attempts;
+
+        return;
+    }
+
+    protected function updateMetadataFromPayment(array & $log, $payment)
+    {
+        $metadata = $payment->getMetadata();
+
+        if (isset($metadata))
         {
-            $this->trace->info(TraceCode::PAYMENT_USER_AGENT_ANOMALY, $anomalies);
+            $anomalies = [];
+
+            // Give preference to value passed from frontend over that parsed from user-agent
+            foreach (self::$updateKeys as $key)
+            {
+                if ((isset($metadata[$key]) === true) and
+                    (isset($log[$key]) === true))
+                {
+                    // collect anomalies
+                    $this->collectMismatch($log[$key], $metadata[$key], $key, $anomalies);
+
+                    $log[$key] = $metadata[$key];
+                }
+            }
+
+            // log anomalies
+            if (empty($anomalies) === false)
+            {
+                $this->trace->info(TraceCode::PAYMENT_USER_AGENT_ANOMALY, $anomalies);
+            }
         }
     }
 

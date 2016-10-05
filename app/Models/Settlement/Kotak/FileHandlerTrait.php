@@ -60,6 +60,7 @@ trait FileHandlerTrait
         $excelObject = $this->createExcelObject($data, $name);
 
         $fileMetadata = $excelObject->store('csv', storage_path('files/settlement'), true);
+
         $fullpath = $fileMetadata['full'];
 
         if ($fullName != null)
@@ -83,9 +84,11 @@ trait FileHandlerTrait
         $excel = $this->createExcelObject($data, $name, $columnFormat);
 
         $fileMetadata = $excel->store('xlsx', storage_path($dir), true);
+
         $fullpath = $fileMetadata['full'];
 
         $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+
         $url = $this->saveToAws($name.'.xlsx', $fullpath, $xlsxMimeType);
 
         return $url;

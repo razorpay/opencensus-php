@@ -131,7 +131,7 @@
     <script>
     Razorpay = {
       config: {
-        api: '{{$api}}',
+        api: '{{$api}}/',
         version: 'v1/'
       }
     }
