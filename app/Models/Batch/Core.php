@@ -126,7 +126,7 @@ class Core extends Base\Core
 
         foreach ($entries as $entry)
         {
-            $totalAmount += $entry[Entity::AMOUNT];
+            $totalAmount += $entry[Header::AMOUNT];
         }
 
         return array($totalEntries, $totalAmount);

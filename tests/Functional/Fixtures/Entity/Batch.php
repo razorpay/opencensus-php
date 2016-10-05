@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Fixtures\Entity;
 
 use RZP\Models\Batch\Type;
 use RZP\Models\Batch\Status;
+use RZP\Models\Batch\Header;
 use RZP\Models\Settlement\Kotak\FileHandlerTrait;
 
 class Batch extends Base
@@ -105,13 +106,13 @@ class Batch extends Base
         foreach ($attributes as $attribute)
         {
             $entry = [
-                'Payment Id'        => $attribute['Payment Id'],
-                'Amount'            => $attribute['Amount'],
-                'Refund Id'         => '',
-                'Refunded Amount'   => 0,
-                'Status'            => Status::FAILURE,
-                'Error Code'        => '',
-                'Error Description' => '',
+                Header::PAYMENT_ID        => $attribute['Payment Id'],
+                Header::AMOUNT            => $attribute['Amount'],
+                Header::REFUND_ID         => '',
+                Header::REFUNDED_AMOUNT   => 0,
+                Header::STATUS            => Status::FAILURE,
+                Header::ERROR_CODE        => '',
+                Header::ERROR_DESCRIPTION => '',
             ];
 
             array_push($processedttributes, $entry);

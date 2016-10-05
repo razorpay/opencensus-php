@@ -36,7 +36,7 @@ class Processor extends Base\Core
         {
             $filePath = $this->getBatchFileFromAws($batch);
 
-            $entries = $this->parseExcelFile($filePath);
+            $entries = $this->parseExcelSheets($filePath);
 
             $shouldSendMail = $this->processBatch($batch, $entries);
 

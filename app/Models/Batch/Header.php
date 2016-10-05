@@ -5,13 +5,13 @@ namespace RZP\Models\Batch;
 class Header
 {
     // Refund Input Headers
-    const PAYMENT_ID        = 'payment_id';
-    const AMOUNT            = 'amount';
-    const REFUND_ID         = 'refund_id';
-    const REFUNDED_AMOUNT   = 'refunded_amount';
-    const STATUS            = 'status';
-    const ERROR_CODE        = 'error_code';
-    const ERROR_DESCRIPTION = 'error_description';
+    const PAYMENT_ID        = 'Payment Id';
+    const AMOUNT            = 'Amount';
+    const REFUND_ID         = 'Refund Id';
+    const REFUNDED_AMOUNT   = 'Refunded Amount';
+    const STATUS            = 'Status';
+    const ERROR_CODE        = 'Error Code';
+    const ERROR_DESCRIPTION = 'Error Description';
 
     const REFUND_HEADERS = [
         self::PAYMENT_ID,

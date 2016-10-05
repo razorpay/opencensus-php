@@ -5,6 +5,7 @@ namespace RZP\Models\Batch;
 use RZP\Models\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Batch\Header;
 
 class Validator extends Base\Validator
 {
@@ -41,8 +42,8 @@ class Validator extends Base\Validator
 
         foreach ($entries as $entry)
         {
-            $amount = $entry['amount'];
-            $paymentId = $entry['payment_id'];
+            $amount = $entry[Header::AMOUNT];
+            $paymentId = $entry[Header::PAYMENT_ID];
 
             if (empty($paymentId) === true)
             {

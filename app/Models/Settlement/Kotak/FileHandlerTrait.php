@@ -590,6 +590,7 @@ trait FileHandlerTrait
     protected function parseExcelSheets($filePath)
     {
         Config::set('excel.import.force_sheets_collection', true);
+        Config::set('excel.import.heading', 'original');
 
         $sheets = $this->parseExcelFile($filePath);
 
