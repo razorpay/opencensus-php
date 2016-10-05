@@ -67,7 +67,7 @@ app.controller('PaymentDetailCtrl', [
           amount: function () {
             var baseAmount = $scope.entity.amount;
 
-            if ($scope.tags.indexOf('Feebearer') !== -1) {
+            if ($scope.tags.indexOf('feebearer') !== -1) {
               baseAmount -= $scope.entity.fee;
             }
 
