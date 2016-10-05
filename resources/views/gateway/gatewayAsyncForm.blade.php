@@ -239,15 +239,15 @@
             </div>
             <div class="center"><span class="link" id='cancel_btn'>Cancel Payment<span></div>
         </div>
-        <form id='form' method="GET">
-            <input type="hidden" name="key_id" value="KEY_ID">
+        <form id='form' method="POST">
+            <input type="hidden" name="key_id" value="{{$data["key_id"]}}">
         </form>
     </div>
 
     <script type="text/javascript">
-        var key_id = 'top_secret';
+        var key_id = '{{$data["key_id"]}}';
         var cancel_url = '/v1/payments/{{$data["payment_id"]}}/cancel?key_id='+key_id;
-        var request_url = '{{$data['request']['url']}}';
+        var request_url = '{{$data['request']['url']}}?key_id='+key_id;
         var callback_url = '/v1/payments/{{$data["payment_id"]}}/redirect_callback';
         var gel =  document.getElementById.bind(document);
 

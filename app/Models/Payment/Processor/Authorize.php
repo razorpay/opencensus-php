@@ -930,6 +930,7 @@ trait Authorize
             'type'          => 'async',
             'version'       => 1,
             'payment_id'    => $id,
+            'key_id'        => \BasicAuth::getPublicKey(),
             'request'       => [
                 'url'    => Route::getUrl('payment_get_status', ['id' => $id]),
                 'method' => 'GET',
