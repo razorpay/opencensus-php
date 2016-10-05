@@ -3,10 +3,13 @@
 namespace RZP\Models\FileHandler;
 
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\File\File;
 
 class Helper
 {
+    const STORAGE_DIRECTORY =  'files/file_handler/';
+
     public function getMimeType($file)
     {
         return $file->getMimeType();
@@ -65,23 +68,23 @@ class Helper
     {
         $fullpath = $this->getFullFilePath($name);
 
-        $file = fopen($fullpath, 'w');
-
-        fwrite($file, $txt);
-        fclose($file);
-        chmod($fullpath, 0777);
+        Storage::put(self::STORAGE_DIRECTORY . $name, $txt, 'public');;
 
         return $fullpath;
     }
 
     protected function getFullFilePath($filename)
     {
-        return $this->getStorageDir() . '/' . $filename;
+        return $this->getStorageDir() . $filename;
     }
 
     protected function getStorageDir()
     {
-        return storage_path('files/file_handler');
+        $path = Storage::disk('local')->getDriver()->getAdapter()->getPathPrefix();
+
+        $fullpath = $path . self::STORAGE_DIRECTORY;
+
+        return $fullpath;
     }
 
     protected function getFileToWriteName($filePrefix)
