@@ -51,40 +51,4 @@ class Entity extends Base\PublicEntity
     protected $entity = 'gateway_absence';
 
     protected $generateIdOnCreate = true;
-
-    public function getGateway()
-    {
-        return $this->getAttribute(self::GATEWAY);
-    }
-
-    public function getFrom()
-    {
-        return $this->getAttribute(self::FROM);
-    }
-
-    public function getTo()
-    {
-        return $this->getAttribute(self::TO);
-    }
-
-    public function getReason()
-    {
-        return $this->getAttribute(self::REASON);
-    }
-
-    public function getBank()
-    {
-        return $this->getAttribute(self::BANK);
-    }
-
-    // ---- Modifiers -------
-    protected function setToAttribute($to)
-    {
-        if ($to == '')
-        {
-            $to = null;
-        }
-
-        $this->attributes[self::TO] = $to;
-    }
 }

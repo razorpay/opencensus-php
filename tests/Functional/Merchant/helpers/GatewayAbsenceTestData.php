@@ -60,6 +60,29 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ],
+    'testGatewayInvalidTo' =>[
+        'request' => [
+            'content' => [
+                'gateway' => 'netbanking_hdfc',
+                'reason'  => 'Test Reason'
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/absence'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    //'description' => 'Gateway [UNKNOWN_GATEWAY] does not exist',
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
     'testGatewayAbsenceDelete' => [
         'request' => [
             'method' => 'DELETE'
@@ -82,7 +105,6 @@ return [
         'response' => [
             'content' => [
                 'reason' => 'Test Reason',
-                'to'    => null,
             ]
         ]
     ]

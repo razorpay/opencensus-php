@@ -9,7 +9,7 @@ use RZP\Exception;
 class Validator extends Base\Validator
 {
     protected static $createRules = array (
-        Entity::GATEWAY         => 'required|string|max:255',
+        Entity::GATEWAY         => 'required|string|max:255|custom',
         Entity::FROM            => 'required|integer',
         Entity::TO              => 'sometimes|integer',
         Entity::REASON          => 'sometimes|string|max:500',
@@ -23,17 +23,15 @@ class Validator extends Base\Validator
     );
 
     protected static $createValidators = array(
-        'gateway', 'to'
+        'to'
     );
 
     protected static $editValidators = array(
         'to'
     );
 
-    public function validateGateway($input)
+    public function validateGateway($attribute, $gateway)
     {
-        $gateway = $input[Entity::GATEWAY];
-
         $valid = Gateway::isValidGateway($gateway);
 
         if ($valid === false)
@@ -45,23 +43,20 @@ class Validator extends Base\Validator
 
     public function validateTo($input)
     {
-        $to = $input[Entity::TO];
-
-        if ($to === '')
+        if (empty($input[Entity::TO]) === true)
         {
-            $to = null;
+            return;
         }
+
+        $to = $input[Entity::TO];
 
         $from = (int) $input[Entity::FROM];
 
-        if ($to !== null)
+        if ($to < $from)
         {
-            if ($to < $from)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'From : ' . $from . ' less than To :' . $to
-                );
-            }
+            throw new Exception\BadRequestValidationFailureException(
+                'From : ' . $from . ' less than To :' . $to
+            );
         }
     }
 }

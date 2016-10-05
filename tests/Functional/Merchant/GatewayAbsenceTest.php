@@ -80,7 +80,18 @@ class GatewayAbsenceTest extends TestCase
     {
         $this->fillDefaultsForTests(__FUNCTION__);
 
-        $this->testData[__FUNCTION__]['request']['content']['to'] = null;
+        unset($this->testData[__FUNCTION__]['request']['content']['to']);
+
+        $this->startTest();
+    }
+
+    public function testGatewayInvalidTo()
+    {
+        $this->fillDefaultsForTests(__FUNCTION__);
+
+        $from = $this->testData[__FUNCTION__]['request']['content']['from'];
+
+        $this->testData[__FUNCTION__]['request']['content']['to'] = $from - 10;
 
         $this->startTest();
     }
@@ -183,6 +194,11 @@ class GatewayAbsenceTest extends TestCase
             'method' => 'POST',
             'url' => '/gateway/absence'
         );
+
+        if ($to === null)
+        {
+            unset($request['content']['to']);
+        }
 
         $content = $this->makeRequestAndGetContent($request);
 
