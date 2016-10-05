@@ -240,7 +240,11 @@
             <div class="center"><span class="link" id='cancel_btn'>Cancel Payment<span></div>
         </div>
         <form id='form' method="POST">
-            <input type="hidden" name="key_id" value="{{$data["key_id"]}}">
+            <input type="hidden" name="key_id" value="{{$data['key_id']}}">
+        </form>
+        <form id="form2" name="form2">
+            <input type="hidden" name="type" value="{{$data['type']}}">
+            <input type="hidden" name="gateway" value="{{$data['gateway']}}">
         </form>
     </div>
 

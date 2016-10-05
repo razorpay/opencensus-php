@@ -931,6 +931,7 @@ trait Authorize
             'version'       => 1,
             'payment_id'    => $id,
             'key_id'        => \BasicAuth::getPublicKey(),
+            'gateway'       => $this->getEncryptedGatewayText($payment->getGateway()),
             'request'       => [
                 'url'    => Route::getUrl('payment_get_status', ['id' => $id]),
                 'method' => 'GET',
