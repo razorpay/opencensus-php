@@ -80,7 +80,7 @@ class DailyReport extends Base\Core
         // This is a debug view only for raising proper errors
         \View::make('emails.merchant.daily_report_debug', $data)->render();
 
-        Mail::send($view, $data, function($message) use ($data)
+        Mail::queue($view, $data, function($message) use ($data)
         {
             $to = $data['merchant']['email'];
 
