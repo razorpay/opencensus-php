@@ -8,6 +8,7 @@ use RZP\Models\Card;
 use RZP\Models\Card\IIN;
 use RZP\Models\Transaction;
 use RZP\Models\Payment\Verify;
+use RZP\Reconciliator\Messenger;
 
 use RZP\Gateway\AxisMigs;
 
@@ -38,11 +39,13 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
     protected $app;
     protected $repo;
+    protected $messenger;
 
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
         $this->repo = $this->app['repo'];
+        $this->messenger = new Messenger();
 
         $this->paymentRepo     = $this->repo->payment;
         $this->iinRepo         = $this->repo->iin;

@@ -18,7 +18,10 @@ class Repository extends Base\Repository
     {
         $query = $this->newQuery()->merchantId($merchantId);
 
-        $query = ($expired === true) ?: $query->notExpired();
+        if ($expired === false)
+        {
+            $query->notExpired();
+        }
 
         return $query->get();
     }

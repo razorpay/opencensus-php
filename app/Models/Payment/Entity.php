@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Card;
+use RZP\Models\Customer;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Processor\Netbanking;
@@ -46,6 +47,7 @@ class Entity extends Base\PublicEntity
     const CONTACT               = 'contact';
     const NOTES                 = 'notes';
     const BANK                  = 'bank';
+    const CARD                  = 'card';
     const CARD_ID               = 'card_id';
     const WALLET                = 'wallet';
     const EMI_PLAN_ID           = 'emi_plan_id';
@@ -170,6 +172,8 @@ class Entity extends Base\PublicEntity
         self::VPA,
         self::EMAIL,
         self::CONTACT,
+        self::CUSTOMER_ID,
+        self::TOKEN_ID,
         self::NOTES,
         self::FEE,
         self::SERVICE_TAX,
@@ -177,8 +181,14 @@ class Entity extends Base\PublicEntity
         self::ERROR_DESCRIPTION,
         self::CREATED_AT);
 
-    protected $publicSetters = array(
-        self::ID, self::ENTITY, self::ORDER_ID, self::CARD_ID);
+    protected $publicSetters = [
+        self::ID,
+        self::ENTITY,
+        self::ORDER_ID,
+        self::CARD_ID,
+        self::CUSTOMER_ID,
+        self::TOKEN_ID
+    ];
 
     protected $guarded = array(self::ID);
 
@@ -1042,6 +1052,34 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    public function setPublicCustomerIdAttribute(Array & $array)
+    {
+        if (isset($array[self::CUSTOMER_ID]))
+        {
+            $customerId = $this->getAttribute(self::CUSTOMER_ID);
+
+            $array[self::CUSTOMER_ID] = Customer\Entity::getSignedId($customerId);
+        }
+        else
+        {
+            unset($array[self::CUSTOMER_ID]);
+        }
+    }
+
+    public function setPublicTokenIdAttribute(Array & $array)
+    {
+        if (isset($array[self::TOKEN_ID]))
+        {
+            $tokenId = $this->getAttribute(self::TOKEN_ID);
+
+            $array[self::TOKEN_ID] = Customer\Token\Entity::getSignedId($tokenId);
+        }
+        else
+        {
+            unset($array[self::TOKEN_ID]);
+        }
+    }
+
     public function associateTerminal($terminal)
     {
         if ($terminal === null)
@@ -1238,6 +1276,11 @@ class Entity extends Base\PublicEntity
     public function scopeStatus($query, $status)
     {
         return $query->where(Payment\Entity::STATUS, '=', $status);
+    }
+
+    public function scopeStatusSuccess($query)
+    {
+        return $query->whereNotIn(Entity::STATUS, [Status::FAILED, Status::CREATED]);
     }
 
     public function scopeCreatedAtLessThan($query, $ts)
