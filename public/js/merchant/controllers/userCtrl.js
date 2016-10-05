@@ -138,7 +138,7 @@ app.controller('UserCtrl', [
                   activated: data.activated,
                   locked: data.locked,
                   submitted: data.submitted,
-                  role:$scope.role
+                  role: $scope.role
                 }
               });
             }
