@@ -1,3 +1,6 @@
 ALTER TABLE payments
     ADD CONSTRAINT payments_token_id_foreign FOREIGN KEY(token_id) REFERENCES tokens(id) ON DELETE RESTRICT,
     ADD CONSTRAINT payments_global_token_id_foreign FOREIGN KEY(global_token_id) REFERENCES tokens(id) ON DELETE RESTRICT;
+
+ALTER TABLE terminals
+    ADD COLUMN gateway_client_certificate TEXT AFTER gateway_acquirer;
