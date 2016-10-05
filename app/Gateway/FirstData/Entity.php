@@ -13,6 +13,9 @@ class Entity extends Base\Entity
     const TDATE                         = 'tdate';
     const STATUS                        = 'status';
     const TRANSACTION_RESULT            = 'transaction_result';
+    const GATEWAY_TRANSACTION_ID        = 'gateway_transaction_id';
+    const ENDPOINT_TRANSACTION_ID       = 'endpoint_transaction_id';
+    const GATEWAY_TERMINAL_ID           = 'gateway_terminal_id';
     const APPROVAL_CODE                 = 'approval_code';
     const ERROR_MESSAGE                 = 'error_message';
 
@@ -26,6 +29,9 @@ class Entity extends Base\Entity
         self::TDATE,
         self::STATUS,
         self::TRANSACTION_RESULT,
+        self::GATEWAY_TRANSACTION_ID,
+        self::ENDPOINT_TRANSACTION_ID,
+        self::GATEWAY_TERMINAL_ID,
         self::APPROVAL_CODE,
         self::ERROR_MESSAGE,
     ];

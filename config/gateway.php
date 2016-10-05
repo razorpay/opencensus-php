@@ -76,11 +76,10 @@ return array(
         'test_hash_secret'                  => env('FIRST_DATA_TEST_HASH_SECRET'),
         'test_user_id'                      => env('FIRST_DATA_TEST_USER_ID'),
         'test_password'                     => env('FIRST_DATA_TEST_PASSWORD'),
+        'test_client_certificate'           => env('FIRST_DATA_TEST_CLIENT_CERTIFICATE'),
+        'test_client_certificate_password'  => env('FIRST_DATA_TEST_CLIENT_CERTIFICATE_PASSWORD'),
         'cert_dir_name'                     => env('FIRST_DATA_CERT_DIR_NAME'),
         'server_certificate'                => env('FIRST_DATA_SERVER_CERTIFICATE'),
-        'client_certificate'                => env('FIRST_DATA_CLIENT_CERTIFICATE'),
-        'client_certificate_key'            => env('FIRST_DATA_CLIENT_CERTIFICATE_KEY'),
-        'client_certificate_key_file'       => env('FIRST_DATA_CLIENT_CERTIFICATE_KEY_FILE'),
     ),
 
     'amex' => array(

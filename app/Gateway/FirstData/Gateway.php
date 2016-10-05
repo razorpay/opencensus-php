@@ -21,11 +21,8 @@ use Carbon\Carbon;
 
 class Gateway extends Base\Gateway
 {
-    const CERT_DIR_NAME                     = 'cert_dir_name';
-    const SERVER_CERTIFICATE                = 'server_certificate';
-    const CLIENT_CERTIFICATE                = 'client_certificate';
-    const CLIENT_CERTIFICATE_KEY_FILE       = 'client_certificate_key_file';
-    const CLIENT_CERTIFICATE_KEY            = 'client_certificate_key';
+    const CERTIFICATE_DIRECTORY_NAME        = 'cert_dir_name';
+    const CERTIFICATE_FORMAT_P12            = 'p12';
 
     const PROCESSING                        = 'PROCESSING';
     const SERVICES                          = 'SERVICES';
@@ -631,7 +628,9 @@ class Gateway extends Base\Gateway
     {
         curl_setopt($curl, CURLOPT_SSLCERT, $this->getClientCertificate());
 
-        curl_setopt($curl, CURLOPT_SSLKEY, $this->getClientCertificateKey());
+        curl_setopt($curl, CURLOPT_SSLCERTTYPE, strtoupper(self::CERTIFICATE_FORMAT_P12));
+
+        curl_setopt($curl, CURLOPT_SSLCERTPASSWD, $this->getClientCertificatePassword());
 
         curl_setopt($curl, CURLOPT_CAINFO, $this->getServerCertificate());
 
@@ -736,6 +735,15 @@ class Gateway extends Base\Gateway
             ['scrubbed_fields' => $scrubFields]);
     }
 
+    // FirstData terminal attributes to Terminal Entity mapping
+    //
+    // Store ID              => GATEWAY_MERCHANT_ID
+    // Shared Secret         => GATEWAY_SECURE_SECRET
+    // User ID               => GATEWAY_MERCHANT_ID
+    // Password              => GATEWAY_ACCESS_CODE
+    // Client Cert           => GATEWAY_CLIENT_CERTIFICATE (base64 encoded)
+    // Client Cert Password  => GATEWAY_TERMINAL_PASSWORD
+
     protected function getStoreId()
     {
         if ($this->mode === Mode::TEST)
@@ -744,6 +752,16 @@ class Gateway extends Base\Gateway
         }
 
         return $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
+    }
+
+    protected function getSharedSecret()
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->config['test_hash_secret'];
+        }
+
+        return $this->terminal[Terminal\Entity::GATEWAY_SECURE_SECRET];
     }
 
     protected function getCredentials()
@@ -768,61 +786,54 @@ class Gateway extends Base\Gateway
 
     protected function getGatewayCertDirName()
     {
-        return $this->config[self::CERT_DIR_NAME];
+        return $this->config[self::CERTIFICATE_DIRECTORY_NAME];
     }
 
     protected function getServerCertificate()
     {
         $gatewayCertPath = $this->getGatewayCertDirPath();
 
-        return $gatewayCertPath . '/' . $this->config[self::SERVER_CERTIFICATE];
+        return $gatewayCertPath . '/' . $this->config['server_certificate'];
     }
 
     protected function getClientCertificate()
     {
         $gatewayCertPath = $this->getGatewayCertDirPath();
 
-        return $gatewayCertPath . '/' . $this->config[self::CLIENT_CERTIFICATE];
-    }
+        $clientCertPath = $gatewayCertPath . '/' . $this->getStoreId() . '.' . self::CERTIFICATE_FORMAT_P12;
 
-    protected function getClientCertificateKey()
-    {
-        $gatewayCertPath = $this->getGatewayCertDirPath();
-
-        $clientCertKeyPath = $gatewayCertPath . '/' . $this->config[self::CLIENT_CERTIFICATE_KEY_FILE];
-
-        if (file_exists($clientCertKeyPath) === false)
+        if (file_exists($clientCertPath) === false)
         {
-            $clientCertKeyFile = fopen($clientCertKeyPath, 'w');
+            $clientCertFile = fopen($clientCertPath, 'w');
 
             if ($this->mode === Mode::TEST)
             {
-                $encodedKey = $this->config[self::CLIENT_CERTIFICATE_KEY];
+                $encodedCert = $this->config['test_client_certificate'];
             }
             else
             {
-                $encodedKey = $this->terminal[Terminal\Entity::GATEWAY_TERMINAL_PASSWORD];
+                $encodedCert = $this->terminal[Terminal\Entity::GATEWAY_CLIENT_CERTIFICATE];
             }
 
-            $key = trim(str_replace('\n', "\n", base64_decode($encodedKey)));
+            $key = base64_decode($encodedCert);
 
-            fwrite($clientCertKeyFile, $key);
+            fwrite($clientCertFile, $key);
 
             $this->trace->info(
-                        TraceCode::CLIENT_CERTIFICATE_KEY_FILE_GENERATED,
-                        ['clientCertKeyPath' => $clientCertKeyPath]);
+                        TraceCode::CLIENT_CERTIFICATE_FILE_GENERATED,
+                        ['clientCertPath' => $clientCertPath]);
         }
 
-        return $clientCertKeyPath;
+        return $clientCertPath;
     }
 
-    protected function getSharedSecret()
+    protected function getClientCertificatePassword()
     {
         if ($this->mode === Mode::TEST)
         {
-            return $this->config['test_hash_secret'];
+            return $this->config['test_client_certificate_password'];
         }
 
-        return $this->terminal[Terminal\Entity::GATEWAY_SECURE_SECRET];
+        return $this->terminal[Terminal\Entity::GATEWAY_TERMINAL_PASSWORD];
     }
 }
