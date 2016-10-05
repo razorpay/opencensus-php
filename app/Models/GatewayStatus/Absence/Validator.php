@@ -14,6 +14,7 @@ class Validator extends Base\Validator
         Entity::TO              => 'sometimes|integer',
         Entity::REASON          => 'sometimes|string|max:500',
         Entity::BANK            => 'sometimes|string|max:255',
+        Entity::SCHEDULED       => 'sometimes|bool'
     );
 
     protected static $editRules = array(

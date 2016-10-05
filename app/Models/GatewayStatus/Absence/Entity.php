@@ -13,6 +13,7 @@ class Entity extends Base\PublicEntity
     const FROM                          = 'from';
     const TO                            = 'to';
     const REASON                        = 'reason';
+    const SCHEDULED                     = 'scheduled';
     const CREATED_AT                    = 'created_at';
     const UPDATED_AT                    = 'updated_at';
 
@@ -21,7 +22,8 @@ class Entity extends Base\PublicEntity
         self::FROM,
         self::TO,
         self::REASON,
-        self::BANK
+        self::BANK,
+        self::SCHEDULED
     );
 
     protected $public = array(
@@ -32,8 +34,15 @@ class Entity extends Base\PublicEntity
         self::TO,
         self::CREATED_AT,
         self::UPDATED_AT,
-        self::REASON
+        self::REASON,
+        self::SCHEDULED
     );
+
+    protected $casts = [
+        self::FROM      => 'int',
+        self::TO        => 'to',
+        self::SCHEDULED => 'bool'
+    ];
 
     const END_OF_TIME = 2147483647;
 
