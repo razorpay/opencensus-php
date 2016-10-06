@@ -15,13 +15,13 @@ use RZP\Trace\TraceCode;
 
 class DailyReport extends Base\Core
 {
-    protected $this->merchantId;
+    protected $merchantId;
 
-    protected $this->timeLowerLimit;
+    protected $timeLowerLimit;
 
-    protected $this->timeUpperLimit;
+    protected $timeUpperLimit;
 
-    protected $this->date;
+    protected $date;
 
     // If the merchant has more payments than this,
     // we'll send aggregates instead of details of
@@ -81,7 +81,7 @@ class DailyReport extends Base\Core
 
         $paymentCount = $data['authorized']['payments']['count']
                         + $data['captured']['payments']['count']
-                        + $data['refunds']['payments']['count'];
+                        + $data['refunds']['refunds']['count'];
 
         // Above a certain threshold, our daily report mails will
         // contain only aggregates, and not actual payment details.
