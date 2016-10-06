@@ -3,6 +3,7 @@
 namespace RZP\Models\Customer\Token;
 
 use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Models\Bank;
 use RZP\Models\Base;
 use RZP\Models\Card;
