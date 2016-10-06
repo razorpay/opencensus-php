@@ -4,7 +4,7 @@ namespace RZP\Models\Payment;
 
 use RZP\Models\Base\PublicCollection;
 
-class Collection extends PublicCollection
+class PaymentCollection extends PublicCollection
 {
     const COUNT = 'count';
     const ITEMS = 'items';
@@ -18,9 +18,7 @@ class Collection extends PublicCollection
      */
     public function toArrayDailyReport()
     {
-        $array[static::ENTITY] = $this->entity;
-        $array[static::COUNT] = count($this->items);
-        $array['admin'] = true;
+        $array[static::COUNT] = $this->count();
 
         $array[static::ITEMS] = $this->itemsToArrayDailyReport();
 

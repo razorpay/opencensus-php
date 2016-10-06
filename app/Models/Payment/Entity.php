@@ -943,7 +943,7 @@ class Entity extends Base\PublicEntity
      */
     public function newCollection(array $models = array())
     {
-        return new Collection($models);
+        return new PaymentCollection($models);
     }
 
     public function toArrayDailyReport()
