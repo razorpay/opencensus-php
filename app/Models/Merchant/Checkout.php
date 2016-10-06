@@ -116,6 +116,11 @@ class Checkout
 
     protected function checkAndFillAppTokenInputFromSession($merchant, $mode, array & $input)
     {
+        if (isset($input[Payment\Entity::CUSTOMER_ID]) === true)
+        {
+            return;
+        }
+
         if ($merchant->isFeatureEnabled('cardsaving') === false)
         {
             return;

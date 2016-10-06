@@ -205,7 +205,15 @@ class Core extends Base\Core
         $appToken = null;
         $appToken = null;
 
-        if (empty($input[Payment\Entity::APP_TOKEN]) === false)
+        if (empty($input[Payment\Entity::CUSTOMER_ID]) === false)
+        {
+            $merchantId = $merchant->getId();
+
+            $customerId = $input[Payment\Entity::CUSTOMER_ID];
+
+            Customer\Entity::verifyIdAndStripSign($customerId);
+        }
+        else if (empty($input[Payment\Entity::APP_TOKEN]) === false)
         {
             $appToken = $input[Payment\Entity::APP_TOKEN];
 
@@ -221,14 +229,6 @@ class Core extends Base\Core
 
                 $merchantId = Account::SHARED_ACCOUNT;
             }
-        }
-        else if (empty($input[Payment\Entity::CUSTOMER_ID]) === false)
-        {
-            $merchantId = $merchant->getId();
-
-            $customerId = $input[Payment\Entity::CUSTOMER_ID];
-
-            Customer\Entity::verifyIdAndStripSign($customerId);
         }
 
         if ($customerId !== null)
