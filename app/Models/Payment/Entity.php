@@ -935,21 +935,10 @@ class Entity extends Base\PublicEntity
                 ($this->localToken->isRecurring() === true));
     }
 
-    /**
-     * Create a new Eloquent Collection instance.
-     *
-     * @param  array  $models
-     * @return \Illuminate\Database\Eloquent\Collection
-     */
-    public function newCollection(array $models = array())
-    {
-        return new PaymentCollection($models);
-    }
-
     public function toArrayDailyReport()
     {
         $reportArray = [
-            self::PUBLIC_ID      => 'pay_' . $this->getId(),
+            self::PUBLIC_ID      => $this->getPublicId(),
             self::AMOUNT         => $this->getAmount(),
             self::AUTHORIZED_AT  => $this->getAuthorizeTimestamp(),
             self::CAPTURED_AT    => $this->getCaptureTimestamp(),

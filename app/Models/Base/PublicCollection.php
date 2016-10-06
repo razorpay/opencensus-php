@@ -43,6 +43,15 @@ class PublicCollection extends Collection
         return $this->itemsToArrayReport();
     }
 
+    public function toArrayDailyReport()
+    {
+        $array[static::COUNT] = $this->count();
+
+        $array[static::ITEMS] = $this->itemsToArrayDailyReport();
+
+        return $array;
+    }
+
     public function getIds()
     {
         $ids = array_map(function($item)
@@ -127,6 +136,15 @@ class PublicCollection extends Collection
         return array_map(function($item)
         {
             return $item->toArrayReport();
+
+        }, $this->items);
+    }
+
+    protected function itemsToArrayDailyReport()
+    {
+        return array_map(function($item)
+        {
+            return $item->toArrayDailyReport();
 
         }, $this->items);
     }
