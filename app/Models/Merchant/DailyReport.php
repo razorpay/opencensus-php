@@ -81,7 +81,7 @@ class DailyReport extends Base\Core
 
         $paymentCount = $data['authorized']['payments']['count']
                         + $data['captured']['payments']['count']
-                        + $data['refunds']['payments']['count'];
+                        + $data['refunds']['refunds']['count'];
 
         // Above a certain threshold, our daily report mails will
         // contain only aggregates, and not actual payment details.
