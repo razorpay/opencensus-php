@@ -209,8 +209,14 @@ trait BrowserHelper
 		$this->waitUntil(function() use ($selector){
             try
             {
-                $displayed = $this->displayedByCss($selector);
-                if ($displayed === true)
+                $displayed = $this->execScript('
+                                                var element = document.querySelector("'.$selector.'");
+                                                if (!element) {
+                                                  return 0;
+                                                }
+                                                return element.getBoundingClientRect().width;
+                                              ');
+                if ($displayed !== 0)
                 {
                     return null;
                 }
@@ -265,9 +271,23 @@ trait BrowserHelper
 
 	public function execScript($script)
 	{
-		$this->execute(array(
+		return $this->execute(array(
             'script' => $script,
             'args' => array()
         ));
 	}
+
+  public function execAsyncScript($script, $timeout)
+  {
+    $this->timeouts()->asyncScript(20000);
+    $script = 'var callback = arguments[0];
+               window.setTimeout(function() {
+                   callback('.$script.');
+               }, '.$timeout.');
+            ';
+    return $this->executeAsync(array(
+            'script' => $script,
+            'args'   => array()
+        ));
+  }
 }
