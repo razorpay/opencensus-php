@@ -592,7 +592,7 @@ class Service extends Base\Service
             array()
         );
 
-        $merchants = Base\PublicCollection;
+        $merchants = new Base\PublicCollection;
 
         if (isset($input[Entity::ID]) === true)
         {
