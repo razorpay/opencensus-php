@@ -10,7 +10,7 @@ class Validator extends Base\Validator
         Entity::FORMAT                => 'required|string',
         Entity::SIZE                  => 'required|',
         Entity::ENCRYPTION_METHOD     => 'required|string',
-        Entity::LOCATION              => 'required|url',
+        Entity::LOCATION              => 'required|',
         Entity::SERVICE               => 'required|in:s3',
         Entity::BUCKET                => 'sometimes|',
         Entity::NAME                  => 'required|',

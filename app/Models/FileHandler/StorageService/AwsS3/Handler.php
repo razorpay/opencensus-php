@@ -18,6 +18,11 @@ class Handler extends Base\Handler
 
     public function save($bucket, $name, $fullpath, $mime, $metadata = [])
     {
+        if ($this->config['mock'] === true)
+        {
+            return $fullpath;
+        }
+
         $s3 = $this->getClient();
 
         try
@@ -41,6 +46,11 @@ class Handler extends Base\Handler
 
     public function fetchAndSaveFile($bucket, $name, $filePath)
     {
+        if ($this->config['mock'] === true)
+        {
+            return $filePath;
+        }
+
         $s3 = $this->getClient();
 
         try
@@ -65,6 +75,11 @@ class Handler extends Base\Handler
 
     public function fetchContent($bucket, $name)
     {
+        if ($this->config['mock'] === true)
+        {
+            return '';
+        }
+
         $s3 = $this->getClient();
 
         try
@@ -109,6 +124,11 @@ class Handler extends Base\Handler
 
     public function getTemporaryUrl($bucket, $key, $duration = '15')
     {
+        if ($this->config['mock'] === true)
+        {
+            return $key;
+        }
+
         $s3 = $this->getClient();
 
         try

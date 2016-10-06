@@ -177,9 +177,7 @@ class Service extends Base\Service
 
     public function update($id, $input)
     {
-        Entity::verifyIdAndStripSign($id);
-
-        $fileHandler = $this->repo->file_handler->getByIdOrFail($id);
+        $fileHandler = $this->repo->file_handler->findByPublicId($id);
 
         $newFileHandler = $this->create($input);
 
@@ -190,14 +188,11 @@ class Service extends Base\Service
 
     public function delete($id)
     {
-        Entity::verifyIdAndStripSign($id);
-
-        $fileHandler = $this->repo->file_handler->getByIdOrFail($id);
+        $fileHandler = $this->repo->file_handler->findByPublicId($id);
 
         $fileHandler->delete();
 
-        //TODO : change the return type
-        return $fileHandler->toArrayPublic();
+        return $fileHandler->toArrayDeleted();
     }
 
     public function deleteByEntityIdAndEntityType($id)

@@ -10,13 +10,6 @@ class Repository extends Base\Repository
 
     protected $entity = 'file_handler';
 
-    public function getByIdOrFail($id)
-    {
-        return $this->newQuery()
-            ->where(Entity::ID, '=', $id)
-            ->firstOrFail();
-    }
-
     public function getByEntityIdAndEntityType($entityId, $entityType)
     {
         return $this->newQuery()

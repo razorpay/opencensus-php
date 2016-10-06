@@ -38,7 +38,7 @@ class Helper
 
         $fileDetails[Entity::ENCRYPTION_METHOD] = $this->getValueOrDefault($input, 'encryptionMethod', 'none');
 
-        $fileDetails[Entity::METADATA] = $this->getValueOrDefault($input, 'metaData');
+        $fileDetails[Entity::METADATA] = $this->getValueOrDefault($input, 'metadata');
 
         return $fileDetails;
     }

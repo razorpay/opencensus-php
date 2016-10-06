@@ -305,4 +305,9 @@ class PublicEntity extends UniqueIdEntity
 
         return date('d/m/y h:i:s', $value);
     }
+
+    public function toArrayDeleted()
+    {
+        return [static::ID => $this->getPublicId(), 'deleted' => true];
+    }
 }
