@@ -15,7 +15,21 @@ use RZP\Trace\TraceCode;
 
 class DailyReport extends Base\Core
 {
-    const DAILY_REPORT_LIMIT = 80;
+    protected $merchantId;
+
+    protected $timeLowerLimit;
+
+    protected $timeUpperLimit;
+
+    protected $date;
+
+    // If the merchant has more payments than this,
+    // we'll send aggregates instead of details of
+    // every individual payment
+    const DETAILED_REPORT_PAYMENT_LIMIT = 80;
+
+    const DAILY_REPORT_EMAIL_TEMPLATE               = 'emails.merchant.daily_report';
+    const DAILY_REPORT_HIGH_VOLUME_EMAIL_TEMPLATE   = 'emails.merchant.daily_report_high_volume';
 
     /**
      * Generates a new daily report
@@ -65,15 +79,19 @@ class DailyReport extends Base\Core
     {
         $data = $this->data;
 
+        $paymentCount = $data['authorized']['payments']['count']
+                        + $data['captured']['payments']['count']
+                        + $data['refunds']['payments']['count'];
+
         // Above a certain threshold, our daily report mails will
         // contain only aggregates, and not actual payment details.
-        if ($data['authorized']['payments']['count'] > self::DAILY_REPORT_LIMIT)
+        if ($paymentCount > self::DETAILED_REPORT_PAYMENT_LIMIT)
         {
-            $dailyReportView = 'emails.merchant.daily_report_high_volume';
+            $dailyReportView = self::DAILY_REPORT_HIGH_VOLUME_EMAIL_TEMPLATE;
         }
         else
         {
-            $dailyReportView = 'emails.merchant.daily_report';
+            $dailyReportView = self::DAILY_REPORT_EMAIL_TEMPLATE;
         }
 
         $view = ['html' => $dailyReportView];
@@ -229,7 +247,7 @@ class DailyReport extends Base\Core
 
         return [
             'sum'      => $refunds->sum('amount'),
-            'refunds'  => $refunds->toArrayPublic(),
+            'refunds'  => ['count' => $refunds->count()],
         ];
     }
 
