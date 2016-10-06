@@ -19,4 +19,64 @@ return [
             ],
         ],
     ],
+
+    'testMigrationWithST1' => [
+        'request' => [
+            'url' => '/transactions/migrate',
+            'method' => 'post',
+            'content' => [
+
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+        ],
+    ],
+
+    'testMigrationWithST2' => [
+        'request' => [
+            'url' => '/transactions/migrate',
+            'method' => 'post',
+            'content' => [
+
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+        ],
+    ],
+
+    'testMigrationWithSTSB' => [
+        'request' => [
+            'url' => '/transactions/migrate',
+            'method' => 'post',
+            'content' => [
+
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+        ],
+    ],
+
+    'testMigrationWithSTSBKK' => [
+        'request' => [
+            'url' => '/transactions/migrate',
+            'method' => 'post',
+            'content' => [
+
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+        ],
+    ],
 ];

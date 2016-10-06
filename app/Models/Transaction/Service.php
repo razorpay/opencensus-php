@@ -37,6 +37,6 @@ class Service extends Base\Service
 
     public function postMigrateOlderTransactions($input)
     {
-        return (new Transaction\DataMigration())->postMigrateOlderTransactions();
+        return (new Transaction\DataMigration())->postMigrateOlderTransactions($input);
     }
 }

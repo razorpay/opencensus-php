@@ -33,9 +33,25 @@ class DataMigration extends Base\Service
 
     protected $feeCalculator;
 
-    public function postMigrateOlderTransactions()
+    public function postMigrateOlderTransactions($input)
     {
-        $txns = $this->repo->transaction->getTransactionsToBeMigrated();
+        list($batch1From, $batch1To, $batch2From, $batch2To) = $this->getTimestamps($input);
+
+        $response = $this->processEntries($batch1From, $batch1To);
+
+        $batchResponse2 = $this->processEntries($batch2From, $batch2To);
+
+        if (empty($batchResponse2) === false)
+        {
+            array_push($response, $batchResponse2);
+        }
+
+        return $response;
+    }
+
+    protected function processEntries($from, $to)
+    {
+        $txns = $this->repo->transaction->getTransactionsToBeMigrated($from, $to);
 
         $response = [];
 
@@ -68,7 +84,7 @@ class DataMigration extends Base\Service
 
             $this->saveFeeDetails($txn, $feesSplit, $payment->getCaptureTimestamp());
 
-            $response[$txn->getId()] = $feesSplit->toArrayPublic();
+            $response[$txn->getPublicId()] = $feesSplit->toArrayPublic();
         }
 
         return $response;
@@ -108,7 +124,7 @@ class DataMigration extends Base\Service
 
     protected function saveFeeDetails($txn, $feesSplit, $captureTime)
     {
-        if (empty($feesSplit) == true)
+        if (empty($feesSplit) === true)
         {
             return;
         }
@@ -131,5 +147,38 @@ class DataMigration extends Base\Service
                 $this->repo->fee_breakup->saveOrFail($feeSplit);
             }
         });
+    }
+
+    protected function getTimestamps($input)
+    {
+        assertTrue(isset($input['month']));
+        assertTrue(isset($input['year']));
+
+        $year = (int) $input['year'];
+        $month = (int) $input['month'];
+
+        assertTrue($month > 0);
+        assertTrue($month <= 12);
+
+        $from = Carbon::today('Asia/Kolkata')
+                        ->month($month)
+                        ->year($year)
+                        ->startOfMonth()
+                        ->timestamp;
+
+        $mid = Carbon::today('Asia/Kolkata')
+                        ->month($month)
+                        ->day(15)
+                        ->year($year)
+                        ->startOfDay()
+                        ->timestamp;
+
+        $end = Carbon::today('Asia/Kolkata')
+                        ->month($month)
+                        ->year($year)
+                        ->endOfMonth()
+                        ->timestamp;
+
+        return [ $from, $mid, $mid + 1, $end];
     }
 }

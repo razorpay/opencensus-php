@@ -248,7 +248,7 @@ class Repository extends Base\Repository
         }
     }
 
-    public function getTransactionsToBeMigrated()
+    public function getTransactionsToBeMigrated($from, $to)
     {
         $txns = $this->newQuery()
                     ->where(Entity::TYPE, 'payment')
@@ -259,7 +259,7 @@ class Repository extends Base\Repository
                             $query->select(FeeBreakup\Entity::TRANSACTION_ID)
                                   ->from(TABLE::FEE_BREAKUP);
                         })
-                    ->limit(10)
+                    ->betweenTime($from, $to)
                     ->select('transactions.*')
                     ->get();
         return $txns;
