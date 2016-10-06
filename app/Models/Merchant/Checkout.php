@@ -87,11 +87,7 @@ class Checkout
                 return null;
             }
 
-            if ($customer->isLocal() === true)
-            {
-                $custData[Payment\Entity::CUSTOMER_ID] = $customer->getPublicId();
-            }
-            else if((Base\Utility::isUpdatedAndroidSdk($input)) and
+            if((Base\Utility::isUpdatedAndroidSdk($input)) and
                     ($appToken !== null) and
                     ($appToken->getMerchantId() === $this->repo->merchant->getSharedAccount()->getId()))
             {
@@ -105,6 +101,11 @@ class Checkout
                 'contact'   => $customer->getContact(),
                 'tokens'    => $savedTokens->toArrayPublic()
             );
+
+            if ($customer->isLocal() === true)
+            {
+                $custData[Payment\Entity::CUSTOMER_ID] = $customer->getPublicId();
+            }
         }
         catch (\Exception $ex)
         {
