@@ -8,27 +8,27 @@ use RZP\Exception;
 
 class Validator extends Base\Validator
 {
-    protected static $createRules = array (
+    protected static $createRules = [
         Entity::GATEWAY         => 'required|string|max:255|custom',
         Entity::FROM            => 'required|integer',
         Entity::TO              => 'sometimes|integer',
         Entity::REASON          => 'sometimes|string|max:500',
         Entity::BANK            => 'sometimes|string|max:255',
         Entity::SCHEDULED       => 'sometimes|bool'
-    );
+    ];
 
-    protected static $editRules = array(
+    protected static $editRules = [
         Entity::FROM            => 'required|integer',
         Entity::TO              => 'sometimes|integer',
-    );
+    ];
 
-    protected static $createValidators = array(
+    protected static $createValidators = [
         'to'
-    );
+    ];
 
-    protected static $editValidators = array(
+    protected static $editValidators = [
         'to'
-    );
+    ];
 
     public function validateGateway($attribute, $gateway)
     {
@@ -50,12 +50,26 @@ class Validator extends Base\Validator
 
         $to = $input[Entity::TO];
 
-        $from = (int) $input[Entity::FROM];
+        $from = $input[Entity::FROM];
 
         if ($to < $from)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'From : ' . $from . ' less than To :' . $to
+            );
+        }
+
+        if ($from > Entity::END_OF_TIME)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'From: '. $from. ' is greater than End of Time:' .Entity::END_OF_TIME
+            );
+        }
+
+        if ($to > Entity::END_OF_TIME)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'To: '. $to. ' is greater than End of Time:' .Entity::END_OF_TIME
             );
         }
     }

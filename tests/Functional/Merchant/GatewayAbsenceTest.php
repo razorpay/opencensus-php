@@ -49,14 +49,14 @@ class GatewayAbsenceTest extends TestCase
 
         $to = $now + 100;
 
-        $request = array(
-            'content' => array(
+        $request = [
+            'content' => [
                 'from' => $now,
                 'to' => $to
-            ),
+            ],
             'method' => 'PUT',
             'url' => $url
-        );
+        ];
 
         $content = $this->makeRequestAndGetContent($request);
 
@@ -104,11 +104,11 @@ class GatewayAbsenceTest extends TestCase
 
         $from = $content1['from'];
 
-        $request = array(
-            'content' => array('from' => $from),
+        $request = [
+            'content' => ['from' => $from],
             'url' => '/gateway/absence',
             'method' => 'GET'
-        );
+        ];
 
         $content = $this->makeRequestAndGetContent($request);
 
@@ -133,11 +133,11 @@ class GatewayAbsenceTest extends TestCase
 
         $to = $content2['to'];
 
-        $request = array(
-            'content' => array('from' => $from, 'to' => $to),
+        $request = [
+            'content' => ['from' => $from, 'to' => $to],
             'url' => '/gateway/absence',
             'method' => 'GET'
-        );
+        ];
 
         $content = $this->makeRequestAndGetContent($request);
 
@@ -183,17 +183,17 @@ class GatewayAbsenceTest extends TestCase
 
     protected function __createGatewayAbsence($gatewayName, $from, $to)
     {
-        $request = array(
-            'content' => array(
+        $request = [
+            'content' => [
                 'gateway' => $gatewayName,
                 'reason'  => 'Test Reason',
                 'bank'  => 'hdfc',
                 'from'  => $from,
                 'to' => $to
-            ),
+            ],
             'method' => 'POST',
             'url' => '/gateway/absence'
-        );
+        ];
 
         if ($to === null)
         {

@@ -17,16 +17,16 @@ class Entity extends Base\PublicEntity
     const CREATED_AT                    = 'created_at';
     const UPDATED_AT                    = 'updated_at';
 
-    protected $fillable = array(
+    protected $fillable = [
         self::GATEWAY,
         self::FROM,
         self::TO,
         self::REASON,
         self::BANK,
         self::SCHEDULED
-    );
+    ];
 
-    protected $public = array(
+    protected $public = [
         self::ID,
         self::GATEWAY,
         self::FROM,
@@ -36,7 +36,7 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::REASON,
         self::SCHEDULED
-    );
+    ];
 
     protected $casts = [
         self::FROM      => 'int',
