@@ -82,14 +82,14 @@ return [
             'content' => [
                 'name'    => 'testc',
                 'email'   => 'test11@razorpay.com',
-                'contact' => '1234567890'
+                'contact' => '9988776655'
             ],
         ],
         'response' => [
             'content' => [
                 'name'    => 'testc',
                 'email'   => 'test11@razorpay.com',
-                'contact' => '1234567890'
+                'contact' => '9988776655'
             ],
         ],
     ],
@@ -341,7 +341,7 @@ return [
 
     'testFetchSavedTokensStatusSaved'   => [
         'request' => [
-                'url' => '/customers/status/1234567890',
+                'url' => '/customers/status/9988776655',
                 'method' => 'get',
                 'content' => [
                 ],
@@ -355,7 +355,7 @@ return [
 
     'testFetchSavedCustomerStatusWithDeviceToken'   => [
         'request' => [
-                'url' => '/customers/status/1234567890',
+                'url' => '/customers/status/9988776655',
                 'method' => 'get',
                 'content' => [
                     'device_token' => '1000custdevice'
@@ -393,7 +393,7 @@ return [
                 'url' => '/devices/1000custdevice/verify',
                 'method' => 'post',
                 'content' => [
-                    'contact' => 1234567890
+                    'contact' => '9988776655',
                 ],
             ],
             'response' => [
