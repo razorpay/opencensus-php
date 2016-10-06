@@ -15,6 +15,8 @@ use RZP\Trace\TraceCode;
 
 class DailyReport extends Base\Core
 {
+    const DAILY_REPORT_LIMIT = 80;
+
     /**
      * Generates a new daily report
      * @param String $id Merchant Id
@@ -61,9 +63,20 @@ class DailyReport extends Base\Core
      */
     protected function sendDailyReport()
     {
-        $view = ['html'=>'emails.merchant.daily_report'];
-
         $data = $this->data;
+
+        // Above a certain threshold, our daily report mails will
+        // contain only aggregates, and not actual payment details.
+        if ($data['authorized']['payments']['count'] > self::DAILY_REPORT_LIMIT)
+        {
+            $dailyReportView = 'emails.merchant.daily_report_high_volume';
+        }
+        else
+        {
+            $dailyReportView = 'emails.merchant.daily_report';
+        }
+
+        $view = ['html' => $dailyReportView];
 
         // Log merchant whose data has been computed
         $this->trace->info(
@@ -168,7 +181,7 @@ class DailyReport extends Base\Core
         // }
 
         return [
-            'payments' => $payments->toArrayAdmin(),
+            'payments' => $payments->toArrayDailyReport(),
             'sum'      => $payments->sum('amount'),
             'orderId'  => false
         ];

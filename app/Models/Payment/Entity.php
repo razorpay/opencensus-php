@@ -936,6 +936,29 @@ class Entity extends Base\PublicEntity
     }
 
     /**
+     * Create a new Eloquent Collection instance.
+     *
+     * @param  array  $models
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function newCollection(array $models = array())
+    {
+        return new Collection($models);
+    }
+
+    public function toArrayDailyReport()
+    {
+        $reportArray = [
+            self::PUBLIC_ID      => 'pay_' . $this->getId(),
+            self::AMOUNT         => $this->getAmount(),
+            self::AUTHORIZED_AT  => $this->getAuthorizeTimestamp(),
+            self::CAPTURED_AT    => $this->getCaptureTimestamp(),
+        ];
+
+        return $reportArray;
+    }
+
+    /**
      * This function returns the current payment method
      * and a detail string for that particular method
      * as a 2 length array. The array is numeric, instead
