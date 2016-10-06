@@ -322,12 +322,12 @@ class Gateway extends Base\Gateway
 
         $content = $input['gateway'];
 
-        if ((isset($content['status']) === false) or
-            ($content['status'] !== Status::SUCCESS))
+        $responseStatus = isset($content['status']) ? $content['status'] : null;
+
+        if ($responseStatus !== Status::SUCCESS)
         {
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-                $content['status']);
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED, $responseStatus);
         }
 
         // verify hash - when ola starts sending hash value
