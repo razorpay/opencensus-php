@@ -2,6 +2,7 @@
 
 namespace RZP\Models\FileHandler;
 
+use Crypt;
 use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
@@ -59,6 +60,7 @@ class Entity extends Base\PublicEntity
         self::ENCRYPTION_METHOD,
         self::LOCATION,
         self::SERVICE,
+        self::PASSWORD,
         self::BUCKET,
         self::NAME,
         self::ENTITY_TYPE,
@@ -96,4 +98,26 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [];
+
+    protected function getPasswordAttribute()
+    {
+        $pwd = $this->attributes[self::PASSWORD];
+
+        if ($pwd === null)
+        {
+            return $pwd;
+        }
+
+        return Crypt::decrypt($pwd);
+    }
+
+    protected function setPasswordAttribute($password)
+    {
+        if ($password === null)
+        {
+            $password = '';
+        }
+
+        $this->attributes[self::PASSWORD] = Crypt::encrypt($password);
+    }
 }

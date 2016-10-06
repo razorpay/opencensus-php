@@ -136,7 +136,7 @@ class Handler extends Base\Handler
 
     public function getBucketName($entityName)
     {
-        if ($this->mode === 'test')
+        if ($this->getMode() === 'test')
         {
             return 'rzp-test-bucket';
         }
@@ -172,6 +172,11 @@ class Handler extends Base\Handler
         ];
 
         return $s3Obj;
+    }
+
+    protected function getMode()
+    {
+        return \BasicAuth::getMode();
     }
 }
 ?>

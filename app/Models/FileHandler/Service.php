@@ -225,9 +225,12 @@ class Service extends Base\Service
 
         $merchantId = @$input['merchantId'] ?: '';
 
-        $fileHandlerInput[Entity::ENTITY_TYPE] = $entityType;
+        if (in_array($entityType, EntityTypeConstants::getValidEntity()) === true)
+        {
+            $fileHandlerInput[Entity::ENTITY_TYPE] = $entityType;
 
-        $fileHandlerInput[Entity::ENTITY_ID] = $entityId;
+            $fileHandlerInput[Entity::ENTITY_ID] = $entityId;
+        }
 
         $fileHandlerInput[Entity::MERCHANT_ID] = $merchantId;
 
