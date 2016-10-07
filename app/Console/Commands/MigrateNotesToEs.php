@@ -31,16 +31,6 @@ class MigrateNotesToEs extends Command
     protected $entityType;
 
     /**
-     * Create a new command instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
-    /**
      * Execute the console command.
      *
      * @return mixed
@@ -92,12 +82,13 @@ class MigrateNotesToEs extends Command
             }
 
             $skip += $take;
-
         }
     }
 
     protected function storeNotesInEs($entities)
     {
+        assertTrue(count($entities) > 0);
+
         foreach($entities as $entityData)
         {
             $entityId = $entityData->id;
@@ -126,7 +117,7 @@ class MigrateNotesToEs extends Command
             $updateResponse = $this->client->bulk($params);
             $this->info("<info>".json_encode($updateResponse)."</info>");
         }
-        catch(Exception $ex)
+        catch(\Exception $ex)
         {
             $this->error("<error>Type Name : $this->entityType \n Index Name : $this->indexName \n Entity : ". json_encode($params). "</error>");
         }
