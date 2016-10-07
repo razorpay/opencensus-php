@@ -65,9 +65,11 @@ class DailyReport extends Base\Core
         if ($this->isBlank() === false)
         {
             $this->sendDailyReport();
-            return $this->data;
+
+            return $this->merchantId;
         }
-        return [];
+
+        return null;
     }
 
     /**
@@ -100,8 +102,7 @@ class DailyReport extends Base\Core
         $this->trace->info(
             TraceCode::SETTLEMENT_DAILY_REPORT_DATA,
             array(
-                    'merchant_id'   => $data['merchant']['id'],
-                    'merchant_name' => $data['merchant']['name'],
+                    'merchant_id'   => $this->merchantId,
                     'captured'      => $data['captured']['payments']['count'],
                     'authorized'    => $data['authorized']['payments']['count'],
                     'refunds'       => $data['refunds']['refunds']['count'],
@@ -260,7 +261,7 @@ class DailyReport extends Base\Core
             'authorized'     => $this->getAuthorizedPayments(),
             'refunds'        => $this->getRefunds(),
             'settlement'     => $this->getSettlement(),
-            'merchant'       => $merchant->toArray(),
+            'billing_label'  => $merchant->getBillingLabel(),
             'account_number' => $merchant->getRedactedAccountNumber(),
             'date'           => $this->date,
         ];
