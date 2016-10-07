@@ -80,6 +80,21 @@ return [
         ],
     ],
 
+    'testMigrationWithTaxMistmatch' => [
+        'request' => [
+            'url' => '/transactions/migrate',
+            'method' => 'post',
+            'content' => [
+
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+        ],
+    ],
+
     'testMigrationWithFeeMistmatch' => [
         'request' => [
             'url' => '/transactions/migrate',

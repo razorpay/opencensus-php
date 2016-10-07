@@ -79,7 +79,11 @@ class DataMigration extends Base\Service
                 $amount = $payment->getAmount() - $payment->getFee();
             }
 
-            $fees = $this->feeCalculator->getUnroundedFees($amount, $pricing->getPercentRate(), $pricing->getFixedRate(), $feesSplit);
+            $fees = $this->feeCalculator->getUnroundedFees(
+                                            $amount,
+                                            $pricing->getPercentRate(),
+                                            $pricing->getFixedRate(),
+                                            $feesSplit);
 
             $this->calculateServiceTaxes($fees, $feesSplit, $payment->getCaptureTimestamp());
 
@@ -124,8 +128,12 @@ class DataMigration extends Base\Service
             $krishiKalyanCessPercentage = self::KRISHI_KALYAN_CESS_PERCENTAGE;
         }
 
-        $this->feeCalculator->calculateServiceTaxes($fee, $feesSplit, $serviceTaxPercentage,
-                $swachhBharatCessPercentage, $krishiKalyanCessPercentage);
+        $this->feeCalculator->calculateServiceTaxes(
+                                $fee,
+                                $feesSplit,
+                                $serviceTaxPercentage,
+                                $swachhBharatCessPercentage,
+                                $krishiKalyanCessPercentage);
     }
 
     protected function matchTaxesAndFeesWithOriginal($txn, $feesSplit)
@@ -177,9 +185,7 @@ class DataMigration extends Base\Service
             {
                 $rzpFee += $feeSplit['amount'];
             }
-            else if ($feeSplit['name'] === FeeBreakupName::SERVICE_TAX or
-                $feeSplit['name'] === FeeBreakupName::SWACHH_BHARAT_CESS or
-                $feeSplit['name'] === FeeBreakupName::KRISHI_KALYAN_CESS )
+            else
             {
                 $taxes += $feeSplit['amount'];
             }

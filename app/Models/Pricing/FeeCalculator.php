@@ -72,7 +72,9 @@ class FeeCalculator
 
     public static function getServiceTaxRate()
     {
-        return self::SERVICE_TAX_PERCENTAGE + self::KRISHI_KALYAN_CESS_PERCENTAGE + self::SWACHH_BHARAT_CESS_PERCENTAGE;
+        return self::SERVICE_TAX_PERCENTAGE +
+                self::KRISHI_KALYAN_CESS_PERCENTAGE +
+                self::SWACHH_BHARAT_CESS_PERCENTAGE;
     }
 
     protected function getRelevantPricingRule($pricing)
@@ -473,14 +475,22 @@ class FeeCalculator
 
         if (empty($percent) === false)
         {
-            $rzpPercentageFeeBreakup = $this->createFeeBreakup(FeeBreakupName::RZP, $percent, $percentageAmount, FeeBreakupType::PERCENTAGE);
+            $rzpPercentageFeeBreakup = $this->createFeeBreakup(
+                                                FeeBreakupName::RZP,
+                                                $percent,
+                                                $percentageAmount,
+                                                FeeBreakupType::PERCENTAGE);
 
             $feesSplit->push($rzpPercentageFeeBreakup);
         }
 
         if (empty($fixed) === false)
         {
-            $rzpFixedFeeBreakup = $this->createFeeBreakup(FeeBreakupName::RZP, 0, $fixed, FeeBreakupType::FIXED);
+            $rzpFixedFeeBreakup = $this->createFeeBreakup(
+                                                FeeBreakupName::RZP,
+                                                0,
+                                                $fixed,
+                                                FeeBreakupType::FIXED);
 
             $feesSplit->push($rzpFixedFeeBreakup);
         }
@@ -516,7 +526,9 @@ class FeeCalculator
         return $feeBreakup;
     }
 
-    public function calculateServiceTaxes($fee, $feesSplit,
+    public function calculateServiceTaxes(
+            $fee,
+            $feesSplit,
             $serviceTaxPercentage = self::SERVICE_TAX_PERCENTAGE,
             $swachhBharatCessPercentage = self::SWACHH_BHARAT_CESS_PERCENTAGE,
             $krishiKalyanCessPercentage = self::KRISHI_KALYAN_CESS_PERCENTAGE)
@@ -524,18 +536,27 @@ class FeeCalculator
     {
         $serviceTaxValue = (int) ceil(($fee * $serviceTaxPercentage)/10000);
 
-        $serviceTaxFeeBreakup = $this->createFeeBreakup(FeeBreakupName::SERVICE_TAX,
-            $serviceTaxPercentage, $serviceTaxValue, FeeBreakupType::PERCENTAGE);
+        $serviceTaxFeeBreakup = $this->createFeeBreakup(
+                                        FeeBreakupName::SERVICE_TAX,
+                                        $serviceTaxPercentage,
+                                        $serviceTaxValue,
+                                        FeeBreakupType::PERCENTAGE);
 
         $krishiKalyanCessValue = (int) ceil(($fee * $krishiKalyanCessPercentage)/10000);
 
-        $krishiKalyanCessFeeBreakup = $this->createFeeBreakup(FeeBreakupName::KRISHI_KALYAN_CESS,
-            $krishiKalyanCessPercentage, $krishiKalyanCessValue, FeeBreakupType::PERCENTAGE);
+        $krishiKalyanCessFeeBreakup = $this->createFeeBreakup(
+                                            FeeBreakupName::KRISHI_KALYAN_CESS,
+                                            $krishiKalyanCessPercentage,
+                                            $krishiKalyanCessValue,
+                                            FeeBreakupType::PERCENTAGE);
 
         $swachhBharatCessValue = (int) ceil(($fee * $swachhBharatCessPercentage)/10000);
 
-        $swachhBharatCessFeeBreakup = $this->createFeeBreakup(FeeBreakupName::SWACHH_BHARAT_CESS,
-            $swachhBharatCessPercentage, $swachhBharatCessValue, FeeBreakupType::PERCENTAGE);
+        $swachhBharatCessFeeBreakup = $this->createFeeBreakup(
+                                            FeeBreakupName::SWACHH_BHARAT_CESS,
+                                            $swachhBharatCessPercentage,
+                                            $swachhBharatCessValue,
+                                            FeeBreakupType::PERCENTAGE);
 
         $feesSplit->push($serviceTaxFeeBreakup);
         $feesSplit->push($krishiKalyanCessFeeBreakup);
@@ -546,25 +567,36 @@ class FeeCalculator
         return $totaltaxes;
     }
 
-    public function calculateServiceTaxesFromFees($fee, $feesSplit,
+    public function calculateServiceTaxesFromFees(
+            $fee,
+            $feesSplit,
             $serviceTaxPercentage = self::SERVICE_TAX_PERCENTAGE,
             $swachhBharatCessPercentage = self::SWACHH_BHARAT_CESS_PERCENTAGE,
             $krishiKalyanCessPercentage = self::KRISHI_KALYAN_CESS_PERCENTAGE)
     {
         $serviceTaxValue = $this->calculateTaxFromFees($fee, $serviceTaxPercentage);
 
-        $serviceTaxFeeBreakup = $this->createFeeBreakup(FeeBreakupName::SERVICE_TAX,
-            $serviceTaxPercentage, $serviceTaxValue, FeeBreakupType::PERCENTAGE);
+        $serviceTaxFeeBreakup = $this->createFeeBreakup(
+                                        FeeBreakupName::SERVICE_TAX,
+                                        $serviceTaxPercentage,
+                                        $serviceTaxValue,
+                                        FeeBreakupType::PERCENTAGE);
 
         $krishiKalyanCessValue = $this->calculateTaxFromFees($fee, $krishiKalyanCessPercentage);
 
-        $krishiKalyanCessFeeBreakup = $this->createFeeBreakup(FeeBreakupName::KRISHI_KALYAN_CESS,
-            $krishiKalyanCessPercentage, $krishiKalyanCessValue, FeeBreakupType::PERCENTAGE);
+        $krishiKalyanCessFeeBreakup = $this->createFeeBreakup(
+                                            FeeBreakupName::KRISHI_KALYAN_CESS,
+                                            $krishiKalyanCessPercentage,
+                                            $krishiKalyanCessValue,
+                                            FeeBreakupType::PERCENTAGE);
 
         $swachhBharatCessValue = $this->calculateTaxFromFees($fee, $swachhBharatCessPercentage);
 
-        $swachhBharatCessFeeBreakup = $this->createFeeBreakup(FeeBreakupName::SWACHH_BHARAT_CESS,
-            $swachhBharatCessPercentage, $swachhBharatCessValue, FeeBreakupType::PERCENTAGE);
+        $swachhBharatCessFeeBreakup = $this->createFeeBreakup(
+                                            FeeBreakupName::SWACHH_BHARAT_CESS,
+                                            $swachhBharatCessPercentage,
+                                            $swachhBharatCessValue,
+                                            FeeBreakupType::PERCENTAGE);
 
         $feesSplit->push($serviceTaxFeeBreakup);
         $feesSplit->push($krishiKalyanCessFeeBreakup);

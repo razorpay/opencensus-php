@@ -154,7 +154,7 @@ class TransactionMigrationTest extends TestCase
         $this->assertContent($content, $transaction['id'], $transaction['fee'], $transaction['service_tax']);
     }
 
-    public function testMigrationWithFeeMistmatch()
+    public function testMigrationWithTaxMistmatch()
     {
         $payment = $this->fixtures->create('payment:captured');
 
@@ -163,6 +163,27 @@ class TransactionMigrationTest extends TestCase
         $this->fixtures->base->editEntity('transaction', $transaction['id'], ['fee' => 22000]);
 
         $this->fixtures->base->editEntity('transaction', $transaction['id'], ['service_tax' => 2000]);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->ba->appAuth();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = $this->url;
+
+        $this->startTest();
+    }
+
+    public function testMigrationWithFeeMistmatch()
+    {
+        $payment = $this->fixtures->create('payment:captured');
+
+        $transaction = $payment->transaction;
+
+        $this->fixtures->base->editEntity('transaction', $transaction['id'], ['fee' => 22000]);
+
+        $this->fixtures->base->editEntity('transaction', $transaction['id'], ['service_tax' => 3000]);
 
         $transaction = $this->getLastEntity('transaction', true);
 
@@ -199,9 +220,7 @@ class TransactionMigrationTest extends TestCase
             {
                 $rzpFee += $feeSplit['amount'];
             }
-            else if ($feeSplit['name'] === FeeBreakupName::SERVICE_TAX or
-                $feeSplit['name'] === FeeBreakupName::SWACHH_BHARAT_CESS or
-                $feeSplit['name'] === FeeBreakupName::KRISHI_KALYAN_CESS )
+            else
             {
                 $taxes += $feeSplit['amount'];
             }
