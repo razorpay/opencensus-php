@@ -159,6 +159,8 @@ EOT;
             $this->assertEquals($response, ['success' => true]);
         }
 
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
         return $payment;
     }
 
@@ -314,5 +316,30 @@ EOT;
         }
 
         return $this->makeRequestAndGetContent($request);
+    }
+
+    /**
+     * TODO: Move this test to Payment Test
+     * But we can only do that once we have sharp support for async
+     */
+    public function testAsyncPaymentAutoCaptured()
+    {
+        $this->ba->privateAuth();
+
+        $res = $this->startTest($this->testData['testCreateAutoCaptureOrder']);
+
+        $this->payment['order_id'] = $res['id'];
+
+        $payment = $this->testPaymentWithS2S(true);
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $response = $this->getPaymentStatus($payment['id']);
+
+        $this->assertEquals([
+            'razorpay_payment_id',
+            'razorpay_order_id',
+            'razorpay_signature'],
+        array_keys($response));
     }
 }
