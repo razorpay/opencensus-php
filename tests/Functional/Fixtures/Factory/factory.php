@@ -53,7 +53,7 @@ $factory(\RZP\Models\BankAccount\Entity::class, [
     'beneficiary_state' => 'DE',
     'beneficiary_country' => 'IN',
     'beneficiary_email' => $faker->email,
-    'beneficiary_mobile' => 1234567890,
+    'beneficiary_mobile' => 9988776655,
     'beneficiary_pin' => 100000,
 ]);
 
@@ -263,7 +263,7 @@ $factory(\RZP\Models\Customer\Entity::class, [
     'id' => $faker->uniqueid,
     'merchant_id' => '10000000000000',
     'name' => 'name',
-    'contact' => '1234567890',
+    'contact' => '9988776655',
     'notes' => null,
 ]);
 

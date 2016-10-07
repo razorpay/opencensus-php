@@ -15,6 +15,22 @@ use RZP\Trace\TraceCode;
 
 class DailyReport extends Base\Core
 {
+    protected $merchantId;
+
+    protected $timeLowerLimit;
+
+    protected $timeUpperLimit;
+
+    protected $date;
+
+    // If the merchant has more payments than this,
+    // we'll send aggregates instead of details of
+    // every individual payment
+    const DETAILED_REPORT_PAYMENT_LIMIT = 80;
+
+    const DAILY_REPORT_EMAIL_TEMPLATE               = 'emails.merchant.daily_report';
+    const DAILY_REPORT_HIGH_VOLUME_EMAIL_TEMPLATE   = 'emails.merchant.daily_report_high_volume';
+
     /**
      * Generates a new daily report
      * @param String $id Merchant Id
@@ -61,9 +77,24 @@ class DailyReport extends Base\Core
      */
     protected function sendDailyReport()
     {
-        $view = ['html'=>'emails.merchant.daily_report'];
-
         $data = $this->data;
+
+        $paymentCount = $data['authorized']['payments']['count']
+                        + $data['captured']['payments']['count']
+                        + $data['refunds']['refunds']['count'];
+
+        // Above a certain threshold, our daily report mails will
+        // contain only aggregates, and not actual payment details.
+        if ($paymentCount > self::DETAILED_REPORT_PAYMENT_LIMIT)
+        {
+            $dailyReportView = self::DAILY_REPORT_HIGH_VOLUME_EMAIL_TEMPLATE;
+        }
+        else
+        {
+            $dailyReportView = self::DAILY_REPORT_EMAIL_TEMPLATE;
+        }
+
+        $view = ['html' => $dailyReportView];
 
         // Log merchant whose data has been computed
         $this->trace->info(
@@ -80,7 +111,7 @@ class DailyReport extends Base\Core
         // This is a debug view only for raising proper errors
         \View::make('emails.merchant.daily_report_debug', $data)->render();
 
-        Mail::send($view, $data, function($message) use ($data)
+        Mail::queue($view, $data, function($message) use ($data)
         {
             $to = $data['merchant']['email'];
 
@@ -168,7 +199,7 @@ class DailyReport extends Base\Core
         // }
 
         return [
-            'payments' => $payments->toArrayAdmin(),
+            'payments' => $payments->toArrayDailyReport(),
             'sum'      => $payments->sum('amount'),
             'orderId'  => false
         ];
@@ -216,7 +247,7 @@ class DailyReport extends Base\Core
 
         return [
             'sum'      => $refunds->sum('amount'),
-            'refunds'  => $refunds->toArrayPublic(),
+            'refunds'  => ['count' => $refunds->count()],
         ];
     }
 

@@ -1,0 +1,138 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width"/>
+  </head>
+  <body class="body" style="background: #EBECEE;">
+    <table class="container" style="background: #EBECEE;">
+      <tr>
+        <td>
+          @include('emails.partials.header', ['message' => $message])
+          <!-- Text Header -->
+          <table class="container">
+            <tr>
+              <td>
+                <table class="row bluebg" style="background:#39ACE5;">
+                  <tr>
+                    <td class="wrapper offset-by-two">
+                      <table class="eight columns ">
+                        <tr>
+                          <td class="center">
+                            <center>
+                              <h2 class="center">
+                                Daily Transaction Report
+                              </h2>
+                            </center>
+                            <center class="whitetext" style="text-align: center;">
+                            for {{$date}}
+                            </center>
+                          </td>
+                          <td class="expander"></td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+          @include('emails.partials.header_image', ['image' => 'report', 'alt' => 'Daily Transaction Report'], ['message' => $message])
+          <!-- Header Subtext -->
+          <table class="container">
+            <tr>
+              <td>
+                <table class="row bluebg">
+                  <tr>
+                    <td class="wrapper offset-by-two" style="background:#39ACE5;">
+                      <table class="eight columns">
+                        <tr>
+                          <td class="center">
+                            <center>
+                            <h2 class="center" style="text-align: center;">
+                              <a href="" style="color:white; text-decoration:none;">{{{$merchant['billing_label']}}}</a>
+                            </h2>
+                            </center>
+                          </td>
+                          <td class="expander"></td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+          <table class="container">
+            <tr>
+              <td>
+                <table class="row bluebg">
+                  <tr>
+                    <td class="wrapper whitetext">
+                      <table class="four columns">
+                        <tr>
+                          <td class="center"><center>
+                            Captured: {{{$captured['payments']['count']}}}<br>
+                            INR {{{number_format($captured['sum']/100, 2)}}}
+                          </center></td>
+                        </tr>
+                      </table>
+                    </td>
+                    <td class="wrapper whitetext">
+                      <table class="four columns">
+                        <tr>
+                          <td class="center"><center>
+                            Authorized: {{{$authorized['payments']['count']}}}<br>
+                            INR {{{number_format($authorized['sum']/100, 2)}}}
+                          </center></td>
+                        </tr>
+                      </table>
+                    </td>
+                    <td class="wrapper last whitetext">
+                      <table class="four columns">
+                        <tr>
+                          <td class="center"><center>
+                            Refunds: {{{$refunds['refunds']['count']}}}<br>
+                            INR {{{number_format($refunds['sum']/100, 2)}}}
+                          </center></td>
+                        </tr>
+                      </table>
+                    </td>
+                    <td class="expander"></td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+          <!-- Header Subtext -->
+          <table class="container">
+            <tr>
+              <td>
+                <table class="row bluebg">
+                  <tr>
+                    <td class="wrapper offset-by-four">
+                      <table class="four columns">
+                        <tr>
+                          <td>
+                            <table class="small-button">
+                              <tr>
+                                <td>
+                                  <a title="Open Dashboard" href="https://dashboard.razorpay.com">Open Dashboard</a>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+          @include('emails.partials.footer', ['message' => $message])
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
