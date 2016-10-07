@@ -127,10 +127,10 @@ class CustomerTest extends TestCase
         $this->mockRaven();
 
         // send OTP
-        $response = $this->sendOtp('1234567890');
+        $response = $this->sendOtp('9988776655');
 
         // verify OTP
-        $content = $this->verifyOtp('1234567890', 'abc@razorpay.com', '233323');
+        $content = $this->verifyOtp('9988776655', 'abc@razorpay.com', '233323');
 
         $this->assertEquals($content['success'], 1);
     }
@@ -142,10 +142,10 @@ class CustomerTest extends TestCase
         $this->mockRaven();
 
         // send OTP
-        $response = $this->sendOtp('1234567890');
+        $response = $this->sendOtp('9988776655');
 
         // verify OTP
-        $content = $this->verifyOtp('1234567890', 'abc@razorpay.com', '233443', '123');
+        $content = $this->verifyOtp('9988776655', 'abc@razorpay.com', '233443', '123');
 
         $this->assertEquals($content['success'], 1);
     }
@@ -157,10 +157,10 @@ class CustomerTest extends TestCase
         $this->mockRaven();
 
         // send OTP
-        $response = $this->sendOtp('1234567890');
+        $response = $this->sendOtp('9988776655');
 
         // verify OTP
-        $content = $this->verifyOtp('1234567890', 'abc@razorpay.com', '233443', '123', true);
+        $content = $this->verifyOtp('9988776655', 'abc@razorpay.com', '233443', '123', true);
 
         $this->assertEquals($content['success'], 1);
 

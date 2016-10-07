@@ -4,3 +4,19 @@ ALTER TABLE payments
 
 ALTER TABLE terminals
     ADD COLUMN gateway_client_certificate TEXT AFTER gateway_acquirer;
+
+ALTER TABLE transactions
+    MODIFY COLUMN amount BIGINT UNSIGNED NOT NULL,
+    MODIFY COLUMN debit BIGINT UNSIGNED NOT NULL,
+    MODIFY COLUMN credit BIGINT UNSIGNED NOT NULL,
+    MODIFY COLUMN balance BIGINT UNSIGNED;
+
+ALTER TABLE settlements
+    MODIFY COLUMN amount BIGINT UNSIGNED NOT NULL;
+
+ALTER TABLE daily_settlements
+    MODIFY COLUMN amount BIGINT UNSIGNED NOT NULL;
+
+ALTER TABLE settlement_details
+    MODIFY COLUMN amount BIGINT UNSIGNED NOT NULL;
+
