@@ -48,7 +48,7 @@ class DailyReportTest extends TestCase
                                 'authorized' => ['payments' => ['count' => 4], 'sum' => 4000000],
                                 'refunds' => ['refunds' => ['count' => 2], 'sum' => 200000],
                                 'settlement' => ['merchant_id' => '10000000000000', 'amount' => 3508000],
-                                'merchant' => ['id' => '10000000000000', 'activated' => true],
+                                'email' => ['test@razorpay.com'],
                             );
                             $this->assertArraySelectiveEquals($testData, $data);
 
