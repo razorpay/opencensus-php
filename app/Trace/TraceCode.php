@@ -267,6 +267,10 @@ class TraceCode
     const RECON_INFO_SUMMARY                        = 'RECON_INFO_SUMMARY';
     const IIN_INSERT_FAILED                         = 'IIN_INSERT_FAILED';
 
+    //Trace code for Transaction Migration
+    const TRANSACTION_MIGRATION_TAX_MISTMATCH       = 'TRANSACTION_MIGRATION_TAX_MISTMATCH';
+    const TRANSACTION_MIGRATION_FEE_MISTMATCH       = 'TRANSACTION_MIGRATION_FEE_MISTMATCH';
+
     /**
      * Trace code for critical info
      */
@@ -360,6 +364,9 @@ class TraceCode
         self::REFUND_TRANSACTION_FAILED                 => 'Transaction failed to create for refund',
         self::RECON_INFO_SUMMARY                        => 'Summary of the reconciliation of the files',
         self::TRANSACTION_CREATED_IN_VERIFY_CAPTURE     => 'Transaction created for a failed capture',
+
+        self::TRANSACTION_MIGRATION_TAX_MISTMATCH       => 'Mismatch in the tax calculation during migration',
+        self::TRANSACTION_MIGRATION_FEE_MISTMATCH       => 'Mismatch in the fees calculation during migration',
     );
 
     /**

@@ -75,21 +75,6 @@ class FeeCalculator
         return self::SERVICE_TAX_PERCENTAGE + self::KRISHI_KALYAN_CESS_PERCENTAGE + self::SWACHH_BHARAT_CESS_PERCENTAGE;
     }
 
-    public static function getServiceTaxPercentage()
-    {
-        return self::SERVICE_TAX_PERCENTAGE;
-    }
-
-    public static function getKrishiKalyanCessPercentage()
-    {
-        return self::KRISHI_KALYAN_CESS_PERCENTAGE;
-    }
-
-    public static function getSwachhBharatCessPercentage()
-    {
-        return self::SWACHH_BHARAT_CESS_PERCENTAGE;
-    }
-
     protected function getRelevantPricingRule($pricing)
     {
         $entity = $this->entity;

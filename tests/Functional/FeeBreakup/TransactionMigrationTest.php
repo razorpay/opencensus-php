@@ -154,6 +154,27 @@ class TransactionMigrationTest extends TestCase
         $this->assertContent($content, $transaction['id'], $transaction['fee'], $transaction['service_tax']);
     }
 
+    public function testMigrationWithFeeMistmatch()
+    {
+        $payment = $this->fixtures->create('payment:captured');
+
+        $transaction = $payment->transaction;
+
+        $this->fixtures->base->editEntity('transaction', $transaction['id'], ['fee' => 22000]);
+
+        $this->fixtures->base->editEntity('transaction', $transaction['id'], ['service_tax' => 2000]);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->ba->appAuth();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = $this->url;
+
+        $this->startTest();
+    }
+
     protected function assertContent($content, $txnId, $fee, $serviceTax)
     {
         $feesCollection = $content[$txnId];

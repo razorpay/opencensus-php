@@ -79,4 +79,19 @@ return [
             ],
         ],
     ],
+
+    'testMigrationWithFeeMistmatch' => [
+        'request' => [
+            'url' => '/transactions/migrate',
+            'method' => 'post',
+            'content' => [
+
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+        ],
+    ],
 ];

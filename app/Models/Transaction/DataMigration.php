@@ -9,6 +9,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Transaction;
+use RZP\Trace\TraceCode;
 use RZP\Models\Pricing\FeeCalculator;
 use RZP\Models\Pricing\FeeBreakup as FeeBreakup;
 use RZP\Models\Pricing\FeeBreakup\Type as FeeBreakupType;
@@ -82,9 +83,14 @@ class DataMigration extends Base\Service
 
             $this->calculateServiceTaxes($fees, $feesSplit, $payment->getCaptureTimestamp());
 
-            $this->saveFeeDetails($txn, $feesSplit, $payment->getCaptureTimestamp());
+            $shouldSaveFeeDetails = $this->matchTaxesAndFeesWithOriginal($txn, $feesSplit);
 
-            $response[$txn->getPublicId()] = $feesSplit->toArrayPublic();
+            if ($shouldSaveFeeDetails === true)
+            {
+                $this->saveFeeDetails($txn, $feesSplit, $payment->getCaptureTimestamp());
+
+                $response[$txn->getPublicId()] = $feesSplit->toArrayPublic();
+            }
         }
 
         return $response;
@@ -120,6 +126,65 @@ class DataMigration extends Base\Service
 
         $this->feeCalculator->calculateServiceTaxes($fee, $feesSplit, $serviceTaxPercentage,
                 $swachhBharatCessPercentage, $krishiKalyanCessPercentage);
+    }
+
+    protected function matchTaxesAndFeesWithOriginal($txn, $feesSplit)
+    {
+        $originalFee = $txn->getFee();
+
+        $originalTax = $txn->getServiceTax();
+
+        $originalRzpFee = $originalFee - $originalTax;
+
+        list($rzpFee, $taxes) = $this->getFeesSplit($feesSplit);
+
+        if ($taxes !== $originalTax)
+        {
+            $this->trace->info(TraceCode::TRANSACTION_MIGRATION_TAX_MISTMATCH,
+                [
+                    'transaction'       => $txn->toArrayPublic(),
+                    'originalTax'       => $originalTax,
+                    'calculatedTax'     => $taxes,
+                ]);
+
+            return false;
+        }
+
+        if ($rzpFee !== $originalRzpFee)
+        {
+            $this->trace->info(TraceCode::TRANSACTION_MIGRATION_FEE_MISTMATCH,
+                [
+                    'transaction'        => $txn->toArrayPublic(),
+                    'originalRzpFee'     => $originalRzpFee,
+                    'calculatedRzpFee'   => $rzpFee,
+                ]);
+
+
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function getFeesSplit($feesSplit)
+    {
+        $rzpFee = 0;
+        $taxes = 0;
+
+        foreach ($feesSplit as $feeSplit)
+        {
+            if ($feeSplit['name'] === FeeBreakupName::RZP)
+            {
+                $rzpFee += $feeSplit['amount'];
+            }
+            else if ($feeSplit['name'] === FeeBreakupName::SERVICE_TAX or
+                $feeSplit['name'] === FeeBreakupName::SWACHH_BHARAT_CESS or
+                $feeSplit['name'] === FeeBreakupName::KRISHI_KALYAN_CESS )
+            {
+                $taxes += $feeSplit['amount'];
+            }
+        }
+        return [$rzpFee, $taxes];
     }
 
     protected function saveFeeDetails($txn, $feesSplit, $captureTime)
