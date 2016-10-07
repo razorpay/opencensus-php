@@ -231,7 +231,20 @@ class Server extends Base\Mock\Server
 
     protected function scrub($cardnumber, $paymentMethod)
     {
-        return '(' . array_flip(FirstData\PaymentMethod::METHOD_MAP)[$paymentMethod] . ')  ... ' . substr($cardnumber,-4);
+        if (is_null($paymentMethod))
+        {
+            $networkCode = 'UNKNOWN';
+        }
+        else
+        {
+            $methodMap = FirstData\PaymentMethod::METHOD_MAP;
+
+            unset($methodMap[Card\Network::UNKNOWN]);
+
+            $networkCode = array_flip($methodMap)[$paymentMethod];
+        }
+
+        return '(' . $networkCode . ')  ... ' . substr($cardnumber,-4);
     }
 
     protected function buildIpgApiOrderResponse($array)
