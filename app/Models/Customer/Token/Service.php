@@ -84,20 +84,19 @@ class Service extends Base\Service
 
     /**
      * fetch tokens for an app_token (global customer)
-     * @param  string app_token
      * @return entity tokens
      */
     public function fetchTokensForGlobalCustomer()
     {
-        $appToken = AppToken\SessionHelper::getAppTokenFromSession($this->mode);
+        $appTokenId = AppToken\SessionHelper::getAppTokenFromSession($this->mode);
 
         $tokens = new Base\PublicCollection;
 
-        if ($appToken !== null)
+        if ($appTokenId !== null)
         {
-            AppToken\Entity::verifyIdAndStripSign($appToken);
+            AppToken\Entity::verifyIdAndStripSign($appTokenId);
 
-            $app = (new AppToken\Core)->getAppByAppToken($appToken, $this->merchant);
+            $app = (new AppToken\Core)->getAppByAppToken($appTokenId, $this->merchant);
 
             $tokens = (new Customer\Token\Core)->fetchTokensByCustomer($app->customer);
         }

@@ -197,7 +197,7 @@ class Core extends Base\Core
         return $customer;
     }
 
-    public function getCustomerAndApp($input, $merchant)
+    public function getCustomerAndApp(array $input, Merchant\Entity $merchant)
     {
         $customerId = null;
         $merchantId = null;
@@ -206,21 +206,19 @@ class Core extends Base\Core
 
         if (empty($input[Payment\Entity::CUSTOMER_ID]) === false)
         {
-            $merchantId = $merchant->getId();
-
             $customerId = $input[Payment\Entity::CUSTOMER_ID];
+            
+            $merchantId = $merchant->getId();
 
             Customer\Entity::verifyIdAndStripSign($customerId);
         }
         else if (empty($input[Payment\Entity::APP_TOKEN]) === false)
         {
-            $appToken = $input[Payment\Entity::APP_TOKEN];
+            $appTokenId = $input[Payment\Entity::APP_TOKEN];
 
-            Customer\AppToken\Entity::verifyIdAndStripSign($appToken);
+            Customer\AppToken\Entity::verifyIdAndStripSign($appTokenId);
 
-            $appToken = (new Customer\AppToken\Core)->getAppByAppToken(
-                $appToken,
-                $merchant);
+            $appToken = (new Customer\AppToken\Core)->getAppByAppToken($appTokenId, $merchant);
 
             if ($appToken !== null)
             {

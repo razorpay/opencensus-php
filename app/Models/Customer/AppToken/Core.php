@@ -5,7 +5,7 @@ namespace RZP\Models\Customer\AppToken;
 use RZP\Models\Base;
 use RZP\Models\Customer\AppToken;
 use RZP\Exception;
-use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 
 class Core extends Base\Core
 {
@@ -47,17 +47,15 @@ class Core extends Base\Core
         return [];
     }
 
-    public function getAppByAppToken($appToken, $merchant)
+    public function getAppByAppToken($appTokenId, Merchant\Entity $merchant)
     {
-        $app = $this->getAppByAppTokenAndMerchantId(
-            $appToken,
-            $this->repo->merchant->getSharedAccount()->getId());
+        $sharedMerchantId = $this->repo->merchant->getSharedAccount()->getId();
+
+        $app = $this->getAppByAppTokenAndMerchantId($appTokenId, $sharedMerchantId);
 
         if ($app === null)
         {
-            $app = $this->getAppByAppTokenAndMerchantId(
-                $appToken,
-                $merchant->getId());
+            $app = $this->getAppByAppTokenAndMerchantId($appTokenId, $merchant->getId());
         }
 
         return $app;
@@ -78,20 +76,18 @@ class Core extends Base\Core
         return $apps[0];
     }
 
-    protected function getAppByAppTokenAndMerchantId($appToken, $merchantId)
+    protected function getAppByAppTokenAndMerchantId($appTokenId, $merchantId)
     {
         $app = null;
 
         try
         {
-            $app = $this->repo->app_token->findByIdAndMerchantId(
-                $appToken,
-                $merchantId);
+            $app = $this->repo->app_token->findByIdAndMerchantId($appTokenId, $merchantId);
         }
         catch (Exception\BadRequestException $ex)
         {
             // ignore the exception, not tracing it as well as we are always trying
-            // 2 merchant acounts and one will always fail so it will be noisy
+            // 2 merchant accounts and one will always fail so it will be noisy
         }
 
         return $app;
