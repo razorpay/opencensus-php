@@ -41,7 +41,7 @@ class FeeCalculator
 
     }
 
-    public function calculate($pricing, & $feesSplit, $preCalculationOfFees = false)
+    public function calculate($pricing, $feesSplit, $preCalculationOfFees = false)
     {
         $entity = $this->entity;
 
@@ -53,7 +53,7 @@ class FeeCalculator
     }
 
 
-    protected function getFees($rule, $amount, & $feesSplit, $preCalculationOfFees = false)
+    protected function getFees($rule, $amount, $feesSplit, $preCalculationOfFees = false)
     {
         list($percent, $fixed) = $rule->getRates();
 
@@ -453,7 +453,7 @@ class FeeCalculator
      * @param boolean $preCalculationOfFees
      * @return fees
      */
-    public function getUnroundedFees($amount, $percent, $fixed, & $feesSplit, $preCalculationOfFees = false)
+    public function getUnroundedFees($amount, $percent, $fixed, $feesSplit, $preCalculationOfFees = false)
     {
         return $this->getRzpFeesUsingPercentOfOriginalAmount($amount, $percent, $fixed, $feesSplit);
     }
@@ -481,7 +481,7 @@ class FeeCalculator
      *
      * rzpFees = percent * amount + fixed
      */
-    protected function getRzpFeesUsingPercentOfOriginalAmount($amount, $percent, $fixed, & $feesSplit)
+    protected function getRzpFeesUsingPercentOfOriginalAmount($amount, $percent, $fixed, $feesSplit)
     {
         $percentageAmount = (int) ceil(($amount * $percent)/10000);
         $totalAmount = $percentageAmount + $fixed;
@@ -531,7 +531,7 @@ class FeeCalculator
         return $feeBreakup;
     }
 
-    public function calculateServiceTaxes($fee, & $feesSplit,
+    public function calculateServiceTaxes($fee, $feesSplit,
             $serviceTaxPercentage = self::SERVICE_TAX_PERCENTAGE,
             $swachhBharatCessPercentage = self::SWACHH_BHARAT_CESS_PERCENTAGE,
             $krishiKalyanCessPercentage = self::KRISHI_KALYAN_CESS_PERCENTAGE)
@@ -561,7 +561,7 @@ class FeeCalculator
         return $totaltaxes;
     }
 
-    public function calculateServiceTaxesFromFees($fee, & $feesSplit,
+    public function calculateServiceTaxesFromFees($fee, $feesSplit,
             $serviceTaxPercentage = self::SERVICE_TAX_PERCENTAGE,
             $swachhBharatCessPercentage = self::SWACHH_BHARAT_CESS_PERCENTAGE,
             $krishiKalyanCessPercentage = self::KRISHI_KALYAN_CESS_PERCENTAGE)

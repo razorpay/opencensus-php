@@ -111,7 +111,6 @@ class Payment extends Base
 
         $payment->saveOrFail();
 
-        // $this->saveFeeDetails($feesSplit, $txn);
         return $payment;
     }
 
@@ -177,8 +176,6 @@ class Payment extends Base
 
         $payment->saveOrFail();
 
-        // $this->saveFeeDetails($feesSplit, $txn);
-
         return $payment;
     }
 
@@ -219,8 +216,6 @@ class Payment extends Base
 
         $payment->saveOrFail();
 
-        // $this->saveFeeDetails($feesSplit, $txn);
-
         return $payment;
     }
 
@@ -243,29 +238,5 @@ class Payment extends Base
     {
         $this->edit(
             $id, ['status' => 'failed', 'error_code' => 'BAD_REQUEST_PAYMENT_FAILED']);
-    }
-
-    protected function saveFeeDetails($feesSplit, $txn)
-    {
-        if(empty($feesSplit) === true)
-        {
-            return;
-        }
-
-        $feesBreakup = array();
-
-        foreach ($feesSplit as $feeSplit)
-        {
-            $params = [
-                'transaction_id'        => $txn->getId(),
-                'name'                  => $feeSplit->getName(),
-                'percentage'            => $feeSplit->getPercentage(),
-                'amount'                => $feeSplit->getAmount(),
-                'type'                  => $feeSplit->getType(),
-            ];
-
-            $feeBreakup = $this->fixtures->create('fee_breakup', $params);
-            array_push($feesBreakup, $feeBreakup);
-        }
     }
 }

@@ -90,7 +90,7 @@ class DataMigration extends Base\Service
         return $response;
     }
 
-    protected function calculateServiceTaxes($fee, & $feesSplit, $capturedTime)
+    protected function calculateServiceTaxes($fee, $feesSplit, $capturedTime)
     {
         $serviceTaxPercentage = 0;
         $krishiKalyanCessPercentage = 0;

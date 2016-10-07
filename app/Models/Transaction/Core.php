@@ -34,7 +34,7 @@ class Core extends Base\Core
         $this->merchant = $this->app['basicauth']->getMerchant();
     }
 
-    public function createFromPaymentAuthorized(Payment\Entity $payment, & $feesSplit)
+    public function createFromPaymentAuthorized(Payment\Entity $payment, $feesSplit)
     {
         $txn = $this->txnCreationFromPaymentOperation($payment, $feesSplit);
 
@@ -68,7 +68,7 @@ class Core extends Base\Core
         return $txn;
     }
 
-    public function createFromPaymentCaptured(Payment\Entity $payment, & $feesSplit)
+    public function createFromPaymentCaptured(Payment\Entity $payment, $feesSplit)
     {
         $txn = $this->txnCreationFromPaymentOperation($payment, $feesSplit);
 
@@ -90,7 +90,7 @@ class Core extends Base\Core
         return $txn;
     }
 
-    protected function txnCreationFromPaymentOperation($payment, & $feesSplit)
+    protected function txnCreationFromPaymentOperation($payment, $feesSplit)
     {
         $txn = new Transaction\Entity;
         $txn->generateId();
@@ -115,7 +115,7 @@ class Core extends Base\Core
         return $txn;
     }
 
-    protected function fillTxnFeesAndAmount($txn, $payment, & $feesSplit)
+    protected function fillTxnFeesAndAmount($txn, $payment, $feesSplit)
     {
         $pricingRuleId = null;
 
@@ -329,7 +329,7 @@ class Core extends Base\Core
         return $txn;
     }
 
-    protected function calculateMerchantFees(Payment\Entity $payment, & $feesSplit)
+    protected function calculateMerchantFees(Payment\Entity $payment, $feesSplit)
     {
         return (new Pricing\Fee)->calculateMerchantFees($payment, $feesSplit);
     }
