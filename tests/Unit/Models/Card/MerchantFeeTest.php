@@ -28,7 +28,7 @@ class MerchantFeeTest extends TestCase
         'currency' => "INR",
         'amount'   => 0,
         'email' => "test@razorpay.com",
-        'contact'   => "1234567890",
+        'contact'   => '9988776655',
         'notes' => [
             'order_id'  => "3453"
         ],

@@ -153,8 +153,8 @@ class Core extends Base\Core
 
             $txn->setGratis(true);
         }
-        //If the merchant is tdrClient
-        //use the fees and service tax from both
+        // If the customer is fee bearer for the merchant
+        // use the fees and service tax from both
         else if (isset($this->merchant) and ($this->merchant->isFeeBearerCustomer()))
         {
             $fee                              = $payment->getFee();
