@@ -15,6 +15,22 @@ use RZP\Trace\TraceCode;
 
 class DailyReport extends Base\Core
 {
+    protected $merchantId;
+
+    protected $timeLowerLimit;
+
+    protected $timeUpperLimit;
+
+    protected $date;
+
+    // If the merchant has more payments than this,
+    // we'll send aggregates instead of details of
+    // every individual payment
+    const DETAILED_REPORT_PAYMENT_LIMIT = 80;
+
+    const DAILY_REPORT_EMAIL_TEMPLATE               = 'emails.merchant.daily_report';
+    const DAILY_REPORT_HIGH_VOLUME_EMAIL_TEMPLATE   = 'emails.merchant.daily_report_high_volume';
+
     /**
      * Generates a new daily report
      * @param String $id Merchant Id
@@ -49,9 +65,11 @@ class DailyReport extends Base\Core
         if ($this->isBlank() === false)
         {
             $this->sendDailyReport();
-            return $this->data;
+
+            return $this->merchantId;
         }
-        return [];
+
+        return null;
     }
 
     /**
@@ -61,16 +79,31 @@ class DailyReport extends Base\Core
      */
     protected function sendDailyReport()
     {
-        $view = ['html'=>'emails.merchant.daily_report'];
-
         $data = $this->data;
+
+        $paymentCount = $data['authorized']['payments']['count']
+                        + $data['captured']['payments']['count']
+                        + $data['refunds']['refunds']['count'];
+
+        // Above a certain threshold, our daily report mails will
+        // contain only aggregates, and not actual payment details.
+        if ($paymentCount > self::DETAILED_REPORT_PAYMENT_LIMIT)
+        {
+            $dailyReportView = self::DAILY_REPORT_HIGH_VOLUME_EMAIL_TEMPLATE;
+        }
+        else
+        {
+            $dailyReportView = self::DAILY_REPORT_EMAIL_TEMPLATE;
+        }
+
+        $view = ['html' => $dailyReportView];
 
         // Log merchant whose data has been computed
         $this->trace->info(
             TraceCode::SETTLEMENT_DAILY_REPORT_DATA,
             array(
-                    'merchant_id'   => $data['merchant']['id'],
-                    'merchant_name' => $data['merchant']['name'],
+                    'merchant_id'   => $this->merchantId,
+                    'merchant_name' => $data['billing_label'],
                     'captured'      => $data['captured']['payments']['count'],
                     'authorized'    => $data['authorized']['payments']['count'],
                     'refunds'       => $data['refunds']['refunds']['count'],
@@ -82,7 +115,7 @@ class DailyReport extends Base\Core
 
         Mail::queue($view, $data, function($message) use ($data)
         {
-            $to = $data['merchant']['email'];
+            $to = $data['email'];
 
             // to might be an array
             if (is_array($to))
@@ -168,9 +201,8 @@ class DailyReport extends Base\Core
         // }
 
         return [
-            'payments' => $payments->toArrayAdmin(),
+            'payments' => $payments->toArrayDailyReport(),
             'sum'      => $payments->sum('amount'),
-            'orderId'  => false
         ];
     }
 
@@ -216,7 +248,7 @@ class DailyReport extends Base\Core
 
         return [
             'sum'      => $refunds->sum('amount'),
-            'refunds'  => $refunds->toArrayPublic(),
+            'refunds'  => ['count' => $refunds->count()],
         ];
     }
 
@@ -229,13 +261,11 @@ class DailyReport extends Base\Core
             'authorized'     => $this->getAuthorizedPayments(),
             'refunds'        => $this->getRefunds(),
             'settlement'     => $this->getSettlement(),
-            'merchant'       => $merchant->toArray(),
+            'billing_label'  => $merchant->getBillingLabelElseName(),
             'account_number' => $merchant->getRedactedAccountNumber(),
+            'email'          => $merchant->getTransactionReportEmail(),
             'date'           => $this->date,
         ];
-
-        // toArray is not reliable
-        $data['merchant']['email'] = $merchant->getTransactionReportEmail();
 
         return $data;
     }
