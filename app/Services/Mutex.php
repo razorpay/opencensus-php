@@ -114,7 +114,12 @@ class Mutex
         }
         finally
         {
-            $this->release($resource);
+            $released = $this->release($resource);
+
+            if ($released === false)
+            {
+                $this->trace->error(TraceCode::MUTEX_LOCK_ALREADY_RELEASED);
+            }
         }
     }
 }
