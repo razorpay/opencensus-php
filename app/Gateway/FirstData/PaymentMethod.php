@@ -8,18 +8,20 @@ class PaymentMethod
 {
     const METHOD_MAP = [
         // MasterCard
-        Card\Network::MC    => 'M',
+        Card\Network::MC      => 'M',
         // Visa
-        Card\Network::VISA  => 'V',
+        Card\Network::VISA    => 'V',
         // American Express
-        Card\Network::AMEX  => 'A',
+        Card\Network::AMEX    => 'A',
         // Diners
-        Card\Network::DICL  => 'C',
+        Card\Network::DICL    => 'C',
         // JCB
-        Card\Network::JCB   => 'J',
+        Card\Network::JCB     => 'J',
         // Maestro
-        Card\Network::MAES  => 'MA',
+        Card\Network::MAES    => 'MA',
         // RuPay
-        Card\Network::RUPAY => 'RU',
+        Card\Network::RUPAY   => 'RU',
+        // Unknown
+        Card\Network::UNKNOWN => null,
     ];
 }

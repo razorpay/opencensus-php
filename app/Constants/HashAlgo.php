@@ -6,7 +6,7 @@ class HashAlgo
 {
     // Cryptographic Hash Algorithms
 
+    const SHA1      = 'sha1';
     const SHA256    = 'sha256';
     const SHA512    = 'sha512';
-    const SHA1      = 'sha1';
 }

@@ -366,9 +366,11 @@ class Gateway
         {
             $this->trace->warning(
                 TraceCode::GATEWAY_PAYMENT_VERIFY,
-                ['payment_id' => $verify->input['payment']['id'],
-                 'message' => 'payment id not found in the gateway database',
-                 'gateway' => $this->gateway]);
+                [
+                    'payment_id' => $verify->input['payment']['id'],
+                    'message'    => 'payment id not found in the gateway database',
+                    'gateway'    => $this->gateway
+                ]);
 
             return null;
         }

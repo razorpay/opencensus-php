@@ -55,7 +55,8 @@ class Gateway extends Base\Gateway
         $this->traceGatewayCallback($input['gateway']);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-            $input['gateway'][ConnectResponseFields::ORDER_ID], Base\Action::AUTHORIZE);
+            $input['gateway'][ConnectResponseFields::ORDER_ID],
+            Base\Action::AUTHORIZE);
 
         $this->verifySecureHash($input['gateway']);
 
@@ -81,6 +82,7 @@ class Gateway extends Base\Gateway
             $this->trace->info(
                 TraceCode::PAYMENT_ALREADY_CAPTURED,
                 $input['payment']);
+
             return;
         }
 
@@ -92,7 +94,9 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(
             TraceCode::GATEWAY_CAPTURE_RESPONSE,
-            ['capture_response' => $response]);
+            [
+                'capture_response' => $response
+            ]);
 
         $captureFields = $this->getCaptureOrRefundFields($response, $input['payment']);
 
@@ -113,7 +117,9 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_RESPONSE,
-            ['refund_response' => $response]);
+            [
+                'refund_response' => $response
+            ]);
 
         $refundFields = $this->getCaptureOrRefundFields($response, $input['refund']);
 
@@ -193,8 +199,8 @@ class Gateway extends Base\Gateway
     protected function getAuthorizeFields($authRequest)
     {
         $attributes = [
-            Entity::AMOUNT              => $authRequest[ConnectRequestFields::CHARGE_TOTAL] * 100,
-            Entity::GATEWAY_PAYMENT_ID  => $authRequest[ConnectRequestFields::ORDER_ID],
+            Entity::AMOUNT             => $authRequest[ConnectRequestFields::CHARGE_TOTAL] * 100,
+            Entity::GATEWAY_PAYMENT_ID => $authRequest[ConnectRequestFields::ORDER_ID],
         ];
 
         return $attributes;
@@ -203,10 +209,10 @@ class Gateway extends Base\Gateway
     protected function getCallbackFields($callbackBody)
     {
         $attributes = [
-            Entity::RECEIVED                    => true,
-            Entity::APPROVAL_CODE               => $callbackBody[ConnectResponseFields::APPROVAL_CODE],
-            Entity::TDATE                       => $callbackBody[ConnectResponseFields::TDATE],
-            Entity::TRANSACTION_RESULT          => $callbackBody[ConnectResponseFields::STATUS],
+            Entity::RECEIVED           => true,
+            Entity::APPROVAL_CODE      => $callbackBody[ConnectResponseFields::APPROVAL_CODE],
+            Entity::TDATE              => $callbackBody[ConnectResponseFields::TDATE],
+            Entity::TRANSACTION_RESULT => $callbackBody[ConnectResponseFields::STATUS],
         ];
 
         if ($attributes[Entity::TRANSACTION_RESULT] === Status::APPROVED)
@@ -222,16 +228,17 @@ class Gateway extends Base\Gateway
     protected function getCaptureOrRefundFields($response, $input)
     {
         $attributes = [
-            Entity::RECEIVED                    => true,
-            Entity::APPROVAL_CODE               => $response[ApiResponseFields::APPROVAL_CODE],
-            Entity::AMOUNT                      => $input['amount'],
-            Entity::TDATE                       => $response[ApiResponseFields::TDATE],
-            Entity::STATUS                      => Status::CAPTURED,
-            Entity::TRANSACTION_RESULT          => $response[ApiResponseFields::TRANSACTION_RESULT],
-            Entity::GATEWAY_PAYMENT_ID          => $response[ApiResponseFields::ORDER_ID],
+            Entity::RECEIVED           => true,
+            Entity::APPROVAL_CODE      => $response[ApiResponseFields::APPROVAL_CODE],
+            Entity::AMOUNT             => $input['amount'],
+            Entity::TDATE              => $response[ApiResponseFields::TDATE],
+            Entity::STATUS             => Status::CAPTURED,
+            Entity::TRANSACTION_RESULT => $response[ApiResponseFields::TRANSACTION_RESULT],
+            Entity::GATEWAY_PAYMENT_ID => $response[ApiResponseFields::ORDER_ID],
         ];
 
         $this->setRefundIdIfNeeded($attributes, $input);
+
         $this->setErrorMessageIfNeeded($attributes);
 
         return $attributes;
@@ -242,10 +249,10 @@ class Gateway extends Base\Gateway
         $code = ErrorCodes::getTimeoutCode();
 
         $attributes = [
-            ApiResponseFields::APPROVAL_CODE        => $code . ':' . $exception->getMessage(),
-            ApiResponseFields::ORDER_ID             => null,
-            ApiResponseFields::TDATE                => null,
-            ApiResponseFields::TRANSACTION_RESULT   => null,
+            ApiResponseFields::APPROVAL_CODE      => $code . ':' . $exception->getMessage(),
+            ApiResponseFields::ORDER_ID           => null,
+            ApiResponseFields::TDATE              => null,
+            ApiResponseFields::TRANSACTION_RESULT => null,
         ];
 
         return $attributes;
@@ -291,7 +298,9 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
-            ['gateway_verify_response' => $ipgApiActionResponse->asXML()]);
+            [
+                'gateway_verify_response' => $ipgApiActionResponse->asXML()
+            ]);
 
         $verify->setVerifyResponseContent($ipgApiActionResponse);
     }
@@ -423,7 +432,9 @@ class Gateway extends Base\Gateway
     {
         $this->trace->info(
             TraceCode::GATEWAY_RESPONSE,
-            ['raw_xml_response' => $xml->asXml()]);
+            [
+                'raw_xml_response' => $xml->asXml()
+            ]);
 
         $soapEnvBody = $xml->children('SOAP-ENV', true)->Body;
 
@@ -460,7 +471,8 @@ class Gateway extends Base\Gateway
         {
             throw new Exception\GatewayErrorException(
                         Error\ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
-                        null, 'Verification failed');
+                        null,
+                        'Verification failed');
         }
 
         return $ipgApiActionResponse;
@@ -529,6 +541,7 @@ class Gateway extends Base\Gateway
     protected function getRequestHash($txnDateTime, $chargeTotal, $currencyCode)
     {
         $storeId = $this->getStoreId();
+
         $sharedSecret = $this->getSecret();
 
         $stringToHash = $storeId . $txnDateTime . $chargeTotal . $currencyCode . $sharedSecret;
@@ -722,17 +735,17 @@ class Gateway extends Base\Gateway
 
     protected function scrubCardInfo(& $content)
     {
-        $scrubFields = [ConnectRequestFields::CARD_NUMBER, ConnectRequestFields::CVV,
-                        ConnectRequestFields::EXP_MONTH, ConnectRequestFields::EXP_YEAR];
+        $scrubFields = [
+            ConnectRequestFields::CARD_NUMBER,
+            ConnectRequestFields::CVV,
+            ConnectRequestFields::EXP_MONTH,
+            ConnectRequestFields::EXP_YEAR
+        ];
 
         foreach ($scrubFields as $scrubField)
         {
             unset($content[$scrubField]);
         }
-
-        $this->trace->info(
-            TraceCode::CARD_NUMBER_SCRUBBED,
-            ['scrubbed_fields' => $scrubFields]);
     }
 
     // FirstData terminal attributes to Terminal Entity mapping
@@ -820,8 +833,10 @@ class Gateway extends Base\Gateway
             fwrite($clientCertFile, $key);
 
             $this->trace->info(
-                        TraceCode::CLIENT_CERTIFICATE_FILE_GENERATED,
-                        ['clientCertPath' => $clientCertPath]);
+                TraceCode::CLIENT_CERTIFICATE_FILE_GENERATED,
+                [
+                    'clientCertPath' => $clientCertPath
+                ]);
         }
 
         return $clientCertPath;
