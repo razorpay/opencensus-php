@@ -49,9 +49,11 @@ trait Authorize
 
         $gatewayInput = [];
 
+        $this->runPaymentInputValidations($payment);
+
         // $gatewayInput is being passed by reference.
         // Adds callback url, payment and card info to $gatewayInput
-        $this->prePaymentAuthorizeProcessing($payment, $input, $gatewayInput);
+        $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
 
         $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
 
@@ -300,31 +302,74 @@ trait Authorize
         return $payment->reload()->toArrayAdmin();
     }
 
-    /**
-     * It does the following -
-     * Verifies payment method, if it's enabled for the merchant or not.
-     * Saves card entities, bank account, etc.
-     * Selects a terminal, based on the gateway.
-     * Validates if international is allowed or not.
-     *
-     * @param RZP /Models/Payment/Entity $payment Payment entity that needs to be processed.
-     * @param array $input Input data received from checkout/merchant.
-     * @param array $gatewayInput Data that is required by gateway for the payment to be processed.
-     * @return array
-     * @throws Exception\BadRequestException
-     * @throws Exception\RuntimeException
-     */
-    protected function prePaymentAuthorizeProcessing($payment, $input, array & $gatewayInput)
+    protected function runPaymentInputValidations(Payment\Entity $payment)
     {
-        // also sets the card details in $gatewayInput (passed by reference), if applicable.
+        $this->validateRecurringIfApplicable($payment);
 
-        $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
-
-        $this->verifyMerchantFeatures($payment, $input);
+        $this->validateS2SIfApplicable($payment);
 
         $this->verifyPaymentMethodEnabled($payment);
+    }
 
-        return $gatewayInput;
+    protected function validateS2SIfApplicable(Payment\Entity $payment)
+    {
+        $merchant = $payment->merchant;
+
+        // We need to check if S2S is enabled only if the payment create
+        // call has been made via private auth.
+        if ($this->app['basicauth']->isPrivateAuth() === false)
+        {
+            return;
+        }
+
+        // For first recurring payments, if it's coming via private auth, the merchant
+        // should have S2S enabled, along with recurring.
+        // For second recurring payments, if it's coming via private auth, the merchant
+        // need not have S2S enabled. The merchant needs to be enabled only for recurring.
+        if (($payment->isRecurring() === true) and
+            ($payment->isSecondRecurring() === true))
+        {
+            return;
+        }
+
+        if ($payment->isWallet())
+        {
+            $this->verifyFeatureForMerchant($merchant, Merchant\Features::S2SWALLET);
+        }
+        else
+        {
+            $this->verifyFeatureForMerchant($merchant, Merchant\Features::S2S);
+        }
+    }
+
+    protected function validateRecurringIfApplicable(Payment\Entity $payment)
+    {
+        $recurring = $payment->isRecurring();
+
+        if ($recurring === false)
+        {
+            return;
+        }
+
+        $merchant = $payment->merchant;
+
+        // Ensure that the merchant is allowed to do recurring payments.
+        $this->verifyFeatureForMerchant($merchant, Merchant\Features::RECURRING);
+
+        // Ensure the right fields are passed for recurring payments
+        $this->validatePaymentInputForRecurring();
+
+        // The first recurring will be on public auth for non-S2S enabled merchants.
+        // The second recurring MUST always be via private auth.
+        if ($payment->isSecondRecurring())
+        {
+            $this->verifyPrivateAuth();
+        }
+    }
+
+    protected function validatePaymentInputForRecurring()
+    {
+        // TODO: Finish this.
     }
 
     protected function runPostGatewaySelectionPreProcessing($payment, array & $gatewayInput)
@@ -504,7 +549,7 @@ trait Authorize
         });
     }
 
-    protected function verifyMerchantFeatures($payment, $input)
+    protected function verifyMerchantFeatures(Payment\Entity $payment, array $input)
     {
         $merchant = $payment->merchant;
 
@@ -520,7 +565,7 @@ trait Authorize
         }
         else if ($this->app['basicauth']->isPrivateAuth() === true)
         {
-            if($payment->isWallet())
+            if ($payment->isWallet())
             {
                 $this->verifyFeatureForMerchant($merchant, Merchant\Features::S2SWALLET);
             }
@@ -540,9 +585,21 @@ trait Authorize
         }
     }
 
+    /**
+     * @param Payment\Entity $payment
+     * @param array $input Input data received from checkout/merchant.
+     * @param array $gatewayInput Data that is required by gateway for the payment to be processed.
+     */
     protected function runPaymentMethodRelatedPreProcessing($payment, & $input, array & $gatewayInput)
     {
-        $this->checkAndFillSavedAppToken($input);
+        //
+        // Either the customer ID or the app token ID is required to get the customer.
+        // Hence, fill the app token in the input if customer ID is not present.
+        //
+        if (empty($input[Payment\Entity::CUSTOMER_ID]) === true)
+        {
+            $this->checkAndFillSavedAppToken($input);
+        }
 
         // First fetch the relevant customer
         list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp($input, $this->merchant);
@@ -637,6 +694,7 @@ trait Authorize
         {
             $payment->localToken()->associate($token);
 
+            // TODO: Change method name. It does more than get
             $gatewayInput['card'] = $this->getCardArrayForSavedToken($token, $input);
         }
         else
@@ -877,11 +935,6 @@ trait Authorize
 
     protected function checkAndFillSavedAppToken(array & $input)
     {
-        if (isset($input['customer_id']) === true)
-        {
-            return;
-        }
-
         if ($this->request->hasSession() === false)
         {
             return;
@@ -1504,7 +1557,7 @@ trait Authorize
         }
     }
 
-    protected function verifyFeatureForMerchant($merchant, $feature)
+    protected function verifyFeatureForMerchant(Merchant\Entity $merchant, $feature)
     {
         if ($merchant->isFeatureEnabled($feature) === false)
         {

@@ -203,7 +203,6 @@ class Core extends Base\Core
         $merchantId = null;
         $customer = null;
         $appToken = null;
-        $appToken = null;
 
         if (empty($input[Payment\Entity::APP_TOKEN]) === false)
         {
