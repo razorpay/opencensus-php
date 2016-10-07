@@ -55,6 +55,8 @@ trait Authorize
         // Adds callback url, payment and card info to $gatewayInput
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
 
+        $this->verifyPaymentMethodEnabled($payment);
+
         $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
 
         return $this->authorizeAcrossTerminals($payment, $input, $gatewayInput);
@@ -307,8 +309,6 @@ trait Authorize
         $this->validateRecurringIfApplicable($payment);
 
         $this->validateS2SIfApplicable($payment);
-
-        $this->verifyPaymentMethodEnabled($payment);
     }
 
     protected function validateS2SIfApplicable(Payment\Entity $payment)
