@@ -4,7 +4,6 @@ return [
 
     'post_refund'               => ['owner', 'manager', 'operations', 'admin'],
     'post_capture'              => ['owner', 'manager', 'operations', 'admin'],
-    'get_keys'                  => ['owner', 'admin'],
     'post_keys'                 => ['owner', 'admin'],
     'get_activation_details'    => ['owner', 'manager', 'admin'],
     'post_activation'           => ['owner', 'manager', 'admin'],

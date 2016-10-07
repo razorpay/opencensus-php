@@ -194,6 +194,10 @@
           MCC
         </a>
         <a href class="list-group-item">
+          <span class="pull-right">{{merchant.details.category2|titlecase}}</span>
+          Category 2
+        </a>
+        <a href class="list-group-item">
           <span class="pull-right">{{merchant.details.billing_label}}</span>
           Billing Label
         </a>
@@ -401,6 +405,7 @@
                     <th>Mode</th>
                     <th>Gateway</th>
                     <th>Category</th>
+                    <th>Network Category</th>
                     <th>Merchant Id</th>
                     <th>Merchant Id 2</th>
                     <th>Terminal Id</th>
@@ -416,6 +421,7 @@
                     <td>{{terminal.mode}}</td>
                     <td>{{terminal.gateway}}</td>
                     <td>{{terminal.category}}</td>
+                    <td>{{terminal.network_category}}</td>
                     <td>{{terminal.gateway_merchant_id}}</td>
                     <td>{{terminal.gateway_merchant_id2}}</td>
                     <td>{{terminal.gateway_terminal_id}}</td>

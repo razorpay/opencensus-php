@@ -1,66 +1,44 @@
-box: wercker/php
-services:
-    - wercker/mysql
+box: pronav/dash
+
 build:
     steps:
       - script:
           name: copy env file
           code: cp ./environment/.env.wercker ./environment/.env.testing
-      - install-packages:
-          packages: lsof
+
       - add-ssh-key:
           keyname: RZP_API
-      - script:
-          name: Install java
-          code: |-
-                sudo apt-get install openjdk-7-jdk
-                sudo apt-get remove openjdk-6-jre openjdk-6-jre-lib
-                java -version
-                echo $JAVA_HOME
-      - script:
-          name: Copy wercker environment variables
-          code: >
-                export DB_MYSQL_HOST="$WERCKER_MYSQL_HOST"
-                export DB_MYSQL_PORT="$WERCKER_MYSQL_PORT"
-                export DB_MYSQL_DATABASE="$WERCKER_MYSQL_DATABASE"
-                export DB_MYSQL_USERNAME="$WERCKER_MYSQL_USERNAME"
-                export DB_MYSQL_PASSWORD="$WERCKER_MYSQL_PASSWORD"
-      - script:
-          name: Enable virtual display
-          code: |-
-                # Start xvfb which gives the context a virtual display
-                # which is required for tests that require an GUI
-                export DISPLAY=:99.0
-                start-stop-daemon --start --quiet --pidfile /tmp/xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1024x768x24 -ac +extension GLX +render -noreset
-                # Give xvfb time to start. 3 seconds is the default for all xvfb-run commands.
-                sleep 3
+
       - script:
           name: install dependencies
-          code: composer install --no-interaction
-      - wercker/npm-install@0.9.3
+          code: |
+              composer config -g github-oauth.github.com $github_token
+              composer install --no-interaction
+
       - script:
           name: clear cache
           code: php artisan cache:clear; php artisan clear-compiled
+
+      - npm-install
+
       - script:
-          name: Create grunt config and set environment
-          code: cp config/grunt.sample.json config/grunt.json && sed -i "2s/development/production/" config/grunt.json
-      - grunt:
-          tasks: default
+          name: gulp
+          code: gulp
           fail-on-warnings: true
-      # This pins the selenium version to our choice
-      - script:
-          name: Install selenium
-          code: wget http://selenium-release.storage.googleapis.com/2.53/selenium-server-standalone-2.53.1.jar
-      - script:
-          name: Start selenium
-          code: nohup java -jar selenium-server-standalone-2.53.1.jar > $WERCKER_REPORT_ARTIFACTS_DIR/selenium.log 2>&1&
+
       - script:
           name: Run artisan migrate
           code: APP_ENV=testing php artisan migrate --env=testing
+
       - script:
           name: run unit tests
           code: phpunit --stop-on-error --stop-on-failure
+
     after-steps:
+      - script:
+          name: copy screenshot
+          # We want this step to not fail even if the file is missing
+          code: cp storage/screenshots/* $WERCKER_REPORT_ARTIFACTS_DIR/. || true
       - slack-notifier:
           url: $SLACK_URL
           channel: tech_bots
@@ -75,10 +53,6 @@ build:
       - script:
           name: copy artisan server logs
           code: cp /tmp/rzp-dbd* $WERCKER_REPORT_ARTIFACTS_DIR/
-      - script:
-          name: copy screenshot
-          # We want this step to not fail even if the file is missing
-          code: cp storage/screenshots/* $WERCKER_REPORT_ARTIFACTS_DIR/. || true
 deploy:
     steps:
       - script:

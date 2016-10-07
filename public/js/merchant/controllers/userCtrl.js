@@ -129,7 +129,6 @@ app.controller('UserCtrl', [
             var sk_user = function(){
               window.skIntro && window.skIntro.html('');
               $('#sk-footer input').off('focus', window.skFocusListener);
-
               window.smoochUserLoaded = true;
               Smooch.updateUser({
                 givenName: data.name,
@@ -138,7 +137,8 @@ app.controller('UserCtrl', [
                   id: data.id,
                   activated: data.activated,
                   locked: data.locked,
-                  submitted: data.submitted
+                  submitted: data.submitted,
+                  role: $scope.role
                 }
               });
             }

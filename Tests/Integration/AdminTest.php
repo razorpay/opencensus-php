@@ -154,7 +154,7 @@ class AdminTest extends TestCase
           'width' => 2560,
           'height' => 1600,
         ));
-        $this->clickByXPath('a','id','merchantsNav');
+        $this->waitAndClickById('merchantsNav');
         $this->assertTrue($this->displayedByClassName('merchant_type'));
         $this->displayedByCss('div.butterbar.hide');
         $this->execScript('$("body").css("MozTransform", "scale(1,1)")');
@@ -174,7 +174,7 @@ class AdminTest extends TestCase
           'width' => 2560,
           'height' => 1600,
         ));
-        $this->clickByXPath('a','id','merchantsNav');
+        $this->waitAndClickById('merchantsNav');
         $this->assertTrue($this->displayedByClassName('merchant_type'));
         $this->execScript('$(".merchant_type").val("0").trigger("change")');
         $this->execScript('$(".merchant_go").click()');
@@ -244,7 +244,7 @@ class AdminTest extends TestCase
           'width' => 2560,
           'height' => 1600,
         ));
-        $this->clickByXPath('a','id','merchantsNav');
+        $this->waitAndClickById('merchantsNav');
         $this->execScript('$(".merchant_type").val("0").trigger("change")');
         $this->execScript('$(".merchant_go").click()');
         $this->assertTrue($this->displayedByClassName('merchants-table-body'));
@@ -274,7 +274,7 @@ class AdminTest extends TestCase
           'height' => 1600,
         ));
         // Browsing the whole form
-        $this->clickByXPath('a','id','merchantsNav');
+        $this->waitAndClickById('merchantsNav');
         $this->execScript('$(".merchant_type").val("0").trigger("change")');
         $this->execScript('$(".merchant_go").click()');
         $this->assertTrue($this->displayedByClassName('merchants-table-body'));
@@ -285,17 +285,18 @@ class AdminTest extends TestCase
         $this->waitUntilContainsByCss('body', 'Merchant Detail');
         $this->execScript('$(".see-activation-form").click()');
         $this->waitUntilDisplayedByClassName('activation-wrapper');
-        $this->waitUntilDisplayedByXPath('form', 'name', 'step1');
+        $this->assertTrue($this->displayedByCss('form[name=step1]'));
         $this->clickByLinkText('Business Details');
-        $this->waitUntilDisplayedByXPath('form', 'name', 'step2');
+        $this->assertTrue(!$this->displayedByCss('form[name=step1]'));
+        $this->assertTrue($this->displayedByCss('form[name=step2]'));
         $this->clickByLinkText('Website Details');
-        $this->waitUntilDisplayedByXPath('form', 'name', 'step3');
+        $this->assertTrue($this->displayedByCss('form[name=step3]'));
         $this->clickByLinkText('Bank Account Details');
-        $this->waitUntilDisplayedByXPath('form', 'name', 'step4');
+        $this->assertTrue($this->displayedByCss('form[name=step4]'));
         $this->clickByLinkText('Documents Upload');
-        $this->waitUntilDisplayedByXPath('form', 'name', 'step5');
+        $this->assertTrue($this->displayedByCss('form[name=step5]'));
         $this->clickByLinkText('Submit Form');
-        $this->waitUntilDisplayedByXPath('form', 'name', 'step6');
+        $this->assertTrue($this->displayedByCss('form[name=step6]'));
     }
 
     public function testMerchantTagging()
@@ -304,7 +305,7 @@ class AdminTest extends TestCase
           'width' => 2560,
           'height' => 1600,
         ));
-        $this->clickByXPath('a','id','merchantsNav');
+        $this->waitAndClickById('merchantsNav');
         $this->execScript('$(".merchant_type").val("0").trigger("change")');
         $this->execScript('$(".merchant_go").click()');
         $this->assertTrue($this->displayedByClassName('merchants-table-body'));
@@ -316,7 +317,7 @@ class AdminTest extends TestCase
         $this->keys(Keys::PAGEDOWN);
         $this->execScript('$(".tag-merchant").click()');
         $this->setValueByName('merchant-tags', 'international,webhook,random_tag');
-        $this->clickByClassName('modal-ok');
+        $this->execScript('$(".modal-ok").click()');
         $this->waitUntilContainsByCss('body', 'Random_Tag');
     }
 

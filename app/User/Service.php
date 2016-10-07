@@ -320,7 +320,14 @@ class Service extends Base\Service
     public function postToSortingHat($job, $data)
     {
         $url = Config::get('razorpay.sorting_hat.url');
-        Requests::post($url, [], $data);
+
+        $headers = [];
+
+        $options = [
+            'timeout'   =>  30
+        ];
+
+        Requests::post($url, $headers, $data, $options);
 
         $job->delete();
     }

@@ -82,6 +82,12 @@ class TestCase extends PHPUnit_Extensions_Selenium2TestCase
 
     protected function setUp() {
         $this->setBrowser('firefox');
+        $this->setDesiredCapabilities([
+            'chromeOptions' => [
+                'args' => ['no-sandbox', 'no-gpu', 'start-maximized']
+            ],
+            'pageLoadingStrategy' => 'eager'
+        ]);
         $this->shareSession(true);
         $this->setBrowserUrl(self::BROWSER_URL);
     }

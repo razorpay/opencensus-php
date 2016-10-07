@@ -85,7 +85,7 @@ class MerchantTest extends TestCase
         $this->timeouts()->implicitWait(10000);
 
         $this->url('#/access/signin');
-        $this->waitUntilDisplayedByXPath('form','name','signin');
+        $this->waitUntilDisplayedByCss('form[name=signin]');
         $this->setValueByName('email', self::$merchant->email);
         $this->setValueByName('password', '123456xx');
     }
@@ -98,7 +98,7 @@ class MerchantTest extends TestCase
         $businessName = Util::random_alpha_string(6). ' Merchant';
 
         $this->url('#/access/signup');
-        $this->waitUntilDisplayedByXPath('form','name','signup');
+        $this->waitUntilDisplayedByCss('form[name=signup]');
         $this->execScript('$("input[name=\"agree\"]").click()');
         $this->setValueByName('business_name', $businessName);
         $this->setValueByName('name', self::$merchant->name);
@@ -107,7 +107,7 @@ class MerchantTest extends TestCase
         $this->setValueByName('password', '123456xx');
         $this->setValueByName('password_confirmation', '123456xx');
 
-        $this->clickByXPath('button','name','submit');
+        $this->clickByName('submit');
         $this->waitUntilDisplayedByCss('div.alert-success');
         $this->waitUntilContainsByCss('body', 'Please check your inbox for confirmation email from Razorpay');
     }
@@ -129,7 +129,7 @@ class MerchantTest extends TestCase
     public function testLogin()
     {
         $this->url('#/access/signin');
-        $this->waitUntilDisplayedByXPath('form','name','signin');
+        $this->waitUntilDisplayedByCss('form[name=signin]');
         $this->setValueByName('email', self::$merchant->email);
         $this->setValueByName('password', '123456xx');
         $this->clickByName('submit');
@@ -142,10 +142,10 @@ class MerchantTest extends TestCase
     public function testMerchantTaggingForRoles()
     {
         $this->url('admin#');
-        $this->clickByXPath('a','id','merchantsNav');
+        $this->clickById('merchantsNav');
         $this->execScript('$(".merchant_type").val("0").trigger("change")');
         $this->execScript('$(".merchant_go").click()');
-        $this->assertTrue($this->displayedByClassName('merchants-table-body'));
+        $this->waitUntilDisplayedByCss('.merchants-table-body');
         $this->clickByXPath('a','text',self::$merchant->id);
         $this->window($this->windowHandles()[1]);
         $this->waitUntilDisplayedByClassName('merchant-wrapper');
@@ -154,7 +154,7 @@ class MerchantTest extends TestCase
         $this->keys(Keys::PAGEDOWN);
         $this->execScript('$(".tag-merchant").click()');
         $this->setValueByName('merchant-tags', 'Roles');
-        $this->clickByClassName('modal-ok');
+        $this->execScript('$(".modal-ok").click()');
         $this->waitUntilContainsByCss('body', 'Roles');
     }
 
@@ -172,7 +172,7 @@ class MerchantTest extends TestCase
         $this->waitUntilContainsByCss('body', 'Invite users to your Organization Team');
 
         $this->setValueById('description', $teamUser->email);
-        $this->selectByNameAndLabel('role', 'Finance');
+        $this->execScript('$("select[name=role]").val(2)');
         $this->clickByXPath('button','text','Send Invitation');
         $this->waitUntilContainsByCss('body', 'Invitation has been successfully sent to '.$teamUser->email);
     }
@@ -182,6 +182,7 @@ class MerchantTest extends TestCase
         $invite = Invitation\Entity::firstorfail();
         $this->url('#/access/signup?invitation='.$invite->token);
         $name = Util::random_alpha_string(6);
+        $this->waitUntilDisplayedByCss('[name=name]');
         $this->setValueByName('name', $name);
         $this->setValueByName('password', '12345xx');
         $this->setValueByName('password_confirmation', '12345xx');
@@ -193,7 +194,7 @@ class MerchantTest extends TestCase
     public function testRestrictedAccessRole()
     {
         $this->url('#/access/signin');
-        $this->waitUntilDisplayedByXPath('form','name','signin');
+        $this->waitUntilDisplayedByCss('form[name=signin]');
         $this->setValueByName('email', self::TEAM_USER_EMAIL);
         $this->setValueByName('password', '12345xx');
         $this->clickByName('submit');
@@ -230,7 +231,7 @@ class MerchantTest extends TestCase
     public function testPaymentsList()
     {
         $this->url('#/access/signin');
-        $this->waitUntilDisplayedByXPath('form', 'name', 'signin');
+        $this->waitUntilDisplayedByCss('form[name=signin]');
         $this->setValueByName('email', self::$merchant->email);
         $this->setValueByName('password', '123456xx');
         $this->clickByName('submit');
@@ -287,7 +288,7 @@ class MerchantTest extends TestCase
         // Now roll the key
         $this->waitAndClickByClassName('roll_key');
         // De-activation choose screen
-        $this->assertTrue($this->displayedByClassName('roll-key-modal'));
+        $this->waitUntilDisplayedByClassName('roll-key-modal');
         $this->waitAndClickByClassName('btn-roll-key-ok');
     }
 
@@ -316,7 +317,7 @@ class MerchantTest extends TestCase
 
         // Fill in business Details and save
         $this->execScript('$(".btn-next")[0].click()');
-        $this->waitUntilDisplayedByXPath('form','name','step2');
+        $this->waitUntilDisplayedByCss('form[name=step2]');
         $this->selectByNameAndLabel('business_type', 'Partnership');
         $this->setValueByName('business_name', 'Test Company Pvt Ltd');
         $this->setValueByName('business_dba', 'Tester');
@@ -331,7 +332,7 @@ class MerchantTest extends TestCase
         $this->setValueByName('business_operation_city', 'city');
         $this->setValueByName('business_operation_pin', '333333');
         //$this->byName('or_same')->click();
-        $this->setValueByName('business_doe', '1990-11-01');
+        $this->execScript('$("[name=business_doe]").val("1990-11-01").trigger("change")');
         $this->setValueByName('company_cin', 'cin123455');
         $this->setValueByName('company_pan', 'pan12345');
         $this->setValueByName('company_pan_name', 'TEST COMPANY (OPC)');
@@ -344,7 +345,7 @@ class MerchantTest extends TestCase
         //$this->waitUntilDisplayedByClassName('alert-success');
 
         $this->execScript('$(".btn-next")[1].click()');
-        $this->waitUntilDisplayedByXPath('form','name','step3');
+        $this->waitUntilDisplayedByCss('form[name=step3]');
         $this->setValueByName('business_website', 'http://testing.com');
         $this->setValueByName('website_about', 'http://testing.com');
         $this->setValueByName('website_contact', 'http://testing.com');
@@ -357,7 +358,7 @@ class MerchantTest extends TestCase
 
         // Fill in Bank Account Details and save
         $this->execScript('$(".btn-next")[2].click()');
-        $this->waitUntilDisplayedByXPath('form','name','step4');
+        $this->waitUntilDisplayedByCss('form[name=step4]');
         $this->setValueByName('bank_account_number', 'RZP123443');
         $this->setValueByName('bank_account_number_confirmation', 'RZP123443');
         $this->setValueByName('bank_account_name', 'Tester');
@@ -378,7 +379,7 @@ class MerchantTest extends TestCase
         // Upload documents and save
         // S3 API is mocked in selenium/init.php to avoid requests to AWS
         $this->execScript('$(".btn-next")[3].click()');
-        $this->waitUntilDisplayedByXPath('form','name','step5');
+        $this->waitUntilDisplayedByCss('form[name=step5]');
         $remote_file = $this->file(__DIR__.'/upload.png');
         $this->byName('business_proof')
             ->value($remote_file);
@@ -398,7 +399,7 @@ class MerchantTest extends TestCase
 
         // Submit for activation
         $this->execScript('$(".btn-next")[4].click()');
-        $this->waitUntilDisplayedByXPath('form','name','step6');
+        $this->waitUntilDisplayedByCss('form[name=step6]');
         $this->waitUntil(function() {
             $this->execScript('$("input[name=\"agree_terms\"]").click()');
             return true;
@@ -413,6 +414,10 @@ class MerchantTest extends TestCase
      */
     public function testProfilePanel()
     {
+        $this->currentWindow()->size(array(
+          'width' => 2560,
+          'height' => 1600,
+        ));
         // Testing profile display
         $this->clickByName('submit');
         $this->waitUntilDisplayedById('profileNav');
@@ -444,7 +449,7 @@ class MerchantTest extends TestCase
         $this->waitUntilDisplayedByClassName('user-dropdown');
         $this->clickByClassName('user-dropdown');
         $this->execScript('$("a:contains(\"Logout\")").click()');
-        $this->waitUntilDisplayedByXPath('form','name','signin');
+        $this->waitUntilDisplayedByCss('form[name=signin]');
     }
 
     public function tearDown()

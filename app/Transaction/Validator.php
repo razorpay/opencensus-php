@@ -12,7 +12,7 @@ class Validator extends Base\Validator
         'created_at'    =>  'required|integer',
         'updated_at'    =>  'required|integer',
         'resource'      =>  'required|in:payment,refund,settlement',
-        'method'        =>  'required_if:resource,payment|in:card,netbanking,wallet,emi',
+        'method'        =>  'required_if:resource,payment|in:card,netbanking,wallet,emi,upi',
         'network'       =>  'required_if:method,card',
         'id'            =>  'sometimes|required_if:resource,payment'
     );

@@ -11,11 +11,9 @@
 * Make sure `SECURE_SESSION=false` in `.env.dev`
 * Run `php composer.phar install` to install laravel
 * Run `php artisan migrate --seed` to migrate and seed the db. If you face problem regarding null fields, turn off strict SQL mode.
-* `npm install`
-* `npm install -g grunt-cli`
-* `cp config/grunt.sample.json config/grunt.json`
-* `grunt`
-* `grunt watch`
+* `npm i`
+* `npm i -g gulp`
+* `gulp watch`
 
 - Open <http://dashboard.razorpay.dev> and login as `test@razorpay.com/123456`.
 
