@@ -21,6 +21,7 @@ use RZP\Models\Settlement\Holidays;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
@@ -580,7 +581,7 @@ class Service extends Base\Service
      * each containing the number of merchants in each category
      * @return array debug response
      */
-    public function sendDailyReportForAllMerchants()
+    public function sendDailyReportForAllMerchants($input)
     {
         RuntimeManager::setMemoryLimit('1024M');
         RuntimeManager::setTimeLimit(300);
@@ -591,32 +592,47 @@ class Service extends Base\Service
             array()
         );
 
-        $merchants = $this->repo->merchant->fetchAllLiveMerchants()
-                                            ->select(Entity::ID)
-                                            ->get();
+        $merchants = new Base\PublicCollection;
 
-        // sent will hold array of merchant data
-        $response = ['sent' => [], 'skipped' => 0];
+        if (isset($input[Entity::ID]) === true)
+        {
+            $merchant = $this->repo->merchant->findOrFailPublic($input[Entity::ID]);
+
+            $merchants->push($merchant);
+        }
+        else
+        {
+            $merchants = $this->repo->merchant->fetchAllLiveMerchants()
+                                              ->select(Entity::ID)
+                                              ->get();
+        }
 
         // Summary of merchants mailed
-        $mailedMerchantsSummary = ['sent' => [], 'sentCount' => 0, 'skippedCount' => 0];
+        $mailedMerchantsSummary = ['sentIds' => [], 'skippedIds' => 0, 'failedIds' => []];
 
         foreach ($merchants as $merchant)
         {
-            $dailyReport = new DailyReport($merchant->getId());
-
-            $sent = $dailyReport->send();
-
-            if (empty($sent))
+            try
             {
-                $response['skipped']++;
-                $mailedMerchantsSummary['skippedCount']++;
+                $dailyReport = new DailyReport($merchant->getId());
+
+                $sentId = $dailyReport->send();
+
+                if (is_null($sentId))
+                {
+                    $mailedMerchantsSummary['skippedIds']++;
+                }
+                else
+                {
+                    $mailedMerchantsSummary['sentIds'][] = $sentId;
+                }
             }
-            else
+            catch (\Exception $ex)
             {
-                $response['sent'][] = $sent;
-                $mailedMerchantsSummary['sentCount']++;
-                $mailedMerchantsSummary['sent'][] = $sent['merchant']['id'];
+                $this->trace->traceException(
+                    $ex, Trace::WARNING, TraceCode::SETTLEMENT_DAILY_REPORT_FAILURE);
+
+                $mailedMerchantsSummary['failedIds'][] = $merchant->getId();
             }
         }
 
@@ -626,7 +642,7 @@ class Service extends Base\Service
             $mailedMerchantsSummary
         );
 
-        return $response;
+        return $mailedMerchantsSummary;
     }
 
     /**

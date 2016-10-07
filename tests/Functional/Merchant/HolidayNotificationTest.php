@@ -43,6 +43,8 @@ class HolidayNotificationTest extends TestCase
 
     public function testHolidayNotificationOnLiveHoliday()
     {
+        $this->markTestSkipped();
+
         $date = Carbon::today('Asia/Kolkata');
 
         $date = $this->getRandomWorkingDay($date);
