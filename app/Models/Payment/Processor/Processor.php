@@ -126,7 +126,7 @@ class Processor
                 'Please provide appropriate payment method',
                 Payment\Entity::METHOD);
         }
-
+        
         // Creates a payment entity in DB with the input values given.
         // Also takes care of fee-bearer customer flow.
         $payment = $this->createPaymentEntity($input);

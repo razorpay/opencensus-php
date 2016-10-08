@@ -51,7 +51,7 @@ trait Authorize
         // Adds callback url, payment and card info to $gatewayInput
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
 
-        $this->runPaymentInputValidations($payment);
+        $this->runPaymentInputValidations($payment, $input);
 
         $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
 
@@ -300,8 +300,10 @@ trait Authorize
         return $payment->reload()->toArrayAdmin();
     }
 
-    protected function runPaymentInputValidations(Payment\Entity $payment)
+    protected function runPaymentInputValidations(Payment\Entity $payment, array $input)
     {
+        $this->validateCardAndCvv($payment, $input);
+
         $this->validateRecurringIfApplicable($payment);
 
         $this->validateS2SIfApplicable($payment);
@@ -353,8 +355,8 @@ trait Authorize
         // Ensure that the merchant is allowed to do recurring payments.
         $this->verifyFeatureForMerchant($merchant, Merchant\Features::RECURRING);
 
-        // Ensure the right fields are passed for recurring payments
-        $this->validatePaymentInputForRecurring();
+        // Validate that the card supports recurring
+        $this->validateRecurringCard($payment);
 
         // The first recurring will be on public auth for non-S2S enabled merchants.
         // The second recurring MUST always be via private auth.
@@ -364,9 +366,13 @@ trait Authorize
         }
     }
 
-    protected function validatePaymentInputForRecurring()
+    protected function validateRecurringCard(Payment\Entity $payment)
     {
-        // TODO: Finish this.
+        if ($payment->card->isRecurringSupported() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_RECURRING_NOT_SUPPORTED);
+        }
     }
 
     protected function runPostGatewaySelectionPreProcessing($payment, array & $gatewayInput)
@@ -660,7 +666,7 @@ trait Authorize
     }
 
     protected function preProcessPaymentForGlobalCustomer(Customer\Entity $customer,
-                                                          Customer\Token\Entity $customerApp,
+                                                          Customer\AppToken\Entity $customerApp,
                                                           Payment\Entity $payment,
                                                           array & $input,
                                                           array & $gatewayInput)
@@ -700,15 +706,12 @@ trait Authorize
         {
             $payment->localToken()->associate($token);
 
-            // TODO: Change method name. It does more than get
-            $gatewayInput['card'] = $this->getCardArrayForSavedToken($token, $input);
+            $gatewayInput['card'] = $this->associateAndGetCardArrayForSavedToken($token, $input);
         }
         else
         {
             // @todo for netbanking/wallets
         }
-
-        $this->validateRecurringPayment($payment, $input);
     }
 
     protected function preProcessPaymentFromSavedCardGlobal(Customer\Entity $customer,
@@ -801,8 +804,6 @@ trait Authorize
         {
             $this->payment->localToken()->associate($token);
         }
-
-        $this->validateRecurringPayment($payment, $input);
     }
 
     protected function savePaymentMethodGlobal(Customer\Entity $customer,
@@ -1435,7 +1436,7 @@ trait Authorize
      * @return
      * @throws \Exception
      */
-    protected function getCardArrayForSavedToken($token, array & $input)
+    protected function associateAndGetCardArrayForSavedToken($token, array & $input)
     {
         $card = $token->card;
 
@@ -1592,17 +1593,9 @@ trait Authorize
         }
     }
 
-    protected function validateRecurringPayment(Payment\Entity $payment, array $input)
+    protected function validateCardAndCvv(Payment\Entity $payment, array $input)
     {
-        // checks if payment is recurring
-        if (($payment->isRecurring()) and
-            ($payment->card->isRecurringSupported() === false))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CARD_RECURRING_NOT_SUPPORTED);
-        }
-
-        // if not recurring, validate card data
+        // if not recurring, validate that card data and cvv in card data is present
         if (($payment->isRecurring() === false) and
             ($payment->getTokenId() !== null) and
             ($payment->localToken->isRecurring() === false))
