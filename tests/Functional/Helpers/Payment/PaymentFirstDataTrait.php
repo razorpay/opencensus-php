@@ -24,77 +24,53 @@ trait PaymentFirstDataTrait
 
     protected function getErrorInAuth()
     {
-        $server = $this->mockServer()
-            ->shouldReceive('content')
-            ->andReturnUsing(function (& $content)
-            {
-                $content['approval_code'] = 'N:87:Bad Track Data';
-                $content['status'] = 'DECLINED';
-            })->mock();
-
-        $this->setMockServer($server);
+        $this->mockServerContentFunction(function (& $content)
+        {
+            $content['approval_code'] = 'N:87:Bad Track Data';
+            $content['status'] = 'DECLINED';
+        });
     }
 
     protected function getUnknownErrorInAuth()
     {
-        $server = $this->mockServer()
-            ->shouldReceive('content')
-            ->andReturnUsing(function (& $content)
-            {
-                $content['approval_code'] = "N:666:Devil's Own Error";
-                $content['status'] = 'DECLINED';
-            })->mock();
-
-        $this->setMockServer($server);
+        $this->mockServerContentFunction(function (& $content)
+        {
+            $content['approval_code'] = "N:666:Devil's Own Error";
+            $content['status'] = 'DECLINED';
+        });
     }
 
     protected function getErrorInReturn()
     {
-        $server = $this->mockServer()
-            ->shouldReceive('content')
-            ->andReturnUsing(function (& $content)
-            {
-                $content['ApprovalCode'] = 'N:-5008:Order does not exist.';
-                $content['TransactionResult'] = 'FAILED';
-            })->mock();
-
-        $this->setMockServer($server);
+        $this->mockServerContentFunction(function (& $content)
+        {
+            $content['ApprovalCode'] = 'N:-5008:Order does not exist.';
+            $content['TransactionResult'] = 'FAILED';
+        });
     }
 
     protected function getErrorInCapture()
     {
-        $server = $this->mockServer()
-            ->shouldReceive('content')
-            ->andReturnUsing(function (& $content)
-            {
-                $content['ApprovalCode'] = 'N:-10503:Invalid amount or currency';
-                $content['TransactionResult'] = 'FAILED';
-            })->mock();
-
-        $this->setMockServer($server);
+        $this->mockServerContentFunction(function (& $content)
+        {
+            $content['ApprovalCode'] = 'N:-10503:Invalid amount or currency';
+            $content['TransactionResult'] = 'FAILED';
+        });
     }
 
     protected function getErrorInInquiry()
     {
-        $server = $this->mockServer()
-            ->shouldReceive('content')
-            ->andReturnUsing(function (& $content)
-            {
-                $content = SoapWrapper::ERROR_ACTION_RESPONSE;
-            })->mock();
-
-        $this->setMockServer($server);
+        $this->mockServerContentFunction(function (& $content)
+        {
+            $content = SoapWrapper::ERROR_ACTION_RESPONSE;
+        });
     }
 
     protected function getTimeoutInCapture()
     {
-        $server = $this->mockServer()
-            ->shouldReceive('content')
-            ->andReturnUsing(function (& $content)
-            {
-                throw new Exception\GatewayTimeoutException('Gateway request timed out');
-            })->mock();
-
-        $this->setMockServer($server);
+        $this->mockServerContentFunction(function (& $content)
+        {
+            throw new Exception\GatewayTimeoutException('Gateway request timed out');
+        });
     }
 }

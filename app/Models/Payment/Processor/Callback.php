@@ -46,6 +46,7 @@ trait Callback
         $this->trace->info(
             TraceCode::PAYMENT_CALLBACK_REQUEST,
             [
+                'gateway_input' => $gatewayInput,
                 'payment_id'    => $id,
             ]);
 
