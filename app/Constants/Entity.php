@@ -61,6 +61,7 @@ class Entity
     const BILLDESK              = 'billdesk';
     const MOBIKWIK              = 'mobikwik';
     const AXIS_MIGS             = 'axis_migs';
+    const FIRST_DATA            = 'first_data';
     const AXIS_GENIUS           = 'axis_genius';
     const NETBANKING            = 'netbanking';
     const CYBERSOURCE           = 'cybersource';
@@ -76,6 +77,7 @@ class Entity
     public static $namespace = array(
         self::UPI                   => \RZP\Gateway\Upi\Base::class,
         self::IIN                   => \RZP\Models\Card\IIN::class,
+        self::EBS                   => \RZP\Gateway\Ebs::class,
         self::ATOM                  => \RZP\Gateway\Atom::class,
         self::AMEX                  => \RZP\Gateway\Amex::class,
         self::HDFC                  => \RZP\Gateway\Hdfc::class,
@@ -91,11 +93,11 @@ class Entity
         self::PRICING               => \RZP\Models\Pricing::class,
         self::WEBHOOK               => \RZP\Models\Merchant\Webhook::class,
         self::BILLDESK              => \RZP\Gateway\Billdesk::class,
-        self::EBS                   => \RZP\Gateway\Ebs::class,
         self::CUSTOMER              => \RZP\Models\Customer::class,
         self::EMI_PLAN              => \RZP\Models\Emi::class,
         self::MOBIKWIK              => \RZP\Gateway\Mobikwik::class,
         self::AXIS_MIGS             => \RZP\Gateway\AxisMigs::class,
+        self::FIRST_DATA            => \RZP\Gateway\FirstData::class,
         self::APP_TOKEN             => \RZP\Models\Customer\AppToken::class,
         self::NETBANKING            => \RZP\Gateway\Netbanking\Base::class,
         self::AXIS_GENIUS           => \RZP\Gateway\AxisGenius::class,
