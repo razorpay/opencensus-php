@@ -21,6 +21,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACCESS_CODE         => 'sometimes',
         Entity::GATEWAY_SECURE_SECRET       => 'sometimes',
         Entity::GATEWAY_RECON_PASSWORD      => 'sometimes|alpha_num',
+        Entity::GATEWAY_CLIENT_CERTIFICATE  => 'sometimes',
         Entity::CATEGORY                    => 'sometimes|integer|digits:4',
         Entity::CARD                        => 'sometimes|boolean',
         Entity::NETBANKING                  => 'sometimes|boolean',
@@ -77,6 +78,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID2        => 'required|string|min:5',
         Entity::GATEWAY_ACCESS_CODE         => 'required|alpha_num|min:5',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|alpha_num|min:5',
+        Entity::GATEWAY_CLIENT_CERTIFICATE  => 'required|min:20',
         Entity::EMI                         => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12',
     );
