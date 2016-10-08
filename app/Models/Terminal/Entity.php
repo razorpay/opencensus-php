@@ -26,6 +26,7 @@ class Entity extends Base\PublicEntity
     const GATEWAY_SECURE_SECRET         = 'gateway_secure_secret';
     const GATEWAY_RECON_PASSWORD        = 'gateway_recon_password';
     const GATEWAY_ACQUIRER              = 'gateway_acquirer';
+    const GATEWAY_CLIENT_CERTIFICATE    = 'gateway_client_certificate';
 
     const CARD                          = 'card';
     const NETBANKING                    = 'netbanking';

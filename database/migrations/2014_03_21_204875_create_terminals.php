@@ -60,6 +60,9 @@ class CreateTerminals extends Migration
             $table->string(Terminal::GATEWAY_ACQUIRER)
                   ->nullable();
 
+            $table->text(Terminal::GATEWAY_CLIENT_CERTIFICATE)
+                  ->nullable();
+
             $table->tinyInteger(Terminal::CARD)
                   ->default(0);
 
