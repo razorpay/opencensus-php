@@ -419,7 +419,7 @@ class Gateway
 
     public static function isValidGateway($gateway)
     {
-        return (defined(__CLASS__.'::'.strtoupper($gateway)));
+        return (defined(__CLASS__ . '::' . strtoupper($gateway)));
     }
 
     public static function getGatewayForWallet($wallet)

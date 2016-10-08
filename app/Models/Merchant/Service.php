@@ -607,11 +607,8 @@ class Service extends Base\Service
                                               ->get();
         }
 
-        // sent will hold array of merchant data
-        $response = ['sent' => [], 'skipped' => 0];
-
         // Summary of merchants mailed
-        $mailedMerchantsSummary = ['sent' => [], 'sentCount' => 0, 'skippedCount' => 0];
+        $mailedMerchantsSummary = ['sentIds' => [], 'skippedIds' => 0, 'failedIds' => []];
 
         foreach ($merchants as $merchant)
         {
@@ -619,24 +616,23 @@ class Service extends Base\Service
             {
                 $dailyReport = new DailyReport($merchant->getId());
 
-                $sent = $dailyReport->send();
+                $sentId = $dailyReport->send();
 
-                if (empty($sent))
+                if (is_null($sentId))
                 {
-                    $response['skipped']++;
-                    $mailedMerchantsSummary['skippedCount']++;
+                    $mailedMerchantsSummary['skippedIds']++;
                 }
                 else
                 {
-                    $response['sent'][] = $sent;
-                    $mailedMerchantsSummary['sentCount']++;
-                    $mailedMerchantsSummary['sent'][] = $sent['merchant']['id'];
+                    $mailedMerchantsSummary['sentIds'][] = $sentId;
                 }
             }
             catch (\Exception $ex)
             {
                 $this->trace->traceException(
                     $ex, Trace::WARNING, TraceCode::SETTLEMENT_DAILY_REPORT_FAILURE);
+
+                $mailedMerchantsSummary['failedIds'][] = $merchant->getId();
             }
         }
 
@@ -646,7 +642,7 @@ class Service extends Base\Service
             $mailedMerchantsSummary
         );
 
-        return $response;
+        return $mailedMerchantsSummary;
     }
 
     /**

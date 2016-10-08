@@ -169,4 +169,24 @@ return [
         'vpa'                   => 'shk@hdfc',
         'entity'                => 'upi',
     ],
+
+    'testCreateAutoCaptureOrder' => [
+        'request' => [
+            'content' => [
+                'amount'          => 50000,
+                'currency'        => 'INR',
+                'receipt'         => 'rcptid42',
+                'payment_capture' => '1',
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'        => 50000,
+                'currency'      => 'INR',
+                'receipt'       => 'rcptid42',
+            ],
+        ],
+    ],
 ];
