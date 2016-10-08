@@ -34,13 +34,13 @@ class Service extends Base\Service
      * @param  array  token edit params
      * @return array  edited token
      */
-    public function edit($id, $token, $input)
+    public function edit($id, $tokenId, $input)
     {
         Customer\Entity::verifyIdAndStripSign($id);
 
         $customer = $this->repo->customer->findByIdAndMerchantId($id, $this->merchant->getId());
 
-        $token = $this->repo->token->getByTokenAndCustomerId($token, $id);
+        $token = $this->repo->token->getByTokenIdAndCustomer($tokenId, $customer);
 
         $token = (new Token\Core)->edit($token, $input);
 
@@ -54,13 +54,13 @@ class Service extends Base\Service
      * @param  string token id
      * @return entity token
      */
-    public function fetch($id, $token)
+    public function fetch($id, $tokenId)
     {
         Customer\Entity::verifyIdAndStripSign($id);
 
         $customer = $this->repo->customer->findByIdAndMerchantId($id, $this->merchant->getId());
 
-        $token = $this->repo->token->getByTokenAndCustomerId($token, $customer->getId());
+        $token = $this->repo->token->getByTokenIdAndCustomer($tokenId, $customer);
 
         return $token->toArrayPublic();
     }
@@ -137,7 +137,7 @@ class Service extends Base\Service
 
     protected function deleteTokenForCustomer($tokenId, $customer)
     {
-        $token = (new Token\Core)->getByTokenAndCustomer($tokenId, $customer);;
+        $token = (new Token\Core)->getByTokenIdAndCustomer($tokenId, $customer);;
 
         if ($token === null)
         {
