@@ -17,7 +17,7 @@ class PaymentController extends Controller
     {
         parent::__construct();
 
-        $this->payment = new Payment\Service();
+        $this->payment = new Payment\Service;
     }
 
     public function getPayment($id)

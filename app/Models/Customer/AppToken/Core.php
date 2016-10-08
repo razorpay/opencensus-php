@@ -47,15 +47,15 @@ class Core extends Base\Core
         return [];
     }
 
-    public function getAppByAppToken($appTokenId, Merchant\Entity $merchant)
+    public function getAppByAppTokenId($appTokenId, Merchant\Entity $merchant)
     {
-        $sharedMerchantId = $this->repo->merchant->getSharedAccount()->getId();
+        $sharedMerchant = $this->repo->merchant->getSharedAccount();
 
-        $app = $this->getAppByAppTokenAndMerchantId($appTokenId, $sharedMerchantId);
+        $app = $this->getAppByAppTokenIdAndMerchant($appTokenId, $sharedMerchant);
 
         if ($app === null)
         {
-            $app = $this->getAppByAppTokenAndMerchantId($appTokenId, $merchant->getId());
+            $app = $this->getAppByAppTokenIdAndMerchant($appTokenId, $merchant);
         }
 
         return $app;
@@ -76,13 +76,13 @@ class Core extends Base\Core
         return $apps[0];
     }
 
-    protected function getAppByAppTokenAndMerchantId($appTokenId, $merchantId)
+    protected function getAppByAppTokenIdAndMerchant($appTokenId, Merchant\Entity $merchant)
     {
         $app = null;
 
         try
         {
-            $app = $this->repo->app_token->findByIdAndMerchantId($appTokenId, $merchantId);
+            $app = $this->repo->app_token->findByIdAndMerchantId($appTokenId, $merchant->getId());
         }
         catch (Exception\BadRequestException $ex)
         {

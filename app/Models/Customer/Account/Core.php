@@ -207,7 +207,7 @@ class Core extends Base\Core
         if (empty($input[Payment\Entity::CUSTOMER_ID]) === false)
         {
             $customerId = $input[Payment\Entity::CUSTOMER_ID];
-            
+
             $merchantId = $merchant->getId();
 
             Customer\Entity::verifyIdAndStripSign($customerId);
@@ -218,7 +218,7 @@ class Core extends Base\Core
 
             Customer\AppToken\Entity::verifyIdAndStripSign($appTokenId);
 
-            $appToken = (new Customer\AppToken\Core)->getAppByAppToken($appTokenId, $merchant);
+            $appToken = (new Customer\AppToken\Core)->getAppByAppTokenId($appTokenId, $merchant);
 
             if ($appToken !== null)
             {

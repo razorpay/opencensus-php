@@ -17,7 +17,7 @@ class Service extends Base\Service
 
             $appCore = new AppToken\Core;
 
-            $app = $appCore->getAppByAppToken($appToken, $this->merchant);
+            $app = $appCore->getAppByAppTokenId($appToken, $this->merchant);
 
             $data = $appCore->deleteAppTokens($app, $input);
 

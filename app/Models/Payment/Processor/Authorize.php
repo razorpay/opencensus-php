@@ -1371,15 +1371,15 @@ trait Authorize
         }
     }
 
-    protected function createCardEntity(array $cardInput, $vault, $merchant)
+    protected function createCardEntity(array $cardInput, $vault, Merchant\Entity $merchant)
     {
         //
         // Creates card entity. Card number is vaulted if vault is true
         //
 
-        if ($vault)
+        if ($vault === true)
         {
-            $vaultToken = Card\Tokenex::getVaultToken($cardInput['number']);
+            $vaultToken = Card\Tokenex::getVaultToken($cardInput[Card\Entity::NUMBER]);
 
             if (empty($vaultToken) === false)
             {
@@ -1388,7 +1388,7 @@ trait Authorize
             }
         }
 
-        $cardCore = new Card\Core();
+        $cardCore = new Card\Core;
 
         $cardData = $cardCore->createAndReturnWithSensitiveData($cardInput, $merchant);
 
@@ -1446,7 +1446,7 @@ trait Authorize
         $savedCard['cvv'] = $cvv;
 
         //create a card entity for merchant
-        $cardCore = new Card\Core();
+        $cardCore = new Card\Core;
 
         $card = $cardCore->createDuplicateCard($savedCard, $this->merchant);
 
