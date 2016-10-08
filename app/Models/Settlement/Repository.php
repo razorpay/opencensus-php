@@ -34,6 +34,15 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchSettledMerchants($from, $to)
+    {
+        return $this->newQuery()
+                    ->whereIn(Entity::CREATED_AT, [$from, $to])
+                    ->select(Entity::MERCHANT_ID)
+                    ->distinct(Entity::MERCHANT_ID)
+                    ->get();
+    }
+
     public function getFewSettlementsWithNoCorrespondingSettlementDetails()
     {
         $setlIds = $this->db->select(

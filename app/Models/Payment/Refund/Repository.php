@@ -86,6 +86,15 @@ class Repository extends Base\Repository
                         $merchantId, $from, $to, ['payment']);
     }
 
+    public function fetchRefundingMerchants($from , $to)
+    {
+        return $this->newQuery()
+                    ->whereBetween(Entity::CREATED_AT, [$from, $to])
+                    ->select(Entity::MERCHANT_ID)
+                    ->distinct(Entity::MERCHANT_ID)
+                    ->get();
+    }
+
     /**
      * Fetches all refunds which have no transactions, but the
      * corresponding payments have transactions.

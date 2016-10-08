@@ -52,6 +52,11 @@ class PublicCollection extends Collection
         return $array;
     }
 
+    public function getAttributes()
+    {
+        return $this->itemsGetAttributes();
+    }
+
     public function getIds()
     {
         $ids = array_map(function($item)
@@ -145,6 +150,15 @@ class PublicCollection extends Collection
         return array_map(function($item)
         {
             return $item->toArrayDailyReport();
+
+        }, $this->items);
+    }
+
+    protected function itemsGetAttributes()
+    {
+        return array_map(function($item)
+        {
+            return $item->getAttributes();
 
         }, $this->items);
     }

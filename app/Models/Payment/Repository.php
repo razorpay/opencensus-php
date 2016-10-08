@@ -392,6 +392,25 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchCapturingMerchants($from , $to)
+    {
+        return $this->newQuery()
+                    ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
+                    ->where(Entity::STATUS, '=', Status::CAPTURED)
+                    ->select(Entity::MERCHANT_ID)
+                    ->distinct(Entity::MERCHANT_ID)
+                    ->get();
+    }
+
+    public function fetchMerchantsForAuthPayments()
+    {
+        return $this->newQuery()
+                    ->where(Entity::STATUS, '=', Status::AUTHORIZED)
+                    ->select(Entity::MERCHANT_ID)
+                    ->distinct(Entity::MERCHANT_ID)
+                    ->get();
+    }
+
     protected function getPaymentVolumeBetweenTimestamp($from, $to)
     {
         $vol = $this->newQuery()
