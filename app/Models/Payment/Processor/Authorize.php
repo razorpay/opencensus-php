@@ -654,7 +654,10 @@ trait Authorize
     {
         $this->payment->customer()->associate($customer);
 
+        //
         // if token is set, payment is either from a saved card or is second recurring
+        // else, the card needs to be saved or need to mark the payment as recurring (first recurring)
+        //
         if (empty($input[Payment\Entity::TOKEN]) === false)
         {
             $this->preProcessPaymentFromSavedCardLocal($customer, $payment, $input, $gatewayInput);
@@ -755,8 +758,9 @@ trait Authorize
                                                           array $input,
                                                           array & $gatewayInput)
     {
-        // Flow if card details are entered with save set to true/false
-        $saveMethod = (($payment->getSave() === true)  or
+        // If save is set to true or recurring is set to true,
+        // we save the card details while processing the payment
+        $saveMethod = (($payment->getSave() === true) or
                        ($payment->isRecurring() === true));
 
         if ($saveMethod === false)
@@ -1442,6 +1446,7 @@ trait Authorize
 
         $cardNumber = Card\Tokenex::getCardNumber($card->getVaultToken());
 
+        // Recurring terminals accept null cvv.
         $cvv = isset($input['card']['cvv']) ? $input['card']['cvv'] : null;
 
         $this->payment->card()->associate($card);
@@ -1615,13 +1620,6 @@ trait Authorize
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED,
                 'number');
         }
-    }
-
-    protected function savePaymentAndCard()
-    {
-        $this->repo->saveOrFail($this->payment->card);
-
-        $this->repo->saveOrFail($this->payment);
     }
 
     protected function updatePaymentAuthorized($wasFailed = false)
