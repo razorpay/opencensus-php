@@ -198,7 +198,7 @@ class Validator extends Base\Validator
 
     protected function validateEmi($input)
     {
-        if (isset($input[Entity::EMI]) === false)
+        if (!isset($input[Entity::EMI]) or ($input[Entity::EMI] !== '1'))
         {
             return;
         }
@@ -262,7 +262,8 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Category provided invalid for gateway',
-                Entity::NETWORK_CATEGORY);
+                Entity::NETWORK_CATEGORY,
+                [$input]);
             }
     }
 
@@ -273,7 +274,8 @@ class Validator extends Base\Validator
             ($new->getId() !== $existing->getId()) and
             ($new->isEmiEnabled() === $existing->isEmiEnabled()) and
             ($new->getEmiDuration() === $existing->getEmiDuration()) and
-            ($new->getRecurring() === $existing->getRecurring()))
+            ($new->getRecurring() === $existing->getRecurring()) and
+            ($new->getNetworkCategory() === $existing->getNetworkCategory()))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY);
