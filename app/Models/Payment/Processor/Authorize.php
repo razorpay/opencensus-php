@@ -49,13 +49,11 @@ trait Authorize
 
         $gatewayInput = [];
 
-        $this->runPaymentInputValidations($payment);
-
         // $gatewayInput is being passed by reference.
         // Adds callback url, payment and card info to $gatewayInput
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
 
-        $this->verifyPaymentMethodEnabled($payment);
+        $this->runPaymentInputValidations($payment);
 
         $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
 
@@ -309,6 +307,8 @@ trait Authorize
         $this->validateRecurringIfApplicable($payment);
 
         $this->validateS2SIfApplicable($payment);
+
+        $this->verifyPaymentMethodEnabled($payment);
     }
 
     protected function validateS2SIfApplicable(Payment\Entity $payment)
@@ -326,8 +326,7 @@ trait Authorize
         // should have S2S enabled, along with recurring.
         // For second recurring payments, if it's coming via private auth, the merchant
         // need not have S2S enabled. The merchant needs to be enabled only for recurring.
-        if (($payment->isRecurring() === true) and
-            ($payment->isSecondRecurring() === true))
+        if ($payment->isSecondRecurring() === true)
         {
             return;
         }
