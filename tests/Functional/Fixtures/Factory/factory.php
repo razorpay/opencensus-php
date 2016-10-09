@@ -222,8 +222,7 @@ $factory(\RZP\Models\Merchant\Webhook\Entity::class, [
     'active' => true,
 ]);
 
-$factory(\RZP\Models\Address\Entity::class,
-    [
+$factory(\RZP\Models\Address\Entity::class, [
         'line1'         => 'some line one',
         'line2'         => 'some line two',
         'city'          => 'Bangalore',
@@ -234,7 +233,17 @@ $factory(\RZP\Models\Address\Entity::class,
         'primary'       => true,
         'entity_id'     => '100000customer',
         'entity_type'   => 'customer',
-    ]);
+]);
+
+$factory(\RZP\Models\Plan\Entity::class, [
+    'merchant_id'       => '10000000000000',
+    'name'              => 'test plan',
+    'interval'          => 'month',
+    'interval_count'    => 1,
+    'amount'            => 2000,
+    'currency'          => 'INR',
+    'notes'             => null,
+]);
 
 $factory(\RZP\Models\Emi\Entity::class, [
     'id' => 10101010101010,

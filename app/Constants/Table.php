@@ -27,6 +27,7 @@ class Table
     const SETTLEMENT            = 'settlements';
     const TRANSACTION           = 'transactions';
     const BANK_ACCOUNT          = 'bank_accounts';
+    const SUBSCRIPTION          = 'subscriptions';
     const DAILY_SETTLEMENT      = 'daily_settlements';
     const SETTLEMENT_DETAIL     = 'settlement_details';
 

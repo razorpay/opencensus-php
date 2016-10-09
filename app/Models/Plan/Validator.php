@@ -4,7 +4,6 @@ namespace RZP\Models\Plan;
 
 use RZP\Models\Base;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
@@ -17,12 +16,37 @@ class Validator extends Base\Validator
         Entity::NOTES           => 'sometimes|notes'
     ];
 
+    protected static $createValidators = [
+        Entity::INTERVAL_COUNT
+    ];
+
     protected function validateInterval($attribute, $value)
     {
         if (Interval::isIntervalValid($value) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid argument for interval passed', null, ['interval' => $value]);
+        }
+    }
+
+    protected function validateIntervalCount($input)
+    {
+        $interval = $input[Entity::INTERVAL];
+        $intervalCount = $input[Entity::INTERVAL_COUNT];
+
+        $maxAllowedIntervalCount = Interval::getMaxAllowedIntervalCount($interval);
+
+        if ($intervalCount > $maxAllowedIntervalCount)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Exceeds the maximum interval count allowed for the given interval',
+                null,
+                [
+                    'interval'          => $interval,
+                    'interval_count'    => $intervalCount,
+                    'max_allowed'       => $maxAllowedIntervalCount
+                ]
+            );
         }
     }
 }

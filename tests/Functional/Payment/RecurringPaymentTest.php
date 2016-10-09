@@ -2,10 +2,8 @@
 
 namespace RZP\Tests\Functional\Payment;
 
-use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Models\Card\Entity as Card;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Customer\Token\Entity as Token;
 

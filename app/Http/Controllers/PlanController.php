@@ -8,21 +8,32 @@ use Request;
 
 class PlanController extends Controller
 {
-    protected $service;
+    protected $planService;
+    protected $subscriptionService;
 
     public function __construct()
     {
         parent::__construct();
 
-        $this->service = new Plan\Service();
+        $this->planService = new Plan\Service;
+        $this->subscriptionService = new Plan\Subscription\Service;
     }
 
     public function postCreatePlan()
     {
         $input = Request::all();
 
-        $plan = $this->service->create($input);
+        $plan = $this->planService->create($input);
 
         return ApiResponse::json($plan);
+    }
+
+    public function postCreateSubscription($planId)
+    {
+        $input = Request::all();
+
+        $subscription = $this->subscriptionService->create($input, $planId);
+
+        return ApiResponse::json($subscription);
     }
 }

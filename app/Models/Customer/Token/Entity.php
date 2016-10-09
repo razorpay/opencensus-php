@@ -211,6 +211,13 @@ class Entity extends Base\PublicEntity
         $this->increment(self::USED_COUNT);
     }
 
+    public function scopeCustomerId($query, $customerId)
+    {
+        $customerIdColumn = $this->getAttributeWithTableName(Entity::CUSTOMER_ID);
+
+        $query->where($customerIdColumn, '=', $customerId);
+    }
+
     protected function setUsedAtAttribute($time)
     {
         $usedAt = $this->getAttribute(self::USED_AT);

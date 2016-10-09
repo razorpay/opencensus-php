@@ -5,7 +5,7 @@ namespace RZP\Models\Customer\Token;
 use RZP\Models\Base;
 use RZP\Models\Customer\Token;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
+use RZP\Models\Customer;
 
 class Repository extends Base\Repository
 {
@@ -56,6 +56,13 @@ class Repository extends Base\Repository
                     ->where(Entity::CUSTOMER_ID, '=', $customer->getId())
                     ->where(Entity::MERCHANT_ID, '=', $customer->merchant->getId())
                     ->get();
+    }
+
+    public function findByIdAndCustomer($id, Customer\Entity $customer)
+    {
+        return $this->newQuery()
+                    ->customerId($customer->getId())
+                    ->findOrFailPublic($id);
     }
 
     public function isMerchantIdRequiredForFetch()

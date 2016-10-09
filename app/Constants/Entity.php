@@ -20,6 +20,7 @@ class Entity
     const IIN                   = 'iin';
     const KEY                   = 'key';
     const CARD                  = 'card';
+    // TODO: Should this be renamed to subscription_plan? Since we have emi_plan and pricing_plan too.
     const PLAN                  = 'plan';
     const ORDER                 = 'order';
     const TOKEN                 = 'token';
@@ -39,6 +40,7 @@ class Entity
     const ADJUSTMENT            = 'adjustment';
     const SETTLEMENT            = 'settlement';
     const TRANSACTION           = 'transaction';
+    const SUBSCRIPTION          = 'subscription';
     const BANK_ACCOUNT          = 'bank_account';
     const DAILY_SETTLEMENT      = 'daily_settlement';
     const SETTLEMENT_DETAILS    = 'settlement_details';
@@ -118,6 +120,7 @@ class Entity
         self::GATEWAY_ABSENCE       => \RZP\Models\GatewayStatus\Absence::class,
         self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
         self::WALLET_FREECHARGE     => \RZP\Gateway\Wallet\Freecharge::class,
+        self::SUBSCRIPTION          => \RZP\Models\Plan\Subscription::class,
     );
 
     protected static $repository = array(

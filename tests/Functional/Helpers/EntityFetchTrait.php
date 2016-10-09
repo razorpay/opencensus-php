@@ -42,7 +42,7 @@ trait EntityFetchTrait
             'content' => $input);
 
         $content = $this->makeRequestAndGetContent($request);
-
+        
         $this->assertArrayHasKey('entity', $content);
         $this->assertSame('collection', $content['entity']);
 
