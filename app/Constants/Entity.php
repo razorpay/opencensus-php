@@ -20,6 +20,7 @@ class Entity
     const IIN                   = 'iin';
     const KEY                   = 'key';
     const CARD                  = 'card';
+    const PLAN                  = 'plan';
     const ORDER                 = 'order';
     const TOKEN                 = 'token';
     const REFUND                = 'refund';

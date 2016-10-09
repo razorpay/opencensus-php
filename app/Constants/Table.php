@@ -8,6 +8,7 @@ class Table
     const IIN                   = 'iins';
     const KEY                   = 'keys';
     const CARD                  = 'cards';
+    const PLAN                  = 'plans';
     const ORDER                 = 'orders';
     const TOKEN                 = 'tokens';
     const REFUND                = 'refunds';
@@ -18,12 +19,12 @@ class Table
     const WEBHOOK               = 'webhooks';
     const ADDRESS               = 'addresses';
     const MERCHANT              = 'merchants';
+    const EMI_PLAN              = 'emi_plans';
     const TERMINAL              = 'terminals';
     const CUSTOMER              = 'customers';
     const APP_TOKEN             = 'customer_apps';
     const ADJUSTMENT            = 'adjustment';
     const SETTLEMENT            = 'settlements';
-    const EMI_PLAN              = 'emi_plans';
     const TRANSACTION           = 'transactions';
     const BANK_ACCOUNT          = 'bank_accounts';
     const DAILY_SETTLEMENT      = 'daily_settlements';

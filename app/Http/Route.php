@@ -257,6 +257,8 @@ final class Route
         'gateway_delete_absence'                  => ['delete',   'gateway/absence/{id}',                     'GatewayController@deleteGatewayAbsence'                            ],
         'gateway_fetch_absence'                   => ['get',      'gateway/absence',                          'GatewayController@getAbsentGateways'                               ],
         'scorecard'                               => ['get',      'scorecard',                                'AdminController@getScorecard'                                      ],
+        'plan_create'                             => ['post',     'plans',                                    'PlanController@postCreatePlan'                                     ],
+        'subscription_create'                     => ['post',     'plans/{plan_id}/subscriptions',            'PlanController@postCreateSubscription'                             ],
     );
 
     public static $public = array(
@@ -346,6 +348,8 @@ final class Route
         'customer_delete_address',
         'customer_fetch_addresses',
         'customer_set_primary_address',
+        'plan_create',
+        'subscription_create',
     );
 
     public static $internal = array(
@@ -592,6 +596,8 @@ final class Route
         'app_delete_token'           => 'cardsaving',
         'otp_post'                   => 'cardsaving',
         'otp_verify'                 => 'cardsaving',
+        'plan_create'                => 'recurring',
+        'subscription_create'        => 'recurring',
     );
 
     protected static $router;
