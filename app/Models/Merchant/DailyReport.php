@@ -65,9 +65,11 @@ class DailyReport extends Base\Core
         if ($this->isBlank() === false)
         {
             $this->sendDailyReport();
-            return $this->data;
+
+            return $this->merchantId;
         }
-        return [];
+
+        return null;
     }
 
     /**
@@ -100,8 +102,8 @@ class DailyReport extends Base\Core
         $this->trace->info(
             TraceCode::SETTLEMENT_DAILY_REPORT_DATA,
             array(
-                    'merchant_id'   => $data['merchant']['id'],
-                    'merchant_name' => $data['merchant']['name'],
+                    'merchant_id'   => $this->merchantId,
+                    'merchant_name' => $data['billing_label'],
                     'captured'      => $data['captured']['payments']['count'],
                     'authorized'    => $data['authorized']['payments']['count'],
                     'refunds'       => $data['refunds']['refunds']['count'],
@@ -113,7 +115,7 @@ class DailyReport extends Base\Core
 
         Mail::queue($view, $data, function($message) use ($data)
         {
-            $to = $data['merchant']['email'];
+            $to = $data['email'];
 
             // to might be an array
             if (is_array($to))
@@ -201,7 +203,6 @@ class DailyReport extends Base\Core
         return [
             'payments' => $payments->toArrayDailyReport(),
             'sum'      => $payments->sum('amount'),
-            'orderId'  => false
         ];
     }
 
@@ -260,13 +261,11 @@ class DailyReport extends Base\Core
             'authorized'     => $this->getAuthorizedPayments(),
             'refunds'        => $this->getRefunds(),
             'settlement'     => $this->getSettlement(),
-            'merchant'       => $merchant->toArray(),
+            'billing_label'  => $merchant->getBillingLabelElseName(),
             'account_number' => $merchant->getRedactedAccountNumber(),
+            'email'          => $merchant->getTransactionReportEmail(),
             'date'           => $this->date,
         ];
-
-        // toArray is not reliable
-        $data['merchant']['email'] = $merchant->getTransactionReportEmail();
 
         return $data;
     }
