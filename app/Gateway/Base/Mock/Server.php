@@ -19,6 +19,13 @@ class Server
     protected $app;
 
     /**
+     * Api Route instance
+     *
+     * @var RZP\Http\Route
+     */
+    protected $route;
+
+    /**
      * Namespace of the current gateway server
      * @var string
      */
@@ -29,6 +36,8 @@ class Server
         $this->request = Request::getFacadeRoot();
 
         $this->app     = App::getFacadeRoot();
+
+        $this->route = $this->app['api.route'];
     }
 
     protected function authorize($input)

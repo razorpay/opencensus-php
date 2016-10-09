@@ -594,18 +594,18 @@ final class Route
         'otp_verify'                 => 'cardsaving',
     );
 
-    protected static $router;
-
-    public static function setRouter($router)
+    public function __construct($app)
     {
-        self::$router = $router;
+        $this->app = $app;
+
+        $this->router = $app['router'];
+
+        $this->ba = $app['basicauth'];
     }
 
-    public static function getCurrentRouteName()
+    public function getCurrentRouteName()
     {
-        $router = self::$router;
-
-        return $router->currentRouteName();
+        return $this->router->currentRouteName();
     }
 
     public static function getSlaveRoutes()
@@ -613,7 +613,7 @@ final class Route
         return self::$slaveRoutes;
     }
 
-    public static function getUrl($routeName, array $parameters = array(), $key = '', $secret = '')
+    public function getUrl($routeName, array $parameters = array(), $key = '', $secret = '')
     {
         if (($secret === '') and
             ($key !== ''))
@@ -630,7 +630,7 @@ final class Route
         return $url;
     }
 
-    public static function getUrlWithPublicAuth($routeName, array $parameters = array(), $key = '')
+    public function getUrlWithPublicAuth($routeName, array $parameters = array(), $key = '')
     {
         if ($key === '')
         {
@@ -640,7 +640,7 @@ final class Route
         return self::getUrl($routeName, $parameters, $key);
     }
 
-    public static function getUrlWithPublicCallbackAuth(array $parameters = array(), $key = '')
+    public function getUrlWithPublicCallbackAuth(array $parameters = array(), $key = '')
     {
         if ($key === '')
         {
@@ -650,7 +650,23 @@ final class Route
         return self::getUrl('payment_callback_with_key_post', $parameters, $key);
     }
 
-    public static function getUrlWithAuth($relativeUrl, $key = '', $secret = '')
+    public function getPublicCallbackUrlWithHash($pid , $key = '')
+    {
+        if ($key === '')
+        {
+            $key = \BasicAuth::getPublicKey();
+        }
+
+        $secret = $this->app->config->get('app.key');
+
+        $hash = hash_hmac('sha1', $pid, $secret);
+
+        $parameters = ['id' => $pid, 'hash' => $hash];
+
+        return self::getUrl('payment_callback_with_key_post', $parameters, $key);
+    }
+
+    public function getUrlWithAuth($relativeUrl, $key = '', $secret = '')
     {
         return self::getSchemaHostAndAuth($key, $secret) . $relativeUrl;
     }
@@ -679,7 +695,7 @@ final class Route
         return $url;
     }
 
-    public static function getDoNotLogURLs()
+    public function getDoNotLogURLs()
     {
         $doNotLogUrls = array(
             'v1/payments/create/jsonp',
@@ -706,6 +722,17 @@ final class Route
         return in_array($route, $jsonpRoutes);
     }
 
+    public function addRouteGroups($groups)
+    {
+        foreach ($groups as $group)
+        {
+            foreach (self::$$group as $routeName)
+            {
+                self::addRoute($routeName);
+            }
+        }
+    }
+
     public static function addRoutes($type)
     {
         foreach (self::$$type as $routeName)
@@ -714,7 +741,7 @@ final class Route
         }
     }
 
-    protected static function addRoute($name)
+    protected function addRoute($name)
     {
         $info = self::$apiRoutes[$name];
 
@@ -722,48 +749,20 @@ final class Route
         $uri = $info[1];
         $action = $info[2];
 
-        $router = self::$router;
-
-        $router->$method($uri, array('as' => $name, 'uses' => $action));
+        $this->router->$method($uri, array('as' => $name, 'uses' => $action));
     }
 
-    public static function defineApiRoutes()
+    public function defineAllExtraRoutes()
     {
-        $router = self::$router;
-
-        $router->group(array('prefix' => 'v1'), function () use ($router)
-        {
-            //
-            // First define internal routes and then private and finally public
-            // If by mistake a route is defined twice in say internal and public,
-            // then it will go into internal app auth and will not expose the route.
-            // This must not happen though.
-            //
-            self::addRoutes('internal');
-            self::addRoutes('private');
-            self::addRoutes('public');
-            self::addRoutes('publicCallback');
-            self::addRoutes('proxy');
-            self::addRoutes('direct');
-        });
-
-    }
-
-    public static function defineAllExtraRoutes()
-    {
-        $router = self::$router;
-
-        $router->any('{all}', function ($uri)
+        $this->router->any('{all}', function ($uri)
         {
             return ApiResponse::routeNotFound();
         })->where('all', '.*');
     }
 
-    public static function defineRootApiRoute()
+    public function defineRootApiRoute()
     {
-        $router = self::$router;
-
-        $router->get('/', function ()
+        $this->router->get('/', function ()
         {
             $response['message'] = "Welcome to Razorpay API.";
 
@@ -771,12 +770,7 @@ final class Route
         });
     }
 
-    public static function getApiRoutes()
-    {
-        return self::$apiRoutes;
-    }
-
-    public static function getApiRouteInCategory($category)
+    public function getApiRouteInCategory($category)
     {
         return array_intersect_key(self::$apiRoutes, array_flip(self::$$category));
     }
@@ -786,8 +780,10 @@ final class Route
         return self::$apiRoutes[$name];
     }
 
-    public static function getApiRouteUrl($name)
+    public function isCurrentRouteInFeatureMap()
     {
-        return self::getApiRoute($name)[1];
+        $route = $this->getCurrentRouteName();
+
+        return (array_key_exists($route, self::$routeNameToFeatureMap));
     }
 }

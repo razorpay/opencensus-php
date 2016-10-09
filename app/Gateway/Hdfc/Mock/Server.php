@@ -299,7 +299,7 @@ class Server extends Base\Mock\Server
     {
         $res['result'] = 'ENROLLED';
 
-        $res['url'] = Route::getUrl('mock_hdfc_3dsecure');
+        $res['url'] = $this->route->getUrl('mock_hdfc_3dsecure');
 
         return $res;
     }

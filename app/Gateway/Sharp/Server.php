@@ -76,7 +76,7 @@ class Server
         }
 
         $data['action'] = 'authorize';
-        $data['url'] = \RZP\Http\Route::getUrlWithPublicAuth('mock_sharp_payment_submit');
+        $data['url'] = $this->route->getUrlWithPublicAuth('mock_sharp_payment_submit');
         $data['content'] = array(
             'callback_url' => $input['callback_url'],
         );
