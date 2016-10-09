@@ -53,9 +53,9 @@ class Processor extends Base\Core
 
                 $batch->setProcessedAt($processedAt);
 
-                $this->repo->saveOrFail($batch);
-
                 $shouldSendMail = $this->shouldSendMail($batch);
+
+                $this->repo->saveOrFail($batch);
 
                 $this->trace->info(
                     TraceCode::BATCH_PROCESS_FILE,
