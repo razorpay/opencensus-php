@@ -112,7 +112,20 @@ class Core extends Base\Core
 
         foreach ($batches as $batch)
         {
-            $this->processor->process($batch);
+            try
+            {
+                $this->processor->process($batch);
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->warning(
+                    TraceCode::BATCH_PROCESSING_ERROR,
+                    [
+                        'batch'         => $batch->toArrayPublic(),
+
+                    ]);
+
+            }
         }
 
         return $batches;
