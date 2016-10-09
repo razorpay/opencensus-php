@@ -6,6 +6,7 @@ use Redis;
 use Predis\PredisException;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 
 /**
  * The below lock implementation is based on single-instance redis redlock algorithm
