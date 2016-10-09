@@ -65,9 +65,9 @@ class Core extends Base\Core
 
     public function retryBatch($batch)
     {
-        if ($batch->getStatus() === Status::PROCESSED)
+        if ($batch->getStatus() === Status::PROCESSED and $batch->getFailureCount() === 0)
         {
-            $this->trace->error(TraceCode::BATCH_RETRY_FAILURE, $batch->toArrayPublic());
+            $this->trace->info(TraceCode::BATCH_RETRY_FAILURE, $batch->toArrayPublic());
 
             throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_BATCH_FILE_ALREADY_PROCESSED);

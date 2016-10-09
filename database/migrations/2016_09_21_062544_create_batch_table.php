@@ -94,10 +94,7 @@ class CreateBatchTable extends Migration
         Schema::table(Table::REFUND, function($table)
         {
             $table->dropForeign(Table::REFUND .'_' .Refund\Entity::BATCH_ID .'_foreign');
-        });
 
-        Schema::table(Table::REFUND, function ($table)
-        {
             $table->dropColumn(Refund\Entity::BATCH_ID);
         });
 
