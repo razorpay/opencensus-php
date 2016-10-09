@@ -259,6 +259,7 @@ final class Route
         'scorecard'                               => ['get',      'scorecard',                                'AdminController@getScorecard'                                      ],
         'plan_create'                             => ['post',     'plans',                                    'PlanController@postCreatePlan'                                     ],
         'subscription_create'                     => ['post',     'plans/{plan_id}/subscriptions',            'PlanController@postCreateSubscription'                             ],
+        'subscriptions_charge'                    => ['post',     'subscriptions/charge',                     'PlanController@postChargeSubscriptions'                            ],
     );
 
     public static $public = array(
@@ -468,6 +469,7 @@ final class Route
         'gateway_fetch_absence',
         'order_refund_multiple_authorized',
         'scorecard',
+        'subscriptions_charge',
     );
 
     public static $proxy = array(
@@ -553,6 +555,7 @@ final class Route
             'es_migrate_entity',
             'setl_post_details_old',
             'order_refund_multiple_authorized',
+            'subscriptions_charge',
         ),
 
         'mailgun' => array(

@@ -36,4 +36,11 @@ class PlanController extends Controller
 
         return ApiResponse::json($subscription);
     }
+
+    public function postChargeSubscriptions()
+    {
+        $summary = $this->subscriptionService->chargeSubscriptions();
+
+        return ApiResponse::json($summary);
+    }
 }

@@ -39,13 +39,21 @@ class CreateSubscription extends Migration
 
             $table->text(Entity::NOTES);
 
+            $table->integer(Entity::START_AT);
+
+            $table->integer(Entity::END_AT);
+
+            $table->integer(Entity::CHARGE_AT);
+
             $table->integer(Entity::ENDED_AT)
                   ->nullable();
 
             $table->integer(Entity::CREATED_AT);
             $table->integer(Entity::UPDATED_AT);
 
-
+            $table->index(Entity::START_AT);
+            $table->index(Entity::END_AT);
+            $table->index(Entity::CHARGE_AT);
             $table->index(Entity::ENDED_AT);
             $table->index(Entity::CREATED_AT);
             $table->index(Entity::UPDATED_AT);

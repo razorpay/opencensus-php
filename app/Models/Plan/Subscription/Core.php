@@ -21,6 +21,11 @@ class Core extends Base\Core
         return $subscription;
     }
 
+    public function charge(Entity $subscription)
+    {
+        // TODO: Add charging
+    }
+
     protected function associateEntitiesToSubscription(Entity $subscription, Plan\Entity $plan, Token\Entity $token)
     {
         $customer = $token->customer;

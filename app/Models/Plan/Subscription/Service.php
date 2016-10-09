@@ -35,4 +35,14 @@ class Service extends Base\Service
 
         return $subscription->toArrayPublic();
     }
+
+    public function chargeSubscriptions()
+    {
+        $subscriptionsToCharge = $this->repo->subscription->getSubscriptionsToCharge();
+
+        foreach ($subscriptionsToCharge as $subscription)
+        {
+            $this->core->charge($subscription);
+        }
+    }
 }

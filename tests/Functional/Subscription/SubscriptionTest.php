@@ -43,7 +43,7 @@ class SubscriptionTest extends TestCase
 
         $tokenId = $recurringPayment['token_id'];
 
-        $requestContent = $this->testData[__FUNCTION__];
+        $requestContent = $this->getCreateSubscriptionRequestContent(__FUNCTION__, $plan->getPublicId(), $tokenId);
 
         $requestContent['request']['url'] = '/plans/' . $plan->getPublicId() . '/subscriptions/';
         $requestContent['request']['content']['token_id'] = $tokenId;
@@ -57,8 +57,25 @@ class SubscriptionTest extends TestCase
         $this->assertEquals($subscription['plan_id'], $plan->getPublicId());
         $this->assertEquals($subscription['customer_id'], 'cust_100000customer');
         $this->assertEquals($subscription['token_id'], $tokenId);
+        $this->assertEquals($subscription['start_at'], $subscription['charge_at']);
 
         $tokenEntity = $this->getLastEntity('token', true);
         $this->assertEquals(true, $tokenEntity['recurring']);
+    }
+
+    protected function getCreateSubscriptionRequestContent($function, $planId, $tokenId)
+    {
+        $requestContent = $this->testData[$function];
+
+        $requestContent['request']['url'] = '/plans/' . $planId . '/subscriptions/';
+        $requestContent['request']['content']['token_id'] = $tokenId;
+
+        $startAt = time() + 100;
+        $endAt = $startAt + 86000;
+
+        $requestContent['request']['content']['start_at'] = $startAt;
+        $requestContent['request']['content']['end_at'] = $endAt;
+
+        return $requestContent;
     }
 }

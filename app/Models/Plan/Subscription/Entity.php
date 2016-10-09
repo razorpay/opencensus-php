@@ -12,14 +12,17 @@ class Entity extends Base\PublicEntity
 {
     use NotesTrait;
 
-    const PLAN_ID               = 'plan_id';
-    const CUSTOMER_ID           = 'customer_id';
-    const CURRENT_PERIOD_START  = 'current_period_start';
-    const CURRENT_PERIOD_END    = 'current_period_end';
-    const ENDED_AT              = 'ended_at';
-    const QUANTITY              = 'quantity';
-    const TOKEN_ID              = 'token_id';
-    const NOTES                 = 'notes';
+    const PLAN_ID           = 'plan_id';
+    const CUSTOMER_ID       = 'customer_id';
+    const CURRENT_START     = 'current_start';
+    const CURRENT_END       = 'current_end';
+    const ENDED_AT          = 'ended_at';
+    const QUANTITY          = 'quantity';
+    const TOKEN_ID          = 'token_id';
+    const NOTES             = 'notes';
+    const CHARGE_AT         = 'charge_at';
+    const START_AT          = 'start_at';
+    const END_AT            = 'end_at';
 
     protected static $sign = 'sub';
 
@@ -35,27 +38,39 @@ class Entity extends Base\PublicEntity
         self::ENDED_AT  => null,
     ];
 
+    protected static $generators = [
+        self::CHARGE_AT,
+    ];
+
     protected $fillable = [
         self::QUANTITY,
         self::NOTES,
+        self::START_AT,
+        self::END_AT,
     ];
 
     protected $public = [
         self::PLAN_ID,
         self::CUSTOMER_ID,
-        self::CURRENT_PERIOD_START,
-        self::CURRENT_PERIOD_END,
+        self::CURRENT_START,
+        self::CURRENT_END,
         self::ENDED_AT,
         self::QUANTITY,
         self::TOKEN_ID,
         self::NOTES,
+        self::CHARGE_AT,
+        self::START_AT,
+        self::END_AT,
     ];
 
     protected $casts = [
-        self::ENDED_AT              => 'int',
-        self::QUANTITY              => 'int',
-        self::CURRENT_PERIOD_START  => 'int',
-        self::CURRENT_PERIOD_END    => 'int',
+        self::START_AT          => 'int',
+        self::END_AT            => 'int',
+        self::CHARGE_AT         => 'int',
+        self::ENDED_AT          => 'int',
+        self::QUANTITY          => 'int',
+        self::CURRENT_START     => 'int',
+        self::CURRENT_END       => 'int',
     ];
 
     protected $publicSetters = [
@@ -124,4 +139,15 @@ class Entity extends Base\PublicEntity
     }
 
     // --------------------- END PUBLIC SETTERS ---------------------
+
+    // --------------------- GENERATORS ---------------------
+
+    public function generateChargeAt($input)
+    {
+        $startAt = $input[Entity::START_AT];
+
+        $this->setAttribute(self::CHARGE_AT, $startAt);
+    }
+
+    // --------------------- END GENERATORS ---------------------
 }
