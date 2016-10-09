@@ -279,6 +279,8 @@ class TraceCode
     const BATCH_GET                                 = 'BATCH_GET';
     const BATCH_FILE_DELETE                         = 'BATCH_FILE_DELETE';
 
+    const MUTEX_LOCK_ALREADY_RELEASED               = 'MUTEX_LOCK_ALREADY_RELEASED';
+
     /**
      * Trace code for critical info
      */

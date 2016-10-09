@@ -32,44 +32,49 @@ class Processor extends Base\Core
 
     public function process($batch)
     {
+        $filePath = $this->getBatchFileFromAws($batch);
+
+        $entries = $this->parseExcelSheets($filePath);
+
         // Set the ttl to 1000 sec.
-        $this->mutex->acquireAndRelease($batch->getId(), function() use ($batch)
-        {
-            $filePath = $this->getBatchFileFromAws($batch);
-
-            $entries = $this->parseExcelSheets($filePath);
-
-            $shouldSendMail = $this->processBatch($batch, $entries);
-
-            $fullpath = $this->createProcessedExcel($batch, $entries);
-
-            $downloadUrl = $this->saveBatchFileToAws($batch, $fullpath);
-
-            $batch->setDownloadFileUrl($downloadUrl);
-
-            $processedAt = Carbon::now('Asia/Kolkata')->timestamp;
-
-            $batch->setProcessedAt($processedAt);
-
-            $this->repo->saveOrFail($batch);
-
-            $this->trace->info(
-                TraceCode::BATCH_PROCESS_FILE,
-                [
-                    'message'            => 'Processed Batch Refund',
-                    'batch'              => $batch->toArrayPublic(),
-                    'Sending Email'      => $shouldSendMail
-                ]);
-
-            if ($shouldSendMail)
+        $this->mutex->acquireAndRelease(
+            $batch->getId(),
+            function() use ($batch, $entries)
             {
-                $this->sendMail($fullpath, $batch->merchant);
-            }
+                $this->processBatch($batch, $entries);
 
-            $this->deleteFile($filePath);
+                $fullpath = $this->createProcessedExcel($batch, $entries);
 
-            $this->deleteFile($fullpath);
-        }, 1000);
+                $downloadUrl = $this->saveBatchFileToAws($batch, $fullpath);
+
+                $batch->setDownloadFileUrl($downloadUrl);
+
+                $processedAt = Carbon::now('Asia/Kolkata')->timestamp;
+
+                $batch->setProcessedAt($processedAt);
+
+                $this->repo->saveOrFail($batch);
+
+                $shouldSendMail = $this->shouldSendMail($batch);
+
+                $this->trace->info(
+                    TraceCode::BATCH_PROCESS_FILE,
+                    [
+                        'message'            => 'Processed Batch Refund',
+                        'batch'              => $batch->toArrayPublic(),
+                        'Sending Email'      => $shouldSendMail
+                    ]);
+
+                if ($shouldSendMail)
+                {
+                    $this->sendMail($fullpath, $batch->merchant);
+                }
+
+                $this->deleteFile($fullpath);
+            },
+            1000);
+
+        $this->deleteFile($filePath);
     }
 
     protected function processBatch($batch, & $entries)
@@ -102,7 +107,10 @@ class Processor extends Base\Core
         $batch->setSuccessCount($totalSuccessCount);
         $batch->setFailureCount($totalFailureCount);
         $batch->incrementAttempts();
+    }
 
+    protected function shouldSendMail($batch)
+    {
         $shouldSendMail = false;
 
         if ($batch->getFailureCount() > 0)
