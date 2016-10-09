@@ -148,10 +148,22 @@ class Processor extends Base\Core
 
             Payment\Entity::verifyIdAndStripSign($paymentId);
 
-            $payment = $this->repo->payment->findByIdAndMerchantId($paymentId, $batch->getMerchantId());
+            try
+            {
+                $payment = $this->repo->payment->findByIdAndMerchantId($paymentId, $batch->getMerchantId());
 
-            $this->processRefundRequest($batch, $payment, $entry);
+                $this->processRefundRequest($batch, $payment, $entry);
+            }
+            catch(\Exception $e)
+            {
+                $this->trace->traceException($e, Trace::WARNING, TraceCode::BATCH_PROCESSING_ERROR);
 
+                $error = $e->getError();
+
+                $entry[Header::ERROR_CODE] = $error->getPublicErrorCode();
+                $entry[Header::ERROR_DESCRIPTION] = $error->getDescription();
+                $entry[Header::STATUS] = Status::FAILURE;
+            }
         }
     }
 
