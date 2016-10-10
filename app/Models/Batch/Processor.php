@@ -71,10 +71,10 @@ class Processor extends Base\Core
                     [
                         'message'            => 'Processed Batch Refund',
                         'batch'              => $batch->toArrayPublic(),
-                        'Sending Email'      => $shouldSendMail
+                        'sending_email'      => $shouldSendMail
                     ]);
 
-                if ($shouldSendMail)
+                if ($shouldSendMail === true)
                 {
                     $this->sendMail($fullPath, $batch->merchant);
                 }

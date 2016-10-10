@@ -28,8 +28,6 @@ class Core extends Base\Core
         parent::__construct();
 
         $this->processor = new Processor;
-
-        $this->mutex = $this->app['api.mutex'];
     }
 
     public function create($input)
@@ -44,7 +42,7 @@ class Core extends Base\Core
 
         $batch->getValidator()->validateEntries($entries, $batch->getType());
 
-        list($totalCount, $amount) = $this->getFileData($batch, $entries);
+        list($totalCount, $amount) = $this->getFileData($entries);
 
         $batch->setAmount($amount);
 
@@ -118,14 +116,12 @@ class Core extends Base\Core
                         'batch'         => $batch->toArrayPublic(),
 
                     ]);
-
             }
         }
-
         return $batches;
     }
 
-    protected function getFileData($batch, $entries)
+    protected function getFileData($entries)
     {
         $totalAmount = 0;
 
