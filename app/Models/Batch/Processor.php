@@ -50,11 +50,11 @@ class Processor extends Base\Core
             {
                 $this->processBatch($batch, $entries);
 
-                $fullpath = $this->createProcessedExcel($batch, $entries);
+                $fullPath = $this->createProcessedExcel($batch, $entries);
 
                 $this->updateBatchStatus($batch);
 
-                $downloadUrl = $this->saveBatchFileToAws($batch, $fullpath);
+                $downloadUrl = $this->saveBatchFileToAws($batch, $fullPath);
 
                 $batch->setDownloadFileUrl($downloadUrl);
 
@@ -76,10 +76,10 @@ class Processor extends Base\Core
 
                 if ($shouldSendMail)
                 {
-                    $this->sendMail($fullpath, $batch->merchant);
+                    $this->sendMail($fullPath, $batch->merchant);
                 }
 
-                $this->deleteFile($fullpath);
+                $this->deleteFile($fullPath);
             },
             1000);
 
@@ -365,7 +365,7 @@ class Processor extends Base\Core
             $this->trace->info(TraceCode::BATCH_FILE_DELETE,
                 [
                     'success' => $success,
-                    'filepath' => $filePath
+                    'file_path' => $filePath
                 ]);
         }
     }
