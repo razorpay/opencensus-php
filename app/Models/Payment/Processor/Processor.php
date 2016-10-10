@@ -384,7 +384,12 @@ class Processor
         }
 
         // We don't want to reach this in case of captured|refunded payments
-        assertTrue($payment->isAuthorized() === true);
+        // However, the payment would be captured here IFF it was auto-captured
+        // So we make an exception for that.
+        $returnResponse = (($payment->isAuthorized()) or
+                           ($payment->getAutoCaptured() and $payment->isCaptured()));
+
+        assertTrue($returnResponse);
 
         return $this->processAuthorizeResponse($payment);
     }

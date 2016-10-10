@@ -26,7 +26,7 @@
                       <table class="eight columns" style="border-collapse: collapse; border-spacing: 0; padding: 0; text-align: left; vertical-align: top; margin: 0 auto; width: 380px;"><tr style="padding: 0; text-align: left; vertical-align: top;"><td class="center" style="-moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0px 0px 10px; text-align: center; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px;">
                             <center style="min-width: 380px; width: 100%;">
                             <h2 class="center" style="color: white; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: bold; line-height: 1.3; margin: 0; padding: 0; text-align: center; word-break: normal; font-size: 20px;">
-                              <a href="" style="color: white; text-decoration: none;">{{{$merchant['billing_label']}}}</a>
+                              <a href="" style="color: white; text-decoration: none;">{{{$billing_label}}}</a>
                             </h2>
                             </center>
                           </td>
@@ -194,6 +194,5 @@
 @endif
 
           @include('emails.partials.footer', ['message' => $message])
-        
-      
+
     </table></table></td></tr></table></body></html>

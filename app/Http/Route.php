@@ -179,6 +179,7 @@ final class Route
         'mock_atom_rzp_payment'                   => ['post',     'gateway/mockanb/payment',                  'MockGatewayController@postAtomRzpPayment'                          ],
         'mock_atom_rzp_payment_submit'            => ['post',     'gateway/mockanb/payment/submit',           'MockGatewayController@postAtomRzpPaymentSubmit'                    ],
         'mock_axis_migs_payment'                  => ['post',     'gateway/mockaxismigs/payment',             'MockGatewayController@postAxisPayment'                             ],
+        'mock_first_data_payment'                 => ['post',     'gateway/mockfirstdata/payment',            'MockGatewayController@postFirstDataPayment'                        ],
         'mock_axis_genius_payment'                => ['post',     'gateway/mockaxisgenius/payment',           'MockGatewayController@postAxisGeniusPayment'                       ],
         'mock_kotak_payment'                      => ['get',      'gateway/mockkotak/payment',                'MockGatewayController@getKotakPayment'                             ],
         'mock_paytm_payment'                      => ['post',     'gateway/mockpaytm/payment',                'MockGatewayController@postPaytmPayment'                            ],
@@ -253,6 +254,10 @@ final class Route
         'otp_verify'                              => ['post',     'otp/verify',                               'CustomerController@verifyOtp'                                      ],
         'sms_callback'                            => ['post',     'sms/{id}/callback',                        'CustomerController@updateSmsStatus'                                ],
         'es_migrate_entity'                       => ['post',     'es/migrate/{entityName}',                  'EsController@migrateEntity'                                        ],
+        'gateway_create_absence'                  => ['post',     'gateway/absence',                          'GatewayController@postCreateGatewayAbsence'                        ],
+        'gateway_update_absence'                  => ['put',      'gateway/absence/{id}',                     'GatewayController@putUpdateGatewayAbsence'                         ],
+        'gateway_delete_absence'                  => ['delete',   'gateway/absence/{id}',                     'GatewayController@deleteGatewayAbsence'                            ],
+        'gateway_fetch_absence'                   => ['get',      'gateway/absence',                          'GatewayController@getAbsentGateways'                               ],
         'scorecard'                               => ['get',      'scorecard',                                'AdminController@getScorecard'                                      ],
     );
 
@@ -280,6 +285,7 @@ final class Route
         'mock_atom_rzp_payment_submit',
         'mock_amex_payment',
         'mock_axis_migs_payment',
+        'mock_first_data_payment',
         'mock_axis_genius_payment',
         'mock_kotak_payment',
         'mock_paytm_payment',
@@ -454,6 +460,10 @@ final class Route
         'credits_create',
         'credits_edit',
         'credits_delete',
+        'gateway_create_absence',
+        'gateway_update_absence',
+        'gateway_delete_absence',
+        'gateway_fetch_absence',
         'order_refund_multiple_authorized',
         'scorecard',
         'migrate_transactions'
