@@ -134,7 +134,7 @@ class Entity extends Base\PublicEntity
 
     public function isCardEnabled()
     {
-        return ($this->isDebitCardEnabled() || $this->getCreditCardAttribute());
+        return ($this->isDebitCardEnabled() || $this->isCreditCardEnabled());
     }
 
     public function isDebitCardEnabled()
