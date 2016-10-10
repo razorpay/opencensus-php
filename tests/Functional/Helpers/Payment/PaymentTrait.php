@@ -207,6 +207,7 @@ trait PaymentTrait
         $payment = array_merge($defaultPayment, $payment);
 
         $content = $this->doAuthPayment($payment);
+
         $id = $content['razorpay_payment_id'];
 
         return array_merge($payment, ['id' => $id]);
