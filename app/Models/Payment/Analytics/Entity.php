@@ -25,7 +25,6 @@ class Entity extends Base\PublicEntity
     const IP                            = 'ip';
     const REFERER                       = 'referer';
     const USER_AGENT                    = 'user_agent';
-    const TERMINAL_ID                   = 'terminal_id';
     const CREATED_AT                    = 'created_at';
     const UPDATED_AT                    = 'updated_at';
 
@@ -57,14 +56,12 @@ class Entity extends Base\PublicEntity
         self::INTEGRATION_VERSION,
         self::REFERER,
         self::USER_AGENT,
-        self::TERMINAL_ID,
     );
 
     protected $public = array(
         self::ID,
         self::PAYMENT_ID,
         self::CHECKOUT_ID,
-        self::TERMINAL_ID,
         self::ATTEMPTS,
         self::LIBRARY,
         self::LIBRARY_VERSION,
@@ -91,6 +88,13 @@ class Entity extends Base\PublicEntity
         self::ATTEMPTS               => 'int',
     );
 
+    // ----------------------- Relations -------------------------------------------
+
+    public function payment()
+    {
+        return $this->hasOne('RZP\Models\Payment\Entity');
+    }
+
     // ----------------------- Getters ---------------------------------------------
 
     public function getPaymentId()
@@ -101,11 +105,6 @@ class Entity extends Base\PublicEntity
     public function getCheckoutId()
     {
         return $this->getAttribute(self::CHECKOUT_ID);
-    }
-
-    public function getTerminalId()
-    {
-        return $this->getAttribute(self::TERMINAL_ID);
     }
 
     public function getAttempts()
@@ -216,42 +215,42 @@ class Entity extends Base\PublicEntity
     {
         $value = $this->attributes[self::LIBRARY];
 
-        return Metadata::getStringForLibraryValue($value);
+        return Metadata::getStringForValue($value, Metadata::LIBRARY_VALUES);
     }
 
     protected function getPlatformAttribute()
     {
         $value = $this->attributes[self::PLATFORM];
 
-        return Metadata::getStringForPlatformValue($value);
+        return Metadata::getStringForValue($value, Metadata::PLATFORM_VALUES);
     }
 
     protected function getBrowserAttribute()
     {
         $value = $this->attributes[self::BROWSER];
 
-        return Metadata::getStringForBrowserValue($value);
+        return Metadata::getStringForValue($value, Metadata::BROWSER_VALUES);
     }
 
     protected function getOsAttribute()
     {
         $value = $this->attributes[self::OS];
 
-        return Metadata::getStringForOsValue($value);
+        return Metadata::getStringForValue($value, Metadata::OS_VALUES);
     }
 
     protected function getDeviceAttribute()
     {
         $value = $this->attributes[self::DEVICE];
 
-        return Metadata::getStringForDeviceValue($value);
+        return Metadata::getStringForValue($value, Metadata::DEVICE_VALUES);
     }
 
     protected function getIntegrationAttribute()
     {
         $value = $this->attributes[self::INTEGRATION];
 
-        return Metadata::getStringForIntegrationValue($value);
+        return Metadata::getStringForValue($value, Metadata::INTEGRATION_VALUES);
     }
 
     protected function setPlatformAttribute($platform)

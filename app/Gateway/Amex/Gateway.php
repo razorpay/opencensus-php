@@ -6,14 +6,9 @@ use RZP\Constants\Mode;
 use RZP\Error;
 use RZP\Exception;
 use RZP\Gateway\Base;
-use RZP\Gateway\Base\Action;
-use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Amex;
 use RZP\Gateway\AxisMigs;
 use RZP\Models\Merchant;
-use Requests;
-use RZP\Trace\Trace;
-use RZP\Trace\TraceCode;
 
 class Gateway extends AxisMigs\Gateway
 {
@@ -51,8 +46,7 @@ class Gateway extends AxisMigs\Gateway
         $merchant = $input['merchant'];
 
         // scoping these extra request params to a specific merchant
-        // to test on production
-        // Harshit's Merchant ID
+        // to test on production Harshit's Merchant ID
         if ($merchant['id'] === Merchant\Account::TEST_ACCOUNT_2)
         {
             $ba = $merchant->bankAccount;
@@ -66,10 +60,6 @@ class Gateway extends AxisMigs\Gateway
             if (isset($merchant['billing_label']))
             {
                 $registeredName = substr($merchant['billing_label'], 0, 100);
-            }
-            else
-            {
-                $registeredName = $tradingName;
             }
 
             $content['vpc_SubMerchant_RegisteredName'] =  $registeredName;

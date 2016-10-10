@@ -16,6 +16,7 @@ class Table
     const PRICING               = 'pricing';
     const PAYMENT               = 'payments';
     const WEBHOOK               = 'webhooks';
+    const ADDRESS               = 'addresses';
     const MERCHANT              = 'merchants';
     const TERMINAL              = 'terminals';
     const CUSTOMER              = 'customers';
@@ -34,6 +35,7 @@ class Table
     const HDFC                  = 'hdfc';
     const AXIS                  = 'axis';
     const CYBERSOURCE           = 'cybersource';
+    const FIRST_DATA            = 'first_data';
     const PAYTM                 = 'paytm';
     const BILLDESK              = 'billdesk';
     const MOBIKWIK              = 'mobikwik';
@@ -49,7 +51,7 @@ class Table
 
     // Terminal Performance
     const TERMINAL_ACTION       = 'terminal_action_logs';
-    const GATEWAYSTATUS_ABSENCE = 'gatewaystatus_absence';
+    const GATEWAY_STATUS_ABSENCE = 'gateway_status_absence';
 
     // Payment Analytics
     const PAYMENT_ANALYTICS     = 'payment_analytics';

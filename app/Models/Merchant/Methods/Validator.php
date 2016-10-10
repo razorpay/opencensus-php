@@ -26,6 +26,7 @@ class Validator extends Base\Validator
         Entity::AIRTELMONEY => 'sometimes|boolean',
         Entity::OLAMONEY    => 'sometimes|boolean',
         Entity::MOBIKWIK    => 'sometimes|boolean',
+        Entity::FREECHARGE  => 'sometimes|boolean',
         Entity::EMI         => 'sometimes|boolean',
         Entity::CREDIT_CARD => 'sometimes|boolean',
         Entity::DEBIT_CARD  => 'sometimes|boolean',

@@ -45,10 +45,10 @@ class CreateCards extends Migration
             $table->string(Card::ISSUER, 100)
                   ->nullable();
 
-            $table->boolean(Card::INTERNATIONAL)
+            $table->tinyInteger(Card::INTERNATIONAL)
                   ->nullable();
 
-            $table->boolean(Card::EMI)
+            $table->tinyInteger(Card::EMI)
                   ->nullable();
 
             $table->string(Card::VAULT, 20)

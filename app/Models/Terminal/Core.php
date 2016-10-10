@@ -50,6 +50,23 @@ class Core extends Base\Core
         return $terminal;
     }
 
+    public function toggle($terminal, $toggle)
+    {
+        $isEnabled = $terminal->isEnabled();
+
+        $terminalStatusTrace = ($toggle) ? TraceCode::TERMINAL_ENABLE : TraceCode::TERMINAL_DISABLE;
+
+        $this->trace->info(
+            $terminalStatusTrace,
+            ['terminal_id' => $terminal->getId(), 'isEnabled' => $isEnabled]);
+
+        $terminal->setEnabled($toggle);
+
+        $this->repo->saveOrFail($terminal);
+
+        return $terminal;
+    }
+
     public function validateExistingTerminal($terminal)
     {
         $params = array(

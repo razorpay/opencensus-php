@@ -2,6 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
+use RZP\Base\RuntimeManager;
 use RZP\Models\Base\EsDao;
 use RZP\Trace\TraceCode;
 use Request;
@@ -23,12 +24,11 @@ class EsController extends Controller
         $this->esDao = new EsDao();
     }
 
-
     public function migrateEntity($entityName)
     {
         // Currently, the entity migration is supported for only payments and refunds.
-        assert(defined("RZP\Constants\\Table::". strtoupper($entityName)));
-        assert(in_array($entityName, ['payment', 'refund']));
+        assertTrue(defined("RZP\\Constants\\Table::". strtoupper($entityName)));
+        assertTrue(in_array($entityName, ['payment', 'refund']));
 
         $this->entityName = $entityName;
 
@@ -47,7 +47,6 @@ class EsController extends Controller
         // Will change this when we move on to more things.
         $this->migrateNotes();
     }
-
 
     protected function migrateNotes()
     {
@@ -79,7 +78,6 @@ class EsController extends Controller
         }
     }
 
-
     protected function fetchNotesFromMySql()
     {
         // Gets the repository of the entity which is being migrated.
@@ -90,7 +88,6 @@ class EsController extends Controller
         return $entities;
     }
 
-
     protected function getEntityRepo()
     {
         $entityRepoClass = 'RZP' . '\\' . 'Models' . '\\' . ucfirst($this->entityName) . '\\' . 'Repository';
@@ -99,11 +96,10 @@ class EsController extends Controller
         return $entityRepo;
     }
 
-
     protected function storeNotesInEs($entities)
     {
         // The ES entity type is the same as the MySQL table name.
-        $entityType = constant("RZP\Constants\\Table::" . strtoupper($this->entityName));
+        $entityType = constant("RZP\\Constants\\Table::" . strtoupper($this->entityName));
 
         // Gets all the ids of all the entities which need to be migrated.
         $entityIds = $entities->getIds();
@@ -160,7 +156,6 @@ class EsController extends Controller
         }
     }
 
-
     protected function getEntityIdsAbsentInEs($entityType, $entityIds)
     {
         // Runs an mget (bulk GET request) to get the documents by Ids.
@@ -181,7 +176,7 @@ class EsController extends Controller
 
     protected function increaseAllowedSystemLimits()
     {
-        ini_set('memory_limit', '1024M');
-        set_time_limit(1800);
+        RuntimeManager::setMemoryLimit('1024M');
+        RuntimeManager::setTimeLimit(1800);
     }
 }

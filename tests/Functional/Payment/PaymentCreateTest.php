@@ -25,6 +25,19 @@ class PaymentCreateTest extends TestCase
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
     }
 
+    public function testCreatePaymentWithInvalidMethod()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['method'] = 'invalid';
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testCreatePaymentCheckoutCallbackNo3dSecure()
     {
         $this->payment['card']['number'] = '555555555555558';
@@ -150,6 +163,9 @@ class PaymentCreateTest extends TestCase
 
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['cvv'] = '1';
+
+        $this->fixtures->merchant->editFeatures('s2s');
+
         $content = $this->doS2SPrivateAuthPayment($payment);
 
         $error = $content['error'];

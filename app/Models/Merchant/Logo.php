@@ -45,8 +45,8 @@ class Logo
             'extension'  => $extension,
             'mime_type'  => $mimeType,
             'size'       => $logoImage->getClientSize(),
-            'width'      => getimagesize($logoImage)[0],
-            'height'     => getimagesize($logoImage)[1],
+            'width'      => \getimagesize($logoImage)[0],
+            'height'     => \getimagesize($logoImage)[1],
             'file_path'  => $destinationPath . '/' . $fileName,
         ];
 
@@ -104,27 +104,27 @@ class Logo
             $filePath = $this->getLogoFilePath($baseFilePath, $size);
 
             // Creates the new image
-            $tmp = imagecreatetruecolor($newWidth, $newHeight);
+            $tmp = \imagecreatetruecolor($newWidth, $newHeight);
 
             // Keeps the background transparent
-            imagealphablending($tmp, false );
-            imagesavealpha($tmp, true );
+            \imagealphablending($tmp, false );
+            \imagesavealpha($tmp, true );
 
-            imagecopyresampled($tmp, $src, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+            \imagecopyresampled($tmp, $src, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
 
             if (($extension === self::JPG_EXTENSION) or ($extension === self::JPEG_EXTENSION))
             {
-                imagejpeg($tmp, $filePath, 100);
+                \imagejpeg($tmp, $filePath, 100);
             }
             else
             {
-                imagepng($tmp, $filePath);
+                \imagepng($tmp, $filePath);
             }
         }
 
         // Delete the temporary files created.
-        imagedestroy($src);
-        imagedestroy($tmp);
+        \imagedestroy($src);
+        \imagedestroy($tmp);
     }
 
     protected function createImageObject($imageDetails)
@@ -136,11 +136,11 @@ class Logo
 
         if (($extension === self::JPG_EXTENSION) or ($extension === self::JPEG_EXTENSION))
         {
-            return imagecreatefromjpeg($baseFilePath);
+            return \imagecreatefromjpeg($baseFilePath);
         }
         else
         {
-            return imagecreatefrompng($baseFilePath);
+            return \imagecreatefrompng($baseFilePath);
         }
     }
 

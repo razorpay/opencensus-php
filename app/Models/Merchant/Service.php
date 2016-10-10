@@ -6,6 +6,7 @@ use RZP\Constants\Mode;
 use Carbon\Carbon;
 use Mail;
 
+use RZP\Base\RuntimeManager;
 use RZP\Models\Base;
 use RZP\Models\BankAccount;
 use RZP\Models\Merchant;
@@ -20,6 +21,7 @@ use RZP\Models\Settlement\Holidays;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
@@ -513,11 +515,6 @@ class Service extends Base\Service
     {
         $file = (new BankAccount\BeneficiaryFile3)->generate();
 
-        //adding sleep to avoid overwriting of second format
-        sleep(10);
-
-        (new BankAccount\BeneficiaryFile2)->generate();
-
         return $file;
     }
 
@@ -563,11 +560,6 @@ class Service extends Base\Service
             (new BankAccount\BeneficiaryFile3)->generateBetweenTimestamps(
                                                         $from->timestamp,
                                                         $today->timestamp);
-
-            //adding sleep to avoid overwriting of second format
-            sleep(10);
-
-            (new BankAccount\BeneficiaryFile2)->generate();
         }
 
         $message = "Merchant Beneficiary file generated. Beneficiary added since".
@@ -589,10 +581,10 @@ class Service extends Base\Service
      * each containing the number of merchants in each category
      * @return array debug response
      */
-    public function sendDailyReportForAllMerchants()
+    public function sendDailyReportForAllMerchants($input)
     {
-        ini_set('memory_limit', '1024M');
-        set_time_limit(300);
+        RuntimeManager::setMemoryLimit('1024M');
+        RuntimeManager::setTimeLimit(300);
 
         // Trace to indicate start of mailing
         $this->trace->info(
@@ -600,32 +592,47 @@ class Service extends Base\Service
             array()
         );
 
-        $merchants = $this->repo->merchant->fetchAllLiveMerchants()
-                                            ->select(Entity::ID)
-                                            ->get();
+        $merchants = new Base\PublicCollection;
 
-        // sent will hold array of merchant data
-        $response = ['sent' => [], 'skipped' => 0];
+        if (isset($input[Entity::ID]) === true)
+        {
+            $merchant = $this->repo->merchant->findOrFailPublic($input[Entity::ID]);
+
+            $merchants->push($merchant);
+        }
+        else
+        {
+            $merchants = $this->repo->merchant->fetchAllLiveMerchants()
+                                              ->select(Entity::ID)
+                                              ->get();
+        }
 
         // Summary of merchants mailed
-        $mailedMerchantsSummary = ['sent' => [], 'sentCount' => 0, 'skippedCount' => 0];
+        $mailedMerchantsSummary = ['sentIds' => [], 'skippedIds' => 0, 'failedIds' => []];
 
         foreach ($merchants as $merchant)
         {
-            $dailyReport = new DailyReport($merchant->getId());
-
-            $sent = $dailyReport->send();
-
-            if (empty($sent))
+            try
             {
-                $response['skipped']++;
-                $mailedMerchantsSummary['skippedCount']++;
+                $dailyReport = new DailyReport($merchant->getId());
+
+                $sentId = $dailyReport->send();
+
+                if (is_null($sentId))
+                {
+                    $mailedMerchantsSummary['skippedIds']++;
+                }
+                else
+                {
+                    $mailedMerchantsSummary['sentIds'][] = $sentId;
+                }
             }
-            else
+            catch (\Exception $ex)
             {
-                $response['sent'][] = $sent;
-                $mailedMerchantsSummary['sentCount']++;
-                $mailedMerchantsSummary['sent'][] = $sent['merchant']['id'];
+                $this->trace->traceException(
+                    $ex, Trace::WARNING, TraceCode::SETTLEMENT_DAILY_REPORT_FAILURE);
+
+                $mailedMerchantsSummary['failedIds'][] = $merchant->getId();
             }
         }
 
@@ -635,7 +642,7 @@ class Service extends Base\Service
             $mailedMerchantsSummary
         );
 
-        return $response;
+        return $mailedMerchantsSummary;
     }
 
     /**
@@ -670,8 +677,8 @@ class Service extends Base\Service
 
     public function notifyMerchantsHoliday($input)
     {
-        ini_set('memory_limit', '1024M');
-        set_time_limit(300);
+        RuntimeManager::setMemoryLimit('1024M');
+        RuntimeManager::setTimeLimit(300);
 
         $this->trace->info(TraceCode::MERCHANT_NOTIFY_HOLIDAY);
 

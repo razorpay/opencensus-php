@@ -141,25 +141,25 @@ class EsDao
 
         $params = [
             'index' => $this->indexName,
-            'type' => $typeName,
-            'body' => [
-                'size' => $count,
-                'from' => $skip,
+            'type'  => $typeName,
+            'body'  => [
+                'size'  => $count,
+                'from'  => $skip,
                 'query' => [
-                    'filtered' => [
+                    'filtered'  => [
                         'query' => [
-                            'multi_match' => [
-                                'query' => $searchString,
-                                'type' => 'cross_fields',
-                                'fields' => ['notes.*']
+                            'multi_match'   => [
+                                'query'     => $searchString,
+                                'type'      => 'cross_fields',
+                                'fields'    => ['notes.*']
                             ]
                         ],
-                        'filter' => [],
+                        'filter'    => [],
                     ]
                 ],
-                'sort' => [
+                'sort'  => [
                     [
-                        'created' => [
+                        'created'   => [
                             'order' => 'desc'
                         ]
                     ]

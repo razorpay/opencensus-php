@@ -16,6 +16,8 @@ class Server
 
     protected $mockRequest;
 
+    protected $app;
+
     /**
      * Namespace of the current gateway server
      * @var string

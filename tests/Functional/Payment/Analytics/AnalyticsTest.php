@@ -7,6 +7,7 @@ use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Payment\Analytics\Entity as AnalyticsEntity;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\EntityActionTrait;
 
 class AnalyticsTest extends TestCase
 {
@@ -23,7 +24,7 @@ class AnalyticsTest extends TestCase
         $this->payment = $this->getDefaultPaymentArray();
     }
 
-    public function testAttempts()
+    public function testAttemptsWithCheckoutId()
     {
         $payment = $this->getDefaultPaymentArray();
 
@@ -52,13 +53,52 @@ class AnalyticsTest extends TestCase
         $this->assertEquals(2, $paymentAnalytic[AnalyticsEntity::ATTEMPTS]);
     }
 
+    public function testAttemptsWithOrderId()
+    {
+        // First payment attempt
+        $order = $this->createOrder();
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order['id'];
+        $rzpPayment = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment');
+        $this->assertEquals($order['id'], $payment['order_id']);
+
+        $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
+        $this->assertEquals(1, $paymentAnalytic[AnalyticsEntity::ATTEMPTS]);
+
+        // // ------------------------------------------------------------------ //
+        // // TODO: Find a way to fail the first attempt
+        // // Second payment attempt
+        // $payment = $this->getDefaultPaymentArray();
+        // $payment['order_id'] = $order['id'];
+        // $rzpPayment = $this->doAuthPayment($payment);
+
+        // $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
+        // $this->assertEquals(2, $paymentAnalytic[AnalyticsEntity::ATTEMPTS]);
+    }
+
+    public function testAttemptsWithoutCheckoutIdOrderId()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment = $this->doAuthPayment($payment);
+
+        $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
+
+        $this->assertNull($paymentAnalytic[AnalyticsEntity::CHECKOUT_ID]);
+
+        $this->assertEquals(1, $paymentAnalytic[AnalyticsEntity::ATTEMPTS]);
+    }
+
     public function testHttpRequestDataForNonOtpBasedPayment()
     {
         $payment = $this->getDefaultPaymentArray();
 
         $requestServer = [
                             'HTTP_USER_AGENT'   => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
-                            'HTTP_REFERER'      => 'https://razorpay.com/demo'
+                            'HTTP_REFERER'      => 'https://pay.com/demo'
                         ];
 
         $payment['_'][AnalyticsEntity::LIBRARY] = 'checkoutjs';
@@ -96,7 +136,7 @@ class AnalyticsTest extends TestCase
 
         $requestServer = [
                             'HTTP_USER_AGENT'   => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
-                            'HTTP_REFERER'      => 'https://razorpay.com/demo'
+                            'HTTP_REFERER'      => 'https://pay.com/demo'
                         ];
 
         $payment['_'][AnalyticsEntity::LIBRARY] = 'checkoutjs';
@@ -141,5 +181,28 @@ class AnalyticsTest extends TestCase
         $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
 
         $this->assertTestResponse($paymentAnalytic, 'testDataForUserAgentAnomaly');
+    }
+
+    public function testHttpRequestDataForInvalidData()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['_'][AnalyticsEntity::LIBRARY] = 'unknown_library';
+
+        $payment['_'][AnalyticsEntity::PLATFORM] = 'unknown_platform';
+
+        $payment['_'][AnalyticsEntity::INTEGRATION] = 'unknown_integration';
+
+        $payment['_'][AnalyticsEntity::BROWSER] = 'unknown_browser';
+
+        $payment['_'][AnalyticsEntity::OS] = 'unknown_os';
+
+        $payment['_'][AnalyticsEntity::DEVICE] = 'unknown_device';
+
+        $payment = $this->doAuthPayment($payment);//, $requestServer);
+
+        $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
+
+        $this->assertTestResponse($paymentAnalytic, 'testHttpRequestDataForInvalidData');
     }
 }

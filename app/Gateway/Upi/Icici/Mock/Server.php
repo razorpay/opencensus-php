@@ -2,10 +2,12 @@
 
 namespace RZP\Gateway\Upi\Icici\Mock;
 
+use App;
 use Carbon\Carbon;
 use Gateway\Upi\Icici;
 use phpseclib\Crypt\RSA;
 use RZP\Gateway\Base;
+use RZP\Gateway\Utility;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Upi\Base\Entity as UPIEntity;
 use Models\Payment;
@@ -14,6 +16,8 @@ class Server extends Base\Mock\Server
 {
     public function __construct()
     {
+        parent::__construct();
+
         if (defined('CRYPT_RSA_PKCS15_COMPAT') === false)
         {
             define('CRYPT_RSA_PKCS15_COMPAT', true);
@@ -71,19 +75,42 @@ class Server extends Base\Mock\Server
 
         $this->validateActionInput($input);
 
+        $app = App::getFacadeRoot();
+
+        $payment = $app['repo']->payment->find($input['merchantTranId']);
+
+        $status = 'SUCCESS';
+        $message = 'Transaction Successful';
+
+        if (isset($payment['notes']['status']) === true)
+        {
+            if ($payment['notes']['status'] === 'created')
+            {
+                $status = 'PENDING';
+                $message = 'Transaction Initiated';
+            }
+            else if ($payment['notes']['status'] === 'failed')
+            {
+                $status = 'FAILURE';
+                $message = 'Transaction failed';
+            }
+        }
+
         $response = array(
-            "response"          => "0",
-            "merchantId"        => $input['merchantId'],
-            "subMerchantId"     => "1234",
-            "terminalId"        => "1234",
-            "success"           => "true",
-            "message"           => "Transaction Successful",
-            "merchantTranId"    => $input['merchantTranId'],
-            "OriginalBankRRN"   => (string) mt_rand(1111111, 9999999),
-            "status"            => "SUCCESS"
+            'response'          => '0',
+            'merchantId'        => $input['merchantId'],
+            'subMerchantId'     => '1234',
+            'terminalId'        => '1234',
+            'success'           => 'true',
+            'message'           => $message,
+            'merchantTranId'    => $input['merchantTranId'],
+            'OriginalBankRRN'   => (string) mt_rand(1111111, 9999999),
+            'status'            => $status
         );
 
-        return $this->makeResponse($response, false);
+        $encrypt = (isset($payment['notes']['encrypt']) and ($payment['notes']['encrypt'] === 'true'));
+
+        return $this->makeResponse($response, $encrypt);
     }
 
     /**
@@ -109,13 +136,21 @@ class Server extends Base\Mock\Server
 
     protected function makeResponse($data, $dontEncrypt = false)
     {
+        if ((is_string($data) === true) and
+            (Utility::isXml($data) === true))
+        {
+            $response = parent::makeResponse($data);
+
+            return $response;
+        }
+
         $content = json_encode($data);
 
         // We encrypt content by default
         if ($dontEncrypt === true)
         {
             $encryptedData = $this->encrypt($content);
-            assert($encryptedData !== false);
+            assertTrue($encryptedData !== false);
 
             $content = base64_encode($encryptedData);
         }
@@ -173,36 +208,40 @@ class Server extends Base\Mock\Server
         return $rsa;
     }
 
-    public function makeS2SRequest(array $upiEntity, array $payment)
+    public function getAsyncCallbackContent(array $upiEntity, array $payment)
     {
-        $data = $this->S2SRequestContent($upiEntity, $payment);
+        $content = $this->S2SRequestContent($upiEntity, $payment);
 
-        $json = json_encode($data, JSON_PRETTY_PRINT);
+        $json = json_encode($content, JSON_PRETTY_PRINT);
 
         $encrypted = $this->encrypt($json);
 
         return base64_encode($encrypted);
     }
 
-    protected function S2SRequestContent(array $entity, array $payment)
+    protected function S2SRequestContent(array $upiEntity, array $payment)
     {
         // Format is 20160830152240
-        $initDate = Carbon::createFromTimestampUTC($entity['created_at'], 'Asia/Kolkata');
+        $initDate = Carbon::createFromTimestampUTC($upiEntity['created_at'], 'Asia/Kolkata');
         $completeDate = $initDate->copy()->addMinutes(1);
 
-        return [
-            'merchantId'        => $entity['gateway_merchant_id'],
-            'subMerchantId'     => $payment['merchant_id'],
-            'terminalId'        => "1234",
-            'BankRRN'           => $entity['gateway_payment_id'],
-            'merchantTranId'    => $entity['payment_id'],
-            'PayerName'         => "payer name not available",
+        $response = [
+            'merchantId'        => $upiEntity['gateway_merchant_id'],
+            'subMerchantId'     => '1234',
+            'terminalId'        => '1234',
+            'BankRRN'           => $upiEntity['gateway_payment_id'],
+            'merchantTranId'    => $upiEntity['payment_id'],
+            'PayerName'         => 'payer name not available',
             'PayerMobile'       => $payment['contact'],
-            'PayerVA'           => $entity['vpa'],
-            'PayerAmount'       => number_format($payment['amount']/100, 2),
-            'TxnStatus'         => "SUCCESS",
+            'PayerVA'           => $upiEntity['vpa'],
+            'PayerAmount'       => number_format($payment['amount']/100, 2, '.', ''),
+            'TxnStatus'         => 'SUCCESS',
             'TxnInitDate'       => $initDate->format('Ymdhis'),
             'TxnCompletionDate' => $completeDate->format('Ymdhis'),
         ];
+
+        $this->content($response);
+
+        return $response;
     }
 }

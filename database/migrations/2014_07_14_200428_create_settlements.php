@@ -29,7 +29,7 @@ class CreateSettlements extends Migration {
             $table->char(Settlement::BANK_ACCOUNT_ID, Settlement::ID_LENGTH)
                   ->nullable();
 
-            $table->integer(Settlement::AMOUNT)
+            $table->bigInteger(Settlement::AMOUNT)
                   ->unsigned();
 
             $table->integer(Settlement::FEES)

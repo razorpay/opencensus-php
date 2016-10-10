@@ -37,7 +37,7 @@ class DailyReportTest extends TestCase
         $createdAt = Carbon::today('Asia/Kolkata')->subDays(1)->timestamp + 5;
         $this->fixtures->settlement->edit($setl['id'], ['created_at' => $createdAt]);
 
-        \Mail::shouldReceive('send')
+        \Mail::shouldReceive('queue')
               ->once()
               ->with(
                     Mockery::any(),
@@ -48,7 +48,7 @@ class DailyReportTest extends TestCase
                                 'authorized' => ['payments' => ['count' => 4], 'sum' => 4000000],
                                 'refunds' => ['refunds' => ['count' => 2], 'sum' => 200000],
                                 'settlement' => ['merchant_id' => '10000000000000', 'amount' => 3508000],
-                                'merchant' => ['id' => '10000000000000', 'activated' => true],
+                                'email' => ['test@razorpay.com'],
                             );
                             $this->assertArraySelectiveEquals($testData, $data);
 

@@ -10,6 +10,7 @@ use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use Request;
 use Redirect;
+use RZP\Models\GatewayStatus\Absence;
 
 class GatewayController extends Controller
 {
@@ -83,7 +84,24 @@ class GatewayController extends Controller
         switch ($gateway)
         {
             case 'billdesk':
+                $data = $this->processS2SCallback($input, $gateway);
+                break;
+
             case 'wallet_olamoney':
+                $trace = $this->app['trace'];
+
+                $trace->info(
+                    TraceCode::GATEWAY_PAYMENT_CALLBACK,
+                    [
+                        'input'     => $input,
+                        'body'      => Request::getContent(),
+                        'headers'   => Request::header(),
+                        'gateway'   => $gateway,
+                    ]);
+
+                break;
+
+            case 'wallet_freecharge':
                 $data = $this->processS2SCallback($input, $gateway);
                 break;
 
@@ -142,10 +160,10 @@ class GatewayController extends Controller
         $paymentId = $nb->getPaymentId();
         $publicPaymentId = $nb->getPublicPaymentId();
 
-
         $payment = $this->repo->payment->findOrFailPublic($paymentId);
 
-        $publicKey = $payment->merchant->keys()->first()->getPublicKey($mode);
+        $keys = $this->repo->key->getKeysForMerchant($payment->getMerchantId());
+        $publicKey = $keys->first()->getPublicKey($mode);
 
         $secret = \App::make('config')->get('app.key');
 
@@ -182,5 +200,59 @@ class GatewayController extends Controller
         }
 
         return ['nb' => $nb, 'mode' => $mode];
+    }
+
+    /**
+     * Method to create a gateway absence entity
+     * @return \Symfony\Component\HttpFoundation\Response
+     * @internal param string $gateway
+     */
+    public function postCreateGatewayAbsence()
+    {
+        $input = Request::all();
+
+        $data = (new Absence\Service)->create($input);
+
+        return ApiResponse::json($data);
+    }
+
+    /**
+     * Method to update gateway absence entity
+     * @param integer $id
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function putUpdateGatewayAbsence($id)
+    {
+        $input = Request::all();
+
+        $data = (new Absence\Service)->edit($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    /**
+     * Method to delete gateway absence entity
+     * @param integer $id
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function deleteGatewayAbsence($id)
+    {
+        $data = (new Absence\Service)->delete($id);
+
+        return ApiResponse::json($data);
+    }
+
+
+    /**
+     * Method to get absent gateways across multiple search params
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function getAbsentGateways()
+    {
+        $input = Request::all();
+
+        $data = (new Absence\Service)->findAbsentGateways($input);
+
+        return ApiResponse::json($data);
     }
 }

@@ -8,6 +8,12 @@ use Lib\PhoneBook;
 
 class Gateway extends Base\Gateway
 {
+    protected function otpResend(array $input)
+    {
+        $this->input = $input;
+        $this->action = Action::OTP_RESEND;
+    }
+
     protected function createGatewayPaymentEntity($attributes, $action = null)
     {
         $attr = $this->getMappedAttributes($attributes);
@@ -24,7 +30,7 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment->fill($attr);
 
-        $gatewayPayment->saveOrFail();
+        $this->repo->saveOrFail($gatewayPayment);
 
         return $gatewayPayment;
     }
@@ -40,13 +46,19 @@ class Gateway extends Base\Gateway
         return $refund;
     }
 
+    /*
+     * Updates the gateway payment entity
+     *
+     * @param gatewayPayment Wallet\Base\Entity      Gateway Payment Entity
+     * @param attributes     array
+     */
     protected function updateGatewayPaymentEntity($gatewayPayment, $attributes)
     {
         $attr = $this->getMappedAttributes($attributes);
 
         $gatewayPayment->fill($attr);
 
-        $gatewayPayment->saveOrFail();
+        $this->repo->saveOrFail($gatewayPayment);
 
         return $gatewayPayment;
     }

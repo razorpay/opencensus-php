@@ -50,6 +50,24 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateTerminalWithNetworkCategory()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testCreateTerminalWithInvalidNetworkCategory()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
     public function testDeleteTerminal()
     {
         $merchant = $this->fixtures
@@ -80,9 +98,11 @@ class TerminalTest extends TestCase
             'terminal:shared_axis_terminal', ['used_count' => 2]);
 
         $tid = $terminal['id'];
+
         $data = array('gateway_terminal_id' => 'random', 'gateway_terminal_password' => 'random');
 
         $content = $this->editTerminal($tid, $data);
+
         $this->assertEquals($content['gateway_terminal_id'], 'random');
     }
 
@@ -112,6 +132,21 @@ class TerminalTest extends TestCase
         $content = $this->editTerminal($tid, $data);
 
         $this->assertEquals(true, $terminal->reload()->upi);
+    }
+
+    public function testToggleTerminal()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal:shared_axis_terminal', ['used_count' => 2, 'enabled' => '1']);
+
+        $tid = $terminal['id'];
+
+        $url = '/terminals/'.$tid.'/toggle';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
     }
 
     public function startTest($testDataToReplace = [])

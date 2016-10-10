@@ -16,6 +16,7 @@ return array(
         'axis_migs',
         'billdesk',
         'cybersource',
+        'first_data',
         'ebs',
         'hdfc',
         'kotak',
@@ -30,11 +31,13 @@ return array(
         'wallet_payzapp',
         'wallet_payumoney',
         'wallet_airtelmoney',
+        'wallet_freecharge',
     ),
 
     'mock_amex'               => env('AMEX_MOCK'),
     'mock_hdfc'               => env('HDFC_MOCK'),
     'mock_cybersource'        => env('CYBERSOURCE_MOCK'),
+    'mock_first_data'         => env('FIRST_DATA_MOCK'),
     'mock_atom'               => env('ATOM_MOCK'),
     'mock_axis_migs'          => env('AXIS_MIGS_MOCK'),
     'mock_axis_genius'        => env('AXIS_GENIUS_MOCK'),
@@ -51,6 +54,9 @@ return array(
     'mock_wallet_payumoney'   => env('PAYUMONEY_MOCK'),
     'mock_wallet_airtelmoney' => env('AIRTELMONEY_MOCK'),
     'mock_upi_icici'          => env('UPI_ICICI_MOCK'),
+    'mock_wallet_freecharge'  => env('FREECHARGE_MOCK'),
+
+    'certificate_path'        => env('CERTIFICATE_DIR_PATH'),
 
     'hdfc' => array(
         'test_terminal_id'  => env('HDFC_GATEWAY_TEST_TERMINAL_ID'),
@@ -63,6 +69,17 @@ return array(
         'test_password'         => env('CYBERSOURCE_GATEWAY_TEST_ACCESS_CODE'),
         'test_merchant_id'      => env('CYBERSOURCE_GATEWAY_TEST_USERNAME', 'cybersource_id'),
         'test_merchant_secret'  => env('CYBERSOURCE_GATEWAY_TEST_SECRET', 'cybersource_secret'),
+    ),
+
+    'first_data' => array(
+        'test_store_id'                     => env('FIRST_DATA_TEST_STORE_ID'),
+        'test_hash_secret'                  => env('FIRST_DATA_TEST_HASH_SECRET'),
+        'test_user_id'                      => env('FIRST_DATA_TEST_USER_ID'),
+        'test_password'                     => env('FIRST_DATA_TEST_PASSWORD'),
+        'test_client_certificate'           => env('FIRST_DATA_TEST_CLIENT_CERTIFICATE'),
+        'test_client_certificate_password'  => env('FIRST_DATA_TEST_CLIENT_CERTIFICATE_PASSWORD'),
+        'cert_dir_name'                     => env('FIRST_DATA_CERT_DIR_NAME'),
+        'server_certificate'                => env('FIRST_DATA_SERVER_CERTIFICATE'),
     ),
 
     'amex' => array(
@@ -162,6 +179,11 @@ return array(
         'live_hash_secret' => env('AIRTELMONEY_WALLET_LIVE_HASH_SECRET'),
     ),
 
+    'wallet_freecharge' => array(
+        'test_hash_secret'      => env('FREECHARGE_WALLET_TEST_HASH_SECRET'),
+        'test_merchant_id'      => env('FREECHARGE_WALLET_TEST_MERCHANT_ID'),
+    ),
+
     'netbanking_hdfc' => array(
         'live_hash_secret'  => env('NETBANKING_HDFC_GATEWAY_LIVE_HASH_SECRET'),
     ),
@@ -179,6 +201,7 @@ return array(
         'test_hash_secret'  => env('SBIEPAY_GATEWAY_TEST_HASH_SECRET'),
     ),
 
+    'proxy_enabled' => env('PROXY_ENABLED'),
 
-    'proxy_address' => 'https://splunk.razorpay.com:8888',
+    'proxy_address' => env('PROXY_ADDRESS'),
 );
