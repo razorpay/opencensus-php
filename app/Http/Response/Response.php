@@ -82,43 +82,6 @@ class Response
         return $this->generateErrorResponse(ErrorCode::BAD_REQUEST_ONLY_HTTPS_ALLOWED);
     }
 
-    public function stopBrowserCaching($response)
-    {
-        //
-        // Ask browser not to cache
-        //
-        $response->headers->set(Header::CACHE_CONTROL,'nocache, no-store, max-age=0, must-revalidate');
-
-        $response->headers->set(Header::PRAGMA,'no-cache');
-
-        //
-        // Put old time so that any browser cache gets expired
-        //
-        $response->headers->set(Header::EXPIRES,'Fri, 01 Jan 1990 00:00:00 GMT');
-    }
-
-    /**
-     * setCallback can throw an exception in case of an invalid
-     * parameter (callback), which is not validated at all. The setCallback
-     * call validates it internally and throws an exception. We
-     * catch that exception here and make sure that we have a fallback
-     * communication mechanism. Checkout ensures that Razorpay.jsonp_callback
-     * is defined and works properly.
-     */
-    protected function attachJsonpCallback($request, $response)
-    {
-        $callback = $request->input('callback');
-
-        try
-        {
-            $response->setCallback($callback);
-        }
-        catch (\InvalidArgumentException $e)
-        {
-            $response->setCallback(self::JSONP_FALLBACK_CALLBACK);
-        }
-    }
-
     public function generateErrorResponse($error, $debug = false)
     {
         list($publicError, $httpStatusCode) = $this->getErrorResponseFields($error, $debug);
@@ -147,11 +110,6 @@ class Response
         $httpStatusCode = $error->getHttpStatusCode();
 
         return [$data, $httpStatusCode];
-    }
-
-    protected function debugException($e)
-    {
-        return $this->generateErrorResponse(ErrorCode::SERVER_ERROR);
     }
 
     public function generateResponse($data = array(), $status = 200)
@@ -205,13 +163,12 @@ class Response
         $this->setContentTypeHtmlForSpecificRoutes($route, $response);
         $this->setAccessControlAllowOriginStarOnSpecificRoutes($route, $response);
 
-        if (($this->jsonp === null) and
-            ($this->isJsonpRoute($route)))
+        if ($this->isResponseJsonp($route))
         {
             $data['http_status_code'] = $status;
             $status = 200;
 
-            $this->attachJsonpCallback($this->request, $response);
+            $this->attachJsonpCallback($response);
         }
 
         $response->setData($data);
@@ -221,11 +178,50 @@ class Response
 
         $this->setSameOriginInHeaders($response, $route);
 
-        // // This statement is needed for keeping tests functional since
-        // // we are using a static var here @todo: change this!
-        // $this->jsonp = null;
-
         return $response;
+    }
+
+    protected function isResponseJsonp($route)
+    {
+        return (($this->jsonp === null) and
+                ($this->isJsonpRoute($route)));
+    }
+
+    protected function stopBrowserCaching($response)
+    {
+        //
+        // Ask browser not to cache
+        //
+        $response->headers->set(Header::CACHE_CONTROL,'nocache, no-store, max-age=0, must-revalidate');
+
+        $response->headers->set(Header::PRAGMA,'no-cache');
+
+        //
+        // Put old time so that any browser cache gets expired
+        //
+        $response->headers->set(Header::EXPIRES,'Fri, 01 Jan 1990 00:00:00 GMT');
+    }
+
+    /**
+     * setCallback can throw an exception in case of an invalid
+     * parameter (callback), which is not validated at all. The setCallback
+     * call validates it internally and throws an exception. We
+     * catch that exception here and make sure that we have a fallback
+     * communication mechanism. Checkout ensures that Razorpay.jsonp_callback
+     * is defined and works properly.
+     */
+    protected function attachJsonpCallback($response)
+    {
+        $callback = $this->request->input('callback');
+
+        try
+        {
+            $response->setCallback($callback);
+        }
+        catch (\InvalidArgumentException $e)
+        {
+            $response->setCallback(self::JSONP_FALLBACK_CALLBACK);
+        }
     }
 
     protected function generateCheckoutView($data)
@@ -321,7 +317,7 @@ class Response
         }
     }
 
-    public function setSameOriginInHeaders($response, $route)
+    protected function setSameOriginInHeaders($response, $route)
     {
         if ($this->mustNotSetSameOriginHeaders($route))
         {
