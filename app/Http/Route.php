@@ -609,6 +609,13 @@ final class Route
         'otp_verify'                 => 'cardsaving',
     );
 
+    const RAZORPAYJS_ROUTES = array(
+        'payment_cancel',
+        'payment_create_ajax',
+        'payment_otp_submit',
+        'payment_otp_resend',
+        'payment_topup_ajax');
+
     public function __construct($app)
     {
         $this->app = $app;
