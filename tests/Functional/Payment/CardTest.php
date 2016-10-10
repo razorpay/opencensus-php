@@ -120,6 +120,23 @@ class CardTest extends TestCase
         $content = $this->startTest($testData);
     }
 
+    public function testCreditCardNotEnabledOnLive()
+    {
+        $this->fixtures->merchant->disableCreditCard('10000000000000');
+        $this->fixtures->merchant->enableDebitCard('10000000000000');
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $this->ba->publicLiveAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '4111111111111111';
+
+        $testData['request']['content'] = $payment;
+
+        $content = $this->startTest($testData);
+    }
+
     public function startTest($testDataToReplace = [])
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
