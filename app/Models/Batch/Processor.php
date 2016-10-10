@@ -30,7 +30,7 @@ class Processor extends Base\Core
         $this->mutex = $this->app['api.mutex'];
     }
 
-    public function process($batch)
+    public function process(Batch\Entity $batch)
     {
         $filePath = $this->getBatchFileFromAws($batch);
 
@@ -79,7 +79,7 @@ class Processor extends Base\Core
         $this->deleteFile($filePath);
     }
 
-    protected function processBatch($batch, & $entries)
+    protected function processBatch(Batch\Entity $batch, & $entries)
     {
         $function = 'process' . ucfirst($batch->getType()) . 'Entries';
         $this->$function($batch, $entries);
@@ -110,7 +110,7 @@ class Processor extends Base\Core
         $batch->setFailureCount($totalFailureCount);
     }
 
-    protected function shouldSendMail($batch)
+    protected function shouldSendMail(Batch\Entity $batch)
     {
         if ($batch->getStatus() === Status::PROCESSED)
         {
@@ -120,7 +120,7 @@ class Processor extends Base\Core
         return false;
     }
 
-    protected function updateBatchStatus($batch)
+    protected function updateBatchStatus(Batch\Entity $batch)
     {
         if ($batch->getFailureCount() > 0)
         {
@@ -139,7 +139,7 @@ class Processor extends Base\Core
         }
     }
 
-    protected function processRefundEntries($batch, & $entries)
+    protected function processRefundEntries(Batch\Entity $batch, & $entries)
     {
         foreach ($entries as & $entry)
         {
@@ -172,7 +172,7 @@ class Processor extends Base\Core
         }
     }
 
-    protected function findExistingRefund($batch, $payment)
+    protected function findExistingRefund(Batch\Entity $batch, Payment\Entity $payment)
     {
         // This ensure that if that batch entity is already processed, we update the refund id
         $refunds = $this->repo->refund->fetchRefundsByBatchAndPayment($batch, $payment);
@@ -197,7 +197,7 @@ class Processor extends Base\Core
         return null;
     }
 
-    protected function processRefundRequest($batch, $payment, & $entry)
+    protected function processRefundRequest(Batch\Entity $batch, Payment\Entity $payment, & $entry)
     {
         $refund = $this->findExistingRefund($batch, $payment);
 
@@ -238,7 +238,7 @@ class Processor extends Base\Core
         $entry[Header::STATUS] = Status::SUCCESS;
     }
 
-    protected function createProcessedExcel($batch, $entries)
+    protected function createProcessedExcel(Batch\Entity $batch, $entries)
     {
         $count = count(Header::REFUND_HEADERS);
 
@@ -268,7 +268,7 @@ class Processor extends Base\Core
     }
 
 
-    public function saveBatchFileToAws($batch, $file)
+    public function saveBatchFileToAws(Batch\Entity $batch, $file)
     {
         $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
@@ -279,7 +279,7 @@ class Processor extends Base\Core
         return $url;
     }
 
-    protected function getBatchFileFromAws($batch)
+    protected function getBatchFileFromAws(Batch\Entity $batch)
     {
         $storagePath = $this->getStoragePath();
 
@@ -299,7 +299,7 @@ class Processor extends Base\Core
         return $path;
     }
 
-    public function getBucketFilePath($batch)
+    public function getBucketFilePath(Batch\Entity $batch)
     {
         if ($batch->getStatus() === Status::CREATED)
         {
@@ -311,12 +311,12 @@ class Processor extends Base\Core
         }
     }
 
-    public function getFileName($batch)
+    public function getFileName(Batch\Entity $batch)
     {
         return $batch->getId() .'.xlsx';
     }
 
-    public function getAwsKey($batch)
+    public function getAwsKey(Batch\Entity $batch)
     {
         $bucketFilePath = $this->getBucketFilePath($batch);
 
@@ -376,7 +376,7 @@ class Processor extends Base\Core
         return false;
     }
 
-    protected function sendMail($filePath, $merchant)
+    protected function sendMail($filePath, Merchant\Entity $merchant)
     {
         $data = [
             'refundFile' => $filePath,

@@ -61,9 +61,10 @@ class Core extends Base\Core
         return $batch;
     }
 
-    public function retryBatch($batch)
+    public function retryBatch(Batch\Entity $batch)
     {
-        if ($batch->getStatus() === Status::PROCESSED and $batch->getFailureCount() === 0)
+        if (($batch->getStatus() === Status::PROCESSED) and
+            ($batch->getFailureCount() === 0))
         {
             $this->trace->info(TraceCode::BATCH_RETRY_FAILURE, $batch->toArrayPublic());
 
@@ -80,7 +81,7 @@ class Core extends Base\Core
         return $batch;
     }
 
-    public function downloadBatch($batch)
+    public function downloadBatch(Batch\Entity $batch)
     {
         $awsKey = $this->processor->getAwsKey($batch);
 
