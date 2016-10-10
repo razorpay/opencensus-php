@@ -346,12 +346,12 @@ trait FileHandlerTrait
 
         $awsBucket = $config[$bucket];
 
-        $cmd = $s3Client->getCommand('GetObject', [
-            'Bucket' => $bucket,
+        $cmd = $s3->getCommand('GetObject', [
+            'Bucket' => $awsBucket,
             'Key'    => $key
         ]);
 
-        $request = $s3Client->createPresignedRequest($cmd, $ttl);
+        $request = $s3->createPresignedRequest($cmd, $ttl);
 
         // Get the actual presigned-url
         $presignedUrl = (string) $request->getUri();
