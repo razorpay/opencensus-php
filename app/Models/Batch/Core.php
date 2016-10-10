@@ -123,9 +123,9 @@ class Core extends Base\Core
                 if ($batch->getAttempts() >= 3)
                 {
                     $batch->setStatus(Status::PROCESSED);
-
-                    $this->repo->saveOrFail($batch);
                 }
+
+                $this->repo->saveOrFail($batch);
             }
         }
         return $batches;
