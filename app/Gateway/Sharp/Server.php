@@ -14,7 +14,11 @@ class Server
 {
     public function __construct()
     {
-        $this->trace = \Trace::getFacadeRoot();
+        $app = \App::getFacadeRoot();
+
+        $this->route = $app['api.route'];
+
+        $this->trace = $app['trace'];
     }
 
     public function action($input)
