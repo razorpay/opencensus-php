@@ -108,7 +108,6 @@ class Processor extends Base\Core
         $batch->setProcessedAmount($totalProcessedAmount);
         $batch->setSuccessCount($totalSuccessCount);
         $batch->setFailureCount($totalFailureCount);
-        $batch->incrementAttempts();
     }
 
     protected function shouldSendMail($batch)

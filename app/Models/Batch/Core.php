@@ -106,6 +106,10 @@ class Core extends Base\Core
         {
             try
             {
+                $batch->setStatus(BatchStatus::PROCESSING);
+
+                $batch->incrementAttempts();
+
                 $this->processor->process($batch);
             }
             catch (\Exception $e)
@@ -115,6 +119,13 @@ class Core extends Base\Core
                     [
                         'batch'         => $batch->toArrayPublic(),
                     ]);
+
+                if ($batch->getAttempts() >= 3)
+                {
+                    $batch->setStatus(Status::PROCESSED);
+
+                    $this->repo->saveOrFail($batch);
+                }
             }
         }
         return $batches;
