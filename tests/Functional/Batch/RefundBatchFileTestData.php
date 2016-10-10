@@ -71,16 +71,24 @@ return [
         ],
     ],
 
-    'testProcessRefundRetryAfterProccessed' => [
+    'testGetRefundFileWithId' => [
         'request' => [
-            'method' => 'post',
+            'url' => '/batches',
+            'method' => 'get',
             'content' => [
-
             ],
         ],
         'response' => [
             'content' => [
-            ]
+                    'entity'        => 'batch',
+                    'status'        => 'created',
+                    'amount'        => 4000,
+                    'total_count'   => 1,
+                    'success_count' => null,
+                    'failure_count' => null,
+                    'attempts'      => 0,
+                    'amount'        => 4000,
+            ],
         ],
     ],
 
@@ -111,6 +119,33 @@ return [
         ],
     ],
 
+    'testProcessRefundFileWithInvalidFile' => [
+        'request' => [
+            'url' => '/batches/process',
+            'method' => 'post',
+            'content' => [
+
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'entity'            => 'batch',
+                        'status'            => 'processing',
+                        'amount'            =>  4000,
+                        'processed_amount'  =>  0,
+                        'success_count'     =>  null,
+                        'failure_count'     =>  null,
+                        'attempts'          =>  1,
+                    ],
+                ]
+            ],
+        ],
+    ],
+
     'testProcessRefundFileWithRefundedBatch' => [
         'request' => [
             'url' => '/batches/process',
@@ -133,6 +168,34 @@ return [
                         'failure_count'     =>  0,
                         'attempts'          =>  1,
                     ],
+                ]
+            ],
+        ],
+    ],
+
+    'testProcessRefundFileWithInvalidPaymentId' => [
+        'request' => [
+            'url' => '/batches/process',
+            'method' => 'post',
+            'content' => [
+
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'entity'            => 'batch',
+                        'status'            => 'processing',
+                        'amount'            =>  8000,
+                        'processed_amount'  =>  4000,
+                        'success_count'     =>  1,
+                        'failure_count'     =>  1,
+                        'attempts'          =>  1,
+                        'total_count'       =>  2,
+                    ]
                 ]
             ],
         ],
@@ -247,7 +310,7 @@ return [
         ],
     ],
 
-    'testProcessRetryRefundWithThreeAttempt' => [
+    'testRetryRefund' => [
         'request' => [
             'method' => 'post',
             'content' => [
@@ -262,8 +325,30 @@ return [
                         'processed_amount'  =>  0,
                         'success_count'     =>  0,
                         'failure_count'     =>  1,
-                        'attempts'          =>  2,
+                        'attempts'          =>  3,
             ],
+        ],
+    ],
+
+    'testRetryRefundWithException' => [
+        'request' => [
+            'method' => 'post',
+            'content' => [
+
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The uploaded file is already processed',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_BATCH_FILE_ALREADY_PROCESSED,
         ],
     ],
 

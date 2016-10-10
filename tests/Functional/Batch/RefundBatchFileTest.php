@@ -61,6 +61,21 @@ class RefundBatchFileTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetRefundFileWithId()
+    {
+        $entries = $this->getDefaultRefundFileEntries();
+
+        $batch = $this->fixtures->create('batch:refund', $entries);
+
+        $this->ba->proxyAuth();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/batches/' .$batch->getPublicId();
+
+        $this->startTest();
+    }
+
     public function testProcessRefundFile()
     {
         $entries = $this->getDefaultRefundFileEntries();
@@ -68,6 +83,25 @@ class RefundBatchFileTest extends TestCase
         $batch = $this->fixtures->create('batch:refund', $entries);
 
         $payment = $this->capturePayment($entries[0]['Payment Id'], 50000);
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testProcessRefundFileWithInvalidFile()
+    {
+        $entries = $this->getDefaultRefundFileEntries();
+
+        $batch = $this->fixtures->create('batch:refund', $entries);
+
+        $payment = $this->capturePayment($entries[0]['Payment Id'], 50000);
+
+        $filePath = $batch->getUploadFileUrl();
+        if (file_exists($filePath))
+        {
+            $success = unlink($filePath);
+        }
 
         $this->ba->appAuth();
 
@@ -87,6 +121,26 @@ class RefundBatchFileTest extends TestCase
         $this->fixtures->base->editEntity('refund', $refund['id'], ['batch_id' => $batch['id']]);
 
         $refund = $this->getLastEntity('refund', true);
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testProcessRefundFileWithInvalidPaymentId()
+    {
+        $entries = $this->getDefaultRefundFileEntries();
+
+        $entries[] = [
+                Header::PAYMENT_ID => 'pay_xyz',
+                Header::AMOUNT     => 4000
+            ];
+
+        $batch = $this->fixtures->create('batch:refund', $entries);
+
+        $payment = $this->capturePayment($entries[0]['Payment Id'], 50000);
+
+        $request = $this->testData[__FUNCTION__]['request'];
 
         $this->ba->appAuth();
 
@@ -126,21 +180,6 @@ class RefundBatchFileTest extends TestCase
         $this->startTest();
     }
 
-    public function testProcessRefundRetryAfterProccessed()
-    {
-        $entries = $this->getDefaultRefundFileEntries();
-
-        $batch = $this->fixtures->create('batch:refund_with_three_attempt', $entries);
-
-
-        $request = & $this->testData[__FUNCTION__]['request'];
-
-        $request['url'] = '/batches/' . 'batch_'.$batch->getId()  .'/retry';
-
-        $this->ba->proxyAuth();
-        $this->startTest();
-    }
-
     public function testProcessRefundWithThreeAttemptSuccess()
     {
         $entries = $this->getDefaultRefundFileEntries();
@@ -154,17 +193,33 @@ class RefundBatchFileTest extends TestCase
         $this->startTest();
     }
 
-    public function testProcessRetryRefundWithThreeAttempt()
+    public function testRetryRefund()
     {
         $entries = $this->getDefaultRefundFileEntries();
 
-        $batch = $this->fixtures->create('batch:refund_with_three_attempt', $entries);
+        $batch = $this->fixtures->create('batch:refund_with_four_attempt', $entries);
 
         $request = & $this->testData[__FUNCTION__]['request'];
 
         $request['url'] = '/batches/' . 'batch_'.$batch->getId()  .'/retry';
 
         $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testRetryRefundWithException()
+    {
+        $entries = $this->getDefaultRefundFileEntries();
+
+        $batch = $this->fixtures->create('batch:refund_with_processed_entries', $entries);
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/batches/' . 'batch_'.$batch->getId()  .'/retry';
+
+        $this->ba->proxyAuth();
+
         $this->startTest();
     }
 

@@ -147,21 +147,6 @@ class Core extends Base\Core
         return array($totalEntries, $totalAmount);
     }
 
-    /**
-    * This functions get the extension of the file. In case of test case, the getClientOriginalExtension() gives empty string
-    */
-    protected function getExtension($file)
-    {
-        $extension = $file->getClientOriginalExtension();
-
-        if (empty($extension) === true)
-        {
-            $extension = $file->getExtension();
-        }
-
-        return $extension;
-    }
-
     protected function increaseAllowedSystemLimits()
     {
         RuntimeManager::setMemoryLimit('1024M');

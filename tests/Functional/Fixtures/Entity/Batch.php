@@ -53,6 +53,11 @@ class Batch extends Base
          return $this->createProcessedEntity($attributes, Status::PROCESSED, 3, 0, 1);
     }
 
+    public function createRefundWithProcessedEntries(array $attributes = array())
+    {
+         return $this->createProcessedEntity($attributes, Status::PROCESSED, 3, 1, 0);
+    }
+
     public function create(array $attributes = array())
     {
         $defaultValues = array(
