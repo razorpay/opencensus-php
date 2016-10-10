@@ -36,7 +36,6 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = array(
         self::MERCHANT_ID,
-        self::CARD,
         self::AMEX,
         self::BANKS,
         self::PAYTM,
