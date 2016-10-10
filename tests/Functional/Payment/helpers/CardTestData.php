@@ -100,8 +100,8 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_NOT_ENALBED_FOR_MERCHANT,
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => 'Credit card transactions are not allowed',
         ],
     ],
 ];
