@@ -5,8 +5,7 @@ namespace RZP\Gateway\Base\Mock;
 use App;
 use RZP\Constants\Mode;
 use RZP\Exception;
-use Request;
-use Requests_Response;
+use RZP\Models\Payment;
 
 class Server
 {
@@ -254,5 +253,10 @@ class Server
         $response->headers->set('Cache-Control', 'no-cache');
 
         return $response;
+    }
+
+    protected function getSignedPaymentId($pid)
+    {
+        return Payment\Entity::getSignedId($pid);
     }
 }

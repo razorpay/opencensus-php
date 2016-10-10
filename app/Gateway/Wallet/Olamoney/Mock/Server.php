@@ -43,7 +43,7 @@ class Server extends Base\Mock\Server
 
         $paymentId = $input['paymentId'];
 
-        $publicId = 'pay_' . $paymentId;
+        $publicId = $this->getSignedPaymentId($paymentId);
 
         $url = $this->route->getPublicCallbackUrlWithHash($publicId);
 

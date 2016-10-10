@@ -85,7 +85,7 @@ class Server extends Base\Mock\Server
             'net_amount_debit'      => '1000'
         );
 
-        $publicId = 'pay_' . $paymentId;
+        $publicId = $this->getSignedPaymentId($paymentId);
 
         $url = $this->route->getPublicCallbackUrlWithHash($publicId);
 
