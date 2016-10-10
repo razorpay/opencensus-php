@@ -767,7 +767,7 @@ class Service extends Base\Service
 
         $authorizedPayments = $this->repo->payment->getAuthorizedPaymentsBetweenTimestamps($from, $to);
 
-        $grouped = $authorizedPayments->keyBy(Payment\Entity::MERCHANT_ID);
+        $grouped = $authorizedPayments->groupBy(Payment\Entity::MERCHANT_ID);
 
         // Put the counts in for debug purposes
         $result['counts']['payments'] = count($authorizedPayments);
