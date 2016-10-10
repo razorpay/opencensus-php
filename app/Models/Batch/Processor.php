@@ -160,7 +160,7 @@ class Processor extends Base\Core
 
                 $this->processRefundRequest($batch, $payment, $entry);
             }
-            catch(\Exception $e)
+            catch (\Exception $e)
             {
                 $this->trace->traceException($e, Trace::WARNING, TraceCode::BATCH_PROCESSING_ERROR);
 
@@ -321,7 +321,7 @@ class Processor extends Base\Core
     {
         $bucketFilePath = $this->getBucketFilePath($batch);
 
-        $filename =$this->getFileName($batch);
+        $filename = $this->getFileName($batch);
 
         $awsKey = $bucketFilePath .'/' .$filename;
 

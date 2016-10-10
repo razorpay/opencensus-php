@@ -61,7 +61,7 @@ class Validator extends Base\Validator
             }
 
             // Batch File should not contain multiple entries for the same payment id
-            if(in_array($paymentId, $existingPaymentIds))
+            if (in_array($paymentId, $existingPaymentIds))
             {
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BATCH_FILE_DUPLICATE_PAYMENT_ID);
             }

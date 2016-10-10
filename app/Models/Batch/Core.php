@@ -114,7 +114,6 @@ class Core extends Base\Core
                     TraceCode::BATCH_PROCESSING_ERROR,
                     [
                         'batch'         => $batch->toArrayPublic(),
-
                     ]);
             }
         }
