@@ -94,7 +94,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_CARD_NOT_ENALBED_FOR_MERCHANT,
+                    'description' => 'Credit card transactions are not allowed',
                 ]
             ],
             'status_code' => 400,
