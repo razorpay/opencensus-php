@@ -413,6 +413,13 @@ class Processor extends Base\Core
             'emails'     => $merchant->getTransactionReportEmailAttribute(),
         ];
 
+        $this->trace->info(
+                    TraceCode::BATCH_PROCESS_FILE,
+                    [
+                        'Sending email' => $data,
+
+                    ]);
+
         Mail::send('emails.message', $data, function($message) use ($data)
         {
             $emails = $data['emails'];
