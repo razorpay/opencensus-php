@@ -36,6 +36,13 @@ class Processor extends Base\Core
 
         $entries = $this->parseExcelSheets($filePath);
 
+        $this->trace->info(
+                    TraceCode::BATCH_PROCESS_FILE,
+                    [
+                        'Get Entries' => $entries,
+
+                    ]);
+
         // Set the ttl to 1000 sec.
         $this->mutex->acquireAndRelease(
             $batch->getId(),
@@ -83,6 +90,13 @@ class Processor extends Base\Core
     {
         $function = 'process' . ucfirst($batch->getType()) . 'Entries';
         $this->$function($batch, $entries);
+
+        $this->trace->info(
+                TraceCode::BATCH_PROCESS_FILE,
+                    [
+                        'Processed Entries' => $entries,
+
+                    ]);
 
         $totalProcessedAmount = 0;
         $totalSuccessCount = 0;
@@ -170,6 +184,13 @@ class Processor extends Base\Core
                 $entry[Header::ERROR_DESCRIPTION] = $error->getDescription();
                 $entry[Header::STATUS] = Status::FAILURE;
             }
+
+            $this->trace->info(
+                    TraceCode::BATCH_PROCESS_FILE,
+                    [
+                        'Processed Entry' => $entry,
+
+                    ]);
         }
     }
 
