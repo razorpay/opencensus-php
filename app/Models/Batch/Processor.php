@@ -278,7 +278,14 @@ class Processor extends Base\Core
             $finalEntries[] = $dict;
         }
 
-        $excel = $this->createExcelObject($dict, $batch->getId(), [], $batch->getType());
+        $this->trace->info(
+                    TraceCode::BATCH_PROCESS_FILE,
+                    [
+                        'Final Entries' => $finalEntries,
+
+                    ]);
+
+        $excel = $this->createExcelObject($finalEntries, $batch->getId(), [], $batch->getType());
 
         $storagePath = $this->getStoragePath();
 
