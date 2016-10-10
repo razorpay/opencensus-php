@@ -135,6 +135,8 @@ class CardTest extends TestCase
         $testData['request']['content'] = $payment;
 
         $content = $this->startTest($testData);
+
+        $this->fixtures->merchant->enableCreditCard('10000000000000');
     }
 
     public function startTest($testDataToReplace = [])
