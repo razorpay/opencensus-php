@@ -106,8 +106,6 @@ class Core extends Base\Core
         {
             try
             {
-                $batch->setStatus(Status::PROCESSING);
-
                 $batch->incrementAttempts();
 
                 $this->processor->process($batch);
@@ -123,6 +121,10 @@ class Core extends Base\Core
                 if ($batch->getAttempts() >= 3)
                 {
                     $batch->setStatus(Status::PROCESSED);
+                }
+                else
+                {
+                    $batch->setStatus(Status::PROCESSING);
                 }
 
                 $this->repo->saveOrFail($batch);
