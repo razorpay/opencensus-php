@@ -13,7 +13,12 @@ class Response
 {
     protected $app;
 
-    protected static $jsonp;
+    protected $request;
+
+    /**
+     * Denotes whether response should be jsonp or not.
+     */
+    protected $jsonp;
 
     /**
      * In case the callback parameter in the query string
@@ -25,17 +30,23 @@ class Response
     public function __construct($app)
     {
         $this->app = $app;
+
+        $this->request = $app['request'];
     }
 
     /**
      * Tells the browser that HTTP AUTH is expected
      * and hence to provide basic auth user and pwd
      */
-    public static function httpAuthExpected()
+    public function httpAuthExpected()
     {
-        self::$jsonp = false;
+        //
+        // When basicauth fails, then even if request is jsonp,
+        // we need to provide non-jsonp response.
+        //
+        $this->jsonp = false;
 
-        $response = self::generateJsonErrorResponse(
+        $response = $this->generateJsonErrorResponse(
             ErrorCode::BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED);
 
         $response->header(Header::WWW_AUTHENTICATE, 'Basic realm="Razorpay"');
@@ -43,35 +54,35 @@ class Response
         return $response;
     }
 
-    public static function provideApiKey()
+    public function provideApiKey()
     {
-        $response = self::generateErrorResponse(
+        $response = $this->generateErrorResponse(
             ErrorCode::BAD_REQUEST_UNAUTHORIZED_API_KEY_NOT_PROVIDED);
 
         return $response;
     }
 
-    public static function unauthorized($code)
+    public function unauthorized($code)
     {
-        return self::generateErrorResponse($code);
+        return $this->generateErrorResponse($code);
     }
 
-    public static function routeNotFound()
+    public function routeNotFound()
     {
-        return self::generateErrorResponse(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+        return $this->generateErrorResponse(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
     }
 
-    public static function httpMethodNotAllowed()
+    public function httpMethodNotAllowed()
     {
-        return self::generateErrorResponse(ErrorCode::BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED);
+        return $this->generateErrorResponse(ErrorCode::BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED);
     }
 
-    public static function onlyHttpsAllowed()
+    public function onlyHttpsAllowed()
     {
-        return self::generateErrorResponse(ErrorCode::BAD_REQUEST_ONLY_HTTPS_ALLOWED);
+        return $this->generateErrorResponse(ErrorCode::BAD_REQUEST_ONLY_HTTPS_ALLOWED);
     }
 
-    public static function stopBrowserCaching($response)
+    public function stopBrowserCaching($response)
     {
         //
         // Ask browser not to cache
@@ -94,7 +105,7 @@ class Response
      * communication mechanism. Checkout ensures that Razorpay.jsonp_callback
      * is defined and works properly.
      */
-    protected static function attachJsonpCallback($request, $response)
+    protected function attachJsonpCallback($request, $response)
     {
         $callback = $request->input('callback');
 
@@ -108,21 +119,21 @@ class Response
         }
     }
 
-    public static function generateErrorResponse($error, $debug = false)
+    public function generateErrorResponse($error, $debug = false)
     {
-        list($publicError, $httpStatusCode) = self::getErrorResponseFields($error, $debug);
+        list($publicError, $httpStatusCode) = $this->getErrorResponseFields($error, $debug);
 
-        return self::generateResponse($publicError, $httpStatusCode);
+        return $this->generateResponse($publicError, $httpStatusCode);
     }
 
-    public static function generateJsonErrorResponse($code)
+    public function generateJsonErrorResponse($code)
     {
-        list($publicError, $httpStatusCode) = self::getErrorResponseFields($code);
+        list($publicError, $httpStatusCode) = $this->getErrorResponseFields($code);
 
-        return self::json($publicError, $httpStatusCode);
+        return $this->json($publicError, $httpStatusCode);
     }
 
-    public static function getErrorResponseFields($error, $debug = false)
+    public function getErrorResponseFields($error, $debug = false)
     {
         $isPublicAuth = BasicAuth::isPublicAuth();
 
@@ -138,27 +149,25 @@ class Response
         return [$data, $httpStatusCode];
     }
 
-    protected static function debugException($e)
+    protected function debugException($e)
     {
-        return self::generateErrorResponse(ErrorCode::SERVER_ERROR);
+        return $this->generateErrorResponse(ErrorCode::SERVER_ERROR);
     }
 
-    public static function generateResponse($data = array(), $status = 200)
+    public function generateResponse($data = array(), $status = 200)
     {
-        $app = App::getFacadeRoot();
+        $app = $this->app;
 
         $key = 'rzp.merchant_callback_url';
 
-        $router = $app['router'];
-
-        $route = $router->currentRouteName();
+        $route = $this->getCurrentRouteName();
 
         if ((isset($app[$key])) and
             ($app[$key] !== null))
         {
-            if (self::isMerchantCallbackRoute($route))
+            if ($this->isMerchantCallbackRoute($route))
             {
-                $data = self::flattenArrayForPost($data);
+                $data = $this->flattenArrayForPost($data);
 
                 $callbackArray = array(
                     'type' => 'return',
@@ -173,68 +182,64 @@ class Response
                             ->with('data', $callbackArray);
             }
         }
-        else if (self::isCallbackRoute($route))
+        else if ($this->isCallbackRoute($route))
         {
             $data['http_status_code'] = $status;
 
             return \View::make('gateway.callback')->with('data', $data);
         }
-        else if (self::isCheckoutRoute($route))
+        else if ($this->isCheckoutRoute($route))
         {
-            return self::generateCheckoutView($data);
+            return $this->generateCheckoutView($data);
         }
 
-        return self::json($data, $status);
+        return $this->json($data, $status);
     }
 
-    public static function json($data = array(), $status = 200)
+    public function json($data = array(), $status = 200)
     {
-        $request = \Request::getFacadeRoot();
-
         $response = \Response::json();
 
-        $app = \App::getFacadeRoot();
-        $router = $app['router'];
-        $route = $router->currentRouteName();
+        $route = $this->getCurrentRouteName();
 
-        self::setContentTypeHtmlForSpecificRoutes($route, $response);
-        self::setAccessControlAllowOriginStarOnSpecificRoutes($route, $response);
+        $this->setContentTypeHtmlForSpecificRoutes($route, $response);
+        $this->setAccessControlAllowOriginStarOnSpecificRoutes($route, $response);
 
-        if ((self::$jsonp === null) and
-            (self::isJsonpRoute($route)))
+        if (($this->jsonp === null) and
+            ($this->isJsonpRoute($route)))
         {
             $data['http_status_code'] = $status;
             $status = 200;
 
-            self::attachJsonpCallback($request, $response);
+            $this->attachJsonpCallback($this->request, $response);
         }
 
         $response->setData($data);
         $response->setStatusCode($status);
 
-        self::stopBrowserCaching($response);
+        $this->stopBrowserCaching($response);
 
-        self::setSameOriginInHeaders($response, $route);
+        $this->setSameOriginInHeaders($response, $route);
 
-        // This statement is needed for keeping tests functional since
-        // we are using a static var here @todo: change this!
-        self::$jsonp = null;
+        // // This statement is needed for keeping tests functional since
+        // // we are using a static var here @todo: change this!
+        // $this->jsonp = null;
 
         return $response;
     }
 
-    protected static function generateCheckoutView($data)
+    protected function generateCheckoutView($data)
     {
         return \View::make('checkout.checkout')
                     ->with($data);
     }
 
-    protected static function isJsonpRequired($path)
+    protected function isJsonpRequired($path)
     {
         return Route::isJsonpRoute($path);
     }
 
-    protected static function isMerchantCallbackRoute($route)
+    protected function isMerchantCallbackRoute($route)
     {
         $callbackRoutes = array(
             'payment_create',
@@ -247,7 +252,7 @@ class Response
         return (in_array($route, $callbackRoutes));
     }
 
-    protected static function isCallbackRoute($route)
+    protected function isCallbackRoute($route)
     {
         $callbackRoutes = array(
             'payment_create_checkout',
@@ -259,7 +264,7 @@ class Response
         return (in_array($route, $callbackRoutes));
     }
 
-    protected static function isCheckoutRoute($route)
+    protected function isCheckoutRoute($route)
     {
         $checkoutRoute = array(
             'checkout');
@@ -267,7 +272,7 @@ class Response
         return (in_array($route, $checkoutRoute));
     }
 
-    protected static function isJsonpRoute($route)
+    protected function isJsonpRoute($route)
     {
         $jsonpRoutes = array(
             'merchant_checkout_preferences',
@@ -280,7 +285,7 @@ class Response
         return (in_array($route, $jsonpRoutes));
     }
 
-    protected static function setContentTypeHtmlForSpecificRoutes($route, $response)
+    protected function setContentTypeHtmlForSpecificRoutes($route, $response)
     {
         $routes = array('payment_create');
 
@@ -295,7 +300,7 @@ class Response
         }
     }
 
-    protected static function setAccessControlAllowOriginStarOnSpecificRoutes($route, $response)
+    protected function setAccessControlAllowOriginStarOnSpecificRoutes($route, $response)
     {
         $routes = array(
             'payment_cancel',
@@ -316,9 +321,9 @@ class Response
         }
     }
 
-    public static function setSameOriginInHeaders($response, $route)
+    public function setSameOriginInHeaders($response, $route)
     {
-        if (self::mustNotSetSameOriginHeaders($route))
+        if ($this->mustNotSetSameOriginHeaders($route))
         {
             return;
         }
@@ -326,14 +331,14 @@ class Response
         $response->headers->set(Header::X_FRAME_OPTIONS, 'SAMEORIGIN', false);
     }
 
-    protected static function mustNotSetSameOriginHeaders($route)
+    protected function mustNotSetSameOriginHeaders($route)
     {
         $routes = array('checkout');
 
         return (in_array($route, $routes));
     }
 
-    protected static function flattenArrayForPost($data)
+    protected function flattenArrayForPost($data)
     {
         $data = flatten_array($data, '][');
 
@@ -346,5 +351,10 @@ class Response
         }
 
         return $array;
+    }
+
+    protected function getCurrentRouteName()
+    {
+        return $this->app['api.route']->getCurrentRouteName();
     }
 }
