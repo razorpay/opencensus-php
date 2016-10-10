@@ -1,17 +1,18 @@
 <?php
 
-namespace RZP\Http;
+namespace RZP\Http\Response;
 
 use App;
 use View;
 use Request;
-use Response;
 use BasicAuth;
 use RZP\Error\Error;
 use RZP\Error\ErrorCode;
 
-class ApiResponse
+class Response
 {
+    protected $app;
+
     protected static $jsonp;
 
     /**
@@ -20,6 +21,11 @@ class ApiResponse
      * We will use this instead
      */
     const JSONP_FALLBACK_CALLBACK = 'Razorpay.jsonp_callback';
+
+    public function __construct($app)
+    {
+        $this->app = $app;
+    }
 
     /**
      * Tells the browser that HTTP AUTH is expected
@@ -32,7 +38,7 @@ class ApiResponse
         $response = self::generateJsonErrorResponse(
             ErrorCode::BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED);
 
-        $response->header(ResponseHeader::WWW_AUTHENTICATE, 'Basic realm="Razorpay"');
+        $response->header(Header::WWW_AUTHENTICATE, 'Basic realm="Razorpay"');
 
         return $response;
     }
@@ -70,14 +76,14 @@ class ApiResponse
         //
         // Ask browser not to cache
         //
-        $response->headers->set(ResponseHeader::CACHE_CONTROL,'nocache, no-store, max-age=0, must-revalidate');
+        $response->headers->set(Header::CACHE_CONTROL,'nocache, no-store, max-age=0, must-revalidate');
 
-        $response->headers->set(ResponseHeader::PRAGMA,'no-cache');
+        $response->headers->set(Header::PRAGMA,'no-cache');
 
         //
         // Put old time so that any browser cache gets expired
         //
-        $response->headers->set(ResponseHeader::EXPIRES,'Fri, 01 Jan 1990 00:00:00 GMT');
+        $response->headers->set(Header::EXPIRES,'Fri, 01 Jan 1990 00:00:00 GMT');
     }
 
     /**
@@ -185,7 +191,7 @@ class ApiResponse
     {
         $request = \Request::getFacadeRoot();
 
-        $response = Response::json();
+        $response = \Response::json();
 
         $app = \App::getFacadeRoot();
         $router = $app['router'];
@@ -285,7 +291,7 @@ class ApiResponse
             // because on android 2.* json content is not being read on form
             // post for cards with no 3d-secure.
             //
-            $response->headers->set(ResponseHeader::CONTENT_TYPE, 'text/html; charset=UTF-8');
+            $response->headers->set(Header::CONTENT_TYPE, 'text/html; charset=UTF-8');
         }
     }
 
@@ -306,7 +312,7 @@ class ApiResponse
             // otherwise these routes will not work there. Read furhter on CORS
             // to understand better.
             //
-            $response->headers->set(ResponseHeader::ACCESS_CONTROL_ALLOW_ORIGIN, '*');
+            $response->headers->set(Header::ACCESS_CONTROL_ALLOW_ORIGIN, '*');
         }
     }
 
@@ -317,7 +323,7 @@ class ApiResponse
             return;
         }
 
-        $response->headers->set(ResponseHeader::X_FRAME_OPTIONS, 'SAMEORIGIN', false);
+        $response->headers->set(Header::X_FRAME_OPTIONS, 'SAMEORIGIN', false);
     }
 
     protected static function mustNotSetSameOriginHeaders($route)

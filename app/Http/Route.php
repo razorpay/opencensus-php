@@ -2,6 +2,8 @@
 
 namespace RZP\Http;
 
+use ApiResponse;
+
 final class Route
 {
     /*

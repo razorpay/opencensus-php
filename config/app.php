@@ -239,6 +239,7 @@ return array(
 
         // Application Facades
         'BasicAuth' => RZP\Http\BasicAuth\Facade::class,
+        'ApiResponse'=> RZP\Http\Response\Facade::class,
         'Trace'     => RZP\Trace\Facade::class,
 
         // Custom Facade
