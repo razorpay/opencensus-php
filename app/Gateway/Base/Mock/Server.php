@@ -18,6 +18,8 @@ class Server
 
     protected $app;
 
+    protected $trace;
+
     /**
      * Api Route instance
      *
@@ -33,11 +35,13 @@ class Server
 
     public function __construct()
     {
-        $this->request = Request::getFacadeRoot();
+        $this->app = App::getFacadeRoot();
 
-        $this->app     = App::getFacadeRoot();
+        $this->request = $this->app['request'];
 
         $this->route = $this->app['api.route'];
+
+        $this->trace = $this->app['trace'];
     }
 
     protected function authorize($input)

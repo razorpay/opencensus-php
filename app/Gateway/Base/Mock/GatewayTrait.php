@@ -51,8 +51,7 @@ trait GatewayTrait
 
     protected function callGatewayRequestFunctionInternally($request)
     {
-        $app = $this->app;
-        $server = $app['gateway']->server($this->gateway);
+        $server = $this->app['gateway']->server($this->gateway);
 
         $input = [];
 

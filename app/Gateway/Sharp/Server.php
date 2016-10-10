@@ -5,22 +5,11 @@ namespace RZP\Gateway\Sharp;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Base;
-use Requests;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use Crypt;
 
-class Server
+class Server extends Base\Mock\Server
 {
-    public function __construct()
-    {
-        $app = \App::getFacadeRoot();
-
-        $this->route = $app['api.route'];
-
-        $this->trace = $app['trace'];
-    }
-
     public function action($input)
     {
         if (isset($input['action']) === false)

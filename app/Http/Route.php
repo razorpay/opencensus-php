@@ -634,7 +634,7 @@ final class Route
     {
         if ($key === '')
         {
-            $key = \BasicAuth::getPublicKey();
+            $key = $this->ba->getPublicKey();
         }
 
         return self::getUrl($routeName, $parameters, $key);
@@ -644,7 +644,7 @@ final class Route
     {
         if ($key === '')
         {
-            $key = \BasicAuth::getPublicKey();
+            $key = $this->ba->getPublicKey();
         }
 
         return self::getUrl('payment_callback_with_key_post', $parameters, $key);
@@ -654,7 +654,7 @@ final class Route
     {
         if ($key === '')
         {
-            $key = \BasicAuth::getPublicKey();
+            $key = $this->ba->getPublicKey();
         }
 
         $secret = $this->app->config->get('app.key');
