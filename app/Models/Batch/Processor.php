@@ -45,6 +45,8 @@ class Processor extends Base\Core
 
                 $fullpath = $this->createProcessedExcel($batch, $entries);
 
+                $this->updateBatchStatus($batch);
+
                 $downloadUrl = $this->saveBatchFileToAws($batch, $fullpath);
 
                 $batch->setDownloadFileUrl($downloadUrl);
@@ -53,9 +55,9 @@ class Processor extends Base\Core
 
                 $batch->setProcessedAt($processedAt);
 
-                $shouldSendMail = $this->shouldSendMail($batch);
-
                 $this->repo->saveOrFail($batch);
+
+                $shouldSendMail = $this->shouldSendMail($batch);
 
                 $this->trace->info(
                     TraceCode::BATCH_PROCESS_FILE,
@@ -90,7 +92,7 @@ class Processor extends Base\Core
         {
             if (empty($entry[Header::STATUS]) === false)
             {
-                if($entry[Header::STATUS] === Status::SUCCESS)
+                if ($entry[Header::STATUS] === Status::SUCCESS)
                 {
                     $totalSuccessCount++;
 
@@ -111,14 +113,21 @@ class Processor extends Base\Core
 
     protected function shouldSendMail($batch)
     {
-        $shouldSendMail = false;
+        if ($batch->getStatus() === Status::PROCESSED)
+        {
+            return true;
+        }
 
+        return false;
+    }
+
+    protected function updateBatchStatus($batch)
+    {
         if ($batch->getFailureCount() > 0)
         {
             if ($batch->getAttempts() >= 3)
             {
                 $batch->setStatus(Status::PROCESSED);
-                $shouldSendMail = true;
             }
             else
             {
@@ -128,10 +137,7 @@ class Processor extends Base\Core
         else
         {
             $batch->setStatus(Status::PROCESSED);
-            $shouldSendMail = true;
         }
-
-        return $shouldSendMail;
     }
 
     protected function processRefundEntries($batch, & $entries)
