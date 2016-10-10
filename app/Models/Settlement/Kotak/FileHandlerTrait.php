@@ -331,7 +331,7 @@ trait FileHandlerTrait
         return $filePath;
     }
 
-    protected function getPreSignedUrlFromAws($key, $filePath, $bucket = 'settlement_bucket')
+    protected function getPreSignedUrlFromAws($key, $bucket = 'settlement_bucket', $ttl = '+10 minutes')
     {
         $config =  \Config::get('aws');
 
@@ -339,19 +339,24 @@ trait FileHandlerTrait
 
         if ($awsS3Mock)
         {
-            return $filePath;
+            return $key;
         }
 
         $s3 = AWS::createClient('s3');
 
         $awsBucket = $config[$bucket];
 
-        $url = $s3->getObjectUrl($awsBucket, $key,
-                '+10 minutes', [
-                    'https'     => true
-            ]);
+        $cmd = $s3Client->getCommand('GetObject', [
+            'Bucket' => $bucket,
+            'Key'    => $key
+        ]);
 
-        return $url;
+        $request = $s3Client->createPresignedRequest($cmd, $ttl);
+
+        // Get the actual presigned-url
+        $presignedUrl = (string) $request->getUri();
+
+        return $presignedUrl;
     }
 
     protected function saveLocally($name, $txt)
