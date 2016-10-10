@@ -106,7 +106,7 @@ class Core extends Base\Core
         {
             try
             {
-                $batch->setStatus(BatchStatus::PROCESSING);
+                $batch->setStatus(Status::PROCESSING);
 
                 $batch->incrementAttempts();
 
