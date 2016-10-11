@@ -28,6 +28,7 @@ class TraceCode
     const PAYMENT_CAPTURE_SUCCESS                   = 'PAYMENT_CAPTURE_SUCCESS';
     const PAYMENT_CAPTURE_FAILURE                   = 'PAYMENT_CAPTURE_FAILURE';
     const PAYMENT_CAPTURE_FORCED                    = 'PAYMENT_CAPTURE_FORCED';
+    const PAYMENT_ALREADY_CAPTURED                  = 'PAYMENT_ALREADY_CAPTURED';
     const PAYMENT_AUTO_CAPTURE                      = 'PAYMENT_AUTO_CAPTURE';
     const PAYMENT_AUTO_CAPTURE_FAILED               = 'PAYMENT_AUTO_CAPTURE_FAILED';
     const PAYMENT_QUEUE_CAPTURE_REQUEST             = 'PAYMENT_QUEUE_CAPTURE_REQUEST';
@@ -130,6 +131,7 @@ class TraceCode
      * Gateway component error messages
      */
 
+    const GATEWAY_RESPONSE                          = 'GATEWAY_RESPONSE';
     const GATEWAY_ENROLL_REQUEST                    = 'GATEWAY_ENROLL_REQUEST';
     const GATEWAY_ENROLL_RESPONSE                   = 'GATEWAY_ENROLL_RESPONSE';
     const GATEWAY_ENROLL_ERROR                      = 'GATEWAY_ENROLL_ERROR';
@@ -171,6 +173,7 @@ class TraceCode
     const GATEWAY_CHECKSUM_VERIFY                   = 'GATEWAY_CHECKSUM_VERIFY';
     const GATEWAY_CHECKSUM_VERIFY_REQUEST           = 'GATEWAY_CHECKSUM_VERIFY_REQUEST';
     const GATEWAY_CHECKSUM_VERIFY_FAILED            = 'GATEWAY_CHECKSUM_VERIFY_FAILED';
+    const GATEWAY_SOAP_REQUEST                      = 'GATEWAY_SOAP_REQUEST';
     const GATEWAY_REQUEST_TIMEOUT                   = 'GATEWAY_REQUEST_TIMEOUT';
     const GATEWAY_RUPAY_CALLBACK                    = 'GATEWAY_RUPAY_CALLBACK';
     const GATEWAY_HDFC_CALLBACK_EMPTY               = 'GATEWAY_HDFC_CALLBACK_EMPTY';
@@ -204,6 +207,8 @@ class TraceCode
     const SETTLEMENT_DAILY_REPORT_DATA              = 'SETTLEMENT_DAILY_REPORT_DATA';
     const SETTLEMENT_DAILY_REPORT_RESULT            = 'SETTLEMENT_DAILY_REPORT_RESULT';
     const SETTLEMENT_DAILY_REPORT_FAILURE           = 'SETTLEMENT_DAILY_REPORT_FAILURE';
+    const CLIENT_CERTIFICATE_FILE_GENERATED         = 'CLIENT_CERTIFICATE_FILE_GENERATED';
+    const CLIENT_CERTIFICATE_KEY_FILE_GENERATED     = 'CLIENT_CERTIFICATE_KEY_FILE_GENERATED';
 
     const MERCHANT_BENEFICIARY_FILE_GENERATE        = 'MERCHANT_BENEFICIARY_FILE_GENERATE';
     const MERCHANT_REPORT_GENERATION                = 'MERCHANT_REPORT_GENERATION';
@@ -269,6 +274,20 @@ class TraceCode
     const RECON_FILE_DETAILS                        = 'RECON_FILE_DETAILS';
     const RECON_INFO_SUMMARY                        = 'RECON_INFO_SUMMARY';
     const IIN_INSERT_FAILED                         = 'IIN_INSERT_FAILED';
+
+    const BATCH_UPLOAD_FILE_ENTRIES                 = 'BATCH_UPLOAD_FILE_ENTRIES';
+    const BATCH_UPLOAD_FILE                         = 'BATCH_UPLOAD_FILE';
+    const BATCH_PROCESS_FILE                        = 'BATCH_PROCESS_FILE';
+    const BATCH_ALREADY_PROCESSED                   = 'BATCH_ALREADY_PROCESSED';
+    const BATCH_PROCESSING_ERROR                    = 'BATCH_PROCESSING_ERROR';
+    const BATCH_RETRY                               = 'BATCH_RETRY';
+    const BATCH_RETRY_FAILURE                       = 'BATCH_RETRY_FAILURE';
+    const BATCH_DOWNLOAD                            = 'BATCH_DOWNLOAD';
+    const BATCH_LIST                                = 'BATCH_LIST';
+    const BATCH_GET                                 = 'BATCH_GET';
+    const BATCH_FILE_DELETE                         = 'BATCH_FILE_DELETE';
+
+    const MUTEX_LOCK_ALREADY_RELEASED               = 'MUTEX_LOCK_ALREADY_RELEASED';
 
     /**
      * Trace code for critical info
@@ -363,6 +382,18 @@ class TraceCode
         self::REFUND_TRANSACTION_FAILED                 => 'Transaction failed to create for refund',
         self::RECON_INFO_SUMMARY                        => 'Summary of the reconciliation of the files',
         self::TRANSACTION_CREATED_IN_VERIFY_CAPTURE     => 'Transaction created for a failed capture',
+
+        self::BATCH_UPLOAD_FILE_ENTRIES                 => 'Entries of the uploaded file',
+        self::BATCH_UPLOAD_FILE                         => 'Uploaded batch file',
+        self::BATCH_PROCESS_FILE                        => 'Processing the batch file',
+        self::BATCH_ALREADY_PROCESSED                   => 'Batch File already processed',
+        self::BATCH_PROCESSING_ERROR                    => 'Error in processing batch',
+        self::BATCH_RETRY                               => 'Manual retry for the batch file',
+        self::BATCH_RETRY_FAILURE                       => 'Failure in retrying batch file',
+        self::BATCH_DOWNLOAD                            => 'Downloading the batch file',
+        self::BATCH_LIST                                => 'Getting the batch files',
+        self::BATCH_GET                                 => 'Get Batch by given id',
+        self::BATCH_FILE_DELETE                         => 'Batch file delete',
     );
 
     /**
