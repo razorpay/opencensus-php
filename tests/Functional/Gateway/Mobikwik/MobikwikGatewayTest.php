@@ -180,7 +180,7 @@ class MobikwikGatewayTest extends TestCase
         $response = $this->response->getOriginalContent()->data;
 
         // Send topup request
-        $response = $this->topupPayment($response['payment_id']);
+        $response = $this->doWalletTopupViaAjaxRoute($response['payment_id']);
 
         // Make topup redirection request
         $redirect = $this->sendRequest($response['request']);

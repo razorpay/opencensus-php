@@ -206,7 +206,7 @@ class FreechargeGatewayTest extends TestCase
         $originalData = $this->response->getOriginalContent()->data;
 
         // Send topup redirect request.
-        $response = $this->topupPayment($originalData['payment_id']);
+        $response = $this->doWalletTopupViaAjaxRoute($originalData['payment_id']);
 
         // Make topup redirection request
         $redirect = $this->sendRequest($response['request']);
@@ -263,7 +263,7 @@ class FreechargeGatewayTest extends TestCase
         // Send topup request
         $this->runRequestResponseFlow($request, function() use ($response)
         {
-            $this->topupPayment($response['razorpay_payment_id']);
+            $this->doWalletTopupViaAjaxRoute($response['razorpay_payment_id']);
         });
     }
 
@@ -280,7 +280,7 @@ class FreechargeGatewayTest extends TestCase
         // Send topup request
         $this->runRequestResponseFlow($request, function() use ($response)
         {
-            $this->topupPayment($response['razorpay_payment_id']);
+            $this->doWalletTopupViaAjaxRoute($response['razorpay_payment_id']);
         });
     }
 
@@ -305,7 +305,7 @@ class FreechargeGatewayTest extends TestCase
 
         // Send topup request
         $this->runRequestResponseFlow($request, function() use ($paymentId) {
-            $this->topupPayment($paymentId);
+            $this->doWalletTopupViaAjaxRoute($paymentId);
         });
     }
 

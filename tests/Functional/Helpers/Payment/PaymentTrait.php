@@ -393,7 +393,7 @@ trait PaymentTrait
         return $response;
     }
 
-    protected function topupPayment($id)
+    protected function doWalletTopupViaAjaxRoute($id)
     {
         $request = array(
             'method' => 'POST',
