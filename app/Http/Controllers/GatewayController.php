@@ -165,13 +165,7 @@ class GatewayController extends Controller
         $keys = $this->repo->key->getKeysForMerchant($payment->getMerchantId());
         $publicKey = $keys->first()->getPublicKey($mode);
 
-        $secret = \App::make('config')->get('app.key');
-
-        $hash = hash_hmac('sha1', $publicPaymentId, $secret);
-
-        $params = ['id' => $publicPaymentId, 'hash' => $hash];
-
-        $url = Route::getUrlWithPublicCallbackAuth($params, $publicKey);
+        $url = $this->route->getPublicCallbackUrlWithHash($publicPaymentId, $publicKey);
 
         $url = $url . '?msg=' . $inputMsg;
 
@@ -180,7 +174,7 @@ class GatewayController extends Controller
 
     protected function getGatewayEntityAndModeByTraceId($traceId)
     {
-        $app = \App::getFacadeRoot();
+        $app = $this->app;
 
         $repo = new \RZP\Gateway\Netbanking\Base\Repository;
 

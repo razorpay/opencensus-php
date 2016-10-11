@@ -16,7 +16,7 @@ class Gateway extends Freecharge\Gateway
     {
         $request = parent::topup($input);
 
-        $url = Route::getUrlWithPublicAuth(
+        $url = $this->route->getUrlWithPublicAuth(
             'mock_wallet_payment_with_paymentid',
             ['wallet' => $input['payment']['wallet'],
             'paymentId' => $input['payment']['id']]);

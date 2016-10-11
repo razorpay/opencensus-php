@@ -18,9 +18,13 @@ class Gateway extends Olamoney\Gateway
 
         $parts = parse_url($request['url']);
 
-        $url = Route::getUrlWithPublicAuth('mock_wallet_payment_get',
-                                                ['wallet' => $input['payment']['wallet'],
-                                                 'paymentId' => $input['payment']['id']]);
+        $url = $this->route->getUrlWithPublicAuth(
+                    'mock_wallet_payment_get',
+                    [
+                        'wallet' => $input['payment']['wallet'],
+                        'paymentId' => $input['payment']['id']
+                    ]);
+
         $url = $url . '&' .$parts['query'];
 
         $request['url'] = $url;
