@@ -393,6 +393,23 @@ trait PaymentTrait
         return $response;
     }
 
+    protected function doWalletTopup($id)
+    {
+        $request = array(
+            'method' => 'POST',
+            'url' => '/payments/'.$id.'/topup',
+            'content' => array()
+        );
+
+        $this->ba->publicAuth();
+
+        $response = $this->makeRequestParent($request);
+
+        $response = $this->handlePaymentCreationFlow($response, $request);
+
+        return $this->getJsonContentFromResponse($response);
+    }
+
     protected function doWalletTopupViaAjaxRoute($id)
     {
         $request = array(

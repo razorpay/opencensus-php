@@ -277,6 +277,23 @@ class PayumoneyGatewayTest extends TestCase
         return $callbackResponse->getOriginalContent()->data;
     }
 
+    public function testTopupPaymentViaRedirectionFlow()
+    {
+        // Get Innsufficient balance response
+        $this->testInsufficientBalancePayment();
+
+        $originalData = $this->response->getOriginalContent()->data;
+
+        // Send topup request
+        $response = $this->doWalletTopup($originalData['payment_id']);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $this->assertTestResponse($wallet, 'testTopupPayment');
+    }
+
     public function testTopupAlreadyProcessedPayment()
     {
         $response = $this->testTopupPayment();
@@ -499,14 +516,19 @@ class PayumoneyGatewayTest extends TestCase
         list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
 
         $this->response     = $response;
-        $this->callbackUrl  = $url;
 
         if ($mock)
         {
             if ($this->isOtpCallbackUrl($url))
             {
+                $this->callbackUrl = $url;
+
                 return $this->makeOtpCallback($url);
             }
+
+            $url = $this->makeFirstGatewayPaymentMockRequest($url, $method, $content);
+
+            return $this->submitPaymentCallbackRedirect($url);
         }
 
         return null;
