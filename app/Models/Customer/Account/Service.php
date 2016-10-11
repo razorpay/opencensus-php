@@ -164,7 +164,8 @@ class Service extends Base\Service
 
             $this->trace->info(TraceCode::CUSTOMER_CHECKCOOKIE_STATUS,
                 [
-                    'session' => $sessionData
+                    'session' => $sessionData,
+                    'input'   => $input
                 ]);
 
             // return once this matches the mismatch cases.

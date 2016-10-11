@@ -66,6 +66,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_TERMINAL_PASSWORD,
         self::GATEWAY_RECON_PASSWORD,
         self::GATEWAY_ACQUIRER,
+        self::GATEWAY_CLIENT_CERTIFICATE,
         self::ENABLED
     ];
 
@@ -99,6 +100,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_TERMINAL_PASSWORD,
         self::GATEWAY_SECURE_SECRET,
         self::GATEWAY_RECON_PASSWORD,
+        self::GATEWAY_CLIENT_CERTIFICATE,
     ];
 
     protected $generateIdOnCreate = true;

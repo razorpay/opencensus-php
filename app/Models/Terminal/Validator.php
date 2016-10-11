@@ -21,6 +21,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACCESS_CODE         => 'sometimes',
         Entity::GATEWAY_SECURE_SECRET       => 'sometimes',
         Entity::GATEWAY_RECON_PASSWORD      => 'sometimes|alpha_num',
+        Entity::GATEWAY_CLIENT_CERTIFICATE  => 'sometimes',
         Entity::CATEGORY                    => 'sometimes|integer|digits:4',
         Entity::CARD                        => 'sometimes|boolean',
         Entity::NETBANKING                  => 'sometimes|boolean',
@@ -77,6 +78,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID2        => 'required|string|min:5',
         Entity::GATEWAY_ACCESS_CODE         => 'required|alpha_num|min:5',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|alpha_num|min:5',
+        Entity::GATEWAY_CLIENT_CERTIFICATE  => 'required|min:20',
         Entity::EMI                         => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12',
     );
@@ -196,7 +198,7 @@ class Validator extends Base\Validator
 
     protected function validateEmi($input)
     {
-        if (isset($input[Entity::EMI]) === false)
+        if (!isset($input[Entity::EMI]) or ($input[Entity::EMI] !== '1'))
         {
             return;
         }
@@ -260,7 +262,8 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Category provided invalid for gateway',
-                Entity::NETWORK_CATEGORY);
+                Entity::NETWORK_CATEGORY,
+                [$input]);
             }
     }
 
@@ -271,7 +274,8 @@ class Validator extends Base\Validator
             ($new->getId() !== $existing->getId()) and
             ($new->isEmiEnabled() === $existing->isEmiEnabled()) and
             ($new->getEmiDuration() === $existing->getEmiDuration()) and
-            ($new->getRecurring() === $existing->getRecurring()))
+            ($new->getRecurring() === $existing->getRecurring()) and
+            ($new->getNetworkCategory() === $existing->getNetworkCategory()))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY);
