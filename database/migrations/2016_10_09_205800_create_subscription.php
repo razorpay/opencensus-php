@@ -5,6 +5,7 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
 use RZP\Models\Plan\Subscription\Entity;
+use RZP\Models\Plan\Subscription\Status;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
@@ -33,8 +34,9 @@ class CreateSubscription extends Migration
             $table->char(Entity::CUSTOMER_ID, Entity::ID_LENGTH);
 
             $table->char(Entity::TOKEN_ID, Entity::ID_LENGTH);
-            
-            $table->string(Entity::STATUS, 16);
+
+            $table->string(Entity::STATUS, 16)
+                  ->default(Status::CREATED);
 
             $table->integer(Entity::QUANTITY)
                   ->default(1);

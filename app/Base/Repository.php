@@ -188,7 +188,7 @@ class Repository extends \Razorpay\Spine\Repository
                     'entity'            => $entity->toArray(),
                     'mode'              => $this->app['rzp.mode'],
                 ];
-                
+
                 // Saving the entity in ES.
                 $this->queue->push($esRepoClassPath.'@fireStoreEntity', $queueData);
             }
