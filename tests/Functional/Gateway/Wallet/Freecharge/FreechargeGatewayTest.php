@@ -208,48 +208,13 @@ class FreechargeGatewayTest extends TestCase
         // Send topup redirect request.
         $response = $this->doWalletTopupViaAjaxRoute($originalData['payment_id']);
 
-        // Make topup redirection request
-        $redirect = $this->sendRequest($response['request']);
-
-        $ret = (($this->isResponseInstanceType($redirect, 'redirect')) and
-                ($redirect->getStatusCode() === 302));
-
-        if ($ret === true)
-        {
-            $content = [
-                'status'        => 'COMPLETED',
-                'walletBalance' => '1234',
-                'errorCode'     => 'E000',
-                'errorMessage'  => 'SUCCESS',
-                'metadata'      => 'dummy',
-                'key_id'        => $this->ba->getKey(),
-            ];
-
-            $content['checksum'] = $this->sortKeysAndGenerateHash($content);
-
-            $callback = array(
-                'url' => $redirect->getTargetUrl(),
-                'method' => 'post',
-                'content' => $content,
-                'headers' => [
-                    'Content-Type'  => 'x-www-form-urlencoded',
-                ],
-            );
-
-            $callbackResponse = $this->sendRequest($callback);
-        }
-        else
-        {
-            assert(false);
-        }
-
-        $this->assertArrayHasKey('razorpay_payment_id', $callbackResponse->getOriginalContent()->data);
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
 
         $wallet = $this->getLastEntity('wallet', true);
 
         $this->assertTestResponse($wallet, __FUNCTION__);
 
-        return $callbackResponse->getOriginalContent()->data;
+        return $response;
     }
 
     public function testTopupAlreadyProcessedPayment()
@@ -448,29 +413,22 @@ class FreechargeGatewayTest extends TestCase
 
         list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
 
-        $this->response     = $response;
-        $this->callbackUrl  = $url;
+        $this->response = $response;
 
         if ($mock)
         {
             if ($this->isOtpCallbackUrl($url))
             {
+                $this->callbackUrl = $url;
+
                 return $this->makeOtpCallback($url);
             }
+
+            $url = $this->makeFirstGatewayPaymentMockRequest($url, $method, $content);
+
+            return $this->submitPaymentCallbackRedirect($url);
         }
 
         return null;
-    }
-
-    protected function sortKeysAndGenerateHash(array $response)
-    {
-        // Sort all keys and arrange <K-V> pair in alphabetical order
-       ksort($response);
-
-       $secretKey = $this->app->config['gateway']['wallet_freecharge']['test_hash_secret'];
-
-       $hashString = json_encode($response).$secretKey;
-
-       return hash('sha256', $hashString);
     }
 }

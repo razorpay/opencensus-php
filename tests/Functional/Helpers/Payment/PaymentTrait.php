@@ -405,7 +405,7 @@ trait PaymentTrait
 
         $response = $this->makeRequestParent($request);
 
-        $response = $this->handlePaymentCreationFlow($response, $request);
+        $response = $this->handleWalletTopupFlow($response, $request);
 
         return $this->getJsonContentFromResponse($response);
     }
@@ -420,9 +420,11 @@ trait PaymentTrait
 
         $this->ba->publicAuth();
 
-        $content = $this->makeRequestAndGetContent($request);
+        $response = $this->makeRequestParent($request);
 
-        return $content;
+        $response = $this->handleWalletTopupFlow($response, $request);
+
+        return $this->getJsonContentFromResponse($response);
     }
 
     protected function redirectPayment($id)

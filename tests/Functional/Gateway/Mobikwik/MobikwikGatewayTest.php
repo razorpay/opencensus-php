@@ -182,28 +182,7 @@ class MobikwikGatewayTest extends TestCase
         // Send topup request
         $response = $this->doWalletTopupViaAjaxRoute($response['payment_id']);
 
-        // Make topup redirection request
-        $redirect = $this->sendRequest($response['request']);
-
-        $ret = (($this->isResponseInstanceType($redirect, 'redirect')) and
-                ($redirect->getStatusCode() === 302));
-
-        if ($ret === true)
-        {
-            $callback = array(
-                'url' => $redirect->getTargetUrl(),
-                'method' => 'get',
-                'content' => []
-            );
-
-            $callbackResponse = $this->sendRequest($callback);
-        }
-        else
-        {
-            assert(false);
-        }
-
-        $this->assertArrayHasKey('razorpay_payment_id', $callbackResponse->getOriginalContent()->data);
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
 
         $mobikwik = $this->getLastEntity('mobikwik', true);
 
