@@ -650,7 +650,7 @@ final class Route
             $key = $this->ba->getPublicKey();
         }
 
-        return self::getUrl($routeName, $parameters, $key);
+        return $this->getUrl($routeName, $parameters, $key);
     }
 
     public function getUrlWithPublicCallbackAuth(array $parameters = array(), $key = '')
@@ -660,7 +660,7 @@ final class Route
             $key = $this->ba->getPublicKey();
         }
 
-        return self::getUrl('payment_callback_with_key_post', $parameters, $key);
+        return $this->getUrl('payment_callback_with_key_post', $parameters, $key);
     }
 
     public function getPublicCallbackUrlWithHash($pid , $key = '')
@@ -676,7 +676,7 @@ final class Route
 
         $parameters = ['id' => $pid, 'hash' => $hash];
 
-        return self::getUrl('payment_callback_with_key_post', $parameters, $key);
+        return $this->getUrl('payment_callback_with_key_post', $parameters, $key);
     }
 
     public function getUrlWithAuth($relativeUrl, $key = '', $secret = '')
@@ -741,16 +741,8 @@ final class Route
         {
             foreach (self::$$group as $routeName)
             {
-                self::addRoute($routeName);
+                $this->addRoute($routeName);
             }
-        }
-    }
-
-    public static function addRoutes($type)
-    {
-        foreach (self::$$type as $routeName)
-        {
-            self::addRoute($routeName);
         }
     }
 
