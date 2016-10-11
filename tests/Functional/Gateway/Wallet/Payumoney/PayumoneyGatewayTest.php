@@ -57,32 +57,40 @@ class PayumoneyGatewayTest extends TestCase
 
         $response = $this->redirectPayment($authPayment['razorpay_payment_id']);
 
-        $this->assertArraySelectiveEquals($authPayment, $response);
+        $this->assertTrue($response->headers->contains('Content-Type', 'text/html; charset=UTF-8'));
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertArraySelectiveEquals($authPayment, $content);
     }
 
     public function testFailedPaymentWithRedirection()
     {
+        $this->config['app.throw_exception_in_testing'] = false;
+        $this->config['app.debug'] = false;
+
         $payment = $this->getDefaultWalletPaymentArray('payumoney');
 
         $this->setOtp(Otp::EXPIRED);
 
         $data = $this->testData[__FUNCTION__];
 
-        $authResponse = $this->runRequestResponseFlow($data, function() use ($payment)
-        {
-            return $this->doAuthPaymentViaAjaxRoute($payment);
-        });
+        $authResponse = $this->doAuthPaymentViaAjaxRoute($payment);
 
-        $content = $this->getJsonContentFromResponse($this->response);
+        $this->assertArraySelectiveEquals($data, $authResponse);
+
+        $payment = $this->getLastEntity('payment');
 
         $data = $this->testData['testExpiredOtpPaymentRedirection'];
 
-        $redirectResponse = $this->runRequestResponseFlow($data, function() use ($content)
-        {
-            return $this->redirectPayment($content['payment_id']);
-        });
+        $response = $this->redirectPayment($payment['id']);
+        $headers = $response->headers;
 
-        $this->assertArraySelectiveEquals($authResponse, $redirectResponse);
+        $this->assertTrue($headers->contains('Content-Type', 'text/html; charset=UTF-8'), 'Content-Type should be text/html');
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertArraySelectiveEquals($authResponse, $content);
     }
 
     public function testOtpRetryPayment()

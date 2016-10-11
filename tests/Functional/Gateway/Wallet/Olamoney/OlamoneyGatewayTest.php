@@ -343,7 +343,9 @@ class OlamoneyGatewayTest extends TestCase
 
         $response = $this->redirectPayment($authPayment['razorpay_payment_id']);
 
-        $this->assertArraySelectiveEquals($authPayment, $response);
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertArraySelectiveEquals($authPayment, $content);
     }
 
     protected function failOlamoneyAuthorizePayment()

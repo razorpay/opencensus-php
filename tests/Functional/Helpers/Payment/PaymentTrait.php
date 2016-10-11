@@ -431,7 +431,7 @@ trait PaymentTrait
             $response->setContent($content);
         }
 
-        return $this->getJsonContentFromResponse($response);
+        return $response;
     }
 
     protected function getPaymentStatus($id)
