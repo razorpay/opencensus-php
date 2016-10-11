@@ -6,6 +6,7 @@ use Redis;
 use Predis\PredisException;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 
 /**
  * The below lock implementation is based on single-instance redis redlock algorithm
@@ -114,7 +115,12 @@ class Mutex
         }
         finally
         {
-            $this->release($resource);
+            $released = $this->release($resource);
+
+            if ($released === false)
+            {
+                $this->trace->error(TraceCode::MUTEX_LOCK_ALREADY_RELEASED);
+            }
         }
     }
 }

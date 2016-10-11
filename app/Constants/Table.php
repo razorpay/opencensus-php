@@ -9,6 +9,7 @@ class Table
     const KEY                   = 'keys';
     const CARD                  = 'cards';
     const PLAN                  = 'plans';
+    const BATCH                 = 'batches';
     const ORDER                 = 'orders';
     const TOKEN                 = 'tokens';
     const REFUND                = 'refunds';

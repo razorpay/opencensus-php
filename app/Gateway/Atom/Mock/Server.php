@@ -67,19 +67,19 @@ class Server extends Base\Mock\Server
 
     protected function getSecondRequestUrl($ttype)
     {
-        return Route::getUrlWithPublicAuth('mock_atom_choose_org');
+        return $this->route->getUrlWithPublicAuth('mock_atom_choose_org');
     }
 
     protected function getRzpPaymentPageUrl()
     {
-        $url = Route::getUrlWithPublicAuth('mock_atom_rzp_payment');
+        $url = $this->route->getUrlWithPublicAuth('mock_atom_rzp_payment');
 
         return $url;
     }
 
     protected function getRzpPaymentPageSubmitUrl()
     {
-        $url = Route::getUrlWithPublicAuth('mock_atom_rzp_payment_submit');
+        $url = $this->route->getUrlWithPublicAuth('mock_atom_rzp_payment_submit');
 
         return $url;
     }
@@ -223,20 +223,9 @@ class Server extends Base\Mock\Server
 
     protected function formMerchantCallbackUrl($paymentPublicId)
     {
-        $hash = $this->getHashOf($paymentPublicId);
-
-        $params = ['id' => $paymentPublicId, 'hash' => $hash];
-
-        $callbackUrl = Route::getUrlWithPublicCallbackAuth($params);
+        $callbackUrl = $this->route->getPublicCallbackUrlWithHash($paymentPublicId);
 
         return $callbackUrl;
-    }
-
-    protected function getHashOf($string)
-    {
-        $secret = \App::make('config')->get('app.key');
-
-        return hash_hmac('sha1', $string, $secret);
     }
 
     public function verifyTxn1stStageInput($input)

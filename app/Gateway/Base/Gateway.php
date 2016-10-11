@@ -114,6 +114,13 @@ class Gateway
      */
     protected $config;
 
+    /**
+     * Api Route instance
+     *
+     * @var RZP\Http\Route
+     */
+    protected $route;
+
     protected $terminal;
 
     /**
@@ -146,6 +153,8 @@ class Gateway
         $this->loadGatewayConfig();
 
         $this->repo = $this->getRepository();
+
+        $this->route = $this->app['api.route'];
     }
 
     public function authorize(array $input)

@@ -24,6 +24,7 @@ class Entity
     const PLAN                  = 'plan';
     const ORDER                 = 'order';
     const TOKEN                 = 'token';
+    const BATCH                 = 'batch';
     const REFUND                = 'refund';
     const BALANCE               = 'balance';
     const CREDITS               = 'credits';
