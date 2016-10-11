@@ -99,7 +99,7 @@ class Core extends Base\Core
 
         $txnData = array(
             Transaction\Entity::TYPE            => Transaction\Type::PAYMENT,
-            Transaction\Entity::CURRENCY        => 'INR',
+            Transaction\Entity::CURRENCY        => Payment\Entity::DEFAULT_CURRENCY,
             Transaction\Entity::CHANNEL         => Transaction\Channel::KOTAK);
 
         if ($payment->getGateway() === Payment\Gateway::ATOM)

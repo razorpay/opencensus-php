@@ -69,6 +69,7 @@ class Entity extends Base\PublicEntity
     const SAVE                  = 'save';
     const LATE_AUTHORIZED       = 'late_authorized';
 
+    const DEFAULT_CURRENCY      = 'INR';
     const CURRENCY_LENGTH       = 3;
 
     const MIN_PAYMENT_AMOUNT    = 100;

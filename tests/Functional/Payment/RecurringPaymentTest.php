@@ -106,6 +106,7 @@ class RecurringPaymentTest extends TestCase
         $tokenId = $paymentEntity[Payment::TOKEN_ID];
 
         unset($payment[Payment::CARD]);
+        unset($payment[Payment::BANK]);
 
         $payment[Payment::TOKEN] = $tokenId;
 

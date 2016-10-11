@@ -53,6 +53,25 @@ class Entity extends Base\PublicEntity
         self::INTERVAL_COUNT    => 'int',
     ];
 
+    // --------------------- GETTERS ---------------------
+
+    public function getAmount()
+    {
+        return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getInterval()
+    {
+        return $this->getAttribute(self::INTERVAL);
+    }
+    
+    public function getIntervalCount()
+    {
+        return $this->getAttribute(self::INTERVAL_COUNT);
+    }
+
+    // --------------------- END GETTERS ---------------------
+
     // --------------------- RELATIONS ---------------------
 
     public function merchant()

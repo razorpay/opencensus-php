@@ -78,6 +78,8 @@ class TraceCode
     const PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND     = 'PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND';
     const PAYMENT_AUTO_REFUND_FAILURE               = 'PAYMENT_AUTO_REFUND_FAILURE';
     const FORCE_AUTHORIZE_TIMEOUT_PAYMENTS_RESPONSE = 'FORCE_AUTHORIZE_TIMEOUT_PAYMENTS_RESPONSE';
+    const SUBSCRIPTION_PAYMENT_QUEUE_DATA           = 'SUBSCRIPTION_PAYMENT_QUEUE_DATA';
+    const SUBSCRIPTION_PAYMENT_FAILED               = 'SUBSCRIPTION_PAYMENT_FAILED';
 
     const ORDER_MULTIPLE_CAPTURED_PAYMENTS          = 'ORDER_MULTIPLE_CAPTURED_PAYMENTS';
 
@@ -333,6 +335,8 @@ class TraceCode
         self::REFUND_GATEWAY_REQUIRED                   => 'Traces whether the gateway refund is required or not',
         self::ORDER_MULTIPLE_CAPTURED_PAYMENTS          => 'Found more than one captured payment for an order.',
         self::PAYMENT_AUTO_REFUND_FAILURE               => 'Refund failed while trying to auto-refund',
+        self::SUBSCRIPTION_PAYMENT_QUEUE_DATA           => 'Payment request data received via queue via subscription',
+        self::SUBSCRIPTION_PAYMENT_FAILED               => 'Subscription payment failed with an exception',
 
         self::ADDRESS_PRIMARY_SWITCH                    => 'Switching primary address of an entity and address type',
 

@@ -40,9 +40,13 @@ class Service extends Base\Service
     {
         $subscriptionsToCharge = $this->repo->subscription->getSubscriptionsToCharge();
 
+        $payments = [];
+
         foreach ($subscriptionsToCharge as $subscription)
         {
-            $this->core->charge($subscription);
+            $payments[] = $this->core->charge($subscription);
         }
+
+        return $payments;
     }
 }

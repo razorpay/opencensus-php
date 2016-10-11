@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Subscription;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use Mockery;
+use Carbon\Carbon;
 
 class SubscriptionTest extends TestCase
 {
@@ -61,6 +62,47 @@ class SubscriptionTest extends TestCase
 
         $tokenEntity = $this->getLastEntity('token', true);
         $this->assertEquals(true, $tokenEntity['recurring']);
+    }
+
+    public function testSubscriptionCharge()
+    {
+        $plan = $this->fixtures->create('plan');
+
+        $subscription = $this->createSubscription($plan);
+
+        $futureNow = Carbon::createFromTimestamp(($subscription['charge_at'] + 100), 'Asia/Kolkata');
+
+        Carbon::setTestNow($futureNow);
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        //$payment = $this->getLastEntity('payment', true);
+    }
+
+    protected function createSubscription($plan)
+    {
+        $this->ba->publicAuth();
+
+        $paymentRequest = $this->getDefaultRecurringPaymentArray();
+        $recurringPayment = $this->doAuthAndCapturePayment($paymentRequest);
+
+        $tokenId = $recurringPayment['token_id'];
+
+        $requestContent = $this->getCreateSubscriptionRequestContent(
+            'testCreateSubscription', $plan->getPublicId(), $tokenId);
+
+        $requestContent['request']['url'] = '/plans/' . $plan->getPublicId() . '/subscriptions/';
+        $requestContent['request']['content']['token_id'] = $tokenId;
+
+        $this->ba->privateAuth();
+
+        $this->startTest($requestContent);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        return $subscription;
     }
 
     protected function getCreateSubscriptionRequestContent($function, $planId, $tokenId)

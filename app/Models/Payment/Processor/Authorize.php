@@ -516,7 +516,7 @@ trait Authorize
         if ((empty($input[Payment\Entity::TOKEN]) === false) and
             ($payment->isSecondRecurring() === true))
         {
-            $this->verifyPrivateAuth();
+            $this->verifyAuthForRecurring();
         }
         else if ($this->app['basicauth']->isPrivateAuth() === true)
         {
@@ -531,9 +531,10 @@ trait Authorize
         }
     }
 
-    protected function verifyPrivateAuth()
+    protected function verifyAuthForRecurring()
     {
-        if ($this->app['basicauth']->isPrivateAuth() === false)
+        if (($this->app['basicauth']->isPrivateAuth() === false) and
+            ($this->app['basicauth']->isPrivilegeAuth() === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_RECURRING_AUTH_NOT_SUPPORTED);

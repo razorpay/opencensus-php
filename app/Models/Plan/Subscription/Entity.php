@@ -14,8 +14,9 @@ class Entity extends Base\PublicEntity
 
     const PLAN_ID           = 'plan_id';
     const CUSTOMER_ID       = 'customer_id';
-    const CURRENT_START     = 'current_start';
-    const CURRENT_END       = 'current_end';
+    //const CURRENT_START     = 'current_start';
+    //const CURRENT_END       = 'current_end';
+    const STATUS            = 'status';
     const ENDED_AT          = 'ended_at';
     const QUANTITY          = 'quantity';
     const TOKEN_ID          = 'token_id';
@@ -36,6 +37,7 @@ class Entity extends Base\PublicEntity
         self::NOTES     => [],
         self::QUANTITY  => 1,
         self::ENDED_AT  => null,
+        self::START_AT  => Status::CREATED,
     ];
 
     protected static $generators = [
@@ -52,8 +54,9 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::PLAN_ID,
         self::CUSTOMER_ID,
-        self::CURRENT_START,
-        self::CURRENT_END,
+        self::STATUS,
+        //self::CURRENT_START,
+        //self::CURRENT_END,
         self::ENDED_AT,
         self::QUANTITY,
         self::TOKEN_ID,
@@ -69,8 +72,8 @@ class Entity extends Base\PublicEntity
         self::CHARGE_AT         => 'int',
         self::ENDED_AT          => 'int',
         self::QUANTITY          => 'int',
-        self::CURRENT_START     => 'int',
-        self::CURRENT_END       => 'int',
+        //self::CURRENT_START     => 'int',
+        //self::CURRENT_END       => 'int',
     ];
 
     protected $publicSetters = [
@@ -80,6 +83,55 @@ class Entity extends Base\PublicEntity
         self::TOKEN_ID,
         self::PLAN_ID,
     ];
+
+    // --------------------- GETTERS ---------------------
+
+    public function getChargeableAmount()
+    {
+        $quantity = $this->getAttribute(self::QUANTITY);
+
+        $planAmount = $this->plan->getAmount();
+
+        $chargeableAmount = $quantity * $planAmount;
+
+        return $chargeableAmount;
+    }
+
+    public function getChargeAt()
+    {
+        return $this->getAttribute(self::CHARGE_AT);
+    }
+
+    public function getEndAt()
+    {
+        return $this->getAttribute(self::END_AT);
+    }
+
+    public function hasEnded()
+    {
+        return ($this->getAttribute(self::ENDED_AT) !== null);
+    }
+
+    public function getStatus()
+    {
+        return $this->getAttribute(self::STATUS);
+    }
+
+    // --------------------- END GETTERS ---------------------
+
+    // --------------------- SETTERS ---------------------
+
+    public function setChargeAt($chargeAt)
+    {
+        $this->setAttribute(self::CHARGE_AT, $chargeAt);
+    }
+
+    public function setEndedAt($endAt)
+    {
+        $this->setAttribute(self::ENDED_AT, $endAt);
+    }
+
+    // --------------------- END SETTERS ---------------------
 
     // --------------------- RELATIONS ---------------------
 

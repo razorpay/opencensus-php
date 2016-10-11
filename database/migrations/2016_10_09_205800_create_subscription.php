@@ -33,6 +33,8 @@ class CreateSubscription extends Migration
             $table->char(Entity::CUSTOMER_ID, Entity::ID_LENGTH);
 
             $table->char(Entity::TOKEN_ID, Entity::ID_LENGTH);
+            
+            $table->string(Entity::STATUS, 16);
 
             $table->integer(Entity::QUANTITY)
                   ->default(1);

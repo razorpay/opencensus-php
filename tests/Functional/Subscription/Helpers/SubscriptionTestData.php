@@ -42,4 +42,15 @@ return [
             ],
         ],
     ],
+    
+    'testSubscriptionCharge' => [
+        'request' => [
+            'url' => '/subscriptions/charge',
+            'method' => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
 ];
