@@ -476,7 +476,7 @@ class Entity extends Base\PublicEntity
         return $logoUrlBasedOnSize;
     }
 
-    public function getTransactionReportEmailAttribute()
+    protected function getTransactionReportEmailAttribute()
     {
         $emails = explode(',', $this->attributes[self::TRANSACTION_REPORT_EMAIL]);
 

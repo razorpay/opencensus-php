@@ -275,6 +275,20 @@ class TraceCode
     const RECON_INFO_SUMMARY                        = 'RECON_INFO_SUMMARY';
     const IIN_INSERT_FAILED                         = 'IIN_INSERT_FAILED';
 
+    const BATCH_UPLOAD_FILE_ENTRIES                 = 'BATCH_UPLOAD_FILE_ENTRIES';
+    const BATCH_UPLOAD_FILE                         = 'BATCH_UPLOAD_FILE';
+    const BATCH_PROCESS_FILE                        = 'BATCH_PROCESS_FILE';
+    const BATCH_ALREADY_PROCESSED                   = 'BATCH_ALREADY_PROCESSED';
+    const BATCH_PROCESSING_ERROR                    = 'BATCH_PROCESSING_ERROR';
+    const BATCH_RETRY                               = 'BATCH_RETRY';
+    const BATCH_RETRY_FAILURE                       = 'BATCH_RETRY_FAILURE';
+    const BATCH_DOWNLOAD                            = 'BATCH_DOWNLOAD';
+    const BATCH_LIST                                = 'BATCH_LIST';
+    const BATCH_GET                                 = 'BATCH_GET';
+    const BATCH_FILE_DELETE                         = 'BATCH_FILE_DELETE';
+
+    const MUTEX_LOCK_ALREADY_RELEASED               = 'MUTEX_LOCK_ALREADY_RELEASED';
+
     /**
      * Trace code for critical info
      */
@@ -368,6 +382,18 @@ class TraceCode
         self::REFUND_TRANSACTION_FAILED                 => 'Transaction failed to create for refund',
         self::RECON_INFO_SUMMARY                        => 'Summary of the reconciliation of the files',
         self::TRANSACTION_CREATED_IN_VERIFY_CAPTURE     => 'Transaction created for a failed capture',
+
+        self::BATCH_UPLOAD_FILE_ENTRIES                 => 'Entries of the uploaded file',
+        self::BATCH_UPLOAD_FILE                         => 'Uploaded batch file',
+        self::BATCH_PROCESS_FILE                        => 'Processing the batch file',
+        self::BATCH_ALREADY_PROCESSED                   => 'Batch File already processed',
+        self::BATCH_PROCESSING_ERROR                    => 'Error in processing batch',
+        self::BATCH_RETRY                               => 'Manual retry for the batch file',
+        self::BATCH_RETRY_FAILURE                       => 'Failure in retrying batch file',
+        self::BATCH_DOWNLOAD                            => 'Downloading the batch file',
+        self::BATCH_LIST                                => 'Getting the batch files',
+        self::BATCH_GET                                 => 'Get Batch by given id',
+        self::BATCH_FILE_DELETE                         => 'Batch file delete',
     );
 
     /**

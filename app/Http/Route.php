@@ -36,6 +36,12 @@ final class Route
         'payment_topup_post'                      => ['post',     'payments/{id}/topup',                      'PaymentCreateController@postTopup'                                 ],
         'payment_redirect_callback'               => ['post',     'payments/{id}/redirect_callback',          'PaymentCreateController@postRedirectCallback'                      ],
         'payment_refund'                          => ['post',     'payments/{id}/refund',                     'PaymentController@postRefund'                                      ],
+        'batch_create'                            => ['post',     'batches',                                  'BatchController@createBatch'                                       ],
+        'batch_fetch_multiple'                    => ['get',      'batches',                                  'BatchController@getBatches'                                        ],
+        'batch_fetch_by_id'                       => ['get',      'batches/{id}',                             'BatchController@getBatchById'                                      ],
+        'batch_process_file'                      => ['post',     'batches/process',                          'BatchController@processBatches'                                    ],
+        'batch_retry'                             => ['post',     'batches/{id}/retry',                       'BatchController@retryBatch'                                        ],
+        'batch_download_file'                     => ['get',      'batches/{id}/download',                    'BatchController@downloadBatch'                                     ],
         'payment_capture'                         => ['post',     'payments/{id}/capture',                    'PaymentController@postCapture'                                     ],
         'payment_verify'                          => ['get',      'payments/{id}/verify',                     'PaymentController@getVerify'                                       ],
         'payment_force_authorize'                 => ['post',     'payments/{id}/force_authorize',            'PaymentController@postForceAuthorize'                              ],
@@ -458,6 +464,7 @@ final class Route
         'credits_create',
         'credits_edit',
         'credits_delete',
+        'batch_process_file',
         'gateway_create_absence',
         'gateway_update_absence',
         'gateway_delete_absence',
@@ -501,6 +508,11 @@ final class Route
         'app_fetch_tokens',
         'credits_fetch_multiple',
         'credits_fetch_by_id',
+        'batch_create',
+        'batch_fetch_multiple',
+        'batch_fetch_by_id',
+        'batch_retry',
+        'batch_download_file'
     );
 
     public static $direct = array(
@@ -548,6 +560,7 @@ final class Route
             'emi_generate_excel',
             'es_migrate_entity',
             'setl_post_details_old',
+            'batch_process_file',
             'order_refund_multiple_authorized',
         ),
 
