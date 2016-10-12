@@ -96,7 +96,7 @@ class PublicCollection extends Collection
         return $dictionary;
     }
 
-    public function getAttributesByKey($field = null, $items = null)
+    public function getStringAttributesByKey($field = null, $items = null)
     {
         $items = is_null($items) ? $this->items : $items;
 
@@ -106,7 +106,7 @@ class PublicCollection extends Collection
         {
             $key = is_null($field) ? $value->getKey() : $value->getAttribute($field);
 
-            $dictionary[$key] = $value->getAttributes();
+            $dictionary[$key] = array_map('strval', $value->getAttributes());
         }
 
         return $dictionary;

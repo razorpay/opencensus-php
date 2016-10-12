@@ -598,19 +598,19 @@ class Service extends Base\Service
 
         $authMerchants = $this->repo->payment
                                 ->fetchMerchantsWithAuthSumAndCount()
-                                ->getAttributesByKey('merchant_id');
+                                ->getStringAttributesByKey('merchant_id');
 
         $captureMerchants = $this->repo->payment
                                 ->fetchMerchantsWithCaptureSumAndCount($from, $to)
-                                ->getAttributesByKey('merchant_id');
+                                ->getStringAttributesByKey('merchant_id');
 
         $refundMerchants = $this->repo->refund
                                 ->fetchMerchantsWithRefundSumAndCount($from, $to)
-                                ->getAttributesByKey('merchant_id');
+                                ->getStringAttributesByKey('merchant_id');
 
         $setlMerchants = $this->repo->settlement
                                 ->fetchSettledMerchants($from, $to)
-                                ->getAttributesByKey('merchant_id');
+                                ->getStringAttributesByKey('merchant_id');
 
         if (isset($input[Entity::ID]) === true)
         {

@@ -44,14 +44,12 @@ class DailyReportTest extends TestCase
                     Mockery::on(function ($data)
                         {
                             $testData = array(
-                                'captured'   => ['count' => 4, 'sum' => '4000000'],
-                                'authorized' => ['count' => 4, 'sum' => '4000000'],
-                                'refunds'    => ['count' => 2, 'sum' => '200000'],
-                                'settlement' => ['amount' => 3508000],
+                                'captured'   => ['count' => '4', 'sum' => '4000000'],
+                                'authorized' => ['count' => '4', 'sum' => '4000000'],
+                                'refunds'    => ['count' => '2', 'sum' => '200000'],
+                                'settlement' => ['amount' => '3508000'],
                                 'email'      => ['test@razorpay.com'],
                             );
-                            s($testData);
-                            sd($data);
                             $this->assertArraySelectiveEquals($testData, $data);
 
                             return true;
