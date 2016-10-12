@@ -172,8 +172,6 @@ final class Route
         'adj_fetch_by_id'                         => ['get',      'adjustments/{id}',                         'AdjustmentController@getAdjustment'                                ],
         'adj_fetch_multiple'                      => ['get',      'adjustments',                              'AdjustmentController@getAdjustments'                               ],
         'adj_add'                                 => ['post',     'adjustments',                              'AdjustmentController@postAdjustment'                               ],
-        'hdfc_mpr_reconcile'                      => ['post',     'gateway/mpr/reconcile',                    'SettlementController@postGatewayMprReconcile'                      ],
-        'hdfc_mpr_generate'                       => ['post',     'gateway/mpr/generate',                     'SettlementController@postGatewayMprGenerate'                       ],
         'mock_hdfc_enroll'                        => ['post',     'gateway/mock_hdfc/enroll',                 'MockGatewayController@enroll'                                      ],
         'mock_hdfc_payment'                       => ['post',     'gateway/mock_hdfc/payment',                'MockGatewayController@payment'                                     ],
         'mock_hdfc_auth_enrolled'                 => ['post',     'gateway/mock_hdfc/auth_enrolled',          'MockGatewayController@authEnrolled'                                ],
@@ -432,8 +430,6 @@ final class Route
         'refund_generate_excel',
         'settlement_compute_tax',
         'daily_settlement_compute_tax',
-        'hdfc_mpr_reconcile',
-        'hdfc_mpr_generate',
         'mock_hdfc_enroll',
         'mock_hdfc_auth_enrolled',
         'mock_hdfc_payment',
@@ -537,7 +533,6 @@ final class Route
         ),
 
         'cron' => array(
-            'hdfc_mpr_generate',
             'setl_initiate',
             'setl_reconcile_generate',
             'setl_return_generate',
@@ -561,7 +556,6 @@ final class Route
         ),
 
         'mailgun' => array(
-            'hdfc_mpr_reconcile',
             'reconciliate',
         ),
 

@@ -10,27 +10,11 @@ use RZP\Models\Settlement;
 
 class Service extends Base\Service
 {
-    public function gatewayMprReconcile($input)
-    {
-        $reconciler = new Mpr\Reconciler;
-
-        $txns = $reconciler->process($input);
-
-        return $txns->toArrayPublic();
-    }
-
     public function initiateSettlements($input, $channel = null)
     {
         $settler = new Settler();
 
         return $settler->settle($input, $channel);
-    }
-
-    public function gatewayMprGenerate($input)
-    {
-        $generator = new Mpr\Generator($this->mode);
-
-        return $generator->generateTestMpr($input);
     }
 
     public function fetch($id)
@@ -109,9 +93,6 @@ class Service extends Base\Service
 
     public function deleteSetlFile($setlFileType)
     {
-        if ($setlFileType === 'hdfc_mpr')
-            return $this->app['gateway']->call(\RZP\Models\Payment\Gateway::HDFC, 'deleteMprFileIfExists', null, Mode::TEST);
-
         return (new Kotak\Service)->deleteSetlFile($setlFileType);
     }
 
