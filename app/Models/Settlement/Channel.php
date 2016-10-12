@@ -19,7 +19,6 @@ class Channel
             Payment\Gateway::KOTAK,
             Payment\Gateway::MOBIKWIK,
             Payment\Gateway::PAYTM,
-            Payment\Gateway::SBIEPAY,
             Payment\Gateway::NETBANKING_HDFC,
             Payment\Gateway::WALLET_PAYZAPP,
             Payment\Gateway::WALLET_PAYUMONEY,
