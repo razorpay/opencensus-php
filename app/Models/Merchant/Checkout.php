@@ -168,7 +168,7 @@ class Checkout
             {
                 $methodsArray['emi'] = $emi;
 
-                $methodsArray['emi_plans'] = (new Emi\Service)->all(array());
+                $methodsArray['emi_plans'] = (new Emi\Service)->all();
             }
         }
 
