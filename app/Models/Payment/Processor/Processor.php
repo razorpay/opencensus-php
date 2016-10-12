@@ -89,6 +89,13 @@ class Processor
 
     protected $verifyRefundStatus;
 
+    /**
+     * Api Route instance
+     *
+     * @var RZP\Http\Route
+     */
+    protected $route;
+
     public function __construct(Merchant\Entity $merchant)
     {
         $this->app  = App::getFacadeRoot();
@@ -109,6 +116,8 @@ class Processor
         $this->request = $this->app['request'];
 
         $this->mutex = $this->app['api.mutex'];
+
+        $this->route = $this->app['api.route'];
 
         // Only used in hdfc verify refund flow
         $this->verifyRefundStatus = null;
@@ -381,7 +390,12 @@ class Processor
         }
 
         // We don't want to reach this in case of captured|refunded payments
-        assertTrue($payment->isAuthorized() === true);
+        // However, the payment would be captured here IFF it was auto-captured
+        // So we make an exception for that.
+        $returnResponse = (($payment->isAuthorized()) or
+                           ($payment->getAutoCaptured() and $payment->isCaptured()));
+
+        assertTrue($returnResponse);
 
         return $this->processAuthorizeResponse($payment);
     }

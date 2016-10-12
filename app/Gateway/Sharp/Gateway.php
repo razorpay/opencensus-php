@@ -157,7 +157,7 @@ class Gateway extends Base\Gateway
 
     protected function getRequestArray($content, $input)
     {
-        $url = \RZP\Http\Route::getUrlWithPublicAuth('mock_sharp_payment_post');
+        $url = $this->route->getUrlWithPublicAuth('mock_sharp_payment_post');
 
         $method = 'post';
 
