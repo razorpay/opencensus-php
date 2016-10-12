@@ -111,7 +111,7 @@ class TerminalProcessor
         $opts = ['failed' => $failedTerminals];
 
         $terminalsSelected = $terminalSelector->selectTerminals($opts);
-
+        
         return $terminalsSelected;
     }
 }
