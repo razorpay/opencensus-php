@@ -346,11 +346,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::INTERNATIONAL, $isInternational);
     }
 
-    public function setCaptureAmount($amount)
-    {
-        $this->setAttribute(self::AMOUNT, $amount);
-    }
-
     public function setAmountAuthorized()
     {
         $authAmount = $this->getAttribute(self::AMOUNT);

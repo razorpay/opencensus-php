@@ -13,7 +13,7 @@ class Header
     const ERROR_CODE        = 'Error Code';
     const ERROR_DESCRIPTION = 'Error Description';
 
-    const REFUND_HEADERS = [
+    const REFUND_OUTPUT_HEADERS = [
         self::PAYMENT_ID,
         self::AMOUNT,
         self::REFUND_ID,
@@ -21,5 +21,10 @@ class Header
         self::STATUS,
         self::ERROR_CODE,
         self::ERROR_DESCRIPTION,
+    ];
+
+    const REFUND_INPUT_HEADERS = [
+        self::PAYMENT_ID,
+        self::AMOUNT
     ];
 }

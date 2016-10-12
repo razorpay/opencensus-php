@@ -24,8 +24,6 @@ class ReconciliationTest extends TestCase
 
     public function testReconciliation()
     {
-        $this->markTestIncomplete();
-
         // Create payments and refunds with timestamps two days back
         $prEntities = $this->createPaymentAndRefundEntities();
 
@@ -106,8 +104,8 @@ class ReconciliationTest extends TestCase
 
         $r = range(1,5);
 
-        $createdAt = Carbon::today('Asia/Kolkata')->subDays(4)->timestamp + 5;
-        $capturedAt = Carbon::today('Asia/Kolkata')->subDays(4)->timestamp + 10;
+        $createdAt = Carbon::today('Asia/Kolkata')->subDays(20)->timestamp + 5;
+        $capturedAt = Carbon::today('Asia/Kolkata')->subDays(20)->timestamp + 10;
 
         foreach ($r as $i)
         {

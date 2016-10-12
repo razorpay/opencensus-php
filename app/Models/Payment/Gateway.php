@@ -590,6 +590,7 @@ class Gateway
                     $gateways = array_merge($gateways, self::$directNetbankingGatewaysInTest);
                 }
 
+                // Adds direct netbanking to have highest priority
                 array_unshift($gateways, 'direct');
 
                 break;

@@ -174,7 +174,6 @@ return array(
         Jenssegers\Agent\AgentServiceProvider::class,
         Maknz\Slack\SlackServiceProvider::class,
         Propaganistas\LaravelPhone\LaravelPhoneServiceProvider::class,
-        Collective\Bus\BusServiceProvider::class,
         Maatwebsite\Excel\ExcelServiceProvider::class,
 
     ),

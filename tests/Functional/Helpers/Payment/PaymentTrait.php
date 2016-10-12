@@ -1114,7 +1114,7 @@ trait PaymentTrait
     {
         $class = $this->app['gateway']->getServerClass($this->gateway);
 
-        return Mockery::mock($class)->makePartial();
+        return Mockery::mock($class, [])->makePartial();
     }
 
     protected function setMockServer($server)

@@ -58,7 +58,12 @@ class FeeCalculator
 
         $fee += $serviceTax;
 
-        assert ($fee < $amount);
+        if ($fee > $amount)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT,
+                Payment\Entity::AMOUNT);
+        }
 
         return  array($fee, $serviceTax);
     }
