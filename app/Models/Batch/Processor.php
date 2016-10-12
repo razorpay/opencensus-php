@@ -37,6 +37,11 @@ class Processor extends Base\Core
         $this->mutex = $this->app['api.mutex'];
     }
 
+    /**
+     * This function process one batch.
+     * @param  Batch\Entity $batch batch entity
+     * @return void
+     */
     public function process(Batch\Entity $batch)
     {
         $this->batch = $batch;
@@ -66,6 +71,12 @@ class Processor extends Base\Core
         $this->runPostBatchProcessOperations();
     }
 
+    /**
+     * This function process batch.
+     * @param  Batch\Entity $batch   Batch Entity
+     * @param  array       $entries  Entries in the batch file
+     * @return void
+     */
     protected function processBatch(& $entries)
     {
         $function = 'process' . ucfirst($this->batch->getType()) . 'Entries';
@@ -100,6 +111,10 @@ class Processor extends Base\Core
         $this->updateBatchStatus();
     }
 
+    /**
+     * This method is for post processing. Once the lock have been released we send out merchant mail, and delete temporary files
+     * @return void
+     */
     protected function runPostBatchProcessOperations()
     {
         // Send email to merchant if file is processed.
@@ -112,6 +127,12 @@ class Processor extends Base\Core
         $this->deleteFile($this->uploadFileLocalPath);
     }
 
+    /**
+     * Update the batch status
+     * status = processed when failure_count = 0 or attempts >= 3
+     * status = processing otherwise
+     * @return void
+     */
     protected function updateBatchStatus()
     {
         $status = Status::PROCESSED;
@@ -125,6 +146,13 @@ class Processor extends Base\Core
         $this->batch->setStatus($status);
     }
 
+    /**
+     * This function process the refund entries.
+     * We process only the unprocessed entries.
+     * If the payment id doesn't exists in the system then we mark the entry as failure
+     * @param  Array        $entries Array of entries
+     * @return void
+     */
     protected function processRefundEntries(& $entries)
     {
         foreach ($entries as & $entry)
@@ -155,6 +183,16 @@ class Processor extends Base\Core
         }
     }
 
+    /**
+     * This method process individual entry in the batch. Actual refund happens in this.
+     * It checks whether a refund exists for the given batch,
+     * If it exists then we update the status as success and refund id
+     * If the refund is successful then we update the entry with status success and refund id
+     * If there is any exception occured, we mark the entry as failed.
+     * @param  Payment\Entity $payment Payment Entity
+     * @param  Array          $entry   Single Entry in excel
+     * @return void
+     */
     protected function processRefundRequest(Payment\Entity $payment, array & $entry)
     {
         $amount = $entry[Header::AMOUNT];
@@ -168,6 +206,12 @@ class Processor extends Base\Core
         $entry[Header::STATUS] = Status::SUCCESS;
     }
 
+    /**
+     * Method to generate the excel from the processed entries.
+     * Also set the downloadFileUrl for the batch
+     * @param  Array        $entries Array of processed entries
+     * @return FilePath              Local file path of the excel file.
+     */
     protected function createProcessedExcel($entries)
     {
         $count = count(Header::REFUND_OUTPUT_HEADERS);
@@ -232,6 +276,13 @@ class Processor extends Base\Core
         return $path;
     }
 
+    /**
+     * Get the bucket file path.
+     * If the batch status is created, then the dir would be batch/upload
+     * else the batch would be processing/processed state, then dir would be batch/download
+     * @param  Batch\Entity $batch [description]
+     * @return [type]              [description]
+     */
     public function getBucketFilePath(Batch\Entity $batch)
     {
         if ($batch->getStatus() === Status::CREATED)
@@ -283,6 +334,15 @@ class Processor extends Base\Core
         return $this->parseExcelSheets($filePath);
     }
 
+    /**
+     * This method is called for each entry in excel. It checks where we need to ignore it or process it.
+     * We need to process the entries in cases
+     *    - If the status is not set (for first time processing)
+     *    - If the status is success
+     *    - If the status is failure and the error code are defined (amount_fully_refunded, refund_amount_greater_than_captured)
+     * @param  [type]  $entry [description]
+     * @return boolean        [description]
+     */
     protected function isEntryProcessed($entry)
     {
         $userErrorCodes = [
