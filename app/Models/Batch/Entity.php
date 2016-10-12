@@ -202,4 +202,9 @@ class Entity extends Base\PublicEntity
     {
         $this->increment(self::ATTEMPTS);
     }
+
+    public function isProcessed()
+    {
+        return ($this->getStatus() === Status::PROCESSED);
+    }
 }

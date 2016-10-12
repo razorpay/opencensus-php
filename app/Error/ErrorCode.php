@@ -261,9 +261,11 @@ class ErrorCode
     const BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE                                     = 'BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE';
 
     const BAD_REQUEST_BATCH_FILE_EXCEED_LIMIT                                       = 'BAD_REQUEST_BATCH_FILE_EXCEED_LIMIT';
+    const BAD_REQUEST_BATCH_FILE_EMPTY                                              = 'BAD_REQUEST_BATCH_FILE_EMPTY';
     const BAD_REQUEST_BATCH_FILE_INVALID_TYPE                                       = 'BAD_REQUEST_BATCH_FILE_INVALID_TYPE';
     const BAD_REQUEST_BATCH_FILE_INVALID_PAYMENT_ID                                 = 'BAD_REQUEST_BATCH_FILE_INVALID_PAYMENT_ID';
     const BAD_REQUEST_BATCH_FILE_INVALID_AMOUNT                                     = 'BAD_REQUEST_BATCH_FILE_INVALID_AMOUNT';
+    const BAD_REQUEST_BATCH_FILE_INVALID_HEADERS                                    = 'BAD_REQUEST_BATCH_FILE_INVALID_HEADERS';
     const BAD_REQUEST_BATCH_FILE_DUPLICATE_PAYMENT_ID                               = 'BAD_REQUEST_BATCH_FILE_DUPLICATE_PAYMENT_ID';
     const BAD_REQUEST_BATCH_FILE_VALIDATION                                         = 'BAD_REQUEST_BATCH_FILE_VALIDATION';
     const BAD_REQUEST_BATCH_FILE_ALREADY_PROCESSED                                  = 'BAD_REQUEST_BATCH_FILE_ALREADY_PROCESSED';
