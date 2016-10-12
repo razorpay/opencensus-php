@@ -396,12 +396,13 @@ class Service extends Base\Service
         return $this->merchant->id . '/' . $startDate->addMonth()->format('m/y');
     }
 
-    public function uploadRefundFile($input)
+    public function uploadBatchFile($mode, $input)
     {
-        $batchRefund = $this->api
-                            ->transaction
-                            ->uploadRefundFile($input);
+        $this->setApiCredentials($this->merchantId, $mode);
 
+        $batchRefund = $this->api
+                            ->batch
+                            ->uploadBatchFile($input);
         return [
             'batch_id'          => $batchRefund['id'],
             'status'            => $batchRefund['status'],
@@ -410,22 +411,26 @@ class Service extends Base\Service
         ];
     }
 
-    public function downloadRefundFile($id)
+    public function downloadBatchFile($mode, $id)
     {
+        $this->setApiCredentials($this->merchantId, $mode);
+
         $downloadResponse = $this->api
-                                 ->transaction
-                                 ->downloadRefundFile($id);
+                                 ->batch
+                                 ->downloadBatchFile($id);
 
         return [
             'url'          => $downloadResponse['url'],
         ];
     }
 
-    public function retryRefundFile($id)
+    public function retryBatchFile($mode, $id)
     {
+        $this->setApiCredentials($this->merchantId, $mode);
+
         $batchRefund = $this->api
-                            ->transaction
-                            ->retryRefundFile($id);
+                            ->batch
+                            ->retryBatchFile($id);
 
         return [
             'batch_id'          => $batchRefund['id'],
@@ -440,6 +445,7 @@ class Service extends Base\Service
         $collection = array();
 
         $this->setApiCredentials($this->merchantId, $mode);
+
         $collection = $this->api->$entity->all($input)->toArray();
 
         $this->mapKeys($collection);
