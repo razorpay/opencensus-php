@@ -43,15 +43,6 @@ class PublicCollection extends Collection
         return $this->itemsToArrayReport();
     }
 
-    public function toArrayDailyReport()
-    {
-        $array[static::COUNT] = $this->count();
-
-        $array[static::ITEMS] = $this->itemsToArrayDailyReport();
-
-        return $array;
-    }
-
     public function getIds()
     {
         $ids = array_map(function($item)
@@ -105,6 +96,22 @@ class PublicCollection extends Collection
         return $dictionary;
     }
 
+    public function getStringAttributesByKey($field = null, $items = null)
+    {
+        $items = is_null($items) ? $this->items : $items;
+
+        $dictionary = array();
+
+        foreach ($items as $value)
+        {
+            $key = is_null($field) ? $value->getKey() : $value->getAttribute($field);
+
+            $dictionary[$key] = array_map('strval', $value->getAttributes());
+        }
+
+        return $dictionary;
+    }
+
     public function filterEntitiesFromEntityIds($entityIds)
     {
         $filteredEntities = $this->only($entityIds)->items;
@@ -136,15 +143,6 @@ class PublicCollection extends Collection
         return array_map(function($item)
         {
             return $item->toArrayReport();
-
-        }, $this->items);
-    }
-
-    protected function itemsToArrayDailyReport()
-    {
-        return array_map(function($item)
-        {
-            return $item->toArrayDailyReport();
 
         }, $this->items);
     }
