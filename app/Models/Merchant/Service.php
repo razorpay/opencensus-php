@@ -9,6 +9,7 @@ use Mail;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Base;
 use RZP\Models\BankAccount;
+use RZP\Models\Emi;
 use RZP\Models\Merchant;
 use RZP\Models\Key;
 use RZP\Models\Payment;
@@ -463,7 +464,7 @@ class Service extends Base\Service
             {
                 $data['emi'] = $emi;
 
-                $data['emi_plans'] = (new Emi\Service)->all();
+                $data['emi_plans'] = (new Emi\Service)->all(array());
             }
         }
 

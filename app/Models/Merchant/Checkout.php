@@ -11,6 +11,7 @@ use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Customer;
+use RZP\Models\Emi;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Models\Payment;
@@ -167,7 +168,7 @@ class Checkout
             {
                 $methodsArray['emi'] = $emi;
 
-                $methodsArray['emi_plans'] = (new Emi\Service)->all();
+                $methodsArray['emi_plans'] = (new Emi\Service)->all(array());
             }
         }
 
