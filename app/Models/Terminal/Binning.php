@@ -14,13 +14,6 @@ class Binning
      * Define rules on terminal binning here
      */
     protected static $rules = [
-        [
-            'method'         => Method::NETBANKING,
-            'binFor'         => Shared::BILLDESK_RAZORPAY_TERMINAL,
-            'binWith'        => '59U9GqsARtkw2r',
-            'bank'           => IFSC::KKBK,
-            'load'           => 75,
-        ]
     ];
 
     public function getRules()

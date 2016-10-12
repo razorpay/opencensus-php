@@ -595,29 +595,65 @@ class Service extends Base\Service
             array()
         );
 
-        $merchants = new Base\PublicCollection;
+        $from = Carbon::yesterday("Asia/Kolkata")->timestamp;
+
+        $to = Carbon::today("Asia/Kolkata")->timestamp;
+
+        $authMerchants = $this->repo->payment
+                                ->fetchAuthorizedSummary()
+                                ->getStringAttributesByKey('merchant_id');
+
+        $captureMerchants = $this->repo->payment
+                                ->fetchCapturedSummaryBetweenTimestamp($from, $to)
+                                ->getStringAttributesByKey('merchant_id');
+
+        $refundMerchants = $this->repo->refund
+                                ->fetchRefundSummaryBetweenTimestamp($from, $to)
+                                ->getStringAttributesByKey('merchant_id');
+
+        $setlMerchants = $this->repo->settlement
+                                ->fetchSettlementsBetweenTimestamp($from, $to)
+                                ->getStringAttributesByKey('merchant_id');
 
         if (isset($input[Entity::ID]) === true)
         {
-            $merchant = $this->repo->merchant->findOrFailPublic($input[Entity::ID]);
-
-            $merchants->push($merchant);
+            $merchantIds = $input[Entity::ID];
         }
         else
         {
-            $merchants = $this->repo->merchant->fetchAllLiveMerchants()
-                                              ->select(Entity::ID)
-                                              ->get();
+            $merchantIds = array_unique(
+                array_merge(
+                    array_keys($captureMerchants),
+                    array_keys($authMerchants),
+                    array_keys($refundMerchants),
+                    array_keys($setlMerchants)
+                )
+            );
         }
 
         // Summary of merchants mailed
-        $mailedMerchantsSummary = ['sentIds' => [], 'skippedIds' => 0, 'failedIds' => []];
+        $mailedMerchantsSummary = [
+            'sentIds'    => [],
+            'skippedIds' => 0,
+            'failedIds'  => []
+        ];
 
-        foreach ($merchants as $merchant)
+        foreach ($merchantIds as $merchantId)
         {
             try
             {
-                $dailyReport = new DailyReport($merchant->getId());
+                $zeroArray = array_fill_keys(['sum', 'count'], 0);
+
+                $data = [
+                    'authorized' => isset($authMerchants[$merchantId])    ? $authMerchants[$merchantId]    : $zeroArray,
+                    'captured'   => isset($captureMerchants[$merchantId]) ? $captureMerchants[$merchantId] : $zeroArray,
+                    'refunds'    => isset($refundMerchants[$merchantId])  ? $refundMerchants[$merchantId]  : $zeroArray,
+                    'settlement' => isset($setlMerchants[$merchantId])    ? $setlMerchants[$merchantId]    : null,
+                ];
+
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                $dailyReport = new DailyReport($merchant, $data);
 
                 $sentId = $dailyReport->send();
 
@@ -635,7 +671,7 @@ class Service extends Base\Service
                 $this->trace->traceException(
                     $ex, Trace::WARNING, TraceCode::SETTLEMENT_DAILY_REPORT_FAILURE);
 
-                $mailedMerchantsSummary['failedIds'][] = $merchant->getId();
+                $mailedMerchantsSummary['failedIds'][] = $merchantId;
             }
         }
 
