@@ -50,6 +50,8 @@ class DailyReportTest extends TestCase
                                 'settlement' => ['amount' => 3508000],
                                 'email'      => ['test@razorpay.com'],
                             );
+                            s($testData);
+                            sd($data);
                             $this->assertArraySelectiveEquals($testData, $data);
 
                             return true;
