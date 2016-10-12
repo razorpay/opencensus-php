@@ -1,3 +1,5 @@
+'use strict'
+
 const gulp = require('gulp')
 const through = require('through')
 const plumber = require('gulp-plumber')
