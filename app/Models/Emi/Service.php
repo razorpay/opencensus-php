@@ -11,11 +11,27 @@ use RZP\Models\Emi;
 
 class Service extends Base\Service
 {
-    public function all()
+    public function all($input)
     {
-        $emiPlans = $this->repo->emi_plan->getAllEmiPlans();
+        $emiPlans = $this->repo->emi_plan->fetch($input);
 
-        return $emiPlans->toArrayPublic();
+        $plans = [];
+
+        foreach ($emiPlans as $plan)
+        {
+            $issuer = $plan->getIssuer();
+
+            $duration = $plan->getDuration();
+
+            $amount = $plan->getMinAmount();
+
+            // all plans of a bank will have same min amount
+            $plans[$issuer][Emi\Entity::MIN_AMOUNT] = $amount;
+
+            $plans[$issuer]['plans'][$duration] = $plan->getRate()/100;
+        }
+
+        return $plans;
     }
 
     public function fetch($id)

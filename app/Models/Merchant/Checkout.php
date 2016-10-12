@@ -160,8 +160,15 @@ class Checkout
                 $methodsArray['netbanking'] = $methods->toArrayWithBankNames();
             }
             $methodsArray['wallet'] = $methods->getEnabledWallets();
-            $methodsArray['emi'] = $methods->isEmiEnabled();
             $methodsArray['upi'] = $methods->isUpiEnabled();
+            $emi = $methods->isEmiEnabled();
+
+            if ($emi === true)
+            {
+                $methodsArray['emi'] = $emi;
+
+                $methodsArray['emi_plans'] = (new Emi\Service)->all();
+            }
         }
 
         return $methodsArray;
