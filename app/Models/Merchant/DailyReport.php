@@ -132,9 +132,9 @@ class DailyReport extends Base\Core
     {
         $data = $this->data;
 
-        return (($data['captured']['payments']['count'] === 0) and
-                ($data['authorized']['payments']['count'] === 0) and
-                ($data['refunds']['refunds']['count'] === 0) and
+        return (($data['captured']['count'] === 0) and
+                ($data['authorized']['count'] === 0) and
+                ($data['refunds']['count'] === 0) and
                 ($data['settlement'] === null));
     }
 
