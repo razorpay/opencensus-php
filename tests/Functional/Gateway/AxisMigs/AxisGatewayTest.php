@@ -170,6 +170,7 @@ class AxisGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('axis_migs', true);
         $pid1 = 'pay_'.$payment['payment_id'];
+        $txnNoNew = $payment['vpc_TransactionNo'];
 
         $this->fixtures->edit('axis_migs', $payment['id'], ['received' => '0']);
 
@@ -181,7 +182,8 @@ class AxisGatewayTest extends TestCase
         $this->assertEquals($payment['status'], 'authorized');
 
         $payment = $this->getLastEntity('axis_migs', true);
-        $this->assertEquals($payment['vpc_TransactionNo'], $txnNo);
+
+        $this->assertEquals($payment['vpc_TransactionNo'], $txnNoNew);
     }
 
     public function testFailureWhen3DSFailsForDomesticMerchant()

@@ -144,7 +144,7 @@ class Gateway extends Base\Gateway
                 'No migs payments with nearby vpc_TransactionNo found');
         }
 
-        $gatewayPayment->setVpcTransactionNo($txnNo, $terminalId);
+        $gatewayPayment->setVpcTransactionNo($txnNo);
         $gatewayPayment['vpc_TxnResponseCode'] = '0';
 
         $repo->saveOrFail($gatewayPayment);
