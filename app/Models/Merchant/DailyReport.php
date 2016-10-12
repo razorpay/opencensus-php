@@ -86,6 +86,7 @@ class DailyReport extends Base\Core
                     'captured'      => $data['captured']['count'],
                     'authorized'    => $data['authorized']['count'],
                     'refunds'       => $data['refunds']['count'],
+                    'settlement'    => $data['settlement']['amount'],
                     )
         );
 

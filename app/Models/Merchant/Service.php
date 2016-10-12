@@ -639,11 +639,13 @@ class Service extends Base\Service
         {
             try
             {
+                $zeroArray = array_fill_keys(['sum', 'count'], 0);
+
                 $data = [
-                    'authorized' => isset($authMerchants[$merchantId])    ? $authMerchants[$merchantId] : null,
-                    'captured'   => isset($captureMerchants[$merchantId]) ? $captureMerchants[$merchantId] : null,
-                    'refunds'    => isset($refundMerchants[$merchantId])  ? $refundMerchants[$merchantId] : null,
-                    'settlement' => isset($setlMerchants[$merchantId])    ? $setlMerchants[$merchantId] : null,
+                    'authorized' => isset($authMerchants[$merchantId])    ? $authMerchants[$merchantId]    : $zeroArray,
+                    'captured'   => isset($captureMerchants[$merchantId]) ? $captureMerchants[$merchantId] : $zeroArray,
+                    'refunds'    => isset($refundMerchants[$merchantId])  ? $refundMerchants[$merchantId]  : $zeroArray,
+                    'settlement' => isset($setlMerchants[$merchantId])    ? $setlMerchants[$merchantId]    : null,
                 ];
 
                 $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
