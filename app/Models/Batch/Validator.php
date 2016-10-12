@@ -26,6 +26,11 @@ class Validator extends Base\Validator
     {
         $totalEntries = count($entries);
 
+        if ($totalEntries === 0)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BATCH_FILE_EMPTY);
+        }
+
         if ($totalEntries > 1000)
         {
            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BATCH_FILE_EXCEED_LIMIT);
@@ -39,6 +44,8 @@ class Validator extends Base\Validator
     protected function validateRefundEntries($entries)
     {
         $existingPaymentIds = array();
+
+        $this->validateRefundHeaders($entries);
 
         foreach ($entries as $entry)
         {
@@ -67,6 +74,20 @@ class Validator extends Base\Validator
             }
 
             array_push($existingPaymentIds, $paymentId);
+        }
+    }
+
+    protected function validateRefundHeaders($entries)
+    {
+        $firstEntry = $entries[0];
+
+        $headers = array_keys($firstEntry);
+
+        $diffArray = array_diff($headers, Header::REFUND_INPUT_HEADERS);
+
+        if (count($diffArray) !== 0 )
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_HEADERS);
         }
     }
 }

@@ -182,15 +182,8 @@ trait Authorize
 
     protected function verifyFeesLessThanAmount($payment)
     {
-        // Ignore the pricing rule not found exception for authorization.
+        // try calculating the fees, throws exception if fees is more than amount
         list($fee, $serviceTax, $ruleKey) = (new Pricing\Fee)->calculateMerchantFees($payment);
-
-        if ($payment->getAmount() < $fee)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT,
-                Payment\Entity::AMOUNT);
-        }
     }
 
     protected function processAuthResponse($request, $payment)

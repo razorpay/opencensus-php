@@ -14,6 +14,10 @@ class Repository extends Base\Repository
 
     protected $entity = 'batch';
 
+    protected $proxyFetchParamRules = array(
+        Entity::TYPE           => 'sometimes|in:refund',
+    );
+
     public function findUnprocessedEntries($limit = 10)
     {
         $status = array(Status::CREATED, Status::PROCESSING);
