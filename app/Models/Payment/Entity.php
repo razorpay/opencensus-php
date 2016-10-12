@@ -935,18 +935,6 @@ class Entity extends Base\PublicEntity
                 ($this->localToken->isRecurring() === true));
     }
 
-    public function toArrayDailyReport()
-    {
-        $reportArray = [
-            self::PUBLIC_ID      => $this->getPublicId(),
-            self::AMOUNT         => $this->getAmount(),
-            self::AUTHORIZED_AT  => $this->getAuthorizeTimestamp(),
-            self::CAPTURED_AT    => $this->getCaptureTimestamp(),
-        ];
-
-        return $reportArray;
-    }
-
     /**
      * This function returns the current payment method
      * and a detail string for that particular method

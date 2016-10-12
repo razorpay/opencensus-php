@@ -592,40 +592,38 @@ class Service extends Base\Service
             array()
         );
 
-        $merchants = [];
+        $from = Carbon::yesterday("Asia/Kolkata")->timestamp;
+
+        $to = Carbon::today("Asia/Kolkata")->timestamp;
+
+        $authMerchants = $this->repo->payment
+                                ->fetchMerchantsWithAuthSumAndCount()
+                                ->getAttributesByKey('merchant_id');
+
+        $captureMerchants = $this->repo->payment
+                                ->fetchMerchantsWithCaptureSumAndCount($from, $to)
+                                ->getAttributesByKey('merchant_id');
+
+        $refundMerchants = $this->repo->refund
+                                ->fetchMerchantsWithRefundSumAndCount($from, $to)
+                                ->getAttributesByKey('merchant_id');
+
+        $setlMerchants = $this->repo->settlement
+                                ->fetchSettledMerchants($from, $to)
+                                ->getAttributesByKey('merchant_id');
 
         if (isset($input[Entity::ID]) === true)
         {
-            $merchants = $input[Entity::ID];
+            $merchantIds = $input[Entity::ID];
         }
         else
         {
-            $from = Carbon::yesterday("Asia/Kolkata")->timestamp;
-
-            $to = Carbon::today("Asia/Kolkata")->timestamp;
-
-            $captureMerchants = $this->repo->payment->fetchCapturingMerchants($from, $to);
-
-            $authMerchants = $this->repo->payment->fetchMerchantsForAuthPayments();
-
-            $refundMerchants = $this->repo->refund->fetchRefundingMerchants($from, $to);
-
-            $setlMerchants = $this->repo->settlement->fetchSettledMerchants($from, $to);
-
-            s($captureMerchants->getAttributes());
-            s($authMerchants->getAttributes());
-            s($refundMerchants->getAttributes());
-            s($setlMerchants->getAttributes());
-
-
-            s(array_merge($captureMerchants->getAttributes(), $refundMerchants->getAttributes()));
-
-            $merchants = array_unique(
+            $merchantIds = array_unique(
                 array_merge(
-                    array_keys($captureMerchants->getDictionaryByAttribute('merchant_id')),
-                    array_keys($authMerchants->getDictionaryByAttribute('merchant_id')),
-                    array_keys($refundMerchants->getDictionaryByAttribute('merchant_id')),
-                    array_keys($setlMerchants->getDictionaryByAttribute('merchant_id'))
+                    array_keys($captureMerchants),
+                    array_keys($authMerchants),
+                    array_keys($refundMerchants),
+                    array_keys($setlMerchants)
                 )
             );
         }
@@ -637,11 +635,20 @@ class Service extends Base\Service
             'failedIds'  => []
         ];
 
-        foreach ($merchants as $merchant)
+        foreach ($merchantIds as $merchantId)
         {
             try
             {
-                $dailyReport = new DailyReport($merchant);
+                $data = [
+                    'authorized' => isset($authMerchants[$merchantId])    ? $authMerchants[$merchantId] : null,
+                    'captured'   => isset($captureMerchants[$merchantId]) ? $captureMerchants[$merchantId] : null,
+                    'refunds'    => isset($refundMerchants[$merchantId])  ? $refundMerchants[$merchantId] : null,
+                    'settlement' => isset($setlMerchants[$merchantId])    ? $setlMerchants[$merchantId] : null,
+                ];
+
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                $dailyReport = new DailyReport($merchant, $data);
 
                 $sentId = $dailyReport->send();
 
@@ -659,7 +666,7 @@ class Service extends Base\Service
                 $this->trace->traceException(
                     $ex, Trace::WARNING, TraceCode::SETTLEMENT_DAILY_REPORT_FAILURE);
 
-                $mailedMerchantsSummary['failedIds'][] = $merchant;
+                $mailedMerchantsSummary['failedIds'][] = $merchantId;
             }
         }
 
@@ -668,8 +675,6 @@ class Service extends Base\Service
             TraceCode::SETTLEMENT_DAILY_REPORT_RESULT,
             $mailedMerchantsSummary
         );
-
-        s($mailedMerchantsSummary);
 
         return $mailedMerchantsSummary;
     }

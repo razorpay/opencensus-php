@@ -37,9 +37,8 @@ class Repository extends Base\Repository
     public function fetchSettledMerchants($from, $to)
     {
         return $this->newQuery()
-                    ->whereIn(Entity::CREATED_AT, [$from, $to])
-                    ->select(Entity::MERCHANT_ID)
-                    ->distinct(Entity::MERCHANT_ID)
+                    ->whereBetween(Entity::CREATED_AT, [$from, $to])
+                    ->select(Entity::MERCHANT_ID, Entity::AMOUNT)
                     ->get();
     }
 

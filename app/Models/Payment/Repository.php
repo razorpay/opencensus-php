@@ -392,22 +392,26 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchCapturingMerchants($from , $to)
-    {
-        return $this->newQuery()
-                    ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
-                    ->where(Entity::STATUS, '=', Status::CAPTURED)
-                    ->select(Entity::MERCHANT_ID)
-                    ->distinct(Entity::MERCHANT_ID)
-                    ->get();
-    }
-
-    public function fetchMerchantsForAuthPayments()
+    public function fetchMerchantsWithAuthSumAndCount()
     {
         return $this->newQuery()
                     ->where(Entity::STATUS, '=', Status::AUTHORIZED)
-                    ->select(Entity::MERCHANT_ID)
-                    ->distinct(Entity::MERCHANT_ID)
+                    ->groupBy(Entity::MERCHANT_ID)
+                    ->selectRaw(Entity::MERCHANT_ID . ','.
+                       'SUM(' . Entity::AMOUNT . ') AS sum' . ','.
+                       'COUNT(*) AS count')
+                    ->get();
+    }
+
+    public function fetchMerchantsWithCaptureSumAndCount($from , $to)
+    {
+        return $this->newQuery()
+                    ->where(Entity::STATUS, '=', Status::CAPTURED)
+                    ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
+                    ->groupBy(Entity::MERCHANT_ID)
+                    ->selectRaw(Entity::MERCHANT_ID . ','.
+                       'SUM(' . Entity::AMOUNT . ') AS sum' . ','.
+                       'COUNT(*) AS count')
                     ->get();
     }
 
