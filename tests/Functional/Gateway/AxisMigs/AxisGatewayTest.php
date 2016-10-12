@@ -31,7 +31,7 @@ class AxisGatewayTest extends TestCase
     {
         $payment = $this->getDefaultPaymentArray();
         $payment = $this->doAuthPayment($payment);
-        
+
         $txn = $this->getLastEntity('transaction', true);
         $this->assertNotNull($txn);
 

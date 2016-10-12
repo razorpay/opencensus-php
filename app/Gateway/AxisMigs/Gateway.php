@@ -246,7 +246,7 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $verify->payment;
         $content = $verify->verifyResponseContent;
         $input = $verify->input;
-        
+
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY,
             ['payment_id' => $input['payment']['id'],
