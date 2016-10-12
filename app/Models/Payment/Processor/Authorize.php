@@ -1140,39 +1140,6 @@ trait Authorize
             $traceData);
     }
 
-    protected function rethrowFailedPaymentErrorException($payment)
-    {
-        $internalErrorCode = $payment->getInternalErrorCode();
-        $publicErrorCode = $payment->getErrorCode();
-        $errorDesc = $payment->getErrorDescription();
-
-        Error\Map::throwExceptionFromErrorDetails(
-            $publicErrorCode, $internalErrorCode, $errorDesc);
-
-        //
-        // If it has reached here, then an edge case occurred, for which
-        // a suitable exception was not found and which must be handled.
-        // So, we trace an error message, ringing alerts to our devs.
-        //
-
-        $this->trace->error(
-            TraceCode::PAYMENT_CALLBACK_FAILURE,
-            [
-                'payment_id' => $payment->getPublicId(),
-                'public_error_code' => $publicErrorCode,
-                'internal_error_code' => $internalErrorCode,
-                'error_description' => $errorDesc,
-                'message' => 'Failed to convert error code to the appropriate exception'
-            ]);
-
-        // If no appropriate exception mapping was found then show
-        // the usual message that payment already processed.
-
-        throw new Exception\BadRequestException(
-            ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
-    }
-
-
     protected function recordTerminalAudit($terminalData)
     {
         try
