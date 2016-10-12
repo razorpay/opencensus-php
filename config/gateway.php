@@ -23,6 +23,7 @@ return array(
         'mobikwik',
         'paytm',
         'netbanking_hdfc',
+        'netbanking_kotak',
         'sharp',
         'wallet_olamoney',
         'upi_icici',
