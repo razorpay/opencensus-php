@@ -268,8 +268,6 @@ class Gateway extends Base\Gateway
         if ($content['vpc_DRExists'] !== 'Y')
         {
             $this->verifyPaymentNonExistentCase($verify, $gatewayPayment);
-
-            $this->verifyApiAndGatewayStatusMatch($verify, $gatewayPayment);
         }
         else
         {
@@ -300,26 +298,6 @@ class Gateway extends Base\Gateway
             $verify->status = VerifyResult::STATUS_MISMATCH;
             $verify->apiSuccess = false;
             $verify->gatewaySuccess = false;
-        }
-    }
-
-    /**
-     * Verifies that gateway status maintained in axis table matches
-     * api payment status. This is only run in case no payment is found
-     * on migs end. (Most probable reason of payment not being found on migs
-     * end is because 3 days have elapsed and no data is maintained after that
-     * on their end.)
-     */
-    protected function verifyApiAndGatewayStatusMatch($verify, $gatewayPayment)
-    {
-        $input = $verify->input;
-
-        if (($input['payment']['status'] === 'failed') and
-            ($gatewayPayment['vpc_TxnResponseCode'] === '0'))
-        {
-            $verify->status = VerifyResult::STATUS_MISMATCH;
-            $verify->apiSuccess = false;
-            $verify->gatewaySuccess = true;
         }
     }
 
