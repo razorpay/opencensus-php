@@ -297,11 +297,60 @@ class TransactionController extends Controller
         $timestamp = Carbon::parse($input['date'])->timestamp;
         $created_at = (new Transaction\Service)->getCreatedAtFromInputAndType($timestamp, $type);
 
-        $merchantId = isset($input['merchant_id']) ? $input['merchant_id'] : null; 
+        $merchantId = isset($input['merchant_id']) ? $input['merchant_id'] : null;
         $data = (new Transaction\Service)->getTimelyTransactionsForTheType($created_at, $mode, $type, $merchantId);
 
         list($error, $data) = (new Transaction\Service)->updateTypeAggregations($data, $created_at, $mode, $type);
 
         return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function uploadRefundFile($mode)
+    {
+        $this->checkMode($mode);
+
+        $input = Input::all();
+
+        $response = (new Api\Service)->uploadRefundFile($input);
+
+        return AppResponse::jsonResponse($response);
+    }
+
+    public function fetchMultipleRefunds($mode)
+    {
+        $this->checkMode($mode);
+
+        $input = Input::all();
+
+        $response = (new Api\Service)->fetchCollection($input, $mode, 'batch');
+
+        return AppResponse::jsonResponse($response);
+    }
+
+    public function fetchRefundById($mode, $id)
+    {
+        $this->checkMode($mode);
+
+        $response = (new Api\Service)->fetchEntity($id, $mode, 'batch');
+
+        return AppResponse::jsonResponse($response);
+    }
+
+    public function downloadRefundFile($mode, $id)
+    {
+        $this->checkMode($mode);
+
+        $response = (new Api\Service)->downloadRefundFile($id);
+
+        return AppResponse::jsonResponse($response);
+    }
+
+    public function retryRefundFile($mode, $id)
+    {
+        $this->checkMode($mode);
+
+        $response = (new Api\Service)->retryRefundFile($id);
+
+        return AppResponse::jsonResponse($response);
     }
 }

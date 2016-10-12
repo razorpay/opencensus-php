@@ -27,4 +27,25 @@ class Transaction extends Entity
 
         return $this->request('GET', $relativeUrl, $params);
     }
+
+    public function uploadRefundFile($input)
+    {
+        $relativeUrl = 'batches';
+
+        return $this->request('POST', $relativeUrl, $input);
+    }
+
+    public function downloadRefundFile($id)
+    {
+        $relativeUrl = 'batches/' .$id .'/download';
+
+        return $this->request('GET', $relativeUrl);
+    }
+
+    public function retryRefundFile($id)
+    {
+        $relativeUrl = 'batches/' .$id .'/retry';
+
+        return $this->request('POST', $relativeUrl);
+    }
 }

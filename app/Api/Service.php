@@ -395,4 +395,55 @@ class Service extends Base\Service
         $startDate = Carbon::createFromDate($year, $month, 1, 'Asia/Calcutta');
         return $this->merchant->id . '/' . $startDate->addMonth()->format('m/y');
     }
+
+    public function uploadRefundFile($input)
+    {
+        $batchRefund = $this->api
+                            ->transaction
+                            ->uploadRefundFile($input);
+
+        return [
+            'batch_id'          => $batchRefund['id'],
+            'status'            => $batchRefund['status'],
+            'total_count'       => $batchRefund['total_count'],
+            'amount'            => $batchRefund['amount'],
+        ];
+    }
+
+    public function downloadRefundFile($id)
+    {
+        $downloadResponse = $this->api
+                                 ->transaction
+                                 ->downloadRefundFile($id);
+
+        return [
+            'url'          => $downloadResponse['url'],
+        ];
+    }
+
+    public function retryRefundFile($id)
+    {
+        $batchRefund = $this->api
+                            ->transaction
+                            ->retryRefundFile($id);
+
+        return [
+            'batch_id'          => $batchRefund['id'],
+            'status'            => $batchRefund['status'],
+            'total_count'       => $batchRefund['total_count'],
+            'amount'            => $batchRefund['amount'],
+        ];
+    }
+
+    public function fetchCollectionBatch($input, $mode)
+    {
+        $collection = array();
+
+        $this->setApiCredentials($this->merchantId, $mode);
+        $collection = $this->api->$entity->all($input)->toArray();
+
+        $this->mapKeys($collection);
+
+        return $collection;
+    }
 }
