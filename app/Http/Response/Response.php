@@ -13,8 +13,6 @@ class Response
 {
     protected $app;
 
-    protected $request;
-
     /**
      * Denotes whether response should be jsonp or not.
      */
@@ -212,7 +210,7 @@ class Response
      */
     protected function attachJsonpCallback($response)
     {
-        $callback = $this->request->input('callback');
+        $callback = $this->app['request']->input('callback');
 
         try
         {
