@@ -45,6 +45,9 @@ build:
           username: wercker
           icon_url: https://cdn.rawgit.com/wantedly/step-pretty-slack-notify/master/icons/$WERCKER_RESULT.jpg
       - script:
+          name: change storage permissions
+          code: sudo chmod g+wx -R storage/ || true
+      - script:
           name: copy trace logs
           code: cp storage/logs/trace.log $WERCKER_REPORT_ARTIFACTS_DIR/. || true
       - script:
