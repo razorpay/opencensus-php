@@ -464,7 +464,7 @@ class Service extends Base\Service
             {
                 $data['emi'] = $emi;
 
-                $data['emi_plans'] = (new Emi\Service)->all(array());
+                $data['emi_plans'] = (new Emi\Service)->all();
             }
         }
 

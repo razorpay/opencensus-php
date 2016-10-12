@@ -20,9 +20,7 @@ class EmiController extends Controller
 
     public function fetchEmiPlans()
     {
-        $input = Request::all();
-
-        $data = (new Emi\Service)->all($input);
+        $data = (new Emi\Service)->all();
 
         return ApiResponse::json($data);
     }

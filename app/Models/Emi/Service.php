@@ -11,9 +11,9 @@ use RZP\Models\Emi;
 
 class Service extends Base\Service
 {
-    public function all($input)
+    public function all()
     {
-        $emiPlans = $this->repo->emi_plan->fetch($input);
+        $emiPlans = $this->repo->emi_plan->fetchEmiPlans();
 
         $plans = [];
 
