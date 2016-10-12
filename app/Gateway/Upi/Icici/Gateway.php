@@ -32,7 +32,6 @@ class Gateway extends Base\Gateway
         Entity::RECEIVED                  => Entity::RECEIVED,
         ResponseFields::PAYER_VA          => Entity::VPA,
         ResponseFields::PAYER_NAME        => Entity::NAME,
-        ResponseFields::PAYER_AMOUNT      => Entity::AMOUNT,
         ResponseFields::PAYER_MOBILE      => Entity::CONTACT,
         ResponseFields::RESPONSE          => Entity::STATUS_CODE,
         ResponseFields::BANK_RRN          => Entity::GATEWAY_PAYMENT_ID,
@@ -119,21 +118,24 @@ class Gateway extends Base\Gateway
      * @param  string $response
      * @return array response as associative array
      */
-    protected function parseGatewayResponse($response)
+    protected function parseGatewayResponse($response, $forceDecryption = false)
     {
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, [
-            'body'      =>  $response,
-            'encrypted' =>  true,
-            'gateway'   =>  $this->gateway
-        ]);
-
-        $decodedJson = json_decode($response, true);
-
-        // The response is encrypted sometimes,
-        // but not in all cases (usually errors are unencrypted)
-        if ($decodedJson !== null)
+        if ($forceDecryption === false)
         {
-            return $decodedJson;
+            $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, [
+                'body'      =>  $response,
+                'encrypted' =>  true,
+                'gateway'   =>  $this->gateway
+            ]);
+
+            $decodedJson = json_decode($response, true);
+
+            // The response is encrypted sometimes,
+            // but not in all cases (usually errors are unencrypted)
+            if ($decodedJson !== null)
+            {
+                return $decodedJson;
+            }
         }
 
         // The gateway response is encrypted, but wrapped
@@ -360,7 +362,7 @@ class Gateway extends Base\Gateway
         $data = $this->encrypt($json);
 
         // RSA::encrypt returns false if encryption failed
-        assert($data !== false);
+        assertTrue($data !== false);
 
         return base64_encode($data);
     }
@@ -524,7 +526,7 @@ class Gateway extends Base\Gateway
      */
     public function preProcessS2SResponse($body)
     {
-        $response = $this->parseGatewayResponse($body);
+        $response = $this->parseGatewayResponse($body, true);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
@@ -559,9 +561,9 @@ class Gateway extends Base\Gateway
         // and we are not revealing Bank RRN, this gives us a bit of
         // extra security for fake callbacks
 
-        assert($content[ResponseFields::MERCHANT_ID] === $gatewayPayment->getMerchantId());
-        assert($content[ResponseFields::MERCHANT_TRAN_ID] === $gatewayPayment->getPaymentId());
-        assert($content[ResponseFields::BANK_RRN] === $gatewayPayment->getGatewayPaymentId());
+        assertTrue($content[ResponseFields::MERCHANT_ID] === $gatewayPayment->getMerchantId());
+        assertTrue($content[ResponseFields::MERCHANT_TRAN_ID] === $gatewayPayment->getPaymentId());
+        assertTrue($content[ResponseFields::BANK_RRN] === $gatewayPayment->getGatewayPaymentId());
 
         if ($status !== Status::SUCCESS)
         {

@@ -53,7 +53,7 @@ class Server extends Base\Mock\Server
 
     public function __construct()
     {
-        $this->request = \Request::getFacadeRoot();
+        parent::__construct();
 
         $this->gateway = new Gateway;
     }
@@ -299,7 +299,7 @@ class Server extends Base\Mock\Server
     {
         $res['result'] = 'ENROLLED';
 
-        $res['url'] = Route::getUrl('mockhdfc_3dsecure');
+        $res['url'] = $this->route->getUrl('mock_hdfc_3dsecure');
 
         return $res;
     }

@@ -8,6 +8,7 @@ use RZP\Models\Card;
 use RZP\Models\Card\IIN;
 use RZP\Models\Transaction;
 use RZP\Models\Payment\Verify;
+use RZP\Reconciliator\Messenger;
 
 use RZP\Gateway\AxisMigs;
 
@@ -38,11 +39,13 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
     protected $app;
     protected $repo;
+    protected $messenger;
 
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
         $this->repo = $this->app['repo'];
+        $this->messenger = new Messenger();
 
         $this->paymentRepo     = $this->repo->payment;
         $this->iinRepo         = $this->repo->iin;
@@ -656,7 +659,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             $this->paymentIin->setCountry($countryCode);
 
             // Make sure that international returns true in this case, after the country code is set.
-            assert($this->paymentIin->isInternational());
+            assertTrue($this->paymentIin->isInternational());
 
             $this->app['trace']->info(
                 TraceCode::RECON_INFO_ALERT,
@@ -802,7 +805,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
     protected function createMissingPaymentTransaction()
     {
-        assert($this->payment->transaction === null);
+        assertTrue($this->payment->transaction === null);
 
         $this->app['trace']->info(
             TraceCode::RECON_INFO_ALERT,

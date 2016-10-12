@@ -126,6 +126,13 @@ class BasicAuth
     protected $trace;
 
     /**
+     * Api Route instance
+     *
+     * @var RZP\Http\Route
+     */
+    protected $route;
+
+    /**
      * Array of dashboard headers
      * @var array
      */
@@ -156,6 +163,7 @@ class BasicAuth
         $this->router = $app['router'];
         $this->trace = $this->app['trace'];
         $this->repo = $this->app['repo'];
+        $this->route = $this->app['api.route'];
     }
 
     public function setCredentials()
@@ -401,16 +409,20 @@ class BasicAuth
     {
         $route = $this->getCurrentRouteName();
 
-        if (array_key_exists($route, Route::$routeNameToFeatureMap) === true)
+        if ($this->route->isCurrentRouteInFeatureMap() === true)
         {
+            //
+            // Current route is in feature map list.
+            //
+
             $accessedFeature = Route::$routeNameToFeatureMap[$route];
             $allowedFeatures = $this->merchant->getFeatures();
 
-            if (!empty($allowedFeatures) and
-                in_array($accessedFeature, $allowedFeatures))
+            if (in_array($accessedFeature, $allowedFeatures))
             {
                 return null;
             }
+
             return ApiResponse::routeNotFound();
         }
 
@@ -686,7 +698,7 @@ class BasicAuth
 
     protected function getCurrentRouteName()
     {
-        return Route::getCurrentRouteName();
+        return $this->app['api.route']->getCurrentRouteName();
     }
 
     public function getAuthType()
@@ -736,6 +748,11 @@ class BasicAuth
     public function isPublicAuth()
     {
         return ($this->type === Type::PUBLIC_AUTH);
+    }
+
+    public function isPrivateAuth()
+    {
+        return ($this->type === Type::PRIVATE_AUTH);
     }
 
     public function isPrivilegeAuth()

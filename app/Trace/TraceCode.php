@@ -15,6 +15,7 @@ class TraceCode
     const PAYMENT_CREATE_FAILED                     = 'PAYMENT_CREATE_FAILED';
     const PAYMENT_AUTH_SUCCESS                      = 'PAYMENT_AUTH_SUCCESS';
     const PAYMENT_AUTH_FAILURE                      = 'PAYMENT_AUTH_FAILURE';
+    const PAYMENT_CALLBACK_REQUEST                  = 'PAYMENT_CALLBACK_REQUEST';
     const PAYMENT_REFUND_REQUEST                    = 'PAYMENT_REFUND_REQUEST';
     const PAYMENT_REFUND_SUCCESS                    = 'PAYMENT_REFUND_SUCCESS';
     const PAYMENT_REFUND_FAILURE                    = 'PAYMENT_REFUND_FAILURE';
@@ -27,6 +28,7 @@ class TraceCode
     const PAYMENT_CAPTURE_SUCCESS                   = 'PAYMENT_CAPTURE_SUCCESS';
     const PAYMENT_CAPTURE_FAILURE                   = 'PAYMENT_CAPTURE_FAILURE';
     const PAYMENT_CAPTURE_FORCED                    = 'PAYMENT_CAPTURE_FORCED';
+    const PAYMENT_ALREADY_CAPTURED                  = 'PAYMENT_ALREADY_CAPTURED';
     const PAYMENT_AUTO_CAPTURE                      = 'PAYMENT_AUTO_CAPTURE';
     const PAYMENT_AUTO_CAPTURE_FAILED               = 'PAYMENT_AUTO_CAPTURE_FAILED';
     const PAYMENT_QUEUE_CAPTURE_REQUEST             = 'PAYMENT_QUEUE_CAPTURE_REQUEST';
@@ -39,6 +41,7 @@ class TraceCode
     const PAYMENT_VERIFY_FAILED                     = 'PAYMENT_VERIFY_FAILED';
     const PAYMENT_FAILED                            = 'PAYMENT_FAILED';
     const PAYMENT_CANCELLED                         = 'PAYMENT_CANCELLED';
+    const PAYMENT_CANCELLED_METADATA                = 'PAYMENT_CANCELLED_METADATA';
     const PAYMENT_FAILED_TO_AUTHORIZED              = 'PAYMENT_FAILED_TO_AUTHORIZED';
     const PAYMENT_CALLBACK_FAILURE                  = 'PAYMENT_CALLBACK_FAILURE';
     const PAYMENT_CALLBACK_RETRY                    = 'PAYMENT_CALLBACK_RETRY';
@@ -74,6 +77,7 @@ class TraceCode
     const REFUND_GATEWAY_REQUIRED                   = 'REFUND_GATEWAY_REQUIRED';
     const PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND     = 'PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND';
     const PAYMENT_AUTO_REFUND_FAILURE               = 'PAYMENT_AUTO_REFUND_FAILURE';
+    const FORCE_AUTHORIZE_TIMEOUT_PAYMENTS_RESPONSE = 'FORCE_AUTHORIZE_TIMEOUT_PAYMENTS_RESPONSE';
 
     const ORDER_MULTIPLE_CAPTURED_PAYMENTS          = 'ORDER_MULTIPLE_CAPTURED_PAYMENTS';
 
@@ -85,6 +89,7 @@ class TraceCode
     const TERMINAL_EDIT                             = 'TERMINAL_EDIT';
     const TERMINAL_ENABLE                           = 'TERMINAL_ENABLE';
     const TERMINAL_DISABLE                          = 'TERMINAL_DISABLE';
+    const TERMINAL_FAIL_SORT                        = 'TERMINAL_FAIL_SORT';
     const MERCHANT_EDIT                             = 'MERCHANT_EDIT';
     const CUSTOMER_EDIT                             = 'CUSTOMER_EDIT';
     const CUSTOMER_TOKEN_EDIT                       = 'CUSTOMER_TOKEN_EDIT';
@@ -106,20 +111,27 @@ class TraceCode
     const PAYMENT_GET_CUSTOMER                      = 'PAYMENT_GET_CUSTOMER';
     const CUSTOMER_SESSION                          = 'CUSTOMER_SESSION';
     const CUSTOMER_CREATE_APP_TOKEN                 = 'CUSTOMER_CREATE_APP_TOKEN';
+    const CUSTOMER_CHECKCOOKIE_STATUS               = 'CUSTOMER_CHECKCOOKIE_STATUS';
     const PAYMENT_PROCESS_FROM_SAVED_LOCAL          = 'PAYMENT_PROCESS_FROM_SAVED_LOCAL';
     const PAYMENT_PROCESS_FROM_SAVED_GLOBAL         = 'PAYMENT_PROCESS_FROM_SAVED_GLOBAL';
     const PAYMENT_SAVE_METHOD                       = 'PAYMENT_SAVE_METHOD';
     const PAYMENT_APP_TOKEN_NOT_FOUND               = 'PAYMENT_APP_TOKEN_NOT_FOUND';
+    const PAYMENT_UPDATE_TOKEN                      = 'PAYMENT_UPDATE_TOKEN';
 
     //Pricing
     const PRICING_RULE_SELECTION                    = 'PRICING_RULE_SELECTION';
     const PAYMENT_PRICING_RULE_NOT_FOUND            = 'PAYMENT_PRICING_RULE_NOT_FOUND';
     const PAYMENT_PRICING_RULE_SELECTION            = 'PAYMENT_PRICING_RULE_SELECTION';
 
+    const ADDRESS_CREATE_REQUEST                    = 'ADDRESS_CREATE_REQUEST';
+    const ADDRESS_PRIMARY_SWITCH                    = 'ADDRESS_PRIMARY_SWITCH';
+    const ADDRESS_DELETE_REQUEST                    = 'ADDRESS_DELETE_REQUEST';
+
     /*
      * Gateway component error messages
      */
 
+    const GATEWAY_RESPONSE                          = 'GATEWAY_RESPONSE';
     const GATEWAY_ENROLL_REQUEST                    = 'GATEWAY_ENROLL_REQUEST';
     const GATEWAY_ENROLL_RESPONSE                   = 'GATEWAY_ENROLL_RESPONSE';
     const GATEWAY_ENROLL_ERROR                      = 'GATEWAY_ENROLL_ERROR';
@@ -161,11 +173,16 @@ class TraceCode
     const GATEWAY_CHECKSUM_VERIFY                   = 'GATEWAY_CHECKSUM_VERIFY';
     const GATEWAY_CHECKSUM_VERIFY_REQUEST           = 'GATEWAY_CHECKSUM_VERIFY_REQUEST';
     const GATEWAY_CHECKSUM_VERIFY_FAILED            = 'GATEWAY_CHECKSUM_VERIFY_FAILED';
+    const GATEWAY_SOAP_REQUEST                      = 'GATEWAY_SOAP_REQUEST';
     const GATEWAY_REQUEST_TIMEOUT                   = 'GATEWAY_REQUEST_TIMEOUT';
     const GATEWAY_RUPAY_CALLBACK                    = 'GATEWAY_RUPAY_CALLBACK';
     const GATEWAY_HDFC_CALLBACK_EMPTY               = 'GATEWAY_HDFC_CALLBACK_EMPTY';
     const GATEWAY_UNSUPPORTED_CARD_NETWORK          = 'GATEWAY_UNSUPPORTED_CARD_NETWORK';
     const GATEWAY_PAYMENT_VERIFY_UNEXPECTED         = 'GATEWAY_PAYMENT_VERIFY_UNEXPECTED';
+    const GATEWAY_ABSENCE_CREATE                    = 'GATEWAY_ABSENCE_CREATE';
+    const GATEWAY_ABSENCE_EDIT                      = 'GATEWAY_ABSENCE_EDIT';
+    const GATEWAY_VERIFY_INVALID_HEADER             = 'GATEWAY_VERIFY_INVALID_HEADER';
+    const GATEWAY_ABSENCE_DELETE                    = 'GATEWAY_ABSENCE_DELETE';
 
     const MPR_HDFC_GEN_INITIATED                    = 'MPR_HDFC_GEN_INITIATED';
     const MPR_HDFC_FILE_GENERATED                   = 'MPR_HDFC_FILE_GENERATED';
@@ -189,6 +206,9 @@ class TraceCode
     const SETTLEMENT_DAILY_REPORT_MAILING           = 'SETTLEMENT_DAILY_REPORT_MAILING';
     const SETTLEMENT_DAILY_REPORT_DATA              = 'SETTLEMENT_DAILY_REPORT_DATA';
     const SETTLEMENT_DAILY_REPORT_RESULT            = 'SETTLEMENT_DAILY_REPORT_RESULT';
+    const SETTLEMENT_DAILY_REPORT_FAILURE           = 'SETTLEMENT_DAILY_REPORT_FAILURE';
+    const CLIENT_CERTIFICATE_FILE_GENERATED         = 'CLIENT_CERTIFICATE_FILE_GENERATED';
+    const CLIENT_CERTIFICATE_KEY_FILE_GENERATED     = 'CLIENT_CERTIFICATE_KEY_FILE_GENERATED';
 
     const MERCHANT_BENEFICIARY_FILE_GENERATE        = 'MERCHANT_BENEFICIARY_FILE_GENERATE';
     const MERCHANT_REPORT_GENERATION                = 'MERCHANT_REPORT_GENERATION';
@@ -255,6 +275,20 @@ class TraceCode
     const RECON_INFO_SUMMARY                        = 'RECON_INFO_SUMMARY';
     const IIN_INSERT_FAILED                         = 'IIN_INSERT_FAILED';
 
+    const BATCH_UPLOAD_FILE_ENTRIES                 = 'BATCH_UPLOAD_FILE_ENTRIES';
+    const BATCH_UPLOAD_FILE                         = 'BATCH_UPLOAD_FILE';
+    const BATCH_PROCESS_FILE                        = 'BATCH_PROCESS_FILE';
+    const BATCH_ALREADY_PROCESSED                   = 'BATCH_ALREADY_PROCESSED';
+    const BATCH_PROCESSING_ERROR                    = 'BATCH_PROCESSING_ERROR';
+    const BATCH_RETRY                               = 'BATCH_RETRY';
+    const BATCH_RETRY_FAILURE                       = 'BATCH_RETRY_FAILURE';
+    const BATCH_DOWNLOAD                            = 'BATCH_DOWNLOAD';
+    const BATCH_LIST                                = 'BATCH_LIST';
+    const BATCH_GET                                 = 'BATCH_GET';
+    const BATCH_FILE_DELETE                         = 'BATCH_FILE_DELETE';
+
+    const MUTEX_LOCK_ALREADY_RELEASED               = 'MUTEX_LOCK_ALREADY_RELEASED';
+
     /**
      * Trace code for critical info
      */
@@ -300,6 +334,8 @@ class TraceCode
         self::ORDER_MULTIPLE_CAPTURED_PAYMENTS          => 'Found more than one captured payment for an order.',
         self::PAYMENT_AUTO_REFUND_FAILURE               => 'Refund failed while trying to auto-refund',
 
+        self::ADDRESS_PRIMARY_SWITCH                    => 'Switching primary address of an entity and address type',
+
         self::BAD_REQUEST_INVALID_API_KEY               => 'The api key provided is invalid',
 
         self::RUNTIME_ERROR                             => 'The request failed at runtime',
@@ -319,6 +355,7 @@ class TraceCode
         self::GATEWAY_UNKNOWN_ERROR                     => 'Unknown gateway error',
         self::GATEWAY_PAYMENT_VERIFY_UNEXPECTED         => 'Unexpected state of events in verify flow',
         self::GATEWAY_UNSUPPORTED_CARD_NETWORK          => 'Card network not supported',
+        self::GATEWAY_VERIFY_INVALID_HEADER             => 'Gateway Verify invalid header',
 
         self::ERROR_EXCEPTION                           => 'Unhandled critical exception occured',
         self::RECOVERABLE_EXCEPTION                     => 'Recoverable exception occurred',
@@ -345,6 +382,18 @@ class TraceCode
         self::REFUND_TRANSACTION_FAILED                 => 'Transaction failed to create for refund',
         self::RECON_INFO_SUMMARY                        => 'Summary of the reconciliation of the files',
         self::TRANSACTION_CREATED_IN_VERIFY_CAPTURE     => 'Transaction created for a failed capture',
+
+        self::BATCH_UPLOAD_FILE_ENTRIES                 => 'Entries of the uploaded file',
+        self::BATCH_UPLOAD_FILE                         => 'Uploaded batch file',
+        self::BATCH_PROCESS_FILE                        => 'Processing the batch file',
+        self::BATCH_ALREADY_PROCESSED                   => 'Batch File already processed',
+        self::BATCH_PROCESSING_ERROR                    => 'Error in processing batch',
+        self::BATCH_RETRY                               => 'Manual retry for the batch file',
+        self::BATCH_RETRY_FAILURE                       => 'Failure in retrying batch file',
+        self::BATCH_DOWNLOAD                            => 'Downloading the batch file',
+        self::BATCH_LIST                                => 'Getting the batch files',
+        self::BATCH_GET                                 => 'Get Batch by given id',
+        self::BATCH_FILE_DELETE                         => 'Batch file delete',
     );
 
     /**

@@ -33,19 +33,25 @@ class Gateway
     const WALLET_PAYZAPP     = 'wallet_payzapp';
     const WALLET_PAYUMONEY   = 'wallet_payumoney';
     const WALLET_AIRTELMONEY = 'wallet_airtelmoney';
+    const WALLET_FREECHARGE  = 'wallet_freecharge';
     const CYBERSOURCE        = 'cybersource';
+    const FIRST_DATA         = 'first_data';
 
-    const NOT_SUPPORTED      = 'not_supported';
-    const SUPPORTED          = 'supported';
+    const NOT_SUPPORTED     = 'not_supported';
+    const SUPPORTED         = 'supported';
 
     const POWER_WALLETS = array(
         Wallet::MOBIKWIK,
         Wallet::PAYUMONEY,
+        Wallet::OLAMONEY,
+        Wallet::FREECHARGE,
     );
 
     const TOPUP_GATEWAYS = array(
         self::MOBIKWIK,
         self::WALLET_PAYUMONEY,
+        self::WALLET_OLAMONEY,
+        self::WALLET_FREECHARGE,
         self::SHARP,
     );
 
@@ -67,9 +73,11 @@ class Gateway
         self::WALLET_PAYZAPP     => Settlement\Channel::KOTAK,
         self::WALLET_PAYUMONEY   => Settlement\Channel::KOTAK,
         self::WALLET_OLAMONEY    => Settlement\Channel::KOTAK,
+        self::WALLET_FREECHARGE  => Settlement\Channel::KOTAK,
         self::WALLET_AIRTELMONEY => Settlement\Channel::KOTAK,
-        self::CYBERSOURCE        => Settlement\Channel::KOTAK,
+        self::FIRST_DATA         => Settlement\Channel::KOTAK,
         self::UPI_ICICI          => Settlement\Channel::KOTAK,
+        self::CYBERSOURCE        => Settlement\Channel::KOTAK
     );
 
     /**
@@ -88,6 +96,7 @@ class Gateway
             self::PAYTM,
             self::AMEX,
             self::CYBERSOURCE,
+            self::FIRST_DATA,
         ),
 
         Method::NETBANKING => array(
@@ -106,6 +115,7 @@ class Gateway
             self::WALLET_PAYZAPP,
             self::WALLET_PAYUMONEY,
             self::WALLET_AIRTELMONEY,
+            self::WALLET_FREECHARGE,
         ),
 
         Method::EMI => array(
@@ -130,6 +140,7 @@ class Gateway
         ],
         self::AMEX => [],
         self::CYBERSOURCE => [],
+        self::FIRST_DATA => [],
     );
 
 
@@ -186,6 +197,9 @@ class Gateway
         self::CYBERSOURCE => array(
             Network::MC,
             Network::VISA),
+        self::FIRST_DATA => array(
+            Network::MC,
+            Network::VISA),
     );
 
     public static $walletToGatewayMap = array(
@@ -195,6 +209,7 @@ class Gateway
         Wallet::PAYZAPP     => Gateway::WALLET_PAYZAPP,
         Wallet::PAYUMONEY   => Gateway::WALLET_PAYUMONEY,
         Wallet::AIRTELMONEY => Gateway::WALLET_AIRTELMONEY,
+        Wallet::FREECHARGE  => Gateway::WALLET_FREECHARGE,
     );
 
     public static $upiToGatewayMap = array(
@@ -242,6 +257,7 @@ class Gateway
         Gateway::AXIS_MIGS,
         Gateway::AMEX,
         Gateway::CYBERSOURCE,
+        Gateway::FIRST_DATA,
     );
 
     /**
@@ -254,6 +270,7 @@ class Gateway
         Gateway::AXIS_MIGS,
         Gateway::AMEX,
         Gateway::CYBERSOURCE,
+        Gateway::FIRST_DATA,
     );
 
     /**
@@ -268,6 +285,7 @@ class Gateway
         Gateway::AXIS_GENIUS,
         Gateway::SHARP,
         Gateway::CYBERSOURCE,
+        Gateway::FIRST_DATA,
     );
 
     /**
@@ -284,6 +302,7 @@ class Gateway
         Gateway::AXIS_MIGS,
         Gateway::AMEX,
         Gateway::CYBERSOURCE,
+        Gateway::FIRST_DATA,
         );
 
     /**
@@ -303,6 +322,7 @@ class Gateway
         Gateway::ATOM,
         Gateway::SHARP,
         Gateway::CYBERSOURCE,
+        Gateway::FIRST_DATA,
     );
 
     /**
@@ -373,12 +393,14 @@ class Gateway
         IFSC::KKBK,
         IFSC::UTIB,
         IFSC::INDB,
+        IFSC::RATN
     );
 
     public static $emiBanksUsingCardTerminals = array(
         IFSC::KKBK,
         IFSC::UTIB,
         IFSC::INDB,
+        IFSC::RATN
     );
 
     public static $emiBankToGatewayMap = array(
@@ -397,7 +419,7 @@ class Gateway
 
     public static function isValidGateway($gateway)
     {
-        return (defined(__CLASS__.'::'.strtoupper($gateway)));
+        return (defined(__CLASS__ . '::' . strtoupper($gateway)));
     }
 
     public static function getGatewayForWallet($wallet)

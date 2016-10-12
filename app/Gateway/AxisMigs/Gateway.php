@@ -22,6 +22,8 @@ class Gateway extends Base\Gateway
 
     protected $authorize = false;
 
+    const CHECKSUM_ATTRIBUTE = 'vpc_SecureHash';
+
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -41,24 +43,24 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_CALLBACK, [$input['gateway']]);
+
         if (isset($input['gateway']['vpc_MerchTxnRef']) === false)
         {
-            $this->trace->info(
-                TraceCode::GATEWAY_PAYMENT_CALLBACK, [$input['gateway']]);
-
             // Payment fails since vpc_MerchTxnRef not set, throw exception
             throw new Exception\GatewayErrorException(
                         Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
         }
 
-        $payment = $this->repo->findByMerchantTxnRefAndCommand(
+        $gatewayPayment = $this->repo->findByMerchantTxnRefAndCommand(
             $input['gateway']['vpc_MerchTxnRef'], Command::PAY);
 
         $this->verifySecureHash($input['gateway']);
 
         $input['gateway']['received'] = 1;
-        $payment->fill($input['gateway']);
-        $payment->saveOrFail();
+        $gatewayPayment->fill($input['gateway']);
+        $gatewayPayment->saveOrFail();
 
         $this->verifyPaymentCallbackResponse($input);
     }
@@ -108,8 +110,15 @@ class Gateway extends Base\Gateway
     {
         $repo = $this->repo;
 
-        $payment = $repo->findByPaymentIdAndCommand(
-                                $input['payment']['id'], Command::PAY);
+        $gatewayPayment = $repo->findByPaymentIdAndCommand($input['payment']['id'], Command::PAY);
+
+        // If it's already authorized on axis side, there's nothing to do here. We just return back.
+        if (($gatewayPayment->getTransactionId() !== null) and
+            ($gatewayPayment->getReceived() === true) and
+            ($gatewayPayment->getVpcTransactionCode() === '0'))
+        {
+            return true;
+        }
 
         // assert ($payment['received'] === false);
         // assert ($payment['vpc_TxnResponseCode'] !== '0');
@@ -135,10 +144,10 @@ class Gateway extends Base\Gateway
                 'No migs payments with nearby vpc_TransactionNo found');
         }
 
-        $payment->setVpcTransactionNo($txnNo, $terminalId);
-        $payment['vpc_TxnResponseCode'] = '0';
+        $gatewayPayment->setVpcTransactionNo($txnNo, $terminalId);
+        $gatewayPayment['vpc_TxnResponseCode'] = '0';
 
-        $repo->saveOrFail($payment);
+        $repo->saveOrFail($gatewayPayment);
 
         return true;
     }
@@ -156,10 +165,10 @@ class Gateway extends Base\Gateway
     {
         assert ($input['payment']['status'] === 'authorized');
 
-        $payment = $this->repo->findByPaymentIdAndCommand(
+        $gatewayPayment = $this->repo->findByPaymentIdAndCommand(
             $input['payment']['id'], Command::PAY);
 
-        $capturedAmount = (int) $payment['vpc_CapturedAmount'];
+        $capturedAmount = (int) $gatewayPayment['vpc_CapturedAmount'];
 
         if ($capturedAmount === $input['payment']['amount'])
         {
@@ -175,9 +184,9 @@ class Gateway extends Base\Gateway
             return;
         }
 
-        $content = $this->getPaymentCaptureRequestContent($input, $payment);
+        $content = $this->getPaymentCaptureRequestContent($input, $gatewayPayment);
 
-        $payment = $this->createGatewayPaymentEntity($content, $input);
+        $gatewayCapturedPayment = $this->createGatewayPaymentEntity($content, $input);
 
         $content = $this->postAmaTransactionRequestAndGetContent($content, $input);
 
@@ -198,7 +207,7 @@ class Gateway extends Base\Gateway
         }
 
         $content['received'] = 1;
-        $payment->fill($content)->saveOrFail();
+        $gatewayCapturedPayment->fill($content)->saveOrFail();
 
         $this->verifyAmaTransactionResponse($content, $input);
     }
@@ -359,14 +368,14 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function verifyPaymentBackfillDataIfRequired($content, $payment)
+    protected function verifyPaymentBackfillDataIfRequired($content, $gatewayPayment)
     {
-        if ($payment['received'] === false)
+        if ($gatewayPayment['received'] === false)
         {
             unset($content['vpc_Command']);
 
-            $payment->fill($content);
-            $payment->saveOrFail();
+            $gatewayPayment->fill($content);
+            $gatewayPayment->saveOrFail();
         }
         else
         {
@@ -382,11 +391,11 @@ class Gateway extends Base\Gateway
             {
                 if (empty($content[$key]) === false)
                 {
-                    $payment->setAttribute($key, $content[$key]);
+                    $gatewayPayment->setAttribute($key, $content[$key]);
                 }
             }
 
-            $payment->saveOrFail();
+            $gatewayPayment->saveOrFail();
         }
     }
 
@@ -580,17 +589,9 @@ class Gateway extends Base\Gateway
         return strtoupper(md5($str));
     }
 
-    protected function verifySecureHash($input)
+    protected function getHashValueFromContent(array $input)
     {
-        $hash = strtoupper($input['vpc_SecureHash']);
-        unset($input['vpc_SecureHash']);
-
-        $generatedHash = $this->generateHash($input);
-
-        if ($generatedHash !== $hash)
-        {
-            throw new Exception\BadRequestValidationFailureException('Failed checksum verification');
-        }
+        return strtoupper(parent::getHashValueFromContent($input));
     }
 
     protected function addMerchantIdAndAccessCode(array & $content, $terminal)

@@ -14,6 +14,10 @@ class Repository extends Base\Repository
 
     protected $entity = 'refund';
 
+    protected $entityFetchParamRules = array(
+        Entity::PAYMENT_ID      => 'sometimes|alpha_num|max:14',
+    );
+
     protected $proxyFetchParamRules = [
         Entity::NOTES           => 'sometimes|string|max:500',
     ];
@@ -133,5 +137,14 @@ class Repository extends Base\Repository
             ->get();
 
         return $refunds;
+    }
+
+    public function fetchRefundsByBatchAndPayment($batch, $payment)
+    {
+        return $this->newQuery()
+                    ->where(Refund\Entity::PAYMENT_ID, '=', $payment->getId())
+                    ->where(Refund\Entity::MERCHANT_ID, '=', $batch->getMerchantId())
+                    ->where(Refund\Entity::BATCH_ID, '=', $batch->getId())
+                    ->get();
     }
 }

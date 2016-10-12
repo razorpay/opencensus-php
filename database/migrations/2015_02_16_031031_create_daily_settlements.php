@@ -27,7 +27,8 @@ class CreateDailySettlements extends Migration
 
             $table->string(DailySettlement::CHANNEL, 8);
 
-            $table->integer(DailySettlement::AMOUNT);
+            $table->bigInteger(DailySettlement::AMOUNT)
+                  ->unsigned();
 
             $table->integer(DailySettlement::FEES);
 

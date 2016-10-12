@@ -24,6 +24,8 @@ class ReconciliationTest extends TestCase
 
     public function testReconciliation()
     {
+        $this->markTestIncomplete();
+
         // Create payments and refunds with timestamps two days back
         $prEntities = $this->createPaymentAndRefundEntities();
 

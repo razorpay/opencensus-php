@@ -35,6 +35,7 @@ class Orchestrator
     const PAYZAPP  = 'PayZapp';
     const MOBIKWIK = 'Mobikwik';
     const PAYTM    = 'Paytm';
+    const OLAMONEY = 'Olamoney';
     const ADMIN    = 'admin';
 
     /**
@@ -48,6 +49,7 @@ class Orchestrator
         self::MOBIKWIK => ['prashanth@razorpay.com'],
         self::PAYTM    => ['prashanth@razorpay.com'],
         self::KOTAK    => ['giri@razorpay.com'],
+        self::OLAMONEY => ['prashanth@razorpay.com'],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
         self::ADMIN    => ['prashanth.yv@razorpay.com'],
@@ -389,7 +391,7 @@ class Orchestrator
         if ($gateway === self::ADMIN)
         {
             $gateway = $this->emailDetails['subject'];
-            assert(in_array($gateway, array_keys(self::GATEWAY_SENDER_MAPPING)),
+            assertTrue(in_array($gateway, array_keys(self::GATEWAY_SENDER_MAPPING)),
                     "[Admin] Invalid/Unrecognized gateway sent in the subject line.");
         }
 

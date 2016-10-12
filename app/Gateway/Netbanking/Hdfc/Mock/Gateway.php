@@ -15,7 +15,7 @@ class Gateway extends Hdfc\Gateway
     {
         $request = parent::authorize($input);
 
-        $url = \RZP\Http\Route::getUrlWithPublicAuth(
+        $url = $this->route->getUrlWithPublicAuth(
                                 'mock_netbanking_payment',
                                 ['bank' => $this->bank]);
 

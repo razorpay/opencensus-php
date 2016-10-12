@@ -53,7 +53,7 @@ $factory(\RZP\Models\BankAccount\Entity::class, [
     'beneficiary_state' => 'DE',
     'beneficiary_country' => 'IN',
     'beneficiary_email' => $faker->email,
-    'beneficiary_mobile' => 1234567890,
+    'beneficiary_mobile' => 9988776655,
     'beneficiary_pin' => 100000,
 ]);
 
@@ -222,6 +222,20 @@ $factory(\RZP\Models\Merchant\Webhook\Entity::class, [
     'active' => true,
 ]);
 
+$factory(\RZP\Models\Address\Entity::class,
+    [
+        'line1'         => 'some line one',
+        'line2'         => 'some line two',
+        'city'          => 'Bangalore',
+        'state'         => 'Karnataka',
+        'zipcode'       => '560078',
+        'country'       => 'in',
+        'type'          => 'shipping_address',
+        'primary'       => true,
+        'entity_id'     => '100000customer',
+        'entity_type'   => 'customer',
+    ]);
+
 $factory(\RZP\Models\Emi\Entity::class, [
     'id' => 10101010101010,
     'duration' => 9,
@@ -249,7 +263,7 @@ $factory(\RZP\Models\Customer\Entity::class, [
     'id' => $faker->uniqueid,
     'merchant_id' => '10000000000000',
     'name' => 'name',
-    'contact' => '1234567890',
+    'contact' => '9988776655',
     'notes' => null,
 ]);
 
@@ -261,6 +275,7 @@ $factory(\RZP\Models\Customer\Token\Entity::class, [
     'method'      => 'wallet',
     'bank'        => null,
     'card_id'     => null,
+    'recurring'   => false,
     'used_count'  => 0,
 ]);
 
@@ -276,4 +291,17 @@ $factory(\RZP\Models\Merchant\Credits\Entity::class, [
     'merchant_id'   => '10000000000000',
     'value'         => 150,
     'campaign'      => 'silent-ads',
+]);
+
+$factory(\RZP\Models\Batch\Entity::class, [
+    'id'            => $faker->uniqueid,
+    'merchant_id'   => '10000000000000',
+    'status'        => 'created'
+]);
+
+$factory(\RZP\Gateway\Wallet\Base\Entity::class, [
+    'id'            => '12345',
+    'amount'        => 0,
+    'contact'       => '9918899029',
+    'email'         => 'a@b.com',
 ]);

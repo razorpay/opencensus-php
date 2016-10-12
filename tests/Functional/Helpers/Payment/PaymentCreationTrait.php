@@ -82,6 +82,8 @@ trait PaymentCreationTrait
             '/payments/create/jsonp',
             '/payments/create/ajax',
             '/payments/create/checkout',
+            '/payments/create/redirect',
+            '/payments/create/recurring',
             '/payments');
 
         return in_array($url, $urls);
@@ -180,6 +182,10 @@ trait PaymentCreationTrait
                         {
                             $gateway = $content['gateway'];
                         }
+                        else if ($content['type'] === 'async')
+                        {
+                            return $response;
+                        }
                     }
                 }
                 else
@@ -212,6 +218,10 @@ trait PaymentCreationTrait
                     else if ($content['type'] === 'otp')
                     {
                         $gateway = $content['gateway'];
+                    }
+                    else if ($content['type'] === 'async')
+                    {
+                        return $response;
                     }
                 }
             }

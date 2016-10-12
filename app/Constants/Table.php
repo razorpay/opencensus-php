@@ -8,6 +8,7 @@ class Table
     const IIN                   = 'iins';
     const KEY                   = 'keys';
     const CARD                  = 'cards';
+    const BATCH                 = 'batches';
     const ORDER                 = 'orders';
     const TOKEN                 = 'tokens';
     const REFUND                = 'refunds';
@@ -16,13 +17,14 @@ class Table
     const PRICING               = 'pricing';
     const PAYMENT               = 'payments';
     const WEBHOOK               = 'webhooks';
+    const ADDRESS               = 'addresses';
     const MERCHANT              = 'merchants';
     const TERMINAL              = 'terminals';
     const CUSTOMER              = 'customers';
+    const EMI_PLAN              = 'emi_plans';
     const APP_TOKEN             = 'customer_apps';
     const ADJUSTMENT            = 'adjustment';
     const SETTLEMENT            = 'settlements';
-    const EMI_PLAN              = 'emi_plans';
     const TRANSACTION           = 'transactions';
     const BANK_ACCOUNT          = 'bank_accounts';
     const DAILY_SETTLEMENT      = 'daily_settlements';
@@ -34,6 +36,7 @@ class Table
     const HDFC                  = 'hdfc';
     const AXIS                  = 'axis';
     const CYBERSOURCE           = 'cybersource';
+    const FIRST_DATA            = 'first_data';
     const PAYTM                 = 'paytm';
     const BILLDESK              = 'billdesk';
     const MOBIKWIK              = 'mobikwik';
@@ -49,7 +52,7 @@ class Table
 
     // Terminal Performance
     const TERMINAL_ACTION       = 'terminal_action_logs';
-    const GATEWAYSTATUS_ABSENCE = 'gatewaystatus_absence';
+    const GATEWAY_STATUS_ABSENCE = 'gateway_status_absence';
 
     // Payment Analytics
     const PAYMENT_ANALYTICS     = 'payment_analytics';

@@ -38,8 +38,8 @@ class Gateway extends Icici\Gateway
     {
         $url = parent::getUrl($type);
 
-        $url = Route::getUrlWithPublicAuth('mock_upi_icici_payment',
-                                            ['bank' => 'icici']);
+        $url = $this->route->getUrlWithPublicAuth(
+                        'mock_upi_icici_payment', ['bank' => 'icici']);
         return $url;
     }
 }

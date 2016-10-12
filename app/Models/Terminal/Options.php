@@ -12,6 +12,8 @@ class Options
 
     protected $hasMultiple = false;
 
+    protected $failedTerminals = [];
+
     public function __construct()
     {
         $this->setChance();
@@ -45,6 +47,16 @@ class Options
         }
 
         $this->chance = $chance;
+    }
+
+    public function setFailedTerminals(array $exclude)
+    {
+        $this->failedTerminals = $exclude;
+    }
+
+    public function getFailedTerminals()
+    {
+        return $this->failedTerminals;
     }
 
     public static function setTestChance($testChance = 0)
