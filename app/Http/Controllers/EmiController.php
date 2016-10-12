@@ -9,13 +9,6 @@ use Request;
 
 class EmiController extends Controller
 {
-    public function fetchAvailableEmiPlans()
-    {
-        $data = (new Emi\Service)->all();
-
-        return ApiResponse::json($data);
-    }
-
     public function addEmiPlan()
     {
         $input = Request::all();
@@ -25,12 +18,20 @@ class EmiController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function fetchEmiPlans()
+    {
+        $input = Request::all();
+
+        $data = (new Emi\Service)->all($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function fetchEmiPlanById($id)
     {
         $data = (new Emi\Service)->fetch($id);
 
         return ApiResponse::json($data);
-
     }
 
     public function deleteEmiPlan($id)
@@ -48,5 +49,4 @@ class EmiController extends Controller
 
         return ApiResponse::json($emiExcel);
     }
-
 }

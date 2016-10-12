@@ -12,11 +12,6 @@ class Repository extends Base\Repository
 
     protected $entity = 'emi_plan';
 
-    public function getAllEmiPlans()
-    {
-        return $this->newQuery()->get();
-    }
-
     public function fetchRelevantEmiPlan($iin, $duration)
     {
         $bank = $iin->getIssuer();
@@ -35,5 +30,10 @@ class Repository extends Base\Repository
         }
 
         return $query->firstOrFail();
+    }
+
+    public function isMerchantIdRequiredForFetch()
+    {
+        return false;
     }
 }

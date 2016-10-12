@@ -456,13 +456,15 @@ class Service extends Base\Service
                 $data['netbanking'] = $methods->toArrayWithBankNames();
             }
             $data['wallet'] = $methods->getEnabledWallets();
-            $data['emi'] = $methods->isEmiEnabled();
             $data['upi'] = $methods->isUpiEnabled();
-        }
+            $emi = $methods->isEmiEnabled();
 
-        if ($this->mode === Mode::TEST)
-        {
-            $data['card'] = true;
+            if ($emi === true)
+            {
+                $data['emi'] = $emi;
+
+                $data['emi_plans'] = (new Emi\Service)->all();
+            }
         }
 
         return $data;
