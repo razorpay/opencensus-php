@@ -48,30 +48,28 @@ class Processor extends Base\Core
             $batch->getId(),
             function() use ($batch, $entries)
             {
-                $this->processBatch($batch, $entries);
+                $this->processBatch($entries);
 
-                $this->createProcessedExcel($batch, $entries);
+                $this->createProcessedExcel($entries);
 
-                $this->repo->saveOrFail($batch);
+                $this->repo->saveOrFail($this->batch);
 
                 $this->trace->info(
                     TraceCode::BATCH_PROCESS_FILE,
                     [
                         'message'            => 'Processed Batch Refund',
-                        'batch'              => $batch->toArrayPublic(),
+                        'batch'              => $this->batch->toArrayPublic(),
                     ]);
             },
             self::MUTEX_LOCK_TIMEOUT);
 
         $this->runPostBatchProcessOperations();
-
-        return $batch;
     }
 
-    protected function processBatch(Batch\Entity $batch, & $entries)
+    protected function processBatch(& $entries)
     {
-        $function = 'process' . ucfirst($batch->getType()) . 'Entries';
-        $this->$function($batch, $entries);
+        $function = 'process' . ucfirst($this->batch->getType()) . 'Entries';
+        $this->$function($entries);
 
         $totalProcessedAmount = 0;
         $totalSuccessCount = 0;
@@ -91,15 +89,15 @@ class Processor extends Base\Core
             }
         }
 
-        $batch->setProcessedAmount($totalProcessedAmount);
-        $batch->setSuccessCount($totalSuccessCount);
-        $batch->setFailureCount($totalFailureCount);
+        $this->batch->setProcessedAmount($totalProcessedAmount);
+        $this->batch->setSuccessCount($totalSuccessCount);
+        $this->batch->setFailureCount($totalFailureCount);
 
         $processedAt = Carbon::now('Asia/Kolkata')->timestamp;
 
-        $batch->setProcessedAt($processedAt);
+        $this->batch->setProcessedAt($processedAt);
 
-        $this->updateBatchStatus($batch);
+        $this->updateBatchStatus();
     }
 
     protected function runPostBatchProcessOperations()
@@ -114,20 +112,20 @@ class Processor extends Base\Core
         $this->deleteFile($this->uploadFileLocalPath);
     }
 
-    protected function updateBatchStatus(Batch\Entity $batch)
+    protected function updateBatchStatus()
     {
         $status = Status::PROCESSED;
 
-        if (($batch->getFailureCount() > 0) and
-            ($batch->getAttempts() < 3))
+        if (($this->batch->getFailureCount() > 0) and
+            ($this->batch->getAttempts() < 3))
         {
             $status = Status::PROCESSING;
         }
 
-        $batch->setStatus($status);
+        $this->batch->setStatus($status);
     }
 
-    protected function processRefundEntries(Batch\Entity $batch, & $entries)
+    protected function processRefundEntries(& $entries)
     {
         foreach ($entries as & $entry)
         {
@@ -140,9 +138,9 @@ class Processor extends Base\Core
 
             try
             {
-                $payment = $this->repo->payment->findByPublicIdAndMerchant($paymentId, $batch->merchant);
+                $payment = $this->repo->payment->findByPublicIdAndMerchant($paymentId, $this->batch->merchant);
 
-                $this->processRefundRequest($batch, $payment, $entry);
+                $this->processRefundRequest($payment, $entry);
             }
             catch (\Exception $e)
             {
@@ -157,28 +155,28 @@ class Processor extends Base\Core
         }
     }
 
-    protected function processRefundRequest(Batch\Entity $batch, Payment\Entity $payment, array & $entry)
+    protected function processRefundRequest(Payment\Entity $payment, array & $entry)
     {
         $amount = $entry[Header::AMOUNT];
 
-        $processor = new Payment\Processor\Processor($batch->merchant);
+        $processor = new Payment\Processor\Processor($this->batch->merchant);
 
-        $refund = $processor->refundPaymentViaBatchEntry($payment, $batch, $amount);
+        $refund = $processor->refundPaymentViaBatchEntry($payment, $this->batch, $amount);
 
         $entry[Header::REFUND_ID] = $refund->getPublicId();
         $entry[Header::REFUNDED_AMOUNT] = $refund->getAmount();
         $entry[Header::STATUS] = Status::SUCCESS;
     }
 
-    protected function createProcessedExcel(Batch\Entity $batch, $entries)
+    protected function createProcessedExcel($entries)
     {
-        $count = count(Header::REFUND_HEADERS);
+        $count = count(Header::REFUND_OUTPUT_HEADERS);
 
         $finalEntries = [];
 
         foreach ($entries as $entry)
         {
-            $dict = array_combine(Header::REFUND_HEADERS, array_fill(0, $count, null));
+            $dict = array_combine(Header::REFUND_OUTPUT_HEADERS, array_fill(0, $count, null));
 
             foreach ($entry as $key => $value)
             {
@@ -188,7 +186,7 @@ class Processor extends Base\Core
             $finalEntries[] = $dict;
         }
 
-        $excel = $this->createExcelObject($finalEntries, $batch->getId(), [], $batch->getType());
+        $excel = $this->createExcelObject($finalEntries, $this->batch->getId(), [], $this->batch->getType());
 
         $storagePath = $this->getStoragePath();
 
@@ -196,9 +194,9 @@ class Processor extends Base\Core
 
         $fullpath = $fileMetadata['full'];
 
-        $downloadUrl = $this->saveBatchFileToAws($batch, $fullpath);
+        $downloadUrl = $this->saveBatchFileToAws($this->batch, $fullpath);
 
-        $batch->setDownloadFileUrl($downloadUrl);
+        $this->batch->setDownloadFileUrl($downloadUrl);
 
         $this->downloadFileLocalPath = $fullpath;
     }
@@ -285,7 +283,6 @@ class Processor extends Base\Core
         return $this->parseExcelSheets($filePath);
     }
 
-
     protected function isEntryProcessed($entry)
     {
         $userErrorCodes = [
@@ -294,7 +291,6 @@ class Processor extends Base\Core
         ];
 
         if (empty($entry[Header::STATUS]))
-
         {
             return false;
         }

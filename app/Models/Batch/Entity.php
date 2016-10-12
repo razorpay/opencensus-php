@@ -76,8 +76,6 @@ class Entity extends Base\PublicEntity
         self::ATTEMPTS                       => 'int',
     );
 
-    protected $downloadFileLocalPath;
-
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');
@@ -203,16 +201,6 @@ class Entity extends Base\PublicEntity
     public function incrementAttempts()
     {
         $this->increment(self::ATTEMPTS);
-    }
-
-    public function getDownloadFileLocalPath()
-    {
-        return $this->downloadFileLocalPath;
-    }
-
-    public function setDownloadFileLocalPath($path)
-    {
-        $this->downloadFileLocalPath = $path;
     }
 
     public function isProcessed()
