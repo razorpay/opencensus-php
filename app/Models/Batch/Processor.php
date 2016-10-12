@@ -151,11 +151,9 @@ class Processor extends Base\Core
 
             $paymentId = $entry[Header::PAYMENT_ID];
 
-            Payment\Entity::verifyIdAndStripSign($paymentId);
-
             try
             {
-                $payment = $this->repo->payment->findByIdAndMerchantId($paymentId, $batch->getMerchantId());
+                $payment = $this->repo->payment->findByPublicIdAndMerchant($paymentId, $batch->merchant);
 
                 $this->processRefundRequest($batch, $payment, $entry);
             }
@@ -172,66 +170,13 @@ class Processor extends Base\Core
         }
     }
 
-    protected function findExistingRefund(Batch\Entity $batch, Payment\Entity $payment)
+    protected function processRefundRequest(Batch\Entity $batch, Payment\Entity $payment, array & $entry)
     {
-        // This ensure that if that batch entity is already processed, we update the refund id
-        $refunds = $this->repo->refund->fetchRefundsByBatchAndPayment($batch, $payment);
+        $amount = $entry[Header::AMOUNT];
 
-        $count = count($refunds);
+        $processor = new Payment\Processor\Processor($batch->merchant);
 
-        if ($count > 0)
-        {
-            $this->trace->error (
-                TraceCode::BATCH_ALREADY_PROCESSED,
-                [
-                    'message' => 'Batch entry already processed',
-                    'batch'   => $batch->getId(),
-                    'refunds' => $refunds->toArrayPublic()
-                ]);
-
-            assert($count === 1);
-
-            return $refunds[0];
-        }
-
-        return null;
-    }
-
-    protected function processRefundRequest(Batch\Entity $batch, Payment\Entity $payment, & $entry)
-    {
-        $refund = $this->findExistingRefund($batch, $payment);
-
-        if ($refund === null)
-        {
-            try
-            {
-                $refundRequest = [
-                    'amount' => (string) $entry[Header::AMOUNT],
-                ];
-
-                $merchant = $batch->merchant;
-
-                $refund = $this->getNewProcessor($merchant)->refundCapturedPayment(
-                    $payment->getPublicId(),
-                    $refundRequest);
-
-                $refund->batch()->associate($batch);
-
-                $this->repo->saveOrFail($refund);
-            }
-            catch (\Exception $e)
-            {
-                $this->trace->traceException($e, Trace::WARNING, TraceCode::BATCH_PROCESSING_ERROR);
-
-                $error = $e->getError();
-
-                $entry[Header::ERROR_CODE] = $error->getPublicErrorCode();
-                $entry[Header::ERROR_DESCRIPTION] = $error->getDescription();
-                $entry[Header::STATUS] = Status::FAILURE;
-
-                return;
-            }
-        }
+        $refund = $processor->refundPaymentViaBatchEntry($payment, $batch, $amount);
 
         $entry[Header::REFUND_ID] = $refund->getPublicId();
         $entry[Header::REFUNDED_AMOUNT] = $refund->getAmount();
@@ -339,18 +284,6 @@ class Processor extends Base\Core
                     'file_path' => $filePath
                 ]);
         }
-    }
-
-    protected function getNewProcessor(Merchant\Entity $merchant = null)
-    {
-        if ($merchant === null)
-        {
-            $merchant = $this->merchant;
-        }
-
-        $processor = new Payment\Processor\Processor($merchant);
-
-        return $processor;
     }
 
     protected function isEntryProcessed($entry)

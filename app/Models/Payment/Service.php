@@ -93,7 +93,7 @@ class Service extends Base\Service
      */
     public function refund($id, array $input)
     {
-        $refund = $this->getNewProcessor()->refundCapturedPayment($id, $input);
+        $refund = $this->getNewProcessor()->refundPaymentViaMerchant($id, $input);
 
         return $refund->toArrayPublic();
     }
