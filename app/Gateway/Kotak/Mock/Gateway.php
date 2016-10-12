@@ -20,7 +20,7 @@ class Gateway extends Kotak\Gateway
         // The key thing now is to replace redirectUrl from kotak's to ours!
         $parts = parse_url($request['url']);
 
-        $url = RZP\Http\Route::getUrlWithPublicAuth('mock_kotak_payment');
+        $url = $this->route->getUrlWithPublicAuth('mock_kotak_payment');
         $url = $url . '&' .$parts['query'];
 
         $request['url'] = $url;

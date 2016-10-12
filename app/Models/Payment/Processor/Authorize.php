@@ -935,7 +935,7 @@ trait Authorize
             'key_id'        => \BasicAuth::getPublicKey(),
             'gateway'       => $this->getEncryptedGatewayText($payment->getGateway()),
             'request'       => [
-                'url'    => Route::getUrl('payment_get_status', ['id' => $id]),
+                'url'    => $this->route->getUrl('payment_get_status', ['id' => $id]),
                 'method' => 'GET',
             ]
         ];
@@ -1657,7 +1657,7 @@ trait Authorize
     {
         $params = $this->getPaymentIdAndHashParams();
 
-        $callbackUrl = Route::getUrlWithPublicCallbackAuth($params);
+        $callbackUrl = $this->route->getUrlWithPublicCallbackAuth($params);
 
         return $callbackUrl;
     }
@@ -1666,7 +1666,7 @@ trait Authorize
     {
         $params = $this->getPaymentIdAndHashParams();
 
-        $otpSubmitUrl = Route::getUrlWithPublicAuth('payment_otp_submit', $params);
+        $otpSubmitUrl = $this->route->getUrlWithPublicAuth('payment_otp_submit', $params);
 
         return $otpSubmitUrl;
     }

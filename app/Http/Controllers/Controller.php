@@ -16,6 +16,7 @@ abstract class Controller extends BaseController
     protected $app;
     protected $trace;
     protected $repo;
+    protected $route;
 
     public function __construct()
     {
@@ -26,5 +27,7 @@ abstract class Controller extends BaseController
         $this->repo = $this->app['repo'];
 
         $this->config = $this->app['config'];
+
+        $this->route = $this->app['api.route'];
     }
 }
