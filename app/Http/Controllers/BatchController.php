@@ -30,7 +30,7 @@ class BatchController extends Controller
 
         $input = Input::all();
 
-        $response = (new Api\Service)->fetchCollection($input, $mode, 'batch');
+        $response = (new Api\Service)->fetchMultipleBatches($mode, $input);
 
         return AppResponse::jsonResponse($response);
     }
@@ -39,7 +39,7 @@ class BatchController extends Controller
     {
         $this->checkMode($mode);
 
-        $response = (new Api\Service)->fetchEntity($id, $mode, 'batch');
+        $response = (new Api\Service)->fetchBatchById($mode, $id);
 
         return AppResponse::jsonResponse($response);
     }

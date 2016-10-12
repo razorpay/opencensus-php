@@ -411,6 +411,38 @@ class Service extends Base\Service
         ];
     }
 
+    public function fetchMultipleBatches($mode, $input)
+    {
+        $collection = array();
+
+        $this->setApiCredentials($this->merchantId, $mode);
+
+        $collection = $this->api
+                           ->batch
+                           ->fetchMultipleBatches($input);
+        $this->mapKeys($collection);
+
+        return $collection;
+    }
+
+    public function fetchBatchById($mode, $id)
+    {
+        $this->setApiCredentials($this->merchantId, $mode);
+
+        $data = $this->api
+                           ->batch
+                           ->fetchBatchById($id);
+
+        $collection = array(
+                'count' => 1,
+                'entity' => 'collection',
+                'items' => array($data));
+
+        $this->mapKeys($collection);
+
+        return $collection;
+    }
+
     public function downloadBatchFile($mode, $id)
     {
         $this->setApiCredentials($this->merchantId, $mode);
