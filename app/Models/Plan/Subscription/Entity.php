@@ -130,6 +130,11 @@ class Entity extends Base\PublicEntity
     {
         $this->setAttribute(self::ENDED_AT, $endAt);
     }
+    
+    public function setStatus($status)
+    {
+        $this->setAttribute(self::STATUS, $status);
+    }
 
     // --------------------- END SETTERS ---------------------
 

@@ -29,7 +29,7 @@ trait Capture
                 'input' => $input,
             ]
         );
-
+        
         $payment = $this->retrieve($id);
 
         $payment->getValidator()->validateInput('capture', $input);

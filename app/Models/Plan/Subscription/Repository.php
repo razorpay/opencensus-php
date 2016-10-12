@@ -17,8 +17,10 @@ class Repository extends Base\Repository
 
         $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
 
+        // TODO: Add status check and current_end also
         return $this->newQuery()
                     ->where(Entity::CHARGE_AT, '<', $currentTime)
+                    //->where(Entity::CURRENT_END, '<', $currentTime)
                     ->get();
     }
 }
