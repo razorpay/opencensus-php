@@ -16,7 +16,6 @@ class Channel
             Payment\Gateway::AXIS_MIGS,
             Payment\Gateway::BILLDESK,
             Payment\Gateway::HDFC,
-            Payment\Gateway::KOTAK,
             Payment\Gateway::MOBIKWIK,
             Payment\Gateway::PAYTM,
             Payment\Gateway::NETBANKING_HDFC,
