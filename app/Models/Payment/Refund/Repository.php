@@ -86,16 +86,7 @@ class Repository extends Base\Repository
                         $merchantId, $from, $to, ['payment']);
     }
 
-    public function fetchRefundingMerchants($from , $to)
-    {
-        return $this->newQuery()
-                    ->whereBetween(Entity::CREATED_AT, [$from, $to])
-                    ->select(Entity::MERCHANT_ID)
-                    ->distinct(Entity::MERCHANT_ID)
-                    ->get();
-    }
-
-    public function fetchMerchantsWithRefundSumAndCount($from , $to)
+    public function fetchRefundSummaryBetweenTimestamp($from , $to)
     {
         return $this->newQuery()
                     ->whereBetween(Entity::CREATED_AT, [$from, $to])

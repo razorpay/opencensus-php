@@ -597,19 +597,19 @@ class Service extends Base\Service
         $to = Carbon::today("Asia/Kolkata")->timestamp;
 
         $authMerchants = $this->repo->payment
-                                ->fetchMerchantsWithAuthSumAndCount()
+                                ->fetchAuthorizedSummary()
                                 ->getStringAttributesByKey('merchant_id');
 
         $captureMerchants = $this->repo->payment
-                                ->fetchMerchantsWithCaptureSumAndCount($from, $to)
+                                ->fetchCapturedSummaryBetweenTimestamp($from, $to)
                                 ->getStringAttributesByKey('merchant_id');
 
         $refundMerchants = $this->repo->refund
-                                ->fetchMerchantsWithRefundSumAndCount($from, $to)
+                                ->fetchRefundSummaryBetweenTimestamp($from, $to)
                                 ->getStringAttributesByKey('merchant_id');
 
         $setlMerchants = $this->repo->settlement
-                                ->fetchSettledMerchants($from, $to)
+                                ->fetchSettlementsBetweenTimestamp($from, $to)
                                 ->getStringAttributesByKey('merchant_id');
 
         if (isset($input[Entity::ID]) === true)

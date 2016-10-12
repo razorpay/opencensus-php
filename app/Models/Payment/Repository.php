@@ -392,7 +392,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchMerchantsWithAuthSumAndCount()
+    public function fetchAuthorizedSummary()
     {
         return $this->newQuery()
                     ->where(Entity::STATUS, '=', Status::AUTHORIZED)
@@ -403,7 +403,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchMerchantsWithCaptureSumAndCount($from , $to)
+    public function fetchCapturedSummaryBetweenTimestamp($from , $to)
     {
         return $this->newQuery()
                     ->where(Entity::STATUS, '=', Status::CAPTURED)

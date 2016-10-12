@@ -34,7 +34,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchSettledMerchants($from, $to)
+    public function fetchSettlementsBetweenTimestamp($from, $to)
     {
         return $this->newQuery()
                     ->whereBetween(Entity::CREATED_AT, [$from, $to])
