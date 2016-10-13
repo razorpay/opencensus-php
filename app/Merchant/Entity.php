@@ -52,6 +52,7 @@ class Entity extends Base\Entity
     const VISA  = 'VISA';
     const UNP   = 'UNP';
     const CARD  = 'CARD';
+    const UPI   = 'UPI';
     const NETBANKING = 'NETBANKING';
     const WALLET  = 'WALLET';
     const UNKNOWN = 'UNKNOWN';
@@ -73,6 +74,7 @@ class Entity extends Base\Entity
         'netbanking'        =>  self::NETBANKING,
         'wallet'            =>  self::WALLET,
         'emi'               =>  self::EMI,
+        'upi'               =>  self::UPI,
         'Unknown'           =>  self::UNKNOWN
     );
 

@@ -14,9 +14,14 @@ class Company
 
 
     const NOT_FOUND_ERROR = 'Entered CIN/LLPIN/FLLPIN/FCRN is not found';
+
     const HEADERS = [
         'Content-Type'  =>  'application/x-www-form-urlencoded',
         'Accept'        =>  'text/html,application/xhtml+xml'
+    ];
+
+    const OPTIONS = [
+        'timeout'       =>  20
     ];
 
     public function __construct($cin)
@@ -105,10 +110,17 @@ class Company
 
     protected function fetchData()
     {
-        $response = $this->session->post(self::INFO_URL, self::HEADERS, [
+        $data = [
             'companyName'   =>  '',
             'companyID'     =>  $this->cin
-        ]);
+        ];
+
+        $response = $this->session->post(
+            self::INFO_URL,
+            self::HEADERS,
+            $data,
+            self::OPTIONS
+        );
 
         return $response->body;
     }
