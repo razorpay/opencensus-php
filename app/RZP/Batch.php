@@ -2,14 +2,14 @@
 
 namespace App\RZP;
 
+use Config;
 use GuzzleHttp\Post\PostFile;
 use GuzzleHttp\Client as Guzzle;
-
-use Config;
 use Razorpay\Api\Entity as ApiEntity;
 use Razorpay\Api\Request as ApiRequest;
-use Razorpay\Api\Errors\BadRequestError as BadRequestError;
 use Razorpay\Api\Errors\ServerError as ServerError;
+use Razorpay\Api\Errors\BadRequestError as BadRequestError;
+
 
 class Batch extends Entity
 {
