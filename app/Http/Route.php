@@ -2,6 +2,8 @@
 
 namespace RZP\Http;
 
+use ApiResponse;
+
 final class Route
 {
     /*
@@ -596,6 +598,13 @@ final class Route
         'otp_post'                   => 'cardsaving',
         'otp_verify'                 => 'cardsaving',
     );
+
+    const RAZORPAYJS_ROUTES = array(
+        'payment_cancel',
+        'payment_create_ajax',
+        'payment_otp_submit',
+        'payment_otp_resend',
+        'payment_topup_ajax');
 
     public function __construct($app)
     {

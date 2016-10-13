@@ -4,8 +4,7 @@ namespace RZP\Http\Middleware;
 
 use App;
 use Closure;
-
-use RZP\Http\ApiResponse;
+use ApiResponse;
 
 
 class VerifyHttps
