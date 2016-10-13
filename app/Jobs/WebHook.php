@@ -6,9 +6,8 @@ use App;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Contracts\Bus\SelfHandling;
 
-class WebHook extends Job implements SelfHandling, ShouldQueue
+class WebHook extends Job implements ShouldQueue
 {
     use InteractsWithQueue, SerializesModels;
 
@@ -16,8 +15,6 @@ class WebHook extends Job implements SelfHandling, ShouldQueue
 
     /**
      * Create a new job instance.
-     *
-     * @return void
      */
     public function __construct($data)
     {

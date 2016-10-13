@@ -4,6 +4,7 @@ namespace RZP\Models\Settlement\Kotak;
 
 use AWS;
 use Excel;
+use Config;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
@@ -74,7 +75,7 @@ trait FileHandlerTrait
         return $url;
     }
 
-    public function writeToExcelFile($data, $name)
+    public function writeToExcelFile($data, $name, $dir = 'files/settlement')
     {
         \Config::set('excel::export.calculate', true);
 
@@ -82,7 +83,7 @@ trait FileHandlerTrait
 
         $excel = $this->createExcelObject($data, $name, $columnFormat);
 
-        $fileMetadata = $excel->store('xlsx', storage_path('files/settlement'), true);
+        $fileMetadata = $excel->store('xlsx', storage_path($dir), true);
 
         $fullpath = $fileMetadata['full'];
 
@@ -124,14 +125,14 @@ trait FileHandlerTrait
 
         $fullPath = $this->getFullFilePath($name);
 
-        return $this->getFileFromAws($bucket, $key, $fullPath);
+        return $this->getFileFromAws($key, $fullPath, $bucket);
     }
 
-    protected function createExcelObject($data, $name, $columnFormat = [])
+    protected function createExcelObject($data, $name, $columnFormat = [], $sheetName = 'Sheet 1')
     {
-        $excel = Excel::create($name, function($excel) use ($data, $columnFormat)
+        $excel = Excel::create($name, function($excel) use ($data, $columnFormat, $sheetName)
         {
-            $excel->sheet('Sheet 1', function($sheet) use ($data, $columnFormat)
+            $excel->sheet($sheetName, function($sheet) use ($data, $columnFormat)
                 {
                     // If a columnFormat variable is specified.
                     // Use it.
@@ -295,9 +296,16 @@ trait FileHandlerTrait
         return $url;
     }
 
-    protected function getFileFromAws($bucket, $key, $filePath)
+    protected function getFileFromAws($key, $filePath, $bucket = 'settlement_bucket')
     {
         $config =  \Config::get('aws');
+
+        $awsS3Mock = $config['mock'];
+
+        if ($awsS3Mock)
+        {
+            return $filePath;
+        }
 
         $s3 = AWS::createClient('s3');
 
@@ -321,6 +329,34 @@ trait FileHandlerTrait
         }
 
         return $filePath;
+    }
+
+    protected function getPreSignedUrlFromAws($key, $bucket = 'settlement_bucket', $ttl = '+10 minutes')
+    {
+        $config =  \Config::get('aws');
+
+        $awsS3Mock = $config['mock'];
+
+        if ($awsS3Mock)
+        {
+            return $key;
+        }
+
+        $s3 = AWS::createClient('s3');
+
+        $awsBucket = $config[$bucket];
+
+        $cmd = $s3->getCommand('GetObject', [
+            'Bucket' => $awsBucket,
+            'Key'    => $key
+        ]);
+
+        $request = $s3->createPresignedRequest($cmd, $ttl);
+
+        // Get the actual presigned-url
+        $presignedUrl = (string) $request->getUri();
+
+        return $presignedUrl;
     }
 
     protected function saveLocally($name, $txt)
@@ -548,13 +584,34 @@ trait FileHandlerTrait
         return $data;
     }
 
-    protected function parseExcelFile($file)
+    protected function parseExcelFile($filePath)
     {
         $data = Excel::load($filePath)
                       ->formatDates(false)
                       ->toArray();
-
         return $data;
+    }
+
+    protected function parseExcelSheets($filePath)
+    {
+        Config::set('excel.import.force_sheets_collection', true);
+        Config::set('excel.import.heading', 'original');
+
+        $sheets = $this->parseExcelFile($filePath);
+
+        assert(count($sheets) === 1);
+
+        return $sheets[0];
+
+        // Uncomment this if we are enabling multiple sheets
+        // $finalEntries = [];
+
+        // foreach ($sheets as $sheet)
+        // {
+        //     $finalEntries = array_merge($finalEntries, $sheet);
+        // }
+
+        // return $finalEntries;
     }
 
     protected function getFileLines($file)

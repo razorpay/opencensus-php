@@ -24,6 +24,10 @@ class Map
         {
             throw new Exception\BadRequestValidationFailureException($desc);
         }
+        else if ($publicCode === ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT);
+        }
         else if ($internalCode === ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT)
         {
             throw new Exception\GatewayTimeoutException('Gateway request timed out');

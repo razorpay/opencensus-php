@@ -11,24 +11,6 @@ use Request;
 
 class SettlementController extends Controller
 {
-    public function postGatewayMprReconcile()
-    {
-        $input = Request::all();
-
-        $data = (new Settlement\Service)->gatewayMprReconcile($input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function postGatewayMprGenerate()
-    {
-        $input = Request::all();
-
-        $data = (new Settlement\Service)->gatewayMprGenerate($input);
-
-        return ApiResponse::json($data);
-    }
-
     public function postSettlementInitiate($channel = null)
     {
         $input = Request::all();
