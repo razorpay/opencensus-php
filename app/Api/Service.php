@@ -398,90 +398,114 @@ class Service extends Base\Service
 
     public function uploadBatchFile($mode, $input)
     {
-        $this->setApiCredentials($this->merchantId, $mode);
+        try
+        {
+            $this->setApiCredentials($this->merchantId, $mode);
 
-        $batchRefund = $this->api
-                            ->batch
-                            ->uploadBatchFile($input);
-        return [
-            'batch_id'          => $batchRefund['id'],
-            'status'            => $batchRefund['status'],
-            'total_count'       => $batchRefund['total_count'],
-            'amount'            => $batchRefund['amount'],
-        ];
+            $batchRefund = $this->api
+                                ->batch
+                                ->uploadBatchFile($input);
+
+            return [null, $batchRefund];
+        }
+        catch(\Razorpay\Api\Errors\Error $e)
+        {
+            $error[] = $e->getMessage();
+
+            return array($error, null);
+        }
     }
 
     public function fetchMultipleBatches($mode, $input)
     {
-        $collection = array();
+        try
+        {
+            $collection = array();
 
-        $this->setApiCredentials($this->merchantId, $mode);
+            $this->setApiCredentials($this->merchantId, $mode);
 
-        $collection = $this->api
-                           ->batch
-                           ->fetchMultipleBatches($input);
-        $this->mapKeys($collection);
+            $collection = $this->api
+                               ->batch
+                               ->fetchMultipleBatches($input);
 
-        return $collection;
+            $this->mapKeys($collection);
+
+            return [null, $collection];
+        }
+        catch(\Razorpay\Api\Errors\Error $e)
+        {
+            $error[] = $e->getMessage();
+
+            return array($error, null);
+        }
     }
 
     public function fetchBatchById($mode, $id)
     {
-        $this->setApiCredentials($this->merchantId, $mode);
+        try
+        {
+            $this->setApiCredentials($this->merchantId, $mode);
 
-        $data = $this->api
-                           ->batch
-                           ->fetchBatchById($id);
+            $data = $this->api
+                         ->batch
+                         ->fetchBatchById($id);
 
-        $collection = array(
-                'count' => 1,
-                'entity' => 'collection',
-                'items' => array($data));
+            $collection = array(
+                            'count' => 1,
+                            'entity' => 'collection',
+                            'items' => array($data));
 
-        $this->mapKeys($collection);
+            $this->mapKeys($collection);
 
-        return $collection;
+            return [null, $collection];
+        }
+        catch(\Razorpay\Api\Errors\Error $e)
+        {
+            $error[] = $e->getMessage();
+
+            return array($error, null);
+        }
     }
 
     public function downloadBatchFile($mode, $id)
     {
-        $this->setApiCredentials($this->merchantId, $mode);
+        try
+        {
+            $this->setApiCredentials($this->merchantId, $mode);
 
-        $downloadResponse = $this->api
-                                 ->batch
-                                 ->downloadBatchFile($id);
+            $downloadResponse = $this->api
+                                     ->batch
+                                     ->downloadBatchFile($id);
 
-        return [
-            'url'          => $downloadResponse['url'],
-        ];
+            return [null, $downloadResponse];
+
+        }
+        catch(\Razorpay\Api\Errors\Error $e)
+        {
+            $error[] = $e->getMessage();
+
+            return array($error, null);
+        }
+
     }
 
     public function retryBatchFile($mode, $id)
     {
-        $this->setApiCredentials($this->merchantId, $mode);
+        try
+        {
+            $this->setApiCredentials($this->merchantId, $mode);
 
-        $batchRefund = $this->api
-                            ->batch
-                            ->retryBatchFile($id);
+            $batchRefund = $this->api
+                                ->batch
+                                ->retryBatchFile($id);
 
-        return [
-            'batch_id'          => $batchRefund['id'],
-            'status'            => $batchRefund['status'],
-            'total_count'       => $batchRefund['total_count'],
-            'amount'            => $batchRefund['amount'],
-        ];
-    }
+            return [null, $batchRefund];
+        }
+        catch(\Razorpay\Api\Errors\Error $e)
+        {
+            $error[] = $e->getMessage();
 
-    public function fetchCollectionBatch($input, $mode)
-    {
-        $collection = array();
-
-        $this->setApiCredentials($this->merchantId, $mode);
-
-        $collection = $this->api->$entity->all($input)->toArray();
-
-        $this->mapKeys($collection);
-
-        return $collection;
+            return array($error, null);
+        }
     }
 }

@@ -11,11 +11,11 @@ class Batch extends Entity
         return $this->request('GET', $relativeUrl);
     }
 
-    public function fetchMultipleBatches($options = array())
+    public function fetchMultipleBatches($input)
     {
         $relativeUrl = 'batches';
 
-        return $this->request('GET', $relativeUrl, $options);
+        return $this->request('GET', $relativeUrl, $input);
     }
 
     public function uploadBatchFile($input)
