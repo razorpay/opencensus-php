@@ -18,6 +18,7 @@ class Entity
 
     const IIN                   = 'iin';
     const KEY                   = 'key';
+    const FILE                  = 'file';
     const CARD                  = 'card';
     const ORDER                 = 'order';
     const TOKEN                 = 'token';
@@ -42,9 +43,6 @@ class Entity
     const TRANSACTION           = 'transaction';
     const FEE_BREAKUP           = 'fee_breakup';
     const BANK_ACCOUNT          = 'bank_account';
-
-    const DAILY_SETTLEMENT      = 'daily_settlement';
-    const SETTLEMENT_DETAILS    = 'settlement_details';
     const FILE_HANDLER          = 'file_handler';
     const TERMINAL_ACTION       = 'terminal_action';
     const GATEWAY_ABSENCE       = 'gateway_absence';
@@ -102,6 +100,11 @@ class Entity
         self::WEBHOOK               => \RZP\Models\Merchant\Webhook::class,
         self::MERCHANT              => \RZP\Models\Merchant::class,
         self::BILLDESK              => \RZP\Gateway\Billdesk::class,
+<<<<<<< HEAD
+=======
+        self::EBS                   => \RZP\Gateway\Ebs::class,
+        self::FILE                  => \RZP\Models\FileStore::class,
+>>>>>>> 84f5128... changed filehandler to filestore
         self::CUSTOMER              => \RZP\Models\Customer::class,
         self::EMI_PLAN              => \RZP\Models\Emi::class,
         self::MOBIKWIK              => \RZP\Gateway\Mobikwik::class,

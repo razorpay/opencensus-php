@@ -1,11 +1,11 @@
 <?php
 
-namespace RZP\Models\FileHandler\StorageService\AwsS3;
+namespace RZP\Models\FileStore\StorageService\AwsS3;
 
 use AWS;
 use Config;
 use RZP\Trace\TraceCode;
-use RZP\Models\FileHandler\StorageService\Base;
+use RZP\Models\FileStore\StorageService\Base;
 
 class Handler extends Base\Handler
 {

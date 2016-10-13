@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\FileHandler;
+namespace RZP\Models\FileStore;
 
 use RZP\Models\Base;
 
@@ -15,10 +15,10 @@ class Core extends Base\Core
      */
     public function create($input)
     {
-        $fileHandler = (new Entity)->build($input);
+        $fileStore = (new Entity)->build($input);
 
-        $this->repo->saveOrFail($fileHandler);
+        $this->repo->saveOrFail($fileStore);
 
-        return $fileHandler;
+        return $fileStore;
     }
 }

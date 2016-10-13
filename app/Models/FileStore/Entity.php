@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\FileHandler;
+namespace RZP\Models\FileStore;
 
 use Crypt;
 use RZP\Models\Base;
@@ -25,11 +25,11 @@ class Entity extends Base\PublicEntity
     const METADATA              = 'metadata';
     const DELETED_AT            = 'deleted_at';
 
-    protected $entity           = 'file_handler';
+    protected $entity           = 'file';
 
     protected static $sign      = 'file';
 
-    protected $table  = \RZP\Constants\Table::FILE_HANDLER;
+    protected $table  = \RZP\Constants\Table::FILESTORE;
 
     protected $generateIdOnCreate = true;
 

@@ -26,10 +26,10 @@ class Table
     const FEE_BREAKUP           = 'fees_breakup';
     const EMI_PLAN              = 'emi_plans';
     const APP_TOKEN             = 'customer_apps';
+    const FILESTORE             = 'files';
     const ADJUSTMENT            = 'adjustment';
     const SETTLEMENT            = 'settlements';
     const TRANSACTION           = 'transactions';
-    const FILE_HANDLER          = 'file_handler';
     const BANK_ACCOUNT          = 'bank_accounts';
     const DAILY_SETTLEMENT      = 'daily_settlements';
     const SETTLEMENT_DETAILS    = 'settlement_details';

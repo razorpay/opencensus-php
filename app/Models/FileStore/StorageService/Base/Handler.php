@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\FileHandler\StorageService\Base;
+namespace RZP\Models\FileStore\StorageService\Base;
 
 use App;
 

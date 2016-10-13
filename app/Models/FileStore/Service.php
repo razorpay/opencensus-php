@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\FileHandler;
+namespace RZP\Models\FileStore;
 
 use RZP\Models\Base;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -28,7 +28,7 @@ class Service extends Base\Service
 
     protected function getStorageHandle($service)
     {
-        $class = 'RZP\Models\FileHandler\StorageService\\';
+        $class = 'RZP\Models\FileStore\StorageService\\';
 
         if (is_null($this->serviceProvider) !== $service)
         {
@@ -69,17 +69,17 @@ class Service extends Base\Service
             []
         );
 
-        $fileHandlerInput = [];
+        $fileStoreInput = [];
 
-        $fileHandlerInput[Entity::SERVICE] = $this->serviceProvider;
+        $fileStoreInput[Entity::SERVICE] = $this->serviceProvider;
 
-        $fileHandlerInput[Entity::BUCKET] = $input['bucket'];
+        $fileStoreInput[Entity::BUCKET] = $input['bucket'];
 
-        $fileHandlerInput = array_merge($fileHandlerInput, $this->getEntityData($input));
+        $fileStoreInput = array_merge($fileStoreInput, $this->getEntityData($input));
 
-        $fileHandlerInput = array_merge($fileHandlerInput, $fileDetails);
+        $fileStoreInput = array_merge($fileStoreInput, $fileDetails);
 
-        $fileHandler = $this->core->create($fileHandlerInput);
+        $fileStore = $this->core->create($fileStoreInput);
 
         $signedUrlFlag = @$input['signedUrl'] ?: false;
 
@@ -92,10 +92,10 @@ class Service extends Base\Service
                 throw new Exception\InvalidArgumentException('Give valid expiry time');
             }
 
-            $fileHandler->url = $this->updateUrl($input['bucket'], $expiryTime, $fileDetails[Entity::LOCATION]);
+            $fileStore->url = $this->updateUrl($input['bucket'], $expiryTime, $fileDetails[Entity::LOCATION]);
         }
 
-        return $fileHandler->toArrayPublic();
+        return $fileStore->toArrayPublic();
     }
 
     protected function updateUrl($bucket, $expiryTime, $url)
@@ -113,61 +113,61 @@ class Service extends Base\Service
     {
         Entity::verifyIdAndStripSign($id);
 
-        $fileHandler = $this->repo->file_handler->getByIdOrFail($id);
+        $fileStore = $this->repo->filestore->getByIdOrFail($id);
 
         if ($signedUrlFlag === true)
         {
-            $fileHandler[Entity::LOCATION] = $this->updateUrl(
-                $fileHandler[Entity::BUCKET],
+            $fileStore[Entity::LOCATION] = $this->updateUrl(
+                $fileStore[Entity::BUCKET],
                 $expiryTime,
-                $fileHandler[Entity::LOCATION]);
+                $fileStore[Entity::LOCATION]);
         }
 
-        return $fileHandler->toArrayPublic();
+        return $fileStore->toArrayPublic();
     }
 
     public function fetchContent($id)
     {
         Entity::verifyIdAndStripSign($id);
 
-        $fileHandler = $this->repo->file_handler->getByIdOrFail($id);
+        $fileStore = $this->repo->filestore->getByIdOrFail($id);
 
         return $this->storageHandler->fetch(
-            $fileHandler[Entity::BUCKET],
-            $fileHandler[Entity::NAME]);
+            $fileStore[Entity::BUCKET],
+            $fileStore[Entity::NAME]);
     }
 
     public function fetchAndSaveFile($id, $filePath)
     {
         Entity::verifyIdAndStripSign($id);
 
-        $fileHandler = $this->repo->file_handler->getByIdOrFail($id);
+        $fileStore = $this->repo->filestore->getByIdOrFail($id);
 
-        $fileHandler[Entity::LOCATION] = $this->storageHandler->fetchAndSaveFile(
-            $fileHandler[Entity::BUCKET],
-            $fileHandler[Entity::NAME],
+        $fileStore[Entity::LOCATION] = $this->storageHandler->fetchAndSaveFile(
+            $fileStore[Entity::BUCKET],
+            $fileStore[Entity::NAME],
             $filePath);
 
-        return $fileHandlers->toArrayPublic();
+        return $fileStores->toArrayPublic();
     }
 
     public function fetchByEntityIdAndType($entityId, $entityType, $signedUrlFlag = true, $expiryTime = '15')
     {
-        $fileHandlers = $this->repo->file_handler->getByEntityIdAndEntityType(
+        $fileStores = $this->repo->filestore->getByEntityIdAndEntityType(
             $entityId,
             $entityType);
-        foreach ($fileHandlers as $fileHandler)
+        foreach ($fileStores as $fileStore)
         {
             if ($signedUrlFlag === true)
             {
-                $fileHandler[Entity::LOCATION] = $this->updateUrl(
-                    $fileHandler[Entity::BUCKET],
+                $fileStore[Entity::LOCATION] = $this->updateUrl(
+                    $fileStore[Entity::BUCKET],
                     $expiryTime,
-                    $fileHandler[Entity::LOCATION]);
+                    $fileStore[Entity::LOCATION]);
             }
         }
 
-        return $fileHandlers->toArrayPublic();
+        return $fileStores->toArrayPublic();
     }
 
     public function search($input)
@@ -177,42 +177,40 @@ class Service extends Base\Service
 
     public function update($id, $input)
     {
-        $fileHandler = $this->repo->file_handler->findByPublicId($id);
+        $fileStore = $this->repo->filestore->findByPublicId($id);
 
-        $newFileHandler = $this->create($input);
+        $newFileStore = $this->create($input);
 
-        $fileHandler->delete();
+        $fileStore->delete();
 
-        return $newFileHandler;
+        return $newFileStore;
     }
 
     public function delete($id)
     {
-        $fileHandler = $this->repo->file_handler->findByPublicId($id);
+        $fileStore = $this->repo->filestore->findByPublicId($id);
 
-        $fileHandler->delete();
+        $fileStore->delete();
 
-        return $fileHandler->toArrayDeleted();
+        return $fileStore->toArrayDeleted();
     }
 
     public function deleteByEntityIdAndEntityType($id)
     {
-        $fileHandlers = $this->repo->file_handler->getByEntityIdAndEntityType(
-            $entityId,
-            $entityType);
+        $fileStores = $this->repo->filestore->getByEntityIdAndEntityType(
+            $entityId, $entityType);
 
-        foreach ($fileHandlers as $fileHandler)
+        foreach ($fileStores as $fileStore)
         {
-            $fileHandler->delete();
+            $fileStore->delete();
         }
 
-        //TODO : change the return type
-        return $fileHandler->toArrayPublic();
+        return $fileStore->toArrayDeleted();
     }
 
     protected function getEntityData($input)
     {
-        $fileHandlerInput = [];
+        $fileStoreInput = [];
 
         $entityType = @$input['entityType'] ?: '';
 
@@ -222,18 +220,18 @@ class Service extends Base\Service
 
         if (in_array($entityType, EntityTypeConstants::getValidEntity()) === true)
         {
-            $fileHandlerInput[Entity::ENTITY_TYPE] = $entityType;
+            $fileStoreInput[Entity::ENTITY_TYPE] = $entityType;
 
-            $fileHandlerInput[Entity::ENTITY_ID] = $entityId;
+            $fileStoreInput[Entity::ENTITY_ID] = $entityId;
         }
 
-        $fileHandlerInput[Entity::MERCHANT_ID] = $merchantId;
+        $fileStoreInput[Entity::MERCHANT_ID] = $merchantId;
 
         $documentType = $this->getDocumentType($entityType, $entityId);
 
-        $fileHandlerInput[Entity::DOCUMENT_TYPE] = $documentType;
+        $fileStoreInput[Entity::DOCUMENT_TYPE] = $documentType;
 
-        return $fileHandlerInput;
+        return $fileStoreInput;
     }
 
     protected function getDocumentType($name, $id)

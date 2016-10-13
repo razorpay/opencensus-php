@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\FileHandler;
+namespace RZP\Models\FileStore;
 
 class EntityTypeConstants
 {

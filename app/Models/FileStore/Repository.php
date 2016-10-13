@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\FileHandler;
+namespace RZP\Models\FileStore;
 
 use RZP\Models\Base;
 
@@ -8,7 +8,7 @@ class Repository extends Base\Repository
 {
     use Base\RepositoryFetch;
 
-    protected $entity = 'file_handler';
+    protected $entity = 'file';
 
     public function getByEntityIdAndEntityType($entityId, $entityType)
     {
