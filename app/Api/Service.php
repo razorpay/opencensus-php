@@ -10,7 +10,6 @@ use Trace;
 
 class Service extends Base\Service
 {
-
     public function __construct()
     {
         $loggedInUser = Auth::user();
@@ -414,7 +413,7 @@ class Service extends Base\Service
         {
             $error[] = $e->getMessage();
 
-            return array($error, null);
+            return [$error, null];
         }
     }
 
@@ -439,7 +438,7 @@ class Service extends Base\Service
         {
             $error[] = $e->getMessage();
 
-            return array($error, null);
+            return [$error, null];
         }
     }
 
@@ -467,7 +466,7 @@ class Service extends Base\Service
         {
             $error[] = $e->getMessage();
 
-            return array($error, null);
+            return [$error, null];
         }
     }
 
@@ -489,9 +488,8 @@ class Service extends Base\Service
         {
             $error[] = $e->getMessage();
 
-            return array($error, null);
+            return [$error, null];
         }
-
     }
 
     public function retryBatchFile($mode, $id)
@@ -511,7 +509,7 @@ class Service extends Base\Service
         {
             $error[] = $e->getMessage();
 
-            return array($error, null);
+            return [$error, null];
         }
     }
 }
