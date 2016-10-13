@@ -21,6 +21,8 @@ use Carbon\Carbon;
 
 class Gateway extends Base\Gateway
 {
+    use Base\AuthorizeFailed;
+
     const CERTIFICATE_DIRECTORY_NAME        = 'cert_dir_name';
     const CERTIFICATE_FORMAT_P12            = 'p12';
 
