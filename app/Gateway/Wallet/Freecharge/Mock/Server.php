@@ -30,7 +30,19 @@ class Server extends Base\Mock\Server
 
         $this->validateActionInput($input);
 
+        $content = [
+            'status'        => 'COMPLETED',
+            'walletBalance' => '1234',
+            'errorCode'     => 'E000',
+            'errorMessage'  => 'SUCCESS',
+            'metadata'      => 'dummy',
+        ];
+
+        $content['checksum'] = $this->generateHash($content);
+
         $callbackUrl = $input['callbackUrl'];
+
+        $callbackUrl .= '?' . http_build_query($content);
 
         return \Redirect::to($callbackUrl);
     }

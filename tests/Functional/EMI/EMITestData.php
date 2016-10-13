@@ -38,6 +38,12 @@ return [
         ],
         'response' => [
             'content' => [
+                'HDFC' => [
+                    'min_amount' => 400000,
+                    'plans' => [
+                        3 => 10.45
+                    ]
+                ]
             ],
         ],
     ],

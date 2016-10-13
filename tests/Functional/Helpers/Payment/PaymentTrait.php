@@ -207,6 +207,7 @@ trait PaymentTrait
         $payment = array_merge($defaultPayment, $payment);
 
         $content = $this->doAuthPayment($payment);
+
         $id = $content['razorpay_payment_id'];
 
         return array_merge($payment, ['id' => $id]);
@@ -392,7 +393,24 @@ trait PaymentTrait
         return $response;
     }
 
-    protected function topupPayment($id)
+    protected function doWalletTopup($id)
+    {
+        $request = array(
+            'method' => 'POST',
+            'url' => '/payments/'.$id.'/topup',
+            'content' => array()
+        );
+
+        $this->ba->publicAuth();
+
+        $response = $this->makeRequestParent($request);
+
+        $response = $this->handleWalletTopupFlow($response, $request);
+
+        return $this->getJsonContentFromResponse($response);
+    }
+
+    protected function doWalletTopupViaAjaxRoute($id)
     {
         $request = array(
             'method' => 'POST',
@@ -402,9 +420,11 @@ trait PaymentTrait
 
         $this->ba->publicAuth();
 
-        $content = $this->makeRequestAndGetContent($request);
+        $response = $this->makeRequestParent($request);
 
-        return $content;
+        $response = $this->handleWalletTopupFlow($response, $request);
+
+        return $this->getJsonContentFromResponse($response);
     }
 
     protected function redirectPayment($id)
@@ -430,7 +450,7 @@ trait PaymentTrait
             $response->setContent($content);
         }
 
-        return $this->getJsonContentFromResponse($response);
+        return $response;
     }
 
     protected function getPaymentStatus($id)
@@ -1113,7 +1133,7 @@ trait PaymentTrait
     {
         $class = $this->app['gateway']->getServerClass($this->gateway);
 
-        return Mockery::mock($class)->makePartial();
+        return Mockery::mock($class, [])->makePartial();
     }
 
     protected function setMockServer($server)

@@ -23,7 +23,7 @@ class Verify
 
     public $gateway;
 
-    public $status = null;
+    public $status = VerifyResult::STATUS_MATCH;
 
     public $apiSuccess = null;
 

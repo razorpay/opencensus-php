@@ -36,6 +36,12 @@ final class Route
         'payment_topup_post'                      => ['post',     'payments/{id}/topup',                      'PaymentCreateController@postTopup'                                 ],
         'payment_redirect_callback'               => ['post',     'payments/{id}/redirect_callback',          'PaymentCreateController@postRedirectCallback'                      ],
         'payment_refund'                          => ['post',     'payments/{id}/refund',                     'PaymentController@postRefund'                                      ],
+        'batch_create'                            => ['post',     'batches',                                  'BatchController@createBatch'                                       ],
+        'batch_fetch_multiple'                    => ['get',      'batches',                                  'BatchController@getBatches'                                        ],
+        'batch_fetch_by_id'                       => ['get',      'batches/{id}',                             'BatchController@getBatchById'                                      ],
+        'batch_process_file'                      => ['post',     'batches/process',                          'BatchController@processBatches'                                    ],
+        'batch_retry'                             => ['post',     'batches/{id}/retry',                       'BatchController@retryBatch'                                        ],
+        'batch_download_file'                     => ['get',      'batches/{id}/download',                    'BatchController@downloadBatch'                                     ],
         'payment_capture'                         => ['post',     'payments/{id}/capture',                    'PaymentController@postCapture'                                     ],
         'payment_verify'                          => ['get',      'payments/{id}/verify',                     'PaymentController@getVerify'                                       ],
         'payment_force_authorize'                 => ['post',     'payments/{id}/force_authorize',            'PaymentController@postForceAuthorize'                              ],
@@ -215,7 +221,7 @@ final class Route
         'features_fetch'                          => ['get',      'features',                                 'MerchantController@getAllFeatures'                                 ],
         'feature_dummy'                           => ['get',      'features/dummy',                           'MerchantController@getDummyFeatures'                               ],
         'emi_plan_add'                            => ['post',     'emi',                                      'EmiController@addEmiPlan'                                          ],
-        'emi_plans_fetch_multiple'                => ['get',      'emi',                                      'EmiController@fetchAvailableEmiPlans'                              ],
+        'emi_plans_fetch_multiple'                => ['get',      'emi',                                      'EmiController@fetchEmiPlans'                                       ],
         'emi_plan_fetch_by_id'                    => ['get',      'emi/{id}',                                 'EmiController@fetchEmiPlanById'                                    ],
         'emi_plan_delete'                         => ['delete',   'emi/{id}',                                 'EmiController@deleteEmiPlan'                                       ],
         'emi_generate_excel'                      => ['post',     'emi/generate/excel',                       'EmiController@generateEmiExcel'                                    ],
@@ -458,6 +464,7 @@ final class Route
         'credits_create',
         'credits_edit',
         'credits_delete',
+        'batch_process_file',
         'gateway_create_absence',
         'gateway_update_absence',
         'gateway_delete_absence',
@@ -501,6 +508,11 @@ final class Route
         'app_fetch_tokens',
         'credits_fetch_multiple',
         'credits_fetch_by_id',
+        'batch_create',
+        'batch_fetch_multiple',
+        'batch_fetch_by_id',
+        'batch_retry',
+        'batch_download_file'
     );
 
     public static $direct = array(
@@ -548,6 +560,7 @@ final class Route
             'emi_generate_excel',
             'es_migrate_entity',
             'setl_post_details_old',
+            'batch_process_file',
             'order_refund_multiple_authorized',
         ),
 
@@ -594,18 +607,18 @@ final class Route
         'otp_verify'                 => 'cardsaving',
     );
 
-    protected static $router;
-
-    public static function setRouter($router)
+    public function __construct($app)
     {
-        self::$router = $router;
+        $this->app = $app;
+
+        $this->router = $app['router'];
+
+        $this->ba = $app['basicauth'];
     }
 
-    public static function getCurrentRouteName()
+    public function getCurrentRouteName()
     {
-        $router = self::$router;
-
-        return $router->currentRouteName();
+        return $this->router->currentRouteName();
     }
 
     public static function getSlaveRoutes()
@@ -613,7 +626,7 @@ final class Route
         return self::$slaveRoutes;
     }
 
-    public static function getUrl($routeName, array $parameters = array(), $key = '', $secret = '')
+    public function getUrl($routeName, array $parameters = array(), $key = '', $secret = '')
     {
         if (($secret === '') and
             ($key !== ''))
@@ -630,27 +643,43 @@ final class Route
         return $url;
     }
 
-    public static function getUrlWithPublicAuth($routeName, array $parameters = array(), $key = '')
+    public function getUrlWithPublicAuth($routeName, array $parameters = array(), $key = '')
     {
         if ($key === '')
         {
-            $key = \BasicAuth::getPublicKey();
+            $key = $this->ba->getPublicKey();
         }
 
-        return self::getUrl($routeName, $parameters, $key);
+        return $this->getUrl($routeName, $parameters, $key);
     }
 
-    public static function getUrlWithPublicCallbackAuth(array $parameters = array(), $key = '')
+    public function getUrlWithPublicCallbackAuth(array $parameters = array(), $key = '')
     {
         if ($key === '')
         {
-            $key = \BasicAuth::getPublicKey();
+            $key = $this->ba->getPublicKey();
         }
 
-        return self::getUrl('payment_callback_with_key_post', $parameters, $key);
+        return $this->getUrl('payment_callback_with_key_post', $parameters, $key);
     }
 
-    public static function getUrlWithAuth($relativeUrl, $key = '', $secret = '')
+    public function getPublicCallbackUrlWithHash($pid , $key = '')
+    {
+        if ($key === '')
+        {
+            $key = $this->ba->getPublicKey();
+        }
+
+        $secret = $this->app->config->get('app.key');
+
+        $hash = hash_hmac('sha1', $pid, $secret);
+
+        $parameters = ['id' => $pid, 'hash' => $hash];
+
+        return $this->getUrl('payment_callback_with_key_post', $parameters, $key);
+    }
+
+    public function getUrlWithAuth($relativeUrl, $key = '', $secret = '')
     {
         return self::getSchemaHostAndAuth($key, $secret) . $relativeUrl;
     }
@@ -679,7 +708,7 @@ final class Route
         return $url;
     }
 
-    public static function getDoNotLogURLs()
+    public function getDoNotLogURLs()
     {
         $doNotLogUrls = array(
             'v1/payments/create/jsonp',
@@ -706,15 +735,18 @@ final class Route
         return in_array($route, $jsonpRoutes);
     }
 
-    public static function addRoutes($type)
+    public function addRouteGroups($groups)
     {
-        foreach (self::$$type as $routeName)
+        foreach ($groups as $group)
         {
-            self::addRoute($routeName);
+            foreach (self::$$group as $routeName)
+            {
+                $this->addRoute($routeName);
+            }
         }
     }
 
-    protected static function addRoute($name)
+    protected function addRoute($name)
     {
         $info = self::$apiRoutes[$name];
 
@@ -722,48 +754,20 @@ final class Route
         $uri = $info[1];
         $action = $info[2];
 
-        $router = self::$router;
-
-        $router->$method($uri, array('as' => $name, 'uses' => $action));
+        $this->router->$method($uri, array('as' => $name, 'uses' => $action));
     }
 
-    public static function defineApiRoutes()
+    public function defineAllExtraRoutes()
     {
-        $router = self::$router;
-
-        $router->group(array('prefix' => 'v1'), function () use ($router)
-        {
-            //
-            // First define internal routes and then private and finally public
-            // If by mistake a route is defined twice in say internal and public,
-            // then it will go into internal app auth and will not expose the route.
-            // This must not happen though.
-            //
-            self::addRoutes('internal');
-            self::addRoutes('private');
-            self::addRoutes('public');
-            self::addRoutes('publicCallback');
-            self::addRoutes('proxy');
-            self::addRoutes('direct');
-        });
-
-    }
-
-    public static function defineAllExtraRoutes()
-    {
-        $router = self::$router;
-
-        $router->any('{all}', function ($uri)
+        $this->router->any('{all}', function ($uri)
         {
             return ApiResponse::routeNotFound();
         })->where('all', '.*');
     }
 
-    public static function defineRootApiRoute()
+    public function defineRootApiRoute()
     {
-        $router = self::$router;
-
-        $router->get('/', function ()
+        $this->router->get('/', function ()
         {
             $response['message'] = "Welcome to Razorpay API.";
 
@@ -771,12 +775,7 @@ final class Route
         });
     }
 
-    public static function getApiRoutes()
-    {
-        return self::$apiRoutes;
-    }
-
-    public static function getApiRouteInCategory($category)
+    public function getApiRouteInCategory($category)
     {
         return array_intersect_key(self::$apiRoutes, array_flip(self::$$category));
     }
@@ -786,8 +785,10 @@ final class Route
         return self::$apiRoutes[$name];
     }
 
-    public static function getApiRouteUrl($name)
+    public function isCurrentRouteInFeatureMap()
     {
-        return self::getApiRoute($name)[1];
+        $route = $this->getCurrentRouteName();
+
+        return (array_key_exists($route, self::$routeNameToFeatureMap));
     }
 }

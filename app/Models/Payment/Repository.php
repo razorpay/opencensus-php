@@ -392,6 +392,29 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchAuthorizedSummary()
+    {
+        return $this->newQuery()
+                    ->where(Entity::STATUS, '=', Status::AUTHORIZED)
+                    ->groupBy(Entity::MERCHANT_ID)
+                    ->selectRaw(Entity::MERCHANT_ID . ','.
+                       'SUM(' . Entity::AMOUNT . ') AS sum' . ','.
+                       'COUNT(*) AS count')
+                    ->get();
+    }
+
+    public function fetchCapturedSummaryBetweenTimestamp($from , $to)
+    {
+        return $this->newQuery()
+                    ->where(Entity::STATUS, '=', Status::CAPTURED)
+                    ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
+                    ->groupBy(Entity::MERCHANT_ID)
+                    ->selectRaw(Entity::MERCHANT_ID . ','.
+                       'SUM(' . Entity::AMOUNT . ') AS sum' . ','.
+                       'COUNT(*) AS count')
+                    ->get();
+    }
+
     protected function getPaymentVolumeBetweenTimestamp($from, $to)
     {
         $vol = $this->newQuery()
