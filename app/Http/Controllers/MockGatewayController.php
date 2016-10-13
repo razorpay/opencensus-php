@@ -251,15 +251,6 @@ class MockGatewayController extends Controller
         return Redirect::to($url);
     }
 
-    public function postSbiepayPayment()
-    {
-        $input = Request::all();
-
-        $server = new \RZP\Gateway\Sbiepay\Mock\Server;
-
-        return $server->authorize($input);
-    }
-
     public function walletPayment($wallet, $paymentId = null)
     {
         $input = Request::all();
