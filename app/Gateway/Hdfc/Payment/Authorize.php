@@ -273,6 +273,8 @@ trait Authorize
         $this->authNotEnrolledRequest['url'] = Hdfc\Urls::AUTH_NOT_ENROLLED_URL;
         $this->authNotEnrolledRequest['data'] = $data;
 
+        unset($this->authNotEnrolledRequest['content']);
+
         $this->trace(
             Trace::DEBUG,
             TraceCode::GATEWAY_NOT_ENROLLED_REQUEST,

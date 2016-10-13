@@ -196,7 +196,7 @@ class PaymentCreateController extends Controller
             return ApiResponse::json(['input' => $input,'display' => $data]);
         }
 
-        $url = \RZP\Http\Route::getUrlWithPublicAuth('payment_create_checkout');
+        $url = $this->route->getUrlWithPublicAuth('payment_create_checkout');
 
         return $this->returnConvenienceFeesView($input, $data, $url);
     }
@@ -337,7 +337,8 @@ class PaymentCreateController extends Controller
             }
             else if ($data['type'] === 'async')
             {
-                return $data;
+                return View::make('gateway.gatewayAsyncForm')
+                           ->with('data', $data);
             }
             else
             {

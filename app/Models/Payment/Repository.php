@@ -242,6 +242,13 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchPaymentsForOrderId($orderId)
+    {
+        return $this->newQuery()
+                    ->where(Payment\Entity::ORDER_ID, '=', $orderId)
+                    ->get();
+    }
+
     protected function addQueryParamBank($query, $params)
     {
         if (Payment\Processor\Netbanking::isSupportedBank($params['bank']) === false)
@@ -382,6 +389,29 @@ class Repository extends Base\Repository
                         Merchant\Entity::WEBSITE)
                     ->orderBy('volume', 'desc')
                     ->limit(30)
+                    ->get();
+    }
+
+    public function fetchAuthorizedSummary()
+    {
+        return $this->newQuery()
+                    ->where(Entity::STATUS, '=', Status::AUTHORIZED)
+                    ->groupBy(Entity::MERCHANT_ID)
+                    ->selectRaw(Entity::MERCHANT_ID . ','.
+                       'SUM(' . Entity::AMOUNT . ') AS sum' . ','.
+                       'COUNT(*) AS count')
+                    ->get();
+    }
+
+    public function fetchCapturedSummaryBetweenTimestamp($from , $to)
+    {
+        return $this->newQuery()
+                    ->where(Entity::STATUS, '=', Status::CAPTURED)
+                    ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
+                    ->groupBy(Entity::MERCHANT_ID)
+                    ->selectRaw(Entity::MERCHANT_ID . ','.
+                       'SUM(' . Entity::AMOUNT . ') AS sum' . ','.
+                       'COUNT(*) AS count')
                     ->get();
     }
 

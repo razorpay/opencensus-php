@@ -119,6 +119,17 @@ class MockGatewayController extends Controller
         return Redirect::to($url);
     }
 
+    public function postFirstDataPayment()
+    {
+        $input = Request::all();
+
+        $server = $this->gateway->server('first_data');
+
+        $url = $server->authorize($input);
+
+        return Redirect::to($url);
+    }
+
     public function postAxisGeniusPayment()
     {
         $input = Request::all();

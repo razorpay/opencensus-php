@@ -85,15 +85,9 @@ class Server extends Base\Mock\Server
             'net_amount_debit'      => '1000'
         );
 
-        $payment = (new Payment\Repository)->find($paymentId);
+        $publicId = $this->getSignedPaymentId($paymentId);
 
-        $secret = $this->app->config->get('app.key');
-
-        $publicId = $payment->getPublicId();
-
-        $hash = hash_hmac('sha1', $publicId, $secret);
-
-        $url = Route::getUrlWithPublicCallbackAuth(['id' => $publicId, 'hash' => $hash]);
+        $url = $this->route->getPublicCallbackUrlWithHash($publicId);
 
         $url .= '?' . http_build_query($content);
 

@@ -906,3 +906,9 @@ update settlements set status = 'failed' where id = '6JKIVhAOglWEzd';
 update settlements set status = 'failed' where id = '6KVt8W16z9wM2S';
 update settlements set status = 'failed' where id = '6KuQGTmk6bp0TM';
 update settlements set status = 'failed' where id = '6LhURyIav2Irt5';
+
+ALTER TABLE payment_analytics
+    MODIFY COLUMN terminal_id char(14);
+
+ALTER TABLE emi_plans
+    ADD COLUMN issuer_plan_id VARCHAR(255) AFTER min_amount;

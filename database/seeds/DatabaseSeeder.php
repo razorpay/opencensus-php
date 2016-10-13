@@ -128,8 +128,11 @@ class DatabaseSeeder extends Seeder
                     'id'            =>  Account::TEST_ACCOUNT,
                     'created_at'    =>  time(),
                     'updated_at'    =>  time(),
-                    )
-                );
+                    'balance'       =>  100000,
+                    'credits'       =>  50000,
+                    'on_hold'       =>  10000,
+                )
+            );
 
             DB::table(Table::MERCHANT)->insert(
                 array(
@@ -428,6 +431,20 @@ class DatabaseSeeder extends Seeder
                 'recurring'             => 0,
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),
+                )
+            );
+
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                        => Terminal\Shared::FIRST_DATA_RAZORPAY_TERMINAL,
+                'merchant_id'               => Account::DEMO_ACCOUNT,
+                'gateway'                   => Gateway::FIRST_DATA,
+                'card'                      => '1',
+                'gateway_merchant_id'       => 'demo_merchant_first_data',
+                'gateway_terminal_id'       => 'shared_terminal_first_data',
+                'gateway_terminal_password' => Crypt::encrypt('demo_account_first_data_terminal_pass'),
+                'created_at'                => time(),
+                'updated_at'                => time(),
                 )
             );
 

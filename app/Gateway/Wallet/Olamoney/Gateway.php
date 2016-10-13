@@ -32,6 +32,7 @@ class Gateway extends Base\Gateway
 
     protected $topup = true;
 
+    protected $accessToken;
 
     protected $map = array(
         Entity::EMAIL                   => Entity::EMAIL,
@@ -153,6 +154,8 @@ class Gateway extends Base\Gateway
         $response = $this->sendGatewayRequest($request);
 
         $content = $this->jsonToArray($response->body);
+
+        $data = [];
 
         if (isset($content[ResponseFields::ACCESS_TOKEN]) === true)
         {
@@ -301,9 +304,9 @@ class Gateway extends Base\Gateway
         $udf = [RequestFields::MERCHANT_DISPLAY_NAME => $input['merchant']->getBillingLabelElseName()];
         $udf = json_encode($udf);
 
-        $notificationUrl = Route::getUrlWithPublicAuth(
-                            'gateway_payment_callback_post', ['gateway' => 'wallet_olamoney']
-                        );
+        $notificationUrl = $this->route->getUrlWithPublicAuth(
+                                'gateway_payment_callback_post',
+                                ['gateway' => 'wallet_olamoney']);
 
         $content = array(
             RequestFields::COMMAND              => Command::DEBIT,
@@ -336,12 +339,12 @@ class Gateway extends Base\Gateway
 
         $content = $input['gateway'];
 
-        if ((isset($content['status']) === false) or
-            ($content['status'] !== Status::SUCCESS))
+        $responseStatus = isset($content['status']) ? $content['status'] : null;
+
+        if ($responseStatus !== Status::SUCCESS)
         {
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-                $content['status']);
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED, $responseStatus);
         }
 
         // verify hash - when ola starts sending hash value
@@ -940,7 +943,7 @@ class Gateway extends Base\Gateway
             return $this->config['test_merchant_id'];
         }
 
-        return $terminal['gateway_merchant_id'];
+        return $this->input['terminal']['gateway_terminal_password'];
     }
 
     protected function getValidWalletToken($input)

@@ -7,6 +7,7 @@ use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Payment\Analytics\Entity as AnalyticsEntity;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\EntityActionTrait;
 
 class AnalyticsTest extends TestCase
 {
@@ -23,7 +24,7 @@ class AnalyticsTest extends TestCase
         $this->payment = $this->getDefaultPaymentArray();
     }
 
-    public function testAttempts()
+    public function testAttemptsWithCheckoutId()
     {
         $payment = $this->getDefaultPaymentArray();
 
@@ -50,6 +51,45 @@ class AnalyticsTest extends TestCase
         $this->assertEquals($checkoutId, $paymentAnalytic[AnalyticsEntity::CHECKOUT_ID]);
 
         $this->assertEquals(2, $paymentAnalytic[AnalyticsEntity::ATTEMPTS]);
+    }
+
+    public function testAttemptsWithOrderId()
+    {
+        // First payment attempt
+        $order = $this->createOrder();
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order['id'];
+        $rzpPayment = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment');
+        $this->assertEquals($order['id'], $payment['order_id']);
+
+        $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
+        $this->assertEquals(1, $paymentAnalytic[AnalyticsEntity::ATTEMPTS]);
+
+        // // ------------------------------------------------------------------ //
+        // // TODO: Find a way to fail the first attempt
+        // // Second payment attempt
+        // $payment = $this->getDefaultPaymentArray();
+        // $payment['order_id'] = $order['id'];
+        // $rzpPayment = $this->doAuthPayment($payment);
+
+        // $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
+        // $this->assertEquals(2, $paymentAnalytic[AnalyticsEntity::ATTEMPTS]);
+    }
+
+    public function testAttemptsWithoutCheckoutIdOrderId()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment = $this->doAuthPayment($payment);
+
+        $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
+
+        $this->assertNull($paymentAnalytic[AnalyticsEntity::CHECKOUT_ID]);
+
+        $this->assertEquals(1, $paymentAnalytic[AnalyticsEntity::ATTEMPTS]);
     }
 
     public function testHttpRequestDataForNonOtpBasedPayment()

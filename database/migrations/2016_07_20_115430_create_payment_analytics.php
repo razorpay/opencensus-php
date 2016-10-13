@@ -4,7 +4,6 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
-use RZP\Models\Terminal;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Analytics\Entity as Analytics;
 
@@ -26,8 +25,6 @@ class CreatePaymentAnalytics extends Migration
 
             $table->string(Analytics::CHECKOUT_ID, Analytics::ID_LENGTH)
                   ->nullable();
-
-            $table->char(Analytics::TERMINAL_ID, Analytics::ID_LENGTH);
 
             $table->smallInteger(Analytics::ATTEMPTS)
                   ->unsigned()
@@ -77,11 +74,6 @@ class CreatePaymentAnalytics extends Migration
 
             $table->integer(Analytics::UPDATED_AT);
 
-            $table->foreign(Analytics::TERMINAL_ID)
-                ->references(Terminal\Entity::ID)
-                ->on(Table::TERMINAL)
-                ->on_delete('restrict');
-
             $table->foreign(Analytics::PAYMENT_ID)
                 ->references(Payment\Entity::ID)
                 ->on(Table::PAYMENT)
@@ -102,9 +94,6 @@ class CreatePaymentAnalytics extends Migration
     {
         Schema::table(Table::PAYMENT_ANALYTICS, function($table)
         {
-            $table->dropForeign(
-                TABLE::PAYMENT_ANALYTICS.'_'.Analytics::TERMINAL_ID.'_foreign');
-
             $table->dropForeign(
                 TABLE::PAYMENT_ANALYTICS.'_'.Analytics::PAYMENT_ID.'_foreign');
         });

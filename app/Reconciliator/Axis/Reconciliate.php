@@ -7,7 +7,7 @@ use RZP\Reconciliator\Base;
 class Reconciliate extends Base\Reconciliate
 {
     const SALE = 'sale';
-    const ACCEPTED_SHEET_NAMES = ['Refund', 'Sales', 'Sale'];
+    const ACCEPTED_SHEET_NAMES = ['Refund', 'REFUND', 'refund', 'Sales', 'Sale', 'SALES'];
 
     /**
      * Figures out what kind of reconciliation is it

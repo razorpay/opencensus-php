@@ -541,7 +541,7 @@ return [
                 'beneficiary_address3'  => 'address 3',
                 'beneficiary_address4'  => 'address 4',
                 'beneficiary_email'     => 'random@email.com',
-                'beneficiary_mobile'    => '1234567890',
+                'beneficiary_mobile'    => '9988776655',
                 'beneficiary_city'      => 'Kolkata',
                 'beneficiary_state'     => 'WB',
                 'beneficiary_country'   => 'IN',
@@ -564,7 +564,7 @@ return [
                 'beneficiary_country' => 'IN',
                 'beneficiary_pin' => '123456',
                 'beneficiary_email' => 'random@email.com',
-                'beneficiary_mobile' => '1234567890',
+                'beneficiary_mobile' => '9988776655',
             ]
         ]
     ],
@@ -580,7 +580,7 @@ return [
                 'beneficiary_address3'  => 'address 3',
                 'beneficiary_address4'  => 'address 4',
                 'beneficiary_email'     => 'random@email.com',
-                'beneficiary_mobile'    => '1234567890',
+                'beneficiary_mobile'    => '9988776655',
                 'beneficiary_city'      => 'Kolkata',
                 'beneficiary_state'     => 'WB',
                 'beneficiary_country'   => 'IN',
@@ -603,7 +603,7 @@ return [
                 'beneficiary_country' => 'IN',
                 'beneficiary_pin' => '123456',
                 'beneficiary_email' => 'random@email.com',
-                'beneficiary_mobile' => '1234567890',
+                'beneficiary_mobile' => '9988776655',
             ]
         ]
     ],
@@ -619,7 +619,7 @@ return [
                 'beneficiary_address3'  => 'address 3',
                 'beneficiary_address4'  => 'address 4',
                 'beneficiary_email'     => 'random@email.com',
-                'beneficiary_mobile'    => '1234567890',
+                'beneficiary_mobile'    => '9988776655',
                 'beneficiary_city'      => 'Kolkata',
                 'beneficiary_state'     => 'WB',
                 'beneficiary_country'   => 'IN',
@@ -658,7 +658,7 @@ return [
                 'beneficiary_address3' => 'address 3',
                 'beneficiary_address4' => 'address 4',
                 'beneficiary_email' => 'random@email.com',
-                'beneficiary_mobile' => '1234567890',
+                'beneficiary_mobile' => '9988776655',
             ]
         ]
     ],
@@ -858,6 +858,19 @@ return [
         ],
     ],
 
+    'testGetCheckoutRouteWithEmi' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testGetCheckoutRouteWithSavedGlobal' => [
         'request' => [
             'url' => '/preferences',
@@ -891,7 +904,7 @@ return [
             'url' => '/preferences',
             'method' => 'get',
             'content' => [
-                'contact' => '1234567890',
+                'contact' => '9988776655',
             ],
         ],
         'response' => [
@@ -905,7 +918,7 @@ return [
             'url' => '/preferences',
             'method' => 'get',
             'content' => [
-                'contact' => '1234567890',
+                'contact' => '9988776655',
                 'device_token' => '1000custdevice'
             ],
         ],
@@ -913,7 +926,7 @@ return [
             'content' => [
                 'customer' => [
                     'saved' => true,
-                    'contact' => '1234567890',
+                    'contact' => '9988776655',
                     'email' => 'test@razorpay.com',
                 ]
             ],
@@ -925,7 +938,7 @@ return [
             'url' => '/preferences',
             'method' => 'get',
             'content' => [
-                'contact' => '1234567890',
+                'contact' => '9988776655',
                 'device_token' => '1000custdevice',
                 '_' => [
                     'library' => 'checkoutjs',
@@ -945,7 +958,7 @@ return [
             'url' => '/preferences',
             'method' => 'get',
             'content' => [
-                'contact' => '1234567890',
+                'contact' => '9988776655',
                 'device_token' => '1000custdevice',
                 '_' => [
                     'library' => 'checkoutjs',
@@ -958,7 +971,7 @@ return [
             'content' => [
                 'customer' => [
                     'saved' => true,
-                    'contact' => '1234567890',
+                    'contact' => '9988776655',
                     'email' => 'test@razorpay.com',
                 ]
 

@@ -28,6 +28,7 @@ trait PaymentTrait
     use PaymentMobikwikTrait;
     use PaymentSbiepayTrait;
     use PaymentCybersourceTrait;
+    use PaymentFirstDataTrait;
     use PaymentEbsTrait;
     use PaymentCreationTrait;
 
@@ -206,6 +207,7 @@ trait PaymentTrait
         $payment = array_merge($defaultPayment, $payment);
 
         $content = $this->doAuthPayment($payment);
+
         $id = $content['razorpay_payment_id'];
 
         return array_merge($payment, ['id' => $id]);
@@ -1112,7 +1114,7 @@ trait PaymentTrait
     {
         $class = $this->app['gateway']->getServerClass($this->gateway);
 
-        return Mockery::mock($class)->makePartial();
+        return Mockery::mock($class, [])->makePartial();
     }
 
     protected function setMockServer($server)
