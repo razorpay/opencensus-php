@@ -96,7 +96,8 @@ app.controller('EntityListCtrl', [
       $scope.query.skip = $scope.entity.skip;
 
       // /live/payments
-      var baseuRL = '/' + $scope.mode + '/' + $scope.entity.type + 's';
+      if ($scope.entity.type === 'batch') var baseuRL = '/' + $scope.mode + '/' + $scope.entity.type + 'es';
+      else var baseuRL = '/' + $scope.mode + '/' + $scope.entity.type + 's';
       var request;
 
       var q = jQuery.extend({}, $scope.query);
@@ -161,6 +162,59 @@ app.controller('EntityListCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     }
+
+
+    // For batch files
+
+    $scope.download = function (batchId) {
+      // GET /{mode}/batches/{id}/download
+      $http({
+        method: 'GET',
+        url: '/' + $scope.mode + '/batches/' + batchId + '/download'
+      }).then(function (res) {
+        // success
+
+        var data = res.data;
+
+        if (data.success) {
+          var url = data.url;
+
+          window.open(url);
+        }
+      }, function () {
+        // error
+      })
+    };
+
+    $scope.retry = function (batchId) {
+      $scope.alerts.resetAlerts();
+
+      $http({
+        method: 'POST',
+
+        url: '/'+$scope.mode+'/batches/'+batchId+'/retry'
+      }).then(function (response) {
+        // success
+        var data = response.data;
+
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Retry successful');
+
+          $scope.entity.items.forEach(function (item) {
+            if (item.id === batchId) {
+              item.status = data.data.status;
+            }
+          });
+        }
+        else {
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }, function () {
+        // error
+      })
+    };
 
   }
 ])

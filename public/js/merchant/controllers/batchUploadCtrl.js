@@ -8,7 +8,8 @@ app.controller('BatchUploadCtrl', [
   'uiLoad',
   'transformRequestAsFormPost',
   '$upload',
-  function ($scope, $http, alertsFactory, user, uiLoad, transformRequestAsFormPost, $upload) {
+  '$state',
+  function ($scope, $http, alertsFactory, user, uiLoad, transformRequestAsFormPost, $upload, $state) {
     $scope.alerts = alertsFactory.getHandler();
 
     $scope.batchForm = {
@@ -35,7 +36,9 @@ app.controller('BatchUploadCtrl', [
       });
 
       request.success(function (data, status, headers, config) {
-        console.log(arguments);
+        if (data.success) {
+          $state.go('app.batch.list');
+        }
       }).error(function () {
 
       });
