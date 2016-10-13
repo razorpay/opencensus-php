@@ -14,7 +14,7 @@ class AxisGatewayTest extends TestCase
 
     public function setUp()
     {
-        $this->markTestSkipped('Removed');
+        // $this->markTestSkipped('Removed');
 
         $this->testDataFilePath = __DIR__.'/AxisGatewayTestData.php';
 
@@ -116,10 +116,34 @@ class AxisGatewayTest extends TestCase
     public function testPaymentVerify()
     {
         $payment = $this->doAuthAndCapturePayment();
+        $this->assertEquals($payment['status'], 'captured');
 
         $this->verifyPayment($payment['id']);
         $payment = $this->getLastEntity('axis_migs', true);
         $this->assertEquals('pay', $payment['vpc_Command']);
+    }
+
+    public function testPaymentVerifyFailed()
+    {
+        $payment = $this->doAuthPayment();
+        $pid = $payment['razorpay_payment_id'];
+
+        $this->fixtures->payment->edit($pid, ['status' => 'failed', 'authorized_at' => null]);
+
+        $server = $this->mockServer()
+                        ->shouldReceive('content')
+                        ->andReturnUsing(function (& $content)
+                        {
+                            $content['vpc_DRExists'] = 'N';
+                        })->mock();
+
+        $this->setMockServer($server);
+
+        $data = $this->testData[__FUNCTION__];
+        $this->runRequestResponseFlow($data, function() use ($pid)
+        {
+            $this->verifyPayment($pid);
+        });
     }
 
     public function testAuthorizeFailedPayment()
@@ -146,6 +170,7 @@ class AxisGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('axis_migs', true);
         $pid1 = 'pay_'.$payment['payment_id'];
+        $txnNoNew = $payment['vpc_TransactionNo'];
 
         $this->fixtures->edit('axis_migs', $payment['id'], ['received' => '0']);
 
@@ -157,7 +182,8 @@ class AxisGatewayTest extends TestCase
         $this->assertEquals($payment['status'], 'authorized');
 
         $payment = $this->getLastEntity('axis_migs', true);
-        $this->assertEquals($payment['vpc_TransactionNo'], $txnNo);
+
+        $this->assertEquals($payment['vpc_TransactionNo'], $txnNoNew);
     }
 
     public function testFailureWhen3DSFailsForDomesticMerchant()
