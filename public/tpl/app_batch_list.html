@@ -39,9 +39,9 @@
             <tr ng-repeat="row in entity.items">
               <td><code>{{row.id}}</code></td>
               <td>{{row.total_count}}</td>
-              <td><span class="label {{getStatusClass(row.status)}}">{{row.status}}</span></td>
+              <td><span class="label {{getStatusClass(row.status)}}" style="font-size: 100%">{{row.status}}</span></td>
               <td>
-                <a href="javascript:void(0);" ng-click="download(row.id)" class="label bg-primary">Download</a>
+                <a href="javascript:void(0);" ng-click="download(row.id)" class="label bg-primary" style="font-size: 100%">Download</a>
               </td>
             </tr>
             <tr ng-show="entity.count === 0">
