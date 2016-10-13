@@ -5,18 +5,11 @@ namespace RZP\Gateway\Sharp;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Base;
-use Requests;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use Crypt;
 
-class Server
+class Server extends Base\Mock\Server
 {
-    public function __construct()
-    {
-        $this->trace = \Trace::getFacadeRoot();
-    }
-
     public function action($input)
     {
         if (isset($input['action']) === false)
@@ -76,7 +69,7 @@ class Server
         }
 
         $data['action'] = 'authorize';
-        $data['url'] = \RZP\Http\Route::getUrlWithPublicAuth('mock_sharp_payment_submit');
+        $data['url'] = $this->route->getUrlWithPublicAuth('mock_sharp_payment_submit');
         $data['content'] = array(
             'callback_url' => $input['callback_url'],
         );

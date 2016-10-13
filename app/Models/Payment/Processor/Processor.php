@@ -89,6 +89,13 @@ class Processor
 
     protected $verifyRefundStatus;
 
+    /**
+     * Api Route instance
+     *
+     * @var RZP\Http\Route
+     */
+    protected $route;
+
     public function __construct(Merchant\Entity $merchant)
     {
         $this->app  = App::getFacadeRoot();
@@ -109,6 +116,8 @@ class Processor
         $this->request = $this->app['request'];
 
         $this->mutex = $this->app['api.mutex'];
+
+        $this->route = $this->app['api.route'];
 
         // Only used in hdfc verify refund flow
         $this->verifyRefundStatus = null;
@@ -484,12 +493,6 @@ class Processor
         $gatewayData['terminal'] = $terminal;
 
         $gatewayData['merchant'] = $this->payment->merchant;
-
-        // TODO: Shouldn't be KOTAK specific
-        if ($gateway === Payment\Gateway::KOTAK)
-        {
-            $gatewayData['bank_account'] = $this->getMerchantBankAccount($terminal->merchant);
-        }
 
         return $this->app['gateway']->call($gateway, $action, $gatewayData, $this->mode, $terminal);
     }

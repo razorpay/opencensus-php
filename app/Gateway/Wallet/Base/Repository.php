@@ -29,7 +29,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where(Entity::PAYMENT_ID , '=', $paymentId)
-                    ->lists(Entity::GATEWAY_PAYMENT_ID2);
+                    ->pluck(Entity::GATEWAY_PAYMENT_ID2);
     }
 
     public function fetchWalletByPaymentId($paymentId)

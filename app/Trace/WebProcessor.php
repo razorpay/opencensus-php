@@ -3,8 +3,6 @@
 namespace RZP\Trace;
 
 use App;
-use RZP\Http\Route;
-use Request;
 use RZP\Exception;
 
 /**
@@ -16,6 +14,8 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
 
     protected $console;
 
+    protected $route;
+
     /**
      * @param mixed $serverData array or object w/ ArrayAccess that provides access to the $_SERVER data
      */
@@ -26,6 +26,8 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
         $this->request = $app['request'];
 
         $this->console = $app->runningInConsole();
+
+        $this->route = $app['api.route'];
 
         $serverData = $this->getServerData();
 
@@ -78,7 +80,7 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
 
     protected function unsetUrlForSensitiveUrls(& $serverData)
     {
-        $sensitiveUrls = Route::getDoNotLogURLs();
+        $sensitiveUrls = $this->route->getDoNotLogURLs();
 
         if (in_array($serverData['uri'], $sensitiveUrls))
         {

@@ -346,11 +346,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::INTERNATIONAL, $isInternational);
     }
 
-    public function setCaptureAmount($amount)
-    {
-        $this->setAttribute(self::AMOUNT, $amount);
-    }
-
     public function setAmountAuthorized()
     {
         $authAmount = $this->getAttribute(self::AMOUNT);
@@ -933,18 +928,6 @@ class Entity extends Base\PublicEntity
         return (($this->isRecurring() === true) and
                 ($this->getTokenId() !== null) and
                 ($this->localToken->isRecurring() === true));
-    }
-
-    public function toArrayDailyReport()
-    {
-        $reportArray = [
-            self::PUBLIC_ID      => $this->getPublicId(),
-            self::AMOUNT         => $this->getAmount(),
-            self::AUTHORIZED_AT  => $this->getAuthorizeTimestamp(),
-            self::CAPTURED_AT    => $this->getCaptureTimestamp(),
-        ];
-
-        return $reportArray;
     }
 
     /**

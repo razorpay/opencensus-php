@@ -17,7 +17,6 @@ class RouteServiceProvider extends ServiceProvider
      */
     protected $namespace = 'RZP\Http\Controllers';
 
-
     /**
      * Define your route model bindings, pattern filters, etc.
      *
@@ -26,7 +25,22 @@ class RouteServiceProvider extends ServiceProvider
      */
     public function boot(Router $router)
     {
+        $this->route = $this->app['api.route'];
+
         parent::boot($router);
+    }
+
+    /**
+     * Register the service provider.
+     *
+     * @return void
+     */
+    public function register()
+    {
+        $this->app->singleton('api.route', function($app)
+        {
+            return new Route($app);
+        });
     }
 
     /**
@@ -37,9 +51,7 @@ class RouteServiceProvider extends ServiceProvider
      */
     public function map(Router $router)
     {
-        Route::setRouter($router);
-
-        Route::defineRootApiRoute();
+        $this->route->defineRootApiRoute();
 
         /**
          * Following params are as explained:
@@ -63,7 +75,7 @@ class RouteServiceProvider extends ServiceProvider
                 $this->mapApiRoutes($router);
             });
 
-        Route::defineAllExtraRoutes();
+        $this->route->defineAllExtraRoutes();
     }
 
     /**
@@ -80,9 +92,7 @@ class RouteServiceProvider extends ServiceProvider
             ['middleware' => 'web'],
             function ($router)
             {
-                Route::addRoutes('public');
-                Route::addRoutes('publicCallback');
-                Route::addRoutes('direct');
+                $this->route->addRouteGroups(['public', 'publicCallback', 'direct']);
             }
         );
     }
@@ -93,9 +103,7 @@ class RouteServiceProvider extends ServiceProvider
             ['middleware' => 'api'],
             function ($router)
             {
-                Route::addRoutes('internal');
-                Route::addRoutes('private');
-                Route::addRoutes('proxy');
+                $this->route->addRouteGroups(['internal', 'private', 'proxy']);
             }
         );
     }

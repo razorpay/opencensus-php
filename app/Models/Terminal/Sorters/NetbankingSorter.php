@@ -79,9 +79,8 @@ class NetbankingSorter extends Terminal\Sorter
     }
 
     /**
-     * Remove 'direct' for non harshil and kotak
-     * If the bank is kotak and the merchant is not harshil
-     * REMOVE once netbanking kotak is available for everyone
+     * Arrange the priority of netbanking gateways based on merchant and bank.
+     * This is used for testing out new gateways.
      *
      * @param  array &$gatewaysPriority
      * @param  string $merchant
@@ -90,16 +89,6 @@ class NetbankingSorter extends Terminal\Sorter
      */
     protected function arrangePriorityByMerchantAndBank(&$gatewaysPriority, $merchant, $bank)
     {
-        if ($bank === IFSC::KKBK)
-        {
-            $merchantsWithNetbankingKotakEnabled = ['2aTeFCKTYWwfrF', '10000000000000'];
-
-            if (in_array($merchant, $merchantsWithNetbankingKotakEnabled) === false)
-            {
-                unset($gatewaysPriority[0]);
-            }
-        }
-
         //TODO Remove this extra code after testing
         if ($merchant === '4izmfM9TFCAgFN')
         {

@@ -287,9 +287,9 @@ class Gateway extends Base\Gateway
         $udf = [RequestFields::MERCHANT_DISPLAY_NAME => $input['merchant']->getBillingLabelElseName()];
         $udf = json_encode($udf);
 
-        $notificationUrl = Route::getUrlWithPublicAuth(
-                            'gateway_payment_callback_post', ['gateway' => 'wallet_olamoney']
-                        );
+        $notificationUrl = $this->route->getUrlWithPublicAuth(
+                                'gateway_payment_callback_post',
+                                ['gateway' => 'wallet_olamoney']);
 
         $content = array(
             RequestFields::COMMAND              => Command::DEBIT,
