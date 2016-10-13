@@ -21,12 +21,10 @@ trait PaymentTrait
     use PaymentAxisMigsTrait;
     use PaymentBilldeskTrait;
     use PaymentHdfcTrait;
-    use PaymentKotakTrait;
     use PaymentNetbankingTrait;
     use PaymentPaytmTrait;
     use PaymentSharpTrait;
     use PaymentMobikwikTrait;
-    use PaymentSbiepayTrait;
     use PaymentCybersourceTrait;
     use PaymentFirstDataTrait;
     use PaymentEbsTrait;
