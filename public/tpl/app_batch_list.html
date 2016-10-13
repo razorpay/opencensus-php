@@ -30,14 +30,14 @@
           <thead>
             <tr>
               <th data-toggle="true">Batch Id</th>
-              <th>Total Count</th>
+              <th>Count</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             <tr ng-repeat="row in entity.items">
-              <td><a ui-sref="app.batches.detail({id:row.id})"><code>{{row.id}}</code></a></td>
+              <td><code>{{row.id}}</code></td>
               <td>{{row.total_count}}</td>
               <td><span class="label {{getStatusClass(row.status)}}">{{row.status}}</span></td>
               <td>
