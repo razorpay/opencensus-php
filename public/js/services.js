@@ -294,7 +294,10 @@ angular.module('app.services', [])
 
       // billdesk
       cancelled: 'bg-danger',
-      null: 'bg-warning'
+      null: 'bg-warning',
+
+      // batch
+      processing: 'bg-info'
     };
 
     return mapper[status];
