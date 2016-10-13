@@ -12,9 +12,11 @@ class Repository extends Base\Repository
 
     protected $entity = 'emi_plan';
 
-    public function getAllEmiPlans()
+    public function fetchEmiPlans()
     {
-        return $this->newQuery()->get();
+        return $this->newQuery()
+                    ->withoutTrashed()
+                    ->get();
     }
 
     public function fetchRelevantEmiPlan($iin, $duration)
@@ -36,4 +38,4 @@ class Repository extends Base\Repository
 
         return $query->firstOrFail();
     }
-}
+ }

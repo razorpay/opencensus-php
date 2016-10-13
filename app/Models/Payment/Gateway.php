@@ -86,7 +86,7 @@ class Gateway
         Method::CARD => array(
             self::HDFC,
             self::ATOM,
-            // self::AXIS_MIGS,
+            self::AXIS_MIGS,
             self::AXIS_GENIUS,
             self::PAYTM,
             self::AMEX,
@@ -259,7 +259,7 @@ class Gateway
      */
     public static $domesticCardGateways = array(
         Gateway::HDFC,
-        // Gateway::AXIS_MIGS,
+        Gateway::AXIS_MIGS,
         Gateway::AMEX,
         Gateway::CYBERSOURCE,
         Gateway::FIRST_DATA,
@@ -577,6 +577,7 @@ class Gateway
                     $gateways = array_merge($gateways, self::$directNetbankingGatewaysInTest);
                 }
 
+                // Adds direct netbanking to have highest priority
                 array_unshift($gateways, 'direct');
 
                 break;

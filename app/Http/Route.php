@@ -217,7 +217,7 @@ final class Route
         'features_fetch'                          => ['get',      'features',                                 'MerchantController@getAllFeatures'                                 ],
         'feature_dummy'                           => ['get',      'features/dummy',                           'MerchantController@getDummyFeatures'                               ],
         'emi_plan_add'                            => ['post',     'emi',                                      'EmiController@addEmiPlan'                                          ],
-        'emi_plans_fetch_multiple'                => ['get',      'emi',                                      'EmiController@fetchAvailableEmiPlans'                              ],
+        'emi_plans_fetch_multiple'                => ['get',      'emi',                                      'EmiController@fetchEmiPlans'                                       ],
         'emi_plan_fetch_by_id'                    => ['get',      'emi/{id}',                                 'EmiController@fetchEmiPlanById'                                    ],
         'emi_plan_delete'                         => ['delete',   'emi/{id}',                                 'EmiController@deleteEmiPlan'                                       ],
         'emi_generate_excel'                      => ['post',     'emi/generate/excel',                       'EmiController@generateEmiExcel'                                    ],

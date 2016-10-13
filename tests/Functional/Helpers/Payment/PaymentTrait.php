@@ -391,7 +391,24 @@ trait PaymentTrait
         return $response;
     }
 
-    protected function topupPayment($id)
+    protected function doWalletTopup($id)
+    {
+        $request = array(
+            'method' => 'POST',
+            'url' => '/payments/'.$id.'/topup',
+            'content' => array()
+        );
+
+        $this->ba->publicAuth();
+
+        $response = $this->makeRequestParent($request);
+
+        $response = $this->handleWalletTopupFlow($response, $request);
+
+        return $this->getJsonContentFromResponse($response);
+    }
+
+    protected function doWalletTopupViaAjaxRoute($id)
     {
         $request = array(
             'method' => 'POST',
@@ -401,9 +418,11 @@ trait PaymentTrait
 
         $this->ba->publicAuth();
 
-        $content = $this->makeRequestAndGetContent($request);
+        $response = $this->makeRequestParent($request);
 
-        return $content;
+        $response = $this->handleWalletTopupFlow($response, $request);
+
+        return $this->getJsonContentFromResponse($response);
     }
 
     protected function redirectPayment($id)
@@ -429,7 +448,7 @@ trait PaymentTrait
             $response->setContent($content);
         }
 
-        return $this->getJsonContentFromResponse($response);
+        return $response;
     }
 
     protected function getPaymentStatus($id)

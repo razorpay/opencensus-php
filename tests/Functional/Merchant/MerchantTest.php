@@ -509,6 +509,19 @@ class MerchantTest extends TestCase
         $response = $this->startTest();
     }
 
+    public function testGetCheckoutRouteWithEmi()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $this->fixtures->merchant->enableEmi();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($response['methods']['emi'], true);
+    }
+
     public function testGetCheckoutRouteWithSavedGlobal()
     {
         $this->ba->publicAuth();
