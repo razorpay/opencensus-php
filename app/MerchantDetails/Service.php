@@ -83,12 +83,23 @@ class Service extends Base\Service
 
     public function saveDetails($step, array $input)
     {
+        $step = intval($step);
+
         // Check if already finished
         $merchantDetails = $this->merchantDetails;
 
         if ($merchantDetails->isLocked())
         {
             return $this->isLockedError();
+        }
+
+        // 4 is the Bank Account Details
+        // We disable this because this doesn't edit the Bank Account
+        // on the API side, causing confusion. We have a separate
+        // method in merchant details to accomplish the same
+        if ($this->merchant->isActive() and ($step === 4))
+        {
+            return ['Editing bank account is not permitted for activated merchants'];
         }
 
         $error = $merchantDetails->finishStep($step, $input);
