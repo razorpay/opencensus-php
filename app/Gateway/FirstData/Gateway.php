@@ -400,6 +400,8 @@ class Gateway extends Base\Gateway
         $gatewayPayment->setGatewayPaymentId($gatewayPaymentId);
 
         $this->repo->saveOrFail($gatewayPayment);
+
+        return $gatewayPayment;
     }
 
     protected function postSoapRequest($content, $requestType)
