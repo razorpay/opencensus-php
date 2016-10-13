@@ -13,7 +13,7 @@ use Razorpay\Api\Errors\ServerError as ServerError;
 
 class Batch extends Entity
 {
-    const UPLOAD_BATCH_FILE = 'batches';
+    const BATCH_FILE_URL = 'batches';
 
     public function fetchBatchById($id)
     {
@@ -31,10 +31,10 @@ class Batch extends Entity
         return $this->request('GET', $relativeUrl, $input);
     }
 
-    public function uploadBatchFile($mode, $input)
+    public function uploadBatchFile($mode, $merchantId, $input)
     {
         // Makes a guzzle file request
-        $response = $this->makeGuzzleFileRequest($mode, $input);
+        $response = $this->makeGuzzleFileRequest($mode, $merchantId, $input);
 
         return $response;
     }
@@ -53,20 +53,20 @@ class Batch extends Entity
         return $this->request('POST', $relativeUrl);
     }
 
-    protected function makeGuzzleFileRequest($mode, $input)
+    protected function makeGuzzleFileRequest($mode, $merchantId, $input)
     {
         // Creates a new Guzzle client
         $client = new Guzzle(['base_url' => Config::get('api.url')]);
 
         // Sets the options for the request. Auth should be part of this.
         $options = array(
-            'auth'      => $this->getApiCredentials($mode, $input['merchant_id']),
+            'auth'      => $this->getApiCredentials($mode, $merchantId),
             'headers'   => ApiRequest::getHeaders(),
             'body'      => ['type' => $input['type']],
         );
 
         // Creates a request instance
-        $request = $client->createRequest("POST", self::UPLOAD_BATCH_FILE, $options);
+        $request = $client->createRequest("POST", self::BATCH_FILE_URL, $options);
 
         // Creates an object to insert post body data
         $postBody = $request->getBody();

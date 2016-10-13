@@ -32,6 +32,10 @@ app.controller('EntityListCtrl', [
       payment_id: ''
     };
 
+    $scope.bulkAction = function(type) {
+      $state.go('app.batch.upload');
+    };
+
     $scope.generate = function (entity) {
       $scope.entity.type = entity;
       generateTable();
@@ -157,6 +161,7 @@ app.controller('EntityListCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     }
+
   }
 ])
 .controller('settlementBreakupModalCtrl', [
@@ -181,7 +186,7 @@ app.controller('EntityListCtrl', [
       if (data.success) {
         $scope.breakupDetails = data.data.items;
       }
-      
+
     }).error(function () {
       $scope.alerts.addAlert('danger', null, true);
     });

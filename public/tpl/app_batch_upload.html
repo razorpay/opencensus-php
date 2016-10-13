@@ -1,0 +1,36 @@
+<div ng-controller="BatchUploadCtrl">
+
+  <div class="bg-light lter b-b wrapper-md">
+    <h1 class="m-n font-thin h3">
+      Batch Uploads ({{mode + " Mode"| titlecase }})
+      <spinner class="inline"></spinner>
+
+      <a href="javascript:void(0);" class="btn btn-info pull-right">View All Batch Uploads</a>
+    </h1>
+  </div>
+  <div class="wrapper-md addfunds-wrapper">
+    <div class="panel panel-default col-sm-6 col-sm-offset-3" >
+      <div class="panel-heading m-t m-b">
+        Refunds File Upload - {{mode | titlecase}} Mode
+      </div>
+      <div class="text-center m-t m-b">
+        <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+      </div>
+      <div class="text-muted m-t m-b">
+        <p>
+          This is a simple way to process <strong>refunds</strong> in batches.
+        </p>
+      </div>
+      <div class="text-center m-t m-b">
+        <form enctype="multipart/form-data">
+          <input type="hidden" name="type" value="refund" ng-model="batchForm.type" />
+
+          <input ui-jq="filestyle" type="file" name="file" ng-file-select="onFileSelect($files, 'file')">
+
+          <button class="btn btn-primary btn-rounded" ng-click="batchUpload()">Submit</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+</div>

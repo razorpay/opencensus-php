@@ -402,11 +402,9 @@ class Service extends Base\Service
         {
             $this->setApiCredentials($this->merchantId, $mode);
 
-            $input['merchant_id'] = $this->merchantId;
-
             $batchRefund = $this->api
                                 ->batch
-                                ->uploadBatchFile($mode, $input);
+                                ->uploadBatchFile($mode, $this->merchantId, $input);
 
             return [null, $batchRefund];
         }
