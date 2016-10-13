@@ -402,9 +402,11 @@ class Service extends Base\Service
         {
             $this->setApiCredentials($this->merchantId, $mode);
 
+            $input['merchant_id'] = $this->merchantId;
+
             $batchRefund = $this->api
                                 ->batch
-                                ->uploadBatchFile($input);
+                                ->uploadBatchFile($mode, $input);
 
             return [null, $batchRefund];
         }
@@ -426,7 +428,8 @@ class Service extends Base\Service
 
             $collection = $this->api
                                ->batch
-                               ->fetchMultipleBatches($input);
+                               ->fetchMultipleBatches($input)
+                               ->toArray();
 
             $this->mapKeys($collection);
 
@@ -448,7 +451,8 @@ class Service extends Base\Service
 
             $data = $this->api
                          ->batch
-                         ->fetchBatchById($id);
+                         ->fetchBatchById($id)
+                         ->toArray();
 
             $collection = array(
                             'count' => 1,
@@ -475,7 +479,8 @@ class Service extends Base\Service
 
             $downloadResponse = $this->api
                                      ->batch
-                                     ->downloadBatchFile($id);
+                                     ->downloadBatchFile($id)
+                                     ->toArray();
 
             return [null, $downloadResponse];
 
@@ -497,7 +502,8 @@ class Service extends Base\Service
 
             $batchRefund = $this->api
                                 ->batch
-                                ->retryBatchFile($id);
+                                ->retryBatchFile($id)
+                                ->toArray();
 
             return [null, $batchRefund];
         }

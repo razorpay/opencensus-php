@@ -12,16 +12,15 @@ use Carbon\Carbon;
 
 class BatchController extends Controller
 {
-
     public function uploadBatchFile($mode)
     {
         $this->checkMode($mode);
 
         $input = Input::all();
 
-        $response = (new Api\Service)->uploadBatchFile($mode, $input);
+        list($error, $response) = (new Api\Service)->uploadBatchFile($mode, $input);
 
-        return AppResponse::jsonResponse($response);
+        return AppResponse::jsonResponse($error, $response);
     }
 
     public function fetchMultipleBatches($mode)
@@ -30,35 +29,35 @@ class BatchController extends Controller
 
         $input = Input::all();
 
-        $response = (new Api\Service)->fetchMultipleBatches($mode, $input);
+        list($error, $response) = (new Api\Service)->fetchMultipleBatches($mode, $input);
 
-        return AppResponse::jsonResponse($response);
+        return AppResponse::jsonResponse($error, $response);
     }
 
     public function fetchBatchById($mode, $id)
     {
         $this->checkMode($mode);
 
-        $response = (new Api\Service)->fetchBatchById($mode, $id);
+        list($error, $response) = (new Api\Service)->fetchBatchById($mode, $id);
 
-        return AppResponse::jsonResponse($response);
+        return AppResponse::jsonResponse($error, $response);
     }
 
     public function downloadBatchFile($mode, $id)
     {
         $this->checkMode($mode);
 
-        $response = (new Api\Service)->downloadRefundFile($mode, $id);
+        list($error, $response) = (new Api\Service)->downloadBatchFile($mode, $id);
 
-        return AppResponse::jsonResponse($response);
+        return AppResponse::jsonResponse($error, $response);
     }
 
     public function retryBatchFile($mode, $id)
     {
         $this->checkMode($mode);
 
-        $response = (new Api\Service)->retryRefundFile($mode, $id);
+        list($error, $response) = (new Api\Service)->retryBatchFile($mode, $id);
 
-        return AppResponse::jsonResponse($response);
+        return AppResponse::jsonResponse($error, $response);
     }
 }
