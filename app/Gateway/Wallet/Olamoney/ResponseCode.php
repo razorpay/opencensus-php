@@ -3,7 +3,6 @@
 namespace RZP\Gateway\Wallet\Olamoney;
 
 use RZP\Error\ErrorCode;
-use RZP\Models\Payment\TwoFaStatus;
 
 class ResponseCode
 {
@@ -41,15 +40,5 @@ class ResponseCode
         }
 
         return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
-    }
-
-    public static function getTwoFaStatus($message)
-    {
-        switch ($message) {
-            case 'Invalid OTP':
-                return TwoFaStatus::FAILED;
-            default:
-                return TwoFaStatus::UNKNOWN;
-        }
     }
 }

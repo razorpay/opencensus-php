@@ -2,8 +2,6 @@
 
 namespace RZP\Gateway\Kotak;
 
-use RZP\Models\Payment\TwoFaStatus;
-
 class ResponseCode
 {
     const SUC   = '00';
@@ -77,19 +75,4 @@ class ResponseCode
         'ACCU600'   => 'Invalid data was posted to the PaySecure PIN pad, Error occurred on issuer side, select another payment type',
         'ACCU800'   => 'Generic PaySecure error, None',
         'ACCU999'   => 'PIN Pad was successfully opened',
-    );
-
-    public static function getTwoFaStatus($code)
-    {
-        switch ($code) {
-            case '00':
-            case '0':
-                return TwoFaStatus::PASSED;
-            case '55':
-            case '75':
-                return TwoFaStatus::FAILED;
-            default:
-                return TwoFaStatus::UNKNOWN;
-        }
-    }
-}
+    );}

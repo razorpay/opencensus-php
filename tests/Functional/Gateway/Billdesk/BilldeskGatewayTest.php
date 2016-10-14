@@ -5,7 +5,6 @@ namespace RZP\Tests\Functional\Gateway\Billdesk;
 use RZP\Exception;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
-use RZP\Models\Payment\TwoFaStatus;
 
 class BilldeskGatewayTest extends TestCase
 {

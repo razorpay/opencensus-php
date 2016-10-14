@@ -447,11 +447,6 @@ class Gateway
         return $payment;
     }
 
-    protected function getTwoFaStatus($response)
-    {
-        throw new Exception\BadRequestException('Child class must implement it!');
-    }
-
     protected function getNamespace()
     {
         return substr(get_called_class(), 0, strrpos(get_called_class(), '\\'));
@@ -687,12 +682,8 @@ class Gateway
 
         if ($payment['otp_attempts'] >= $limit)
         {
-            $e = new Exception\GatewayErrorException(
+            throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED);
-
-            $e->markTwoFaError();
-
-            throw $e;
         }
     }
 

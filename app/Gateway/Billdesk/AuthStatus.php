@@ -2,8 +2,6 @@
 
 namespace RZP\Gateway\Billdesk;
 
-use RZP\Models\Payment\TwoFaStatus;
-
 class AuthStatus
 {
     const SUCCESS       = '0300';
@@ -26,14 +24,4 @@ class AuthStatus
         '0002'  => 'BillDesk is waiting for Response from Bank Pending Transaction',
         '0001'  => 'Error at BillDesk Cancel Transaction',
     );
-
-    public static function getTwoFaStatus($code)
-    {
-        switch ($code) {
-            case '0300':
-                return TwoFaStatus::PASSED;
-            default:
-                return TwoFaStatus::UNKNOWN;
-            }
-    }
 }

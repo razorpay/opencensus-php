@@ -3,7 +3,6 @@
 namespace RZP\Gateway\Wallet\Payzapp;
 
 use RZP\ErrorCode;
-use RZP\Models\Payment\TwoFaStatus;
 
 class ResponseCode
 {
@@ -75,14 +74,4 @@ class ResponseCode
         14002   => '3DS Aborted',
         14003   => 'MPI Error',
     );
-
-    public static function getTwoFaStatus($code)
-    {
-        switch ($code) {
-            case 0:
-                return TwoFaStatus::PASSED;
-            default:
-                return TwoFaStatus::UNKNOWN;
-        }
-    }
 }

@@ -5,7 +5,6 @@ namespace RZP\Gateway\Hdfc;
 use RZP\Error;
 use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Payment\Result;
-use RZP\Models\Payment\TwoFaStatus;
 
 class ErrorCode
 {
@@ -366,17 +365,5 @@ class ErrorCode
         }
 
         return self::$invalidResultErrorCode;
-    }
-
-    public static function getTwoFaStatus($code)
-    {
-        switch ($code) {
-            case 'GV00004':
-            case 'GV00007':
-            case 'GV00008':
-                return TwoFaStatus::FAILED;
-            default:
-                return TwoFaStatus::UNKNOWN;
-        }
     }
 }

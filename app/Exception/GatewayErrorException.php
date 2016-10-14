@@ -7,7 +7,15 @@ use RZP\Error\ErrorCode;
 
 class GatewayErrorException extends RecoverableException
 {
+
     protected $twoFaError = false;
+
+    protected $twoFaErrorCodes = [
+        ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
+        ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
+        ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED,
+        ErrorCode::BAD_REQUEST_PAYMENT_OTP_EXPIRED,
+    ];
 
     public function __construct(
         $code,
@@ -40,6 +48,15 @@ class GatewayErrorException extends RecoverableException
 
     public function hasTwoFaError()
     {
-        return $this->twoFaError ;
+        if ($this->twoFaError === true)
+        {
+            return true;
+        }
+
+        $error = $this->getError();
+
+        $errorCode = $error->getInternalErrorCode();
+
+        return in_array($errorCode, $this->twoFaErrorCodes);
     }
 }

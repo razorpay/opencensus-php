@@ -119,7 +119,7 @@ class Gateway extends Base\Gateway
         {
             $responseCode = $input['gateway'][Resp::RESPONSE_CODE];
 
-            return [Payment\Entity::TWO_FA_STATUS => $this->getTwoFaStatus($responseCode)];
+            return [Payment\Entity::TWO_FA_STATUS => Payment\TwoFaStatus::NOT_APPLICABLE];
         }
     }
 
@@ -167,11 +167,6 @@ class Gateway extends Base\Gateway
         $verify = new Base\Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
-    }
-
-    protected function getTwoFaStatus($code)
-    {
-        return Payment\TwoFaStatus::UNKNOWN;
     }
 
     protected function getRequest($location, $method, $content)

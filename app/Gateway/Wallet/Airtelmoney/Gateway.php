@@ -15,6 +15,7 @@ use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Wallet\Base;
 use RZP\Gateway\Wallet\Base\Action;
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 
 class Gateway extends Base\Gateway
@@ -81,6 +82,8 @@ class Gateway extends Base\Gateway
         else
         {
             $this->callbackAuthSuccessFlow($input);
+
+            return [Payment\Entity::TWO_FA_STATUS => Payment\TwoFaStatus::PASSED];
         }
     }
 

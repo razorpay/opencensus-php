@@ -155,33 +155,19 @@ class Gateway extends Base\Gateway
 
         $code = $content['ResponseCode'];
 
-        $twoFaStatus = $this->getTwoFaStatus($code);
-
         // Payment successful
         if (in_array($code, ResponseCode::PAYMENT_SUCCESS_STATUS))
         {
-            return [Payment\Entity::TWO_FA_STATUS => $twoFaStatus];
+            return [];
         }
         // Payment fails, throw exception
         else
         {
-            $e = new Exception\GatewayErrorException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-                    null,
-                    $input['gateway']['Message']);
-
-            if ($twoFaStatus === Payment\TwoFaStatus::FAILED)
-            {
-                $e->markTwoFaError();
-            }
-
-            throw $e;
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                null,
+                $input['gateway']['Message']);
         }
-    }
-
-    protected function getTwoFaStatus($code)
-    {
-        return ResponseCode::getTwoFaStatus($code);
     }
 
     protected function getFormattedCardExpiryDate($input)

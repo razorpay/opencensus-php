@@ -400,7 +400,7 @@ class Gateway extends Base\Gateway
 
         $this->createGatewayPaymentEntity($content);
 
-        return $this->getCallbackResponseData($content);
+        return [Payment\Entity::TWO_FA_STATUS => Payment\TwoFaStatus::PASSED];
     }
 
     protected function getAuthorizeRequestContent($input)
@@ -673,7 +673,7 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            return $this->getCallbackResponseData($input);
+            return [Payment\Entity::TWO_FA_STATUS => Payment\TwoFaStatus::PASSED];
         }
     }
 
@@ -692,29 +692,10 @@ class Gateway extends Base\Gateway
             $message = $response['statusdescription'];
         }
 
-        $e = new Exception\GatewayErrorException(
+        throw new Exception\GatewayErrorException(
             $errorCode,
             $code,
             $message);
-
-        if ($this->getTwoFaStatus($code) === Payment\TwoFaStatus::FAILED)
-        {
-            $e->markTwoFaError();
-        }
-
-        throw $e;
-    }
-
-    protected function getTwoFaStatus($code)
-    {
-        return ResponseCodeMap::getTwoFaStatus($code);
-    }
-
-    protected function getCallbackResponseData($input)
-    {
-        $code = $input['statuscode'];
-
-        return [Payment\Entity::TWO_FA_STATUS => $this->getTwoFaStatus($code)];
     }
 
     protected function getUrlDomain()

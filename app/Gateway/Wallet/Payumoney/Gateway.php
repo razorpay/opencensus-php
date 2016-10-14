@@ -10,7 +10,6 @@ use RZP\Exception;
 use RZP\Trace\Trace;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
-use RZP\Models\Payment\TwoFaStatus;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
@@ -317,28 +316,16 @@ class Gateway extends Base\Gateway
             $errorCode = ResponseCodeMap::getApiErrorCode($content['errorCode']);
 
             // Payment fails, throw exception
-            $e = new Exception\GatewayErrorException(
+            throw new Exception\GatewayErrorException(
                 $errorCode,
                 $content['status'],
                 $content['message']);
-
-            if ($this->getTwoFaStatus($content['errorCode']) === Payment\TwoFaStatus::FAILED)
-            {
-                $e->markTwoFaError();
-            }
-
-            throw $e;
         }
 
         // set two-fa status as passed
         $data[Payment\Entity::TWO_FA_STATUS] = Payment\TwoFaStatus::PASSED;
 
         return $data;
-    }
-
-    protected function getTwoFaStatus($code)
-    {
-        return ResponseCodeMap::getTwoFaStatus($code);
     }
 
     public function callbackTopupFlow($input)

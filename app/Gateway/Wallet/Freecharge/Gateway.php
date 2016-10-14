@@ -958,22 +958,10 @@ class Gateway extends Base\Gateway
 
             $errorCode = $content[ResponseFields::ERROR_CODE];
 
-            $ex = new Exception\GatewayErrorException(
+            throw new Exception\GatewayErrorException(
                 ResponseCodeMap::getApiErrorCode($errorCode),
                 $content[ResponseFields::ERROR_CODE],
                 $content[ResponseFields::ERROR_MESSAGE]);
-
-            if ($this->getTwoFaStatus($errorCode) === TwoFaStatus::FAILED)
-            {
-                $ex->markTwoFaError();
-            }
-
-            throw $ex;
         }
-    }
-
-    protected function getTwoFaStatus($code)
-    {
-        return ResponseCodeMap::getTwoFaStatus($code);
     }
 }

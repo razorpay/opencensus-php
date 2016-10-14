@@ -94,7 +94,7 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             $input['gateway']);
 
-        $payment = $this->repo->findByPaymentIdAndActionOrFail(
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
 
         $bankRefNo = $input['gateway']['BankRefNo'];
@@ -103,8 +103,8 @@ class Gateway extends Base\Gateway
         $attrs = $this->getMappedAttributes($input['gateway']);
         $attrs['received'] = true;
 
-        $payment->fill($attrs);
-        $payment->saveOrFail();
+        $gatewayPayment->fill($attrs);
+        $gatewayPayment->saveOrFail();
 
         if (($bankRefNo === '') or
             ($message !== ''))
@@ -144,11 +144,6 @@ class Gateway extends Base\Gateway
             throw new Exception\BadRequestValidationFailureException(
                 'Failed checksum verification');
         }
-    }
-
-    protected function getTwoFaStatus($code)
-    {
-        return ErrorCode::getTwoFaStatus($code);
     }
 
     protected function getPaymentRequestData($input)

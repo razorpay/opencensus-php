@@ -5,7 +5,6 @@ namespace RZP\Gateway\Wallet\Freecharge;
 use RZP\Error;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Base;
-use RZP\Models\Payment\TwoFaStatus;
 
 class ResponseCodeMap extends Base\ResponseCodeMap
 {
@@ -55,14 +54,4 @@ class ResponseCodeMap extends Base\ResponseCodeMap
         'E701'  => ErrorCode::BAD_REQUEST_PAYMENT_OTP_EXPIRED,
         'E702'  => ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
     );
-
-    public static function getTwoFaStatus($errorCode)
-    {
-        switch ($errorCode) {
-            case 'E702':
-                return TwoFaStatus::FAILED;
-            default:
-                return TwoFaStatus::UNKNOWN;
-        }
-    }
 }

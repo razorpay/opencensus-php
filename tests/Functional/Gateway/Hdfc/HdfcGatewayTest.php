@@ -66,23 +66,6 @@ class HdfcGatewayTest extends TestCase
         $this->assertEquals(TwoFaStatus::PASSED, $payment['two_fa_status']);
     }
 
-    public function testTwoFaFailure()
-    {
-        $payment = $this->getDefaultPaymentArray();
-        $payment['card']['number'] = '4012001371677861';
-
-        $data = $this->testData[__FUNCTION__];
-
-        $this->runRequestResponseFlow($data, function() use ($payment)
-        {
-            $this->doAuthPayment($payment);
-        });
-
-        $payment = $this->getLastPayment(true);
-
-        $this->assertEquals(TwoFaStatus::FAILED, $payment['two_fa_status']);
-    }
-
     public function testTwoFaNotApplicable()
     {
         $payment = $this->getDefaultPaymentArray();
@@ -92,7 +75,7 @@ class HdfcGatewayTest extends TestCase
 
         $payment = $this->getLastPayment(true);
 
-        $this->assertEquals(TwoFaStatus::NOT_APPLICABLE, $payment['two_fa_status']);
+        $this->assertEquals(TwoFaStatus::UNAVAILABLE, $payment['two_fa_status']);
     }
 
     public function testRupayCard()

@@ -177,17 +177,10 @@ class Gateway extends Base\Gateway
 
             $errorCode = ResponseCode::getApiErrorCode($message);
 
-            $exception = new Exception\GatewayErrorException(
+            throw new Exception\GatewayErrorException(
                 $errorCode,
                 $content[ResponseFields::STATUS],
                 $message);
-
-            if ($this->getTwoFaStatus($message) === Payment\TwoFaStatus::FAILED)
-            {
-                $exception->markTwoFaError();
-            }
-
-            throw $exception;
         }
 
         // set two-fa status as passed
@@ -274,11 +267,6 @@ class Gateway extends Base\Gateway
         $gatewayPaymentAttrs = $this->getCreateWalletAttributes($input, $content);
 
         $this->createGatewayPaymentEntity($gatewayPaymentAttrs, Action::AUTHORIZE);
-    }
-
-    protected function getTwoFaStatus($message)
-    {
-        return ResponseCode::getTwoFaStatus($message);
     }
 
     protected function getDebitRequestArray($input)

@@ -128,7 +128,7 @@ class CybersourceGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals($payment['two_fa_status'],
-            \RZP\Models\Payment\TwoFaStatus::NOT_APPLICABLE);
+            \RZP\Models\Payment\TwoFaStatus::UNAVAILABLE);
 
         $gatewayPayment = $this->getLastEntity('cybersource', true);
 

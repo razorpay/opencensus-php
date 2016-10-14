@@ -265,7 +265,7 @@ class Gateway extends Base\Gateway
         {
             $resCode = (int) $input['resCode'];
 
-            return [Payment\Entity::TWO_FA_STATUS => $this->getTwoFaStatus($resCode)];
+            return [Payment\Entity::TWO_FA_STATUS => Payment\TwoFaStatus::PASSED];
         }
 
         //trace input
@@ -278,11 +278,6 @@ class Gateway extends Base\Gateway
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
                 $input['resCode'],
                 $input['resDesc']);
-    }
-
-    protected function getTwoFaStatus($code)
-    {
-        return ResponseCode::getTwoFaStatus($code);
     }
 
     protected function verifyPayment($verify)

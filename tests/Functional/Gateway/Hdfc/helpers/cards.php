@@ -41,7 +41,7 @@ return [
         'response' => [
             'content' => [
                 'status' => 'authorized',
-                'two_fa_status' => 'not_applicable',
+                'two_fa_status' => 'unavailable',
                 'captured' => false,
                 'fee' => null,
                 'service_tax' => null,

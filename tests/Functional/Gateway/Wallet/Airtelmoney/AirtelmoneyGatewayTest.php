@@ -56,6 +56,10 @@ class AirtelmoneyGatewayTest extends TestCase
             $this->doAuthPayment($payment);
         });
 
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('unknown', $payment['two_fa_status']);
+
         $wallet = $this->getLastEntity('wallet', true);
 
         $this->assertTestResponse($wallet, 'testFailedPaymentWalletEntity');

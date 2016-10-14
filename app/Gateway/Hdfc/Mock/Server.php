@@ -41,7 +41,6 @@ class Server extends Base\Mock\Server
         '6073849700004947',
         '4111111111111111',
         '4012001037411127',
-        '4012001371677861',
     );
 
     protected $notEnrolledDebitCardNumbers = array(
@@ -71,7 +70,6 @@ class Server extends Base\Mock\Server
         {
             $this->data['paymentid'] = $input['MD'];
             $ret = $this->getAuthResponse($input['MD']);
-            // sd($input);
             $ret['TermUrl'] = $input['TermUrl'];
             $ret['MD'] = $input['MD'];
 
@@ -178,15 +176,6 @@ class Server extends Base\Mock\Server
 
     protected function getAuthResponse($txnId, $cardNumber = null)
     {
-        if ($cardNumber === '4012001371677861')
-        {
-            $res['error_code_tag'] = 'GV00004';
-            $res['result'] = '!ERROR!-GV00004-PARes status not sucessful';
-            $res['error_service_tag'] = '';
-
-            return $res;
-        }
-
         $gatewayTransaction = $this->getRepo()->findByGatewayTransactionIdOrFail($txnId);
 
         $card = $gatewayTransaction->payment->card;

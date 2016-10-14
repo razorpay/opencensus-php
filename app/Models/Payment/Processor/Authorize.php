@@ -203,8 +203,8 @@ trait Authorize
         // Else if $request is null, then payment is a one-step process,
         // i.e. without 2-factor authentication
         //
-
-        $this->updatePaymentTwoFaStatus(TwoFaStatus::NOT_APPLICABLE);
+        // $this->payment->setTwoFaStatus(TwoFaStatus::UNAVAILABLE);
+        $this->updatePaymentTwoFaStatus(TwoFaStatus::UNAVAILABLE);
 
         $this->updateAndNotifyPaymentAuthorized();
 

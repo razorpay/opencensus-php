@@ -37,7 +37,8 @@ class CreatePayments  extends Migration
 
             $table->string(Payment::STATUS);
 
-            $table->string(Payment::TWO_FA_STATUS, 20);
+            $table->string(Payment::TWO_FA_STATUS, 20)
+                  ->nullable();
 
             $table->char(Payment::ORDER_ID, Payment::ID_LENGTH)
                   ->nullable();

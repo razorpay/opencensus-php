@@ -208,7 +208,6 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = array(
         self::STATUS            => Status::CREATED,
-        self::TWO_FA_STATUS     => TwoFaStatus::UNKNOWN,
         self::REFUND_STATUS     => Refund\Status::NULL,
         self::NOTES             => [],
         self::AMOUNT_REFUNDED   => 0,

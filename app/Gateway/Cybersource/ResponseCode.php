@@ -3,7 +3,6 @@
 namespace RZP\Gateway\Cybersource;
 
 use RZP\Error\ErrorCode;
-use RZP\Models\Payment\TwoFaStatus;
 
 class ResponseCode
 {
@@ -182,17 +181,5 @@ class ResponseCode
         }
 
         return false;
-    }
-
-    public static function getTwoFaStatus($code)
-    {
-        switch ($code) {
-            case 100:
-                return TwoFaStatus::PASSED;
-            case 476:
-                return TwoFaStatus::FAILED;
-            default:
-                return TwoFaStatus::UNKNOWN;
-        }
     }
 }

@@ -4,7 +4,6 @@ namespace RZP\Gateway\Wallet\Payumoney;
 
 use RZP\Error;
 use RZP\Error\ErrorCode;
-use RZP\Models\Payment\TwoFaStatus;
 
 class ResponseCodeMap
 {
@@ -22,19 +21,6 @@ class ResponseCodeMap
     protected static $success = array(
         0
     );
-
-    public static function getTwoFaStatus($errorCode)
-    {
-        switch ($errorCode) {
-            case '3010006':
-            case '3010007':
-            case '3010008':
-            case '3010032':
-                return TwoFaStatus::FAILED;
-            default:
-                return TwoFaStatus::UNKNOWN;
-        }
-    }
 
     public static function getResponseMessage($code)
     {

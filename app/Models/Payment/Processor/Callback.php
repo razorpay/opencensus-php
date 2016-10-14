@@ -271,6 +271,8 @@ trait Callback
 
         $code = $e->getError()->getInternalErrorCode();
 
+        $this->setTwoFaErrorStatusAfterCallback($this->payment, $e);
+
         if (Error\Error::hasAction($code) === false)
         {
             $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);

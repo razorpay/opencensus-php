@@ -410,17 +410,12 @@ class Gateway extends Base\Gateway
 
             $this->persistAfterAuthorize($input, $response, $request);
 
-            return $this->getCallbackResponseData();
+            return [Payment\Entity::TWO_FA_STATUS => Payment\TwoFaStatus::PASSED];
         }
         catch (SoapFault $exception)
         {
             $this->handleSoapFault($exception, "Post Enroll Authorize: Authorization Failed");
         }
-    }
-
-    protected function getCallbackResponseData()
-    {
-        return [Payment\Entity::TWO_FA_STATUS => Payment\TwoFaStatus::PASSED];
     }
 
     protected function postNotEnrolledAuthorize($input, $enrollResponse)
@@ -1307,22 +1302,9 @@ class Gateway extends Base\Gateway
                 $reasonCode);
         }
 
-        $e = new Exception\GatewayErrorException(
+        throw new Exception\GatewayErrorException(
                 ResponseCode::getMappedCode($reasonCode),
                 $reasonCode,
                 $desc);
-
-        // check if 3d secure auth failed
-        if ($this->getTwoFaStatus($reasonCode) === Payment\TwoFaStatus::FAILED)
-        {
-            $e->markTwoFaError();
-        }
-
-        throw $e;
-    }
-
-    protected function getTwoFaStatus($code)
-    {
-        return ResponseCode::getTwoFaStatus($code);
     }
 }

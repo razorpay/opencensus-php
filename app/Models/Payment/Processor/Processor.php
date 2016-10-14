@@ -444,17 +444,29 @@ class Processor
 
         $payment->setError($code, $desc, $internalCode);
 
-
-        if (($exception instanceof Exception\GatewayErrorException) and ($exception->hasTwoFaError()))
-        {
-            $payment->setTwoFaStatus(Payment\TwoFaStatus::FAILED);
-        }
-
         $this->repo->saveOrFail($payment);
 
         $this->tracePaymentFailed($error, $traceCode);
 
         $this->eventPaymentFailed();
+    }
+
+    protected function setTwoFaErrorStatusAfterCallback($payment, $exception)
+    {
+        if ($payment->isNetbanking())
+        {
+            $twoFaStatus = Payment\TwoFaStatus::NOT_APPLICABLE;
+        }
+        else if (($exception instanceof Exception\GatewayErrorException) and $exception->hasTwoFaError())
+        {
+            $twoFaStatus = Payment\TwoFaStatus::FAILED;
+        }
+        else
+        {
+            $twoFaStatus = Payment\TwoFaStatus::UNKNOWN;
+        }
+
+        $payment->setTwoFaStatus($twoFaStatus);
     }
 
     protected function eventPaymentFailed()
@@ -471,11 +483,6 @@ class Processor
         $payment = $this->payment;
 
         $payment->setInternalErrorCode($internalCode);
-
-        if (($e instanceof Exception\GatewayErrorException) and ($e->hasTwoFaError()))
-        {
-            $payment->setTwoFaStatus(Payment\TwoFaStatus::FAILED);
-        }
 
         $this->repo->saveOrFail($payment);
     }
