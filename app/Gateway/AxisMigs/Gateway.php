@@ -629,7 +629,7 @@ class Gateway extends Base\Gateway
             // then we need to block the transaction on the international card.
             //
 
-            if ($this->getTwoFaStatus($threeDSstatus) === Payment\TwoFaStatus::FAILED)
+            if ($this->getTwoFactorAuth($threeDSstatus) === Payment\TwoFactorAuth::FAILED)
             {
                 if ($input['merchant']['international'] === false)
                 {
@@ -661,9 +661,9 @@ class Gateway extends Base\Gateway
 
     protected function getCallbackResponseData(array $input)
     {
-        $twoFaStatus = $this->getTwoFaStatus($input['threeDSstatus']);
+        $twoFactorAuth = $this->getTwoFactorAuth($input['threeDSstatus']);
 
-        $data = array(Payment\Entity::TWO_FA_STATUS => $twoFaStatus);
+        $data = array(Payment\Entity::TWO_FACTOR_AUTH => $twoFactorAuth);
 
         return $data;
     }
@@ -672,9 +672,9 @@ class Gateway extends Base\Gateway
     {
         $e = new Exception\GatewayErrorException($code, $gatewayErrorCode, $gatewayErrorDesc);
 
-        $twoFaStatus = $this->getTwoFaStatus($threeDSstatus);
+        $twoFactorAuth = $this->getTwoFactorAuth($threeDSstatus);
 
-        if ($twoFaStatus === Payment\TwoFaStatus::FAILED)
+        if ($twoFactorAuth === Payment\TwoFactorAuth::FAILED)
         {
             $e->markTwoFaError();
         }
@@ -682,7 +682,7 @@ class Gateway extends Base\Gateway
         throw $e;
     }
 
-    protected function getTwoFaStatus($threeDSstatus)
+    protected function getTwoFactorAuth($threeDSstatus)
     {
         return ThreeDSecureStatus::getThreeDSstatus($threeDSstatus);
     }

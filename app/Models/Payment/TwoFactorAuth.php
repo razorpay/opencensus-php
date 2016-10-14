@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Payment;
 
-class TwoFaStatus
+class TwoFactorAuth
 {
     const PASSED            = 'passed';
     const FAILED            = 'failed';

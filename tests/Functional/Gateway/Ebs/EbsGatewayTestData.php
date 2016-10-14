@@ -9,7 +9,7 @@ return [
         'amount'                    => 50000,
         'method'                    => 'netbanking',
         'status'                    => 'captured',
-        'two_fa_status'             => 'not_applicable',
+        'two_factor_auth'           => 'not_applicable',
         'amount_authorized'         => 50000,
         'amount_refunded'           => 0,
         'currency'                  => 'INR',

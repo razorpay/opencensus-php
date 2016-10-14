@@ -410,7 +410,7 @@ class Gateway extends Base\Gateway
 
             $this->persistAfterAuthorize($input, $response, $request);
 
-            return [Payment\Entity::TWO_FA_STATUS => Payment\TwoFaStatus::PASSED];
+            return [Payment\Entity::TWO_FACTOR_AUTH => Payment\TwoFactorAuth::PASSED];
         }
         catch (SoapFault $exception)
         {

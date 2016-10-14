@@ -11,7 +11,6 @@ use RZP\Models\Card;
 use RZP\Models\Customer;
 use RZP\Models\Order;
 use RZP\Models\Payment;
-use RZP\Models\Payment\TwoFaStatus;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Refund;
 use RZP\Trace\TraceCode;
@@ -26,7 +25,7 @@ class Entity extends Base\PublicEntity
     const AMOUNT_AUTHORIZED     = 'amount_authorized';
     const AMOUNT_REFUNDED       = 'amount_refunded';
     const STATUS                = 'status';
-    const TWO_FA_STATUS         = 'two_fa_status';
+    const TWO_FACTOR_AUTH       = 'two_factor_auth';
     const ORDER_ID              = 'order_id';
     const INTERNATIONAL         = 'international';
     const METHOD                = 'method';
@@ -114,7 +113,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_REFUNDED,
         self::CURRENCY,
         self::STATUS,
-        self::TWO_FA_STATUS,
+        self::TWO_FACTOR_AUTH,
         self::REFUND_STATUS,
         self::CAPTURED,
         self::DESCRIPTION,
@@ -162,7 +161,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::STATUS,
-        self::TWO_FA_STATUS,
+        self::TWO_FACTOR_AUTH,
         self::ORDER_ID,
         self::INTERNATIONAL,
         self::METHOD,
@@ -362,9 +361,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
     }
 
-    public function setTwoFaStatus($status)
+    public function setTwoFactorAuth($status)
     {
-        $this->setAttribute(self::TWO_FA_STATUS, $status);
+        $this->setAttribute(self::TWO_FACTOR_AUTH, $status);
     }
 
     public function setRefundStatus($status)
@@ -917,9 +916,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CARD_ID);
     }
 
-    public function getTwoFaStatus()
+    public function getTwoFactorAuth()
     {
-        return $this->getAttribute(self::TWO_FA_STATUS);
+        return $this->getAttribute(self::TWO_FACTOR_AUTH);
     }
     public function getMerchantId()
     {

@@ -27,7 +27,7 @@ use RZP\Models\Payment\Status;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Payment\Analytics;
-use RZP\Models\Payment\TwoFaStatus;
+use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Models\Payment\Analytics\Entity as AnalyticsEntity;
 use RZP\Models\Payment\TerminalAnalytics;
 
@@ -203,8 +203,7 @@ trait Authorize
         // Else if $request is null, then payment is a one-step process,
         // i.e. without 2-factor authentication
         //
-        // $this->payment->setTwoFaStatus(TwoFaStatus::UNAVAILABLE);
-        $this->updatePaymentTwoFaStatus(TwoFaStatus::UNAVAILABLE);
+        $this->updatePaymentTwoFactorAuth(TwoFactorAuth::UNAVAILABLE);
 
         $this->updateAndNotifyPaymentAuthorized();
 

@@ -42,7 +42,7 @@ class FreechargeGatewayTest extends TestCase
         $this->assertTestResponse($payment, 'testPayment');
         $this->assertNotEmpty($payment['global_token_id']);
         $this->assertNotEmpty($payment['global_customer_id']);
-        $this->assertEquals('passed', $payment['two_fa_status']);
+        $this->assertEquals('passed', $payment['two_factor_auth']);
 
         $wallet = $this->getLastEntity('wallet', true);
 
@@ -84,7 +84,7 @@ class FreechargeGatewayTest extends TestCase
 
         $this->assertEquals($payment['otp_attempts'], 1);
 
-        $this->assertEquals('failed', $payment['two_fa_status']);
+        $this->assertEquals('failed', $payment['two_factor_auth']);
 
         $this->step = null;
     }

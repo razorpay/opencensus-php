@@ -31,7 +31,7 @@ use RZP\Gateway\Base;
 use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Payment;
 use RZP\Models\Card;
-use RZP\Models\Payment\TwoFaStatus;
+use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Trace\TraceCode;
 use App;
 

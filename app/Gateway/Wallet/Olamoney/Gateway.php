@@ -17,7 +17,7 @@ use RZP\Gateway\Wallet\Base\Entity;
 use RZP\Http\Route;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Status as PaymentStatus;
-use RZP\Models\Payment\TwoFaStatus;
+use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Constants\HashAlgo;
 use Carbon\Carbon;
 
@@ -184,7 +184,7 @@ class Gateway extends Base\Gateway
         }
 
         // set two-fa status as passed
-        $data[Payment\Entity::TWO_FA_STATUS] = Payment\TwoFaStatus::PASSED;
+        $data[Payment\Entity::TWO_FACTOR_AUTH] = Payment\TwoFactorAuth::PASSED;
 
         return $data;
     }

@@ -165,9 +165,14 @@ trait Callback
         {
             $data = $this->callGatewayCallback($input);
 
-            $twoFaStatus = isset($data[Payment\Entity::TWO_FA_STATUS]) ? $data[Payment\Entity::TWO_FA_STATUS] : null;
+            $twoFactorAuth = null;
 
-            $this->updatePaymentTwoFaStatus($twoFaStatus);
+            if (isset($data[Payment\Entity::TWO_FACTOR_AUTH]))
+            {
+                $twoFactorAuth = $data[Payment\Entity::TWO_FACTOR_AUTH];
+            }
+
+            $this->updatePaymentTwoFactorAuth($twoFactorAuth);
 
             $this->updateAndNotifyPaymentAuthorized();
         }

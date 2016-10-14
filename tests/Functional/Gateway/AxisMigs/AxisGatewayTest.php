@@ -6,7 +6,7 @@ use Mockery;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment\Entity;
-use RZP\Models\Payment\TwoFaStatus;
+use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Error;
 use RZP\Error\PublicErrorCode;
 
@@ -39,7 +39,7 @@ class AxisGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
         $this->assertNotNull($payment['transaction_id']);
-        $this->assertEquals(TwoFaStatus::PASSED, $payment[Entity::TWO_FA_STATUS]);
+        $this->assertEquals(TwoFactorAuth::PASSED, $payment[Entity::TWO_FACTOR_AUTH]);
 
         $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
 
@@ -180,7 +180,7 @@ class AxisGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertEquals(TwoFaStatus::FAILED, $payment[Entity::TWO_FA_STATUS]);
+        $this->assertEquals(TwoFactorAuth::FAILED, $payment[Entity::TWO_FACTOR_AUTH]);
 
         $this->assertEquals($payment['status'], 'failed');
     }

@@ -265,7 +265,7 @@ class Gateway extends Base\Gateway
         {
             $resCode = (int) $input['resCode'];
 
-            return [Payment\Entity::TWO_FA_STATUS => Payment\TwoFaStatus::PASSED];
+            return [Payment\Entity::TWO_FACTOR_AUTH => Payment\TwoFactorAuth::PASSED];
         }
 
         //trace input

@@ -323,7 +323,7 @@ class Gateway extends Base\Gateway
         }
 
         // set two-fa status as passed
-        $data[Payment\Entity::TWO_FA_STATUS] = Payment\TwoFaStatus::PASSED;
+        $data[Payment\Entity::TWO_FACTOR_AUTH] = Payment\TwoFactorAuth::PASSED;
 
         return $data;
     }

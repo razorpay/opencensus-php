@@ -400,7 +400,7 @@ class Gateway extends Base\Gateway
 
         $this->createGatewayPaymentEntity($content);
 
-        return [Payment\Entity::TWO_FA_STATUS => Payment\TwoFaStatus::PASSED];
+        return [Payment\Entity::TWO_FACTOR_AUTH => Payment\TwoFactorAuth::PASSED];
     }
 
     protected function getAuthorizeRequestContent($input)
@@ -673,7 +673,7 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            return [Payment\Entity::TWO_FA_STATUS => Payment\TwoFaStatus::PASSED];
+            return [Payment\Entity::TWO_FACTOR_AUTH => Payment\TwoFactorAuth::PASSED];
         }
     }
 

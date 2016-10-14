@@ -21,7 +21,7 @@ use RZP\Models\Customer\Token;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Core;
-use RZP\Models\Payment\TwoFaStatus;
+use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
@@ -206,7 +206,7 @@ class Gateway extends Base\Gateway
         $this->traceGatewayPaymentResponse($content, $input);
 
         // set two-fa status as passed
-        $data[Payment\Entity::TWO_FA_STATUS] = TwoFaStatus::PASSED;
+        $data[Payment\Entity::TWO_FACTOR_AUTH] = TwoFactorAuth::PASSED;
 
         return $data;
     }

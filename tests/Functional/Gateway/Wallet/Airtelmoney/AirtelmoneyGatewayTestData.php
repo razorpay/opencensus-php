@@ -10,7 +10,7 @@ return [
         'amount'            => 50000,
         'method'            => 'wallet',
         'status'            => 'captured',
-        'two_fa_status'     => 'passed',
+        'two_factor_auth'   => 'passed',
         'amount_authorized' => 50000,
         'amount_refunded'   => 0,
         'refund_status'     => null,

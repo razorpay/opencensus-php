@@ -134,7 +134,7 @@ trait Authorize
             $this->throwException($authResponse['error']);
         }
 
-        return [PaymentModel\Entity::TWO_FA_STATUS => PaymentModel\TwoFaStatus::PASSED];
+        return [PaymentModel\Entity::TWO_FACTOR_AUTH => PaymentModel\TwoFactorAuth::PASSED];
     }
 
     protected function callbackAlreadyProcessed($authResponse)

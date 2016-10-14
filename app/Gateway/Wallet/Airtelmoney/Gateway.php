@@ -83,7 +83,7 @@ class Gateway extends Base\Gateway
         {
             $this->callbackAuthSuccessFlow($input);
 
-            return [Payment\Entity::TWO_FA_STATUS => Payment\TwoFaStatus::PASSED];
+            return [Payment\Entity::TWO_FACTOR_AUTH => Payment\TwoFactorAuth::PASSED];
         }
     }
 

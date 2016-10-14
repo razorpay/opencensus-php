@@ -5,7 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Amex;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment\Entity;
-use RZP\Models\Payment\TwoFaStatus;
+use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Error;
 use RZP\Error\PublicErrorCode;
 
@@ -43,7 +43,7 @@ class AmexGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals($payment['transaction_id'], null);
-        $this->assertEquals($payment[Entity::TWO_FA_STATUS], TwoFaStatus::PASSED);
+        $this->assertEquals($payment[Entity::TWO_FACTOR_AUTH], TwoFactorAuth::PASSED);
 
         $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
 
@@ -135,7 +135,7 @@ class AmexGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertEquals($payment[Entity::TWO_FA_STATUS], TwoFaStatus::FAILED);
+        $this->assertEquals($payment[Entity::TWO_FACTOR_AUTH], TwoFactorAuth::FAILED);
 
         $this->assertEquals($payment['status'], 'failed');
     }

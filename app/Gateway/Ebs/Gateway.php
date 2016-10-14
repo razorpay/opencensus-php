@@ -119,7 +119,7 @@ class Gateway extends Base\Gateway
         {
             $responseCode = $input['gateway'][Resp::RESPONSE_CODE];
 
-            return [Payment\Entity::TWO_FA_STATUS => Payment\TwoFaStatus::NOT_APPLICABLE];
+            return [Payment\Entity::TWO_FACTOR_AUTH => Payment\TwoFactorAuth::NOT_APPLICABLE];
         }
     }
 

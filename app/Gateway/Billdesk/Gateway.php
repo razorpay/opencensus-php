@@ -97,7 +97,7 @@ class Gateway extends Base\Gateway
 
         assertTrue($content['CustomerID'] === $input['payment']['id']);
 
-        $data = array(Payment\Entity::TWO_FA_STATUS => Payment\TwoFaStatus::NOT_APPLICABLE);
+        $data = array(Payment\Entity::TWO_FACTOR_AUTH => Payment\TwoFactorAuth::NOT_APPLICABLE);
 
         return $data;
     }

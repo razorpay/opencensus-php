@@ -455,18 +455,18 @@ class Processor
     {
         if ($payment->isNetbanking())
         {
-            $twoFaStatus = Payment\TwoFaStatus::NOT_APPLICABLE;
+            $twoFactorAuth = Payment\TwoFactorAuth::NOT_APPLICABLE;
         }
         else if (($exception instanceof Exception\GatewayErrorException) and $exception->hasTwoFaError())
         {
-            $twoFaStatus = Payment\TwoFaStatus::FAILED;
+            $twoFactorAuth = Payment\TwoFactorAuth::FAILED;
         }
         else
         {
-            $twoFaStatus = Payment\TwoFaStatus::UNKNOWN;
+            $twoFactorAuth = Payment\TwoFactorAuth::UNKNOWN;
         }
 
-        $payment->setTwoFaStatus($twoFaStatus);
+        $payment->setTwoFactorAuth($twoFactorAuth);
     }
 
     protected function eventPaymentFailed()
@@ -854,13 +854,13 @@ class Processor
         return substr($contact, -10);
     }
 
-    protected function updatePaymentTwoFaStatus($twoFaStatus)
+    protected function updatePaymentTwoFactorAuth($twoFactorAuth)
     {
-        if ($twoFaStatus !== null)
+        if ($twoFactorAuth !== null)
         {
             $payment = $this->payment;
 
-            $payment->setTwoFaStatus($twoFaStatus);
+            $payment->setTwoFactorAuth($twoFactorAuth);
 
             $payment->saveOrFail();
         }
