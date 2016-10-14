@@ -282,6 +282,41 @@ class MerchantFeeTest extends TestCase
                 'international'       => 0,
             ));
 
+        $pricingPlanEmi = new Pricing\Entity(array(
+                'id'                  => '1fq0O3demix3gf',
+                'plan_id'             => '1hDYlICobzOCYt',
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'payment',
+                'payment_method'      => 'emi',
+                'payment_method_type' => null,
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'amount_range_active' => false,
+                'amount_range_min'    => 0,
+                'amount_range_max'    => 0,
+                'percent_rate'        => 300,
+                'fixed_rate'          => 0,
+                'international'       => 0,
+            ));
+
+        $pricingPlanEmiAmex = new Pricing\Entity(array(
+                'id'                  => '1fq0O3demiamex',
+                'plan_id'             => '1hDYlICobzOCYt',
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'payment',
+                'payment_method'      => 'emi',
+                'payment_method_type' => null,
+                'payment_network'     => 'AMEX',
+                'payment_issuer'      => null,
+                'amount_range_active' => false,
+                'amount_range_min'    => 0,
+                'amount_range_max'    => 0,
+                'percent_rate'        => 300,
+                'fixed_rate'          => 0,
+                'international'       => 0,
+            ));
+
+
         $pricingRules = [
             $pricingRuleOne,
             $pricingRuleTwo,
@@ -295,7 +330,9 @@ class MerchantFeeTest extends TestCase
             $pricingPlanWallet,
             $pricingPlanWallet1,
             $pricingPlanWallet2,
-            $pricingPlanWallet3
+            $pricingPlanWallet3,
+            $pricingPlanEmi,
+            $pricingPlanEmiAmex,
          ];
 
         if ($withCreditCardRule)
@@ -478,6 +515,15 @@ class MerchantFeeTest extends TestCase
         $this->runMerchantFeeTestWallet("payzapp", "1fq0O3dewex3gf");
     }
 
+    public function testEmiRuleSelection()
+    {
+        $this->fee->setPricingRepo($this->getMockPricingRepo());
+
+        $this->runMerchantFeeTestEmi("Visa", "1fq0O3demix3gf");
+
+        $this->runMerchantFeeTestEmi("American Express", "1fq0O3demiamex");
+    }
+
     protected function runMerchantFeeTest($amount, $network, $expectedRule, $cardType, $isCardInternational = false)
     {
         $paymentArray = $this->getDefaultPaymentEntityArray();
@@ -535,4 +581,22 @@ class MerchantFeeTest extends TestCase
         $this->assertEquals($expectedRule, $ruleKey);
     }
 
+    protected function runMerchantFeeTestEmi($network, $expectedRule)
+    {
+        $paymentArray = $this->getDefaultPaymentEntityArray();
+
+        $paymentArray['amount'] = 500000;
+
+        $paymentArray[Payment\Entity::METHOD] = Payment\Method::EMI;
+
+        $payment = new Payment\Entity($paymentArray);
+
+        $payment->card = (new Card\Entity)->build($this->card);
+
+        $payment->card->setNetwork($network);
+
+        list($fee, $serviceTax, $ruleKey) = $this->fee->calculateMerchantFees($payment);
+
+        $this->assertEquals($expectedRule, $ruleKey);
+    }
 }
