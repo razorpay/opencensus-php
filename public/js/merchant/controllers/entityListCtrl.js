@@ -177,10 +177,7 @@ app.controller('EntityListCtrl', [
         var data = res.data;
 
         if (data.success) {
-          var url = data.url;
-
-          console.log(url);
-          console.log(data.data.url);
+          var url = data.data.url;
 
           window.open(url);
         }
