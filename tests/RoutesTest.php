@@ -28,11 +28,9 @@ class RoutesTest extends TestCase
 
     public function testMailgunRoute()
     {
+        $this->markTestSkipped();
+
         $routes = array(
-            'hdfc_mpr_production_test',
-            'hdfc_mpr_production_live',
-            'hdfc_mpr_beta_test',
-            'hdfc_mpr_beta_live'
         );
 
         $mgConfig = \Config::get('applications.mailgun');
@@ -75,6 +73,7 @@ class RoutesTest extends TestCase
         $scheme = ($https === false) ? 'http://' : 'https://';
         $host = substr($url, strlen($scheme));
 
+        // @todo: Needs to be rewritten.
         $action = "forward('".$scheme . $basicAuth . '@' . $host . "/v1/gateway/mpr/reconcile')";
         $expression = "match_recipient('". $route . '@' . $mg['url']."')";
 

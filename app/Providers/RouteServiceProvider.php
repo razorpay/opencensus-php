@@ -3,6 +3,7 @@
 namespace RZP\Providers;
 
 use RZP\Http\Route;
+use RZP\Http\Response\Response;
 use Illuminate\Routing\Router;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 
@@ -40,6 +41,11 @@ class RouteServiceProvider extends ServiceProvider
         $this->app->singleton('api.route', function($app)
         {
             return new Route($app);
+        });
+
+        $this->app->singleton('api.response', function ($app)
+        {
+            return new Response($app);
         });
     }
 

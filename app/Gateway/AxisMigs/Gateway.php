@@ -145,7 +145,7 @@ class Gateway extends Base\Gateway
                 'No migs payments with nearby vpc_TransactionNo found');
         }
 
-        $gatewayPayment->setVpcTransactionNo($txnNo, $terminalId);
+        $gatewayPayment->setVpcTransactionNo($txnNo);
         $gatewayPayment['vpc_TxnResponseCode'] = '0';
 
         $repo->saveOrFail($gatewayPayment);
@@ -244,11 +244,9 @@ class Gateway extends Base\Gateway
 
     protected function verifyPayment($verify)
     {
-        $payment = $verify->payment;
+        $gatewayPayment = $verify->payment;
         $content = $verify->verifyResponseContent;
         $input = $verify->input;
-
-        $status = VerifyResult::STATUS_MATCH;
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY,
@@ -270,30 +268,28 @@ class Gateway extends Base\Gateway
 
         if ($content['vpc_DRExists'] !== 'Y')
         {
-            $this->verifyPaymentNonExistentCase($verify, $payment);
+            $this->verifyPaymentNonExistentCase($verify, $gatewayPayment);
         }
         else
         {
             assert ($content['vpc_DRExists'] === 'Y');
 
-            $this->verifyPaymentReconcileWithGatewayResponse($content, $verify, $status);
+            $this->verifyPaymentReconcileWithGatewayResponse($content, $verify);
         }
 
-        $verify->status = $status;
+        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
 
-        $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
+        $this->verifyPaymentBackfillDataIfRequired($content, $gatewayPayment);
 
-        $this->verifyPaymentBackfillDataIfRequired($content, $payment);
-
-        return $status;
+        return $verify->status;
     }
 
-    protected function verifyPaymentNonExistentCase($verify, $payment)
+    protected function verifyPaymentNonExistentCase($verify, $gatewayPayment)
     {
         // Could be the case where the transaction didn't even hit migs
-        if (($payment['received'] === false) and
-            (($payment['vpc_TxnResponseCode'] === null) or
-             ($payment['vpc_TxnResponseCode'] !== '0')))
+        if (($gatewayPayment['received'] === false) and
+            (($gatewayPayment['vpc_TxnResponseCode'] === null) or
+             ($gatewayPayment['vpc_TxnResponseCode'] !== '0')))
         {
             $verify->apiSuccess = false;
             $verify->gatewaySuccess = false;
@@ -306,7 +302,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function verifyPaymentReconcileWithGatewayResponse($content, $verify, & $status)
+    protected function verifyPaymentReconcileWithGatewayResponse($content, $verify)
     {
         $payment = $verify->payment;
         $input = $verify->input;
@@ -320,7 +316,7 @@ class Gateway extends Base\Gateway
                 ($input['payment']['status'] === 'created'))
             {
                 $verify->apiSuccess = false;
-                $status = VerifyResult::STATUS_MISMATCH;
+                $verify->status = VerifyResult::STATUS_MISMATCH;
             }
             else
             {
@@ -346,7 +342,7 @@ class Gateway extends Base\Gateway
                 // and we don't need to worry.
 
                 $verify->gatewaySuccess = true;
-                $status = VerifyResult::STATUS_MISMATCH;
+                $verify->status = VerifyResult::STATUS_MISMATCH;
             }
         }
     }

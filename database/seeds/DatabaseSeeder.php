@@ -346,21 +346,6 @@ class DatabaseSeeder extends Seeder
 
         DB::table(Table::TERMINAL)->insert(
             array(
-                'id'                    => '1ynP3sEf2tQsm8',
-                'merchant_id'           => Account::TEST_ACCOUNT,
-                'gateway'               => Gateway::KOTAK,
-                'card'                  => '1',
-                'gateway_merchant_id'   => 'test_merchant_kotak',
-                'gateway_terminal_id'   => 'test_terminal_kotak',
-                'gateway_terminal_password' => Crypt::encrypt('test_account_kotak_terminal_pass'),
-                'recurring'             => 0,
-                'created_at'            =>  time(),
-                'updated_at'            =>  time(),
-                )
-            );
-
-        DB::table(Table::TERMINAL)->insert(
-            array(
                 'id'                    => '1znP3sEf2tQsm8',
                 'merchant_id'           => Account::TEST_ACCOUNT,
                 'gateway'               => Gateway::PAYTM,
@@ -465,21 +450,6 @@ class DatabaseSeeder extends Seeder
 
         DB::table(Table::TERMINAL)->insert(
             array(
-                'id'                    => Terminal\Shared::KOTAK_RAZORPAY_TERMINAL,
-                'merchant_id'           => Account::DEMO_ACCOUNT,
-                'gateway'               => Gateway::KOTAK,
-                'card'                  => '1',
-                'gateway_merchant_id'   => 'demo_merchant_kotak',
-                'gateway_terminal_id'   => 'shared_terminal_kotak',
-                'gateway_terminal_password' => Crypt::encrypt('demo_account_kotak_terminal_pass'),
-                'recurring'             => 0,
-                'created_at'            =>  time(),
-                'updated_at'            =>  time(),
-                )
-            );
-
-        DB::table(Table::TERMINAL)->insert(
-            array(
                 'id'                    => Terminal\Shared::PAYTM_RAZORPAY_TERMINAL,
                 'merchant_id'           => Account::DEMO_ACCOUNT,
                 'gateway'               => Gateway::PAYTM,
@@ -532,7 +502,6 @@ class DatabaseSeeder extends Seeder
 
         $this->createAmexTerminals();
         $this->createBilldeskGatewayTerminals();
-        $this->createSbiepayGatewayTerminals();
         $this->createNetbankingHdfcTerminals();
         $this->createMobikwikTerminals();
         $this->createPayzappTerminals();
@@ -713,41 +682,6 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'   => 'demo_merchant_netbanking_kotak',
                 'gateway_terminal_id'   => 'demo_terminal_netbanking_kotak',
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_netbanking_kotak_terminal_pass'),
-                'recurring'             => 0,
-                'created_at'            =>  time(),
-                'updated_at'            =>  time(),
-            )
-        );
-    }
-
-    protected function createSbiepayGatewayTerminals()
-    {
-        DB::table(Table::TERMINAL)->insert(
-            array(
-                'id'                    => '2byKhdVKZ9iJgB',
-                'merchant_id'           => Account::TEST_ACCOUNT,
-                'gateway'               => 'sbiepay',
-                'card'                  => '0',
-                'netbanking'            => '1',
-                'gateway_merchant_id'   => 'test_merchant_sbiepay',
-                'gateway_terminal_id'   => 'test_terminal_sbiepay',
-                'gateway_terminal_password' => Crypt::encrypt('test_account_sbiepay_terminal_pass'),
-                'recurring'             => 0,
-                'created_at'            =>  time(),
-                'updated_at'            =>  time(),
-            )
-        );
-
-        DB::table(Table::TERMINAL)->insert(
-            array(
-                'id'                    => Terminal\Shared::SBIEPAY_RAZORPAY_TERMINAL,
-                'merchant_id'           => Account::DEMO_ACCOUNT,
-                'gateway'               => 'sbiepay',
-                'card'                  => '0',
-                'netbanking'            => '1',
-                'gateway_merchant_id'   => 'demo_merchant_sbiepay',
-                'gateway_terminal_id'   => 'demo_terminal_sbiepay',
-                'gateway_terminal_password' => Crypt::encrypt('demo_account_sbiepay_terminal_pass'),
                 'recurring'             => 0,
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),

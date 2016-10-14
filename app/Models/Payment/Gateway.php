@@ -21,10 +21,8 @@ class Gateway
     const BILLDESK           = 'billdesk';
     const EBS                = 'ebs';
     const HDFC               = 'hdfc';
-    const KOTAK              = 'kotak';
     const MOBIKWIK           = 'mobikwik';
     const PAYTM              = 'paytm';
-    const SBIEPAY            = 'sbiepay';
     const SHARP              = 'sharp';
     const NETBANKING_HDFC    = 'netbanking_hdfc';
     const NETBANKING_KOTAK   = 'netbanking_kotak';
@@ -63,10 +61,8 @@ class Gateway
         self::BILLDESK           => Settlement\Channel::KOTAK,
         self::EBS                => Settlement\Channel::KOTAK,
         self::HDFC               => Settlement\Channel::KOTAK,
-        self::KOTAK              => Settlement\Channel::KOTAK,
         self::MOBIKWIK           => Settlement\Channel::KOTAK,
         self::PAYTM              => Settlement\Channel::KOTAK,
-        self::SBIEPAY            => Settlement\Channel::KOTAK,
         self::SHARP              => Settlement\Channel::KOTAK,
         self::NETBANKING_HDFC    => Settlement\Channel::KOTAK,
         self::NETBANKING_KOTAK   => Settlement\Channel::KOTAK,
@@ -90,9 +86,8 @@ class Gateway
         Method::CARD => array(
             self::HDFC,
             self::ATOM,
-            // self::AXIS_MIGS,
+            self::AXIS_MIGS,
             self::AXIS_GENIUS,
-            self::KOTAK,
             self::PAYTM,
             self::AMEX,
             self::CYBERSOURCE,
@@ -105,7 +100,6 @@ class Gateway
             self::EBS,
             self::NETBANKING_HDFC,
             self::NETBANKING_KOTAK,
-            self::SBIEPAY,
         ),
 
         Method::WALLET => array(
@@ -179,8 +173,6 @@ class Gateway
         self::ATOM => array(
             Network::MC,
             Network::VISA),
-        self::KOTAK => array(
-            Network::RUPAY),
         self::AMEX => array(
             Network::AMEX),
         self::PAYTM => array(
@@ -267,7 +259,7 @@ class Gateway
      */
     public static $domesticCardGateways = array(
         Gateway::HDFC,
-        // Gateway::AXIS_MIGS,
+        Gateway::AXIS_MIGS,
         Gateway::AMEX,
         Gateway::CYBERSOURCE,
         Gateway::FIRST_DATA,
@@ -279,7 +271,6 @@ class Gateway
      * @var array
      */
     public static $domesticCardGatewaysInTest = array(
-        Gateway::KOTAK,
         Gateway::ATOM,
         Gateway::PAYTM,
         Gateway::AXIS_GENIUS,
@@ -316,8 +307,6 @@ class Gateway
      */
     public static $directCardGatewaysInTest = array(
         Gateway::AXIS_GENIUS,
-        Gateway::SBIEPAY,
-        Gateway::KOTAK,
         Gateway::PAYTM,
         Gateway::ATOM,
         Gateway::SHARP,
@@ -363,7 +352,6 @@ class Gateway
     public static $netbankingGateways = array(
         Gateway::BILLDESK,
         Gateway::EBS,
-        Gateway::SBIEPAY,
         Gateway::PAYTM,
         Gateway::ATOM);
 
@@ -384,7 +372,6 @@ class Gateway
      * @var array
      */
     public static $directNetbankingGatewaysInTest = array(
-        Gateway::SBIEPAY,
         Gateway::PAYTM,
         Gateway::ATOM);
 
