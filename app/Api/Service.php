@@ -403,7 +403,7 @@ class Service extends Base\Service
 
             $batchRefund = $this->api
                                 ->batch
-                                ->uploadBatchFile($mode, $this->merchantId, $input);
+                                ->uploadFile($mode, $this->merchantId, $input);
 
             return [null, $batchRefund];
         }
@@ -419,13 +419,13 @@ class Service extends Base\Service
     {
         try
         {
-            $collection = array();
+            $collection = [];
 
             $this->setApiCredentials($this->merchantId, $mode);
 
             $collection = $this->api
                                ->batch
-                               ->fetchMultipleBatches($input)
+                               ->fetchMultiple($input)
                                ->toArray();
 
             $this->mapKeys($collection);
@@ -448,14 +448,14 @@ class Service extends Base\Service
 
             $data = $this->api
                          ->batch
-                         ->fetchBatchById($id)
+                         ->fetchById($id)
                          ->toArray();
 
             $collection = [
-                'count' => 1,
-                'entity' => 'collection',
-                'items' => array($data)
-            ];
+                            'count' => 1,
+                            'entity' => 'collection',
+                            'items' => array($data),
+                          ];
 
             $this->mapKeys($collection);
 
@@ -477,7 +477,7 @@ class Service extends Base\Service
 
             $downloadResponse = $this->api
                                      ->batch
-                                     ->downloadBatchFile($id)
+                                     ->downloadFile($id)
                                      ->toArray();
 
             return [null, $downloadResponse];
@@ -499,7 +499,7 @@ class Service extends Base\Service
 
             $batchRefund = $this->api
                                 ->batch
-                                ->retryBatchFile($id)
+                                ->retryFile($id)
                                 ->toArray();
 
             return [null, $batchRefund];

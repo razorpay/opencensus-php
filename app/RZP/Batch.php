@@ -10,28 +10,21 @@ use Razorpay\Api\Request as ApiRequest;
 use Razorpay\Api\Errors\ServerError as ServerError;
 use Razorpay\Api\Errors\BadRequestError as BadRequestError;
 
-
 class Batch extends Entity
 {
     const BATCH_FILE_URL = 'batches';
 
-    public function fetchBatchById($id)
+    public function fetchById($id)
     {
-        $relativeUrl = 'batches/' .$id;
-
-        return $this->request('GET', $relativeUrl);
+        return parent::fetch($id);
     }
 
-    public function fetchMultipleBatches($input)
+    public function fetchMultiple($input)
     {
-        $relativeUrl = 'batches';
-
-        unset($input['submit']);
-
-        return $this->request('GET', $relativeUrl, $input);
+        return parent::all($input);
     }
 
-    public function uploadBatchFile($mode, $merchantId, $input)
+    public function uploadFile($mode, $merchantId, $input)
     {
         // Makes a guzzle file request
         $response = $this->makeGuzzleFileRequest($mode, $merchantId, $input);
@@ -39,16 +32,16 @@ class Batch extends Entity
         return $response;
     }
 
-    public function downloadBatchFile($id)
+    public function downloadFile($id)
     {
-        $relativeUrl = 'batches/' .$id .'/download';
+        $relativeUrl = "batches/$id/download";
 
         return $this->request('GET', $relativeUrl);
     }
 
-    public function retryBatchFile($id)
+    public function retryFile($id)
     {
-        $relativeUrl = 'batches/' .$id .'/retry';
+        $relativeUrl = "batches/$id/retry";
 
         return $this->request('POST', $relativeUrl);
     }
@@ -56,22 +49,26 @@ class Batch extends Entity
     protected function makeGuzzleFileRequest($mode, $merchantId, $input)
     {
         // Creates a new Guzzle client
-        $client = new Guzzle(['base_url' => Config::get('api.url')]);
+        $client = new Guzzle([
+                                'base_url' => Config::get('api.url')
+                            ]);
 
         // Sets the options for the request. Auth should be part of this.
-        $options = array(
-            'auth'      => $this->getApiCredentials($mode, $merchantId),
-            'headers'   => ApiRequest::getHeaders(),
-            'body'      => ['type' => $input['type']],
-        );
+        $options = [
+                'auth'      => $this->getApiCredentials($mode, $merchantId),
+                'headers'   => ApiRequest::getHeaders(),
+                'body'      => [
+                                    'type' => $input['type']
+                                ],
+                ];
 
         // Creates a request instance
-        $request = $client->createRequest("POST", self::BATCH_FILE_URL, $options);
+        $request = $client->createRequest('POST', self::BATCH_FILE_URL, $options);
 
         // Creates an object to insert post body data
         $postBody = $request->getBody();
 
-        $filePath = $this->moveAndGetFilePath($input['file']);
+        $filePath = $input['file']->getRealPath();
 
         $postFile = new PostFile('file', fopen($filePath, 'r'));
 
@@ -117,26 +114,6 @@ class Batch extends Entity
         }
     }
 
-    protected function getGuzzleInstance()
-    {
-        return new Guzzle([
-            'base_uri' => Config::get('api.url'),
-            'timeout'  => 200,
-        ]);
-    }
-
-    protected function moveAndGetFilePath($file)
-    {
-        $destinationPath = storage_path('files/batches');
-        $fileName = $file->getFilename() . '.' . $file->getClientOriginalExtension();
-
-        $file->move($destinationPath, $fileName);
-
-        $filePath = $destinationPath . '/' . $fileName;
-
-        return $filePath;
-    }
-
     protected function deleteFileLocally($filePath)
     {
         if (file_exists($filePath))
@@ -157,5 +134,10 @@ class Batch extends Entity
         $secret = Config::get('api.auth_pass');
 
         return [$id, $secret];
+    }
+
+    protected function getEntityUrl()
+    {
+        return 'batches/';
     }
 }
