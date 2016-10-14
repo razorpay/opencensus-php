@@ -198,15 +198,17 @@ trait Authorize
             return $this->getPaymentGatewayRequestData($request, $payment);
         }
 
+        $this->updateAndNotifyPaymentAuthorized();
+
+        $payment = $this->payment;
+
         //
         // Else if $request is null, then payment is a one-step process,
         // i.e. without 2-factor authentication
         //
-        $this->updatePaymentTwoFactorAuth(TwoFactorAuth::UNAVAILABLE);
+        $payment->setTwoFactorAuth(TwoFactorAuth::UNAVAILABLE);
 
-        $this->updateAndNotifyPaymentAuthorized();
-
-        $payment = $this->payment;
+        $payment->saveOrFail();
 
         return $this->postPaymentAuthorizeProcessing($payment);
     }

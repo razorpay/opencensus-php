@@ -172,7 +172,9 @@ trait Callback
                 $twoFactorAuth = $data[Payment\Entity::TWO_FACTOR_AUTH];
             }
 
-            $this->updatePaymentTwoFactorAuth($twoFactorAuth);
+            $payment->setTwoFactorAuth($twoFactorAuth);
+
+            $payment->saveOrFail();
 
             $this->updateAndNotifyPaymentAuthorized();
         }
@@ -276,7 +278,7 @@ trait Callback
 
         $code = $e->getError()->getInternalErrorCode();
 
-        $this->setTwoFaErrorStatusAfterCallback($this->payment, $e);
+        $this->setTwoFactorAuthAfterCallbackException($this->payment, $e);
 
         if (Error\Error::hasAction($code) === false)
         {

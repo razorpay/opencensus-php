@@ -450,13 +450,14 @@ class Processor
         $this->eventPaymentFailed();
     }
 
-    protected function setTwoFaErrorStatusAfterCallback($payment, $exception)
+    protected function setTwoFactorAuthAfterCallbackException($payment, $exception)
     {
         if ($payment->isNetbanking())
         {
             $twoFactorAuth = Payment\TwoFactorAuth::NOT_APPLICABLE;
         }
-        else if (($exception instanceof Exception\GatewayErrorException) and $exception->hasTwoFaError())
+        else if (($exception instanceof Exception\GatewayErrorException) and
+            ($exception->hasTwoFaError()))
         {
             $twoFactorAuth = Payment\TwoFactorAuth::FAILED;
         }
@@ -845,17 +846,5 @@ class Processor
     protected function getFormattedContact($contact)
     {
         return substr($contact, -10);
-    }
-
-    protected function updatePaymentTwoFactorAuth($twoFactorAuth)
-    {
-        if ($twoFactorAuth !== null)
-        {
-            $payment = $this->payment;
-
-            $payment->setTwoFactorAuth($twoFactorAuth);
-
-            $payment->saveOrFail();
-        }
     }
 }
