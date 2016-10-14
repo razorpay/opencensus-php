@@ -2,8 +2,8 @@
 
 namespace RZP\Http\Controllers;
 
+use ApiResponse;
 use Request;
-use RZP\Http\ApiResponse;
 use RZP\Models\Terminal;
 
 class TerminalController extends Controller

@@ -2,12 +2,12 @@
 
 namespace RZP\Http\Controllers;
 
-use RZP\Constants\Mode;
+use ApiResponse;
 use Database\DefaultConnection;
 use Request;
 use Redirect;
+use RZP\Constants\Mode;
 use View;
-use RZP\Http\ApiResponse;
 
 class MockGatewayController extends Controller
 {

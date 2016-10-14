@@ -2,12 +2,12 @@
 
 namespace RZP\Http\Controllers;
 
-use RZP\Http\ApiResponse;
+use ApiResponse;
+use Request;
 use RZP\Exception\RecoverableException;
 use RZP\Models\Settlement;
 use RZP\Models\Settlement\Details;
 use RZP\Models\Transaction;
-use Request;
 
 class SettlementController extends Controller
 {

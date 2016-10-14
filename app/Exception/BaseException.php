@@ -3,7 +3,7 @@
 namespace RZP\Exception;
 
 use Exception;
-use RZP\Http\ApiResponse;
+use ApiResponse;
 
 class BaseException extends Exception
 {
