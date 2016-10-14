@@ -24,7 +24,7 @@ class Batch extends Entity
         return parent::all($input);
     }
 
-    public function uploadBatchFile($mode, $merchantId, $input)
+    public function uploadFile($mode, $merchantId, $input)
     {
         // Makes a guzzle file request
         $response = $this->makeGuzzleFileRequest($mode, $merchantId, $input);
@@ -32,14 +32,14 @@ class Batch extends Entity
         return $response;
     }
 
-    public function downloadBatchFile($id)
+    public function downloadFile($id)
     {
         $relativeUrl = "batches/$id/download";
 
         return $this->request('GET', $relativeUrl);
     }
 
-    public function retryBatchFile($id)
+    public function retryFile($id)
     {
         $relativeUrl = "batches/$id/retry";
 

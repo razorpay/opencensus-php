@@ -403,7 +403,7 @@ class Service extends Base\Service
 
             $batchRefund = $this->api
                                 ->batch
-                                ->uploadBatchFile($mode, $this->merchantId, $input);
+                                ->uploadFile($mode, $this->merchantId, $input);
 
             return [null, $batchRefund];
         }
@@ -415,7 +415,7 @@ class Service extends Base\Service
         }
     }
 
-    public function fetchMultiple($mode, $input)
+    public function fetchMultipleBatches($mode, $input)
     {
         try
         {
@@ -440,7 +440,7 @@ class Service extends Base\Service
         }
     }
 
-    public function fetchById($mode, $id)
+    public function fetchBatchById($mode, $id)
     {
         try
         {
@@ -477,7 +477,7 @@ class Service extends Base\Service
 
             $downloadResponse = $this->api
                                      ->batch
-                                     ->downloadBatchFile($id)
+                                     ->downloadFile($id)
                                      ->toArray();
 
             return [null, $downloadResponse];
@@ -499,7 +499,7 @@ class Service extends Base\Service
 
             $batchRefund = $this->api
                                 ->batch
-                                ->retryBatchFile($id)
+                                ->retryFile($id)
                                 ->toArray();
 
             return [null, $batchRefund];
