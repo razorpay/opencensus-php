@@ -24,7 +24,6 @@ use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Status;
-use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Payment\Analytics;
 use RZP\Models\Payment\TwoFactorAuth;

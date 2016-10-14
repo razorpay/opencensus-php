@@ -1303,8 +1303,8 @@ class Gateway extends Base\Gateway
         }
 
         throw new Exception\GatewayErrorException(
-                ResponseCode::getMappedCode($reasonCode),
-                $reasonCode,
-                $desc);
+            ResponseCode::getMappedCode($reasonCode),
+            $reasonCode,
+            $desc);
     }
 }

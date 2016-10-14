@@ -14,7 +14,6 @@ use RZP\Models\Payment;
 use RZP\Models\Order;
 use RZP\Models\Payment\Status;
 use RZP\Models\Pricing;
-use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\Trace;

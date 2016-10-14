@@ -17,7 +17,6 @@ use RZP\Gateway\Wallet\Base\Entity;
 use RZP\Http\Route;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Status as PaymentStatus;
-use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Constants\HashAlgo;
 use Carbon\Carbon;
 
