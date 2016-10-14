@@ -29,9 +29,7 @@
       <div class="text-center m-t m-b">
         <form enctype="multipart/form-data">
           <input type="hidden" name="type" value="refund" ng-model="batchForm.type" />
-
           <input ui-jq="filestyle" type="file" name="file" ng-file-select="onFileSelect($files, 'file')">
-
           <button class="btn btn-primary btn-rounded" ng-click="batchUpload()">Submit</button>
         </form>
       </div>

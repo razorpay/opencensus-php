@@ -2,13 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Auth;
 use Input;
 use Response;
 use App\Api;
-use App\Merchant;
 use App\Http\AppResponse;
-use Carbon\Carbon;
 
 class BatchController extends Controller
 {

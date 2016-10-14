@@ -32,10 +32,6 @@ app.controller('EntityListCtrl', [
       payment_id: ''
     };
 
-    $scope.bulkAction = function(type) {
-      $state.go('app.batch.upload');
-    };
-
     $scope.generate = function (entity) {
       $scope.entity.type = entity;
       generateTable();
@@ -96,8 +92,12 @@ app.controller('EntityListCtrl', [
       $scope.query.skip = $scope.entity.skip;
 
       // /live/payments
-      if ($scope.entity.type === 'batch') var baseuRL = '/' + $scope.mode + '/' + $scope.entity.type + 'es';
-      else var baseuRL = '/' + $scope.mode + '/' + $scope.entity.type + 's';
+      var baseURL = '/' + $scope.mode + '/' + $scope.entity.type + 's';
+
+      if ($scope.entity.type === 'batch') {
+        var baseURL = '/' + $scope.mode + '/' + $scope.entity.type + 'es';
+      }
+
       var request;
 
       var q = jQuery.extend({}, $scope.query);
@@ -128,10 +128,10 @@ app.controller('EntityListCtrl', [
       // Figure out the proper URL to hit if we are fetching just a single
       // entity or a collection
       if ($scope.entity.id === '') {
-        request = $http.get(baseuRL, {params: q});
+        request = $http.get(baseURL, {params: q});
       }
       else {
-        request = $http.get(baseuRL + '/' + $scope.entity.id, {
+        request = $http.get(baseURL + '/' + $scope.entity.id, {
           params: q
         });
       }
@@ -182,7 +182,7 @@ app.controller('EntityListCtrl', [
           window.open(url);
         }
       }, function () {
-        // error
+        $scope.alerts.addAlert('danger', null, true);
       })
     };
 
@@ -191,7 +191,6 @@ app.controller('EntityListCtrl', [
 
       $http({
         method: 'POST',
-
         url: '/'+$scope.mode+'/batches/'+batchId+'/retry'
       }).then(function (response) {
         // success
@@ -211,9 +210,9 @@ app.controller('EntityListCtrl', [
             $scope.alerts.addAlert('danger', value);
           });
         }
-      }, function () {
-        // error
-      })
+      }, function (response) {
+        $scope.alerts.addAlert('danger', null, true);
+      });
     };
 
   }

@@ -451,10 +451,11 @@ class Service extends Base\Service
                          ->fetchBatchById($id)
                          ->toArray();
 
-            $collection = array(
-                            'count' => 1,
-                            'entity' => 'collection',
-                            'items' => array($data));
+            $collection = [
+                'count' => 1,
+                'entity' => 'collection',
+                'items' => array($data)
+            ];
 
             $this->mapKeys($collection);
 

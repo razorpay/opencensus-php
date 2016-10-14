@@ -31,11 +31,14 @@ Route::group(['middleware'  =>  'auth:user'], function()
     Route::get('/{mode}/orders/{id}/payments', 'TransactionController@getOrderPayments');
 
     // Batch Refund Routes
-    Route::post('/{mode}/batches', 'BatchController@uploadBatchFile');
-    Route::get('/{mode}/batches', 'BatchController@fetchMultipleBatches');
-    Route::get('/{mode}/batches/{id}', 'BatchController@fetchBatchById');
-    Route::post('/{mode}/batches/{id}/retry', 'BatchController@retryBatchFile');
-    Route::get('/{mode}/batches/{id}/download', 'BatchController@downloadBatchFile');
+    Route::group(['prefix' => '{mode}/batches'], function () {
+        Route::get('/', 'BatchController@fetchMultipleBatches');
+        Route::get('{id}', 'BatchController@fetchBatchById');
+        Route::get('{id}/download', 'BatchController@downloadBatchFile');
+
+        Route::post('/', 'BatchController@uploadBatchFile');
+        Route::post('{id}/retry', 'BatchController@retryBatchFile');
+    });
 
     Route::get('/{mode}/payments/{id}', 'TransactionController@getPayment');
     Route::get('/{mode}/payments/{id}/card', 'TransactionController@getPaymentCardData');
