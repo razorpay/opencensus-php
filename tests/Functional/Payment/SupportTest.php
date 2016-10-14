@@ -68,7 +68,7 @@ class SupportTest extends TestCase
 
         $request = array(
             'url' => '/payments/verify/all',
-            'method' => 'get'
+            'method' => 'post'
         );
 
         $this->ba->appAuth();
