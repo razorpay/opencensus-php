@@ -427,6 +427,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AUTO_CAPTURED, $autoCaptured);
     }
 
+    public function setVerifyBucket($verifyBucket = 0)
+    {
+        $this->setAttribute(self::VERIFY_BUCKET, $verifyBucket);
+    }
+
     public function setVerified($verified)
     {
         $this->setAttribute(self::VERIFIED, $verified);
@@ -922,6 +927,11 @@ class Entity extends Base\PublicEntity
     public function getOtpAttempts()
     {
         return $this->getAttribute(self::OTP_ATTEMPTS);
+    }
+
+    public function getVerifyBucket()
+    {
+        return $this->getAttribute(self::VERIFY_BUCKET);
     }
 
     public function isSecondRecurring()
