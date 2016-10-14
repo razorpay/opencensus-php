@@ -167,10 +167,6 @@ class TraceFields
             'description'
         ),
 
-        TraceCode::MPR_RECONCILE_UNRECOGNIZED_CARD_NETWORK => array(
-            'network'
-        ),
-
         TraceCode::DASHBOARD_INTEGRATION_ERROR => array(
             'body',
             'transaction',

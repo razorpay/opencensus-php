@@ -858,6 +858,19 @@ return [
         ],
     ],
 
+    'testGetCheckoutRouteWithEmi' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testGetCheckoutRouteWithSavedGlobal' => [
         'request' => [
             'url' => '/preferences',

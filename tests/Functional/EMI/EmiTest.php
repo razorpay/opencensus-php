@@ -31,9 +31,7 @@ class EmiTest extends TestCase
 
         $this->ba->publicAuth();
 
-        $plans = $this->startTest();
-
-        $this->assertEquals($plans['entity'], 'collection');
+        $this->startTest();
     }
 
     public function testFetchEmiPlanUsingPlanId()
@@ -43,6 +41,7 @@ class EmiTest extends TestCase
         $emi = $this->getLastEntity('emi_plan', true);
 
         $request = &$this->testData['testFetchEmiPlanUsingPlanId']['request'];
+
         $request['url'] = '/emi/'.$emi['id'];
 
         $this->startTest();

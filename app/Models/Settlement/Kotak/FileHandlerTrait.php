@@ -599,14 +599,19 @@ trait FileHandlerTrait
 
         $sheets = $this->parseExcelFile($filePath);
 
-        $finalEntries = [];
+        assert(count($sheets) === 1);
 
-        foreach ($sheets as $sheet)
-        {
-            $finalEntries = array_merge($finalEntries, $sheet);
-        }
+        return $sheets[0];
 
-        return $finalEntries;
+        // Uncomment this if we are enabling multiple sheets
+        // $finalEntries = [];
+
+        // foreach ($sheets as $sheet)
+        // {
+        //     $finalEntries = array_merge($finalEntries, $sheet);
+        // }
+
+        // return $finalEntries;
     }
 
     protected function getFileLines($file)

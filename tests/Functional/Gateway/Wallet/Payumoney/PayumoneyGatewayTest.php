@@ -57,32 +57,40 @@ class PayumoneyGatewayTest extends TestCase
 
         $response = $this->redirectPayment($authPayment['razorpay_payment_id']);
 
-        $this->assertArraySelectiveEquals($authPayment, $response);
+        $this->assertTrue($response->headers->contains('Content-Type', 'text/html; charset=UTF-8'));
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertArraySelectiveEquals($authPayment, $content);
     }
 
     public function testFailedPaymentWithRedirection()
     {
+        $this->config['app.throw_exception_in_testing'] = false;
+        $this->config['app.debug'] = false;
+
         $payment = $this->getDefaultWalletPaymentArray('payumoney');
 
         $this->setOtp(Otp::EXPIRED);
 
         $data = $this->testData[__FUNCTION__];
 
-        $authResponse = $this->runRequestResponseFlow($data, function() use ($payment)
-        {
-            return $this->doAuthPaymentViaAjaxRoute($payment);
-        });
+        $authResponse = $this->doAuthPaymentViaAjaxRoute($payment);
 
-        $content = $this->getJsonContentFromResponse($this->response);
+        $this->assertArraySelectiveEquals($data, $authResponse);
+
+        $payment = $this->getLastEntity('payment');
 
         $data = $this->testData['testExpiredOtpPaymentRedirection'];
 
-        $redirectResponse = $this->runRequestResponseFlow($data, function() use ($content)
-        {
-            return $this->redirectPayment($content['payment_id']);
-        });
+        $response = $this->redirectPayment($payment['id']);
+        $headers = $response->headers;
 
-        $this->assertArraySelectiveEquals($authResponse, $redirectResponse);
+        $this->assertTrue($headers->contains('Content-Type', 'text/html; charset=UTF-8'), 'Content-Type should be text/html');
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertArraySelectiveEquals($authResponse, $content);
     }
 
     public function testOtpRetryPayment()
@@ -237,36 +245,31 @@ class PayumoneyGatewayTest extends TestCase
         $originalData = $this->response->getOriginalContent()->data;
 
         // Send topup request
-        $response = $this->topupPayment($originalData['payment_id']);
+        $response = $this->doWalletTopupViaAjaxRoute($originalData['payment_id']);
 
-        // Make topup redirection request
-        $redirect = $this->sendRequest($response['request']);
-
-        $ret = (($this->isResponseInstanceType($redirect, 'redirect')) and
-                ($redirect->getStatusCode() === 302));
-
-        if ($ret === true)
-        {
-            $callback = array(
-                'url' => $redirect->getTargetUrl(),
-                'method' => 'get',
-                'content' => []
-            );
-
-            $callbackResponse = $this->sendRequest($callback);
-        }
-        else
-        {
-            assert(false);
-        }
-
-        $this->assertArrayHasKey('razorpay_payment_id', $callbackResponse->getOriginalContent()->data);
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
 
         $wallet = $this->getLastEntity('wallet', true);
 
         $this->assertTestResponse($wallet, __FUNCTION__);
 
-        return $callbackResponse->getOriginalContent()->data;
+        return $response;
+    }
+
+    public function testTopupPaymentViaRedirectionFlow()
+    {
+        // Get Innsufficient balance response
+        $this->testInsufficientBalancePayment();
+
+        $originalData = $this->response->getOriginalContent()->data;
+
+        $response = $this->doWalletTopup($originalData['payment_id']);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $this->assertTestResponse($wallet, 'testTopupPayment');
     }
 
     public function testTopupAlreadyProcessedPayment()
@@ -280,7 +283,7 @@ class PayumoneyGatewayTest extends TestCase
         // Send topup request
         $this->runRequestResponseFlow($request, function() use ($response)
         {
-            $this->topupPayment($response['razorpay_payment_id']);
+            $this->doWalletTopupViaAjaxRoute($response['razorpay_payment_id']);
         });
     }
 
@@ -297,7 +300,7 @@ class PayumoneyGatewayTest extends TestCase
         // Send topup request
         $this->runRequestResponseFlow($request, function() use ($response)
         {
-            $this->topupPayment($response['razorpay_payment_id']);
+            $this->doWalletTopupViaAjaxRoute($response['razorpay_payment_id']);
         });
     }
 
@@ -322,7 +325,7 @@ class PayumoneyGatewayTest extends TestCase
 
         // Send topup request
         $this->runRequestResponseFlow($request, function() use ($paymentId) {
-            $this->topupPayment($paymentId);
+            $this->doWalletTopupViaAjaxRoute($paymentId);
         });
     }
 
@@ -491,14 +494,19 @@ class PayumoneyGatewayTest extends TestCase
         list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
 
         $this->response     = $response;
-        $this->callbackUrl  = $url;
 
         if ($mock)
         {
             if ($this->isOtpCallbackUrl($url))
             {
+                $this->callbackUrl = $url;
+
                 return $this->makeOtpCallback($url);
             }
+
+            $url = $this->makeFirstGatewayPaymentMockRequest($url, $method, $content);
+
+            return $this->submitPaymentCallbackRedirect($url);
         }
 
         return null;

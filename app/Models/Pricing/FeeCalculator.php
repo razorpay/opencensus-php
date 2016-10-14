@@ -65,7 +65,12 @@ class FeeCalculator
 
         $totalFees = $fee + $totaltaxes;
 
-        assert ($totalFees < $amount);
+        if ($totalFees > $amount)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT,
+                Payment\Entity::AMOUNT);
+        }
 
         return  array($totalFees, $totaltaxes);
     }

@@ -184,12 +184,6 @@ class TraceCode
     const GATEWAY_VERIFY_INVALID_HEADER             = 'GATEWAY_VERIFY_INVALID_HEADER';
     const GATEWAY_ABSENCE_DELETE                    = 'GATEWAY_ABSENCE_DELETE';
 
-    const MPR_HDFC_GEN_INITIATED                    = 'MPR_HDFC_GEN_INITIATED';
-    const MPR_HDFC_FILE_GENERATED                   = 'MPR_HDFC_FILE_GENERATED';
-    const MPR_HDFC_PAYMENTS_FETCHED                 = 'MPR_HDFC_PAYMENTS_FETCHED';
-    const MPR_GENERATED                             = 'MPR_GENERATED';
-    const MPR_RECONCILED                            = 'MPR_RECONCILED';
-    const MPR_RECONCILE_UNRECOGNIZED_CARD_NETWORK   = 'MPR_RECONCILE_UNRECOGNIZED_CARD_NETWORK';
     const SETTLEMENT_INITIATING                     = 'SETTLEMENT_INITIATING';
     const SETTLEMENT_INITIATED                      = 'SETTLEMENT_INITIATED';
     const SETTLEMENT_RECONCILED                     = 'SETTLEMENT_RECONCILED';
