@@ -179,6 +179,9 @@ app.controller('EntityListCtrl', [
         if (data.success) {
           var url = data.url;
 
+          console.log(url);
+          console.log(data.data.url);
+
           window.open(url);
         }
       }, function () {
