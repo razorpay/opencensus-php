@@ -35,6 +35,9 @@ class DailyReport extends Base\Core
 
         $this->merchant = $merchant;
 
+        // date format = 6th July 2015
+        $this->date = Carbon::yesterday("Asia/Kolkata")->format('jS F Y');
+
         $this->data = array_merge($data, $this->getMerchantData());
 
         // 00:00 Yesterday
@@ -42,9 +45,6 @@ class DailyReport extends Base\Core
 
         // 00:00 Today
         $this->timeUpperLimit = Carbon::today("Asia/Kolkata")->timestamp;
-
-        // date format = 6th July 2015
-        $this->date = Carbon::yesterday("Asia/Kolkata")->format('jS F Y');
 
         $this->increaseAllowedSystemLimits();
     }
