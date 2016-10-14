@@ -419,7 +419,7 @@ class Service extends Base\Service
     {
         try
         {
-            $collection = array();
+            $collection = [];
 
             $this->setApiCredentials($this->merchantId, $mode);
 
@@ -454,8 +454,8 @@ class Service extends Base\Service
             $collection = [
                 'count' => 1,
                 'entity' => 'collection',
-                'items' => array($data)
-            ];
+                            'items' => array($data),
+                          ];
 
             $this->mapKeys($collection);
 

@@ -15,18 +15,16 @@ class Batch extends Entity
 {
     const BATCH_FILE_URL = 'batches';
 
-    public function fetchBatchById($id)
+    public function fetchById($id)
     {
-        $relativeUrl = 'batches/' .$id;
+        $relativeUrl = "batches/$id";
 
         return $this->request('GET', $relativeUrl);
     }
 
-    public function fetchMultipleBatches($input)
+    public function fetchMultiple($input)
     {
         $relativeUrl = 'batches';
-
-        unset($input['submit']);
 
         return $this->request('GET', $relativeUrl, $input);
     }
@@ -41,14 +39,14 @@ class Batch extends Entity
 
     public function downloadBatchFile($id)
     {
-        $relativeUrl = 'batches/' .$id .'/download';
+        $relativeUrl = "batches/$id/download";
 
         return $this->request('GET', $relativeUrl);
     }
 
     public function retryBatchFile($id)
     {
-        $relativeUrl = 'batches/' .$id .'/retry';
+        $relativeUrl = "batches/$id/retry";
 
         return $this->request('POST', $relativeUrl);
     }
@@ -56,17 +54,21 @@ class Batch extends Entity
     protected function makeGuzzleFileRequest($mode, $merchantId, $input)
     {
         // Creates a new Guzzle client
-        $client = new Guzzle(['base_url' => Config::get('api.url')]);
+        $client = new Guzzle([
+                                'base_url' => Config::get('api.url')
+                            ]);
 
         // Sets the options for the request. Auth should be part of this.
-        $options = array(
-            'auth'      => $this->getApiCredentials($mode, $merchantId),
-            'headers'   => ApiRequest::getHeaders(),
-            'body'      => ['type' => $input['type']],
-        );
+        $options = [
+                'auth'      => $this->getApiCredentials($mode, $merchantId),
+                'headers'   => ApiRequest::getHeaders(),
+                'body'      => [
+                                    'type' => $input['type']
+                                ],
+                ];
 
         // Creates a request instance
-        $request = $client->createRequest("POST", self::BATCH_FILE_URL, $options);
+        $request = $client->createRequest('POST', self::BATCH_FILE_URL, $options);
 
         // Creates an object to insert post body data
         $postBody = $request->getBody();
@@ -115,14 +117,6 @@ class Batch extends Entity
             // Delete the local file created after the request is made.
             $this->deleteFileLocally($filePath);
         }
-    }
-
-    protected function getGuzzleInstance()
-    {
-        return new Guzzle([
-            'base_uri' => Config::get('api.url'),
-            'timeout'  => 200,
-        ]);
     }
 
     protected function moveAndGetFilePath($file)
