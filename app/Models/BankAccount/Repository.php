@@ -13,12 +13,13 @@ class Repository extends Base\Repository
 
     protected $entity = 'BankAccount';
 
-    const WITH_TRASHED = 'with_trashed';
+    const WITH_TRASHED = 'deleted';
 
     protected $appFetchParamRules = array(
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
         self::WITH_TRASHED      => 'sometimes|in:0,1',
         Entity::TYPE            => 'sometimes|in:customer,merchant',
+        Entity::ENTITY_ID       => 'sometimes|alpha_num'
     );
 
     public function getBankAccount($merchant)
