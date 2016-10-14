@@ -225,6 +225,12 @@ class Gateway
         self::NETBANKING_HDFC,
         self::NETBANKING_KOTAK,
         self::WALLET_PAYZAPP,
+        self::FIRST_DATA,
+        self::CYBERSOURCE,
+        self::WALLET_PAYUMONEY,
+        self::WALLET_AIRTELMONEY,
+        self::WALLET_OLAMONEY,
+        self::WALLET_FREECHARGE,
     );
 
     /**
