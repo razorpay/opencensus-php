@@ -55,7 +55,7 @@ class Gateway extends Base\Gateway
 
     public function otpGenerate(array $input)
     {
-        ;
+        return $this->getOtpSubmitRequest($input);
     }
 
     public function topup(array $input)
