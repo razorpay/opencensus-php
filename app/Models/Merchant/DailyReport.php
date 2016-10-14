@@ -23,6 +23,8 @@ class DailyReport extends Base\Core
 
     protected $date;
 
+    protected $data;
+
     const DAILY_REPORT_EMAIL_TEMPLATE   = 'emails.merchant.daily_report';
 
     /**
