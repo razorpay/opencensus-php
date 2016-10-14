@@ -142,6 +142,40 @@ class Service extends Base\Service
         return [$error, null];
     }
 
+    public function editAdmin($input, $id)
+    {
+        $error = [];
+
+        try
+        {
+            $this->logAdminEdits($id, $input);
+
+            $error = array();
+
+            $admin = Admin\Entity::findorfail($id);
+
+            if (isset($input['name']))
+            {
+                $error = $admin->changeName($input['name']);
+            }
+
+            if (isset($input['email']))
+            {
+                $error = $admin->changeEmail($input['email']);
+            }
+
+            $admin->saveOrFail();
+
+            return $error;
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return array($error, []);
+    }
+
     public function listMerchants($input)
     {
         $data = Merchant\Entity::join('merchant_details', 'merchants.id', '=', 'merchant_details.merchant_id')
@@ -544,6 +578,14 @@ class Service extends Base\Service
             // This is always sent currently for every edit.
             unset($input['transaction_report_email']);
             $this->logActionToSlack($id, Actions::RISK_RATING_CHANGED, $input);
+        }
+    }
+
+    protected function logAdminEdits($id, $input)
+    {
+        if (isset($input['email']))
+        {
+            $this->trace->info(TraceCode::MISC_TRACE_CODE, array_merge(['id' => $id], $input));
         }
     }
 

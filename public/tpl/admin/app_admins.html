@@ -41,6 +41,9 @@
               <a class="btn-admin-promote" ng-show="row.username != admin.username && admin.superadmin == 1 && row.superadmin != 1" ng-confirm-click="Are you sure you want to promote this admin?" ng-click="promote(row.id)">
                 <i class="fa fa-user-secret" tooltip="Make superadmin"></i>
               </a>
+              <a tooltip="Click me!" ng-show="admin.superadmin == 1" ng-click="openEditAdmin(row.id)">
+                Edit<i class="pull-right fa fa-pencil-square"></i>
+              </a>
             </td>
           </tr>
         </tbody>
@@ -115,5 +118,31 @@
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
       <button class="btn btn-primary modal-ok" ng-click="ok(admin)">OK</button>
+  </div>
+</script>
+
+<script type="text/ng-template" id="editAdminModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Edit Admin</h3>
+  </div>
+  <div class="modal-body merchant-modal">
+    <form class="form-horizontal" ng-init="admin={email:current.email, name:current.name}">
+      <div class="form-group">
+        <label for="Name" class="col-lg-2 control-label">Name:</label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" name="name" ng-model="admin.name">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="Email" class="col-lg-2 control-label">Email:</label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" name="category" ng-model="admin.email" />
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+    <button class="btn btn-primary modal-ok" ng-click="ok(admin)">OK</button>
   </div>
 </script>

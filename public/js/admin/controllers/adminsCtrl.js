@@ -45,6 +45,21 @@ app.controller('AdminsCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     };
+    $scope.openEditAdmin = function (id) {
+      $scope.selected = $scope.admins.find(admin => admin.id === id);
+      var modalInstance = $modal.open({
+        templateUrl: 'editAdminModalContent.html',
+        controller: 'editAdminModalCtrl',
+        resolve: {
+          current: function () {
+            return jQuery.extend({}, $scope.selected);
+          }
+        }
+      });
+      modalInstance.result.then(function (admin) {
+        $scope.editAdmin(admin);
+      }, $.noop);
+    };
     $scope.createAdmin = function () {
       var modalInstance = $modal.open({
         templateUrl: 'newAdminModalContent.html',
@@ -54,6 +69,42 @@ app.controller('AdminsCtrl', [
       modalInstance.result.then(function (data) {
         newAdminRequest(data);
       }, function () {
+      });
+    };
+    $scope.editAdmin = function (admin) {
+
+      var dropUnchangedFields = function(admin) {
+        for (var i in admin) {
+          var val = $scope.selected[i];
+          if (val && Array === val.constructor) {
+            val = val.join(',');
+          }
+
+          if (admin[i] === val) {
+            delete admin[i];
+          }
+        }
+      };
+
+      dropUnchangedFields(admin);
+
+      var request = $http({
+        method: 'post',
+        url: '/admin/' + $scope.selected.id + '/edit',
+        data: angular.toJson(admin)
+      });
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Admin edited successfully', true);
+          generateMerchant();
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
       });
     };
     function newAdminRequest(data) {
@@ -92,6 +143,23 @@ app.controller('AdminsCtrl', [
   function ($scope, $modalInstance) {
     $scope.ok = function (data) {
       $modalInstance.close(data);
+    };
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+  }
+]).controller('editAdminModalCtrl', [
+  '$scope',
+  '$modalInstance',
+  'current',
+  'riskMap',
+  function ($scope, $modalInstance, current, riskMap) {
+
+    $scope.riskMap = riskMap;
+
+    $scope.current = current;
+    $scope.ok = function (admin) {
+      $modalInstance.close(admin);
     };
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');
