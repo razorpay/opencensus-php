@@ -415,7 +415,7 @@ class Service extends Base\Service
         }
     }
 
-    public function fetchMultipleBatches($mode, $input)
+    public function fetchMultiple($mode, $input)
     {
         try
         {
@@ -425,7 +425,7 @@ class Service extends Base\Service
 
             $collection = $this->api
                                ->batch
-                               ->fetchMultipleBatches($input)
+                               ->fetchMultiple($input)
                                ->toArray();
 
             $this->mapKeys($collection);
@@ -440,7 +440,7 @@ class Service extends Base\Service
         }
     }
 
-    public function fetchBatchById($mode, $id)
+    public function fetchById($mode, $id)
     {
         try
         {
@@ -448,12 +448,12 @@ class Service extends Base\Service
 
             $data = $this->api
                          ->batch
-                         ->fetchBatchById($id)
+                         ->fetchById($id)
                          ->toArray();
 
             $collection = [
-                'count' => 1,
-                'entity' => 'collection',
+                            'count' => 1,
+                            'entity' => 'collection',
                             'items' => array($data),
                           ];
 

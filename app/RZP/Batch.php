@@ -10,23 +10,18 @@ use Razorpay\Api\Request as ApiRequest;
 use Razorpay\Api\Errors\ServerError as ServerError;
 use Razorpay\Api\Errors\BadRequestError as BadRequestError;
 
-
 class Batch extends Entity
 {
     const BATCH_FILE_URL = 'batches';
 
     public function fetchById($id)
     {
-        $relativeUrl = "batches/$id";
-
-        return $this->request('GET', $relativeUrl);
+        return parent::fetch($id);
     }
 
     public function fetchMultiple($input)
     {
-        $relativeUrl = 'batches';
-
-        return $this->request('GET', $relativeUrl, $input);
+        return parent::all($input);
     }
 
     public function uploadBatchFile($mode, $merchantId, $input)
@@ -73,7 +68,7 @@ class Batch extends Entity
         // Creates an object to insert post body data
         $postBody = $request->getBody();
 
-        $filePath = $this->moveAndGetFilePath($input['file']);
+        $filePath = $input['file']->getRealPath();
 
         $postFile = new PostFile('file', fopen($filePath, 'r'));
 
@@ -119,18 +114,6 @@ class Batch extends Entity
         }
     }
 
-    protected function moveAndGetFilePath($file)
-    {
-        $destinationPath = storage_path('files/batches');
-        $fileName = $file->getFilename() . '.' . $file->getClientOriginalExtension();
-
-        $file->move($destinationPath, $fileName);
-
-        $filePath = $destinationPath . '/' . $fileName;
-
-        return $filePath;
-    }
-
     protected function deleteFileLocally($filePath)
     {
         if (file_exists($filePath))
@@ -151,5 +134,10 @@ class Batch extends Entity
         $secret = Config::get('api.auth_pass');
 
         return [$id, $secret];
+    }
+
+    protected function getEntityUrl()
+    {
+        return 'batches/';
     }
 }
