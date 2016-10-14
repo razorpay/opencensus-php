@@ -115,48 +115,41 @@ class Gateway extends Base\Gateway
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
-        if ($content['status'] !== Status::SUCCESS)
+        if ($content['result'][0]['status'] !== 'success')
         {
-            $verify->apiSuccess = false;
-        }
-        else
-        {
-            if ($content['result'][0]['status'] !== 'success')
-            {
-                $verify->gatewaySuccess = false;
+            $verify->gatewaySuccess = false;
 
-                if (($payment === null) and
-                    (($input['payment']['status'] === 'failed') or
-                     ($input['payment']['status'] === 'created')))
-                {
-                    $verify->apiSuccess = false;
-                }
-                else if (($payment['received'] === false) and
-                         (($payment['status_code'] === null) or
-                          ($payment['status_code'] !== (string) Status::SUCCESS)))
-                {
-                    $verify->apiSuccess = false;
-                }
-                else if ($payment['status_code'] === (string) Status::SUCCESS)
-                {
-                    $verify->status = VerifyResult::STATUS_MISMATCH;
-                    $verify->apiSuccess = true;
-                }
+            if (($payment === null) and
+                (($input['payment']['status'] === 'failed') or
+                 ($input['payment']['status'] === 'created')))
+            {
+                $verify->apiSuccess = false;
             }
-            else if ($content['result'][0]['status'] === "success")
+            else if (($payment['received'] === false) and
+                     (($payment['status_code'] === null) or
+                      ($payment['status_code'] !== (string) Status::SUCCESS)))
             {
-                $verify->gatewaySuccess = true;
+                $verify->apiSuccess = false;
+            }
+            else if ($payment['status_code'] === (string) Status::SUCCESS)
+            {
+                $verify->status = VerifyResult::STATUS_MISMATCH;
+                $verify->apiSuccess = true;
+            }
+        }
+        else if ($content['result'][0]['status'] === "success")
+        {
+            $verify->gatewaySuccess = true;
 
-                if (($input['payment']['status'] !== 'created') and
-                    ($input['payment']['status'] !== 'failed'))
-                {
-                    $verify->apiSuccess = true;
-                }
-                else
-                {
-                    $verify->status = VerifyResult::STATUS_MISMATCH;
-                    $verify->apiSuccess = false;
-                }
+            if (($input['payment']['status'] !== 'created') and
+                ($input['payment']['status'] !== 'failed'))
+            {
+                $verify->apiSuccess = true;
+            }
+            else
+            {
+                $verify->status = VerifyResult::STATUS_MISMATCH;
+                $verify->apiSuccess = false;
             }
         }
 
@@ -171,24 +164,15 @@ class Gateway extends Base\Gateway
     {
         $content = $response['result'][0];
 
-        $this->action = Action::AUTHORIZE;
-
         if (isset($content['status']) and $content['status'] === Status::VERIFY_SUCCESS)
         {
             $walletAttributes = $this->getWalletContentFromVerify($payment, $content);
 
             if ($payment === null)
             {
-                $payment = $this->createGatewayPaymentEntity($walletAttributes);
-            }
-            else if ($payment['received'] === false)
-            {
-                $payment->fill($walletAttributes);
-                $payment->saveOrFail();
+                $payment = $this->createGatewayPaymentEntity($walletAttributes, Action::AUTHORIZE);
             }
         }
-
-        $this->action = Action::VERIFY;
 
         return $payment;
     }
@@ -267,9 +251,7 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
 
-        $code = $content['status'];
-
-        if ($code !== Status::SUCCESS)
+        if ($content['status'] !== Status::SUCCESS)
         {
             $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
 
@@ -344,10 +326,13 @@ class Gateway extends Base\Gateway
             }
         }
 
+        $status = $content['status'] ?? null;
+        $message = $content['error_Message'] ?? null;
+
         throw new Exception\GatewayErrorException(
             ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-            $content['status'],
-            $content['error_Message']);
+            $status,
+            $message);
     }
 
     public function debit(array $input)
@@ -381,11 +366,7 @@ class Gateway extends Base\Gateway
             'received' => true
         );
 
-        $this->action = Action::AUTHORIZE;
-
-        $this->createGatewayPaymentEntity($contentToSave);
-
-        $this->action = Action::DEBIT_WALLET;
+        $this->createGatewayPaymentEntity($contentToSave, Action::AUTHORIZE);
     }
 
     public function checkBalance(array $input)
@@ -420,7 +401,8 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
 
-        if (($content['status'] === Status::SUCCESS) and
+        if ((isset($content['status']) === true) and
+            ($content['status'] === Status::SUCCESS) and
             (isset($content['result']['availableBalance']) === true))
         {
             $key = $this->getBalanceKeyForCache($input['payment']);
