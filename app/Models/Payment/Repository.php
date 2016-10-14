@@ -192,17 +192,65 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getUnverifiedPayments($ts)
+    public function getUnverifiedPayments($ts, $verifyBoundary)
     {
         $verifyEnabledGateways = Payment\Gateway::$verifyEnabled;
 
-        return $this->newQuery()
-                    ->whereNull(Payment\Entity::VERIFIED)
-                    ->status(Payment\Status::FAILED)
-                    ->whereIn(Payment\Entity::GATEWAY, $verifyEnabledGateways)
-                    ->createdAtLessThan($ts)
-                    ->take(50)
-                    ->get();
+        $condition = $this->getWhereConditionForVerify($ts, $verifyBoundary);
+
+        $query = $this->newQuery()
+            ->whereNull(Payment\Entity::VERIFIED)
+            ->status(Payment\Status::FAILED)
+            ->whereIn(Payment\Entity::GATEWAY, $verifyEnabledGateways);
+
+        $query = $this->addWhereQueryForVerify($query, $condition);
+
+        return $query->get();
+    }
+
+    protected function addWhereQueryForVerify($query, $condition)
+    {
+        $query->where(
+            function ($query) use ($condition)
+            {
+                $query->where($condition['where']);
+
+                if (isset($condition['or']) === true)
+                {
+                    foreach($condition['or'] as $orWhereCondition)
+                    {
+                        $query->orWhere($orWhereCondition);
+                    }
+                }
+
+                return $query;
+            }
+        );
+
+        return $query;
+    }
+
+    protected function getWhereConditionForVerify($ts, $verifyBoundary)
+    {
+        $whereCondition = [
+            [Payment\Entity::CREATED_AT , '<', $ts],
+            [Payment\Entity::VERIFY_BUCKET, '=', 0]
+        ];
+
+        $orWhereConditions = [];
+
+        foreach($verifyBoundary as $boundary => $time)
+        {
+            $orWhereConditions[] = [
+                [Payment\Entity::CREATED_AT, '<', $time],
+                [Payment\Entity::VERIFY_BUCKET, '=', $boundary]
+            ];
+        }
+
+        return [
+            'where' => $whereCondition,
+            'or' => $orWhereConditions
+        ];
     }
 
     public function fetchPaymentsForCustomerMethod($customer, $method, $skip)

@@ -18,6 +18,18 @@ class Verify
 {
     const MIN_TIME_BEFORE_VERIFY = 120; // 2 minutes
 
+    const BOUNDARY = [
+        1 => 15,            // 15 minute
+        2 => 60,            // 60 minute
+        3 => 1440,          // 1 day
+        4 => 2880,          // 2 day
+        5 => 4320,          // 3 day
+        6 => 5760,          // 4 day
+        7 => 7200,          // 5 day
+        8 => 8640,          // 6 day
+        9 => 10080          // 7 day
+    ];
+
     const SUCCESS       = 'success';
     const ERROR         = 'error';
     const AUTHORIZED    = 'authorized';
@@ -96,11 +108,18 @@ class Verify
 
     public function verifyAllPayments()
     {
-        $ts = time() - self::MIN_TIME_BEFORE_VERIFY;
+        $currentTime  = time();
 
-        $payments = $this->paymentRepo->getUnverifiedPayments($ts);
+        $ts = $currentTime - self::MIN_TIME_BEFORE_VERIFY;
 
-        $payments->shuffle();
+        $boundary = [];
+
+        foreach (self::BOUNDARY as $key=> $value)
+        {
+            $boundary[$key] = [ time() - $value ];
+        }
+
+        $payments = $this->paymentRepo->getUnverifiedPayments($ts, $boundary);
 
         return $this->verifyMultiplePayments($payments, 'all');
     }
