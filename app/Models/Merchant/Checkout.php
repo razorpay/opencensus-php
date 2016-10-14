@@ -11,6 +11,7 @@ use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Customer;
+use RZP\Models\Emi;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Models\Payment;
@@ -160,8 +161,15 @@ class Checkout
                 $methodsArray['netbanking'] = $methods->toArrayWithBankNames();
             }
             $methodsArray['wallet'] = $methods->getEnabledWallets();
-            $methodsArray['emi'] = $methods->isEmiEnabled();
             $methodsArray['upi'] = $methods->isUpiEnabled();
+            $emi = $methods->isEmiEnabled();
+
+            if ($emi === true)
+            {
+                $methodsArray['emi'] = $emi;
+
+                $methodsArray['emi_plans'] = (new Emi\Service)->all();
+            }
         }
 
         return $methodsArray;

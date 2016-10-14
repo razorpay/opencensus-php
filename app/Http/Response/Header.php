@@ -1,8 +1,8 @@
 <?php
 
-namespace RZP\Http;
+namespace RZP\Http\Response;
 
-class ResponseHeader
+class Header
 {
     const PRAGMA                        = 'Pragma';
     const EXPIRES                       = 'Expires';
