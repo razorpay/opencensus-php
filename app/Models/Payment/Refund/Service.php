@@ -84,6 +84,17 @@ class Service extends Base\Service
             $returnValue[$gateway] = $this->generateRefundFileForGateway($type, $gatewayCode, $from, $to, $gateway);
         }
 
+        $this->trace->info(
+            TraceCode::REFUND_FILE_GENERATE_REQUEST,
+            [
+                'input'       => $input,
+                'from'        => $from,
+                'to'          => $to,
+                'gateways'    => $gateways,
+                'returnValue' => $returnValue,
+            ]
+        );
+
         return $returnValue;
     }
 
