@@ -155,7 +155,13 @@ app.controller('EntitiesCtrl', [
       },
       bank_account: {
         deleted: booleanList,
-        merchant_id: ['Merchant Id']
+        entity_id: ['Entity Id'],
+        merchant_id: ['Merchant Id'],
+        type: [
+          'all',
+          'customer',
+          'merchant'
+        ]
       },
       balance: {},
       ebs: {},
@@ -218,7 +224,10 @@ app.controller('EntitiesCtrl', [
         tdate: ['Tdate'],
       },
       daily_settlement: {},
-      emi_plan: {},
+      emi_plan: {
+        bank: ['Bank'],
+        network: ['Network']
+      },
       hdfc: {
         auth: ['Auth Code'],
         gateway_transaction_id: ['Gateway Transaction Id'],
@@ -231,12 +240,15 @@ app.controller('EntitiesCtrl', [
         emi: booleanList,
         otp_read: booleanList,
         iin: ['Iin'],
+        international: booleanList,
+        issuer: ['Issuer'],
+        network: ['Network'],
         type: [
           'all',
           'credit',
           'debit',
           'unknown'
-        ]
+        ],
       },
       key: {
         merchant_id: ['Merchant Id']
@@ -293,7 +305,10 @@ app.controller('EntitiesCtrl', [
         authorized: booleanList,
         receipt: ['Receipt']
       },
-      payment_analytics: {},
+      payment_analytics: {
+        checkout_id: ['Checkout Id'],
+        payment_id: ['Payment Id']
+      },
       payment: {
         app_token: ['App Token'],
         bank: ['Bank Code'],
@@ -302,7 +317,7 @@ app.controller('EntitiesCtrl', [
         global_customer_id: ['Global Customer Id'],
         email: ['Contact Email'],
         gateway: gatewayList,
-        global_token: ['Global Token'],
+        global_token_id: ['Global Token Id'],
         iin: ['Card IIN'],
         international: booleanList,
         last4: ['Card Last 4'],
@@ -317,7 +332,7 @@ app.controller('EntitiesCtrl', [
         ],
         save: booleanList,
         status: statusList,
-        token: ['Token'],
+        token_id: ['Token Id'],
         verified: [
           'all',
           'null',
@@ -345,13 +360,15 @@ app.controller('EntitiesCtrl', [
       settlement: {
         merchant_id: ['Merchant Id'],
         status: ['all', 'created', 'failed', 'processed'],
-        transaction_id: ['Transaction Id']
+        transaction_id: ['Transaction Id'],
+        utr: ['UTR']
       },
       settlement_details: {
         merchant_id: ['Merchant Id'],
         settlement_id: ['Settlement Id']
       },
       terminal: {
+        emnabled: booleanList,
         gateway: gatewayList,
         merchant_id: ['Merchant Id'],
         shared: booleanList
