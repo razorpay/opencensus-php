@@ -85,7 +85,7 @@ class Repository extends Base\Repository
         $query->orderBy(Entity::MERCHANT_ID, 'desc');
     }
 
-    protected function addQueryParamWithTrashed($query, $params)
+    protected function addQueryParamDeleted($query, $params)
     {
         if ($params[self::WITH_TRASHED] === '1')
         {
