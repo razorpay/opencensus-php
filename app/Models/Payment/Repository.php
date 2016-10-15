@@ -205,6 +205,8 @@ class Repository extends Base\Repository
 
         $query = $this->addWhereQueryForVerify($query, $condition);
 
+        $query->orderBy(Payment\Entity::CREATED_AT, 'desc');
+
         return $query->get();
     }
 
