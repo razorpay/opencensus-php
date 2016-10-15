@@ -81,20 +81,4 @@ class Entity extends Base\Entity implements AuthenticatableContract, Authorizabl
         $this->superadmin = 1;
         $this->save();
     }
-
-    public function changeEmail($email)
-    {
-        $input = [
-            'email'  => $email
-        ];
-
-        $error = $this->edit($input, 'changeEmail');
-    }
-
-    public function changeName($name)
-    {
-        return $this->edit([
-            'name' => $name
-        ], 'changeName');
-    }
 }

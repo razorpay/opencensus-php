@@ -586,7 +586,7 @@ class Service extends Base\Service
     {
         if (isset($input['email']))
         {
-            $this->trace->info(TraceCode::MISC_TRACE_CODE, array_merge(['id' => $id], $input));
+            $this->logActionToSlack($id, Actions::ADMIN_EDIT);
         }
     }
 
