@@ -115,41 +115,44 @@ class Gateway extends Base\Gateway
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
-        if ($content['result'][0]['status'] !== 'success')
+        if ($content['status'] === Status::SUCCESS)
         {
-            $verify->gatewaySuccess = false;
+            if ($content['result'][0]['status'] !== 'success')
+            {
+                $verify->gatewaySuccess = false;
 
-            if (($payment === null) and
-                (($input['payment']['status'] === 'failed') or
-                 ($input['payment']['status'] === 'created')))
-            {
-                $verify->apiSuccess = false;
+                if (($payment === null) and
+                    (($input['payment']['status'] === 'failed') or
+                     ($input['payment']['status'] === 'created')))
+                {
+                    $verify->apiSuccess = false;
+                }
+                else if (($payment['received'] === false) and
+                         (($payment['status_code'] === null) or
+                          ($payment['status_code'] !== (string) Status::SUCCESS)))
+                {
+                    $verify->apiSuccess = false;
+                }
+                else if ($payment['status_code'] === (string) Status::SUCCESS)
+                {
+                    $verify->status = VerifyResult::STATUS_MISMATCH;
+                    $verify->apiSuccess = true;
+                }
             }
-            else if (($payment['received'] === false) and
-                     (($payment['status_code'] === null) or
-                      ($payment['status_code'] !== (string) Status::SUCCESS)))
+            else if ($content['result'][0]['status'] === "success")
             {
-                $verify->apiSuccess = false;
-            }
-            else if ($payment['status_code'] === (string) Status::SUCCESS)
-            {
-                $verify->status = VerifyResult::STATUS_MISMATCH;
-                $verify->apiSuccess = true;
-            }
-        }
-        else if ($content['result'][0]['status'] === "success")
-        {
-            $verify->gatewaySuccess = true;
+                $verify->gatewaySuccess = true;
 
-            if (($input['payment']['status'] !== 'created') and
-                ($input['payment']['status'] !== 'failed'))
-            {
-                $verify->apiSuccess = true;
-            }
-            else
-            {
-                $verify->status = VerifyResult::STATUS_MISMATCH;
-                $verify->apiSuccess = false;
+                if (($input['payment']['status'] !== 'created') and
+                    ($input['payment']['status'] !== 'failed'))
+                {
+                    $verify->apiSuccess = true;
+                }
+                else
+                {
+                    $verify->status = VerifyResult::STATUS_MISMATCH;
+                    $verify->apiSuccess = false;
+                }
             }
         }
 
@@ -164,7 +167,8 @@ class Gateway extends Base\Gateway
     {
         $content = $response['result'][0];
 
-        if (isset($content['status']) and $content['status'] === Status::VERIFY_SUCCESS)
+        if ((isset($content['status']) === true) and
+            ($content['status'] === Status::VERIFY_SUCCESS))
         {
             $walletAttributes = $this->getWalletContentFromVerify($payment, $content);
 
