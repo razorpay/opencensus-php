@@ -66,7 +66,7 @@ class PayumoneyGatewayTest extends TestCase
     {
         $payment = $this->getDefaultWalletPaymentArray('payumoney');
 
-        $this->mockServerContentFunction(function(&$content, $action = null)
+        $this->mockServerContentFunction(function(& $content, $action = null)
         {
             if ($action === 'getBalance')
             {
@@ -94,7 +94,7 @@ class PayumoneyGatewayTest extends TestCase
     {
         $payment = $this->getDefaultWalletPaymentArray('payumoney');
 
-        $this->mockServerContentFunction(function(&$content, $action = null)
+        $this->mockServerContentFunction(function(& $content, $action = null)
         {
             if ($action === 'debit')
             {
@@ -123,7 +123,7 @@ class PayumoneyGatewayTest extends TestCase
     {
         $payment = $this->getDefaultWalletPaymentArray('payumoney');
 
-        $this->mockServerContentFunction(function(&$content, $action = null)
+        $this->mockServerContentFunction(function(& $content, $action = null)
         {
             if ($action === 'otpGenerate')
             {
@@ -165,8 +165,6 @@ class PayumoneyGatewayTest extends TestCase
         $this->assertArraySelectiveEquals($data, $authResponse);
 
         $payment = $this->getLastEntity('payment');
-
-        $data = $this->testData['testExpiredOtpPaymentRedirection'];
 
         $response = $this->redirectPayment($payment['id']);
         $headers = $response->headers;
@@ -308,7 +306,7 @@ class PayumoneyGatewayTest extends TestCase
 
         $this->setOtp(Otp::WALLET_LIMIT_EXCEEDED);
 
-        $this->mockServerContentFunction(function(&$content)
+        $this->mockServerContentFunction(function(& $content)
         {
             $content['result']['maxLimit'] = 0;
             $content['result']['availableBalance'] = 0;
@@ -348,7 +346,7 @@ class PayumoneyGatewayTest extends TestCase
 
         $originalData = $this->response->getOriginalContent()->data;
 
-        $this->mockServerContentFunction(function(&$content)
+        $this->mockServerContentFunction(function(& $content)
         {
             $content['status'] = 'failure';
         });
@@ -373,7 +371,7 @@ class PayumoneyGatewayTest extends TestCase
 
         $originalData = $this->response->getOriginalContent()->data;
 
-        $this->mockServerContentFunction(function(&$content)
+        $this->mockServerContentFunction(function(& $content)
         {
             unset($content['status']);
         });
@@ -481,7 +479,7 @@ class PayumoneyGatewayTest extends TestCase
 
         $response = $this->doAuthPayment($payment);
 
-        $this->mockServerContentFunction(function(&$content)
+        $this->mockServerContentFunction(function(& $content)
         {
             $content['result'][0]['status'] = 'failure';
         });
@@ -548,7 +546,7 @@ class PayumoneyGatewayTest extends TestCase
 
         $refundAmount = $payment['amount'] / 5;
 
-        $this->mockServerContentFunction(function(&$content, $action) use ($refundAmount)
+        $this->mockServerContentFunction(function(& $content, $action) use ($refundAmount)
         {
             if ($action === 'validateRefund')
             {

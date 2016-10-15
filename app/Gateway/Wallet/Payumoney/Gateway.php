@@ -163,22 +163,22 @@ class Gateway extends Base\Gateway
         return $verify->status;
     }
 
-    protected function saveVerifyContentIfNeeded($payment, $response)
+    protected function saveVerifyContentIfNeeded($gatewayPayment, $response)
     {
         $content = $response['result'][0];
 
         if ((isset($content['status']) === true) and
             ($content['status'] === Status::VERIFY_SUCCESS))
         {
-            $walletAttributes = $this->getWalletContentFromVerify($payment, $content);
+            $walletAttributes = $this->getWalletContentFromVerify($gatewayPayment, $content);
 
-            if ($payment === null)
+            if ($gatewayPayment === null)
             {
-                $payment = $this->createGatewayPaymentEntity($walletAttributes, Action::AUTHORIZE);
+                $gatewayPayment = $this->createGatewayPaymentEntity($walletAttributes, Action::AUTHORIZE);
             }
         }
 
-        return $payment;
+        return $gatewayPayment;
     }
 
     public function refund(array $input)
