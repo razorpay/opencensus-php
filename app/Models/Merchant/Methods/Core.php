@@ -11,12 +11,21 @@ use RZP\Models\Payment;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Pricing;
 use RZP\Models\Terminal;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
     public function setPaymentMethods($merchant, $input)
     {
         $methods = $this->getPaymentMethods($merchant);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_EDIT,
+            [
+                'merchant_id' => $merchant->getId(),
+                'input' => $input,
+                'current_methods' => $methods->toArrayAdmin(),
+            ]);
 
         $methods->setMethods($input);
 

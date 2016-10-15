@@ -7,12 +7,11 @@ use RZP\Error;
 use RZP\Exception;
 use RZP\Models\Payment\Processor\Notify;
 use RZP\Gateway\Base;
-use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\AxisMigs;
 use Requests;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payment;
 
 class Gateway extends Base\Gateway
 {
@@ -248,9 +247,11 @@ class Gateway extends Base\Gateway
         $input = $verify->input;
 
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
-            ['payment_id' => $input['payment']['id'],
-             'content' => $content]);
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            [
+                'payment_id' => $input['payment']['id'],
+                'content' => $content
+            ]);
 
         unset($content['vpc_Command']);
 
@@ -267,7 +268,7 @@ class Gateway extends Base\Gateway
 
         if ($content['vpc_DRExists'] !== 'Y')
         {
-            $this->verifyPaymentNonExistentCase($verify, $gatewayPayment);
+            $this->verifyPaymentNonExistentCase($verify);
         }
         else
         {
@@ -283,21 +284,33 @@ class Gateway extends Base\Gateway
         return $verify->status;
     }
 
-    protected function verifyPaymentNonExistentCase($verify, $gatewayPayment)
+    protected function verifyPaymentNonExistentCase($verify)
     {
+        $verify->gatewaySuccess = false;
+
+        $gatewayPayment = $verify->payment;
+
+        $apiPayment = $verify->input['payment'];
+
         // Could be the case where the transaction didn't even hit migs
         if (($gatewayPayment['received'] === false) and
             (($gatewayPayment['vpc_TxnResponseCode'] === null) or
              ($gatewayPayment['vpc_TxnResponseCode'] !== '0')))
         {
             $verify->apiSuccess = false;
-            $verify->gatewaySuccess = false;
         }
         else
         {
-            $verify->status = VerifyResult::STATUS_MISMATCH;
-            $verify->apiSuccess = false;
-            $verify->gatewaySuccess = false;
+            if (($apiPayment['status'] !== Payment\Status::CREATED) and
+                ($apiPayment['status'] !== Payment\Status::FAILED))
+            {
+                $verify->apiSuccess = true;
+                $verify->status = VerifyResult::STATUS_MISMATCH;
+            }
+            else
+            {
+                $verify->apiSuccess = false;
+            }
         }
     }
 
