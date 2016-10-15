@@ -6,10 +6,8 @@ class Status
 {
     const CREATED           = 'created';
     const PROCESSED         = 'processed';
+    const ON_HOLD           = 'on_hold';
     const FAILED            = 'failed';
 
-
-    const AUTHORIZED        = 'authorized';
-    const CAPTURE_FAILED    = 'capture_failed';
-    const RETRY             = 'retry';
+    const AUTH_FAILURE      = 'auth_failure';
 }

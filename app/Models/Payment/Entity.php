@@ -14,6 +14,8 @@ use RZP\Models\Payment;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Refund;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Table;
+use RZP\Models\Plan\Subscription;
 
 class Entity extends Base\PublicEntity
 {
@@ -69,6 +71,8 @@ class Entity extends Base\PublicEntity
     const SAVE                  = 'save';
     const LATE_AUTHORIZED       = 'late_authorized';
 
+    const SUBSCRIPTION_ID       = 'subscription_id';
+
     const DEFAULT_CURRENCY      = 'INR';
     const CURRENCY_LENGTH       = 3;
 
@@ -78,7 +82,7 @@ class Entity extends Base\PublicEntity
 
     protected $entity           = 'payment';
 
-    protected $table            = \RZP\Constants\Table::PAYMENT;
+    protected $table            = Table::PAYMENT;
 
     protected $metadata         = array();
 
@@ -151,6 +155,7 @@ class Entity extends Base\PublicEntity
         self::OTP_ATTEMPTS,
         self::OTP_COUNT,
         self::LATE_AUTHORIZED,
+        self::SUBSCRIPTION_ID,
         self::CREATED_AT,
         self::UPDATED_AT);
 
@@ -180,6 +185,7 @@ class Entity extends Base\PublicEntity
         self::SERVICE_TAX,
         self::ERROR_CODE,
         self::ERROR_DESCRIPTION,
+        self::SUBSCRIPTION_ID,
         self::CREATED_AT);
 
     protected $publicSetters = [
@@ -188,7 +194,8 @@ class Entity extends Base\PublicEntity
         self::ORDER_ID,
         self::CARD_ID,
         self::CUSTOMER_ID,
-        self::TOKEN_ID
+        self::TOKEN_ID,
+        self::SUBSCRIPTION_ID,
     ];
 
     protected $guarded = array(self::ID);
@@ -1062,7 +1069,7 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function setPublicTokenIdAttribute(Array & $array)
+    public function setPublicTokenIdAttribute(array & $array)
     {
         if (isset($array[self::TOKEN_ID]))
         {
@@ -1073,6 +1080,20 @@ class Entity extends Base\PublicEntity
         else
         {
             unset($array[self::TOKEN_ID]);
+        }
+    }
+
+    public function setPublicSubscriptionIdAttribute(array & $array)
+    {
+        if (isset($array[self::SUBSCRIPTION_ID]))
+        {
+            $subscriptionId = $this->getAttribute(self::SUBSCRIPTION_ID);
+
+            $array[self::SUBSCRIPTION_ID] = Subscription\Entity::getSignedId($subscriptionId);
+        }
+        else
+        {
+            unset($array[self::SUBSCRIPTION_ID]);
         }
     }
 

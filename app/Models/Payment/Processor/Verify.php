@@ -12,7 +12,6 @@ use RZP\Models\Payment\VerifyResult;
 
 trait Verify
 {
-
     public function verify($payment)
     {
         $this->setPayment($payment);

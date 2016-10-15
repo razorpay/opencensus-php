@@ -40,6 +40,12 @@ class CreateSubscription extends Migration
 
             $table->integer(Entity::QUANTITY)
                   ->default(1);
+            
+            $table->integer(Entity::PAID_COUNT)
+                  ->default(0);
+            
+            $table->integer(Entity::AUTH_ATTEMPTS)
+                  ->default(0);
 
             $table->text(Entity::NOTES);
 

@@ -14,8 +14,8 @@ class Entity extends Base\PublicEntity
 
     const PLAN_ID           = 'plan_id';
     const CUSTOMER_ID       = 'customer_id';
-    //const CURRENT_START     = 'current_start';
-    //const CURRENT_END       = 'current_end';
+    const CURRENT_START     = 'current_start';
+    const CURRENT_END       = 'current_end';
     const STATUS            = 'status';
     const ENDED_AT          = 'ended_at';
     const QUANTITY          = 'quantity';
@@ -24,6 +24,9 @@ class Entity extends Base\PublicEntity
     const CHARGE_AT         = 'charge_at';
     const START_AT          = 'start_at';
     const END_AT            = 'end_at';
+    const PAID_COUNT        = 'paid_count';
+    const AUTH_ATTEMPTS     = 'auth_attempts';
+    const ERROR_STATUS      = 'error_status';
 
     protected static $sign = 'sub';
 
@@ -34,10 +37,13 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $defaults = [
-        self::NOTES     => [],
-        self::QUANTITY  => 1,
-        self::ENDED_AT  => null,
-        self::START_AT  => Status::CREATED,
+        self::NOTES         => [],
+        self::QUANTITY      => 1,
+        self::ENDED_AT      => null,
+        self::STATUS        => Status::CREATED,
+        self::PAID_COUNT    => 0,
+        self::AUTH_ATTEMPTS => 0,
+        self::ERROR_STATUS  => null,
     ];
 
     protected static $generators = [
@@ -55,8 +61,8 @@ class Entity extends Base\PublicEntity
         self::PLAN_ID,
         self::CUSTOMER_ID,
         self::STATUS,
-        //self::CURRENT_START,
-        //self::CURRENT_END,
+        self::CURRENT_START,
+        self::CURRENT_END,
         self::ENDED_AT,
         self::QUANTITY,
         self::TOKEN_ID,
@@ -64,6 +70,7 @@ class Entity extends Base\PublicEntity
         self::CHARGE_AT,
         self::START_AT,
         self::END_AT,
+        self::PAID_COUNT,
     ];
 
     protected $casts = [
@@ -72,8 +79,10 @@ class Entity extends Base\PublicEntity
         self::CHARGE_AT         => 'int',
         self::ENDED_AT          => 'int',
         self::QUANTITY          => 'int',
-        //self::CURRENT_START     => 'int',
-        //self::CURRENT_END       => 'int',
+        self::CURRENT_START     => 'int',
+        self::CURRENT_END       => 'int',
+        self::PAID_COUNT        => 'int',
+        self::AUTH_ATTEMPTS     => 'int',
     ];
 
     protected $publicSetters = [
@@ -102,6 +111,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CHARGE_AT);
     }
 
+    public function getStartAt()
+    {
+        return $this->getAttribute(self::START_AT);
+    }
+
     public function getEndAt()
     {
         return $this->getAttribute(self::END_AT);
@@ -117,6 +131,26 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::STATUS);
     }
 
+    public function getPaidCount()
+    {
+        return $this->getAttribute(self::PAID_COUNT);
+    }
+    
+    public function getCurrentStart()
+    {
+        return $this->getAttribute(self::CURRENT_START);
+    }
+    
+    public function getCurrentEnd()
+    {
+        return $this->getAttribute(self::CURRENT_END);
+    }
+    
+    public function getAuthAttempts()
+    {
+        return $this->getAttribute(self::AUTH_ATTEMPTS);
+    }
+
     // --------------------- END GETTERS ---------------------
 
     // --------------------- SETTERS ---------------------
@@ -130,10 +164,35 @@ class Entity extends Base\PublicEntity
     {
         $this->setAttribute(self::ENDED_AT, $endAt);
     }
-    
+
     public function setStatus($status)
     {
         $this->setAttribute(self::STATUS, $status);
+    }
+
+    public function setCurrentStart($currentStart)
+    {
+        $this->setAttribute(self::CURRENT_START, $currentStart);
+    }
+
+    public function setCurrentEnd($currentEnd)
+    {
+        $this->setAttribute(self::CURRENT_END, $currentEnd);
+    }
+
+    public function incrementPaidCount()
+    {
+        $this->increment(self::PAID_COUNT);
+    }
+    
+    public function incrementAuthAttempts()
+    {
+        $this->increment(self::AUTH_ATTEMPTS);
+    }
+    
+    public function setErrorStatus($errorStatus)
+    {
+        $this->setAttribute(self::ERROR_STATUS, $errorStatus);
     }
 
     // --------------------- END SETTERS ---------------------
