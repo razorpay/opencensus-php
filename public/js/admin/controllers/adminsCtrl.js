@@ -75,23 +75,8 @@ app.controller('AdminsCtrl', [
     };
     $scope.editAdmin = function (admin) {
 
-      var dropUnchangedFields = function(admin) {
-        for (var i in admin) {
-          var val = $scope.selected[i];
-          if (val && Array === val.constructor) {
-            val = val.join(',');
-          }
-
-          if (admin[i] === val) {
-            delete admin[i];
-          }
-        }
-      };
-
-      dropUnchangedFields(admin);
-
       var request = $http({
-        method: 'post',
+        method: 'put',
         url: '/admin/' + $scope.selected[0].id + '/edit',
         data: angular.toJson(admin)
       });
@@ -154,10 +139,7 @@ app.controller('AdminsCtrl', [
   '$scope',
   '$modalInstance',
   'current',
-  'riskMap',
-  function ($scope, $modalInstance, current, riskMap) {
-
-    $scope.riskMap = riskMap;
+  function ($scope, $modalInstance, current) {
 
     $scope.current = current;
     $scope.ok = function (admin) {

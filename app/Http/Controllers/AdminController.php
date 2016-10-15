@@ -102,7 +102,7 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error);
     }
 
-    public function postEdit($id)
+    public function putEdit($id)
     {
         $input = Input::all();
 
