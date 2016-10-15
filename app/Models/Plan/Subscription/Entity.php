@@ -18,6 +18,7 @@ class Entity extends Base\PublicEntity
     const CURRENT_END       = 'current_end';
     const STATUS            = 'status';
     const ENDED_AT          = 'ended_at';
+    const PROCESSED_AT      = 'processed_at';
     const QUANTITY          = 'quantity';
     const TOKEN_ID          = 'token_id';
     const NOTES             = 'notes';
@@ -44,6 +45,7 @@ class Entity extends Base\PublicEntity
         self::PAID_COUNT    => 0,
         self::AUTH_ATTEMPTS => 0,
         self::ERROR_STATUS  => null,
+        self::PROCESSED_AT  => null,
     ];
 
     protected static $generators = [
@@ -78,6 +80,7 @@ class Entity extends Base\PublicEntity
         self::END_AT            => 'int',
         self::CHARGE_AT         => 'int',
         self::ENDED_AT          => 'int',
+        self::PROCESSED_AT      => 'int',
         self::QUANTITY          => 'int',
         self::CURRENT_START     => 'int',
         self::CURRENT_END       => 'int',
@@ -130,6 +133,11 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::STATUS);
     }
+    
+    public function getErrorStatus()
+    {
+        return $this->getAttribute(self::ERROR_STATUS);
+    }
 
     public function getPaidCount()
     {
@@ -179,6 +187,11 @@ class Entity extends Base\PublicEntity
     {
         $this->setAttribute(self::CURRENT_END, $currentEnd);
     }
+    
+    public function setProcessedAt($processedAt)
+    {
+        $this->setAttribute(self::PROCESSED_AT, $processedAt);
+    }
 
     public function incrementPaidCount()
     {
@@ -217,6 +230,11 @@ class Entity extends Base\PublicEntity
     public function token()
     {
         return $this->belongsTo('RZP\Models\Customer\Token\Entity');
+    }
+    
+    public function payments()
+    {
+        return $this->hasMany('RZP\Models\Payment\Entity');
     }
 
     // --------------------- END RELATIONS ---------------------

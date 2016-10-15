@@ -28,32 +28,37 @@ class CreateSubscription extends Migration
                   ->primary();
 
             $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH);
-
             $table->char(Entity::PLAN_ID, Entity::ID_LENGTH);
-
             $table->char(Entity::CUSTOMER_ID, Entity::ID_LENGTH);
-
             $table->char(Entity::TOKEN_ID, Entity::ID_LENGTH);
 
             $table->string(Entity::STATUS, 16)
                   ->default(Status::CREATED);
 
+            $table->string(Entity::ERROR_STATUS, 16)
+                  ->nullable();
+
             $table->integer(Entity::QUANTITY)
                   ->default(1);
-            
+
             $table->integer(Entity::PAID_COUNT)
                   ->default(0);
-            
+
             $table->integer(Entity::AUTH_ATTEMPTS)
                   ->default(0);
 
             $table->text(Entity::NOTES);
 
-            $table->integer(Entity::START_AT);
+            $table->integer(Entity::CURRENT_START);
+            $table->integer(Entity::CURRENT_END);
 
+            $table->integer(Entity::START_AT);
             $table->integer(Entity::END_AT);
 
             $table->integer(Entity::CHARGE_AT)
+                  ->nullable();
+            
+            $table->integer(Entity::PROCESSED_AT)
                   ->nullable();
 
             $table->integer(Entity::ENDED_AT)

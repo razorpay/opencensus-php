@@ -2,12 +2,15 @@
 
 namespace RZP\Models\Plan\Subscription;
 
+use RZP\Exception\BadRequestException;
+use RZP\Exception\LogicException;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Plan;
 use RZP\Models\Customer;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
@@ -44,8 +47,64 @@ class Core extends Base\Core
                     'key_id'            => $this->app['basicauth']->getPublicKey(),
                 ];
 
+                // If the status is in created state, this means that the token has not
+                // been associated with it yet. An authorized payment for this subscription
+                // has not been done.
+                if ($subscription->getStatus() === Status::CREATED)
+                {
+                    throw new LogicException(
+                        'Should not have reached here. The subscription is not' .
+                        'chargeable because it is still in created state.',
+                        null,
+                        [
+                            'subscription_id'   => $subscription->getId(),
+                            'status'            => $subscription->getStatus(),
+                        ]);
+                }
+
                 $this->app['queue']->push(Charge::class . '@fireCharge', $queuePayload);
             });
+    }
+
+    /**
+     * Subscription need not be updated if it's in created or processed state.
+     * That flow would be taken care by the normal subscription capture flow.
+     *
+     * Only if it's in on_hold state with capture_failure as error, we need to
+     * explicitly update the subscription. This is because, this capture would
+     * have been an explicit call and not via normal subscription flow.
+     *
+     * @param Entity $subscription
+     * @param Payment\Entity $capturedPayment
+     * @return bool
+     */
+    public function shouldUpdateSubscriptionOnCapture(Entity $subscription, Payment\Entity $capturedPayment)
+    {
+        $status = $subscription->getStatus();
+        $errorStatus = $subscription->getErrorStatus();
+
+        if ($status === Status::ON_HOLD)
+        {
+            if ($errorStatus === Status::CAPTURE_FAILURE)
+            {
+                return true;
+            }
+            else
+            {
+                $this->trace->error(
+                    TraceCode::SUBSCRIPTION_STATE_UNEXPECTED,
+                    [
+                        'payment_id'        => $capturedPayment->getId(),
+                        'subscription_id'   => $subscription->getId(),
+                        'status'            => $subscription->getStatus(),
+                        'error_status'      => $subscription->getErrorStatus(),
+                    ]);
+
+                return false;
+            }
+        }
+
+        return false;
     }
 
     protected function constructRecurringPayload(Entity $subscription)

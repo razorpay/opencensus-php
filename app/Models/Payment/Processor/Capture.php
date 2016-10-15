@@ -5,6 +5,7 @@ namespace RZP\Models\Payment\Processor;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Order;
+use RZP\Models\Plan\Subscription;
 use RZP\Models\Transaction;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -29,7 +30,7 @@ trait Capture
                 'input' => $input,
             ]
         );
-        
+
         $payment = $this->retrieve($id);
 
         $payment->getValidator()->validateInput('capture', $input);
@@ -313,6 +314,8 @@ trait Capture
 
             $this->updatePaidOrderStatus($payment);
 
+            $this->updateSubscriptionStatus($payment);
+
             $this->tracePaymentInfo(TraceCode::PAYMENT_CAPTURE_SUCCESS);
         });
 
@@ -373,7 +376,7 @@ trait Capture
         $this->repo->saveOrFail($payment);
     }
 
-    protected function verifyOrderUnpaid($payment)
+    protected function verifyOrderUnpaid(Payment\Entity $payment)
     {
         $order = $this->repo->order->getOrderForPayment($payment);
 
@@ -385,23 +388,52 @@ trait Capture
         }
     }
 
-    protected function updatePaidOrderStatus($payment)
+    protected function updatePaidOrderStatus(Payment\Entity $payment)
     {
         $order = $payment->order;
 
-        if (isset($order) === true)
+        if (empty($order) === true)
+        {
+            return;
+        }
+
+        $this->trace->info(
+            TraceCode::PAYMENT_CAPTURE_ORDER_UPDATE,
+            [
+                'payment_id' => $payment->getId(),
+                'order_id' => $order->getId(),
+            ]);
+
+        $order->setStatus(Order\Status::PAID);
+
+        $this->repo->saveOrFail($order);
+    }
+
+    protected function updateSubscriptionStatus(Payment\Entity $payment)
+    {
+        $subscription = $payment->subscription;
+
+        if (empty($subscription) === true)
+        {
+            return;
+        }
+
+        $subscriptionCore = new Subscription\Core;
+
+        $updateSubscription = $subscriptionCore->shouldUpdateSubscriptionOnCapture($subscription, $payment);
+
+        if ($updateSubscription === true)
         {
             $this->trace->info(
-                TraceCode::PAYMENT_CAPTURE_ORDER_UPDATE,
+                TraceCode::PAYMENT_CAPTURE_SUBSCRIPTION_UPDATE,
                 [
-                    'payment_id' => $payment->getId(),
-                    'order_id' => $order->getId(),
-                ]
-            );
+                    'payment_id'        => $payment->getId(),
+                    'subscription_id'   => $subscription->getId(),
+                ]);
 
-            $order->setStatus(Order\Status::PAID);
+            $subscriptionCharge = new Subscription\Charge;
 
-            $this->repo->saveOrFail($order);
+            $subscriptionCharge->handleCaptureSuccess($subscription, $payment);
         }
     }
 }

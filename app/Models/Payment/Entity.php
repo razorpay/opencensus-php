@@ -1201,6 +1201,11 @@ class Entity extends Base\PublicEntity
     {
         return $this->belongsTo('RZP\Models\Order\Entity');
     }
+    
+    public function subscription()
+    {
+        return $this->belongsTo('RZP\Models\Plan\Subscription\Entity');
+    }
 
     public function analytics()
     {

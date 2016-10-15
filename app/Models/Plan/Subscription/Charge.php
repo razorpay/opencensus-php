@@ -59,8 +59,6 @@ class Charge
             $this->handleAuthorizationFailure($job, $ex, $subscription);
         }
 
-        $this->repo->saveOrFail($subscription);
-
         $job->delete();
     }
 
@@ -83,8 +81,7 @@ class Charge
         }
         catch (\Exception $ex)
         {
-            $this->handleCaptureFailure($authorizedPayment);
-            return;
+            $this->handleCaptureFailure($subscription);
         }
     }
 
@@ -117,7 +114,7 @@ class Charge
         return $capturedPayment;
     }
 
-    protected function handleCaptureSuccess(Entity $subscription, Payment\Entity $capturedPayment)
+    public function handleCaptureSuccess(Entity $subscription, Payment\Entity $capturedPayment)
     {
         $plan = $subscription->plan;
 
@@ -236,9 +233,12 @@ class Charge
         }
     }
 
-    protected function handleCaptureFailure()
+    protected function handleCaptureFailure(Entity $subscription)
     {
+        $subscription->setStatus(Status::ON_HOLD);
+        $subscription->setErrorStatus(Status::CAPTURE_FAILURE);
 
+        $this->repo->saveOrFail($subscription);
     }
 
     protected function captureSubscriptionPayment(Entity $subscription, Payment\Entity $payment)
