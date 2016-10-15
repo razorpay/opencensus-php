@@ -26,6 +26,7 @@ class Repository extends Base\Repository
         Entity::GATEWAY_ACQUIRER    => 'sometimes|string',
         Entity::GATEWAY_TERMINAL_ID => 'sometimes|alpha_num',
         Entity::EMI                 => 'sometimes|in:0,1',
+        Entity::ENABLED             => 'sometimes|in:0,1',
     );
 
     public function addQueryParamDeleted($query, $params)
