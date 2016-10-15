@@ -235,11 +235,14 @@ class SettlementTest extends TestCase
 
         $createdAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp + 5;
 
-        $payout = $this->fixtures->create('payout',
-                ['amount' => '1000',
-                 'currency' => 'INR',
-                 'created_at' => $createdAt,
-                 'updated_at' => $createdAt + 10]);
+        $payout = $this->fixtures->create(
+            'payout',
+            [
+                'amount'     => '1000',
+                'currency'   => 'INR',
+                'created_at' => $createdAt,
+                'updated_at' => $createdAt + 10
+            ]);
 
         // Generate settlements for above transactions
         $content = $this->initiateSettlements();
