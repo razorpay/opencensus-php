@@ -57,12 +57,9 @@ class Validator extends Base\Validator
         'password_confirmation'     => 'required|between:6,50'
     );
 
-    protected static $changeEmailRules = array(
-        'email'         => 'required|email'
-    );
-
-    protected static $changeNameRules = array(
-        'name'         => 'required|min:3|alpha_space_num|max:200'
+    protected static $editRules = array(
+        'email'         => 'required|email',
+        'name'          => 'required|min:3|alpha_space_num|max:200',
     );
 
     protected static $apiCallValidators = array('apiCall');

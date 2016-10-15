@@ -46,13 +46,15 @@ app.controller('AdminsCtrl', [
       });
     };
     $scope.openEditAdmin = function (id) {
-      $scope.selected = $scope.admins.find(admin => admin.id === id);
+      // Leaving this commented code here since this looks better and would like to make it work.
+      // $scope.selected = $scope.admins.find(admin => admin.id === id);
+      $scope.selected = $scope.admins.filter(function(x) { return x['id'] === id; });
       var modalInstance = $modal.open({
         templateUrl: 'editAdminModalContent.html',
         controller: 'editAdminModalCtrl',
         resolve: {
           current: function () {
-            return jQuery.extend({}, $scope.selected);
+            return jQuery.extend({}, $scope.selected[0]);
           }
         }
       });
@@ -90,7 +92,7 @@ app.controller('AdminsCtrl', [
 
       var request = $http({
         method: 'post',
-        url: '/admin/' + $scope.selected.id + '/edit',
+        url: '/admin/' + $scope.selected[0].id + '/edit',
         data: angular.toJson(admin)
       });
       request.success(function (data) {

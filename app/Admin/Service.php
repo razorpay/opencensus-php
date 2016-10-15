@@ -154,15 +154,7 @@ class Service extends Base\Service
 
             $admin = Admin\Entity::findorfail($id);
 
-            if (isset($input['name']))
-            {
-                $error = $admin->changeName($input['name']);
-            }
-
-            if (isset($input['email']))
-            {
-                $error = $admin->changeEmail($input['email']);
-            }
+            $error = $admin->edit($input);
 
             $admin->saveOrFail();
 
@@ -171,8 +163,6 @@ class Service extends Base\Service
                 // Delete all existing sessions
                 $this->deleteAllAdminSessions($id);
             }
-
-            return $error;
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {

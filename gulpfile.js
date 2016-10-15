@@ -110,6 +110,9 @@ gulp.task('js', ()=> concatJs().pipe(gulp.dest('public')))
 gulp.task('js:prod', ()=> {
   return concatJs()
     .pipe(uglify())
+    .on('error', function(e){
+        console.log(e);
+     })
     .pipe(rev())
     .pipe(gulp.dest('public'))
     .pipe(rev.manifest())
