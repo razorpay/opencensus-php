@@ -21,6 +21,8 @@ class Core extends Base\Core
 
         try
         {
+            $this->validateMerchantStatus($merchant);
+
             $payout = $this->createPayoutEntity($input, $merchant);
 
             $this->updatePayoutWithTxn($payout);
@@ -94,6 +96,17 @@ class Core extends Base\Core
         unset($input[Entity::DESTINATION]);
 
         return $destination;
+    }
+
+    protected function validateMerchantStatus($merchant)
+    {
+        $onHold = $merchant->holdFunds();
+
+        if ($onHold === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_MERCHANT_FUNDS_ON_HOLD);
+        }
     }
 
     protected function validateMerchantBalance($payout)
