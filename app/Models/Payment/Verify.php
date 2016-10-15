@@ -39,6 +39,7 @@ class Verify
     protected $mode;
     protected $core;
     protected $paymentRepo;
+    protected $mutex;
 
     public function __construct($mode, $trace)
     {
@@ -53,6 +54,8 @@ class Verify
         $this->paymentRepo = $app['repo']->payment;
 
         $this->app = $app;
+
+        $this->mutex = $this->app['api.mutex'];
     }
 
     public function verifyPaymentsWithFilter($filter)
@@ -132,8 +135,24 @@ class Verify
 
         $timeDiff = 0;
 
+        $verifyLockKeys = [];
+
+        $strict = false;
+
         foreach ($payments as $payment)
         {
+            $verifyLockKeys[] = $payment->getId() . "_verify";
+        }
+
+        $verifyKeys = $this->mutex->acquireMultiple($verifyLockKeys, 86400, $strict);
+
+        foreach ($payments as $payment)
+        {
+            if (in_array($payment->getId() . "_verify", $verifyKeys['locked']) === false)
+            {
+                continue;
+            }
+
             $res = $this->verifyPayment($payment);
 
             switch ($res)
@@ -148,7 +167,7 @@ class Verify
 
                 case self::AUTHORIZED:
                     $failed++;
-                    $timeDiff += $time - $payment->getCreatedAt();
+                    $timeDiff += time() - $payment->getCreatedAt();
                     $authorized++;
                     break;
 
@@ -161,6 +180,8 @@ class Verify
                         'Unknown result code: ' . $res);
             }
         }
+
+        $this->mutex->releaseMultiple($verifyKeys['locked']);
 
         $totalTime = time() - $time;
 
@@ -183,7 +204,7 @@ class Verify
 
         $message = 'Payment verify result';
 
-        $total = $timedOut + $verified + $failed + $authorized + $error;
+        $total = $timedOut + $verified + $authorized + $error;
 
         if (($total !== 0) and
             (($verified > 4) or
@@ -191,7 +212,14 @@ class Verify
         {
             // Drop all false values (NULL, 0, "")
             $slackArray = array_filter($results);
-            $this->app['slack']->queue($message, $slackArray, ['channel' => Config::get('slack.channels.tech_logs')]);
+
+            $this->app['slack']->queue(
+                $message,
+                $slackArray,
+                [
+                    'channel' => Config::get('slack.channels.tech_logs')
+                ]
+            );
         }
 
         return $results;

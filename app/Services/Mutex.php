@@ -26,6 +26,53 @@ class Mutex
         $this->requestId = $app['request']->getId();
 
         $this->trace = $app['trace'];
+
+    }
+
+    //TODO : ADD COMMENTS
+    //
+    public function acquireMultiple($resources, $ttl = 60, $strict = false)
+    {
+        $lockedResources = [];
+
+        $alreadyLockedResources = [];
+
+        foreach($resources as $resource)
+        {
+            $isLockAcquired = $this->acquire($resource, $ttl);
+
+            if($isLockAcquired === true)
+            {
+                $lockedResources[] = $resource;
+            }
+            else
+            {
+                if ($strict === true)
+                {
+                    $this->releaseMultiple($lockedResources);
+
+                    return [
+                        'locked' => [],
+                        'not_locked' => $resources
+                    ];
+                }
+
+                $alreadyLocked[] = $resource;
+            }
+        }
+
+        return [
+            'locked' => $lockedResources,
+            'not_locked' => $alreadyLockedResources
+        ];
+    }
+
+    public function releaseMultiple($resources)
+    {
+        foreach($resources as $resource)
+        {
+            $this->release($resource);
+        }
     }
 
     /**
