@@ -2,7 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
-use RZP\Http\ApiResponse;
+use ApiResponse;
 use RZP\Exception\RecoverableException;
 use RZP\Models\Admin;
 use Request;
@@ -64,5 +64,14 @@ class AdminController extends Controller
     public function postTransparentRedirect()
     {
         $input = Request::all();
+    }
+
+    public function getScorecard()
+    {
+        $input = Request::all();
+
+        $data = (new Admin\Scorecard)->generateScorecard($input);
+
+        return ApiResponse::json($data);
     }
 }

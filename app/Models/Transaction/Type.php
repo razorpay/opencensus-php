@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Transaction;
 
+use RZP\Exception;
+
 class Type
 {
     const REFUND        = 'refund';
@@ -21,10 +23,10 @@ class Type
 
     public static function getEntityClass($type)
     {
-        $entity = 'RZP\\Models\\'.ucfirst($type) . '\Entity';
+        $entity = 'RZP\\Models\\' . ucfirst($type) . '\Entity';
 
         if ($type === self::REFUND)
-            $entity = 'RZP\\Models\\Payment\\'.ucfirst($type).'\Entity';
+            $entity = 'RZP\\Models\\Payment\\' . ucfirst($type) . '\Entity';
 
         return $entity;
     }

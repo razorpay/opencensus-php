@@ -3,7 +3,9 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Payment\Entity as Payment;
+use RZP\Gateway\Upi\Base\Entity as Upi;
+use RZP\Constants\Table;
 
 class CreateUpi extends Migration
 {
@@ -15,38 +17,48 @@ class CreateUpi extends Migration
     public function up()
     {
 
-        Schema::create('upi', function(Blueprint $table)
+        Schema::create(Table::UPI, function(Blueprint $table)
         {
             $table->engine = 'InnoDB';
 
-            $table->increments('id');
+            $table->increments(Upi::ID);
 
-            $table->char('payment_id', UniqueIdEntity::ID_LENGTH);
-            $table->string('action');
-            $table->string('amount');
-            $table->string('bank');
-            $table->string('contact')->nullable();
-            $table->string('name')->nullable();
-            $table->boolean('received')->default(0);
-            $table->string('gateway_merchant_id')->nullable();
-            $table->string('gateway_payment_id')->nullable();
-            $table->string('email')->nullable();
-            $table->string('status_code')->nullable();
-            $table->string('vpa')->nullable();
+            $table->char(Upi::PAYMENT_ID, Payment::ID_LENGTH);
 
-            // Adds created_at and updated_at columns to the table
-            $table->integer('created_at');
-            $table->integer('updated_at');
+            $table->string(Upi::ACTION);
 
-            $table->foreign('payment_id')
-                  ->references('id')
-                  ->on('payments')
+            $table->string(Upi::AMOUNT);
+
+            $table->string(Upi::BANK);
+
+            $table->string(Upi::CONTACT)->nullable();
+
+            $table->string(Upi::EMAIL)->nullable();
+
+            $table->string(Upi::VPA)->nullable();
+
+            $table->string(Upi::NAME)->nullable();
+
+            $table->tinyInteger(Upi::RECEIVED)->default(0);
+
+            $table->string(Upi::GATEWAY_MERCHANT_ID)->nullable();
+
+            $table->string(Upi::GATEWAY_PAYMENT_ID)->nullable();
+
+            $table->string(Upi::STATUS_CODE)->nullable();
+
+            $table->integer(Upi::CREATED_AT);
+            $table->integer(Upi::UPDATED_AT);
+
+            $table->foreign(Upi::PAYMENT_ID)
+                  ->references(Payment::ID)
+                  ->on(Table::PAYMENT)
                   ->on_delete('restrict');
 
-            $table->index('received');
-            $table->index('gateway_payment_id');
-            $table->index('bank');
-            $table->index('status_code');
+            $table->index(Upi::RECEIVED);
+            $table->index(Upi::GATEWAY_PAYMENT_ID);
+            $table->index(Upi::BANK);
+            $table->index(Upi::STATUS_CODE);
         });
     }
 
@@ -57,11 +69,11 @@ class CreateUpi extends Migration
      */
     public function down()
     {
-        Schema::table('upi', function($table)
+        Schema::table(Table::UPI, function($table)
         {
-            $table->dropForeign('upi_payment_id_foreign');
+            $table->dropForeign(Table::UPI.'_'.Upi::PAYMENT_ID.'_foreign');
         });
 
-        Schema::drop('upi');
+        Schema::drop(Table::UPI);
     }
 }

@@ -33,10 +33,8 @@ class Base
         'webhook'       => \RZP\Models\Merchant\Webhook\Entity::class,
         'methods'       => \RZP\Models\Merchant\Methods\Entity::class,
         'balance'       => \RZP\Models\Merchant\Balance\Entity::class,
-        'methods'       => \RZP\Models\Merchant\Methods\Entity::class,
         'payment'       => \RZP\Models\Payment\Entity::class,
         'pricing'       => \RZP\Models\Pricing\Entity::class,
-        'webhook'       => \RZP\Models\Merchant\Webhook\Entity::class,
         'customer'      => \RZP\Models\Customer\Entity::class,
         'merchant'      => \RZP\Models\Merchant\Entity::class,
         'terminal'      => \RZP\Models\Terminal\Entity::class,
@@ -48,6 +46,9 @@ class Base
         'transaction'   => \RZP\Models\Transaction\Entity::class,
         'bank_account'  => \RZP\Models\BankAccount\Entity::class,
         'credits'       => \RZP\Models\Merchant\Credits\Entity::class,
+        'address'       => \RZP\Models\Address\Entity::class,
+        'batch'         => \RZP\Models\Batch\Entity::class,
+        'wallet'        => \RZP\Gateway\Wallet\Base\Entity::class,
     );
 
     protected static $liveAndTest = array(
@@ -190,7 +191,7 @@ class Base
 
     protected function callInTransaction($callable, $args)
     {
-        return $this->db->transaction(function ()
+        return $this->db->transaction(function () use ($callable)
         {
             return call_user_func($callable);
         });

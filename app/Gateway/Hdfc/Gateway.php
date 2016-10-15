@@ -346,6 +346,18 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
+        // TODO: remove these after gateway manager driver are fixed
+
+        $this->inquiryRequest['data'] = [];
+        $this->inquiryRequest['xml'] = '';
+        $this->inquiryRequest['error'] = null;
+
+        $this->inquiryResponse['data'] = [];
+        $this->inquiryResponse['xml'] = '';
+        $this->inquiryResponse['error'] = null;
+
+        $this->error = false;
+
         $verify = new Base\Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
@@ -401,34 +413,6 @@ class Gateway extends Base\Gateway
         $paymentId = $input['payment']['id'];
 
         return $this->isCapturedSuccessfully($paymentId);
-    }
-
-    public function getPaymentOrRefundId($input)
-    {
-        return Hdfc\Mpr\Reconciler::getPaymentOrRefundId($input);
-    }
-
-    public function reconcile($input)
-    {
-        return (new Hdfc\Mpr\Reconciler)->reconcile(
-            $input['input'],
-            $input['transactionId'],
-            $input['entities']);
-    }
-
-    public function generateMpr($input)
-    {
-        return (new Hdfc\Mpr\Generator)->generateMpr($input);
-    }
-
-    public function mprFileExists()
-    {
-        return (new Hdfc\Mpr\Generator)->mprFileExists();
-    }
-
-    public function deleteMprFileIfExists()
-    {
-        (new Hdfc\Mpr\Generator)->deleteMprFileIfExists();
     }
 
 // ----------------------Gateway operations end --------------------------------
@@ -549,6 +533,10 @@ class Gateway extends Base\Gateway
         if (strpos($contentType, 'application/xml') === false)
         {
             Hdfc\ErrorHandler::setGatewayWrongContentType($response, $contentType);
+
+            $this->trace->info(
+                TraceCode::GATEWAY_VERIFY_INVALID_HEADER,
+                $contentType);
 
             $this->error = true;
         }

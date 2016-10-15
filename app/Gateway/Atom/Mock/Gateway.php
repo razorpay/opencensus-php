@@ -30,7 +30,7 @@ class Gateway extends Atom\Gateway
         // The key thing now is to replace redirectUrl from atom's to ours!
         $parts = parse_url($data['url']);
 
-        $baseUrl = \RZP\Http\Route::getUrlWithPublicAuth('mockatom_choose_org');
+        $baseUrl = $this->route->getUrlWithPublicAuth('mock_atom_choose_org');
         $newRedirectUrl = $baseUrl . '&' . $parts['query'];
 
         // Put the new redirect url back in!
@@ -51,7 +51,7 @@ class Gateway extends Atom\Gateway
             $mockGatewaysConfig = \Config::get('applications.mock_gateways');
             $secret = $mockGatewaysConfig['secret'];
 
-            $mockUrl = \RZP\Http\Route::getUrl('mockatom_init_payment', array(), 'rzp_test', $secret);
+            $mockUrl = $this->route->getUrl('mock_atom_init_payment', array(), 'rzp_test', $secret);
 
             $parts = parse_url($url);
 

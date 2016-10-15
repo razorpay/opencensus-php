@@ -38,7 +38,9 @@ class Network
         self::MAES    => '#25C395',
         self::MC      => '#25BAC3',
         self::RUPAY   => '#74C674',
-        self::VISA    => '#C15482',);
+        self::VISA    => '#C15482',
+        self::UNKNOWN => '#E74C3C'
+    );
 
    public static $networks = array(
         self::AMEX,
@@ -73,6 +75,11 @@ class Network
 //        self::RUPAY,
         self::UNP,
      );
+
+    public static $recurringNetworks = array(
+        self::VISA,
+        self::MC,
+    );
 
     public static $cvvLength = array(
         self::AMEX => 4);

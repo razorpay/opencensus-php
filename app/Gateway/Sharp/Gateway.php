@@ -20,6 +20,11 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
+        if ($this->isRecurringPaymentRequest($input))
+        {
+            return;
+        }
+
         $content = array(
             'action'        => 'authorize',
             'amount'        => $input['payment']['amount'],
@@ -152,7 +157,7 @@ class Gateway extends Base\Gateway
 
     protected function getRequestArray($content, $input)
     {
-        $url = \RZP\Http\Route::getUrlWithPublicAuth('mock_sharp_payment_post');
+        $url = $this->route->getUrlWithPublicAuth('mock_sharp_payment_post');
 
         $method = 'post';
 
@@ -187,5 +192,17 @@ class Gateway extends Base\Gateway
     protected function decryptCardNumber($encryptedCard)
     {
         return Crypt::decrypt($encryptedCard);
+    }
+
+    protected function isRecurringPaymentRequest($input)
+    {
+        if (($input['payment']['recurring'] === true) and
+            ($input['token'] !== null) and
+            ($input['token']->isRecurring() === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

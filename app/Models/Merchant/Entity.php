@@ -63,6 +63,7 @@ class Entity extends Base\PublicEntity
         self::SCOPE,
         self::WEBSITE,
         self::CATEGORY,
+        self::CATEGORY2,
         self::FEATURES,
         self::LOGO_URL,
         self::FEE_BEARER,
@@ -97,6 +98,7 @@ class Entity extends Base\PublicEntity
         self::PRICING_PLAN_ID,
         self::WEBSITE,
         self::CATEGORY,
+        self::CATEGORY2,
         self::INTERNATIONAL,
         self::FEE_BEARER,
         self::BILLING_LABEL,
@@ -474,7 +476,7 @@ class Entity extends Base\PublicEntity
         return $logoUrlBasedOnSize;
     }
 
-    public function getTransactionReportEmailAttribute()
+    protected function getTransactionReportEmailAttribute()
     {
         $emails = explode(',', $this->attributes[self::TRANSACTION_REPORT_EMAIL]);
 

@@ -2,7 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
-use RZP\Http\ApiResponse;
+use ApiResponse;
 use RZP\Models\Customer;
 use Request;
 
@@ -168,6 +168,38 @@ class CustomerController extends Controller
         $input = Request::all();
 
         $data = (new Customer\Service)->updateSmsStatus($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postCreateAddress($customerId)
+    {
+        $input = Request::all();
+
+        $address = (new Customer\Service)->createAddress($customerId, $input);
+
+        return ApiResponse::json($address);
+    }
+
+    public function getAddresses($customerId)
+    {
+        $input = Request::all();
+
+        $addresses = (new Customer\Service)->fetchAddresses($customerId, $input);
+
+        return ApiResponse::json($addresses);
+    }
+
+    public function putPrimaryAddress($customerId, $addressId)
+    {
+        $address = (new Customer\Service)->setPrimaryAddress($customerId, $addressId);
+
+        return ApiResponse::json($address);
+    }
+
+    public function deleteAddress($customerId, $addressId)
+    {
+        $data = (new Customer\Service)->deleteAddress($customerId, $addressId);
 
         return ApiResponse::json($data);
     }

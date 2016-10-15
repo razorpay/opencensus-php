@@ -104,7 +104,7 @@ class Gateway extends Base\Gateway
         if ((isset($content[ResponseFields::STATUS]) === false) or
             ($content[ResponseFields::STATUS] !== Status::SUCCESS))
         {
-            $refundData['response_description'] = $content[ResponseFields::MSG];
+            $refundData['response_description'] = substr($content[ResponseFields::MSG], 0, 255);
             $refundData['status_code'] = $content[ResponseFields::STATUS];
 
             $this->createGatewayRefundEntity($refundData);
@@ -118,7 +118,7 @@ class Gateway extends Base\Gateway
                 DateFormat::NEW_FDC_TXN_DATE_FORMAT);
 
             $contentToSave = [
-                'response_description'  => $content[ResponseFields::MSG],
+                'response_description'  => substr($content[ResponseFields::MSG], 0, 255),
                 'status_code'           => $content[ResponseFields::STATUS],
                 'gateway_refund_id'     => $content[ResponseFields::NEW_FDC_TXN_ID],
                 'reference2'            => $reference2,
@@ -189,10 +189,7 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
-        if ($this->mode === Mode::LIVE)
-        {
-            $request['options']['proxy'] = 'https://splunk.razorpay.com:8888';
-        }
+        $this->setProxy($request);
 
         return $request;
     }
@@ -385,7 +382,7 @@ class Gateway extends Base\Gateway
             return $this->config['test_merchant_id'];
         }
 
-        assert($this->mode === Mode::LIVE);
+        assertTrue($this->mode === Mode::LIVE);
 
         // We are fetching merchant id from config
         // as it's common across all the merchants
@@ -399,7 +396,7 @@ class Gateway extends Base\Gateway
             return $this->config['test_end_mid'];
         }
 
-        assert($this->mode === Mode::LIVE);
+        assertTrue($this->mode === Mode::LIVE);
 
         return $terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
     }
@@ -449,7 +446,7 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 ResponseCodeMap::getApiErrorCode($content[ResponseFields::CODE]),
                 $content[ResponseFields::CODE],
-                $content[ResponseFields::MSG]);
+                substr($content[ResponseFields::MSG], 0, 255));
         }
     }
 
@@ -467,7 +464,7 @@ class Gateway extends Base\Gateway
         // Create a payment gateway entity and save it.
         $contentToSave = [
             ResponseFields::STATUS     => $content[ResponseFields::STATUS],
-            ResponseFields::MSG        => $content[ResponseFields::MSG],
+            ResponseFields::MSG        => substr($content[ResponseFields::MSG], 0, 255),
             ResponseFields::TXN_REF_NO => $content[ResponseFields::TXN_REF_NO],
             ResponseFields::TRAN_ID    => $content[ResponseFields::TRAN_ID],
             ResponseFields::TRAN_DATE  => $date,
@@ -489,8 +486,8 @@ class Gateway extends Base\Gateway
 
         $this->action = Action::CALLBACK;
 
-        assert($verifyContent[ResponseFields::STATUS] === Status::SUCCESS);
-        assert((float) $verifyContent[ResponseFields::TXN_AMT] === (float) $content[ResponseFields::TRAN_AMT]);
+        assertTrue($verifyContent[ResponseFields::STATUS] === Status::SUCCESS);
+        assertTrue((float) $verifyContent[ResponseFields::TXN_AMT] === (float) $content[ResponseFields::TRAN_AMT]);
     }
 
     /**
@@ -504,7 +501,7 @@ class Gateway extends Base\Gateway
         // Create a payment gateway entity and save it.
         $contentToSave = [
             ResponseFields::STATUS  => $content[ResponseFields::STATUS],
-            ResponseFields::MSG     => $content[ResponseFields::MSG],
+            ResponseFields::MSG     => substr($content[ResponseFields::MSG], 0, 255),
         ];
 
         $wallet = $this->repo->findByPaymentIdAndAction(
@@ -582,12 +579,18 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
-        if ($this->mode === Mode::LIVE)
-        {
-            $request['options']['proxy'] = 'https://splunk.razorpay.com:8888';
-        }
+        $this->setProxy($request);
 
         return $request;
+    }
+
+    protected function setProxy(&$request)
+    {
+        if (($this->mode === Mode::LIVE) and
+            ($this->proxyEnabled === true))
+        {
+            $request['options']['proxy'] = $this->proxy;
+        }
     }
 
     protected function getLiveSecret()

@@ -185,13 +185,13 @@ class Gateway extends Base\Gateway
 
     protected function validateCallbackChecksum($content)
     {
-        $expectedHash = $content['Checksum'];
+        $inputHash = $content['Checksum'];
 
         unset($content['Checksum']);
 
-        $generatedHash = $this->getHashOfArray($content);
+        $expectedHash = $this->getHashOfArray($content);
 
-        if ($expectedHash !== $generatedHash)
+        if (hash_equals($expectedHash, $inputHash)  !== true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Failed checksum verification');
@@ -252,7 +252,17 @@ class Gateway extends Base\Gateway
             $request);
 
         $response = $this->sendGatewayRequest($request);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            ['response' => $response]);
+
         $content = $response->body;
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            ['responseBody' => $content]);
+
         $content = $this->getDataFromResponse($content);
 
         $this->trace->info(

@@ -58,7 +58,12 @@ class FeeCalculator
 
         $fee += $serviceTax;
 
-        assert ($fee < $amount);
+        if ($fee > $amount)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT,
+                Payment\Entity::AMOUNT);
+        }
 
         return  array($fee, $serviceTax);
     }
@@ -130,6 +135,14 @@ class FeeCalculator
         {
             $rule = $this->getRelevantPricingRuleForNBPayment($rules);
         }
+        else if ($method === Payment\Method::UPI)
+        {
+            $rule = $this->getRelevantPricingRuleForUPI($rules);
+        }
+        else if ($method === Payment\Method::EMI)
+        {
+            $rule = $this->getRelevantPricingRuleForEmi($rules);
+        }
         else
         {
             $rule = $this->getRelevantPricingRuleForMethod($rules);
@@ -141,7 +154,37 @@ class FeeCalculator
     protected function getRelevantPricingRuleForMethod($rules)
     {
         return $this->validateAndGetOnePricingRule($rules);
+    }
 
+    protected function getRelevantPricingRuleForUPI($rules)
+    {
+        return $this->applyAmountRangeFilterAndReturnOneRule($rules);
+    }
+
+    protected function applyAmountRangeFilterAndReturnOneRule($rules)
+    {
+        $payment = $this->entity;
+
+        $amount = $payment->getAmount();
+
+        $filters = [
+            [Pricing\Entity::AMOUNT_RANGE_ACTIVE, true, true, false]
+        ];
+
+        $rules = $this->applyFiltersOnRules($rules, $filters);
+
+        $subventionType = $payment->merchant->getSubventionType();
+
+        $rule = $this->chooseRuleWithAmount($rules, $amount, $subventionType);
+
+        if ($rule === null)
+        {
+            throw new Exception\LogicException(
+                'Failed to find a valid pricing rule for the payment. ' .
+                'Payment id: ' . $payment->getId());
+        }
+
+        return $rule;
     }
 
     protected function getRelevantPricingRuleForNBPayment($rules)
@@ -158,32 +201,13 @@ class FeeCalculator
         // * Filter based on AmountRange
         // * Choose based on Amount
 
-        $filter = array(
-            [Pricing\Entity::PAYMENT_NETWORK, $bank, true, null]
-        );
+        $filters = [
+            [Pricing\Entity::PAYMENT_NETWORK, $bank, true, null],
+        ];
 
-        $rules = $this->applyFiltersOnRules($rules, $filter);
+        $rules = $this->applyFiltersOnRules($rules, $filters);
 
-        $filter1 = array(
-            [Pricing\Entity::AMOUNT_RANGE_ACTIVE, true, true, false]
-        );
-
-        $rules = $this->applyFiltersOnRules($rules, $filter1);
-
-        $amount = $payment->getAmount();
-
-        $subventionType = $payment->merchant->getSubventionType();
-
-        $rule = $this->chooseRuleWithAmount($rules, $amount, $subventionType);
-
-        if ($rule === null)
-        {
-            throw new Exception\LogicException(
-                'Failed to find a valid pricing rule for the payment. ' .
-                'Payment id: ' . $payment->getId());
-        }
-
-        return $rule;
+        return $this->applyAmountRangeFilterAndReturnOneRule($rules);
     }
 
     protected function getRelevantPricingRuleForWalletPayment($rules)
@@ -206,6 +230,21 @@ class FeeCalculator
         );
 
         $rules = $this->applyFiltersOnRules($rules, $filter);
+
+        return $this->validateAndGetOnePricingRule($rules);
+    }
+
+    protected function getRelevantPricingRuleForEmi($rules)
+    {
+        $payment = $this->entity;
+
+        $network = Card\Network::getCode($payment->card->getNetwork());
+
+        $filters1 = array(
+            [Pricing\Entity::PAYMENT_NETWORK,       $network,       true,   null    ],
+        );
+
+        $rules = $this->applyFiltersOnRules($rules, $filters1);
 
         return $this->validateAndGetOnePricingRule($rules);
     }
@@ -240,11 +279,6 @@ class FeeCalculator
             [Pricing\Entity::PAYMENT_NETWORK,       $network,       true,   null    ],
         );
 
-        $filters2 = array(
-            [Pricing\Entity::PAYMENT_METHOD_TYPE,   $cardType,      true,   null    ],
-            [Pricing\Entity::AMOUNT_RANGE_ACTIVE,   true,           true,   false   ],
-        );
-
         $rules = $this->applyFiltersOnRules($rules, $filters1);
 
         if ($network === Card\Network::AMEX)
@@ -252,35 +286,15 @@ class FeeCalculator
             return $this->validateAndGetOnePricingRule($rules);
         }
 
+        // If network is not amex, we can check for AMOUNT RANGE FILTERS
+
+        $filters2 = array(
+            [Pricing\Entity::PAYMENT_METHOD_TYPE,   $cardType,      true,   null    ],
+        );
+
         $rules = $this->applyFiltersOnRules($rules, $filters2);
 
-        if (count($rules) === 0)
-        {
-            throw new Exception\LogicException(
-                'Invalid rule count: 0, Payment Id: ' . $payment->getId(),
-                ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT,
-                [
-                    'intl' => $international,
-                    'card_type' => $cardType,
-                    'network' => $network,
-                    'merchant_id' => $payment->getMerchantId()
-                ]);
-        }
-
-        $amount = $payment->getAmount();
-
-        $subventionType = $payment->merchant->getSubventionType();
-
-        $rule = $this->chooseRuleWithAmount($rules, $amount, $subventionType);
-
-        if ($rule === null)
-        {
-            throw new Exception\LogicException(
-                'Failed to find a valid pricing rule for the payment. ' .
-                'Payment id: ' . $payment->getId());
-        }
-
-        return $rule;
+        return $this->applyAmountRangeFilterAndReturnOneRule($rules);
     }
 
     protected function applyFiltersOnRules($rules, $filters)

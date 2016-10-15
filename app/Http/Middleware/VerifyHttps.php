@@ -2,22 +2,33 @@
 
 namespace RZP\Http\Middleware;
 
-use RZP\Http\ApiResponse;
+use App;
 use Closure;
+use ApiResponse;
+
 
 class VerifyHttps
 {
-    const PRODUCTION_HOSTS = [
-        'alpha.razorpay.com',
-        'beta.razorpay.com',
-        'api.razorpay.com'
-    ];
+    protected function getProductionHosts()
+    {
+        $app = App::getFacadeRoot();
+
+        $config = $app['config'];
+
+        $productionHosts = [];
+
+        $productionHosts = $config->get('url.api_hosts');
+
+        return $productionHosts;
+    }
 
     public function handle($request, Closure $next)
     {
         $host = $request->getHttpHost();
 
-        if ((in_array($host, self::PRODUCTION_HOSTS)) and
+        $productionHosts = $this->getProductionHosts();
+
+        if ((in_array($host, $productionHosts)) and
             ($request->secure() === false))
         {
             return ApiResponse::onlyHttpsAllowed();

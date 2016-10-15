@@ -12,6 +12,7 @@ use RZP\Models\Customer;
 use RZP\Models\Customer\Token;
 use RZP\Models\Emi;
 use RZP\Models\Payment;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Status;
 use RZP\Models\Transaction;
@@ -42,6 +43,13 @@ trait Callback
      */
     public function callback($id, $hash, array $gatewayInput)
     {
+        $this->trace->info(
+            TraceCode::PAYMENT_CALLBACK_REQUEST,
+            [
+                'gateway_input' => $gatewayInput,
+                'payment_id'    => $id,
+            ]);
+
         $payment = $this->retrieve($id);
 
         // For redirect flow
@@ -52,7 +60,6 @@ trait Callback
         // Kinda weird! And it's always null.
         //
         unset($gatewayInput['csrf']);
-
         $this->verifyHash($hash, $payment->getPublicId());
 
         if ($payment->isCreated() === false)
@@ -262,9 +269,7 @@ trait Callback
 
         if (Error\Error::hasAction($code) === false)
         {
-            $this->updatePaymentFailed(
-                $e->getError(),
-                TraceCode::PAYMENT_AUTH_FAILURE);
+            $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
         }
         else
         {
@@ -280,6 +285,38 @@ trait Callback
         }
 
         throw $e;
+    }
+
+    protected function rethrowFailedPaymentErrorException($payment)
+    {
+        $internalErrorCode = $payment->getInternalErrorCode();
+        $publicErrorCode = $payment->getErrorCode();
+        $errorDesc = $payment->getErrorDescription();
+
+        Error\Map::throwExceptionFromErrorDetails(
+            $publicErrorCode, $internalErrorCode, $errorDesc);
+
+        //
+        // If it has reached here, then an edge case occurred, for which
+        // a suitable exception was not found and which must be handled.
+        // So, we trace an error message, ringing alerts to our devs.
+        //
+
+        $this->trace->error(
+            TraceCode::PAYMENT_CALLBACK_FAILURE,
+            [
+                'payment_id' => $payment->getPublicId(),
+                'public_error_code' => $publicErrorCode,
+                'internal_error_code' => $internalErrorCode,
+                'error_description' => $errorDesc,
+                'message' => 'Failed to convert error code to the appropriate exception'
+            ]);
+
+        // If no appropriate exception mapping was found then show
+        // the usual message that payment already processed.
+
+        throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
     }
 
     protected function checkForMerchantCallbackUrl($payment)

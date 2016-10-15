@@ -53,6 +53,13 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
+    protected function addQueryParamInternational($query, $params)
+    {
+        $international = Card\Entity::getAttributeWithTableName(Entity::INTERNATIONAL);
+
+        $query->where($international, '=', $params[Entity::INTERNATIONAL]);
+    }
+
     protected function addQueryParamStatus($query, $params)
     {
         $status = $params[Payment\Entity::STATUS];

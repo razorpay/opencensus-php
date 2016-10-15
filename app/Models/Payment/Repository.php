@@ -2,11 +2,12 @@
 
 namespace RZP\Models\Payment;
 
+use Carbon\Carbon;
 use RZP\Models\Base;
-use RZP\Models\Merchant\Methods;
-use RZP\Models\Payment;
 use RZP\Models\Card;
+use RZP\Models\Merchant;
 use RZP\Models\Order;
+use RZP\Models\Payment;
 use RZP\Models\Transaction;
 use RZP\Constants\Table;
 use RZP\Exception;
@@ -33,23 +34,25 @@ class Repository extends Base\Repository
 
     // These are admin allowed params to search on.
     protected $appFetchParamRules = array(
-        Entity::STATUS          => 'sometimes|string',
-        Entity::VERIFIED        => 'sometimes|in:null,0,1,2',
-        Entity::REFUND_STATUS   => 'sometimes|in:null,partial,full',
-        Entity::BANK            => 'sometimes',
-        Entity::METHOD          => 'sometimes',
-        Entity::GATEWAY         => 'sometimes',
-        Entity::EMAIL           => 'sometimes|email',
-        Entity::MERCHANT_ID     => 'sometimes|alpha_num',
-        Entity::CARD_ID         => 'sometimes|alpha_num|size:14',
-        Entity::CAPTURED        => 'sometimes|in:0,1',
-        Entity::WALLET          => 'sometimes|',
-        Entity::NOTES           => 'sometimes|string|max:500',
-        Card\Entity::IIN        => 'sometimes|integer|digits:6',
-        Card\Entity::LAST4      => 'sometimes|string|digits:4',
+        Entity::STATUS             => 'sometimes|string',
+        Entity::VERIFIED           => 'sometimes|in:null,0,1,2',
+        Entity::REFUND_STATUS      => 'sometimes|in:null,partial,full',
+        Entity::BANK               => 'sometimes',
+        Entity::METHOD             => 'sometimes',
+        Entity::GATEWAY            => 'sometimes',
+        Entity::EMAIL              => 'sometimes|email',
+        Entity::MERCHANT_ID        => 'sometimes|alpha_num',
+        Entity::CARD_ID            => 'sometimes|alpha_num|size:14',
+        Entity::CAPTURED           => 'sometimes|in:0,1',
+        Entity::WALLET             => 'sometimes|',
+        Entity::NOTES              => 'sometimes|string|max:500',
+        Card\Entity::IIN           => 'sometimes|integer|digits:6',
+        Card\Entity::LAST4         => 'sometimes|string|digits:4',
         Card\Entity::INTERNATIONAL => 'sometimes|in:0,1',
-        Entity::CUSTOMER_ID     => 'sometimes|alpha_num',
-        Entity::SAVE            => 'sometimes|in:0,1',
+        Entity::CUSTOMER_ID        => 'sometimes|alpha_num|size:14',
+        ENTITY::TOKEN_ID           => 'sometimes|alpha_num|size:14',
+        ENTITY::GLOBAL_TOKEN_ID    => 'sometimes|alpha_num|size:14',
+        Entity::SAVE               => 'sometimes|in:0,1',
     );
 
     protected $esWhitelistedParams = [
@@ -98,6 +101,7 @@ class Repository extends Base\Repository
                     ->where(Entity::BANK, '=', $bank)
                     ->where(Entity::METHOD, '=', Method::EMI)
                     ->with('card.globalCard')
+                    ->with('emiPlan')
                     ->get();
     }
 
@@ -240,6 +244,13 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchPaymentsForOrderId($orderId)
+    {
+        return $this->newQuery()
+                    ->where(Payment\Entity::ORDER_ID, '=', $orderId)
+                    ->get();
+    }
+
     protected function addQueryParamBank($query, $params)
     {
         if (Payment\Processor\Netbanking::isSupportedBank($params['bank']) === false)
@@ -283,11 +294,9 @@ class Repository extends Base\Repository
 
     protected function addQueryParamInternational($query, $params)
     {
-        $this->joinQueryCard($query);
+        $international = Payment\Entity::getAttributeWithTableName(Entity::INTERNATIONAL);
 
-        $query->where(Card\Entity::INTERNATIONAL, '=', $params[Card\Entity::INTERNATIONAL]);
-
-        $query->select($query->getModel()->getTable().'.*');
+        $query->where($international, '=', $params[Entity::INTERNATIONAL]);
     }
 
     protected function addQueryCaptured($query, $params)
@@ -306,9 +315,9 @@ class Repository extends Base\Repository
 
     protected function addQueryParamOrderId($query, $params)
     {
-        $order_id = (new Order\Entity)->verifyIdAndSilentlyStripSign($params[Entity::ORDER_ID]);
+        $orderId = (new Order\Entity)->verifyIdAndSilentlyStripSign($params[Entity::ORDER_ID]);
 
-        $query->where(Entity::ORDER_ID, '=', $order_id);
+        $query->where(Entity::ORDER_ID, '=', $orderId);
     }
 
     protected function joinQueryCard($query)
@@ -331,4 +340,90 @@ class Repository extends Base\Repository
         $query->join(Card\Entity::getTableName(), $paymentCardId, '=', $cardId);
     }
 
+    public function getYesterdayVolume()
+    {
+        $yesterday = Carbon::yesterday('Asia/Kolkata')->timestamp;
+        $today = Carbon::today('Asia/Kolkata')->timestamp;
+
+        return $this->getPaymentVolumeBetweenTimestamp($yesterday, $today);
+    }
+
+    public function getCurrentMonthVolume()
+    {
+        $from = Carbon::today('Asia/Kolkata')->startOfMonth()->timestamp;
+        $to = Carbon::today('Asia/Kolkata')->timestamp;
+
+        return $this->getPaymentVolumeBetweenTimestamp($from, $to);
+    }
+
+    public function getCreatedPaymentsForOrder($orderId)
+    {
+        $ts = time() - Analytics\Entity::PAYMENT_WINDOW;
+
+        return $this->newQuery()
+                    ->whereIn(Entity::STATUS, [Status::CREATED, Status::FAILED])
+                    ->where(Payment\Entity::ORDER_ID, '=', $orderId)
+                    ->where(Payment\Entity::CREATED_AT, '>', $ts)
+                    ->get();
+    }
+
+    public function getYesterdayTopMerchantVolumeWise()
+    {
+        $from = Carbon::yesterday('Asia/Kolkata')->timestamp;
+        $to = Carbon::today('Asia/Kolkata')->timestamp;
+
+        $pid = Payment\Entity::getAttributeWithTableName(Payment\Entity::MERCHANT_ID);
+        $mid = Merchant\Entity::getAttributeWithTableName(Merchant\Entity::ID);
+
+        return $this->newQuery()
+                    ->join(Merchant\Entity::getTableName(), $pid, '=', $mid)
+                    ->selectRaw(
+                       Payment\Entity::MERCHANT_ID . ','.
+                       Merchant\Entity::NAME . ','.
+                       Merchant\Entity::WEBSITE . ','.
+                       "SUM(amount) / 100 AS volume" . ','.
+                       'COUNT(*) AS count')
+                    ->betweenTime($from, $to)
+                    ->statusSuccess()
+                    ->groupBy(
+                        Payment\Entity::MERCHANT_ID,
+                        Merchant\Entity::NAME,
+                        Merchant\Entity::WEBSITE)
+                    ->orderBy('volume', 'desc')
+                    ->limit(30)
+                    ->get();
+    }
+
+    public function fetchAuthorizedSummary()
+    {
+        return $this->newQuery()
+                    ->where(Entity::STATUS, '=', Status::AUTHORIZED)
+                    ->groupBy(Entity::MERCHANT_ID)
+                    ->selectRaw(Entity::MERCHANT_ID . ','.
+                       'SUM(' . Entity::AMOUNT . ') AS sum' . ','.
+                       'COUNT(*) AS count')
+                    ->get();
+    }
+
+    public function fetchCapturedSummaryBetweenTimestamp($from , $to)
+    {
+        return $this->newQuery()
+                    ->where(Entity::STATUS, '=', Status::CAPTURED)
+                    ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
+                    ->groupBy(Entity::MERCHANT_ID)
+                    ->selectRaw(Entity::MERCHANT_ID . ','.
+                       'SUM(' . Entity::AMOUNT . ') AS sum' . ','.
+                       'COUNT(*) AS count')
+                    ->get();
+    }
+
+    protected function getPaymentVolumeBetweenTimestamp($from, $to)
+    {
+        $vol = $this->newQuery()
+                    ->betweenTime($from, $to)
+                    ->statusSuccess()
+                    ->sum(Entity::AMOUNT);
+
+        return $vol;
+    }
 }

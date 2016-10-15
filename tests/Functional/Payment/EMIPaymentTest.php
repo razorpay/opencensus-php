@@ -73,25 +73,16 @@ class EmiPaymentTest extends TestCase
         $this->ba->publicAuth();
 
         //Kotak Card
-        $this->makeEmiPaymentOnCard('4280951000002433', 9, 1, 'capp_1000000custapp');
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->fixtures->edit('payment', $payment['id'], [
-            'created_at'  => $yesterdayAtTen - 2,
-            'authorized_at' => $yesterdayAtTen,
-            'captured_at' => $yesterdayAtTen + 2,
-            'updated_at' => $yesterdayAtTen + 2,
-        ]);
+        $this->makeEmiPaymentOnCard('4280951000002433', 9, $yesterdayAtTen, 1, 'capp_1000000custapp');
 
         //Axis Card
-        $this->makeEmiPaymentOnCard('4111460212312338', 3);
-        $payment = $this->getLastEntity('payment', true);
-        $this->fixtures->edit('payment', $payment['id'], [
-            'created_at'  => $yesterdayAtTen - 2,
-            'authorized_at' => $yesterdayAtTen,
-            'captured_at' => $yesterdayAtTen + 2,
-            'updated_at' => $yesterdayAtTen + 2,
-        ]);
+        $this->makeEmiPaymentOnCard('4111460212312338', 3, $yesterdayAtTen);
+
+        //IndusInd Card
+        $this->makeEmiPaymentOnCard('4147720000000009', 9, $yesterdayAtTen);
+
+        //RBL Card
+        $this->makeEmiPaymentOnCard('5243730000000008', 9, $yesterdayAtTen);
 
         $request = array(
             'method' => 'POST',
@@ -102,12 +93,17 @@ class EmiPaymentTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals(count($content), 3);
+        $this->assertEquals(count($content), 4);
+
         $this->assertEquals(File::exists($this->zipFileName($content['KKBK'])), true);
         $this->assertEquals(File::exists($this->zipFileName($content['UTIB'])), true);
+        $this->assertEquals(File::exists($this->zipFileName($content['INDB'])), true);
+        $this->assertEquals(File::exists($this->zipFileName($content['RATN'])), true);
 
         $this->checkPasswordProtectedZip($this->zipFileName($content['KKBK']));
         $this->checkPasswordProtectedZip($this->zipFileName($content['UTIB']));
+        $this->checkPasswordProtectedZip($this->zipFileName($content['INDB']));
+        $this->checkPasswordProtectedZip($this->zipFileName($content['RATN']));
 
         $this->fixtures->merchant->disableEmi();
     }
@@ -149,7 +145,7 @@ class EmiPaymentTest extends TestCase
         }
     }
 
-    protected function makeEmiPaymentOnCard($card, $emiDuration, $save = 0, $appToken = null, $customerId =  null)
+    protected function makeEmiPaymentOnCard($card, $emiDuration, $paymentTime, $save = 0, $appToken = null, $customerId =  null)
     {
         $this->payment['amount'] = 500000;
         $this->payment['method'] = 'emi';
@@ -160,6 +156,17 @@ class EmiPaymentTest extends TestCase
         $this->payment['customer_id'] = $customerId;
 
         $this->doAuthAndCapturePayment($this->payment);
+
+        // Set Payment Time
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->fixtures->edit('payment', $payment['id'], [
+            'created_at'  => $paymentTime - 2,
+            'authorized_at' => $paymentTime,
+            'captured_at' => $paymentTime + 2,
+            'updated_at' => $paymentTime + 2,
+        ]);
+
     }
 
     public function testEmiPaymentEmiNotSupported()

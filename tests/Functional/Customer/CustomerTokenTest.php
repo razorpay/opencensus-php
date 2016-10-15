@@ -5,11 +5,13 @@ namespace RZP\Tests\Functional\CustomerToken;
 use Mockery;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
 class CustomerTokenTest extends TestCase
 {
-    use RequestResponseFlowTrait;
+    use PaymentTrait;
+    use InteractsWithSession;
 
     public function setUp()
     {
@@ -66,6 +68,15 @@ class CustomerTokenTest extends TestCase
         $this->startTest();
     }
 
+    public function testDeleteCustomerTokenById()
+    {
+        $this->mockSession();
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     public function testGetCustomerTokensByAppToken()
     {
         $this->mockSession();
@@ -77,6 +88,8 @@ class CustomerTokenTest extends TestCase
 
     public function testFetchSavedTokensStatusSaved()
     {
+        $this->mockSession();
+
         $this->ba->publicAuth();
 
         $response = $this->startTest();
@@ -86,6 +99,8 @@ class CustomerTokenTest extends TestCase
 
     public function testFetchSavedCustomerStatusWithDeviceToken()
     {
+        $this->mockSession();
+
         $this->ba->publicAuth();
 
         $this->startTest();
@@ -139,7 +154,8 @@ class CustomerTokenTest extends TestCase
     protected function mockSession()
     {
         $data = array(
-            'test_app_token' => 'capp_1000000custapp'
+            'test_app_token'   => 'capp_1000000custapp',
+            'test_checkcookie' => '1'
         );
 
         $this->session($data);

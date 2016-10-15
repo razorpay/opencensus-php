@@ -4,31 +4,34 @@ namespace RZP\Models\Customer;
 
 use RZP\Models\Base;
 use RZP\Models\Customer;
+use RZP\Models\Address;
 use RZP\Models\Merchant;
-use RZP\Models\Merchant\Account;
 use RZP\Models\BankAccount;
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
     /**
      * Creates Local customer entity for merchant
-     * @param  array customer data
+     * @param  array $input
      * @return array customer data
      */
     public function createLocalCustomer($input)
     {
-        $failOnDuplicate = true;
+        // Not being used currently. Will uncomment when required.
 
-        if ((isset($input['flag'])) and
-            ($input['flag'] === '1'))
-        {
-            $failOnDuplicate = false;
-        }
+        // $failOnDuplicate = true;
+        //
+        // if ((isset($input['flag'])) and
+        //     ($input['flag'] === '1'))
+        // {
+        //     $failOnDuplicate = false;
+        // }
 
         unset($input['flag']);
 
-        $customer = (new Customer\Core)->createLocalCustomer($input, $this->merchant, $failOnDuplicate);
+        $customer = (new Customer\Core)->createLocalCustomer($input, $this->merchant);
 
         return $customer->toArrayPublic();
     }
@@ -152,6 +155,26 @@ class Service extends Base\Service
     public function fetchGlobalCustomerStatus($contact, $input, $sendOtp = false)
     {
         $data = ['saved' => false];
+
+        // send otp is true when called from the checkout, false if called from
+        // preferences, we need to find out for first case only
+        if ($sendOtp === true)
+        {
+            $sessionData = $this->app['request']->session()->all();
+
+            $this->trace->info(TraceCode::CUSTOMER_CHECKCOOKIE_STATUS,
+                [
+                    'session' => $sessionData,
+                    'input'   => $input
+                ]);
+
+            $key = $this->mode . '_checkcookie';
+
+            if (empty($sessionData[$key]) === true)
+            {
+                return $data;
+            }
+        }
 
         $merchant = $this->repo->merchant->getSharedAccount();
 
@@ -287,5 +310,76 @@ class Service extends Base\Service
 
         return $collection->toArrayWithItems();
     }
-}
 
+    public function createAddress($customerId, array $input)
+    {
+        Entity::verifyIdAndStripSign($customerId);
+
+        $customer = $this->repo->customer->findByIdAndMerchant($customerId, $this->merchant);
+
+        $address = (new Address\Core)->create($customer, Address\Type::CUSTOMER, $input);
+
+        return $address->toArrayPublic();
+    }
+
+    public function fetchAddresses($customerId, array $input)
+    {
+        Entity::verifyIdAndStripSign($customerId);
+
+        $customer = $this->repo->customer->findByIdAndMerchant($customerId, $this->merchant);
+
+        $addresses = $this->repo->address->fetchAddressesForEntity($customer, $input);
+
+        return $addresses->toArrayPublic();
+    }
+
+    public function setPrimaryAddress($customerId, $addressId)
+    {
+        $address = $this->getAddressFromCustomerId($customerId, $addressId);
+
+        // If the address is already set as primary, there's nothing to do.
+        if ($address->isPrimary() === true)
+        {
+            return $address;
+        }
+
+        $address = (new Address\Core)->setPrimaryAddress($address);
+
+        return $address->toArrayPublic();
+    }
+
+    public function deleteAddress($customerId, $addressId)
+    {
+        $address = $this->getAddressFromCustomerId($customerId, $addressId);
+
+        $address = (new Address\Core)->delete($address);
+
+        if ($address === null)
+        {
+            return [];
+        }
+
+        return $address->toArrayPublic();
+    }
+
+    /**
+     * Gets the customer from customerId, with merchant as the restriction
+     * Gets the address from addressId, with customer as the restriction
+     * This ensures that the merchant is retrieving his customer only
+     * and is attempting to get an address of that customer only.
+     *
+     * @param $customerId
+     * @param $addressId
+     * @return Address\Entity
+     */
+    protected function getAddressFromCustomerId($customerId, $addressId)
+    {
+        Entity::verifyIdAndStripSign($customerId);
+
+        Address\Entity::verifyIdAndStripSign($addressId);
+
+        $customer = $this->repo->customer->findByIdAndMerchant($customerId, $this->merchant);
+
+        return $this->repo->address->findByEntityAndId($addressId, $customer);
+    }
+}

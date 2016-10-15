@@ -2,9 +2,9 @@
 
 namespace RZP\Http\Controllers;
 
-use RZP\Http\ApiResponse;
-use RZP\Models\Pricing;
+use ApiResponse;
 use Request;
+use RZP\Models\Pricing;
 
 class PricingController extends Controller
 {

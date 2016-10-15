@@ -32,6 +32,13 @@ class Gateway
     const OTP_ATTEMPTS_LIMIT = 3;
 
     /**
+     * In gateway responses one particular field contains
+     * hash or checksum. This variable will contain that field
+     * name.
+     */
+    const CHECKSUM_ATTRIBUTE = '';
+
+    /**
      * The application instance.
      *
      * @var \Illuminate\Foundation\Application
@@ -108,6 +115,15 @@ class Gateway
     protected $config;
 
     /**
+     * Api Route instance
+     *
+     * @var RZP\Http\Route
+     */
+    protected $route;
+
+    protected $terminal;
+
+    /**
      * Some gateways whitelist our IP and requests to them can only
      * be sent from those IP.
      *
@@ -137,6 +153,8 @@ class Gateway
         $this->loadGatewayConfig();
 
         $this->repo = $this->getRepository();
+
+        $this->route = $this->app['api.route'];
     }
 
     public function authorize(array $input)
@@ -223,6 +241,37 @@ class Gateway
         assert (is_bool($mock));
 
         $this->mock = $mock;
+    }
+
+    protected function getHashValueFromContent(array $content)
+    {
+        return $content[static::CHECKSUM_ATTRIBUTE];
+    }
+
+    protected function verifySecureHash(array $content)
+    {
+        $actual = $this->getHashValueFromContent($content);
+
+        unset($content[static::CHECKSUM_ATTRIBUTE]);
+
+        $generated = $this->generateHash($content);
+
+        $this->compareHashes($actual, $generated);
+    }
+
+    protected function compareHashes($actual, $generated)
+    {
+        if (hash_equals($actual, $generated) === false)
+        {
+            $this->trace->info(
+                TraceCode::GATEWAY_CHECKSUM_VERIFY_FAILED,
+                [
+                    'actual'    => $actual,
+                    'generated' => $generated
+                ]);
+
+            throw new Exception\RuntimeException('Failed checksum verification');
+        }
     }
 
     public function generateRefunds($input)
@@ -326,16 +375,18 @@ class Gateway
         {
             $this->trace->warning(
                 TraceCode::GATEWAY_PAYMENT_VERIFY,
-                ['payment_id' => $verify->input['payment']['id'],
-                 'message' => 'payment id not found in the gateway database',
-                 'gateway' => $this->gateway]);
+                [
+                    'payment_id' => $verify->input['payment']['id'],
+                    'message'    => 'payment id not found in the gateway database',
+                    'gateway'    => $this->gateway
+                ]);
 
             return null;
         }
 
-        $content = $this->sendPaymentVerifyRequest($verify);
+        $this->sendPaymentVerifyRequest($verify);
 
-        $status = $this->verifyPayment($verify);
+        $this->verifyPayment($verify);
 
         if (($verify->match === false) and
             ($verify->throwExceptionOnMismatch))
@@ -369,8 +420,19 @@ class Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_REQUEST,
             [
-                'request' => $request,
-                'gateway' => $this->gateway,
+                'request'    => $request,
+                'gateway'    => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+            ]);
+    }
+
+    protected function traceGatewayPaymentResponse($response, $input)
+    {
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_RESPONSE,
+            [
+                'response'   => $response,
+                'gateway'    => $this->gateway,
                 'payment_id' => $input['payment']['id'],
             ]);
     }
@@ -513,6 +575,8 @@ class Gateway
         $this->config = $this->app['config']->get($configGatewayStr);
 
         $this->proxy = $this->app['config']->get('gateway.proxy_address');
+
+        $this->proxyEnabled = $this->app['config']->get('gateway.proxy_enabled');
     }
 
     protected function getFormValues($form, $url)
@@ -621,6 +685,15 @@ class Gateway
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED);
         }
+    }
+
+    protected function getGatewayCertDirPath()
+    {
+        $certificatePath = $this->app['config']->get('gateway.certificate_path');
+
+        $gatewayCertPath = $certificatePath . '/' . $this->getGatewayCertDirName();
+
+        return $gatewayCertPath;
     }
 
     protected function getRepository()

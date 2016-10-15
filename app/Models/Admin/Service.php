@@ -5,9 +5,7 @@ namespace RZP\Models\Admin;
 use RZP\Constants\Entity;
 use RZP\Models\Base;
 use RZP\Models;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
-use Gateway;
 
 class Service extends Base\Service
 {
@@ -41,46 +39,31 @@ class Service extends Base\Service
 
     public function sendTestNewsletter($input)
     {
-        $errors = (new Validator)->validateInput('send_test_newsletter', $input);
+        (new Validator)->validateInput('send_test_newsletter', $input);
 
-        if (empty($errors))
-        {
-            //
-            // Now we send the newsletter
-            //
-            $mailer = new Newsletter(
-                $input['email'],
-                $input['subject'],
-                $input['msg'],
-                $input['template'],
-                true // Test Email to self
-            );
+        $mailer = new Newsletter(
+            $input['subject'],
+            $input['msg'],
+            $input['template']
+        );
 
-            return $mailer->send();
-        }
-        else
-        {
-            return $errors;
-        }
+        $mailer->setTestEmail($input['email']);
+
+        return $mailer->send();
     }
 
     public function sendNewsletter($input)
     {
-        $errors = (new Validator)->validateInput('send_newsletter', $input);
+        (new Validator)->validateInput('send_newsletter', $input);
 
-        if (empty($errors))
-        {
-            $mailer = new Newsletter(
-                $input['lists'],
-                $input['subject'],
-                $input['msg'],
-                $input['template']);
+        $mailer = new Newsletter(
+            $input['subject'],
+            $input['msg'],
+            $input['template']
+        );
 
-            return $mailer->send();
-        }
-        else
-        {
-            return $errors;
-        }
+        $mailer->setRecipient($input['lists']);
+
+        return $mailer->send();
     }
 }

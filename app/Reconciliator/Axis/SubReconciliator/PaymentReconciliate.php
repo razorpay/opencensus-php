@@ -2,6 +2,8 @@
 
 namespace RZP\Reconciliator\Axis;
 
+use Carbon\Carbon;
+
 use RZP\Exception\ReconciliationException;
 use RZP\Models\Bank\IFSC;
 use RZP\Reconciliator\Base;
@@ -27,15 +29,18 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_RRN           = 'rrn_no';
     const COLUMN_CARD_LOCALE   = 'lofo';
     const COLUMN_ISSUER        = 'transaction_category';
+    const COLUMN_SETTLED_AT    = 'settlement_date';
 
-    protected $messenger;
+    const POSSIBLE_DATE_FORMATS = [
+        'd-M-y',
+        'Y-m-d h:i:s'
+    ];
+
     protected $axisMigsRepo;
 
     public function __construct()
     {
         parent::__construct();
-
-        $this->messenger = new Messenger();
 
         $this->axisMigsRepo = $this->repo->axis_migs;
     }
@@ -147,7 +152,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         {
             return IFSC::UTIB;
         }
-        
+
         return null;
     }
 
@@ -287,5 +292,32 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         }
 
         return $cardType;
+    }
+
+    protected function getGatewaySettledAt($row)
+    {
+        if (empty($row[self::COLUMN_SETTLED_AT]) === true)
+        {
+            return null;
+        }
+
+        $columnSettledAt = strtolower($row[self::COLUMN_SETTLED_AT]);
+
+        $gatewaySettledAt = null;
+
+        foreach (self::POSSIBLE_DATE_FORMATS as $possibleDateFormat)
+        {
+            try
+            {
+                $gatewaySettledAt = Carbon::createFromFormat($possibleDateFormat, $columnSettledAt, 'Asia/Kolkata');
+                $gatewaySettledAt = $gatewaySettledAt->timestamp;
+            }
+            catch (\Exception $ex)
+            {
+                continue;
+            }
+        }
+
+        return $gatewaySettledAt;
     }
 }

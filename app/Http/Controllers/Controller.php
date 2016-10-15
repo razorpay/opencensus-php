@@ -16,7 +16,8 @@ abstract class Controller extends BaseController
     protected $app;
     protected $trace;
     protected $repo;
-    
+    protected $route;
+
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -24,5 +25,9 @@ abstract class Controller extends BaseController
         $this->trace = $this->app['trace'];
 
         $this->repo = $this->app['repo'];
+
+        $this->config = $this->app['config'];
+
+        $this->route = $this->app['api.route'];
     }
 }
