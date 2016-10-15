@@ -46,30 +46,22 @@ class Charge
 
         $this->processor = $this->getNewProcessor($subscription->merchant);
 
-        $success = true;
-        $authorizedPayment = null;
-
         $subscription->incrementAuthAttempts();
 
         try
         {
             $authorizedPayment = $this->authorizePayment($recurringPayload);
+
+            $this->handleAuthorizationSuccess($authorizedPayment, $subscription);
         }
         catch (\Exception $ex)
         {
-            $success = false;
-
             $this->handleAuthorizationFailure($job, $ex, $subscription);
         }
 
         $this->repo->saveOrFail($subscription);
 
         $job->delete();
-
-        if ($success === true)
-        {
-            $this->handleAuthorizationSuccess($authorizedPayment, $subscription);
-        }
     }
 
     protected function authorizePayment(array $recurringPayload)
