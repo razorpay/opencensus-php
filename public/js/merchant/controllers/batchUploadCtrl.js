@@ -19,6 +19,8 @@ app.controller('BatchUploadCtrl', [
     };
 
     $scope.onFileSelect = function ($files, fieldname) {
+      $scope.alerts.resetAlerts();
+
       var file = $files[0];
 
       $scope.batchForm.batchFile = file;
@@ -26,6 +28,7 @@ app.controller('BatchUploadCtrl', [
     };
 
     $scope.batchUpload = function () {
+      $scope.alerts.resetAlerts();
 
       var request = $upload.upload({
         url: '/' + $scope.mode + '/batches',
@@ -39,8 +42,13 @@ app.controller('BatchUploadCtrl', [
         if (data.success) {
           $state.go('app.batch.list');
         }
+        else {
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
       }).error(function () {
-
+        $scope.alerts.addAlert('danger', null, true);
       });
 
     };
