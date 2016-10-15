@@ -134,7 +134,7 @@ class AxisGatewayTest extends TestCase
                         ->shouldReceive('content')
                         ->andReturnUsing(function (& $content)
                         {
-                            $content['vpc_DRExists'] = 'N';
+                            $content['vpc_DRExists'] = 'Y';
                         })->mock();
 
         $this->setMockServer($server);
