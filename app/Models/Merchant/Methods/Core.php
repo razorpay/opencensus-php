@@ -37,9 +37,7 @@ class Core extends Base\Core
 
         $this->checkPricing($merchant, $methods);
 
-        $this->repo->saveOrFail($methods);
-
-        $this->notifyOnSlack($merchant, $methods);
+        $this->saveAndNotifyOnSlack($merchant, $methods);
 
         return $methods->toArray();
     }
@@ -195,11 +193,11 @@ class Core extends Base\Core
         return $data;
     }
 
-    protected function notifyOnSlack(Merchant\Entity $merchant, Entity $methods)
+    protected function saveAndNotifyOnSlack(Merchant\Entity $merchant, Entity $methods)
     {
         $data = $this->getEditedMethodsDifference($methods);
 
-        $this->repo->saveOrFail($merchant);
+        $this->repo->saveOrFail($methods);
 
         if (empty($data) === false)
         {
