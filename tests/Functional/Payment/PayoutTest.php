@@ -33,6 +33,15 @@ class PayoutTest extends TestCase
         $this->assertEquals('txn_' . $payout['transaction_id'], $txn['id']);
     }
 
+    public function testCreatePayoutFundsOnHold()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->holdFunds();
+
+        $this->startTest();
+    }
+
     public function testCreatePayoutInsufficientBalance()
     {
         return $this->startTest();

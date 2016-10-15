@@ -37,6 +37,37 @@ return [
         ],
     ],
 
+    'testCreatePayoutFundsOnHold' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'amount'      => 1000000,
+                'currency'    => 'INR',
+                'customer_id' => 'cust_100000customer',
+                'method'      => 'fund_transfer',
+                'destination' => 'ba_1000000lcustba',
+                'notes'       => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYOUT_MERCHANT_FUNDS_ON_HOLD,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_MERCHANT_FUNDS_ON_HOLD,
+        ],
+    ],
+
+
     'testCreatePayoutInsufficientBalance' => [
         'request' => [
             'method'  => 'POST',
