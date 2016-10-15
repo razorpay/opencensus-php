@@ -27,17 +27,14 @@ class RefundFile extends Base\RefundFile
 
         $filePath = $this->writeToTextFile($txt);
 
-        $fileHandler = new FileStore\Service;
+        $creator = new FileStore\Creator;
 
-        $fileHandlerHelper = new FileStore\Helper;
+        $creator->format('txt')
+                ->content($txt)
+                ->name('')
+                ->save();
 
-        $txtFilePath = $fileHandlerHelper->writeToTextFile(EntityTypeConstants::KOTAK_NETBANKING_REFUND, $txt);
-
-        $fileInput['filePath'] = $txtFilePath;
-
-        $fileInput['entityType'] = EntityTypeConstants::KOTAK_NETBANKING_REFUND;
-
-        $data = $fileHandler->create($fileInput);
+        $fileId = $creator->getFileId();
 
         $fileFullPath = $this->getFullFilePath($name);
 

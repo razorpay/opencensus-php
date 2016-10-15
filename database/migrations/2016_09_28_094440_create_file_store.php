@@ -25,7 +25,7 @@ class CreateFileStore extends Migration
 
             $table->char(FileStore::MERCHANT_ID, FileStore::ID_LENGTH);
 
-            $table->string(FileStore::DOCUMENT_TYPE);
+            $table->string(FileStore::TYPE);
 
             $table->string(FileStore::ENTITY_ID, FileStore::ID_LENGTH)->nullable();
 
@@ -63,7 +63,7 @@ class CreateFileStore extends Migration
 
             $table->index(FileStore::ENTITY_TYPE);
 
-            $table->index(FileStore::DOCUMENT_TYPE);
+            $table->index(FileStore::TYPE);
 
             $table->index(FileStore::CREATED_AT);
 

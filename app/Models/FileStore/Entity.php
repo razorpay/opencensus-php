@@ -9,7 +9,7 @@ class Entity extends Base\PublicEntity
 {
     const ID                    = 'id';
     const MERCHANT_ID           = 'merchant_id';
-    const DOCUMENT_TYPE         = 'document_type';
+    const TYPE                  = 'TYPE';
     const ENTITY_ID             = 'entity_id';
     const ENTITY_TYPE           = 'entity_type';
     const COMMENTS              = 'comments';
@@ -37,7 +37,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::NAME,
         self::COMMENTS,
-        self::DOCUMENT_TYPE,
+        self::TYPE,
         self::CREATED_AT,
     ];
 
@@ -56,7 +56,7 @@ class Entity extends Base\PublicEntity
         self::PERMISSION,
         self::METADATA,
         self::COMMENTS,
-        self::DOCUMENT_TYPE
+        self::TYPE
     ];
 
     protected $visible = [
@@ -74,7 +74,7 @@ class Entity extends Base\PublicEntity
         self::PERMISSION,
         self::METADATA,
         self::COMMENTS,
-        self::DOCUMENT_TYPE,
+        self::TYPE,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT
@@ -106,5 +106,22 @@ class Entity extends Base\PublicEntity
         }
 
         $this->attributes[self::PASSWORD] = $password;
+    }
+
+    public function entityAssociate($entity)
+    {
+        $this->setEntityType($entity->getEntityName());
+
+        $this->source()->associate($entity);
+    }
+
+    public function setFormat($format)
+    {
+        $this->setAttribute(self::FORMAT, $format);
+    }
+
+    public function getFormat()
+    {
+        return $this->getAttribute(self::FORMAT);
     }
 }
