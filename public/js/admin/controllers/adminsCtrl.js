@@ -96,7 +96,7 @@ app.controller('AdminsCtrl', [
       request.success(function (data) {
         if (data.success) {
           $scope.alerts.addAlert('success', 'Admin edited successfully', true);
-          generateMerchant();
+          location.reload();
         } else {
           $scope.alerts.resetAlerts();
           angular.forEach(data.errors, function (value) {

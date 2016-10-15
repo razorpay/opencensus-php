@@ -166,6 +166,12 @@ class Service extends Base\Service
 
             $admin->saveOrFail();
 
+            if (empty($error) === true)
+            {
+                // Delete all existing sessions
+                $this->deleteAllAdminSessions($id);
+            }
+
             return $error;
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
@@ -297,6 +303,11 @@ class Service extends Base\Service
     {
         $sessionId = Crypt::decrypt($sessionId);
         (new SessionTable\Entity)->deleteOneSessionForAdmin($sessionId);
+    }
+
+    public function deleteAllAdminSessions($adminId)
+    {
+        (new SessionTable\Entity)->deleteAllSessionsForAdmin($adminId);
     }
 
     public function deleteAdmin($id)
