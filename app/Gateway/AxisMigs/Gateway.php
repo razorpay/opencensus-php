@@ -536,15 +536,14 @@ class Gateway extends Base\Gateway
 
     protected function postAmaTransactionRequest(array & $content, $input)
     {
-        $this->addAmaTransactionFields($content, $input);
-
-        $request = $this->getAmaRequestArray($content);
-
         $this->trace->info(
             TraceCode::GATEWAY_SUPPORT_REQUEST,
             ['action' => 'Support action request array',
             'content' => $content]);
 
+        $this->addAmaTransactionFields($content, $input);
+
+        $request = $this->getAmaRequestArray($content);
         // send the request and get response
         $response = $this->postRequest($request);
 
