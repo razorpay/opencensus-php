@@ -36,7 +36,8 @@ class Selector
         Sorters\NetbankingSorter::class,
         Sorters\MerchantSorter::class,
         Sorters\InternationalCardSorter::class,
-        Sorters\FailedTerminalsSorter::class
+        Sorters\FailedTerminalsSorter::class,
+        Sorters\TerminalLoadSorter::class,
     ];
 
     public function __construct(Payment\Entity $payment, $mode)
@@ -116,7 +117,7 @@ class Selector
 
         foreach (self::$sorters as $sorter)
         {
-            $sortedTerminals = (new $sorter)->sort($sortedTerminals, $this->input, $verbose);
+            $sortedTerminals = (new $sorter)->sort($sortedTerminals, $this->input, $verbose, $options);
             $this->traceTerminals($sortedTerminals, 'Terminals after ' . $sorter, $verbose);
         }
 
