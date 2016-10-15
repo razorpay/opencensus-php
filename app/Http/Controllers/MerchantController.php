@@ -291,10 +291,11 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    /*
-    === Batch Processing (of refunds for now) ===
-    */
-
+    /**
+     * Upload Batch File
+     * @param  string $mode Live/Test Mode
+     * @return Array       Array of error and response
+     */
     public function uploadBatchFile($mode)
     {
         $this->checkMode($mode);
@@ -306,6 +307,11 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse($error, $response);
     }
 
+    /**
+     * Fetch Multiple Batches
+     * @param  string $mode Live/Test Mode
+     * @return Array       Array of error and response
+     */
     public function fetchMultipleBatches($mode)
     {
         $this->checkMode($mode);
@@ -317,6 +323,12 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse($error, $response);
     }
 
+    /**
+     * Fetch batch by id
+     * @param  string $mode Live/Test Mode
+     * @param  string $id   Batch Id
+     * @return Array       Array of error and response
+     */
     public function fetchBatchById($mode, $id)
     {
         $this->checkMode($mode);
@@ -326,6 +338,12 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse($error, $response);
     }
 
+    /**
+     * Download Batch file
+     * @param  string $mode Live/Test Mode
+     * @param  string $id   Batch Id
+     * @return Array       Array of error and response
+     */
     public function downloadBatchFile($mode, $id)
     {
         $this->checkMode($mode);
@@ -335,6 +353,12 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse($error, $response);
     }
 
+    /**
+     * Retry given batch
+     * @param  string $mode Live/Test Mode
+     * @param  string $id   Batch Id
+     * @return Array       Array of error and response
+     */
     public function retryBatchFile($mode, $id)
     {
         $this->checkMode($mode);

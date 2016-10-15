@@ -14,12 +14,12 @@ class Batch extends Entity
 {
     const BATCH_FILE_URL = 'batches';
 
-    public function fetchById($id)
+    public function fetch($id)
     {
         return parent::fetch($id);
     }
 
-    public function fetchMultiple($input)
+    public function all($input = array())
     {
         return parent::all($input);
     }
