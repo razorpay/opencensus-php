@@ -73,6 +73,10 @@ class Charge
 
     protected function handleAuthorizationSuccess(Payment\Entity $authorizedPayment, Entity $subscription)
     {
+        $authorizedPayment->subscription()->associate($subscription);
+
+        $this->repo->saveOrFail($authorizedPayment);
+
         try
         {
             $capturedPayment = $this->capturePayment($authorizedPayment);
@@ -152,14 +156,27 @@ class Charge
     }
 
     /**
-     * Gets the current chargeAt and adds the interval to it to get the nextChargeAt.
-     * If the nextChargeAt is greater than the endAt, we set the chargeAt to null.
+     * Gets the current period's end and assigns that to charge_at.
+     * If the current period's end is greater than the end_at of the subscription,
+     * we set the charge_at to null.
      *
      * @param Entity $subscription
      * @param Plan\Entity $plan
      */
     protected function setNextChargeAt(Entity $subscription, Plan\Entity $plan)
     {
+        $currentEnd = $subscription->getCurrentEnd();
+
+        $nextChargeAt = $currentEnd;
+        $endAt = $subscription->getEndAt();
+
+        if ($nextChargeAt > $endAt)
+        {
+            $nextChargeAt = null;
+        }
+
+        $subscription->setChargeAt($nextChargeAt);
+
         $currentChargeAt = $subscription->getChargeAt();
 
         $currentChargeAt = Carbon::createFromTimestamp($currentChargeAt);

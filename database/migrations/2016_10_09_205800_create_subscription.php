@@ -57,11 +57,14 @@ class CreateSubscription extends Migration
 
             $table->integer(Entity::CHARGE_AT)
                   ->nullable();
-            
+
             $table->integer(Entity::PROCESSED_AT)
                   ->nullable();
 
             $table->integer(Entity::ENDED_AT)
+                  ->nullable();
+
+            $table->integer(Entity::FAILED_AT)
                   ->nullable();
 
             $table->integer(Entity::CREATED_AT);
@@ -71,6 +74,7 @@ class CreateSubscription extends Migration
             $table->index(Entity::END_AT);
             $table->index(Entity::CHARGE_AT);
             $table->index(Entity::ENDED_AT);
+            $table->index(Entity::FAILED_AT);
             $table->index(Entity::CREATED_AT);
             $table->index(Entity::UPDATED_AT);
 

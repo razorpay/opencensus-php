@@ -28,6 +28,7 @@ class Entity extends Base\PublicEntity
     const PAID_COUNT        = 'paid_count';
     const AUTH_ATTEMPTS     = 'auth_attempts';
     const ERROR_STATUS      = 'error_status';
+    const FAILED_AT         = 'failed_at';
 
     protected static $sign = 'sub';
 
@@ -46,6 +47,7 @@ class Entity extends Base\PublicEntity
         self::AUTH_ATTEMPTS => 0,
         self::ERROR_STATUS  => null,
         self::PROCESSED_AT  => null,
+        self::FAILED_AT     => null,
     ];
 
     protected static $generators = [
@@ -86,6 +88,7 @@ class Entity extends Base\PublicEntity
         self::CURRENT_END       => 'int',
         self::PAID_COUNT        => 'int',
         self::AUTH_ATTEMPTS     => 'int',
+        self::FAILED_AT         => 'int',
     ];
 
     protected $publicSetters = [
