@@ -425,7 +425,7 @@ class Service extends Base\Service
 
             $collection = $this->api
                                ->batch
-                               ->fetchMultiple($input)
+                               ->all($input)
                                ->toArray();
 
             $this->mapKeys($collection);
@@ -448,7 +448,7 @@ class Service extends Base\Service
 
             $data = $this->api
                          ->batch
-                         ->fetchById($id)
+                         ->fetch($id)
                          ->toArray();
 
             $collection = [

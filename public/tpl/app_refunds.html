@@ -5,7 +5,10 @@
       Refunds ({{mode + " Mode"| titlecase }})
       <spinner class="inline"></spinner>
 
-      <a ui-sref="app.batch.upload()" class="btn btn-info pull-right">Batch Refunds</a>
+      <a ng-show="user.tags.indexOf('Batchrefunds') != -1" ui-sref="app.batch.upload()" class="btn btn-info pull-right">
+          Batch Refunds
+      </a>
+
     </h1>
   </div>
   <div class="wrapper-md">
