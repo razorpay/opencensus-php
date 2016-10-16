@@ -394,6 +394,33 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getMonthTopMerchantVolumeWise()
+    {
+        $from = Carbon::today('Asia/Kolkata')->startOfMonth()->timestamp;
+        $to = Carbon::today('Asia/Kolkata')->timestamp;
+
+        $pid = Payment\Entity::getAttributeWithTableName(Payment\Entity::MERCHANT_ID);
+        $mid = Merchant\Entity::getAttributeWithTableName(Merchant\Entity::ID);
+
+        return $this->newQuery()
+                    ->join(Merchant\Entity::getTableName(), $pid, '=', $mid)
+                    ->selectRaw(
+                       Payment\Entity::MERCHANT_ID . ','.
+                       Merchant\Entity::NAME . ','.
+                       Merchant\Entity::WEBSITE . ','.
+                       "SUM(amount) / 100 AS volume" . ','.
+                       'COUNT(*) AS count')
+                    ->betweenTime($from, $to)
+                    ->statusSuccess()
+                    ->groupBy(
+                        Payment\Entity::MERCHANT_ID,
+                        Merchant\Entity::NAME,
+                        Merchant\Entity::WEBSITE)
+                    ->orderBy('volume', 'desc')
+                    ->limit(30)
+                    ->get();
+    }
+
     public function fetchAuthorizedSummary()
     {
         return $this->newQuery()
