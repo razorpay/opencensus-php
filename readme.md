@@ -54,6 +54,11 @@
 
 TIP: Change the values of `RUN_FIXTURES` and `RUN_FIXTURES_ONCE` in `.env.testing` file to `false` after running the tests once. This makes sure you don't run fixtures everytime and hence the tests will run faster. If you add/change/delete any fixtures or clear your test db then change them to `true` once, run tests and then change them back to `false`.
 
+### Code Coverage Instructions
+
+* Install `php70-xdebug`
+* Run `phpunit --coverage-html [Directory to save coverage]`
+* You can also generate coverage in other formats. Visit [PHPUnit CodeCoverage](https://phpunit.de/manual/current/en/code-coverage-analysis.html) for more info.
 
 # Docs
 

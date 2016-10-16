@@ -15,6 +15,7 @@ class Repository extends Base\Repository
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
         Entity::TRANSACTION_ID  => 'sometimes|alpha_num',
         Entity::STATUS          => 'sometimes|in:created,processed,failed',
+        Entity::UTR             => 'sometimes|alpha_num',
     );
 
     public function getSettlementWithFeesAsNullOrZero()
