@@ -330,8 +330,8 @@ class Gateway extends Base\Gateway
             }
         }
 
-        $status = $content['status'] ?? null;
-        $message = $content['error_Message'] ?? null;
+        $status = isset($content['status']) ? $content['status']: null;
+        $message = isset($content['error_Message']) ? $content['error_Message']: null;
 
         throw new Exception\GatewayErrorException(
             ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
