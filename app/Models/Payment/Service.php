@@ -8,7 +8,6 @@ use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Error;
-use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
@@ -800,11 +799,9 @@ class Service extends Base\Service
 
     /**
      * Sends the authorized payments reminder email
-     * @param  string $merchantId [description]
-     * @param  array $payments   [description]
-     * @param  string $subject Subject for the email
-     * @param  boolean $final Whether this is the final payment reminder
-     * @return null
+     * @param  string   $merchantId
+     * @param  array    $payments
+     * @param  boolean  $final Whether this is the final payment reminder
      */
     protected function sendAuthorizedPaymentsReminderMail($merchantId, $payments, $final)
     {
