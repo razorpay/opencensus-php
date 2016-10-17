@@ -43,13 +43,10 @@ trait Refund
 
         $this->setPaymentAndRefundInfo($refund, $payment);
 
-        // Currently doing it for only HDFC and PayTm. In case when other gateways start
-        // getting similar issues, we will start supporting for them too.
-        if (($payment->getGateway() !== Payment\Gateway::HDFC) or
-            ($payment->getGateway() !== Payment\Gateway::PAYTM))
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_GATEWAY);
-        }
+        // Currently doing it for only HDFC and PayTM. In case when other gateways
+        // start getting similar issues, we will start supporting for them too.
+        assert (($payment->getGateway() === Payment\Gateway::HDFC) or
+                ($payment->getGateway() === Payment\Gateway::PAYTM));
 
         $data = array(
             'payment'   => $payment->toArray(),
