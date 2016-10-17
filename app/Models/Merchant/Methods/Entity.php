@@ -366,6 +366,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::FREECHARGE, $value);
     }
 
+    public function setCard($card)
+    {
+        $this->setAttribute(self::CARD, $card);
+    }
+
     public function setCreditCard($card)
     {
         $this->setAttribute(self::CREDIT_CARD, $card);
