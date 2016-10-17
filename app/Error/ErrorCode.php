@@ -236,7 +236,6 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_PROBLEM_IN_UPDATING                                   = 'BAD_REQUEST_PAYMENT_PROBLEM_IN_UPDATING';
     const BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT                              = 'BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT';
     const BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED                                   = 'BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED';
-    const BAD_REQUEST_INVALID_GATEWAY                                               = 'BAD_REQUEST_INVALID_GATEWAY';
     const BAD_REQUEST_GATEWAY_REFUND_ABSENT                                         = 'BAD_REQUEST_GATEWAY_REFUND_ABSENT';
 
 
