@@ -135,21 +135,21 @@ class Verify
 
             switch ($res)
             {
-                case Constants\Status::SUCCESS:
+                case Constants\Verify::SUCCESS:
                     $verified++;
                     break;
 
-                case Constants\Status::TIMEOUT:
+                case Constants\Verify::TIMEOUT:
                     $timedOut++;
                     break;
 
-                case Constants\Status::AUTHORIZED:
+                case Constants\Verify::AUTHORIZED:
                     $failed++;
                     $timeDiff += time() - $payment->getCreatedAt();
                     $authorized++;
                     break;
 
-                case Constants\Status::ERROR:
+                case Constants\Verify::ERROR:
                     $error++;
                     break;
 
@@ -206,7 +206,7 @@ class Verify
 
     public function verifyPayment($payment)
     {
-        $status = Constants\Status::SUCCESS;
+        $status = Constants\Verify::SUCCESS;
 
         $merchant = $payment->merchant;
 
@@ -238,7 +238,7 @@ class Verify
             }
 
             // Now Just continue
-            $status = Constants\Status::AUTHORIZED;
+            $status = Constants\Verify::AUTHORIZED;
         }
         catch (Exception\GatewayTimeoutException $e)
         {
@@ -247,7 +247,7 @@ class Verify
                 ['payment_id' => $payment->getId()]);
 
             // Just continue
-            $status = Constants\Status::TIMEOUT;
+            $status = Constants\Verify::TIMEOUT;
         }
         catch (\Exception $e)
         {
@@ -258,7 +258,7 @@ class Verify
             $this->trace->traceException($e);
 
             // Just continue
-            $status = Constants\Status::ERROR;
+            $status = Constants\Verify::ERROR;
         }
 
         return $status;
