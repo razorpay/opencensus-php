@@ -115,6 +115,7 @@ class Gateway
         Method::EMI => array(
             self::AMEX,
             self::HDFC,
+            self::FIRST_DATA,
         ),
 
         Method::UPI => array(
@@ -225,6 +226,12 @@ class Gateway
         self::NETBANKING_HDFC,
         self::NETBANKING_KOTAK,
         self::WALLET_PAYZAPP,
+        self::FIRST_DATA,
+        self::CYBERSOURCE,
+        self::WALLET_PAYUMONEY,
+        self::WALLET_AIRTELMONEY,
+        self::WALLET_OLAMONEY,
+        self::WALLET_FREECHARGE,
     );
 
     /**
@@ -377,21 +384,27 @@ class Gateway
 
     public static $emiBanks = array(
         IFSC::HDFC,
-        IFSC::KKBK,
-        IFSC::UTIB,
+        IFSC::HSBC,
+        IFSC::ICIC,
         IFSC::INDB,
-        IFSC::RATN
+        IFSC::KKBK,
+        IFSC::RATN,
+        IFSC::SCBL,
+        IFSC::UTIB,
     );
 
     public static $emiBanksUsingCardTerminals = array(
-        IFSC::KKBK,
-        IFSC::UTIB,
         IFSC::INDB,
-        IFSC::RATN
+        IFSC::KKBK,
+        IFSC::RATN,
+        IFSC::UTIB,
     );
 
     public static $emiBankToGatewayMap = array(
-        IFSC::HDFC      =>  Gateway::HDFC,
+        IFSC::HDFC => Gateway::HDFC,
+        IFSC::ICIC => Gateway::FIRST_DATA,
+        IFSC::HSBC => Gateway::FIRST_DATA,
+        IFSC::SCBL => Gateway::FIRST_DATA,
     );
 
     public static function isNetbankingBankDirectlySupported($bank)

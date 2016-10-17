@@ -315,7 +315,7 @@ class MerchantTest extends TestCase
         $content = $this->startTest();
 
         $bankAccounts = $this->getEntities(
-                            'bank_account', ['with_trashed' => true, 'type' => 'merchant'], true);
+                            'bank_account', ['deleted' => true, 'type' => 'merchant'], true);
 
         // The old account should get deleted (hard delete) as there are
         // no settlements attached to it.
@@ -329,7 +329,7 @@ class MerchantTest extends TestCase
         $content = $this->startTest();
 
         $bankAccounts = $this->getEntities(
-                            'bank_account', ['with_trashed' => true, 'type' => 'merchant'], true);
+                            'bank_account', ['deleted' => true, 'type' => 'merchant'], true);
 
         // The old account should get deleted (hard delete) as there are
         // no settlements attached to it.
@@ -358,7 +358,7 @@ class MerchantTest extends TestCase
         $this->runRequestResponseFlow($testData);
 
         $bankAccounts = $this->getEntities(
-                            'bank_account', ['with_trashed' => true, 'type' => 'merchant'], true);
+                            'bank_account', ['deleted' => true, 'type' => 'merchant'], true);
 
         // The old account should get SOFT deleted as there are settlements
         // attached to it.

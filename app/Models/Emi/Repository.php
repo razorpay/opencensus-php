@@ -12,6 +12,11 @@ class Repository extends Base\Repository
 
     protected $entity = 'emi_plan';
 
+    protected $appFetchParamRules = array(
+        Entity::BANK            => 'sometimes|string|size:4',
+        Entity::NETWORK         => 'sometimes|string|max:12',
+    );
+
     public function fetchEmiPlans()
     {
         return $this->newQuery()
