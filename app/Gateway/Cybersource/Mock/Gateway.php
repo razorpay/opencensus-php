@@ -12,62 +12,15 @@ class Gateway extends Cybersource\Gateway
 {
     use Base\Mock\GatewayTrait;
 
-    protected function postRequest($request)
+    protected function getSoapClientObject($request)
     {
-        // Redirect the request internally
-        $serverResponse = $this->callGatewayRequestInternally($request);
+        $options = array_merge(['encoding' => 'UTF-8', 'soap_version' => SOAP_1_1], $request['options']);
 
-        return $serverResponse;
-    }
+        $soapClient = new SoapClient($request['url'], $request['options']);
 
-    protected function callGatewayRequestInternally($request)
-    {
-        $server = $this->getServer();
+        $headers = $this->getSoapHeader($request);
+        $soapClient->__setSoapHeaders($headers);
 
-        $server->setInput($request['content']);
-
-        $input = $request['content'];
-
-        $action = null;
-
-        switch(true)
-        {
-            case isset($input['payerAuthEnrollService']):
-                $action = 'enroll';
-                break;
-
-            case isset($input['payerAuthValidateService']):
-                $action = 'auth_validate';
-                break;
-
-            case isset($input['ccAuthService']):
-                $action = 'authorize';
-                break;
-
-            case isset($input['ccCaptureService']):
-            case isset($input['ccCreditService']):
-                break;
-
-            default:
-                throw new Exception\LogicException('Unrecognized request type');
-        }
-
-        if ($action === null)
-        {
-            $action = $this->action;
-        }
-
-        $action = camel_case($action);
-
-        $response = $server->$action($input);
-
-        return $response;
-    }
-
-    protected function getServer()
-    {
-        $app = App::getFacadeRoot();
-
-        return $app['gateway']->server($this->gateway);
+        return $soapClient;
     }
 }

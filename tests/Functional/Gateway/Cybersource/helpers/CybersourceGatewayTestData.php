@@ -185,12 +185,11 @@ return [
         'refund_id' => null,
         'auth_data' => null,
         'amount' => 50000,
-        'pares_status' => 'Y',
+        'pares_status' => null,
         'status' => 'authorized',
         'xid' => 'eW5DZTVGTkVaRWF3VnowSXYzNzA=',
         'eci' => '05',
         'cavv' => 'AAABAWFlmQAAAABjRWWZEEFgFz+=',
-        'ref' => '4661454138166750401025',
         'capture_ref' => null,
         'reason_code' => 100
     ]

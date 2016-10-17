@@ -183,15 +183,15 @@ class CybersourceGatewayTest extends TestCase
 
     public function testAuthorizeFailedPayment()
     {
-        $this->failAuthorizePayment();
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4280951000002433';
+
+        $this->makeRequestAndCatchException(function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
 
         $payment = $this->getLastEntity('payment', true);
-
-        $cybersource = $this->getLastEntity('cybersource', true);
-
-        $this->assertEquals('4661454138166750401025', $cybersource['ref']);
-
-        $this->resetMockServer();
 
         $this->authorizeFailedPayment($payment['id']);
 
@@ -203,27 +203,5 @@ class CybersourceGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             $this->testData['testAuthorizeFailedPayment'], $cybersource);
-    }
-
-    protected function failAuthorizePayment(array $replace = array())
-    {
-        $server = $this->mockServer()
-                        ->shouldReceive('content')
-                        ->andReturnUsing(function (& $content) use ($replace)
-                        {
-                            foreach ($replace as $key => $value)
-                            {
-                                $content[$key] = $value;
-                            }
-
-                            $content['reasonCode'] = '151';
-                        })->mock();
-
-        $this->setMockServer($server);
-
-        $this->makeRequestAndCatchException(function ()
-        {
-            $content = $this->doAuthPayment();
-        });
     }
 }

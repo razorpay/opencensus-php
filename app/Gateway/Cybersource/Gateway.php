@@ -5,6 +5,7 @@ namespace RZP\Gateway\Cybersource;
 use Cache;
 use Crypt;
 use Config;
+use SoapVar;
 use Requests;
 use SoapFault;
 use RZP\Error;
@@ -19,7 +20,6 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
-
 
 class Gateway extends Base\Gateway
 {
@@ -896,11 +896,46 @@ class Gateway extends Base\Gateway
 
     protected function getSoapClientObject($request)
     {
-        $soapClient = new CybersourceSoapClient($request['url'],
-                                                $request['options']['auth'],
-                                                $request['connect_options']);
+        $defaults = ['encoding' => 'UTF-8', 'soap_version' => SOAP_1_1];
+
+        $options = array_merge($defaults, $request['options']);
+
+        $soapClient = new \SoapClient($request['url'], $options);
+
+        $headers = $this->getSoapHeader($request);
+        $soapClient->__setSoapHeaders($headers);
 
         return $soapClient;
+    }
+
+    protected function getSoapHeader($request)
+    {
+        $username = $request['auth']['username'];
+        $password = $request['auth']['password'];
+
+        // Must understand should be omitted in case of test cases
+        $mustUnderstand = ! $this->mock;
+
+        $wsseNs = 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd';
+
+        // $passwordObj->Type = 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordTex';
+
+        $wsseAuth = [
+            'Username' => (new SoapVar($username, XSD_STRING, NULL, $wsseNs, NULL, $wsseNs)),
+            'Password' => (new SoapVar($password, XSD_STRING, NULL, $wsseNs, NULL, $wsseNs)),
+        ];
+
+        $wsseToken = [
+            'UsernameToken' => (new SoapVar($wsseAuth, SOAP_ENC_OBJECT, NULL, $wsseNs, 'UsernameToken', $wsseNs))
+        ];
+
+        $wsseTokenSoap = new SoapVar($wsseToken, SOAP_ENC_OBJECT, NULL, $wsseNs, 'UsernameToken', $wsseNs);
+
+        $wsseHeaderSoap = new SoapVar($wsseTokenSoap, SOAP_ENC_OBJECT, NULL, $wsseNs, 'Security', $wsseNs);
+
+        $objSoapVarWSSEHeader = new \SoapHeader($wsseNs, 'Security', $wsseHeaderSoap, $mustUnderstand);
+
+        return $objSoapVarWSSEHeader;
     }
 
     protected function getWsdlFile()
@@ -1074,10 +1109,9 @@ class Gateway extends Base\Gateway
     {
         $soapClient = $this->getSoapClientObject($request);
 
-        $content = json_decode(json_encode($request['content']));
+        $response = $soapClient->runTransaction($request['content']);
 
-        $response = $soapClient->runTransaction($content);
-
+        // Hack to convert object to array recursively
         return json_decode(json_encode($response), true);;
     }
 
@@ -1085,7 +1119,7 @@ class Gateway extends Base\Gateway
     {
         unset($request['content']['card']);
         unset($request['card']);
-        unset($request['options']['auth']);
+        unset($request['auth']);
 
         $this->trace->info($traceCode, $request);
     }
@@ -1096,12 +1130,10 @@ class Gateway extends Base\Gateway
             'url'     => $this->getWsdlFile(),
             'method'  => $method,
             'content' => $content,
+            'auth' => $this->getCredentials(),
             'options' => [
-                'auth' => $this->getCredentials()
-            ],
-            'connect_options' => [
                 'exception' => true,
-                'connection_timeout' => self::CONNECTION_TIMEOUT
+                'connection_timeout' => self::TIMEOUT
             ],
         ];
 
