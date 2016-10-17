@@ -1266,12 +1266,13 @@ class Gateway extends Base\Gateway
         $paInfo = $paymentData['PayerAuthenticationInfo'];
 
         $data = [
-            'eci' => str_pad($paInfo['ECI'], 2, '0', STR_PAD_LEFT),
-            'cavv' => $paInfo['AAV_CAVV'],
-            'xid' => $paInfo['XID'],
+            'eci'         => str_pad($paInfo['ECI'], 2, '0', STR_PAD_LEFT),
+            'cavv'        => $paInfo['AAV_CAVV'],
+            'xid'         => $paInfo['XID'],
             'reason_code' => 100,
-            'action' => Base\Action::AUTHORIZE,
-            'status' => Status::AUTHORIZED
+            'action'      => Base\Action::AUTHORIZE,
+            'status'      => Status::AUTHORIZED,
+            'received'    => true
         ];
 
         $verify->verifyResponseContent = $data;
