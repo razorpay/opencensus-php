@@ -100,14 +100,14 @@ class Verify
 
         foreach ($payments as $payment)
         {
-            $verifyLockKeys[] = $payment->getId() . "_verify";
+            $verifyLockKeys[] = $payment->getId() . Constants\Verify::KEY_SUFFIX;
         }
 
         $verifyKeys = $this->mutex->acquireMultiple($verifyLockKeys, 86400, $strict);
 
         foreach ($payments as $payment)
         {
-            if (in_array($payment->getId() . "_verify", $verifyKeys['locked']) === false)
+            if (in_array($payment->getId() . Constants\Verify::KEY_SUFFIX, $verifyKeys['locked']) === false)
             {
                 // If a payment cannot be locked for verify,
                 // Ignore the payment for running verify

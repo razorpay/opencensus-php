@@ -11,6 +11,8 @@ class Verify
 
     const DEFAULT_MAXDAYS   = 7;
 
+    const KEY_SUFFIX        = '_verify';
+
     const MINUTES_IN_DAY    = 1440;
     const SECONDS_IN_MINUTE = 60;
 
