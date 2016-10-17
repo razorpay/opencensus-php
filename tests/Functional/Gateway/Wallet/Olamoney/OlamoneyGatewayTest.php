@@ -209,30 +209,9 @@ class OlamoneyGatewayTest extends TestCase
         $response = $this->response->getOriginalContent()->data;
 
         // Send topup request
-        $response = $this->topupPayment($response['payment_id']);
+        $response = $this->doWalletTopupViaAjaxRoute($response['payment_id']);
 
-        // Make topup redirection request
-        $redirect = $this->sendRequest($response['request']);
-
-        $ret = (($this->isResponseInstanceType($redirect, 'redirect')) and
-                ($redirect->getStatusCode() === 302));
-
-        if ($ret === true)
-        {
-            $callback = array(
-                'url' => $redirect->getTargetUrl(),
-                'method' => 'get',
-                'content' => []
-            );
-
-            $callbackResponse = $this->sendRequest($callback);
-        }
-        else
-        {
-            assert(false);
-        }
-
-        $this->assertArrayHasKey('razorpay_payment_id', $callbackResponse->getOriginalContent()->data);
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
 
         $wallet = $this->getLastEntity('wallet', true);
 
@@ -343,7 +322,9 @@ class OlamoneyGatewayTest extends TestCase
 
         $response = $this->redirectPayment($authPayment['razorpay_payment_id']);
 
-        $this->assertArraySelectiveEquals($authPayment, $response);
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertArraySelectiveEquals($authPayment, $content);
     }
 
     protected function failOlamoneyAuthorizePayment()
@@ -371,19 +352,20 @@ class OlamoneyGatewayTest extends TestCase
         list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
 
         $this->response     = $response;
-        $this->callbackUrl  = $url;
+
 
         if ($mock)
         {
             if ($this->isOtpCallbackUrl($url))
             {
+                $this->callbackUrl = $url;
+
                 return $this->makeOtpCallback($url);
             }
 
-            // $request = $this->makeFirstGatewayPaymentMockRequest($url, $method, $content);
+            $url = $this->makeFirstGatewayPaymentMockRequest($url, $method, $content);
 
-            // return $this->submitPaymentCallbackData($request['url'],
-            //     $request['method'], $request['content']);
+            return $this->submitPaymentCallbackRedirect($url);
         }
 
         return null;

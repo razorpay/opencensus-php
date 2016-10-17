@@ -43,15 +43,9 @@ class Server extends Base\Mock\Server
 
         $paymentId = $input['paymentId'];
 
-        $payment = (new Payment\Repository)->find($paymentId);
+        $publicId = $this->getSignedPaymentId($paymentId);
 
-        $publicId = $payment->getPublicId();
-
-        $secret = $this->app->config->get('app.key');
-
-        $hash = hash_hmac('sha1', $publicId, $secret);
-
-        $url = Route::getUrlWithPublicCallbackAuth(['id' => $publicId, 'hash' => $hash]);
+        $url = $this->route->getPublicCallbackUrlWithHash($publicId);
 
         $url .= '?' . http_build_query($content);
 

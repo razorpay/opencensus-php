@@ -16,7 +16,7 @@ class Gateway extends Airtelmoney\Gateway
     {
         $request = parent::authorize($input);
 
-        $url = Route::getUrlWithPublicAuth(
+        $url = $this->route->getUrlWithPublicAuth(
                     'mock_wallet_payment_with_paymentid',
                     ['wallet' => $input['payment']['wallet'],
                      'paymentId' => $input['payment']['id']]);

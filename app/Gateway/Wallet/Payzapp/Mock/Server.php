@@ -105,11 +105,6 @@ class Server extends Base\Mock\Server
         return $input;
     }
 
-    public static function getMockServerUrl()
-    {
-        $callbackUrl = Route::getUrlWithPublicCallbackAuth($params);
-    }
-
     protected static function getWibmoTxnId()
     {
         return random_alphanum_string(21);

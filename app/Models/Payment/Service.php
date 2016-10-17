@@ -8,6 +8,7 @@ use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Error;
+use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
@@ -92,7 +93,7 @@ class Service extends Base\Service
      */
     public function refund($id, array $input)
     {
-        $refund = $this->getNewProcessor()->refundCapturedPayment($id, $input);
+        $refund = $this->getNewProcessor()->refundPaymentViaMerchant($id, $input);
 
         return $refund->toArrayPublic();
     }
@@ -312,6 +313,15 @@ class Service extends Base\Service
         $payment = $this->repo->payment->findOrFailPublic($id);
 
         $merchant = $payment->merchant;
+
+        // TODO: Hack to prevent S2S callback processing for TPV Merchants.
+        // All TPV Merchant transactions will be made through BILLDESK.
+        // Issue is currently on BILLDESK end. Remove once the fix has been
+        // made from the BILLDESK side.
+        if ($merchant->isTPVRequired())
+        {
+            return ['success' => true];
+        }
 
         return $this->getNewProcessor($merchant)->s2sCallback($payment, $input);
     }
@@ -767,7 +777,7 @@ class Service extends Base\Service
 
         $authorizedPayments = $this->repo->payment->getAuthorizedPaymentsBetweenTimestamps($from, $to);
 
-        $grouped = $authorizedPayments->keyBy(Payment\Entity::MERCHANT_ID);
+        $grouped = $authorizedPayments->groupBy(Payment\Entity::MERCHANT_ID);
 
         // Put the counts in for debug purposes
         $result['counts']['payments'] = count($authorizedPayments);

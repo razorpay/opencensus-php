@@ -14,7 +14,6 @@ class Shared
     const BILLDESK_RAZORPAY_TERMINAL        = '1000BdeskTrmnl';
     const EBS_RAZORPAY_TERMINAL             = '100000EbsTrmnl';
     const HDFC_RAZORPAY_TERMINAL            = '1000HdfcShared';
-    const KOTAK_RAZORPAY_TERMINAL           = '1000KotakTrmnl';
     const MOBIKWIK_RAZORPAY_TERMINAL        = '1000MobiKwikTl';
     const NETBANKING_HDFC_TERMINAL          = '100NbHdfcTrmnl';
     const NETBANKING_KOTAK_TERMINAL         = '100NbKotakTmnl';
@@ -23,10 +22,10 @@ class Shared
     const PAYZAPP_RAZORPAY_TERMINAL         = '100PayzappTmnl';
     const PAYUMONEY_RAZORPAY_TERMINAL       = '100PayumnyTmnl';
     const FREECHARGE_RAZORPAY_TERMINAL      = '100FrchrgeTmnl';
-    const SBIEPAY_RAZORPAY_TERMINAL         = '10000SbiEpayTl';
     const SHARP_RAZORPAY_TERMINAL           = '1000SharpTrmnl';
     const CYBERSOURCE_HDFC_TERMINAL         = '1000CybrsTrmnl';
     const CYBERSOURCE_AXIS_TERMINAL         = '1000CybAxTrmnl';
+    const FIRST_DATA_RAZORPAY_TERMINAL      = '1000FrstDataTl';
     const UPI_ICICI_RAZORPAY_TERMINAL       = '100UPIICICITml';
     const AIRTELMONEY_RAZORPAY_TERMINAL     = '100ArtlMnyTmnl';
 
@@ -37,7 +36,6 @@ class Shared
         self::BILLDESK_RAZORPAY_TERMINAL,
         self::EBS_RAZORPAY_TERMINAL,
         self::HDFC_RAZORPAY_TERMINAL,
-        self::KOTAK_RAZORPAY_TERMINAL,
         self::MOBIKWIK_RAZORPAY_TERMINAL,
         self::OLAMONEY_RAZORPAY_TERMINAL,
         self::PAYTM_RAZORPAY_TERMINAL,
@@ -47,9 +45,9 @@ class Shared
         self::PAYUMONEY_RAZORPAY_TERMINAL,
         self::FREECHARGE_RAZORPAY_TERMINAL,
         self::SHARP_RAZORPAY_TERMINAL,
-        self::SBIEPAY_RAZORPAY_TERMINAL,
         self::CYBERSOURCE_HDFC_TERMINAL,
         self::CYBERSOURCE_AXIS_TERMINAL,
+        self::FIRST_DATA_RAZORPAY_TERMINAL,
         self::UPI_ICICI_RAZORPAY_TERMINAL,
         self::AIRTELMONEY_RAZORPAY_TERMINAL,
     );
@@ -65,7 +63,6 @@ class Shared
         self::EBS_RAZORPAY_TERMINAL         => Gateway::EBS,
         self::CYBERSOURCE_HDFC_TERMINAL     => Gateway::CYBERSOURCE,
         self::HDFC_RAZORPAY_TERMINAL        => Gateway::HDFC,
-        self::KOTAK_RAZORPAY_TERMINAL       => Gateway::KOTAK,
         self::MOBIKWIK_RAZORPAY_TERMINAL    => Gateway::MOBIKWIK,
         self::NETBANKING_HDFC_TERMINAL      => Gateway::NETBANKING_HDFC,
         self::NETBANKING_KOTAK_TERMINAL     => Gateway::NETBANKING_KOTAK,
@@ -75,8 +72,8 @@ class Shared
         self::PAYUMONEY_RAZORPAY_TERMINAL   => Gateway::WALLET_PAYUMONEY,
         self::AIRTELMONEY_RAZORPAY_TERMINAL => Gateway::WALLET_AIRTELMONEY,
         self::FREECHARGE_RAZORPAY_TERMINAL  => Gateway::WALLET_FREECHARGE,
-        self::SBIEPAY_RAZORPAY_TERMINAL     => Gateway::SBIEPAY,
         self::SHARP_RAZORPAY_TERMINAL       => Gateway::SHARP,
+        self::FIRST_DATA_RAZORPAY_TERMINAL  => Gateway::FIRST_DATA,
         self::UPI_ICICI_RAZORPAY_TERMINAL   => Gateway::UPI_ICICI,
     );
 

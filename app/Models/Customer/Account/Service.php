@@ -164,11 +164,16 @@ class Service extends Base\Service
 
             $this->trace->info(TraceCode::CUSTOMER_CHECKCOOKIE_STATUS,
                 [
-                    'session' => $sessionData
+                    'session' => $sessionData,
+                    'input'   => $input
                 ]);
 
-            // return once this matches the mismatch cases.
-            // return $data;
+            $key = $this->mode . '_checkcookie';
+
+            if (empty($sessionData[$key]) === true)
+            {
+                return $data;
+            }
         }
 
         $merchant = $this->repo->merchant->getSharedAccount();

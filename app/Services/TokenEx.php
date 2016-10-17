@@ -173,7 +173,11 @@ class TokenEx
 
         if ($success === false)
         {
-            throw new Exception\RuntimeException('tokenex request: '. $referenceNumber . ' failed');
+            $data = [
+                'referenceId' => $referenceNumber
+            ];
+
+            throw new Exception\RuntimeException('tokenex request failed', $data);
         }
     }
 }

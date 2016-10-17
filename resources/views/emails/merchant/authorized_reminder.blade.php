@@ -81,7 +81,7 @@ capturing it in the dashboard.</p>
                       </tr></table></td>
                   <td class="shortwrapper" style="-moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0; text-align: left; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px;">
                     <table class="three columns" style="border-collapse: collapse; border-spacing: 0; padding: 0; text-align: left; vertical-align: top; margin: 0 auto; width: 130px;"><tr style="padding: 0; text-align: left; vertical-align: top;"><td class="darktext center" style="-moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0px 0px 10px; text-align: center; vertical-align: top; color: #484B4C; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 25px; margin: 0; font-size: 14px;">
-                          {{{\Carbon\Carbon::createFromTimeStamp($payment['authorized_at'], "Asia/Kolkata")->format('h:i a')}}}
+                          {{{\Carbon\Carbon::createFromTimeStamp($payment['authorized_at'], "Asia/Kolkata")->format('jS M, h:i a')}}}
                         </td>
                       </tr></table></td>
                   <td class="shortwrapper last" style="-moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0; text-align: left; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px; padding-right: 0px;">
@@ -92,6 +92,6 @@ capturing it in the dashboard.</p>
             </tr></table>
           @endforeach
           @include('emails.partials.footer', ['message' => $message])
-        
-      
+
+
     </table></td></tr></table></body></html>

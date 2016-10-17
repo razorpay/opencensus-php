@@ -2,7 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
-use RZP\Http\ApiResponse;
+use ApiResponse;
 use RZP\Models\Payment;
 use RZP\Models\Card;
 use RZP\Trace\TraceCode;
@@ -243,11 +243,11 @@ class PaymentController extends Controller
 
         return ApiResponse::json($data);
     }
-    
+
     public function postAuthorizeLockTimeOut($paymentIds)
     {
         $data = $this->payment->authorizeLockTimeOutPayments($paymentIds);
-        
+
         return ApiResponse::json($data);
     }
 }

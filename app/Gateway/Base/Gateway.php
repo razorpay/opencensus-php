@@ -115,6 +115,15 @@ class Gateway
     protected $config;
 
     /**
+     * Api Route instance
+     *
+     * @var RZP\Http\Route
+     */
+    protected $route;
+
+    protected $terminal;
+
+    /**
      * Some gateways whitelist our IP and requests to them can only
      * be sent from those IP.
      *
@@ -144,6 +153,8 @@ class Gateway
         $this->loadGatewayConfig();
 
         $this->repo = $this->getRepository();
+
+        $this->route = $this->app['api.route'];
     }
 
     public function authorize(array $input)
@@ -364,16 +375,18 @@ class Gateway
         {
             $this->trace->warning(
                 TraceCode::GATEWAY_PAYMENT_VERIFY,
-                ['payment_id' => $verify->input['payment']['id'],
-                 'message' => 'payment id not found in the gateway database',
-                 'gateway' => $this->gateway]);
+                [
+                    'payment_id' => $verify->input['payment']['id'],
+                    'message'    => 'payment id not found in the gateway database',
+                    'gateway'    => $this->gateway
+                ]);
 
             return null;
         }
 
-        $content = $this->sendPaymentVerifyRequest($verify);
+        $this->sendPaymentVerifyRequest($verify);
 
-        $status = $this->verifyPayment($verify);
+        $this->verifyPayment($verify);
 
         if (($verify->match === false) and
             ($verify->throwExceptionOnMismatch))
@@ -674,6 +687,15 @@ class Gateway
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED);
         }
+    }
+
+    protected function getGatewayCertDirPath()
+    {
+        $certificatePath = $this->app['config']->get('gateway.certificate_path');
+
+        $gatewayCertPath = $certificatePath . '/' . $this->getGatewayCertDirName();
+
+        return $gatewayCertPath;
     }
 
     protected function getRepository()

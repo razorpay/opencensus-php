@@ -103,13 +103,18 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MIN_AMOUNT);
     }
 
-    protected function getBankAttribute()
+    /**
+     * Issuer is either a bank or a network
+     */
+    public function getIssuer()
     {
-       return $this->attributes[self::BANK];
-    }
+        $bank = $this->getBank();
 
-    protected function getMethodsAttribute()
-    {
-       return $this->attributes[self::METHODS];
+        if (is_null($bank) === false)
+        {
+            return $bank;
+        }
+
+        return $this->getNetwork();
     }
 }

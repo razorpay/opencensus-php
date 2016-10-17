@@ -2,12 +2,12 @@
 
 namespace RZP\Http\Controllers;
 
-use RZP\Constants\Mode;
+use ApiResponse;
 use Database\DefaultConnection;
 use Request;
 use Redirect;
+use RZP\Constants\Mode;
 use View;
-use RZP\Http\ApiResponse;
 
 class MockGatewayController extends Controller
 {
@@ -113,6 +113,17 @@ class MockGatewayController extends Controller
         $input = Request::all();
 
         $server = $this->gateway->server('axis_migs');
+
+        $url = $server->authorize($input);
+
+        return Redirect::to($url);
+    }
+
+    public function postFirstDataPayment()
+    {
+        $input = Request::all();
+
+        $server = $this->gateway->server('first_data');
 
         $url = $server->authorize($input);
 
@@ -238,15 +249,6 @@ class MockGatewayController extends Controller
         $url = $server->authorize($input);
 
         return Redirect::to($url);
-    }
-
-    public function postSbiepayPayment()
-    {
-        $input = Request::all();
-
-        $server = new \RZP\Gateway\Sbiepay\Mock\Server;
-
-        return $server->authorize($input);
     }
 
     public function walletPayment($wallet, $paymentId = null)

@@ -2,33 +2,15 @@
 
 namespace RZP\Http\Controllers;
 
-use RZP\Http\ApiResponse;
+use ApiResponse;
+use Request;
 use RZP\Exception\RecoverableException;
 use RZP\Models\Settlement;
 use RZP\Models\Settlement\Details;
 use RZP\Models\Transaction;
-use Request;
 
 class SettlementController extends Controller
 {
-    public function postGatewayMprReconcile()
-    {
-        $input = Request::all();
-
-        $data = (new Settlement\Service)->gatewayMprReconcile($input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function postGatewayMprGenerate()
-    {
-        $input = Request::all();
-
-        $data = (new Settlement\Service)->gatewayMprGenerate($input);
-
-        return ApiResponse::json($data);
-    }
-
     public function postSettlementInitiate($channel = null)
     {
         $input = Request::all();

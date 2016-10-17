@@ -182,6 +182,10 @@ trait PaymentCreationTrait
                         {
                             $gateway = $content['gateway'];
                         }
+                        else if ($content['type'] === 'async')
+                        {
+                            return $response;
+                        }
                     }
                 }
                 else
@@ -215,6 +219,78 @@ trait PaymentCreationTrait
                     {
                         $gateway = $content['gateway'];
                     }
+                    else if ($content['type'] === 'async')
+                    {
+                        return $response;
+                    }
+                }
+            }
+        }
+
+        return $this->runPaymentCallbackFlowForGateway($response, $gateway, $callback);
+    }
+
+    protected function handleWalletTopupFlow($response, $request, &$callback = null)
+    {
+        $content = $response->getContent();
+
+        $gateway = null;
+
+        // Has to be either redirect or a html form post.o
+        // First check for normal html form post.
+        $ret = ((json_decode($content) === null) and
+                ($this->isResponseInstanceType($response, 'http')) and
+                ($response->headers->get('content-type') === 'text/html; charset=UTF-8') and
+                ($response->getStatusCode() === 200));
+
+        if ($ret === false)
+        {
+            // Now check for redirect
+            $redirect = (($this->isResponseInstanceType($response, 'redirect')) and
+                    ($response->getStatusCode() === 302));
+
+            if ($redirect === true)
+            {
+                $gateway = $response->headers->get('X-gateway');
+            }
+
+            //
+            // Fetch payment creation info from JsonResponse
+            //
+            else if (\Str::endsWith($request['url'], 'topup/ajax'))
+            {
+                $content = $response->getData(true);
+
+                if (isset($content['type']) === true)
+                {
+                    if ($content['type'] === 'first')
+                    {
+                        $gateway = $content['gateway'];
+                    }
+                }
+            }
+            else
+            {
+                return $response;
+            }
+        }
+        else
+        {
+            $gateway = $response->headers->get('X-gateway');
+
+            //
+            // When doing form posts relevant here, we put in a
+            // second form which is not submitted but it contains gateway
+            // field in encrypted form and 'type' field with value as 'first'
+            // or 'return'. Otherwise, don't take an action here.
+            //
+            $content = $this->getSecondFormDataFromResponse($content, 'http://localhost');
+
+            if (isset($content['type']) === true)
+            {
+                if ($content['type'] === 'first')
+                {
+                    $gateway = $content['gateway'];
                 }
             }
         }
