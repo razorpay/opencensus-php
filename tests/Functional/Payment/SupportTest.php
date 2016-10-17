@@ -75,16 +75,16 @@ class SupportTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
+        unset($content['totalTime']);
+
         $this->assertEquals(
             [
-                'filter'        => 'all',
-                'verified'      => 1,
-                'failed'        => 0,
-                'authorized'    => 0,
-                'timed out'     => 0,
-                'error'         => 0,
-                'authorizedTime'=> 0,
-                'totalTime'     => '0 secs',
+                'filter'            => 'all',
+                'verified'          => 1,
+                'authorized/failed' => 0,
+                'timed out'         => 0,
+                'error'             => 0,
+                'authorizedTime'    => 0,
             ],
             $content);
     }

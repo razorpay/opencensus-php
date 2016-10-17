@@ -172,36 +172,28 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function get50PaymentsWithVerifyResult($result)
-    {
-        return $this->newQuery()
-                    ->where(Payment\Entity::VERIFIED, '=', $result)
-                    ->take(50)
-                    ->get();
-    }
-
-    public function getPaymentsWithCreatedStatusForVerification($ts)
-    {
-        $verifyEnabledGateways = Payment\Gateway::$verifyEnabled;
-
-        return $this->newQuery()
-                    ->whereNull(Payment\Entity::VERIFIED)
-                    ->status(Payment\Status::CREATED)
-                    ->whereIn(Payment\Entity::GATEWAY, $verifyEnabledGateways)
-                    ->createdAtLessThan($ts)
-                    ->get();
-    }
-
-    public function getUnverifiedPayments($ts, $verifyBoundary)
+    public function getPaymentsToVerify($ts, $verifyBoundary, $verifyStatus = null, $paymentStatus = null)
     {
         $verifyEnabledGateways = Payment\Gateway::$verifyEnabled;
 
         $condition = $this->getWhereConditionForVerify($ts, $verifyBoundary);
 
         $query = $this->newQuery()
-            ->whereNull(Payment\Entity::VERIFIED)
-            ->status(Payment\Status::FAILED)
             ->whereIn(Payment\Entity::GATEWAY, $verifyEnabledGateways);
+
+        if ($verifyStatus === null)
+        {
+            $query->whereNull(Payment\Entity::VERIFIED);
+        }
+        else
+        {
+            $query->where(Payment\Entity::VERIFIED, '=', $verifyStatus);
+        }
+
+        if ($paymentStatus !== null)
+        {
+            $query->status($paymentStatus);
+        }
 
         $query = $this->addWhereQueryForVerify($query, $condition);
 

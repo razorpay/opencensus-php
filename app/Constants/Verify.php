@@ -14,7 +14,9 @@ class Verify
     const MINUTES_IN_DAY    = 1440;
     const SECONDS_IN_MINUTE = 60;
 
-    const MIN_TIME_BEFORE_VERIFY = 120;  // 2 Minutes
+    const CREATED_MIN_TIME_BEFORE_VERIFY    = 150;  // 2.5 Minutes
+    const ALL_MIN_TIME_BEFORE_VERIFY        = 120;  // 2.5 Minutes
+    const DEFAULT_MIN_TIME_BEFORE_VERIFY    = 0;    // 0 Minute
 
     const SUCCESS       = 'success';
     const ERROR         = 'error';
@@ -31,5 +33,21 @@ class Verify
         }
 
         return $boundary;
+    }
+
+    public static function getMinimumTimeBeforeVerify($filter)
+    {
+        $time = self::DEFAULT_MIN_TIME_BEFORE_VERIFY;
+
+        if ($filter === 'all')
+        {
+            $time = self::ALL_MIN_TIME_BEFORE_VERIFY;
+        }
+        elseif ($filter === 'created')
+        {
+            $time = self::CREATED_MIN_TIME_BEFORE_VERIFY;
+        }
+
+        return $time;
     }
 }

@@ -36,80 +36,60 @@ class Verify
 
     public function verifyPaymentsWithFilter($filter)
     {
-        if ($filter === 'all')
+        switch($filter)
         {
-            return $this->verifyAllPayments();
+            case 'created':
+                $paymentStatus = Payment\Status::CREATED;
+                $verifyStatus = null;
+                break;
+
+            case 'all':
+                $paymentStatus = Payment\Status::FAILED;
+                $verifyStatus = null;
+                break;
+
+            case 'failed':
+                $paymentStatus = null;
+                $verifyStatus = VerifyResult::FAILED;
+                break;
+
+            case 'error':
+                $paymentStatus = null;
+                $verifyStatus = VerifyResult::ERROR;
+                break;
+
+            default:
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_PARAMETERS, $filter);
         }
-        else if ($filter === 'failed')
-        {
-            return $this->verifyPaymentsWithFailedVerifyResult();
-        }
-        else if ($filter === 'error')
-        {
-            return $this->verifyPaymentsWithErrorVerifyResult();
-        }
-        else if ($filter === 'created')
-        {
-            return $this->verifyPaymentsWithCreatedStatus();
-        }
-        else
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_PARAMETERS, $filter);
-        }
-    }
 
-    public function verifyPaymentsWithFailedVerifyResult()
-    {
-        $payments = $this->paymentRepo->get50PaymentsWithVerifyResult(VerifyResult::FAILED);
-
-        $payments->shuffle();
-
-        return $this->verifyMultiplePayments($payments, 'failed');
-    }
-
-    public function verifyPaymentsWithErrorVerifyResult()
-    {
-        $payments = $this->paymentRepo->get50PaymentsWithVerifyResult(VerifyResult::ERROR);
-
-        $payments->shuffle();
-
-        return $this->verifyMultiplePayments($payments, 'error');
-    }
-
-    public function verifyPaymentsWithCreatedStatus()
-    {
-        $ts = time() - (int) (2.5 * 60);
-
-        $payments = $this->paymentRepo->getPaymentsWithCreatedStatusForVerification($ts);
-
-        return $this->verifyMultiplePayments($payments, 'created');
-    }
-
-    public function verifyAllPayments()
-    {
-        $currentTime  = time();
-
-        $ts = $currentTime - Constants\Verify::MIN_TIME_BEFORE_VERIFY;
+        $ts = time() - Constants\Verify::getMinimumTimeBeforeVerify($filter);
 
         $boundary = Constants\Verify::getBoundayInSeconds();
 
         $boundaryQueryData = [];
 
-        foreach ($boundary as $key=> $value)
+        foreach ($boundary as $key => $value)
         {
             $boundaryQueryData[$key] = time() - $value;
         }
 
-        $payments = $this->paymentRepo->getUnverifiedPayments($ts, $boundaryQueryData);
+        $payments = $this->paymentRepo->getPaymentsToVerify($ts, $boundaryQueryData, $verifyStatus, $paymentStatus);
 
-        return $this->verifyMultiplePayments($payments, 'all');
+        return $this->verifyMultiplePayments($payments, $filter);
     }
 
     public function verifyMultiplePayments($payments, $filter)
     {
-        $timedOut = $verified = $failed = $authorized = $error = 0;
+        $result = [
+            Constants\Verify::AUTHORIZED    => 0,
+            Constants\Verify::SUCCESS       => 0,
+            Constants\Verify::TIMEOUT       => 0,
+            Constants\Verify::ERROR         => 0,
+        ];
 
-        $time = time();
+        $avgTimeDiff = 0;
+
+        $verifyStartTime = time();
 
         $timeDiff = 0;
 
@@ -128,69 +108,53 @@ class Verify
         {
             if (in_array($payment->getId() . "_verify", $verifyKeys['locked']) === false)
             {
+                // If a payment cannot be locked for verify,
+                // Ignore the payment for running verify
                 continue;
             }
 
-            $res = $this->verifyPayment($payment);
+            $verifyStatus = $this->verifyPayment($payment);
 
-            switch ($res)
+            if ($verifyStatus === Constants\Verify::AUTHORIZED)
             {
-                case Constants\Verify::SUCCESS:
-                    $verified++;
-                    break;
-
-                case Constants\Verify::TIMEOUT:
-                    $timedOut++;
-                    break;
-
-                case Constants\Verify::AUTHORIZED:
-                    $failed++;
-                    $timeDiff += time() - $payment->getCreatedAt();
-                    $authorized++;
-                    break;
-
-                case Constants\Verify::ERROR:
-                    $error++;
-                    break;
-
-                default:
-                    throw new Exception\LogicException(
-                        'Unknown result code: ' . $res);
+                $timeDiff += time() - $payment->getCreatedAt();
             }
+
+            $result[$verifyStatus] += 1;
         }
 
         $this->mutex->releaseMultiple($verifyKeys['locked']);
 
-        $totalTime = time() - $time;
+        $totalTime = time() - $verifyStartTime;
 
-        $avgTimeDiff = 0;
-
-        if ($authorized !== 0)
+        if ($result[Constants\Verify::AUTHORIZED] !== 0)
         {
-            $avgTimeDiff = (int) ($timeDiff / $authorized);
+            $avgTimeDiff = (int) ($timeDiff / $results[Constants\Verify::AUTHORIZED]);
         }
 
-        $results = [
+        $total = $result[Constants\Verify::AUTHORIZED] +
+            $result[Constants\Verify::SUCCESS] +
+            $result[Constants\Verify::TIMEOUT] +
+            $result[Constants\Verify::ERROR];
+
+        $processedResults = [
             'filter'            => $filter,
-            'verified'          => $verified,
-            'failed'            => $failed,
-            'authorized'        => $authorized,
-            'timed out'         => $timedOut,
-            'error'             => $error,
+            'verified'          => $result[Constants\Verify::SUCCESS],
+            'authorized/failed' => $result[Constants\Verify::AUTHORIZED],
+            'timed out'         => $result[Constants\Verify::TIMEOUT],
+            'error'             => $result[Constants\Verify::ERROR],
             'authorizedTime'    => $avgTimeDiff,
             'totalTime'         => $totalTime . ' secs'
         ];
 
-        $message = 'Payment verify result';
-
-        $total = $timedOut + $verified + $authorized + $error;
-
         if (($total !== 0) and
-            (($verified > 4) or
-             ($total !== $verified)))
+            (($result[Constants\Verify::SUCCESS] > 4) or
+             ($total !== $result[Constants\Verify::SUCCESS])))
         {
             // Drop all false values (NULL, 0, "")
-            $slackArray = array_filter($results);
+            $slackArray = array_filter($processedResults);
+
+            $message = 'Payment verify result';
 
             $this->app['slack']->queue(
                 $message,
@@ -201,7 +165,7 @@ class Verify
             );
         }
 
-        return $results;
+        return $processedResults;
     }
 
     public function verifyPayment($payment)
