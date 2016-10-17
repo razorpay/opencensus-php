@@ -23,4 +23,5 @@ class Actions
     const FREE_CREDITS_EDIT     = 'Free Credits Edited';
     const TAGGED                = 'Tagged';
     const CONFIRMED             = 'Confirmed';
+    const ADMIN_EDIT            = 'Admin Edited';
 }

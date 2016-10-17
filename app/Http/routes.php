@@ -168,6 +168,7 @@ Route::group(['middleware'  =>  'admin'], function()
 
     // Admin Meta Routes
     Route::post('/admin/password', 'AdminController@postPassword');
+    Route::put('/admin/{id}/edit', 'AdminController@putEdit');
 
     // Pricing Plan Routes
     Route::post('/admin/pricing/new', 'AdminController@postNewPricingPlan');

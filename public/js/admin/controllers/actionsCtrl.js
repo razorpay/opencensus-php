@@ -680,6 +680,8 @@ app.controller('ActionsCtrl', [
         mode: mode
       };
       if (from && to) {
+        to = new Date(to).getTime()/1000;
+        from = new Date(from).getTime()/1000;
         data.from = from;
         data.to = to;
       } else {

@@ -350,8 +350,14 @@ class MerchantController extends Controller
 
         list($error, $response) = (new Api\Service)->downloadBatchFile($mode, $id);
 
-        return redirect($response['url']);
-        // return AppResponse::jsonResponse($error, $response);
+        if (empty($response) !== true)
+        {
+            return redirect($response['url']);
+        }
+        else
+        {
+            return AppResponse::jsonResponse($error, $response);
+        }
     }
 
     /**
