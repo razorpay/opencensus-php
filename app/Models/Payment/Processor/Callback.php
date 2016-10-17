@@ -112,7 +112,7 @@ trait Callback
         $this->checkForRecentFailedPayment($payment);
 
         throw new Exception\BadRequestException(
-            ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
+            ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
     }
 
     public function s2sCallback($payment, array $gatewayInput)
@@ -136,7 +136,7 @@ trait Callback
         if ($payment->isCreated() === false)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
+                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
         }
 
         $this->processPaymentCallback($payment, $gatewayInput);
@@ -262,7 +262,7 @@ trait Callback
         if ($status !== Status::CREATED)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
+                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
         }
 
         $code = $e->getError()->getInternalErrorCode();
@@ -316,7 +316,7 @@ trait Callback
         // the usual message that payment already processed.
 
         throw new Exception\BadRequestException(
-            ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
+            ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
     }
 
     protected function checkForMerchantCallbackUrl($payment)
