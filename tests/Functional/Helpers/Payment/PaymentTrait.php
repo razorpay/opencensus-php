@@ -21,12 +21,10 @@ trait PaymentTrait
     use PaymentAxisMigsTrait;
     use PaymentBilldeskTrait;
     use PaymentHdfcTrait;
-    use PaymentKotakTrait;
     use PaymentNetbankingTrait;
     use PaymentPaytmTrait;
     use PaymentSharpTrait;
     use PaymentMobikwikTrait;
-    use PaymentSbiepayTrait;
     use PaymentCybersourceTrait;
     use PaymentFirstDataTrait;
     use PaymentEbsTrait;
@@ -778,29 +776,31 @@ trait PaymentTrait
     {
         $card = null;
 
-        if ($saved == true)
+        if ($saved === true)
         {
-            $card = array(
-                'cvv'   => 111);
+            $card = [
+                'cvv' => 111
+            ];
         }
         else
         {
-            $card = array(
-                'number'            => '41476700000006',
-                'name'              => 'Harshil',
-                'expiry_month'      => '12',
-                'expiry_year'       => '2017',
-                'cvv'               => '566');
+            $card = [
+                'number'       => '41476700000006',
+                'name'         => 'Harshil',
+                'expiry_month' => '12',
+                'expiry_year'  => '2017',
+                'cvv'          => '566'
+            ];
         }
 
         $payment = $this->getDefaultPaymentArrayNeutral();
 
         $attributes = [
-            'amount'            =>  '300000',
-            'method'            =>  'emi',
-            'emi_duration'      =>  '9',
-            'card'              => $card,
-            'bank'              => 'ICIC',
+            'amount'       => '300000',
+            'method'       => 'emi',
+            'emi_duration' => '9',
+            'card'         => $card,
+            'bank'         => 'ICIC',
         ];
 
         $payment = array_merge($payment, $attributes);

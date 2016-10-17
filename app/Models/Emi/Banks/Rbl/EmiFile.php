@@ -111,7 +111,7 @@ class EmiFile extends Base\EmiFile
                 'Store State'                      => '',
                 'MID'                              => '',
                 'TID'                              => '',
-                'Tx Time'                          => $this->formattedDateFromTimestamp($emiPayment->getCaptureTimestamp()),
+                'Tx Time'                          => $this->formattedDateFromTimestamp($emiPayment->getAuthorizeTimestamp()),
                 'Subvention payable to Issuer'     => '',
                 'Subvention Amount (Rs.)'          => '',
                 'Interest Rate'                    => $rate,

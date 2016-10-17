@@ -21,6 +21,8 @@ use Carbon\Carbon;
 
 class Gateway extends Base\Gateway
 {
+    use Base\AuthorizeFailed;
+
     const CERTIFICATE_DIRECTORY_NAME        = 'cert_dir_name';
     const CERTIFICATE_FORMAT_P12            = 'p12';
 
@@ -398,6 +400,8 @@ class Gateway extends Base\Gateway
         $gatewayPayment->setGatewayPaymentId($gatewayPaymentId);
 
         $this->repo->saveOrFail($gatewayPayment);
+
+        return $gatewayPayment;
     }
 
     protected function postSoapRequest($content, $requestType)

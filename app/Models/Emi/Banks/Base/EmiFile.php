@@ -76,11 +76,12 @@ class EmiFile
 
     protected function getEmiAmount($amount, $annualRate, $tenureInMonths)
     {
-        // r is monthly rate i.e a/12 * 100
+        // $annualRate is a
+        // $monthlyRate is a/12 i.e should be treated as 13/1200
         // E = P x r x (1+r)^n/((1+r)^n – 1)
         // tenure in months
 
-        $monthlyRate = $annualRate * 100 / 12;
+        $monthlyRate = $annualRate / 1200;
 
         $expression = pow((1+ $monthlyRate), $tenureInMonths);
 
@@ -88,7 +89,7 @@ class EmiFile
 
         $den = $expression - 1;
 
-        return ($num / $den);
+        return floor($num / $den);
     }
 
     protected function sendEmiFile($fullPath)

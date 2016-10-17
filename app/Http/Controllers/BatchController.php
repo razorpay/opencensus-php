@@ -2,7 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
-use RZP\Http\ApiResponse;
+use ApiResponse;
 use RZP\Models\Batch;
 use Request;
 use View;

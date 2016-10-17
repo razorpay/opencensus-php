@@ -2,13 +2,13 @@
 
 namespace RZP\Http\Controllers;
 
+use ApiResponse;
+use Request;
 use RZP\Constants\Mode;
-use RZP\Http\ApiResponse;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Terminal;
 use RZP\Models\Key;
-use Request;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 

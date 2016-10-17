@@ -128,6 +128,10 @@ class FeeCalculator
         {
             $rule = $this->getRelevantPricingRuleForUPI($rules);
         }
+        else if ($method === Payment\Method::EMI)
+        {
+            $rule = $this->getRelevantPricingRuleForEmi($rules);
+        }
         else
         {
             $rule = $this->getRelevantPricingRuleForMethod($rules);
@@ -219,6 +223,21 @@ class FeeCalculator
         return $this->validateAndGetOnePricingRule($rules);
     }
 
+    protected function getRelevantPricingRuleForEmi($rules)
+    {
+        $payment = $this->entity;
+
+        $network = Card\Network::getCode($payment->card->getNetwork());
+
+        $filters1 = array(
+            [Pricing\Entity::PAYMENT_NETWORK,       $network,       true,   null    ],
+        );
+
+        $rules = $this->applyFiltersOnRules($rules, $filters1);
+
+        return $this->validateAndGetOnePricingRule($rules);
+    }
+
     protected function getRelevantPricingRuleForCardPayment($rules)
     {
         // All the rules for the current pricing plan will be put
@@ -248,8 +267,6 @@ class FeeCalculator
             [Pricing\Entity::INTERNATIONAL,         $international, false,  false   ],
             [Pricing\Entity::PAYMENT_NETWORK,       $network,       true,   null    ],
         );
-
-
 
         $rules = $this->applyFiltersOnRules($rules, $filters1);
 

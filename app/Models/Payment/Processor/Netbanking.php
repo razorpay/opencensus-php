@@ -138,50 +138,6 @@ class Netbanking
         IFSC::SBTR,
     );
 
-    protected static $sbiepay = array(
-        IFSC::SBTR,
-        IFSC::CSBK,
-        IFSC::JAKA,
-        IFSC::MAHB,
-        IFSC::DEUT,
-        IFSC::VIJB,
-        IFSC::PSIB,
-        IFSC::SIBL,
-        IFSC::BKID,
-        IFSC::SBBJ,
-        IFSC::SBHY,
-        IFSC::SBMY,
-        IFSC::STBP,
-        IFSC::UTBI,
-        IFSC::IDIB,
-        IFSC::CIUB,
-        IFSC::DLXB,
-        IFSC::ICIC,
-        IFSC::YESB,
-        IFSC::KVBL,
-        IFSC::FDRL,
-        IFSC::ORBC,
-        IFSC::CORP,
-        IFSC::INDB,
-        IFSC::HDFC,
-        IFSC::BBKM,
-        IFSC::KARB,
-        IFSC::ANDB,
-        IFSC::CNRB,
-        IFSC::RATN,
-        IFSC::UBIN,
-        IFSC::CBIN,
-        IFSC::PUNB,
-        IFSC::IOBA,
-        IFSC::SBIN,
-        IFSC::IBKL,
-        IFSC::BKDN,
-        IFSC::DCBL,
-        IFSC::TMBL,
-        IFSC::SYNB,
-        IFSC::CITI,
-        IFSC::LAVB);
-
     protected static $atom = array(
         IFSC::UTIB,
         IFSC::BKID,
@@ -339,7 +295,6 @@ class Netbanking
             $banks = self::getSupportedBanksInLiveMode();
 
             $banks = array_merge($banks, self::$selfInTest);
-            $banks = array_merge($banks, self::$sbiepay);
         }
 
         if ($isTPVRequired)
@@ -353,11 +308,6 @@ class Netbanking
     public static function getSupportedBanksInLiveMode()
     {
         return array_unique(array_merge(self::$billdesk, self::$ebs, self::$self));
-    }
-
-    public static function getSbiepaySupportedBanks()
-    {
-        return self::$sbiepay;
     }
 
     public static function getSupportedBanksForTPV()
@@ -383,10 +333,5 @@ class Netbanking
     public static function isBilldeskSupportedBank($bank)
     {
         return in_array($bank, self::$billdesk);
-    }
-
-    public static function isSbiepaySupportedBank($bank)
-    {
-        return in_array($bank, self::$sbiepay);
     }
 }

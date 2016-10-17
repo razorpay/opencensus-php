@@ -56,6 +56,7 @@ class MaxMind
             'emailMD5'          => md5($payment->getEmail()),
             'bin'               => $payment->card->getIin(),
             'txnID'             => $payment->getId(),
+            'shopID'            => $payment->getMerchantId(),
             'order_amount'      => $this->getFormattedAmount($payment),
             'order_currency'    => $payment->getCurrency(),
             'txn_type'          => Card\Type::getMaxmindCardType($card->getType()),

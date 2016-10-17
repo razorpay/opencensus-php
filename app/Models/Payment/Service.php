@@ -314,6 +314,15 @@ class Service extends Base\Service
 
         $merchant = $payment->merchant;
 
+        // TODO: Hack to prevent S2S callback processing for TPV Merchants.
+        // All TPV Merchant transactions will be made through BILLDESK.
+        // Issue is currently on BILLDESK end. Remove once the fix has been
+        // made from the BILLDESK side.
+        if ($merchant->isTPVRequired())
+        {
+            return ['success' => true];
+        }
+
         return $this->getNewProcessor($merchant)->s2sCallback($payment, $input);
     }
 
