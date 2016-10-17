@@ -350,7 +350,7 @@ class MerchantController extends Controller
 
         list($error, $response) = (new Api\Service)->downloadBatchFile($mode, $id);
 
-        return response()->download($response['url']);
+        return redirect($response['url']);
         // return AppResponse::jsonResponse($error, $response);
     }
 
