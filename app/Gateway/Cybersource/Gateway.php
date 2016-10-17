@@ -65,8 +65,9 @@ class Gateway extends Base\Gateway
     const TEST_WSDL_FILE              = 'cybstest.wsdl.xml';
     const LIVE_WSDL_FILE              = 'cybslive.wsdl.xml';
     const XID                         = 'xid';
-    //soap client timeout in seconds
-    const CONNECTION_TIMEOUT          = 60;
+
+    // Soap client timeout in seconds
+    const TIMEOUT                     = 60;
 
     protected $gateway = Constants\Table::CYBERSOURCE;
 
