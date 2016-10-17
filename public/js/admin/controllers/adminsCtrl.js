@@ -45,6 +45,23 @@ app.controller('AdminsCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     };
+    $scope.openEditAdmin = function (id) {
+      // Leaving this commented code here since this looks better and would like to make it work.
+      // $scope.selected = $scope.admins.find(admin => admin.id === id);
+      $scope.selected = $scope.admins.filter(function(x) { return x['id'] === id; });
+      var modalInstance = $modal.open({
+        templateUrl: 'editAdminModalContent.html',
+        controller: 'editAdminModalCtrl',
+        resolve: {
+          current: function () {
+            return jQuery.extend({}, $scope.selected[0]);
+          }
+        }
+      });
+      modalInstance.result.then(function (admin) {
+        $scope.editAdmin(admin);
+      }, $.noop);
+    };
     $scope.createAdmin = function () {
       var modalInstance = $modal.open({
         templateUrl: 'newAdminModalContent.html',
@@ -54,6 +71,27 @@ app.controller('AdminsCtrl', [
       modalInstance.result.then(function (data) {
         newAdminRequest(data);
       }, function () {
+      });
+    };
+    $scope.editAdmin = function (admin) {
+
+      var request = $http({
+        method: 'put',
+        url: '/admin/' + $scope.selected[0].id + '/edit',
+        data: angular.toJson(admin)
+      });
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Admin edited successfully', true);
+          location.reload();
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
       });
     };
     function newAdminRequest(data) {
@@ -92,6 +130,20 @@ app.controller('AdminsCtrl', [
   function ($scope, $modalInstance) {
     $scope.ok = function (data) {
       $modalInstance.close(data);
+    };
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+  }
+]).controller('editAdminModalCtrl', [
+  '$scope',
+  '$modalInstance',
+  'current',
+  function ($scope, $modalInstance, current) {
+
+    $scope.current = current;
+    $scope.ok = function (admin) {
+      $modalInstance.close(admin);
     };
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');
