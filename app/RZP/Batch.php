@@ -34,14 +34,14 @@ class Batch extends Entity
 
     public function downloadFile($id)
     {
-        $relativeUrl = "batches/$id/download";
+        $relativeUrl = $this->getEntityUrl()."$id/download";
 
         return $this->request('GET', $relativeUrl);
     }
 
     public function retryFile($id)
     {
-        $relativeUrl = "batches/$id/retry";
+        $relativeUrl = $this->getEntityUrl()."$id/retry";
 
         return $this->request('POST', $relativeUrl);
     }

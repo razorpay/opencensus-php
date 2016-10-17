@@ -397,6 +397,8 @@ class Service extends Base\Service
 
     public function uploadBatchFile($mode, $input)
     {
+        $error = $batchRefund = null;
+
         try
         {
             $this->setApiCredentials($this->merchantId, $mode);
@@ -404,19 +406,19 @@ class Service extends Base\Service
             $batchRefund = $this->api
                                 ->batch
                                 ->uploadFile($mode, $this->merchantId, $input);
-
-            return [null, $batchRefund];
         }
         catch(\Razorpay\Api\Errors\Error $e)
         {
             $error[] = $e->getMessage();
-
-            return [$error, null];
         }
+
+        return [$error, $batchRefund];
     }
 
     public function fetchMultipleBatches($mode, $input)
     {
+        $error = $collection = null;
+
         try
         {
             $collection = [];
@@ -429,19 +431,19 @@ class Service extends Base\Service
                                ->toArray();
 
             $this->mapKeys($collection);
-
-            return [null, $collection];
         }
         catch(\Razorpay\Api\Errors\Error $e)
         {
             $error[] = $e->getMessage();
-
-            return [$error, null];
         }
+
+        return [$error, $collection];
     }
 
     public function fetchBatchById($mode, $id)
     {
+        $error = $collection = null;
+
         try
         {
             $this->setApiCredentials($this->merchantId, $mode);
@@ -458,19 +460,19 @@ class Service extends Base\Service
                           ];
 
             $this->mapKeys($collection);
-
-            return [null, $collection];
         }
         catch(\Razorpay\Api\Errors\Error $e)
         {
             $error[] = $e->getMessage();
-
-            return [$error, null];
         }
+
+        return [$error, $collection];
     }
 
     public function downloadBatchFile($mode, $id)
     {
+        $error = $downloadResponse = null;
+
         try
         {
             $this->setApiCredentials($this->merchantId, $mode);
@@ -480,19 +482,19 @@ class Service extends Base\Service
                                      ->downloadFile($id)
                                      ->toArray();
 
-            return [null, $downloadResponse];
-
         }
         catch(\Razorpay\Api\Errors\Error $e)
         {
             $error[] = $e->getMessage();
-
-            return [$error, null];
         }
+
+        return [$error, $downloadResponse];
     }
 
     public function retryBatchFile($mode, $id)
     {
+        $error = $batchRefund = null;
+
         try
         {
             $this->setApiCredentials($this->merchantId, $mode);
@@ -501,14 +503,12 @@ class Service extends Base\Service
                                 ->batch
                                 ->retryFile($id)
                                 ->toArray();
-
-            return [null, $batchRefund];
         }
         catch(\Razorpay\Api\Errors\Error $e)
         {
             $error[] = $e->getMessage();
-
-            return [$error, null];
         }
+
+        return [$error, $batchRefund];
     }
 }

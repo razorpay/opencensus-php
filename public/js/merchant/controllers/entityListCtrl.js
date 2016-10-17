@@ -94,6 +94,7 @@ app.controller('EntityListCtrl', [
       // /live/payments
       var baseURL = '/' + $scope.mode + '/' + $scope.entity.type + 's';
 
+      // TODO: This is a hack, will need a proper pluralizer
       if ($scope.entity.type === 'batch') {
         var baseURL = '/' + $scope.mode + '/' + $scope.entity.type + 'es';
       }
