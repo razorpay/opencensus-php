@@ -375,7 +375,7 @@ class Service extends Base\Service
 
         $data = [];
 
-         // we get all the billdesk refunds. we return back data for applicable and if success.
+        // We get all the Billdesk refunds. We return back data for applicable and if success.
 
         foreach ($refunds as $refund)
         {

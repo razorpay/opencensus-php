@@ -539,9 +539,6 @@ trait Refund
 
         return null;
     }
-<<<<<<< HEAD
-}
-=======
 
     protected function findExistingRefundForBatch(Batch\Entity $batch, Payment\Entity $payment)
     {
@@ -568,4 +565,3 @@ trait Refund
         return null;
     }
 }
->>>>>>> master

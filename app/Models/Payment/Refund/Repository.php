@@ -153,7 +153,6 @@ class Repository extends Base\Repository
     /**
      * Join with the corresponding gateway and check that this particular payment
      * has no gateway entity for the refund.
-     * We send the
      *
      * @param $gateway
      * @param $ts
