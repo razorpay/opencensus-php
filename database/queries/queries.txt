@@ -1029,7 +1029,8 @@ WHERE iin IN ('402874',
               '558959');
 
 UPDATE wallet w
-JOIN refunds r ON w.payment_id = r.payment_id
+JOIN refunds r ON w.refund_id = r.id
 SET w.amount = r.amount
 WHERE w.wallet = 'olamoney'
-    AND w.action = 'refund';
+    AND w.action = 'refund'
+    AND w.amount != r.amount;
