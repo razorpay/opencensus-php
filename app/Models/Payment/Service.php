@@ -734,14 +734,14 @@ class Service extends Base\Service
 
     public function verifyMultiplePayments($filter)
     {
-        $verify = new Verify($this->mode, $this->trace);
+        $verify = new Verify();
 
         return $verify->verifyPaymentsWithFilter($filter);
     }
 
     public function verifyPayment($payment)
     {
-        $verify = new Verify($this->mode, $this->trace);
+        $verify = new Verify();
 
         return $verify->verifyPayment($payment);
     }

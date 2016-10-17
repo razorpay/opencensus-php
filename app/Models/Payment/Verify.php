@@ -19,15 +19,13 @@ class Verify
     protected $paymentRepo;
     protected $mutex;
 
-    public function __construct($mode, $trace)
+    public function __construct()
     {
         $this->app = App::getFacadeRoot();
 
-        $this->mode = $mode;
+        $this->mode = $this->app['rzp.mode'];
 
-        $this->trace = $trace;
-
-        $this->core = new Payment\Core;
+        $this->trace = $this->app['trace'];
 
         $this->paymentRepo = $this->app['repo']->payment;
 
@@ -132,10 +130,7 @@ class Verify
             $avgTimeDiff = (int) ($timeDiff / $results[Constants\Verify::AUTHORIZED]);
         }
 
-        $total = $result[Constants\Verify::AUTHORIZED] +
-            $result[Constants\Verify::SUCCESS] +
-            $result[Constants\Verify::TIMEOUT] +
-            $result[Constants\Verify::ERROR];
+        $total = array_sum($result);
 
         $processedResults = [
             'filter'            => $filter,
