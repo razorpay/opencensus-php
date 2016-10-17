@@ -297,7 +297,7 @@ trait Authorize
     {
         $this->validateCardAndCvv($payment, $input);
 
-        $this->validateRecurringIfApplicable($payment);
+        $this->validateRecurringIfApplicable($payment, $input);
 
         $this->validateS2SIfApplicable($payment);
 
@@ -334,7 +334,7 @@ trait Authorize
         }
     }
 
-    protected function validateRecurringIfApplicable(Payment\Entity $payment)
+    protected function validateRecurringIfApplicable(Payment\Entity $payment, array $input)
     {
         $recurring = $payment->isRecurring();
 
