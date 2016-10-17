@@ -182,15 +182,8 @@ trait Authorize
 
     protected function verifyFeesLessThanAmount($payment)
     {
-        // Ignore the pricing rule not found exception for authorization.
+        // try calculating the fees, throws exception if fees is more than amount
         list($fee, $serviceTax, $ruleKey) = (new Pricing\Fee)->calculateMerchantFees($payment);
-
-        if ($payment->getAmount() < $fee)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT,
-                Payment\Entity::AMOUNT);
-        }
     }
 
     protected function processAuthResponse($request, $payment)
@@ -1009,7 +1002,7 @@ trait Authorize
             'key_id'        => \BasicAuth::getPublicKey(),
             'gateway'       => $this->getEncryptedGatewayText($payment->getGateway()),
             'request'       => [
-                'url'    => Route::getUrl('payment_get_status', ['id' => $id]),
+                'url'    => $this->route->getUrl('payment_get_status', ['id' => $id]),
                 'method' => 'GET',
             ]
         ];
@@ -1215,39 +1208,6 @@ trait Authorize
             TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
             $traceData);
     }
-
-    protected function rethrowFailedPaymentErrorException($payment)
-    {
-        $internalErrorCode = $payment->getInternalErrorCode();
-        $publicErrorCode = $payment->getErrorCode();
-        $errorDesc = $payment->getErrorDescription();
-
-        Error\Map::throwExceptionFromErrorDetails(
-            $publicErrorCode, $internalErrorCode, $errorDesc);
-
-        //
-        // If it has reached here, then an edge case occurred, for which
-        // a suitable exception was not found and which must be handled.
-        // So, we trace an error message, ringing alerts to our devs.
-        //
-
-        $this->trace->error(
-            TraceCode::PAYMENT_CALLBACK_FAILURE,
-            [
-                'payment_id' => $payment->getPublicId(),
-                'public_error_code' => $publicErrorCode,
-                'internal_error_code' => $internalErrorCode,
-                'error_description' => $errorDesc,
-                'message' => 'Failed to convert error code to the appropriate exception'
-            ]);
-
-        // If no appropriate exception mapping was found then show
-        // the usual message that payment already processed.
-
-        throw new Exception\BadRequestException(
-            ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
-    }
-
 
     protected function recordTerminalAudit($terminalData)
     {
@@ -1721,7 +1681,7 @@ trait Authorize
     {
         $params = $this->getPaymentIdAndHashParams();
 
-        $callbackUrl = Route::getUrlWithPublicCallbackAuth($params);
+        $callbackUrl = $this->route->getUrlWithPublicCallbackAuth($params);
 
         return $callbackUrl;
     }
@@ -1730,7 +1690,7 @@ trait Authorize
     {
         $params = $this->getPaymentIdAndHashParams();
 
-        $otpSubmitUrl = Route::getUrlWithPublicAuth('payment_otp_submit', $params);
+        $otpSubmitUrl = $this->route->getUrlWithPublicAuth('payment_otp_submit', $params);
 
         return $otpSubmitUrl;
     }

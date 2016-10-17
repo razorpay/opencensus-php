@@ -415,34 +415,6 @@ class Gateway extends Base\Gateway
         return $this->isCapturedSuccessfully($paymentId);
     }
 
-    public function getPaymentOrRefundId($input)
-    {
-        return Hdfc\Mpr\Reconciler::getPaymentOrRefundId($input);
-    }
-
-    public function reconcile($input)
-    {
-        return (new Hdfc\Mpr\Reconciler)->reconcile(
-            $input['input'],
-            $input['transactionId'],
-            $input['entities']);
-    }
-
-    public function generateMpr($input)
-    {
-        return (new Hdfc\Mpr\Generator)->generateMpr($input);
-    }
-
-    public function mprFileExists()
-    {
-        return (new Hdfc\Mpr\Generator)->mprFileExists();
-    }
-
-    public function deleteMprFileIfExists()
-    {
-        (new Hdfc\Mpr\Generator)->deleteMprFileIfExists();
-    }
-
 // ----------------------Gateway operations end --------------------------------
 
     protected function validateCallbackGatewayFields($input, $network)

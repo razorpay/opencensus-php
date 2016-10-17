@@ -6,6 +6,7 @@ use Excel;
 use Config;
 
 use RZP\Exception;
+use RZP\Models\Base\UniqueIdEntity;
 
 class Converter
 {
@@ -27,7 +28,7 @@ class Converter
         'ref'  => 'reference',
     ];
 
-    const MAX_SHEETS_ALLOWED = 10;
+    const MAX_SHEETS_ALLOWED = 3;
     const ROW_CHUNK_SIZE = 500;
 
     protected $dataArray;
@@ -90,7 +91,7 @@ class Converter
 
         foreach (range(0, self::MAX_SHEETS_ALLOWED) as $index)
         {
-            $randomSheetName = '';
+            $randomSheetName = 'sheet' . $index;
             $allSheetsContent[$randomSheetName] = [];
 
             Excel::filter('chunk')->selectSheetsByIndex($index)->load($filePath)->chunk(

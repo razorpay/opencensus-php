@@ -21,12 +21,10 @@ trait PaymentTrait
     use PaymentAxisMigsTrait;
     use PaymentBilldeskTrait;
     use PaymentHdfcTrait;
-    use PaymentKotakTrait;
     use PaymentNetbankingTrait;
     use PaymentPaytmTrait;
     use PaymentSharpTrait;
     use PaymentMobikwikTrait;
-    use PaymentSbiepayTrait;
     use PaymentCybersourceTrait;
     use PaymentFirstDataTrait;
     use PaymentEbsTrait;
@@ -207,6 +205,7 @@ trait PaymentTrait
         $payment = array_merge($defaultPayment, $payment);
 
         $content = $this->doAuthPayment($payment);
+
         $id = $content['razorpay_payment_id'];
 
         return array_merge($payment, ['id' => $id]);
@@ -392,7 +391,24 @@ trait PaymentTrait
         return $response;
     }
 
-    protected function topupPayment($id)
+    protected function doWalletTopup($id)
+    {
+        $request = array(
+            'method' => 'POST',
+            'url' => '/payments/'.$id.'/topup',
+            'content' => array()
+        );
+
+        $this->ba->publicAuth();
+
+        $response = $this->makeRequestParent($request);
+
+        $response = $this->handleWalletTopupFlow($response, $request);
+
+        return $this->getJsonContentFromResponse($response);
+    }
+
+    protected function doWalletTopupViaAjaxRoute($id)
     {
         $request = array(
             'method' => 'POST',
@@ -402,9 +418,11 @@ trait PaymentTrait
 
         $this->ba->publicAuth();
 
-        $content = $this->makeRequestAndGetContent($request);
+        $response = $this->makeRequestParent($request);
 
-        return $content;
+        $response = $this->handleWalletTopupFlow($response, $request);
+
+        return $this->getJsonContentFromResponse($response);
     }
 
     protected function redirectPayment($id)
@@ -430,7 +448,7 @@ trait PaymentTrait
             $response->setContent($content);
         }
 
-        return $this->getJsonContentFromResponse($response);
+        return $response;
     }
 
     protected function getPaymentStatus($id)
@@ -758,29 +776,31 @@ trait PaymentTrait
     {
         $card = null;
 
-        if ($saved == true)
+        if ($saved === true)
         {
-            $card = array(
-                'cvv'   => 111);
+            $card = [
+                'cvv' => 111
+            ];
         }
         else
         {
-            $card = array(
-                'number'            => '41476700000006',
-                'name'              => 'Harshil',
-                'expiry_month'      => '12',
-                'expiry_year'       => '2017',
-                'cvv'               => '566');
+            $card = [
+                'number'       => '41476700000006',
+                'name'         => 'Harshil',
+                'expiry_month' => '12',
+                'expiry_year'  => '2017',
+                'cvv'          => '566'
+            ];
         }
 
         $payment = $this->getDefaultPaymentArrayNeutral();
 
         $attributes = [
-            'amount'            =>  '300000',
-            'method'            =>  'emi',
-            'emi_duration'      =>  '9',
-            'card'              => $card,
-            'bank'              => 'ICIC',
+            'amount'       => '300000',
+            'method'       => 'emi',
+            'emi_duration' => '9',
+            'card'         => $card,
+            'bank'         => 'ICIC',
         ];
 
         $payment = array_merge($payment, $attributes);
@@ -1113,7 +1133,7 @@ trait PaymentTrait
     {
         $class = $this->app['gateway']->getServerClass($this->gateway);
 
-        return Mockery::mock($class)->makePartial();
+        return Mockery::mock($class, [])->makePartial();
     }
 
     protected function setMockServer($server)

@@ -2,9 +2,9 @@
 
 namespace RZP\Http\Controllers;
 
-use RZP\Http\ApiResponse;
-use RZP\Models\Order;
+use ApiResponse;
 use Request;
+use RZP\Models\Order;
 
 class OrderController extends Controller
 {

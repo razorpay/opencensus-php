@@ -58,7 +58,12 @@ class FeeCalculator
 
         $fee += $serviceTax;
 
-        assert ($fee < $amount);
+        if ($fee > $amount)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT,
+                Payment\Entity::AMOUNT);
+        }
 
         return  array($fee, $serviceTax);
     }
@@ -122,6 +127,10 @@ class FeeCalculator
         else if ($method === Payment\Method::UPI)
         {
             $rule = $this->getRelevantPricingRuleForUPI($rules);
+        }
+        else if ($method === Payment\Method::EMI)
+        {
+            $rule = $this->getRelevantPricingRuleForEmi($rules);
         }
         else
         {
@@ -214,6 +223,21 @@ class FeeCalculator
         return $this->validateAndGetOnePricingRule($rules);
     }
 
+    protected function getRelevantPricingRuleForEmi($rules)
+    {
+        $payment = $this->entity;
+
+        $network = Card\Network::getCode($payment->card->getNetwork());
+
+        $filters1 = array(
+            [Pricing\Entity::PAYMENT_NETWORK,       $network,       true,   null    ],
+        );
+
+        $rules = $this->applyFiltersOnRules($rules, $filters1);
+
+        return $this->validateAndGetOnePricingRule($rules);
+    }
+
     protected function getRelevantPricingRuleForCardPayment($rules)
     {
         // All the rules for the current pricing plan will be put
@@ -243,8 +267,6 @@ class FeeCalculator
             [Pricing\Entity::INTERNATIONAL,         $international, false,  false   ],
             [Pricing\Entity::PAYMENT_NETWORK,       $network,       true,   null    ],
         );
-
-
 
         $rules = $this->applyFiltersOnRules($rules, $filters1);
 

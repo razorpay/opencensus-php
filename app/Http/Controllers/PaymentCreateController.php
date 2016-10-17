@@ -2,7 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
-use RZP\Http\ApiResponse;
+use ApiResponse;
 use RZP\Models\Payment;
 use RZP\Models\Card;
 use RZP\Trace\TraceCode;
@@ -196,7 +196,7 @@ class PaymentCreateController extends Controller
             return ApiResponse::json(['input' => $input,'display' => $data]);
         }
 
-        $url = \RZP\Http\Route::getUrlWithPublicAuth('payment_create_checkout');
+        $url = $this->route->getUrlWithPublicAuth('payment_create_checkout');
 
         return $this->returnConvenienceFeesView($input, $data, $url);
     }

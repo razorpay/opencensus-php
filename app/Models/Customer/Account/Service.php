@@ -168,8 +168,12 @@ class Service extends Base\Service
                     'input'   => $input
                 ]);
 
-            // return once this matches the mismatch cases.
-            // return $data;
+            $key = $this->mode . '_checkcookie';
+
+            if (empty($sessionData[$key]) === true)
+            {
+                return $data;
+            }
         }
 
         $merchant = $this->repo->merchant->getSharedAccount();

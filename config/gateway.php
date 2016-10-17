@@ -25,7 +25,6 @@ return array(
         'netbanking_hdfc',
         'netbanking_kotak',
         'sharp',
-        'sbiepay',
         'wallet_olamoney',
         'upi_icici',
         'wallet_payzapp',
@@ -48,7 +47,6 @@ return array(
     'mock_netbanking_kotak'   => env('NETBANKING_KOTAK_MOCK'),
     'mock_billdesk'           => env('BILLDESK_MOCK'),
     'mock_ebs'                => env('EBS_MOCK'),
-    'mock_sbiepay'            => false,
     'mock_wallet_olamoney'    => env('OLAMONEY_MOCK'),
     'mock_wallet_payzapp'     => env('PAYZAPP_MOCK'),
     'mock_wallet_payumoney'   => env('PAYUMONEY_MOCK'),
@@ -120,13 +118,6 @@ return array(
         'test_hash_secret' => env('EBS_GATEWAY_TEST_HASH_SECRET', 'secret'),
     ),
 
-    'kotak' => array(
-        'test_hash_secret'  => env('KOTAK_GATEWAY_TEST_HASH_SECRET'),
-        'test_merchant_id'  => env('KOTAK_GATEWAY_TEST_MERCHANT_ID'),
-        'test_access_code'  => env('KOTAK_GATEWAY_TEST_ACCESS_CODE'),
-        'test_terminal_id'  => env('KOTAK_GATEWAY_TEST_TERMINAL_ID'),
-    ),
-
     'mobikwik' => array(
         'test_hash_secret'  => env('MOBIKWIK_GATEWAY_TEST_HASH_SECRET'),
         'test_merchant_id'  => 'MBK9002',
@@ -194,11 +185,6 @@ return array(
     ),
 
     'sharp' => array(
-    ),
-
-    'sbiepay' => array(
-        'test_merchant_id'  => env('SBIEPAY_GATEWAY_TEST_MERCHANT_ID'),
-        'test_hash_secret'  => env('SBIEPAY_GATEWAY_TEST_HASH_SECRET'),
     ),
 
     'proxy_enabled' => env('PROXY_ENABLED'),
