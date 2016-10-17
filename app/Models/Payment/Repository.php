@@ -179,8 +179,8 @@ class Repository extends Base\Repository
         $condition = $this->getWhereConditionForVerify($ts, $verifyBoundary);
 
         $query = $this->newQuery()
-            ->whereIn(Payment\Entity::GATEWAY, $verifyEnabledGateways)
             ->where(Payment\Entity::VERIFIED, '=', $verifyStatus);
+            ->whereIn(Payment\Entity::GATEWAY, $verifyEnabledGateways)
 
         if ($paymentStatus !== null)
         {
@@ -201,12 +201,9 @@ class Repository extends Base\Repository
             {
                 $query->where($condition['where']);
 
-                if (isset($condition['or']) === true)
+                foreach($condition['or'] as $orWhereCondition)
                 {
-                    foreach($condition['or'] as $orWhereCondition)
-                    {
-                        $query->orWhere($orWhereCondition);
-                    }
+                    $query->orWhere($orWhereCondition);
                 }
 
                 return $query;
@@ -218,6 +215,8 @@ class Repository extends Base\Repository
 
     protected function getWhereConditionForVerify($ts, $verifyBoundary)
     {
+        // This Condition will give all newly creatd PAyments,
+        // which have Crossed Minimum time threshold
         $whereCondition = [
             [Payment\Entity::VERIFY_BUCKET, '=', 0],
             [Payment\Entity::CREATED_AT , '<', $ts]
@@ -225,6 +224,10 @@ class Repository extends Base\Repository
 
         $orWhereConditions = [];
 
+        // Each or condition will fetch payments which are
+        // in next Verify Bucket and not processed by previous cron
+        // This will not give all payments at once, but only payments which
+        // crossed the boundary after prev cron ran(SLIDING WINDOW PROTOCOL)
         foreach($verifyBoundary as $boundary => $time)
         {
             $orWhereConditions[] = [
