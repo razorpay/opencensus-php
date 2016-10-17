@@ -143,6 +143,28 @@ class CybersourceGatewayTest extends TestCase
             $this->testData['testPaymentRefund'], $refund);
     }
 
+    public function testPaymentPartialRefund()
+    {
+        $payment = $this->doAuthAndCapturePayment();
+
+        $refundAmount = (int) ($payment['amount'] / 5);
+
+        $this->mockServerContentFunction(function($content) use ($refundAmount)
+        {
+            $actualRefundAmount = (int) ($content['purchaseTotals']['grandTotalAmount'] * 100);
+
+            $assertion = ($actualRefundAmount === $refundAmount);
+
+            $this->assertTrue($assertion, 'Actual refund amount different than expected amount');
+        });
+
+        $this->refundPayment($payment['id'], $refundAmount);
+
+        $refund = $this->getLastEntity('cybersource', true);
+
+        $this->assertTestResponse($refund);
+    }
+
     public function testAuthPaymentRefund()
     {
         $payment = $this->getDefaultPaymentArray();

@@ -172,6 +172,18 @@ return [
         'admin' => true,
     ],
 
+    'testPaymentPartialRefund' => [
+        'reason_code' => 100,
+        'received' => true,
+        'amount' => 10000,
+        'commerce_indicator' => null,
+        'pares_status' => null,
+        'action' => 'refund',
+        'status' => 'refunded',
+        'entity' => 'cybersource',
+        'admin' => true,
+    ],
+
     'testAuthPaymentRefund' => [
         'amount' => 50000,
         'currency' => 'INR',

@@ -166,7 +166,7 @@ class Server
         $wsdlFile = $this->getWsdlFile();
 
         $server = new SoapServer($wsdlFile);
-        $server->setClass(get_class($this));
+        $server->setObject($this);
 
         return $server->handle($input);
     }

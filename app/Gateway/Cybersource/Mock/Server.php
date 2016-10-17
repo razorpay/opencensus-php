@@ -9,7 +9,6 @@ use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\App;
 use RZP\Http;
-use SoapServer;
 use RZP\Gateway\Cybersource;
 
 class Server extends Base\Mock\Server
@@ -19,6 +18,12 @@ class Server extends Base\Mock\Server
     protected function getWsdlFile()
     {
         return dirname(__DIR__) . '/Wsdl/cybstest.wsdl.xml';
+    }
+
+    // Dummy function for mock soap client
+    public function Security($header)
+    {
+
     }
 
     public function runTransaction($request)
@@ -86,6 +91,8 @@ class Server extends Base\Mock\Server
         $this->validateActionInput($input, 'refund');
 
         $response = array();
+
+        $this->content($input);
 
         $response['decision'] = 'ACCEPT';
         $response['reasonCode'] = Cybersource\Result::SUCCESS;
