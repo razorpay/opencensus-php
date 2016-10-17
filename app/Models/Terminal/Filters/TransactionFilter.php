@@ -78,9 +78,9 @@ class TransactionFilter extends Terminal\Filter
             return true;
         }
 
-        $isMerchantInternational = $input['merchant']->isInternational();
+        $isPaymentInternational = $input['payment']->isInternational();
 
-        if (($input['mode'] === Mode::TEST) and ($isMerchantInternational))
+        if (($input['mode'] === Mode::TEST) and ($isPaymentInternational))
         {
             // Allow support for cards on atom for international test
             $testTerminals = array_merge(
@@ -89,7 +89,7 @@ class TransactionFilter extends Terminal\Filter
 
             return in_array($terminal->getGateway(), $testTerminals);
         }
-        else if ($isMerchantInternational)
+        else if ($isPaymentInternational)
         {
             return in_array($terminal->getGateway(), Gateway::$internationalCardGateways);
         }

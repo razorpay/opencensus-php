@@ -166,8 +166,6 @@ trait Capture
         {
             $amount = $amount + $payment->getFee();
 
-            $payment->setCaptureAmount($amount);
-
             $this->trace->info(
                 TraceCode::PAYMENT_CAPTURE_REQUEST,
                 [
@@ -188,8 +186,6 @@ trait Capture
         {
             $data['card'] = $payment->card->toArray();
         }
-
-        $payment->setCaptureAmount($amount);
 
         $this->captureOnGateway($data);
 

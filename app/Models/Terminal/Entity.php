@@ -26,6 +26,7 @@ class Entity extends Base\PublicEntity
     const GATEWAY_SECURE_SECRET         = 'gateway_secure_secret';
     const GATEWAY_RECON_PASSWORD        = 'gateway_recon_password';
     const GATEWAY_ACQUIRER              = 'gateway_acquirer';
+    const GATEWAY_CLIENT_CERTIFICATE    = 'gateway_client_certificate';
 
     const CARD                          = 'card';
     const NETBANKING                    = 'netbanking';
@@ -65,6 +66,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_TERMINAL_PASSWORD,
         self::GATEWAY_RECON_PASSWORD,
         self::GATEWAY_ACQUIRER,
+        self::GATEWAY_CLIENT_CERTIFICATE,
         self::ENABLED
     ];
 
@@ -98,6 +100,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_TERMINAL_PASSWORD,
         self::GATEWAY_SECURE_SECRET,
         self::GATEWAY_RECON_PASSWORD,
+        self::GATEWAY_CLIENT_CERTIFICATE,
     ];
 
     protected $generateIdOnCreate = true;

@@ -382,7 +382,7 @@ class AuthorizeTest extends TestCase
         $data = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow($data, function() use ($payment) {
-            $this->topupPayment($payment->getPublicId());
+            $this->doWalletTopupViaAjaxRoute($payment->getPublicId());
         });
     }
 

@@ -2,10 +2,10 @@
 
 namespace RZP\Http\Controllers;
 
-use RZP\Reconciliator\Orchestrator;
-use RZP\Http\ApiResponse;
-use RZP\Exception;
+use ApiResponse;
 use Request;
+use RZP\Exception;
+use RZP\Reconciliator\Orchestrator;
 
 class ReconciliatorController extends Controller
 {

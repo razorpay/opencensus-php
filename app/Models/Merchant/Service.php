@@ -9,6 +9,7 @@ use Mail;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Base;
 use RZP\Models\BankAccount;
+use RZP\Models\Emi;
 use RZP\Models\Merchant;
 use RZP\Models\Key;
 use RZP\Models\Payment;
@@ -21,6 +22,7 @@ use RZP\Models\Settlement\Holidays;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
@@ -455,13 +457,15 @@ class Service extends Base\Service
                 $data['netbanking'] = $methods->toArrayWithBankNames();
             }
             $data['wallet'] = $methods->getEnabledWallets();
-            $data['emi'] = $methods->isEmiEnabled();
             $data['upi'] = $methods->isUpiEnabled();
-        }
+            $emi = $methods->isEmiEnabled();
 
-        if ($this->mode === Mode::TEST)
-        {
-            $data['card'] = true;
+            if ($emi === true)
+            {
+                $data['emi'] = $emi;
+
+                $data['emi_plans'] = (new Emi\Service)->all();
+            }
         }
 
         return $data;
@@ -580,7 +584,7 @@ class Service extends Base\Service
      * each containing the number of merchants in each category
      * @return array debug response
      */
-    public function sendDailyReportForAllMerchants()
+    public function sendDailyReportForAllMerchants($input)
     {
         RuntimeManager::setMemoryLimit('1024M');
         RuntimeManager::setTimeLimit(300);
@@ -591,32 +595,83 @@ class Service extends Base\Service
             array()
         );
 
-        $merchants = $this->repo->merchant->fetchAllLiveMerchants()
-                                            ->select(Entity::ID)
-                                            ->get();
+        $from = Carbon::yesterday("Asia/Kolkata")->timestamp;
 
-        // sent will hold array of merchant data
-        $response = ['sent' => [], 'skipped' => 0];
+        $to = Carbon::today("Asia/Kolkata")->timestamp;
+
+        $authMerchants = $this->repo->payment
+                                ->fetchAuthorizedSummary()
+                                ->getStringAttributesByKey('merchant_id');
+
+        $captureMerchants = $this->repo->payment
+                                ->fetchCapturedSummaryBetweenTimestamp($from, $to)
+                                ->getStringAttributesByKey('merchant_id');
+
+        $refundMerchants = $this->repo->refund
+                                ->fetchRefundSummaryBetweenTimestamp($from, $to)
+                                ->getStringAttributesByKey('merchant_id');
+
+        $setlMerchants = $this->repo->settlement
+                                ->fetchSettlementsBetweenTimestamp($from, $to)
+                                ->getStringAttributesByKey('merchant_id');
+
+        if (isset($input[Entity::ID]) === true)
+        {
+            $merchantIds = $input[Entity::ID];
+        }
+        else
+        {
+            $merchantIds = array_unique(
+                array_merge(
+                    array_keys($captureMerchants),
+                    array_keys($authMerchants),
+                    array_keys($refundMerchants),
+                    array_keys($setlMerchants)
+                )
+            );
+        }
 
         // Summary of merchants mailed
-        $mailedMerchantsSummary = ['sent' => [], 'sentCount' => 0, 'skippedCount' => 0];
+        $mailedMerchantsSummary = [
+            'sentIds'    => [],
+            'skippedIds' => 0,
+            'failedIds'  => []
+        ];
 
-        foreach ($merchants as $merchant)
+        foreach ($merchantIds as $merchantId)
         {
-            $dailyReport = new DailyReport($merchant->getId());
-
-            $sent = $dailyReport->send();
-
-            if (empty($sent))
+            try
             {
-                $response['skipped']++;
-                $mailedMerchantsSummary['skippedCount']++;
+                $zeroArray = array_fill_keys(['sum', 'count'], 0);
+
+                $data = [
+                    'authorized' => isset($authMerchants[$merchantId])    ? $authMerchants[$merchantId]    : $zeroArray,
+                    'captured'   => isset($captureMerchants[$merchantId]) ? $captureMerchants[$merchantId] : $zeroArray,
+                    'refunds'    => isset($refundMerchants[$merchantId])  ? $refundMerchants[$merchantId]  : $zeroArray,
+                    'settlement' => isset($setlMerchants[$merchantId])    ? $setlMerchants[$merchantId]    : null,
+                ];
+
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                $dailyReport = new DailyReport($merchant, $data);
+
+                $sentId = $dailyReport->send();
+
+                if (is_null($sentId))
+                {
+                    $mailedMerchantsSummary['skippedIds']++;
+                }
+                else
+                {
+                    $mailedMerchantsSummary['sentIds'][] = $sentId;
+                }
             }
-            else
+            catch (\Exception $ex)
             {
-                $response['sent'][] = $sent;
-                $mailedMerchantsSummary['sentCount']++;
-                $mailedMerchantsSummary['sent'][] = $sent['merchant']['id'];
+                $this->trace->traceException(
+                    $ex, Trace::WARNING, TraceCode::SETTLEMENT_DAILY_REPORT_FAILURE);
+
+                $mailedMerchantsSummary['failedIds'][] = $merchantId;
             }
         }
 
@@ -626,7 +681,7 @@ class Service extends Base\Service
             $mailedMerchantsSummary
         );
 
-        return $response;
+        return $mailedMerchantsSummary;
     }
 
     /**

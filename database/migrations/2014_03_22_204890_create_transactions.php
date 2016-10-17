@@ -32,7 +32,7 @@ class CreateTransactions extends Migration
 
             $table->char(Transaction::MERCHANT_ID, Transaction::ID_LENGTH);
 
-            $table->integer(Transaction::AMOUNT)
+            $table->bigInteger(Transaction::AMOUNT)
                   ->unsigned();
 
             $table->integer(Transaction::FEE)
@@ -45,15 +45,15 @@ class CreateTransactions extends Migration
             $table->char(Transaction::PRICING_RULE_ID, Transaction::ID_LENGTH)
                   ->nullable();
 
-            $table->integer(Transaction::DEBIT)
+            $table->bigInteger(Transaction::DEBIT)
                   ->unsigned();
 
-            $table->integer(Transaction::CREDIT)
+            $table->bigInteger(Transaction::CREDIT)
                   ->unsigned();
 
             $table->char(Transaction::CURRENCY, 3);
 
-            $table->integer(Transaction::BALANCE)
+            $table->bigInteger(Transaction::BALANCE)
                   ->unsigned()
                   ->nullable();
 
@@ -89,7 +89,7 @@ class CreateTransactions extends Migration
 
             $table->integer(Transaction::RECONCILED_AT)
                   ->nullable();
-            
+
             $table->integer(Transaction::GATEWAY_SETTLED_AT)
                   ->nullable();
 
@@ -106,7 +106,7 @@ class CreateTransactions extends Migration
             $table->index(Transaction::SETTLED);
 
             $table->index(Transaction::RECONCILED_AT);
-            
+
             $table->index(Transaction::GATEWAY_SETTLED_AT);
 
             $table->index(Transaction::CHANNEL);

@@ -907,8 +907,130 @@ update settlements set status = 'failed' where id = '6KVt8W16z9wM2S';
 update settlements set status = 'failed' where id = '6KuQGTmk6bp0TM';
 update settlements set status = 'failed' where id = '6LhURyIav2Irt5';
 
+ALTER TABLE payments
+    ADD CONSTRAINT payments_token_id_foreign FOREIGN KEY(token_id) REFERENCES tokens(id) ON DELETE RESTRICT,
+    ADD CONSTRAINT payments_global_token_id_foreign FOREIGN KEY(global_token_id) REFERENCES tokens(id) ON DELETE RESTRICT;
+
+ALTER TABLE terminals
+    ADD COLUMN gateway_client_certificate TEXT AFTER gateway_acquirer;
+
+ALTER TABLE transactions
+    MODIFY COLUMN amount BIGINT UNSIGNED NOT NULL,
+    MODIFY COLUMN debit BIGINT UNSIGNED NOT NULL,
+    MODIFY COLUMN credit BIGINT UNSIGNED NOT NULL,
+    MODIFY COLUMN balance BIGINT UNSIGNED;
+
+ALTER TABLE settlements
+    MODIFY COLUMN amount BIGINT UNSIGNED NOT NULL;
+
+ALTER TABLE daily_settlements
+    MODIFY COLUMN amount BIGINT UNSIGNED NOT NULL;
+
+ALTER TABLE settlement_details
+    MODIFY COLUMN amount BIGINT UNSIGNED NOT NULL;
+
 ALTER TABLE payment_analytics
     MODIFY COLUMN terminal_id char(14);
 
 ALTER TABLE emi_plans
     ADD COLUMN issuer_plan_id VARCHAR(255) AFTER min_amount;
+
+UPDATE iins
+SET issuer='HSBC',
+    issuer_name='HSBC Bank',
+    emi='1',
+    type='credit'
+WHERE iin IN ('461715',
+              '418356',
+              '447692',
+              '461704',
+              '456342',
+              '461707',
+              '461708',
+              '467191',
+              '490900',
+              '517755',
+              '540259',
+              '542207',
+              '517797',
+              '554837',
+              '512042',
+              '517782',
+              '517798',
+              '554851',
+              '541089',
+              '418357',
+              '461714',
+              '467190',
+              '438459',
+              '456719',
+              '461716',
+              '461721',
+              '461722',
+              '486269',
+              '461709');
+
+UPDATE iins
+SET issuer='ICIC',
+    issuer_name='ICICI Bank',
+    emi='1',
+    type='credit'
+WHERE iin IN ('447746',
+              '423226',
+              '444341',
+              '447758',
+              '407659',
+              '517637',
+              '517653',
+              '517719',
+              '524193',
+              '524376',
+              '523951',
+              '525996',
+              '552418',
+              '547467',
+              '545207',
+              '540282',
+              '402368',
+              '423227',
+              '447747',
+              '407651',
+              '461133',
+              '437551',
+              '462986',
+              '470573',
+              '474846',
+              '420580',
+              '450172',
+              '405533');
+
+UPDATE iins
+SET issuer='SCBL',
+    issuer_name='Standard Chartered Bank',
+    emi='1',
+    type='credit'
+WHERE iin IN ('402874',
+              '412903',
+              '412905',
+              '419607',
+              '454198',
+              '462270',
+              '462271',
+              '462272',
+              '462273',
+              '543186',
+              '544438',
+              '549124',
+              '549132',
+              '554374',
+              '554375',
+              '554378',
+              '554623',
+              '558959');
+
+UPDATE wallet w
+JOIN refunds r ON w.refund_id = r.id
+SET w.amount = r.amount
+WHERE w.wallet = 'olamoney'
+    AND w.action = 'refund'
+    AND w.amount != r.amount;

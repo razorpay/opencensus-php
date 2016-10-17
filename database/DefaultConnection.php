@@ -4,16 +4,16 @@ namespace Database;
 
 use Config;
 use App;
-use RZP\Http\Route;
+use Route;
 use RZP\Constants\Mode;
 
 class DefaultConnection
 {
     public static function set($mode)
     {
-        $currentRoute = Route::getCurrentRouteName();
+        $currentRoute = Route::currentRouteName();
 
-        $slaveRoutes = Route::getSlaveRoutes();
+        $slaveRoutes = [];//Route::getSlaveRoutes();
 
         if (in_array($currentRoute, $slaveRoutes) === true)
         {
