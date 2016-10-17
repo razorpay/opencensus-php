@@ -18,41 +18,44 @@ class Verify
     protected $core;
     protected $paymentRepo;
     protected $mutex;
+    protected $slackHandler;
 
     public function __construct()
     {
-        $this->app = App::getFacadeRoot();
+        $app = App::getFacadeRoot();
 
-        $this->mode = $this->app['rzp.mode'];
+        $this->mode = $app['rzp.mode'];
 
-        $this->trace = $this->app['trace'];
+        $this->trace = $app['trace'];
 
-        $this->paymentRepo = $this->app['repo']->payment;
+        $this->paymentRepo = $app['repo']->payment;
 
-        $this->mutex = $this->app['api.mutex'];
+        $this->mutex = $app['api.mutex'];
+
+        $this->slackHandler = $app['slack'];
     }
 
     public function verifyPaymentsWithFilter($filter)
     {
+        $verifyStatus = null;
+
+        $paymentStatus = null;
+
         switch($filter)
         {
-            case 'created':
-                $paymentStatus = Payment\Status::CREATED;
-                $verifyStatus = null;
-                break;
-
             case 'all':
                 $paymentStatus = Payment\Status::FAILED;
-                $verifyStatus = null;
+                break;
+
+            case 'created':
+                $paymentStatus = Payment\Status::CREATED;
                 break;
 
             case 'failed':
-                $paymentStatus = null;
                 $verifyStatus = VerifyResult::FAILED;
                 break;
 
             case 'error':
-                $paymentStatus = null;
                 $verifyStatus = VerifyResult::ERROR;
                 break;
 
@@ -151,7 +154,7 @@ class Verify
 
             $message = 'Payment verify result';
 
-            $this->app['slack']->queue(
+            $this->slackHandler->queue(
                 $message,
                 $slackArray,
                 [
