@@ -167,26 +167,6 @@ app.controller('EntityListCtrl', [
 
     // For batch files
 
-    $scope.download = function (batchId) {
-      // GET /{mode}/batches/{id}/download
-      $http({
-        method: 'GET',
-        url: '/' + $scope.mode + '/batches/' + batchId + '/download'
-      }).then(function (res) {
-        // success
-
-        var data = res.data;
-
-        if (data.success) {
-          var url = data.data.url;
-
-          window.open(url);
-        }
-      }, function () {
-        $scope.alerts.addAlert('danger', null, true);
-      })
-    };
-
     $scope.retry = function (batchId) {
       $scope.alerts.resetAlerts();
 
