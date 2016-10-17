@@ -17,14 +17,21 @@ class TerminalLoadSorter extends Terminal\Sorter
             'gateway'    => Gateway::FIRST_DATA,
             'load'       => 5,
         ],
-        // Test terminals, won't be used on prod
+
+        // Test terminals, won't be used on prod.
+        //
+        // Because of the way applicableRules are computed, the terminals
+        // in this list are assigned chance ranges in ascending order,
+        // i.e. here 1000FrstDataTl will be selected for chance = 86=>90,
+        // while 1000CybrsTrmnl will be selected for chance = 91->100.
+
         '1000FrstDataTl' => [
             'gateway'    => Gateway::FIRST_DATA,
             'load'       => 5,
         ],
         '1000CybrsTrmnl' => [
             'gateway'    => Gateway::CYBERSOURCE,
-            'load'       => 5,
+            'load'       => 10,
         ]
     ];
 
@@ -61,6 +68,8 @@ class TerminalLoadSorter extends Terminal\Sorter
                         unset($sortedTerminals[$key]);
 
                         array_unshift($sortedTerminals, $terminal);
+
+                        break;
                     }
                 }
             }
