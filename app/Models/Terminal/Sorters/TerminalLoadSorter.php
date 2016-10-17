@@ -95,7 +95,7 @@ class TerminalLoadSorter extends Terminal\Sorter
             // Checking >100-p, rather than simply <p
             // because in test cases we're always setting
             // p to zero, to avoid unexpected bheaviour.
-            if ($chancePercent > 100 - $cumulativeProbabity)
+            if ($chancePercent > (100 - $cumulativeProbabity))
             {
                 return $terminalId;
             }
