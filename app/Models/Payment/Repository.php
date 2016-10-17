@@ -179,16 +179,8 @@ class Repository extends Base\Repository
         $condition = $this->getWhereConditionForVerify($ts, $verifyBoundary);
 
         $query = $this->newQuery()
-            ->whereIn(Payment\Entity::GATEWAY, $verifyEnabledGateways);
-
-        if ($verifyStatus === null)
-        {
-            $query->whereNull(Payment\Entity::VERIFIED);
-        }
-        else
-        {
-            $query->where(Payment\Entity::VERIFIED, '=', $verifyStatus);
-        }
+            ->whereIn(Payment\Entity::GATEWAY, $verifyEnabledGateways)
+            ->where(Payment\Entity::VERIFIED, '=', $verifyStatus);
 
         if ($paymentStatus !== null)
         {
