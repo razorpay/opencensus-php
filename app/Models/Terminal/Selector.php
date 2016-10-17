@@ -142,19 +142,6 @@ class Selector
                     ['payment' => $this->payment->toArrayAdmin()]);
             }
         }
-        // if binning is enabled, make the binned terminal the top most one
-        // add other terminals in case of failing binned terminal
-        if ($options and $options->getChance() > 0)
-        {
-            $terminal = (new Binning)->select($sortedTerminals[0], $options->getChance(), $this->input, $terminals);
-
-            array_unshift($sortedTerminals, $terminal);
-
-            $sortedTerminals = array_unique($sortedTerminals, SORT_REGULAR);
-
-            // array unique removes index. We need to renumber it.
-            $sortedTerminals = array_values($sortedTerminals);
-        }
 
         $terminal = $sortedTerminals[0];
 
