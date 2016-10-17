@@ -2,13 +2,6 @@
 
 namespace RZP\Models\Payment;
 
-use RZP\Models\Merchant;
-use RZP\Models\Terminal;
-use RZP\Models\Payment;
-use RZP\Exception;
-use RZP\Error\ErrorCode;
-use RZP\Trace\Trace;
-
 class VerifyResult
 {
     const UNKNOWN   = null;

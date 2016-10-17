@@ -235,8 +235,8 @@ class Repository extends Base\Repository
     protected function getWhereConditionForVerify($ts, $verifyBoundary)
     {
         $whereCondition = [
-            [Payment\Entity::CREATED_AT , '<', $ts],
-            [Payment\Entity::VERIFY_BUCKET, '=', 0]
+            [Payment\Entity::VERIFY_BUCKET, '=', 0],
+            [Payment\Entity::CREATED_AT , '<', $ts]
         ];
 
         $orWhereConditions = [];
@@ -244,8 +244,8 @@ class Repository extends Base\Repository
         foreach($verifyBoundary as $boundary => $time)
         {
             $orWhereConditions[] = [
-                [Payment\Entity::CREATED_AT, '<', $time],
-                [Payment\Entity::VERIFY_BUCKET, '=', $boundary]
+                [Payment\Entity::VERIFY_BUCKET, '=', $boundary],
+                [Payment\Entity::CREATED_AT, '<', $time]
             ];
         }
 

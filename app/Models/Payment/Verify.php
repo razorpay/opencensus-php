@@ -5,36 +5,14 @@ namespace RZP\Models\Payment;
 use App;
 use Config;
 
+use RZP\Constants;
 use RZP\Error\ErrorCode;
-use RZP\Models\Base;
-use RZP\Models\Card;
-use RZP\Models\Merchant;
 use RZP\Models\Payment;
-use RZP\Models\Transaction;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
 
 class Verify
 {
-    const MIN_TIME_BEFORE_VERIFY = 120; // 2 minutes
-
-    const BOUNDARY = [
-        1 => 15,            // 15 minute
-        2 => 60,            // 60 minute
-        3 => 1440,          // 1 day
-        4 => 2880,          // 2 day
-        5 => 4320,          // 3 day
-        6 => 5760,          // 4 day
-        7 => 7200,          // 5 day
-        8 => 8640,          // 6 day
-        9 => 10080          // 7 day
-    ];
-
-    const SUCCESS       = 'success';
-    const ERROR         = 'error';
-    const AUTHORIZED    = 'authorized';
-    const TIMEOUT       = 'timeout';
-
     protected $trace;
     protected $mode;
     protected $core;
@@ -43,7 +21,7 @@ class Verify
 
     public function __construct($mode, $trace)
     {
-        $app = App::getFacadeRoot();
+        $this->app = App::getFacadeRoot();
 
         $this->mode = $mode;
 
@@ -51,9 +29,7 @@ class Verify
 
         $this->core = new Payment\Core;
 
-        $this->paymentRepo = $app['repo']->payment;
-
-        $this->app = $app;
+        $this->paymentRepo = $this->app['repo']->payment;
 
         $this->mutex = $this->app['api.mutex'];
     }
@@ -113,16 +89,18 @@ class Verify
     {
         $currentTime  = time();
 
-        $ts = $currentTime - self::MIN_TIME_BEFORE_VERIFY;
+        $ts = $currentTime - Constants\Verify::MIN_TIME_BEFORE_VERIFY;
 
-        $boundary = [];
+        $boundary = Constants\Verify::getBoundayInSeconds();
 
-        foreach (self::BOUNDARY as $key=> $value)
+        $boundaryQueryData = [];
+
+        foreach ($boundary as $key=> $value)
         {
-            $boundary[$key] = [ time() - $value ];
+            $boundaryQueryData[$key] = time() - $value;
         }
 
-        $payments = $this->paymentRepo->getUnverifiedPayments($ts, $boundary);
+        $payments = $this->paymentRepo->getUnverifiedPayments($ts, $boundaryQueryData);
 
         return $this->verifyMultiplePayments($payments, 'all');
     }
@@ -157,21 +135,21 @@ class Verify
 
             switch ($res)
             {
-                case self::SUCCESS:
+                case Constants\Status::SUCCESS:
                     $verified++;
                     break;
 
-                case self::TIMEOUT:
+                case Constants\Status::TIMEOUT:
                     $timedOut++;
                     break;
 
-                case self::AUTHORIZED:
+                case Constants\Status::AUTHORIZED:
                     $failed++;
                     $timeDiff += time() - $payment->getCreatedAt();
                     $authorized++;
                     break;
 
-                case self::ERROR:
+                case Constants\Status::ERROR:
                     $error++;
                     break;
 
@@ -192,7 +170,7 @@ class Verify
             $avgTimeDiff = (int) ($timeDiff / $authorized);
         }
 
-        $results = array(
+        $results = [
             'filter'            => $filter,
             'verified'          => $verified,
             'failed'            => $failed,
@@ -200,7 +178,8 @@ class Verify
             'timed out'         => $timedOut,
             'error'             => $error,
             'authorizedTime'    => $avgTimeDiff,
-            'totalTime'         => $totalTime . ' secs');
+            'totalTime'         => $totalTime . ' secs'
+        ];
 
         $message = 'Payment verify result';
 
@@ -227,6 +206,8 @@ class Verify
 
     public function verifyPayment($payment)
     {
+        $status = Constants\Status::SUCCESS;
+
         $merchant = $payment->merchant;
 
         //
@@ -238,8 +219,6 @@ class Verify
         try
         {
             $res = $this->processor($merchant)->verify($payment);
-
-            return self::SUCCESS;
         }
         catch (Exception\PaymentVerificationException $e)
         {
@@ -259,7 +238,7 @@ class Verify
             }
 
             // Now Just continue
-            return self::AUTHORIZED;
+            $status = Constants\Status::AUTHORIZED;
         }
         catch (Exception\GatewayTimeoutException $e)
         {
@@ -268,7 +247,7 @@ class Verify
                 ['payment_id' => $payment->getId()]);
 
             // Just continue
-            return self::TIMEOUT;
+            $status = Constants\Status::TIMEOUT;
         }
         catch (\Exception $e)
         {
@@ -279,8 +258,10 @@ class Verify
             $this->trace->traceException($e);
 
             // Just continue
-            return self::ERROR;
+            $status = Constants\Status::ERROR;
         }
+
+        return $status;
     }
 
     protected function processor($merchant = null)
