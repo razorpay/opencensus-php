@@ -12,15 +12,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      *******************/
     const COLUMN_INT_PAYMENT_ID = 'int_payment_id';
 
-    protected $messenger;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->messenger = new Messenger();
-    }
-
     protected function getPaymentId($row)
     {
         $intPaymentId = $row[self::COLUMN_INT_PAYMENT_ID];

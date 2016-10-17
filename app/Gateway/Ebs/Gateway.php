@@ -19,6 +19,8 @@ use Symfony\Component\DomCrawler\Crawler;
 
 class Gateway extends Base\Gateway
 {
+    use Base\AuthorizeFailed;
+
     const HASH_ALGO    = 'SHA512';
     const MERCHANT_ID  = 'test_merchant_id';
     const HASH_SECRET  = 'test_hash_secret';

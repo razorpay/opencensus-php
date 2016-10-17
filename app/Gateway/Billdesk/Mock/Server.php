@@ -59,7 +59,7 @@ class Server extends Base\Mock\Server
         // $headers = array(
         //                     'User-Agent'    => 'Razorpay-Webhook/v1',
         //             );
-        // $url = RZP\Http\Route::getUrlWithPublicAuth('gateway_payment_callback_post',
+        // $url = $this-route->getUrlWithPublicAuth('gateway_payment_callback_post',
         //                                         ['gateway' => 'billdesk']);
 
         // Requests::post(

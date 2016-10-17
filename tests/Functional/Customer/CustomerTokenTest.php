@@ -88,6 +88,8 @@ class CustomerTokenTest extends TestCase
 
     public function testFetchSavedTokensStatusSaved()
     {
+        $this->mockSession();
+
         $this->ba->publicAuth();
 
         $response = $this->startTest();
@@ -97,6 +99,8 @@ class CustomerTokenTest extends TestCase
 
     public function testFetchSavedCustomerStatusWithDeviceToken()
     {
+        $this->mockSession();
+
         $this->ba->publicAuth();
 
         $this->startTest();
@@ -150,7 +154,8 @@ class CustomerTokenTest extends TestCase
     protected function mockSession()
     {
         $data = array(
-            'test_app_token' => 'capp_1000000custapp'
+            'test_app_token'   => 'capp_1000000custapp',
+            'test_checkcookie' => '1'
         );
 
         $this->session($data);

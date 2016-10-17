@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Base;
 
 use RZP\Models\Base;
+use RZP\Models\Payment;
 
 class Entity extends Base\PublicEntity
 {
@@ -23,7 +24,7 @@ class Entity extends Base\PublicEntity
 
     public function getPublicPaymentId()
     {
-        return 'pay_' . $this->getPaymentId();
+        return Payment\Entity::getSignedId($this->getPaymentId());
     }
 
     public function getRefundId()

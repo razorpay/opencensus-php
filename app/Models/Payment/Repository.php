@@ -34,23 +34,25 @@ class Repository extends Base\Repository
 
     // These are admin allowed params to search on.
     protected $appFetchParamRules = array(
-        Entity::STATUS          => 'sometimes|string',
-        Entity::VERIFIED        => 'sometimes|in:null,0,1,2',
-        Entity::REFUND_STATUS   => 'sometimes|in:null,partial,full',
-        Entity::BANK            => 'sometimes',
-        Entity::METHOD          => 'sometimes',
-        Entity::GATEWAY         => 'sometimes',
-        Entity::EMAIL           => 'sometimes|email',
-        Entity::MERCHANT_ID     => 'sometimes|alpha_num',
-        Entity::CARD_ID         => 'sometimes|alpha_num|size:14',
-        Entity::CAPTURED        => 'sometimes|in:0,1',
-        Entity::WALLET          => 'sometimes|',
-        Entity::NOTES           => 'sometimes|string|max:500',
-        Card\Entity::IIN        => 'sometimes|integer|digits:6',
-        Card\Entity::LAST4      => 'sometimes|string|digits:4',
+        Entity::STATUS             => 'sometimes|string',
+        Entity::VERIFIED           => 'sometimes|in:null,0,1,2',
+        Entity::REFUND_STATUS      => 'sometimes|in:null,partial,full',
+        Entity::BANK               => 'sometimes',
+        Entity::METHOD             => 'sometimes',
+        Entity::GATEWAY            => 'sometimes',
+        Entity::EMAIL              => 'sometimes|email',
+        Entity::MERCHANT_ID        => 'sometimes|alpha_num',
+        Entity::CARD_ID            => 'sometimes|alpha_num|size:14',
+        Entity::CAPTURED           => 'sometimes|in:0,1',
+        Entity::WALLET             => 'sometimes|',
+        Entity::NOTES              => 'sometimes|string|max:500',
+        Card\Entity::IIN           => 'sometimes|integer|digits:6',
+        Card\Entity::LAST4         => 'sometimes|string|digits:4',
         Card\Entity::INTERNATIONAL => 'sometimes|in:0,1',
-        Entity::CUSTOMER_ID     => 'sometimes|alpha_num',
-        Entity::SAVE            => 'sometimes|in:0,1',
+        Entity::CUSTOMER_ID        => 'sometimes|alpha_num|size:14',
+        ENTITY::TOKEN_ID           => 'sometimes|alpha_num|size:14',
+        ENTITY::GLOBAL_TOKEN_ID    => 'sometimes|alpha_num|size:14',
+        Entity::SAVE               => 'sometimes|in:0,1',
     );
 
     protected $esWhitelistedParams = [
@@ -242,6 +244,13 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchPaymentsForOrderId($orderId)
+    {
+        return $this->newQuery()
+                    ->where(Payment\Entity::ORDER_ID, '=', $orderId)
+                    ->get();
+    }
+
     protected function addQueryParamBank($query, $params)
     {
         if (Payment\Processor\Netbanking::isSupportedBank($params['bank']) === false)
@@ -382,6 +391,56 @@ class Repository extends Base\Repository
                         Merchant\Entity::WEBSITE)
                     ->orderBy('volume', 'desc')
                     ->limit(30)
+                    ->get();
+    }
+
+    public function getMonthTopMerchantVolumeWise()
+    {
+        $from = Carbon::today('Asia/Kolkata')->startOfMonth()->timestamp;
+        $to = Carbon::today('Asia/Kolkata')->timestamp;
+
+        $pid = Payment\Entity::getAttributeWithTableName(Payment\Entity::MERCHANT_ID);
+        $mid = Merchant\Entity::getAttributeWithTableName(Merchant\Entity::ID);
+
+        return $this->newQuery()
+                    ->join(Merchant\Entity::getTableName(), $pid, '=', $mid)
+                    ->selectRaw(
+                       Payment\Entity::MERCHANT_ID . ','.
+                       Merchant\Entity::NAME . ','.
+                       Merchant\Entity::WEBSITE . ','.
+                       "SUM(amount) / 100 AS volume" . ','.
+                       'COUNT(*) AS count')
+                    ->betweenTime($from, $to)
+                    ->statusSuccess()
+                    ->groupBy(
+                        Payment\Entity::MERCHANT_ID,
+                        Merchant\Entity::NAME,
+                        Merchant\Entity::WEBSITE)
+                    ->orderBy('volume', 'desc')
+                    ->limit(30)
+                    ->get();
+    }
+
+    public function fetchAuthorizedSummary()
+    {
+        return $this->newQuery()
+                    ->where(Entity::STATUS, '=', Status::AUTHORIZED)
+                    ->groupBy(Entity::MERCHANT_ID)
+                    ->selectRaw(Entity::MERCHANT_ID . ','.
+                       'SUM(' . Entity::AMOUNT . ') AS sum' . ','.
+                       'COUNT(*) AS count')
+                    ->get();
+    }
+
+    public function fetchCapturedSummaryBetweenTimestamp($from , $to)
+    {
+        return $this->newQuery()
+                    ->where(Entity::STATUS, '=', Status::CAPTURED)
+                    ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
+                    ->groupBy(Entity::MERCHANT_ID)
+                    ->selectRaw(Entity::MERCHANT_ID . ','.
+                       'SUM(' . Entity::AMOUNT . ') AS sum' . ','.
+                       'COUNT(*) AS count')
                     ->get();
     }
 

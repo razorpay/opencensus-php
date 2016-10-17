@@ -3,19 +3,20 @@
 namespace RZP\Models\Payment\Processor;
 
 use BasicAuth;
+use Mail;
+use Request;
+use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Http\Route;
-use RZP\Exception;
 use RZP\Error\ErrorCode;
-use Mail;
+use RZP\Gateway\Hdfc;
 use RZP\Models\Card;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Transaction;
-use Request;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use RZP\Gateway\Hdfc;
+use RZP\Models\Batch;
 
 trait Refund
 {
@@ -23,53 +24,15 @@ trait Refund
      * Refunds a payment
      * @param  Payment\Entity   $payment     Payment Id
      * @param  array            $input  Refund input params
+     * @param  Batch\Entity     $batch
      *
      * @return Payment\Refund\Entity
      */
-    protected function refund(Payment\Entity $payment, array $input)
+    protected function refund(Payment\Entity $payment, array $input, Batch\Entity $batch = null)
     {
-        $this->trace->info(
-            TraceCode::PAYMENT_REFUND_REQUEST,
-            [
-                'payment_id' => $payment->getId(),
-                'input' => $input
-            ]);
+        $refund = $this->buildRefundEntity($payment, $input, $batch);
 
-        $this->setPayment($payment);
-
-        $refund = (new Payment\Refund\Entity)->build($input, $payment);
-
-        $refund->merchant()->associate($this->merchant);
-
-        if ($this->payment->isCaptured())
-        {
-            $this->validateMerchantBalance($refund);
-        }
-
-        $this->refund = $refund;
-
-        $data = array(
-            'payment'   => $payment->toArray(),
-            'refund'    => $refund->toArray(),
-            'amount'    => $refund->getAmount());
-
-        if ($payment->isMethodCardOrEmi())
-        {
-            $data['card'] = $refund->payment->card->toArray();
-        }
-
-        $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment, $refund)
-        {
-            if (($payment->getTransactionId() !== null) or
-                ($payment->isAuthorized() === false))
-            {
-                $this->refundOnGateway($data);
-            }
-
-            $this->recordRefund();
-
-            $this->sendRefundNotification($payment, $refund);
-        });
+        $this->processRefund($refund);
 
         return $refund;
     }
@@ -80,9 +43,10 @@ trait Refund
 
         $this->setPaymentAndRefundInfo($refund, $payment);
 
-        // Currently doing it for only HDFC. In case when other gateways start
+        // Currently doing it for only HDFC and PayTm. In case when other gateways start
         // getting similar issues, we will start supporting for them too.
-        if ($payment->getGateway() !== Payment\Gateway::HDFC)
+        if (($payment->getGateway() !== Payment\Gateway::HDFC) or
+            ($payment->getGateway() !== Payment\Gateway::PAYTM))
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_GATEWAY);
         }
@@ -282,10 +246,8 @@ trait Refund
         return $this->refund($payment, $input);
     }
 
-    public function refundCapturedPayment($paymentId, $input)
+    protected function refundCapturedPayment($payment, array $input = [], Batch\Entity $batch = null)
     {
-        $payment = $this->retrieve($paymentId);
-
         if ($payment->isFullyRefunded())
         {
             throw new Exception\BadRequestException(
@@ -298,7 +260,35 @@ trait Refund
                 ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED);
         }
 
-        return $this->refund($payment, $input);
+        return $this->refund($payment, $input, $batch);
+    }
+
+    public function refundPaymentViaMerchant($paymentId, $input)
+    {
+        $payment = $this->retrieve($paymentId);
+
+        return $this->refundCapturedPayment($payment, $input);
+    }
+
+    public function refundPaymentViaBatchEntry(Payment\Entity $payment, Batch\Entity $batch, $amount)
+    {
+        $merchant = $batch->merchant;
+
+        //
+        // Check if a refund already exists.
+        // If one exists, then we should not fire a new one else two refunds will happen.
+        //
+        $refund = $this->findExistingRefundForBatch($batch, $payment);
+
+        if ($refund !== null)
+        {
+            return $refund;
+        }
+
+        $input = ['amount' => (string) $amount];
+
+        // No refund existed so fire a new one.
+        return $this->refundCapturedPayment($payment, $input, $batch);
     }
 
     protected function callGatewayForVerifyRefund($data)
@@ -400,6 +390,63 @@ trait Refund
         });
     }
 
+    protected function buildRefundEntity(Payment\Entity $payment, array $input, Batch\Entity $batch = null)
+    {
+        $this->trace->info(
+            TraceCode::PAYMENT_REFUND_REQUEST,
+            [
+                'payment_id' => $payment->getId(),
+                'input' => $input
+            ]);
+
+        $this->setPayment($payment);
+
+        $refund = (new Payment\Refund\Entity)->build($input, $payment);
+
+        $refund->merchant()->associate($this->merchant);
+
+        if ($this->payment->isCaptured())
+        {
+            $this->validateMerchantBalance($refund);
+        }
+
+        $this->refund = $refund;
+
+        $refund->batch()->associate($batch);
+
+        return $refund;
+    }
+
+    protected function processRefund(Payment\Refund\Entity $refund)
+    {
+        $payment = $refund->payment;
+
+        $data = array(
+            'payment'   => $payment->toArray(),
+            'refund'    => $refund->toArray(),
+            'amount'    => $refund->getAmount());
+
+        if ($payment->isMethodCardOrEmi())
+        {
+            $data['card'] = $refund->payment->card->toArray();
+        }
+
+        $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment, $refund)
+        {
+            if (($payment->getTransactionId() !== null) or
+                ($payment->isAuthorized() === false))
+            {
+                $this->refundOnGateway($data);
+            }
+
+            $this->recordRefund();
+
+            $this->sendRefundNotification($payment, $refund);
+        });
+
+        return $refund;
+    }
+
     protected function updatePaymentRefunded()
     {
         // Indicates buggy case where refund entity is already present
@@ -492,4 +539,33 @@ trait Refund
 
         return null;
     }
+<<<<<<< HEAD
 }
+=======
+
+    protected function findExistingRefundForBatch(Batch\Entity $batch, Payment\Entity $payment)
+    {
+        // This ensure that if that batch entity is already processed, we update the refund id
+        $refunds = $this->repo->refund->fetchRefundsByBatchAndPayment($batch, $payment);
+
+        $count = count($refunds);
+
+        if ($count > 0)
+        {
+            $this->trace->error (
+                TraceCode::BATCH_ALREADY_PROCESSED,
+                [
+                    'message' => 'Batch entry already processed',
+                    'batch'   => $batch->getId(),
+                    'refunds' => $refunds->toArrayPublic()
+                ]);
+
+            assert($count === 1);
+
+            return $refunds[0];
+        }
+
+        return null;
+    }
+}
+>>>>>>> master

@@ -5,7 +5,7 @@ namespace RZP\Exception;
 use App;
 use Response;
 use Exception;
-use RZP\Http\ApiResponse;
+use ApiResponse;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Error\Error;

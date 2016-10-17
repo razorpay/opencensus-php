@@ -88,25 +88,22 @@ trait Authorize
 
             $this->runPostGatewaySelectionPreProcessing($payment, $terminalGatewayInput);
 
-            // data for payment analytics
-            $rawData = [
-                'payment_id' => $payment['id'],
-                'input' => $input,
-                'terminal_id' => $payment['terminal_id']
-            ];
-
             if ($this->canRunOtpPaymentFlow($payment, $input))
             {
-                $this->createAnalyticsLog($rawData);
+                $this->createAnalyticsLog($payment);
 
                 $request = $this->runOtpPaymentFlow($terminalGatewayInput, $payment);
 
                 return $request;
             }
 
-            $terminalData = $rawData;
-
-            $terminalData['start'] = microtime(true);
+            // data for terminal analytics
+            $terminalData = [
+                            'payment_id'    => $payment['id'],
+                            'input'         => $input,
+                            'terminal_id'   => $payment['terminal_id'],
+                            'start'         => microtime(true),
+                        ];
 
             try
             {
@@ -152,7 +149,7 @@ trait Authorize
                 if (($retry === false) or
                     ($retryAttempts >= $maxRetryAttempts))
                 {
-                    $this->createAnalyticsLog($rawData);
+                    $this->createAnalyticsLog($payment);
                 }
             }
         }
@@ -185,15 +182,8 @@ trait Authorize
 
     protected function verifyFeesLessThanAmount($payment)
     {
-        // Ignore the pricing rule not found exception for authorization.
+        // try calculating the fees, throws exception if fees is more than amount
         list($fee, $serviceTax, $ruleKey) = (new Pricing\Fee)->calculateMerchantFees($payment);
-
-        if ($payment->getAmount() < $fee)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT,
-                Payment\Entity::AMOUNT);
-        }
     }
 
     protected function processAuthResponse($request, $payment)
@@ -933,8 +923,10 @@ trait Authorize
             'type'          => 'async',
             'version'       => 1,
             'payment_id'    => $id,
+            'key_id'        => \BasicAuth::getPublicKey(),
+            'gateway'       => $this->getEncryptedGatewayText($payment->getGateway()),
             'request'       => [
-                'url'    => Route::getUrl('payment_get_status', ['id' => $id]),
+                'url'    => $this->route->getUrl('payment_get_status', ['id' => $id]),
                 'method' => 'GET',
             ]
         ];
@@ -1141,39 +1133,6 @@ trait Authorize
             $traceData);
     }
 
-    protected function rethrowFailedPaymentErrorException($payment)
-    {
-        $internalErrorCode = $payment->getInternalErrorCode();
-        $publicErrorCode = $payment->getErrorCode();
-        $errorDesc = $payment->getErrorDescription();
-
-        Error\Map::throwExceptionFromErrorDetails(
-            $publicErrorCode, $internalErrorCode, $errorDesc);
-
-        //
-        // If it has reached here, then an edge case occurred, for which
-        // a suitable exception was not found and which must be handled.
-        // So, we trace an error message, ringing alerts to our devs.
-        //
-
-        $this->trace->error(
-            TraceCode::PAYMENT_CALLBACK_FAILURE,
-            [
-                'payment_id' => $payment->getPublicId(),
-                'public_error_code' => $publicErrorCode,
-                'internal_error_code' => $internalErrorCode,
-                'error_description' => $errorDesc,
-                'message' => 'Failed to convert error code to the appropriate exception'
-            ]);
-
-        // If no appropriate exception mapping was found then show
-        // the usual message that payment already processed.
-
-        throw new Exception\BadRequestException(
-            ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
-    }
-
-
     protected function recordTerminalAudit($terminalData)
     {
         try
@@ -1222,44 +1181,16 @@ trait Authorize
         }
     }
 
-    protected function createAnalyticsLog($rawData)
+    protected function createAnalyticsLog($payment)
     {
         try
         {
-            $log = [
-                AnalyticsEntity::PAYMENT_ID     => $rawData['payment_id'],
-                AnalyticsEntity::TERMINAL_ID    => $rawData['terminal_id'],
-            ];
-
-            $row = (new Analytics\Service)->createAuditLog($log, $rawData);
-
-            // log invalid data
-            $invalidData = [];
-
-            foreach ($row as $key => $value) {
-                if (Analytics\Metadata::isInvalidValue($value))
-                {
-                    $invalidData[$key] = $value;
-                }
-            }
-
-            if (empty($invalidData) === false)
-            {
-                $checkoutMetadataToLog = null;
-
-                if (isset($rawData['input']) and isset($rawData['input']['_']))
-                {
-                    $checkoutMetadataToLog = $rawData['input']['_'];
-                }
-
-                $this->trace->warning(TraceCode::PAYMENT_ANALYTICS_UNRECOGNIZED_DATA,
-                    ['invalid_data' => $invalidData,
-                     'raw_data'     => $checkoutMetadataToLog]);
-            }
+            $analyticsEntity = (new Analytics\Core)->create($payment);
         }
         catch (\Exception $e)
         {
-            $this->trace->traceException($e, Trace::WARNING, TraceCode::PAYMENT_ANALYTICS_SAVE_FAILED);
+            $this->trace->traceException($e, Trace::WARNING,
+                TraceCode::PAYMENT_ANALYTICS_SAVE_FAILED);
         }
     }
 
@@ -1337,6 +1268,7 @@ trait Authorize
                 // TODO: Return metadata in a better format
                 'contact' => $payment->getContact(),
                 'amount'  => number_format(($payment->getAmount()/100), 2),
+                'wallet'  => $payment->getWallet()
             );
         }
         catch (Exception\BaseException $e)
@@ -1679,7 +1611,7 @@ trait Authorize
     {
         $params = $this->getPaymentIdAndHashParams();
 
-        $callbackUrl = Route::getUrlWithPublicCallbackAuth($params);
+        $callbackUrl = $this->route->getUrlWithPublicCallbackAuth($params);
 
         return $callbackUrl;
     }
@@ -1688,7 +1620,7 @@ trait Authorize
     {
         $params = $this->getPaymentIdAndHashParams();
 
-        $otpSubmitUrl = Route::getUrlWithPublicAuth('payment_otp_submit', $params);
+        $otpSubmitUrl = $this->route->getUrlWithPublicAuth('payment_otp_submit', $params);
 
         return $otpSubmitUrl;
     }

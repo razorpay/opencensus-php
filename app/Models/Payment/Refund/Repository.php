@@ -86,6 +86,17 @@ class Repository extends Base\Repository
                         $merchantId, $from, $to, ['payment']);
     }
 
+    public function fetchRefundSummaryBetweenTimestamp($from , $to)
+    {
+        return $this->newQuery()
+                    ->whereBetween(Entity::CREATED_AT, [$from, $to])
+                    ->groupBy(Entity::MERCHANT_ID)
+                    ->selectRaw(Entity::MERCHANT_ID . ','.
+                       'SUM(' . Entity::AMOUNT . ') AS sum' . ','.
+                       'COUNT(*) AS count')
+                    ->get();
+    }
+
     /**
      * Fetches all refunds which have no transactions, but the
      * corresponding payments have transactions.
@@ -190,5 +201,14 @@ class Repository extends Base\Repository
                          ->get();
 
         return $response;
+    }
+
+    public function fetchRefundsByBatchAndPayment($batch, $payment)
+    {
+        return $this->newQuery()
+                    ->where(Refund\Entity::PAYMENT_ID, '=', $payment->getId())
+                    ->where(Refund\Entity::MERCHANT_ID, '=', $batch->getMerchantId())
+                    ->where(Refund\Entity::BATCH_ID, '=', $batch->getId())
+                    ->get();
     }
 }

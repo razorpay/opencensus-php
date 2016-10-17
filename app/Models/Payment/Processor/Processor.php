@@ -89,6 +89,13 @@ class Processor
 
     protected $verifyRefundStatus;
 
+    /**
+     * Api Route instance
+     *
+     * @var RZP\Http\Route
+     */
+    protected $route;
+
     public function __construct(Merchant\Entity $merchant)
     {
         $this->app  = App::getFacadeRoot();
@@ -109,6 +116,8 @@ class Processor
         $this->request = $this->app['request'];
 
         $this->mutex = $this->app['api.mutex'];
+
+        $this->route = $this->app['api.route'];
 
         // Only used in hdfc verify refund flow
         $this->verifyRefundStatus = null;
@@ -365,8 +374,12 @@ class Processor
         // has been exceeded
         if ($payment->justCreated() === false)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+            $e = new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT);
+
+            $this->updatePaymentFailed($e, TraceCode::PAYMENT_TIMED_OUT);
+
+            throw $e;
         }
 
         if ($payment->isCreated() === true)
@@ -377,7 +390,12 @@ class Processor
         }
 
         // We don't want to reach this in case of captured|refunded payments
-        assertTrue($payment->isAuthorized() === true);
+        // However, the payment would be captured here IFF it was auto-captured
+        // So we make an exception for that.
+        $returnResponse = (($payment->isAuthorized()) or
+                           ($payment->getAutoCaptured() and $payment->isCaptured()));
+
+        assertTrue($returnResponse);
 
         return $this->processAuthorizeResponse($payment);
     }
@@ -475,12 +493,6 @@ class Processor
         $gatewayData['terminal'] = $terminal;
 
         $gatewayData['merchant'] = $this->payment->merchant;
-
-        // TODO: Shouldn't be KOTAK specific
-        if ($gateway === Payment\Gateway::KOTAK)
-        {
-            $gatewayData['bank_account'] = $this->getMerchantBankAccount($terminal->merchant);
-        }
 
         return $this->app['gateway']->call($gateway, $action, $gatewayData, $this->mode, $terminal);
     }

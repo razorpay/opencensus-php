@@ -36,7 +36,8 @@ class Selector
         Sorters\NetbankingSorter::class,
         Sorters\MerchantSorter::class,
         Sorters\InternationalCardSorter::class,
-        Sorters\FailedTerminalsSorter::class
+        Sorters\TerminalLoadSorter::class,
+        Sorters\FailedTerminalsSorter::class,
     ];
 
     public function __construct(Payment\Entity $payment, $mode)
@@ -116,7 +117,7 @@ class Selector
 
         foreach (self::$sorters as $sorter)
         {
-            $sortedTerminals = (new $sorter)->sort($sortedTerminals, $this->input, $verbose);
+            $sortedTerminals = (new $sorter)->sort($sortedTerminals, $this->input, $verbose, $options);
             $this->traceTerminals($sortedTerminals, 'Terminals after ' . $sorter, $verbose);
         }
 
@@ -140,19 +141,6 @@ class Selector
                     'No terminal found.',
                     ['payment' => $this->payment->toArrayAdmin()]);
             }
-        }
-        // if binning is enabled, make the binned terminal the top most one
-        // add other terminals in case of failing binned terminal
-        if ($options and $options->getChance() > 0)
-        {
-            $terminal = (new Binning)->select($sortedTerminals[0], $options->getChance(), $this->input, $terminals);
-
-            array_unshift($sortedTerminals, $terminal);
-
-            $sortedTerminals = array_unique($sortedTerminals, SORT_REGULAR);
-
-            // array unique removes index. We need to renumber it.
-            $sortedTerminals = array_values($sortedTerminals);
         }
 
         $terminal = $sortedTerminals[0];

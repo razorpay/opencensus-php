@@ -15,7 +15,7 @@ class Sorter
      */
     protected $properties;
 
-    public function sort($terminals, $input, $verbose = false)
+    public function sort($terminals, $input, $verbose = false, $options = null)
     {
         // No need to sort if there's only one terminal
         if (count($terminals) === 1)
@@ -30,7 +30,7 @@ class Sorter
         {
             $sorterFunction = $this->getSorterNameForProperty($sorterProperty);
 
-            $currentTerminals = $this->$sorterFunction($currentTerminals, $input);
+            $currentTerminals = $this->$sorterFunction($currentTerminals, $input, $options);
 
             $this->traceTerminals(
                 $currentTerminals,

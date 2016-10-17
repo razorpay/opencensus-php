@@ -2,13 +2,13 @@
 
 namespace RZP\Http\Controllers;
 
+use ApiResponse;
+use Request;
 use RZP\Constants\Mode;
-use RZP\Http\ApiResponse;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Terminal;
 use RZP\Models\Key;
-use Request;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 
@@ -461,7 +461,10 @@ class MerchantController extends Controller
      */
     public function sendDailyReport()
     {
-        $response = (new \RZP\Models\Merchant\Service)->sendDailyReportForAllMerchants();
+        $input = Request::all();
+
+        $response = (new \RZP\Models\Merchant\Service)->sendDailyReportForAllMerchants($input);
+
         return ApiResponse::json($response);
     }
 

@@ -14,7 +14,6 @@ class Terminal extends Base
         $this->createSharedAxisTerminal();
         $this->createSharedBilldeskTerminal();
         $this->createSharedAxisGeniusTerminal();
-        $this->createSharedKotakTerminal();
         $this->createSharedPaytmTerminal();
         $this->createSharedMobikwikTerminal();
         $this->createSharedNetbankingHdfcTerminal();
@@ -22,6 +21,7 @@ class Terminal extends Base
         $this->createSharedCybersourceHdfcTerminal();
         $this->createSharedCybersourceHdfcRecurringTerminals();
         $this->createSharedCybersourceAxisTerminal();
+        $this->createSharedFirstDataTerminal();
         $this->createSharedEbsTerminal();
     }
 
@@ -171,6 +171,25 @@ class Terminal extends Base
             'gateway_merchant_id'       => 'razorpay axis_migs',
             'gateway_terminal_id'       => 'nodal account axis_migs',
             'gateway_terminal_password' => 'razorpay_password',
+        );
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedFirstDataTerminal(array $attributes = array())
+    {
+        $termId = \RZP\Models\Terminal\Shared::FIRST_DATA_RAZORPAY_TERMINAL;
+
+        $defaultValues = array(
+            'id'                        => $termId,
+            'merchant_id'               => '1MercShareTerm',
+            'gateway'                   => 'first_data',
+            'card'                      => 1,
+            'shared'                    => 1,
+            'gateway_merchant_id'       => 'random',
+            'gateway_secure_secret'     => 'secret',
         );
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -464,23 +483,6 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
-    public function createSharedKotakTerminal()
-    {
-        $termId = \RZP\Models\Terminal\Shared::KOTAK_RAZORPAY_TERMINAL;
-
-        $attributes = array(
-            'id'                        => $termId,
-            'merchant_id'               => '1MercShareTerm',
-            'gateway'                   => 'kotak',
-            'card'                      => 1,
-            'gateway_merchant_id'       => 'razorpay kotak',
-            'gateway_terminal_id'       => 'nodal account kotak',
-            'gateway_terminal_password' => 'razorpay_password',
-        );
-
-        return $this->createEntityInTestAndLive('terminal', $attributes);
-    }
-
     public function createSharedPaytmTerminal()
     {
         $termId = \RZP\Models\Terminal\Shared::PAYTM_RAZORPAY_TERMINAL;
@@ -580,20 +582,6 @@ class Terminal extends Base
         );
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
-    }
-
-    public function createSharedSbiepayTerminal(array $attributes = array())
-    {
-        $termId = \RZP\Models\Terminal\Shared::SBIEPAY_RAZORPAY_TERMINAL;
-
-        $attributes = array(
-            'id'                    => $termId,
-            'merchant_id'           => '10000000000000',
-            'gateway'               => 'sbiepay',
-            'gateway_merchant_id'   => 'abcd',
-            'card'                  => 0);
-
-        return parent::create($attributes);
     }
 
     public function createSharedHdfcTerminal(array $attributes = array())
