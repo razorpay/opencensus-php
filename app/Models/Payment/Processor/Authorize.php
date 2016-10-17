@@ -353,7 +353,12 @@ trait Authorize
 
         // The first recurring will be on public auth for non-S2S enabled merchants.
         // The second recurring MUST always be via private auth.
-        if ($payment->isSecondRecurring())
+        // But, if token IS PRESENT, it could just mean a different recurring payment
+        // with the same token. It need not necessarily be the initial recurring payment
+        // for which the token was created in the first place. Hence, here, second recurring
+        // is not really second recurring and could be in fact first recurring only.
+        if ((empty($input[Payment\Entity::TOKEN]) === false) and
+            ($payment->isSecondRecurring() === true))
         {
             $this->verifyPrivateAuth();
         }
