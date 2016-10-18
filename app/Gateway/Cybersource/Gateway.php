@@ -897,10 +897,6 @@ class Gateway extends Base\Gateway
 
     protected function getSoapClientObject($request)
     {
-        $defaults = ['encoding' => 'UTF-8', 'soap_version' => SOAP_1_1];
-
-        $options = array_merge($defaults, $request['options']);
-
         $soapClient = new \SoapClient($request['url'], $options);
 
         $headers = $this->getSoapHeader($request);
@@ -1113,7 +1109,7 @@ class Gateway extends Base\Gateway
         $response = $soapClient->runTransaction($request['content']);
 
         // Hack to convert object to array recursively
-        return json_decode(json_encode($response), true);;
+        return json_decode(json_encode($response), true);
     }
 
     protected function traceGatewayRequest($traceCode, $request)
@@ -1131,9 +1127,10 @@ class Gateway extends Base\Gateway
             'url'     => $this->getWsdlFile(),
             'method'  => $method,
             'content' => $content,
-            'auth' => $this->getCredentials(),
+            'auth'    => $this->getCredentials(),
             'options' => [
-                'exception' => true,
+                'encoding'           => 'UTF-8',
+                'exception'          => true,
                 'connection_timeout' => self::TIMEOUT
             ],
         ];

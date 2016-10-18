@@ -4,7 +4,6 @@ namespace RZP\Gateway\Cybersource\Mock;
 
 use App;
 use DOMDocument;
-use DOMException;
 use RZP\Exception;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;

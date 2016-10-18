@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Base\Mock;
 
-use ErrorException;
+use Exception;
 use SoapServer as BaseSoapServer;
 
 class SoapServer extends BaseSoapServer
@@ -18,14 +18,7 @@ class SoapServer extends BaseSoapServer
             ob_start();
             parent::handle($soapRequest);
         }
-        catch (ErrorException $ex)
-        {
-            if (strstr($ex->getMessage(), 'headers already sent') === false)
-            {
-                throw $ex;
-            }
-        }
-        catch (\Exception $ex)
+        catch (Exception $ex)
         {
             if (strstr($ex->getMessage(), 'headers already sent') === false)
             {
