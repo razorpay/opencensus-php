@@ -27,11 +27,14 @@ class Service extends Base\Service
     {
         parent::__construct();
 
-        $this->core = new Payment\Core();
+        $this->core = new Payment\Core;
     }
 
     /**
      * Processes a payment.
+     * @param array $input
+     * @return array|mixed
+     * @throws Exception\BadRequestValidationFailureException
      */
     public function process(array $input)
     {
@@ -40,6 +43,9 @@ class Service extends Base\Service
 
     /**
      * Processes a wallet payment
+     * @param array $input
+     * @return array|mixed
+     * @throws Exception\BadRequestValidationFailureException
      */
     public function processWallet(array $input)
     {
