@@ -156,7 +156,7 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Amount exceeds maximum amount allowed.',
-                'amount');
+                'amount', $amount);
         }
     }
 
