@@ -68,6 +68,15 @@ trait RepositoryUpdateTestAndLive
         $entity->exists = true;
     }
 
+    public function insert($entities)
+    {
+        $repo = $this->repo;
+
+        $repo::on('test')->insert($entities);
+
+        $repo::on('live')->insert($entities);
+    }
+
     public function delete($entity)
     {
         return $this->manager->transactionOnLiveAndTest(function () use ($entity)

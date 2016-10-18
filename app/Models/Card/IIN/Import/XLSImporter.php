@@ -159,13 +159,13 @@ class XLSImporter
                 $chunk[IIN\Entity::UPDATED_AT] = $time;
             }
 
-            IIN\Entity::insert($chunks);
+            $this->app['repo']->iin->insert($chunks);
         }
     }
 
     protected function updateIntoDB(& $conflicts)
     {
-        $columns = array(IIN\Entity::NETWORK, IIN\Entity::TYPE, IIN\Entity::COUNTRY);
+        $columns = array(IIN\Entity::NETWORK, IIN\Entity::TYPE, IIN\Entity::COUNTRY, IIN\Entity::ISSUER);
 
         foreach ($conflicts as $iinId => $entry)
         {
@@ -175,7 +175,9 @@ class XLSImporter
                 (empty($input) === false))
             {
                 $entity = $this->app['repo']->iin->find($iinId);
+
                 $entity->edit($input);
+
                 $this->app['repo']->saveOrFail($entity);
             }
 
@@ -201,8 +203,7 @@ class XLSImporter
         foreach ($columns as $column)
         {
             if (($column === 'country') or
-                ((isset($dbEntry[$column])) and
-                 ($dbEntry[$column] !== '')))
+                (empty($dbEntry[$column]) === false))
             {
                 if ($dbEntry[$column] !== $fileEntry[$column])
                 {

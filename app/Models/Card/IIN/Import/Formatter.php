@@ -4,6 +4,7 @@ namespace RZP\Models\Card\IIN\Import;
 
 use RZP\Models\Card\IIN\Entity as IIN;
 use RZP\Models\Card\Network;
+use RZP\Models\Bank\Name;
 use RZP\Models\Base;
 use RZP\Exception;
 
@@ -63,6 +64,11 @@ class Formatter
 
                     case 'bin':
                         $input[IIN::IIN] = $row[$index];
+                        break;
+
+                    case 'issuer':
+                        $input[IIN::ISSUER] = $row[$index];
+                        $input[IIN::ISSUER_NAME] = Name::getName($row[$index]);
                         break;
 
                     case 'card_brand':
