@@ -148,12 +148,14 @@ return array(
         App\Providers\CustomSessionServiceProvider::class,
         Illuminate\Translation\TranslationServiceProvider::class,
         Illuminate\View\ViewServiceProvider::class,
+        Artdarek\OAuth\OAuthServiceProvider::class,
 
         /*
          * Application Service Providers...
          */
         App\Providers\AuthServiceProvider::class,
         App\Providers\AppServiceProvider::class,
+        App\Providers\GoogleOauthMockServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         App\Trace\TraceServiceProvider::class,
@@ -239,6 +241,7 @@ return array(
         'AWS'             => Aws\Laravel\AwsFacade::class,
         'Debugbar'        => Barryvdh\Debugbar\Facade::class,
         'Excel'           => Maatwebsite\Excel\Facades\Excel::class,
+        'OAuth'           => Artdarek\OAuth\OAuth::class,
         'Mailgun'         => Bogardo\Mailgun\Facades\Mailgun::class,
         'PDF'             => Nitmedia\Wkhtml2pdf\Facades\Wkhtml2pdf::class,
         'Slack'           => Maknz\Slack\Facades\Slack::class,

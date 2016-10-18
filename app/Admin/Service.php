@@ -71,6 +71,40 @@ class Service extends Base\Service
         return [$error, null];
     }
 
+    public function loginWithGoogle($code, $googleService)
+    {
+        $error = [];
+        $token = $googleService->requestAccessToken($code);
+
+        $response = $googleService->request(Config::get('oauth-5-laravel.userinfo_url'));
+
+        $result = json_decode($response);
+
+        if ($result->verified_email === false)
+        {
+            return App::abort(404);
+        }
+
+        $admin = Admin\Entity::where('email', $result->email)->first();
+
+        if ($admin)
+        {
+            $admin->access_token = $token->getAccessToken();
+            $admin->google_id = $result->id;
+            $admin->password = '';
+
+            $admin->save();
+
+            Auth::guard('admin')->loginUsingId($admin->id);
+        }
+        else
+        {
+            $error[] = 'This email is not registered.';
+        }
+
+        return $error;
+    }
+
     /**
      * Updates the keepAlive timer stored in Session
      * @return integer|boolean Current timestamp or false if user needs to be

@@ -60,8 +60,11 @@ app.controller('AdminCtrl', [
     };
     $scope.logout = function () {
       logoutRequest().finally(function () {
-        $state.go('access.signin');
+        $state.go('access.logout');
       });
+    };
+    $scope.goToSignIn = function () {
+      location.reload();
     };
     $scope.$on('$keepalive', function () {
       $http({

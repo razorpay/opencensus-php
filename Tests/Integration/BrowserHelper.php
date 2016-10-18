@@ -227,7 +227,7 @@ trait BrowserHelper
             }
             catch(\PHPUnit_Extensions_Selenium2TestCase_WebDriverException $e)
             {
-                if (strpos($e->getMessage(), 'NoSuchElementException') !== false)
+                if (strpos($e->getMessage(), 'Unable to locate element:') !== false)
                 {
                     return true;
                 }

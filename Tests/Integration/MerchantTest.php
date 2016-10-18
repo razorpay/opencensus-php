@@ -142,9 +142,6 @@ class MerchantTest extends TestCase
     public function testMerchantTaggingForRoles()
     {
         $this->url('admin#');
-        $this->setValueByName('username', self::$admin->username);
-        $this->setValueByName('password', '123456');
-        $this->submitByName('submit');
         $this->clickById('merchantsNav');
         $this->execScript('$(".merchant_type").val("0").trigger("change")');
         $this->execScript('$(".merchant_go").click()');

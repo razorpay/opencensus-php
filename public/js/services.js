@@ -256,7 +256,7 @@ angular.module('app.services', [])
         return admin.identity().then(function () {
           if ($rootScope.toState.data.role === 'auth') {
             if (admin.isAuthenticated() === false)
-              $state.go('access.signin');
+              location.reload();
             // user is signed in but not authorized for desired state
             if ($rootScope.toState.data.superadmin) {
               admin.identity().then(function (data) {

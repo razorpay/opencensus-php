@@ -7,6 +7,11 @@ use App\Admin;
 use App\Merchant;
 use Auth;
 use Input;
+use OAuth;
+use Config;
+use App;
+use App\Admin\Entity;
+use Redirect;
 
 class AdminController extends Controller
 {
@@ -30,6 +35,31 @@ class AdminController extends Controller
 
     public function getIndex()
     {
+        $code = Input::get('code');
+        $googleService = (new OAuth)->consumer('Google');
+
+        // If the user is not logged in
+        if (!Auth::guard('admin')->check())
+        {
+            // if code is provided get user data and sign in
+            if ($code !== null or env('OAUTH_MOCK') === true)
+            {
+                $error = (new Admin\Service)->loginWithGoogle($code, $googleService);
+
+                if (empty($error))
+                {
+                    return redirect('/admin');
+                }
+                else
+                {
+                    return AppResponse::jsonResponse($error, []);
+                }
+            }
+            else
+            {
+                return redirect((string) $googleService->getAuthorizationUri());
+            }
+        }
         return view('admin.tmpgetIndex');
     }
 
