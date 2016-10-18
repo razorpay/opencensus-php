@@ -144,6 +144,7 @@ class Checkout
         $methodsArray = array(
             'entity'        => 'methods',
             'card'          => true,
+            'amex'          => false,
             'netbanking'    => [],
             'wallet'        => [],
             'emi'           => false,
@@ -155,6 +156,7 @@ class Checkout
         if ($methods !== null)
         {
             $methodsArray['card'] = $methods->isCardEnabled();
+            $methodsArray['amex'] = $methods->isAmexEnabled();
             $netbankingEnabled = $methods->isNetbankingEnabled();
             if ($netbankingEnabled === true)
             {

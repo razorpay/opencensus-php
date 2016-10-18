@@ -440,6 +440,7 @@ class Service extends Base\Service
         $data = array(
             'entity'        => 'methods',
             'card'          => true,
+            'amex'          => false,
             'netbanking'    => [],
             'wallet'        => [],
             'emi'           => false,
@@ -451,6 +452,7 @@ class Service extends Base\Service
         if ($methods !== null)
         {
             $data['card'] = $methods->isCardEnabled();
+            $data['amex'] = $methods->isAmexEnabled();
             $netbankingEnabled = $methods->isNetbankingEnabled();
             if ($netbankingEnabled === true)
             {
