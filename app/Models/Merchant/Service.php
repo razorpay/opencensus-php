@@ -437,40 +437,9 @@ class Service extends Base\Service
 
     public function getPaymentMethods()
     {
-        $data = array(
-            'entity'        => 'methods',
-            'card'          => true,
-            'amex'          => false,
-            'netbanking'    => [],
-            'wallet'        => [],
-            'emi'           => false,
-            'upi'           => false,
-        );
+        $formattedMethods = (new Methods\Core)->getFormattedMethods($this->merchant);
 
-        $methods = (new Methods\Core)->getMethods($this->merchant);
-
-        if ($methods !== null)
-        {
-            $data['card'] = $methods->isCardEnabled();
-            $data['amex'] = $methods->isAmexEnabled();
-            $netbankingEnabled = $methods->isNetbankingEnabled();
-            if ($netbankingEnabled === true)
-            {
-                $data['netbanking'] = $methods->toArrayWithBankNames();
-            }
-            $data['wallet'] = $methods->getEnabledWallets();
-            $data['upi'] = $methods->isUpiEnabled();
-            $emi = $methods->isEmiEnabled();
-
-            if ($emi === true)
-            {
-                $data['emi'] = $emi;
-
-                $data['emi_plans'] = (new Emi\Service)->all();
-            }
-        }
-
-        return $data;
+        return $formattedMethods;
     }
 
     public function setPaymentMethods($merchantId, $input)
