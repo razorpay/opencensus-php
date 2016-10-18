@@ -31,7 +31,7 @@ class ReconciliatorController extends Controller
     public function postReconciliateCancelledTransactions($gateway)
     {
         $summary = (new Reconciliator\Service)->reconciliateCancelledTransactions($gateway);
-        
-        // Get the payment IDs of all billdesk records which have RefStatus as cancelled.
+
+        return ApiResponse::generateResponse($summary);
     }
 }
