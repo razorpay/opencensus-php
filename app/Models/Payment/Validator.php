@@ -160,7 +160,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateCardAndCvv($input)
+    public function validateCardAndCvv(array $input)
     {
         if (isset($input['card']) === false)
         {
