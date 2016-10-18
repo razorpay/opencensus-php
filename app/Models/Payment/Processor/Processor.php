@@ -443,6 +443,8 @@ class Processor
 
         $payment->setError($code, $desc, $internalCode);
 
+        $payment->setVerified(null);
+
         $this->repo->saveOrFail($payment);
 
         $this->tracePaymentFailed($error, $traceCode);
