@@ -4,11 +4,8 @@ namespace RZP\Models\Emi\Banks\Axis;
 
 use Carbon\Carbon;
 
-use RZP\Services\TokenEx;
-use RZP\Models\Card;
-use RZP\Models\Emi\Service;
 use RZP\Models\Emi\Banks\Base;
-use RZP\Gateway\Base\Action;
+use RZP\Trace\TraceCode;
 
 class EmiFile extends Base\EmiFile
 {
@@ -42,6 +39,11 @@ class EmiFile extends Base\EmiFile
         $fullPath = $this->getTextFullFilePath();
 
         $this->sendEmiFile($fullPath);
+
+        $this->trace->info(
+                        TraceCode::EMI_FILE_SENT,
+                        ['bank' => $this->bankName, 'payment_ids' => $input->getIds()]
+                    );
 
         return $urlExcel;
     }

@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Models\Card;
 use RZP\Models\Settlement\Kotak\FileHandlerTrait;
 use RZP\Models\Payment\Action;
+use RZP\Trace\TraceCode;
 
 class EmiFile
 {
@@ -23,6 +24,8 @@ class EmiFile
 
         $this->app = \App::getFacadeRoot();
 
+        $this->trace = $this->app['trace'];
+
         $this->repo = $this->app['repo'];
     }
 
@@ -35,6 +38,11 @@ class EmiFile
         $fullPath = $this->getExcelFullFilePath();
 
         $this->sendEmiFile($fullPath);
+
+        $this->trace->info(
+                        TraceCode::EMI_FILE_SENT,
+                        ['bank' => $this->bankName, 'payment_ids' => $input->getIds()]
+                    );
 
         return $urlExcel;
     }
