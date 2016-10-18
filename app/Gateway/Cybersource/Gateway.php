@@ -9,6 +9,7 @@ use SoapVar;
 use Requests;
 use SoapFault;
 use RZP\Error;
+use SoapClient;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Gateway\Utility;
@@ -897,7 +898,7 @@ class Gateway extends Base\Gateway
 
     protected function getSoapClientObject($request)
     {
-        $soapClient = new \SoapClient($request['url'], $options);
+        $soapClient = new SoapClient($request['url'], $request['options']);
 
         $headers = $this->getSoapHeader($request);
         $soapClient->__setSoapHeaders($headers);

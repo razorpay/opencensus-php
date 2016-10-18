@@ -28,10 +28,10 @@ class SoapClient extends BaseSoapClient
 
         $request = $requestDOM->saveXML();
 
-        return $this->callGatewayRequestInternally($request, $location, $action, $version, $oneWay);
+        return $this->callGatewayRequestInternally($request, $location, $action);
     }
 
-    protected function callGatewayRequestInternally($input, $location, $action, $version, $oneWay)
+    protected function callGatewayRequestInternally($input, $location, $action)
     {
         $server = $this->app['gateway']->server('cybersource');
 

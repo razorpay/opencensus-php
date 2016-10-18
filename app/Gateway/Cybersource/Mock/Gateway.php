@@ -14,8 +14,6 @@ class Gateway extends Cybersource\Gateway
 
     protected function getSoapClientObject($request)
     {
-        $options = array_merge(['encoding' => 'UTF-8', 'soap_version' => SOAP_1_1], $request['options']);
-
         $soapClient = new SoapClient($request['url'], $request['options']);
 
         $headers = $this->getSoapHeader($request);
