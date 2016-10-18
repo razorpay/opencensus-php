@@ -426,6 +426,11 @@ class Service extends Base\Service
             'total time'            => $time . ' secs'
         ];
 
+        $this->trace->info(
+            TraceCode::ORDERS_MULTIPLE_AUTHORIZED_REFUNDS,
+            $results
+        );
+
         $message = 'Multiple authorized payments for orders with a captured payment refunded';
 
         $this->slack->queue($message, $results, ['channel' => '#tech_logs']);
@@ -488,6 +493,12 @@ class Service extends Base\Service
             try
             {
                 $this->getNewProcessor($merchant)->refundAuthorizedPayment($authorizedPayment);
+
+                $this->trace->info(
+                    TraceCode::ORDER_REFUNDED,
+                    [
+                        'payment_id' => $authorizedPayment->getId()
+                    ]);
 
                 $refundedCount++;
             }

@@ -31,7 +31,7 @@ class Service extends Base\Service
 
         foreach ($transactions as $transaction)
         {
-            $success = $transactionCore->updateReconciledAt($transaction);
+            $success = $transactionCore->updateReconciliationData($transaction);
 
             if ($success === true)
             {

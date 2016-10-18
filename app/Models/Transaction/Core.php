@@ -90,7 +90,7 @@ class Core extends Base\Core
         return $txn;
     }
 
-    public function updateReconciledAt(Entity $transaction)
+    public function updateReconciliationData(Entity $transaction)
     {
         $reconciled = $transaction->isReconciled();
 
@@ -100,6 +100,8 @@ class Core extends Base\Core
         }
 
         $transaction->setReconciledAt(time());
+        $transaction->setGatewayFee(0);
+        $transaction->setGatewayServiceTax(0);
 
         $this->repo->saveOrFail($transaction);
 
