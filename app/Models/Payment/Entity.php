@@ -868,6 +868,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TOKEN_ID);
     }
 
+    public function getGlobalCustomerId()
+    {
+        return $this->getAttribute(self::GLOBAL_CUSTOMER_ID);
+    }
+
     public function getGlobalTokenId()
     {
         return $this->getAttribute(self::GLOBAL_TOKEN_ID);

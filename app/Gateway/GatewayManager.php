@@ -11,12 +11,6 @@ use RZP\Gateway\Base\Mock;
 
 class GatewayManager extends \Illuminate\Support\Manager
 {
-    const SINGLETON_GATWAYS = [
-        Payment\Gateway::WALLET_PAYUMONEY,
-        Payment\Gateway::WALLET_OLAMONEY,
-        Payment\Gateway::WALLET_FREECHARGE
-    ];
-
     protected $gateways = array();
 
     protected $mocks = array();
@@ -119,16 +113,9 @@ class GatewayManager extends \Illuminate\Support\Manager
     {
         $driver = $driver ?: $this->getDefaultDriver();
 
-        // If the given driver has not been created before, we will create the instances
-        // here and cache it so we can return it next time very quickly. If there is
-        // already a driver created by this name, we'll just return that instance.
-        if ((isset($this->drivers[$driver]) === false) or
-            (in_array($driver, self::SINGLETON_GATWAYS) === false))
-        {
-            $this->drivers[$driver] = $this->createDriver($driver);
-        }
+        $driver = $this->createDriver($driver);
 
-        return $this->drivers[$driver];
+        return $driver;
     }
 
     public function server($driver)

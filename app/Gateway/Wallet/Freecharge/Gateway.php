@@ -198,8 +198,6 @@ class Gateway extends Base\Gateway
         {
             $data['token'] = $this->getTokenAttributes($content);
 
-            $this->accessToken = $content[ResponseFields::ACCESS_TOKEN];
-
             $content[ResponseFields::ACCESS_TOKEN]  = '';
 
             $content[ResponseFields::REFRESH_TOKEN] = '';
@@ -282,7 +280,7 @@ class Gateway extends Base\Gateway
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
         }
 
-        $this->accessToken = $token->getGatewayToken();
+        $input['token'] = $token->toArray();
 
         return $this->getTopupWalletRedirectRequestArray($input);
     }
@@ -486,7 +484,7 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentRequest($content, $input);
 
-        $content[RequestFields::ACCESS_TOKEN] = $this->accessToken;
+        $content[RequestFields::ACCESS_TOKEN] = $input['token']['gateway_token'];
 
         $content[RequestFields::CHECKSUM] = $this->getHashOfArray($content);
 
@@ -512,7 +510,7 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentRequest($content, $input);
 
-        $content[RequestFields::ACCESS_TOKEN] = $this->accessToken;
+        $content[RequestFields::ACCESS_TOKEN] = $input['token']['gateway_token'];
 
         $content[ResponseFields::CHECKSUM] = $this->getHashOfArray($content);
 
@@ -606,7 +604,7 @@ class Gateway extends Base\Gateway
                 'payment_id' => $input['payment']['id'],
             ]);
 
-        $content[RequestFields::LOGIN_TOKEN] = $this->generateLoginToken($this->accessToken);
+        $content[RequestFields::LOGIN_TOKEN] = $this->generateLoginToken($input['token']['gateway_token']);
 
         $content[RequestFields::CHECKSUM] = $this->getHashOfArray($content);
 
@@ -875,13 +873,6 @@ class Gateway extends Base\Gateway
             ($content[ResponseFields::STATUS] === Status::TOPUP_SUCCESS))
         {
             $this->verifyCheckSumForResponse($content);
-
-            $token = $this->getValidWalletToken($input);
-
-            if ($token !== null)
-            {
-                $this->accessToken = $token->getGatewayToken();
-            }
         }
     }
 
@@ -910,8 +901,6 @@ class Gateway extends Base\Gateway
         if (isset($content[ResponseFields::ACCESS_TOKEN]))
         {
             $data['token'] = $this->getTokenAttributes($content);
-
-            $this->accessToken = $content[ResponseFields::ACCESS_TOKEN];
 
             $content[ResponseFields::ACCESS_TOKEN]  = '';
 

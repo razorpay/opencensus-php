@@ -151,9 +151,14 @@ trait Callback
         $input['payment'] = $payment->toArray();
         $input['gateway'] = $gatewayInput;
 
-        if ($payment->globalCustomer !== null)
+        if ($payment->getGlobalCustomerId() !== null)
         {
             $input['customer'] = $payment->globalCustomer;
+        }
+
+        if ($payment->getGlobalTokenId() !== null)
+        {
+            $input['token'] = $payment->globalToken->toArray();
         }
 
         if ($payment->card !== null)
@@ -209,7 +214,7 @@ trait Callback
         }
     }
 
-    protected function postPaymentOtpCallbackProcessing($input, $data)
+    protected function postPaymentOtpCallbackProcessing(&$input, $data)
     {
         $payment = $this->payment;
 
@@ -243,6 +248,8 @@ trait Callback
             $token = $this->createOrUpdateToken($input, $data);
 
             $payment->globalToken()->associate($token);
+
+            $input['token'] = $token->toArray();
         }
 
         $this->repo->saveOrFail($payment);
