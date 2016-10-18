@@ -63,12 +63,6 @@ class Core extends Base\Core
         {
             $card = $this->create($input, $merchant);
         }
-        // else
-        // {
-        //     $editInput = array_diff($input, $card->toArray());
-
-        //     $card = $this->edit($card, $editInput);
-        // }
 
         return array_merge(
             $card->toArray(),

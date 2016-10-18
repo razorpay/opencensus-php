@@ -17,7 +17,7 @@ class Service extends Base\Service
 
             $appCore = new AppToken\Core;
 
-            $appToken = $appCore->getAppByAppToken($appTokenId, $this->merchant);
+            $appToken = $appCore->getAppByAppTokenId($appTokenId, $this->merchant);
 
             if ($appToken !== null)
             {
