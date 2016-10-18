@@ -1231,7 +1231,7 @@ trait Authorize
             $traceData);
     }
 
-    protected function rethrowFailedPaymentErrorException($payment)
+    /*protected function rethrowFailedPaymentErrorException($payment)
     {
         $internalErrorCode = $payment->getInternalErrorCode();
         $publicErrorCode = $payment->getErrorCode();
@@ -1261,7 +1261,7 @@ trait Authorize
 
         throw new Exception\BadRequestException(
             ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
-    }
+    }*/
 
 
     protected function recordTerminalAudit(array $terminalData, Payment\Entity $payment)
