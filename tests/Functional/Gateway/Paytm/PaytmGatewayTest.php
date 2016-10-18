@@ -82,9 +82,6 @@ class PaytmGatewayTest extends TestCase
 
     public function testRefundPayment()
     {
-        // HACK, remove once paytm refunds are done
-        $this->markTestSkipped('Skipped as a hack for now');
-
         $payment = $this->getDefaultNetbankingPaymentArray();
         $payment = $this->doAuthAndCapturePayment($payment);
 
