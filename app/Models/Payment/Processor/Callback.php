@@ -214,7 +214,7 @@ trait Callback
         }
     }
 
-    protected function postPaymentOtpCallbackProcessing(&$input, $data)
+    protected function postPaymentOtpCallbackProcessing(array &$input, $data)
     {
         $payment = $this->payment;
 

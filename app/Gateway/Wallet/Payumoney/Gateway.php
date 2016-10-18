@@ -638,7 +638,7 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function getTopupWalletRedirectRequestArray($input, $content)
+    protected function getTopupWalletRedirectRequestArray(array $input, $content)
     {
         $this->action($input, Action::TOPUP_REDIRECT);
 
