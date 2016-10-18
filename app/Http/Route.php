@@ -639,7 +639,7 @@ final class Route
 
         $urlSegment = \URL::route($routeName, $parameters, false);
 
-        $url = self::getSchemaHostAndAuth($key, $secret) . $urlSegment;
+        $url = $this->getSchemaHostAndAuth($key, $secret) . $urlSegment;
 
         return $url;
     }
@@ -652,6 +652,19 @@ final class Route
         }
 
         return $this->getUrl($routeName, $parameters, $key);
+    }
+
+    public function getUrlWithPublicAuthInQueryParam($routeName, array $parameters = array())
+    {
+        $key = $this->ba->getPublicKey();
+
+        list($schema, $host) = $this->getSchemaAndHost();
+
+        $parameters['key_id'] = $key;
+
+        $urlSegment = \Url::route($routeName, $parameters, false);
+
+        return $schema . $host . $urlSegment;
     }
 
     public function getUrlWithPublicCallbackAuth(array $parameters = array(), $key = '')
@@ -682,15 +695,12 @@ final class Route
 
     public function getUrlWithAuth($relativeUrl, $key = '', $secret = '')
     {
-        return self::getSchemaHostAndAuth($key, $secret) . $relativeUrl;
+        return $this->getSchemaHostAndAuth($key, $secret) . $relativeUrl;
     }
 
-    protected static function getSchemaHostAndAuth($key = '', $secret = '')
+    protected function getSchemaHostAndAuth($key = '', $secret = '')
     {
-        $request = \Request::getFacadeRoot();
-
-        $schema = $request->getScheme() . '://';
-        $host = $request->getHost();
+        list($schema, $host) = $this->getSchemaAndHost();
 
         $auth = '';
         if ($key !== '')
@@ -707,6 +717,16 @@ final class Route
         $url = $schema . $auth . $host;
 
         return $url;
+    }
+
+    protected function getSchemaAndHost()
+    {
+        $request = \Request::getFacadeRoot();
+
+        $schema = $request->getScheme() . '://';
+        $host = $request->getHost();
+
+        return [$schema, $host];
     }
 
     public function getDoNotLogURLs()
