@@ -307,7 +307,6 @@ class Notify
             $channel = $config->get('slack.channels.high_4');
         }
         else if (($riskRating === self::MIN_HIGH_RISK_RATING) and
-                ($mode === Mode::LIVE) and
                 ($amount <= 1000))
         {
             $channel = $config->get('slack.channels.lt_10');
