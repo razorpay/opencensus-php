@@ -67,7 +67,8 @@ class SegmentClient
 
         if ($order !== null)
         {
-            $properties['order'] = $order->toArrayPublic();
+            //$properties['order'] = $order->toArrayPublic();
+            $properties['id_type'] = 'order';
 
             $orderId = $order->getId();
         }
@@ -75,6 +76,8 @@ class SegmentClient
         if (isset($metadata[AnalyticsEntity::CHECKOUT_ID]))
         {
             $checkoutId = $metadata[AnalyticsEntity::CHECKOUT_ID];
+
+            $properties['id_type'] = 'checkout';
         }
 
         $properties['order_id'] = $orderId;
@@ -83,15 +86,16 @@ class SegmentClient
 
         $id  = $orderId !== null ? $orderId : $checkoutId;
 
-        // This is a case where we do not have both checkout id and order id. So
-        // for the moment, we do not want to send data to segment. Fixing this
-        // needs api to generate a checkout id, when not available and allowing
-        // frontend/custom checkout to consume so.
+        // This is a case where we do not have both checkout id and order id.
+        // So instead of tracing anything, we want to get some data. Using
+        // payment_id as the anonymousId
         if ($id === null)
         {
             $this->trace->warning(TraceCode::SEGMENT_ID_UNAVAILABLE, $properties);
 
-            return null;
+            $id = $payment->getId();
+
+            $properties['id_type'] = 'payment';
         }
 
         $properties = flatten_array($properties);
