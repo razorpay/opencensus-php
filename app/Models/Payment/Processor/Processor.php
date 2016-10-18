@@ -86,6 +86,7 @@ class Processor
     protected $request;
     protected $methods;
     protected $refund;
+    protected $order;
 
     protected $verifyRefundStatus;
 
@@ -428,6 +429,16 @@ class Processor
 
         $status = $payment->getStatus();
 
+        $segmentCustomProperties = [
+            'error' => $error,
+            'code' => $code,
+            'description' => $desc,
+            'internal_error_code' => $internalCode,
+            'status' => $status
+        ];
+
+        $this->api['segment']->trackPayment($payment, $traceCode, $segmentCustomProperties);
+
         if (($status !== Status::CREATED) and ($status !== Status::AUTHORIZED))
         {
             throw new Exception\LogicException(
@@ -534,6 +545,8 @@ class Processor
         }
 
         $this->payment = $payment;
+
+        $this->app['segment']->trackPayment($payment, TraceCode::PAYMENT_CREATED);
 
         return $payment;
     }
@@ -667,6 +680,8 @@ class Processor
         $this->trace->$level(
             $traceCode,
             $traceData);
+
+        $this->api['segment']->tracePayment($this->payment, TraceCode::PAYMENT_FAILED, $traceData);
     }
 
     protected function retrieveToken($input)

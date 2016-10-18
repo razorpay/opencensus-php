@@ -55,6 +55,12 @@ trait Authorize
 
         $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
 
+        $segmentCustomProps = [
+            'terminals' => $this->selectedTerminals
+        ];
+
+        $this->app['segment']->trackPayment($payment, TraceCode::SEGMENT_TERMINALS_SELECTED, $segmentCustomProps);
+
         return $this->authorizeAcrossTerminals($payment, $input, $gatewayInput);
     }
 
@@ -88,8 +94,18 @@ trait Authorize
 
             $this->runPostGatewaySelectionPreProcessing($payment, $terminalGatewayInput);
 
+            $segmentCustomProps = [
+                'terminals' => $this->selectedTerminals,
+                'terminal_gateway_input' => $terminalGatewayInput,
+                'selected_terminal' => $currentTerminal,
+                'retry_attempt' => $retryAttempts
+            ];
+
+            $this->app['segment']->trackPayment($payment, TraceCode::SEGMENT_GATEWAY_POSTPROCESSING, $segmentCustomProps);
+
             if ($this->canRunOtpPaymentFlow($payment, $input))
             {
+                //TODO: Add segment details here for OTP based flow
                 $this->createAnalyticsLog($payment);
 
                 $request = $this->runOtpPaymentFlow($terminalGatewayInput, $payment);
@@ -144,7 +160,7 @@ trait Authorize
             {
                 $terminalData['end'] = microtime(true);
 
-                $this->recordTerminalAudit($terminalData);
+                $this->recordTerminalAudit($terminalData, $payment);
 
                 if (($retry === false) or
                     ($retryAttempts >= $maxRetryAttempts))
@@ -167,6 +183,8 @@ trait Authorize
         );
 
         $this->trace->info(TraceCode::TERMINAL_FAILURE, $traceData);
+
+        $this->app['segment']->trackPayment($payment, TraceCode::TERMINAL_FAILURE, $traceData);
 
         // retry only if it is safe to do so
         return ((property_exists($e, 'safeRetry') === true) and
@@ -1133,7 +1151,40 @@ trait Authorize
             $traceData);
     }
 
-    protected function recordTerminalAudit($terminalData)
+    protected function rethrowFailedPaymentErrorException($payment)
+    {
+        $internalErrorCode = $payment->getInternalErrorCode();
+        $publicErrorCode = $payment->getErrorCode();
+        $errorDesc = $payment->getErrorDescription();
+
+        Error\Map::throwExceptionFromErrorDetails(
+            $publicErrorCode, $internalErrorCode, $errorDesc);
+
+        //
+        // If it has reached here, then an edge case occurred, for which
+        // a suitable exception was not found and which must be handled.
+        // So, we trace an error message, ringing alerts to our devs.
+        //
+
+        $this->trace->error(
+            TraceCode::PAYMENT_CALLBACK_FAILURE,
+            [
+                'payment_id' => $payment->getPublicId(),
+                'public_error_code' => $publicErrorCode,
+                'internal_error_code' => $internalErrorCode,
+                'error_description' => $errorDesc,
+                'message' => 'Failed to convert error code to the appropriate exception'
+            ]);
+
+        // If no appropriate exception mapping was found then show
+        // the usual message that payment already processed.
+
+        throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
+    }
+
+
+    protected function recordTerminalAudit(array $terminalData, Payment\Entity $payment)
     {
         try
         {
@@ -1169,6 +1220,8 @@ trait Authorize
             }
 
             (new TerminalAnalytics\Core)->create($log);
+
+            $this->app['segment']->trackPayment($payment, TraceCode::SEGMENT_TERMINAL_SUCCESS, $log);
         }
         catch(\Exception $e)
         {

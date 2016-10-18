@@ -289,6 +289,19 @@ class TraceCode
      */
     const PAYMENT_NOTES_INVALID                     = 'PAYMENT_NOTES_INVALID';
 
+    /**
+     * Additional trace codes for Segment integration
+     */
+    const SEGMENT_ID_UNAVAILABLE                    = 'SEGMENT_ID_UNAVAILABLE';
+    const SEGMENT_TERMINALS_SELECTED                = 'SEGMENT_TERMINALS_SELECTED';
+    const SEGMENT_GATEWAY_POSTPROCESSING            = 'SEGMENT_GATEWAY_POSTPROCESSING';
+    const SEGMENT_GATEWAY_EXCEPTION                 = 'SEGMENT_GATEWAY_EXCEPTION';
+    const SEGMENT_PAYMENT_EXCEPTION                 = 'SEGMENT_PAYMENT_EXCEPTION';
+    const SEGMENT_OTP_GENERATE                      = 'SEGMENT_OTP_GENERATE';
+    const SEGMENT_PAYMENT_AUTH_RETRY                = 'SEGMENT_PAYMENT_AUTH_RETRY';
+    const SEGMENT_TERMINAL_SUCCESS                  = 'SEGMENT_TERMINAL_SUCCESS';
+
+
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',
