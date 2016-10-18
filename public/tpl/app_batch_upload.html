@@ -9,28 +9,34 @@
     </h1>
   </div>
   <div class="wrapper-md addfunds-wrapper">
-    <div class="panel panel-default col-sm-6 col-sm-offset-3" >
+    <div class="panel panel-default panel-form col-sm-6 col-sm-offset-3" >
       <div class="panel-heading m-t m-b">
         Refunds File Upload - {{mode | titlecase}} Mode
+
+        <small class="pull-right">
+          <a href="https://docs.razorpay.com/v1/page/batch-refunds" class="highlight" target="_blank">DOCUMENTATION &nbsp;<i class="fa fa-external-link"></i></a>
+        </small>
       </div>
       <div class="text-center m-t m-b">
         <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
       </div>
       <div class="text-muted m-t m-b">
         <p>
-          This is a simple way to process <strong>refunds</strong> in batches.
-        </p>
-        <p>
-          <a href="files/sample_batch_refund.xlsx">
-            Download Sample File
-          </a>
+          This is a simple way to process <strong>refunds</strong> in batches. For a quick
+          reference, <a href="files/sample_batch_refund.xlsx" class="highlight"> click here </a> to download a sample file.
         </p>
       </div>
       <div class="text-center m-t m-b">
         <form enctype="multipart/form-data">
           <input type="hidden" name="type" value="refund" ng-model="batchForm.type" />
-          <input ui-jq="filestyle" type="file" name="file" ng-file-select="onFileSelect($files, 'file')">
-          <button class="btn btn-primary btn-rounded" ng-click="batchUpload()">Submit</button>
+
+          <div class="form-group">
+            <input ui-jq="filestyle" type="file" name="file" ng-file-select="onFileSelect($files, 'file')">
+          </div>
+
+          <div>
+            <button class="btn btn-primary btn-rounded" ng-click="batchUpload()">Submit</button>
+          </div>
         </form>
       </div>
     </div>

@@ -5,7 +5,7 @@
   </h1>
 </div>
 <div class="wrapper-md addfunds-wrapper" ng-controller="AddfundsCtrl">
-  <div class="panel panel-default col-sm-6 col-sm-offset-3" >
+  <div class="panel panel-default panel-form col-sm-6 col-sm-offset-3" >
     <div class="panel-heading m-t m-b">
       Add Funds - {{mode | titlecase}} Mode
     </div>
@@ -19,7 +19,7 @@
       <p>
         Add Funds works over your own account. Therefore, a TDR will be deducted on this
         as well. If you are adding funds for a large refund, send us a mail to
-        <a href="mailto:support@razorpay.com">support@razorpay.com</a>.
+        <a href="mailto:support@razorpay.com" class="highlight">support@razorpay.com</a>.
       </p>
       <p ng-show="mode==='test'">
         Since you are in test mode, this will be a test payment.
