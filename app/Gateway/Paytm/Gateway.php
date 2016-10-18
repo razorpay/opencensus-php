@@ -118,11 +118,6 @@ class Gateway extends Base\Gateway
         }
     }
 
-    public function verifyRefund(array $input)
-    {
-        return false;
-    }
-
     public function verify(array $input)
     {
         parent::verify($input);

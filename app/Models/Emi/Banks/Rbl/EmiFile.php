@@ -61,17 +61,13 @@ class EmiFile extends Base\EmiFile
         'EMI Model',
     ];
 
-    public function generate($input)
+    protected function writeEmiFile($emiData)
     {
-        $txt = $this->getEmiData($input);
+        $url = $this->writeToExcelFile($emiData, $this->getFileToWriteNameWithoutExt());
 
-        $urlExcel = $this->writeToExcelFile($txt, $this->getFileToWriteNameWithoutExt());
+        $path = $this->getExcelFullFilePath();
 
-        $fullPath = $this->getExcelFullFilePath();
-
-        $this->sendEmiFile($fullPath);
-
-        return $urlExcel;
+        return compact('url', 'path');
     }
 
     protected function getEmiData($input)

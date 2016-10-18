@@ -28,6 +28,33 @@ return [
         ],
     ],
 
+    'testCreateOrderWithNegativeAmount' => [
+        'request' => [
+            'content' => [
+                'amount'          => -200,
+                'currency'        => 'INR',
+                'receipt'         => 'rcptid42',
+                'payment_capture' => '1'
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+         'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT,
+                    'field' => 'amount'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
     'testCreateAutoCaptureOrder' => [
         'request' => [
             'content' => [

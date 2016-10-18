@@ -176,7 +176,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
     protected function tryAuthorizeFailedPayment($row)
     {
-        $paymentService = new Payment\Service();
+        $paymentService = new Payment\Service;
 
         try
         {
