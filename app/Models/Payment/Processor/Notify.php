@@ -292,7 +292,9 @@ class Notify
         $channel = $config->get('slack.channels.low');
 
         $riskRating = $this->template['payment']['risk'];
+
         $amount = $this->template['payment']['raw_amount'];
+
         $mode = $this->mode;
 
         // The priority order is important here
@@ -304,9 +306,9 @@ class Notify
         {
             $channel = $config->get('slack.channels.high_4');
         }
-        else if ($riskRating === self::MIN_HIGH_RISK_RATING &&
-                $mode === Mode::LIVE &&
-                $amount <= 1000)
+        else if (($riskRating === self::MIN_HIGH_RISK_RATING) and
+                ($mode === Mode::LIVE) and
+                ($amount <= 1000))
         {
             $channel = $config->get('slack.channels.lt_10');
         }
