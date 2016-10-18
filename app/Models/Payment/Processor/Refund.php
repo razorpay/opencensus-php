@@ -183,13 +183,6 @@ trait Refund
         Payment\Entity $payment,
         Payment\Refund\Entity $refund)
     {
-        // Hack to not send refund notification for PayTM
-        // Should be removed after refunding the authorized payments
-        if ($payment->isGateway(Payment\Gateway::PAYTM) === true)
-        {
-            return null;
-        }
-
         //
         // Analytics is on dashboard side for now
         //
