@@ -1285,15 +1285,9 @@ trait Authorize
         // Creates card entity. Card number is vaulted if vault is true
         //
 
-        if ($vault)
+        if ($vault === true)
         {
-            $vaultToken = Card\Tokenex::getVaultToken($cardInput['number']);
-
-            if (empty($vaultToken) === false)
-            {
-                $cardInput[Card\Entity::VAULT_TOKEN] = $vaultToken;
-                $cardInput[Card\Entity::VAULT] = Card\Vault::TOKENEX;
-            }
+            $cardInput[Card\Entity::VAULT] = Card\Vault::TOKENEX;
         }
 
         $cardCore = new Card\Core();

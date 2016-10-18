@@ -50,7 +50,7 @@ class Core extends Base\Core
 
         $card = null;
 
-        if (isset($input[Entity::VAULT_TOKEN]))
+        if (isset($input[Entity::VAULT]))
         {
             $newCard = (new Card\Entity)->build($input);
 
