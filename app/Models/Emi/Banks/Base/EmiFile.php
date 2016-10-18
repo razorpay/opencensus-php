@@ -6,6 +6,7 @@ use Str;
 use Carbon\Carbon;
 use RZP\Models\Card;
 use RZP\Models\Settlement\Kotak\FileHandlerTrait;
+use RZP\Models\Payment\Action;
 
 class EmiFile
 {
@@ -48,7 +49,7 @@ class EmiFile
     {
         $gateway = $payment->getGateway();
 
-        $gatewayPayment = $this->repo->$gateway->findCapturedPaymentById($payment->getId());
+        $gatewayPayment = $this->repo->$gateway->findByPaymentIdAndActionOrFail($payment->getId(), Action::CAPTURE);
 
         return $gatewayPayment->getAuthCode();
     }
