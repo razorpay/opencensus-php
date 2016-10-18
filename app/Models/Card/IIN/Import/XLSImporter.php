@@ -5,9 +5,9 @@ namespace RZP\Models\Card\IIN\Import;
 use App;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
+use RZP\Models\Base;
 use RZP\Models\Card\IIN;
 use RZP\Models\Card\Network;
-use RZP\Models\Base\PublicCollection;
 
 /**
  * This class is called by the service function with the input data.
@@ -154,7 +154,7 @@ class XLSImporter
         // Too many entries crashes the sql query
         foreach (array_chunk($cleaned, $chunkSize) as $chunks)
         {
-            $iins = new PublicCollection;
+            $iins = new Base\PublicCollection;
 
             foreach ($chunks as & $chunk)
             {
@@ -207,7 +207,8 @@ class XLSImporter
         foreach ($columns as $column)
         {
             if (($column === 'country') or
-                (empty($dbEntry[$column]) === false and empty($fileEntry[$column]) === false))
+                ((empty($dbEntry[$column]) === false) and
+                 (empty($fileEntry[$column]) === false)))
             {
                 if ($dbEntry[$column] !== $fileEntry[$column])
                 {
