@@ -210,7 +210,9 @@ class Server extends Base\Mock\Server
 
         $cardNumber = $this->data['card'];
 
-        $network = Card\Network::detectNetwork($cardNumber);
+        $iin = substr($cardNumber, 0, 6);
+
+        $network = Card\Network::detectNetwork($iin);
 
         if ($this->isSpecialCardNumber($cardNumber))
         {
@@ -267,7 +269,7 @@ class Server extends Base\Mock\Server
 
         // @todo: move this to iin
         $iin = substr($cardNumber, 0, 6);
-        $network = Card\Network::detectNetwork($cardNumber);
+        $network = Card\Network::detectNetwork($iin);
         $type = $this->getCardType($cardNumber, $iin);
 
         $res = array();
@@ -310,7 +312,7 @@ class Server extends Base\Mock\Server
         {
             return 'debit';
         }
-        else if (Card\Network::detectNetwork($cardNumber) === Card\Network::MAES)
+        else if (Card\Network::detectNetwork($iin) === Card\Network::MAES)
         {
             return 'debit';
         }
@@ -409,7 +411,9 @@ class Server extends Base\Mock\Server
 
         if (isset($this->data['card']))
         {
-            $network = Card\Network::detectNetwork($this->data['card']);
+            $iin = substr($this->data['card'], 0, 6);
+
+            $network = Card\Network::detectNetwork($iin);
         }
 
         if ($txn === null)

@@ -346,7 +346,7 @@ class Repository extends Base\Repository
     public function fetchBetweenTimestamps($from, $to)
     {
         return $this->newQuery()
-                    ->whereBetween('created_at', $from, $to);
+                    ->whereBetween('created_at', [$from, $to]);
     }
 
     public function findByGatewayTransactionIdOrFail($gatewayTxnId)
