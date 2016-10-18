@@ -56,6 +56,10 @@ class Gateway extends Base\Gateway
 
     public function refund(array $input)
     {
+        // This is a hack for doing refund on API side
+        // It should be removed after refunding payments
+        return null;
+
         parent::refund($input);
 
         $payment = $this->repo->findByPaymentIdAndActionOrFail(
