@@ -92,7 +92,13 @@ app.controller('EntityListCtrl', [
       $scope.query.skip = $scope.entity.skip;
 
       // /live/payments
-      var baseuRL = '/' + $scope.mode + '/' + $scope.entity.type + 's';
+      var baseURL = '/' + $scope.mode + '/' + $scope.entity.type + 's';
+
+      // TODO: This is a hack, will need a proper pluralizer
+      if ($scope.entity.type === 'batch') {
+        var baseURL = '/' + $scope.mode + '/' + $scope.entity.type + 'es';
+      }
+
       var request;
 
       var q = jQuery.extend({}, $scope.query);
@@ -123,10 +129,10 @@ app.controller('EntityListCtrl', [
       // Figure out the proper URL to hit if we are fetching just a single
       // entity or a collection
       if ($scope.entity.id === '') {
-        request = $http.get(baseuRL, {params: q});
+        request = $http.get(baseURL, {params: q});
       }
       else {
-        request = $http.get(baseuRL + '/' + $scope.entity.id, {
+        request = $http.get(baseURL + '/' + $scope.entity.id, {
           params: q
         });
       }
@@ -157,6 +163,39 @@ app.controller('EntityListCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     }
+
+
+    // For batch files
+
+    $scope.retry = function (batchId) {
+      $scope.alerts.resetAlerts();
+
+      $http({
+        method: 'POST',
+        url: '/'+$scope.mode+'/batches/'+batchId+'/retry'
+      }).then(function (response) {
+        // success
+        var data = response.data;
+
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Retry successful');
+
+          $scope.entity.items.forEach(function (item) {
+            if (item.id === batchId) {
+              item.status = data.data.status;
+            }
+          });
+        }
+        else {
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }, function (response) {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
   }
 ])
 .controller('settlementBreakupModalCtrl', [
@@ -181,7 +220,7 @@ app.controller('EntityListCtrl', [
       if (data.success) {
         $scope.breakupDetails = data.data.items;
       }
-      
+
     }).error(function () {
       $scope.alerts.addAlert('danger', null, true);
     });

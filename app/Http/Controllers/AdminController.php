@@ -132,6 +132,15 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error);
     }
 
+    public function putEdit($id)
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new Admin\Service)->editAdmin($input, $id);
+
+        return AppResponse::jsonResponse($error);
+    }
+
     public function getMerchantList()
     {
         $input = Input::all();

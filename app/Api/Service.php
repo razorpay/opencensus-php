@@ -10,7 +10,6 @@ use Trace;
 
 class Service extends Base\Service
 {
-
     public function __construct()
     {
         $loggedInUser = Auth::user();
@@ -394,5 +393,122 @@ class Service extends Base\Service
     {
         $startDate = Carbon::createFromDate($year, $month, 1, 'Asia/Calcutta');
         return $this->merchant->id . '/' . $startDate->addMonth()->format('m/y');
+    }
+
+    public function uploadBatchFile($mode, $input)
+    {
+        $error = $batchRefund = null;
+
+        try
+        {
+            $this->setApiCredentials($this->merchantId, $mode);
+
+            $batchRefund = $this->api
+                                ->batch
+                                ->uploadFile($mode, $this->merchantId, $input);
+        }
+        catch(\Razorpay\Api\Errors\Error $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return [$error, $batchRefund];
+    }
+
+    public function fetchMultipleBatches($mode, $input)
+    {
+        $error = $collection = null;
+
+        try
+        {
+            $collection = [];
+
+            $this->setApiCredentials($this->merchantId, $mode);
+
+            $collection = $this->api
+                               ->batch
+                               ->all($input)
+                               ->toArray();
+
+            $this->mapKeys($collection);
+        }
+        catch(\Razorpay\Api\Errors\Error $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return [$error, $collection];
+    }
+
+    public function fetchBatchById($mode, $id)
+    {
+        $error = $collection = null;
+
+        try
+        {
+            $this->setApiCredentials($this->merchantId, $mode);
+
+            $data = $this->api
+                         ->batch
+                         ->fetch($id)
+                         ->toArray();
+
+            $collection = [
+                            'count' => 1,
+                            'entity' => 'collection',
+                            'items' => array($data),
+                          ];
+
+            $this->mapKeys($collection);
+        }
+        catch(\Razorpay\Api\Errors\Error $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return [$error, $collection];
+    }
+
+    public function downloadBatchFile($mode, $id)
+    {
+        $error = $downloadResponse = null;
+
+        try
+        {
+            $this->setApiCredentials($this->merchantId, $mode);
+
+            $downloadResponse = $this->api
+                                     ->batch
+                                     ->downloadFile($id)
+                                     ->toArray();
+
+        }
+        catch(\Razorpay\Api\Errors\Error $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return [$error, $downloadResponse];
+    }
+
+    public function retryBatchFile($mode, $id)
+    {
+        $error = $batchRefund = null;
+
+        try
+        {
+            $this->setApiCredentials($this->merchantId, $mode);
+
+            $batchRefund = $this->api
+                                ->batch
+                                ->retryFile($id)
+                                ->toArray();
+        }
+        catch(\Razorpay\Api\Errors\Error $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return [$error, $batchRefund];
     }
 }

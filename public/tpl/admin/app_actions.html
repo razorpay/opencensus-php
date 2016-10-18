@@ -629,7 +629,7 @@
         <label for="from" class="col-lg-2 control-label">From</label>
         <div class="col-lg-10" >
           <p class="input-group">
-            <input type="date" class="form-control" ng-model="from">
+            <input type="date" class="form-control" ng-model="from_date">
           </p>
         </div>
       </div>
@@ -637,7 +637,7 @@
         <label for="to" class="col-lg-2 control-label">To</label>
         <div class="col-lg-10" >
           <p class="input-group">
-            <input type="date" class="form-control" ng-model="to">
+            <input type="date" class="form-control" ng-model="to_date">
           </p>
         </div>
       </div>
@@ -664,6 +664,6 @@
   </div>
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-      <button class="btn btn-primary modal-ok" ng-click="ok(date,from,do,bank, mode)">Generate</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(date,from_date,to_date,bank, mode)">Generate</button>
   </div>
 </script>
