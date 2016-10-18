@@ -6,6 +6,8 @@ use Str;
 use Carbon\Carbon;
 use RZP\Models\Card;
 use RZP\Models\Settlement\Kotak\FileHandlerTrait;
+use RZP\Models\Payment\Action;
+use RZP\Trace\TraceCode;
 
 class EmiFile
 {
@@ -22,12 +24,25 @@ class EmiFile
 
         $this->app = \App::getFacadeRoot();
 
+        $this->trace = $this->app['trace'];
+
         $this->repo = $this->app['repo'];
     }
 
     public function generate($input)
     {
-        ;
+        $emiData = $this->getEmiData($input);
+
+        $emiFile = $this->writeEmiFile($emiData);
+
+        $this->sendEmiFile($emiFile['path']);
+
+        $this->trace->info(
+                        TraceCode::EMI_FILE_SENT,
+                        ['bank' => $this->bankName, 'payment_ids' => $input->getIds()]
+                    );
+
+        return $emiFile['url'];
     }
 
     protected function getCardNumber($card)
@@ -48,7 +63,7 @@ class EmiFile
     {
         $gateway = $payment->getGateway();
 
-        $gatewayPayment = $this->repo->$gateway->findCapturedPaymentById($payment->getId());
+        $gatewayPayment = $this->repo->$gateway->findByPaymentIdAndActionOrFail($payment->getId(), Action::CAPTURE);
 
         return $gatewayPayment->getAuthCode();
     }

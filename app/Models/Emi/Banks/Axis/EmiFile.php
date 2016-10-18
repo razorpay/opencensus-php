@@ -4,11 +4,8 @@ namespace RZP\Models\Emi\Banks\Axis;
 
 use Carbon\Carbon;
 
-use RZP\Services\TokenEx;
-use RZP\Models\Card;
-use RZP\Models\Emi\Service;
 use RZP\Models\Emi\Banks\Base;
-use RZP\Gateway\Base\Action;
+use RZP\Trace\TraceCode;
 
 class EmiFile extends Base\EmiFile
 {
@@ -31,19 +28,15 @@ class EmiFile extends Base\EmiFile
         'EMI ID',
     ];
 
-    public function generate($input)
+    protected function writeEmiFile($emiData)
     {
-        $txt = $this->getEmiData($input);
-
         // Axis wants the file to be in CSV format, but named with a .txt extension
-        $urlExcel = $this->writeToCsvFile($txt, $this->getFileToWriteNameWithoutExt(), $this->getTextFullFilePath());
+        $url = $this->writeToCsvFile($emiData, $this->getFileToWriteNameWithoutExt(), $this->getTextFullFilePath());
 
-        // Since the file name is in excel we use the txt f
-        $fullPath = $this->getTextFullFilePath();
+        // Since the file name is in excel we use the txt function
+        $path = $this->getTextFullFilePath();
 
-        $this->sendEmiFile($fullPath);
-
-        return $urlExcel;
+        return compact('url', 'path');
     }
 
     protected function getEmiData($input)

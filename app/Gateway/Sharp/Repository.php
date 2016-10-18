@@ -17,7 +17,7 @@ class Repository extends Base\Repository
     }
 
     // Override Base\Repository function since sharp table doesn't exist
-    public function findCapturedPaymentById($paymentId)
+    public function findByPaymentIdAndActionOrFail($paymentId, $action)
     {
         return (new Entity);
     }
