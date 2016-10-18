@@ -31,20 +31,18 @@ class EmiFile
 
     public function generate($input)
     {
-        $txt = $this->getEmiData($input);
+        $emiData = $this->getEmiData($input);
 
-        $urlExcel = $this->writeToExcelFile($txt, $this->getFileToWriteNameWithoutExt());
+        $emiFile = $this->writeEmiFile($emiData);
 
-        $fullPath = $this->getExcelFullFilePath();
-
-        $this->sendEmiFile($fullPath);
+        $this->sendEmiFile($emiFile['path']);
 
         $this->trace->info(
                         TraceCode::EMI_FILE_SENT,
                         ['bank' => $this->bankName, 'payment_ids' => $input->getIds()]
                     );
 
-        return $urlExcel;
+        return $emiFile['url'];
     }
 
     protected function getCardNumber($card)

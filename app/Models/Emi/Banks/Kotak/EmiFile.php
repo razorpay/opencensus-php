@@ -38,6 +38,15 @@ class EmiFile extends Base\EmiFile
         'Discount / Cashback Amount',
     ];
 
+    protected function writeEmiFile($emiData)
+    {
+        $url = $this->writeToExcelFile($emiData, $this->getFileToWriteNameWithoutExt());
+
+        $path = $this->getExcelFullFilePath();
+
+        return compact('url', 'path');
+    }
+
     protected function getEmiData($input)
     {
         $emiPayments = [];
