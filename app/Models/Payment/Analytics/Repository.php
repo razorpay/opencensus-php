@@ -13,6 +13,7 @@ class Repository extends Base\Repository
     // These are admin allowed params to search on.
     protected $appFetchParamRules = array(
         Entity::PAYMENT_ID      => 'sometimes|alpha_num',
+        Entity::CHECKOUT_ID     => 'sometimes|alpha_num',
     );
 
     public function getRecentMerchantPaymentsForCheckoutId($checkoutId)

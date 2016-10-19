@@ -23,8 +23,6 @@ class PayumoneyGatewayTest extends TestCase
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_payumoney_terminal');
 
-        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-
         $this->gateway = 'wallet_payumoney';
 
         $this->fixtures->merchant->enableWallet('10000000000000', 'payumoney');
@@ -64,6 +62,93 @@ class PayumoneyGatewayTest extends TestCase
         $this->assertArraySelectiveEquals($authPayment, $content);
     }
 
+    public function testPaymentWithCheckBalanceFailure()
+    {
+        $payment = $this->getDefaultWalletPaymentArray('payumoney');
+
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'getBalance')
+            {
+                unset($content['status']);
+                $content['message'] = 'Error in fetching wallet limit';
+            }
+        });
+
+        $authPayment = $this->doAuthPayment($payment);
+
+        $capturePayment = $this->capturePayment($authPayment['razorpay_payment_id'], $payment['amount']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertTestResponse($payment, 'testPayment');
+        $this->assertNotEmpty($payment['global_token_id']);
+        $this->assertNotEmpty($payment['global_customer_id']);
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $this->assertTestResponse($wallet, 'testPaymentWalletEntity');
+    }
+
+    public function testDebitFailed()
+    {
+        $payment = $this->getDefaultWalletPaymentArray('payumoney');
+
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'debit')
+            {
+                $content['status'] = -1;
+                $content['message'] = 'Error in use wallet';
+            }
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertSame($payment['status'], 'failed');
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $this->assertNull($wallet);
+    }
+
+    public function testOtpGenerateFailure()
+    {
+        $payment = $this->getDefaultWalletPaymentArray('payumoney');
+
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'otpGenerate')
+            {
+                $content['status'] = -1;
+                $content['message'] = 'OTP couldn\'t be generated';
+                $content['errorCode'] = 'unknown';
+            }
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertSame($payment['status'], 'failed');
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $this->assertNull($wallet);
+    }
+
     public function testFailedPaymentWithRedirection()
     {
         $this->config['app.throw_exception_in_testing'] = false;
@@ -80,8 +165,6 @@ class PayumoneyGatewayTest extends TestCase
         $this->assertArraySelectiveEquals($data, $authResponse);
 
         $payment = $this->getLastEntity('payment');
-
-        $data = $this->testData['testExpiredOtpPaymentRedirection'];
 
         $response = $this->redirectPayment($payment['id']);
         $headers = $response->headers;
@@ -223,7 +306,7 @@ class PayumoneyGatewayTest extends TestCase
 
         $this->setOtp(Otp::WALLET_LIMIT_EXCEEDED);
 
-        $this->mockServerContentFunction(function(&$content)
+        $this->mockServerContentFunction(function(& $content)
         {
             $content['result']['maxLimit'] = 0;
             $content['result']['availableBalance'] = 0;
@@ -254,6 +337,56 @@ class PayumoneyGatewayTest extends TestCase
         $this->assertTestResponse($wallet, __FUNCTION__);
 
         return $response;
+    }
+
+    public function testTopupWithFailedStatus()
+    {
+        // Get Innsufficient balance response
+        $this->testInsufficientBalancePayment();
+
+        $originalData = $this->response->getOriginalContent()->data;
+
+        $this->mockServerContentFunction(function(& $content)
+        {
+            $content['status'] = 'failure';
+        });
+
+        $data = $this->testData['testTopupFailed'];
+
+        // Send topup request
+        $response = $this->runRequestResponseFlow($data, function() use ($originalData)
+        {
+            return $this->doWalletTopupViaAjaxRoute($originalData['payment_id']);
+        });
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $this->assertNull($wallet);
+    }
+
+    public function testTopupWithoutStatus()
+    {
+        // Get Innsufficient balance response
+        $this->testInsufficientBalancePayment();
+
+        $originalData = $this->response->getOriginalContent()->data;
+
+        $this->mockServerContentFunction(function(& $content)
+        {
+            unset($content['status']);
+        });
+
+        $data = $this->testData['testTopupFailed'];
+
+        // Send topup request
+        $response = $this->runRequestResponseFlow($data, function() use ($originalData)
+        {
+            return $this->doWalletTopupViaAjaxRoute($originalData['payment_id']);
+        });
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $this->assertNull($wallet);
     }
 
     public function testTopupPaymentViaRedirectionFlow()
@@ -321,10 +454,10 @@ class PayumoneyGatewayTest extends TestCase
 
         $paymentId = $payment->getPublicId();
 
-        $request = $this->testData['topupDataAlreadyProcessed'];
+        $data = $this->testData['topupDataAlreadyProcessed'];
 
         // Send topup request
-        $this->runRequestResponseFlow($request, function() use ($paymentId) {
+        $this->runRequestResponseFlow($data, function() use ($paymentId) {
             $this->doWalletTopupViaAjaxRoute($paymentId);
         });
     }
@@ -338,6 +471,25 @@ class PayumoneyGatewayTest extends TestCase
         $this->payment = $this->verifyPayment($authPayment['razorpay_payment_id']);
 
         $this->assertSame($this->payment['payment']['verified'], 1);
+    }
+
+    public function testVerifyPaymentMismatch()
+    {
+        $payment = $this->getDefaultWalletPaymentArray('payumoney');
+
+        $response = $this->doAuthPayment($payment);
+
+        $this->mockServerContentFunction(function(& $content)
+        {
+            $content['result'][0]['status'] = 'failure';
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $response = $this->runRequestResponseFlow($data, function() use ($response)
+        {
+            return $this->verifyPayment($response['razorpay_payment_id']);
+        });
     }
 
     public function testVerifyFailedPayment()
@@ -378,6 +530,40 @@ class PayumoneyGatewayTest extends TestCase
         $capturePayment = $this->capturePayment($authPayment['razorpay_payment_id'], $payment['amount']);
 
         $this->refundPayment($capturePayment['id']);
+
+        $refund = $this->getLastEntity('wallet', true);
+
+        $this->assertTestResponse($refund);
+    }
+
+    public function testPartialRefundPayment()
+    {
+        $payment = $this->getDefaultWalletPaymentArray('payumoney');
+
+        $authPayment = $this->doAuthPayment($payment);
+
+        $capturePayment = $this->capturePayment($authPayment['razorpay_payment_id'], $payment['amount']);
+
+        $refundAmount = $payment['amount'] / 5;
+
+        $this->mockServerContentFunction(function(& $content, $action) use ($refundAmount)
+        {
+            if ($action === 'validateRefund')
+            {
+                $actualRefundAmount = (int) ($content['refundAmount'] * 100);
+
+                $assertion = ($actualRefundAmount === $refundAmount);
+
+                $this->assertTrue($assertion, 'Actual refund amount different than expected amount');
+            }
+
+            if ($action === 'refund')
+            {
+                $content['result'] = '123456';
+            }
+        });
+
+        $this->refundPayment($capturePayment['id'], $refundAmount);
 
         $refund = $this->getLastEntity('wallet', true);
 

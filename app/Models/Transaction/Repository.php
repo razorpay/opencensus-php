@@ -2,12 +2,14 @@
 
 namespace RZP\Models\Transaction;
 
-use Carbon\Carbon;
+use RZP\Models\Payment;
+use RZP\Constants\Table;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base;
 use RZP\Models\Transaction;
 use RZP\Models\Settlement;
 use RZP\Exception;
+use RZP\Gateway\Billdesk;
 
 class Repository extends Base\Repository
 {
@@ -219,6 +221,26 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where(Transaction\Entity::SETTLEMENT_ID, '=', $setlId)
+                    ->get();
+    }
+
+    public function getCancelledBilldeskTransactions()
+    {
+        $billdeskPaymentId = Billdesk\Entity::getAttributeWithTableName(Billdesk\Entity::PAYMENT_ID);
+        $billdeskRefStatus = Billdesk\Entity::getAttributeWithTableName('RefStatus');
+
+        $paymentId = Payment\Entity::getAttributeWithTableName(Payment\Entity::ID);
+        $paymentStatus = Payment\Entity::getAttributeWithTableName(Payment\Entity::STATUS);
+
+        $transactionEntityId = Entity::getAttributeWithTableName(Entity::ENTITY_ID);
+        $transactionReconciledAt = Entity::getAttributeWithTableName(Entity::RECONCILED_AT);
+
+        return $this->newQuery()
+                    ->join(Table::PAYMENT, $paymentId, '=', $transactionEntityId)
+                    ->join(Table::BILLDESK, $billdeskPaymentId, '=', $paymentId)
+                    ->where($billdeskRefStatus, '=', Billdesk\RefundStatus::CANCELLED)
+                    ->where($paymentStatus, '=', Payment\Status::REFUNDED)
+                    ->whereNull($transactionReconciledAt)
                     ->get();
     }
 

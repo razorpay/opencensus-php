@@ -77,7 +77,7 @@ class Core extends Base\Core
 
         $plan = $this->repo->pricing->getMerchantPricingPlan($merchant);
 
-        (new Methods\Core)->valdiateInternationalPricingForMerchant($merchant, $plan);
+        (new Methods\Core)->validateInternationalPricingForMerchant($merchant, $plan);
 
         $this->saveAndNotify($merchant);
 

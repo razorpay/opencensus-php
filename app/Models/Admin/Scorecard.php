@@ -20,36 +20,17 @@ class Scorecard extends Base\Core
 
         $yesterdayMerchantVolume = $this->repo->payment->getYesterdayTopMerchantVolumeWise();
 
+        $monthlyMerchantVolume = $this->repo->payment->getMonthTopMerchantVolumeWise();
+
         $message = '
             Yesterday Volume        - ' . $yesterdayVolume / 100 . ' <br />
-            Monthly Volume till now - ' . $monthVolume / 100 . ' <br />
-            Yesterday Top Merchants By Volume - <br />';
+            Monthly Volume till now - ' . $monthVolume / 100 . ' <br /><br />';
 
-        $message .= '<table border="1">';
+        $message .= 'Yesterday Top Merchants By Volume - <br />';
+        $message .= $this->getTabularFormattedMerchantVolumeScorecard($yesterdayMerchantVolume);
 
-        $message .= '<tr>' .
-                    '<th> Merchant Id </th>'.
-                    '<th> Name </th>'.
-                    '<th> Website </th>'.
-                    '<th> Volume </th>'.
-                    '<th> Count </th>'.
-                    '</tr>';
-
-        foreach ($yesterdayMerchantVolume as $merchantData)
-        {
-            $message .= '<tr>';
-
-            $attributes = $merchantData->getAttributes();
-
-            foreach ($attributes as $key => $value)
-            {
-                $message .= '<td>' . $value . '</td>';
-            }
-
-            $message .= '</tr>';
-        }
-
-        $message .= '</table>';
+        $message .= 'Monthly Top Merchants By Volume - <br />';
+        $message .= $this->getTabularFormattedMerchantVolumeScorecard($monthlyMerchantVolume);
 
         $data['body'] = $message;
 
@@ -69,5 +50,36 @@ class Scorecard extends Base\Core
         });
 
         return ['success' => true];
+    }
+
+    protected function getTabularFormattedMerchantVolumeScorecard($volumeData)
+    {
+        $message = '<table border="1">';
+
+        $message .= '<tr>' .
+                    '<th> Merchant Id </th>'.
+                    '<th> Name </th>'.
+                    '<th> Website </th>'.
+                    '<th> Volume </th>'.
+                    '<th> Count </th>'.
+                    '</tr>';
+
+        foreach ($volumeData as $merchantData)
+        {
+            $message .= '<tr>';
+
+            $attributes = $merchantData->getAttributes();
+
+            foreach ($attributes as $key => $value)
+            {
+                $message .= '<td>' . $value . '</td>';
+            }
+
+            $message .= '</tr>';
+        }
+
+        $message .= '</table><br />';
+
+        return $message;
     }
 }

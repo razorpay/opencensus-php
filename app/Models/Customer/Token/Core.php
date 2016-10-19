@@ -55,11 +55,14 @@ class Core extends Base\Core
     /**
      * Get the token entity for local/global customer. $id can be token or
      * token id for now.
+     * @param $id
+     * @param $customer
+     * @return Token\Entity
      */
-    public function getByTokenAndCustomer($id, $customer)
+    public function getByTokenIdAndCustomer($id, Customer\Entity $customer)
     {
         // TODO: remove this once merchants shifts to token_id
-        $token = $this->repo->token->getByTokenAndCustomerId($id, $customer->getId());
+        $token = $this->repo->token->getByTokenIdAndCustomer($id, $customer);
 
         if ($token === null)
         {

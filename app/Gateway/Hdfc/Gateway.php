@@ -249,7 +249,7 @@ class Gateway extends Base\Gateway
     {
         parent::__construct();
 
-        $this->repo = new Hdfc\Repository();
+        $this->repo = new Hdfc\Repository;
     }
 
 // ---------------------------Gateway operations -------------------------------

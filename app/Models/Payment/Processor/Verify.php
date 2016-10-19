@@ -8,6 +8,7 @@ use Config;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
+use RZP\Models\Payment\Status;
 use RZP\Models\Payment\VerifyResult;
 
 trait Verify
@@ -35,9 +36,7 @@ trait Verify
         }
         catch (Exception\PaymentVerificationException $e)
         {
-            $payment->setVerified(VerifyResult::FAILED);
-
-            $this->repo->saveOrFail($payment);
+            $this->updatePaymentVerified($payment, VerifyResult::FAILED);
 
             $this->trace->info(
                 TraceCode::PAYMENT_VERIFY_FAILED,
@@ -53,20 +52,28 @@ trait Verify
         }
         catch (\Exception $e)
         {
-            $payment->setVerified(VerifyResult::ERROR);
-
-            $this->repo->saveOrFail($payment);
+            $this->updatePaymentVerified($payment, VerifyResult::ERROR);
 
             throw $e;
         }
-
-        $payment->setVerified(VerifyResult::SUCCESS);
+        $this->updatePaymentVerified($payment, VerifyResult::SUCCESS);
 
         $data['payment'] = $payment->toArrayAdmin();
 
-        $this->repo->saveOrFail($payment);
-
         return $data;
+    }
+
+    protected function updatePaymentVerified(Payment\Entity $payment, $verifyStatus)
+    {
+        //Do not update Payment if status is created
+        if ($payment->getStatus() === Status::CREATED)
+        {
+            return;
+        }
+
+        $payment->setVerified($verifyStatus);
+
+        $this->repo->saveOrFail($payment);
     }
 
     protected function notifyInSlack($data)

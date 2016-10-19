@@ -12,6 +12,17 @@ class Repository extends Base\Repository
 
     protected $entity = 'IIN';
 
+    protected $appFetchParamRules = array(
+        Entity::IIN             => 'sometimes|integer|digits:6',
+        Entity::NETWORK         => 'sometimes|alpha_space',
+        Entity::INTERNATIONAL   => 'sometimes|in:0,1',
+        Entity::EMI             => 'sometimes|in:0,1',
+        Entity::TYPE            => 'sometimes|string|in:debit,credit,unknown',
+        Entity::OTP_READ        => 'sometimes|in:0,1',
+        Entity::ISSUER          => 'sometimes|string',
+    );
+
+
     protected function addQueryOrder($query)
     {
         ;

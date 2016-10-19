@@ -1,4 +1,4 @@
-    <?php
+<?php
 
 namespace RZP\Models\Payment\Processor;
 

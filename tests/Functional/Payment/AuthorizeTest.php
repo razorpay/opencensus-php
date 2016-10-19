@@ -66,6 +66,11 @@ class AuthorizeTest extends TestCase
         $this->startTest();
     }
 
+    public function testNegativeAmount()
+    {
+        $this->startTest();
+    }
+
     public function testContactInvalidCountryCode()
     {
         $this->startTest();

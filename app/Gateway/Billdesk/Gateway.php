@@ -235,7 +235,7 @@ class Gateway extends Base\Gateway
             ($input['payment']['status'] === 'failed') or
             ($input['payment']['status'] === 'created'))
         {
-            $refAmount = (int) $content['RefAmount'] * 100;
+            $refAmount = (int) ($content['RefAmount'] * 100);
 
             if (($content['RefStatus'] === RefundStatus::CANCELLED) and
                 ($refAmount === $input['payment']['amount']))

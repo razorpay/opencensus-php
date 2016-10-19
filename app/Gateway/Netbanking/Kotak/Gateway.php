@@ -254,7 +254,17 @@ class Gateway extends Base\Gateway
             $request);
 
         $response = $this->sendGatewayRequest($request);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            ['response' => $response]);
+
         $content = $response->body;
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            ['responseBody' => $content]);
+
         $content = $this->getDataFromResponse($content);
 
         $this->trace->info(

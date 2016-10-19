@@ -45,7 +45,10 @@ trait Refund
 
         // Currently doing it for only HDFC. In case when other gateways start
         // getting similar issues, we will start supporting for them too.
-        assert ($payment->getGateway() === Payment\Gateway::HDFC);
+        if ($payment->getGateway() !== Payment\Gateway::HDFC)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_GATEWAY);
+        }
 
         $data = array(
             'payment'   => $payment->toArray(),
