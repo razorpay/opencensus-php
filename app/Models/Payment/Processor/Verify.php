@@ -66,13 +66,12 @@ trait Verify
 
     protected function updatePaymentVerified(Payment\Entity $payment, $verifyStatus)
     {
-
         $daysToAdd = 1;
 
         // Get Verify Boundary to update Verify Bucket
         // We are adding a day when setting Verify Boundary
         // This will prevent cron to pick payments which have crossed last boundary
-        $boundary = Constants\Verify::getBoundayInSeconds($daysToAdd);
+        $boundary = Constants\Verify::getBoundaryInSeconds($daysToAdd);
 
         $payment->setVerified($verifyStatus);
 

@@ -4,7 +4,7 @@ namespace RZP\Constants;
 
 class Verify
 {
-    protected static $unEvenBounday = [
+    protected static $unevenBoundary = [
         1 =>  15,            // 15 minute
         2 =>  60,            // 60 minute
     ];
@@ -16,8 +16,12 @@ class Verify
     const MINUTES_IN_DAY    = 1440;
     const SECONDS_IN_MINUTE = 60;
 
+    // Cron should be ran for only payments which are created befor a certain time
+    // Cretaed payments creation equals or greater 2.5 minutes
+    // All payments creation equals or greater 2 minutes
+    // Failed/Errored paymnets this time is 0, verify should be ran just after they go in that state
     const CREATED_MIN_TIME_BEFORE_VERIFY    = 150;  // 2.5 Minutes
-    const ALL_MIN_TIME_BEFORE_VERIFY        = 120;  // 2.5 Minutes
+    const ALL_MIN_TIME_BEFORE_VERIFY        = 120;  // 2 Minutes
     const DEFAULT_MIN_TIME_BEFORE_VERIFY    = 0;    // 0 Minute
 
     const SUCCESS       = 'success';
@@ -25,9 +29,9 @@ class Verify
     const AUTHORIZED    = 'authorized';
     const TIMEOUT       = 'timeout';
 
-    public static function getBoundayInSeconds($daysToAdd = 0)
+    public static function getBoundaryInSeconds($daysToAdd = 0)
     {
-        $boundary = self::$unEvenBounday;
+        $boundary = self::$unevenBoundary;
 
         foreach (range (1, (self::DEFAULT_MAXDAYS + $daysToAdd)) as $day)
         {
@@ -45,7 +49,7 @@ class Verify
         {
             $time = self::ALL_MIN_TIME_BEFORE_VERIFY;
         }
-        elseif ($filter === 'created')
+        else if ($filter === 'created')
         {
             $time = self::CREATED_MIN_TIME_BEFORE_VERIFY;
         }
