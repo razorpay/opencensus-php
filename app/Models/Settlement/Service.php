@@ -2,11 +2,14 @@
 
 namespace RZP\Models\Settlement;
 
+use Carbon\Carbon;
+
 use RZP\Constants\Mode;
 use RZP\Models\Base;
 use RZP\Models\Gateway;
 use RZP\Models\Transaction;
 use RZP\Models\Settlement;
+use RZP\Models\Settlement\Kotak;
 
 class Service extends Base\Service
 {
@@ -15,6 +18,19 @@ class Service extends Base\Service
         $settler = new Settler();
 
         return $settler->settle($input, $channel);
+    }
+
+    public function generateSettlementFile($input)
+    {
+        $to = Carbon::now('Asia/Kolkata')->timestamp;
+
+        $from = Carbon::now('Asia/Kolkata')->subDay(1)->timestamp;
+
+        $setls = $this->repo->settlement->getSettlementsBetweenTimestamp($from, $to);
+
+        $urls = (new Kotak\Service)->generateSettlementFile($setls, null);
+
+        return $urls;
     }
 
     public function fetch($id)
