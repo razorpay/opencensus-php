@@ -45,9 +45,7 @@ final class Route
         'batch_retry'                             => ['post',     'batches/{id}/retry',                             'BatchController@retryBatch'                                        ],
         'batch_download_file'                     => ['get',      'batches/{id}/download',                          'BatchController@downloadBatch'                                     ],
         'payment_capture'                         => ['post',     'payments/{id}/capture',                          'PaymentController@postCapture'                                     ],
-        'payment_verify_multiple_post'            => ['post',     'payments/verify/{filter}',                       'PaymentController@postVerifyPayments'                              ],
-        // Remove Get Path after crons are modified
-        'payment_verify_multiple_get'             => ['get',      'payments/verify/{filter}',                      'PaymentController@postVerifyPayments'                               ],
+        'payment_verify'                          => ['get',      'payments/{id}/verify',                           'PaymentController@getVerify'                                       ],
         'payment_force_authorize'                 => ['post',     'payments/{id}/force_authorize',                  'PaymentController@postForceAuthorize'                              ],
         'payment_cancel'                          => ['get',      'payments/{id}/cancel',                           'PaymentController@postCancel'                                      ],
         'payment_authorize_failed'                => ['post',     'payments/{id}/authorize_failed',                 'PaymentController@postAuthorizeFailedPayment'                      ],
@@ -62,7 +60,9 @@ final class Route
         'payment_timeout'                         => ['post',     'payments/timeout',                               'PaymentController@postTimeout'                                     ],
         'payment_auto_capture'                    => ['post',     'payments/autocapture',                           'PaymentController@postAutoCapture'                                 ],
         'payment_auto_capture_email'              => ['get',      'payments/autocapture/email',                     'PaymentController@getAutoCaptureEmail'                             ],
-        'payment_verify_multiple'                 => ['get',      'payments/verify/{filter}',                       'PaymentController@getVerifyPayments'                               ],
+        'payment_verify_multiple_post'            => ['post',     'payments/verify/{filter}',                       'PaymentController@postVerifyPayments'                              ],
+        // Remove Get Path after crons are modified
+        'payment_verify_multiple_get'             => ['get',      'payments/verify/{filter}',                      'PaymentController@postVerifyPayments'                               ],
         'payment_capture_reminder'                => ['get',      'payments/all/reminder',                          'PaymentController@sendReminderMailForAuthorizedPayments'           ],
         'payment_refund_authorized'               => ['post',     'payments/refund/authorized',                     'PaymentController@postRefundOldAuthorizedPayments'                 ],
         'payment_capture_verify'                  => ['post',     'payments/{id}/verify/capture',                   'PaymentController@postCaptureVerify'                               ],
