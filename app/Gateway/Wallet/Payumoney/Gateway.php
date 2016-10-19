@@ -210,15 +210,6 @@ class Gateway extends Base\Gateway
     {
         $this->action($input, Action::TOPUP_WALLET);
 
-        $token = $this->getValidWalletToken($input);
-
-        if ($token === null)
-        {
-            throw new Exception\BaseException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
-        }
-
-        $input['token'] = $token->toArray();
-
         $request = $this->getTopupWalletRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);

@@ -403,15 +403,6 @@ class Gateway extends Base\Gateway
 
     protected function getBillGeneratorAttributes($input)
     {
-        $token = $this->getValidWalletToken($input);
-
-        if ($token === null)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
-        }
-
-        $input['token'] = $token->toArray();
-
         $amount = (string) number_format($input['payment']['amount'] / 100, 2, '.', '');
 
         $udf = [RequestFields::MERCHANT_DISPLAY_NAME => $input['merchant']->getBillingLabelElseName()];
