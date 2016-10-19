@@ -64,7 +64,7 @@ class Newsletter
      */
     protected function getEmailList($list)
     {
-        $repo = new Merchant\Repository();
+        $repo = new Merchant\Repository;
         $merchants = [];
 
         switch($list)

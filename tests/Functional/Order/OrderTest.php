@@ -45,6 +45,13 @@ class OrderTest extends TestCase
         return $order;
     }
 
+    public function testCreateOrderWithNegativeAmount()
+    {
+        $order = $this->startTest();
+
+        return $order;
+    }
+
     public function testCreateAutoCaptureOrder()
     {
         $order = $this->startTest();

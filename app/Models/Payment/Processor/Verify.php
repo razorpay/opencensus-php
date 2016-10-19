@@ -9,6 +9,7 @@ use RZP\Exception;
 use RZP\Constants;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
+use RZP\Models\Payment\Status;
 use RZP\Models\Payment\VerifyResult;
 
 trait Verify
@@ -66,14 +67,17 @@ trait Verify
 
     protected function updatePaymentVerified(Payment\Entity $payment, $verifyStatus)
     {
+        //For payment in created state don't update Verifed status
+        if ($payment->getStatus() !== Status::CREATED)
+        {
+            $payment->setVerified($verifyStatus);
+        }
         $daysToAdd = 1;
 
         // Get Verify Boundary to update Verify Bucket
         // We are adding a day when setting Verify Boundary
         // This will prevent cron to pick payments which have crossed last boundary
         $boundary = Constants\Verify::getBoundaryInSeconds($daysToAdd);
-
-        $payment->setVerified($verifyStatus);
 
         $diff = time() - $payment->getCreatedAt();
 

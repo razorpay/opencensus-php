@@ -25,14 +25,6 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
-    public function findCapturedPaymentById($paymentId)
-    {
-        return $this->newQuery()
-                    ->where(Entity::PAYMENT_ID, '=', $paymentId)
-                    ->where(Entity::ACTION, '=', Status::CAPTURED)
-                    ->firstOrFail();
-    }
-
     public function retrieveCapturedByPaymentId($id)
     {
         return $this->newQuery()
