@@ -281,6 +281,29 @@ class SettlementTest extends TestCase
         $this->assertSame($totalAmount, $setl['amount']);
     }
 
+    public function testSettlementFileGeneration()
+    {
+        $this->testMerchantSettlement();
+
+        $setl = $this->getLastEntity('settlement', true);
+
+        $time = $setl['created_at'] - 1;
+
+        $this->fixtures->edit('settlement', $setl['id'],
+            [
+                'created_at' => $time
+            ]);
+
+        $request = array(
+            'url' => '/settlements/file/generate',
+            'method' => 'POST'
+        );
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotEquals($content, null);
+    }
+
     protected function startTest($testDataToReplace = array())
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
