@@ -66,7 +66,7 @@ class TerminalRotatorTest extends TestCase
 
         $payment2['_'][AnalyticsEntity::CHECKOUT_ID] = $checkoutId;
 
-        $newTerminalsUsed = $this->doPaymentAndFetchUsedTerminals($payment2);
+        $newTerminalsUsed = $this->doValidPaymentAndFetchUsedTerminals($payment2);
 
 
         $intersection = array_intersect($terminalsUsed, $newTerminalsUsed);
@@ -100,7 +100,7 @@ class TerminalRotatorTest extends TestCase
 
         $payment2['order_id'] = $order['id'];
 
-        $newTerminalsUsed = $this->doPaymentAndFetchUsedTerminals($payment2);
+        $newTerminalsUsed = $this->doValidPaymentAndFetchUsedTerminals($payment2);
 
         $intersection = array_intersect($terminalsUsed, $newTerminalsUsed);
 
@@ -255,6 +255,20 @@ class TerminalRotatorTest extends TestCase
         return $order;
     }
 
+    protected function doValidPaymentAndFetchUsedTerminals($payment)
+    {
+        $this->doAuthPayment($payment);
+
+        $payment  = $this->getLastPayment(true);
+
+        Payment\Entity::verifyIdAndStripSign($payment['id']);
+
+        $analytics = $this->getEntities('terminal_analytics', array('payment_id' => $payment['id']), true);
+
+        $terminalsUsed = $this->fetchUsedTerminals($analytics);
+
+        return $terminalsUsed;
+    }
     protected function doPaymentAndFetchUsedTerminals($payment)
     {
         $data = $this->testData['testMultipleFailAttemptsWithSameTerminals'];
