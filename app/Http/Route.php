@@ -159,6 +159,7 @@ final class Route
         'setl_fixer'                              => ['get',      'settlements/fixer',                              'SettlementController@getSettlementFixer'                           ],
         'setl_delete_file'                        => ['delete',   'settlements/file/{setlFileType}',                'SettlementController@deleteSettlementFile'                         ],
         'setl_initiate'                           => ['post',     'settlements/initiate/{channel?}',                'SettlementController@postSettlementInitiate'                       ],
+        'setl_file_generate'                      => ['post',     'settlements/file/generate',                      'SettlementController@postSettlementFileGenerate'                   ],
         'setl_reconcile_generate'                 => ['post',     'settlements/reconcile/generate',                 'SettlementController@postSettlementReconcileGenerate'              ],
         'setl_reconcile'                          => ['post',     'settlements/reconcile',                          'SettlementController@postSettlementReconcile'                      ],
         'setl_reconcile_h2h'                      => ['post',     'settlements/h2hreconcile',                       'SettlementController@postH2HSettlementReconcile'                   ],
@@ -403,6 +404,7 @@ final class Route
         'pricing_delete_plan_rule',
         'pricing_delete_plan_rule_force',
         'setl_initiate',
+        'setl_file_generate',
         'setl_reconcile',
         'setl_reconcile_h2h',
         'setl_reconcile_generate',
@@ -639,7 +641,7 @@ final class Route
 
         $urlSegment = \URL::route($routeName, $parameters, false);
 
-        $url = self::getSchemaHostAndAuth($key, $secret) . $urlSegment;
+        $url = $this->getSchemaHostAndAuth($key, $secret) . $urlSegment;
 
         return $url;
     }
@@ -652,6 +654,19 @@ final class Route
         }
 
         return $this->getUrl($routeName, $parameters, $key);
+    }
+
+    public function getUrlWithPublicAuthInQueryParam($routeName, array $parameters = array())
+    {
+        $key = $this->ba->getPublicKey();
+
+        list($schema, $host) = $this->getSchemaAndHost();
+
+        $parameters['key_id'] = $key;
+
+        $urlSegment = \Url::route($routeName, $parameters, false);
+
+        return $schema . $host . $urlSegment;
     }
 
     public function getUrlWithPublicCallbackAuth(array $parameters = array(), $key = '')
@@ -682,15 +697,12 @@ final class Route
 
     public function getUrlWithAuth($relativeUrl, $key = '', $secret = '')
     {
-        return self::getSchemaHostAndAuth($key, $secret) . $relativeUrl;
+        return $this->getSchemaHostAndAuth($key, $secret) . $relativeUrl;
     }
 
-    protected static function getSchemaHostAndAuth($key = '', $secret = '')
+    protected function getSchemaHostAndAuth($key = '', $secret = '')
     {
-        $request = \Request::getFacadeRoot();
-
-        $schema = $request->getScheme() . '://';
-        $host = $request->getHost();
+        list($schema, $host) = $this->getSchemaAndHost();
 
         $auth = '';
         if ($key !== '')
@@ -707,6 +719,16 @@ final class Route
         $url = $schema . $auth . $host;
 
         return $url;
+    }
+
+    protected function getSchemaAndHost()
+    {
+        $request = \Request::getFacadeRoot();
+
+        $schema = $request->getScheme() . '://';
+        $host = $request->getHost();
+
+        return [$schema, $host];
     }
 
     public function getDoNotLogURLs()

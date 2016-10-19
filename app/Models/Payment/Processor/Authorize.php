@@ -1004,10 +1004,9 @@ trait Authorize
             'type'          => 'async',
             'version'       => 1,
             'payment_id'    => $id,
-            'key_id'        => \BasicAuth::getPublicKey(),
             'gateway'       => $this->getEncryptedGatewayText($payment->getGateway()),
             'request'       => [
-                'url'    => $this->route->getUrl('payment_get_status', ['id' => $id]),
+                'url'    => $this->route->getUrlWithPublicAuthInQueryParam('payment_get_status', ['id' => $id]),
                 'method' => 'GET',
             ]
         ];
