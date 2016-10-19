@@ -20,6 +20,15 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postSettlementFileGenerate()
+    {
+        $input = Request::all();
+
+        $data = (new Settlement\Service)->generateSettlementFile($input)
+
+        return ApiResponse::json($data);
+    }
+
     public function putEditSettlement($id)
     {
         $input = Request::all();
