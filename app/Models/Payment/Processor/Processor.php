@@ -476,7 +476,7 @@ class Processor
         $this->app['events']->fire('api.payment.failed', array($this->payment));
     }
 
-    protected function setPaymentError(Exception $e)
+    protected function setPaymentError(Exception\BaseException $e)
     {
         $error = $e->getError();
 

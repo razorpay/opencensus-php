@@ -27,7 +27,6 @@ use RZP\Models\Payment\Status;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Payment\Analytics;
 use RZP\Models\Payment\TwoFactorAuth;
-use RZP\Models\Payment\Analytics\Entity as AnalyticsEntity;
 use RZP\Models\Payment\TerminalAnalytics;
 
 use RZP\Error;
