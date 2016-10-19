@@ -444,6 +444,7 @@ class Processor
         $payment->setError($code, $desc, $internalCode);
 
         $payment->setVerified(null);
+        $payment->setVerifyBucket(0);
 
         $this->repo->saveOrFail($payment);
 
