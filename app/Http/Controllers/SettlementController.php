@@ -24,7 +24,7 @@ class SettlementController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Settlement\Service)->generateSettlementFile($input)
+        $data = (new Settlement\Service)->generateSettlementFile($input);
 
         return ApiResponse::json($data);
     }

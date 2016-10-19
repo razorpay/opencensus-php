@@ -404,6 +404,7 @@ final class Route
         'pricing_delete_plan_rule',
         'pricing_delete_plan_rule_force',
         'setl_initiate',
+        'setl_file_generate',
         'setl_reconcile',
         'setl_reconcile_h2h',
         'setl_reconcile_generate',

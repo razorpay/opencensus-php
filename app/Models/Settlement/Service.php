@@ -22,13 +22,13 @@ class Service extends Base\Service
 
     public function generateSettlementFile($input)
     {
-        $to = Carbon::today('Asia/Kolkata');
+        $to = Carbon::now('Asia/Kolkata')->timestamp;
 
-        $from = Carbon::yesterday('Asia/Kolkata');
+        $from = Carbon::now('Asia/Kolkata')->subDay(1)->timestamp;
 
         $setls = $this->repo->settlement->getSettlementsBetweenTimestamp($from, $to);
 
-        $urls = (new Kotak\Service)->generateSettlementFile($setls);
+        $urls = (new Kotak\Service)->generateSettlementFile($setls, null);
 
         return $urls;
     }
