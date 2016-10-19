@@ -7,14 +7,29 @@ use RZP\Models\Base;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
-    public function createAdjustment($input, $merchant)
+    public function createAdjustment(array $input, $merchant)
     {
+        $traceData = [
+            'input'    => $input,
+            'merchant' => $merchant->getId(),
+        ];
+
+        $this->trace->info(
+            TraceCode::ADJUSTMENT_CREATE_REQUEST, $traceData);
+
         return $this->repo->transaction(function() use ($input, $merchant)
             {
-                return $this->createAdjInTransaction($input, $merchant);
+                $adj = $this->createAdjInTransaction($input, $merchant);
+
+                $this->trace->info(
+                    TraceCode::ADJUSTMENT_CREATE_SUCCESS,
+                    $adj->toArrayPublic());
+
+                return $adj;
             });
     }
 

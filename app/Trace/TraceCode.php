@@ -131,6 +131,10 @@ class TraceCode
     const ADDRESS_PRIMARY_SWITCH                    = 'ADDRESS_PRIMARY_SWITCH';
     const ADDRESS_DELETE_REQUEST                    = 'ADDRESS_DELETE_REQUEST';
 
+    //Adjustments
+    const ADJUSTMENT_CREATE_REQUEST                 = 'ADJUSTMENT_CREATE_REQUEST';
+    const ADJUSTMENT_CREATE_SUCCESS                 = 'ADJUSTMENT_CREATE_SUCCESS';
+
     /*
      * Gateway component error messages
      */
