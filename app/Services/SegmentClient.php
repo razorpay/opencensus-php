@@ -31,7 +31,7 @@ class SegmentClient
 
         Segment::init($key, [
                              'consumer'     => 'file',
-                             'debug'        => true,
+                             'debug'        => $this->config['segment.debug'],
                              'filename'     => $this->config['segment.storage_path']
                              ]);
     }
