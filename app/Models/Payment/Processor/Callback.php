@@ -52,6 +52,8 @@ trait Callback
 
         $payment = $this->retrieve($id);
 
+        $this->app['segment']->trackPayment($payment, TraceCode::PAYMENT_CALLBACK_REQUEST,['gatewayInput' => $gatewayInput]);
+
         // For redirect flow
         $this->checkForMerchantCallbackUrl($payment);
 
@@ -103,6 +105,8 @@ trait Callback
             ($diff < self::CALLBACK_PROCESS_AGAIN_DURATION * 60))
         {
             $this->trace->info(TraceCode::PAYMENT_CALLBACK_RETRY_SUCCESS);
+
+            $this->app['segment']->trackPayment($payment, TraceCode::PAYMENT_CALLBACK_RETRY_SUCCESS);
 
             return $this->postPaymentAuthorizeProcessing($payment);
         }
@@ -236,6 +240,8 @@ trait Callback
             $input['customer'] = $customer;
 
             $payment->globalCustomer()->associate($customer);
+
+            $this->app['segment']->trackPayment($payment, TraceCode::SEGMENT_OTP_POSTPROCESSING, ['is_customer_set' => true]);
         }
 
         if (isset($data['token']) === true)
@@ -243,6 +249,8 @@ trait Callback
             $token = $this->createOrUpdateToken($input, $data);
 
             $payment->globalToken()->associate($token);
+
+            $this->app['segment']->trackPayment($payment, TraceCode::SEGMENT_OTP_POSTPROCESSING, ['is_token_set' => true]);
         }
 
         $this->repo->saveOrFail($payment);
@@ -296,24 +304,27 @@ trait Callback
         Error\Map::throwExceptionFromErrorDetails(
             $publicErrorCode, $internalErrorCode, $errorDesc);
 
+        $errors = [
+            'public_error_code'     => $publicErrorCode,
+            'internal_error_code'   => $internalErrorCode,
+            'error_description'     => $errorDesc,
+            'message'               => 'Failed to convert error code to the appropriate exception'
+        ];
+
+        $traceLogs = array_merge(['payment_id' => $payment->getPublicId()], $errors);
+
         //
         // If it has reached here, then an edge case occurred, for which
         // a suitable exception was not found and which must be handled.
         // So, we trace an error message, ringing alerts to our devs.
         //
 
-        $this->trace->error(
-            TraceCode::PAYMENT_CALLBACK_FAILURE,
-            [
-                'payment_id' => $payment->getPublicId(),
-                'public_error_code' => $publicErrorCode,
-                'internal_error_code' => $internalErrorCode,
-                'error_description' => $errorDesc,
-                'message' => 'Failed to convert error code to the appropriate exception'
-            ]);
+        $this->trace->error(TraceCode::PAYMENT_CALLBACK_FAILURE, $traceLogs);
 
         // If no appropriate exception mapping was found then show
         // the usual message that payment already processed.
+
+        $this->app['segment']->trackPayment($payment, TraceCode::PAYMENT_CALLBACK_FAILURE, $errors);
 
         throw new Exception\BadRequestException(
             ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);

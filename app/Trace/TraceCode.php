@@ -303,6 +303,10 @@ class TraceCode
     const SEGMENT_OTP_GENERATE                      = 'SEGMENT_OTP_GENERATE';
     const SEGMENT_PAYMENT_AUTH_RETRY                = 'SEGMENT_PAYMENT_AUTH_RETRY';
     const SEGMENT_TERMINAL_SUCCESS                  = 'SEGMENT_TERMINAL_SUCCESS';
+    const SEGMENT_GATEWAY_PREPROCESSING             = 'SEGMENT_GATEWAY_PREPROCESSING';
+    const SEGMENT_OTP_POSTPROCESSING                = 'SEGMENT_OTP_POSTPROCESSING';
+    const SEGMENT_OTP_RESEND_EXCEPTION              = 'SEGMENT_OTP_RESEND_EXCEPTION';
+
 
 
     protected static $messages = array(

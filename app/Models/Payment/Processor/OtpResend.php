@@ -29,6 +29,8 @@ trait OtpResend
             return $data;
         }
 
+        $this->app['segment']->trackPayment($payment, TraceCode::SEGMENT_OTP_RESEND_EXCEPTION);
+
         throw new LogicException(
             'Gateway does not support OTP resend',
             null,

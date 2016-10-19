@@ -2,10 +2,10 @@
 
 namespace RZP\Services;
 
-use RZP\Models\Payment\Entity as PaymentEntity;
-use RZP\Models\Payment\Analytics\Entity as AnalyticsEntity;
 use Segment;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payment\Entity as PaymentEntity;
+use RZP\Models\Payment\Analytics\Entity as AnalyticsEntity;
 
 class SegmentClient
 {
@@ -14,8 +14,6 @@ class SegmentClient
     protected $config;
 
     protected $trace;
-
-    protected $repo;
 
     protected $version;
 
@@ -27,16 +25,15 @@ class SegmentClient
 
         $this->config = $app['config'];
 
-        $this->repo = $app['repo'];
-
         $key = $this->config['segment.write_key'];
 
         $this->version = "1.0";
 
-        Segment::init($key, ['consumer' => 'file',
-                             'debug' => true,
-                            'filename' => $this->config['segment.storage_path']]);
-
+        Segment::init($key, [
+                             'consumer'     => 'file',
+                             'debug'        => true,
+                             'filename'     => $this->config['segment.storage_path']
+                             ]);
     }
 
     protected function fillDefaults($payment, $event)
@@ -44,13 +41,14 @@ class SegmentClient
         $metadata = $payment->getMetadata();
 
         $properties = [
-            'payment_id' => $payment->getId(),
-            'mode' => $this->mode,
-            'merchantId' => $payment->merchant->getId(),
-            'amount' => $payment->getAmount(),
-            'method' => $payment->getMethod(),
-            'metadata' => $metadata,
-            'version' => $this->version,
+            'payment_id'        => $payment->getPublicId(),
+            'mode'              => $this->mode,
+            'merchantId'        => $payment->merchant->getId(),
+            'amount'            => $payment->getAmount(),
+            'method'            => $payment->getMethod(),
+            'gateway'           => $payment->getGateway(),
+            'metadata'          => $metadata,
+            'version'           => $this->version,
         ];
 
         $merchant = $payment->merchant;
@@ -61,39 +59,40 @@ class SegmentClient
 
         $id = null;
 
-        $orderId = null;
-
-        $checkoutId = null;
-
-        if ($order !== null)
+        if (empty($order) === false)
         {
-            //$properties['order'] = $order->toArrayPublic();
+            $orderId = $order->getPublicId();
+
             $properties['id_type'] = 'order';
 
-            $orderId = $order->getId();
+            $properties['order_id'] = $orderId;
+
+            $id = $orderId;
         }
 
-        if (isset($metadata[AnalyticsEntity::CHECKOUT_ID]))
+        if (empty($metadata[AnalyticsEntity::CHECKOUT_ID]) === false)
         {
             $checkoutId = $metadata[AnalyticsEntity::CHECKOUT_ID];
 
             $properties['id_type'] = 'checkout';
+
+            $properties['checkout_id'] = $checkoutId;
+
+            if (empty($id) === true)
+            {
+                $id = $checkoutId;
+            }
+
         }
-
-        $properties['order_id'] = $orderId;
-
-        $properties['checkout_id'] = $checkoutId;
-
-        $id  = $orderId !== null ? $orderId : $checkoutId;
 
         // This is a case where we do not have both checkout id and order id.
         // So instead of tracing anything, we want to get some data. Using
         // payment_id as the anonymousId
-        if ($id === null)
+        if (empty($id) === true)
         {
             $this->trace->warning(TraceCode::SEGMENT_ID_UNAVAILABLE, $properties);
 
-            $id = $payment->getId();
+            $id = $payment->getPublicId();
 
             $properties['id_type'] = 'payment';
         }
@@ -101,9 +100,9 @@ class SegmentClient
         $properties = flatten_array($properties);
 
         $defaults = [
-            'anonymousId' => $id,
-            'event' => $event,
-            'properties' => $properties
+            'anonymousId'   => $id,
+            'event'         => $event,
+            'properties'    => $properties
         ];
 
         return $defaults;
@@ -111,7 +110,7 @@ class SegmentClient
 
     protected function processCustomProperties(array $customProperties)
     {
-        if (isset($customProperties['terminals']))
+        if (empty($customProperties['terminals']) === false)
         {
             $terminals = $customProperties['terminals'];
 
@@ -119,7 +118,7 @@ class SegmentClient
 
             $terminalIds = [];
 
-            foreach($terminals as $terminal)
+            foreach ($terminals as $terminal)
             {
                 $terminalIds[] = $terminal->getId();
             }
@@ -129,16 +128,16 @@ class SegmentClient
             $customProperties['terminals_count'] = count($terminalIds);
         }
 
-        $flattened  =  flatten_array($customProperties);
+        $flattened = flatten_array($customProperties);
 
         return $flattened;
     }
 
-    public function trackPayment(PaymentEntity $payment, $event, array $customProperties=[])
+    public function trackPayment(PaymentEntity $payment, $event, array $customProperties = [])
     {
         $defaults = $this->fillDefaults($payment, $event);
 
-        if ($defaults === null)
+        if (empty($defaults) === true)
         {
             return;
         }

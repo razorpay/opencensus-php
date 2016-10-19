@@ -430,14 +430,14 @@ class Processor
         $status = $payment->getStatus();
 
         $segmentCustomProperties = [
-            'error' => $error,
-            'code' => $code,
-            'description' => $desc,
-            'internal_error_code' => $internalCode,
-            'status' => $status
+            'error'                 => $error,
+            'code'                  => $code,
+            'description'           => $desc,
+            'internal_error_code'   => $internalCode,
+            'status'                => $status
         ];
 
-        $this->api['segment']->trackPayment($payment, $traceCode, $segmentCustomProperties);
+        $this->app['segment']->trackPayment($payment, $traceCode, $segmentCustomProperties);
 
         if (($status !== Status::CREATED) and ($status !== Status::AUTHORIZED))
         {
@@ -506,6 +506,8 @@ class Processor
         $gatewayData['terminal'] = $terminal;
 
         $gatewayData['merchant'] = $this->payment->merchant;
+
+        $this->app['segment']->trackPayment($this->payment, TraceCode::SEGMENT_GATEWAY_PREPROCESSING, ['action' => $action]);
 
         return $this->app['gateway']->call($gateway, $action, $gatewayData, $this->mode, $terminal);
     }
@@ -681,7 +683,7 @@ class Processor
             $traceCode,
             $traceData);
 
-        $this->api['segment']->tracePayment($this->payment, TraceCode::PAYMENT_FAILED, $traceData);
+        $this->app['segment']->trackPayment($this->payment, TraceCode::PAYMENT_FAILED, $traceData);
     }
 
     protected function retrieveToken($input)
