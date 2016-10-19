@@ -127,6 +127,7 @@ return array(
         'highrisk'       => '#transactions_highrisk',
         'tech_logs'      => '#tech_logs',
         'subscriptions'  => '#subscriptions',
+        'lt_10'          => '#transactions_lt_10'
     ],
 
     'is_slack_enabled' => env('SLACK_MOCK') === true ? false : true

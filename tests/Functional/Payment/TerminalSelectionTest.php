@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Payment;
 use RZP\Exception\RuntimeException;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Terminal\Options;
 
 class TerminalSelectionTest extends TestCase
 {
@@ -128,6 +129,39 @@ class TerminalSelectionTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('1000HdfcShared', $payment['terminal_id']);
         $this->fixtures->merchant->disableEmi();
+    }
+
+    public function testTerminalChoiceonChance()
+    {
+        $this->fixtures->create('terminal:all_shared_terminals');
+        $this->mockTokenex();
+
+        $chances = [
+            // Chance from 91 to 100 should give Cybersource
+            [ 'chanceValue' => 100, 'expected_terminal_id' => '1000CybrsTrmnl' ],
+            // Chance from 86 to 90 should give First Data
+            [ 'chanceValue' => 86,  'expected_terminal_id' => '1000FrstDataTl' ],
+            // Chance 85 or below should give HDFC
+            [ 'chanceValue' => 0,   'expected_terminal_id' => '1n25f6uN5S1Z5a' ],
+
+        ];
+
+        foreach ($chances as $chance)
+        {
+            $this->chanceTerminalTest($chance['chanceValue'], $chance['expected_terminal_id']);
+        }
+    }
+
+    private function chanceTerminalTest($chance, $expectedTerminalId)
+    {
+        Options::setTestChance($chance);
+
+        $this->payment = $this->getDefaultPaymentArray();
+
+        $content = $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals($expectedTerminalId, $payment['terminal_id']);
     }
 
     public function testTerminalChoiceOnRiskyMerchant()

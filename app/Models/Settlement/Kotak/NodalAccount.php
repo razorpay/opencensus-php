@@ -82,7 +82,7 @@ class NodalAccount
         $this->mail = \Mail::getFacadeRoot();
     }
 
-    public function generateSettlementFile($settlements, $txns)
+    public function generateSettlementFile($settlements, $txns, $h2h = true)
     {
         $textData = array();
         $excelData = array();
@@ -168,7 +168,10 @@ class NodalAccount
 
         $txt = $this->generateText($textData);
 
-        $urlText = $this->writeToTextFileH2H($txt);
+        if ($h2h === true)
+        {
+            $urlText = $this->writeToTextFileH2H($txt);
+        }
 
         $urlText = $this->writeToTextFile($txt);
 

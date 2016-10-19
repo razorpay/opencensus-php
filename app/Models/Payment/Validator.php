@@ -156,11 +156,11 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Amount exceeds maximum amount allowed.',
-                'amount');
+                'amount', $amount);
         }
     }
 
-    public function validateCardAndCvv($input)
+    public function validateCardAndCvv(array $input)
     {
         if (isset($input['card']) === false)
         {

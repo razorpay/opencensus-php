@@ -9,7 +9,6 @@ use App;
 use RZP\Base\RuntimeManager;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class Orchestrator
 {

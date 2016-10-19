@@ -90,6 +90,24 @@ class Core extends Base\Core
         return $txn;
     }
 
+    public function updateReconciliationData(Entity $transaction)
+    {
+        $reconciled = $transaction->isReconciled();
+
+        if ($reconciled === true)
+        {
+            return false;
+        }
+
+        $transaction->setReconciledAt(time());
+        $transaction->setGatewayFee(0);
+        $transaction->setGatewayServiceTax(0);
+
+        $this->repo->saveOrFail($transaction);
+
+        return true;
+    }
+
     protected function txnCreationFromPaymentOperation($payment)
     {
         $txn = new Transaction\Entity;

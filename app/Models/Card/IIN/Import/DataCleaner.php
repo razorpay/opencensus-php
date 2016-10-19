@@ -24,7 +24,7 @@ class DataCleaner
 
     public function __construct()
     {
-        $this->repo = new IIN\Repository();
+        $this->repo = new IIN\Repository;
     }
 
     /**

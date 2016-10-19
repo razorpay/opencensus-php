@@ -25,6 +25,10 @@ class Repository extends Base\Repository
         Entity::RECEIPT         => 'sometimes|string|max:40',
     ];
 
+    protected $proxyFetchParamRules = [
+        Entity::STATUS          => 'sometimes|in:created,attempted,paid',
+    ];
+
     protected $esWhitelistedParams = [
         Entity::NOTES
     ];

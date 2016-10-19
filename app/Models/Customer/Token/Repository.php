@@ -32,11 +32,11 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getByTokenAndCustomerId($token, $id)
+    public function getByTokenIdAndCustomer($tokenId, Customer\Entity $customer)
     {
         return $this->newQuery()
-                    ->where(Token\Entity::CUSTOMER_ID, '=', $id)
-                    ->where(Token\Entity::TOKEN, '=', $token)
+                    ->where(Token\Entity::CUSTOMER_ID, '=', $customer->getId())
+                    ->where(Token\Entity::TOKEN, '=', $tokenId)
                     ->first();
     }
 
