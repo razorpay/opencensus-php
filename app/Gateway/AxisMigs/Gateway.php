@@ -12,7 +12,6 @@ use RZP\Gateway\AxisMigs;
 use RZP\Models\Payment;
 use Requests;
 use RZP\Trace\TraceCode;
-use RZP\Models\Payment;
 
 class Gateway extends Base\Gateway
 {
