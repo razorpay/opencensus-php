@@ -138,7 +138,7 @@ class Server extends Base\Mock\Server
                 $res['result'] = 'AUTH ERROR';
             }
         }
-        elseif ($cardNumber === '4000000000000002')
+        else if ($cardNumber === '4000000000000002')
         {
             // mock timeout exception for enroll
             throw new \Requests_Exception("operation timed out", "operation timed out");

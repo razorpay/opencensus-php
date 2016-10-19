@@ -226,7 +226,7 @@ trait FileHandlerTrait
         {
           return $alphabet[$data];
         }
-        elseif($data > 25)
+        else if($data > 25)
         {
           $dividend = ($data + 1);
 
