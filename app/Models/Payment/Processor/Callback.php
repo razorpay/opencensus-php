@@ -1,4 +1,4 @@
-<?php
+    <?php
 
 namespace RZP\Models\Payment\Processor;
 
@@ -174,7 +174,7 @@ trait Callback
 
             $payment->setTwoFactorAuth($twoFactorAuth);
 
-            $payment->saveOrFail();
+            $this->repo->saveOrFail($payment);
 
             $this->updateAndNotifyPaymentAuthorized();
         }

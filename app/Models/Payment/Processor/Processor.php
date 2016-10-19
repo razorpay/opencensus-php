@@ -457,7 +457,7 @@ class Processor
             $twoFactorAuth = Payment\TwoFactorAuth::NOT_APPLICABLE;
         }
         else if (($exception instanceof Exception\GatewayErrorException) and
-            ($exception->hasTwoFaError()))
+                 ($exception->hasTwoFaError()))
         {
             $twoFactorAuth = Payment\TwoFactorAuth::FAILED;
         }
@@ -474,7 +474,7 @@ class Processor
         $this->app['events']->fire('api.payment.failed', array($this->payment));
     }
 
-    protected function setPaymentError($e)
+    protected function setPaymentError(Exception $e)
     {
         $error = $e->getError();
 

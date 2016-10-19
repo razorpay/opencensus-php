@@ -208,7 +208,7 @@ trait Authorize
         //
         $payment->setTwoFactorAuth(TwoFactorAuth::UNAVAILABLE);
 
-        $payment->saveOrFail();
+        $this->repo->saveOrFail($payment);
 
         return $this->postPaymentAuthorizeProcessing($payment);
     }
