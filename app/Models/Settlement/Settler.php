@@ -431,15 +431,7 @@ class Settler
 
     protected function fetchTransactionsToSettle($input)
     {
-        $ts = $this->initSettlementTimestamp($input);
-
-        $ts = time();
-
-        if (($this->mode === Mode::TEST) and
-            (empty($input['testSettleTimeStamp']) === false))
-        {
-            $ts = $input['testSettleTimeStamp'];
-        }
+        $ts = $this->initSettlementTimestamp();
 
         $txns = $this->repo->transaction->fetchUnsettledTransactions($ts);
 
@@ -448,25 +440,20 @@ class Settler
 
     protected function fetchMerchantTransactionsToSettle($input, $merchant)
     {
-        $ts = time();
-
-        if (($this->mode === Mode::TEST) and
-            (empty($input['testSettleTimeStamp']) === false))
-        {
-            $ts = $input['testSettleTimeStamp'];
-        }
+        $ts = $this->initSettlementTimestamp();
 
         $txns = $this->repo->transaction->fetchUnsettledTransactionsForMerchant($ts, $merchant);
 
         return $txns;
     }
 
-    protected function initSettlementTimestamp($input)
+    protected function initSettlementTimestamp()
     {
         if (self::$settlementTimestamp === null)
         {
             // Get the timestamp today at 12 am
             $timestamp = Carbon::today('Asia/Kolkata')->timestamp;
+
             self::$settlementTimestamp = $timestamp;
         }
 
