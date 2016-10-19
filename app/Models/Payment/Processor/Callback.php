@@ -115,6 +115,8 @@ trait Callback
         // directly for the failure.
         $this->checkForRecentFailedPayment($payment);
 
+        $this->app['segment']->trackPayment($payment, ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
+
         throw new Exception\BadRequestException(
             ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
     }
@@ -139,6 +141,8 @@ trait Callback
 
         if ($payment->isCreated() === false)
         {
+            $this->app['segment']->trackPayment($payment, ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
         }

@@ -26,6 +26,8 @@ trait OtpResend
             $payment->resetOtpAttempts();
             $payment->saveOrFail();
 
+            $this->app['segment']->trackPayment($payment, TraceCode::SEGMENT_OTP_RESEND);
+
             return $data;
         }
 

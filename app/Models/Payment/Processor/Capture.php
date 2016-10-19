@@ -55,6 +55,8 @@ trait Capture
         $this->trace->info(
             TraceCode::PAYMENT_AUTO_CAPTURE, ['payment_id' => $payment->getId()]);
 
+        $this->app['segment']->trackPayment($payment, TraceCode::PAYMENT_AUTO_CAPTURE);
+
         try
         {
             $payment = $this->capturePayment($payment, $amount);
@@ -65,6 +67,16 @@ trait Capture
                 TraceCode::PAYMENT_AUTO_CAPTURE_FAILED,
                 ['auto_capture' => 1,
                 'payment_id' => $payment->getPublicId()]);
+
+            $customProperties = [
+                'error' => $e->getError(),
+                'public_error' => $e->getPublicError(),
+                'errMsg' => $e->getDataAsString()
+            ];
+
+            $this->app['segment']->trackPayment($payment,
+                                                TraceCode::PAYMENT_AUTO_CAPTURE_FAILED,
+                                                $customProperties);
 
             return false;
         }

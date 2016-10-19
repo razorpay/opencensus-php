@@ -43,7 +43,8 @@ class SegmentClient
         $properties = [
             'payment_id'        => $payment->getPublicId(),
             'mode'              => $this->mode,
-            'merchantId'        => $payment->merchant->getId(),
+            'merchant_id'       => $payment->merchant->getId(),
+            'merchant_name'     => $payment->merchant->getName(),
             'amount'            => $payment->getAmount(),
             'method'            => $payment->getMethod(),
             'gateway'           => $payment->getGateway(),
