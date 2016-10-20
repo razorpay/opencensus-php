@@ -17,7 +17,7 @@ trait Verify
      * Run Verify on a given Payment
      *
      * @param Payment\Entity $payment Payment for which verify should be ran
-     *        string         $filter  Filter used for running the verify
+     * @param string         $filter  Filter used for running the verify
      *
      * @return array having refund and payment data
      */
@@ -86,9 +86,11 @@ trait Verify
             return;
         }
 
+        $app = App::getFacadeRoot();
+
         //  if filter is null, then verify is initiated manually, not via Cron
         //  Dont update VERIFY_BUCKET, in that case
-        if (is_null($filter) === true)
+        if ($app['basicauth']->isCron() === true)
         {
             $daysToAdd = 1;
 

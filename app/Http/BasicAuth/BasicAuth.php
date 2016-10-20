@@ -760,6 +760,21 @@ class BasicAuth
         return ($this->type === Type::PRIVILEGE_AUTH);
     }
 
+    public function isCron()
+    {
+        $secret = $this->getSecret();
+
+        $cronApp = $this->internalAppConfigs['cron'];
+
+        if ((isset($cronApp['secret']) === true) and
+            ($cronApp['secret'] === $secret))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     protected function setKeyFromQueryParams()
     {
         // Get key from input params
