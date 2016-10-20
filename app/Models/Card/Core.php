@@ -50,7 +50,7 @@ class Core extends Base\Core
 
         $card = null;
 
-        if (isset($input[Entity::VAULT_TOKEN]))
+        if (isset($input[Entity::VAULT]))
         {
             $newCard = (new Card\Entity)->build($input);
 
@@ -195,7 +195,9 @@ class Core extends Base\Core
 
         if ($cards->count() > 0)
         {
-            assertTrue($cards->count() === 1);
+            // TODO: delete the other cards
+
+            $cards->sortBy(Card\Entity::ID);
 
             return $cards[0];
         }
