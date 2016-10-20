@@ -62,14 +62,8 @@ class PublicEntity extends UniqueIdEntity
         $array = $this->toArrayPublic();
 
         unset($array[self::ENTITY]);
-        if (isset($array[Payment\Entity::CUSTOMER_ID]))
-        {
-            unset($array[Payment\Entity::CUSTOMER_ID]);
-        }
-        if (isset($array[Payment\Entity::TOKEN_ID]))
-        {
-            unset($array[Payment\Entity::TOKEN_ID]);
-        }
+        unset($array[Payment\Entity::CUSTOMER_ID]);
+        unset($array[Payment\Entity::TOKEN_ID]);
 
         foreach ($this->amounts as $key)
         {
