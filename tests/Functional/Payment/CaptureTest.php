@@ -153,38 +153,15 @@ class CaptureTest extends TestCase
 
         $this->gateway = 'hdfc';
 
-        $this->mockServerContentFunction(function (& $content, $action)
-        {
-            if ($action === 'authorize')
-            {
-                throw new Exception\GatewayTimeoutException('Timed out');
-            }
-
-            if ($action === 'inquiry')
-            {
-                $content['RESPCODE'] = '0';
-                $content['RESPMSG'] = 'Transaction succeeded';
-                $content['STATUS'] = 'TXN_SUCCESS';
-            }
-
-            return $content;
-        });
+        $this->mockServerVerifyContentFunction();
 
         $this->gateway = null;
 
-        $this->makeRequestAndCatchException(function () use ($order)
-        {
-            $payment = $this->getDefaultPaymentArray();
-            $payment['amount'] = $order->getAmount();
-            $payment['order_id'] = $order->getPublicId();
-
-            $content = $this->doAuthPayment($payment);
-        });
+        $this->doAuthPaymentAndCatchException($order);
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertEquals('failed', $payment['status']);
-        $this->assertEquals('GATEWAY_ERROR_REQUEST_TIMEOUT', $payment['internal_error_code']);
+        $this->assertInternalErrorCode($payment, 'GATEWAY_ERROR_REQUEST_TIMEOUT');
 
         $this->authorizeFailedPayment($payment['id']);
 
@@ -205,38 +182,15 @@ class CaptureTest extends TestCase
 
         $this->gateway = 'hdfc';
 
-        $this->mockServerContentFunction(function (& $content, $action)
-        {
-            if ($action === 'authorize')
-            {
-                throw new Exception\GatewayTimeoutException('Timed out');
-            }
-
-            if ($action === 'inquiry')
-            {
-                $content['RESPCODE'] = '0';
-                $content['RESPMSG'] = 'Transaction succeeded';
-                $content['STATUS'] = 'TXN_SUCCESS';
-            }
-
-            return $content;
-        });
+        $this->mockServerVerifyContentFunction();
 
         $this->gateway = null;
 
-        $this->makeRequestAndCatchException(function () use ($order)
-        {
-            $payment = $this->getDefaultPaymentArray();
-            $payment['amount'] = $order->getAmount();
-            $payment['order_id'] = $order->getPublicId();
-
-            $content = $this->doAuthPayment($payment);
-        });
+        $this->doAuthPaymentAndCatchException($order);
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertEquals('failed', $payment['status']);
-        $this->assertEquals('GATEWAY_ERROR_REQUEST_TIMEOUT', $payment['internal_error_code']);
+        $this->assertInternalErrorCode($payment, 'GATEWAY_ERROR_REQUEST_TIMEOUT');
 
         $this->authorizeFailedPayment($payment['id']);
 
@@ -258,52 +212,21 @@ class CaptureTest extends TestCase
 
         $this->gateway = 'hdfc';
 
-        $this->mockServerContentFunction(function (& $content, $action)
-        {
-            if ($action === 'authorize')
-            {
-                throw new Exception\GatewayTimeoutException('Timed out');
-            }
-
-            if ($action === 'inquiry')
-            {
-                $content['RESPCODE'] = '0';
-                $content['RESPMSG'] = 'Transaction succeeded';
-                $content['STATUS'] = 'TXN_SUCCESS';
-            }
-
-            return $content;
-        });
+        $this->mockServerVerifyContentFunction();
 
         $this->gateway = null;
 
-        $this->makeRequestAndCatchException(function () use ($order)
-        {
-            $payment = $this->getDefaultPaymentArray();
-            $payment['amount'] = $order->getAmount();
-            $payment['order_id'] = $order->getPublicId();
-
-            $content = $this->doAuthPayment($payment);
-        });
+        $this->doAuthPaymentAndCatchException($order);
 
         $payment1 = $this->getLastEntity('payment', true);
 
-        $this->assertEquals('failed', $payment1['status']);
-        $this->assertEquals('GATEWAY_ERROR_REQUEST_TIMEOUT', $payment1['internal_error_code']);
+        $this->assertInternalErrorCode($payment1, 'GATEWAY_ERROR_REQUEST_TIMEOUT');
 
-        $this->makeRequestAndCatchException(function () use ($order)
-        {
-            $payment = $this->getDefaultPaymentArray();
-            $payment['amount'] = $order->getAmount();
-            $payment['order_id'] = $order->getPublicId();
-
-            $content = $this->doAuthPayment($payment);
-        });
+        $this->doAuthPaymentAndCatchException($order);
 
         $payment2 = $this->getLastEntity('payment', true);
 
-        $this->assertEquals('failed', $payment2['status']);
-        $this->assertEquals('GATEWAY_ERROR_REQUEST_TIMEOUT', $payment2['internal_error_code']);
+        $this->assertInternalErrorCode($payment2, 'GATEWAY_ERROR_REQUEST_TIMEOUT');
 
         $this->authorizeFailedPayment($payment2['id']);
         $this->authorizeFailedPayment($payment1['id']);
@@ -512,5 +435,45 @@ class CaptureTest extends TestCase
         $dashboard->shouldReceive('queueRecord')
               ->times($times)
               ->with('payment', Mockery::type('RZP\Models\\Base\\PublicEntity'));
+    }
+
+    protected function mockServerVerifyContentFunction()
+    {
+        $this->mockServerContentFunction(function (& $content, $action)
+        {
+            if ($action === 'authorize')
+            {
+                throw new Exception\GatewayTimeoutException('Timed out');
+            }
+
+            if ($action === 'inquiry')
+            {
+                $content['RESPCODE'] = '0';
+                $content['RESPMSG'] = 'Transaction succeeded';
+                $content['STATUS'] = 'TXN_SUCCESS';
+            }
+
+            return $content;
+        });
+    }
+
+    protected function doAuthPaymentAndCatchException($order)
+    {
+        return $this->makeRequestAndCatchException(function () use ($order)
+        {
+            $payment = $this->getDefaultPaymentArray();
+            $payment['amount'] = $order->getAmount();
+            $payment['order_id'] = $order->getPublicId();
+
+            $content = $this->doAuthPayment($payment);
+
+            return $content;
+        });
+    }
+
+    protected function assertInternalErrorCode($payment, $internalErrorCode)
+    {
+        $this->assertEquals('failed', $payment['status']);
+        $this->assertEquals($internalErrorCode, $payment['internal_error_code']);
     }
 }
