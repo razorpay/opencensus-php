@@ -119,15 +119,17 @@ class Core extends Base\Core
                         'batch'         => $batch->toArrayPublic(),
                     ]);
 
-                if ($batch->getAttempts() >= 3)
-                {
-                    $batch->setStatus(Status::PROCESSED);
-                }
-                else
-                {
-                    $batch->setStatus(Status::PROCESSING);
-                }
+                // TODO: Remove this comment. Currently we will mark the final state as processed.
+                // if ($batch->getAttempts() >= 3)
+                // {
+                //     $batch->setStatus(Status::PROCESSED);
+                // }
+                // else
+                // {
+                //     $batch->setStatus(Status::PROCESSING);
+                // }
 
+                $batch->setStatus(Status::PROCESSED);
                 $this->repo->saveOrFail($batch);
             }
         }
