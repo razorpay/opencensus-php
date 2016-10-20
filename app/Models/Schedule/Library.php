@@ -5,7 +5,7 @@ namespace RZP\Models\Schedule;
 use RZP\Models\Merchant\Schedule as MerchantSchedule;
 use Carbon\Carbon;
 
-class Core
+class Library
 {
   public static function getNextApplicableTime($currentTime, $merchant)
   {
@@ -27,8 +27,6 @@ class Core
 
   protected static function getNextApplicableTimeFromSchedule($currentTime, $merchantSchedule)
   {
-    $schedule = $merchantSchedule->schedule();
-
     $schedule = (new Repository)->findOrFailPublic($merchantSchedule->getScheduleId());
 
     $settledAt = self::getMinimumDelayedTime($currentTime, $schedule);

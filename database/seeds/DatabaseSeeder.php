@@ -42,7 +42,7 @@ class DatabaseSeeder extends Seeder
                 array(
                     'id'          => '1',
                     'merchant_id' => '10000000000000',
-                    'schedule_id' => 'schd_2_hourly',
+                    'schedule_id' => 'schd_basic_t3',
                     'last_run'    => null,
                     'created_at'  => time(),
                     'updated_at'  => time(),
@@ -74,6 +74,21 @@ class DatabaseSeeder extends Seeder
                     'interval'   => 1,
                     'anchor'     => null,
                     'delay'      => 259200,
+                    'created_at' => time(),
+                    'updated_at' => time(),
+                    )
+                );
+
+            DB::table(Table::SCHEDULE)->insert(
+                array(
+                    'id'         => 'schd_tuesdays',
+                    'name'       => 'Every Tuesday',
+                    'owner_id'   => '100000Razorpay',
+                    'type'       => 'settlement',
+                    'period'     => 'weekly',
+                    'interval'   => 1,
+                    'anchor'     => 2,
+                    'delay'      => 86400,
                     'created_at' => time(),
                     'updated_at' => time(),
                     )

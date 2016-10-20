@@ -14,7 +14,7 @@ use RZP\Models\Terminal;
 use RZP\Models\Transaction;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement\Holidays;
-use RZP\Models\Schedule\Core as Schedule;
+use RZP\Models\Schedule\Library as Schedule;
 use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
