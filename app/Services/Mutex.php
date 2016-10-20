@@ -29,19 +29,26 @@ class Mutex
 
     }
 
-    //TODO : ADD COMMENTS
-    //
-    public function acquireMultiple($resources, $ttl = 60, $strict = false)
+    /**
+     * Set the lock for the all resource provided
+     *
+     * @param array  $resources Array of the resource
+     * @param int    $ttl       Expiry time of lock in seconds
+     * @param string $strict    defines lock should happen or not, even if one resource is not locked
+     *
+     * @return array containing values of locked and not_locked keys
+     */
+    public function acquireMultiple(array $resources, $ttl = 60, $strict = false)
     {
         $lockedResources = [];
 
         $alreadyLockedResources = [];
 
-        foreach($resources as $resource)
+        foreach ($resources as $resource)
         {
             $isLockAcquired = $this->acquire($resource, $ttl);
 
-            if($isLockAcquired === true)
+            if ($isLockAcquired === true)
             {
                 $lockedResources[] = $resource;
             }
@@ -67,6 +74,13 @@ class Mutex
         ];
     }
 
+    /**
+     * Release the lock for the resource array provided
+     *
+     * @param array $resources Array of the resource
+     *
+     * @return void
+     */
     public function releaseMultiple($resources)
     {
         foreach($resources as $resource)
