@@ -28,7 +28,7 @@ class Service extends Base\Service
 
         $setls = $this->repo->settlement->getSettlementsBetweenTimestamp($from, $to);
 
-        $urls = (new Kotak\Service)->generateSettlementFile($setls, null);
+        $urls = (new Kotak\Service)->generateSettlementFile($setls);
 
         return $urls;
     }

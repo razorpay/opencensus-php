@@ -406,9 +406,9 @@ class Settler
         return $shouldSettle;
     }
 
-    protected function createSettlementFile($settlements, $txns)
+    protected function createSettlementFile($settlements)
     {
-        $urls = (new Kotak\NodalAccount)->generateSettlementFile($settlements, $txns);
+        $urls = (new Kotak\NodalAccount)->generateSettlementFile($settlements);
 
         $this->trace->info(TraceCode::SETTLEMENT_FILE_GENERATED_KOTAK);
 
