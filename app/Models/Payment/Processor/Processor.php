@@ -4,6 +4,7 @@ namespace RZP\Models\Payment\Processor;
 
 use App;
 use BasicAuth;
+use Carbon\Carbon;
 
 use RZP\Constants\Mode;
 use RZP\Dashboard\Dashboard;
@@ -771,17 +772,22 @@ class Processor
 
     protected function shouldAutoCapture($payment)
     {
+        $days = self::AUTO_REFUND_TIME_PERIOD;
+        $date = Carbon::today('Asia/Kolkata');
+        $ts = $date->subDays($days)->timestamp;
+
         // If payment is not authorized or if it's late authorized,
         // do not auto capture it, irrespective of it being a signed
         // payment or marked for auto capture.
         if (($payment->isAuthorized() === false) or
-            ($payment->isLateAuthorized() === true))
+            (($payment->isLateAuthorized() === true) and
+             ($payment->getCreatedAt() < $ts)))
         {
             return false;
         }
 
         // If payment order was marked as auto capture
-        if (($payment->order !== null) and
+        if (($payment->getApiOrderId() !== null) and
             ($payment->order->getPaymentCapture() === true))
         {
             return true;

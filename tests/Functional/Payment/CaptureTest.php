@@ -144,6 +144,55 @@ class CaptureTest extends TestCase
         $this->startTest();
     }
 
+    public function testAutoCaptureOnLateAuthorizedPayment()
+    {
+        $this->app['config']->set('gateway.mock_hdfc', true);
+
+        $order = $this->fixtures->create('order', ['payment_capture' => '1']);
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action)
+        {
+            if ($action === 'authorize')
+            {
+                throw new Exception\GatewayTimeoutException('Timed out');
+            }
+
+            if ($action === 'inquiry')
+            {
+                $content['RESPCODE'] = '0';
+                $content['RESPMSG'] = 'Transaction succeeded';
+                $content['STATUS'] = 'TXN_SUCCESS';
+            }
+
+            return $content;
+        });
+
+        $this->gateway = null;
+
+        $this->makeRequestAndCatchException(function () use ($order)
+        {
+            $payment = $this->getDefaultPaymentArray();
+            $payment['amount'] = $order->getAmount();
+            $payment['order_id'] = $order->getPublicId();
+
+            $content = $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->authorizeFailedPayment($payment['id']);
+
+        $payment = $this->getLastEntity('payment', true);
+        $order = $this->getLastEntity('order', true);
+
+        $this->assertEquals($payment['status'], 'captured');
+        $this->assertEquals($order['status'], 'paid');
+
+        $this->assertTrue($payment['amount'] === $order['amount']);
+    }
+
     public function testCaptureAfterRefund()
     {
         $payment = $this->defaultAuthPayment();

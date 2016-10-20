@@ -544,6 +544,8 @@ trait Authorize
             // to authorized
             $this->updateAndNotifyPaymentAuthorized(true);
 
+            $this->autoCapturePaymentIfApplicable($payment);
+
             $this->repo->saveOrFail($payment);
 
             $this->setPayment($payment);
