@@ -205,6 +205,8 @@ class Processor extends Base\Core
         $entry[Header::REFUND_ID] = $refund->getPublicId();
         $entry[Header::REFUNDED_AMOUNT] = $refund->getAmount();
         $entry[Header::STATUS] = Status::SUCCESS;
+        $entry[Header::ERROR_CODE] = null;
+        $entry[Header::ERROR_DESCRIPTION] = null;
     }
 
     /**
