@@ -363,6 +363,11 @@ class Gateway extends Base\Gateway
                                                     $authGatewayStatus, $authTdate);
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
+
+        // Verify Response is actually a SOAP Object, and AuthorizeFailed
+        // expects it to be an array. This avoids an error being thrown
+        // during failed->auth process.
+        $verify->setVerifyResponseContent([]);
     }
 
     protected function getVerifyApiStatus($gatewayPayment, $payment)
