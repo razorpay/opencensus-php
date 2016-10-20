@@ -1,3 +1,5 @@
+"use strict";
+
 //Activation Form Controller
 app.controller('ActivationCtrl', [
   '$scope',
@@ -60,7 +62,7 @@ app.controller('ActivationCtrl', [
       var request = $http.get('/activation/details');
       request.success(function (data) {
         var steps_finished = data.data.steps_finished;
-        angular.forEach(steps_finished, function (value, key) {
+        angular.forEach(steps_finished, function (value) {
           $scope.check[value] = true;
         });
         angular.forEach(data.data.data, function (value, key) {
@@ -79,9 +81,8 @@ app.controller('ActivationCtrl', [
               $scope.formAlerts.addAlert('info', 'Form has been submitted for activation and is pending admin response');
           });
         }
-        if (data.locked == 0) {
+        if (data.data.locked === 1) {
           $scope.locked = true;
-          $scope.formAlerts.addAlert('warning', 'Form has been locked by admin, changes are not allowed.');
         }
       });
     }
@@ -109,7 +110,7 @@ app.controller('ActivationCtrl', [
           $scope.refreshUser(true);
         } else {
           $scope.alerts[step].resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts[step].addAlert('danger', value);
           });
           $scope.check[step] = false;
@@ -152,12 +153,12 @@ app.controller('ActivationCtrl', [
           }
         }
       });
-      request.success(function (data, status, headers, config) {
+      request.success(function (data) {
         if (data.success) {
           $scope.fileAlerts[fieldname].addAlert('success', 'File Uploaded Successfully', true);
         } else {
           $scope.fileAlerts[fieldname].resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.fileAlerts[fieldname].addAlert('danger', value);
           });
         }
@@ -172,7 +173,7 @@ app.controller('ActivationCtrl', [
       input.setAttribute('type', 'date');
       var notADateValue = 'not-a-date';
       input.setAttribute('value', notADateValue);
-      return !(input.value === notADateValue);
+      return (input.value !== notADateValue);
     }
     function submitForm(step) {
       if ($scope.data[6].agree_terms !== true) {
@@ -191,7 +192,7 @@ app.controller('ActivationCtrl', [
           getData();
         } else {
           $scope.alerts[step].resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts[step].addAlert('danger', value);
           });
           $scope.check[step] = false;

@@ -57,7 +57,7 @@
         <button type="submit" class="btn btn-prev btn-default btn-rounded disabled">Prev</button>
         <button type="submit" class="pull-right btn btn-next btn-default btn-rounded" ng-click="steps.step2=true">Next</button>
       </div>
-      <fieldset ng-disabled="locked">
+      <fieldset>
         <div class="form-group">
           <label for="contact_name" class="col-sm-3 control-label">Contact Name</label>
           <div class="col-sm-8">
@@ -96,7 +96,7 @@
         <button type="button" class="btn btn-prev btn-default btn-rounded" ng-click="steps.step1=true">Prev</button>
         <button type="submit" class="pull-right btn btn-next btn-default btn-rounded" ng-click="steps.step3=true">Next</button>
       </div>
-      <fieldset ng-disabled="locked">
+      <fieldset>
         <div class="form-group">
           <label for="business_type" class="col-sm-3 control-label">Organisation Type</label>
           <div class="col-sm-8">
@@ -321,24 +321,24 @@
         <button type="submit" class="btn btn-prev btn-default btn-rounded" ng-click="steps.step2=true">Prev</button>
         <button type="submit" class="pull-right btn btn-next btn-default btn-rounded" ng-click="steps.step4=true">Next</button>
       </div>
-      <fieldset ng-disabled="locked">
+      <fieldset>
         <div class="form-group">
           <label for="business_website" class="col-sm-3 control-label">Website Address</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" name="business_website" ng-model="data.3.business_website" placeholder="http://www.website.com" >
+            <input type="text" class="form-control" name="business_website" ng-model="data.3.business_website" placeholder="http://www.website.com" ng-readonly="locked">
           </div>
         </div>
         <div class="form-group">
           <label for="website_about" class="col-sm-3 control-label">About Us URL</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" name="website_about" ng-model="data.3.website_about" placeholder="http://www.website.com/aboutus.html" >
+            <input type="text" class="form-control" name="website_about" ng-model="data.3.website_about" placeholder="http://www.website.com/aboutus.html" ng-readonly="locked">
           </div>
         </div>
         <div class="form-group">
           <label for="website_contact" class="col-sm-3 control-label">Contact Us URL</label>
           <div class="col-sm-8">
           <span class="help-block">Must contain the operational address</span>
-            <input type="text" class="form-control" name="website_contact" ng-model="data.3.website_contact" placeholder="http://www.website.com/contact.html" >
+            <input type="text" class="form-control" name="website_contact" ng-model="data.3.website_contact" placeholder="http://www.website.com/contact.html" ng-readonly="locked">
           </div>
         </div>
         <div class="form-group">
@@ -347,7 +347,7 @@
             <span class="help-block">
               <a href="https://docs.google.com/document/d/1MpaLoEbx5-cmTB3qfbDadhjsuNCkEA2j13H2ZGx3PAk/edit" target="_blank">Download a template here</a>
             </span>
-            <input type="text" class="form-control" name="website_privacy" ng-model="data.3.website_privacy" placeholder="http://www.website.com/privacy.html" >
+            <input type="text" class="form-control" name="website_privacy" ng-model="data.3.website_privacy" placeholder="http://www.website.com/privacy.html" ng-readonly="locked">
           </div>
         </div>
         <div class="form-group">
@@ -356,7 +356,7 @@
             <span class="help-block">
               <a href="https://docs.google.com/document/d/1wYq6CULlAtBdYrcjEVygQ3uYOplqU-kT1wrxguUKHcI/edit" target="_blank">Download a template here</a>
             </span>
-            <input type="text" class="form-control" name="website_terms" ng-model="data.3.website_terms" placeholder="http://www.website.com/terms.html" >
+            <input type="text" class="form-control" name="website_terms" ng-model="data.3.website_terms" placeholder="http://www.website.com/terms.html" ng-readonly="locked">
           </div>
         </div>
         <div class="form-group">
@@ -365,21 +365,21 @@
             <span class="help-block">
               <a href="https://docs.google.com/document/d/1zOrg11NPYSMCxa3KwkOnfPxKRkllzXBdocEQsQN10TM/edit" target="_blank">Download a template here</a>
             </span>
-            <input type="text" class="form-control" name="website_refund" ng-model="data.3.website_refund" placeholder="http://www.website.com/refund.html" >
+            <input type="text" class="form-control" name="website_refund" ng-model="data.3.website_refund" placeholder="http://www.website.com/refund.html" ng-readonly="locked">
           </div>
         </div>
         <div class="form-group">
           <label for="website_pricing" class="col-sm-3 control-label">URL displaying Product Pricing</label>
           <div class="col-sm-8">
             <span class="help-block">Any page with product prices. May display a range of prices if not actual price</span>
-            <input type="text" class="form-control" name="website_pricing" ng-model="data.3.website_pricing" placeholder="http://www.website.com/pricing.html" >
+            <input type="text" class="form-control" name="website_pricing" ng-model="data.3.website_pricing" placeholder="http://www.website.com/pricing.html" ng-readonly="locked">
           </div>
         </div>
         <div class="form-group">
           <label for="website_login" class="col-sm-3 control-label">Login Window URL</label>
           <div class="col-sm-8">
             <span class="help-block">If no login required, give us a page where you ask for customer details</span>
-            <input type="text" class="form-control" name="website_login" ng-model="data.3.website_login" placeholder="http://www.website.com/login.html" >
+            <input type="text" class="form-control" name="website_login" ng-model="data.3.website_login" placeholder="http://www.website.com/login.html" ng-readonly="locked">
           </div>
         </div>
       </fieldset>
@@ -396,55 +396,55 @@
         <button type="submit" class="btn btn-prev btn-default btn-rounded" ng-click="steps.step3=true">Prev</button>
         <button type="submit" class="pull-right btn btn-next btn-default btn-rounded" ng-click="steps.step5=true">Next</button>
       </div>
-      <fieldset ng-disabled="locked">
+      <fieldset>
         <div class="form-group">
           <label for="bank_name" class="col-sm-3 control-label">Name of Bank</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" ng-model="data.4.bank_name" placeholder="Name of Bank">
+            <input type="text" class="form-control" ng-model="data.4.bank_name" placeholder="Name of Bank" ng-readonly="locked">
             <span class="help-block">Do not panic if this is empty or incorrect. We don't ask this field any more.</span>
           </div>
         </div>
         <div class="form-group">
           <label for="bank_account_number" class="col-sm-3 control-label">Bank Account Number</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" ng-model="data.4.bank_account_number" placeholder="Bank Account Number" required>
+            <input type="text" class="form-control" ng-model="data.4.bank_account_number" placeholder="Bank Account Number" required ng-readonly="locked">
           </div>
         </div>
         <div class="form-group">
           <label for="bank_account_name" class="col-sm-3 control-label">Beneficiary Name</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" name="bank_account_name" ng-model="data.4.bank_account_name" placeholder="Account Holder Name" required>
+            <input type="text" class="form-control" name="bank_account_name" ng-model="data.4.bank_account_name" placeholder="Account Holder Name" required ng-readonly="locked">
             <span class="help-block">Should be same as business/individual name</span>
           </div>
         </div>
         <div class="form-group">
           <label for="bank_beneficiary_address1" class="col-sm-3 control-label">Beneficiary Address Line 1</label>
           <div class="col-sm-8">
-            <textarea class="form-control" name="bank_beneficiary_address1" ng-model="data.4.bank_beneficiary_address1" placeholder="Beneficiary Address Line 1" required></textarea>
+            <textarea class="form-control" name="bank_beneficiary_address1" ng-model="data.4.bank_beneficiary_address1" placeholder="Beneficiary Address Line 1" required ng-readonly="locked"></textarea>
           </div>
         </div>
         <div class="form-group">
           <label for="bank_beneficiary_address2" class="col-sm-3 control-label">Beneficiary Address Line 2</label>
           <div class="col-sm-8">
-            <textarea class="form-control" name="bank_beneficiary_address2" ng-model="data.4.bank_beneficiary_address2" placeholder="Beneficiary Address Line 2"></textarea>
+            <textarea class="form-control" name="bank_beneficiary_address2" ng-model="data.4.bank_beneficiary_address2" placeholder="Beneficiary Address Line 2" ng-readonly="locked"></textarea>
           </div>
         </div>
         <div class="form-group">
           <label for="bank_beneficiary_address3" class="col-sm-3 control-label">Beneficiary Address Line 3</label>
           <div class="col-sm-8">
-            <textarea class="form-control" name="bank_beneficiary_address3" ng-model="data.4.bank_beneficiary_address3" placeholder="Beneficiary Address Line 3"></textarea>
+            <textarea class="form-control" name="bank_beneficiary_address3" ng-model="data.4.bank_beneficiary_address3" placeholder="Beneficiary Address Line 3" ng-readonly="locked"></textarea>
           </div>
         </div>
         <div class="form-group">
           <label for="bank_beneficiary_city" class="col-sm-3 control-label">Beneficiary Address City</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" ng-model="data.4.bank_beneficiary_city" placeholder="Beneficiary Address City" required>
+            <input type="text" class="form-control" ng-model="data.4.bank_beneficiary_city" placeholder="Beneficiary Address City" required ng-readonly="locked">
           </div>
         </div>
         <div class="form-group">
           <label for="bank_beneficiary_state" class="col-sm-3 control-label">Beneficiary State</label>
           <div class="col-sm-8">
-            <select name="bank_beneficiary_state" ng-model="data.4.bank_beneficiary_state" class="form-control" required>
+            <select name="bank_beneficiary_state" ng-model="data.4.bank_beneficiary_state" class="form-control" required ng-readonly="locked">
               <option value="AN">Andaman And Nicobar</option>
               <option value="AP">Andhra Pradesh</option>
               <option value="AR">Arunachal Pradesh</option>
@@ -486,26 +486,26 @@
         <div class="form-group">
           <label for="bank_beneficiary_pin" class="col-sm-3 control-label">Beneficiary Address Pincode</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" ng-model="data.4.bank_beneficiary_pin" placeholder="Beneficiary Address Pincode" required>
+            <input type="text" class="form-control" ng-model="data.4.bank_beneficiary_pin" placeholder="Beneficiary Address Pincode" required ng-readonly="locked">
           </div>
         </div>
         <div class="form-group">
           <label for="bank_account_type" class="col-sm-3 control-label">Bank Account Type</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" ng-model="data.4.bank_account_type" placeholder="Bank Account Type e.g. Current, Savings" required>
+            <input type="text" class="form-control" ng-model="data.4.bank_account_type" placeholder="Bank Account Type e.g. Current, Savings" required ng-readonly="locked">
           </div>
         </div>
         <div class="form-group">
           <label for="bank_branch_address" class="col-sm-3 control-label">Branch Address</label>
           <div class="col-sm-8">
-            <textarea class="form-control" ng-model="data.4.bank_branch" placeholder="Branch Address"></textarea>
+            <textarea class="form-control" ng-model="data.4.bank_branch" placeholder="Branch Address" ng-readonly="locked"></textarea>
             <span class="help-block">Do not panic if this is empty or incorrect. We don't ask this field any more.</span>
           </div>
         </div>
         <div class="form-group">
           <label for="bank_branch_ifsc" class="col-sm-3 control-label">Branch IFSC Code</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" ng-model="data.4.bank_branch_ifsc" placeholder="IFSC Code of the Bank Branch" required>
+            <input type="text" class="form-control" ng-model="data.4.bank_branch_ifsc" placeholder="IFSC Code of the Bank Branch" required ng-readonly="locked">
           </div>
         </div>
       </fieldset>
@@ -522,7 +522,7 @@
         <button type="submit" class="btn btn-prev btn-default btn-rounded" ng-click="steps.step4=true">Prev</button>
         <button type="submit" class="pull-right btn btn-next btn-default btn-rounded" ng-click="steps.step6=true" >Next</button>
       </div>
-      <fieldset ng-disabled="locked">
+      <fieldset>
         <alert type="info">The links to uploaded files are valid for one hour, refresh the page if they do not work.</alert>
         <div class="form-group">
           <label for="business_proof" class="col-sm-3 control-label">Bussiness Proof </label>
@@ -629,8 +629,6 @@
           <button type="submit" class="btn btn-prev btn-default btn-rounded" ng-click="steps.step5=true">Prev</button>
           <button type="submit" class="pull-right btn btn-next btn-default btn-rounded disabled">Next</button>
         </div>
-        <fieldset ng-disabled="locked">
-        </fieldset>
       </form>
     </tab>
   </tabset>

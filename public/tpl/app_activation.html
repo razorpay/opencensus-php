@@ -18,39 +18,39 @@
       </tab-heading>
       <h4>Contact Details</h4>
       <form name="step1" class="form-validation form-horizontal" ng-submit="submit(1)" novalidate>
-      <fieldset ng-disabled="locked">
+      <fieldset>
         <div class="text-center m-t m-b alerts">
           <alert ng-repeat="alert in alerts[1].getAlerts()" type="{{alert.type}}" close="alerts[1].closeAlert($index)">{{alert.msg}}</alert>
         </div>
         <div class="form-group">
           <label for="contact_name" class="col-sm-3 control-label">Contact Name</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" name="contact_name" ng-model="data.1.contact_name" placeholder="Contact Name" required>
+            <input ng-readonly="locked" type="text" class="form-control" name="contact_name" ng-model="data.1.contact_name" placeholder="Contact Name" required>
           </div>
         </div>
         <div class="form-group">
           <label for="contact_email" class="col-sm-3 control-label">Email</label>
           <div class="col-sm-8">
-            <input type="email" class="form-control" name="contact_email" ng-model="data.1.contact_email" placeholder="Email" required>
+            <input ng-readonly="locked" type="email" class="form-control" name="contact_email" ng-model="data.1.contact_email" placeholder="Email" required>
           </div>
         </div>
         <div class="form-group">
           <label for="transaction_report_email" class="col-sm-3 control-label">Transaction Report Email</label>
           <div class="col-sm-8">
-            <input type="email" class="form-control" name="transaction_report_email" ng-model="data.1.transaction_report_email" placeholder="Email" required>
+            <input ng-readonly="locked" type="email" class="form-control" name="transaction_report_email" ng-model="data.1.transaction_report_email" placeholder="Email" required>
             <span class="help-block">All payment related reports will be sent to this email address</span>
           </div>
         </div>
         <div class="form-group">
           <label for="contact_mobile" class="col-sm-3 control-label">Mobile</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" name="contact_mobile" ng-model="data.1.contact_mobile" placeholder="Mobile" required>
+            <input ng-readonly="locked" type="text" class="form-control" name="contact_mobile" ng-model="data.1.contact_mobile" placeholder="Mobile" required>
           </div>
         </div>
         <div class="form-group">
           <label for="contact_landline" class="col-sm-3 control-label">Landline</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" name="contact_landline" ng-model="data.1.contact_landline" placeholder="Landline">
+            <input ng-readonly="locked" type="text" class="form-control" name="contact_landline" ng-model="data.1.contact_landline" placeholder="Landline">
           </div>
         </div>
         <div class="m-t m-b text-center prev-next">
@@ -67,7 +67,7 @@
       </tab-heading>
       <h4>Business Details </h4>
       <form name="step2" class="form-validation form-horizontal" ng-submit="submit(2)" novalidate>
-      <fieldset ng-disabled="locked">
+      <fieldset>
         <div class="m-t m-b text-center prev-next">
         </div>
         <div class="text-center m-t m-b alerts">
@@ -81,7 +81,7 @@
                 <a href="mailto:support@razorpay.com">support@razorpay.com</a>
               for more details
             </alert>
-            <select name="business_type" ng-model="data.2.business_type" class="form-control" required>
+            <select name="business_type" ng-model="data.2.business_type" class="form-control" required ng-disabled="locked">
               <option value="1">Proprietership</option>
               <option value="2">Individual</option>
               <option value="3">Partnership</option>
@@ -98,20 +98,20 @@
         <div class="form-group">
           <label for="business_name" class="col-sm-3 control-label">Full Business Name</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" name="business_name" ng-model="data.2.business_name" placeholder="Acme Private Limited" required>
+            <input ng-readonly="locked" type="text" class="form-control" name="business_name" ng-model="data.2.business_name" placeholder="Acme Private Limited" required>
           </div>
         </div>
         <div class="form-group">
           <label for="business_dba" class="col-sm-3 control-label">Billing Label</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" name="business_dba" ng-model="data.2.business_dba" placeholder="Acme Watches" >
+            <input ng-readonly="locked" type="text" class="form-control" name="business_dba" ng-model="data.2.business_dba" placeholder="Acme Watches" >
             <span class="help-block">This is the brand name that the customers are familiar with.</span>
           </div>
         </div>
         <div class="form-group">
           <label for="business_international" class="col-sm-3 control-label">International Payments Required?</label>
           <div class="col-sm-8">
-              <select name="business_international" ng-model="data.2.business_international" class="form-control" required>
+              <select name="business_international" ng-model="data.2.business_international" class="form-control" required ng-readonly="locked">
                 <option value="0">No</option>
                 <option value="1">Yes</option>
               </select>
@@ -121,7 +121,7 @@
         <div class="form-group">
           <label for="business_paymentdetails" class="col-sm-3 control-label">Payments Accepted for:</label>
           <div class="col-sm-8">
-            <select name="business_paymentdetails" ng-model="data.2.business_paymentdetails" class="form-control" required>
+            <select name="business_paymentdetails" ng-model="data.2.business_paymentdetails" class="form-control" required ng-readonly="locked">
               <option value="B2B">Business to Business (B2B)</option>
               <option value="B2C">Business to Consumer (B2C)</option>
               <option value="B2B+B2C">Both B2B and B2C</option>
@@ -132,32 +132,32 @@
         <div class="form-group">
         <label for="business_model" class="col-sm-3 control-label">Business Model</label>
           <div class="col-sm-8">
-            <textarea class="form-control" name="business_model" ng-model="data.2.business_model" placeholder="Business Model" maxlength="255"></textarea>
+            <textarea class="form-control" name="business_model" ng-model="data.2.business_model" placeholder="Business Model" maxlength="255" ng-readonly="locked"></textarea>
             <span class="help-block">Please give a brief explanation of your business model and future plans (Essential for startups)</span>
           </div>
         </div>
         <div class="form-group">
         <label for="business_registered_address" class="col-sm-3 control-label">Registered Address</label>
           <div class="col-sm-8">
-            <textarea class="form-control" name="business_registered_address" ng-model="data.2.business_registered_address" placeholder="Registered Address" required></textarea>
+            <textarea ng-readonly="locked" class="form-control" name="business_registered_address" ng-model="data.2.business_registered_address" placeholder="Registered Address" required></textarea>
           </div>
         </div>
         <div class="form-group">
         <label for="business_registered_state" class="col-sm-3 control-label">Registration Address State</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" name="business_registered_state" ng-model="data.2.business_registered_state" placeholder="Registered Address State" required>
+            <input ng-readonly="locked" type="text" class="form-control" name="business_registered_state" ng-model="data.2.business_registered_state" placeholder="Registered Address State" required>
           </div>
         </div>
         <div class="form-group">
         <label for="business_registered_city" class="col-sm-3 control-label">Registered Address City</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" name="business_registered_city" ng-model="data.2.business_registered_city" placeholder="Registered Address City" required>
+            <input ng-readonly="locked" type="text" class="form-control" name="business_registered_city" ng-model="data.2.business_registered_city" placeholder="Registered Address City" required>
           </div>
         </div>
         <div class="form-group">
         <label for="business_registered_pin" class="col-sm-3 control-label">Registered Address Pincode</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" name="business_registered_pin" ng-model="data.2.business_registered_pin" placeholder="Registered Address Pincode" required>
+            <input ng-readonly="locked" type="text" class="form-control" name="business_registered_pin" ng-model="data.2.business_registered_pin" placeholder="Registered Address Pincode" required>
           </div>
         </div>
 
@@ -165,7 +165,7 @@
         <label for="or_same" class="col-sm-3 control-label">Operational Address same as Registered Address</label>
           <div class="col-sm-8">
               <label class="i-switch m-t-xs m-r">
-                <input type="checkbox" ng-change="genOperation(or_same)" name="or_same" ng-model="or_same"><i></i>
+                <input ng-readonly="locked" type="checkbox" ng-change="genOperation(or_same)" name="or_same" ng-model="or_same"><i></i>
               </label>
               <span class="help-block">Physical Verification might be performed at your operational address.</span>
           </div>
@@ -174,82 +174,84 @@
         <div class="form-group">
         <label for="business_operation_address" class="col-sm-3 control-label">Operational Address</label>
           <div class="col-sm-8">
-            <textarea class="form-control" name="business_operation_address" ng-model="data.2.business_operation_address" placeholder="Operational Address" ng-disabled="or_same" required></textarea>
+            <textarea ng-readonly="locked" class="form-control" name="business_operation_address"
+              ng-model="data.2.business_operation_address" placeholder="Operational Address" ng-disabled="or_same" required>
+            </textarea>
             </div>
         </div>
         <div class="form-group">
         <label for="business_operation_state" class="col-sm-3 control-label">Operational Address State</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" name="business_operation_state" ng-model="data.2.business_operation_state" placeholder="Operation State" ng-disabled="or_same" required>
+            <input ng-readonly="locked" type="text" class="form-control" name="business_operation_state" ng-model="data.2.business_operation_state" placeholder="Operation State" ng-disabled="or_same" required>
           </div>
         </div>
         <div class="form-group">
         <label for="business_operation_city" class="col-sm-3 control-label">Operational Address City</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" name="business_operation_city" ng-model="data.2.business_operation_city" placeholder="Operational Address City" ng-disabled="or_same" required>
+            <input ng-readonly="locked" type="text" class="form-control" name="business_operation_city" ng-model="data.2.business_operation_city" placeholder="Operational Address City" ng-disabled="or_same" required>
           </div>
         </div>
         <div class="form-group">
         <label for="business_operation_pin" class="col-sm-3 control-label">Operational Address Pincode</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" name="business_operation_pin" ng-model="data.2.business_operation_pin" placeholder="Operational Address Pincode" ng-disabled="or_same" required>
+            <input ng-readonly="locked" type="text" class="form-control" name="business_operation_pin" ng-model="data.2.business_operation_pin" placeholder="Operational Address Pincode" ng-disabled="or_same" required>
           </div>
         </div>
         <div class="form-group">
         <label for="business_doe" class="col-sm-3 control-label">Date of Establishment</label>
           <div class="col-sm-8">
-            <input type="date" class="form-control" name="business_doe" ng-model="data.2.business_doe" placeholder="Date of Establishment (YYYY-MM-DD)" required>
+            <input ng-readonly="locked" type="date" class="form-control" name="business_doe" ng-model="data.2.business_doe" placeholder="Date of Establishment (YYYY-MM-DD)" required>
             <span class="help-block" ng-show="checkInputDateSupport()">Example Date: 2015-11-30</span>
           </div>
         </div>
         <div class="form-group">
         <label for="company_cin" class="col-sm-3 control-label">Company CIN</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" name="company_cin" ng-model="data.2.company_cin" placeholder="Company CIN">
+            <input ng-readonly="locked" type="text" class="form-control" name="company_cin" ng-model="data.2.company_cin" placeholder="Company CIN">
             <span class="help-block">Mandatory for Companies</span>
           </div>
         </div>
         <div class="form-group">
         <label for="company_pan" class="col-sm-3 control-label">Company PAN</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" name="company_pan" ng-model="data.2.company_pan" placeholder="Company PAN">
+            <input ng-readonly="locked" type="text" class="form-control" name="company_pan" ng-model="data.2.company_pan" placeholder="Company PAN">
             <span class="help-block">Mandatory for Companies</span>
           </div>
         </div>
         <div class="form-group">
         <label for="company_pan_name" class="col-sm-3 control-label">Name on PAN Card</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" name="company_pan_name" ng-model="data.2.company_pan_name" placeholder="Name on PAN (provided above)">
+            <input ng-readonly="locked" type="text" class="form-control" name="company_pan_name" ng-model="data.2.company_pan_name" placeholder="Name on PAN (provided above)">
             <span class="help-block">Mandatory for Companies</span>
           </div>
         </div>
         <div class="form-group">
         <label for="transaction_volume" class="col-sm-3 control-label">Expected annual transaction volume (INR)</label>
           <div class="col-sm-8">
-            <select name="transaction_volume" ng-model="data.2.transaction_volume" class="form-control" required>
-                        <option value="1">&lt; 1 Lakh</option>
-                        <option value="2">1 to 10 lakh</option>
-                        <option value="3">10 Lakh to 1 Crore</option>
-                        <option value="4">&gt; 1 Crore</option>
-                      </select>
+            <select ng-readonly="locked" name="transaction_volume" ng-model="data.2.transaction_volume" class="form-control" required>
+              <option value="1">&lt; 1 Lakh</option>
+              <option value="2">1 to 10 lakh</option>
+              <option value="3">10 Lakh to 1 Crore</option>
+              <option value="4">&gt; 1 Crore</option>
+            </select>
           </div>
         </div>
         <div class="form-group">
         <label for="transaction_value" class="col-sm-3 control-label">Expected average transaction value</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" name="transaction_value" ng-model="data.2.transaction_value" placeholder="E.g. Average price of the commodities you sell">
+            <input ng-readonly="locked" type="text" class="form-control" name="transaction_value" ng-model="data.2.transaction_value" placeholder="E.g. Average price of the commodities you sell">
           </div>
         </div>
         <div class="form-group">
           <label for="promoter_pan" class="col-sm-3 control-label">PAN of any 1 authorised signatory/promoter/director</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" name="promoter_pan" ng-model="data.2.promoter_pan" placeholder="PAN Number of Promoter" required>
+            <input ng-readonly="locked" type="text" class="form-control" name="promoter_pan" ng-model="data.2.promoter_pan" placeholder="PAN Number of Promoter" required>
           </div>
         </div>
         <div class="form-group">
           <label for="promoter_pan_name" class="col-sm-3 control-label">Name on PAN Card</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" name="promoter_pan_name" ng-model="data.2.promoter_pan_name" placeholder="Name on PAN Card" required>
+            <input ng-readonly="locked" type="text" class="form-control" name="promoter_pan_name" ng-model="data.2.promoter_pan_name" placeholder="Name on PAN Card" required>
           </div>
         </div>
         <div class="m-t m-b text-center prev-next">
@@ -267,7 +269,7 @@
       </tab-heading>
       <h4>Website Details</h4>
       <form name="step3" class="form-validation form-horizontal" ng-submit="submit(3)" novalidate>
-      <fieldset ng-disabled="locked">
+      <fieldset>
         <div class="m-t m-b text-center prev-next">
         </div>
         <div class="text-center m-t m-b alerts">
@@ -277,21 +279,21 @@
           <label for="business_website" class="col-sm-3 control-label">Website Address</label>
           <div class="col-sm-8">
             <span class="help-block">Example: http://www.website.com/</span>
-            <input type="text" class="form-control" name="business_website" ng-model="data.3.business_website" placeholder="http://www.website.com" >
+            <input ng-readonly="locked" type="text" class="form-control" name="business_website" ng-model="data.3.business_website" placeholder="http://www.website.com" >
           </div>
         </div>
         <div class="form-group">
           <label for="website_about" class="col-sm-3 control-label">About Us URL</label>
           <div class="col-sm-8">
             <span class="help-block">Example: http://www.website.com/aboutus.html</span>
-            <input type="text" class="form-control" name="website_about" ng-model="data.3.website_about" placeholder="http://www.website.com/aboutus.html" >
+            <input ng-readonly="locked" type="text" class="form-control" name="website_about" ng-model="data.3.website_about" placeholder="http://www.website.com/aboutus.html" >
           </div>
         </div>
         <div class="form-group">
           <label for="website_contact" class="col-sm-3 control-label">Contact Us URL</label>
           <div class="col-sm-8">
             <span class="help-block">Example: http://www.website.com/contact.html</span>
-            <input type="text" class="form-control" name="website_contact" ng-model="data.3.website_contact" placeholder="http://www.website.com/contact.html" >
+            <input ng-readonly="locked" type="text" class="form-control" name="website_contact" ng-model="data.3.website_contact" placeholder="http://www.website.com/contact.html" >
           </div>
         </div>
         <div class="form-group">
@@ -304,7 +306,7 @@
               </a>
               . Example: http://www.website.com/privacy.html
             </span>
-            <input type="text" class="form-control" name="website_privacy" ng-model="data.3.website_privacy" placeholder="http://www.website.com/privacy.html" >
+            <input ng-readonly="locked" type="text" class="form-control" name="website_privacy" ng-model="data.3.website_privacy" placeholder="http://www.website.com/privacy.html" >
           </div>
         </div>
         <div class="form-group">
@@ -317,7 +319,7 @@
               </a>
               . Example: http://www.website.com/terms.html
             </span>
-            <input type="text" class="form-control" name="website_terms" ng-model="data.3.website_terms" placeholder="http://www.website.com/terms.html" >
+            <input ng-readonly="locked" type="text" class="form-control" name="website_terms" ng-model="data.3.website_terms" placeholder="http://www.website.com/terms.html" >
           </div>
         </div>
         <div class="form-group">
@@ -330,7 +332,7 @@
               </a>
               . Example: http://www.website.com/refund.html
             </span>
-            <input type="text" class="form-control" name="website_refund" ng-model="data.3.website_refund" placeholder="http://www.website.com/refund.html" >
+            <input ng-readonly="locked" type="text" class="form-control" name="website_refund" ng-model="data.3.website_refund" placeholder="http://www.website.com/refund.html" >
           </div>
         </div>
         <div class="form-group">
@@ -342,14 +344,14 @@
                 template here
               </a>
             </span>
-            <input type="text" class="form-control" name="website_pricing" ng-model="data.3.website_pricing" placeholder="http://www.website.com/pricing.html" >
+            <input ng-readonly="locked" type="text" class="form-control" name="website_pricing" ng-model="data.3.website_pricing" placeholder="http://www.website.com/pricing.html" >
           </div>
         </div>
         <!-- <div class="form-group">
           <label for="website_login" class="col-sm-3 control-label">Login Window URL</label>
           <div class="col-sm-8">
             <span class="help-block">If no login required, give us a page where you ask for customer details. Example: http://www.website.com/login.html</span>
-            <input type="text" class="form-control" name="website_login" ng-model="data.3.website_login" placeholder="http://www.website.com/login.html" >
+            <input ng-readonly="locked" type="text" class="form-control" name="website_login" ng-model="data.3.website_login" placeholder="http://www.website.com/login.html" >
           </div>
         </div> -->
         <div class="m-t m-b text-center prev-next">
@@ -367,7 +369,7 @@
       </tab-heading>
       <h4>Bank Account Details</h4>
       <form name="step4" class="form-validation form-horizontal" ng-submit="submit(4)" novalidate>
-      <fieldset ng-disabled="locked">
+      <fieldset>
         <div class="m-t m-b text-center prev-next">
         </div>
         <div class="text-center m-t m-b alerts">
@@ -376,50 +378,50 @@
         <div class="form-group">
           <label for="bank_account_number" class="col-sm-3 control-label">Bank Account Number</label>
           <div class="col-sm-8">
-            <input type="password" class="form-control" name="bank_account_number" ng-model="data.4.bank_account_number" placeholder="Bank Account Number" required autocomplete="off">
+            <input ng-readonly="locked" type="password" class="form-control" name="bank_account_number" ng-model="data.4.bank_account_number" placeholder="Bank Account Number" required autocomplete="off">
           </div>
         </div>
         <div class="form-group">
           <label for="bank_account_number" class="col-sm-3 control-label">Re-enter Bank Account Number</label>
           <div class="col-sm-8">
-            <input type="text" ng-class="{'ng-invalid': data.4.bank_account_number !== data.4.bank_account_number_confirmation, 'form-control': true, 'ng-valid': data.4.bank_account_number === data.4.bank_account_number_confirmation}" name="bank_account_number_confirmation" ng-model="data.4.bank_account_number_confirmation" placeholder="Re-enter your Bank Account Number">
+            <input ng-readonly="locked" type="text" ng-class="{'ng-invalid': data.4.bank_account_number !== data.4.bank_account_number_confirmation, 'form-control': true, 'ng-valid': data.4.bank_account_number === data.4.bank_account_number_confirmation}" name="bank_account_number_confirmation" ng-model="data.4.bank_account_number_confirmation" placeholder="Re-enter your Bank Account Number">
           </div>
         </div>
         <div class="form-group">
           <label for="bank_account_name" class="col-sm-3 control-label">Beneficiary Name</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" name="bank_account_name" ng-model="data.4.bank_account_name" placeholder="Account Holder Name" required>
+            <input ng-readonly="locked" type="text" class="form-control" name="bank_account_name" ng-model="data.4.bank_account_name" placeholder="Account Holder Name" required>
             <span class="help-block">Should be same as business/individual name</span>
           </div>
         </div>
         <div class="form-group">
           <label for="bank_beneficiary_address1" class="col-sm-3 control-label">Beneficiary Address Line 1</label>
           <div class="col-sm-8">
-            <textarea class="form-control" name="bank_beneficiary_address1" ng-model="data.4.bank_beneficiary_address1" placeholder="Beneficiary Address Line 1" required></textarea>
+            <textarea ng-readonly="locked" class="form-control" name="bank_beneficiary_address1" ng-model="data.4.bank_beneficiary_address1" placeholder="Beneficiary Address Line 1" required></textarea>
           </div>
         </div>
         <div class="form-group">
           <label for="bank_beneficiary_address2" class="col-sm-3 control-label">Beneficiary Address Line 2</label>
           <div class="col-sm-8">
-            <textarea class="form-control" name="bank_beneficiary_address2" ng-model="data.4.bank_beneficiary_address2" placeholder="Beneficiary Address Line 2"></textarea>
+            <textarea ng-readonly="locked" class="form-control" name="bank_beneficiary_address2" ng-model="data.4.bank_beneficiary_address2" placeholder="Beneficiary Address Line 2"></textarea>
           </div>
         </div>
         <div class="form-group">
           <label for="bank_beneficiary_address3" class="col-sm-3 control-label">Beneficiary Address Line 3</label>
           <div class="col-sm-8">
-            <textarea class="form-control" name="bank_beneficiary_address3" ng-model="data.4.bank_beneficiary_address3" placeholder="Beneficiary Address Line 3"></textarea>
+            <textarea ng-readonly="locked" class="form-control" name="bank_beneficiary_address3" ng-model="data.4.bank_beneficiary_address3" placeholder="Beneficiary Address Line 3"></textarea>
           </div>
         </div>
         <div class="form-group">
           <label for="bank_beneficiary_city" class="col-sm-3 control-label">Beneficiary Address City</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" name="bank_beneficiary_city" ng-model="data.4.bank_beneficiary_city" placeholder="Beneficiary Address City" required>
+            <input ng-readonly="locked" type="text" class="form-control" name="bank_beneficiary_city" ng-model="data.4.bank_beneficiary_city" placeholder="Beneficiary Address City" required>
           </div>
         </div>
         <div class="form-group">
           <label for="bank_beneficiary_state" class="col-sm-3 control-label">Beneficiary Address State</label>
           <div class="col-sm-8">
-            <select name="bank_beneficiary_state" ng-model="data.4.bank_beneficiary_state" class="form-control" required>
+            <select ng-readonly="locked" name="bank_beneficiary_state" ng-model="data.4.bank_beneficiary_state" class="form-control" required>
               <option value="AN">Andaman And Nicobar</option>
               <option value="AP">Andhra Pradesh</option>
               <option value="AR">Arunachal Pradesh</option>
@@ -461,13 +463,13 @@
         <div class="form-group">
           <label for="bank_beneficiary_pin" class="col-sm-3 control-label">Beneficiary Address Pincode</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" name="bank_beneficiary_pin" ng-model="data.4.bank_beneficiary_pin" placeholder="Beneficiary Address Pincode" required>
+            <input ng-readonly="locked" type="text" class="form-control" name="bank_beneficiary_pin" ng-model="data.4.bank_beneficiary_pin" placeholder="Beneficiary Address Pincode" required>
           </div>
         </div>
         <div class="form-group">
           <label for="bank_account_type" class="col-sm-3 control-label">Bank Account Type</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" name="bank_account_type" ng-model="data.4.bank_account_type" placeholder="Bank Account Type e.g. Current, Savings" required>
+            <input ng-readonly="locked" type="text" class="form-control" name="bank_account_type" ng-model="data.4.bank_account_type" placeholder="Bank Account Type e.g. Current, Savings" required>
           </div>
         </div>
         <!-- <div class="form-group">
@@ -479,7 +481,7 @@
         <div class="form-group">
           <label for="bank_branch_ifsc" class="col-sm-3 control-label">Branch IFSC Code</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" name="bank_branch_ifsc" ng-model="data.4.bank_branch_ifsc" placeholder="IFSC Code of the Bank Branch" required>
+            <input ng-readonly="locked" type="text" class="form-control" name="bank_branch_ifsc" ng-model="data.4.bank_branch_ifsc" placeholder="IFSC Code of the Bank Branch" required>
           </div>
         </div>
         <div class="m-t m-b text-center prev-next">
