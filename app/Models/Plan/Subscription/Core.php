@@ -38,12 +38,17 @@ class Core extends Base\Core
     {
         $this->mutex->acquireAndRelease(
             $subscription->getId(),
-            function() use($subscription) {
+            function() use($subscription) 
+            {
                 $recurringPayload = $this->constructRecurringPayload($subscription);
 
                 $queuePayload = [
                     'recurring_payload' => $recurringPayload,
                     'subscription_id'   => $subscription->getId(),
+                    // This would almost always be rzp_{mode},since it will be
+                    // run via cron. We actually need the mode here. But basicauth
+                    // functions mostly work on the key. Hence, sending the key
+                    // across rather than the mode.
                     'key_id'            => $this->app['basicauth']->getPublicKey(),
                 ];
 
@@ -53,7 +58,7 @@ class Core extends Base\Core
                 if ($subscription->getStatus() === Status::CREATED)
                 {
                     throw new LogicException(
-                        'Should not have reached here. The subscription is not' .
+                        'Should not have reached here. The subscription is not ' .
                         'chargeable because it is still in created state.',
                         null,
                         [
@@ -63,7 +68,13 @@ class Core extends Base\Core
                 }
 
                 $this->app['queue']->push(Charge::class . '@fireCharge', $queuePayload);
-            });
+            }
+        );
+    }
+
+    public function retry(Entity $subscription)
+    {
+        $this->charge($subscription);
     }
 
     /**
@@ -116,7 +127,7 @@ class Core extends Base\Core
         $recurringPayload = [
             Payment\Entity::AMOUNT      => $subscriptionAmount,
             Payment\Entity::CURRENCY    => Payment\Entity::DEFAULT_CURRENCY,
-            Payment\Entity::RECURRING   => "1",
+            Payment\Entity::RECURRING   => '1',
             Payment\Entity::TOKEN       => $tokenId,
             Payment\Entity::CUSTOMER_ID => $customer->getPublicId(),
             Payment\Entity::EMAIL       => $customer->getEmail(),

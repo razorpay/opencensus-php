@@ -48,6 +48,8 @@ class Entity extends Base\PublicEntity
         self::ERROR_STATUS  => null,
         self::PROCESSED_AT  => null,
         self::FAILED_AT     => null,
+        self::CURRENT_START => null,
+        self::CURRENT_END   => null,
     ];
 
     protected static $generators = [
@@ -136,7 +138,7 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::STATUS);
     }
-    
+
     public function getErrorStatus()
     {
         return $this->getAttribute(self::ERROR_STATUS);
@@ -146,22 +148,22 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::PAID_COUNT);
     }
-    
+
     public function getCurrentStart()
     {
         return $this->getAttribute(self::CURRENT_START);
     }
-    
+
     public function getCurrentEnd()
     {
         return $this->getAttribute(self::CURRENT_END);
     }
-    
+
     public function getAuthAttempts()
     {
         return $this->getAttribute(self::AUTH_ATTEMPTS);
     }
-    
+
     public function getTokenId()
     {
         return $this->getAttribute(self::TOKEN_ID);
@@ -195,7 +197,7 @@ class Entity extends Base\PublicEntity
     {
         $this->setAttribute(self::CURRENT_END, $currentEnd);
     }
-    
+
     public function setProcessedAt($processedAt)
     {
         $this->setAttribute(self::PROCESSED_AT, $processedAt);
@@ -205,15 +207,25 @@ class Entity extends Base\PublicEntity
     {
         $this->increment(self::PAID_COUNT);
     }
-    
+
     public function incrementAuthAttempts()
     {
         $this->increment(self::AUTH_ATTEMPTS);
     }
-    
+
     public function setErrorStatus($errorStatus)
     {
         $this->setAttribute(self::ERROR_STATUS, $errorStatus);
+    }
+
+    public function setFailedAt($failedAt)
+    {
+        $this->setAttribute(self::FAILED_AT, $failedAt);
+    }
+
+    public function resetAuthAttempts()
+    {
+        $this->setAttribute(self::AUTH_ATTEMPTS, 0);
     }
 
     // --------------------- END SETTERS ---------------------
@@ -239,7 +251,7 @@ class Entity extends Base\PublicEntity
     {
         return $this->belongsTo('RZP\Models\Customer\Token\Entity');
     }
-    
+
     public function payments()
     {
         return $this->hasMany('RZP\Models\Payment\Entity');

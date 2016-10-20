@@ -348,8 +348,11 @@ class Processor
     /**
      * Returns the proper async response for the status checks
      * made by Checkout
+     *
      * @param  string $id payment id
      * @return array
+     * @throws Exception\BadRequestException
+     * @throws Exception\LogicException
      */
     public function getAsyncResponse($id)
     {

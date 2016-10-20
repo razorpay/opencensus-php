@@ -186,7 +186,7 @@ trait Authorize
         list($fee, $serviceTax, $ruleKey) = (new Pricing\Fee)->calculateMerchantFees($payment);
     }
 
-    protected function processAuthResponse($request, $payment)
+    protected function processAuthResponse(array $request, Payment\Entity $payment)
     {
         //
         // If $request is not null, then payment is two-step process
@@ -670,6 +670,31 @@ trait Authorize
         }
 
         $payment->setInternational();
+
+        $this->associateSubscriptionIfApplicable($payment, $input);
+    }
+
+    protected function associateSubscriptionIfApplicable(Payment\Entity $payment, array $input)
+    {
+        if (empty($input[Payment\Entity::SUBSCRIPTION_ID]) === true)
+        {
+            return;
+        }
+
+        $subscriptionId = $input[Payment\Entity::SUBSCRIPTION_ID];
+
+        Subscription\Entity::verifyIdAndStripSign($subscriptionId);
+
+        $subscription = $this->repo->subscription->findByIdAndMerchant($subscriptionId, $this->merchant);
+
+        $this->trace->info(
+            TraceCode::PAYMENT_SUBSCRIPTION_ASSOCIATE,
+            [
+                'payment_id'        => $payment->getId(),
+                'subscription_id'   => $subscription->getId(),
+            ]);
+
+        $payment->subscription()->associate($subscription);
     }
 
     protected function preProcessPaymentWithoutSaving($payment, & $input, array & $gatewayInput)
@@ -1138,13 +1163,93 @@ trait Authorize
     /**
      * This function is just meant for preparing the return value
      * after payment authorize processing and auto capturing, if applicable.
+     * @param Payment\Entity $payment
+     * @param array $input Payment create request
+     * @return array
      */
-    protected function postPaymentAuthorizeProcessing($payment)
+    protected function postPaymentAuthorizeProcessing(Payment\Entity $payment)
     {
         // Auto capture payment, if applicable
         $this->autoCapturePaymentIfApplicable($payment);
 
+        $this->updateSubscriptionTokenIfApplicable($payment);
+
         return $this->processAuthorizeResponse($payment);
+    }
+
+    protected function updateSubscriptionTokenIfApplicable(Payment\Entity $payment)
+    {
+        $subscription = $payment->subscription;
+
+        if ($subscription === null)
+        {
+            return;
+        }
+
+        $paymentToken = $payment->token;
+
+        $this->trace->info(
+            TraceCode::SUBSCRIPTION_TOKEN_ASSOCIATE,
+            [
+                'payment_id'        => $payment->getId(),
+                'subscription_id'   => $subscription->getId(),
+                'payment_token_id'  => $paymentToken->getId(),
+            ]);
+
+        // TODO: Should we do a reload of subscription here? In case some other payment is setting the token?
+
+        $valid = $this->handleUnexpectedSubscriptionState($payment, $paymentToken, $subscription);
+
+        if ($valid === false)
+        {
+            return;
+        }
+
+        $subscription->token()->associate($paymentToken);
+        $subscription->setStatus(Subscription\Status::ACTIVE);
+
+        $this->repo->saveOrFail($subscription);
+    }
+
+    protected function handleUnexpectedSubscriptionState(Payment\Entity $payment,
+                                                         Token\Entity $paymentToken,
+                                                         Subscription\Entity $subscription)
+    {
+        $valid = true;
+
+        $subscriptionToken = $subscription->token;
+
+        if ($subscriptionToken !== null)
+        {
+            // Will move this to warning/info if we are getting too many of these.
+            $this->trace->error(
+                TraceCode::SUBSCRIPTION_TOKEN_ALREADY_ASSOCIATED,
+                [
+                    'payment_id'            => $payment->getId(),
+                    'subscription_id'       => $subscription->getId(),
+                    'payment_token_id'      => $paymentToken->getId(),
+                    'subscription_token_id' => $subscriptionToken->getId(),
+                ]);
+
+            $valid = false;
+        }
+
+        $subscriptionStatus = $subscription->getStatus();
+
+        if ($subscriptionStatus !== Subscription\Status::CREATED)
+        {
+            $this->trace->error(
+                TraceCode::SUBSCRIPTION_STATE_UNEXPECTED,
+                [
+                    'payment_id'            => $payment->getId(),
+                    'subscription_id'       => $subscription->getId(),
+                    'subscription_status'   => $subscriptionStatus,
+                ]);
+
+            $valid = false;
+        }
+
+        return $valid;
     }
 
     /**
@@ -1669,14 +1774,19 @@ trait Authorize
             $this->repo->saveOrFail($payment);
             $this->repo->saveOrFail($payment->terminal);
 
-            $this->updateTokenOnAuthorized();
-
-            // If payment has an associated order
-            // set the order to be paid
-            $this->updateAuthorizedOrderStatus($payment);
+            $this->updateAssociatedPaymentEntities($payment);
 
             $this->tracePaymentInfo(TraceCode::PAYMENT_AUTH_SUCCESS);
         });
+    }
+
+    protected function updateAssociatedPaymentEntities(Payment\Entity $payment)
+    {
+        $this->updateTokenOnAuthorized();
+
+        // If payment has an associated order
+        // set the order to be paid
+        $this->updateAuthorizedOrderStatus($payment);
     }
 
     protected function isGatewayActuallyAuthorizingPayment(Payment\Entity $payment)

@@ -266,6 +266,7 @@ final class Route
         'plan_create'                             => ['post',     'plans',                                          'PlanController@postCreatePlan'                                     ],
         'subscription_create'                     => ['post',     'plans/{plan_id}/subscriptions',                  'PlanController@postCreateSubscription'                             ],
         'subscriptions_charge'                    => ['post',     'subscriptions/charge',                           'PlanController@postChargeSubscriptions'                            ],
+        'subscriptions_auth_retry'                => ['post',     'subscriptions/retry/auth',                       'PlanController@postRetryAuthSubscriptions'                         ],
     );
 
     public static $public = array(
@@ -474,6 +475,7 @@ final class Route
         'order_refund_multiple_authorized',
         'scorecard',
         'subscriptions_charge',
+        'subscriptions_auth_retry',
         'billdesk_reconcile_cancelled',
     );
 
@@ -566,6 +568,7 @@ final class Route
             'batch_process_file',
             'order_refund_multiple_authorized',
             'subscriptions_charge',
+            'subscriptions_auth_retry',
         ),
 
         'mailgun' => array(

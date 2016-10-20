@@ -11,16 +11,33 @@ class Repository extends Base\Repository
 
     public function getSubscriptionsToCharge()
     {
-        /**
-         * select * from subscriptions where charge_at <= 'current_time'
-         */
+        return $this->getBaseSubscriptionsQuery()
+                    ->whereIn(Entity::STATUS, [Status::PROCESSED, Status::ACTIVE])
+                    ->whereNull(Entity::ENDED_AT)
+                    ->where(Entity::AUTH_ATTEMPTS, 0)
+                    ->get();
+    }
 
+    public function getSubscriptionsToRetry()
+    {
+        return $this->getBaseSubscriptionsQuery()
+                    ->where(Entity::STATUS, '=', Status::ON_HOLD)
+                    ->where(Entity::ERROR_STATUS, Status::AUTH_FAILURE)
+                    ->where(Entity::AUTH_ATTEMPTS, '>', 0)
+                    ->where(Entity::AUTH_ATTEMPTS, '<', Charge::MAX_AUTH_ATTEMPTS)
+                    ->get();
+    }
+
+    protected function getBaseSubscriptionsQuery()
+    {
         $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
 
-        // TODO: Add status check and current_end also
         return $this->newQuery()
                     ->where(Entity::CHARGE_AT, '<', $currentTime)
-                    //->where(Entity::CURRENT_END, '<', $currentTime)
-                    ->get();
+                    ->where(function($query) use ($currentTime)
+                            {
+                                $query->whereNull(Entity::CURRENT_END)
+                                      ->orWhere(Entity::CURRENT_END, '<', $currentTime);
+                            });
     }
 }

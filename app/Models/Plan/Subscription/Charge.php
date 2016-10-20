@@ -5,6 +5,7 @@ namespace RZP\Models\Plan\Subscription;
 use App;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
+use RZP\Exception\LogicException;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
@@ -44,22 +45,33 @@ class Charge
 
         $subscription = $this->repo->subscription->findOrFail($data['subscription_id']);
 
-        $this->processor = $this->getNewProcessor($subscription->merchant);
+        $this->processor = new Payment\Processor\Processor($subscription->merchant);
 
         $subscription->incrementAuthAttempts();
+
+        $authorizedPayment = null;
 
         try
         {
             $authorizedPayment = $this->authorizePayment($recurringPayload);
-
-            $this->handleAuthorizationSuccess($authorizedPayment, $subscription);
         }
         catch (\Exception $ex)
         {
-            $this->handleAuthorizationFailure($job, $ex, $subscription);
+            $this->trace->traceException($ex);
+
+            $this->handleAuthorizationFailure($subscription);
+
+            return;
+        }
+        finally
+        {
+            $job->delete();
         }
 
-        $job->delete();
+        // This is being done outside the try-catch-finally block because we
+        // do not want to invoke the function handleAuthorizationFailure
+        // if an exception gets thrown in handleAuthorizationSuccess.
+        $this->handleAuthorizationSuccess($authorizedPayment, $subscription);
     }
 
     protected function authorizePayment(array $recurringPayload)
@@ -74,35 +86,88 @@ class Charge
     protected function handleAuthorizationSuccess(Payment\Entity $authorizedPayment, Entity $subscription)
     {
         $authorizedPayment->subscription()->associate($subscription);
-
         $this->repo->saveOrFail($authorizedPayment);
+
+        $this->resetErrorFields($subscription);
+        $this->repo->saveOrFail($subscription);
 
         try
         {
             $capturedPayment = $this->capturePayment($authorizedPayment);
-
-            $this->handleCaptureSuccess($subscription, $capturedPayment);
         }
         catch (\Exception $ex)
         {
+            $this->trace->traceException($ex);
+
             $this->handleCaptureFailure($subscription);
+
+            return;
         }
+
+        // This is being done outside the try-catch block because we do not
+        // want to invoke handleCaptureFailure if an exception gets thrown
+        // in handleCaptureSuccess flow.
+        $this->handleCaptureSuccess($subscription, $capturedPayment);
     }
 
-    protected function handleAuthorizationFailure(array $job, \Exception $ex, Entity $subscription)
+    protected function resetErrorFields(Entity $subscription)
     {
+        $subscription->setFailedAt(null);
+        $subscription->setErrorStatus(null);
+    }
+
+    protected function handleAuthorizationFailure(Entity $subscription)
+    {
+        $this->trace->error(
+            TraceCode::SUBSCRIPTION_PAYMENT_AUTHORIZE_FAILED,
+            [
+                'subscription_id'   => $subscription->getId(),
+            ]);
+
         $subscription->setErrorStatus(Status::AUTH_FAILURE);
 
-        if ($subscription->getAuthAttempts() < self::MAX_AUTH_ATTEMPTS)
+        $authAttempts = $subscription->getAuthAttempts();
+
+        if ($authAttempts < self::MAX_AUTH_ATTEMPTS)
         {
             $subscription->setStatus(Status::ON_HOLD);
+            $this->incrementChargeAtByOneDay($subscription);
+        }
+        else if ($authAttempts === self::MAX_AUTH_ATTEMPTS)
+        {
+            $subscription->setStatus(Status::FAILED);
+            $subscription->setFailedAt(time());
+
+            // TODO: Notify merchant about the failure.
         }
         else
         {
-            $subscription->setStatus(Status::FAILED);
+            throw new LogicException(
+                'Should not have reached here. Auth Attempts cannot be greater than 3.',
+                null,
+                [
+                    'subscription_id'   => $subscription->getId(),
+                    'auth_attempts'     => $authAttempts,
+                ]);
         }
 
         $this->repo->saveOrFail($subscription);
+    }
+
+    /**
+     * This function is only called during an auth_failure.
+     *
+     * @param Entity $subscription
+     */
+    protected function incrementChargeAtByOneDay(Entity $subscription)
+    {
+        $currentChargeAt = $subscription->getChargeAt();
+
+        $currentChargeAt = Carbon::createFromTimestamp($currentChargeAt);
+
+        $nextChargeAt = $currentChargeAt->addDay()->timestamp;
+
+        $subscription->setChargeAt($nextChargeAt);
     }
 
     protected function capturePayment(Payment\Entity $authorizedPayment)
@@ -124,6 +189,8 @@ class Charge
 
         $subscription->setStatus(Status::PROCESSED);
 
+        $this->resetErrorStatusForSuccessfulCapture($subscription, $capturedPayment);
+
         $this->setCurrentPeriod($subscription, $plan);
 
         $this->setNextChargeAt($subscription, $plan);
@@ -137,8 +204,32 @@ class Charge
         $this->repo->saveOrFail($subscription);
     }
 
+    protected function resetErrorStatusForSuccessfulCapture(Entity $subscription, Payment\Entity $capturedPayment)
+    {
+        $errorStatus = $subscription->getErrorStatus();
+
+        // At this point of the flow, if there is an error, it should be capture failure only.
+        // If it was auth_failure, capture shouldn't have been called at all for the payment.
+
+        if (($errorStatus === null) or
+            ($errorStatus === Status::CAPTURE_FAILURE))
+        {
+            $subscription->setErrorStatus(null);
+        }
+        else
+        {
+            $this->trace->error(
+                TraceCode::SUBSCRIPTION_ERROR_STATUS_UNEXPECTED,
+                [
+                    'payment_id'        => $capturedPayment->getId(),
+                    'subscription_id'   => $subscription->getId(),
+                    'error_status'      => $errorStatus,
+                ]);
+        }
+    }
+
     /**
-     * This basically uses the captured_at.
+     * This just uses the captured_at.
      *
      * @param Entity $subscription
      * @param Payment\Entity $capturedPayment
@@ -160,6 +251,9 @@ class Charge
      * If the current period's end is greater than the end_at of the subscription,
      * we set the charge_at to null.
      *
+     * We cannot take the current charge_at and just add the interval to it
+     * for the next charge_at because charge_at can be modified during auth failures.
+     *
      * @param Entity $subscription
      * @param Plan\Entity $plan
      */
@@ -177,27 +271,27 @@ class Charge
 
         $subscription->setChargeAt($nextChargeAt);
 
-        $currentChargeAt = $subscription->getChargeAt();
-
-        $currentChargeAt = Carbon::createFromTimestamp($currentChargeAt);
-
-        $intervalFunc = $this->getIntervalFunction($plan);
-
-        $intervalCount = $plan->getIntervalCount();
-
-        // Modifies currentChargeAt variable.
-        $currentChargeAt->$intervalFunc($intervalCount);
-
-        $nextChargeAt = $currentChargeAt->timestamp;
-
-        $endAt = $subscription->getEndAt();
-
-        if ($nextChargeAt > $endAt)
-        {
-            $nextChargeAt = null;
-        }
-
-        $subscription->setChargeAt($nextChargeAt);
+        // $currentChargeAt = $subscription->getChargeAt();
+        //
+        // $currentChargeAt = Carbon::createFromTimestamp($currentChargeAt);
+        //
+        // $intervalFunc = $this->getIntervalFunction($plan);
+        //
+        // $intervalCount = $plan->getIntervalCount();
+        //
+        // // Modifies currentChargeAt variable.
+        // $currentChargeAt->$intervalFunc($intervalCount);
+        //
+        // $nextChargeAt = $currentChargeAt->timestamp;
+        //
+        // $endAt = $subscription->getEndAt();
+        //
+        // if ($nextChargeAt > $endAt)
+        // {
+        //     $nextChargeAt = null;
+        // }
+        //
+        // $subscription->setChargeAt($nextChargeAt);
     }
 
     /**
@@ -252,6 +346,12 @@ class Charge
 
     protected function handleCaptureFailure(Entity $subscription)
     {
+        $this->trace->error(
+            TraceCode::SUBSCRIPTION_PAYMENT_CAPTURE_FAILED,
+            [
+                'subscription_id'   => $subscription->getId(),
+            ]);
+
         $subscription->setStatus(Status::ON_HOLD);
         $subscription->setErrorStatus(Status::CAPTURE_FAILURE);
 
@@ -315,13 +415,6 @@ class Charge
         $settings['color'] = 'danger';
 
         return $settings;
-    }
-
-    protected function getNewProcessor(Merchant\Entity $merchant)
-    {
-        $processor = new Payment\Processor\Processor($merchant);
-
-        return $processor;
     }
 
     protected function getIntervalFunction(Plan\Entity $plan)

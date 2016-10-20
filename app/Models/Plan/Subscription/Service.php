@@ -6,6 +6,7 @@ use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\Customer\Token;
 use RZP\Models\Plan;
+use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
@@ -40,13 +41,87 @@ class Service extends Base\Service
     {
         $subscriptionsToCharge = $this->repo->subscription->getSubscriptionsToCharge();
 
-        $payments = [];
+        $queued = $failed = 0;
+        $failures = [];
 
         foreach ($subscriptionsToCharge as $subscription)
         {
-            $payments[] = $this->core->charge($subscription);
+            try
+            {
+                $this->core->charge($subscription);
+                $queued += 1;
+            }
+            catch (\Exception $ex)
+            {
+                $failed += 1;
+                $failures[] = $subscription->getId();
+
+                $this->trace->traceException($ex);
+
+                $this->trace->error(
+                    TraceCode::SUBSCRIPTION_CHARGE_QUEUE_FAILED,
+                    [
+                        'subscription_id' => $subscription->getId(),
+                    ]);
+            }
         }
 
-        return $payments;
+        $summary = [
+            'total' => $subscriptionsToCharge->count(),
+            'queued' => $queued,
+            'failed' => $failed,
+            'failure_subscriptions' => $failures,
+        ];
+
+        $this->trace->info(
+            TraceCode::SUBSCRIPTION_CHARGE_QUEUE_SUMMARY,
+            $summary
+        );
+
+        return $summary;
+    }
+
+    public function retryAuthSubscription()
+    {
+        $subscriptionsToRetry = $this->repo->subscription->getSubscriptionsToRetry();
+
+        $queued = $failed = 0;
+        $failures = [];
+
+        foreach ($subscriptionsToRetry as $subscription)
+        {
+            try
+            {
+                $this->core->retry($subscription);
+                $queued += 1;
+            }
+            catch (\Exception $ex)
+            {
+                $failed += 1;
+                $failures[] = $subscription->getId();
+
+                $this->trace->traceException($ex);
+
+                $this->trace->error(
+                    TraceCode::SUBSCRIPTION_RETRY_QUEUE_FAILED,
+                    [
+                        'subscription_id' => $subscription->getId(),
+                    ]);
+            }
+        }
+
+        $summary = [
+            'total' => $subscriptionsToRetry->count(),
+            'queued' => $queued,
+            'failed' => $failed,
+            'failure_subscriptions' => $failures,
+        ];
+
+        $this->trace->info(
+            TraceCode::SUBSCRIPTION_RETRY_QUEUE_SUMMARY,
+            $summary
+        );
+
+        return $summary;
     }
 }

@@ -2,7 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
-use RZP\Http\ApiResponse;
+use ApiResponse;
 use RZP\Models\Plan;
 use Request;
 
@@ -41,6 +41,13 @@ class PlanController extends Controller
     {
         $summary = $this->subscriptionService->chargeSubscriptions();
 
+        return ApiResponse::json($summary);
+    }
+
+    public function postRetryAuthSubscriptions()
+    {
+        $summary = $this->subscriptionService->retryAuthSubscription();
+        
         return ApiResponse::json($summary);
     }
 }
