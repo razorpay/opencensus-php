@@ -95,11 +95,11 @@ trait Authorize
             $this->runPostGatewaySelectionPreProcessing($payment, $terminalGatewayInput);
 
             $segmentCustomProps = [
-                'terminals' => $this->selectedTerminals,
-                'terminal_gateway_input' => $terminalGatewayInput,
-                'selected_terminal' => $currentTerminal,
-                'retry_attempt' => $retryAttempts
-            ];
+                                    'terminals'                 => $this->selectedTerminals,
+                                    'terminal_gateway_input'    => $terminalGatewayInput,
+                                    'selected_terminal'         => $currentTerminal->toArrayPublic(),
+                                    'retry_attempt'             => $retryAttempts
+                                ];
 
             $this->app['segment']->trackPayment($payment, TraceCode::SEGMENT_GATEWAY_POSTPROCESSING, $segmentCustomProps);
 
