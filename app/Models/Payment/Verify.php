@@ -19,7 +19,7 @@ class Verify
     protected $core;
     protected $paymentRepo;
     protected $mutex;
-    protected $slackHandler;
+    protected $slack;
 
     public function __construct()
     {
@@ -33,11 +33,13 @@ class Verify
 
         $this->mutex = $app['api.mutex'];
 
-        $this->slackHandler = $app['slack'];
+        $this->slack = $app['slack'];
     }
 
     /* Verify Payments Based on filter
+     *
      * @param  string $filter filter
+     *
      * @return return aggregrated result of verify results
      *         Sample Result
      *         [
@@ -75,7 +77,7 @@ class Verify
                 break;
 
             default:
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_PARAMETERS, $filter);
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_PARAMETERS, 'filter', $filter);
         }
 
         $ts = time() - Constants\Verify::getMinimumTimeBeforeVerify($filter);
@@ -135,7 +137,7 @@ class Verify
 
             if ($verifyStatus === Constants\Verify::AUTHORIZED)
             {
-                $timeDiff += time() - $payment->getCreatedAt();
+                $timeDiff += (time() - $payment->getCreatedAt());
             }
 
             $result[$verifyStatus] += 1;
@@ -147,7 +149,7 @@ class Verify
 
         if ($result[Constants\Verify::AUTHORIZED] !== 0)
         {
-            $avgTimeDiff = (int) ($timeDiff / $results[Constants\Verify::AUTHORIZED]);
+            $avgTimeDiff = (int) ($timeDiff / $result[Constants\Verify::AUTHORIZED]);
         }
 
         $total = array_sum($result);
@@ -171,7 +173,7 @@ class Verify
 
             $message = 'Payment verify result';
 
-            $this->slackHandler->queue(
+            $this->slack->queue(
                 $message,
                 $slackArray,
                 [
