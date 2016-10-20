@@ -306,13 +306,7 @@ class Gateway extends Base\Gateway
 
         $response = $this->postSoapRequest($requestContent, ApiRequestFields::ACTION_REQUEST);
 
-        $ipgApiActionResponse = $this->parseVerifyResponse($response);
-
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
-            [
-                'gateway_verify_response' => $ipgApiActionResponse->asXML()
-            ]);
+        $ipgApiActionResponse = $this->parseVerifyResponse($input['payment'], $response);
 
         $verify->setVerifyResponseContent($ipgApiActionResponse);
     }
@@ -327,30 +321,46 @@ class Gateway extends Base\Gateway
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
-        foreach ($verifyResponse->children('a1', true) as $transactionValue)
+        if($verifyResponse === null)
         {
-            $type   = $transactionValue->children('v1', true)->CreditCardTxType->Type->__toString();
+            // Verify request failed, as FirstData API returned successfully flag set to false
+            // This is probably because the payment request timed out, or some other unknown
+            // reason. Either way, this is equivalent to gateway success being false.
+            $verify->gatewaySuccess = false;
 
-            // Verify response contains separate states for all transactions, possibly multiple for refund/capture.
-            // We're only interested in the preauth transaction state, so loop to that one, and check status.
-            if ($type === TxnType::AUTH)
-            {
-                $verifyAuthResponse = $transactionValue;
-            }
+            $authTdate              = null;
+
+            $authGatewayPaymentId   = null;
+
+            $authGatewayStatus      = Status::FAILED;
         }
+        else
+        {
+            foreach ($verifyResponse->children('a1', true) as $transactionValue)
+            {
+                $type   = $transactionValue->children('v1', true)->CreditCardTxType->Type->__toString();
 
-        // A example of the verify response structure can be found
-        // in the verifyResponseWrapper method of SoapWrapper class.
-        //
-        // As tdate, order_ID and state are structed under different
-        // namespaces, their parsing logic is also distinct.
-        $authTdate  = $verifyAuthResponse->children('v1', true)->TransactionDetails->TDate->__toString();
+                // Verify response contains separate states for all transactions, possibly multiple for refund/capture.
+                // We're only interested in the preauth transaction state, so loop to that one, and check status.
+                if ($type === TxnType::AUTH)
+                {
+                    $verifyAuthResponse = $transactionValue;
+                }
+            }
 
-        $authGatewayPaymentId = $verifyAuthResponse->children('v1', true)->TransactionDetails->OrderId->__toString();
+            // A example of the verify response structure can be found
+            // in the verifyResponseWrapper method of SoapWrapper class.
+            //
+            // As tdate, order_ID and state are structed under different
+            // namespaces, their parsing logic is also distinct.
+            $authTdate  = $verifyAuthResponse->children('v1', true)->TransactionDetails->TDate->__toString();
 
-        $authGatewayStatus  = $verifyAuthResponse->children('a1', true)->TransactionState->__toString();
+            $authGatewayPaymentId = $verifyAuthResponse->children('v1', true)->TransactionDetails->OrderId->__toString();
 
-        $verify->gatewaySuccess = ($authGatewayStatus === Status::AUTHORIZED);
+            $authGatewayStatus  = $verifyAuthResponse->children('a1', true)->TransactionState->__toString();
+
+            $verify->gatewaySuccess = ($authGatewayStatus === Status::AUTHORIZED);
+        }
 
         $verify->apiSuccess = $this->getVerifyApiStatus($gatewayPayment, $input['payment']);
 
@@ -359,9 +369,15 @@ class Gateway extends Base\Gateway
             $verify->status = VerifyResult::STATUS_MISMATCH;
         }
 
-        $verify->payment = $this->saveVerifyContent($gatewayPayment, $authGatewayPaymentId, $authGatewayStatus, $authTdate);
+        $verify->payment = $this->saveVerifyContent($gatewayPayment, $authGatewayPaymentId,
+                                                    $authGatewayStatus, $authTdate);
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
+
+        // Verify Response is actually a SOAP Object, and AuthorizeFailed
+        // expects it to be an array. This avoids an error being thrown
+        // during failed->auth process.
+        $verify->setVerifyResponseContent([]);
     }
 
     protected function getVerifyApiStatus($gatewayPayment, $payment)
@@ -475,7 +491,7 @@ class Gateway extends Base\Gateway
      * @param  $xml Response received
      * @return $ipgApiActionResponse
      */
-    protected function parseVerifyResponse($xml)
+    protected function parseVerifyResponse($payment, $xml)
     {
         $ipgApiActionResponse = $xml->children('SOAP-ENV', true)->Body->children('ipgapi', true);
 
@@ -483,11 +499,23 @@ class Gateway extends Base\Gateway
 
         if ($successful === 'false')
         {
-            throw new Exception\GatewayErrorException(
-                        Error\ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
-                        null,
-                        'Verification failed');
+            $this->trace->warning(
+                TraceCode::PAYMENT_VERIFY_FAILED,
+                [
+                    'payment_id' => $payment['id'],
+                    'message'    => 'Payment verification failed.',
+                    'gateway'    => $this->gateway,
+                ]);
+
+            return null;
         }
+
+        $this->trace->info(
+                TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+                [
+                    'gateway_verify_response' => $ipgApiActionResponse->asXML()
+                ]
+            );
 
         return $ipgApiActionResponse;
     }
