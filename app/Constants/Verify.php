@@ -48,13 +48,13 @@ class Verify
 
     // TODO: This is present here to ensure backward compatibility and
     // should be removed after the required changes in the cron are made.
-    const ALL_MIN_TIME        = 120;  // 2 Minutes
+    const FAILURE_MIN_TIME        = 120;  // 2 Minutes
 
     /**
      * This is the minimum time for which the payment should be in
      * failed state, before we run a "failed/error" verify on it.
      */
-    const DEFAULT_MIN_TIME    = 0;    // 0 Minute
+    const ERRORED_MIN_TIME    = 0;    // 0 Minute
 
     // ================== End Configurations ==================
 
@@ -76,10 +76,13 @@ class Verify
 
     // ================== End Verify Results ==================
 
+    // ================== Verify Filter ==================
+
     const PAYMENTS_CREATED  = 'payments_created';
     const PAYMENTS_FAILED   = 'payments_failed';
     const VERIFY_ERROR      = 'verify_error';
 
+    // ================== End Verify Filter ==================
 
     /*
      * @param string $filter    filter for which boundary has to be returned

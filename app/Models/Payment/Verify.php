@@ -63,7 +63,7 @@ class Verify
             case 'all':
             case Constants\Verify::PAYMENTS_FAILED:
                 $paymentStatus = Payment\Status::FAILED;
-                $ts = time() - Constants\Verify::ALL_MIN_TIME;
+                $ts = time() - Constants\Verify::FAILURE_MIN_TIME;
                 break;
 
             case 'created':
@@ -74,13 +74,13 @@ class Verify
 
             case 'failed':
                 $verifyStatus = Constants\Verify::VERIFIED_FAILED;
-                $ts = time() - Constants\Verify::DEFAULT_MIN_TIME;
+                $ts = time() - Constants\Verify::ERRORED_MIN_TIME;
                 break;
 
             case 'error':
             case Constants\Verify::VERIFY_ERROR:
                 $verifyStatus = Constants\Verify::VERIFIED_ERROR;
-                $ts = time() - Constants\Verify::DEFAULT_MIN_TIME;
+                $ts = time() - Constants\Verify::ERRORED_MIN_TIME;
                 break;
 
             default:
@@ -99,6 +99,12 @@ class Verify
         }
 
         $payments = $this->paymentRepo->getPaymentsToVerify($ts, $boundaryQueryData, $verifyStatus, $paymentStatus);
+
+        // Pick Random 100 values by shuffling and then slice for first 100 values
+        $payments->shuffle();
+
+        $payments->slice(0, 100);
+
         return $this->verifyMultiplePayments($payments, $filter);
     }
 
@@ -163,7 +169,7 @@ class Verify
             $verifyLockKeys[] = $payment->getId() . Constants\Verify::KEY_SUFFIX;
         }
 
-        $verifyKeys = $this->mutex->acquireMultiple($verifyLockKeys, 86400, $strict);
+        $verifyKeys = $this->mutex->acquireMultiple($verifyLockKeys, 3600, $strict);
 
         return $verifyKeys;
     }
