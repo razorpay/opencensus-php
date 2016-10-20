@@ -63,7 +63,7 @@ class EmiFile
     {
         $gateway = $payment->getGateway();
 
-        $gatewayPayment = $this->repo->$gateway->findByPaymentIdAndActionOrFail($payment->getId(), Action::CAPTURE);
+        $gatewayPayment = $this->repo->$gateway->findCapturedPaymentByIdOrFail($payment->getId());
 
         return $gatewayPayment->getAuthCode();
     }
