@@ -27,12 +27,11 @@
 
 ### ( OSX )
 *  Copy the contents of `api.razorpay.com.conf` to `httpd-vhosts.conf` and update the directory location where your project lies.
+*  In `/etc/hosts`, add `api.razorpay.dev` to the list of domains that loopback to your own machine.
 * Follow Common Instructions
 * Follow Common Test Setup Instructions
-#### OSX - Extra steps
-
 * Install coreutils `brew install coreutils --with-default-names`
-~~* Create a symbolic link for date util `sudo ln -s /usr/local/opt/coreutils/libexec/gnubin/date /usr/bin/date`~~
+* ~~Create a symbolic link for date util `sudo ln -s /usr/local/opt/coreutils/libexec/gnubin/date /usr/bin/date`~~
 
 ### Common Instruction
 
