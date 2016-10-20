@@ -776,9 +776,10 @@ class Processor
         $date = Carbon::today('Asia/Kolkata');
         $ts = $date->subDays($days)->timestamp;
 
-        // If payment is not authorized or if it's late authorized,
-        // do not auto capture it, irrespective of it being a signed
-        // payment or marked for auto capture.
+        // If payment is not authorized or if it's late authorized and
+        // has exceeded the auto refund time period, do not auto capture
+        // it, irrespective of it being a signed payment or marked
+        // for auto capture.
         if (($payment->isAuthorized() === false) or
             (($payment->isLateAuthorized() === true) and
              ($payment->getCreatedAt() < $ts)))
