@@ -80,7 +80,7 @@ class TerminalRotatorTest extends TestCase
         // only a order id, ensure the payment goes through
         // the other terminal
 
-        $order = $this->createOrder();
+        $order = $this->createTestOrder();
 
         $this->fixtures->times(5)->create('terminal:dynamic_shared_hdfc_terminal');
 
@@ -139,7 +139,7 @@ class TerminalRotatorTest extends TestCase
         // not excluded and the payment fails again with the
         // same exception that it failed before.
 
-        $order = $this->createOrder();
+        $order = $this->createTestOrder();
 
         $this->fixtures->create('terminal:shared_hdfc_terminal');
 
@@ -151,9 +151,12 @@ class TerminalRotatorTest extends TestCase
 
         $data = $this->testData['testMultipleFailAttemptsWithSameTerminals'];
 
-        $this->runRequestResponseFlow($data, function() use ($payment1) {
-            $this->doAuthPayment($payment1);
-        });
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment1)
+            {
+                $this->doAuthPayment($payment1);
+            });
 
         $payment2 = $this->getPaymentArray();
 
@@ -168,7 +171,7 @@ class TerminalRotatorTest extends TestCase
     {
         $data = $this->testData['testMultipleFailAttemptsWithSameTerminals'];
 
-        $order = $this->createOrder();
+        $order = $this->createTestOrder();
 
         $this->fixtures->create('terminal:shared_hdfc_terminal');
 
@@ -227,32 +230,15 @@ class TerminalRotatorTest extends TestCase
         return $terminalsUsed;
     }
 
-    protected function stripSign(& $id)
+    protected function createTestOrder()
     {
-        $ix = strpos($id, '_');
-        if ($ix !== false)
-        {
-            $id = substr($id, $ix + 1);
-        }
-    }
-
-    protected function createOrder()
-    {
-        $request = array(
-            'content' => array(
+        $input = array(
                 'amount'        => 50000,
                 'currency'      => 'INR',
                 'receipt'       => 'rcptid42',
-            ),
-            'method' => 'POST',
-            'url' => '/orders'
-        );
+            );
 
-        $this->ba->privateAuth();
-
-        $order = $this->makeRequestAndGetContent($request);
-
-        return $order;
+        return $this->createOrder($input);
     }
 
     protected function doValidPaymentAndFetchUsedTerminals($payment)
@@ -273,9 +259,12 @@ class TerminalRotatorTest extends TestCase
     {
         $data = $this->testData['testMultipleFailAttemptsWithSameTerminals'];
 
-        $this->runRequestResponseFlow($data, function() use ($payment) {
-            $this->doAuthPayment($payment);
-        });
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            });
 
         $payment  = $this->getLastPayment(true);
 
