@@ -1034,3 +1034,6 @@ SET w.amount = r.amount
 WHERE w.wallet = 'olamoney'
     AND w.action = 'refund'
     AND w.amount != r.amount;
+
+ALTER TABLE first_data
+    ADD COLUMN auth_code VARCHAR(6) AFTER gateway_terminal_id;

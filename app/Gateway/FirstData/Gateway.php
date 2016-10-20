@@ -211,10 +211,14 @@ class Gateway extends Base\Gateway
     protected function getCallbackFields($callbackBody)
     {
         $attributes = [
-            Entity::RECEIVED           => true,
-            Entity::APPROVAL_CODE      => $callbackBody[ConnectResponseFields::APPROVAL_CODE],
-            Entity::TDATE              => $callbackBody[ConnectResponseFields::TDATE],
-            Entity::TRANSACTION_RESULT => $callbackBody[ConnectResponseFields::STATUS],
+            Entity::RECEIVED                => true,
+            Entity::APPROVAL_CODE           => $callbackBody[ConnectResponseFields::APPROVAL_CODE],
+            Entity::TDATE                   => $callbackBody[ConnectResponseFields::TDATE],
+            Entity::TRANSACTION_RESULT      => $callbackBody[ConnectResponseFields::STATUS],
+            Entity::GATEWAY_TRANSACTION_ID  => $callbackBody[ConnectResponseFields::IPG_TRANSACTION_ID],
+            Entity::ENDPOINT_TRANSACTION_ID => $callbackBody[ConnectResponseFields::ENDPOINT_TRANSACTION_ID],
+            Entity::GATEWAY_TERMINAL_ID     => $callbackBody[ConnectResponseFields::TERMINAL_ID],
+            Entity::AUTH_CODE               => $callbackBody[ConnectResponseFields::PROCESSOR_RESPONSE_CODE],
         ];
 
         if ($attributes[Entity::TRANSACTION_RESULT] === Status::APPROVED)
@@ -230,13 +234,16 @@ class Gateway extends Base\Gateway
     protected function getCaptureOrRefundFields($response, $input)
     {
         $attributes = [
-            Entity::RECEIVED           => true,
-            Entity::APPROVAL_CODE      => $response[ApiResponseFields::APPROVAL_CODE],
-            Entity::AMOUNT             => $input['amount'],
-            Entity::TDATE              => $response[ApiResponseFields::TDATE],
-            Entity::STATUS             => Status::CAPTURED,
-            Entity::TRANSACTION_RESULT => $response[ApiResponseFields::TRANSACTION_RESULT],
-            Entity::GATEWAY_PAYMENT_ID => $response[ApiResponseFields::ORDER_ID],
+            Entity::RECEIVED               => true,
+            Entity::APPROVAL_CODE          => $response[ApiResponseFields::APPROVAL_CODE],
+            Entity::AMOUNT                 => $input['amount'],
+            Entity::TDATE                  => $response[ApiResponseFields::TDATE],
+            Entity::STATUS                 => Status::CAPTURED,
+            Entity::TRANSACTION_RESULT     => $response[ApiResponseFields::TRANSACTION_RESULT],
+            Entity::GATEWAY_PAYMENT_ID     => $response[ApiResponseFields::ORDER_ID],
+            Entity::GATEWAY_TRANSACTION_ID => $response[ApiResponseFields::IPG_TRANSACTION_ID],
+            Entity::GATEWAY_TERMINAL_ID    => $response[ApiResponseFields::TERMINAL_ID],
+            Entity::AUTH_CODE              => $response[ApiResponseFields::PROCESSOR_APPROVAL_CODE],
         ];
 
         $this->setRefundIdIfNeeded($attributes, $input);
@@ -251,10 +258,13 @@ class Gateway extends Base\Gateway
         $code = ErrorCodes::getTimeoutCode();
 
         $attributes = [
-            ApiResponseFields::APPROVAL_CODE      => $code . ':' . $exception->getMessage(),
-            ApiResponseFields::ORDER_ID           => null,
-            ApiResponseFields::TDATE              => null,
-            ApiResponseFields::TRANSACTION_RESULT => null,
+            ApiResponseFields::APPROVAL_CODE           => $code . ':' . $exception->getMessage(),
+            ApiResponseFields::ORDER_ID                => null,
+            ApiResponseFields::TDATE                   => null,
+            ApiResponseFields::TRANSACTION_RESULT      => null,
+            ApiResponseFields::IPG_TRANSACTION_ID      => null,
+            ApiResponseFields::TERMINAL_ID             => null,
+            ApiResponseFields::PROCESSOR_APPROVAL_CODE => null,
         ];
 
         return $attributes;
