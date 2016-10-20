@@ -61,26 +61,31 @@ class Verify
         switch($filter)
         {
             case 'all':
+            case Constants\Verify::PAYMENTS_FAILED:
                 $paymentStatus = Payment\Status::FAILED;
+                $ts = time() - Constants\Verify::ALL_MIN_TIME;
                 break;
 
             case 'created':
+            case Constants\Verify::PAYMENTS_CREATED:
                 $paymentStatus = Payment\Status::CREATED;
+                $ts = time() - Constants\Verify::CREATED_MIN_TIME;
                 break;
 
             case 'failed':
                 $verifyStatus = Constants\Verify::VERIFIED_FAILED;
+                $ts = time() - Constants\Verify::DEFAULT_MIN_TIME;
                 break;
 
             case 'error':
+            case Constants\Verify::VERIFY_ERROR:
                 $verifyStatus = Constants\Verify::VERIFIED_ERROR;
+                $ts = time() - Constants\Verify::DEFAULT_MIN_TIME;
                 break;
 
             default:
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_PARAMETERS, 'filter', $filter);
         }
-
-        $ts = time() - Constants\Verify::getMinimumTimeBeforeVerify($filter);
 
         $boundary = Constants\Verify::getBoundaryInSeconds($filter);
 
@@ -94,10 +99,14 @@ class Verify
         }
 
         $payments = $this->paymentRepo->getPaymentsToVerify($ts, $boundaryQueryData, $verifyStatus, $paymentStatus);
-
         return $this->verifyMultiplePayments($payments, $filter);
     }
 
+    /*
+     * @param Base\PublicCollection $payments
+     * @param string                $filter
+     * @return array with aggregrated results
+    */
     public function verifyMultiplePayments(Base\PublicCollection $payments, $filter)
     {
         $result = [
@@ -105,14 +114,46 @@ class Verify
             Constants\Verify::SUCCESS       => 0,
             Constants\Verify::TIMEOUT       => 0,
             Constants\Verify::ERROR         => 0,
+            'verifyStartTime'               => time(),
+            'timeDiff'                      => 0,
         ];
 
-        $avgTimeDiff = 0;
+        $verifyKeys = $this->lockPaymentsForVerify($payments);
 
-        $verifyStartTime = time();
+        foreach ($payments as $payment)
+        {
+            if (in_array($payment->getId() . Constants\Verify::KEY_SUFFIX, $verifyKeys['locked']) === false)
+            {
+                // If a payment cannot be locked for verify, don't run verify for those payments
+                continue;
+            }
 
-        $timeDiff = 0;
+            $verifyStatus = $this->verifyPayment($payment);
 
+            if ($verifyStatus === Constants\Verify::AUTHORIZED)
+            {
+                $result['timeDiff'] += (time() - $payment->getCreatedAt());
+            }
+
+            $result[$verifyStatus] += 1;
+        }
+
+        $this->releasePaymentsAfterVerify($verifyKeys['locked']);
+
+        $processedResults = $this->processResult($result, $filter);
+
+        $this->notifyInSlack($result, $processedResults);
+
+        return $processedResults;
+    }
+
+    /* Lock All Paymnets
+     * @param Base\PublicCollection $payments
+     * @return array with keys locked and not_locked,
+     *         having payments which are locked and not_locked respectively
+    */
+    protected function lockPaymentsForVerify(Base\PublicCollection $payments)
+    {
         $verifyLockKeys = [];
 
         $strict = false;
@@ -124,35 +165,33 @@ class Verify
 
         $verifyKeys = $this->mutex->acquireMultiple($verifyLockKeys, 86400, $strict);
 
-        foreach ($payments as $payment)
-        {
-            if (in_array($payment->getId() . Constants\Verify::KEY_SUFFIX, $verifyKeys['locked']) === false)
-            {
-                // If a payment cannot be locked for verify,
-                // Ignore the payment for running verify
-                continue;
-            }
+        return $verifyKeys;
+    }
 
-            $verifyStatus = $this->verifyPayment($payment);
+    /* Release lock on all payments id lcoked for verify
+     * @param array $lockedKeys array containing all keys which are locked
+     * @return void
+    */
+    protected function releasePaymentsAfterVerify(array $lockedKeys)
+    {
+        $this->mutex->releaseMultiple($lockedKeys);
+    }
 
-            if ($verifyStatus === Constants\Verify::AUTHORIZED)
-            {
-                $timeDiff += (time() - $payment->getCreatedAt());
-            }
+    /* Process the result for displaying in slack and returning to caller
+     * @param arary  $result  raw result array
+     * @param string $filter  filter used to fetch payments
+     * @return array with processed result
+    */
+    protected function processResult(array $result, $filter)
+    {
+        $avgTimeDiff = 0;
 
-            $result[$verifyStatus] += 1;
-        }
-
-        $this->mutex->releaseMultiple($verifyKeys['locked']);
-
-        $totalTime = time() - $verifyStartTime;
+        $totalTime = time() - $result['verifyStartTime'];
 
         if ($result[Constants\Verify::AUTHORIZED] !== 0)
         {
-            $avgTimeDiff = (int) ($timeDiff / $result[Constants\Verify::AUTHORIZED]);
+            $avgTimeDiff = (int) ($result['timeDiff'] / $result[Constants\Verify::AUTHORIZED]);
         }
-
-        $total = array_sum($result);
 
         $processedResults = [
             'filter'            => $filter,
@@ -163,6 +202,22 @@ class Verify
             'authorizedTime'    => $avgTimeDiff,
             'totalTime'         => $totalTime . ' secs'
         ];
+
+        return $processedResults;
+    }
+
+    /* Notify Processed Data in slack
+     * @param arary  $result           raw result array
+     * @param string $processedResults processed result array
+     * @return void
+    */
+    protected function notifyInSlack(array $result, array $processedResults)
+    {
+        unset($result['timeDiff']);
+
+        unset($result['verifyStartTime']);
+
+        $total = array_sum($result);
 
         if (($total !== 0) and
             (($result[Constants\Verify::SUCCESS] > 4) or
@@ -181,8 +236,6 @@ class Verify
                 ]
             );
         }
-
-        return $processedResults;
     }
 
     public function verifyPayment(Payment\Entity $payment)

@@ -19,7 +19,7 @@ class Verify
      * For all the payments which are NOT in created state,
      * verify for the payment will be run once for in every boundary bucket.
      */
-    protected static $defaultStartBoundary = [
+    protected static $failureStartBoundary = [
         1 => 900,           // 15  Minutes
         2 => 3600,          // 60  Minutes
         // TODO: Decide on the boundaries.
@@ -76,6 +76,11 @@ class Verify
 
     // ================== End Verify Results ==================
 
+    const PAYMENTS_CREATED  = 'payments_created';
+    const PAYMENTS_FAILED   = 'payments_failed';
+    const VERIFY_ERROR      = 'verify_error';
+
+
     /*
      * @param string $filter    filter for which boundary has to be returned
      * @param int    $daysToAdd days to be added at end after default days boundary
@@ -88,56 +93,31 @@ class Verify
     */
     public static function getBoundaryInSeconds($filter, $daysToAdd = 0)
     {
-        $boundary = self::getStartBoundary($filter);
-
-        if ($filter !== 'created')
+        switch($filter)
         {
-            // This will add daily boundaries at the end
-            foreach (range (1, (self::DEFAULT_MAX_DAYS + $daysToAdd)) as $day)
-            {
-                $boundary[] = $day * self::SECONDS_IN_DAY;
-            }
+            //TODO: remove 'created', 'failure', 'error' and 'all' filter
+            case 'created':
+            case self::PAYMENTS_CREATED:
+                $boundary = self::$createdStartBoundary;
+                break;
 
-        }
+            case 'failure':
+            case 'error':
+            case self::VERIFY_ERROR:
+            case 'all':
+            case self::PAYMENTS_FAILED:
 
-        return $boundary;
-    }
+                $boundary = self::$failureStartBoundary;
 
-    /*
-     * Return the minimum time before which verify whould be started after payment is created
-     * @param string $filter filter for which the minimum time should be returned
-     *                       possible values: all, created, error, failure
-     * @return int Time(in secs), after which verify cron will pick payments
-    */
-    public static function getMinimumTimeBeforeVerify($filter)
-    {
-        $time = self::DEFAULT_MIN_TIME;
+                foreach (range (1, (self::DEFAULT_MAX_DAYS + $daysToAdd)) as $day)
+                {
+                    $boundary[] = $day * self::SECONDS_IN_DAY;
+                }
 
-        if ($filter === 'all')
-        {
-            $time = self::ALL_MIN_TIME;
-        }
-        else if ($filter === 'created')
-        {
-            $time = self::CREATED_MIN_TIME;
-        }
+                break;
 
-        return $time;
-    }
-
-    /*
-     * Return the initial uneven boundary for VERIFY_BUCKET
-     * @param string $filter filter for which the boundary should be returned
-     *                       possible values: all, created, error, failure
-     * @return array verify Boundary Array
-    */
-    public static function getStartBoundary($filter)
-    {
-        $boundary = self::$defaultStartBoundary;
-
-        if ($filter === 'created')
-        {
-            $boundary = self::$createdStartBoundary;
+            default:
+                throw new Exception\LogicException('Unknown filter: ' . $filter);
         }
 
         return $boundary;
