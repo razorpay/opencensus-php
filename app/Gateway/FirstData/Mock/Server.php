@@ -231,7 +231,7 @@ class Server extends Base\Mock\Server
 
     protected function scrub($cardnumber, $paymentMethod)
     {
-        if (is_null($paymentMethod))
+        if ($paymentMethod === null)
         {
             $networkCode = 'UNKNOWN';
         }

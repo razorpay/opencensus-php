@@ -94,6 +94,8 @@ class Entity extends Base\PublicEntity
         self::VAULT,
         self::NETWORK_CODE,
         self::TRIVIA,
+        self::CREATED_AT,
+        self::UPDATED_AT,
     );
 
     protected $public = array(

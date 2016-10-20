@@ -235,18 +235,14 @@ class PaymentRetrieveTest extends TestCase
 
     public function testMoreThan100InPrivateAuth()
     {
+        $data = $this->testData[__FUNCTION__];
+
         $e = null;
 
-        try
+        $this->runRequestResponseFlow($data, function()
         {
             $content = $this->getEntities('payment', ['count' => 1000]);
-        }
-        catch (\Exception $e)
-        {
-            ;
-        }
-
-        $this->assertEquals('RZP\Exception\BadRequestValidationFailureException', get_class($e));
+        });
     }
 
     public function testSearchEsForNotes()

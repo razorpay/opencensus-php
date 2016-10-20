@@ -175,7 +175,7 @@ class FirstDataGatewayTest extends TestCase
         });
     }
 
-    public function testFailedVerify()
+    public function testFailedVerifyMismatch()
     {
         $this->doAuthPayment($this->payment);
 
