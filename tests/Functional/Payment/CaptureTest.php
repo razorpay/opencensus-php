@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Payment;
 use Redis;
 use Carbon\Carbon;
 use Mockery;
+use RZP\Exception;
 use Dashboard\Payment;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment\Entity as PaymentEntity;
@@ -182,6 +183,9 @@ class CaptureTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
+        $this->assertEquals('failed', $payment['status']);
+        $this->assertEquals('GATEWAY_ERROR_REQUEST_TIMEOUT', $payment['internal_error_code']);
+
         $this->authorizeFailedPayment($payment['id']);
 
         $payment = $this->getLastEntity('payment', true);
@@ -231,6 +235,9 @@ class CaptureTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
+        $this->assertEquals('failed', $payment['status']);
+        $this->assertEquals('GATEWAY_ERROR_REQUEST_TIMEOUT', $payment['internal_error_code']);
+
         $this->authorizeFailedPayment($payment['id']);
 
         $payment = $this->getLastEntity('payment', true);
@@ -241,6 +248,77 @@ class CaptureTest extends TestCase
         $this->assertEquals(true, $order['authorized']);
 
         $this->assertTrue($payment['amount'] === $order['amount']);
+    }
+
+    public function testMultiplePaymentsWithAutoCapture()
+    {
+        $this->app['config']->set('gateway.mock_hdfc', true);
+
+        $order = $this->fixtures->create('order', ['payment_capture' => '1']);
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action)
+        {
+            if ($action === 'authorize')
+            {
+                throw new Exception\GatewayTimeoutException('Timed out');
+            }
+
+            if ($action === 'inquiry')
+            {
+                $content['RESPCODE'] = '0';
+                $content['RESPMSG'] = 'Transaction succeeded';
+                $content['STATUS'] = 'TXN_SUCCESS';
+            }
+
+            return $content;
+        });
+
+        $this->gateway = null;
+
+        $this->makeRequestAndCatchException(function () use ($order)
+        {
+            $payment = $this->getDefaultPaymentArray();
+            $payment['amount'] = $order->getAmount();
+            $payment['order_id'] = $order->getPublicId();
+
+            $content = $this->doAuthPayment($payment);
+        });
+
+        $payment1 = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('failed', $payment1['status']);
+        $this->assertEquals('GATEWAY_ERROR_REQUEST_TIMEOUT', $payment1['internal_error_code']);
+
+        $this->makeRequestAndCatchException(function () use ($order)
+        {
+            $payment = $this->getDefaultPaymentArray();
+            $payment['amount'] = $order->getAmount();
+            $payment['order_id'] = $order->getPublicId();
+
+            $content = $this->doAuthPayment($payment);
+        });
+
+        $payment2 = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('failed', $payment2['status']);
+        $this->assertEquals('GATEWAY_ERROR_REQUEST_TIMEOUT', $payment2['internal_error_code']);
+
+        $this->authorizeFailedPayment($payment2['id']);
+        $this->authorizeFailedPayment($payment1['id']);
+
+        $olderPayment = $this->getEntityById('payment', $payment1['id'], true);
+        $newerPayment = $this->getEntityById('payment', $payment2['id'], true);
+
+        $order = $this->getLastEntity('order', true);
+
+        $this->assertEquals('captured', $newerPayment['status']);
+        $this->assertEquals('authorized', $olderPayment['status']);
+        $this->assertEquals('paid', $order['status']);
+        $this->assertEquals(true, $order['authorized']);
+
+        $this->assertTrue($olderPayment['amount'] === $order['amount']);
     }
 
     public function testCaptureAfterRefund()

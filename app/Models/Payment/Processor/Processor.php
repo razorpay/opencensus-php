@@ -773,10 +773,10 @@ class Processor
     protected function shouldAutoCapture($payment)
     {
         // If payment is not authorized or order is null, do not auto
-        // capture it, irrespective of it being a signed payment or
-        // marked for auto capture.
+        // capture it.
         if (($payment->isAuthorized() === false) or
             ($payment->getApiOrderId() === null) or
+            ($payment->order->isPaid() === true) or
             ($payment->order->getPaymentCapture() === false))
         {
             return false;

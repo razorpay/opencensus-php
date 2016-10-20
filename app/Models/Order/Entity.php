@@ -181,4 +181,9 @@ class Entity extends Base\PublicEntity
     {
         return (((int) $this->getAttribute(self::AUTHORIZED)) === 1);
     }
+
+    public function isPaid()
+    {
+        return ($this->getAttribute(self::STATUS) === Status::PAID);
+    }
 }
