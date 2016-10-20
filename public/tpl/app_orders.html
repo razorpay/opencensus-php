@@ -10,34 +10,43 @@
     <div class="panel-heading">
       List of all Orders
     </div>
-    <div class="panel-body form-inline">
+    <div class="panel-body">
       <div class="row wrapper">
-        <div class="text-center m-t" ng-show="alerts.getAlerts().length > 0">
+        <div class="col-md-12 text-center" ng-show="alerts.getAlerts().length > 0">
           <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
         </div>
-        <div class="col-sm-2">
-          Receipt:
-          <input type="text" class="form-control input-sm w-sm inline" ng-model="query.receipt" placeholder="Receipt No."
-            name="receipt" ng-enter="regenerate();"
-          >
+
+        <div class="col-md-9">
+          <div class="filter-container">
+            <div class="form-group filter-item-container">
+              <div class="filter-item">
+                <label for="receipt">Receipt:</label>
+                <input id="receipt" type="text" class="form-control input-sm" ng-model="query.receipt" placeholder="Receipt No." name="receipt" ng-enter="regenerate();" />
+              </div>
+            </div>
+
+            <div class="form-group filter-item-container filter-item-xs">
+              <div class="filter-item">
+                <label for="count">Count:</label>
+                <input id="count" type="number" class="form-control input-sm" ng-model="query.count" placeholder="20" name="count" ng-enter="regenerate()" />
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="col-sm-2">
-          Count:
-          <input type="number" class="form-control inline w-xxs"
-            ng-model="query.count" placeholder="20" name="count" ng-enter="regenerate()"
-          >
-        </div>
-        <div class="col-sm-6 pull-right">
-          <div class="input-group pull-right">
-            <input type="text" class="form-control input-sm inline" placeholder="Search Order Id" ng-model="entity.id">
-            <span class="input-group-btn">
-              <button class="btn btn-sm btn-default" type="button" ng-click="search()" busy="...">Go!</button>
-              <button class="btn btn-sm btn-default" type="button" ng-click="regenerate()" busy="...">Clear</button>
-            </span>
+        <div class="col-md-3">
+          <div class="search-filter form-group pull-right">
+            <div class="input-group">
+              <input type="text" class="form-control input-sm" placeholder="Search Order Id" ng-model="entity.id">
+              <span class="input-group-btn">
+                <button class="btn btn-sm btn-default" type="button" ng-click="search()" busy="...">Go!</button>
+                <button class="btn btn-sm btn-default" type="button" ng-click="regenerate()" busy="...">Clear</button>
+              </span>
+            </div>
           </div>
         </div>
       </div>
     </div>
+
     <div class="table-responsive">
       <table class="orders-table table table-striped b-t b-light" ui-jq="footable">
         <thead>
