@@ -177,8 +177,6 @@ class RefundBatchFileTest extends TestCase
 
     public function testProcessRefundWithThreeAttempt()
     {
-        // $this->markTestSkipped();
-
         $entries = $this->getDefaultRefundFileEntries();
 
         $batch = $this->fixtures->create('batch:refund_with_three_attempt', $entries);
