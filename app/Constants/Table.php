@@ -15,6 +15,8 @@ class Table
     const BALANCE               = 'balance';
     const METHODS               = 'merchant_banks';
     const PRICING               = 'pricing';
+    const SCHEDULE              = 'schedules';
+    const MERCHANT_SCHEDULE     = 'merchant_schedules';
     const PAYMENT               = 'payments';
     const WEBHOOK               = 'webhooks';
     const ADDRESS               = 'addresses';

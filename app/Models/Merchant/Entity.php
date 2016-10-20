@@ -211,6 +211,12 @@ class Entity extends Base\PublicEntity
             'RZP\Models\Pricing\Entity', self::PRICING_PLAN_ID, 'plan_id');
     }
 
+    public function schedule()
+    {
+        return $this->hasOne(
+            'RZP\Models\Merchant\Schedule\Entity', 'merchant_id');
+    }
+
     public function payments()
     {
         return $this->hasMany(

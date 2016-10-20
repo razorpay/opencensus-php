@@ -14,6 +14,7 @@ use RZP\Models\Terminal;
 use RZP\Models\Transaction;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement\Holidays;
+use RZP\Models\Schedule\Core as Schedule;
 use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
@@ -461,9 +462,7 @@ class Core extends Base\Core
     {
         $capturedAt = $payment->getAttribute(Payment\Entity::CAPTURED_AT);
 
-        $addDays = $payment->merchant->getSettlementSchedule();
-
-        return $this->calculateSettledAtTimestamp($capturedAt, $addDays);
+        return Schedule::getNextApplicableTime($capturedAt, $payment->merchant);
     }
 
     public function calculateSettledAtTimestamp($timestamp, $addDays, $ignoreBankHolidays = false)

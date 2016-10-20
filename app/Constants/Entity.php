@@ -28,6 +28,8 @@ class Entity
     const CREDITS               = 'credits';
     const METHODS               = 'methods';
     const PRICING               = 'pricing';
+    const SCHEDULE              = 'schedule';
+    const MERCHANT_SCHEDULE     = 'merchant_schedule';
     const PAYMENT               = 'payment';
     const WEBHOOK               = 'webhook';
     const EMI_PLAN              = 'emi_plan';

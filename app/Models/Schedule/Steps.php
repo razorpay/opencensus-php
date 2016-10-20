@@ -1,0 +1,22 @@
+<?php
+
+namespace RZP\Models\Schedule;
+
+class Steps
+{
+    const NON_ANCHORED_STEPS = [
+        Period::HOURLY       => 'Hour',
+        Period::DAILY        => 'Day',
+        Period::WEEKLY       => 'Week',
+        Period::MONTHLY_DATE => 'Month',
+        Period::MONTHLY_WEEK => 'Month',
+    ];
+
+    const ANCHORED_STEPS = [
+        Period::HOURLY       => 'Hour',
+        Period::DAILY        => 'Day',
+        Period::WEEKLY       => 'Day',
+        Period::MONTHLY_DATE => 'Day',
+        Period::MONTHLY_WEEK => 'Day',
+    ];
+}
