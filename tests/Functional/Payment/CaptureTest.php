@@ -187,8 +187,58 @@ class CaptureTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
         $order = $this->getLastEntity('order', true);
 
-        $this->assertEquals($payment['status'], 'captured');
-        $this->assertEquals($order['status'], 'paid');
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals('paid', $order['status']);
+
+        $this->assertTrue($payment['amount'] === $order['amount']);
+    }
+
+    public function testPaymentNotCapturedWithOrder()
+    {
+        $this->app['config']->set('gateway.mock_hdfc', true);
+
+        $order = $this->fixtures->create('order');
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action)
+        {
+            if ($action === 'authorize')
+            {
+                throw new Exception\GatewayTimeoutException('Timed out');
+            }
+
+            if ($action === 'inquiry')
+            {
+                $content['RESPCODE'] = '0';
+                $content['RESPMSG'] = 'Transaction succeeded';
+                $content['STATUS'] = 'TXN_SUCCESS';
+            }
+
+            return $content;
+        });
+
+        $this->gateway = null;
+
+        $this->makeRequestAndCatchException(function () use ($order)
+        {
+            $payment = $this->getDefaultPaymentArray();
+            $payment['amount'] = $order->getAmount();
+            $payment['order_id'] = $order->getPublicId();
+
+            $content = $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->authorizeFailedPayment($payment['id']);
+
+        $payment = $this->getLastEntity('payment', true);
+        $order = $this->getLastEntity('order', true);
+
+        $this->assertEquals('authorized', $payment['status']);
+        $this->assertEquals('attempted', $order['status']);
+        $this->assertEquals(true, $order['authorized']);
 
         $this->assertTrue($payment['amount'] === $order['amount']);
     }

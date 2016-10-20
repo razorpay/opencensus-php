@@ -772,29 +772,30 @@ class Processor
 
     protected function shouldAutoCapture($payment)
     {
-        $days = self::AUTO_REFUND_TIME_PERIOD;
-        $date = Carbon::today('Asia/Kolkata');
-        $ts = $date->subDays($days)->timestamp;
-
-        // If payment is not authorized or if it's late authorized and
-        // has exceeded the auto refund time period, do not auto capture
-        // it, irrespective of it being a signed payment or marked
-        // for auto capture.
+        // If payment is not authorized or order is null, do not auto
+        // capture it, irrespective of it being a signed payment or
+        // marked for auto capture.
         if (($payment->isAuthorized() === false) or
-            (($payment->isLateAuthorized() === true) and
-             ($payment->getCreatedAt() < $ts)))
+            ($payment->getApiOrderId() === null) or
+            ($payment->order->getPaymentCapture() === false))
         {
             return false;
         }
 
         // If payment order was marked as auto capture
-        if (($payment->getApiOrderId() !== null) and
-            ($payment->order->getPaymentCapture() === true))
+        $days = self::AUTO_REFUND_TIME_PERIOD;
+        $date = Carbon::today('Asia/Kolkata');
+        $ts = $date->subDays($days)->timestamp;
+
+        // Don't capture if it's late authorized and
+        // has exceeded the auto refund time period
+        if (($payment->isLateAuthorized() === true) and
+            ($payment->getCreatedAt() < $ts))
         {
-            return true;
+            return false;
         }
 
-        return false;
+        return true;
     }
 
     protected function acquireMutexOnPayment($payment)
