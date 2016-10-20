@@ -68,7 +68,7 @@ trait Verify
     protected function updatePaymentVerified(Payment\Entity $payment, $verifyStatus, $filter)
     {
         //For payment in created state don't update Payment
-        if ($payment->getStatus() !== Status::CREATED)
+        if ($payment->getStatus() === Status::CREATED)
         {
             return;
         }
