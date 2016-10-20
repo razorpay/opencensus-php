@@ -296,16 +296,7 @@ class Gateway extends Base\Gateway
 
         $response = $this->postSoapRequest($requestContent, ApiRequestFields::ACTION_REQUEST);
 
-        $ipgApiActionResponse = $this->parseVerifyResponse($response);
-
-        if ($ipgApiActionResponse !== false)
-        {
-            $this->trace->info(
-                TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
-                [
-                    'gateway_verify_response' => $ipgApiActionResponse->asXML()
-                ]);
-        }
+        $ipgApiActionResponse = $this->parseVerifyResponse($input['payment'], $response);
 
         $verify->setVerifyResponseContent($ipgApiActionResponse);
     }
@@ -320,18 +311,18 @@ class Gateway extends Base\Gateway
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
-        if($verifyResponse === false)
+        if($verifyResponse === null)
         {
             // Verify request failed, as FirstData API returned successfully flag set to false
             // This is probably because the payment request timed out, or some other unknown
             // reason. Either way, this is equivalent to gateway success being false.
             $verify->gatewaySuccess = false;
 
-            $authTdate            = null;
+            $authTdate              = null;
 
-            $authGatewayPaymentId = null;
+            $authGatewayPaymentId   = null;
 
-            $authGatewayStatus    = Status::FAILED;
+            $authGatewayStatus      = Status::FAILED;
         }
         else
         {
@@ -368,8 +359,8 @@ class Gateway extends Base\Gateway
             $verify->status = VerifyResult::STATUS_MISMATCH;
         }
 
-        $verify->payment = $this->saveVerifyContentIfNeeded($verifyResponse, $gatewayPayment,
-                                        $authGatewayPaymentId, $authGatewayStatus, $authTdate);
+        $verify->payment = $this->saveVerifyContent($gatewayPayment, $authGatewayPaymentId,
+                                                    $authGatewayStatus, $authTdate);
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
     }
@@ -411,18 +402,15 @@ class Gateway extends Base\Gateway
         return $apiStatus;
     }
 
-    protected function saveVerifyContentIfNeeded($verifyResponse, $gatewayPayment, $gatewayPaymentId, $status, $tdate)
+    protected function saveVerifyContent($gatewayPayment, $gatewayPaymentId, $status, $tdate)
     {
-        if ($verifyResponse !== false)
-        {
-            $gatewayPayment->setStatus($status);
+        $gatewayPayment->setStatus($status);
 
-            $gatewayPayment->setTdate($tdate);
+        $gatewayPayment->setTdate($tdate);
 
-            $gatewayPayment->setGatewayPaymentId($gatewayPaymentId);
+        $gatewayPayment->setGatewayPaymentId($gatewayPaymentId);
 
-            $this->repo->saveOrFail($gatewayPayment);
-        }
+        $this->repo->saveOrFail($gatewayPayment);
 
         return $gatewayPayment;
     }
@@ -488,7 +476,7 @@ class Gateway extends Base\Gateway
      * @param  $xml Response received
      * @return $ipgApiActionResponse
      */
-    protected function parseVerifyResponse($xml)
+    protected function parseVerifyResponse($payment, $xml)
     {
         $ipgApiActionResponse = $xml->children('SOAP-ENV', true)->Body->children('ipgapi', true);
 
@@ -499,12 +487,20 @@ class Gateway extends Base\Gateway
             $this->trace->warning(
                 TraceCode::PAYMENT_VERIFY_FAILED,
                 [
+                    'payment_id' => $payment['id'],
                     'message'    => 'Payment verification failed.',
-                    'gateway'    => $this->gateway
+                    'gateway'    => $this->gateway,
                 ]);
 
-            return false;
+            return null;
         }
+
+        $this->trace->info(
+                TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+                [
+                    'gateway_verify_response' => $ipgApiActionResponse->asXML()
+                ]
+            );
 
         return $ipgApiActionResponse;
     }
