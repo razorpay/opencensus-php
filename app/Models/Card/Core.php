@@ -195,7 +195,9 @@ class Core extends Base\Core
 
         if ($cards->count() > 0)
         {
-            assertTrue($cards->count() === 1);
+            // TODO: delete the other cards
+
+            $cards->sortBy(Card\Entity::ID);
 
             return $cards[0];
         }
