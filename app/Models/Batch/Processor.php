@@ -137,11 +137,12 @@ class Processor extends Base\Core
     {
         $status = Status::PROCESSED;
 
-        if (($this->batch->getFailureCount() > 0) and
-            ($this->batch->getAttempts() < 3))
-        {
-            $status = Status::PROCESSING;
-        }
+        // TODO: Remove this comment. Currently we will mark the final state as processed.
+        // if (($this->batch->getFailureCount() > 0) and
+        //     ($this->batch->getAttempts() < 3))
+        // {
+        //     $status = Status::PROCESSING;
+        // }
 
         $this->batch->setStatus($status);
     }
