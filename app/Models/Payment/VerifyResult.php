@@ -2,10 +2,12 @@
 
 namespace RZP\Models\Payment;
 
+use RZP\Constants;
+
 class VerifyResult
 {
-    const UNKNOWN   = null;
-    const FAILED    = 0;
-    const SUCCESS   = 1;
-    const ERROR     = 2;
+    const UNKNOWN   = Constants\Verify::VERIFIED_UNKNOWN;
+    const FAILED    = Constants\Verify::VERIFIED_FAILED;
+    const SUCCESS   = Constants\Verify::VERIFIED_SUCCESS;
+    const ERROR     = Constants\Verify::VERIFIED_ERROR;
 }

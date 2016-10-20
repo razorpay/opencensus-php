@@ -35,6 +35,20 @@ class Verify
         $this->slackHandler = $app['slack'];
     }
 
+    /* Verify Payments Based on filter
+     * params $filter - filter
+     * returns Return aggregrated result of verify results
+     *         Sample Result
+     *         [
+     *          'filter'            => <filter>,
+     *          'verified'          => <count>,
+     *          'authorized/failed' => <count>,
+     *          'timed out'         => <count>,
+     *          'error'             => <count>,
+     *          'authorizedTime'    => <time>,
+     *          'totalTime'         => <time>
+     *         ]
+     */
     public function verifyPaymentsWithFilter($filter)
     {
         $verifyStatus = null;
@@ -52,11 +66,11 @@ class Verify
                 break;
 
             case 'failed':
-                $verifyStatus = VerifyResult::FAILED;
+                $verifyStatus = Constants\Verify::VERIFIED_FAILED;
                 break;
 
             case 'error':
-                $verifyStatus = VerifyResult::ERROR;
+                $verifyStatus = Constants\Verify::VERIFIED_ERROR;
                 break;
 
             default:
@@ -69,6 +83,8 @@ class Verify
 
         $boundaryQueryData = [];
 
+        // $boundary have time in seconds, signifying payment should be X second old
+        // For querying on db, need to change that to absolute value
         foreach ($boundary as $key => $value)
         {
             $boundaryQueryData[$key] = time() - $value;

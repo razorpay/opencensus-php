@@ -172,6 +172,14 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    /*
+     * Return Payments object(s) which should be verified
+     * Params:  $ts             - Filter to remove Paymnets which are created before $ts seconds
+     *          $verifyBoundary - Array of [VERIFY_BUCKET and timestamp] values
+     *          $verifyStatus   - Value for filter of VerifyStatus
+     *          $paymentStatus  - Value for filter of paymnetStatus
+     * Return Payments Array
+    */
     public function getPaymentsToVerify($ts, $verifyBoundary, $verifyStatus = null, $paymentStatus = null)
     {
         $verifyEnabledGateways = Payment\Gateway::$verifyEnabled;
@@ -187,13 +195,21 @@ class Repository extends Base\Repository
             $query->status($paymentStatus);
         }
 
-        $query = $this->addWhereQueryForVerify($query, $condition);
+        $this->addWhereQueryForVerify($query, $condition);
 
         $query->orderBy(Payment\Entity::CREATED_AT, 'desc');
 
         return $query->get();
     }
 
+    /*
+     * Adds Where and orWhere Query in the query using condition
+     * Params:  $query     - Original Query
+     *          $condition - Array with Keys 'where' and 'or'
+     *                     - It will add 'where' and 'whereOr' condition
+     *                       using the values given in 'where' and 'or'
+     * Return null
+    */
     protected function addWhereQueryForVerify($query, $condition)
     {
         $query->where(
@@ -205,17 +221,21 @@ class Repository extends Base\Repository
                 {
                     $query->orWhere($orWhereCondition);
                 }
-
-                return $query;
             }
         );
-
-        return $query;
     }
 
+    /*
+     * Process $ts and VERIFY_BOUNDARY array and return where and orWhere Condition
+     * Params: $ts             - Filter to remove Paymnets which are created before $ts seconds
+     *         $verifyBoundary - Array with Key as bucket and value as time for that bucket
+     * Return array with where and orWhere Condition
+     *        where condition will be created using $ts
+     *        orWhere condition will be created using $verifyBoundary
+    */
     protected function getWhereConditionForVerify($ts, $verifyBoundary)
     {
-        // This Condition will give all newly creatd PAyments,
+        // This Condition will give all newly creatd Payments,
         // which have Crossed Minimum time threshold
         $whereCondition = [
             [Payment\Entity::VERIFY_BUCKET, '=', 0],
@@ -228,17 +248,17 @@ class Repository extends Base\Repository
         // in next Verify Bucket and not processed by previous cron
         // This will not give all payments at once, but only payments which
         // crossed the boundary after prev cron ran(SLIDING WINDOW PROTOCOL)
-        foreach($verifyBoundary as $boundary => $time)
+        foreach($verifyBoundary as $bucket => $time)
         {
             $orWhereConditions[] = [
-                [Payment\Entity::VERIFY_BUCKET, '=', $boundary],
+                [Payment\Entity::VERIFY_BUCKET, '=', $bucket],
                 [Payment\Entity::CREATED_AT, '<', $time]
             ];
         }
 
         return [
             'where' => $whereCondition,
-            'or' => $orWhereConditions
+            'or'    => $orWhereConditions
         ];
     }
 

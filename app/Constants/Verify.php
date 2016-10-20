@@ -6,12 +6,12 @@ class Verify
 {
     protected static $createdStartBoundary = [
         1 => 150,           // 2.5 Minutes
-        2 => 900,            // 15  Minutes
+        2 => 900,           // 15  Minutes
         3 => 3600,          // 60  Minutes
     ];
 
     protected static $defaultStartBoundary = [
-        2 => 900,            // 15  Minutes
+        2 => 900,           // 15  Minutes
         3 => 3600,          // 60  Minutes
     ];
 
@@ -41,9 +41,14 @@ class Verify
     const AUTHORIZED    = 'authorized';
     const TIMEOUT       = 'timeout';
 
+    // VERIFIED columns Result
+    const VERIFIED_UNKNOWN  = null;
+    const VERIFIED_FAILED   = 0;
+    const VERIFIED_SUCCESS  = 1;
+    const VERIFIED_ERROR    = 2;
     /*
      * Return the Verify Boundary Array
-     * Params : $daysToAdd --> Days to be added at end after default days boundary
+     * Params : $daysToAdd - Days to be added at end after default days boundary
      *          While Fetching payments $daysToAdd should be 0
      *          While Setting VERIFY_BUCKET $daysToAdd should be 1
      *              As we don't want to verify Payments which are verified after DEFAULT_MAX_DAYS
@@ -65,7 +70,7 @@ class Verify
 
     /*
      * Return the minimum time before which verify whould be started after payment is created
-     * Params : $filter    --> filter for which the minimum time should be returned
+     * Params : $filter    - filter for which the minimum time should be returned
      *                      possible values: all, created, error, failure
      * Return : Time(in secs), after which verify cron will pick payments
     */
@@ -87,8 +92,8 @@ class Verify
 
     /*
      * Return the initial uneven boundary for VERIFY_BUCKET
-     * Params : $filter --> filter for which the boundary should be returned
-     *                      possible values: all, created, error, failure
+     * Params : $filter - filter for which the boundary should be returned
+     *                    possible values: all, created, error, failure
      * Return : Verify Boundary Array
     */
     public static function getStartBoundary($filter)

@@ -10,11 +10,17 @@ use RZP\Constants;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Status;
-use RZP\Models\Payment\VerifyResult;
 
 trait Verify
 {
-
+    /*
+     * Run Verify on a given Payment
+     * Params : $payment - Payment for which verify should be ran
+     *          $filter  - Filter used for running the verify
+     *                     null - if ran via dashboard/manually
+     *                     all/error/failure/created - via cron
+     * Returns : Array having refund and payment data
+     */
     public function verify($payment, $filter = null)
     {
         $this->setPayment($payment);
@@ -37,7 +43,7 @@ trait Verify
         }
         catch (Exception\PaymentVerificationException $e)
         {
-            $this->updatePaymentVerified($payment, VerifyResult::FAILED, $filter);
+            $this->updatePaymentVerified($payment, Constants\Verify::VERIFIED_FAILED, $filter);
 
             $this->trace->info(
                 TraceCode::PAYMENT_VERIFY_FAILED,
@@ -53,18 +59,28 @@ trait Verify
         }
         catch (\Exception $e)
         {
-            $this->updatePaymentVerified($payment, VerifyResult::ERROR, $filter);
+            $this->updatePaymentVerified($payment, Constants\Verify::VERIFIED_ERROR, $filter);
 
             throw $e;
         }
 
-        $this->updatePaymentVerified($payment, VerifyResult::SUCCESS, $filter);
+        $this->updatePaymentVerified($payment, Constants\Verify::VERIFIED_SUCCESS, $filter);
 
         $data['payment'] = $payment->toArrayAdmin();
 
         return $data;
     }
 
+    /*
+     * Update Payment attributes after running verify
+     * Params : $payment      - Payment for which attributes should be updated
+     *          $verifyStatus - Status of verify -
+     *                          either of these ERROR,SUCCESS,FAILED
+     *          $filter       - Filter used for running the verify
+     *                          null - if ran via dashboard/manually
+     *                          all/error/failure/created - via cron
+     * Returns : null
+     */
     protected function updatePaymentVerified(Payment\Entity $payment, $verifyStatus, $filter)
     {
         //For payment in created state don't update Payment
@@ -75,7 +91,7 @@ trait Verify
 
         //  if filter is null, then verify is initiated manually, not via Cron
         //  Dont update VERIFY_BUCKET, in that case
-        if ($filter !== null)
+        if (is_null($filter) === true)
         {
             $daysToAdd = 1;
 
@@ -98,6 +114,7 @@ trait Verify
 
             $payment->setVerifyBucket($verifyBucket);
         }
+
         $payment->setVerified($verifyStatus);
 
         $this->repo->saveOrFail($payment);
@@ -105,15 +122,13 @@ trait Verify
 
     protected function notifyInSlack($data)
     {
+        $message = 'Payment verification failed.';
+
         // Use the message from $data if it has one
         if (isset($data['message']))
         {
             $message = $data['message'];
             unset($data['message']);
-        }
-        else
-        {
-            $message = 'Payment verification failed.';
         }
 
         $app = App::getFacadeRoot();
