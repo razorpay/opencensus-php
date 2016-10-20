@@ -20,6 +20,13 @@ class Service extends Base\Service
         return $settler->settle($input, $channel);
     }
 
+    public function initiateSettlementsV2($input, $channel)
+    {
+        $data = (new Settlement\Processor)->process($input, $channel);
+
+        return $data;
+    }
+
     public function generateSettlementFile($input)
     {
         $to = Carbon::now('Asia/Kolkata')->timestamp;

@@ -45,8 +45,6 @@ class Settler
 
     public function settleForParticularMerchant($input, $merchant, $channel = null)
     {
-        $this->increaseAllowedSystemLimits();
-
         $this->preSettlementProcessing();
 
         $this->input = $input;

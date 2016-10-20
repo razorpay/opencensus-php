@@ -2,13 +2,11 @@
 
 namespace RZP\Models\Settlement\Kotak;
 
-use Carbon\Carbon;
-use RZP\Error\ErrorCode;
-use RZP\Exception;
 use Excel;
-
 use Mail;
-
+use Carbon\Carbon;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
@@ -180,219 +178,6 @@ class NodalAccount
         return [$urlText, $urlExcel];
     }
 
-    public function generateSettlementFile2($settlements)
-    {
-        $textData = array();
-        $excelData = array();
-
-        $txt = '';
-
-        $row = 2; // row number
-
-        $totalAmount = $neftAmount = $iftAmount = 0;
-        $neftCount   = $iftCount   = 0;
-
-        foreach ($settlements as $settlement)
-        {
-            $merchant = $settlement->merchant;
-
-            $ba = $merchant->bankAccount;
-
-            //
-            // @note: Convert the amount to string for text file otherwise
-            //        sometimes float becomes recurring decimal in text file.
-            //        However in excel keep it as integer since it helps in
-            //        mathematical operations directly
-            //
-
-            $amount = $settlement->getAmount() / 100;
-            $totalAmount += $amount;
-
-            $type = 'NEFT';
-
-            $ifsc = $ba->getIfscCode();
-
-            $ifscFirstFour = substr($ifsc, 0, 4);
-
-            if (($ifscFirstFour === 'KKBK') or
-                ($ifscFirstFour === 'VYSA'))
-            {
-                $type = 'IFT';
-                $iftAmount += $amount;
-                $iftCount++;
-            }
-            else
-            {
-                $neftAmount += $amount;
-                $neftCount++;
-            }
-
-            $array = array(
-                'Client_Code'           => 'NODAL',
-                'Product_Code'          => 'CMSPAY',
-                'Payment_Type'          => $type,
-                'Payment_Ref_No.'       => $settlement->getPublicId(),
-                'Payment_Date'          => $this->date,
-                'Dr_Ac_No'              => static::$nodalAccountNumber,
-                'Amount'                => $amount,
-                'Bank_Code_Indicator'   => 'M',
-                'Beneficiary_Name'      => $ba->getBeneficiaryName(),
-                'IFSC Code'             => $ifsc,
-                'Beneficiary_Acc_No'    => $ba->getAccountNumber(),
-                'Credit_Narration'      => 'RAZORPAY SETTLEMENT',
-                'Payment Details 1'     => 'RAZORPAY PAYMENT',
-                'Payment Details 2'     => $merchant->getPublicId(),
-                'Payment Details 3'     => $ba->getId()
-            );
-
-            $array = $this->getAllFields($array);
-
-            $textDataArray = $array;
-            $textDataArray['Amount'] = (string) $amount;
-
-            array_push($textData, $textDataArray);
-
-            // Excel file has couple extra fields for calculating text data of that row.
-            $array['Symbol'] = '~';
-            $array['Text File'] = $this->getExcelTextFieldFormula($row);
-            $array['Beneficiary_Acc_No'] = "'".$array['Beneficiary_Acc_No'];
-            $row++;
-
-            array_push($excelData, $array);
-        }
-
-        $amounts['total'] = $totalAmount;
-        $amounts['neft'] = $neftAmount;
-        $amounts['ift'] = $iftAmount;
-
-        $count['total'] = $settlements->count();
-        $count['neft']  = $neftCount;
-        $count['ift']   = $iftCount;
-
-        $urlExcel = $this->writeToExcelFile($excelData, $this->getFileToWriteNameWithoutExt());
-
-        $txt = $this->generateText($textData);
-
-        $urlText = $this->writeToTextFile($txt);
-
-        $this->sendKotakSettlementMail($count, $amounts);
-
-        return [$urlText, $urlExcel];
-    }
-
-    /**
-     * Settlement file for kotak to be sent via h2h
-     * Includes new beneficiary code
-     *
-     * @param array $settlements all settlements that need to be processed
-     * @param array $txns all txns that need to be processed
-     * @return array Array containing url of text and excel files generated.
-     */
-    public function generateSettlementFile3($settlements)
-    {
-        $textData = array();
-        $excelData = array();
-
-        $txt = '';
-
-        $row = 2; // row number
-
-        $totalAmount = $neftAmount = $iftAmount = 0;
-        $neftCount   = $iftCount   = 0;
-
-        foreach ($settlements as $settlement)
-        {
-            $merchant = $settlement->merchant;
-
-            $ba = $merchant->bankAccount;
-
-            //
-            // @note: Convert the amount to string for text file otherwise
-            //        sometimes float becomes recurring decimal in text file.
-            //        However in excel keep it as integer since it helps in
-            //        mathematical operations directly
-            //
-
-            $amount = $settlement->getAmount() / 100;
-            $totalAmount += $amount;
-
-            $type = 'NEFT';
-
-            $ifsc = $ba->getIfscCode();
-
-            $ifscFirstFour = substr($ifsc, 0, 4);
-
-            if (($ifscFirstFour === 'KKBK') or
-                ($ifscFirstFour === 'VYSA'))
-            {
-                $type = 'IFT';
-                $iftAmount += $amount;
-                $iftCount++;
-            }
-            else
-            {
-                $neftAmount += $amount;
-                $neftCount++;
-            }
-
-            $array = array(
-                'Client_Code'           => 'RAZORNODAL',
-                'Product_Code'          => 'MERPAY',
-                'Payment_Type'          => $type,
-                'Payment_Ref_No.'       => $settlement->getPublicId(),
-                'Payment_Date'          => $this->date,
-                'Dr_Ac_No'              => static::$nodalAccountNumber,
-                'Amount'                => $amount,
-                'Bank_Code_Indicator'   => 'M',
-                'Beneficiary_Code'      => $ba->getKotakBeneficaryCode(),
-                'Beneficiary_Name'      => '',
-                'Beneficiary_Bank'      => '',
-                'IFSC Code'             => '',
-                'Beneficiary_Acc_No'    => '',
-                'Location'              => '',
-                'Print_Location'        => '',
-                'Instrument_Number'     => '',
-                'Credit_Narration'      => 'RAZORPAY SETTLEMENT',
-                'Payment Details 1'     => 'RAZORPAY PAYMENT',
-                'Payment Details 2'     => $merchant->getPublicId(),
-                'Payment Details 3'     => $ba->getId(),
-            );
-
-            $array = $this->getAllFields($array);
-
-            $textDataArray = $array;
-            $textDataArray['Amount'] = (string) $amount;
-
-            array_push($textData, $textDataArray);
-
-            // Excel file has couple extra fields for calculating text data of that row.
-            $array['Symbol'] = '~';
-            $array['Text File'] = $this->getExcelTextFieldFormula($row);
-            $array['Beneficiary_Acc_No'] = "'".$array['Beneficiary_Acc_No'];
-            $row++;
-
-            array_push($excelData, $array);
-        }
-
-        $amounts['total'] = $totalAmount;
-        $amounts['neft'] = $neftAmount;
-        $amounts['ift'] = $iftAmount;
-
-        $count['total'] = $settlements->count();
-        $count['neft']  = $neftCount;
-        $count['ift']   = $iftCount;
-
-        $urlExcel = $this->writeToExcelFile($excelData, $this->getFileToWriteNameWithoutExt());
-
-        $txt = $this->generateText($textData);
-
-        $urlText = $this->writeToTextFile($txt);
-
-        $this->sendKotakSettlementMail($count, $amounts);
-
-        return [$urlText, $urlExcel];
-    }
-
     protected function getEmptyArray()
     {
         $count = count(static::$headings);
@@ -411,16 +196,6 @@ class NodalAccount
 
         return $dict;
     }
-
-    protected function getExcelTextFieldFormula($i)
-    {
-        $str = "=+A2&AX2&B2&AX2&C2&AX2&D2&AX2&E2&AX2&F2&AX2&G2&AX2&H2&AX2&I2&AX2&J2&AX2&K2&AX2&L2&AX2&M2&AX2&N2&AX2&O2&AX2&P2&AX2&Q2&AX2&R2&AX2&S2&AX2&T2&AX2&U2&AX2&V2&AX2&W2&AX2&X2&AX2&Y2&AX2&Z2&AX2&AA2";
-        $str = str_replace('2', $i, $str);
-
-        return $str;
-    }
-
-
 
     protected function sendKotakSettlementMail($count, $amounts)
     {
