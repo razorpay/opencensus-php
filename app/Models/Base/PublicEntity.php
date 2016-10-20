@@ -4,7 +4,6 @@ namespace RZP\Models\Base;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
-use RZP\Models\Payment;
 
 class PublicEntity extends UniqueIdEntity
 {
@@ -62,8 +61,6 @@ class PublicEntity extends UniqueIdEntity
         $array = $this->toArrayPublic();
 
         unset($array[self::ENTITY]);
-        unset($array[Payment\Entity::CUSTOMER_ID]);
-        unset($array[Payment\Entity::TOKEN_ID]);
 
         foreach ($this->amounts as $key)
         {
