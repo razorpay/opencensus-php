@@ -8,6 +8,7 @@ use Config;
 use RZP\Constants;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
+use RZP\Models\Base;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
 
@@ -36,8 +37,8 @@ class Verify
     }
 
     /* Verify Payments Based on filter
-     * params $filter - filter
-     * returns Return aggregrated result of verify results
+     * @param  string $filter filter
+     * @return return aggregrated result of verify results
      *         Sample Result
      *         [
      *          'filter'            => <filter>,
@@ -95,7 +96,7 @@ class Verify
         return $this->verifyMultiplePayments($payments, $filter);
     }
 
-    public function verifyMultiplePayments($payments, $filter)
+    public function verifyMultiplePayments(Base\PublicCollection $payments, $filter)
     {
         $result = [
             Constants\Verify::AUTHORIZED    => 0,
@@ -182,7 +183,7 @@ class Verify
         return $processedResults;
     }
 
-    public function verifyPayment($payment)
+    public function verifyPayment(Payment\Entity $payment)
     {
         $status = Constants\Verify::SUCCESS;
 

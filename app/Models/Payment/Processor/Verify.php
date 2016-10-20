@@ -15,13 +15,13 @@ trait Verify
 {
     /*
      * Run Verify on a given Payment
-     * Params : $payment - Payment for which verify should be ran
-     *          $filter  - Filter used for running the verify
-     *                     null - if ran via dashboard/manually
-     *                     all/error/failure/created - via cron
-     * Returns : Array having refund and payment data
+     *
+     * @param Payment\Entity $payment Payment for which verify should be ran
+     *        string         $filter  Filter used for running the verify
+     *
+     * @return array having refund and payment data
      */
-    public function verify($payment, $filter = null)
+    public function verify(Payment\Entity $payment, $filter = null)
     {
         $this->setPayment($payment);
 
@@ -73,13 +73,10 @@ trait Verify
 
     /*
      * Update Payment attributes after running verify
-     * Params : $payment      - Payment for which attributes should be updated
-     *          $verifyStatus - Status of verify -
-     *                          either of these ERROR,SUCCESS,FAILED
-     *          $filter       - Filter used for running the verify
-     *                          null - if ran via dashboard/manually
-     *                          all/error/failure/created - via cron
-     * Returns : null
+     * @param Payment\Entity $payment       payment for which attributes should be updated
+     * @param string         $verifyStatus  status of verify
+     * @param string         $filter        filter used for running the verify
+     * @return void
      */
     protected function updatePaymentVerified(Payment\Entity $payment, $verifyStatus, $filter)
     {
@@ -120,7 +117,7 @@ trait Verify
         $this->repo->saveOrFail($payment);
     }
 
-    protected function notifyInSlack($data)
+    protected function notifyInSlack(array $data)
     {
         $message = 'Payment verification failed.';
 

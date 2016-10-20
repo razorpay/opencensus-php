@@ -174,11 +174,11 @@ class Repository extends Base\Repository
 
     /*
      * Return Payments object(s) which should be verified
-     * Params:  $ts             - Filter to remove Paymnets which are created before $ts seconds
-     *          $verifyBoundary - Array of [VERIFY_BUCKET and timestamp] values
-     *          $verifyStatus   - Value for filter of VerifyStatus
-     *          $paymentStatus  - Value for filter of paymnetStatus
-     * Return Payments Array
+     * @param string $ts             filter to remove Paymnets which are created before $ts seconds
+     * @param string $verifyBoundary array of [VERIFY_BUCKET and timestamp] values
+     * @param string $verifyStatus   value for filter of VerifyStatus
+     * @param string $paymentStatus  value for filter of paymnetStatus
+     * @return Collection of Payment
     */
     public function getPaymentsToVerify($ts, $verifyBoundary, $verifyStatus = null, $paymentStatus = null)
     {
@@ -204,11 +204,11 @@ class Repository extends Base\Repository
 
     /*
      * Adds Where and orWhere Query in the query using condition
-     * Params:  $query     - Original Query
-     *          $condition - Array with Keys 'where' and 'or'
-     *                     - It will add 'where' and 'whereOr' condition
-     *                       using the values given in 'where' and 'or'
-     * Return null
+     * @param BuilderEx $query     original query
+     * @param array     $condition array with Keys 'where' and 'or'
+     *                             it will add 'where' and 'whereOr' condition
+     *                             using the values given in 'where' and 'or'
+     * @return void
     */
     protected function addWhereQueryForVerify($query, $condition)
     {
@@ -226,12 +226,12 @@ class Repository extends Base\Repository
     }
 
     /*
-     * Process $ts and VERIFY_BOUNDARY array and return where and orWhere Condition
-     * Params: $ts             - Filter to remove Paymnets which are created before $ts seconds
-     *         $verifyBoundary - Array with Key as bucket and value as time for that bucket
-     * Return array with where and orWhere Condition
-     *        where condition will be created using $ts
-     *        orWhere condition will be created using $verifyBoundary
+     * Process min_time and VERIFY_BOUNDARY array and return where and orWhere Condition
+     * @param int  $ts              filter to remove Paymnets which are created before $ts seconds
+     * @param array $verifyBoundary array with Key as bucket and value as time for that bucket
+     * @return array with where and orWhere Condition
+     *         where condition will be created using $ts
+     *         orWhere condition will be created using $verifyBoundary
     */
     protected function getWhereConditionForVerify($ts, $verifyBoundary)
     {
