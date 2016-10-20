@@ -10,7 +10,6 @@ use Config;
 use Carbon\Carbon;
 use Lib\PhoneBook;
 use RZP\Models\Emi;
-use RZP\Http\Route;
 use RZP\Models\Card;
 use RZP\Models\Order;
 use RZP\Models\Payment;
@@ -26,6 +25,7 @@ use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Status;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Payment\Analytics;
+use RZP\Models\Plan\Subscription;
 use RZP\Models\Payment\TerminalAnalytics;
 
 use RZP\Error;
@@ -301,7 +301,48 @@ trait Authorize
 
         $this->validateS2SIfApplicable($payment);
 
+        $this->validateSubscriptionInputIfPresent($payment, $input);
+
         $this->verifyPaymentMethodEnabled($payment);
+    }
+
+    protected function validateSubscriptionInputIfPresent(Payment\Entity $payment, array $input)
+    {
+        if (empty($input[Payment\Entity::SUBSCRIPTION_ID]) === true)
+        {
+            return;
+        }
+
+        $subscriptionId = $input[Payment\Entity::SUBSCRIPTION_ID];
+
+        if ($payment->isRecurring() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_SUBSCRIPTION_NOT_RECURRING,
+                null,
+                [
+                    'payment_id'        => $payment->getId(),
+                    'subscription_id'   => $subscriptionId,
+                    'recurring'         => $input[Payment\Entity::RECURRING],
+                ]);
+        }
+
+        Subscription\Entity::verifyIdAndStripSign($subscriptionId);
+        $subscription = $this->repo->subscription->findByIdAndMerchant($subscriptionId, $this->merchant);
+
+        if (($subscription->getStatus() !== Subscription\Status::CREATED) or
+            ($subscription->token !== null))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_ALREADY_ACTIVE,
+                null,
+                [
+                    'payment_id'            => $payment->getId(),
+                    'subscription_id'       => $subscriptionId,
+                    'subscription_status'   => $subscription->getStatus(),
+                    'subscription_token'    => $subscription->getTokenId(),
+                ]);
+        }
     }
 
     protected function validateS2SIfApplicable(Payment\Entity $payment)

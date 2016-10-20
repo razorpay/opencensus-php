@@ -193,7 +193,9 @@ class PublicErrorDescription
     const BAD_REQUEST_UNAUTHORIZED_INVALID_HASH                                 = 'Hash Data is invald.';
     const BAD_REQUEST_UNAUTHORIZED_UNABLE_TO_ATHORIZE                           = 'Unable to authorize.';
     const BAD_REQUEST_INVALID_GATEWAY                                           = 'Invalid gateway provided for the request';
-
+    const BAD_REQUEST_PAYMENT_SUBSCRIPTION_NOT_RECURRING                        = 'Recurring is not set for the subscription payment';
+    const BAD_REQUEST_SUBSCRIPTION_ALREADY_ACTIVE                               = 'Subscription is already active';
+    
     const BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD                                    = 'Payment declined because it didn\'t pass all risk checks';
     const BAD_REQUEST_CARD_AVS_FAILED                                           = 'Payment processing failed because address validation failed';
     const BAD_REQUEST_CARD_STOLEN_OR_LOST                                       = 'Payment failed because stolen or lost card is used';

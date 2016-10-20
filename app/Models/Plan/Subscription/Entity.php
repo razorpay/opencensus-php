@@ -161,6 +161,11 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::AUTH_ATTEMPTS);
     }
+    
+    public function getTokenId()
+    {
+        return $this->getAttribute(self::TOKEN_ID);
+    }
 
     // --------------------- END GETTERS ---------------------
 

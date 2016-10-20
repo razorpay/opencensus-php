@@ -237,7 +237,8 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT                              = 'BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT';
     const BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED                                   = 'BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED';
     const BAD_REQUEST_INVALID_GATEWAY                                               = 'BAD_REQUEST_INVALID_GATEWAY';
-
+    const BAD_REQUEST_PAYMENT_SUBSCRIPTION_NOT_RECURRING                            = 'BAD_REQUEST_PAYMENT_SUBSCRIPTION_NOT_RECURRING';
+    const BAD_REQUEST_SUBSCRIPTION_ALREADY_ACTIVE                                   = 'BAD_REQUEST_SUBSCRIPTION_ALREADY_ACTIVE';
 
     const BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD                                        = 'BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD';
     const BAD_REQUEST_CARD_AVS_FAILED                                               = 'BAD_REQUEST_CARD_AVS_FAILED';
