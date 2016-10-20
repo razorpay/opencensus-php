@@ -15,16 +15,16 @@ use RZP\Models\Payment\VerifyResult;
 trait Verify
 {
 
-    public function verify($payment)
+    public function verify($payment, $filter = null)
     {
         $this->setPayment($payment);
 
         $refunds = $payment->refunds;
 
-        $data = array(
+        $data = [
             'payment' => $payment->toArray(),
             'refunds' => $refunds->toArray(),
-        );
+        ];
 
         if ($payment->isMethodCardOrEmi())
         {
@@ -37,7 +37,7 @@ trait Verify
         }
         catch (Exception\PaymentVerificationException $e)
         {
-            $this->updatePaymentVerified($payment, VerifyResult::FAILED);
+            $this->updatePaymentVerified($payment, VerifyResult::FAILED, $filter);
 
             $this->trace->info(
                 TraceCode::PAYMENT_VERIFY_FAILED,
@@ -53,45 +53,52 @@ trait Verify
         }
         catch (\Exception $e)
         {
-            $this->updatePaymentVerified($payment, VerifyResult::ERROR);
+            $this->updatePaymentVerified($payment, VerifyResult::ERROR, $filter);
 
             throw $e;
         }
 
-        $this->updatePaymentVerified($payment, VerifyResult::SUCCESS);
+        $this->updatePaymentVerified($payment, VerifyResult::SUCCESS, $filter);
 
         $data['payment'] = $payment->toArrayAdmin();
 
         return $data;
     }
 
-    protected function updatePaymentVerified(Payment\Entity $payment, $verifyStatus)
+    protected function updatePaymentVerified(Payment\Entity $payment, $verifyStatus, $filter)
     {
-        //For payment in created state don't update Verifed status
+        //For payment in created state don't update Payment
         if ($payment->getStatus() !== Status::CREATED)
         {
-            $payment->setVerified($verifyStatus);
+            return;
         }
-        $daysToAdd = 1;
 
-        // Get Verify Boundary to update Verify Bucket
-        // We are adding a day when setting Verify Boundary
-        // This will prevent cron to pick payments which have crossed last boundary
-        $boundary = Constants\Verify::getBoundaryInSeconds($daysToAdd);
-
-        $diff = time() - $payment->getCreatedAt();
-
-        $verifyBucket = 0;
-
-        foreach ($boundary as $key => $value)
+        //  if filter is null, then verify is initiated manually, not via Cron
+        //  Dont update VERIFY_BUCKET, in that case
+        if ($filter !== null)
         {
-            if ($diff >= $value)
-            {
-                $verifyBucket = $key;
-            }
-        }
+            $daysToAdd = 1;
 
-        $payment->setVerifyBucket($verifyBucket);
+            // Get Verify Boundary to update Verify Bucket
+            // We are adding a day when setting Verify Boundary
+            // This will prevent cron to pick payments which have crossed last boundary
+            $boundary = Constants\Verify::getBoundaryInSeconds($filter, $daysToAdd);
+
+            $diff = time() - $payment->getCreatedAt();
+
+            $verifyBucket = 0;
+
+            foreach ($boundary as $key => $value)
+            {
+                if ($diff >= $value)
+                {
+                    $verifyBucket = $key;
+                }
+            }
+
+            $payment->setVerifyBucket($verifyBucket);
+        }
+        $payment->setVerified($verifyStatus);
 
         $this->repo->saveOrFail($payment);
     }

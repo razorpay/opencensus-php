@@ -65,7 +65,7 @@ class Verify
 
         $ts = time() - Constants\Verify::getMinimumTimeBeforeVerify($filter);
 
-        $boundary = Constants\Verify::getBoundaryInSeconds();
+        $boundary = Constants\Verify::getBoundaryInSeconds($filter);
 
         $boundaryQueryData = [];
 
