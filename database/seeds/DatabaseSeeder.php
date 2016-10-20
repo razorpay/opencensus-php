@@ -38,6 +38,47 @@ class DatabaseSeeder extends Seeder
             DB::table(Table::PRICING)->insert(
                 $pricingSeedData);
 
+            DB::table(Table::MERCHANT_SCHEDULE)->insert(
+                array(
+                    'id'          => '1',
+                    'merchant_id' => '10000000000000',
+                    'schedule_id' => 'schd_2_hourly',
+                    'last_run'    => null,
+                    'created_at'  => time(),
+                    'updated_at'  => time(),
+                    )
+                );
+
+            DB::table(Table::SCHEDULE)->insert(
+                array(
+                    'id'         => 'schd_2_hourly',
+                    'name'       => 'Every 2 hours',
+                    'owner_id'   => '100000Razorpay',
+                    'type'       => 'settlement',
+                    'period'     => 'hourly',
+                    'interval'   => 2,
+                    'anchor'     => null,
+                    'delay'      => 3600,
+                    'created_at' => time(),
+                    'updated_at' => time(),
+                    )
+                );
+
+            DB::table(Table::SCHEDULE)->insert(
+                array(
+                    'id'         => 'schd_basic_t3',
+                    'name'       => 'Basic T3',
+                    'owner_id'   => '100000Razorpay',
+                    'type'       => 'settlement',
+                    'period'     => 'daily',
+                    'interval'   => 1,
+                    'anchor'     => null,
+                    'delay'      => 259200,
+                    'created_at' => time(),
+                    'updated_at' => time(),
+                    )
+                );
+
             DB::table(Table::MERCHANT)->insert(
                 array(
                     'id'            =>  Account::NODAL_ACCOUNT,

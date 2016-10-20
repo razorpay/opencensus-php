@@ -24,16 +24,26 @@ class Entity extends Base\PublicEntity
 
     public function merchant()
     {
-        return $this->belongsTo('RZP\Models\Merchant\Entity', self::MERCHANT_ID);
+        return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
     public function schedule()
     {
-        return $this->belongsTo('RZP\Models\Schedule\Entity', self::SCHEDULE_ID);
+        return $this->belongsTo('RZP\Models\Schedule\Entity');
+    }
+
+    public function getScheduleId()
+    {
+        return $this->getAttribute(self::SCHEDULE_ID);
     }
 
     public function getLastRun()
     {
         return $this->getAttribute(self::LAST_RUN);
+    }
+
+    public function setLastRun($lastRun)
+    {
+        return $this->setAttribute(self::LAST_RUN, $lastRun);
     }
 }

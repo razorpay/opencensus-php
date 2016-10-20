@@ -19,7 +19,7 @@ class Core
     }
     else
     {
-      $settledAt = $this->getNextApplicableTimeFromSchedule($currentTime, $merchantSchedule);
+      $settledAt = self::getNextApplicableTimeFromSchedule($currentTime, $merchantSchedule);
     }
 
     return $settledAt;
@@ -29,6 +29,8 @@ class Core
   {
     $schedule = $merchantSchedule->schedule();
 
+    $schedule = (new Repository)->findOrFailPublic($merchantSchedule->getScheduleId());
+
     $settledAt = self::getMinimumDelayedTime($currentTime, $schedule);
 
     if ($schedule->getAnchor() !== null)
@@ -37,7 +39,7 @@ class Core
     }
     else
     {
-      $nextRun = self::resolveUnAnchored($merchantSchedule, $schedule);
+      $nextRun = self::resolveUnAnchored($settledAt, $schedule, $merchantSchedule);
     }
 
     return $nextRun->getTimeStamp();
@@ -57,7 +59,7 @@ class Core
     return $settledAt;
   }
 
-  protected static function resolveUnAnchored($merchantSchedule, $schedule)
+  protected static function resolveUnAnchored($settledAt, $schedule, $merchantSchedule)
   {
     $lastRun = self::getLastRun($merchantSchedule);
 
@@ -70,7 +72,18 @@ class Core
       $lastRun->$step($interval);
     }
 
+    self::updateLastRun($merchantSchedule, $lastRun);
+
     return $lastRun;
+  }
+
+  protected static function updateLastRun($merchantSchedule, $lastRun)
+  {
+    $merchantSchedule = (new MerchantSchedule\Repository)->findOrFailPublic($merchantSchedule->getId());
+
+    $merchantSchedule->setLastRun($lastRun->getTimeStamp());
+
+    $merchantSchedule->saveOrFail();
   }
 
   protected static function checkAnchor($time, $schedule)
