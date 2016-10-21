@@ -772,6 +772,11 @@ class Processor
 
     protected function shouldAutoCapture($payment)
     {
+        if ($payment->isLateAuthorized() === true)
+        {
+            $payment = $payment->reload();
+        }
+
         // If payment is not authorized or order is null, do not auto
         // capture it.
         if (($payment->isAuthorized() === false) or
