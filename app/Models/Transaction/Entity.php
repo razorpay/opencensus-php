@@ -96,7 +96,7 @@ class Entity extends Base\PublicEntity
     );
 
     protected $defaults = array(
-        self::GRATIS      => false,
+        self::GRATIS    => false,
     );
 
     protected $amounts = array(
@@ -400,7 +400,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::GRATIS, $gratis);
     }
 
-    public function setFeeCredits($credits)
+    public function setFeeCredits(int $credits)
     {
         $this->setAttribute(self::FEE_CREDITS, $credits);
     }

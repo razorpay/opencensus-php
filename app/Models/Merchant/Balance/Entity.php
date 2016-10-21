@@ -157,7 +157,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CREDITS, $credits);
     }
 
-    public function setFeeCredits($credits)
+    public function setFeeCredits(int $credits)
     {
         assert ($credits >= 0);
 

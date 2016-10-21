@@ -60,24 +60,24 @@ class Entity extends Base\PublicEntity
 
 // --------------------- Setters ----------------------------------------
 
-    public function setCampaign($campaignName)
+    public function setCampaign(string $campaignName)
     {
         $this->setAttribute(self::CAMPAIGN, $campaignName);
     }
 
-    public function setValue($value)
+    public function setValue(int $value)
     {
         assert (($value >= 0) and ($value <= 1000000));
 
         $this->setAttribute(self::VALUE, $value);
     }
 
-    public function setType($type)
+    public function setType(string $type)
     {
         $this->setAttribute(self::TYPE, $type);
     }
 
-    public function setIsAdmin($isAdmin)
+    public function setIsAdmin(bool $isAdmin)
     {
         $this->setAttribute(self::IS_ADMIN, $isAdmin);
     }
