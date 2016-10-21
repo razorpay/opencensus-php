@@ -35,16 +35,30 @@ class Library
 
     $settledAt = self::getMinimumDelayedTime($currentTime, $schedule);
 
-    if ($schedule->getAnchor() !== null)
+    $nextRun = $schedule->getNextRun();
+
+    $nextRun = Carbon::createFromTimestamp($nextRun, 'Asia/Kolkata');
+
+    if ($settledAt > $nextRun)
     {
-      $nextRun = self::resolveAnchored($settledAt, $schedule);
-    }
-    else
-    {
-      $nextRun = self::resolveUnAnchored($settledAt, $schedule);
+      $nextRun = self::computeFutureRun($schedule, $settledAt, $nextRun);
     }
 
     return $nextRun->getTimeStamp();
+  }
+
+  protected static function computeFutureRun($schedule, $settledAt, $nextRun)
+  {
+    if ($schedule->getAnchor() !== null)
+    {
+      $futureRun = self::resolveAnchored($settledAt, $schedule);
+    }
+    else
+    {
+      $futureRun = self::resolveUnAnchored($settledAt, $schedule);
+    }
+
+    return $futureRun;
   }
 
   protected static function resolveAnchored($settledAt, $schedule)
@@ -66,34 +80,23 @@ class Library
     return $settledAt;
   }
 
-  protected static function resolveUnAnchored($settledAt, $schedule)
+  protected static function resolveUnAnchored($settledAt, $schedule, $nextRun)
   {
-    $lastRun = self::getLastRun($schedule);
-
     $step = self::getNonAnchoredStep($schedule);
 
     $interval = $schedule->getInterval();
 
     App::getFacadeRoot()['trace']->info(
-                                        TraceCode::SCHEDULE_ANCHORED_RESOLUTION,
-                                        compact('settledAt', 'schedule', 'step', 'interval')
-                                      );
+                              TraceCode::SCHEDULE_ANCHORED_RESOLUTION,
+                              compact('settledAt', 'schedule', 'nextRun', 'step', 'interval')
+                            );
 
     while($settledAt > $lastRun)
     {
-      $lastRun->$step($interval);
+      $nextRun->$step($interval);
     }
 
-    self::updateLastRun($schedule, $lastRun);
-
-    return $lastRun;
-  }
-
-  protected static function updateLastRun($schedule, $lastRun)
-  {
-    $schedule->setLastRun($lastRun->getTimeStamp());
-
-    $schedule->saveOrFail();
+    return $nextRun;
   }
 
   protected static function checkAnchor($time, $schedule)

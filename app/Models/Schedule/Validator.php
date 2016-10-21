@@ -14,7 +14,7 @@ class Validator extends Base\Validator
         Entity::INTERVAL => 'sometimes|integer',
         Entity::ANCHOR   => 'sometimes|integer',
         Entity::DELAY    => 'required|integer',
-        Entity::LAST_RUN => 'sometimes|integer',
+        Entity::NEXT_RUN => 'sometimes|integer',
     );
 
     protected static $editRules = array(
@@ -22,7 +22,7 @@ class Validator extends Base\Validator
         Entity::INTERVAL => 'sometimes|integer',
         Entity::ANCHOR   => 'sometimes|integer',
         Entity::DELAY    => 'required|integer',
-        Entity::LAST_RUN => 'sometimes|integer',
+        Entity::NEXT_RUN => 'sometimes|integer',
     );
 
     protected static $createValidators = array(
