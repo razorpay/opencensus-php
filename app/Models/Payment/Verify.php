@@ -78,7 +78,7 @@ class Verify
 
     public function verifyPaymentsWithErrorVerifyResult()
     {
-        $payments = $this->paymentRepo->get50PaymentsWithVerifyResult(VerifyResult::ERROR);
+        $payments = $this->paymentRepo->get50PaymentsWithVerifyResult(VerifyResult::ERROR, true);
 
         $payments = $payments->shuffle();
 

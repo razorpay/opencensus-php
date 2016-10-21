@@ -172,12 +172,18 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function get50PaymentsWithVerifyResult($result)
+    public function get50PaymentsWithVerifyResult($result, $random = false)
     {
-        return $this->newQuery()
+        $query = $this->newQuery()
                     ->where(Payment\Entity::VERIFIED, '=', $result)
-                    ->take(50)
-                    ->get();
+                    ->take(50);
+
+        if ($random)
+        {
+            $query->inRandomOrder();
+        }
+
+        return $query()->get();
     }
 
     public function getPaymentsWithCreatedStatusForVerification($ts)
