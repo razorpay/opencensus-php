@@ -149,6 +149,10 @@ final class Route
         'pricing_add_plan_rule'                   => ['post',     'pricing/{id}/rule',                              'PricingController@postAddPricingPlanRule'                          ],
         'pricing_delete_plan_rule'                => ['delete',   'pricing/{planId}/rule/{ruleId}',                 'PricingController@deletePricingPlanRule'                           ],
         'pricing_delete_plan_rule_force'          => ['delete',   'pricing/{planId}/rule/{ruleId}/force',           'PricingController@deletePricingPlanRuleForce'                      ],
+        'schedule_create'                         => ['post',     'schedules',                                      'ScheduleController@postSchedule'                                   ],
+        'schedule_get'                            => ['get',      'schedules/{id}',                                 'ScheduleController@getSchedule'                                    ],
+        'schedule_update'                         => ['put',      'schedules/{id}',                                 'ScheduleController@putSchedule'                                    ],
+        'schedule_assign'                         => ['post',     'merchant/schedules',                             'ScheduleController@assignSchedule'                                 ],
         'transaction_fetch_by_id'                 => ['get',      'transactions/{id}',                              'TransactionController@getTransaction'                              ],
         'transaction_fetch_multiple'              => ['get',      'transactions',                                   'TransactionController@getTransactions'                             ],
         'transaction_monthly_report'              => ['get',      'transactions/report',                            'TransactionController@getMonthlyReport'                            ],
@@ -350,6 +354,11 @@ final class Route
         'customer_delete_address',
         'customer_fetch_addresses',
         'customer_set_primary_address',
+        'schedule_create',
+        'schedule_get',
+        'schedule_update',
+        'schedule_assign',
+
     );
 
     public static $internal = array(
@@ -469,6 +478,10 @@ final class Route
         'order_refund_multiple_authorized',
         'scorecard',
         'billdesk_reconcile_cancelled',
+        'schedule_create',
+        'schedule_get',
+        'schedule_update',
+        'schedule_assign',
     );
 
     public static $proxy = array(
