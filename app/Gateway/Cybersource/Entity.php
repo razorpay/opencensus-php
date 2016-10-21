@@ -7,21 +7,34 @@ use RZP\Constants;
 
 class Entity extends Base\Entity
 {
-    const ID                   = 'id';
-    const COMMERCE_INDICATOR   = 'commerce_indicator';
-    const COLLECTION_INDICATOR = 'collection_indicator';
-    const AMOUNT               = 'amount';
-    const STATUS               = 'status';
-    const ECI                  = 'eci';
-    const CAVV                 = 'cavv';
-    const AUTH_DATA            = 'auth_data';
-    const REF                  = 'ref';
-    const CAPTURE_REF          = 'capture_ref';
-    const XID                  = 'xid';
-    const PARES_STATUS         = 'pares_status';
-    const REASON_CODE          = 'reason_code';
-    const CREATED_AT           = 'created_at';
-    const UPDATED_AT           = 'updated_at';
+    const ID                     = 'id';
+    const REQUEST_TOKEN          = 'requestToken';
+    const VERES_ENROLLED         = 'veresEnrolled';
+    const CAVV_ALGORITHM         = 'cavvAlgorithm';
+    const CAVV                   = 'cavv';
+    const ECI_RAW                = 'eciRaw';
+    const AMOUNT                 = 'amount';
+    const STATUS                 = 'status';
+    const ECI                    = 'eci';
+    const AVS_CODE               = 'avsCode';
+    const CARD_CATEGORY          = 'cardCategory';
+    const CARD_GROUP             = 'cardGroup';
+    const CV_CODE                = 'cvCode';
+    const MERCHANT_ADVICE_CODE   = 'merchantAdviceCode';
+    const GATEWAY_TRANSACTION_ID = 'gatewayTransactionID';
+    const PROCESSOR_RESPONSE     = 'processorResponse';
+    const AUTH_DATA              = 'auth_data';
+    const AUTHORIZATION_CODE     = 'authorizationCode';
+    const COMMERCE_INDICATOR     = 'commerce_indicator';
+    const COLLECTION_INDICATOR   = 'collection_indicator';
+    const REF                    = 'ref';
+    const CAPTURE_REF            = 'capture_ref';
+    const RECEIPT_NUMBER         = 'receiptNumber';
+    const XID                    = 'xid';
+    const PARES_STATUS           = 'pares_status';
+    const REASON_CODE            = 'reason_code';
+    const CREATED_AT             = 'created_at';
+    const UPDATED_AT             = 'updated_at';
 
     protected $fields = array(
         self::ID,
@@ -151,5 +164,10 @@ class Entity extends Base\Entity
     public function setAction($action)
     {
         $this->setAttribute(self::ACTION, $action);
+    }
+
+    public function setAmount($amount)
+    {
+        $this->setAttribute(self::AMOUNT, $amount);
     }
 }

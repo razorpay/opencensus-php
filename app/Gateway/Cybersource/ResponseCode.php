@@ -79,8 +79,8 @@ class ResponseCode
     );
 
     public static $errorCodeMap = array(
-        101 => ErrorCode::BAD_REQUEST_PAYMENT_MISSING_DATA,
-        102 => ErrorCode::BAD_REQUEST_INVALID_PARAMETERS,
+        101 => ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
+        102 => ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
         104 => ErrorCode::GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST,
         110 => ErrorCode::BAD_REQUEST_PAYMENT_PARTIAL_AMOUNT_APPROVED,
         150 => ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
@@ -137,7 +137,7 @@ class ResponseCode
 
         461 => ErrorCode::BAD_REQUEST_UNSUPPORTED_CHARACTER_SET,
         476 => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
-        480 => ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED,
+        480 => ErrorCode::GATEWAY_ERROR_DENIED_BY_RISK,
         481 => ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED,
         520 => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_GATEWAY,
 
@@ -167,11 +167,32 @@ class ResponseCode
         return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
     }
 
+    public static function getDescription($code)
+    {
+        if (isset(self::$reasonCodes[$code]))
+        {
+            return self::$reasonCodes[$code];
+        }
+
+        return 'Payment failed';
+    }
+
     public static function isGatewayError($code)
     {
         if ((isset(self::$errorCodeMap[$code]) === true) and
             ((self::$errorCodeMap[$code] === ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT) or
              (self::$errorCodeMap[$code] === ErrorCode::GATEWAY_ERROR_TIMED_OUT)))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public static function isFatalError($code)
+    {
+        if ((isset(self::$errorCodeMap[$code]) === true) and
+            (self::$errorCodeMap[$code] === ErrorCode::SERVER_ERROR_INVALID_ARGUMENT))
         {
             return true;
         }
