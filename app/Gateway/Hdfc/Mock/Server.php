@@ -210,9 +210,7 @@ class Server extends Base\Mock\Server
 
         $cardNumber = $this->data['card'];
 
-        $iin = substr($cardNumber, 0, 6);
-
-        $network = Card\Network::detectNetwork($iin);
+        $network = $this->getCardNetwork($cardNumber);
 
         if ($this->isSpecialCardNumber($cardNumber))
         {
@@ -267,10 +265,8 @@ class Server extends Base\Mock\Server
     {
         $cardNumber = $this->data['card'];
 
-        // @todo: move this to iin
-        $iin = substr($cardNumber, 0, 6);
-        $network = Card\Network::detectNetwork($iin);
-        $type = $this->getCardType($cardNumber, $iin);
+        $network = $this->getCardNetwork($cardNumber);
+        $type = $this->getCardType($cardNumber, $network);
 
         $res = array();
 
@@ -306,17 +302,18 @@ class Server extends Base\Mock\Server
         return $res;
     }
 
-    protected function getCardType($cardNumber, $iin)
+    protected function getCardType($cardNumber, $network)
     {
         if (in_array($cardNumber, $this->debitCardNumbers))
         {
             return 'debit';
         }
-        else if (Card\Network::detectNetwork($iin) === Card\Network::MAES)
+        else if ($network === Card\Network::MAES)
         {
             return 'debit';
         }
 
+        $iin = substr($cardNumber, 0, 6);
         $cardDetails = (new Card\Repository)->retrieveIinDetails($iin);
 
         if ($cardDetails === null)
@@ -411,9 +408,7 @@ class Server extends Base\Mock\Server
 
         if (isset($this->data['card']))
         {
-            $iin = substr($this->data['card'], 0, 6);
-
-            $network = Card\Network::detectNetwork($iin);
+            $network = $this->getCardNetwork($this->data['card']);
         }
 
         if ($txn === null)
@@ -571,5 +566,12 @@ class Server extends Base\Mock\Server
         $error['result'] = $code . '-' . Hdfc\ErrorCode::$errorMessages[$code];
 
         return $error;
+    }
+
+    protected function getCardNetwork($number)
+    {
+        $iin = substr($number, 0, 6);
+
+        return Card\Network::detectNetwork($iin);
     }
 }
