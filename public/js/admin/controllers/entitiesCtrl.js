@@ -407,6 +407,14 @@ app.controller('EntitiesCtrl', [
       },
       webhook: {
         merchant_id: ['Merchant Id'],
+      },
+      batch: {
+        merchant_id: ['Merchant Id'],
+        status: [
+          'created',
+          'processing',
+          'processed'
+        ],
       }
     };
 
