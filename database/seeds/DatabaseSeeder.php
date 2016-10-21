@@ -48,7 +48,7 @@ class DatabaseSeeder extends Seeder
                     'interval'   => 2,
                     'anchor'     => null,
                     'delay'      => 3600,
-                    'next_run'   => null,
+                    'next_run'   => 1451586600,
                     'created_at' => time(),
                     'updated_at' => time(),
                     )
@@ -63,8 +63,8 @@ class DatabaseSeeder extends Seeder
                     'period'     => 'daily',
                     'interval'   => 1,
                     'anchor'     => null,
-                    'delay'      => 259200,
-                    'next_run'   => null,
+                    'delay'      => 172800,
+                    'next_run'   => 1451586600,
                     'created_at' => time(),
                     'updated_at' => time(),
                     )
@@ -80,7 +80,7 @@ class DatabaseSeeder extends Seeder
                     'interval'   => 1,
                     'anchor'     => 2,
                     'delay'      => 86400,
-                    'next_run'   => null,
+                    'next_run'   => 1451932200,
                     'created_at' => time(),
                     'updated_at' => time(),
                     )

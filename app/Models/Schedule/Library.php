@@ -26,7 +26,7 @@ class Library
     return $settledAt;
   }
 
-  protected static function getNextApplicableTimeFromSchedule($currentTime, $schedule)
+  public static function getNextApplicableTimeFromSchedule($currentTime, $schedule)
   {
     App::getFacadeRoot()['trace']->info(
                                         TraceCode::SCHEDULE_RESOLUTION_INITIATED,
@@ -47,6 +47,9 @@ class Library
     return $nextRun->getTimeStamp();
   }
 
+
+  // ----------------------- Protected methods -----------------------
+
   protected static function computeFutureRun($schedule, $settledAt, $nextRun)
   {
     if ($schedule->getAnchor() !== null)
@@ -55,7 +58,7 @@ class Library
     }
     else
     {
-      $futureRun = self::resolveUnAnchored($settledAt, $schedule);
+      $futureRun = self::resolveUnAnchored($settledAt, $schedule, $nextRun);
     }
 
     return $futureRun;
@@ -63,7 +66,7 @@ class Library
 
   protected static function resolveAnchored($settledAt, $schedule)
   {
-    $settledAt = $settledAt->hour(0)->minute(0)->second(0);
+    $settledAt = $settledAt->addDay()->hour(0)->minute(0)->second(0);
 
     $step = self::getAnchoredStep($schedule);
 
@@ -91,7 +94,7 @@ class Library
                               compact('settledAt', 'schedule', 'nextRun', 'step', 'interval')
                             );
 
-    while($settledAt > $lastRun)
+    while($settledAt > $nextRun)
     {
       $nextRun->$step($interval);
     }

@@ -93,6 +93,23 @@ class Holidays
         return self::getNthWorkingDayFrom($date, $countDays, $ignoreBankHolidays);
     }
 
+    public static function getNextWorkingTime($time)
+    {
+        $dateTime = Carbon::createFromTimestamp($time);
+
+        if (self::isWorkingDay($dateTime) === false)
+        {
+            $dateTime = $dateTime->copy()->hour(0)->minute(0)->second(0);
+
+            while (self::isWorkingDay($dateTime, $ignoreBankHolidays) === false)
+            {
+                $dateTime->addDay();
+            }
+        }
+
+        return $dateTime->getTimeStamp();
+    }
+
     public static function getPreviousWorkingDay($date)
     {
         $prevDay = $date->copy()->subDay();

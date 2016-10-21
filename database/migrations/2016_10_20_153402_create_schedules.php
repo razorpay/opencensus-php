@@ -22,7 +22,8 @@ class CreateSchedules extends Migration
             $table->char(Schedule::ID, Schedule::ID_LENGTH)
                   ->primary();
 
-            $table->string(Schedule::NAME);
+            $table->string(Schedule::NAME)
+                  ->nullable();
 
             $table->char(Schedule::OWNER_ID, Schedule::ID_LENGTH);
 
