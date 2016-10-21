@@ -36,7 +36,11 @@ class Entity extends Base\PublicEntity
         self::FEES,
         self::SETTLEMENT_COUNT,
         self::TRANSACTION_COUNT,
-        self::SERVICE_TAX
+        self::SERVICE_TAX,
+        self::INITIATED_AT,
+        self::API_FEE,
+        self::GATEWAY_FEE,
+        self::URLS,
     );
 
     protected $public = array(

@@ -2,14 +2,16 @@
 
 namespace RZP\Models\Settlement;
 
+use RZP\Constants\Mode;
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-
 use RZP\Base\RuntimeManager;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Payment;
+use RZP\Models\Settlement;
 use RZP\Models\Transaction;
 use RZP\Models\Settlement\Kotak;
 use RZP\Models\Settlement\Channel;
@@ -27,13 +29,29 @@ class Processor extends Base\Core
 
         $this->preSettlementProcessing($input, $channel);
 
+        if (($this->mode === Mode::LIVE) and
+            (Holidays::isWorkingDay(Carbon::today('Asia/Kolkata')) === false))
+        {
+            return Holidays::HOLIDAY_MESSAGE;
+        }
+
         list($settlements, $txnCount) = $this->createSettlements($channel);
 
-        $dailySettlement = $this->createDailySetlEntity($settlements, $txnCount, $channel);
+        $this->dailySettlement = $this->createDailySetlEntity($settlements, $txnCount, $channel);
 
-        $data = $this->generateSettlementFile($settlements);
+        $data = $this->generateSettlementFile($settlements, $channel);
 
-        return $data;
+        $this->updateDailySettlementEntity($data);
+
+        $response = [
+            'channel'               => $channel,
+            'count'                 => $settlements->count(),
+            'transaction_count'     => $txnCount,
+            'settlement_text_file'  => $data[0],
+            'settlement_excel_file' => $data[1]
+        ];
+
+        return $response;
     }
 
     protected function increaseAllowedSystemLimits()
@@ -52,43 +70,26 @@ class Processor extends Base\Core
         //set channel
         if ($channel === null)
         {
-            $channel = Channel::KOTAK
+            $channel = Channel::KOTAK;
         }
-    }
-
-    protected function traceSetlInitiating($channel)
-    {
-        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y H:i:s');
-
-        $this->trace->info(
-            TraceCode::SETTLEMENT_INITIATING,
-            [
-                'channel'   => $this->channel,
-                'timestamp' => $this->setlTime,
-                'time'      => $time,
-            ]);
     }
 
     protected function createSettlements($channel)
     {
         $txns = $this->repo->transaction->fetchUnsettledTransactions($this->setlTime);
 
-        list($settlements, $txnCount) = $this->createSettlementsFromTxns($txns, $channel);
+        return $this->repo->transaction(function() use ($txns, $channel)
+        {
+            list($settlements, $txnCount) = $this->createSettlementsFromTxns($txns, $channel);
 
-        $this->repo->transaction(function(){
-            foreach ($settlements as $settlement)
-            {
-                $this->repo->saveOrFail($settlement);
-            }
+            return [$settlements, $txnCount];
         });
-
-        return [$settlements, $txnCount];
     }
 
     protected function createSettlementsFromTxns($txns, $channel)
     {
         $settlements = new Base\PublicCollection;
-        $settledTxnCount = 0
+        $settledTxnCount = 0;
 
         $i = 0;
         $count = $txns->count();
@@ -153,7 +154,9 @@ class Processor extends Base\Core
                 continue;
             }
 
-            $setl = (new Settlement\Merchant($merchant, $channel, $this->repo))->settle(
+            $merchantSettler = new Settlement\Merchant($merchant, $channel, $this->repo);
+
+            $setl = $merchantSettler->settle(
                                         $setlTxns,
                                         $setlAmount,
                                         $setlFee,
@@ -190,13 +193,31 @@ class Processor extends Base\Core
             DailySettlement::SERVICE_TAX       => $totalServiceTax,
             DailySettlement::SETTLEMENT_COUNT  => $settlements->count(),
             DailySettlement::TRANSACTION_COUNT => $txnsCount,
+            DailySettlement::INITIATED_AT      => time(),
+            DailySettlement::API_FEE           => 0,
+            DailySettlement::GATEWAY_FEE       => 0,
+            DailySettlement::URLS              => null,
         );
 
         $dailySettlement->fill($input);
 
-        $this->repo->saveOrFail($dailySetl);
+        $this->repo->saveOrFail($dailySettlement);
 
         return $dailySettlement;
+    }
+
+    protected function updateDailySettlementEntity($data)
+    {
+        $dailySettlement = $this->dailySettlement;
+
+        $urls = [
+            'kotak_settlement_txt' => $data[0],
+            'kotak_settlement_excel' => $data[1]
+        ];
+
+        $dailySettlement->setUrls($urls);
+
+        $this->repo->saveOrFail($dailySettlement);
     }
 
     protected function generateSettlementFile($settlements, $channel)
@@ -208,7 +229,7 @@ class Processor extends Base\Core
             $data = (new Kotak\NodalAccount)->generateSettlementFile($settlements);
         }
 
-        return $data
+        return $data;
     }
 
     protected function shouldSettle(Transaction\Entity $txn, $channel, $merchant)
