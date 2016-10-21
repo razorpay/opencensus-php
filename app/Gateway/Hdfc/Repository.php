@@ -26,6 +26,15 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function findCapturedPaymentByIdOrFail($paymentId)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Entity::PAYMENT_ID, '=', $paymentId)
+                    ->where(Entity::ACTION, '=', Action::CAPTURE)
+                    ->firstOrFail();
+    }
+
     public function persistAfterEnroll($request, $response)
     {
         $result = $response['enroll_result'];
@@ -346,7 +355,7 @@ class Repository extends Base\Repository
     public function fetchBetweenTimestamps($from, $to)
     {
         return $this->newQuery()
-                    ->whereBetween('created_at', $from, $to);
+                    ->whereBetween('created_at', [$from, $to]);
     }
 
     public function findByGatewayTransactionIdOrFail($gatewayTxnId)

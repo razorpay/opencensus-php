@@ -1373,13 +1373,7 @@ trait Authorize
 
         if ($vault === true)
         {
-            $vaultToken = Card\Tokenex::getVaultToken($cardInput[Card\Entity::NUMBER]);
-
-            if (empty($vaultToken) === false)
-            {
-                $cardInput[Card\Entity::VAULT_TOKEN] = $vaultToken;
-                $cardInput[Card\Entity::VAULT] = Card\Vault::TOKENEX;
-            }
+            $cardInput[Card\Entity::VAULT] = Card\Vault::TOKENEX;
         }
 
         $cardCore = new Card\Core;
