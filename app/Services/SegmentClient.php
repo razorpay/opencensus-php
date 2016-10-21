@@ -2,7 +2,6 @@
 
 namespace RZP\Services;
 
-use Segment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Payment\Analytics\Entity as AnalyticsEntity;
@@ -31,12 +30,7 @@ class SegmentClient
         $key = $this->config['segment.write_key'];
 
         $this->version = "1.0";
-
-        Segment::init($key, [
-                             //'consumer'     => 'file',
-                             'debug'        => $this->config['segment.debug'],
-                             //'filename'     => $this->config['segment.storage_path']
-                             ]);
+        
     }
 
     protected function fillDefaults($payment, $event)
@@ -162,6 +156,11 @@ class SegmentClient
 
     public function trackPayment(PaymentEntity $payment, $event, array $customProperties = [])
     {
+        if ($this->mode === 'test')
+        {
+            return ;
+        }
+
         $defaults = $this->fillDefaults($payment, $event);
 
         if (empty($defaults) === true)
@@ -174,6 +173,7 @@ class SegmentClient
         $properties = array_merge($defaults['properties'], $customProperties);
 
         $defaults['properties'] = $properties;
+
 
         $this->buildRequestAndSend($defaults);
     }
