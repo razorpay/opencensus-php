@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Schedule;
 
-use RZP\Models\Merchant\Schedule as MerchantSchedule;
 use Illuminate\Support\Facades\App;
 use RZP\Trace\TraceCode;
 use Carbon\Carbon;

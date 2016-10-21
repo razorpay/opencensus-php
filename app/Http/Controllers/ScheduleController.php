@@ -32,13 +32,4 @@ class ScheduleController extends Controller
 
         return ApiResponse::json($data);
     }
-
-    public function assignSchedule()
-    {
-        $input = Request::all();
-
-        $data = (new Schedule\Service)->assignSchedule($input);
-
-        return ApiResponse::json($data);
-    }
 }

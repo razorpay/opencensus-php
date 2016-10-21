@@ -282,6 +282,10 @@ class ErrorCode
     const BAD_REQUEST_DESCRIPTION_SHOULD_BE_STRING                                  = 'BAD_REQUEST_DESCRIPTION_SHOULD_BE_STRING';
     const BAD_REQUEST_DESCRIPTION_TOO_LARGE                                         = 'BAD_REQUEST_DESCRIPTION_TOO_LARGE';
 
+    const BAD_REQUEST_UNKNOWN_SCHEDULE                                              = 'BAD_REQUEST_UNKNOWN_SCHEDULE';
+    const BAD_REQUEST_INVALID_SCHEDULE                                              = 'BAD_REQUEST_INVALID_SCHEDULE';
+    const BAD_REQUEST_SCHEDULE_REQUIRED                                             = 'BAD_REQUEST_SCHEDULE_REQUIRED';
+
     const BAD_REQUEST_PRICING_ID_REQURED                                            = 'BAD_REQUEST_PRICING_ID_REQURED';
     const BAD_REQUEST_PRICING_PLAN_ALREADY_EXISTS                                   = 'BAD_REQUEST_PRICING_PLAN_ALREADY_EXISTS';
     const BAD_REQUEST_PRICING_RATE_NOT_DEFINED                                      = 'BAD_REQUEST_PRICING_RATE_NOT_DEFINED';

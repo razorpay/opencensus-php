@@ -19,7 +19,7 @@ class Entity extends Base\PublicEntity
     protected $fillable = array(
         self::ID,
         self::NAME,
-        self::MERCHANT_ID,
+        self::OWNER_ID,
         self::TYPE,
         self::PERIOD,
         self::INTERVAL,

@@ -557,6 +557,11 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    public function setSettlementScheduleId($settlementScheduleId)
+    {
+        $this->setAttribute(self::SETTLEMENT_SCHEDULE_ID, $settlementScheduleId);
+    }
+
     public function getSettlementSchedule()
     {
         return $this->getAttribute(self::SETTLEMENT_SCHEDULE);

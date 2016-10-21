@@ -15,6 +15,7 @@ use RZP\Models\Key;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Models\Terminal;
+use RZP\Models\Schedule;
 use RZP\Models\Merchant\Webhook;
 use RZP\Models\Admin\Newsletter;
 use RZP\Models\Settlement\Holidays;
@@ -265,6 +266,42 @@ class Service extends Base\Service
         $this->repo->saveOrFail($merchant);
 
         return $plan->toArrayPublic();
+    }
+
+    public function assignSettlementSchedule($id, $input)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        if (isset($input[Entity::SETTLEMENT_SCHEDULE_ID]) === true)
+        {
+            $schedule = $this->repo->schedule->findOrFailPublic($input[Entity::SETTLEMENT_SCHEDULE_ID]);
+
+            if ($schedule === null)
+            {
+                throw new Exception\BadRequestException(
+                                        ErrorCode::BAD_REQUEST_UNKNOWN_SCHEDULE,
+                                        'Unknown schedule',
+                                        Entity::SETTLEMENT_SCHEDULE_ID,
+                                        $input);
+            }
+        }
+        else
+        {
+            $schedule = (new Schedule\Core)->createSchedule($input);
+
+            $this->trace->info(TraceCode::SCHEDULE_CREATED, $schedule->toArray());
+        }
+
+        $merchant->setSettlementScheduleId($schedule->getId());
+
+        $this->trace->info(TraceCode::SCHEDULE_ASSIGNED, [
+                            'schedule' => $schedule->toArray(),
+                            'merchant' => $merchant->getId(),
+                        ]);
+
+        $this->repo->saveOrFail($merchant);
+
+        return $schedule->toArrayPublic();
     }
 
     public function getPricingPlan($id)
