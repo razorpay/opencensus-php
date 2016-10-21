@@ -401,7 +401,7 @@ trait Authorize
         if ((empty($input[Payment\Entity::TOKEN]) === false) and
             ($payment->isSecondRecurring() === true))
         {
-            $this->verifyPrivateAuth();
+            $this->verifyAuthForRecurring();
         }
     }
 
