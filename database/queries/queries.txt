@@ -1034,3 +1034,6 @@ SET w.amount = r.amount
 WHERE w.wallet = 'olamoney'
     AND w.action = 'refund'
     AND w.amount != r.amount;
+
+ALTER TABLE merchants
+    ADD COLUMN settlement_schedule_id VARCHAR(14) AFTER settlement_schedule;

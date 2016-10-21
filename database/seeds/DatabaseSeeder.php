@@ -1,4 +1,4 @@
-<?php
+a<?php
 
 use RZP\Constants\Mode;
 use RZP\Constants\Table;
@@ -38,17 +38,6 @@ class DatabaseSeeder extends Seeder
             DB::table(Table::PRICING)->insert(
                 $pricingSeedData);
 
-            DB::table(Table::MERCHANT_SCHEDULE)->insert(
-                array(
-                    'id'          => '1',
-                    'merchant_id' => '10000000000000',
-                    'schedule_id' => 'schd_basic_t3',
-                    'last_run'    => null,
-                    'created_at'  => time(),
-                    'updated_at'  => time(),
-                    )
-                );
-
             DB::table(Table::SCHEDULE)->insert(
                 array(
                     'id'         => 'schd_2_hourly',
@@ -59,6 +48,7 @@ class DatabaseSeeder extends Seeder
                     'interval'   => 2,
                     'anchor'     => null,
                     'delay'      => 3600,
+                    'last_run'   => null,
                     'created_at' => time(),
                     'updated_at' => time(),
                     )
@@ -74,6 +64,7 @@ class DatabaseSeeder extends Seeder
                     'interval'   => 1,
                     'anchor'     => null,
                     'delay'      => 259200,
+                    'last_run'   => null,
                     'created_at' => time(),
                     'updated_at' => time(),
                     )
@@ -89,6 +80,7 @@ class DatabaseSeeder extends Seeder
                     'interval'   => 1,
                     'anchor'     => 2,
                     'delay'      => 86400,
+                    'last_run'   => null,
                     'created_at' => time(),
                     'updated_at' => time(),
                     )
@@ -174,6 +166,7 @@ class DatabaseSeeder extends Seeder
                     'updated_at'    =>  time(),
                     'transaction_report_email'=>'test@razorpay.com',
                     'settlement_schedule' => 3,
+                    'settlement_schedule_id' => 'schd_tuesdays',
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
                     )

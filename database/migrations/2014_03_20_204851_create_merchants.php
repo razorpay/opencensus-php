@@ -58,6 +58,9 @@ class CreateMerchants extends Migration
 
             $table->integer(Merchant::SETTLEMENT_SCHEDULE);
 
+            $table->char(Merchant::SETTLEMENT_SCHEDULE_ID, Merchant::ID_LENGTH)
+                  ->nullable();
+
             $table->string(Merchant::TRANSACTION_REPORT_EMAIL)
                   ->nullable();
 

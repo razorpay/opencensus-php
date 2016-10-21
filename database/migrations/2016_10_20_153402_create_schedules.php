@@ -38,6 +38,9 @@ class CreateSchedules extends Migration
 
             $table->integer(Schedule::DELAY);
 
+            $table->integer(Schedule::LAST_RUN)
+                  ->nullable();
+
             $table->integer(Schedule::CREATED_AT);
             $table->integer(Schedule::UPDATED_AT);
 

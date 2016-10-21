@@ -3,15 +3,17 @@
 namespace RZP\Models\Schedule;
 
 use RZP\Models\Merchant\Schedule as MerchantSchedule;
+use Illuminate\Support\Facades\App;
+use RZP\Trace\TraceCode;
 use Carbon\Carbon;
 
 class Library
 {
   public static function getNextApplicableTime($currentTime, $merchant)
   {
-    $merchantSchedule = (new MerchantSchedule\Repository)->findByMerchantId($merchant->getId());
+    $schedule = $merchant->schedule;
 
-    if ($merchantSchedule === null)
+    if ($schedule === null)
     {
       $addDays = $merchant->getSettlementSchedule();
 
@@ -19,15 +21,18 @@ class Library
     }
     else
     {
-      $settledAt = self::getNextApplicableTimeFromSchedule($currentTime, $merchantSchedule);
+      $settledAt = self::getNextApplicableTimeFromSchedule($currentTime, $schedule);
     }
 
     return $settledAt;
   }
 
-  protected static function getNextApplicableTimeFromSchedule($currentTime, $merchantSchedule)
+  protected static function getNextApplicableTimeFromSchedule($currentTime, $schedule)
   {
-    $schedule = (new Repository)->findOrFailPublic($merchantSchedule->getScheduleId());
+    App::getFacadeRoot()['trace']->info(
+                                        TraceCode::SCHEDULE_RESOLUTION_INITIATED,
+                                        compact('currentTime', 'schedule')
+                                      );
 
     $settledAt = self::getMinimumDelayedTime($currentTime, $schedule);
 
@@ -37,7 +42,7 @@ class Library
     }
     else
     {
-      $nextRun = self::resolveUnAnchored($settledAt, $schedule, $merchantSchedule);
+      $nextRun = self::resolveUnAnchored($settledAt, $schedule);
     }
 
     return $nextRun->getTimeStamp();
@@ -49,6 +54,11 @@ class Library
 
     $step = self::getAnchoredStep($schedule);
 
+    App::getFacadeRoot()['trace']->info(
+                                        TraceCode::SCHEDULE_ANCHORED_RESOLUTION,
+                                        compact('settledAt', 'schedule', 'step')
+                                      );
+
     while(self::checkAnchor($settledAt, $schedule) === false)
     {
       $settledAt->$step();
@@ -57,31 +67,34 @@ class Library
     return $settledAt;
   }
 
-  protected static function resolveUnAnchored($settledAt, $schedule, $merchantSchedule)
+  protected static function resolveUnAnchored($settledAt, $schedule)
   {
-    $lastRun = self::getLastRun($merchantSchedule);
+    $lastRun = self::getLastRun($schedule);
 
     $step = self::getNonAnchoredStep($schedule);
 
     $interval = $schedule->getInterval();
+
+    App::getFacadeRoot()['trace']->info(
+                                        TraceCode::SCHEDULE_ANCHORED_RESOLUTION,
+                                        compact('settledAt', 'schedule', 'step', 'interval')
+                                      );
 
     while($settledAt > $lastRun)
     {
       $lastRun->$step($interval);
     }
 
-    self::updateLastRun($merchantSchedule, $lastRun);
+    self::updateLastRun($schedule, $lastRun);
 
     return $lastRun;
   }
 
-  protected static function updateLastRun($merchantSchedule, $lastRun)
+  protected static function updateLastRun($schedule, $lastRun)
   {
-    $merchantSchedule = (new MerchantSchedule\Repository)->findOrFailPublic($merchantSchedule->getId());
+    $schedule->setLastRun($lastRun->getTimeStamp());
 
-    $merchantSchedule->setLastRun($lastRun->getTimeStamp());
-
-    $merchantSchedule->saveOrFail();
+    $schedule->saveOrFail();
   }
 
   protected static function checkAnchor($time, $schedule)
@@ -109,7 +122,7 @@ class Library
   {
     $minimumDelay = $schedule->getDelay();
 
-    $settledAt = Carbon::createFromTimestamp($currentTime)->addSeconds($minimumDelay);
+    $settledAt = Carbon::createFromTimestamp($currentTime, 'Asia/Kolkata')->addSeconds($minimumDelay);
 
     return $settledAt;
   }
@@ -132,11 +145,11 @@ class Library
     return $step;
   }
 
-  protected static function getLastRun($merchantSchedule)
+  protected static function getLastRun($schedule)
   {
-    $lastRunTimestamp = $merchantSchedule->getLastRun();
+    $lastRunTimestamp = $schedule->getLastRun();
 
-    $lastRun = Carbon::createFromTimestamp($lastRunTimestamp);
+    $lastRun = Carbon::createFromTimestamp($lastRunTimestamp, 'Asia/Kolkata');
 
     return $lastRun;
   }

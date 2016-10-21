@@ -14,6 +14,7 @@ class Entity extends Base\PublicEntity
     const INTERVAL    = 'interval';
     const ANCHOR      = 'anchor';
     const DELAY       = 'delay';
+    const LAST_RUN    = 'last_run';
 
     protected $fillable = array(
         self::ID,
@@ -24,6 +25,7 @@ class Entity extends Base\PublicEntity
         self::INTERVAL,
         self::ANCHOR,
         self::DELAY,
+        self::LAST_RUN,
     );
 
     protected $table = \RZP\Constants\Table::SCHEDULE;
@@ -67,6 +69,18 @@ class Entity extends Base\PublicEntity
     public function getDelay()
     {
         return $this->getAttribute(self::DELAY);
+    }
+
+    public function getLastRun()
+    {
+        return $this->getAttribute(self::LAST_RUN);
+    }
+
+    // ----------------------- Setters ---------------------------------------------
+
+    public function setLastRun($lastRun)
+    {
+        return $this->setAttribute(self::LAST_RUN, $lastRun);
     }
 
 }
