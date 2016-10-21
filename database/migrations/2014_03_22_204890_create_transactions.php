@@ -71,6 +71,9 @@ class CreateTransactions extends Migration
             $table->tinyInteger(Transaction::GRATIS)
                   ->default(0);
 
+            $table->boolean(Transaction::FEE_CREDITS)
+                  ->default(false);
+
             $table->bigInteger(Transaction::ESCROW_BALANCE)
                   ->nullable();
 
@@ -112,6 +115,8 @@ class CreateTransactions extends Migration
             $table->index(Transaction::CHANNEL);
 
             $table->index(Transaction::GRATIS);
+
+            $table->index(Transaction::FEE_CREDITS);
 
             $table->index(Transaction::CREATED_AT);
 

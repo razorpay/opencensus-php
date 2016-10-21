@@ -219,6 +219,11 @@ class Merchant extends Base
         return $this->fixtures->edit('balance', $id, ['credits' => $credits]);
     }
 
+    public function editFeeCredits($credits, $id = '10000000000000')
+    {
+        return $this->fixtures->edit('balance', $id, ['fee_credits' => $credits]);
+    }
+
     public function editCreditsforNodalAccount($credits)
     {
         return $this->editCredits($credits, '10NodalAccount');
