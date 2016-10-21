@@ -10,9 +10,25 @@ class Fields
 
     const REQUEST_ID                = 'requestID';
 
+    const PAYMENT_REQUEST_ID        = 'PaymentRequestID';
+
     const REQUEST_TOKEN             = 'requestToken';
 
     const MERCHANT_ID               = 'merchantID';
+
+    const TYPE                      = 'type';
+
+    const SUBTYPE                   = 'subtype';
+
+    const VERSION_NUMBER            = 'versionNumber';
+
+    const MERCHANT_REFERENCE_NUMBER = 'merchantReferenceNumber';
+
+    const TARGET_DATE               = 'targetDate';
+
+    const PAYMENT_DATA              = 'PaymentData';
+
+    const PAYER_AUTHENTICATION_INFO = 'PayerAuthenticationInfo';
 
     const XID                       = 'xid';
 
@@ -36,11 +52,15 @@ class Fields
 
     const AVS_CODE                  = 'avsCode';
 
+    const AVS_RESULT                = 'AVSResult';
+
     const CARD_CATEGORY             = 'cardCategory';
 
     const CARD_GROUP                = 'cardGroup';
 
     const CV_CODE                   = 'cvCode';
+
+    const CV_RESULT                 = 'CVResult';
 
     const MERCHANT_ADVICE_CODE      = 'merchantAdviceCode';
 

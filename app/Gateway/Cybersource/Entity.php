@@ -138,7 +138,14 @@ class Entity extends Base\Entity
 
     public function getCaptureRef()
     {
-        return $this->getAttribute(self::CAPTURE_REF);
+        $captureRef = $this->getAttribute(self::CAPTURE_REF);
+
+        if ($captureRef === null)
+        {
+            return $this->getAttribute(self::REF);
+        }
+
+        return $captureRef;
     }
 
     public function getXid()

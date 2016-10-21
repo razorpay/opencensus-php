@@ -143,6 +143,200 @@ class Gateway extends Base\Gateway
         }
     }
 
+    public function verify(array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
+    }
+
+    public function sendPaymentVerifyRequest($verify)
+    {
+        $input = $verify->input;
+        $payment = $verify->payment;
+
+        $request = $this->getPaymentVerifyRequestContent($input, $payment);
+
+        $this->traceGatewayRequest(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            $request,
+            $input);
+
+        $this->setCybersourceCredentials($request);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->traceGatewayResponse(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            $response->body,
+            $input);
+
+        $this->response = $response;
+
+        $content = $this->xmlToArray($response->body);
+
+        $verify->verifyResponse = $this->response;
+
+        $verify->verifyResponseBody = $this->response->body;
+
+        $verify->verifyResponseContent = $content;
+
+        return $content;
+    }
+
+    protected function getPaymentVerifyRequestContent($input, $payment)
+    {
+        $targetDate = Carbon::createFromTimestamp($payment->getCreatedAt(), 'UTC')
+                                ->format('Ymd');
+
+        $content = [
+            F::TYPE                      => 'transaction',
+            F::SUBTYPE                   => 'transactionDetail',
+            F::MERCHANT_ID               => $this->getMerchantID($input['terminal']),
+            F::TARGET_DATE               => $targetDate,
+            F::VERSION_NUMBER            => '1.90',
+            F::MERCHANT_REFERENCE_NUMBER => $input['payment']['id'],
+        ];
+
+        $request = $this->getStandardRequestArray($content);
+
+        return $request;
+    }
+
+    protected function verifyPayment($verify)
+    {
+        $input = $verify->input;
+        $content = $verify->verifyResponseContent;
+
+        $verify->status = VerifyResult::STATUS_MATCH;
+
+        list($authReply, $requestContent) = $this->fetchAuthorizeReplyFromContent($content);
+
+        // Payment is failed when ics_auth is not present
+        if (isset($authReply['RFlag']) === true)
+        {
+            if ($authReply['RFlag'] !== ReplyFlag::SOK)
+            {
+                $this->verifyNonExistentCase($verify);
+            }
+            else if ($authReply['RFlag'] === ReplyFlag::SOK)
+            {
+                $this->verifyPaymentReconcileWithGatewayResponse($verify);
+
+                $this->getVerifyContentFromResponse($verify);
+            }
+        }
+
+        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
+
+        $verify->verifyResponseContent = $this->mapVerifyResponseContent($requestContent);
+
+        return $verify->status;
+    }
+
+    protected function verifyNonExistentCase($verify)
+    {
+        $payment = $verify->payment;
+        $input = $verify->input;
+
+        $verify->gatewaySuccess = false;
+
+        if (($payment === null) and
+            (($input['payment']['status'] === 'failed') or
+             ($input['payment']['status'] === 'created')))
+        {
+            $verify->apiSuccess = false;
+        }
+        else if (($payment['received'] === false) and
+                 (($payment['status'] === null) or
+                  ($payment['status'] !== (string) Status::AUTHORIZED)))
+        {
+            $verify->apiSuccess = false;
+        }
+        else if ($payment['status'] === (string) Status::AUTHORIZED)
+        {
+            $verify->status = VerifyResult::STATUS_MISMATCH;
+            $verify->apiSuccess = true;
+        }
+    }
+
+    protected function verifyPaymentReconcileWithGatewayResponse($verify)
+    {
+        $payment = $verify->payment;
+        $input = $verify->input;
+
+        $verify->gatewaySuccess = true;
+
+        if (($input['payment']['status'] !== 'created') and
+            ($input['payment']['status'] !== 'failed'))
+        {
+            $verify->apiSuccess = true;
+        }
+        else
+        {
+            $verify->status = VerifyResult::STATUS_MISMATCH;
+            $verify->apiSuccess = false;
+        }
+    }
+
+    protected function fetchAuthorizeReplyFromContent($content)
+    {
+        $requests = $content['Requests']['Request'];
+
+        if ($this->isSequentialArray($requests) === false)
+        {
+            $requests = [$requests];
+        }
+
+        foreach($requests as $request)
+        {
+            $applicationReplies = $request['ApplicationReplies']['ApplicationReply'];
+
+            if ($this->isSequentialArray($applicationReplies) === false)
+            {
+                $applicationReplies = [$applicationReplies];
+            }
+
+            foreach($applicationReplies as $applicationReply)
+            {
+                if ($applicationReply['@attributes']['Name'] === 'ics_auth')
+                {
+                    return [$applicationReply, $request];
+                }
+            }
+        }
+
+        return [];
+    }
+
+    protected function mapVerifyResponseContent(array $content)
+    {
+        if (empty($content[F::PAYMENT_DATA]) === false)
+        {
+            $attributes = [
+                E::REQUEST_ID         => $content[F::PAYMENT_DATA][F::PAYMENT_REQUEST_ID],
+                E::AUTHORIZATION_CODE => $content[F::PAYMENT_DATA]['AuthorizationCode'],
+                E::AVS_CODE           => $content[F::PAYMENT_DATA][F::AVS_RESULT],
+                E::CV_CODE            => $content[F::PAYMENT_DATA][F::CV_RESULT]
+            ];
+
+            if (empty($content[F::PAYMENT_DATA][F::PAYER_AUTHENTICATION_INFO]) === false)
+            {
+                $payerAuthInfo = $content[F::PAYMENT_DATA][F::PAYER_AUTHENTICATION_INFO];
+
+                $attributes[E::ECI_RAW]        = $payerAuthInfo['ECI'];
+                $attributes[E::CAVV_ALGORITHM] = $payerAuthInfo['AAV_CAVV'];
+                $attributes[E::XID]            = $payerAuthInfo['XID'];
+            }
+
+            return $attributes;
+        }
+
+        return $content;
+    }
+
     protected function decideAuthStepAfterEnroll(array $input, array $response)
     {
         switch ($response[F::REASON_CODE])
@@ -483,13 +677,13 @@ class Gateway extends Base\Gateway
 
     protected function getAttributeFromCaptureResponse(array $input, array $response)
     {
-        $ccCaptureReply = $response[F::CC_CREDIT_REPLY];
+        $ccCaptureReply = $response[F::CC_CAPTURE_REPLY];
 
         $attributes = [
             E::REF           => $response[F::REQUEST_ID],
             E::REASON_CODE   => $response[F::REASON_CODE],
             E::REQUEST_TOKEN => $response[F::REQUEST_TOKEN],
-            E::STATUS        => Status::REFUNDED,
+            E::STATUS        => Status::CAPTURED,
             E::RECEIVED      => true
         ];
 
@@ -547,7 +741,7 @@ class Gateway extends Base\Gateway
         $content[F::MERCHANT_REFERENCE] = $input['payment']['id'];
 
         $content[F::CC_AUTH_SERVICE] = [
-            F::RUN                => 'true',
+            F::RUN => 'true'
         ];
 
         if (isset($this->eci) === true)
@@ -600,14 +794,16 @@ class Gateway extends Base\Gateway
         $content[F::MERCHANT_REFERENCE] = $input['payment']['id'];
 
         $content[F::CC_CREDIT_SERVICE] = [
-            F::RUN => 'true'
-            F::CAPTURE_REQUEST_ID => $gatewayPayment->getRef()
+            F::RUN                => 'true',
+            F::CAPTURE_REQUEST_ID => $gatewayPayment->getCaptureRef()
         ];
 
         $content[F::PURCHASE_TOTALS] = [
             F::CURRENCY           => $input['payment']['currency'],
             F::GRAND_TOTAL_AMOUNT => ($input['refund']['amount'] / 100)
         ];
+
+        $content[F::BILL_TO] = $this->getBillingInfo($input);
 
         $request = $this->getStandardSoapRequest($content);
 
@@ -622,7 +818,7 @@ class Gateway extends Base\Gateway
         $content[F::MERCHANT_REFERENCE] = $input['payment']['id'];
 
         $content[F::CC_CAPTURE_SERVICE] = [
-            F::RUN => 'true'
+            F::RUN => 'true',
             F::AUTH_REQUEST_ID => $gatewayPayment->getRef()
         ];
 
@@ -698,7 +894,7 @@ class Gateway extends Base\Gateway
 
         $payment->setRefundId($refundId);
 
-        $payment->setAmount($amount);
+        $payment->setAmount($refundAmount);
 
         $payment->setAction($this->action);
 
@@ -821,6 +1017,26 @@ class Gateway extends Base\Gateway
         return $objSoapVarWSSEHeader;
     }
 
+    protected function setCybersourceCredentials(&$request)
+    {
+        $terminal = $this->terminal;
+
+        $auth = array(
+            'username' => $terminal['gateway_merchant_id'],
+            'password' => $terminal['gateway_secure_secret']
+        );
+
+        if ($this->mode === Mode::TEST)
+        {
+            $auth = array(
+                'username' => $this->config[self::TEST_MERCHANT_ID],
+                'password' => $this->config[self::TEST_MERCHANT_SECRET]
+            );
+        }
+
+        $request['options']['auth'] = [$auth['username'], $auth['password']];
+    }
+
     // Logging
 
     protected function traceGatewayRequest($traceCode, $request, $input)
@@ -845,6 +1061,18 @@ class Gateway extends Base\Gateway
                 'gateway'    => 'cybersource',
                 'payment_id' => $input['payment']['id'],
             ]);
+    }
+
+    protected function xmlToArray($data)
+    {
+        $xml_values = simplexml_load_string($data);
+
+        return json_decode(json_encode($xml_values), true);
+    }
+
+    protected function isSequentialArray($array)
+    {
+        return array_keys($array) === range(0, count($array) - 1);
     }
 
     // Exception handling
