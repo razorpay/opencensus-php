@@ -108,8 +108,6 @@ class Gateway extends Base\Gateway
 
         $this->setCardNumberAndCvv($input);
 
-        // $response = $this->validateAuth($input, $gatewayPayment);
-
         $this->authorizeEnrolled($input, $gatewayPayment);
     }
 
@@ -298,37 +296,6 @@ class Gateway extends Base\Gateway
         {
             $this->handleSoapFault($exception, "Authorization failed");
         }
-    }
-
-    protected function validateAuth(array $input, Entity $gatewayPayment)
-    {
-        $authValidateRequest = $this->getAuthValidateRequestArray($input, $response);
-
-        $this->traceGatewayRequest(
-                TraceCode::GATEWAY_AUTH_VALIDATE_REQUEST, $authValidateRequest, $input);
-
-        try
-        {
-            $response = $this->postRequest($request);
-
-            $this->traceGatewayResponse(TraceCode::GATEWAY_AUTH_VALIDATE_RESPONSE, $response, $input);
-
-            $gatewayAttributes = $this->getAttributeFromAuthValidateResponse($input, $response);
-
-            $gatewayPayment->fill($gatewayAttributes);
-            $gatewayPayment->save();
-
-            if ($response[F::REASON_CODE] !== Result::SUCCESS)
-            {
-                $this->checkErrorsAndThrowException($response);
-            }
-        }
-        catch (SoapFault $exception)
-        {
-            $this->handleSoapFault($exception, "Authorization failed");
-        }
-
-        return $response;
     }
 
     protected function validateAndSetEciValue(array $input, array $response)
