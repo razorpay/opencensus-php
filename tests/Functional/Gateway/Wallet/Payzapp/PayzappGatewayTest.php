@@ -106,17 +106,23 @@ class PayzappGatewayTest extends TestCase
             }
         });
 
-        $this->refundPayment($payment['id'], $refundAmount);
+        $data = $this->testData[__FUNCTION__];
 
-        $payment = $this->getLastEntity('payment', true);
+        $this->runRequestResponseFlow($data, function() use ($payment, $refundAmount)
+        {
+            $this->refundPayment($payment['id'], $refundAmount);
+        });
 
-        $this->assertEquals('partial', $payment['refund_status']);
-        $this->assertEquals($refundAmount, $payment['amount_refunded']);
+        $this->markTestIncomplete('Partial not supported right now');
+        // $payment = $this->getLastEntity('payment', true);
 
-        $wallet = $this->getLastEntity('wallet', true);
+        // $this->assertEquals('partial', $payment['refund_status']);
+        // $this->assertEquals($refundAmount, $payment['amount_refunded']);
 
-        $this->assertNotNull($wallet['refund_id']);
-        $this->assertEquals($refundAmount, $wallet['amount']);
+        // $wallet = $this->getLastEntity('wallet', true);
+
+        // $this->assertNotNull($wallet['refund_id']);
+        // $this->assertEquals($refundAmount, $wallet['amount']);
     }
 
     public function testVerifyPayment()
