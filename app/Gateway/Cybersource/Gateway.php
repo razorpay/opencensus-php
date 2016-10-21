@@ -65,6 +65,38 @@ class Gateway extends Base\Gateway
         return $this->decideAuthStepAfterEnroll($input, $response);
     }
 
+    public function capture(array $input)
+    {
+        parent::capture($input);
+
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+                                $input['payment']['id'], Action::AUTHORIZE);
+
+        $request = $this->getCaptureRequestArray($input, $gatewayPayment);
+
+        $this->traceGatewayRequest(TraceCode::GATEWAY_CAPTURE_REQUEST, $request, $input);
+
+        try
+        {
+            $response = $this->postRequest($request);
+
+            $this->traceGatewayResponse(TraceCode::GATEWAY_CAPTURE_RESPONSE, $response, $input);
+
+            if ($response[F::REASON_CODE] !== Result::SUCCESS)
+            {
+                $this->checkErrorsAndThrowException($response);
+            }
+
+            $gatewayAttributes = $this->getAttributeFromCaptureResponse($input, $response);
+
+            $this->createGatewayPaymentEntity($gatewayAttributes, $input);
+        }
+        catch (SoapFault $exception)
+        {
+            $this->handleSoapFault($exception, 'Payment capture failed');
+        }
+    }
+
     public function callback(array $input)
     {
         parent::callback($input);
@@ -79,6 +111,38 @@ class Gateway extends Base\Gateway
         // $response = $this->validateAuth($input, $gatewayPayment);
 
         $this->authorizeEnrolled($input, $gatewayPayment);
+    }
+
+    public function refund(array $input)
+    {
+        parent::refund($input);
+
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+                                $input['payment']['id'], Action::CAPTURE);
+
+        $request = $this->getRefundRequestArray($input, $gatewayPayment);
+
+        $this->traceGatewayRequest(TraceCode::GATEWAY_REFUND_REQUEST, $request, $input);
+
+        try
+        {
+            $response = $this->postRequest($request);
+
+            $this->traceGatewayResponse(TraceCode::GATEWAY_REFUND_RESPONSE, $response, $input);
+
+            if ($response[F::REASON_CODE] !== Result::SUCCESS)
+            {
+                $this->checkErrorsAndThrowException($response);
+            }
+
+            $gatewayAttributes = $this->getAttributeFromRefundResponse($input, $response);
+
+            $this->createGatewayRefundEntity($gatewayAttributes, $input);
+        }
+        catch (SoapFault $exception)
+        {
+            $this->handleSoapFault($exception, 'Refund failed');
+        }
     }
 
     protected function decideAuthStepAfterEnroll(array $input, array $response)
@@ -365,8 +429,7 @@ class Gateway extends Base\Gateway
     {
         $key = 'cybersource_' . $input['payment']['id'] . '_card_details';
 
-        //  CHange it to pull
-        return Cache::store($this->secureCache)->get($key);
+        return Cache::store($this->secureCache)->pull($key);
     }
 
     protected function getAttributeFromAuthEnrollResponse(array $input, array $response)
@@ -447,6 +510,36 @@ class Gateway extends Base\Gateway
         $ccAuthAttributes = $this->getAttributeFromAuthorizeResponse($input, $response);
 
         $attributes = array_merge($payerAuthValidateAttributes, $ccAuthAttributes);
+
+        return $attributes;
+    }
+
+    protected function getAttributeFromCaptureResponse(array $input, array $response)
+    {
+        $ccCaptureReply = $response[F::CC_CREDIT_REPLY];
+
+        $attributes = [
+            E::REF           => $response[F::REQUEST_ID],
+            E::REASON_CODE   => $response[F::REASON_CODE],
+            E::REQUEST_TOKEN => $response[F::REQUEST_TOKEN],
+            E::STATUS        => Status::REFUNDED,
+            E::RECEIVED      => true
+        ];
+
+        return $attributes;
+    }
+
+    protected function getAttributeFromRefundResponse(array $input, array $response)
+    {
+        $ccCreditReply = $response[F::CC_CREDIT_REPLY];
+
+        $attributes = [
+            E::REF           => $response[F::REQUEST_ID],
+            E::REASON_CODE   => $response[F::REASON_CODE],
+            E::REQUEST_TOKEN => $response[F::REQUEST_TOKEN],
+            E::STATUS        => Status::REFUNDED,
+            E::RECEIVED      => true
+        ];
 
         return $attributes;
     }
@@ -532,6 +625,50 @@ class Gateway extends Base\Gateway
         return $authServiceRequest;
     }
 
+    protected function getRefundRequestArray(array $input, Entity $gatewayPayment)
+    {
+        $content = [];
+
+        $content[F::MERCHANT_ID] = $this->getMerchantId($input['terminal']);
+        $content[F::MERCHANT_REFERENCE] = $input['payment']['id'];
+
+        $content[F::CC_CREDIT_SERVICE] = [
+            F::RUN => 'true'
+            F::CAPTURE_REQUEST_ID => $gatewayPayment->getRef()
+        ];
+
+        $content[F::PURCHASE_TOTALS] = [
+            F::CURRENCY           => $input['payment']['currency'],
+            F::GRAND_TOTAL_AMOUNT => ($input['refund']['amount'] / 100)
+        ];
+
+        $request = $this->getStandardSoapRequest($content);
+
+        return $request;
+    }
+
+    protected function getCaptureRequestArray(array $input, Entity $gatewayPayment)
+    {
+        $content = [];
+
+        $content[F::MERCHANT_ID] = $this->getMerchantId($input['terminal']);
+        $content[F::MERCHANT_REFERENCE] = $input['payment']['id'];
+
+        $content[F::CC_CAPTURE_SERVICE] = [
+            F::RUN => 'true'
+            F::AUTH_REQUEST_ID => $gatewayPayment->getRef()
+        ];
+
+        $content[F::PURCHASE_TOTALS] = [
+            F::CURRENCY           => $input['payment']['currency'],
+            F::GRAND_TOTAL_AMOUNT => ($input['payment']['amount'] / 100)
+        ];
+
+        $request = $this->getStandardSoapRequest($content);
+
+        return $request;
+    }
+
     protected function getAuthValidateContentArray(array $input)
     {
         $content = [];
@@ -568,6 +705,31 @@ class Gateway extends Base\Gateway
         $amount    = $input['payment']['amount'];
 
         $payment->setPaymentId($paymentId);
+
+        $payment->setAmount($amount);
+
+        $payment->setAction($this->action);
+
+        $payment->fill($attributes);
+
+        $payment->saveOrFail();
+
+        $this->gatewayPayment = $payment;
+
+        return $payment;
+    }
+
+    protected function createGatewayRefundEntity($attributes, $input)
+    {
+        $payment = $this->getNewGatewayPaymentEntity();
+
+        $paymentId    = $input['payment']['id'];
+        $refundId     = $input['refund']['id'];
+        $refundAmount = $input['refund']['amount'];
+
+        $payment->setPaymentId($paymentId);
+
+        $payment->setRefundId($refundId);
 
         $payment->setAmount($amount);
 

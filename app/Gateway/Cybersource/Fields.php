@@ -58,6 +58,14 @@ class Fields
 
     const PA_ENROLL_SERVICE         = 'payerAuthEnrollService';
 
+    const CC_CREDIT_SERVICE         = 'ccCreditService';
+
+    const CC_CREDIT_REPLY           = 'ccCreditReply';
+
+    const CC_CAPTURE_SERVICE        = 'ccCaptureService';
+
+    const CC_CAPTURE_REPLY          = 'ccCaptureReply';
+
     const PA_ENROLL_REPLY           = 'payerAuthEnrollReply';
 
     const PA_VALIDATE_SERVICE       = 'payerAuthValidateService';
@@ -65,6 +73,10 @@ class Fields
     const PA_VALIDATE_REPLY         = 'payerAuthValidateReply';
 
     const SIGNED_PA_RES             = 'signedPARes';
+
+    const CAPTURE_REQUEST_ID        = 'captureRequestID';
+
+    const AUTH_REQUEST_ID           = 'authRequestID';
 
     const PA_REQ                    = 'paReq';
 
