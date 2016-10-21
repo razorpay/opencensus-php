@@ -424,9 +424,9 @@ class Core extends Base\Core
 
         $nodalBalance = $this->getNodalBalanceLockForUpdate($txn->getChannel());
 
-        $nodalBalance->subtractCredits($amount);
+        $nodalBalance->subtractAmountCredits($amount);
 
-        $merchantBalance->subtractCredits($amount);
+        $merchantBalance->subtractAmountCredits($amount);
     }
 
     protected function getNodalBalanceLockForUpdate($channel)

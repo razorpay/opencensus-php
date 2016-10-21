@@ -290,7 +290,6 @@ $factory(\RZP\Models\Merchant\Credits\Entity::class, [
     'id'            => $faker->uniqueid,
     'merchant_id'   => '10000000000000',
     'value'         => 150,
-    'fee_credits'   => 0,
     'is_admin'      => 1,
     'type'          => 'amount',
     'campaign'      => 'silent-ads',

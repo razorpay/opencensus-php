@@ -29,6 +29,12 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = false;
 
+    protected $casts = [
+        self::CREDITS     => 'integer',
+        self::FEE_CREDITS => 'integer',
+        self::BALANCE     => 'integer',
+    ];
+
     protected function addAmount($amount)
     {
         $this->checkNumeric($amount);
@@ -116,7 +122,7 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function subtractCredits($amount)
+    public function subtractAmountCredits($amount)
     {
         $credits = $this->getCredits();
 
@@ -144,11 +150,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::FEE_CREDITS, $credits);
     }
 
-    public function setFreeCredits($credits)
-    {
-        return $this->setCredits($credits);
-    }
-
     public function setCredits($credits)
     {
         assert ($credits >= 0);
@@ -161,16 +162,6 @@ class Entity extends Base\PublicEntity
         assert ($credits >= 0);
 
         $this->setAttribute(self::FEE_CREDITS, $credits);
-    }
-
-    protected function getBalanceAttribute()
-    {
-        return (int) $this->attributes[self::BALANCE];
-    }
-
-    protected function getCreditsAttribute()
-    {
-        return (int) $this->attributes[self::CREDITS];
     }
 
     public function save(array $options = array())

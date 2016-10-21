@@ -53,7 +53,7 @@ class Repository extends Base\Repository
         $nodalCredits = $nodalCredits - $balance->getCredits() + $freeCredits;
         $nodalBalance->setCredits($nodalCredits);
 
-        $balance->setFreeCredits($freeCredits);
+        $balance->setCredits($freeCredits);
 
         $balance->saveOrFail();
         $nodalBalance->saveOrFail();

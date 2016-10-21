@@ -10,7 +10,6 @@ class Entity extends Base\PublicEntity
     const CAMPAIGN                  = 'campaign';
     const MERCHANT_ID               = 'merchant_id';
     const VALUE                     = 'value';
-    const FEE_CREDITS               = 'fee_credits';
     const TYPE                      = 'type';
     const IS_ADMIN                  = 'is_admin';
 
@@ -24,7 +23,6 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::CAMPAIGN,
         self::VALUE,
-        self::FEE_CREDITS,
         self::TYPE,
         self::IS_ADMIN,
     );
@@ -34,7 +32,6 @@ class Entity extends Base\PublicEntity
         self::CAMPAIGN,
         self::MERCHANT_ID,
         self::VALUE,
-        self::FEE_CREDITS,
         self::TYPE,
         self::IS_ADMIN,
         self::CREATED_AT
@@ -44,21 +41,18 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::CAMPAIGN,
         self::VALUE,
-        self::FEE_CREDITS,
         self::CREATED_AT
     );
 
     protected $defaults = array(
         self::VALUE             => 0,
         self::CAMPAIGN          => null,
-        self::FEE_CREDITS       => 0,
         self::TYPE              => 'amount',
     );
 
     // Casts the attributes to native types
     protected $casts = [
         self::VALUE             => 'integer',
-        self::FEE_CREDITS       => 'integer',
         self::IS_ADMIN          => 'boolean',
     ];
 
@@ -76,13 +70,6 @@ class Entity extends Base\PublicEntity
         assert (($value >= 0) and ($value <= 1000000));
 
         $this->setAttribute(self::VALUE, $value);
-    }
-
-    public function setFeeCredits($value)
-    {
-        assert (($value >= 0) and ($value <= 20000));
-
-        $this->setAttribute(self::FEE_CREDITS, $value);
     }
 
     public function setType($type)
@@ -112,11 +99,6 @@ class Entity extends Base\PublicEntity
     public function getType()
     {
         return $this->getAttribute(self::TYPE);
-    }
-
-    public function getFeeCredits()
-    {
-        return $this->getAttribute(self::FEE_CREDITS);
     }
 
     public function getIsAdmin()

@@ -28,9 +28,6 @@ class CreateCreditsTable extends Migration
             $table->integer(Credits::VALUE)
                 ->nullable();
 
-            $table->integer(Credits::FEE_CREDITS)
-                ->nullable();
-
             $table->string(Credits::TYPE, 255);
 
             $table->boolean(Credits::IS_ADMIN)
