@@ -110,6 +110,8 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
 
+        $request['headers'] = $this->getRequestHeaders();
+
         $response = $this->sendGatewayRequest($request);
 
         // In 1 minute you can hit the RE-SEND-OTP API 4 times.
@@ -148,6 +150,8 @@ class Gateway extends Base\Gateway
         $request = $this->getOtpSubmitRequestArray($input);
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+
+        $request['headers'] = $this->getRequestHeaders();
 
         $response = $this->sendGatewayRequest($request);
 
@@ -192,9 +196,9 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray();
 
-        $request['headers'] = $this->getRequestHeaders();
-
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+
+        $request['headers'] = $this->getRequestHeaders();
 
         $request['content'] = json_encode($content);
 
@@ -271,9 +275,9 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray();
 
-        $request['headers'] = $this->getRequestHeaders();
-
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+
+        $request['headers'] = $this->getRequestHeaders();
 
         $request['content'] = $content;
 
@@ -465,7 +469,6 @@ class Gateway extends Base\Gateway
             'method'  => 'post',
             'content' => $queryArray,
             'url'     => $url . '?' . $query,
-            'headers' => $this->getRequestHeaders(),
         ];
 
         return $request;
@@ -488,7 +491,6 @@ class Gateway extends Base\Gateway
             'method'  => 'post',
             'content' => $queryArray,
             'url'     => $url . '?' . $query,
-            'headers' => $this->getRequestHeaders(),
         ];
 
         return $request;
