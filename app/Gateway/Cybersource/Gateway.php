@@ -9,6 +9,7 @@ use SoapVar;
 use SoapFault;
 use RZP\Error;
 use SoapClient;
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Gateway\Utility;
@@ -55,10 +56,10 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        // if ($this->isRecurringPaymentRequest($input) === true)
-        // {
-        //     return $this->recurring($input);
-        // }
+        if ($this->isRecurringPaymentRequest($input) === true)
+        {
+            return $this->authorizeRecurring($input);
+        }
 
         $response = $this->enroll($input);
 
@@ -224,14 +225,12 @@ class Gateway extends Base\Gateway
             else if ($authReply['RFlag'] === ReplyFlag::SOK)
             {
                 $this->verifyPaymentReconcileWithGatewayResponse($verify);
-
-                $this->getVerifyContentFromResponse($verify);
             }
         }
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
 
-        $verify->verifyResponseContent = $this->mapVerifyResponseContent($requestContent);
+        $verify->verifyResponseContent = $this->getVerifyContentFromResponse($requestContent);
 
         return $verify->status;
     }
@@ -311,24 +310,24 @@ class Gateway extends Base\Gateway
         return [];
     }
 
-    protected function mapVerifyResponseContent(array $content)
+    protected function getVerifyContentFromResponse(array $content)
     {
         if (empty($content[F::PAYMENT_DATA]) === false)
         {
             $attributes = [
-                E::REQUEST_ID         => $content[F::PAYMENT_DATA][F::PAYMENT_REQUEST_ID],
-                E::AUTHORIZATION_CODE => $content[F::PAYMENT_DATA]['AuthorizationCode'],
-                E::AVS_CODE           => $content[F::PAYMENT_DATA][F::AVS_RESULT],
-                E::CV_CODE            => $content[F::PAYMENT_DATA][F::CV_RESULT]
+                E::REF                => $content[F::PAYMENT_DATA][F::PAYMENT_REQUEST_ID],
+                E::AUTHORIZATION_CODE => $content[F::PAYMENT_DATA]['AuthorizationCode'] ?? null,
+                E::AVS_CODE           => $content[F::PAYMENT_DATA][F::AVS_RESULT] ?? null,
+                E::CV_CODE            => $content[F::PAYMENT_DATA][F::CV_RESULT] ?? null
             ];
 
             if (empty($content[F::PAYMENT_DATA][F::PAYER_AUTHENTICATION_INFO]) === false)
             {
                 $payerAuthInfo = $content[F::PAYMENT_DATA][F::PAYER_AUTHENTICATION_INFO];
 
-                $attributes[E::ECI_RAW]        = $payerAuthInfo['ECI'];
-                $attributes[E::CAVV_ALGORITHM] = $payerAuthInfo['AAV_CAVV'];
-                $attributes[E::XID]            = $payerAuthInfo['XID'];
+                $attributes[E::ECI_RAW]        = $payerAuthInfo['ECI'] ?? null;
+                $attributes[E::CAVV_ALGORITHM] = $payerAuthInfo['AAV_CAVV'] ?? null;
+                $attributes[E::XID]            = $payerAuthInfo['XID'] ?? null;
             }
 
             return $attributes;
@@ -492,6 +491,36 @@ class Gateway extends Base\Gateway
         }
     }
 
+    protected function authorizeRecurring(array $input)
+    {
+        $authRequest = $this->getAuthorizeRecurringRequestArray($input);
+
+        $this->traceGatewayRequest(TraceCode::GATEWAY_AUTHORIZE_REQUEST, $authRequest, $input);
+
+        try
+        {
+            $response = $this->postRequest($authRequest);
+
+            $this->traceGatewayResponse(TraceCode::GATEWAY_AUTHORIZE_RESPONSE, $response, $input);
+
+            $gatewayAttributes = $this->getAttributeFromAuthorizeResponse($input, $response);
+
+            $gatewayAttributes[E::COMMERCE_INDICATOR] = 'recurring';
+
+            $gatewayPayment->fill($gatewayAttributes);
+            $gatewayPayment->save();
+
+            if ($response[F::REASON_CODE] !== Result::SUCCESS)
+            {
+                $this->checkErrorsAndThrowException($response);
+            }
+        }
+        catch (SoapFault $exception)
+        {
+            $this->handleSoapFault($exception, "Authorization failed");
+        }
+    }
+
     protected function validateAndSetEciValue(array $input, array $response)
     {
         $payerAuthEnrollReply = $response[F::PA_ENROLL_REPLY];
@@ -621,7 +650,7 @@ class Gateway extends Base\Gateway
             E::REASON_CODE              => $response[F::REASON_CODE],
             E::REQUEST_TOKEN            => $response[F::REQUEST_TOKEN],
             E::RECEIPT_NUMBER           => $response[F::RECEIPT_NUMBER],
-            E::AUTHORIZATION_CODE       => $ccAuthReply[F::AUTHORIZATION_CODE],
+            E::AUTHORIZATION_CODE       => $ccAuthReply[F::AUTHORIZATION_CODE] ?? null,
             E::AVS_CODE                 => $ccAuthReply[F::AVS_CODE] ?? null,
             E::CARD_CATEGORY            => $ccAuthReply[F::CARD_CATEGORY] ?? null,
             E::CARD_GROUP               => $ccAuthReply[F::CARD_GROUP] ?? null,
@@ -759,7 +788,7 @@ class Gateway extends Base\Gateway
             F::ACCOUNT_NUMBER   => $input['card']['number'],
             F::EXPIRATION_MONTH => $input['card']['expiry_month'],
             F::EXPIRATION_YEAR  => $input['card']['expiry_year'],
-            F::CVN              => $input['card']['cvv'],
+            F::CVN              => $input['card']['cvv'] ?? null,
             F::CARD_TYPE        => CardType::get($input['card']['network_code'])
         ];
 
@@ -773,6 +802,19 @@ class Gateway extends Base\Gateway
         $request = $this->getStandardSoapRequest($content);
 
         return $request;
+    }
+
+    protected function getAuthorizeRecurringRequestArray(array $input)
+    {
+        $authorizeRequest = $this->getAuthorizeRequestArray($input);
+
+        // Unset CVV number as it's not required in recurring
+        unset($authorizeRequest['content'][F::CARD][F::CVN]);
+
+        // Set commerceIndicator as recurring
+        $authorizeRequest['content'][F::CC_AUTH_SERVICE][F::COMMERCE_INDICATOR] = 'recurring';
+
+        return $authorizeRequest;
     }
 
     protected function getAuthorizeEnrolledRequestArray(array $input)
@@ -858,6 +900,19 @@ class Gateway extends Base\Gateway
         ];
 
         return $billingInfo;
+    }
+
+
+    // Check for recurring payment
+    protected function isRecurringPaymentRequest($input)
+    {
+        if (($input['payment']['recurring'] === true) and
+            ($input['token']->isRecurring() === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function createGatewayPaymentEntity($attributes, $input)
