@@ -462,7 +462,9 @@ class Core extends Base\Core
     {
         $capturedAt = $payment->getAttribute(Payment\Entity::CAPTURED_AT);
 
-        return Schedule::getNextApplicableTime($capturedAt, $payment->merchant);
+        $returnTime = Schedule::getNextApplicableTime($capturedAt, $payment->merchant);
+
+        return Holidays::getNextWorkingTime($returnTime);
     }
 
     public function calculateSettledAtTimestamp($timestamp, $addDays, $ignoreBankHolidays = false)
