@@ -1037,3 +1037,7 @@ WHERE w.wallet = 'olamoney'
 
 ALTER TABLE merchants
     ADD COLUMN settlement_schedule_id VARCHAR(14) AFTER settlement_schedule;
+
+ALTER TABLE first_data
+    ADD COLUMN auth_code VARCHAR(6) AFTER gateway_terminal_id;
+
