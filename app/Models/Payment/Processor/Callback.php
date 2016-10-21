@@ -260,6 +260,7 @@ trait Callback
         $this->repo->saveOrFail($payment);
     }
 
+    //TODO: add segment here
     protected function processPaymentCallbackException($e)
     {
         // Refresh and check that payment is in created state only

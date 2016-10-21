@@ -99,6 +99,7 @@ trait Capture
      * @param $payment
      * @return array
      */
+    // TODO: add segment here
     public function verifyCapture($payment)
     {
         $this->setPayment($payment);

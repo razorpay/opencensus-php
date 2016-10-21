@@ -22,8 +22,7 @@
         "php-http/guzzle6-adapter": "^1.1",
         "phpseclib/phpseclib": "^2.0",
         "jenssegers/agent": "^2.3",
-        "minfraud/http": "^1.70",
-        "segmentio/analytics-php": "^1.4"
+        "minfraud/http": "^1.70"
     },
     "repositories": [
         {

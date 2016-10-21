@@ -1246,7 +1246,11 @@ trait Authorize
 
             (new TerminalAnalytics\Core)->create($log);
 
-            $this->app['segment']->trackPayment($payment, TraceCode::SEGMENT_TERMINAL_SUCCESS, $log);
+            $tStatus = TerminalAnalytics\Entity::TERMINAL_STATUS;
+
+            $terminalStatus = ($tStatus === 1) ? TraceCode::SEGMENT_TERMINAL_SUCCESS : TraceCode::TERMINAL_FAILURE;
+
+            $this->app['segment']->trackPayment($payment, $terminalStatus, $log);
         }
         catch(\Exception $e)
         {

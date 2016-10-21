@@ -6,6 +6,7 @@ use Segment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Payment\Analytics\Entity as AnalyticsEntity;
+use GuzzleHttp\Client;
 
 class SegmentClient
 {
@@ -16,6 +17,8 @@ class SegmentClient
     protected $trace;
 
     protected $version;
+
+    const LUMBERJACK_SEGMENT_URLPATTERN = 'segment_post';
 
     public function __construct($app)
     {
@@ -30,9 +33,9 @@ class SegmentClient
         $this->version = "1.0";
 
         Segment::init($key, [
-                             'consumer'     => 'file',
+                             //'consumer'     => 'file',
                              'debug'        => $this->config['segment.debug'],
-                             'filename'     => $this->config['segment.storage_path']
+                             //'filename'     => $this->config['segment.storage_path']
                              ]);
     }
 
@@ -134,6 +137,29 @@ class SegmentClient
         return $flattened;
     }
 
+    protected function buildRequestAndSend(array $defaults)
+    {
+        $ljConfig = $this->config->get('applications.lumberjack');
+
+        $url = $ljConfig['url'].self::LUMBERJACK_SEGMENT_URLPATTERN;
+
+        $secret = $ljConfig['secret'];
+
+        $data = json_encode($defaults);
+
+        $signature = hash_hmac('sha1', $data, $secret);
+
+        $headers = [
+                    'content-type' => 'application/json',
+                    'x-signature' => $signature
+                   ];
+
+        // TODO: make this async using guzzler async events
+        $client = new Client(['headers' => $headers]);
+
+        $response = $client->request('POST', $url, ['json' => $data]);
+    }
+
     public function trackPayment(PaymentEntity $payment, $event, array $customProperties = [])
     {
         $defaults = $this->fillDefaults($payment, $event);
@@ -149,7 +175,6 @@ class SegmentClient
 
         $defaults['properties'] = $properties;
 
-        //TODO: do something with the status and also handle exceptions here if any
-        $status = Segment::track($defaults);
+        $this->buildRequestAndSend($defaults);
     }
 }
