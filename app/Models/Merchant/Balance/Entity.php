@@ -122,7 +122,7 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function subtractAmountCredits($amount)
+    public function subtractCredits($amount)
     {
         $credits = $this->getCredits();
 

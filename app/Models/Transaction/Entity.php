@@ -97,7 +97,6 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = array(
         self::GRATIS      => false,
-        self::FEE_CREDITS => false,
     );
 
     protected $amounts = array(
@@ -124,7 +123,7 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::GRATIS      => 'boolean',
-        self::FEE_CREDITS => 'boolean',
+        self::FEE_CREDITS => 'integer',
     ];
 
     public function merchant()
