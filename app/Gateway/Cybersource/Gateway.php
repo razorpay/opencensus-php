@@ -425,7 +425,7 @@ class Gateway extends Base\Gateway
 
         try
         {
-            $response = $this->postRequest($request);
+            $response = $this->postRequest($authRequest);
 
             $this->traceGatewayResponse(TraceCode::GATEWAY_AUTHORIZE_RESPONSE, $response, $input);
 
@@ -630,7 +630,7 @@ class Gateway extends Base\Gateway
             E::REF                  => $response[F::REQUEST_ID],
             E::REASON_CODE          => $response[F::REASON_CODE],
             E::REQUEST_TOKEN        => $response[F::REQUEST_TOKEN],
-            E::XID                  => $payerAuthEnrollReply[F::XID],
+            E::XID                  => $payerAuthEnrollReply[F::XID] ?? null,
             E::ECI                  => $payerAuthEnrollReply[F::ECI] ?? null,
             E::VERES_ENROLLED       => $payerAuthEnrollReply[F::VERES_ENROLLED] ?? null,
             E::COMMERCE_INDICATOR   => $payerAuthEnrollReply[F::COMMERCE_INDICATOR] ?? null,
@@ -739,7 +739,7 @@ class Gateway extends Base\Gateway
         $content = [];
 
         $content[F::MERCHANT_ID] = $this->getMerchantId($input['terminal']);
-        $content[F::MERCHANT_REFERENCE] = $input['payment']['id'];
+        $content[F::MERCHANT_REFERENCE_CODE] = $input['payment']['id'];
 
         $content[F::PA_ENROLL_SERVICE] = [
             F::RUN => 'true'
@@ -767,7 +767,7 @@ class Gateway extends Base\Gateway
         $content = [];
 
         $content[F::MERCHANT_ID] = $this->getMerchantId($input['terminal']);
-        $content[F::MERCHANT_REFERENCE] = $input['payment']['id'];
+        $content[F::MERCHANT_REFERENCE_CODE] = $input['payment']['id'];
 
         $content[F::CC_AUTH_SERVICE] = [
             F::RUN => 'true'
@@ -833,7 +833,7 @@ class Gateway extends Base\Gateway
         $content = [];
 
         $content[F::MERCHANT_ID] = $this->getMerchantId($input['terminal']);
-        $content[F::MERCHANT_REFERENCE] = $input['payment']['id'];
+        $content[F::MERCHANT_REFERENCE_CODE] = $input['payment']['id'];
 
         $content[F::CC_CREDIT_SERVICE] = [
             F::RUN                => 'true',
@@ -857,7 +857,7 @@ class Gateway extends Base\Gateway
         $content = [];
 
         $content[F::MERCHANT_ID] = $this->getMerchantId($input['terminal']);
-        $content[F::MERCHANT_REFERENCE] = $input['payment']['id'];
+        $content[F::MERCHANT_REFERENCE_CODE] = $input['payment']['id'];
 
         $content[F::CC_CAPTURE_SERVICE] = [
             F::RUN => 'true',

@@ -24,6 +24,8 @@ class Fields
 
     const MERCHANT_REFERENCE_NUMBER = 'merchantReferenceNumber';
 
+    const MERCHANT_REFERENCE_CODE   = 'merchantReferenceCode';
+
     const TARGET_DATE               = 'targetDate';
 
     const PAYMENT_DATA              = 'PaymentData';
@@ -69,8 +71,6 @@ class Fields
     const PAYMENT_NETWORK_TXN_ID    = 'paymentNetworkTransactionID';
 
     const PROCESSOR_RESPONSE        = 'processorResponse';
-
-    const MERCHANT_REFERENCE        = 'merchantReferenceCode';
 
     const CC_AUTH_SERVICE           = 'ccAuthService';
 
@@ -143,4 +143,8 @@ class Fields
     const CURRENCY                  = 'currency';
 
     const GRAND_TOTAL_AMOUNT        = 'grandTotalAmount';
+
+    const AMOUNT                    = 'amount';
+
+    const RECONCILIATION_ID         = 'reconciliationID';
 }

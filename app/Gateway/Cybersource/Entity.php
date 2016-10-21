@@ -8,7 +8,6 @@ use RZP\Constants;
 class Entity extends Base\Entity
 {
     const ID                     = 'id';
-    const REQUEST_TOKEN          = 'requestToken';
     const VERES_ENROLLED         = 'veresEnrolled';
     const CAVV_ALGORITHM         = 'cavvAlgorithm';
     const CAVV                   = 'cavv';
@@ -16,6 +15,7 @@ class Entity extends Base\Entity
     const AMOUNT                 = 'amount';
     const STATUS                 = 'status';
     const ECI                    = 'eci';
+    const PARES_STATUS           = 'pares_status';
     const AVS_CODE               = 'avsCode';
     const CARD_CATEGORY          = 'cardCategory';
     const CARD_GROUP             = 'cardGroup';
@@ -29,9 +29,9 @@ class Entity extends Base\Entity
     const COLLECTION_INDICATOR   = 'collection_indicator';
     const REF                    = 'ref';
     const CAPTURE_REF            = 'capture_ref';
-    const RECEIPT_NUMBER         = 'receiptNumber';
     const XID                    = 'xid';
-    const PARES_STATUS           = 'pares_status';
+    const RECEIPT_NUMBER         = 'receiptNumber';
+    const REQUEST_TOKEN          = 'requestToken';
     const REASON_CODE            = 'reason_code';
     const CREATED_AT             = 'created_at';
     const UPDATED_AT             = 'updated_at';
