@@ -7,7 +7,6 @@ use App\Admin;
 use App\Merchant;
 use Auth;
 use Input;
-use OAuth;
 use Config;
 use App;
 use App\Admin\Entity;
@@ -36,7 +35,7 @@ class AdminController extends Controller
     public function getIndex()
     {
         $code = Input::get('code');
-        $googleService = (new OAuth)->consumer('Google');
+        $googleService = \OAuthFacade::consumer('Google');
 
         // If the user is not logged in
         if (!Auth::guard('admin')->check())
