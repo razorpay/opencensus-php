@@ -61,6 +61,33 @@ class Repository extends Base\Repository
         return $balance;
     }
 
+    public function editMerchantFeeCredits($merchant, $feeCredits)
+    {
+        return $this->transaction(function () use ($merchant, $feeCredits)
+        {
+            return $this->editMerchantFeeCreditsInTransaction($merchant, $feeCredits);
+        });
+    }
+
+    private function editMerchantFeeCreditsInTransaction($merchant, $feeCredits)
+    {
+        assert ($this->isTransactionActive());
+
+        $balance = $this->findOrFail($merchant->getId());
+        $nodalBalance = $this->getNodalBalanceLockForUpdate('kotak');
+
+        $nodalCredits = $nodalBalance->getFeeCredits();
+        $nodalCredits = $nodalCredits - $balance->getFeeCredits() + $feeCredits;
+        $nodalBalance->setFeeCredits($nodalCredits);
+
+        $balance->setFeeCredits($feeCredits);
+
+        $balance->saveOrFail();
+        $nodalBalance->saveOrFail();
+
+        return $balance;
+    }
+
     public function updateBalance($balance)
     {
         assert ($this->isTransactionActive());

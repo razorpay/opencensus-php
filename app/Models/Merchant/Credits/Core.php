@@ -14,6 +14,11 @@ class Core extends Base\Core
 
     public function create($merchant, $input)
     {
+        if (isset($input[Credits\Entity::TYPE]) === false)
+        {
+            $input[Credits\Entity::TYPE] = Credits\Type::AMOUNT;
+        }
+
         $creditsLog = (new Credits\Entity)->build($input);
 
         $creditsLog->merchant()->associate($merchant);
@@ -24,26 +29,39 @@ class Core extends Base\Core
         $creditsLog->setIsAdmin($isAdmin);
 
         $this->repo->credits->validateCampaignCreditsNotAssigned(
-                                $creditsLog->getCampaign(), $merchant);
+            $creditsLog->getCampaign(), $merchant, $input['type']);
 
         return $this->repo->transaction(function() use ($merchant, $creditsLog)
         {
             $this->repo->saveOrFail($creditsLog);
 
-            $this->updateCreditsInMerchantAccount($merchant, $creditsLog->getValue());
+            $type = $creditsLog->getType();
+
+            $this->updateCreditsInMerchantAccount($merchant, $creditsLog->getValue(), $type);
 
             return $creditsLog;
         });
     }
 
-    public function updateCreditsInMerchantAccount($merchant, $credits)
+    public function updateCreditsInMerchantAccount($merchant, $credits, $type=Credits\Type::AMOUNT)
     {
-        // Add the credits to merchant's main balance
-        $merchantBalance = $merchant->balance->getCredits();
+        if ($type === Credits\Type::AMOUNT)
+        {
+            // Add the credits to merchant's main balance
+            $merchantBalance = $merchant->balance->getCredits();
 
-        $newCredits = $merchantBalance + $credits;
+            $newCredits = $merchantBalance + $credits;
 
-        $this->repo->balance->editMerchantFreeCredits($merchant, $newCredits);
+            $this->repo->balance->editMerchantFreeCredits($merchant, $newCredits);
+        }
+        else if ($type === Credits\Type::FEE)
+        {
+            $merchantFeeCredits = $merchant->balance->getFeeCredits();
+
+            $newCredits = $merchantFeeCredits + $credits;
+
+            $this->repo->balance->editMerchantFeeCredits($merchant, $newCredits);
+        }
     }
 
     /*
@@ -65,7 +83,9 @@ class Core extends Base\Core
             $creditsLog->setValue($credits);
             $this->repo->saveOrFail($creditsLog);
 
-            $this->updateCreditsInMerchantAccount($creditsLog->merchant, $creditsDifference);
+            $type = $creditsLog->getType();
+
+            $this->updateCreditsInMerchantAccount($creditsLog->merchant, $creditsDifference, $type);
 
             return $creditsLog;
         });
@@ -78,11 +98,13 @@ class Core extends Base\Core
     {
         return $this->repo->transaction(function() use ($creditsLog)
         {
+            $type = $creditsLog->getType();
+
             // Since we are deleting, value should be negative
             $credits = -1 * $creditsLog->getValue();
             $this->repo->deleteOrFail($creditsLog);
 
-            $this->updateCreditsInMerchantAccount($creditsLog->merchant, $credits);
+            $this->updateCreditsInMerchantAccount($creditsLog->merchant, $credits, $type);
 
             return $creditsLog;
         });
