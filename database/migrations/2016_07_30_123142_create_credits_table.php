@@ -29,8 +29,7 @@ class CreateCreditsTable extends Migration
 
             $table->string(Credits::TYPE, 20);
 
-            $table->boolean(Credits::IS_ADMIN)
-                ->default(true);
+            $table->boolean(Credits::IS_ADMIN);
 
             $table->integer(Credits::CREATED_AT);
             $table->integer(Credits::UPDATED_AT);
