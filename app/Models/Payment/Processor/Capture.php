@@ -53,7 +53,10 @@ trait Capture
         $payment->setAutoCapturedTrue();
 
         $this->trace->info(
-            TraceCode::PAYMENT_AUTO_CAPTURE, ['payment_id' => $payment->getId()]);
+            TraceCode::PAYMENT_AUTO_CAPTURE,
+            [
+                'payment_id' => $payment->getId()
+            ]);
 
         try
         {

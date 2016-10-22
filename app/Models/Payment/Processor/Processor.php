@@ -770,14 +770,35 @@ class Processor
         return $ba;
     }
 
-    protected function shouldAutoCapture($payment)
+    protected function shouldAutoCapture(Payment\Entity $payment)
     {
-        // If payment is not authorized or order is null,
-        // do not auto capture it.
-        if (($payment->isAuthorized() === false) or
-            ($payment->getApiOrderId() === null) or
-            ($payment->order->isPaid() === true) or
-            ($payment->order->getPaymentCapture() === false))
+        // The payment should always be in authorized if it has reached this point.
+        // Ideally, this should throw an exception. But, we do not want to fail
+        // the payment because of an internal issue.
+        if ($payment->isAuthorized() === false)
+        {
+            $this->trace->error(
+                TraceCode::PAYMENT_AUTO_CAPTURE_NOT_AUTHORIZED,
+                [
+                    'payment_id'    => $payment->getId(),
+                    'status'        => $payment->getStatus()
+                ]);
+
+            return false;
+        }
+
+        // We do an auto capture only if payment is associated with an order.
+        if ($payment->getApiOrderId() === null)
+        {
+            return false;
+        }
+
+        $order = $payment->order;
+
+        $this->repo->reload($order);
+
+        if (($order->isPaid() === true) or
+            ($order->getPaymentCapture() === false))
         {
             return false;
         }
