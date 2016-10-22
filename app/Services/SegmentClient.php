@@ -179,10 +179,10 @@ class SegmentClient
 
     public function trackPayment(PaymentEntity $payment, $event, array $customProperties = [])
     {
-        // if ($this->mode === 'test')
-        // {
-        //     return ;
-        // }
+        if ($this->mode === 'test')
+        {
+            return ;
+        }
 
         $defaults = $this->fillDefaults($payment, $event);
 
