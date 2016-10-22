@@ -27,7 +27,7 @@ class Validator extends Base\Validator
     {
         $type = $creditsLog->getType();
 
-        $MAX_CREDITS = self::getMaxCreditsForType($type);
+        $maxCredits = self::getMaxCreditsForType($type);
 
         if ($credits < self::MIN_CREDITS)
         {
@@ -35,10 +35,10 @@ class Validator extends Base\Validator
                 'Cannot assign credits less than one rupee');
         }
 
-        if ($credits > $MAX_CREDITS)
+        if ($credits > $maxCredits)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Cannot Assign credits more than '. $MAX_CREDITS);
+                'Cannot Assign credits more than '. $maxCredits);
         }
 
         $merchantBalance = self::getMerchantBalance($creditsLog);

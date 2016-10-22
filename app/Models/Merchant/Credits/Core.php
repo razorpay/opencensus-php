@@ -29,7 +29,7 @@ class Core extends Base\Core
         $creditsLog->setIsAdmin($isAdmin);
 
         $this->repo->credits->validateCampaignCreditsNotAssigned(
-            $creditsLog->getCampaign(), $merchant, $input['type']);
+            $creditsLog->getCampaign(), $merchant, $creditsLog->getType());
 
         return $this->repo->transaction(function() use ($merchant, $creditsLog)
         {
@@ -43,7 +43,7 @@ class Core extends Base\Core
         });
     }
 
-    public function updateCreditsInMerchantAccount($merchant, $credits, $type=Credits\Type::AMOUNT)
+    public function updateCreditsInMerchantAccount($merchant, $credits, $type = Credits\Type::AMOUNT)
     {
         if ($type === Credits\Type::AMOUNT)
         {

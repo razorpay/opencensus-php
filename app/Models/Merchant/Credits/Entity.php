@@ -101,7 +101,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TYPE);
     }
 
-    public function getIsAdmin()
+    public function isAdmin()
     {
         return $this->getAttribute(self::IS_ADMIN);
     }
