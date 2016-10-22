@@ -544,12 +544,31 @@ trait Authorize
             // to authorized
             $this->updateAndNotifyPaymentAuthorized(true);
 
-            $this->autoCapturePaymentIfApplicable($payment);
+            $this->autoCaptureLateAuthorizedPayment($payment);
 
             $this->repo->saveOrFail($payment);
 
             $this->setPayment($payment);
         });
+    }
+
+    protected function autoCaptureLateAuthorizedPayment(Payment\Entity $payment)
+    {
+        $payment = $this->repo->reload($payment);
+
+        // If payment order was marked as auto capture
+        $days = self::AUTO_REFUND_TIME_PERIOD;
+        $date = Carbon::today('Asia/Kolkata');
+        $ts = $date->subDays($days)->timestamp;
+
+        // Don't capture if payment was authorized
+        // after auto refund time period
+        if ($payment->getCreatedAt() <= $ts)
+        {
+            return;
+        }
+
+        $this->autoCapturePaymentIfApplicable($payment);
     }
 
     protected function verifyMerchantFeatures(Payment\Entity $payment, array $input)

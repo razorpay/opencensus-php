@@ -772,30 +772,12 @@ class Processor
 
     protected function shouldAutoCapture($payment)
     {
-        if ($payment->isLateAuthorized() === true)
-        {
-            $payment = $payment->reload();
-        }
-
-        // If payment is not authorized or order is null, do not auto
-        // capture it.
+        // If payment is not authorized or order is null,
+        // do not auto capture it.
         if (($payment->isAuthorized() === false) or
             ($payment->getApiOrderId() === null) or
             ($payment->order->isPaid() === true) or
             ($payment->order->getPaymentCapture() === false))
-        {
-            return false;
-        }
-
-        // If payment order was marked as auto capture
-        $days = self::AUTO_REFUND_TIME_PERIOD;
-        $date = Carbon::today('Asia/Kolkata');
-        $ts = $date->subDays($days)->timestamp;
-
-        // Don't capture if it's late authorized and
-        // has exceeded the auto refund time period
-        if (($payment->isLateAuthorized() === true) and
-            ($payment->getCreatedAt() < $ts))
         {
             return false;
         }
