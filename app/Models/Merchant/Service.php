@@ -282,15 +282,6 @@ class Service extends Base\Service
         {
             $schedule = $this->repo->schedule
                              ->findByIdAndOwnerId($input[Entity::SETTLEMENT_SCHEDULE_ID], Account::SHARED_ACCOUNT);
-
-            if ($schedule === null)
-            {
-                throw new Exception\BadRequestException(
-                                        ErrorCode::BAD_REQUEST_UNKNOWN_SCHEDULE,
-                                        'Unknown schedule',
-                                        Entity::SETTLEMENT_SCHEDULE_ID,
-                                        $input);
-            }
         }
         else
         {

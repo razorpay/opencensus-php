@@ -28,11 +28,6 @@ class CreateSchedules extends Migration
 
             $table->char(Schedule::OWNER_ID, Schedule::ID_LENGTH);
 
-            $table->foreign(Schedule::OWNER_ID)
-                  ->references(Merchant::ID)
-                  ->on(Table::MERCHANT)
-                  ->on_delete('restrict');
-
             $table->string(Schedule::TYPE, 15);
 
             $table->string(Schedule::PERIOD, 15);
@@ -52,6 +47,11 @@ class CreateSchedules extends Migration
             $table->integer(Schedule::UPDATED_AT);
 
             $table->index(Schedule::TYPE);
+
+            $table->foreign(Schedule::OWNER_ID)
+                  ->references(Merchant::ID)
+                  ->on(Table::MERCHANT)
+                  ->on_delete('restrict');
         });
     }
 

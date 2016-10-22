@@ -354,11 +354,6 @@ final class Route
         'customer_delete_address',
         'customer_fetch_addresses',
         'customer_set_primary_address',
-        'schedule_create',
-        'schedule_get',
-        'schedule_update',
-        'schedule_assign',
-
     );
 
     public static $internal = array(
@@ -478,10 +473,6 @@ final class Route
         'order_refund_multiple_authorized',
         'scorecard',
         'billdesk_reconcile_cancelled',
-        'schedule_create',
-        'schedule_get',
-        'schedule_update',
-        'schedule_assign',
     );
 
     public static $proxy = array(
@@ -523,7 +514,11 @@ final class Route
         'batch_fetch_multiple',
         'batch_fetch_by_id',
         'batch_retry',
-        'batch_download_file'
+        'batch_download_file',
+        'schedule_create',
+        'schedule_get',
+        'schedule_update',
+        'schedule_assign',
     );
 
     public static $direct = array(

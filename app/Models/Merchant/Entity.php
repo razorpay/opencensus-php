@@ -215,7 +215,7 @@ class Entity extends Base\PublicEntity
             'RZP\Models\Pricing\Entity', self::PRICING_PLAN_ID, 'plan_id');
     }
 
-    public function schedule()
+    public function settlementSchedule()
     {
         return $this->belongsTo(
             'RZP\Models\Schedule\Entity', self::SETTLEMENT_SCHEDULE_ID);
