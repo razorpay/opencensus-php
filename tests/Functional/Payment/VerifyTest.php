@@ -113,7 +113,7 @@ class VerifyTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertContent($content, ['verified' => $verifiedResultArray['none']]);
+        $this->assertContent($content, ['verified' => $verifiedResultArray['all']]);
 
         $time->addMinutes(15);
 
@@ -133,7 +133,7 @@ class VerifyTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertContent($content, ['verified' => $verifiedResultArray['none']]);
+        $this->assertContent($content, ['verified' => $verifiedResultArray['all']]);
 
         $content = $this->makeRequestAndGetContent($request);
 
