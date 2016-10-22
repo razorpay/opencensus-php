@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
+use RZP\Dashboard\Dashboard;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Payment;
@@ -29,29 +30,47 @@ class Processor extends Base\Core
 
         $this->preSettlementProcessing($input, $channel);
 
-        if (($this->mode === Mode::LIVE) and
-            (Holidays::isWorkingDay(Carbon::today('Asia/Kolkata')) === false))
+        list($shouldProcess, $message) = $this->shouldProcessSettlements();
+
+        if ($shouldProcess === false)
         {
-            return Holidays::HOLIDAY_MESSAGE;
+            return $message;
         }
 
-        list($settlements, $txnCount) = $this->createSettlements($channel);
+        try
+        {
+            list($settlements, $txnCount) = $this->createSettlements($channel);
 
-        $this->dailySettlement = $this->createDailySetlEntity($settlements, $txnCount, $channel);
+            $data = [
+                'channel'               => $channel,
+                'count'                 => $settlements->count(),
+                'transaction_count'     => $txnCount,
+            ];
 
-        $data = $this->generateSettlementFile($settlements, $channel);
+            if ($settlements->count() > 0)
+            {
+                $this->dailySettlement = $this->createDailySetlEntity($settlements, $txnCount, $channel);
 
-        $this->updateDailySettlementEntity($data);
+                list($urlText, $urlExcel) = $this->generateSettlementFile($settlements, $channel);
 
-        $response = [
-            'channel'               => $channel,
-            'count'                 => $settlements->count(),
-            'transaction_count'     => $txnCount,
-            'settlement_text_file'  => $data[0],
-            'settlement_excel_file' => $data[1]
-        ];
+                $this->updateDailySettlementEntity($urlText, $urlExcel);
 
-        return $response;
+                $data['settlement_text_file']  = $urlText;
+                $data['settlement_excel_file'] = $urlExcel;
+            }
+            else
+            {
+                $data['message'] = 'No settlements found!';
+            }
+
+            $this->successNotification($data, $settlements);
+        }
+        catch (\Exception $e)
+        {
+            $this->settlementFailure($channel, $e);
+        }
+
+        return $data;
     }
 
     protected function increaseAllowedSystemLimits()
@@ -74,16 +93,89 @@ class Processor extends Base\Core
         }
     }
 
+    protected function shouldProcessSettlements()
+    {
+        $today = Carbon::today('Asia/Kolkata');
+
+        if (($this->mode === Mode::LIVE) and
+            (Holidays::isWorkingDay($today) === false))
+        {
+            return [false, Holidays::HOLIDAY_MESSAGE];
+        }
+
+        if ($this->checkSettlementTime())
+        {
+            return [false, ['message' => 'settlements cannot be processed now']];
+        }
+
+        return [true, null];
+    }
+
+    protected function checkSettlementTime()
+    {
+        // NEFT can be processed between 8am and 6 pm only, while batch file can
+        // be uploaded anytime
+
+        $sevenAm = Carbon::today('Asia/Kolkata')->hour(7)->timestamp;
+        $fivePm = Carbon::today('Asia/Kolkata')->hour(17)->timestamp;
+
+        if (($this->mode === Mode::LIVE) and
+            ($this->setlTime >= $sevenAm) and
+            ($this->setlTime <= $fivePm))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+
     protected function createSettlements($channel)
     {
         $txns = $this->repo->transaction->fetchUnsettledTransactions($this->setlTime);
 
+        $txns = $this->filterTransactionsForSettlement($txns, $channel);
+
         return $this->repo->transaction(function() use ($txns, $channel)
         {
-            list($settlements, $txnCount) = $this->createSettlementsFromTxns($txns, $channel);
+            $settlements = $this->createSettlementsFromTxns($txns, $channel);
 
-            return [$settlements, $txnCount];
+            return [$settlements, $txns->count()];
         });
+    }
+
+    protected function filterTransactionsForSettlement($txns, $channel)
+    {
+        $filteredTxns = new Base\PublicCollection;
+
+        foreach ($txns as $txn)
+        {
+            // skip if txn not to be settled
+            if ($this->shouldSettle($txn, $channel, $txn->merchant) === false)
+            {
+                continue;
+            }
+
+            // skip if txn is refund of authorized txn and update the txn
+            if (($txn->getBalance() === 0) and
+                ($txn->isTypeRefund()))
+            {
+                $payment = $txn->source->payment;
+
+                if ($payment->hasBeenCaptured() === false)
+                {
+                    $txn[Transaction\Entity::SETTLED_AT] = null;
+
+                    $this->repo->saveOrFail($txn);
+
+                    continue;
+                }
+            }
+
+            $filteredTxns->push($txn);
+        }
+
+        return $filteredTxns;
     }
 
     protected function createSettlementsFromTxns($txns, $channel)
@@ -103,39 +195,14 @@ class Processor extends Base\Core
             $setlTxns = new Base\PublicCollection;
 
             // Get merchant
+            assert($txns[$i]->merchant !== null);
+            $merchant = $txns[$i]->merchant;
             $merchantId = $txns[$i]->getMerchantId();
-            $merchant = $this->repo->merchant->findOrFail($merchantId);
 
             while (($i < $count) and
                    ($txns[$i]->getMerchantId() === $merchantId))
             {
                 $txn = $txns[$i];
-
-                if ($this->shouldSettle($txn, $channel, $merchant) === false)
-                {
-                    $i++;
-                    continue;
-                }
-
-                if (($txn->getBalance() === 0) and
-                    ($txn->isTypeRefund()))
-                {
-                    $payment = $txn->source->payment;
-
-                    if ($payment->hasBeenCaptured() === false)
-                    {
-                        $this->trace->info(
-                            TraceCode::TRANSACTION_REFUND_TRACE,
-                            [
-                                'id' => $txn->getId()
-                            ]);
-
-                        $txn[Transaction\Entity::SETTLED_AT] = null;
-                        $txn->saveOrFail();
-                        $i++;
-                        continue;
-                    }
-                }
 
                 $setlAmount += $txn->getCredit() - $txn->getDebit();
                 $setlGatewayFee += $txn->getGatewayFee();
@@ -165,10 +232,9 @@ class Processor extends Base\Core
                                         $serviceTax);
 
             $settlements->push($setl);
-            $settledTxnCount += $setlTxns->count();
         }
 
-        return [$settlements, $settledTxnCount];
+        return $settlements;
     }
 
     protected function createDailySetlEntity($settlements, $txnsCount, $channel)
@@ -206,13 +272,13 @@ class Processor extends Base\Core
         return $dailySettlement;
     }
 
-    protected function updateDailySettlementEntity($data)
+    protected function updateDailySettlementEntity($urlText, $urlExcel)
     {
         $dailySettlement = $this->dailySettlement;
 
         $urls = [
-            'kotak_settlement_txt' => $data[0],
-            'kotak_settlement_excel' => $data[1]
+            'kotak_settlement_txt'   => $urlText,
+            'kotak_settlement_excel' => $urlExcel
         ];
 
         $dailySettlement->setUrls($urls);
@@ -252,4 +318,30 @@ class Processor extends Base\Core
 
         return $shouldSettle;
     }
+
+    protected function settlementFailure($channel, $e)
+    {
+        $e = new SettlementFailureException($channel, null, $e);
+
+        $this->failureNotification($e);
+
+        $this->trace->critical(TraceCode::SETTLEMENT_INITIATE_FAILED);
+
+        throw $e;
+    }
+
+    protected function successNotification($data, $settlements)
+    {
+        $this->trace->info(TraceCode::SETTLEMENT_INITIATED, $data);
+
+        (new SlackNotification)->success('setl_initiate', $data);
+
+        Dashboard::send('settlement', $settlements);
+    }
+
+    protected function failureNotification($exception)
+    {
+        (new SlackNotification)->failure('setl_initiate', $exception);
+    }
+
 }

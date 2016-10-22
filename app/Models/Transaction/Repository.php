@@ -43,6 +43,7 @@ class Repository extends Base\Repository
                     ->where(Transaction\Entity::SETTLED_AT, '<', $timestamp)
                     ->where(Transaction\Entity::SETTLED, '=', 0)
                     ->where(Transaction\Entity::TYPE, '!=', Type::SETTLEMENT)
+                    ->with('merchant')
                     ->orderBy(Transaction\Entity::MERCHANT_ID)
                     ->orderBy(Transaction\Entity::ID)
                     ->get();
