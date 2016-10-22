@@ -83,7 +83,7 @@ class HolidayNotificationTest extends TestCase
 
         $content = $this->sendHolidayNotification(Mode::LIVE);
 
-        $this->assertEquals($content['email'] === 'live@razorpay.com');
+        $this->assertEquals($content['email'],'live@razorpay.com');
 
         Carbon::setTestNow();
     }
