@@ -67,16 +67,10 @@ class CreateCybersourceGateway extends Migration
             $table->char(Cybersource::ECI, 2)
                   ->nullable();
 
-            $table->char(Cybersource::ECI_RAW, 2)
-                  ->nullable();
-
             $table->char(Cybersource::COLLECTION_INDICATOR, 2)
                   ->nullable();
 
             $table->char(Cybersource::CAVV, 40)
-                  ->nullable();
-
-            $table->char(Cybersource::CAVV_ALGORITHM, 2)
                   ->nullable();
 
             $table->char(Cybersource::AUTHORIZATION_CODE, 6)

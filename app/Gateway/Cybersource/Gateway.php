@@ -325,9 +325,9 @@ class Gateway extends Base\Gateway
             {
                 $payerAuthInfo = $content[F::PAYMENT_DATA][F::PAYER_AUTHENTICATION_INFO];
 
-                $attributes[E::ECI_RAW]        = $payerAuthInfo['ECI'] ?? null;
-                $attributes[E::CAVV_ALGORITHM] = $payerAuthInfo['AAV_CAVV'] ?? null;
-                $attributes[E::XID]            = $payerAuthInfo['XID'] ?? null;
+                $attributes[E::ECI]  = $payerAuthInfo['ECI'] ?? null;
+                $attributes[E::CAVV] = $payerAuthInfo['AAV_CAVV'] ?? null;
+                $attributes[E::XID]  = $payerAuthInfo['XID'] ?? null;
             }
 
             return $attributes;
@@ -377,7 +377,6 @@ class Gateway extends Base\Gateway
                     E::REF           => $response[F::REQUEST_ID],
                     E::STATUS        => Status::ENROLL_FAILED,
                     E::REASON_CODE   => $response[F::REASON_CODE],
-                    E::REQUEST_TOKEN => $response[F::REQUEST_TOKEN],
                     E::RECEIVED      => '1'
                 ];
 
@@ -448,13 +447,15 @@ class Gateway extends Base\Gateway
     {
         $authRequest = $this->getAuthorizeEnrolledRequestArray($input);
 
-        $this->traceGatewayRequest(TraceCode::GATEWAY_AUTHORIZE_REQUEST, $authRequest, $input);
+        $this->traceGatewayRequest(
+            TraceCode::GATEWAY_ENROLLED_AUTH_REQUEST, $authRequest, $input);
 
         try
         {
             $response = $this->postRequest($authRequest);
 
-            $this->traceGatewayResponse(TraceCode::GATEWAY_AUTHORIZE_RESPONSE, $response, $input);
+            $this->traceGatewayResponse(
+                TraceCode::GATEWAY_ENROLLED_AUTH_RESPONSE,$response, $input);
 
             if (($response[F::DECISION] === Decision::REJECT) or
                 ($response[F::DECISION] === Decision::ERROR))
@@ -463,7 +464,6 @@ class Gateway extends Base\Gateway
                     E::REF           => $response[F::REQUEST_ID],
                     E::STATUS        => Status::AUTHORIZE_FAILED,
                     E::REASON_CODE   => $response[F::REASON_CODE],
-                    E::REQUEST_TOKEN => $response[F::REQUEST_TOKEN],
                     E::RECEIVED      => '1'
                 ];
 
@@ -495,13 +495,15 @@ class Gateway extends Base\Gateway
     {
         $authRequest = $this->getAuthorizeRecurringRequestArray($input);
 
-        $this->traceGatewayRequest(TraceCode::GATEWAY_AUTHORIZE_REQUEST, $authRequest, $input);
+        $this->traceGatewayRequest(
+            TraceCode::GATEWAY_RECURRING_AUTH_REQUEST, $authRequest, $input);
 
         try
         {
             $response = $this->postRequest($authRequest);
 
-            $this->traceGatewayResponse(TraceCode::GATEWAY_AUTHORIZE_RESPONSE, $response, $input);
+            $this->traceGatewayResponse(
+                TraceCode::GATEWAY_RECURRING_AUTH_RESPONSE, $response, $input);
 
             $gatewayAttributes = $this->getAttributeFromAuthorizeResponse($input, $response);
 
@@ -578,6 +580,11 @@ class Gateway extends Base\Gateway
             'content' => $content
         ];
 
+        $this->traceGatewayRequest(
+            TraceCode::GATEWAY_NOT_ENROLLED_REQUEST,
+            $request,
+            $input);
+
         return $request;
     }
 
@@ -629,14 +636,21 @@ class Gateway extends Base\Gateway
         $attributes = [
             E::REF                  => $response[F::REQUEST_ID],
             E::REASON_CODE          => $response[F::REASON_CODE],
-            E::REQUEST_TOKEN        => $response[F::REQUEST_TOKEN],
             E::XID                  => $payerAuthEnrollReply[F::XID] ?? null,
-            E::ECI                  => $payerAuthEnrollReply[F::ECI] ?? null,
             E::VERES_ENROLLED       => $payerAuthEnrollReply[F::VERES_ENROLLED] ?? null,
             E::COMMERCE_INDICATOR   => $payerAuthEnrollReply[F::COMMERCE_INDICATOR] ?? null,
-            E::COLLECTION_INDICATOR => $payerAuthEnrollReply[F::UCAF_COLLECTION_INDICATOR] ?? null,
             E::STATUS               => Status::CREATED
         ];
+
+        if ($input['card']['network_code'] === Card\Network::MC)
+        {
+            $attributes[E::ECI] = $payerAuthEnrollReply[F::UCAF_COLLECTION_INDICATOR] ?? null;
+        }
+
+        if ($input['card']['network_code'] === Card\Network::VISA)
+        {
+            $attributes[E::ECI] = $payerAuthEnrollReply[F::ECI] ?? null;
+        }
 
         return $attributes;
     }
@@ -648,7 +662,6 @@ class Gateway extends Base\Gateway
         $attributes = [
             E::REF                      => $response[F::REQUEST_ID],
             E::REASON_CODE              => $response[F::REASON_CODE],
-            E::REQUEST_TOKEN            => $response[F::REQUEST_TOKEN],
             E::RECEIPT_NUMBER           => $response[F::RECEIPT_NUMBER],
             E::AUTHORIZATION_CODE       => $ccAuthReply[F::AUTHORIZATION_CODE] ?? null,
             E::AVS_CODE                 => $ccAuthReply[F::AVS_CODE] ?? null,
@@ -658,7 +671,8 @@ class Gateway extends Base\Gateway
             E::MERCHANT_ADVICE_CODE     => $ccAuthReply[F::MERCHANT_ADVICE_CODE] ?? null,
             E::GATEWAY_TRANSACTION_ID   => $ccAuthReply[F::PAYMENT_NETWORK_TXN_ID],
             E::PROCESSOR_RESPONSE       => $ccAuthReply[F::PROCESSOR_RESPONSE],
-            E::STATUS                   => Status::AUTHORIZED
+            E::STATUS                   => Status::AUTHORIZED,
+            E::RECEIVED                 => true
         ];
 
         if ($response[F::REASON_CODE] !== Result::SUCCESS)
@@ -676,14 +690,12 @@ class Gateway extends Base\Gateway
         $attributes = [
             E::REF                      => $response[F::REQUEST_ID],
             E::REASON_CODE              => $response[F::REASON_CODE],
-            E::REQUEST_TOKEN            => $response[F::REQUEST_TOKEN],
             E::CAVV                     => $payerAuthValidateReply[F::CAVV] ?? null,
-            E::CAVV_ALGORITHM           => $payerAuthValidateReply[F::CAVV_ALGORITHM] ?? null,
             E::XID                      => $payerAuthValidateReply[F::XID],
             E::PARES_STATUS             => $payerAuthValidateReply[F::PARES_STATUS],
             E::VERES_ENROLLED           => $payerAuthValidateReply[F::VERES_ENROLLED] ?? null,
             E::COMMERCE_INDICATOR       => $payerAuthValidateReply[F::COMMERCE_INDICATOR] ?? null,
-            E::ECI_RAW                  => $payerAuthValidateReply[F::ECI_RAW],
+            E::ECI                      => $payerAuthValidateReply[F::ECI_RAW],
         ];
 
         if ($response[F::REASON_CODE] !== Result::SUCCESS)
@@ -711,7 +723,6 @@ class Gateway extends Base\Gateway
         $attributes = [
             E::REF           => $response[F::REQUEST_ID],
             E::REASON_CODE   => $response[F::REASON_CODE],
-            E::REQUEST_TOKEN => $response[F::REQUEST_TOKEN],
             E::STATUS        => Status::CAPTURED,
             E::RECEIVED      => true
         ];
@@ -726,7 +737,6 @@ class Gateway extends Base\Gateway
         $attributes = [
             E::REF           => $response[F::REQUEST_ID],
             E::REASON_CODE   => $response[F::REASON_CODE],
-            E::REQUEST_TOKEN => $response[F::REQUEST_TOKEN],
             E::STATUS        => Status::REFUNDED,
             E::RECEIVED      => true
         ];
@@ -806,15 +816,15 @@ class Gateway extends Base\Gateway
 
     protected function getAuthorizeRecurringRequestArray(array $input)
     {
-        $authorizeRequest = $this->getAuthorizeRequestArray($input);
+        $authRequest = $this->getAuthorizeRequestArray($input);
 
         // Unset CVV number as it's not required in recurring
-        unset($authorizeRequest['content'][F::CARD][F::CVN]);
+        unset($authRequest['content'][F::CARD][F::CVN]);
 
         // Set commerceIndicator as recurring
-        $authorizeRequest['content'][F::CC_AUTH_SERVICE][F::COMMERCE_INDICATOR] = 'recurring';
+        $authRequest['content'][F::CC_AUTH_SERVICE][F::COMMERCE_INDICATOR] = 'recurring';
 
-        return $authorizeRequest;
+        return $authRequest;
     }
 
     protected function getAuthorizeEnrolledRequestArray(array $input)

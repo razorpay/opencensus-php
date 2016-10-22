@@ -9,72 +9,78 @@ class Entity extends Base\Entity
 {
     const ID                     = 'id';
     const VERES_ENROLLED         = 'veresEnrolled';
-    const CAVV_ALGORITHM         = 'cavvAlgorithm';
-    const CAVV                   = 'cavv';
-    const ECI_RAW                = 'eciRaw';
     const AMOUNT                 = 'amount';
     const STATUS                 = 'status';
+    const CAVV                   = 'cavv';
     const ECI                    = 'eci';
+    const COLLECTION_INDICATOR   = 'collection_indicator';
     const PARES_STATUS           = 'pares_status';
     const AVS_CODE               = 'avsCode';
     const CARD_CATEGORY          = 'cardCategory';
     const CARD_GROUP             = 'cardGroup';
     const CV_CODE                = 'cvCode';
     const MERCHANT_ADVICE_CODE   = 'merchantAdviceCode';
-    const GATEWAY_TRANSACTION_ID = 'gatewayTransactionID';
+    const GATEWAY_TRANSACTION_ID = 'gatewayTransactionId';
     const PROCESSOR_RESPONSE     = 'processorResponse';
     const AUTH_DATA              = 'auth_data';
     const AUTHORIZATION_CODE     = 'authorizationCode';
+    const RECEIPT_NUMBER         = 'receiptNumber';
     const COMMERCE_INDICATOR     = 'commerce_indicator';
-    const COLLECTION_INDICATOR   = 'collection_indicator';
     const REF                    = 'ref';
     const CAPTURE_REF            = 'capture_ref';
     const XID                    = 'xid';
-    const RECEIPT_NUMBER         = 'receiptNumber';
-    const REQUEST_TOKEN          = 'requestToken';
     const REASON_CODE            = 'reason_code';
     const CREATED_AT             = 'created_at';
     const UPDATED_AT             = 'updated_at';
 
     protected $fields = array(
         self::ID,
-        self::PAYMENT_ID,
-        self::RECEIVED,
-        self::REFUND_ID,
-        self::ACTION,
+        self::VERES_ENROLLED,
         self::AMOUNT,
         self::STATUS,
         self::ECI,
+        self::PARES_STATUS,
+        self::AVS_CODE,
+        self::CARD_CATEGORY,
+        self::CARD_GROUP,
+        self::CV_CODE,
         self::CAVV,
+        self::MERCHANT_ADVICE_CODE,
+        self::GATEWAY_TRANSACTION_ID,
+        self::PROCESSOR_RESPONSE,
         self::AUTH_DATA,
+        self::AUTHORIZATION_CODE,
+        self::RECEIPT_NUMBER,
+        self::COMMERCE_INDICATOR,
         self::REF,
         self::CAPTURE_REF,
-        self::COMMERCE_INDICATOR,
-        self::COLLECTION_INDICATOR,
         self::XID,
-        self::PARES_STATUS,
         self::REASON_CODE,
         self::CREATED_AT,
-        self::UPDATED_AT,
+        self::UPDATED_AT
     );
 
     protected $fillable = array(
-        self::PAYMENT_ID,
-        self::RECEIVED,
-        self::REFUND_ID,
-        self::ACTION,
-        self::AMOUNT,
-        self::STATUS,
+        self::VERES_ENROLLED,
         self::ECI,
+        self::PARES_STATUS,
+        self::AVS_CODE,
+        self::CARD_CATEGORY,
+        self::CARD_GROUP,
+        self::CV_CODE,
         self::CAVV,
-        self::AUTH_DATA,
-        self::REF,
-        self::CAPTURE_REF,
         self::COMMERCE_INDICATOR,
-        self::XID,
+        self::MERCHANT_ADVICE_CODE,
+        self::GATEWAY_TRANSACTION_ID,
+        self::PROCESSOR_RESPONSE,
+        self::AUTHORIZATION_CODE,
+        self::RECEIPT_NUMBER,
         self::PARES_STATUS,
         self::REASON_CODE,
-        self::COLLECTION_INDICATOR,
+        self::REF,
+        self::XID,
+        self::STATUS,
+        self::RECEIVED
     );
 
     protected $casts = [
@@ -91,6 +97,11 @@ class Entity extends Base\Entity
         return $this->belongsTo('RZP\Models\Payment\Entity', self::PAYMENT_ID, self::ID);
     }
 
+    public function refund()
+    {
+        return $this->belongsTo('RZP\Models\Refund\Entity', self::REFUND_ID, self::ID);
+    }
+
     public function getId()
     {
         return $this->getAttribute(self::ID);
@@ -99,11 +110,6 @@ class Entity extends Base\Entity
     public function getCommerceIndicator()
     {
         return $this->getAttribute(self::COMMERCE_INDICATOR);
-    }
-
-    public function getCollectionIndicator()
-    {
-        return $this->getAttribute(self::COLLECTION_INDICATOR);
     }
 
     public function getAmount()
@@ -121,14 +127,19 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::ECI);
     }
 
+    public function getEciRaw()
+    {
+        return $this->getAttribute(self::ECI_RAW);
+    }
+
     public function getCavv()
     {
         return $this->getAttribute(self::CAVV);
     }
 
-    public function getAuthCode()
+    public function getAuthorizationCode()
     {
-        return $this->getAttribute(self::AUTH_DATA);
+        return $this->getAttribute(self::AUTHORIZATION_CODE);
     }
 
     public function getRef()

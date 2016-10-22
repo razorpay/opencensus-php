@@ -4,147 +4,175 @@ namespace RZP\Gateway\Cybersource;
 
 class Fields
 {
-    const DECISION                  = 'decision';
+    const DECISION                      = 'decision';
 
-    const REASON_CODE               = 'reasonCode';
+    const REASON_CODE                   = 'reasonCode';
 
-    const REQUEST_ID                = 'requestID';
+    const REQUEST_ID                    = 'requestID';
 
-    const PAYMENT_REQUEST_ID        = 'PaymentRequestID';
+    const PAYMENT_REQUEST_ID            = 'PaymentRequestID';
 
-    const REQUEST_TOKEN             = 'requestToken';
+    const REQUEST_TOKEN                 = 'requestToken';
 
-    const MERCHANT_ID               = 'merchantID';
+    const MERCHANT_ID                   = 'merchantID';
 
-    const TYPE                      = 'type';
+    const TYPE                          = 'type';
 
-    const SUBTYPE                   = 'subtype';
+    const SUBTYPE                       = 'subtype';
 
-    const VERSION_NUMBER            = 'versionNumber';
+    const VERSION_NUMBER                = 'versionNumber';
 
-    const MERCHANT_REFERENCE_NUMBER = 'merchantReferenceNumber';
+    const MERCHANT_REFERENCE_NUMBER     = 'merchantReferenceNumber';
 
-    const MERCHANT_REFERENCE_CODE   = 'merchantReferenceCode';
+    const MERCHANT_REFERENCE_CODE       = 'merchantReferenceCode';
 
-    const TARGET_DATE               = 'targetDate';
+    const TARGET_DATE                   = 'targetDate';
 
-    const PAYMENT_DATA              = 'PaymentData';
+    const PAYMENT_DATA                  = 'PaymentData';
 
-    const PAYER_AUTHENTICATION_INFO = 'PayerAuthenticationInfo';
+    const PAYER_AUTHENTICATION_INFO     = 'PayerAuthenticationInfo';
 
-    const XID                       = 'xid';
+    const XID                           = 'xid';
 
-    const VERES_ENROLLED            = 'veresEnrolled';
+    const VERES_ENROLLED                = 'veresEnrolled';
 
-    const COMMERCE_INDICATOR        = 'commerceIndicator';
+    const COMMERCE_INDICATOR            = 'commerceIndicator';
 
-    const ECI                       = 'eci';
+    const ECI                           = 'eci';
 
-    const ECI_RAW                   = 'eciRaw';
+    const ECI_RAW                       = 'eciRaw';
 
-    const CAVV                      = 'cavv';
+    const CAVV                          = 'cavv';
 
-    const CAVV_ALGORITHM            = 'cavvAlgorithm';
+    const CAVV_ALGORITHM                = 'cavvAlgorithm';
 
-    const UCAF_COLLECTION_INDICATOR = 'ucafCollectionIndicator';
+    const UCAF_COLLECTION_INDICATOR     = 'ucafCollectionIndicator';
 
-    const RECEIPT_NUMBER            = 'receiptNumber';
+    const RECEIPT_NUMBER                = 'receiptNumber';
 
-    const AUTHORIZATION_CODE        = 'authorizationCode';
+    const AUTHORIZATION_CODE            = 'authorizationCode';
 
-    const AVS_CODE                  = 'avsCode';
+    const AVS_CODE                      = 'avsCode';
 
-    const AVS_RESULT                = 'AVSResult';
+    const AVS_CODE_RAW                  = 'avsCodeRaw';
 
-    const CARD_CATEGORY             = 'cardCategory';
+    const AVS_RESULT                    = 'AVSResult';
 
-    const CARD_GROUP                = 'cardGroup';
+    const CARD_CATEGORY                 = 'cardCategory';
 
-    const CV_CODE                   = 'cvCode';
+    const CARD_GROUP                    = 'cardGroup';
 
-    const CV_RESULT                 = 'CVResult';
+    const CV_CODE                       = 'cvCode';
 
-    const MERCHANT_ADVICE_CODE      = 'merchantAdviceCode';
+    const CV_CODE_RAW                   = 'cvCodeRaw';
 
-    const GATEWAY_TRANSACTION_ID    = 'gatewayTransactionID';
+    const CAVV_RESPONSE_CODE            = 'cavvResponseCode';
 
-    const PAYMENT_NETWORK_TXN_ID    = 'paymentNetworkTransactionID';
+    const CAVV_RESPONSE_CODE_RAW        = 'cavvResponseCodeRaw';
 
-    const PROCESSOR_RESPONSE        = 'processorResponse';
+    const CV_RESULT                     = 'CVResult';
 
-    const CC_AUTH_SERVICE           = 'ccAuthService';
+    const MERCHANT_ADVICE_CODE          = 'merchantAdviceCode';
 
-    const CC_AUTH_REPLY             = 'ccAuthReply';
+    const MERCHANT_ADVICE_CODE_RAW      = 'merchantAdviceCodeRaw';
 
-    const PA_ENROLL_SERVICE         = 'payerAuthEnrollService';
+    const GATEWAY_TRANSACTION_ID        = 'gatewayTransactionID';
 
-    const CC_CREDIT_SERVICE         = 'ccCreditService';
+    const PAYMENT_NETWORK_TXN_ID        = 'paymentNetworkTransactionID';
 
-    const CC_CREDIT_REPLY           = 'ccCreditReply';
+    const AUTHENTICATION_RESULT         = 'authenticationResult';
 
-    const CC_CAPTURE_SERVICE        = 'ccCaptureService';
+    const AUTHENTICATION_STATUS_MESSAGE = 'authenticationStatusMessage';
 
-    const CC_CAPTURE_REPLY          = 'ccCaptureReply';
+    const PROCESSOR_RESPONSE            = 'processorResponse';
 
-    const PA_ENROLL_REPLY           = 'payerAuthEnrollReply';
+    const CC_AUTH_SERVICE               = 'ccAuthService';
 
-    const PA_VALIDATE_SERVICE       = 'payerAuthValidateService';
+    const CC_AUTH_REPLY                 = 'ccAuthReply';
 
-    const PA_VALIDATE_REPLY         = 'payerAuthValidateReply';
+    const PA_ENROLL_SERVICE             = 'payerAuthEnrollService';
 
-    const SIGNED_PA_RES             = 'signedPARes';
+    const CC_CREDIT_SERVICE             = 'ccCreditService';
 
-    const CAPTURE_REQUEST_ID        = 'captureRequestID';
+    const CC_CREDIT_REPLY               = 'ccCreditReply';
 
-    const AUTH_REQUEST_ID           = 'authRequestID';
+    const CC_CAPTURE_SERVICE            = 'ccCaptureService';
 
-    const PA_REQ                    = 'paReq';
+    const CC_CAPTURE_REPLY              = 'ccCaptureReply';
 
-    const PA_RES                    = 'PaRes';
+    const PA_ENROLL_REPLY               = 'payerAuthEnrollReply';
 
-    const PARES_STATUS              = 'paresStatus';
+    const PA_VALIDATE_SERVICE           = 'payerAuthValidateService';
 
-    const ACS_URL                   = 'acsURL';
+    const PA_VALIDATE_REPLY             = 'payerAuthValidateReply';
 
-    const FIRST_NAME                = 'firstName';
+    const SIGNED_PA_RES                 = 'signedPARes';
 
-    const LAST_NAME                 = 'lastName';
+    const CAPTURE_REQUEST_ID            = 'captureRequestID';
 
-    const STREET                    = 'street1';
+    const AUTH_REQUEST_ID               = 'authRequestID';
 
-    const CITY                      = 'city';
+    const PA_REQ                        = 'paReq';
 
-    const STATE                     = 'state';
+    const PA_RES                        = 'PaRes';
 
-    const POSTAL_CODE               = 'postalCode';
+    const PARES_STATUS                  = 'paresStatus';
 
-    const COUNTRY                   = 'country';
+    const ACS_URL                       = 'acsURL';
 
-    const EMAIL                     = 'email';
+    const FIRST_NAME                    = 'firstName';
 
-    const RUN                       = 'run';
+    const LAST_NAME                     = 'lastName';
 
-    const CARD                      = 'card';
+    const STREET                        = 'street1';
 
-    const BILL_TO                   = 'billTo';
+    const CITY                          = 'city';
 
-    const ACCOUNT_NUMBER            = 'accountNumber';
+    const STATE                         = 'state';
 
-    const EXPIRATION_MONTH          = 'expirationMonth';
+    const POSTAL_CODE                   = 'postalCode';
 
-    const EXPIRATION_YEAR           = 'expirationYear';
+    const COUNTRY                       = 'country';
 
-    const CARD_TYPE                 = 'cardType';
+    const EMAIL                         = 'email';
 
-    const CVN                       = 'cvNumber';
+    const RUN                           = 'run';
 
-    const PURCHASE_TOTALS           = 'purchaseTotals';
+    const CARD                          = 'card';
 
-    const CURRENCY                  = 'currency';
+    const BILL_TO                       = 'billTo';
 
-    const GRAND_TOTAL_AMOUNT        = 'grandTotalAmount';
+    const ACCOUNT_NUMBER                = 'accountNumber';
 
-    const AMOUNT                    = 'amount';
+    const EXPIRATION_MONTH              = 'expirationMonth';
 
-    const RECONCILIATION_ID         = 'reconciliationID';
+    const EXPIRATION_YEAR               = 'expirationYear';
+
+    const CARD_TYPE                     = 'cardType';
+
+    const CVN                           = 'cvNumber';
+
+    const PURCHASE_TOTALS               = 'purchaseTotals';
+
+    const CURRENCY                      = 'currency';
+
+    const GRAND_TOTAL_AMOUNT            = 'grandTotalAmount';
+
+    const AMOUNT                        = 'amount';
+
+    const RECONCILIATION_ID             = 'reconciliationID';
+
+    const REFUND_DATETIME               = 'refundDateTime';
+
+    const AUTHORIZED_DATETIME           = 'authorizedDateTime';
+
+    const AUTHENTICATION_PATH           = 'authenticationPath';
+
+    const PROOF_XML                     = 'proofXml';
+
+    const PROXY_PAN                     = 'proxyPan';
+
+    const MD                            = 'MD';
+
+    const TERM_URL                      = 'TermUrl';
 }
