@@ -281,7 +281,7 @@ class Service extends Base\Service
         if (isset($input[Entity::SETTLEMENT_SCHEDULE_ID]) === true)
         {
             $schedule = $this->repo->schedule
-                             ->findByIdAndOwnerId($input[Entity::SETTLEMENT_SCHEDULE_ID], Account::SHARED_ACCOUNT);
+                             ->getByIdAndOwnerId($input[Entity::SETTLEMENT_SCHEDULE_ID], Account::SHARED_ACCOUNT);
         }
         else
         {

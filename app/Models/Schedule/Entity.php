@@ -28,6 +28,18 @@ class Entity extends Base\PublicEntity
         self::NEXT_RUN,
     );
 
+    protected $public = array(
+        self::ID,
+        self::NAME,
+        self::OWNER_ID,
+        self::TYPE,
+        self::PERIOD,
+        self::INTERVAL,
+        self::ANCHOR,
+        self::DELAY,
+        self::NEXT_RUN,
+    );
+
     protected $table = Table::SCHEDULE;
 
     protected $entity = 'schedule';

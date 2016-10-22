@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Schedule;
 
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use Carbon\Carbon;
 
@@ -34,7 +36,7 @@ class Validator extends Base\Validator
     {
         $period = $input[Entity::PERIOD];
 
-        if (in_array($period, Period::PERIOD_LIST) === true)
+        if (in_array($period, Period::PERIOD_LIST) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_SCHEDULE_INVALID_PERIOD);
@@ -50,7 +52,7 @@ class Validator extends Base\Validator
             (in_array($input[Entity::ANCHOR], $weekend) === true))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_SCHEDULE_INVALID_PERIOD);
+                ErrorCode::BAD_REQUEST_SCHEDULE_WEEKEND_ANCHOR_NOT_PERMITTED);
         }
     }
 }
