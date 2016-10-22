@@ -5,6 +5,7 @@ namespace RZP\Models\Payment;
 use App;
 use Config;
 
+use Carbon\Carbon;
 use RZP\Constants;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
@@ -63,24 +64,24 @@ class Verify
             case 'all':
             case Constants\Verify::PAYMENTS_FAILED:
                 $paymentStatus = Payment\Status::FAILED;
-                $ts = time() - Constants\Verify::FAILURE_MIN_TIME;
+                $ts = Carbon::now()->timestamp - Constants\Verify::FAILURE_MIN_TIME;
                 break;
 
             case 'created':
             case Constants\Verify::PAYMENTS_CREATED:
                 $paymentStatus = Payment\Status::CREATED;
-                $ts = time() - Constants\Verify::CREATED_MIN_TIME;
+                $ts = Carbon::now()->timestamp - Constants\Verify::CREATED_MIN_TIME;
                 break;
 
             case 'failed':
                 $verifyStatus = Constants\Verify::VERIFIED_FAILED;
-                $ts = time() - Constants\Verify::ERRORED_MIN_TIME;
+                $ts = Carbon::now()->timestamp - Constants\Verify::ERRORED_MIN_TIME;
                 break;
 
             case 'error':
             case Constants\Verify::VERIFY_ERROR:
                 $verifyStatus = Constants\Verify::VERIFIED_ERROR;
-                $ts = time() - Constants\Verify::ERRORED_MIN_TIME;
+                $ts = Carbon::now()->timestamp - Constants\Verify::ERRORED_MIN_TIME;
                 break;
 
             default:
@@ -95,7 +96,7 @@ class Verify
         // For querying on db, need to change that to absolute value
         foreach ($boundary as $key => $value)
         {
-            $boundaryQueryData[$key] = time() - $value;
+            $boundaryQueryData[$key] = Carbon::now()->timestamp - $value;
         }
 
         $payments = $this->paymentRepo->getPaymentsToVerify($ts, $boundaryQueryData, $verifyStatus, $paymentStatus);
