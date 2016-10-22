@@ -20,10 +20,14 @@ class SegmentClient
     const LUMBERJACK_SEGMENT_URLPATTERN = 'segment_post';
 
     const CARD_NUMBER = 'card.number';
+
     const GATEWAY_CARD_NUMBER = 'terminal_gateway_input.card.number';
 
     const CVV = 'card.cvv';
+
     const GATEWAY_CVV = 'terminal_gateway_input.card.cvv';
+
+    const VERSION = "1.0";
 
     const SENSITIVE_KEYS = [
         self::CARD_NUMBER,
@@ -39,10 +43,6 @@ class SegmentClient
         $this->trace = $app['trace'];
 
         $this->config = $app['config'];
-
-        $key = $this->config['segment.write_key'];
-
-        $this->version = "1.0";
     }
 
     protected function fillDefaults($payment, $event)
@@ -58,7 +58,7 @@ class SegmentClient
             'method'            => $payment->getMethod(),
             'gateway'           => $payment->getGateway(),
             'metadata'          => $metadata,
-            'version'           => $this->version,
+            'version'           => self::VERSION,
         ];
 
         $merchant = $payment->merchant;
@@ -179,10 +179,12 @@ class SegmentClient
 
     public function trackPayment(PaymentEntity $payment, $event, array $customProperties = [])
     {
-        // if ($this->mode === 'test')
-        // {
-        //     return ;
-        // }
+        $is_enabled = $this->config['segment.is_enabled'];
+
+        if ($is_enabled === false)
+        {
+            return;
+        }
 
         $defaults = $this->fillDefaults($payment, $event);
 

@@ -1246,7 +1246,7 @@ trait Authorize
 
             (new TerminalAnalytics\Core)->create($log);
 
-            $tStatus = TerminalAnalytics\Entity::TERMINAL_STATUS;
+            $tStatus = $log[TerminalAnalytics\Entity::TERMINAL_STATUS];
 
             $terminalStatus = ($tStatus === 1) ? TraceCode::SEGMENT_TERMINAL_SUCCESS : TraceCode::TERMINAL_FAILURE;
 
