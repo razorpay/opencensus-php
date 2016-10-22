@@ -64,12 +64,14 @@ class Validator extends Base\Validator
                 'amount');
         }
 
-        if (ctype_digit($amountToRefund) === false)
+        if (is_numeric($amountToRefund) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Amount should only have digits',
                 'amount');
         }
+
+        $amountToRefund = intval($amountToRefund);
 
         $amountCaptured = $payment->getAmount();
 
