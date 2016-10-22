@@ -67,4 +67,118 @@ class VerifyTest extends TestCase
             ],
             $content);
     }
+
+    public function testVerifyMultipleFailedPayments()
+    {
+        $createdAt = time() - 60 * 60;
+
+        $payment = $this->fixtures->create(
+            'payment:netbanking_failed', ['created_at' => $createdAt]);
+
+        $createdAt = time() - 60 * 60 - 86400;
+
+        $payment2 = $this->fixtures->create(
+            'payment:netbanking_failed', ['created_at' => $createdAt]);
+
+        $request = [
+            'url' => '/payments/verify/all',
+            'method' => 'post'
+        ];
+
+        $this->ba->appAuth();
+
+        //TODO: add verify result and call runVerifyForMaxPeriod
+    }
+
+    public function testVerifySingleFailedPayments()
+    {
+        $createdAt = time() - 3*60;
+
+        $payment = $this->fixtures->create(
+            'payment:netbanking_failed', ['created_at' => $createdAt]);
+
+        $this->ba->appAuth();
+
+        $this->runVerifyForMaxPeriod();
+    }
+
+    protected function runVerifyForMaxPeriod($verifiedResultArray = ['all' =>1, 'partial' => 0,'none'=> 0])
+    {
+        $time = new Carbon('now');
+
+        $request = [
+            'url' => '/payments/verify/all',
+            'method' => 'post'
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertContent($content, ['verified' => $verifiedResultArray['none']]);
+
+        $time->addMinutes(15);
+
+        Carbon::setTestNow($time);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertContent($content, ['verified' => $verifiedResultArray['all']]);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertContent($content, ['verified' => $verifiedResultArray['none']]);
+
+        $time->addMinutes(45);
+
+        Carbon::setTestNow($time);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertContent($content, ['verified' => $verifiedResultArray['none']]);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertContent($content, ['verified' => $verifiedResultArray['none']]);
+
+        foreach (range(1, 7) as $day)
+        {
+            $time->addDay(1);
+
+            Carbon::setTestNow($time);
+
+            $content = $this->makeRequestAndGetContent($request);
+
+            $this->assertContent($content, ['verified' => $verifiedResultArray['all']]);
+
+            $content = $this->makeRequestAndGetContent($request);
+
+            $this->assertContent($content, ['verified' => $verifiedResultArray['none']]);
+        }
+
+        $time->addDay(1);
+
+        Carbon::setTestNow($time);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertContent($content, ['verified' => $verifiedResultArray['none']]);
+    }
+
+    protected function assertContent(array $content, array $param = [])
+    {
+        unset($content['totalTime']);
+
+        $defaultParams = [
+            'filter'            => 'all',
+            'verified'          => 1,
+            'authorized/failed' => 0,
+            'timed out'         => 0,
+            'error'             => 0,
+            'authorizedTime'    => 0,
+        ];
+
+        $defaultParams = array_merge($defaultParams, $param);
+
+        $this->assertEquals($defaultParams, $content);
+
+    }
 }

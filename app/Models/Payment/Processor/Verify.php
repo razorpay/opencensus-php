@@ -7,6 +7,7 @@ use Config;
 
 use RZP\Exception;
 use RZP\Constants;
+use Carbon\Carbon;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Status;
@@ -90,16 +91,14 @@ trait Verify
 
         //  if filter is null, then verify is initiated manually, not via Cron
         //  Dont update VERIFY_BUCKET, in that case
-        if ($app['basicauth']->isCron() === true)
+        if (($app['basicauth']->isCron() === true) or ($this->mode === 'test'))
         {
             $daysToAdd = 1;
 
             // Get Verify Boundary to update Verify Bucket
-            // We are adding a day when setting Verify Boundary
-            // This will prevent cron to pick payments which have crossed last boundary
-            $boundary = Constants\Verify::getBoundaryInSeconds($filter, $daysToAdd);
+            $boundary = Constants\Verify::getBoundaryInSeconds($filter);
 
-            $diff = time() - $payment->getCreatedAt();
+            $diff = Carbon::now()->timestamp - $payment->getCreatedAt();
 
             $verifyBucket = 0;
 
@@ -111,7 +110,7 @@ trait Verify
                 }
             }
 
-            $payment->setVerifyBucket($verifyBucket);
+            $payment->setVerifyBucket($verifyBucket + 1);
         }
 
         $payment->setVerified($verifyStatus);

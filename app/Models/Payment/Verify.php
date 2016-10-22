@@ -135,7 +135,7 @@ class Verify
                 continue;
             }
 
-            $verifyStatus = $this->verifyPayment($payment);
+            $verifyStatus = $this->verifyPayment($payment, $filter);
 
             if ($verifyStatus === Constants\Verify::AUTHORIZED)
             {
@@ -245,7 +245,7 @@ class Verify
         }
     }
 
-    public function verifyPayment(Payment\Entity $payment)
+    public function verifyPayment(Payment\Entity $payment, $filter)
     {
         $status = Constants\Verify::SUCCESS;
 
@@ -259,7 +259,7 @@ class Verify
         //
         try
         {
-            $res = $this->processor($merchant)->verify($payment);
+            $res = $this->processor($merchant)->verify($payment, $filter);
         }
         catch (Exception\PaymentVerificationException $e)
         {

@@ -112,15 +112,16 @@ class Payment extends Base
 
     public function createNetbankingFailed(array $attributes = array())
     {
-        $defaultValues = array(
-            'bank'  => 'HDFC',
-            'status' => 'failed',
-            'gateway' => 'billdesk',
-            'method' => 'netbanking',
-            'terminal_id' => '1n25f6uN5S1Z5a',
+        $defaultValues = [
+            'bank'           => 'HDFC',
+            'status'         => 'failed',
+            'gateway'        => 'billdesk',
+            'method'         => 'netbanking',
+            'terminal_id'    => '1n25f6uN5S1Z5a',
             'transaction_id' => null,
-            'created_at' => time() - 10,
-            'updated_at' => time() - 5);
+            'created_at'     => time() - 10,
+            'updated_at'     => time() - 5
+        ];
 
         $attributes = array_merge($defaultValues, $attributes);
 

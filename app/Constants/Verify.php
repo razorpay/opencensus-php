@@ -2,6 +2,8 @@
 
 namespace RZP\Constants;
 
+use RZP\Exception;
+
 class Verify
 {
     // ================== Configurations ==================
@@ -86,15 +88,10 @@ class Verify
 
     /*
      * @param string $filter    filter for which boundary has to be returned
-     * @param int    $daysToAdd days to be added at end after default days boundary
-     *                          while Fetching payments $daysToAdd should be 0
-     *                          while Setting VERIFY_BUCKET $daysToAdd should be 1
-     *                          as we don't want to verify Payments which are verified after DEFAULT_MAX_DAYS
-     *
      * @return array            verify boundary array
      *
     */
-    public static function getBoundaryInSeconds($filter, $daysToAdd = 0)
+    public static function getBoundaryInSeconds($filter)
     {
         switch($filter)
         {
@@ -112,7 +109,7 @@ class Verify
 
                 $boundary = self::$failureStartBoundary;
 
-                foreach (range (1, (self::DEFAULT_MAX_DAYS + $daysToAdd)) as $day)
+                foreach (range (1, self::DEFAULT_MAX_DAYS) as $day)
                 {
                     $boundary[] = $day * self::SECONDS_IN_DAY;
                 }
