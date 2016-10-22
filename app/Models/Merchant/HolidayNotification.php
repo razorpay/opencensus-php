@@ -139,6 +139,7 @@ class HolidayNotification
 
         // Get Next working day that is not a bank holiday
         $ignoreBankHolidays = true;
+
         $nextWorkingDay = Holidays::getNextWorkingDay($today, $ignoreBankHolidays);
 
         // Ensure if that is a settlement holiday then send mail

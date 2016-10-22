@@ -501,6 +501,7 @@ class DatabaseSeeder extends Seeder
             );
 
         $this->createAmexTerminals();
+        $this->createCybersourceTerminals();
         $this->createBilldeskGatewayTerminals();
         $this->createNetbankingHdfcTerminals();
         $this->createMobikwikTerminals();
@@ -547,6 +548,35 @@ class DatabaseSeeder extends Seeder
                 'updated_at'            =>  time(),
                 )
             );
+    }
+
+    protected function createCybersourceTerminals()
+    {
+        DB::table(Table::TERMINAL)->insert([
+            'id'                        => '1VwJebUIU7hIhd',
+            'merchant_id'               => Account::TEST_ACCOUNT,
+            'gateway'                   => Gateway::CYBERSOURCE,
+            'card'                      => '1',
+            'gateway_merchant_id'       => 'test_merchant_cybersource',
+            'gateway_terminal_id'       => 'test_terminal_cybersource',
+            'gateway_terminal_password' => Crypt::encrypt('demo_account_hdfc_terminal_pass'),
+            'recurring'                 => 0,
+            'created_at'                => time(),
+            'updated_at'                => time(),
+        ]);
+
+        DB::table(Table::TERMINAL)->insert([
+            'id'                        => Terminal\Shared::CYBERSOURCE_HDFC_TERMINAL,
+            'merchant_id'               => Account::DEMO_ACCOUNT,
+            'gateway'                   => Gateway::CYBERSOURCE,
+            'card'                      => '1',
+            'gateway_merchant_id'       => 'demo_merchant_cybersource',
+            'gateway_terminal_id'       => 'demo_terminal_cybersource',
+            'gateway_terminal_password' => Crypt::encrypt('demo_account_atom_terminal_pass'),
+            'recurring'                 => 0,
+            'created_at'                => time(),
+            'updated_at'                => time(),
+        ]);
     }
 
     protected function createBilldeskGatewayTerminals()
