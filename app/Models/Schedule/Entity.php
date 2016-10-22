@@ -40,6 +40,13 @@ class Entity extends Base\PublicEntity
         self::NEXT_RUN,
     );
 
+    protected $casts = [
+        self::INTERVAL => 'int',
+        self::ANCHOR   => 'int',
+        self::DELAY    => 'int',
+        self::NEXT_RUN => 'int',
+    ];
+
     protected $table = Table::SCHEDULE;
 
     protected $entity = 'schedule';
