@@ -24,7 +24,7 @@ class Repository extends Base\Repository
         $pricing = $this->newQuery()
                         ->where(Pricing\Entity::PLAN_ID, '=', $id)
                         ->orderBy(Pricing\Entity::PLAN_ID, 'desc')
-                        ->orderBy(Pricing\Entity::ID, 'desc')
+                        ->orderBy(Pricing\Entity::PAYMENT_METHOD, 'desc')
                         ->get();
 
         if (($pricing->count() === 0) and
@@ -70,7 +70,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->orderBy(Pricing\Entity::PLAN_ID, 'desc')
-                    ->orderBy(Pricing\Entity::ID, 'desc')
+                    ->orderBy(Pricing\Entity::PAYMENT_METHOD, 'desc')
                     ->get();
     }
 
@@ -80,7 +80,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->whereNull(Pricing\Entity::GATEWAY)
                     ->orderBy(Pricing\Entity::PLAN_ID, 'desc')
-                    ->orderBy(Pricing\Entity::ID, 'desc')
+                    ->orderBy(Pricing\Entity::PAYMENT_METHOD, 'desc')
                     ->get();
     }
 
@@ -95,7 +95,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where(Pricing\Entity::PLAN_NAME, '=', $name)
-                    ->orderBy(Pricing\Entity::ID, 'desc')
+                    ->orderBy(Pricing\Entity::PAYMENT_METHOD, 'desc')
                     ->get();
     }
 
