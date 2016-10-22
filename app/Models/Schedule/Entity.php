@@ -3,6 +3,7 @@
 namespace RZP\Models\Schedule;
 
 use RZP\Models\Base;
+use RZP\Constants\Table;
 
 class Entity extends Base\PublicEntity
 {
@@ -19,7 +20,6 @@ class Entity extends Base\PublicEntity
     protected $fillable = array(
         self::ID,
         self::NAME,
-        self::OWNER_ID,
         self::TYPE,
         self::PERIOD,
         self::INTERVAL,
@@ -28,11 +28,19 @@ class Entity extends Base\PublicEntity
         self::NEXT_RUN,
     );
 
-    protected $table = \RZP\Constants\Table::SCHEDULE;
+    protected $table = Table::SCHEDULE;
 
     protected $entity = 'schedule';
 
     protected $generateIdOnCreate = true;
+
+    // ----------------------- Associations ----------------------------------------
+
+    public function owner()
+    {
+        return $this->belongsTo(
+            'RZP\Models\Merchant\Entity', self::OWNER_ID);
+    }
 
     // ----------------------- Getters ---------------------------------------------
 
@@ -81,6 +89,11 @@ class Entity extends Base\PublicEntity
     public function setNextRun($nextRun)
     {
         return $this->setAttribute(self::NEXT_RUN, $nextRun);
+    }
+
+    public function setOwnerId($ownerId)
+    {
+        return $this->setAttribute(self::OWNER_ID, $ownerId);
     }
 
 }

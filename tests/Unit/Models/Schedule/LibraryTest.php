@@ -19,7 +19,7 @@ class LibraryTest extends TestCase
     {
         $data = $this->testData[__FUNCTION__];
 
-        $basicT3Schedule = (new Schedule\Repository)->getScheduleByIdAndOwnerId('schd_basic_t3', '100000Razorpay');
+        $basicT3Schedule = (new Schedule\Repository)->getByIdAndOwnerId('schd_basic_t3', '100000Razorpay');
 
         $this->runCaseWiseScheduleTest($basicT3Schedule, $data);
     }
@@ -28,7 +28,7 @@ class LibraryTest extends TestCase
     {
         $data = $this->testData[__FUNCTION__];
 
-        $twoHourSchedule = (new Schedule\Repository)->getScheduleByIdAndOwnerId('schd_2_hourly', '100000Razorpay');
+        $twoHourSchedule = (new Schedule\Repository)->getByIdAndOwnerId('schd_2_hourly', '100000Razorpay');
 
         $this->runCaseWiseScheduleTest($twoHourSchedule, $data);
     }
@@ -37,7 +37,7 @@ class LibraryTest extends TestCase
     {
         $data = $this->testData[__FUNCTION__];
 
-        $tuesdaySchedule = (new Schedule\Repository)->getScheduleByIdAndOwnerId('schd_tuesdays', '100000Razorpay');
+        $tuesdaySchedule = (new Schedule\Repository)->getByIdAndOwnerId('schd_tuesdays', '100000Razorpay');
 
         $this->runCaseWiseScheduleTest($tuesdaySchedule, $data);
     }

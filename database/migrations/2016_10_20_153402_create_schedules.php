@@ -4,6 +4,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Models\Schedule\Entity as Schedule;
+use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Constants\Table;
 
 class CreateSchedules extends Migration
@@ -22,14 +23,19 @@ class CreateSchedules extends Migration
             $table->char(Schedule::ID, Schedule::ID_LENGTH)
                   ->primary();
 
-            $table->string(Schedule::NAME)
+            $table->string(Schedule::NAME, 50)
                   ->nullable();
 
             $table->char(Schedule::OWNER_ID, Schedule::ID_LENGTH);
 
-            $table->string(Schedule::TYPE);
+            $table->foreign(Schedule::OWNER_ID)
+                  ->references(Merchant::ID)
+                  ->on(Table::MERCHANT)
+                  ->on_delete('restrict');
 
-            $table->string(Schedule::PERIOD);
+            $table->string(Schedule::TYPE, 15);
+
+            $table->string(Schedule::PERIOD, 15);
 
             $table->integer(Schedule::INTERVAL)
                   ->nullable();
@@ -45,7 +51,6 @@ class CreateSchedules extends Migration
             $table->integer(Schedule::CREATED_AT);
             $table->integer(Schedule::UPDATED_AT);
 
-            $table->index(Schedule::OWNER_ID);
             $table->index(Schedule::TYPE);
         });
     }
@@ -57,6 +62,11 @@ class CreateSchedules extends Migration
      */
     public function down()
     {
+        Schema::table(Table::PAYMENT, function($table)
+        {
+            $table->dropForeign(Table::SCHEDULE.'_'.Schedule::OWNER_ID.'_foreign');
+        });
+
         Schema::drop(Table::SCHEDULE);
     }
 }

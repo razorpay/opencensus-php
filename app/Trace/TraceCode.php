@@ -215,6 +215,9 @@ class TraceCode
     const SCHEDULE_RESOLUTION_INITIATED             = 'SCHEDULE_RESOLUTION_INITIATED';
     const SCHEDULE_ANCHORED_RESOLUTION              = 'SCHEDULE_ANCHORED_RESOLUTION';
     const SCHEDULE_UNANCHORED_RESOLUTION            = 'SCHEDULE_UNANCHORED_RESOLUTION';
+    const SCHEDULE_ASSIGN_REQUEST                   = 'SCHEDULE_ASSIGN_REQUEST';
+    const SCHEDULE_CREATE_REQUEST                   = 'SCHEDULE_CREATE_REQUEST';
+    const SCHEDULE_EDIT_REQUEST                     = 'SCHEDULE_EDIT_REQUEST';
     const SCHEDULE_CREATED                          = 'SCHEDULE_CREATED';
     const SCHEDULE_EDITED                           = 'SCHEDULE_EDITED';
     const SCHEDULE_ASSIGNED                         = 'SCHEDULE_ASSIGNED';

@@ -10,11 +10,11 @@ class Repository extends Base\Repository
 
     protected $entity = 'schedule';
 
-    public function getScheduleByIdAndOwnerId($id, $ownerId)
+    public function getByIdAndOwnerId($id, $ownerId)
     {
         return $this->newQuery()
                     ->where(Entity::ID, '=', $id)
                     ->where(Entity::OWNER_ID, '=', $ownerId)
-                    ->first();
+                    ->firstOrFail();
     }
 }

@@ -270,11 +270,18 @@ class Service extends Base\Service
 
     public function assignSettlementSchedule($id, $input)
     {
+        $this->trace->info(TraceCode::SCHEDULE_ASSIGN_REQUEST, [
+                    'merchant_id' => $id,
+                    'input'       => $input,
+                ]
+            );
+
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         if (isset($input[Entity::SETTLEMENT_SCHEDULE_ID]) === true)
         {
-            $schedule = $this->repo->schedule->findOrFailPublic($input[Entity::SETTLEMENT_SCHEDULE_ID]);
+            $schedule = $this->repo->schedule
+                             ->findByIdAndOwnerId($input[Entity::SETTLEMENT_SCHEDULE_ID], Account::SHARED_ACCOUNT);
 
             if ($schedule === null)
             {
@@ -301,7 +308,7 @@ class Service extends Base\Service
 
         $this->repo->saveOrFail($merchant);
 
-        return $schedule->toArrayPublic();
+        return $merchant->toArrayPublic();
     }
 
     public function getPricingPlan($id)

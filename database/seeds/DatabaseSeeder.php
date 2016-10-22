@@ -1,4 +1,4 @@
-a<?php
+<?php
 
 use RZP\Constants\Mode;
 use RZP\Constants\Table;

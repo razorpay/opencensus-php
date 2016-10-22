@@ -464,7 +464,7 @@ class Core extends Base\Core
 
         $returnTime = Schedule::getNextApplicableTime($capturedAt, $payment->merchant);
 
-        return Holidays::getNextWorkingTime($returnTime);
+        return $returnTime;
     }
 
     public function calculateSettledAtTimestamp($timestamp, $addDays, $ignoreBankHolidays = false)

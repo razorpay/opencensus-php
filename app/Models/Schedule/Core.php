@@ -3,6 +3,7 @@
 namespace RZP\Models\Schedule;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant\Account;
 use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
@@ -10,6 +11,8 @@ class Core extends Base\Core
     public function createSchedule($input)
     {
         $schedule = (new Entity)->build($input);
+
+        $schedule->setOwnerId(Account::SHARED_ACCOUNT);
 
         $this->repo->saveOrFail($schedule);
 
@@ -20,7 +23,7 @@ class Core extends Base\Core
     {
         $schedule->edit($input);
 
-        $schedule->saveOrFail();
+        $this->repo->saveOrFail($schedule);
 
         return $schedule;
     }
