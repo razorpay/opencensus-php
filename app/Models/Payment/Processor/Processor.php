@@ -4,7 +4,6 @@ namespace RZP\Models\Payment\Processor;
 
 use App;
 use BasicAuth;
-use Carbon\Carbon;
 
 use RZP\Constants\Mode;
 use RZP\Dashboard\Dashboard;
