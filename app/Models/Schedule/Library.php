@@ -125,11 +125,21 @@ class Library
 
     protected static function getMinimumDelayedTime($currentTime, $schedule)
     {
+        $current = Carbon::createFromTimestamp($currentTime, 'Asia/Kolkata');
+
         $minimumDelay = $schedule->getDelay();
 
-        $settledAt = Carbon::createFromTimestamp($currentTime, 'Asia/Kolkata')->addSeconds($minimumDelay);
+        if ($minimumDelay === 0)
+        {
+            // Avoiding zero delay to prevent race conditions
+            $current->addHour();
+        }
+        else
+        {
+            $current->addDays($minimumDelay);
+        }
 
-        return $settledAt;
+        return $current;
     }
 
     protected static function getStep($schedule, $stepsArray)

@@ -6,11 +6,11 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Models\Schedule;
 use Carbon\Carbon;
 
-class LibraryTest extends TestCase
+class ScheduleLibraryTest extends TestCase
 {
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/LibraryTestData.php';
+        $this->testDataFilePath = __DIR__.'/ScheduleLibraryTestData.php';
 
         parent::setUp();
     }
