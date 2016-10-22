@@ -290,7 +290,7 @@ class Service extends Base\Service
             $this->trace->info(TraceCode::SCHEDULE_CREATED, $schedule->toArray());
         }
 
-        $merchant->setSettlementScheduleId($schedule->getId());
+        $merchant->schedule()->associate($schedule);
 
         $this->trace->info(TraceCode::SCHEDULE_ASSIGNED, [
                             'schedule' => $schedule->toArray(),

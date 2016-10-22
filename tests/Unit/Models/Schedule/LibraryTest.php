@@ -19,32 +19,33 @@ class LibraryTest extends TestCase
     {
         $data = $this->testData[__FUNCTION__];
 
-        $basicT3Schedule = (new Schedule\Repository)->getByIdAndOwnerId('schd_basic_t3', '100000Razorpay');
+        $basicT3Schedule = new Schedule\Entity($data['schedule']);
 
-        $this->runCaseWiseScheduleTest($basicT3Schedule, $data);
+        $this->runCaseWiseScheduleTest($basicT3Schedule, $data['cases']);
     }
 
     public function testTwoHourSchedule()
     {
         $data = $this->testData[__FUNCTION__];
 
-        $twoHourSchedule = (new Schedule\Repository)->getByIdAndOwnerId('schd_2_hourly', '100000Razorpay');
+        $twoHourSchedule = new Schedule\Entity($data['schedule']);
 
-        $this->runCaseWiseScheduleTest($twoHourSchedule, $data);
+        $this->runCaseWiseScheduleTest($twoHourSchedule, $data['cases']);
     }
 
     public function testEveryTuesdaySchedule()
     {
         $data = $this->testData[__FUNCTION__];
 
-        $tuesdaySchedule = (new Schedule\Repository)->getByIdAndOwnerId('schd_tuesdays', '100000Razorpay');
+        $tuesdaySchedule = new Schedule\Entity($data['schedule']);
 
-        $this->runCaseWiseScheduleTest($tuesdaySchedule, $data);
+        $this->runCaseWiseScheduleTest($tuesdaySchedule, $data['cases']);
     }
 
-    private function runCaseWiseScheduleTest($schedule, $data)
+    private function runCaseWiseScheduleTest($schedule, $cases)
     {
-        foreach ($data as $case) {
+        foreach ($cases as $case)
+        {
             $nextTime = Schedule\Library::getNextApplicableTimeFromSchedule($case['initialTime'], $schedule);
 
             $this->assertEquals($case['expectedNextTime'], $nextTime);

@@ -10,7 +10,7 @@ class Library
 {
     public static function getNextApplicableTime($currentTime, $merchant)
     {
-        $schedule = $merchant->settlementSchedule;
+        $schedule = $merchant->schedule;
 
         if ($schedule === null)
         {

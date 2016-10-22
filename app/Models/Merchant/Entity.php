@@ -215,7 +215,7 @@ class Entity extends Base\PublicEntity
             'RZP\Models\Pricing\Entity', self::PRICING_PLAN_ID, 'plan_id');
     }
 
-    public function settlementSchedule()
+    public function schedule()
     {
         return $this->belongsTo(
             'RZP\Models\Schedule\Entity', self::SETTLEMENT_SCHEDULE_ID);
@@ -555,11 +555,6 @@ class Entity extends Base\PublicEntity
         {
             $array[self::LOGO_URL] = $this->getFullLogoUrlWithSize(self::ORIGINAL_SIZE);
         }
-    }
-
-    public function setSettlementScheduleId($settlementScheduleId)
-    {
-        $this->setAttribute(self::SETTLEMENT_SCHEDULE_ID, $settlementScheduleId);
     }
 
     public function getSettlementSchedule()
