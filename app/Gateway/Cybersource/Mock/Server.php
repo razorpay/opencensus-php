@@ -39,6 +39,8 @@ class Server extends Base\Mock\Server
             F::TERM_URL => $input[F::TERM_URL]
         ];
 
+        $this->content($response, 'callback');
+
         return $response;
     }
 
@@ -90,7 +92,7 @@ class Server extends Base\Mock\Server
 
         $this->switchAuthorizeCases($input, $response);
 
-        $this->content($response);
+        $this->content($response, 'authorize');
 
         return $response;
     }
@@ -113,7 +115,7 @@ class Server extends Base\Mock\Server
 
         $this->switchEnrollCases($input, $response);
 
-        $this->content($response);
+        $this->content($response, 'enrollment');
 
         return $response;
     }
@@ -673,9 +675,11 @@ class Server extends Base\Mock\Server
 
         $content = $this->getVerifyContent($input);
 
-        $this->content($content);
+        $this->content($content, 'verify_content');
 
         $xml = require __DIR__ . '/VerifyResponseXml.php';
+
+        $this->content($xml, 'verify_xml');
 
         return $this->makeResponse($xml);
     }
@@ -696,7 +700,8 @@ class Server extends Base\Mock\Server
                 'requestId' => '4661468455432' . random_int(10000000, 99999999),
                 'amount' => $amount,
                 'authCode' => strtoupper(Str::quickRandom(6)),
-                'eci' => '2'
+                'eci' => '2',
+                'RFlag' => Cybersource\ReplyFlag::SOK
             ],
             'payerAuthEnrollService' => [
                 'requestId' => '4661468455432' . random_int(10000000, 99999999),

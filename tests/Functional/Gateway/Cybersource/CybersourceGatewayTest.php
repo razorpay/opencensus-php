@@ -59,23 +59,39 @@ class CybersourceGatewayTest extends TestCase
             $this->testData['testCybersourceCaptureEntity'], $payment);
     }
 
-    public function testGatewayTimeoutError()
+    public function testGatewayCallbackWithEmptyInput()
     {
         $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4000000000000002';
+
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            if ($action === 'callback')
+            {
+                $content['PaRes'] = '';
+            }
+        });
 
         $data = $this->testData[__FUNCTION__];
-
-        $this->mockTimeout();
 
         $this->runRequestResponseFlow($data, function() use ($payment) {
             $this->doAuthPayment($payment);
         });
     }
 
+    public function testGatewayTimeoutError()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $this->mockTimeout();
+
+        $this->runRequestResponseFlow($data, function() {
+            $this->doAuthPayment();
+        });
+    }
+
     public function testGatewayProcessorTimeout()
     {
-        $payment = $this->getDefaultPaymentArray();
-
         $this->mockServerContentFunction(function(&$content)
         {
             $content['decision'] = 'REJECT';
@@ -89,8 +105,9 @@ class CybersourceGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() use ($payment) {
-            $this->doAuthPayment($payment);
+        $this->runRequestResponseFlow($data, function()
+        {
+            $this->doAuthPayment();
         });
     }
 
@@ -150,7 +167,7 @@ class CybersourceGatewayTest extends TestCase
     {
         $payment = $this->getDefaultPaymentArray();
 
-        $response = $this->doAuthPayment();
+        $response = $this->doAuthPayment($payment);
 
         $paymentId = $response['razorpay_payment_id'];
         $input = ['amount' => $payment['amount']];
@@ -175,7 +192,27 @@ class CybersourceGatewayTest extends TestCase
         $this->assertSame($response['gateway']['gatewayPayment']['status'], 'authorized');
     }
 
-    public function testGatewayPaymentMismatchVerify()
+    public function testGatewayAuthorizedPaymentMatchVerify()
+    {
+        $payment = $this->doAuthPayment();
+
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            if ($action === 'verify_content')
+            {
+                $content['ccAuthService']['RFlag'] = 'DCARDEXPIRED';
+            }
+        });
+
+        $data = $this->testData['testGatewayPaymentMismatchVerify'];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $response = $this->verifyPayment($payment['razorpay_payment_id']);
+        });
+    }
+
+    public function testGatewayFailedPaymentMismatchVerify()
     {
         $this->mockTimeout('processor');
 
@@ -186,12 +223,45 @@ class CybersourceGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $data = $this->testData[__FUNCTION__];
+        $data = $this->testData['testGatewayPaymentMismatchVerify'];
 
         $this->runRequestResponseFlow($data, function() use ($payment)
         {
             $this->verifyPayment($payment['id']);
         });
+    }
+
+    public function testGatewayVerifyPaymentNotFound()
+    {
+        $this->mockTimeout('processor');
+
+        $this->makeRequestAndCatchException(function()
+        {
+            $this->doAuthPayment();
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->mockServerContentFunction(function(&$xml, $action)
+        {
+            if ($action === 'verify_xml')
+            {
+                $xml = '<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Report SYSTEM "https://ebc.cybersource.com/ebc/reports/dtd/tdr_1_1.dtd">
+<Report xmlns="https://ebc.cybersource.com/ebc/reports/dtd/tdr_1_1.dtd" Name="Transaction Detail" Version="1.1" MerchantID="merchant_id" ReportStartDate="2016-10-23 18:48:54.658+05:30" ReportEndDate="2016-10-23 18:48:54.658+05:30">
+    <Requests />
+</Report>';
+            }
+        });
+
+        $response = $this->verifyPayment($payment['id']);
+
+        $this->assertSame($response['payment']['status'], 'failed');
+        $this->assertSame($response['payment']['verified'], 1);
+        $this->assertSame($response['gateway']['status'], 'status_match');
+        $this->assertSame($response['gateway']['gateway'], 'cybersource');
+        $this->assertSame($response['gateway']['verifyResponseContent'], []);
+        $this->assertSame($response['gateway']['gatewayPayment']['status'], 'enroll_failed');
     }
 
     public function testAuthorizeFailedPayment()
@@ -219,6 +289,84 @@ class CybersourceGatewayTest extends TestCase
 
         $this->assertNotNull($cybersource['ref']);
         $this->assertTestResponse($cybersource);
+    }
+
+    public function testGatewayPaymentXidMisMatch()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4000000000000002';
+
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content['payerAuthValidateReply']['xid'] = 'random_xid';
+            }
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testGatewayMissingFieldError()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->mockServerContentFunction(function(&$content)
+        {
+            $content['reasonCode'] = 101;
+            $content['decision'] = 'ERROR';
+            $content['missingFields'] = 'c:card_accountNumber';
+            $content['payerAuthEnrollReply'] = [
+                'reasonCode' => 101
+            ];
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testGatewayInvalidReasonCode()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->mockServerContentFunction(function(&$content)
+        {
+            $content['reasonCode'] = 1101;
+            $content['decision'] = 'ERROR';
+            $content['missingFields'] = 'c:card_accountNumber';
+            $content['payerAuthEnrollReply'] = [
+                'reasonCode' => 1101
+            ];
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testSoapFaultException()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->mockServerContentFunction(function(&$content)
+        {
+            throw new \SoapFault('HTTP', 'Random SoapFault Exception');
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->doAuthPayment($payment);
+        });
     }
 
     public function testRecurringPaymentAuthenticateCard()
@@ -284,22 +432,25 @@ class CybersourceGatewayTest extends TestCase
 
     protected function mockTimeout($type = 'gateway')
     {
-        $this->mockServerContentFunction(function(&$content) use ($type)
+        $this->mockServerContentFunction(function(&$content, $action = null) use ($type)
         {
-            if ($type === 'gateway')
+            if ($action === 'enrollment')
             {
-                throw new \SoapFault('HTTP', 'Error Fetching http headers');
-            }
+                if ($type === 'gateway')
+                {
+                    throw new \SoapFault('HTTP', 'Error Fetching http headers');
+                }
 
-            if ($type === 'processor')
-            {
-                $content['decision'] = 'REJECT';
-                $content['reasonCode'] = 151;
-                $content['payerAuthEnrollReply'] = [
-                    'reasonCode' => 151
-                ];
+                if ($type === 'processor')
+                {
+                    $content['decision'] = 'REJECT';
+                    $content['reasonCode'] = 151;
+                    $content['payerAuthEnrollReply'] = [
+                        'reasonCode' => 151
+                    ];
 
-                unset($content['purchaseTotals']);
+                    unset($content['purchaseTotals']);
+                }
             }
         });
     }

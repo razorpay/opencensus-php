@@ -31,7 +31,10 @@ class CardType
             return constant(__CLASS__ . '::' . $network);
         }
 
+        // @codeCoverageIgnoreStart
+        // Adding this as a defensive code, code should never reach here.
         throw new Exception\LogicException(
             'Unsupported card network');
+        // @codeCoverageIgnoreEnd
     }
 }

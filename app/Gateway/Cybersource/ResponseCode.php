@@ -177,36 +177,10 @@ class ResponseCode
         return 'Payment failed';
     }
 
-    public static function isGatewayError($code)
-    {
-        if ((isset(self::$errorCodeMap[$code]) === true) and
-            ((self::$errorCodeMap[$code] === ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT) or
-             (self::$errorCodeMap[$code] === ErrorCode::GATEWAY_ERROR_TIMED_OUT)))
-        {
-            return true;
-        }
-
-        return false;
-    }
-
     public static function isFatalError($code)
     {
         if ((isset(self::$errorCodeMap[$code]) === true) and
             (self::$errorCodeMap[$code] === ErrorCode::SERVER_ERROR_INVALID_ARGUMENT))
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    public static function isValidationError($code)
-    {
-        if ((isset(self::$errorCodeMap[$code]) === true) and
-            ((self::$errorCodeMap[$code] === ErrorCode::BAD_REQUEST_PAYMENT_MISSING_DATA) or
-             (self::$errorCodeMap[$code] === ErrorCode::BAD_REQUEST_INVALID_PARAMETERS) or
-             (self::$errorCodeMap[$code] === ErrorCode::GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST) or
-             (self::$errorCodeMap[$code] === ErrorCode::BAD_REQUEST_UNSUPPORTED_CHARACTER_SET)))
         {
             return true;
         }

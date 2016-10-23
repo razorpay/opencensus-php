@@ -93,7 +93,7 @@ $xml = <<<VERIFYXML
         </ApplicationReply>
         <ApplicationReply Name="ics_auth">
           <RCode>1</RCode>
-          <RFlag>SOK</RFlag>
+          <RFlag>{$content['ccAuthService']['RFlag']}</RFlag>
           <RMsg>Request was processed successfully.</RMsg>
         </ApplicationReply>
       </ApplicationReplies>

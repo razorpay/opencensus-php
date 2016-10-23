@@ -7,7 +7,6 @@ use Crypt;
 use Config;
 use SoapVar;
 use SoapFault;
-use RZP\Error;
 use SoapClient;
 use Carbon\Carbon;
 use RZP\Exception;
@@ -250,11 +249,11 @@ class Gateway extends Base\Gateway
         }
         else if (($payment['received'] === false) and
                  (($payment['status'] === null) or
-                  ($payment['status'] !== (string) Status::AUTHORIZED)))
+                  ($payment['status'] !== Status::AUTHORIZED)))
         {
             $verify->apiSuccess = false;
         }
-        else if ($payment['status'] === (string) Status::AUTHORIZED)
+        else if ($payment['status'] === Status::AUTHORIZED)
         {
             $verify->status = VerifyResult::STATUS_MISMATCH;
             $verify->apiSuccess = true;
@@ -282,32 +281,35 @@ class Gateway extends Base\Gateway
 
     protected function fetchAuthorizeReplyFromContent($content)
     {
-        $requests = $content['Requests']['Request'];
+        $requests = $content['Requests']['Request'] ?? null;
 
-        if ($this->isSequentialArray($requests) === false)
+        if ($requests !== null)
         {
-            $requests = [$requests];
-        }
-
-        foreach($requests as $request)
-        {
-            $applicationReplies = $request['ApplicationReplies']['ApplicationReply'];
-
-            if ($this->isSequentialArray($applicationReplies) === false)
+            if ($this->isSequentialArray($requests) === false)
             {
-                $applicationReplies = [$applicationReplies];
+                $requests = [$requests];
             }
 
-            foreach($applicationReplies as $applicationReply)
+            foreach($requests as $request)
             {
-                if ($applicationReply['@attributes']['Name'] === 'ics_auth')
+                $applicationReplies = $request['ApplicationReplies']['ApplicationReply'];
+
+                if ($this->isSequentialArray($applicationReplies) === false)
                 {
-                    return [$applicationReply, $request];
+                    $applicationReplies = [$applicationReplies];
+                }
+
+                foreach($applicationReplies as $applicationReply)
+                {
+                    if ($applicationReply['@attributes']['Name'] === 'ics_auth')
+                    {
+                        return [$applicationReply, $request];
+                    }
                 }
             }
         }
 
-        return [];
+        return [[], []];
     }
 
     /**
@@ -359,11 +361,12 @@ class Gateway extends Base\Gateway
                 $this->validateAndSetEciValue($input, $response);
 
                 return $this->authorizeNotEnrolled($input, $response);
-
-            default:
-                throw new Exception\LogicException(
-                    'Gateway returned invalid result');
         }
+
+        // @codeCoverageIgnoreStart
+        // Adding this as a defensive code, code should never reach here.
+        throw new Exception\LogicException('Unexpected response');
+        // @codeCoverageIgnoreEnd
     }
 
     protected function enroll(array $input)
@@ -379,7 +382,7 @@ class Gateway extends Base\Gateway
             $this->traceGatewayResponse(TraceCode::GATEWAY_ENROLL_RESPONSE, $response, $input);
 
             if (($response[F::DECISION] === Decision::ERROR) or
-                (($response[F::REASON_CODE] !== Result::SUCCESS) and
+                (($response[F::REASON_CODE] !== Result::NOT_ENROLLED) and
                  ($response[F::REASON_CODE] !== Result::ENROLLED)))
             {
                 $gatewayAttributes = [
@@ -1071,6 +1074,10 @@ class Gateway extends Base\Gateway
         return $file;
     }
 
+    /**
+     * @codeCoverageIgnore
+     * Returns SoapClient Object when mock is disabled
+     */
     protected function getSoapClientObject($request)
     {
         $soapClient = new SoapClient($request['wsdl'], $request['options']);
@@ -1222,7 +1229,7 @@ class Gateway extends Base\Gateway
                 ]);
 
             throw new Exception\GatewayErrorException(
-                Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+                    ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
         }
     }
 
@@ -1240,7 +1247,8 @@ class Gateway extends Base\Gateway
         }
     }
 
-    /*
+    /**
+     * @codeCoverageIgnore
      * @incomplete Optimize callback response verification
      */
     protected function validateParesStatus(array $input)
