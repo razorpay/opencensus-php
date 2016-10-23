@@ -11,7 +11,6 @@ class Entity extends Base\PublicEntity
     const MERCHANT_ID               = 'merchant_id';
     const VALUE                     = 'value';
     const TYPE                      = 'type';
-    const IS_ADMIN                  = 'is_admin';
 
     protected $entity               = 'credits';
 
@@ -24,7 +23,6 @@ class Entity extends Base\PublicEntity
         self::CAMPAIGN,
         self::VALUE,
         self::TYPE,
-        self::IS_ADMIN,
     );
 
     protected $visible = array(
@@ -33,7 +31,6 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::VALUE,
         self::TYPE,
-        self::IS_ADMIN,
         self::CREATED_AT
     );
 
@@ -53,7 +50,6 @@ class Entity extends Base\PublicEntity
     // Casts the attributes to native types
     protected $casts = [
         self::VALUE             => 'integer',
-        self::IS_ADMIN          => 'boolean',
     ];
 
     protected static $sign      = 'credits';
@@ -77,11 +73,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::TYPE, $type);
     }
 
-    public function setIsAdmin(bool $isAdmin)
-    {
-        $this->setAttribute(self::IS_ADMIN, $isAdmin);
-    }
-
 // --------------------- End Setters -------------------------------------
 
 // --------------------- Getters -----------------------------------------
@@ -99,11 +90,6 @@ class Entity extends Base\PublicEntity
     public function getType()
     {
         return $this->getAttribute(self::TYPE);
-    }
-
-    public function isAdmin()
-    {
-        return $this->getAttribute(self::IS_ADMIN);
     }
 
 // --------------------- End Getters -----------------------------------------

@@ -23,11 +23,6 @@ class Core extends Base\Core
 
         $creditsLog->merchant()->associate($merchant);
 
-        # Merchant is not set if it is an admin
-        $isAdmin = $this->merchant === null ? true : false;
-
-        $creditsLog->setIsAdmin($isAdmin);
-
         $this->repo->credits->validateCampaignCreditsNotAssigned(
             $creditsLog->getCampaign(), $merchant, $creditsLog->getType());
 
