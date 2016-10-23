@@ -255,6 +255,9 @@ class Server extends Base\Mock\Server
             // Verified by Visa Card Enrolled: Unsuccessful Authentication
             case 4000000000000028:
 
+            // Verified bt Visa Card Enrolled for Recurring payment
+            case 4012001038443335:
+
                 $response[F::DECISION] = 'REJECT';
                 $response[F::REASON_CODE] = 475;
 
@@ -343,6 +346,10 @@ class Server extends Base\Mock\Server
 
         switch ($cardNumber)
         {
+            // Verified bt Visa Card Enrolled for Recurring payment
+            case 4012001038443335:
+                $commerceIndicator = 'recurring';
+
             // Verified by Visa Card Enrolled: Successful Authentication
             // With authentication window
             case 4000000000000002:
@@ -364,7 +371,7 @@ class Server extends Base\Mock\Server
                     F::AUTHENTICATION_STATUS_MESSAGE => 'Success',
                     F::CAVV                          => 'AAABAWFlmQAAAABjRWWZEEFgFz+=',
                     F::CAVV_ALGORITHM                => '2',
-                    F::COMMERCE_INDICATOR            => 'vbv',
+                    F::COMMERCE_INDICATOR            => $commerceIndicator ?? 'vbv',
                     F::ECI                           => '05',
                     F::ECI_RAW                       => '05',
                     F::XID                           => base64_encode($this->messageId),

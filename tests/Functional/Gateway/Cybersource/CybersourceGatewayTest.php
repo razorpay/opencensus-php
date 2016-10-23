@@ -19,9 +19,13 @@ class CybersourceGatewayTest extends TestCase
 
         parent::setUp();
 
-        $this->sharedHdfcTerminal = $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal');
+
+        $this->fixtures->create('terminal:shared_cybersource_hdfc_recurring_terminals');
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->merchant->editFeatures('recurring');
 
         $this->gateway = 'cybersource';
 
@@ -36,7 +40,8 @@ class CybersourceGatewayTest extends TestCase
         $this->assertEquals(0, $txn['count']);
 
         $payment = $this->getLastEntity('payment', true);
-        $this->assertEquals($payment['transaction_id'], null);
+        $this->assertNull($payment['transaction_id']);
+        $this->assertEquals('1000CybrsTrmnl', $payment['terminal_id']);
 
         $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
 
@@ -214,6 +219,50 @@ class CybersourceGatewayTest extends TestCase
 
         $this->assertNotNull($cybersource['ref']);
         $this->assertTestResponse($cybersource);
+    }
+
+    public function testRecurringPaymentAuthenticateCard()
+    {
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $response = $this->doAuthPayment($payment);
+        $paymentId = $response['razorpay_payment_id'];
+
+        $paymentEntity = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertTestResponse($paymentEntity);
+        $this->assertNotNull($paymentEntity['token_id']);
+        $this->assertEquals('1000CybrsTrmnl', $paymentEntity['terminal_id']);
+
+        $token = $paymentEntity['token_id'];
+
+        unset($payment['card']);
+
+        // Set payment for subsequent recurring payment
+        $payment['token'] = $token;
+
+        // Switch to private auth for subsequent recurring payment
+        $this->ba->privateAuth();
+
+        $response = $this->doS2SRecurringPayment($payment);
+        $paymentId = $response['razorpay_payment_id'];
+
+        $paymentEntity = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertTestResponse($paymentEntity);
+        $this->assertNotNull($paymentEntity['token_id']);
+        $this->assertEquals('2RecurringTerm', $paymentEntity['terminal_id']);
+
+        $paymentId = Payment::verifyIdAndSilentlyStripSign($paymentId);
+
+        $cybersource = $this->getLastEntity('cybersource', true);
+
+        $cybersourceData = $this->testData['cybersourceRecurringEntity'];
+
+        $this->assertNotNull($cybersource['ref']);
+        $this->assertNotNull($cybersource['authorizationCode']);
+        $this->assertEquals($paymentId, $cybersource['payment_id']);
+        $this->assertArraySelectiveEquals($cybersourceData, $cybersource);
     }
 
     // -------- helpers ----------
