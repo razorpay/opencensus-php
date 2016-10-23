@@ -37,6 +37,8 @@ class Validator extends Base\Validator
         'ccAuthService.eci'                    => 'sometimes|numeric|digits_between:1,2',
         'ccAuthService.commerceIndicator'      => 'sometimes|in:internet,recurring,vbv_attempted,spa',
         'ccAuthService.veresEnrolled'          => 'sometimes|in:Y,N,U',
+        'ucaf'                                 => 'sometimes|array',
+        'ucaf.commerceIndicator'               => 'sometimes_if:card.cardType,002|string',
         'payerAuthValidateService'             => 'sometimes|array',
         'payerAuthValidateService.run'         => 'required_with:payerAuthValidateService|string|in:true',
         'payerAuthValidateService.signedPARes' => 'required_with:payerAuthValidateService|string',

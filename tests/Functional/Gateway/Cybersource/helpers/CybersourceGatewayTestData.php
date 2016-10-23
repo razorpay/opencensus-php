@@ -48,7 +48,7 @@ return [
             'status_code' => 504,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\GatewayTimeoutException',
+            'class' => RZP\Exception\GatewayTimeoutException::class,
             'internal_error_code' => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
         ],
     ],
@@ -204,29 +204,5 @@ return [
         'cavv'          => 'AAABAWFlmQAAAABjRWWZEEFgFz+=',
         'capture_ref'   => null,
         'reason_code'   => 100
-    ],
-
-    'testEnrolledVisaSuccessfulTxn' => [
-        'action'               => "authorize",
-        'received'             => true,
-        'refund_id'            => null,
-        'auth_data'            => null,
-        'commerce_indicator'   => "vbv",
-        'amount'               => 50000,
-        'pares_status'         => "Y",
-        'status'               => "authorized",
-        'avsCode'              => "Y",
-        'cardCategory'         => "F",
-        'cardGroup'            => "0",
-        'cvCode'               => "M",
-        'veresEnrolled'        => null,
-        'eci'                  => "05",
-        'collection_indicator' => null,
-        'capture_ref'          => null,
-        'merchantAdviceCode'   => "01",
-        'processorResponse'    => "00",
-        'reason_code'          => 100,
-        'entity'               => "cybersource",
-        'admin'                => true,
     ]
 ];

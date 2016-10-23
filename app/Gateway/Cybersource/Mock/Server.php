@@ -26,7 +26,7 @@ class Server extends Base\Mock\Server
     // Dummy function for mock soap client
     public function Security($header)
     {
-
+        ;
     }
 
     public function acs(array $input)
@@ -65,7 +65,7 @@ class Server extends Base\Mock\Server
                 break;
 
             default:
-                throw new Exception\LogicException('Unrecognized request type');
+                $this->assertTrue(false, 'Unrecognized request type');
         }
 
         $action = camel_case($action);
@@ -213,31 +213,48 @@ class Server extends Base\Mock\Server
 
         switch ($cardNumber)
         {
-            // Verified by Visa Card Enrolled: Successful Authentication
-            // With authentication window
-            case 4000000000000002:
+            // MasterCard SecureCode Card Enrolled: Attempts Processing
+            case 5200000000000106:
 
-                $response[F::DECISION] = 'REJECT';
-                $response[F::REASON_CODE] = 475;
+            // Verified by Visa Card Enrolled: Attempts Processing
+            case 4000000000000000063:
+                $authenticationPath = 'ATTEMPTS';
 
-                $this->enrolled = 'Y';
-
-                $response[F::PA_ENROLL_REPLY] = [
-                    F::ACS_URL => $this->acsUrl,
-                    F::AUTHENTICATION_PATH => 'ENROLLED',
-                    F::PA_REQ => $this->getPaReq($input),
-                    F::PROOF_XML => $this->getProofXml($input, $response),
-                    F::PROXY_PAN => $this->proxyPan,
-                    F::REASON_CODE => 475,
-                    F::VERES_ENROLLED => $this->enrolled,
-                    F::XID => base64_encode($this->messageId)
-                ];
-
-                break;
+            // MasterCard SecureCode Card Enrolled: Incomplete Authentication
+            case 5200000000000031:
 
             // Verified by Visa Card Enrolled: Incomplete Authentication
             case 4000000000000036:
 
+            // Verified by Visa Card Enrolled: Authentication Error
+            case 4000000000000093:
+                $authenticationPath = $authenticationPath ?? 'UNKNOWN';
+
+            // MasterCard SecureCode Card Enrolled: Authentication Error
+            case 5200000000000098:
+
+            // MasterCard SecureCode Card Enrolled: Successful Authentication
+            // But Invalid PARes
+            case 5200000000000015:
+
+            // Verified by Visa Card Enrolled: Successful Authentication
+            // But Invalid PARes
+            case 4000000000000000071:
+
+            // MasterCard SecureCode Card Enrolled: Successful Authentication
+            // With authentication window
+            case 5200000000000007:
+
+            // Verified by Visa Card Enrolled: Successful Authentication
+            // With authentication window
+            case 4000000000000002:
+
+            // MasterCard SecureCode Card Enrolled: Unsuccessful Authentication
+            case 5200000000000023:
+
+            // Verified by Visa Card Enrolled: Unsuccessful Authentication
+            case 4000000000000028:
+
                 $response[F::DECISION] = 'REJECT';
                 $response[F::REASON_CODE] = 475;
 
@@ -245,7 +262,7 @@ class Server extends Base\Mock\Server
 
                 $response[F::PA_ENROLL_REPLY] = [
                     F::ACS_URL => $this->acsUrl,
-                    F::AUTHENTICATION_PATH => 'ENROLLED',
+                    F::AUTHENTICATION_PATH => $authenticationPath ?? 'ENROLLED',
                     F::PA_REQ => $this->getPaReq($input),
                     F::PROOF_XML => $this->getProofXml($input, $response),
                     F::PROXY_PAN => $this->proxyPan,
@@ -255,6 +272,66 @@ class Server extends Base\Mock\Server
                 ];
 
                 break;
+
+            // MasterCard SecureCode Card Enrolled: Unavailable Authentication
+            case 5200000000000064:
+                $this->enrolled = 'U';
+
+                $response[F::PA_ENROLL_REPLY] = [
+                    F::REASON_CODE               => 100,
+                    F::COMMERCE_INDICATOR        => 'spa',
+                    F::UCAF_COLLECTION_INDICATOR => '0',
+                    F::PROOF_XML                 => $this->getProofXml($input, $response),
+                    F::VERES_ENROLLED            => $this->enrolled,
+                    F::AUTHENTICATION_PATH       => 'NOREDIRECT'
+                ];
+
+                break;
+
+            // MasterCard SecureCode Enrollment Check Error: Error response
+            case 5200000000000080:
+                $this->enrolled = 'U';
+
+                $response[F::PA_ENROLL_REPLY] = [
+                    F::REASON_CODE               => 100,
+                    F::COMMERCE_INDICATOR        => 'spa',
+                    F::UCAF_COLLECTION_INDICATOR => '1',
+                    F::PROOF_XML                 => $this->getProofXml($input, $response),
+                    F::VERES_ENROLLED            => $this->enrolled
+                ];
+
+                break;
+
+            // Verified by Visa Enrollment Check Error: Error response
+            case 4000000000000085:
+
+            // Verified by Visa Enrollment Check Error:
+            // Incorrect Configuration: Unable to Authenticate
+            case 4000000000000077:
+
+            // Verified by Visa Card Enrolled: Unavailable Authentication
+            case 4000000000000000014:
+
+                $this->enrolled = 'U';
+
+                $response[F::PA_ENROLL_REPLY] = [
+                    F::REASON_CODE        => 100,
+                    F::COMMERCE_INDICATOR => 'internet',
+                    F::PROOF_XML          => $this->getProofXml($input, $response),
+                    F::VERES_ENROLLED     => $this->enrolled
+                ];
+
+                break;
+
+            // Verified by Visa Card Not Enrolled
+            case 4000000000000051:
+                $this->enrolled = 'N';
+
+                $response[F::PA_ENROLL_REPLY][F::AUTHENTICATION_PATH] = 'NOREDIRECT';
+                $response[F::PA_ENROLL_REPLY][F::PROOF_XML] = $this->getProofXml($input, $response);
+
+                break;
+
         }
     }
 
@@ -269,9 +346,6 @@ class Server extends Base\Mock\Server
             // Verified by Visa Card Enrolled: Successful Authentication
             // With authentication window
             case 4000000000000002:
-
-                $response[F::DECISION] = 'ACCEPT';
-                $response[F::REASON_CODE] = 100;
 
                 $response[F::CC_AUTH_REPLY] = array_merge($originalCcAuthReply, [
                     F::AVS_CODE                      => 'Y',
@@ -299,26 +373,263 @@ class Server extends Base\Mock\Server
 
                 $response[F::PURCHASE_TOTALS][F::CURRENCY] = 'INR';
 
+                unset($response[F::CC_AUTH_REPLY][F::CARD_CATEGORY]);
+                unset($response[F::CC_AUTH_REPLY][F::CARD_GROUP]);
+                break;
+
+            // Verified by Visa Card Enrolled: Successful Authentication
+            // With authentication window
+            case 5200000000000007:
+
+                $response[F::CC_AUTH_REPLY] = array_merge($originalCcAuthReply, [
+                    F::AVS_CODE                      => 'Y',
+                    F::AVS_CODE_RAW                  => 'Y',
+                    F::CV_CODE                       => 'M',
+                    F::CV_CODE_RAW                   => 'M',
+                    F::MERCHANT_ADVICE_CODE          => '01',
+                    F::MERCHANT_ADVICE_CODE_RAW      => 'M001',
+                    F::CAVV_RESPONSE_CODE            => '2',
+                    F::CAVV_RESPONSE_CODE_RAW        => '2',
+                ]);
+
+                $response[F::PA_VALIDATE_REPLY] = [
+                    F::REASON_CODE                   => 100,
+                    F::AUTHENTICATION_RESULT         => '0',
+                    F::AUTHENTICATION_STATUS_MESSAGE => 'Success',
+                    F::UCAF_AUTHENTICATION_DATA      => 'jELUbgG+Tfj0AREACMLdCae+oIs=',
+                    F::CAVV_ALGORITHM                => '3',
+                    F::COMMERCE_INDICATOR            => 'spa',
+                    F::UCAF_COLLECTION_INDICATOR     => '02',
+                    F::ECI_RAW                       => '02',
+                    F::XID                           => base64_encode($this->messageId),
+                    F::PARES_STATUS                  => 'Y',
+                ];
+
+                $response[F::PURCHASE_TOTALS][F::CURRENCY] = 'INR';
+
+                unset($response[F::CC_AUTH_REPLY][F::CARD_CATEGORY]);
+                unset($response[F::CC_AUTH_REPLY][F::CARD_GROUP]);
+
+                break;
+
+            // MasterCard SecureCode Card Enrolled: Successful Authentication
+            // But Invalid PARes
+            case 5200000000000015:
+
+            // Verified by Visa Card Enrolled: Successful Authentication
+            // But Invalid PARes
+            case 4000000000000000071:
+
+                $response[F::DECISION] = 'REJECT';
+                $response[F::REASON_CODE] = 476;
+
+                $response[F::PA_VALIDATE_REPLY] = [
+                    F::REASON_CODE                   => 476,
+                    F::AUTHENTICATION_RESULT         => '-1',
+                    F::AUTHENTICATION_STATUS_MESSAGE => 'PARes signature digest value mismatch. PARes message has been modified',
+                    F::XID                           => base64_encode($this->messageId)
+                ];
+
+                unset($response[F::CC_AUTH_REPLY]);
+                unset($response[F::RECEIPT_NUMBER]);
+
+                break;
+
+            // MasterCard SecureCode Card Enrolled: Authentication Error
+            case 5200000000000098:
+
+                $response[F::DECISION] = 'REJECT';
+                $response[F::REASON_CODE] = 476;
+
+                $response[F::PA_VALIDATE_REPLY] = [
+                    F::REASON_CODE               => 476,
+                    F::COMMERCE_INDICATOR        => 'internet',
+                    F::UCAF_COLLECTION_INDICATOR => '1'
+                ];
+
+                unset($response[F::CC_AUTH_REPLY]);
+
+                break;
+
+            // Verified by Visa Card Enrolled: Authentication Error
+            case 4000000000000093:
+
+                $response[F::DECISION] = 'REJECT';
+                $response[F::REASON_CODE] = 476;
+
+                $response[F::PA_VALIDATE_REPLY] = [
+                    F::REASON_CODE         => 476,
+                    F::COMMERCE_INDICATOR  => 'internet',
+                    F::ECI                 => '07'
+                ];
+
+                unset($response[F::CC_AUTH_REPLY]);
+
+                break;
+
+            // MasterCard SecureCode Card Enrolled: Unsuccessful Authentication
+            case 5200000000000023:
+
+            // Verified by Visa Card Enrolled: Unsuccessful Authentication
+            case 4000000000000028:
+
+                $response[F::DECISION] = 'REJECT';
+                $response[F::REASON_CODE] = 476;
+
+                $response[F::PA_VALIDATE_REPLY] = [
+                    F::REASON_CODE                   => 476,
+                    F::AUTHENTICATION_RESULT         => '9',
+                    F::AUTHENTICATION_STATUS_MESSAGE => 'User failed authentication',
+                    F::XID                           => base64_encode($this->messageId),
+                    F::PARES_STATUS                  => 'N'
+                ];
+
+                unset($response[F::CC_AUTH_REPLY]);
+                unset($response[F::RECEIPT_NUMBER]);
+
+                break;
+
+            // MasterCard SecureCode Card Enrolled: Incomplete Authentication
+            case 5200000000000031:
+
+                $response[F::CC_AUTH_REPLY] = array_merge($originalCcAuthReply, [
+                    F::AVS_CODE                      => 'Y',
+                    F::AVS_CODE_RAW                  => 'Y',
+                    F::CV_CODE                       => 'M',
+                    F::CV_CODE_RAW                   => 'M',
+                    F::MERCHANT_ADVICE_CODE          => '01',
+                    F::MERCHANT_ADVICE_CODE_RAW      => 'M001',
+                    F::CAVV_RESPONSE_CODE            => '2',
+                    F::CAVV_RESPONSE_CODE_RAW        => '2',
+                ]);
+
+                $response[F::PA_VALIDATE_REPLY] = [
+                    F::REASON_CODE                   => 100,
+                    F::AUTHENTICATION_RESULT         => '6',
+                    F::AUTHENTICATION_STATUS_MESSAGE => 'Issuer unable to perform authentication',
+                    F::COMMERCE_INDICATOR            => 'spa',
+                    F::UCAF_COLLECTION_INDICATOR     => '0',
+                    F::XID                           => base64_encode($this->messageId),
+                    F::PARES_STATUS                  => 'U'
+                ];
+
                 break;
 
             // Verified by Visa Card Enrolled: Incomplete Authentication
             case 4000000000000036:
 
-                $response[F::DECISION] = 'REJECT';
-                $response[F::REASON_CODE] = 475;
+                $response[F::CC_AUTH_REPLY] = array_merge($originalCcAuthReply, [
+                    F::AVS_CODE                      => 'Y',
+                    F::AVS_CODE_RAW                  => 'Y',
+                    F::CV_CODE                       => 'M',
+                    F::CV_CODE_RAW                   => 'M',
+                    F::MERCHANT_ADVICE_CODE          => '01',
+                    F::MERCHANT_ADVICE_CODE_RAW      => 'M001',
+                    F::CAVV_RESPONSE_CODE            => '2',
+                    F::CAVV_RESPONSE_CODE_RAW        => '2',
+                ]);
 
-                $this->enrolled = 'Y';
-
-                $response[F::PA_ENROLL_REPLY] = [
-                    F::ACS_URL => $this->acsUrl,
-                    F::AUTHENTICATION_PATH => 'ENROLLED',
-                    F::PA_REQ => $this->getPaReq($input),
-                    F::PROOF_XML => $this->getProofXml($input, $response),
-                    F::PROXY_PAN => $this->proxyPan,
-                    F::REASON_CODE => 475,
-                    F::VERES_ENROLLED => $this->enrolled,
-                    F::XID => base64_encode($this->messageId)
+                $response[F::PA_VALIDATE_REPLY] = [
+                    F::REASON_CODE                   => 100,
+                    F::AUTHENTICATION_RESULT         => '6',
+                    F::AUTHENTICATION_STATUS_MESSAGE => 'Issuer unable to perform authentication',
+                    F::COMMERCE_INDICATOR            => 'internet',
+                    F::ECI                           => '07',
+                    F::XID                           => base64_encode($this->messageId),
+                    F::PARES_STATUS                  => 'U'
                 ];
+
+                break;
+
+            // MasterCard SecureCode Card Enrolled: Attempts Processing
+            case 5200000000000106:
+
+                $response[F::CC_AUTH_REPLY] = array_merge($originalCcAuthReply, [
+                    F::AVS_CODE                      => 'Y',
+                    F::AVS_CODE_RAW                  => 'Y',
+                    F::CV_CODE                       => 'M',
+                    F::CV_CODE_RAW                   => 'M',
+                    F::MERCHANT_ADVICE_CODE          => '01',
+                    F::MERCHANT_ADVICE_CODE_RAW      => 'M001',
+                    F::CAVV_RESPONSE_CODE            => '2',
+                    F::CAVV_RESPONSE_CODE_RAW        => '2',
+                ]);
+
+                $response[F::PA_VALIDATE_REPLY] = [
+                    F::REASON_CODE                   => 100,
+                    F::AUTHENTICATION_RESULT         => '1',
+                    F::AUTHENTICATION_STATUS_MESSAGE => 'Success',
+                    F::CAVV_ALGORITHM                => '3',
+                    F::COMMERCE_INDICATOR            => 'spa',
+                    F::UCAF_AUTHENTICATION_DATA      => 'hsjuQljfI86bAQAFvVQGaWsBPwI=',
+                    F::UCAF_COLLECTION_INDICATOR     => '1',
+                    F::ECI_RAW                       => '01',
+                    F::XID                           => base64_encode($this->messageId),
+                    F::PARES_STATUS                  => 'A'
+                ];
+
+                break;
+
+            // Verified by Visa Card Enrolled: Attempts Processing
+            case 4000000000000000063:
+
+                $response[F::CC_AUTH_REPLY] = array_merge($originalCcAuthReply, [
+                    F::AVS_CODE                      => 'Y',
+                    F::AVS_CODE_RAW                  => 'Y',
+                    F::CV_CODE                       => 'M',
+                    F::CV_CODE_RAW                   => 'M',
+                    F::MERCHANT_ADVICE_CODE          => '01',
+                    F::MERCHANT_ADVICE_CODE_RAW      => 'M001',
+                    F::CAVV_RESPONSE_CODE            => '2',
+                    F::CAVV_RESPONSE_CODE_RAW        => '2',
+                ]);
+
+                $response[F::PA_VALIDATE_REPLY] = [
+                    F::REASON_CODE                   => 100,
+                    F::AUTHENTICATION_RESULT         => '1',
+                    F::AUTHENTICATION_STATUS_MESSAGE => 'Success',
+                    F::CAVV                          => 'BwAQAgJ4IAUFBwdik3ggEETHTsU=',
+                    F::CAVV_ALGORITHM                => '2',
+                    F::COMMERCE_INDICATOR            => 'vbv_attempted',
+                    F::ECI                           => '06',
+                    F::ECI_RAW                       => '06',
+                    F::XID                           => base64_encode($this->messageId),
+                    F::PARES_STATUS                  => 'A'
+                ];
+
+                break;
+
+            // MasterCard SecureCode Enrollment Check Error: Error response
+            case 5200000000000080:
+
+            // Verified by Visa Enrollment Check Error: Error response
+            case 4000000000000085:
+
+            // Verified by Visa Enrollment Check Error:
+            // Incorrect Configuration: Unable to Authenticate
+            case 4000000000000077:
+
+            // MasterCard SecureCode Card Enrolled: Unavailable Authentication
+            case 5200000000000064:
+
+            // Verified by Visa Card Enrolled: Unavailable Authentication
+            case 4000000000000000014:
+
+            // Verified by Visa Card Not Enrolled
+            case 4000000000000051:
+
+                $response[F::CC_AUTH_REPLY] = array_merge($originalCcAuthReply, [
+                    F::AVS_CODE                 => 'Y',
+                    F::AVS_CODE_RAW             => 'Y',
+                    F::MERCHANT_ADVICE_CODE     => '01',
+                    F::MERCHANT_ADVICE_CODE_RAW => 'M001',
+                    F::CAVV_RESPONSE_CODE       => '2',
+                    F::CAVV_RESPONSE_CODE_RAW   => '2',
+                ]);
+
+                unset($response[F::PA_VALIDATE_REPLY]);
+                unset($response[F::CC_AUTH_REPLY][F::CARD_CATEGORY]);
+                unset($response[F::CC_AUTH_REPLY][F::CARD_GROUP]);
 
                 break;
         }
@@ -437,13 +748,6 @@ class Server extends Base\Mock\Server
         $xml = base64_encode($xml);
 
         return $xml;
-    }
-
-    protected function getCardNumberFromProxyPan($paReq)
-    {
-        $acctID = getTextBetweenStrings($paReq, '<acctID>', '</acctID>');
-
-        return $this->proxyPanMap[$acctID];
     }
 
     protected function makeResponse($body)

@@ -70,28 +70,4 @@ class CybersourceGatewayTest extends TestCase
             $this->doAuthPayment($payment);
         });
     }
-
-    public function testEnrolledVisaSuccessfulTxn()
-    {
-        $payment = $this->getDefaultPaymentArray();
-        $payment['card']['number'] = '4000000000000002';
-
-        $response = $this->doAuthPayment($payment);
-        $paymentId = Payment::verifyIdAndSilentlyStripSign(
-                                    $response['razorpay_payment_id']);
-
-        $cybersource = $this->getLastEntity('cybersource', true);
-
-        $this->assertEquals($paymentId, $cybersource['payment_id']);
-        $this->assertTestResponse($cybersource);
-    }
-
-    public function testFetchCybersourceEntityById()
-    {
-        $payment = $this->doAuthPayment();
-
-        $cybersource = $this->getLastEntity('cybersource', true);
-
-        $this->getEntityById('cybersource', $cybersource['id'], true);
-    }
 }

@@ -46,7 +46,13 @@ class Fields
 
     const CAVV_ALGORITHM                = 'cavvAlgorithm';
 
+    const UCAF                          = 'ucaf';
+
+    const COLLECTION_INDICATOR          = 'collectionIndicator';
+
     const UCAF_COLLECTION_INDICATOR     = 'ucafCollectionIndicator';
+
+    const UCAF_AUTHENTICATION_DATA      = 'ucafAuthenticationData';
 
     const RECEIPT_NUMBER                = 'receiptNumber';
 

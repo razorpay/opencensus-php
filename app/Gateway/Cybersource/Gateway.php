@@ -389,6 +389,8 @@ class Gateway extends Base\Gateway
 
             $gatewayPayment = $this->createGatewayPaymentEntity($gatewayAttributes, $input);
 
+            $this->gatewayPayment = $gatewayPayment;
+
             return $response;
         }
         catch (SoapFault $exception)
@@ -397,21 +399,21 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function checkErrorsAndThrowException(array $response)
+    protected function checkErrorsAndThrowException(array $response, $code = null, $desc = null)
     {
         $reasonCode = $response[F::REASON_CODE];
 
-        $errorCode = ResponseCode::getMappedCode($reasonCode);
-        $description = ResponseCode::getDescription($reasonCode);
+        $code = $code ?: ResponseCode::getMappedCode($reasonCode);
+        $desc = $desc ?: ResponseCode::getDescription($reasonCode);
 
         if (ResponseCode::isFatalError($reasonCode) === true)
         {
             throw new Exception\ServerErrorException(
-                'Server error occured. Please contact admin.', $errorCode);
+                'Server error occured. Please contact admin.', $code);
         }
 
         throw new Exception\GatewayErrorException(
-                $errorCode, $reasonCode, $description);
+                $code, $reasonCode, $desc);
     }
 
     protected function authorizeNotEnrolled(array $input, array $response)
@@ -430,7 +432,10 @@ class Gateway extends Base\Gateway
 
             $gatewayAttributes = $this->getAttributeFromAuthorizeResponse($input, $response);
 
-            $gatewayPayment = $this->createGatewayPaymentEntity($gatewayAttributes, $input);
+            $gatewayPayment = $this->gatewayPayment;
+
+            $gatewayPayment->fill($gatewayAttributes);
+            $gatewayPayment->save();
 
             if ($response[F::REASON_CODE] !== Result::SUCCESS)
             {
@@ -457,33 +462,40 @@ class Gateway extends Base\Gateway
             $this->traceGatewayResponse(
                 TraceCode::GATEWAY_ENROLLED_AUTH_RESPONSE,$response, $input);
 
+            $payerAuthValidateReply = $response[F::PA_VALIDATE_REPLY];
+
+            $this->validateXidIfApplicable($gatewayPayment, $payerAuthValidateReply);
+
             if (($response[F::DECISION] === Decision::REJECT) or
                 ($response[F::DECISION] === Decision::ERROR))
             {
                 $gatewayAttributes = [
-                    E::REF           => $response[F::REQUEST_ID],
-                    E::STATUS        => Status::AUTHORIZE_FAILED,
-                    E::REASON_CODE   => $response[F::REASON_CODE],
-                    E::RECEIVED      => '1'
+                    E::REF                => $response[F::REQUEST_ID],
+                    E::STATUS             => Status::AUTHORIZE_FAILED,
+                    E::REASON_CODE        => $response[F::REASON_CODE],
+                    E::ECI                => $payerAuthValidateReply[F::ECI] ?? null,
+                    E::COMMERCE_INDICATOR => $payerAuthValidateReply[F::COMMERCE_INDICATOR] ?? null,
+                    E::PARES_STATUS       => $payerAuthValidateReply[F::PARES_STATUS] ?? null,
+                    E::RECEIVED           => '1'
                 ];
+
+                if (isset($payerAuthValidateReply[F::UCAF_COLLECTION_INDICATOR]) === true)
+                {
+                    $gatewayAttributes[E::ECI] = $payerAuthValidateReply[F::UCAF_COLLECTION_INDICATOR];
+                }
 
                 $gatewayPayment->fill($gatewayAttributes);
                 $gatewayPayment->save();
 
-                $this->checkErrorsAndThrowException($response);
+                $desc = $payerAuthValidateReply[F::AUTHENTICATION_STATUS_MESSAGE] ?? null;
+
+                $this->checkErrorsAndThrowException($response, null, $desc);
             }
 
             $gatewayAttributes = $this->getAttributeFromAuthorizeEnrolledResponse($input, $response);
 
-            $this->validateXid($gatewayPayment, $gatewayAttributes);
-
             $gatewayPayment->fill($gatewayAttributes);
             $gatewayPayment->save();
-
-            if ($response[F::REASON_CODE] !== Result::SUCCESS)
-            {
-                $this->checkErrorsAndThrowException($response);
-            }
         }
         catch (SoapFault $exception)
         {
@@ -507,7 +519,7 @@ class Gateway extends Base\Gateway
 
             $gatewayAttributes = $this->getAttributeFromAuthorizeResponse($input, $response);
 
-            $gatewayAttributes[E::COMMERCE_INDICATOR] = 'recurring';
+            $gatewayAttributes[E::COMMERCE_INDICATOR] = CommerceIndicator::RECURRING;
 
             $gatewayPayment->fill($gatewayAttributes);
             $gatewayPayment->save();
@@ -529,40 +541,42 @@ class Gateway extends Base\Gateway
 
         $networkCode = $input['card']['network_code'];
 
-        switch ($networkCode)
+        if ((isset($payerAuthEnrollReply[F::ECI]) === true) or
+            (isset($payerAuthEnrollReply[F::UCAF_COLLECTION_INDICATOR]) === true))
         {
-            case Card\Network::VISA:
+            switch ($networkCode)
+            {
+                case Card\Network::VISA:
 
-                $eciRaw = $payerAuthEnrollReply[E::ECI] ?? '07';
+                    $eciRaw = $payerAuthEnrollReply[F::ECI];
 
-                // NOTE: Make sure PHP return correct int on conversion
-                // Example: '012' should be converted to decimal 12 not octal 12
-                $eci = (int) $eciRaw;
+                    // NOTE: Make sure PHP return correct int on conversion
+                    // Example: '012' should be converted to decimal 12 not octal 12
+                    $eci = (int) $eciRaw;
 
-                if ($eci !== 6)
-                {
-                    throw new Exception\LogicException(
-                        'ECI value should be 6. ECI: ' . $eci);
-                }
+                    if ($eci !== 6)
+                    {
+                        throw new Exception\LogicException(
+                            'ECI value should be 6. ECI: ' . $eci);
+                    }
 
-                $this->eci = $eciRaw;
+                    break;
 
-                return;
+                case Card\Network::MC:
+                    $eciRaw = $payerAuthEnrollReply[F::UCAF_COLLECTION_INDICATOR];
 
-            case Card\Network::MC:
-                $ucafRaw = $payerAuthEnrollReply[F::UCAF_COLLECTION_INDICATOR] ?? '01';
+                    $eci = (int) $eciRaw;
 
-                $ucaf = (int) $ucafRaw;
+                    if ($eci !== 1)
+                    {
+                        throw new Exception\LogicException(
+                            'ECI value should be 1. ECI: ' . $eci);
+                    }
 
-                if ($ucaf !== 1)
-                {
-                    throw new Exception\LogicException(
-                        'ECI value should be 1. ECI: ' . $eci);
-                }
+                    break;
+            }
 
-                $this->eci = $ucafRaw;
-
-                return;
+            $this->eci = $eciRaw;
         }
     }
 
@@ -579,11 +593,6 @@ class Gateway extends Base\Gateway
             'method'  => 'post',
             'content' => $content
         ];
-
-        $this->traceGatewayRequest(
-            TraceCode::GATEWAY_NOT_ENROLLED_REQUEST,
-            $request,
-            $input);
 
         return $request;
     }
@@ -693,10 +702,27 @@ class Gateway extends Base\Gateway
             E::CAVV                     => $payerAuthValidateReply[F::CAVV] ?? null,
             E::XID                      => $payerAuthValidateReply[F::XID],
             E::PARES_STATUS             => $payerAuthValidateReply[F::PARES_STATUS],
-            E::VERES_ENROLLED           => $payerAuthValidateReply[F::VERES_ENROLLED] ?? null,
             E::COMMERCE_INDICATOR       => $payerAuthValidateReply[F::COMMERCE_INDICATOR] ?? null,
-            E::ECI                      => $payerAuthValidateReply[F::ECI_RAW],
+            E::ECI                      => $payerAuthValidateReply[F::ECI_RAW] ?? null,
         ];
+
+        if ($attributes[E::ECI] === null)
+        {
+            if (isset($payerAuthValidateReply[F::ECI]) === true)
+            {
+                $attributes[E::ECI] = $payerAuthValidateReply[F::ECI];
+            }
+
+            if (isset($payerAuthValidateReply[F::UCAF_COLLECTION_INDICATOR]) === true)
+            {
+                $attributes[E::ECI] = $payerAuthValidateReply[F::UCAF_COLLECTION_INDICATOR];
+            }
+        }
+
+        if (isset($payerAuthValidateReply[F::UCAF_AUTHENTICATION_DATA]) === true)
+        {
+            $attributes[E::CAVV] = $payerAuthValidateReply[F::UCAF_AUTHENTICATION_DATA];
+        }
 
         if ($response[F::REASON_CODE] !== Result::SUCCESS)
         {
@@ -785,13 +811,27 @@ class Gateway extends Base\Gateway
 
         if (isset($this->eci) === true)
         {
-            $content[F::CC_AUTH_SERVICE][F::ECI] = $this->eci;
+            $cardNetwork = $input['card']['network_code'];
+
+            if ($cardNetwork === Card\Network::VISA)
+            {
+                $content[F::CC_AUTH_SERVICE][F::ECI] = $this->eci;
+            }
+
+            if ($cardNetwork === Card\Network::MC)
+            {
+                $content[F::UCAF][F::COLLECTION_INDICATOR] = $this->eci;
+            }
         }
 
         if ($response !== null)
         {
+            if (isset($response[F::VERES_ENROLLED]) === true)
+            {
+                $content[F::CC_AUTH_SERVICE][F::VERES_ENROLLED] = $response[F::VERES_ENROLLED];
+            }
+
             $content[F::CC_AUTH_SERVICE][F::COMMERCE_INDICATOR] = $response[F::COMMERCE_INDICATOR];
-            $content[F::CC_AUTH_SERVICE][F::VERES_ENROLLED]     = $response[F::VERES_ENROLLED];
         }
 
         $content[F::CARD] = [
@@ -822,7 +862,7 @@ class Gateway extends Base\Gateway
         unset($authRequest['content'][F::CARD][F::CVN]);
 
         // Set commerceIndicator as recurring
-        $authRequest['content'][F::CC_AUTH_SERVICE][F::COMMERCE_INDICATOR] = 'recurring';
+        $authRequest['content'][F::CC_AUTH_SERVICE][F::COMMERCE_INDICATOR] = CommerceIndicator::RECURRING;
 
         return $authRequest;
     }
@@ -1210,16 +1250,17 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function validateXid($gatewayPayment, $attributes)
+    protected function validateXidIfApplicable($gatewayPayment, $payerAuthValidateReply)
     {
         $expectedXid = $gatewayPayment->getXid();
 
-        $actualXid = $attributes[F::XID];
+        $actualXid = $payerAuthValidateReply[F::XID] ?? null;
 
-        if ($actualXid !== $expectedXid)
+        if (($actualXid !== null) and
+            ($actualXid !== $expectedXid))
         {
             throw new Exception\LogicException(
-                'Invalid data');
+                'Invalid XID given');
         }
     }
 
