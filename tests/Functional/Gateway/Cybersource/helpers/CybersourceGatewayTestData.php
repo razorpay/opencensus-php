@@ -120,7 +120,7 @@ return [
         'terminal_id'         => '1000CybrsTrmnl',
         'recurring'           => false,
         'save'                => false,
-        'late_authorized'     => 0,
+        'late_authorized'     => false,
         'captured'            => false,
         'entity'              => 'payment',
         'admin'               => true
@@ -216,7 +216,7 @@ return [
         'auto_captured'       => false,
         'gateway'             => 'cybersource',
         'recurring'           => true,
-        'late_authorized'     => 0,
+        'late_authorized'     => false,
         'captured'            => false,
         'entity'              => 'payment',
         'admin'               => true
