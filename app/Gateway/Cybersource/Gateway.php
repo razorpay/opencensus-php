@@ -521,8 +521,7 @@ class Gateway extends Base\Gateway
 
             $gatewayAttributes[E::COMMERCE_INDICATOR] = CommerceIndicator::RECURRING;
 
-            $gatewayPayment->fill($gatewayAttributes);
-            $gatewayPayment->save();
+            $this->createGatewayPaymentEntity($gatewayAttributes, $input);
 
             if ($response[F::REASON_CODE] !== Result::SUCCESS)
             {
