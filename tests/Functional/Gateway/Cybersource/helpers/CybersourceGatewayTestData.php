@@ -5,77 +5,6 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
-    'testFailedAuthPayment' => [
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_MISSING_DATA,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_MISSING_DATA,
-        ],
-    ],
-
-    'testGatewayError' => [
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::GATEWAY_ERROR,
-                    'description' => 'There is a problem with the gateway causing the payment to fail',
-                ],
-            ],
-            'status_code' => 502,
-        ],
-        'exception' => [
-            'class' => 'RZP\Exception\GatewayErrorException',
-            'internal_error_code' => ErrorCode::GATEWAY_ERROR_TIMED_OUT,
-        ],
-    ],
-
-    'testGatewayTimeoutError' => [
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::GATEWAY_ERROR,
-                    'description' => PublicErrorDescription::GATEWAY_ERROR_REQUEST_TIMEOUT,
-                ],
-            ],
-            'status_code' => 504,
-        ],
-        'exception' => [
-            'class' => RZP\Exception\GatewayTimeoutException::class,
-            'internal_error_code' => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
-        ],
-    ],
-
-    'testGatewayWithSavedCard' => [
-        'response' => [
-            'content' => [
-                'razorpay_payment_id'
-            ],
-        ]
-    ],
-
-    'testAuthenticationFailurePayment' => [
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::GATEWAY_ERROR,
-                    'description' => 'Payment failed due to processing error on gateway',
-                ],
-            ],
-            'status_code' => 502,
-        ],
-        'exception' => [
-            'class' => 'RZP\Exception\GatewayErrorException',
-            'internal_error_code' => ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED,
-        ],
-    ],
 
     'testPayment' => [
         'merchant_id'       => '10000000000000',
@@ -103,6 +32,21 @@ return [
         'entity'            => 'payment',
     ],
 
+    'testCybersourceCaptureEntity' => [
+        'amount'             => 50000,
+        'pares_status'       => null,
+        'reason_code'        => 100,
+        'action'             => 'capture',
+        'received'           => true,
+        'refund_id'          => null,
+        'auth_data'          => null,
+        'commerce_indicator' => null,
+        'eci'                => null,
+        'cavv'               => null,
+        'status'             => 'captured',
+        'entity'             => 'cybersource',
+    ],
+
     'testTransactionAfterCapture' => [
         'type'              => 'payment',
         'merchant_id'       => '10000000000000',
@@ -123,72 +67,114 @@ return [
         'admin'             => true,
     ],
 
-    'testCybersourceAuthEntity' => [
-        'amount'             => 50000,
-        'pares_status'       => 'Y',
-        'reason_code'        => 475,
-        'action'             => 'authorize',
-        'received'           => true,
-        'refund_id'          => null,
-        'auth_data'          => null,
-        'commerce_indicator' => 'Internet',
-        'eci'                => '05',
-        'cavv'               => '1',
-        'status'             => 'authorized',
-        'entity'             => 'cybersource',
+    'testGatewayTimeoutError' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => PublicErrorDescription::GATEWAY_ERROR_REQUEST_TIMEOUT,
+                ],
+            ],
+            'status_code' => 504,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\GatewayTimeoutException::class,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
+        ],
     ],
 
-     'testCybersourceCaptureEntity' => [
-        'amount'             => 50000,
-        'pares_status'       => null,
-        'reason_code'        => 100,
-        'action'             => 'capture',
-        'received'           => true,
-        'refund_id'          => null,
-        'auth_data'          => null,
-        'commerce_indicator' => null,
-        'eci'                => null,
-        'cavv'               => null,
-        'status'             => 'captured',
-        'entity'             => 'cybersource',
+    'testGatewayProcessorTimeout' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => 'There is a problem with the gateway causing the payment to fail',
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_TIMED_OUT,
+        ],
     ],
 
-    'testNotEnrolledCSEntity' => [
-        'amount'       => 50000,
-        'pares_status' => null,
-        'status'       => 'captured',
-        'entity'       => 'cybersource',
+    'testPaymentWithSavedCard' => [
+        'amount'              => 50000,
+        'method'              => 'card',
+        'status'              => 'authorized',
+        'amount_authorized'   => 50000,
+        'amount_refunded'     => 0,
+        'refund_status'       => null,
+        'currency'            => 'INR',
+        'internal_error_code' => null,
+        'global_customer_id'  => '10000gcustomer',
+        'app_token'           => '1000000custapp',
+        'global_token_id'     => '10000custgcard',
+        'email'               => 'a@b.com',
+        'contact'             => '+919918899029',
+        'transaction_id'      => null,
+        'auto_captured'       => false,
+        'captured_at'         => null,
+        'gateway'             => 'cybersource',
+        'terminal_id'         => '1000CybrsTrmnl',
+        'recurring'           => false,
+        'save'                => false,
+        'late_authorized'     => 0,
+        'captured'            => false,
+        'entity'              => 'payment',
+        'admin'               => true
     ],
 
-    'testPaymentRefund' => [
-        'reason_code'        => 100,
-        'received'           => true,
-        'amount'             => 50000,
-        'commerce_indicator' => null,
-        'pares_status'       => null,
+    'testGatewayFullRefund' => [
         'action'             => 'refund',
+        'received'           => true,
+        'auth_data'          => null,
+        'commerce_indicator' => null,
+        'amount'             => 50000,
+        'pares_status'       => null,
         'status'             => 'refunded',
+        'merchantAdviceCode' => null,
+        'reason_code'        => 100,
         'entity'             => 'cybersource',
-        'admin'              => true,
+        'admin'              => true
     ],
 
-    'testPaymentPartialRefund' => [
-        'reason_code'        => 100,
+    'testGatewayPartialRefund' => [
+        'action'             => 'refund',
         'received'           => true,
+        'auth_data'          => null,
+        'commerce_indicator' => null,
         'amount'             => 10000,
-        'commerce_indicator' => null,
         'pares_status'       => null,
-        'action'             => 'refund',
         'status'             => 'refunded',
+        'merchantAdviceCode' => null,
+        'reason_code'        => 100,
         'entity'             => 'cybersource',
-        'admin'              => true,
+        'admin'              => true
     ],
 
-    'testAuthPaymentRefund' => [
+    'testAuthorizedPaymentRefund' => [
         'amount'    => 50000,
         'currency'  => 'INR',
         'entity'    => 'refund',
         'admin'     => true,
+    ],
+
+    'testGatewayPaymentMismatchVerify' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\PaymentVerificationException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+        ],
     ],
 
     'testAuthorizeFailedPayment' => [
@@ -199,10 +185,12 @@ return [
         'amount'        => 50000,
         'pares_status'  => null,
         'status'        => 'authorized',
-        'xid'           => 'eW5DZTVGTkVaRWF3VnowSXYzNzA=',
-        'eci'           => '05',
-        'cavv'          => 'AAABAWFlmQAAAABjRWWZEEFgFz+=',
+        'xid'           => 'bWJWb1RsYzN1dEpTVUVvQ1NBMDA=',
+        'eci'           => '2',
+        'cavv'          => 'jAt2OkgfBuDnCBAAAJDIBBkAAAA=',
         'capture_ref'   => null,
-        'reason_code'   => 100
+        'reason_code'   => 100,
+        'entity'        => 'cybersource',
+        'admin'         => true
     ]
 ];

@@ -4,9 +4,9 @@ $xml = <<<VERIFYXML
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Report SYSTEM "https://ebc.cybersource.com/ebc/reports/dtd/tdr_1_1.dtd">
 
-<Report xmlns="https://ebc.cybersource.com/ebc/reports/dtd/tdr_1_1.dtd" Name="Transaction Detail" Version="1.1" MerchantID="{{$input['merchantID']}}" ReportStartDate="2016-10-21 23:53:27.977+05:30" ReportEndDate="2016-10-21 23:53:27.977+05:30">
+<Report xmlns="https://ebc.cybersource.com/ebc/reports/dtd/tdr_1_1.dtd" Name="Transaction Detail" Version="1.1" MerchantID="{$input['merchantID']}" ReportStartDate="2016-10-21 23:53:27.977+05:30" ReportEndDate="2016-10-21 23:53:27.977+05:30">
   <Requests>
-    <Request MerchantReferenceNumber="{{$input['merchantReferenceNumber']}}" RequestDate="2016-08-05T18:48:27+05:30" RequestID="{{$content['ccCaptureService']['requestId']}}" SubscriptionID="" Source="SOAP Toolkit API">
+    <Request MerchantReferenceNumber="{$input['merchantReferenceNumber']}" RequestDate="2016-08-05T18:48:27+05:30" RequestID="{$content['ccCaptureService']['requestId']}" SubscriptionID="" Source="SOAP Toolkit API">
       <BillTo>
         <FirstName />
         <LastName />
@@ -27,7 +27,7 @@ $xml = <<<VERIFYXML
         <LineItem Number="0">
           <FulfillmentType />
           <Quantity>1</Quantity>
-          <UnitPrice>{{$content['ccCaptureService']['amount']}}</UnitPrice>
+          <UnitPrice>{$content['ccCaptureService']['amount']}</UnitPrice>
           <TaxAmount>0.00</TaxAmount>
           <ProductCode>default</ProductCode>
         </LineItem>
@@ -45,18 +45,18 @@ $xml = <<<VERIFYXML
         </ApplicationReply>
       </ApplicationReplies>
       <PaymentData>
-        <PaymentRequestID>{{$content['ccCaptureService']['requestId']}}</PaymentRequestID>
+        <PaymentRequestID>{$content['ccCaptureService']['requestId']}</PaymentRequestID>
         <PaymentProcessor>vdchdfc</PaymentProcessor>
-        <Amount>{{$content['ccCaptureService']['amount']}}</Amount>
+        <Amount>{$content['ccCaptureService']['amount']}</Amount>
         <CurrencyCode>INR</CurrencyCode>
         <TotalTaxAmount>0.00</TotalTaxAmount>
-        <AuthorizationCode>{{$content['ccAuthService']['authCode']}}</AuthorizationCode>
+        <AuthorizationCode>{$content['ccAuthService']['authCode']}</AuthorizationCode>
         <AVSResult>G</AVSResult>
         <AVSResultMapped>G</AVSResultMapped>
         <CVResult>M</CVResult>
       </PaymentData>
     </Request>
-    <Request MerchantReferenceNumber="{{$input['merchantReferenceNumber']}}" RequestDate="2016-08-05T18:48:23+05:30" RequestID="{{$content['ccAuthService']['requestId']}}" SubscriptionID="" Source="SOAP Toolkit API">
+    <Request MerchantReferenceNumber="{$input['merchantReferenceNumber']}" RequestDate="2016-08-05T18:48:23+05:30" RequestID="{$content['ccAuthService']['requestId']}" SubscriptionID="" Source="SOAP Toolkit API">
       <BillTo>
         <FirstName>NOREAL</FirstName>
         <LastName>NAME</LastName>
@@ -98,9 +98,9 @@ $xml = <<<VERIFYXML
         </ApplicationReply>
       </ApplicationReplies>
       <PaymentData>
-        <PaymentRequestID>{{$content['ccAuthService']['requestId']}}</PaymentRequestID>
+        <PaymentRequestID>{$content['ccAuthService']['requestId']}</PaymentRequestID>
         <PaymentProcessor>vdchdfc</PaymentProcessor>
-        <Amount>{{$content['ccAuthService']['amount']}}</Amount>
+        <Amount>{$content['ccAuthService']['amount']}</Amount>
         <CurrencyCode>INR</CurrencyCode>
         <TotalTaxAmount>0.00</TotalTaxAmount>
         <AuthorizationCode>146572</AuthorizationCode>
@@ -108,13 +108,13 @@ $xml = <<<VERIFYXML
         <AVSResultMapped>G</AVSResultMapped>
         <CVResult>M</CVResult>
         <PayerAuthenticationInfo>
-          <ECI>2</ECI>
+          <ECI>{$content['ccAuthService']['eci']}</ECI>
           <AAV_CAVV>jAt2OkgfBuDnCBAAAJDIBBkAAAA=</AAV_CAVV>
           <XID>bWJWb1RsYzN1dEpTVUVvQ1NBMDA=</XID>
         </PayerAuthenticationInfo>
       </PaymentData>
     </Request>
-    <Request MerchantReferenceNumber="{{$input['merchantReferenceNumber']}}" RequestDate="2016-08-05T18:48:22+05:30" RequestID="{{$content['ccAuthService']['requestId']}}" SubscriptionID="" Source="SOAP Toolkit API">
+    <Request MerchantReferenceNumber="{$input['merchantReferenceNumber']}" RequestDate="2016-08-05T18:48:22+05:30" RequestID="{$content['ccAuthService']['requestId']}" SubscriptionID="" Source="SOAP Toolkit API">
       <BillTo>
         <FirstName>NOREAL</FirstName>
         <LastName>NAME</LastName>
@@ -138,7 +138,7 @@ $xml = <<<VERIFYXML
         <LineItem Number="0">
           <FulfillmentType />
           <Quantity>1</Quantity>
-          <UnitPrice>{{$content['ccAuthService']['amount']}}</UnitPrice>
+          <UnitPrice>{$content['ccAuthService']['amount']}</UnitPrice>
           <TaxAmount>0.00</TaxAmount>
           <ProductCode>default</ProductCode>
         </LineItem>
@@ -153,13 +153,13 @@ $xml = <<<VERIFYXML
       <PaymentData>
         <CurrencyCode>USD</CurrencyCode>
         <PayerAuthenticationInfo>
-          <ECI>{{$content['ccAuthService']['eci']}}</ECI>
+          <ECI>{$content['ccAuthService']['eci']}</ECI>
           <AAV_CAVV>jAt2OkgfBuDnCBAAAJDIBBkAAAA=</AAV_CAVV>
           <XID>bWJWb1RsYzN1dEpTVUVvQ1NBMDA=</XID>
         </PayerAuthenticationInfo>
       </PaymentData>
     </Request>
-    <Request MerchantReferenceNumber="{{$input['merchantReferenceNumber']}}" RequestDate="2016-08-05T18:48:00+05:30" RequestID="{{$content['payerAuthEnrollService']['requestId']}}" SubscriptionID="" Source="SOAP Toolkit API">
+    <Request MerchantReferenceNumber="{$input['merchantReferenceNumber']}" RequestDate="2016-08-05T18:48:00+05:30" RequestID="{$content['payerAuthEnrollService']['requestId']}" SubscriptionID="" Source="SOAP Toolkit API">
       <BillTo>
         <FirstName />
         <LastName />
@@ -180,7 +180,7 @@ $xml = <<<VERIFYXML
         <LineItem Number="0">
           <FulfillmentType />
           <Quantity>1</Quantity>
-          <UnitPrice>{{$content['payerAuthEnrollService']['amount']}}</UnitPrice>
+          <UnitPrice>{$content['payerAuthEnrollService']['amount']}</UnitPrice>
           <TaxAmount>0.00</TaxAmount>
           <ProductCode>default</ProductCode>
         </LineItem>

@@ -310,6 +310,13 @@ class Gateway extends Base\Gateway
         return [];
     }
 
+    /**
+     * Get array content from XML, don't use data from this to save
+     * in verify. Only use this for authorize failed
+     *
+     * @param array $content Parsed XML array
+     * @return array
+     */
     protected function getVerifyContentFromResponse(array $content)
     {
         if (empty($content[F::PAYMENT_DATA]) === false)
@@ -318,7 +325,9 @@ class Gateway extends Base\Gateway
                 E::REF                => $content[F::PAYMENT_DATA][F::PAYMENT_REQUEST_ID],
                 E::AUTHORIZATION_CODE => $content[F::PAYMENT_DATA]['AuthorizationCode'] ?? null,
                 E::AVS_CODE           => $content[F::PAYMENT_DATA][F::AVS_RESULT] ?? null,
-                E::CV_CODE            => $content[F::PAYMENT_DATA][F::CV_RESULT] ?? null
+                E::CV_CODE            => $content[F::PAYMENT_DATA][F::CV_RESULT] ?? null,
+                E::STATUS             => Status::AUTHORIZED,
+                E::REASON_CODE        => 100
             ];
 
             if (empty($content[F::PAYMENT_DATA][F::PAYER_AUTHENTICATION_INFO]) === false)
@@ -397,23 +406,6 @@ class Gateway extends Base\Gateway
         {
             $this->handleSoapFault($exception, 'Auth Enroll: Server Error occured', true);
         }
-    }
-
-    protected function checkErrorsAndThrowException(array $response, $code = null, $desc = null)
-    {
-        $reasonCode = $response[F::REASON_CODE];
-
-        $code = $code ?: ResponseCode::getMappedCode($reasonCode);
-        $desc = $desc ?: ResponseCode::getDescription($reasonCode);
-
-        if (ResponseCode::isFatalError($reasonCode) === true)
-        {
-            throw new Exception\ServerErrorException(
-                'Server error occured. Please contact admin.', $code);
-        }
-
-        throw new Exception\GatewayErrorException(
-                $code, $reasonCode, $desc);
     }
 
     protected function authorizeNotEnrolled(array $input, array $response)
@@ -894,8 +886,6 @@ class Gateway extends Base\Gateway
             F::GRAND_TOTAL_AMOUNT => ($input['refund']['amount'] / 100)
         ];
 
-        $content[F::BILL_TO] = $this->getBillingInfo($input);
-
         $request = $this->getStandardSoapRequest($content);
 
         return $request;
@@ -1198,34 +1188,21 @@ class Gateway extends Base\Gateway
             $errMsg, null, $sf);
     }
 
-    /**
-     * @param $response
-     * @throws Exception\BadRequestException
-     * @throws Exception\GatewayErrorException
-     */
-    protected function throwException($response)
+    protected function checkErrorsAndThrowException(array $response, $code = null, $desc = null)
     {
-        if (isset($response['reasonCode']) === false)
+        $reasonCode = $response[F::REASON_CODE];
+
+        $code = $code ?: ResponseCode::getMappedCode($reasonCode);
+        $desc = $desc ?: ResponseCode::getDescription($reasonCode);
+
+        if (ResponseCode::isFatalError($reasonCode) === true)
         {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
-        }
-
-        $reasonCode = $response['reasonCode'];
-
-        $desc = ResponseCode::getDescription($reasonCode);
-
-        if (ResponseCode::isValidationError($reasonCode))
-        {
-            throw new Exception\BadRequestException(
-                ResponseCode::getMappedCode($reasonCode),
-                $reasonCode);
+            throw new Exception\ServerErrorException(
+                'Server error occured. Please contact admin.', $code);
         }
 
         throw new Exception\GatewayErrorException(
-            ResponseCode::getMappedCode($reasonCode),
-            $reasonCode,
-            $desc);
+                $code, $reasonCode, $desc);
     }
 
     protected function validateCallbackGatewayFields(array $input)

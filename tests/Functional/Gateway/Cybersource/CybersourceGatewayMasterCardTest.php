@@ -4,7 +4,6 @@ namespace RZP\Tests\Functional\Gateway\Cybersource;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
-use RZP\Gateway\Cybersource;
 use RZP\Error\PublicErrorCode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment\Entity as Payment;

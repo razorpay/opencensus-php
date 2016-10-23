@@ -670,13 +670,13 @@ class Server extends Base\Mock\Server
 
         $xml = require __DIR__ . '/VerifyResponseXml.php';
 
-        return $xml;
+        return $this->makeResponse($xml);
     }
 
     protected function getVerifyContent(array $input)
     {
         $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
-                        $input[F::MERCHANT_REFERENCE_CODE], Action::AUTHORIZE);
+                        $input[F::MERCHANT_REFERENCE_NUMBER], Cybersource\Action::AUTHORIZE);
 
         $amount = ($payment->getAmount() / 100);
 

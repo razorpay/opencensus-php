@@ -14,6 +14,7 @@ class Status
 
     const AUTHORIZED                = 'authorized';
     const AUTHORIZE_FAILED          = 'authorize_failed';
+    const ENROLL_FAILED             = 'enroll_failed';
     const CAPTURED                  = 'captured';
     const CAPTURE_FAILED            = 'capture_failed';
     const CREATED                   = 'created';
