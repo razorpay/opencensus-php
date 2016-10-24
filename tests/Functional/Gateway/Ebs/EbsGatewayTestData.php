@@ -101,7 +101,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'                 => 'RZP\Exception\BadRequestException',
+            'class'                 => RZP\Exception\BadRequestException::class,
             'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_UNREFUNDED,
         ],
     ],
@@ -117,7 +117,7 @@ return [
             'status_code' => 504,
         ],
         'exception' => [
-            'class'                 => 'RZP\Exception\GatewayTimeoutException',
+            'class'                 => RZP\Exception\GatewayTimeoutException::class,
             'internal_error_code'   => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
         ],
     ],
@@ -133,7 +133,7 @@ return [
             'status_code' => 504,
         ],
         'exception' => [
-            'class'                 => 'RZP\Exception\GatewayTimeoutException',
+            'class'                 => RZP\Exception\GatewayTimeoutException::class,
             'internal_error_code'   => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
         ],
     ],
@@ -149,7 +149,7 @@ return [
             'status_code' => 504,
         ],
         'exception' => [
-            'class'                 => 'RZP\Exception\GatewayTimeoutException',
+            'class'                 => RZP\Exception\GatewayTimeoutException::class,
             'internal_error_code'   => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
         ],
     ],
@@ -165,7 +165,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'                 => 'RZP\Exception\BadRequestException',
+            'class'                 => RZP\Exception\BadRequestException::class,
             'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED,
         ],
     ],
@@ -181,7 +181,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'                 => 'RZP\Exception\GatewayErrorException',
+            'class'                 => RZP\Exception\GatewayErrorException::class,
             'internal_error_code'   => 'BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE',
         ],
     ],
@@ -197,7 +197,7 @@ return [
             'status_code' => 500,
         ],
         'exception' => [
-            'class'                 => 'RZP\Exception\RuntimeException',
+            'class'                 => RZP\Exception\RuntimeException::class,
             'internal_error_code'   => ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
         ],
     ],
@@ -213,7 +213,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'                 => 'RZP\Exception\PaymentVerificationException',
+            'class'                 => RZP\Exception\PaymentVerificationException::class,
             'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
         ],
     ],
@@ -229,7 +229,7 @@ return [
             'status_code' => 500,
         ],
         'exception' => [
-            'class'                 => 'RZP\Exception\RuntimeException',
+            'class'                 => RZP\Exception\RuntimeException::class,
             'internal_error_code'   => ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
         ],
     ],

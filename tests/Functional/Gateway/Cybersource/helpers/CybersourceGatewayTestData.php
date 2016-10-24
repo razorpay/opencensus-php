@@ -16,7 +16,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_MISSING_DATA,
         ],
     ],
@@ -32,7 +32,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\GatewayErrorException',
+            'class' => RZP\Exception\GatewayErrorException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
             'two_fa_error' => true,
         ],
@@ -49,7 +49,7 @@ return [
             'status_code' => 502,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\GatewayErrorException',
+            'class' => RZP\Exception\GatewayErrorException::class,
             'internal_error_code' => ErrorCode::GATEWAY_ERROR_TIMED_OUT,
         ],
     ],
@@ -65,7 +65,7 @@ return [
             'status_code' => 504,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\GatewayTimeoutException',
+            'class' => RZP\Exception\GatewayTimeoutException::class,
             'internal_error_code' => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
         ],
     ],
@@ -89,7 +89,7 @@ return [
             'status_code' => 502,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\GatewayErrorException',
+            'class' => RZP\Exception\GatewayErrorException::class,
             'internal_error_code' => ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED,
         ],
     ],
