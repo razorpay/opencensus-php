@@ -41,6 +41,23 @@ class UPIGatewayTest extends TestCase
         return $paymentId;
     }
 
+    public function testPaymentViaRedirection()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $response = $this->doAuthPayment($payment);
+
+        $paymentId = $response['payment_id'];
+
+        // Co Proto must be working
+        $this->assertEquals('async', $response['type']);
+
+        $this->checkPaymentStatus($paymentId, 'created');
+        $this->checkPaymentStatus($paymentId, 'created');
+
+        return $paymentId;
+    }
+
     public function testPaymentWithXmlResponse()
     {
         $this->mockServerContentFunction(function (& $content)
