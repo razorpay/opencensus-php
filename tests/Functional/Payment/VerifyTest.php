@@ -244,14 +244,14 @@ class VerifyTest extends TestCase
     protected function assertContent(array $content, array $param)
     {
         // We dont want to check time taken for payments
-        unset($content['totalTime']);
+        unset($content['total_time']);
 
-        unset($content['authorizedTime']);
+        unset($content['authorized_time']);
 
         $defaultParams = [
             'verified'          => 0,
             'authorized/failed' => 0,
-            'timed out'         => 0,
+            'timed_out'         => 0,
             'error'             => 0,
         ];
 
@@ -300,7 +300,7 @@ class VerifyTest extends TestCase
         $content = $this->makeRequestAndGetContent($request);
 
         $resultData = [
-            'timed out' => 1,
+            'timed_out' => 1,
             'filter'    => 'payments_failed',
         ];
 
@@ -324,7 +324,7 @@ class VerifyTest extends TestCase
         $content = $this->makeRequestAndGetContent($request);
 
         $resultData = [
-            'timed out' => 1,
+            'timed_out' => 1,
             'filter'    => 'verify_error'
         ];
 
