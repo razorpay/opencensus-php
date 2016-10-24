@@ -93,7 +93,7 @@ class Verify
         $boundary = Constants\Verify::getBoundaryInSeconds($filter);
 
         $payments = $this->paymentRepo->getPaymentsToVerify(
-                                    $minimumTime, $boundary, $verifyStatus, $paymentStatus, true);
+                                    $minimumTime, $boundary, $verifyStatus, $paymentStatus);
 
         return $this->verifyMultiplePayments($payments, $filter);
     }

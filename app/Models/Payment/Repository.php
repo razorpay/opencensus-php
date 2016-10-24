@@ -172,19 +172,20 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    /*
+    /**
      * Return Payments object(s) which should be verified
-     * @param string $ts             filter to remove Payments which are created before $ts seconds
+     * @param string $minimumTime filter to remove Payments which are created before $ts seconds
      * @param string $verifyBoundary array of [VERIFY_BUCKET and timestamp] values
-     * @param string $verifyStatus   value for filter of VerifyStatus
-     * @param string $paymentStatus  value for filter of paymentStatus
+     * @param string $verifyStatus value for filter of VerifyStatus
+     * @param string $paymentStatus value for filter of paymentStatus
+     * @param bool   $random
      * @return Collection of Payment
-    */
+     */
     public function getPaymentsToVerify($minimumTime,
                                         $verifyBoundary,
                                         $verifyStatus = null,
                                         $paymentStatus = null,
-                                        $random = false)
+                                        $random = true)
     {
         $verifyEnabledGateways = Payment\Gateway::$verifyEnabled;
 
@@ -201,7 +202,7 @@ class Repository extends Base\Repository
             $query->status($paymentStatus);
         }
 
-        if ($random)
+        if ($random === true)
         {
             $query->inRandomOrder();
         }
@@ -209,7 +210,7 @@ class Repository extends Base\Repository
         // For created, we only look at the payment status.
         if ($paymentStatus !== Payment\Status::CREATED)
         {
-            $condition = $this->getWhereConditionForVerify($minimumTime, $verifyBoundary);
+            $condition = $this->getWhereConditionsForVerify($minimumTime, $verifyBoundary);
 
             $this->addWhereQueryForVerify($query, $condition);
         }
@@ -220,10 +221,11 @@ class Repository extends Base\Repository
 
     /**
      * Adds Where and orWhere Query in the query using condition
-     * @param       $query     original query
-     * @param array $condition array with Keys 'where' and 'or'
-     *                             it will add 'where' and 'whereOr' condition
-     *                             using the values given in 'where' and 'or'
+     *
+     * @param       $query
+     * @param array $conditions array with Keys 'where' and 'or'
+     *                          it will add 'where' and 'whereOr' condition
+     *                          using the values given in 'where' and 'or'
      * @return void
      */
     protected function addWhereQueryForVerify($query, $conditions)
@@ -248,11 +250,10 @@ class Repository extends Base\Repository
      *         where condition will be created using $ts
      *         orWhere condition will be created using $verifyBoundary
      */
-    protected function getWhereConditionForVerify($minimumTime, $verifyBoundaries)
+    protected function getWhereConditionsForVerify($minimumTime, $verifyBoundaries)
     {
-        // This Condition will give all newly created Payments,
-        // which have crossed Minimum time threshold
-        //
+        // This Condition will give all newly created payments,
+        // which have crossed minimum time threshold.
         $whereConditions[] = [
             [Payment\Entity::VERIFY_BUCKET, '=', 0],
             [Payment\Entity::CREATED_AT , '<', $minimumTime]
