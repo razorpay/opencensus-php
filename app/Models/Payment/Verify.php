@@ -92,17 +92,8 @@ class Verify
 
         $boundary = Constants\Verify::getBoundaryInSeconds($filter);
 
-        $boundaryQueryData = [];
-
-        // $boundary has time in seconds, signifying payment should be X second old
-        // For querying on db, need to change that to absolute value
-        foreach ($boundary as $key => $value)
-        {
-            $boundaryQueryData[$key] = Carbon::now('Asia/Kolkata')->timestamp - $value;
-        }
-
         $payments = $this->paymentRepo->getPaymentsToVerify(
-                                    $minimumTime, $boundaryQueryData, $verifyStatus, $paymentStatus, true);
+                                    $minimumTime, $boundary, $verifyStatus, $paymentStatus, true);
 
         return $this->verifyMultiplePayments($payments, $filter);
     }

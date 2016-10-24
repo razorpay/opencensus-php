@@ -188,8 +188,6 @@ class Repository extends Base\Repository
     {
         $verifyEnabledGateways = Payment\Gateway::$verifyEnabled;
 
-        $condition = $this->getWhereConditionForVerify($minimumTime, $verifyBoundary);
-
         $query = $this->newQuery()
                       ->whereIn(Payment\Entity::GATEWAY, $verifyEnabledGateways);
 
@@ -208,7 +206,12 @@ class Repository extends Base\Repository
             $query->inRandomOrder();
         }
 
-        $this->addWhereQueryForVerify($query, $condition);
+        if ( $paymentStatus !== Payment\Status::CREATED)
+        {
+            $condition = $this->getWhereConditionForVerify($minimumTime, $verifyBoundary);
+
+            $this->addWhereQueryForVerify($query, $condition);
+        }
 
         return $query->take(100)
                      ->get();
@@ -263,9 +266,11 @@ class Repository extends Base\Repository
         // crossed the boundary after prev cron ran (SLIDING WINDOW PROTOCOL)
         foreach($verifyBoundaries as $bucket => $time)
         {
+            // $boundary have time in seconds, signifying payment should be X second old
+            // For querying on db, need to change that to absolute value
             $orWhereConditions[] = [
-                [Payment\Entity::VERIFY_BUCKET, '=', $bucket],
-                [Payment\Entity::CREATED_AT, '<', $time]
+                [Payment\Entity::VERIFY_BUCKET, '=', ($bucket + 1)],
+                [Payment\Entity::CREATED_AT, '<', (Carbon::now('Asia/Kolkata')->timestamp - $time)]
             ];
         }
 
