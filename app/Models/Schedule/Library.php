@@ -2,38 +2,13 @@
 
 namespace RZP\Models\Schedule;
 
-use Illuminate\Support\Facades\App;
 use RZP\Models\Settlement\Holidays;
-use RZP\Trace\TraceCode;
 use Carbon\Carbon;
 
 class Library
 {
-    public static function getNextApplicableTime($currentTime, $merchant)
+    public static function getNextApplicableTime($currentTime, $schedule)
     {
-        $schedule = $merchant->schedule;
-
-        if ($schedule === null)
-        {
-            $addDays = $merchant->getSettlementSchedule();
-
-            $settledAt = (new \RZP\Models\Transaction\Core)->calculateSettledAtTimestamp($currentTime, $addDays);
-        }
-        else
-        {
-            $settledAt = self::getNextApplicableTimeFromSchedule($currentTime, $schedule);
-        }
-
-        return $settledAt;
-    }
-
-    public static function getNextApplicableTimeFromSchedule($currentTime, $schedule)
-    {
-        App::getFacadeRoot()['trace']->info(
-                                        TraceCode::SCHEDULE_RESOLUTION_INITIATED,
-                                        compact('currentTime', 'schedule')
-                                        );
-
         $settledAt = self::getMinimumDelayedTime($currentTime, $schedule);
 
         $nextRun = $schedule->getNextRun();
@@ -73,11 +48,6 @@ class Library
 
         $step = 'add' . $stepType;
 
-        App::getFacadeRoot()['trace']->info(
-                                        TraceCode::SCHEDULE_ANCHORED_RESOLUTION,
-                                        compact('settledAt', 'schedule', 'step')
-                                        );
-
         while (self::checkAnchor($settledAt, $schedule) === false)
         {
             $settledAt->$step();
@@ -95,11 +65,6 @@ class Library
         $step = self::getStep($schedule, Steps::NON_ANCHORED_STEPS);
 
         $interval = $schedule->getInterval();
-
-        App::getFacadeRoot()['trace']->info(
-                                        TraceCode::SCHEDULE_ANCHORED_RESOLUTION,
-                                        compact('settledAt', 'schedule', 'nextRun', 'step', 'interval')
-                                        );
 
         while ($settledAt > $nextRun)
         {

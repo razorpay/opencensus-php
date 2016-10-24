@@ -46,7 +46,7 @@ class ScheduleLibraryTest extends TestCase
     {
         foreach ($cases as $case)
         {
-            $nextTime = Schedule\Library::getNextApplicableTimeFromSchedule($case['initialTime'], $schedule);
+            $nextTime = Schedule\Library::getNextApplicableTime($case['initialTime'], $schedule);
 
             $this->assertEquals($case['expectedNextTime'], $nextTime);
         }

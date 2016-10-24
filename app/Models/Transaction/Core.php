@@ -462,7 +462,20 @@ class Core extends Base\Core
     {
         $capturedAt = $payment->getAttribute(Payment\Entity::CAPTURED_AT);
 
-        $returnTime = Schedule::getNextApplicableTime($capturedAt, $payment->merchant);
+        $merchant = $payment->merchant;
+
+        $returnTime = null;
+
+        if ($merchant->getSettlementScheduleId() === null)
+        {
+            $addDays = $merchant->getSettlementSchedule();
+
+            $returnTime = $this->calculateSettledAtTimestamp($capturedAt, $addDays);
+        }
+        else
+        {
+            $returnTime = Schedule::getNextApplicableTime($capturedAt, $merchant->schedule);
+        }
 
         return $returnTime;
     }
