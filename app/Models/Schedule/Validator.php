@@ -29,7 +29,7 @@ class Validator extends Base\Validator
 
     protected static $createValidators = array(
         'period',
-        'weeklyAnchor',
+        'anchor',
     );
 
     protected function validatePeriod($input)
@@ -43,12 +43,28 @@ class Validator extends Base\Validator
         }
     }
 
+    protected function validateAnchor($input)
+    {
+        if ($input[Entity::PERIOD] === Period::WEEKLY)
+        {
+            $this->validateWeeklyAnchor($input);
+        }
+        else if (($input[Entity::PERIOD] === Period::DAILY) or
+                ($input[Entity::PERIOD] === Period::HOURLY))
+        {
+            if (isset($input[Entity::ANCHOR]) === true)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_SCHEDULE_HOURLY_DAILY_ANCHOR_NOT_PERMITTED);
+            }
+        }
+    }
+
     protected function validateWeeklyAnchor($input)
     {
         $weekend = [Carbon::SATURDAY, Carbon::SUNDAY];
 
-        if (($input[Entity::PERIOD] == Period::WEEKLY) and
-            (isset($input[Entity::ANCHOR]) === true) and
+        if ((isset($input[Entity::ANCHOR]) === true) and
             (in_array($input[Entity::ANCHOR], $weekend) === true))
         {
             throw new Exception\BadRequestException(
