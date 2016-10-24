@@ -146,13 +146,33 @@ return [
         ],
         'response' => [
             'content' => [
-				'entity' => "collection",
-				'count' => 2,
-				'items' => [
+                'entity' => "collection",
+                'count' => 2,
+                'items' => [
                     [
-						'campaign' => "silent-ads",
-						'value' => 90,
-					],
+                        'campaign' => "silent-ads",
+                        'value' => 90,
+                    ],
+                    [
+                        'campaign' => "silent-ads",
+                        'value' => 90,
+                    ],
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testFeeCreditsGrantedInCampaign' => [
+        'request' => [
+            'url' => '/credits/?campaign=silent-ads&type=fee',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => "collection",
+                'count' => 1,
+                'items' => [
                     [
                         'campaign' => "silent-ads",
                         'value' => 90,
@@ -170,13 +190,13 @@ return [
         ],
         'response' => [
             'content' => [
-				'entity' => "collection",
-				'count' => 1,
-				'items' => [
+                'entity' => "collection",
+                'count' => 1,
+                'items' => [
                     [
-						'campaign' => "silent-ads",
-						'value' => 90,
-					],
+                        'campaign' => "silent-ads",
+                        'value' => 90,
+                    ],
                 ],
             ],
             'status_code' => 200,
@@ -191,7 +211,7 @@ return [
         'response' => [
             'content' => [
                 'success' => true
-			],
+            ],
             'status_code' => 200,
         ],
     ],
