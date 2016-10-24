@@ -13,8 +13,5 @@ class Steps
     const NON_ANCHORED_STEPS = [
         Period::HOURLY       => 'Hour',
         Period::DAILY        => 'Day',
-        Period::WEEKLY       => 'Week',
-        Period::MONTHLY_DATE => 'Month',
-        Period::MONTHLY_WEEK => 'Week',
     ];
 }

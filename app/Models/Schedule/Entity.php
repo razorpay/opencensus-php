@@ -40,6 +40,10 @@ class Entity extends Base\PublicEntity
         self::NEXT_RUN,
     );
 
+    protected static $modifiers = array(
+        self::ANCHOR,
+    );
+
     protected $casts = [
         self::INTERVAL => 'int',
         self::ANCHOR   => 'int',
@@ -59,6 +63,24 @@ class Entity extends Base\PublicEntity
     {
         return $this->belongsTo(
             'RZP\Models\Merchant\Entity', self::MERCHANT_ID);
+    }
+
+    // ----------------------- Modifiers -------------------------------------------
+
+    public function modifyAnchor(& $input)
+    {
+        $period = $input[self::PERIOD];
+
+        $anchoredPeriods = array_keys(Steps::ANCHORED_STEPS);
+
+        if ((in_array($period, $anchoredPeriods) === true) and
+            isset($input[self::ANCHOR]) === false)
+        {
+            // For weekly periods, default anchor is Monday (Sunday is zero)
+            // For monthly-week periods, default anchor is first week
+            // For monthly-date periods, default anchor is 1st of the month
+            $input[self::ANCHOR] = 1;
+        }
     }
 
     // ----------------------- Getters ---------------------------------------------
