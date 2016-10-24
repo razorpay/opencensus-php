@@ -109,20 +109,6 @@ class EbsGatewayTest extends TestCase
         });
     }
 
-    public function testHackedPayment()
-    {
-        $this->getHackedResponse();
-
-        $payment = $this->getDefaultNetbankingPaymentArray('ANDB');
-
-        $data = $this->testData['testHackedPayment'];
-
-        $this->runRequestResponseFlow($data, function() use ($payment)
-        {
-            $payment = $this->doAuthPayment($payment);
-        });
-    }
-
     public function testPaymentRefund()
     {
         $payment = $this->getDefaultNetbankingPaymentArray('ANDB');
