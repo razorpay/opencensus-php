@@ -24,7 +24,7 @@ class Processor extends Base\Core
 
     protected $input;
 
-    public function process(array $input, $channel)
+    public function process(array $input, $channel, $schedule=false)
     {
         $this->increaseAllowedSystemLimits();
 
@@ -37,38 +37,7 @@ class Processor extends Base\Core
             return $message;
         }
 
-        try
-        {
-            list($settlements, $txnCount) = $this->createSettlements($channel);
-
-            $data = [
-                'channel'               => $channel,
-                'count'                 => $settlements->count(),
-                'transaction_count'     => $txnCount,
-            ];
-
-            if ($settlements->count() > 0)
-            {
-                $this->dailySettlement = $this->createDailySetlEntity($settlements, $txnCount, $channel);
-
-                list($urlText, $urlExcel) = $this->generateSettlementFile($settlements, $channel);
-
-                $this->updateDailySettlementEntity($urlText, $urlExcel);
-
-                $data['settlement_text_file']  = $urlText;
-                $data['settlement_excel_file'] = $urlExcel;
-            }
-            else
-            {
-                $data['message'] = 'No settlements found!';
-            }
-
-            $this->successNotification($data, $settlements);
-        }
-        catch (\Exception $e)
-        {
-            $this->settlementFailure($channel, $e);
-        }
+        $data = $this->processSettlements($input, $channel, $schedule);
 
         return $data;
     }
@@ -129,16 +98,64 @@ class Processor extends Base\Core
         return false;
     }
 
-
-    protected function createSettlements($channel)
+    protected function processSettlements($input, $channel, $schedule)
     {
-        $txns = $this->repo->transaction->fetchUnsettledTransactions($this->setlTime);
+        try
+        {
+            list($settlements, $txnCount) = $this->createSettlements($channel, $schedule);
 
-        $txns = $this->filterTransactionsForSettlement($txns, $channel);
+            $data = [
+                'channel'               => $channel,
+                'count'                 => $settlements->count(),
+                'transaction_count'     => $txnCount,
+            ];
+
+            if ($settlements->count() > 0)
+            {
+                $this->dailySettlement = $this->createDailySetlEntity($settlements, $txnCount, $channel);
+
+                list($urlText, $urlExcel) = $this->generateSettlementFile($settlements, $channel);
+
+                $this->updateDailySettlementEntity($urlText, $urlExcel);
+
+                $data['settlement_text_file']  = $urlText;
+                $data['settlement_excel_file'] = $urlExcel;
+            }
+            else
+            {
+                $data['message'] = 'No settlements found!';
+            }
+
+            $this->successNotification($data, $settlements);
+        }
+        catch (\Exception $e)
+        {
+            $this->settlementFailure($channel, $e);
+        }
+
+        return $data;
+    }
+
+    protected function createSettlements($channel, $schedule)
+    {
+        $txns = new Base\PublicCollection;
+
+        if ($schedule === false)
+        {
+            $txns = $this->repo->transaction->fetchUnsettledTransactions($this->setlTime);
+        }
+        else
+        {
+            $txns = $this->repo->transaction->fetchUnsettledTxnsFromSchedules($this->setlTime);
+        }
+
+        $txns = $this->filterTransactionsForSettlement($txns, $channel, $schedule);
 
         return $this->repo->transaction(function() use ($txns, $channel)
         {
             $settlements = $this->createSettlementsFromTxns($txns, $channel);
+
+            $this->repo->transaction->settled($txns, $this->setlTime);
 
             return [$settlements, $txns->count()];
         });
