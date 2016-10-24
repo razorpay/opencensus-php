@@ -205,7 +205,8 @@ trait Authorize
         //
         // Else if $request is null, then payment is a one-step process,
         // i.e. without 2-factor authentication
-        //
+        // This right now sets it to UNAVAILABLE, it could be SKIPPED too when
+        // flows corresponding to that are added
         $payment->setTwoFactorAuth(TwoFactorAuth::UNAVAILABLE);
 
         $this->repo->saveOrFail($payment);

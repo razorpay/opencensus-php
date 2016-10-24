@@ -41,6 +41,7 @@ class Gateway extends \RZP\Gateway\Base\Gateway
 
     protected function getCallbackResponseData()
     {
+        return [];
         return [Payment\Entity::TWO_FACTOR_AUTH => Payment\TwoFactorAuth::NOT_APPLICABLE];
     }
 }

@@ -167,21 +167,22 @@ trait Callback
 
             $twoFactorAuth = null;
 
-            if (isset($data[Payment\Entity::TWO_FACTOR_AUTH]))
+            if (isset($data[Payment\Entity::TWO_FACTOR_AUTH]) === true)
             {
                 $twoFactorAuth = $data[Payment\Entity::TWO_FACTOR_AUTH];
             }
 
             $payment->setTwoFactorAuth($twoFactorAuth);
 
-            $this->repo->saveOrFail($payment);
 
-            $this->updateAndNotifyPaymentAuthorized();
+            $this->repo->saveOrFail($payment);
         }
         catch (Exception\BaseException $e)
         {
             $this->processPaymentCallbackException($e);
         }
+
+        $this->updateAndNotifyPaymentAuthorized();
     }
 
     protected function callGatewayCallback($input)

@@ -4,7 +4,7 @@ namespace RZP\Models\Payment;
 
 class TwoFactorAuth
 {
-    // use PASSED when the payment that went to 2FA succeeds
+    // use PASSED when a payment, that went through 2FA, succeeds
     const PASSED            = 'passed';
 
     // use FAILED when on payment failure, the gateway error code indicates 2FA failure
@@ -15,7 +15,7 @@ class TwoFactorAuth
     const UNKNOWN           = 'unknown';
 
     // use SKIPPED when Razorpay chooses to skip 2FA
-    //e.g. in case of Recurring payments
+    // e.g. in case of Recurring payments
     const SKIPPED           = 'skipped';
 
     // use NOT_APPLICABLE for Netbanking payments
