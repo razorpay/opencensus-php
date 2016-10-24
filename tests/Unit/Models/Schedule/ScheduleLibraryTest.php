@@ -46,9 +46,26 @@ class ScheduleLibraryTest extends TestCase
     {
         foreach ($cases as $case)
         {
-            $nextTime = Schedule\Library::getNextApplicableTime($case['initialTime'], $schedule);
+            $initialTime = $this->getTimeStamp($case['initialTime']);
 
-            $this->assertEquals($case['expectedNextTime'], $nextTime);
+            $nextTime = Schedule\Library::getNextApplicableTime($initialTime, $schedule);
+
+            $calculatedTime = $this->getFormattedTime($nextTime);
+
+            $this->assertEquals($calculatedTime, $case['expectedNextTime']);
         }
+    }
+
+    private function getTimeStamp($dateTime)
+    {
+        return Carbon::createFromFormat('Y-m-d H:i:s',
+                                        $dateTime,
+                                        'Asia/Kolkata')->timestamp;
+    }
+
+    private function getFormattedTime($timestamp)
+    {
+        return Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata')
+                                            ->format('Y-m-d H:i:s');
     }
 }
