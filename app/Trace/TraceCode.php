@@ -81,6 +81,7 @@ class TraceCode
     const REFUND_FILE_GENERATE_REQUEST              = 'REFUND_FILE_GENERATE_REQUEST';
     const RECONCILE_CANCELLED_TRANSACTIONS          = 'RECONCILE_CANCELLED_TRANSACTIONS';
     const ORDER_REFUNDED                            = 'ORDER_REFUNDED';
+    const WEBHOOK_EDIT                              = 'WEBHOOK_EDIT';
 
     const ORDER_MULTIPLE_CAPTURED_PAYMENTS          = 'ORDER_MULTIPLE_CAPTURED_PAYMENTS';
 
