@@ -21,7 +21,7 @@ class Service extends Base\Service
 
     public function getScheduleById($id)
     {
-        $schedule = $this->repo->schedule->getByIdAndOwnerId($id, Account::SHARED_ACCOUNT);
+        $schedule = $this->repo->schedule->getByIdAndMerchantId($id, Account::SHARED_ACCOUNT);
 
         return $schedule->toArrayPublic();
     }
@@ -30,7 +30,7 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::SCHEDULE_EDIT_REQUEST, $input);
 
-        $schedule = $this->repo->schedule->getByIdAndOwnerId($id, Account::SHARED_ACCOUNT);
+        $schedule = $this->repo->schedule->getByIdAndMerchantId($id, Account::SHARED_ACCOUNT);
 
         $schedule = (new Schedule\Core)->editSchedule($schedule, $input);
 

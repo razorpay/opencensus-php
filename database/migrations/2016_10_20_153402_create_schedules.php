@@ -26,7 +26,7 @@ class CreateSchedules extends Migration
             $table->string(Schedule::NAME, 50)
                   ->nullable();
 
-            $table->char(Schedule::OWNER_ID, Schedule::ID_LENGTH);
+            $table->char(Schedule::MERCHANT_ID, Schedule::ID_LENGTH);
 
             $table->string(Schedule::TYPE, 15);
 
@@ -48,7 +48,7 @@ class CreateSchedules extends Migration
 
             $table->index(Schedule::TYPE);
 
-            $table->foreign(Schedule::OWNER_ID)
+            $table->foreign(Schedule::MERCHANT_ID)
                   ->references(Merchant::ID)
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
@@ -64,7 +64,7 @@ class CreateSchedules extends Migration
     {
         Schema::table(Table::PAYMENT, function($table)
         {
-            $table->dropForeign(Table::SCHEDULE.'_'.Schedule::OWNER_ID.'_foreign');
+            $table->dropForeign(Table::SCHEDULE.'_'.Schedule::MERCHANT_ID.'_foreign');
         });
 
         Schema::drop(Table::SCHEDULE);

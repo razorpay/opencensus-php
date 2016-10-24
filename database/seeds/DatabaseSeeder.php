@@ -185,49 +185,49 @@ class DatabaseSeeder extends Seeder
 
             DB::table(Table::SCHEDULE)->insert(
                 array(
-                    'id'         => 'schd_2_hourly',
-                    'name'       => 'Every 2 hours',
-                    'owner_id'   => '100000Razorpay',
-                    'type'       => 'settlement',
-                    'period'     => 'hourly',
-                    'interval'   => 2,
-                    'anchor'     => null,
-                    'delay'      => 0,
-                    'next_run'   => 1451586600,
-                    'created_at' => time(),
-                    'updated_at' => time(),
+                    'id'          => 'schd_2_hourly',
+                    'name'        => 'Every 2 hours',
+                    'merchant_id' => '100000Razorpay',
+                    'type'        => 'settlement',
+                    'period'      => 'hourly',
+                    'interval'    => 2,
+                    'anchor'      => null,
+                    'delay'       => 0,
+                    'next_run'    => 1451586600,
+                    'created_at'  => time(),
+                    'updated_at'  => time(),
                     )
                 );
 
             DB::table(Table::SCHEDULE)->insert(
                 array(
-                    'id'         => 'schd_basic_t3',
-                    'name'       => 'Basic T3',
-                    'owner_id'   => '100000Razorpay',
-                    'type'       => 'settlement',
-                    'period'     => 'daily',
-                    'interval'   => 1,
-                    'anchor'     => null,
-                    'delay'      => 3,
-                    'next_run'   => 1451586600,
-                    'created_at' => time(),
-                    'updated_at' => time(),
+                    'id'          => 'schd_basic_t3',
+                    'name'        => 'Basic T3',
+                    'merchant_id' => '100000Razorpay',
+                    'type'        => 'settlement',
+                    'period'      => 'daily',
+                    'interval'    => 1,
+                    'anchor'      => null,
+                    'delay'       => 3,
+                    'next_run'    => 1451586600,
+                    'created_at'  => time(),
+                    'updated_at'  => time(),
                     )
                 );
 
             DB::table(Table::SCHEDULE)->insert(
                 array(
-                    'id'         => 'schd_tuesdays',
-                    'name'       => 'Every Tuesday',
-                    'owner_id'   => '100000Razorpay',
-                    'type'       => 'settlement',
-                    'period'     => 'weekly',
-                    'interval'   => 1,
-                    'anchor'     => 2,
-                    'delay'      => 1,
-                    'next_run'   => 1451932200,
-                    'created_at' => time(),
-                    'updated_at' => time(),
+                    'id'          => 'schd_tuesdays',
+                    'name'        => 'Every Tuesday',
+                    'merchant_id' => '100000Razorpay',
+                    'type'        => 'settlement',
+                    'period'      => 'weekly',
+                    'interval'    => 1,
+                    'anchor'      => 2,
+                    'delay'       => 1,
+                    'next_run'    => 1451932200,
+                    'created_at'  => time(),
+                    'updated_at'  => time(),
                     )
                 );
 

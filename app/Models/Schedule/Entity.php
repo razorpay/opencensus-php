@@ -9,7 +9,7 @@ class Entity extends Base\PublicEntity
 {
     const ID          = 'id';
     const NAME        = 'name';
-    const OWNER_ID    = 'owner_id';
+    const MERCHANT_ID = 'merchant_id';
     const TYPE        = 'type';
     const PERIOD      = 'period';
     const INTERVAL    = 'interval';
@@ -31,7 +31,7 @@ class Entity extends Base\PublicEntity
     protected $public = array(
         self::ID,
         self::NAME,
-        self::OWNER_ID,
+        self::MERCHANT_ID,
         self::TYPE,
         self::PERIOD,
         self::INTERVAL,
@@ -55,10 +55,10 @@ class Entity extends Base\PublicEntity
 
     // ----------------------- Associations ----------------------------------------
 
-    public function owner()
+    public function merchant()
     {
         return $this->belongsTo(
-            'RZP\Models\Merchant\Entity', self::OWNER_ID);
+            'RZP\Models\Merchant\Entity', self::MERCHANT_ID);
     }
 
     // ----------------------- Getters ---------------------------------------------
@@ -68,9 +68,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::NAME);
     }
 
-    public function getOwnerId()
+    public function getMerchantId()
     {
-        return $this->getAttribute(self::OWNER_ID);
+        return $this->getAttribute(self::MERCHANT_ID);
     }
 
     public function getType()
@@ -110,9 +110,9 @@ class Entity extends Base\PublicEntity
         return $this->setAttribute(self::NEXT_RUN, $nextRun);
     }
 
-    public function setOwnerId($ownerId)
+    public function setMerchantId($merchantId)
     {
-        return $this->setAttribute(self::OWNER_ID, $ownerId);
+        return $this->setAttribute(self::MERCHANT_ID, $merchantId);
     }
 
 }

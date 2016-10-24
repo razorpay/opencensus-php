@@ -12,7 +12,7 @@ class Core extends Base\Core
     {
         $schedule = (new Entity)->build($input);
 
-        $schedule->setOwnerId(Account::SHARED_ACCOUNT);
+        $schedule->setMerchantId(Account::SHARED_ACCOUNT);
 
         $this->repo->saveOrFail($schedule);
 
