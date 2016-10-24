@@ -72,9 +72,6 @@ class Core extends Base\Core
         // from merchant balance.
         // Transaction is rolled back if merchant credit balance is less than zero.
         //
-
-        $this->repo->balance->getMerchantBalance($creditsLog->merchant);
-
         $creditsLog->getValidator()->validateNewCreditsValue($creditsLog, (int) $creditsValue);
 
         return $this->repo->transaction(function() use ($creditsLog, $creditsValue)

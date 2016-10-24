@@ -10,13 +10,13 @@ use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
-    const MAX_CREDITS     = 100000000;
-    const MAX_FEE_CREDITS = 50000000;
-    const MIN_CREDITS     = 100;
+    const MAX_AMOUNT_CREDITS = 100000000;
+    const MAX_FEE_CREDITS    = 50000000;
+    const MIN_CREDITS        = 100;
 
     protected static $createRules = array(
         Entity::CAMPAIGN => 'required|alpha_dash|max:255',
-        Entity::VALUE    => 'required|integer|min:1|max:'.self::MAX_CREDITS,
+        Entity::VALUE    => 'required|integer|min:1|max:'.self::MAX_AMOUNT_CREDITS,
         Entity::TYPE     => 'required|alpha_dash|max:20',
     );
 
@@ -76,13 +76,13 @@ class Validator extends Base\Validator
         switch ($type)
         {
             case Credits\Type::AMOUNT:
-                return self::MAX_CREDITS;
+                return self::MAX_AMOUNT_CREDITS;
 
             case Credits\Type::FEE:
                 return self::MAX_FEE_CREDITS;
 
             default:
-                return self::MAX_CREDITS;
+                return self::MAX_AMOUNT_CREDITS;
         }
     }
 

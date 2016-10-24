@@ -472,7 +472,10 @@ class Core extends Base\Core
 
         $feeCredits = $merchantBalance->getFeeCredits();
 
-        assert($feeCredits > $fee);
+        if ($feeCredits < $fee)
+        {
+            throw new Exception/LogicException("FeeCredits should be higher or equal to the fee");
+        }
 
         $nodalBalance = $this->getNodalBalanceLockForUpdate($txn->getChannel());
 
