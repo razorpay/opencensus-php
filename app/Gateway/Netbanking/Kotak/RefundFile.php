@@ -7,7 +7,7 @@ use RZP\Gateway\Base;
 
 class RefundFile extends Base\RefundFile
 {
-    protected static $fileToWriteName = 'Kotak_Netbanking_Refunds';
+    protected static $fileToWriteName = 'Kotak_Netbanking_Refund';
 
     protected static $headers = [
         'S.No',

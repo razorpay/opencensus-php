@@ -501,6 +501,13 @@ class Service extends Base\Service
 
     public function editWebhook($webhookId, $input)
     {
+        $this->trace->info(
+            TraceCode::WEBHOOK_EDIT,
+            [
+                'webhook_id'    => $webhookId,
+                'input'         => $input,
+            ]);
+
         $webhook = (new Webhook\Core)->editWebhook($this->merchant, $webhookId, $input);
 
         return $webhook->toArray();

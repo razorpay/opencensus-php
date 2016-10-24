@@ -164,6 +164,12 @@ class Gateway extends Base\Gateway
 
         $this->setDomainType();
 
+        if ($input['refund']['amount'] !== $input['payment']['amount'])
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_PARTIAL_REFUND_NOT_SUPPORTED);
+        }
+
         $request = $this->getRefundRequestContent($input);
 
         $response = $this->postRequest($request)['content'];
