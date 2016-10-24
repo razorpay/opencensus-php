@@ -215,4 +215,28 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testCreditsTypeCollision' => [
+        'request' => [
+            'url' => '/merchants/10000000000000/credits_log/',
+            'method' => 'post',
+            'content' => [
+                'value' => 25,
+                'campaign' => 'silent-ads',
+                'type' => 'amount',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];
