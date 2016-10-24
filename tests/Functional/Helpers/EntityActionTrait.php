@@ -2,9 +2,11 @@
 
 namespace RZP\Tests\Functional\Helpers;
 
-use RZP\Exception\BaseException;
 use Requests;
 use Symfony\Component\DomCrawler\Crawler;
+
+use RZP\Models\Merchant\Account;
+use RZP\Exception\BaseException;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 trait EntityActionTrait
@@ -75,8 +77,24 @@ trait EntityActionTrait
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function addCredits(array $input = array(), $mid = '10000000000000')
+    protected function addAmountCredits(array $input = array(), $mid = Account::TEST_ACCOUNT)
     {
+        $input['type'] = 'amount';
+
+        $request = array(
+            'url' => '/merchants/'.$mid.'/credits_log',
+            'method' => 'POST',
+            'content' => $input);
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function addFeeCredits(array $input = array(), $mid = Account::TEST_ACCOUNT)
+    {
+        $input['type'] = 'fee';
+
         $request = array(
             'url' => '/merchants/'.$mid.'/credits_log',
             'method' => 'POST',
@@ -133,7 +151,7 @@ trait EntityActionTrait
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function fetchReport($entity, $content, $id = '10000000000000')
+    protected function fetchReport($entity, $content, $id = Account::TEST_ACCOUNT)
     {
         $request = array(
             'url' => '/reports/'.$entity,
@@ -145,7 +163,7 @@ trait EntityActionTrait
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function fetchBalance($mid = '10000000000000')
+    protected function fetchBalance($mid = Account::TEST_ACCOUNT)
     {
         return $this->getEntityById('balance', $mid, true);
     }

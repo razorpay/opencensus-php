@@ -5,8 +5,9 @@ namespace RZP\Tests\Functional\Merchant;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Credits;
 
-class CreditsTest extends TestCase
+class FeeCreditsTest extends TestCase
 {
     use PaymentTrait;
 
@@ -25,16 +26,18 @@ class CreditsTest extends TestCase
         $this->startTest();
     }
 
-
     public function testCreditsLogAlreadyExists()
     {
-        $this->fixtures->create('credits');
+        $this->fixtures->create('credits', [Credits\Entity::TYPE => Credits\Type::FEE]);
+
+        $this->testData[__FUNCTION__]['request']['content']['type'] = Credits\Type::FEE;
+
         $this->startTest();
     }
 
     public function testGetCreditsLog()
     {
-        $creditsLog = $this->fixtures->create('credits');
+        $creditsLog = $this->fixtures->create('credits', [Credits\Entity::TYPE => Credits\Type::FEE]);
 
         $this->testData[__FUNCTION__]['request']['url'] .= $creditsLog->getId();
         $this->testData[__FUNCTION__]['response']['content']['id'] = $creditsLog->getPublicId();
@@ -45,7 +48,7 @@ class CreditsTest extends TestCase
 
     public function testPositiveUpdateCredits()
     {
-        $creditsLog = $this->addCredits(['value' => 150, 'campaign' => 'silent-ads']);
+        $creditsLog = $this->addFeeCredits(['value' => 150, 'campaign' => 'silent-ads']);
         $id = $creditsLog['id'];
 
         $this->testData[__FUNCTION__]['request']['url'] .= $id;
@@ -56,12 +59,12 @@ class CreditsTest extends TestCase
         $this->assertEquals($creditsLog['value'], 190);
 
         $balance = $this->fetchBalance();
-        $this->assertEquals($balance['credits'], 190);
+        $this->assertEquals($balance['fee_credits'], 190);
     }
 
     public function testNegativeUpdateCredits()
     {
-        $creditsLog = $this->addCredits(['value' => 150, 'campaign' => 'silent-ads']);
+        $creditsLog = $this->addFeeCredits(['value' => 150, 'campaign' => 'silent-ads']);
         $id = $creditsLog['id'];
 
         $this->testData[__FUNCTION__]['request']['url'] .= $id;
@@ -72,14 +75,14 @@ class CreditsTest extends TestCase
         $this->assertEquals($creditsLog['value'], 100);
 
         $balance = $this->fetchBalance();
-        $this->assertEquals($balance['credits'], 100);
+        $this->assertEquals($balance['fee_credits'], 100);
     }
 
     public function testFailNegativeUpdateCredits()
     {
         // ID 123 is given in the data so it should match
         $creditsLog = $this->fixtures->create(
-            'credits', ['id' => '123', 'value' => 150]);
+            'credits', ['id' => '123', 'value' => 150, 'type' => Credits\Type::FEE]);
         $merchant = $creditsLog->merchant;
         $balance = (new Merchant\Balance\Repository)->editMerchantFreeCredits($merchant, 10);
         $this->startTest();
@@ -89,17 +92,24 @@ class CreditsTest extends TestCase
     {
         // id 123 is given in the data so it should match
         $creditslog = $this->fixtures->create(
-            'credits', ['id' => '123', 'value' => 90]);
+            'credits', ['id' => '123', 'value' => 90, 'type' => Credits\Type::FEE]);
         $this->startTest();
     }
 
-    public function testCreditsGrantedInCampaign()
+    public function testFeeCreditsGrantedInCampaign()
     {
         $this->fixtures->create(
             'credits',
-            ['id' => '123', 'value' => 90, 'campaign' => 'noisy-ads']);
-        $this->fixtures->create('credits', ['id' => '124', 'value' => 90]);
-        $this->fixtures->create('credits', ['id' => '125', 'value' => 90]);
+            [
+                'id' => '123', 'value' => 90, 'campaign' => 'noisy-ads',
+                'type' => Credits\Type::FEE
+            ]);
+        $this->fixtures->create(
+            'credits',
+            ['id' => '124', 'value' => 90, 'type' => Credits\Type::FEE]);
+        $this->fixtures->create(
+            'credits',
+            ['id' => '125', 'value' => 90, 'type' => Credits\Type::AMOUNT]);
 
         $this->ba->proxyAuth();
         $this->startTest();
@@ -107,9 +117,18 @@ class CreditsTest extends TestCase
 
     public function testCreditsGrantedToMerchant()
     {
+        $this->testData[__FUNCTION__]['request']['url'] .= '?type=fee';
+
         $this->fixtures->create('merchant', ['id' => '10000']);
-        $this->fixtures->create('credits', ['id' => '123', 'value' => 90, 'merchant_id'=>'10000']);
-        $this->fixtures->create('credits', ['id' => '125', 'value' => 90]);
+        $this->fixtures->create(
+            'credits',
+            [
+                'id' => '123', 'value' => 90,
+                'type' => Credits\Type::AMOUNT
+            ]);
+        $this->fixtures->create(
+            'credits',
+            ['id' => '125', 'value' => 90, 'type' => Credits\Type::FEE]);
 
         $this->ba->proxyAuth();
         $this->startTest();
@@ -117,9 +136,9 @@ class CreditsTest extends TestCase
 
     public function testDeleteCreditsLog()
     {
-        $creditsLog = $this->addCredits(['value' => 150, 'campaign' => 'silent-ads']);
+        $creditsLog = $this->addFeeCredits(['value' => 150, 'campaign' => 'silent-ads']);
 
-        $creditsLog = $this->fixtures->create('credits');
+        $creditsLog = $this->fixtures->create('credits', ['type' => 'fee']);
 
         $this->testData[__FUNCTION__]['request']['url'] .= $creditsLog->getId();
 
