@@ -226,16 +226,14 @@ class Repository extends Base\Repository
      *                             using the values given in 'where' and 'or'
      * @return void
      */
-    protected function addWhereQueryForVerify($query, $condition)
+    protected function addWhereQueryForVerify($query, $conditions)
     {
         $query->where(
-            function ($query) use ($condition)
+            function ($query) use ($conditions)
             {
-                $query->where($condition['where']);
-
-                foreach($condition['or'] as $orWhereCondition)
+                foreach($conditions as $condition)
                 {
-                    $query->orWhere($orWhereCondition);
+                    $query->orWhere($condition);
                 }
             }
         );
@@ -254,12 +252,11 @@ class Repository extends Base\Repository
     {
         // This Condition will give all newly created Payments,
         // which have crossed Minimum time threshold
-        $whereCondition = [
+        //
+        $whereConditions[] = [
             [Payment\Entity::VERIFY_BUCKET, '=', 0],
             [Payment\Entity::CREATED_AT , '<', $minimumTime]
         ];
-
-        $orWhereConditions = [];
 
         // Each or condition will fetch payments which are
         // in next Verify Bucket and not processed by previous cron
@@ -272,16 +269,13 @@ class Repository extends Base\Repository
 
             // $boundary have time in seconds, signifying payment should be X second old
             // For querying on db, need to change that to absolute value
-            $orWhereConditions[] = [
+            $whereConditions[] = [
                 [Payment\Entity::VERIFY_BUCKET, '=', ($bucket + 1)],
                 [Payment\Entity::CREATED_AT, '<', $paymentCreatedAfter]
             ];
         }
 
-        return [
-            'where' => $whereCondition,
-            'or'    => $orWhereConditions
-        ];
+        return $whereConditions;
     }
 
     public function fetchPaymentsForCustomerMethod($customer, $method, $skip)
