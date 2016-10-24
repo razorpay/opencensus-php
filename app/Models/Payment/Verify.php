@@ -37,21 +37,23 @@ class Verify
         $this->slack = $app['slack'];
     }
 
-    /* Verify Payments Based on filter
+    /**
+     * Verify Payments Based on filter
      *
-     * @param  string $filter filter
-     *
-     * @return return aggregrated result of verify results
-     *         Sample Result
-     *         [
-     *          'filter'            => <filter>,
-     *          'verified'          => <count>,
-     *          'authorized/failed' => <count>,
-     *          'timed out'         => <count>,
-     *          'error'             => <count>,
-     *          'authorizedTime'    => <time>,
-     *          'totalTime'         => <time>
-     *         ]
+     * @param  string $filter
+     * @return array aggregated result of verify results
+     *               Sample Result
+     *              [
+     *                  'filter'            => <filter>,
+     *                  'verified'          => <count>,
+     *                  'authorized/failed' => <count>,
+     *                  'timed out'         => <count>,
+     *                  'error'             => <count>,
+     *                  'authorizedTime'    => <time>,
+     *                  'totalTime'         => <time>
+     *              ]
+     * @throws Exception\BadRequestException
+     * @throws Exception\LogicException
      */
     public function verifyPaymentsWithFilter($filter)
     {
@@ -92,7 +94,7 @@ class Verify
 
         $boundaryQueryData = [];
 
-        // $boundary have time in seconds, signifying payment should be X second old
+        // $boundary has time in seconds, signifying payment should be X second old
         // For querying on db, need to change that to absolute value
         foreach ($boundary as $key => $value)
         {
@@ -104,10 +106,10 @@ class Verify
         return $this->verifyMultiplePayments($payments, $filter);
     }
 
-    /*
+    /**
      * @param Base\PublicCollection $payments
      * @param string                $filter
-     * @return array with aggregrated results
+     * @return array with aggregated results
     */
     public function verifyMultiplePayments(Base\PublicCollection $payments, $filter)
     {
@@ -116,17 +118,19 @@ class Verify
             Constants\Verify::SUCCESS       => 0,
             Constants\Verify::TIMEOUT       => 0,
             Constants\Verify::ERROR         => 0,
-            'verifyStartTime'               => time(),
-            'timeDiff'                      => 0,
+            'verify_start_time'             => time(),
+            'time_diff'                     => 0,
         ];
 
         $verifyKeys = $this->lockPaymentsForVerify($payments);
 
         foreach ($payments as $payment)
         {
-            if (in_array($payment->getId() . Constants\Verify::KEY_SUFFIX, $verifyKeys['locked']) === false)
+            $lockKeyId = $payment->getId() . Constants\Verify::KEY_SUFFIX;
+
+            // If a payment cannot be locked for verify, don't run verify for those payments
+            if (in_array($lockKeyId, $verifyKeys['locked']) === false)
             {
-                // If a payment cannot be locked for verify, don't run verify for those payments
                 continue;
             }
 
@@ -134,7 +138,7 @@ class Verify
 
             if ($verifyStatus === Constants\Verify::AUTHORIZED)
             {
-                $result['timeDiff'] += (time() - $payment->getCreatedAt());
+                $result['time_diff'] += (time() - $payment->getCreatedAt());
             }
 
             $result[$verifyStatus] += 1;
@@ -149,7 +153,7 @@ class Verify
         return $processedResults;
     }
 
-    /* Lock All Paymnets
+    /* Lock All Payments
      * @param Base\PublicCollection $payments
      * @return array with keys locked and not_locked,
      *         having payments which are locked and not_locked respectively
@@ -180,7 +184,7 @@ class Verify
     }
 
     /* Process the result for displaying in slack and returning to caller
-     * @param arary  $result  raw result array
+     * @param array  $result  raw result array
      * @param string $filter  filter used to fetch payments
      * @return array with processed result
     */
@@ -188,36 +192,36 @@ class Verify
     {
         $avgTimeDiff = 0;
 
-        $totalTime = time() - $result['verifyStartTime'];
+        $totalTime = time() - $result['verify_start_time'];
 
         if ($result[Constants\Verify::AUTHORIZED] !== 0)
         {
-            $avgTimeDiff = (int) ($result['timeDiff'] / $result[Constants\Verify::AUTHORIZED]);
+            $avgTimeDiff = (int) ($result['time_diff'] / $result[Constants\Verify::AUTHORIZED]);
         }
 
         $processedResults = [
             'filter'            => $filter,
             'verified'          => $result[Constants\Verify::SUCCESS],
             'authorized/failed' => $result[Constants\Verify::AUTHORIZED],
-            'timed out'         => $result[Constants\Verify::TIMEOUT],
+            'timed_out'         => $result[Constants\Verify::TIMEOUT],
             'error'             => $result[Constants\Verify::ERROR],
-            'authorizedTime'    => $avgTimeDiff,
-            'totalTime'         => $totalTime . ' secs'
+            'authorized_time'   => $avgTimeDiff,
+            'total_time'        => $totalTime . ' secs'
         ];
 
         return $processedResults;
     }
 
     /* Notify Processed Data in slack
-     * @param arary  $result           raw result array
-     * @param string $processedResults processed result array
+     * @param array $result           raw result array
+     * @param array $processedResults processed result array
      * @return void
     */
     protected function notifyInSlack(array $result, array $processedResults)
     {
-        unset($result['timeDiff']);
+        unset($result['time_diff']);
 
-        unset($result['verifyStartTime']);
+        unset($result['verify_start_time']);
 
         $total = array_sum($result);
 
