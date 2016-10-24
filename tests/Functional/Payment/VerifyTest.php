@@ -38,35 +38,18 @@ class VerifyTest extends TestCase
         $this->ba->privateAuth();
     }
 
-    public function testVerifyAllPayments()
+    public function testVerifySingleFailedPayments()
     {
-        $createdAt = time() - 60 * 60;
+        $createdAt = time() - 3*60;
 
         $payment = $this->fixtures->create(
             'payment:netbanking_failed', ['created_at' => $createdAt]);
 
-        $request = array(
-            'url' => '/payments/verify/all',
-            'method' => 'post'
-        );
-
         $this->ba->appAuth();
 
-        $content = $this->makeRequestAndGetContent($request);
-
-        unset($content['totalTime']);
-
-        $this->assertEquals(
-            [
-                'filter'            => 'all',
-                'verified'          => 1,
-                'authorized/failed' => 0,
-                'timed out'         => 0,
-                'error'             => 0,
-                'authorizedTime'    => 0,
-            ],
-            $content);
+        $this->runVerifyForMaxPeriod();
     }
+
 
     public function testVerifyMultipleFailedPayments()
     {
@@ -89,18 +72,6 @@ class VerifyTest extends TestCase
         ];
 
         $this->runVerifyForMaxPeriod($result);
-    }
-
-    public function testVerifySingleFailedPayments()
-    {
-        $createdAt = time() - 3*60;
-
-        $payment = $this->fixtures->create(
-            'payment:netbanking_failed', ['created_at' => $createdAt]);
-
-        $this->ba->appAuth();
-
-        $this->runVerifyForMaxPeriod();
     }
 
     public function testVerifySingleCreatedPayments()
@@ -131,7 +102,7 @@ class VerifyTest extends TestCase
 
         $this->assertContent($content, $verifiedResultArray['all'], $filter);
 
-        foreach ( range(0, 5) as $index)
+        foreach (range(0, 5) as $index)
         {
             $time->addSeconds(150);
 
@@ -213,6 +184,8 @@ class VerifyTest extends TestCase
         $content = $this->makeRequestAndGetContent($request);
 
         $this->assertContent($content, $verifiedResultArray['none'], $filter);
+
+        Carbon::setTestNow();
     }
 
     protected function assertContent(array $content, $verified, $filter)
