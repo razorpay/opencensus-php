@@ -50,7 +50,6 @@ class VerifyTest extends TestCase
         $this->runVerifyForMaxPeriod();
     }
 
-
     public function testVerifyMultipleFailedPayments()
     {
         $createdAt = time() - 3 * 60;

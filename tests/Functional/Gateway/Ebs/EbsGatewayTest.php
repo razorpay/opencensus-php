@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Gateway\Ebs;
 
 use RZP\Exception;
+use Carbon\Carbon;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 
@@ -290,21 +291,107 @@ class EbsGatewayTest extends TestCase
         $this->assertSame($payment['verified'], 1);
     }
 
-    public function testPaymentFailedVerify()
+    public function testPaymentFailedVerifyViaCron()
     {
-        $payment = $this->getDefaultNetbankingPaymentArray('ANDB');
-        $payment = $this->doAuthAndCapturePayment($payment);
+        $data = $this->testData['testPaymentFailedVerifyViaCron'];
+        $this->getErrorInCallback();
 
-        $this->getErrorInVerify();
+        $payment = $this->getDefaultNetbankingPaymentArray('ANDB');
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $payment = $this->doAuthAndCapturePayment($payment);
+            }
+        );
+
         $payment = $this->getLastEntity('payment', true);
 
-        $data = $this->testData['testPaymentFailedVerify'];
+        $this->getTimeoutInVerify();
 
-        $this->runRequestResponseFlow($data, function() use ($payment) {
-            $this->verifyPayment($payment['id']);
-        });
+        $this->ba->appAuth();
 
-        $this->assertSame($payment['verified'], null);
+        $request = [
+            'url' => '/payments/verify/payments_failed',
+            'method' => 'post'
+        ];
+
+        $time = new Carbon('now');
+
+        $time->addMinutes(15);
+
+        Carbon::setTestNow($time);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $resultData = [
+            'timed out' => 1,
+            'filter'            => 'payments_failed',
+        ];
+
+        $this->checkContent($content, $resultData);
+
+        $request = [
+            'url' => '/payments/verify/verify_error',
+            'method' => 'post'
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $resultData = ['filter' => 'verify_error'];
+
+        $this->checkContent($content, $resultData);
+
+        $time->addMinutes(60);
+
+        Carbon::setTestNow($time);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $resultData = [
+            'timed out' => 1,
+            'filter'    => 'verify_error'
+        ];
+
+        $this->checkContent($content,  $resultData);
+
+        $time->addDay();
+
+        Carbon::setTestNow($time);
+
+        $this->resetMockServer();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $resultData = [
+            'authorized/failed' => 1,
+            'filter'            => 'verify_error'
+        ];
+
+        $this->checkContent($content, $resultData);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['status'], 'authorized');
+    }
+    protected function checkContent(array $content, array $param)
+    {
+        // We dont want to check time taken for payments
+        unset($content['totalTime']);
+
+        unset($content['authorizedTime']);
+
+        $defaultParams = [
+            'verified'          => 0,
+            'authorized/failed' => 0,
+            'timed out'         => 0,
+            'error'             => 0,
+        ];
+
+        $defaultParams = array_merge($defaultParams, $param);
+
+        $this->assertEquals($defaultParams, $content);
     }
 
     public function testPaymentFailedVerifyAndRetry()
