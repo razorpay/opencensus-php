@@ -122,12 +122,19 @@ class RefundTest extends TestCase
         $this->startTest($this->payment['public_id'], '');
     }
 
-    // Invalid Test case, string amount would be converted to int value
     public function testRefundWithSpacedAmount()
     {
-        $this->markTestSkipped();
-
         $this->startTest($this->payment['public_id'], ' 100');
+    }
+
+    public function testRefundWithFloatAmountString()
+    {
+        $this->startTest($this->payment['public_id'], '100.1');
+    }
+
+    public function testRefundWithFloatAmount()
+    {
+        $this->startTest($this->payment['public_id'], 100.1);
     }
 
     public function testRefundofOldAuthorizedPayments()
