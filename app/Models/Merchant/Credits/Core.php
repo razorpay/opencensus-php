@@ -22,12 +22,12 @@ class Core extends Base\Core
 
         $creditsLog->merchant()->associate($merchant);
 
-        $this->repo->balance->getMerchantBalance($merchant);
+        $balance = $this->repo->balance->getMerchantBalance($merchant);
 
         $this->repo->credits->validateCampaignCreditsNotAssigned(
             $creditsLog->getCampaign(), $merchant, $creditsLog->getType());
 
-        $creditsLog->getValidator()->validateCreditsType($merchant->balance, $creditsLog->getType());
+        $creditsLog->getValidator()->validateCreditsType($balance, $creditsLog->getType());
 
         return $this->repo->transaction(function() use ($merchant, $creditsLog)
         {
@@ -46,7 +46,7 @@ class Core extends Base\Core
         if ($type === Credits\Type::AMOUNT)
         {
             // Add the credits to merchant's main balance
-            $merchantAmountCredits = $merchant->balance->getCredits();
+            $merchantAmountCredits = $merchant->balance->getAmountCredits();
 
             $newCredits = $merchantAmountCredits + $credits;
 
