@@ -32,7 +32,14 @@ app.controller('DashboardAggregationsCtrl', [
       request.success(function (result) {
         if(result.success) {
           $scope.balance = result.data.balance;
-          $scope.credits = result.data.credits;
+          if (result.data.credits) {
+            $scope.credits = result.data.credits;
+            $scope.credits_type = 'amount';
+          }
+          if (result.data.fee_credits) {
+            $scope.credits = result.data.fee_credits;
+            $scope.credits_type = 'fee';
+          }
         }
 
         $('.fake_hide_till_loaded').removeClass('fake_hide_till_loaded');

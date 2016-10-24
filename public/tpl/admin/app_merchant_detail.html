@@ -138,7 +138,7 @@
           Capture Screenshots <i class="pull-right fa fa-camera"></i>
         </a>
         <a href class="list-group-item" ng-click="openCredits()">
-          Credits
+          Add Credits
         </a>
       </div>
     </div>
@@ -464,6 +464,7 @@
                   <thead>
                     <th>Id</th>
                     <th>Campaign</th>
+                    <th>Type</th>
                     <th>Value</th>
                     <th>Created At</th>
                     <th>Delete</th>
@@ -472,6 +473,7 @@
                   <tr ng-repeat="credit in merchant.creditsLog.items">
                     <td>{{credit.id}}</td>
                     <td>{{credit.campaign}}</td>
+                    <td>{{credit.type}}</td>
                     <td>{{credit.value/100 | rupee:"INR "}}</td>
                     <td>{{credit.created_at*1000 | date:'short'}}</td>
                     <td>
@@ -1188,10 +1190,10 @@
     <h3 class="modal-title">Credits</h3>
   </div>
   <div class="modal-body merchant-modal">
-    <form class="form-horizontal" ng-init="credits={mode:'live', value:100}">
+    <form class="form-horizontal" ng-init="credits={mode: 'live', value: 100, type: 'amount'}">
 
       <div class="form-group">
-        <label class="col-lg-3 control-label">Mode:</label>
+        <label class="col-lg-3 control-label">Mode</label>
         <div class="col-lg-9" >
           <select class="form-control m-b" ng-model="credits.mode">
              <option value="test">Test</option>
@@ -1201,17 +1203,31 @@
       </div>
 
       <div class="form-group">
-        <label for="campaign" class="col-lg-3 control-label">Campaign:</label>
+        <label class="col-lg-3 control-label">Type</label>
+        <div class="col-lg-9" >
+          <select class="form-control m-b" ng-model="credits.type">
+             <option value="amount" selected>Amount</option>
+             <option value="fee">Fee</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="campaign" class="col-lg-3 control-label">Campaign</label>
         <div class="col-lg-9" >
           <input type="text" class="form-control m-b" name="campaign" ng-model="credits.campaign">
         </div>
       </div>
 
       <div class="form-group">
-        <label for="value" class="col-lg-3 control-label">Amount (INR):</label>
+        <label for="value" class="col-lg-3 control-label">Amount (INR)</label>
         <div class="col-lg-9" >
           <input type="number" class="form-control m-b" name="value" ng-model="credits.value" />
-          This will add a (positive) credit of (INR {{credits.value|rupee}}) to the merchant account
+          This will add a (positive) credit of (INR {{credits.value|rupee}}) to the merchant account.<br>
+          This will be counted against their
+            <span ng-show="credits.type==='amount'">total payment volume</span>
+            <span ng-show="credits.type==='fee'">fees only</span>
+          .
         </div>
       </div>
     </form>

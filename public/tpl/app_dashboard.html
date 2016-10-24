@@ -60,7 +60,7 @@
             <div class="col-xs-6 fake_hide_till_loaded" ng-show="credits">
               <div class="panel padder-v item">
                 <div class="font-thin h1">{{credits/100 | rupee}}</div>
-                <span class="text-muted text-xs">Total Credits</span>
+                <span class="text-muted text-xs">Total <span ng-show="credits_type==='fee'">Fee</span> Credits</span>
               </div>
             </div>
 
