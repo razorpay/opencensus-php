@@ -131,4 +131,38 @@ class CreditsTest extends TestCase
         $this->assertEquals(1050000, $nodalBalance['balance']);
         $this->assertEquals(10000 - $txn['fee_credits'], $nodalBalance['fee_credits']);
     }
+
+    // We authorize, check the fields and capture the payment. We then check if
+    // credits are updated or not.
+    public function testFeeCredits2()
+    {
+        $this->fixtures->merchant->editFeeCredits('10000', '10000000000000');
+        $this->fixtures->merchant->editCreditsforNodalAccount('10000', 'fee');
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment = $this->doAuthPayment($payment);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+        $this->assertEquals(1000000, $balance['balance']);
+        $this->assertEquals(10000, $balance['fee_credits']);
+
+        $nodalBalance = $this->getNodalAccountBalance();
+        $this->assertEquals(1050000, $nodalBalance['balance']);
+        $this->assertEquals(10000, $nodalBalance['fee_credits']);
+
+        $this->capturePayment($payment['razorpay_payment_id'], '50000');
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+        $txn = $this->getLastEntity('transaction', true);
+        $nodalBalance = $this->getNodalAccountBalance();
+
+        $this->assertEquals($txn['fee_credits'], $txn['fee']);
+        $this->assertEquals(false, $txn['gratis']);
+
+        $this->assertEquals(1050000, $balance['balance']);
+        $this->assertEquals(10000 - $txn['fee_credits'], $balance['fee_credits']);
+
+        $this->assertEquals(1050000, $nodalBalance['balance']);
+        $this->assertEquals(10000 - $txn['fee_credits'], $nodalBalance['fee_credits']);
+    }
 }
