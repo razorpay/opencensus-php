@@ -295,7 +295,7 @@ trait Callback
 
                 $this->repo->saveOrFail($payment);
 
-                $this->api['segment']->trackPayment($payment,
+                $this->app['segment']->trackPayment($payment,
                                                     ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT);
 
                 break;

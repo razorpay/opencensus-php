@@ -326,7 +326,7 @@ trait Refund
         }
         catch (Exception\BaseException $e)
         {
-            $this->api['segment']->trackPayment($this->payment, TraceCode::PAYMENT_REFUND_FAILURE);
+            $this->app['segment']->trackPayment($this->payment, TraceCode::PAYMENT_REFUND_FAILURE);
 
             $this->tracePaymentFailed(
                     $e->getError(),
@@ -424,7 +424,7 @@ trait Refund
 
         $this->tracePaymentInfo(TraceCode::PAYMENT_REFUND_SUCCESS);
 
-        $this->api['segment']->trackPayment($this->payment, TraceCode::PAYMENT_REFUND_SUCCESS);
+        $this->app['segment']->trackPayment($this->payment, TraceCode::PAYMENT_REFUND_SUCCESS);
     }
 
     protected function validateMerchantBalance($refund)
@@ -442,7 +442,7 @@ trait Refund
                 ];
             $this->trace->info(TraceCode::PAYMENT_REFUND_FAILURE, $traceMessage);
 
-            $this->api['segment']->trackPayment($refund->payment, TraceCode::PAYMENT_REFUND_FAILURE, $traceMessage);
+            $this->app['segment']->trackPayment($refund->payment, TraceCode::PAYMENT_REFUND_FAILURE, $traceMessage);
 
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE);

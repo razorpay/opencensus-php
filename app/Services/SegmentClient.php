@@ -19,21 +19,22 @@ class SegmentClient
 
     const LUMBERJACK_SEGMENT_URLPATTERN = 'segment_post';
 
-    const CARD_NUMBER = 'card.number';
-
-    const GATEWAY_CARD_NUMBER = 'terminal_gateway_input.card.number';
-
-    const CVV = 'card.cvv';
-
-    const GATEWAY_CVV = 'terminal_gateway_input.card.cvv';
-
     const VERSION = "1.0";
 
+    // list of sensitive keys to exclude from sengding to segment
+    // even if the api has these variables
+
     const SENSITIVE_KEYS = [
-        self::CARD_NUMBER,
-        self::GATEWAY_CARD_NUMBER,
-        self::CVV,
-        self::GATEWAY_CVV,
+        'CARD_NUMBER' => 'card.number',
+        'GATEWAY_CARD_NUMBER' => 'terminal_gateway_input.card.number',
+        'CVV' => 'card.cvv',
+        'CARD_ID' => 'card.id',
+        'GATEWAY_CVV' => 'terminal_gateway_input.card.cvv',
+        'CARD_IIN' => 'card.iin',
+        'CARD_LAST4' => 'card.last4',
+        'CARD_EXP_MONTH' => 'card.expiry_month',
+        'CARD_EXP_YEAR' => 'card.expiry_year',
+        'PAYMENT_CARD_ID' => 'payment.card_id'
     ];
 
     public function __construct($app)
@@ -163,12 +164,26 @@ class SegmentClient
         // TODO: make this async using guzzler async events
         $client = new Client(['headers' => $headers]);
 
-        $response = $client->request('POST', $url, ['json' => $data]);
+        try
+        {
+            $response = $client->request('POST', $url, ['json' => $data]);
+        }
+        catch(\Exception $e)
+        {
+            $traceMessage = [
+                'message' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'trace' => $e->getTraceAsString()
+            ];
+
+            $this->trace->warning(TraceCode::SEGMENT_POST_FAILED, $traceMessage);
+        }
+
     }
 
     protected function removeSensitiveInformation(array & $properties)
     {
-        foreach (self::SENSITIVE_KEYS as $key)
+        foreach (self::SENSITIVE_KEYS as $name => $key)
         {
             if (array_key_exists($key, $properties))
             {

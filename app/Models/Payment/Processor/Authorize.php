@@ -505,7 +505,7 @@ trait Authorize
 
             if ($flag === false)
             {
-                $this->api['segment']->trackPayment($payment,
+                $this->app['segment']->trackPayment($payment,
                                                     TraceCode::SEGMENT_PAYMENT_FAILED_EXPECTED_GATEWAY_SUCCESS,
                                                     $data);
 
@@ -518,7 +518,7 @@ trait Authorize
 
             if ($payment->isStatusCreatedOrFailed() === false)
             {
-                $this->api['segment']->trackPayment($payment,
+                $this->app['segment']->trackPayment($payment,
                                                     TraceCode::SEGMENT_PAYMENT_ALREADY_AUTHORIZED,
                                                     $data);
 
