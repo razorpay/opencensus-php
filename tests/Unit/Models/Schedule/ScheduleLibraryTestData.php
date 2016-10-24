@@ -99,4 +99,96 @@ return [
             'next_run'    => 1451932200,
         ],
     ],
+
+    'testEndOfEveryMonthSchedule' => [
+        'cases' => [
+            //Initial time is 21st September. Expected time is end
+            //of month, 30th September.
+            [
+                'initialTime' => "2016-09-21 20:57:59",
+                'expectedNextTime' => "2016-09-30 00:00:00"
+            ],
+            //Initial time is 21st October. End of month is
+            //31st October, but 31st is Diwali. So expected
+            //time is 1st November.
+            [
+                'initialTime' => "2016-10-21 20:57:59",
+                'expectedNextTime' => "2016-11-01 00:00:00"
+            ],
+        ],
+        'schedule' => [
+            'name'        => 'End of Month',
+            'merchant_id' => '100000Razorpay',
+            'type'        => 'settlement',
+            'period'      => 'monthly-date',
+            'interval'    => null,
+            'anchor'      => -1,
+            'delay'       => 2,
+            'next_run'    => null,
+        ],
+    ],
+
+    'testTenthOfEveryMonthSchedule' => [
+        'cases' => [
+            //Initial time is 21st September. Expected time
+            //is 10th of next month.
+            [
+                'initialTime' => "2016-09-21 20:57:59",
+                'expectedNextTime' => "2016-10-10 00:00:00"
+            ],
+        ],
+        'schedule' => [
+            'name'        => '10th of Month',
+            'merchant_id' => '100000Razorpay',
+            'type'        => 'settlement',
+            'period'      => 'monthly-date',
+            'interval'    => null,
+            'anchor'      => 10,
+            'delay'       => 2,
+            'next_run'    => null,
+        ],
+    ],
+
+    'testSecondWeekOfEveryMonthSchedule' => [
+        'cases' => [
+            //Initial time is 21st October. Second Monday
+            //is on the 10th, so expected time is 10th October.
+            [
+                'initialTime' => "2016-10-01 20:57:59",
+                'expectedNextTime' => "2016-10-10 00:00:00"
+            ],
+        ],
+        'schedule' => [
+            'name'        => 'Second week of Month',
+            'merchant_id' => '100000Razorpay',
+            'type'        => 'settlement',
+            'period'      => 'monthly-week',
+            'interval'    => null,
+            'anchor'      => 2,
+            'delay'       => 2,
+            'next_run'    => null,
+        ],
+    ],
+
+    'testLastMondayOfEveryMonthSchedule' => [
+        'cases' => [
+            //Initial time is 21st October. Last Monday
+            //is on the 31st, on Diwali. So expected time
+            //is 1st Novermber.
+            [
+                'initialTime' => "2016-10-01 20:57:59",
+                'expectedNextTime' => "2016-11-01 00:00:00"
+            ],
+        ],
+        'schedule' => [
+            'name'        => 'Last week of Month',
+            'merchant_id' => '100000Razorpay',
+            'type'        => 'settlement',
+            'period'      => 'monthly-week',
+            'interval'    => null,
+            'anchor'      => -1,
+            'delay'       => 2,
+            'next_run'    => null,
+        ],
+    ],
 ];

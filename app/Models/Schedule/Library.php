@@ -105,6 +105,13 @@ class Library
             // Mapping for period to Carbon methods
             $check = Anchor::CHECKS[$schedule->getPeriod()];
 
+            // For monthly-week periods, ensure that weekday is Monday
+            if (($schedule->getPeriod() === Period::MONTHLY_WEEK) and
+                ($time->dayOfWeek !== Carbon::MONDAY))
+            {
+                return false;
+            }
+
             return ($time->$check === $schedule->getAnchor());
         }
         else
@@ -112,12 +119,12 @@ class Library
             // Last date of the month
             if ($schedule->getPeriod() === Period::MONTHLY_DATE)
             {
-                return ($time->day === $time->lastOfMonth()->day);
+                return ($time->day === $time->copy()->lastOfMonth()->day);
             }
             // Last week of the month
             else if ($schedule->getPeriod() === Period::MONTHLY_WEEK)
             {
-                return ($time->day === $time->lastOfMonth(Carbon::Monday)->day);
+                return ($time->day === $time->copy()->lastOfMonth(Carbon::MONDAY)->day);
             }
         }
     }

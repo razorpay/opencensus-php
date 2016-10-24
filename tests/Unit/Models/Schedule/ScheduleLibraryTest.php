@@ -42,6 +42,42 @@ class ScheduleLibraryTest extends TestCase
         $this->runCaseWiseScheduleTest($tuesdaySchedule, $data['cases']);
     }
 
+    public function testEndOfEveryMonthSchedule()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $endMonthSchedule = new Schedule\Entity($data['schedule']);
+
+        $this->runCaseWiseScheduleTest($endMonthSchedule, $data['cases']);
+    }
+
+    public function testTenthOfEveryMonthSchedule()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $tenthOfMonthSchedule = new Schedule\Entity($data['schedule']);
+
+        $this->runCaseWiseScheduleTest($tenthOfMonthSchedule, $data['cases']);
+    }
+
+    public function testSecondWeekOfEveryMonthSchedule()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $secondWeekSchedule = new Schedule\Entity($data['schedule']);
+
+        $this->runCaseWiseScheduleTest($secondWeekSchedule, $data['cases']);
+    }
+
+    public function testLastMondayOfEveryMonthSchedule()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $lastWeekSchedule = new Schedule\Entity($data['schedule']);
+
+        $this->runCaseWiseScheduleTest($lastWeekSchedule, $data['cases']);
+    }
+
     private function runCaseWiseScheduleTest($schedule, $cases)
     {
         foreach ($cases as $case)

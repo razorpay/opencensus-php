@@ -26,6 +26,17 @@ class ScheduleTest extends TestCase
         $this->createSchedule();
     }
 
+    public function testScheduleDefaultAnchor()
+    {
+        $request = $this->getValidScheduleBody();
+
+        unset($request['content']['anchor']);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(Carbon::MONDAY, $response['anchor']);
+    }
+
     public function testScheduleInvalidPeriod()
     {
         $request = $this->getValidScheduleBody();
