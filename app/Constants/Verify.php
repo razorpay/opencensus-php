@@ -14,7 +14,7 @@ class Verify
      * Hence, at max, verify for the payment (when it is in created state) will be run 5 times.
      */
     protected static $createdStartBoundary = [
-        1 => 120,           // 2 Minutes
+        120,           // 2 Minutes
     ];
 
     /**
@@ -22,8 +22,8 @@ class Verify
      * verify for the payment will be run once for in every boundary bucket.
      */
     protected static $failureStartBoundary = [
-        1 => 900,           // 15 Minutes
-        2 => 3600,          // 60 Minutes
+        900,           // 15 Minutes
+        3600,          // 60 Minutes
         // TODO: Decide on the boundaries.
     ];
 

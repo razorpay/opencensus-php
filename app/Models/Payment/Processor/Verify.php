@@ -108,7 +108,7 @@ trait Verify
             $nextVerifyBucket = $currentVerifyBucket + 1;
 
             // We need to set the next verify bucket for the cron to pick up.
-            $payment->setVerifyBucket($nextVerifyBucket + 1);
+            $payment->setVerifyBucket($nextVerifyBucket);
         }
 
         $payment->setVerified($verifyStatus);
@@ -116,19 +116,31 @@ trait Verify
         $this->repo->saveOrFail($payment);
     }
 
+    /**
+     * Gets the verify bucket in which the current
+     * diff (current_time - payment_created_at) falls in.
+     * For example: If greater than 15 minutes, the verify_bucket
+     * will be 1. If greater than 1 hour, the verify_bucket will be 2.
+     *
+     * @param $diff
+     * @param $boundaries
+     * @return int
+     */
     protected function getCurrentVerifyBucket($diff, $boundaries)
     {
-        $verifyBucket = 0;
+        $currentVerifyBucket = $verifyBucket = 0;
 
-        foreach ($boundaries as $key => $value)
+        foreach ($boundaries as $boundary)
         {
-            if ($diff >= $value)
+            $verifyBucket += 1;
+
+            if ($diff >= $boundary)
             {
-                $verifyBucket = $key;
+                $currentVerifyBucket = $verifyBucket;
             }
         }
 
-        return $verifyBucket;
+        return $currentVerifyBucket;
     }
 
     protected function notifyInSlack(array $data)
