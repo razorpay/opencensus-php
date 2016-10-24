@@ -22,8 +22,15 @@ class Verify
      * verify for the payment will be run once for in every boundary bucket.
      */
     protected static $failureStartBoundary = [
-        900,           // 15 Minutes
-        3600,          // 60 Minutes
+        15,            // 15 Minutes
+        60,            // 60 Minutes
+        1440,          // 1 Day
+        2880,          // 2 Day
+        4320,          // 3 Day
+        5760,          // 4 Day
+        7200,          // 5 Day
+        8640,          // 6 Day
+        10080,         // 7 Day
         // TODO: Decide on the boundaries.
     ];
 
@@ -98,7 +105,7 @@ class Verify
             // TODO: remove 'created', 'failure', 'error' and 'all' filter
             case 'created':
             case self::PAYMENTS_CREATED:
-                $boundary = self::$createdStartBoundary;
+                $boundaries = self::$createdStartBoundary;
                 break;
 
             case 'failure':
@@ -107,14 +114,13 @@ class Verify
             case 'all':
             case self::PAYMENTS_FAILED:
 
-                $boundary = self::$failureStartBoundary;
+                $boundaries = self::$failureStartBoundary;
 
-                // failureStartBoundary contains only the boundaries in a day.
-                // We need to add the daily boundaries also in this.
-                foreach (range (1, self::DEFAULT_MAX_DAYS) as $day)
+                // Converts Minutes to Seconds
+                $boundaries = array_map(function($boundary)
                 {
-                    $boundary[] = $day * self::SECONDS_IN_DAY;
-                }
+                    return $boundary * 60;
+                }, $boundaries);
 
                 break;
 
@@ -122,6 +128,6 @@ class Verify
                 throw new Exception\LogicException('Unknown filter provided.', null, ['filter' => $filter]);
         }
 
-        return $boundary;
+        return $boundaries;
     }
 }
