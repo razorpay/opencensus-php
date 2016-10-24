@@ -70,24 +70,24 @@ class VerifyTest extends TestCase
 
     public function testVerifyMultipleFailedPayments()
     {
-        $createdAt = time() - 60 * 60;
+        $createdAt = time() - 3 * 60;
 
         $payment = $this->fixtures->create(
             'payment:netbanking_failed', ['created_at' => $createdAt]);
 
-        $createdAt = time() - 60 * 60 - 86400;
+        $createdAt = time() - 4 * 60;
 
         $payment2 = $this->fixtures->create(
             'payment:netbanking_failed', ['created_at' => $createdAt]);
 
-        $request = [
-            'url' => '/payments/verify/all',
-            'method' => 'post'
-        ];
-
         $this->ba->appAuth();
 
-        //TODO: add verify result and call runVerifyForMaxPeriod
+        $result = [
+            'all'     => 2,
+            'none'    => 0,
+        ];
+
+        $this->runVerifyForMaxPeriod($result);
     }
 
     public function testVerifySingleFailedPayments()
@@ -102,18 +102,69 @@ class VerifyTest extends TestCase
         $this->runVerifyForMaxPeriod();
     }
 
-    protected function runVerifyForMaxPeriod($verifiedResultArray = ['all' =>1, 'partial' => 0,'none'=> 0])
+    public function testVerifySingleCreatedPayments()
     {
+        $createdAt = time() - 3*60;
+
+        $payment = $this->fixtures->create(
+            'payment:netbanking_created', ['created_at' => $createdAt]);
+
+        $this->ba->appAuth();
+
+        $verifiedResultArray = [
+            'filter'  => 'payments_created',
+            'all'     => 1,
+            'none'    => 0,
+        ];
+
+        $filter = $verifiedResultArray['filter'];
+
         $time = new Carbon('now');
 
         $request = [
-            'url' => '/payments/verify/all',
+            'url' => '/payments/verify/'. $filter,
             'method' => 'post'
         ];
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertContent($content, ['verified' => $verifiedResultArray['all']]);
+        $this->assertContent($content, $verifiedResultArray['all'], $filter);
+
+        foreach ( range(0, 5) as $index)
+        {
+            $time->addSeconds(150);
+
+            Carbon::setTestNow($time);
+
+            $content = $this->makeRequestAndGetContent($request);
+
+            $this->assertContent($content, $verifiedResultArray['all'], $filter);
+        }
+    }
+
+    protected function runVerifyForMaxPeriod($verifiedResultArray = null)
+    {
+        if ($verifiedResultArray === null)
+        {
+            $verifiedResultArray = [
+                'filter'  => 'payments_failed',
+                'all'     => 1,
+                'none'    => 0,
+            ];
+        }
+
+        $filter = $verifiedResultArray['filter'];
+
+        $time = new Carbon('now');
+
+        $request = [
+            'url' => '/payments/verify/'. $filter,
+            'method' => 'post'
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertContent($content, $verifiedResultArray['all'], $filter);
 
         $time->addMinutes(15);
 
@@ -121,11 +172,11 @@ class VerifyTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertContent($content, ['verified' => $verifiedResultArray['all']]);
+        $this->assertContent($content, $verifiedResultArray['all'], $filter);
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertContent($content, ['verified' => $verifiedResultArray['none']]);
+        $this->assertContent($content, $verifiedResultArray['none'], $filter);
 
         $time->addMinutes(45);
 
@@ -133,11 +184,11 @@ class VerifyTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertContent($content, ['verified' => $verifiedResultArray['all']]);
+        $this->assertContent($content, $verifiedResultArray['all'], $filter);
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertContent($content, ['verified' => $verifiedResultArray['none']]);
+        $this->assertContent($content, $verifiedResultArray['none'], $filter);
 
         foreach (range(1, 7) as $day)
         {
@@ -147,11 +198,11 @@ class VerifyTest extends TestCase
 
             $content = $this->makeRequestAndGetContent($request);
 
-            $this->assertContent($content, ['verified' => $verifiedResultArray['all']]);
+            $this->assertContent($content, $verifiedResultArray['all'], $filter);
 
             $content = $this->makeRequestAndGetContent($request);
 
-            $this->assertContent($content, ['verified' => $verifiedResultArray['none']]);
+            $this->assertContent($content, $verifiedResultArray['none'], $filter);
         }
 
         $time->addDay(1);
@@ -160,25 +211,22 @@ class VerifyTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertContent($content, ['verified' => $verifiedResultArray['none']]);
+        $this->assertContent($content, $verifiedResultArray['none'], $filter);
     }
 
-    protected function assertContent(array $content, array $param = [])
+    protected function assertContent(array $content, $verified, $filter)
     {
         unset($content['totalTime']);
 
         $defaultParams = [
-            'filter'            => 'all',
-            'verified'          => 1,
+            'filter'            => $filter,
+            'verified'          => $verified,
             'authorized/failed' => 0,
             'timed out'         => 0,
             'error'             => 0,
             'authorizedTime'    => 0,
         ];
 
-        $defaultParams = array_merge($defaultParams, $param);
-
         $this->assertEquals($defaultParams, $content);
-
     }
 }
