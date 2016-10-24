@@ -416,6 +416,8 @@ trait Authorize
 
         $gatewayInput['callbackUrl'] = $this->getCallbackUrl();
 
+        $gatewayInput['otpSubmitUrl'] = $this->getOtpSubmitUrl();
+
         if ($payment->order)
         {
             $gatewayInput['order'] = $payment->order->toArray();
@@ -1337,17 +1339,29 @@ trait Authorize
 
             $data['otp_resend'] = $otpResend;
 
-            $this->callGatewayFunction('otpGenerate', $data);
+            $request = $this->callGatewayFunction('otpGenerate', $data);
 
+            return $this->processOtpFlowResponse($request, $payment);
+        }
+        catch (Exception\BaseException $e)
+        {
+            $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
+
+            throw $e;
+        }
+    }
+
+    protected function processOtpFlowResponse($request, $payment): array
+    {
+        if ($request !== null)
+        {
             $payment->incrementOtpCount();
+
             $payment->save();
 
             $returnData = [
                 'type' => 'otp',
-                'request' => [
-                    'url' => $this->getOtpSubmitUrl(),
-                    'method' => 'post',
-                ],
+                'request' => $request,
                 'version' => 1,
                 'payment_id' => $payment->getPublicId(),
                 'gateway' => $this->getEncryptedGatewayText($payment->getGateway()),
@@ -1360,12 +1374,6 @@ trait Authorize
             $this->app['segment']->trackPayment($payment, TraceCode::SEGMENT_OTP_GENERATE, $returnData);
 
             return $returnData;
-        }
-        catch (Exception\BaseException $e)
-        {
-            $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
-
-            throw $e;
         }
     }
 

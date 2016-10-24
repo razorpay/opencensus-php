@@ -139,6 +139,8 @@ class Gateway extends Base\Gateway
                 $code,
                 $message);
         }
+
+        return $this->getOtpSubmitRequest($input);
     }
 
     public function callbackOtpSubmit(array $input)

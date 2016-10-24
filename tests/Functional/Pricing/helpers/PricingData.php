@@ -70,7 +70,7 @@ return [
                 'rules' => array(
                     array(
                         'plan_name' => 'TestUploadPlan2',
-                        'payment_method' => 'card',
+                        'payment_method' => 'netbanking',
                         'percent_rate' => 1000,
                         'international' => false,
                         'amount_range_active' => false,
@@ -79,13 +79,13 @@ return [
                     ),
                     array(
                         'plan_name' => 'TestUploadPlan2',
-                        'payment_method' => 'netbanking',
+                        'payment_method' => 'card',
                         'percent_rate' => 1000,
                         'international' => false,
                         'amount_range_active' => false,
                         'amount_range_min' => null,
                         'amount_range_max' => null,
-                    )
+                    ),
                 ),
             ],
         ],

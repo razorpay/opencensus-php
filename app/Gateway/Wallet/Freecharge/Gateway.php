@@ -137,6 +137,8 @@ class Gateway extends Base\Gateway
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_WALLET_USER_DOES_NOT_EXIST);
         }
+
+        return $this->getOtpSubmitRequest($input);
     }
 
     /*
@@ -168,6 +170,8 @@ class Gateway extends Base\Gateway
             $input['payment']['id'], Action::AUTHORIZE);
 
         $this->updateGatewayPaymentEntity($wallet, ['otpId' => $otpId]);
+
+        return $this->getOtpSubmitRequest($input);
     }
 
     public function callbackOtpSubmit(array $input)
