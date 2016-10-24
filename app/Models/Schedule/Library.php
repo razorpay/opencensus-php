@@ -23,7 +23,6 @@ class Library
         return $nextRun->getTimeStamp();
     }
 
-
     // ----------------------- Protected methods -----------------------
 
     protected static function computeFutureRun($schedule, $settledAt, $nextRun)
@@ -44,17 +43,16 @@ class Library
     {
         $settledAt = $settledAt->addDay()->hour(0)->minute(0)->second(0);
 
-        $stepType = Steps::ANCHORED_STEP;
-
-        $step = 'add' . $stepType;
+        $step = self::getStep($schedule, Steps::ANCHORED_STEPS);
 
         while (self::checkAnchor($settledAt, $schedule) === false)
         {
             $settledAt->$step();
         }
-        while (Holidays::isWorkingDay($settledAt) === false)
+
+        if (Holidays::isWorkingDay($settledAt) === false)
         {
-            $settledAt->$step();
+            $settledAt = Holidays::getNextWorkingDay($settledAt);
         }
 
         return $settledAt;
@@ -69,6 +67,11 @@ class Library
         while ($settledAt > $nextRun)
         {
             $nextRun->$step($interval);
+        }
+
+        if (Holidays::isWorkingDay($nextRun) === false)
+        {
+            $nextRun = Holidays::getNextWorkingDay($nextRun);
         }
 
         return $nextRun;
@@ -110,25 +113,12 @@ class Library
             // Now jump forward in days instead of hours.
             if (Holidays::isWorkingDay($current) === false)
             {
-                $current = $current->addDay()->hour(0)->minute(0)->second(0);
-
-                while (Holidays::isWorkingDay($current) === false)
-                {
-                    $current->addDay();
-                }
+                $current = Holidays::getNextWorkingDay($current);
             }
         }
         else
         {
-            while ($minimumDelay > 0)
-            {
-                $current->addDay();
-
-                if (Holidays::isWorkingDay($current) === true)
-                {
-                    $minimumDelay--;
-                }
-            }
+            $current = Holidays::getNthWorkingDayFrom($current, $minimumDelay);
         }
 
         return $current;
