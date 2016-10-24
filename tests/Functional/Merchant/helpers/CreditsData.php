@@ -139,7 +139,7 @@ return [
         ],
     ],
 
-    'testCreditsGrantedInCampaign' => [
+    'testAmountCreditsGrantedInCampaign' => [
         'request' => [
             'url' => '/credits/?campaign=silent-ads',
             'method' => 'get',
@@ -152,10 +152,38 @@ return [
                     [
                         'campaign' => "silent-ads",
                         'value' => 90,
+                        'type'  => 'amount',
                     ],
                     [
                         'campaign' => "silent-ads",
                         'value' => 90,
+                        'type' => 'amount',
+                    ],
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testFeeCreditsGrantedInCampaign' => [
+        'request' => [
+            'url' => '/credits/?campaign=silent-ads',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => "collection",
+                'count' => 2,
+                'items' => [
+                    [
+                        'campaign' => "silent-ads",
+                        'value' => 90,
+                        'type'  => 'fee',
+                    ],
+                    [
+                        'campaign' => "silent-ads",
+                        'value' => 90,
+                        'type' => 'fee',
                     ],
                 ],
             ],
