@@ -178,7 +178,8 @@ class TraceFields
     /**
      * Return fields for a trace event
      *
-     * @param $eventCode event code
+     * @param string $traceCode event code
+     * @return array|mixed
      */
     public static function getFields($traceCode)
     {
