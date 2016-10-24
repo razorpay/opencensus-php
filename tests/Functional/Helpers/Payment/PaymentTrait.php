@@ -1117,7 +1117,9 @@ trait PaymentTrait
         $var = 'mock_' . $this->gateway;
 
         if (isset($gateway[$var]))
+        {
             return $gateway['mock_' . $this->gateway];
+        }
 
         return false;
     }

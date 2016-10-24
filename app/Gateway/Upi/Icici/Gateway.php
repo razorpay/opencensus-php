@@ -334,10 +334,10 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_REQUEST,
             [
-                'request' => $request,
+                'request'           => $request,
                 'decrypted_content' => $data,
-                'gateway' => 'upi_icici',
-                'payment_id' => $input['payment']['id'],
+                'gateway'           => $this->gateway,
+                'payment_id'        => $input['payment']['id'],
             ]);
 
         return $request;

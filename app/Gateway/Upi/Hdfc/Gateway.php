@@ -27,8 +27,13 @@ class Gateway extends Base\Gateway
 
     const BANK = 'hdfc';
 
-    protected $map = array(
+    // Expiry timeout in minutes
+    const EXPIRY_TIMEOUT = 5;
 
+    protected $map = array(
+        ResponseFields::PAYER_VA          => Entity::VPA,
+        ResponseFields::STATUS            => Entity::STATUS_CODE,
+        ResponseFields::UPI_TXN_ID        => Entity::GATEWAY_PAYMENT_ID,
     );
 
     /**
@@ -39,6 +44,34 @@ class Gateway extends Base\Gateway
     public function authorize(array $input)
     {
         parent::authorize($input);
+
+        $attributes = $this->getGatewayEntityAttributes($input);
+
+        $payment = $this->createGatewayPaymentEntity($attributes);
+
+        $request =  $this->getAuthorizeRequestArray($input);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $response = $this->parseGatewayResponse($response->body);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $response);
+
+        $this->updateGatewayPaymentResponse($payment, $response);
+
+        $status = $response[ResponseFields::STATUS];
+
+        if ($status !== Status::SUCCESS)
+        {
+            $errorCode = ResponseCodeMap::getApiErrorCode($status);
+
+            throw new Exception\GatewayErrorException(
+                $errorCode,
+                $status,
+                ResponseCode::getResponseMessage($status));
+        }
+
+        return true;
     }
 
     /**
@@ -58,15 +91,24 @@ class Gateway extends Base\Gateway
      * @param  string $response
      * @param  string $type type of request
      */
-    protected function parseGatewayResponse($response, $type = 'collect')
+    protected function parseGatewayResponse($responseBody, $type = 'collect')
     {
+        $response = $this->decrypt($responseBody);
+
         $fields = [];
         switch ($type) {
             case 'collect':
+
+                // There are lots of additional dummy fields
+                // after this, which we ignore
                 $fields = [
-                    'OrderNo', 'UPI Txn Id', 'amount', 'status', 'status desc',
-                    'payer VA', 'payeeVA', 'add1', 'add2', 'add3', 'add4', 'add5',
-                    'add6', 'add7', 'add8', 'add9', 'add10'
+                    ResponseFields::PAYMENT_ID,
+                    ResponseFields::UPI_TXN_ID,
+                    ResponseFields::AMOUNT,
+                    ResponseFields::STATUS,
+                    ResponseFields::STATUS_DESCRIPTION,
+                    ResponseFields::PAYER_VA,
+                    ResponseFields::PAYEE_VA,
                 ];
 
                 break;
@@ -90,11 +132,12 @@ class Gateway extends Base\Gateway
         }
 
         $values = explode('|', $response);
+
         $response = [];
 
-        foreach ($values as $index => $value)
+        foreach ($fields as $index => $key)
         {
-            $response[$fields[$index]] = $value;
+            $response[$key]     =   $values[$index];
         }
 
         return $response;
@@ -136,7 +179,6 @@ class Gateway extends Base\Gateway
         if ($this->mode === Mode::LIVE)
         {
             $key = $this->config['live_merchant_key'];
-
         }
 
         return hex2bin($key);
@@ -154,8 +196,6 @@ class Gateway extends Base\Gateway
         {
             $type = $this->action;
         }
-
-        $type = "{$this->mode}_{$type}";
 
         return parent::getUrl($type);
     }
@@ -209,10 +249,14 @@ class Gateway extends Base\Gateway
     {
         $payment = $input['payment'];
 
-        $collectByTimestamp = Carbon::now('Asia/Kolkata')->addMinutes(5)->format('d/m/Y h:i A');
-
         $data = [
-            // TODO
+            $this->getMerchantId(),
+            $input['payment']['id'],
+            $input['payment']['vpa'],
+            $this->formatAmount($payment['amount']),
+            $this->getPaymentRemark($input),
+            self::EXPIRY_TIMEOUT,
+            $this->getMCCCode($input),
         ];
 
         $content = $this->transformRequestArrayToContent($data);
@@ -223,11 +267,17 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_PAYMENT_REQUEST,
             [
                 'decrypted_content' => $data,
-                'gateway' => 'upi_hdfc',
-                'payment_id' => $input['payment']['id'],
+                'encrypted'         => $content,
+                'gateway'           => $this->gateway,
+                'payment_id'        => $input['payment']['id'],
             ]);
 
         return $request;
+    }
+
+    protected function getMCCCode(array $input)
+    {
+        return $input['merchant']['category'];
     }
 
     /**
@@ -239,7 +289,9 @@ class Gateway extends Base\Gateway
     {
         $description = $input['merchant']->getBillingLabelElseName();
 
-        return ($description ? substr($description, 0, 50) : 'Pay via Razorpay');
+        $remark = ($description ? substr($description, 0, 50) : 'Pay via Razorpay');
+
+        return str_replace('|', ' ', $remark);
     }
 
     /**
@@ -250,10 +302,21 @@ class Gateway extends Base\Gateway
      */
     protected function transformRequestArrayToContent(array $data)
     {
-        // TODO: Make sure none of the fields contain a `pipe`
-        // Then join and return
+        // We have space for 10 extra fields that we don't use
+        $suffixArray = array_fill(0, 10, 'NA');
 
-        return implode('|', $data);
+        $data = array_merge($data, $suffixArray);
+
+        $data = implode('|', $data);
+
+        $msg = $this->encrypt($data);
+
+        $json = [
+            'requestMsg'    =>  $msg,
+            'pgMerchantId'  =>  $this->getMerchantId(),
+        ];
+
+        return json_encode($json);
     }
 
     protected function updateGatewayPaymentResponse($payment, array $response)

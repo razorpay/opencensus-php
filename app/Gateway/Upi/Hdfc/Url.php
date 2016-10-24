@@ -4,11 +4,12 @@ namespace RZP\Gateway\Upi\Hdfc;
 
 class Url
 {
-    const TEST_DOMAIN       = '';
+    const TEST_DOMAIN       = 'https://upitest.hdfcbank.com';
     const LIVE_DOMAIN       = 'https://upitest.hdfcbank.com';
 
+    const AUTHORIZE    = '/upi/meTransCollectSvc';
+
     // TODO: placeholders for now
-    const AUTHORIZE    = '/authorize';
     const VERIFY       = '/status';
     const REFUND       = '/refund';
 }
