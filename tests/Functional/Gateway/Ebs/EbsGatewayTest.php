@@ -374,6 +374,8 @@ class EbsGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals($payment['status'], 'authorized');
+
+        Carbon::setTestNow();
     }
     protected function checkContent(array $content, array $param)
     {
