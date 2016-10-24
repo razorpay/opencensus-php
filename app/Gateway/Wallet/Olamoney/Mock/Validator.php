@@ -23,6 +23,7 @@ class Validator extends Base\Validator
         RequestFields::BILL . '.' . RequestFields::AMOUNT                   => 'required|numeric',
         RequestFields::BILL . '.' . RequestFields::COMMENTS                 => 'sometimes|string',
         RequestFields::BILL . '.' . RequestFields::UDF                      => 'required|string',
+        RequestFields::PHONE                                                => 'sometimes|string|size:10',
     );
 
     protected static $otpGenerateRules = array(
