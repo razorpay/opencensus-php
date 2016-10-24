@@ -96,7 +96,6 @@ trait Authorize
 
             $segmentCustomProps = [
                                     'terminals'                 => $this->selectedTerminals,
-                                    'terminal_gateway_input'    => $terminalGatewayInput,
                                     'selected_terminal'         => $currentTerminal->toArrayPublic(),
                                     'retry_attempt'             => $retryAttempts
                                 ];
