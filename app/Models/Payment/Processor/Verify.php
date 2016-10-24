@@ -84,14 +84,12 @@ trait Verify
      */
     protected function updatePaymentVerified(Payment\Entity $payment, $verifyStatus, $filter)
     {
-
         // For Payment in created state, verify bucket should not be updated
         // as we want to run cron on specific interval, till payment is marked as failed/authorized
         // If filter is null, then verify is initiated manually, not via cron
         // Don't update VERIFY_BUCKET, in that case
         if (($payment->getStatus() !== Status::CREATED) and
-            (($this->app['basicauth']->isCron() === true) or
-            (($this->mode === 'test') and ($filter !== null))))
+            ($this->app['basicauth']->isCron() === true))
         {
             // Get Verify Boundary to update Verify Bucket
             $boundaries = Constants\Verify::getBoundaryInSeconds($filter);

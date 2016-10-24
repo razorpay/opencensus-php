@@ -37,7 +37,7 @@ class VerifyTest extends TestCase
 
         $this->payment = $this->fixtures->create('payment:captured');
 
-        $this->ba->privateAuth();
+        $this->ba->cronAuth();
     }
 
     public function testVerifySingleFailedPayments()
@@ -46,8 +46,6 @@ class VerifyTest extends TestCase
 
         $payment = $this->fixtures->create(
             'payment:netbanking_failed', ['created_at' => $createdAt]);
-
-        $this->ba->appAuth();
 
         $this->runVerifyForMaxPeriod();
     }
@@ -63,8 +61,6 @@ class VerifyTest extends TestCase
 
         $payment2 = $this->fixtures->create(
             'payment:netbanking_failed', ['created_at' => $createdAt]);
-
-        $this->ba->appAuth();
 
         $result = [
             'filter'  => 'payments_failed',
@@ -82,8 +78,6 @@ class VerifyTest extends TestCase
         $payment = $this->fixtures->create(
             'payment:netbanking_created', ['created_at' => $createdAt]);
 
-        $this->ba->appAuth();
-
         $verifiedResultArray = [
             'filter'  => 'payments_created',
             'all'     => 1,
@@ -92,7 +86,7 @@ class VerifyTest extends TestCase
 
         $filter = $verifiedResultArray['filter'];
 
-        $time = new Carbon('now');
+        $time = Carbon::now('Asia/Kolkata');
 
         $request = [
             'url' => '/payments/verify/'. $filter,
@@ -140,7 +134,7 @@ class VerifyTest extends TestCase
 
         $filter = $verifiedResultArray['filter'];
 
-        $time = new Carbon('now');
+        $time = Carbon::now('Asia/Kolkata');
 
         $request = [
             'url' => '/payments/verify/'. $filter,
@@ -284,14 +278,12 @@ class VerifyTest extends TestCase
 
         $this->getTimeoutInVerify();
 
-        $this->ba->appAuth();
-
         $request = [
             'url'    => '/payments/verify/payments_failed',
             'method' => 'post'
         ];
 
-        $time = new Carbon('now');
+        $time = Carbon::now('Asia/Kolkata');
 
         $time->addMinutes(15);
 
