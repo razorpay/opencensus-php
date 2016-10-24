@@ -180,7 +180,7 @@ class Repository extends Base\Repository
      * @param string $paymentStatus  value for filter of paymnetStatus
      * @return Collection of Payment
     */
-    public function getPaymentsToVerify($ts, $verifyBoundary, $verifyStatus = null, $paymentStatus = null)
+    public function getPaymentsToVerify($ts, $verifyBoundary, $verifyStatus = null, $paymentStatus = null, $random = false)
     {
         $verifyEnabledGateways = Payment\Gateway::$verifyEnabled;
 
@@ -199,9 +199,15 @@ class Repository extends Base\Repository
             $query->status($paymentStatus);
         }
 
+        if ($random)
+        {
+            $query->inRandomOrder();
+        }
+
         $this->addWhereQueryForVerify($query, $condition);
 
-        $query->orderBy(Payment\Entity::CREATED_AT, 'desc');
+        $query->orderBy(Payment\Entity::CREATED_AT, 'desc')
+            ->take(100);
 
         return $query->get();
     }

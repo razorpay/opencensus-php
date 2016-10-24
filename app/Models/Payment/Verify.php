@@ -99,12 +99,7 @@ class Verify
             $boundaryQueryData[$key] = Carbon::now()->timestamp - $value;
         }
 
-        $payments = $this->paymentRepo->getPaymentsToVerify($ts, $boundaryQueryData, $verifyStatus, $paymentStatus);
-
-        // Pick Random 100 values by shuffling and then slice for first 100 values
-        $payments->shuffle();
-
-        $payments->slice(0, 100);
+        $payments = $this->paymentRepo->getPaymentsToVerify($ts, $boundaryQueryData, $verifyStatus, $paymentStatus, true);
 
         return $this->verifyMultiplePayments($payments, $filter);
     }
