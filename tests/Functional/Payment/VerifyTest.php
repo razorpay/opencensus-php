@@ -83,6 +83,7 @@ class VerifyTest extends TestCase
         $this->ba->appAuth();
 
         $result = [
+            'filter'  => 'payments_failed',
             'all'     => 2,
             'none'    => 0,
         ];
