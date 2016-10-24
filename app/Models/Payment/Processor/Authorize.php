@@ -1126,9 +1126,9 @@ trait Authorize
             'razorpay_payment_id' => $payment->getPublicId()
         ];
 
-        if ($payment->getAutoCaptured() === true)
+        if ($payment->getApiOrderId() !== null)
         {
-            $this->fillReturnDataForAutoCaptureOrders($payment, $returnData);
+            $this->fillReturnDataWithOrder($payment, $returnData);
         }
 
         if ($payment->getCallbackUrl())
@@ -1139,7 +1139,7 @@ trait Authorize
         return $returnData;
     }
 
-    protected function fillReturnDataForAutoCaptureOrders(Payment\Entity $payment, & $data)
+    protected function fillReturnDataWithOrder(Payment\Entity $payment, & $data)
     {
         $data['razorpay_order_id'] = $payment->order->getPublicId();
 
