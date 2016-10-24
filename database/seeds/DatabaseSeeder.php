@@ -208,7 +208,7 @@ class DatabaseSeeder extends Seeder
                     'period'     => 'daily',
                     'interval'   => 1,
                     'anchor'     => null,
-                    'delay'      => 2,
+                    'delay'      => 3,
                     'next_run'   => 1451586600,
                     'created_at' => time(),
                     'updated_at' => time(),

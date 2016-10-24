@@ -52,7 +52,7 @@ class ScheduleLibraryTest extends TestCase
 
             $calculatedTime = $this->getFormattedTime($nextTime);
 
-            $this->assertEquals($calculatedTime, $case['expectedNextTime']);
+            $this->assertEquals($case['expectedNextTime'], $calculatedTime);
         }
     }
 
