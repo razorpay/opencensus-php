@@ -350,6 +350,8 @@ class Processor
      * made by Checkout
      * @param  string $id payment id
      * @return array
+     * @throws Exception\BadRequestException
+     * @throws Exception\LogicException
      */
     public function getAsyncResponse($id)
     {

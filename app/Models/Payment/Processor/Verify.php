@@ -14,13 +14,15 @@ use RZP\Models\Payment\Status;
 
 trait Verify
 {
-    /*
+    /**
      * Run Verify on a given Payment
      *
      * @param Payment\Entity $payment Payment for which verify should be ran
      * @param string         $filter  Filter used for running the verify
      *
      * @return array having refund and payment data
+     * @throws Exception\PaymentVerificationException
+     * @throws \Exception
      */
     public function verify(Payment\Entity $payment, $filter = null)
     {
@@ -72,8 +74,9 @@ trait Verify
         return $data;
     }
 
-    /*
+    /**
      * Update Payment attributes after running verify
+     *
      * @param Payment\Entity $payment       payment for which attributes should be updated
      * @param string         $verifyStatus  status of verify
      * @param string         $filter        filter used for running the verify
@@ -81,7 +84,8 @@ trait Verify
      */
     protected function updatePaymentVerified(Payment\Entity $payment, $verifyStatus, $filter)
     {
-        //For payment in created state don't update Payment
+        // If payment is in created state, we do not update
+        // the verify fields in the payment.
         if ($payment->getStatus() === Status::CREATED)
         {
             return;
@@ -89,32 +93,42 @@ trait Verify
 
         $app = App::getFacadeRoot();
 
-        //  if filter is null, then verify is initiated manually, not via Cron
-        //  Dont update VERIFY_BUCKET, in that case
+        // If filter is null, then verify is initiated manually, not via cron
+        // Don't update VERIFY_BUCKET, in that case
         if (($app['basicauth']->isCron() === true) or
             (($this->mode === 'test') and ($filter !== null)))
         {
             // Get Verify Boundary to update Verify Bucket
-            $boundary = Constants\Verify::getBoundaryInSeconds($filter);
+            $boundaries = Constants\Verify::getBoundaryInSeconds($filter);
 
             $diff = Carbon::now()->timestamp - $payment->getCreatedAt();
 
-            $verifyBucket = 0;
+            $currentVerifyBucket = $this->getCurrentVerifyBucket($diff, $boundaries);
 
-            foreach ($boundary as $key => $value)
-            {
-                if ($diff >= $value)
-                {
-                    $verifyBucket = $key;
-                }
-            }
+            $nextVerifyBucket = $currentVerifyBucket + 1;
 
-            $payment->setVerifyBucket($verifyBucket + 1);
+            // We need to set the next verify bucket for the cron to pick up.
+            $payment->setVerifyBucket($nextVerifyBucket + 1);
         }
 
         $payment->setVerified($verifyStatus);
 
         $this->repo->saveOrFail($payment);
+    }
+
+    protected function getCurrentVerifyBucket($diff, $boundaries)
+    {
+        $verifyBucket = 0;
+
+        foreach ($boundaries as $key => $value)
+        {
+            if ($diff >= $value)
+            {
+                $verifyBucket = $key;
+            }
+        }
+
+        return $verifyBucket;
     }
 
     protected function notifyInSlack(array $data)

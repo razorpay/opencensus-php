@@ -14,16 +14,16 @@ class Verify
      * Hence, at max, verify for the payment (when it is in created state) will be run 5 times.
      */
     protected static $createdStartBoundary = [
-        1 => 120,           // 2   Minutes
+        1 => 120,           // 2 Minutes
     ];
 
     /**
-     * For all the payments which are NOT in created state,
+     * For all the payments which are in failed state,
      * verify for the payment will be run once for in every boundary bucket.
      */
     protected static $failureStartBoundary = [
-        1 => 900,           // 15  Minutes
-        2 => 3600,          // 60  Minutes
+        1 => 900,           // 15 Minutes
+        2 => 3600,          // 60 Minutes
         // TODO: Decide on the boundaries.
     ];
 
@@ -38,25 +38,25 @@ class Verify
      * We do not use the payment_id directly because
      * it's already being used in the core flows of refund and capture.
      */
-    const KEY_SUFFIX        = '_verify';
+    const KEY_SUFFIX = '_verify';
 
-    const SECONDS_IN_DAY    = 86400;
+    const SECONDS_IN_DAY = 86400;
 
     /**
      * This is the minimum time for which the payment should be in
      * created state, before we run a "created" verify on it.
      */
-    const CREATED_MIN_TIME    = 120;  // 2 Minutes
+    const CREATED_MIN_TIME = 120;  // 2 Minutes
 
     // TODO: This is present here to ensure backward compatibility and
     // should be removed after the required changes in the cron are made.
-    const FAILURE_MIN_TIME        = 120;  // 2 Minutes
+    const FAILURE_MIN_TIME = 120;  // 2 Minutes
 
     /**
      * This is the minimum time for which the payment should be in
      * failed state, before we run a "failed/error" verify on it.
      */
-    const ERRORED_MIN_TIME    = 0;    // 0 Minute
+    const ERRORED_MIN_TIME = 0; // 0 Minute
 
     // ================== End Configurations ==================
 
@@ -86,16 +86,16 @@ class Verify
 
     // ================== End Verify Filter ==================
 
-    /*
-     * @param string $filter    filter for which boundary has to be returned
-     * @return array            verify boundary array
-     *
-    */
+    /**
+     * @param string $filter filter for which boundary has to be returned
+     * @return array verify boundary array
+     * @throws Exception\LogicException
+     */
     public static function getBoundaryInSeconds($filter)
     {
         switch($filter)
         {
-            //TODO: remove 'created', 'failure', 'error' and 'all' filter
+            // TODO: remove 'created', 'failure', 'error' and 'all' filter
             case 'created':
             case self::PAYMENTS_CREATED:
                 $boundary = self::$createdStartBoundary;
@@ -109,6 +109,8 @@ class Verify
 
                 $boundary = self::$failureStartBoundary;
 
+                // failureStartBoundary contains only the boundaries in a day.
+                // We need to add the daily boundaries also in this.
                 foreach (range (1, self::DEFAULT_MAX_DAYS) as $day)
                 {
                     $boundary[] = $day * self::SECONDS_IN_DAY;
@@ -117,7 +119,7 @@ class Verify
                 break;
 
             default:
-                throw new Exception\LogicException('Unknown filter: ' . $filter);
+                throw new Exception\LogicException('Unknown filter provided.', null, ['filter' => $filter]);
         }
 
         return $boundary;
