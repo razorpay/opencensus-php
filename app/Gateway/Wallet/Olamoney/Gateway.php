@@ -449,7 +449,10 @@ class Gateway extends Base\Gateway
 
         $content[RequestFields::HASH] = $this->getHashForBill($content);
 
-        $requestContent[RequestFields::BILL] = base64_encode(json_encode($content));
+        $requestContent = [
+            RequestFields::BILL => base64_encode(json_encode($content)),
+            RequestFields::PHONE => $this->getFormattedContact($input['payment']['contact'])
+        ];
 
         return $requestContent;
     }
