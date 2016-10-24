@@ -3,6 +3,7 @@
 namespace RZP\Models\Schedule;
 
 use Illuminate\Support\Facades\App;
+use RZP\Models\Settlement\Holidays;
 use RZP\Trace\TraceCode;
 use Carbon\Carbon;
 
@@ -68,7 +69,9 @@ class Library
     {
         $settledAt = $settledAt->addDay()->hour(0)->minute(0)->second(0);
 
-        $step = self::getStep($schedule, Steps::ANCHORED_STEPS);
+        $stepType = Steps::ANCHORED_STEP;
+
+        $step = 'add' . $stepType;
 
         App::getFacadeRoot()['trace']->info(
                                         TraceCode::SCHEDULE_ANCHORED_RESOLUTION,
@@ -76,6 +79,10 @@ class Library
                                         );
 
         while (self::checkAnchor($settledAt, $schedule) === false)
+        {
+            $settledAt->$step();
+        }
+        while (Holidays::isWorkingDay($settledAt) === false)
         {
             $settledAt->$step();
         }
@@ -133,10 +140,30 @@ class Library
         {
             // Avoiding zero delay to prevent race conditions
             $current->addHour();
+
+            // Adding a single hour resulted in a holiday.
+            // Now jump forward in days instead of hours.
+            if (Holidays::isWorkingDay($current) === false)
+            {
+                $current = $current->addDay()->hour(0)->minute(0)->second(0);
+
+                while (Holidays::isWorkingDay($current) === false)
+                {
+                    $current->addDay();
+                }
+            }
         }
         else
         {
-            $current->addDays($minimumDelay);
+            while ($minimumDelay > 0)
+            {
+                $current->addDay();
+
+                if (Holidays::isWorkingDay($current) === true)
+                {
+                    $minimumDelay--;
+                }
+            }
         }
 
         return $current;

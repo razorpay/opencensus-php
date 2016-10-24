@@ -4,8 +4,14 @@
 return [
     'testBasicT3Schedule' => [
         'cases' => [
-            //Initial is on Friday, 2 days delay, so expected is Monday 12am
-            ['initialTime' => 1477063679, 'expectedNextTime' => 1477247400],
+            //Initial is on Friday, Sat-Sun are holidays, 2 days delay
+            //is Monday and Tuesday. Expected time is Wednesday.
+            ['initialTime' => 1477063679, 'expectedNextTime' => 1477420200],
+
+            //Initial is 13th April. 14th and 15th are Holidays,
+            //16th is a Saturday, but a working day. 17th is a Sunday.
+            //So 2 day delay is Saturday and Monday. Expected time is Tuesday.
+            ['initialTime' => 1460545030, 'expectedNextTime' => 1461004200],
         ],
         'schedule' => [
             'name'       => 'Basic T3',
@@ -26,6 +32,10 @@ return [
 
             //Initial at 9.01pm. Delay one hour, so expected is 12am
             ['initialTime' => 1477063879, 'expectedNextTime' => 1477074600],
+
+            //Initial is 11.01pm on a Friday, 21st October. Delay one hour,
+            //but next 2 days are weekend holidays. Expected time is Monday.
+            ['initialTime' => 1477071079, 'expectedNextTime' => 1477247400],
         ],
         'schedule' => [
             'name'       => 'Every 2 hours',
@@ -47,6 +57,11 @@ return [
             //Initial at Monday 12.01am, i.e. just past midnight.
             //Delay one day, so expected is Tuesday next week
             ['initialTime' => 1477248400, 'expectedNextTime' => 1477938600],
+
+            //Initial time is 8th October. Next schedule day is Tuesday,
+            //11th October, but both 11th and 12th October are holidays.
+            //So expected time is 13th, Thursday.
+            ['initialTime' => 1475925622, 'expectedNextTime' => 1476297000],
         ],
         'schedule' => [
             'name'       => 'Every Tuesday',
