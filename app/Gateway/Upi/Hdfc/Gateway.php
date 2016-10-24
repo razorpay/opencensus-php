@@ -1,9 +1,9 @@
 <?php
 
-namespace RZP\Gateway\Upi\Icici;
+namespace RZP\Gateway\Upi\Hdfc;
 
 use Carbon\Carbon;
-use phpseclib\Crypt\RSA;
+use phpseclib\Crypt\AES;
 use Request;
 use RZP\Exception;
 use ErrorException;
@@ -23,20 +23,12 @@ class Gateway extends Base\Gateway
 {
     use AuthorizeFailed;
 
-    protected $gateway = 'upi_icici';
+    protected $gateway = 'upi_hdfc';
 
-    const BANK = 'icici';
+    const BANK = 'hdfc';
 
     protected $map = array(
-        Entity::VPA                       => Entity::VPA,
-        Entity::RECEIVED                  => Entity::RECEIVED,
-        ResponseFields::PAYER_VA          => Entity::VPA,
-        ResponseFields::PAYER_NAME        => Entity::NAME,
-        ResponseFields::PAYER_MOBILE      => Entity::CONTACT,
-        ResponseFields::RESPONSE          => Entity::STATUS_CODE,
-        ResponseFields::BANK_RRN          => Entity::GATEWAY_PAYMENT_ID,
-        ResponseFields::ORIGINAL_BANK_RRN => Entity::GATEWAY_PAYMENT_ID,
-        ResponseFields::MERCHANT_ID       => Entity::GATEWAY_MERCHANT_ID,
+
     );
 
     /**
@@ -139,14 +131,15 @@ class Gateway extends Base\Gateway
      */
     protected function getEncryptionKey()
     {
-        $key = $this->config['live_merchant_key'];
+        $key = $this->config['test_merchant_key'];
 
-        if ($this->mode === Mode::TEST)
+        if ($this->mode === Mode::LIVE)
         {
-            $key = $this->config['test_merchant_key'];
+            $key = $this->config['live_merchant_key'];
+
         }
 
-        return $key;
+        return hex2bin($key);
     }
 
     /**
@@ -172,9 +165,20 @@ class Gateway extends Base\Gateway
      * @param  string $data
      * @return string
      */
-    protected function encrypt($data)
+    public function encrypt($data)
     {
-        // TODO
+        $cipher = $this->getAESInstance();
+
+        return strtoupper(bin2hex($cipher->encrypt($data)));
+    }
+
+    protected function getAESInstance()
+    {
+        $cipher = new AES(AES::MODE_ECB);
+
+        $cipher->setKey($this->getEncryptionKey());
+
+        return $cipher;
     }
 
     /**
@@ -182,10 +186,24 @@ class Gateway extends Base\Gateway
      * @param  string $data
      * @return string
      */
-    protected function decrypt($data)
+    public function decrypt($data)
     {
-        // TODO
+        $cipher = $this->getAESInstance();
+
+        return $cipher->decrypt(hex2bin($data));
     }
+
+    protected function hex2str($hex)
+    {
+        $str = '';
+
+        for($i=0;$i<strlen($hex);$i+=2)
+        {
+           $str .= chr(hexdec(substr($hex,$i,2)));
+        }
+
+        return $str;
+      }
 
     protected function getAuthorizeRequestArray($input)
     {

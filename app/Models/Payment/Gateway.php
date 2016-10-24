@@ -14,45 +14,47 @@ use RZP\Models\Payment;
 
 class Gateway
 {
-    const AMEX                = 'amex';
-    const ATOM                = 'atom';
-    const AXIS_GENIUS         = 'axis_genius';
-    const AXIS_MIGS           = 'axis_migs';
-    const BILLDESK            = 'billdesk';
-    const CYBERSOURCE         = 'cybersource';
-    const EBS                 = 'ebs';
-    const FIRST_DATA          = 'first_data';
-    const HDFC                = 'hdfc';
-    const MOBIKWIK            = 'mobikwik';
-    const NETBANKING_HDFC     = 'netbanking_hdfc';
-    const NETBANKING_KOTAK    = 'netbanking_kotak';
-    const NETBANKING_ICICI    = 'netbanking_icici';
-    const NETBANKING_AIRTEL   = 'netbanking_airtel';
-    const NETBANKING_AXIS     = 'netbanking_axis';
-    const NETBANKING_FEDERAL  = 'netbanking_federal';
-    const NETBANKING_RBL      = 'netbanking_rbl';
-    const NETBANKING_INDUSIND = 'netbanking_indusind';
-    const PAYTM               = 'paytm';
-    const SHARP               = 'sharp';
-    const UPI_ICICI           = 'upi_icici';
-    const UPI_IDFC            = 'upi_idfc';
-    const AEPS_ICICI          = 'aeps_icici';
-    const WALLET_AIRTELMONEY  = 'wallet_airtelmoney';
-    const WALLET_FREECHARGE   = 'wallet_freecharge';
-    const WALLET_JIOMONEY     = 'wallet_jiomoney';
-    const WALLET_OPENWALLET   = 'wallet_openwallet';
-    const WALLET_OLAMONEY     = 'wallet_olamoney';
-    const WALLET_PAYUMONEY    = 'wallet_payumoney';
-    const WALLET_PAYZAPP      = 'wallet_payzapp';
-    const WALLET_MPESA        = 'wallet_mpesa';
+    const AMEX               = 'amex';
+    const ATOM               = 'atom';
+    const AXIS_GENIUS        = 'axis_genius';
+    const AXIS_MIGS          = 'axis_migs';
+    const BILLDESK           = 'billdesk';
+    const CYBERSOURCE        = 'cybersource';
+    const EBS                = 'ebs';
+    const FIRST_DATA         = 'first_data';
+    const HDFC               = 'hdfc';
+    const MOBIKWIK           = 'mobikwik';
+    const NETBANKING_AIRTEL  = 'netbanking_airtel';
+    const NETBANKING_AXIS    = 'netbanking_axis';
+    const NETBANKING_FEDERAL = 'netbanking_federal';
+    const NETBANKING_HDFC    = 'netbanking_hdfc';
+    const NETBANKING_ICICI   = 'netbanking_icici';
+    const NETBANKING_INDUSIND= 'netbanking_indusind';
+    const NETBANKING_KOTAK   = 'netbanking_kotak';
+    const NETBANKING_RBL     = 'netbanking_rbl';
+    const PAYTM              = 'paytm';
+    const SHARP              = 'sharp';
+    const UPI_HDFC           = 'upi_hdfc';
+    const UPI_ICICI          = 'upi_icici';
+    const UPI_IDFC           = 'upi_idfc';
+    const AEPS_ICICI         = 'aeps_icici';
 
-    const ACQUIRER_HDFC       = 'hdfc';
-    const ACQUIRER_ICIC       = 'icic';
-    const ACQUIRER_AXIS       = 'axis';
-    const ACQUIRER_AMEX       = 'amex';
+    const WALLET_AIRTELMONEY = 'wallet_airtelmoney';
+    const WALLET_FREECHARGE  = 'wallet_freecharge';
+    const WALLET_JIOMONEY    = 'wallet_jiomoney';
+    const WALLET_MPESA       = 'wallet_mpesa';
+    const WALLET_OLAMONEY    = 'wallet_olamoney';
+    const WALLET_OPENWALLET  = 'wallet_openwallet';
+    const WALLET_PAYUMONEY   = 'wallet_payumoney';
+    const WALLET_PAYZAPP     = 'wallet_payzapp';
 
-    const NOT_SUPPORTED       = 'not_supported';
-    const SUPPORTED           = 'supported';
+    const ACQUIRER_HDFC      = 'hdfc';
+    const ACQUIRER_ICIC      = 'icic';
+    const ACQUIRER_AXIS      = 'axis';
+    const ACQUIRER_AMEX      = 'amex';
+
+    const NOT_SUPPORTED      = 'not_supported';
+    const SUPPORTED          = 'supported';
 
     const GATEWAY_ACQUIRERS = [
         self::AXIS_MIGS   => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
@@ -160,6 +162,7 @@ class Gateway
         self::WALLET_OPENWALLET   => Settlement\Channel::KOTAK,
         self::WALLET_MPESA        => Settlement\Channel::KOTAK,
         self::FIRST_DATA          => Settlement\Channel::KOTAK,
+        self::UPI_HDFC            => Settlement\Channel::KOTAK,
         self::UPI_ICICI           => Settlement\Channel::KOTAK,
         self::AEPS_ICICI          => Settlement\Channel::KOTAK,
         self::CYBERSOURCE         => Settlement\Channel::KOTAK,
@@ -217,6 +220,7 @@ class Gateway
         ],
 
         Method::UPI => [
+            self::UPI_HDFC,
             self::UPI_ICICI,
             self::UPI_IDFC,
         ],
@@ -279,11 +283,12 @@ class Gateway
      * the payment to be authorized.
      * @var array
      */
-    public static $asynchronous = array(
+    public static $asynchronous = [
+        self::UPI_HDFC,
         self::UPI_ICICI,
         self::UPI_IDFC,
         self::SHARP,
-    );
+    ];
 
     /**
      * Each card gateway only support specific card networks.
@@ -347,6 +352,7 @@ class Gateway
     );
 
     public static $upiToGatewayMap = array(
+        Upi::HDFC   => Gateway::UPI_HDFC,
         Upi::ICICI  => Gateway::UPI_ICICI,
         Upi::IDFC   => Gateway::UPI_IDFC,
     );
@@ -410,6 +416,7 @@ class Gateway
      */
     public static $s2sCallbackGateways = array(
         Gateway::BILLDESK,
+        Gateway::UPI_HDFC,
         Gateway::UPI_ICICI,
         Gateway::WALLET_OLAMONEY,
         Gateway::SHARP

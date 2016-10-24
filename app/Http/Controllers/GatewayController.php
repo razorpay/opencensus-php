@@ -108,9 +108,12 @@ class GatewayController extends Controller
                 break;
 
             case 'upi':
+                // This falls through to next case
+                $gateway = 'upi_icici';
+
+            case 'upi_hdfc':
             case 'upi_icici':
                 $input = Request::getContent();
-                $gateway = 'upi_icici';
 
                 $data = $this->processServerCallback($input, $gateway);
 
