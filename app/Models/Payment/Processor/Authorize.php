@@ -104,7 +104,6 @@ trait Authorize
 
             if ($this->canRunOtpPaymentFlow($payment, $input))
             {
-                //TODO: Add segment details here for OTP based flow
                 $this->createAnalyticsLog($payment);
 
                 $request = $this->runOtpPaymentFlow($terminalGatewayInput, $payment);
@@ -506,7 +505,10 @@ trait Authorize
 
             if ($flag === false)
             {
-                //TODO: Add segment trace here. Find right tracecode value.
+                $this->api['segment']->trackPayment($payment,
+                                                    TraceCode::SEGMENT_PAYMENT_FAILED_EXPECTED_GATEWAY_SUCCESS,
+                                                    $data);
+
                 throw new Exception\BadRequestValidationFailureException(
                     'Payment expected to have succeeded on the gateway has actually not. ' .
                     'Should not have called this function in this scenario');
@@ -516,7 +518,10 @@ trait Authorize
 
             if ($payment->isStatusCreatedOrFailed() === false)
             {
-                //TODO: Add segment trace here. Find right tracecode value.
+                $this->api['segment']->trackPayment($payment,
+                                                    TraceCode::SEGMENT_PAYMENT_ALREADY_AUTHORIZED,
+                                                    $data);
+
                 throw new Exception\BadRequestValidationFailureException(
                     'Payment being authorized is actually already authorized by some other thread.',
                     null,

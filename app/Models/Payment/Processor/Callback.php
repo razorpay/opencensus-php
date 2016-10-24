@@ -260,7 +260,6 @@ trait Callback
         $this->repo->saveOrFail($payment);
     }
 
-    //TODO: add segment here
     protected function processPaymentCallbackException($e)
     {
         // Refresh and check that payment is in created state only
@@ -293,7 +292,12 @@ trait Callback
         {
             case ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT:
                 $payment->incrementOtpAttempts();
+
                 $this->repo->saveOrFail($payment);
+
+                $this->api['segment']->trackPayment($payment,
+                                                    ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT);
+
                 break;
         }
 

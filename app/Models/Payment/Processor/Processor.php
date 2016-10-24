@@ -283,7 +283,7 @@ class Processor
      * @return  $status Payment\Status
      * @throws Exception\BadRequestException
      */
-    // TODO: add segment data here
+    
     public function cancel($id, $input)
     {
         $status = null;
@@ -294,6 +294,8 @@ class Processor
 
         if ($diff > self::PAYMENT_CANCEL_TIME_DURATION)
         {
+            $this->api['segment']->trackPayment($payment, ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED);
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED);
         }
