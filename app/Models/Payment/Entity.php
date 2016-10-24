@@ -1145,6 +1145,9 @@ class Entity extends Base\PublicEntity
     {
         $data = parent::toArrayReport();
 
+        unset($data[self::CUSTOMER_ID]);
+        unset($data[self::TOKEN_ID]);
+
         $data[self::NOTES] = $this->getNotesJson();
 
         if ($this->isMethodCardOrEmi())

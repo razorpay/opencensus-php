@@ -86,6 +86,45 @@ class PayzappGatewayTest extends TestCase
             $this->testData['testPaymentPayzappEntityAfterRefund'], $payment);
     }
 
+    public function testPartialRefund()
+    {
+        $payment = $this->getDefaultWalletPaymentArray('payzapp');
+
+        $response = $this->doAuthPayment($payment);
+
+        $refundAmount = (int) ($payment['amount'] / 5);
+
+        $payment = $this->capturePayment($response['razorpay_payment_id'], $payment['amount']);
+
+        $this->mockServerContentFunction(function (&$content, $action) use ($refundAmount)
+        {
+            if ($action === 'refund')
+            {
+                $assertion = ($content['amount'] === $refundAmount);
+
+                assertTrue($assertion, 'Actual refund amount different than expected amount');
+            }
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment, $refundAmount)
+        {
+            $this->refundPayment($payment['id'], $refundAmount);
+        });
+
+        $this->markTestIncomplete('Partial not supported right now');
+        // $payment = $this->getLastEntity('payment', true);
+
+        // $this->assertEquals('partial', $payment['refund_status']);
+        // $this->assertEquals($refundAmount, $payment['amount_refunded']);
+
+        // $wallet = $this->getLastEntity('wallet', true);
+
+        // $this->assertNotNull($wallet['refund_id']);
+        // $this->assertEquals($refundAmount, $wallet['amount']);
+    }
+
     public function testVerifyPayment()
     {
         $payment = $this->getDefaultWalletPaymentArray('payzapp');
