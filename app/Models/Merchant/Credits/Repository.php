@@ -57,4 +57,23 @@ class Repository extends Base\Repository
                 'Credits Id: ' . $creditsLog->getId());
         }
     }
+
+    public function validateCreditsType(Merchant\Entity $merchant, array $input)
+    {
+        $type = $input[Entity::TYPE];
+        $balance = $merchant->balance;
+
+        if (($type === Type::AMOUNT) and
+            ($balance->getFeeCredits() > 0))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Cannot assign amount credits as fee credits are already present');
+        }
+        else if(($type === Type::FEE) and
+                ($balance->getCredits() > 0))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Cannot assign fee credits as amount credits are already present');
+        }
+    }
 }

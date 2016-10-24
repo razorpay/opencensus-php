@@ -38,7 +38,7 @@ class Core extends Base\Core
     {
         $txn = $this->txnCreationFromPaymentOperation($payment);
 
-        $this->updateFreeCredits($txn, $payment);
+        $this->updateCredits($txn, $payment);
 
         $this->updateNodalBalance($txn);
 
@@ -83,7 +83,7 @@ class Core extends Base\Core
 
         $txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);
 
-        $this->updateFreeCredits($txn, $payment);
+        $this->updateCredits($txn, $payment);
 
         $this->updateBalances($txn);
 
@@ -141,6 +141,8 @@ class Core extends Base\Core
 
         $freeCredits = $merchantBalance->getCredits();
 
+        $feeCredits = $merchantBalance->getFeeCredits();
+
         $amount = $payment->getAmount();
 
         $oldTransaction = $this->checkIfOldPayment($payment);
@@ -182,7 +184,18 @@ class Core extends Base\Core
         else
         {
             list($fee, $serviceTax, $pricingRuleId) = $this->calculateMerchantFees($payment);
-            $credit = $amount - $fee;
+
+            if ($feeCredits >= $fee)
+            {
+                $credit         = $amount;
+                $feeCredits     = $fee;
+
+                $txn->setFeeCredits($feeCredits);
+            }
+            else
+            {
+                $credit = $amount - $fee;
+            }
         }
 
         $txn->setPricingRule($pricingRuleId);
@@ -396,7 +409,7 @@ class Core extends Base\Core
         return $txn;
     }
 
-    public function updateFreeCredits($txn, $payment)
+    public function updateAmountCredits($txn, $payment)
     {
         assert ($txn->isTypePayment() === true);
 
@@ -405,6 +418,12 @@ class Core extends Base\Core
         if (($txn->getFee() !== 0) or
             ($txn->getCredit() !== $txn->getAmount()) or
             ($payment->getCreatedAt() < self::JULY_FIRST_EPOCH))
+        {
+            return;
+        }
+
+        // While filling the txn fees and amount, we have not used amount credits.
+        if ($txn->isGratis() === false)
         {
             return;
         }
@@ -427,6 +446,36 @@ class Core extends Base\Core
         $nodalBalance->subtractCredits($amount);
 
         $merchantBalance->subtractCredits($amount);
+    }
+
+    public function updateFeeCredits(Transaction\Entity $txn, Payment\Entity $payment)
+    {
+        assert ($txn->isTypePayment() === true);
+
+        // While filling the txn fees and amount, we have not used fee credits.
+        if ($txn->getFeeCredits() === 0)
+        {
+            return;
+        }
+
+        $fee = $txn->getFee();
+
+        $merchantBalance = $this->getBalanceLockForUpdate($txn->merchant);
+
+        $feeCredits = $merchantBalance->getFeeCredits();
+
+        assertTrue($feeCredits > 0);
+
+        if ($feeCredits < $fee)
+        {
+            $fee = $feeCredits;
+        }
+
+        $nodalBalance = $this->getNodalBalanceLockForUpdate($txn->getChannel());
+
+        $nodalBalance->subtractFeeCredits($fee);
+
+        $merchantBalance->subtractFeeCredits($fee);
     }
 
     protected function getNodalBalanceLockForUpdate($channel)
@@ -478,5 +527,17 @@ class Core extends Base\Core
     protected function getSettlementSchedule($payment)
     {
         return $payment->merchant->getSettlementSchedule();
+    }
+
+    public function updateCredits(Transaction\Entity $txn, Payment\Entity $payment)
+    {
+        if ($txn->isGratis() === true)
+        {
+            return $this->updateAmountCredits($txn, $payment);
+        }
+        else if ($txn->getFeeCredits() > 0)
+        {
+            return $this->updateFeeCredits($txn, $payment);
+        }
     }
 }

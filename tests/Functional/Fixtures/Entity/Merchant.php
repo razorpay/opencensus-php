@@ -224,9 +224,16 @@ class Merchant extends Base
         return $this->fixtures->edit('balance', $id, ['fee_credits' => $credits]);
     }
 
-    public function editCreditsforNodalAccount($credits)
+    public function editCreditsforNodalAccount($credits, $type='amount')
     {
-        return $this->editCredits($credits, '10NodalAccount');
+        if ($type === 'amount')
+        {
+            return $this->editCredits($credits, '10NodalAccount');
+        }
+        else if ($type === 'fee')
+        {
+            return $this->editFeeCredits($credits, '10NodalAccount');
+        }
     }
 
     public function enableConvenienceFeeModel($id = '10000000000000')

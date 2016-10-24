@@ -18,8 +18,6 @@ class CreditsTest extends TestCase
 
         $this->ba->proxyAuth();
 
-        $this->fixtures->merchant->editCredits('100000', '10000000000000');
-        $this->fixtures->merchant->editCreditsforNodalAccount('100000');
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_billdesk_terminal');
         $this->fixtures->create('pricing:zero_pricing_plan');
     }
@@ -29,6 +27,9 @@ class CreditsTest extends TestCase
      */
     public function testCredits()
     {
+        $this->fixtures->merchant->editCredits('100000', '10000000000000');
+        $this->fixtures->merchant->editCreditsforNodalAccount('100000');
+
         $this->doAuthAndCapturePayment();
 
         $txn = $this->getLastEntity('transaction', true);
@@ -51,6 +52,9 @@ class CreditsTest extends TestCase
      */
     public function testCredits2()
     {
+        $this->fixtures->merchant->editCredits('100000', '10000000000000');
+        $this->fixtures->merchant->editCreditsforNodalAccount('100000');
+
         $payment = $this->getDefaultNetbankingPaymentArray();
         $this->doAuthPayment($payment);
 
@@ -71,6 +75,9 @@ class CreditsTest extends TestCase
 
     public function testPartialCredits()
     {
+        $this->fixtures->merchant->editCredits('100000', '10000000000000');
+        $this->fixtures->merchant->editCreditsforNodalAccount('100000');
+
         $this->fixtures->merchant->editCreditsforNodalAccount('1000000');
 
         $payment = $this->getDefaultNetbankingPaymentArray();
@@ -90,5 +97,27 @@ class CreditsTest extends TestCase
         $nodalBalance = $this->getNodalAccountBalance();
         $this->assertEquals(1500000, $nodalBalance['balance']);
         $this->assertEquals(900000, $nodalBalance['credits']);
+    }
+
+    public function testFeeCredits()
+    {
+        $this->fixtures->merchant->editFeeCredits('10000', '10000000000000');
+        $this->fixtures->merchant->editCreditsforNodalAccount('10000', 'fee');
+
+        $this->doAuthAndCapturePayment();
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+        $payment = $this->getLastEntity('payment', true);
+        $txn = $this->getLastEntity('transaction', true);
+        $nodalBalance = $this->getNodalAccountBalance();
+
+        $this->assertEquals($txn['fee_credits'], $txn['fee']);
+        $this->assertEquals(false, $txn['gratis']);
+
+        $this->assertEquals(1050000, $balance['balance']);
+        $this->assertEquals(10000 - $txn['fee_credits'], $balance['fee_credits']);
+
+        $this->assertEquals(1050000, $nodalBalance['balance']);
+        $this->assertEquals(10000 - $txn['fee_credits'], $nodalBalance['fee_credits']);
     }
 }

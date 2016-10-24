@@ -26,6 +26,8 @@ class Core extends Base\Core
         $this->repo->credits->validateCampaignCreditsNotAssigned(
             $creditsLog->getCampaign(), $merchant, $creditsLog->getType());
 
+        $this->repo->credits->validateCreditsType($merchant, $input);
+
         return $this->repo->transaction(function() use ($merchant, $creditsLog)
         {
             $this->repo->saveOrFail($creditsLog);
