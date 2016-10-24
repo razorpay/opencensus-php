@@ -60,6 +60,7 @@ class Entity extends Base\PublicEntity
     const TERMINAL_ID           = 'terminal_id';
     const SIGNED                = 'signed';
     const VERIFIED              = 'verified';
+    // This is the bucket for the next verify and not the current verify.
     const VERIFY_BUCKET         = 'verfiy_bucket';
     const CALLBACK_URL          = 'callback_url';
     const SERVICE_TAX           = 'service_tax';
