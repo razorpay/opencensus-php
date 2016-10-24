@@ -66,24 +66,24 @@ class Verify
             case 'all':
             case Constants\Verify::PAYMENTS_FAILED:
                 $paymentStatus = Payment\Status::FAILED;
-                $ts = Carbon::now('Asia/Kolkata')->timestamp - Constants\Verify::FAILURE_MIN_TIME;
+                $minimumTime = Carbon::now('Asia/Kolkata')->timestamp - Constants\Verify::FAILURE_MIN_TIME;
                 break;
 
             case 'created':
             case Constants\Verify::PAYMENTS_CREATED:
                 $paymentStatus = Payment\Status::CREATED;
-                $ts = Carbon::now('Asia/Kolkata')->timestamp - Constants\Verify::CREATED_MIN_TIME;
+                $minimumTime = Carbon::now('Asia/Kolkata')->timestamp - Constants\Verify::CREATED_MIN_TIME;
                 break;
 
             case 'failed':
                 $verifyStatus = Constants\Verify::VERIFIED_FAILED;
-                $ts = Carbon::now('Asia/Kolkata')->timestamp - Constants\Verify::ERRORED_MIN_TIME;
+                $minimumTime = Carbon::now('Asia/Kolkata')->timestamp - Constants\Verify::ERRORED_MIN_TIME;
                 break;
 
             case 'error':
             case Constants\Verify::VERIFY_ERROR:
                 $verifyStatus = Constants\Verify::VERIFIED_ERROR;
-                $ts = Carbon::now('Asia/Kolkata')->timestamp - Constants\Verify::ERRORED_MIN_TIME;
+                $minimumTime = Carbon::now('Asia/Kolkata')->timestamp - Constants\Verify::ERRORED_MIN_TIME;
                 break;
 
             default:
@@ -101,7 +101,8 @@ class Verify
             $boundaryQueryData[$key] = Carbon::now('Asia/Kolkata')->timestamp - $value;
         }
 
-        $payments = $this->paymentRepo->getPaymentsToVerify($ts, $boundaryQueryData, $verifyStatus, $paymentStatus, true);
+        $payments = $this->paymentRepo->getPaymentsToVerify(
+                                    $minimumTime, $boundaryQueryData, $verifyStatus, $paymentStatus, true);
 
         return $this->verifyMultiplePayments($payments, $filter);
     }
