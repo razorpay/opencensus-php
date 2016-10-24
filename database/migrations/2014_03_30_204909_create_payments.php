@@ -131,7 +131,7 @@ class CreatePayments  extends Migration
                   ->nullable();
 
             $table->tinyInteger(Payment::VERIFY_BUCKET)
-                  ->default(0);
+                  ->nullable();
 
             $table->text(Payment::CALLBACK_URL)
                   ->nullable();

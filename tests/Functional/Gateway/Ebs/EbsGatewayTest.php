@@ -277,25 +277,6 @@ class EbsGatewayTest extends TestCase
         $this->assertSame($payment['verified'], 1);
     }
 
-    protected function checkContent(array $content, array $param)
-    {
-        // We dont want to check time taken for payments
-        unset($content['totalTime']);
-
-        unset($content['authorizedTime']);
-
-        $defaultParams = [
-            'verified'          => 0,
-            'authorized/failed' => 0,
-            'timed out'         => 0,
-            'error'             => 0,
-        ];
-
-        $defaultParams = array_merge($defaultParams, $param);
-
-        $this->assertEquals($defaultParams, $content);
-    }
-
     public function testPaymentFailedVerifyAndRetry()
     {
         $payment = $this->getDefaultNetbankingPaymentArray('ANDB');
