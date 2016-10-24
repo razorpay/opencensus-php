@@ -718,7 +718,9 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                 return false;
             }
 
-            $this->paymentTransaction = $this->payment->reload()->transaction;
+            // Refresh both payment and transaction to get latest changes.
+            // Reload txn because relation are cached.
+            $this->paymentTransaction = $this->payment->reload()->transaction->reload();
         }
 
         $currentGatewayFee = $this->paymentTransaction->getGatewayFee();
