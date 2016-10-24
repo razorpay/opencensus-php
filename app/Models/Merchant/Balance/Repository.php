@@ -32,7 +32,11 @@ class Repository extends Base\Repository
 
     public function getMerchantBalance($merchant)
     {
-        return Entity::findOrFailPublic($merchant->getId());
+        $balance = $this->findOrFailPublic($merchant->getId());
+
+        $balance->merchant()->associate($merchant);
+
+        return $balance;
     }
 
     public function editMerchantFreeCredits($merchant, $freeCredits)

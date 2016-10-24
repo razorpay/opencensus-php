@@ -56,7 +56,7 @@ class CreditsTest extends TestCase
         $this->fixtures->merchant->editCreditsforNodalAccount('100000');
 
         $payment = $this->getDefaultNetbankingPaymentArray();
-        $this->doAuthPayment($payment);
+        $payment = $this->doAuthPayment($payment);
 
         $txn = $this->getLastEntity('transaction', true);
         $this->assertEquals(0, $txn['fee']);
@@ -65,7 +65,18 @@ class CreditsTest extends TestCase
         $this->assertEquals('1ZeroPricingR2', $txn['pricing_rule_id']);
 
         $balance = $this->getEntityById('balance', '10000000000000', true);
+        // Only payment authorized. So equal to original credits.
         $this->assertEquals(1000000, $balance['balance']);
+        $this->assertEquals(100000, $balance['credits']);
+
+        $nodalBalance = $this->getNodalAccountBalance();
+        $this->assertEquals(1050000, $nodalBalance['balance']);
+        $this->assertEquals(100000, $nodalBalance['credits']);
+
+        $this->capturePayment($payment['razorpay_payment_id'], '50000');
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+        $this->assertEquals(1050000, $balance['balance']);
         $this->assertEquals(50000, $balance['credits']);
 
         $nodalBalance = $this->getNodalAccountBalance();

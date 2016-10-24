@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\Credits;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Models\Merchant\Credits;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -23,46 +24,60 @@ class Validator extends Base\Validator
         Entity::VALUE    => 'sometimes|integer',
     );
 
-    public static function validateNewCreditsValue($creditsLog, $credits)
+    /**
+     * Validates credits value when credits is being edited.
+     */
+    public function validateNewCreditsValue($creditsLog, $creditsValue)
     {
         $type = $creditsLog->getType();
 
-        $maxCredits = self::getMaxCreditsForType($type);
+        // Validates min and max boundary for credits value
+        $this->validateCreditsBoundaryLimits($type, $creditsValue);
 
-        if ($credits < self::MIN_CREDITS)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Cannot assign credits less than one rupee');
-        }
+        $currentCreditsBalance = $this->getMerchantCredits($creditsLog);
 
-        if ($credits > $maxCredits)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Cannot Assign credits more than '. $maxCredits);
-        }
+        $creditsDifference = $creditsValue - $creditsLog->getValue();
 
-        $merchantBalance = self::getMerchantBalance($creditsLog);
-
-        $creditsDifference = $credits - $creditsLog->getValue();
-
+        //
+        // Validate that merchant credits balance does not go negative
+        // after the update
+        //
         if (($creditsDifference < 0) and
-            (abs($creditsDifference) > $merchantBalance))
+            (abs($creditsDifference) > $currentCreditsBalance))
         {
             $msg = 'Cannot change %s from %d to %d. Merchant Total %s Remaining: %d';
 
             $msg = sprintf($msg, $type, $creditsLog->getValue(),
-                $credits, $type, $merchantBalance);
+                $credits, $type, $currentCreditsBalance);
 
             throw new Exception\BadRequestValidationFailureException($msg);
         }
     }
 
-    protected static function getMaxCreditsForType(string $type)
+    protected function validateCreditsBoundaryLimits($type, $creditsValue)
     {
-        switch($type)
+        $maxCreditsValue = $this->getMaxCreditsForType($type);
+
+        if ($creditsValue < self::MIN_CREDITS)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Cannot assign credits less than one rupee');
+        }
+
+        if ($creditsValue > $maxCreditsValue)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Cannot assign credits more than '. $maxCreditsValue);
+        }
+    }
+
+    protected function getMaxCreditsForType(string $type)
+    {
+        switch ($type)
         {
             case Credits\Type::AMOUNT:
                 return self::MAX_CREDITS;
+
             case Credits\Type::FEE:
                 return self::MAX_FEE_CREDITS;
 
@@ -71,21 +86,37 @@ class Validator extends Base\Validator
         }
     }
 
-    protected static function getMerchantBalance(Credits\Entity $creditsLog)
+    protected function getMerchantCredits(Credits\Entity $creditsLog)
     {
         $balance = $creditsLog->merchant->balance;
         $type = $creditsLog->getType();
 
-        switch($type)
+        switch ($type)
         {
             case Credits\Type::AMOUNT:
-                return $balance->getCredits();
+                return $balance->getAmountCredits();
 
             case Credits\Type::FEE:
                 return $balance->getFeeCredits();
 
             default:
                 return null;
+        }
+    }
+
+    public function validateCreditsType(Merchant\Balance\Entity $balance, $type)
+    {
+        if (($type === Type::AMOUNT) and
+            ($balance->getFeeCredits() > 0))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Cannot assign amount credits as fee credits are already present');
+        }
+        else if(($type === Type::FEE) and
+                ($balance->getCredits() > 0))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Cannot assign fee credits as amount credits are already present');
         }
     }
 }
