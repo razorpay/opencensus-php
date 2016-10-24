@@ -91,10 +91,9 @@ trait Verify
 
         //  if filter is null, then verify is initiated manually, not via Cron
         //  Dont update VERIFY_BUCKET, in that case
-        if (($app['basicauth']->isCron() === true) or ($this->mode === 'test'))
+        if (($app['basicauth']->isCron() === true) or
+            (($this->mode === 'test') and ($filter !== null)))
         {
-            $daysToAdd = 1;
-
             // Get Verify Boundary to update Verify Bucket
             $boundary = Constants\Verify::getBoundaryInSeconds($filter);
 
