@@ -479,6 +479,9 @@ class Core extends Base\Core
         $nodalBalance->subtractFeeCredits($fee);
 
         $merchantBalance->subtractFeeCredits($fee);
+
+        // Nodal balance needs to be saved because of amount credit update
+        $this->repo->balance->updateBalance($nodalBalance);
     }
 
     protected function getNodalBalanceLockForUpdate($channel)
