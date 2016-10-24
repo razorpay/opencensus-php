@@ -183,7 +183,7 @@ class Repository extends Base\Repository
             $query->inRandomOrder();
         }
 
-        return $query()->get();
+        return $query->get();
     }
 
     public function getPaymentsWithCreatedStatusForVerification($ts)
