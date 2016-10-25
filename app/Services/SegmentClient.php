@@ -48,6 +48,20 @@ class SegmentClient
     {
         $metadata = $payment->getMetadata();
 
+        $isInternational = null;
+
+        if ($payment->card !== null)
+        {
+            $isInternational = $payment->isInternational();
+        }
+
+        $terminalId = null;
+
+        if ($payment->terminal !== null)
+        {
+            $terminalId = $payment->terminal->getPublicId();
+        }
+
         $properties = [
             'payment_id'        => $payment->getPublicId(),
             'mode'              => $this->mode,
@@ -58,8 +72,8 @@ class SegmentClient
             'gateway'           => $payment->getGateway(),
             'bank'              => $payment->getBank(),
             'wallet'            => $payment->getWallet(),
-            'international'     => $payment->isInternational(),
-            'terminal_id'       => $payment->terminal->getPublicId(),
+            'international'     => $isInternational,
+            'terminal_id'       => $terminalId,
             'metadata'          => $metadata,
             'version'           => self::VERSION,
         ];
@@ -168,7 +182,7 @@ class SegmentClient
 
         try
         {
-            $response = $client->request('POST', $url, ['json' => $data]);
+            $response = $client->request('POST', $url, ['json' => $defaults]);
         }
         catch(\Exception $e)
         {
