@@ -1035,10 +1035,6 @@ WHERE w.wallet = 'olamoney'
     AND w.action = 'refund'
     AND w.amount != r.amount;
 
-ALTER TABLE merchants
-    ADD COLUMN settlement_schedule_id VARCHAR(14) AFTER settlement_schedule;
-ADD INDEX merchants_settlement_schedule_id_index (settlement_schedule_id);
-
 ALTER TABLE first_data
     ADD COLUMN auth_code VARCHAR(6) AFTER gateway_terminal_id;
 
