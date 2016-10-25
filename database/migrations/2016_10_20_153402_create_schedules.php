@@ -32,13 +32,13 @@ class CreateSchedules extends Migration
 
             $table->string(Schedule::PERIOD, 15);
 
-            $table->integer(Schedule::INTERVAL)
+            $table->tinyInteger(Schedule::INTERVAL)
                   ->nullable();
 
-            $table->integer(Schedule::ANCHOR)
+            $table->tinyInteger(Schedule::ANCHOR)
                   ->nullable();
 
-            $table->integer(Schedule::DELAY);
+            $table->tinyInteger(Schedule::DELAY);
 
             $table->integer(Schedule::NEXT_RUN)
                   ->nullable();
