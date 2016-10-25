@@ -323,10 +323,12 @@
     </div>
 
     <script type="text/javascript">
+        // Async Payment data //
+        var data = {!!utf8_json_encode($data)!!};
+        // Async Payment data //
         var request_url = '{{$data['request']['url']}}';
 
         var key_id = '{{ BasicAuth::getPublicKey() }}';
-
         var cancel_url = '/v1/payments/{{$data["payment_id"]}}/cancel?key_id='+key_id;
         var callback_url = '/v1/payments/{{$data["payment_id"]}}/redirect_callback?key_id='+key_id;
         var gel =  document.getElementById.bind(document);
