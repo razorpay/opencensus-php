@@ -32,7 +32,7 @@ class Service extends Base\Service
 
         $schedule = $this->repo->schedule->findByIdAndMerchantId($id, Account::SHARED_ACCOUNT);
 
-        $schedule = (new Schedule\Core)->editSchedule($schedule, $input);
+        $schedule = (new Core)->editSchedule($schedule, $input);
 
         $this->trace->info(TraceCode::SCHEDULE_EDITED, $schedule->toArray());
 
