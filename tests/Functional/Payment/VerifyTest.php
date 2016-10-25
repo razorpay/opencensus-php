@@ -40,6 +40,72 @@ class VerifyTest extends TestCase
         $this->ba->cronAuth();
     }
 
+    public function testNonCronCaller()
+    {
+        $createdAt = time() - 3*60;
+
+        $this->ba->appAuth();
+
+        $payment = $this->fixtures->create(
+            'payment:netbanking_failed', ['created_at' => $createdAt]);
+
+        $verifiedResultArray = [
+            'filter'  => 'payments_failed',
+            'all'     => 1,
+            'none'    => 0,
+        ];
+
+        $filter = $verifiedResultArray['filter'];
+
+        $time = Carbon::now('Asia/Kolkata');
+
+        $request = [
+            'url' => '/payments/verify/'. $filter,
+            'method' => 'post'
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $resultData =[
+            'verified' => 1,
+            'filter'   => 'payments_failed'
+        ];
+
+        $this->assertContent($content, $resultData);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertContent($content, $resultData);
+
+        $this->ba->cronAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertContent($content, $resultData);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $resultData =[
+            'verified' => 0,
+            'filter'   => 'payments_failed'
+        ];
+
+        $this->assertContent($content, $resultData);
+    }
+
+    public function testVerifyForPaymentsWithNullBucket()
+    {
+        $createdAt = time() - 3*60;
+
+        $payment = $this->fixtures->create(
+            'payment:netbanking_failed', [
+                'created_at'    => $createdAt,
+                'verify_bucket' => null,
+            ]);
+
+        $this->testVerifySingleFailedPayments();
+    }
+
     public function testVerifySingleFailedPayments()
     {
         $createdAt = time() - 3*60;
