@@ -52,6 +52,8 @@ class UPIGatewayTest extends TestCase
         // Co Proto must be working
         $this->assertEquals('async', $response['type']);
 
+        // Payment status is a polling API which checkout hits
+        // continously. Replicating the same in test case
         $this->checkPaymentStatus($paymentId, 'created');
         $this->checkPaymentStatus($paymentId, 'created');
 
