@@ -278,6 +278,8 @@ class VerifyTest extends TestCase
 
         $this->getTimeoutInVerify();
 
+        $this->ba->cronAuth();
+
         $request = [
             'url'    => '/payments/verify/payments_failed',
             'method' => 'post'
@@ -342,5 +344,34 @@ class VerifyTest extends TestCase
         $this->assertEquals($payment['status'], 'authorized');
 
         Carbon::setTestNow();
+    }
+
+    public function testVerifyAllPayments()
+    {
+        $createdAt = time() - 60 * 60;
+
+        $payment = $this->fixtures->create(
+            'payment:netbanking_failed', ['created_at' => $createdAt]);
+
+        $request = array(
+            'url' => '/payments/verify/all',
+            'method' => 'get'
+        );
+
+        $this->ba->appAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(
+            [
+                'filter'            => 'all',
+                'verified'          => 1,
+                'authorized/failed' => 0,
+                'timed_out'         => 0,
+                'error'             => 0,
+                'authorized_time'   => 0,
+                'total_time'        => '0 secs',
+            ],
+            $content);
     }
 }
