@@ -38,6 +38,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::CAMPAIGN,
         self::VALUE,
+        self::TYPE,
         self::CREATED_AT
     );
 

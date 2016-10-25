@@ -304,10 +304,21 @@ class Entity extends Base\PublicEntity
 
     protected function modifyOs(& $input)
     {
-        if ((isset($input[self::OS])) and
-            (strtolower($input[self::OS]) === 'os x'))
+        if (isset($input[self::OS]) === true)
         {
-            $input[self::OS] = Metadata::MACOS;
+            switch (strtolower($input[self::OS]))
+            {
+                case 'os x':
+                    $input[self::OS] = Metadata::MACOS;
+                    break;
+
+                case 'androidos':
+                    $input[self::OS] = Metadata::ANDROID;
+                    break;
+
+                default:
+                    break;
+            }
         }
     }
 }

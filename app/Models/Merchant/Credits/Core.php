@@ -11,7 +11,6 @@ use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
-
     public function create($merchant, $input)
     {
         if (isset($input[Credits\Entity::TYPE]) === false)
@@ -23,8 +22,12 @@ class Core extends Base\Core
 
         $creditsLog->merchant()->associate($merchant);
 
+        $balance = $this->repo->balance->getMerchantBalance($merchant);
+
         $this->repo->credits->validateCampaignCreditsNotAssigned(
             $creditsLog->getCampaign(), $merchant, $creditsLog->getType());
+
+        $creditsLog->getValidator()->validateCreditsType($balance, $creditsLog->getType());
 
         return $this->repo->transaction(function() use ($merchant, $creditsLog)
         {
@@ -43,9 +46,9 @@ class Core extends Base\Core
         if ($type === Credits\Type::AMOUNT)
         {
             // Add the credits to merchant's main balance
-            $merchantBalance = $merchant->balance->getCredits();
+            $merchantAmountCredits = $merchant->balance->getAmountCredits();
 
-            $newCredits = $merchantBalance + $credits;
+            $newCredits = $merchantAmountCredits + $credits;
 
             $this->repo->balance->editMerchantFreeCredits($merchant, $newCredits);
         }
@@ -62,20 +65,19 @@ class Core extends Base\Core
     /*
      * Update credits in the credits Log and merchant credits.
      */
-    public function updateCredits($creditsLog, $credits)
+    public function updateCredits($creditsLog, $creditsValue)
     {
         //
         // When we update the credits, We need to subsequently add/subtract credits
         // from merchant balance.
         // Transaction is rolled back if merchant credit balance is less than zero.
         //
+        $creditsLog->getValidator()->validateNewCreditsValue($creditsLog, (int) $creditsValue);
 
-        Credits\Validator::validateNewCreditsValue($creditsLog, (int) $credits);
-
-        return $this->repo->transaction(function() use ($creditsLog, $credits)
+        return $this->repo->transaction(function() use ($creditsLog, $creditsValue)
         {
-            $creditsDifference = $credits - $creditsLog->getValue();
-            $creditsLog->setValue($credits);
+            $creditsDifference = $creditsValue - $creditsLog->getValue();
+            $creditsLog->setValue($creditsValue);
             $this->repo->saveOrFail($creditsLog);
 
             $type = $creditsLog->getType();
@@ -96,10 +98,10 @@ class Core extends Base\Core
             $type = $creditsLog->getType();
 
             // Since we are deleting, value should be negative
-            $credits = -1 * $creditsLog->getValue();
+            $creditsValue = -1 * $creditsLog->getValue();
             $this->repo->deleteOrFail($creditsLog);
 
-            $this->updateCreditsInMerchantAccount($creditsLog->merchant, $credits, $type);
+            $this->updateCreditsInMerchantAccount($creditsLog->merchant, $creditsValue, $type);
 
             return $creditsLog;
         });
