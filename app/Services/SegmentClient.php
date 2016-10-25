@@ -178,7 +178,7 @@ class SegmentClient
                    ];
 
         // TODO: make this async using guzzler async events
-        $client = new Client(['headers' => $headers]);
+        $client = new Client(['headers' => $headers, 'http_errors' => false]);
 
         try
         {
