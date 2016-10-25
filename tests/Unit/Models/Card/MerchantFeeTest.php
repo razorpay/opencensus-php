@@ -602,7 +602,9 @@ class MerchantFeeTest extends TestCase
 
         $payment->card->setNetwork($network);
 
-        list($fee, $serviceTax, $ruleKey) = $this->fee->calculateMerchantFees($payment);
+        $feesSplit = new PublicCollection;
+
+        list($fee, $serviceTax, $ruleKey) = $this->fee->calculateMerchantFees($payment, $feesSplit);
 
         $this->assertEquals($expectedRule, $ruleKey);
     }

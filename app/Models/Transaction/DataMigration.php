@@ -44,7 +44,7 @@ class DataMigration extends Base\Service
 
         if (empty($batchResponse2) === false)
         {
-            array_push($response, $batchResponse2);
+            $response = $response + $batchResponse2;
         }
 
         return $response;

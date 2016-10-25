@@ -2,17 +2,15 @@
 
 namespace RZP\Models\Transaction;
 
+use RZP\Models\Base;
+use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Constants\Table;
 use RZP\Trace\TraceCode;
-use RZP\Models\Base;
-use RZP\Models\Transaction;
-use RZP\Models\Payment;
-use RZP\Models\Pricing\FeeBreakup as FeeBreakup;
-use RZP\Models\Settlement;
-use RZP\Constants\Table;
-use RZP\Exception;
 use RZP\Gateway\Billdesk;
+use RZP\Models\Settlement;
+use RZP\Models\Transaction;
+use RZP\Models\Pricing\FeeBreakup as FeeBreakup;
 
 class Repository extends Base\Repository
 {

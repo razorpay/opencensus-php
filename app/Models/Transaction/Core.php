@@ -108,7 +108,7 @@ class Core extends Base\Core
         return true;
     }
 
-    protected function txnCreationFromPaymentOperation($payment)
+    protected function txnCreationFromPaymentOperation($payment, $feesSplit)
     {
         $txn = new Transaction\Entity;
         $txn->generateId();
