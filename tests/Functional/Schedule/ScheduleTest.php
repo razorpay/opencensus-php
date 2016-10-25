@@ -16,7 +16,7 @@ class ScheduleTest extends TestCase
 
         parent::setUp();
 
-        $this->ba->proxyAuth();
+        $this->ba->appAuth();
 
         $this->testScheduleBody = $request = $this->testData['testScheduleBody'];
     }
