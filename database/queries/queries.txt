@@ -1055,3 +1055,4 @@ UPDATE credits
 
 ALTER TABLE credits
     MODIFY COLUMN type VARCHAR(20) NOT NULL;
+

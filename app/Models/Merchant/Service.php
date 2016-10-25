@@ -15,6 +15,7 @@ use RZP\Models\Key;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Models\Terminal;
+use RZP\Models\Schedule;
 use RZP\Models\Merchant\Webhook;
 use RZP\Models\Admin\Newsletter;
 use RZP\Models\Settlement\Holidays;
@@ -265,6 +266,44 @@ class Service extends Base\Service
         $this->repo->saveOrFail($merchant);
 
         return $plan->toArrayPublic();
+    }
+
+    public function assignSettlementSchedule($id, $input)
+    {
+        $this->trace->info(
+            TraceCode::SCHEDULE_ASSIGN_REQUEST,
+            [
+                'merchant_id' => $id,
+                'input'       => $input,
+            ]);
+
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        if (isset($input[Entity::SETTLEMENT_SCHEDULE_ID]) === true)
+        {
+            $scheduleId = $input[Entity::SETTLEMENT_SCHEDULE_ID];
+
+            $schedule = $this->repo->schedule->findByIdAndMerchantId($scheduleId, Account::SHARED_ACCOUNT);
+        }
+        else
+        {
+            $schedule = (new Schedule\Core)->createSchedule($input);
+
+            $this->trace->info(TraceCode::SCHEDULE_CREATED, $schedule->toArray());
+        }
+
+        $merchant->schedule()->associate($schedule);
+
+        $this->trace->info(
+            TraceCode::SCHEDULE_ASSIGNED,
+            [
+                'schedule' => $schedule->toArray(),
+                'merchant' => $merchant->getId(),
+            ]);
+
+        $this->repo->saveOrFail($merchant);
+
+        return $merchant->toArrayPublic();
     }
 
     public function getPricingPlan($id)
