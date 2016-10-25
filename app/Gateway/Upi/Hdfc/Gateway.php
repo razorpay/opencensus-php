@@ -93,6 +93,12 @@ class Gateway extends Base\Gateway
      */
     protected function parseGatewayResponse($responseBody, $type = 'collect')
     {
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_RESPONSE,
+            [
+                'body'              => $responseBody,
+            ]);
+
         $response = $this->decrypt($responseBody);
 
         $fields = [];
@@ -115,19 +121,34 @@ class Gateway extends Base\Gateway
 
             case 'verify':
                 $fields = [
-                    'UPI Txn ID', 'OrderNo', 'Amount', 'Txn Auth Date', 'status',
-                    'status desc', 'respcode', 'approval no', 'payerVA', 'NPCI UPI txn id',
-                    'referance id', 'add1', 'add2', 'add3', 'add4', 'add5', 'add6', 'add7',
-                    'add8', 'add9', 'add10'
+                    ResponseFields::UPI_TXN_ID,
+                    ResponseFields::PAYMENT_ID,
+                    ResponseFields::AMOUNT,
+                    ResponseFields::TXN_AUTH_DATE,
+                    ResponseFields::STATUS,
+                    ResponseFields::STATUS_DESCRIPTION,
+                    ResponseFields::RESPCODE,
+                    ResponseFields::APPROVAL_NO,
+                    ResponseFields::PAYER_VA,
+                    ResponseFields::NPCI_UPI_TXN_ID,
+                    ResponseFields::REFERENCE_ID,
                 ];
                 break;
 
             case 'refund':
                 $fields = [
-                    'UPI Txn Id', 'OrderNo', 'Amount', 'Txn Auth Date', 'status',
-                    'status desc', 'respcode', 'approvalno', 'payer VA', 'txn id ',
-                    'custref id', 'add1', 'add2', 'add3', 'add4', 'add5', 'add6',
-                    'add7', 'add8', 'add9', 'add10'
+                    ResponseFields::UPI_TXN_ID,
+                    ResponseFields::PAYMENT_ID,
+                    ResponseFields::AMOUNT,
+                    ResponseFields::TXN_AUTH_DATE,
+                    ResponseFields::STATUS,
+                    ResponseFields::STATUS_DESCRIPTION,
+                    ResponseFields::RESPCODE,
+                    ResponseFields::APPROVAL_NO,
+                    ResponseFields::PAYER_VA,
+                    ResponseFields::APPROVAL_NO,
+                    ResponseFields::TXN_ID,
+                    ResponseFields::CUSTOMER_REFERENCE_ID,
                 ];
         }
 
@@ -249,6 +270,9 @@ class Gateway extends Base\Gateway
     {
         $payment = $input['payment'];
 
+        // The order is defined in the docs
+        // See README.md
+
         $data = [
             $this->getMerchantId(),
             $input['payment']['id'],
@@ -275,9 +299,19 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
+    /**
+     * Returns the MCC code, based on the merchant category
+     * @param  array  $input
+     * @return string 4 digit integer as string
+     */
     protected function getMCCCode(array $input)
     {
-        return $input['merchant']['category'];
+        if ($input['merchant']['category'])
+        {
+            return $input['merchant']['category'];
+        }
+
+        return '0000';
     }
 
     /**
@@ -308,6 +342,13 @@ class Gateway extends Base\Gateway
         $data = array_merge($data, $suffixArray);
 
         $data = implode('|', $data);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            [
+                'data'              => $data,
+            ]);
+
 
         $msg = $this->encrypt($data);
 
@@ -443,27 +484,12 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * subMerchantId is limited to 10 characters
-     * so we send the first 10 characters
-     * @return string
-     */
-    protected function getSubMerchantId(array $input)
-    {
-        // ICICI docs say that they accept alphanumeric
-        // merchant IDs, but they do not. The field is
-        // also marked as optional, but it is not.
-        return '1234';
-
-        // return substr($input['merchant']['id'], 0, 10);
-    }
-
-    /**
      * Returns Payment Id
      * @param  string $body Request Body
      * @return string Payment Id
      */
     public function getPaymentIdFromServerCallback(array $response)
     {
-        return $response[ResponseFields::MERCHANT_TRAN_ID];
+        return $response[ResponseFields::PAYMENT_ID];
     }
 }
