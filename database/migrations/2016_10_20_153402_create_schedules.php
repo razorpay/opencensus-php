@@ -53,6 +53,19 @@ class CreateSchedules extends Migration
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
         });
+
+        Schema::table(Table::MERCHANT, function($table)
+        {
+            $table->char(Merchant::SETTLEMENT_SCHEDULE_ID, Merchant::ID_LENGTH)
+                  ->nullable()
+                  ->after(Merchant::SETTLEMENT_SCHEDULE);
+
+            $table->foreign(Merchant::SETTLEMENT_SCHEDULE_ID)
+                  ->references(Schedule::ID)
+                  ->on(Table::SCHEDULE)
+                  ->on_delete('restrict');
+
+        });
     }
 
     /**
@@ -62,7 +75,14 @@ class CreateSchedules extends Migration
      */
     public function down()
     {
-        Schema::table(Table::PAYMENT, function($table)
+        Schema::table(Table::MERCHANT, function($table)
+        {
+            $table->dropForeign(Table::MERCHANT . '_' . Merchant::SETTLEMENT_SCHEDULE_ID . '_foreign');
+
+            $table->dropColumn(Merchant::SETTLEMENT_SCHEDULE_ID);
+        });
+
+        Schema::table(Table::SCHEDULE, function($table)
         {
             $table->dropForeign(Table::SCHEDULE.'_'.Schedule::MERCHANT_ID.'_foreign');
         });

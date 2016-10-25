@@ -55,8 +55,6 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'schedule';
 
-    protected $generateIdOnCreate = true;
-
     // ----------------------- Associations ----------------------------------------
 
     public function merchant()

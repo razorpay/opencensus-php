@@ -55,7 +55,8 @@ class Base
         'pricing',
         'methods',
         'emi_plan',
-        'iin'
+        'iin',
+        'schedule',
     );
 
     public function create(array $attributes = array())

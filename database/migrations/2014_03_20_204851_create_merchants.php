@@ -58,9 +58,6 @@ class CreateMerchants extends Migration
 
             $table->integer(Merchant::SETTLEMENT_SCHEDULE);
 
-            $table->char(Merchant::SETTLEMENT_SCHEDULE_ID, Merchant::ID_LENGTH)
-                  ->nullable();
-
             $table->string(Merchant::TRANSACTION_REPORT_EMAIL)
                   ->nullable();
 
@@ -101,7 +98,6 @@ class CreateMerchants extends Migration
             $table->index(Merchant::RECEIPT_EMAIL_ENABLED);
             $table->index(Merchant::RISK_RATING);
             $table->index(Merchant::EMAIL);
-            $table->index(Merchant::SETTLEMENT_SCHEDULE_ID);
         });
     }
 
