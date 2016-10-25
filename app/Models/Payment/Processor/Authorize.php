@@ -1254,7 +1254,7 @@ trait Authorize
         }
         catch(\Exception $e)
         {
-            $this->trace->warning(
+            $this->trace->error(
                 TraceCode::TERMINAL_ANALYTICS_SAVE_FAILED,
                 ['terminalData' => $terminalData]
             );
