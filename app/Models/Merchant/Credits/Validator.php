@@ -12,11 +12,11 @@ class Validator extends Base\Validator
 {
     const MAX_AMOUNT_CREDITS = 100000000;
     const MAX_FEE_CREDITS    = 50000000;
-    const MIN_CREDITS        = 100;
+    const MIN_CREDITS        = -1000000;
 
     protected static $createRules = array(
         Entity::CAMPAIGN => 'required|alpha_dash|max:255',
-        Entity::VALUE    => 'required|integer|min:1|max:'.self::MAX_AMOUNT_CREDITS,
+        Entity::VALUE    => 'required|integer|min:'.self::MIN_CREDITS.'|max:'.self::MAX_AMOUNT_CREDITS,
         Entity::TYPE     => 'required|alpha_dash|max:20',
     );
 
@@ -42,13 +42,18 @@ class Validator extends Base\Validator
         // Validate that merchant credits balance does not go negative
         // after the update
         //
-        if (($creditsDifference < 0) and
-            (abs($creditsDifference) > $currentCreditsBalance))
-        {
-            $msg = 'Cannot change %s from %d to %d. Merchant Total %s Remaining: %d';
+        $this->validateBalanceCredits($creditsDifference, $currentCreditsBalance, $type);
+    }
 
-            $msg = sprintf($msg, $type, $creditsLog->getValue(),
-                $credits, $type, $currentCreditsBalance);
+    public function validateBalanceCredits($value, $merchantCredits, $type)
+    {
+        if (($value < 0) and
+            (abs($value) > $merchantCredits))
+        {
+            $msg = 'Cannot update or add %d %s-credits. Merchant has only %d %s-credits.';
+
+            $msg = sprintf($msg, $value/100, $type,
+                $merchantCredits/100, $type);
 
             throw new Exception\BadRequestValidationFailureException($msg);
         }

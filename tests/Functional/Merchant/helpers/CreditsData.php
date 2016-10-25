@@ -95,6 +95,24 @@ return [
         ],
     ],
 
+    'testNegativeCredits' => [
+        'request' => [
+            'url' => '/merchants/10000000000000/credits_log/',
+            'method' => 'post',
+            'content' => [
+                'value' => -150,
+                'campaign' => 'silent-ads',
+                'type' => 'amount'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'value' => -150,
+                'campaign' => 'silent-ads',
+            ],
+        ],
+    ],
+
     'testFailNegativeUpdateCredits' => [
         'request' => [
             'url' => '/merchants/10000000000000/credits/123/',

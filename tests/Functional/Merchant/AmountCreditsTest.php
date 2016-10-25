@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Merchant;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Account;
 
 class AmountCreditsTest extends TestCase
 {
@@ -74,6 +75,15 @@ class AmountCreditsTest extends TestCase
         $balance = $this->fetchBalance();
         $this->assertEquals($balance['credits'], 100);
     }
+
+    public function testNegativeCredits()
+    {
+        $this->fixtures->merchant->editCredits('1000000', Account::TEST_ACCOUNT);
+        $this->fixtures->merchant->editCreditsforNodalAccount('1000000');
+
+        $this->startTest();
+    }
+
 
     public function testFailNegativeUpdateCredits()
     {

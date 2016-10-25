@@ -93,6 +93,29 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TYPE);
     }
 
+    public function getMerchantCredits()
+    {
+        if ($this->merchant === null)
+        {
+            return null;
+        }
+
+        $balance = $this->merchant->balance;
+
+        switch ($this->getType())
+        {
+            case Type::AMOUNT:
+                return $balance->getAmountCredits();
+
+            case Type::FEE:
+                return $balance->getFeeCredits();
+
+            default:
+                return $balance->getAmountCredits();
+        }
+
+    }
+
 // --------------------- End Getters -----------------------------------------
 
 // --------------------- Modifiers -------------------------------------------
