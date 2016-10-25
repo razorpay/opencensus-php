@@ -71,16 +71,16 @@ class Verify
     {
         $payments = $this->paymentRepo->get50PaymentsWithVerifyResult(VerifyResult::FAILED);
 
-        $payments->shuffle();
+        $payments = $payments->shuffle();
 
         return $this->verifyMultiplePayments($payments, 'failed');
     }
 
     public function verifyPaymentsWithErrorVerifyResult()
     {
-        $payments = $this->paymentRepo->get50PaymentsWithVerifyResult(VerifyResult::ERROR);
+        $payments = $this->paymentRepo->get50PaymentsWithVerifyResult(VerifyResult::ERROR, true);
 
-        $payments->shuffle();
+        $payments = $payments->shuffle();
 
         return $this->verifyMultiplePayments($payments, 'error');
     }
@@ -100,7 +100,7 @@ class Verify
 
         $payments = $this->paymentRepo->getUnverifiedPayments($ts);
 
-        $payments->shuffle();
+        $payments = $payments->shuffle();
 
         return $this->verifyMultiplePayments($payments, 'all');
     }

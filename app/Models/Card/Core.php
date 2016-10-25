@@ -89,7 +89,7 @@ class Core extends Base\Core
 
     public function fillNetworkDetails($card, $input)
     {
-        $network = Card\Network::detectNetwork($input['number']);
+        $network = Card\Network::detectNetwork($card->getIin());
 
         $networkName = Card\Network::getFullName($network);
 

@@ -50,5 +50,7 @@ trait OtpResend
         $gatewayInput['payment'] = $payment->toArray();
 
         $gatewayInput['callbackUrl'] = $this->getCallbackUrl();
+
+        $gatewayInput['otpSubmitUrl'] = $this->getOtpSubmitUrl();
     }
 }

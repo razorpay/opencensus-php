@@ -210,20 +210,21 @@ class Gateway extends Base\Gateway
 
     protected function getCallbackFields($callbackBody)
     {
+
         $attributes = [
             Entity::RECEIVED                => true,
             Entity::APPROVAL_CODE           => $callbackBody[ConnectResponseFields::APPROVAL_CODE],
             Entity::TDATE                   => $callbackBody[ConnectResponseFields::TDATE],
             Entity::TRANSACTION_RESULT      => $callbackBody[ConnectResponseFields::STATUS],
             Entity::GATEWAY_TRANSACTION_ID  => $callbackBody[ConnectResponseFields::IPG_TRANSACTION_ID],
-            Entity::ENDPOINT_TRANSACTION_ID => $callbackBody[ConnectResponseFields::ENDPOINT_TRANSACTION_ID],
-            Entity::GATEWAY_TERMINAL_ID     => $callbackBody[ConnectResponseFields::TERMINAL_ID],
-            Entity::AUTH_CODE               => $callbackBody[ConnectResponseFields::PROCESSOR_RESPONSE_CODE],
         ];
 
         if ($attributes[Entity::TRANSACTION_RESULT] === Status::APPROVED)
         {
-            $attributes[Entity::STATUS] = Status::AUTHORIZED;
+            $attributes[Entity::STATUS]                  = Status::AUTHORIZED;
+            $attributes[Entity::ENDPOINT_TRANSACTION_ID] = $callbackBody[ConnectResponseFields::ENDPOINT_TRANSACTION_ID];
+            $attributes[Entity::GATEWAY_TERMINAL_ID]     = $callbackBody[ConnectResponseFields::TERMINAL_ID];
+            $attributes[Entity::AUTH_CODE]               = $callbackBody[ConnectResponseFields::PROCESSOR_RESPONSE_CODE];
         }
 
         $this->setErrorMessageIfNeeded($attributes);

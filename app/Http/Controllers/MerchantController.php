@@ -144,6 +144,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function assignSettlementSchedule($id)
+    {
+        $input = Request::all();
+
+        $data = (new Merchant\Service)->assignSettlementSchedule($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getPricingPlan($id)
     {
         $data = (new Merchant\Service)->getPricingPlan($id);

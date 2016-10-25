@@ -27,6 +27,7 @@ class Validator extends Base\Validator
         'login_id'                       => 'required|in:random',
         'pgName'                         => 'required|in:hdfcpg',
         'message_hash'                   => 'required|string',
+        'amount'                         => 'required|numeric'
     );
 
     protected static $verifyRules = array(
