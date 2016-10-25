@@ -95,9 +95,9 @@ trait Authorize
             $this->runPostGatewaySelectionPreProcessing($payment, $terminalGatewayInput);
 
             $segmentCustomProps = [
-                                    'terminals'                 => $this->selectedTerminals,
-                                    'selected_terminal'         => $currentTerminal->toArrayPublic(),
-                                    'retry_attempt'             => $retryAttempts
+                                  'terminals'                 => $this->selectedTerminals,
+                                  'selected_terminal'         => $currentTerminal->toArrayPublic(),
+                                  'retry_attempt'             => $retryAttempts
                                 ];
 
             $this->app['segment']->trackPayment($payment, TraceCode::SEGMENT_GATEWAY_POSTPROCESSING, $segmentCustomProps);
@@ -429,7 +429,7 @@ trait Authorize
             $gatewayInput['token'] = $payment->localToken;
         }
 
-        $this->app['segment']->trackPayment($payment, TraceCode::PAYMENT_CREATED, $gatewayInput);
+        $this->app['segment']->trackPayment($payment, TraceCode::PAYMENT_CREATED);
     }
 
     protected function dummyPrePaymentAuthorizeProcessing($payment, $input)

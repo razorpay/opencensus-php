@@ -52,7 +52,7 @@ trait Callback
 
         $payment = $this->retrieve($id);
 
-        $this->app['segment']->trackPayment($payment, TraceCode::PAYMENT_CALLBACK_REQUEST,['gatewayInput' => $gatewayInput]);
+        $this->app['segment']->trackPayment($payment, TraceCode::PAYMENT_CALLBACK_REQUEST);
 
         // For redirect flow
         $this->checkForMerchantCallbackUrl($payment);
@@ -260,7 +260,7 @@ trait Callback
             $payment->globalToken()->associate($token);
 
             $input['token'] = $token->toArray();
-            
+
             $this->app['segment']->trackPayment($payment, TraceCode::SEGMENT_OTP_POSTPROCESSING, ['is_token_set' => true]);
         }
 
