@@ -134,6 +134,13 @@ class FeeCreditsTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreditsTypeCollision()
+    {
+        $creditsLog = $this->addFeeCredits(['value' => 150, 'campaign' => 'silent-ads']);
+
+        $this->startTest();
+    }
+
     public function testDeleteCreditsLog()
     {
         $creditsLog = $this->addFeeCredits(['value' => 150, 'campaign' => 'silent-ads']);

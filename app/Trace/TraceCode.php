@@ -68,6 +68,7 @@ class TraceCode
     const VERIFY_CAPTURE_RESPONSE                   = 'VERIFY_CAPTURE_RESPONSE';
     const PAYMENT_ANALYTICS_SAVE_FAILED             = 'PAYMENT_ANALYTICS_SAVE_FAILED';
     const PAYMENT_ANALYTICS_UNRECOGNIZED_DATA       = 'PAYMENT_ANALYTICS_UNRECOGNIZED_DATA';
+    const PAYMENT_ANALYTICS_INCORRECT_DATA          = 'PAYMENT_ANALYTICS_INCORRECT_DATA';
     const TERMINAL_ANALYTICS_SAVE_FAILED            = 'TERMINAL_ANALYTICS_SAVE_FAILED';
     const VERIFY_REFUND_TRANSACTION_CREATED         = 'VERIFY_REFUND_TRANSACTION_CREATED';
     const MANUAL_GATEWAY_REFUND_RESPONSE            = 'MANUAL_GATEWAY_REFUND_RESPONSE';
@@ -338,6 +339,7 @@ class TraceCode
         self::PAYMENT_VERIFY_CAPTURE_FAILURE            => 'Issue while performing verify for capture',
         self::VERIFY_CAPTURE_RESPONSE                   => 'Response received on verify capture',
         self::PAYMENT_ANALYTICS_UNRECOGNIZED_DATA       => 'Unrecognized data found in payment analytics log',
+        self::PAYMENT_ANALYTICS_INCORRECT_DATA          => 'Incorrect data found in payment analytics log',
         self::VERIFY_REFUND_TRANSACTION_CREATED         => 'Refund transaction created in verify refund',
         self::MANUAL_GATEWAY_REFUND_RESPONSE            => 'Response received on manual gateway refund',
         self::MANUAL_GATEWAY_ALL_REFUNDS_RESPONSE       => 'Response received for all refunds on manual gateway refund',
