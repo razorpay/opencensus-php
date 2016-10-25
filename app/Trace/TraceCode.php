@@ -302,6 +302,7 @@ class TraceCode
      * Additional trace codes for Segment integration
      */
     const SEGMENT_ID_UNAVAILABLE                    = 'SEGMENT_ID_UNAVAILABLE';
+    const GATEWAY_SELECTION_PREPROCESSING           = 'SEGMENT_GATEWAY_SELECTION_PREPROCESSING';
     const GATEWAY_POSTPROCESSING                    = 'GATEWAY_POSTPROCESSING';
     const OTP_GENERATE                              = 'OTP_GENERATE';
     const OTP_POSTPROCESSING                        = 'OTP_POSTPROCESSING';

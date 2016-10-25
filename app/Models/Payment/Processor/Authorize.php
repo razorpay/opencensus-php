@@ -422,7 +422,12 @@ trait Authorize
             $gatewayInput['token'] = $payment->localToken;
         }
 
-        $this->app['segment']->trackPayment($payment, TraceCode::PAYMENT_CREATED);
+        $cusomProperties = [
+            'otpSubmitUrl' => $this->getOtpSubmitUrl(),
+            'callbackUrl' => $this->getCallbackUrl()
+        ];
+
+        $this->app['segment']->trackPayment($payment, TraceCode::GATEWAY_SELECTION_PREPROCESSING, $cusomProperties);
     }
 
     protected function dummyPrePaymentAuthorizeProcessing($payment, $input)
