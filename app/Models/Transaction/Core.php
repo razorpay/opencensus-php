@@ -38,8 +38,6 @@ class Core extends Base\Core
     {
         $txn = $this->txnCreationFromPaymentOperation($payment, $feesSplit);
 
-        $this->updateFreeCredits($txn, $payment);
-
         $this->updateNodalBalance($txn);
 
         $this->repo->balance->updateBalance($this->merchantBalance);
@@ -54,6 +52,8 @@ class Core extends Base\Core
         $settledAt = $this->getSettledAtTimestamp($payment);
 
         $txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);
+
+        $this->updateCredits($txn, $payment);
 
         $this->updateMerchantBalance($txn);
 
@@ -83,14 +83,32 @@ class Core extends Base\Core
 
         $txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);
 
-        $this->updateFreeCredits($txn, $payment);
+        $this->updateCredits($txn, $payment);
 
         $this->updateBalances($txn);
 
         return $txn;
     }
 
-    protected function txnCreationFromPaymentOperation($payment, $feesSplit)
+    public function updateReconciliationData(Entity $transaction)
+    {
+        $reconciled = $transaction->isReconciled();
+
+        if ($reconciled === true)
+        {
+            return false;
+        }
+
+        $transaction->setReconciledAt(time());
+        $transaction->setGatewayFee(0);
+        $transaction->setGatewayServiceTax(0);
+
+        $this->repo->saveOrFail($transaction);
+
+        return true;
+    }
+
+    protected function txnCreationFromPaymentOperation($payment)
     {
         $txn = new Transaction\Entity;
         $txn->generateId();
@@ -122,6 +140,8 @@ class Core extends Base\Core
         $merchantBalance = $this->getBalanceLockForUpdate($payment->merchant);
 
         $freeCredits = $merchantBalance->getCredits();
+
+        $feeCredits = $merchantBalance->getFeeCredits();
 
         $amount = $payment->getAmount();
 
@@ -164,7 +184,18 @@ class Core extends Base\Core
         else
         {
             list($fee, $serviceTax, $pricingRuleId) = $this->calculateMerchantFees($payment, $feesSplit);
-            $credit = $amount - $fee;
+
+            if ($feeCredits >= $fee)
+            {
+                $credit         = $amount;
+                $feeCredits     = $fee;
+
+                $txn->setFeeCredits($feeCredits);
+            }
+            else
+            {
+                $credit = $amount - $fee;
+            }
         }
 
         $txn->setPricingRule($pricingRuleId);
@@ -378,7 +409,7 @@ class Core extends Base\Core
         return $txn;
     }
 
-    public function updateFreeCredits($txn, $payment)
+    public function updateAmountCredits($txn, $payment)
     {
         assert ($txn->isTypePayment() === true);
 
@@ -391,14 +422,25 @@ class Core extends Base\Core
             return;
         }
 
+        // While filling the txn fees and amount, we have not used amount credits.
+        if ($txn->isGratis() === false)
+        {
+            return;
+        }
+
         $amount = $txn->getAmount();
 
         $merchantBalance = $this->getBalanceLockForUpdate($txn->merchant);
 
         $freeCredits = $merchantBalance->getCredits();
 
-        assertTrue($freeCredits > 0);
+        assert($freeCredits > 0);
 
+        //
+        // Even if free credits is less than txn amount, we still give full
+        // amount as free credits. However, in balance we only go ahead with
+        // updating the actual free credits so that it does not go negative.
+        //
         if ($freeCredits < $amount)
         {
             $amount = $freeCredits;
@@ -409,6 +451,40 @@ class Core extends Base\Core
         $nodalBalance->subtractCredits($amount);
 
         $merchantBalance->subtractCredits($amount);
+
+        // Nodal balance needs to be saved because of amount credit update
+        $this->repo->balance->updateBalance($nodalBalance);
+    }
+
+    public function updateFeeCredits(Transaction\Entity $txn, Payment\Entity $payment)
+    {
+        assert ($txn->isTypePayment() === true);
+
+        // While filling the txn fees and amount, we have not used fee credits.
+        if ($txn->getFeeCredits() === 0)
+        {
+            return;
+        }
+
+        $fee = $txn->getFee();
+
+        $merchantBalance = $this->getBalanceLockForUpdate($txn->merchant);
+
+        $feeCredits = $merchantBalance->getFeeCredits();
+
+        if ($feeCredits < $fee)
+        {
+            throw new Exception/LogicException("FeeCredits should be higher or equal to the fee");
+        }
+
+        $nodalBalance = $this->getNodalBalanceLockForUpdate($txn->getChannel());
+
+        $nodalBalance->subtractFeeCredits($fee);
+
+        $merchantBalance->subtractFeeCredits($fee);
+
+        // Nodal balance needs to be saved because of amount credit update
+        $this->repo->balance->updateBalance($nodalBalance);
     }
 
     protected function getNodalBalanceLockForUpdate($channel)
@@ -460,5 +536,17 @@ class Core extends Base\Core
     protected function getSettlementSchedule($payment)
     {
         return $payment->merchant->getSettlementSchedule();
+    }
+
+    public function updateCredits(Transaction\Entity $txn, Payment\Entity $payment)
+    {
+        if ($txn->isGratis() === true)
+        {
+            return $this->updateAmountCredits($txn, $payment);
+        }
+        else if ($txn->getFeeCredits() > 0)
+        {
+            return $this->updateFeeCredits($txn, $payment);
+        }
     }
 }

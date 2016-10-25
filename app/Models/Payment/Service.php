@@ -8,7 +8,6 @@ use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Error;
-use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
@@ -27,11 +26,14 @@ class Service extends Base\Service
     {
         parent::__construct();
 
-        $this->core = new Payment\Core();
+        $this->core = new Payment\Core;
     }
 
     /**
      * Processes a payment.
+     * @param array $input
+     * @return array|mixed
+     * @throws Exception\BadRequestValidationFailureException
      */
     public function process(array $input)
     {
@@ -40,6 +42,9 @@ class Service extends Base\Service
 
     /**
      * Processes a wallet payment
+     * @param array $input
+     * @return array|mixed
+     * @throws Exception\BadRequestValidationFailureException
      */
     public function processWallet(array $input)
     {
@@ -427,6 +432,11 @@ class Service extends Base\Service
             'total time'            => $time . ' secs'
         ];
 
+        $this->trace->info(
+            TraceCode::ORDERS_MULTIPLE_AUTHORIZED_REFUNDS,
+            $results
+        );
+
         $message = 'Multiple authorized payments for orders with a captured payment refunded';
 
         $this->slack->queue($message, $results, ['channel' => '#tech_logs']);
@@ -490,6 +500,12 @@ class Service extends Base\Service
             {
                 $this->getNewProcessor($merchant)->refundAuthorizedPayment($authorizedPayment);
 
+                $this->trace->info(
+                    TraceCode::ORDER_REFUNDED,
+                    [
+                        'payment_id' => $authorizedPayment->getId()
+                    ]);
+
                 $refundedCount++;
             }
             catch (\Exception $ex)
@@ -530,7 +546,7 @@ class Service extends Base\Service
         $timedOut = 0; $failed = 0; $error = 0;
         $time = time();
 
-        $payments->shuffle();
+        $payments = $payments->shuffle();
 
         foreach ($payments as $payment)
         {
@@ -800,11 +816,9 @@ class Service extends Base\Service
 
     /**
      * Sends the authorized payments reminder email
-     * @param  string $merchantId [description]
-     * @param  array $payments   [description]
-     * @param  string $subject Subject for the email
-     * @param  boolean $final Whether this is the final payment reminder
-     * @return null
+     * @param  string   $merchantId
+     * @param  array    $payments
+     * @param  boolean  $final Whether this is the final payment reminder
      */
     protected function sendAuthorizedPaymentsReminderMail($merchantId, $payments, $final)
     {

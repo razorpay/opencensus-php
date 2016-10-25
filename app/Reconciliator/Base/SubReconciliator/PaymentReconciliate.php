@@ -177,7 +177,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
     protected function tryAuthorizeFailedPayment($row)
     {
-        $paymentService = new Payment\Service();
+        $paymentService = new Payment\Service;
 
         try
         {
@@ -719,7 +719,9 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                 return false;
             }
 
-            $this->paymentTransaction = $this->payment->reload()->transaction;
+            // Refresh both payment and transaction to get latest changes.
+            // Reload txn because relation are cached.
+            $this->paymentTransaction = $this->payment->reload()->transaction->reload();
         }
 
         $currentGatewayFee = $this->paymentTransaction->getGatewayFee();
@@ -822,6 +824,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         $txn = (new Transaction\Core)->createFromPaymentAuthorized($this->payment, $feesSplit);
 
         $this->repo->saveOrFail($txn);
+        // This is required to save the association of the transaction with the payment.
+        $this->repo->saveOrFail($this->payment);
 
         $this->saveFeeDetails($txn, $feesSplit);
     }

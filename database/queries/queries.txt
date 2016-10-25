@@ -1034,3 +1034,24 @@ SET w.amount = r.amount
 WHERE w.wallet = 'olamoney'
     AND w.action = 'refund'
     AND w.amount != r.amount;
+
+ALTER TABLE first_data
+    ADD COLUMN auth_code VARCHAR(6) AFTER gateway_terminal_id;
+
+## Queries related to fee credits changes
+## Fired on Oct 23 12:01 pm
+ALTER TABLE credits
+   MODIFY COLUMN value INTEGER NOT NULL,
+   ADD COLUMN type VARCHAR(20) AFTER merchant_id;
+
+ALTER TABLE balance
+   ADD COLUMN fee_credits INTEGER NOT NULL DEFAULT 0 AFTER credits;
+
+ALTER TABLE transactions
+   ADD COLUMN fee_credits INTEGER NOT NULL DEFAULT 0 AFTER gratis;
+
+UPDATE credits
+    SET type = "amount";
+
+ALTER TABLE credits
+    MODIFY COLUMN type VARCHAR(20) NOT NULL;

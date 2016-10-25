@@ -35,6 +35,13 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getSettlementsBetweenTimestamp($from, $to)
+    {
+        return $this->newQuery()
+                    ->whereBetween(Entity::CREATED_AT, [$from, $to])
+                    ->get();
+    }
+
     public function fetchSettlementsBetweenTimestamp($from, $to)
     {
         return $this->newQuery()

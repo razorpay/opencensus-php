@@ -92,6 +92,22 @@ return [
         'entity' => 'transaction',
         'admin' => true,
     ],
+
+    'testPartialRefund' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_PARTIAL_REFUND_NOT_SUPPORTED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_PARTIAL_REFUND_NOT_SUPPORTED,
+        ],
+    ],
     'testPaymentPayzappEntity' => [
 //        'id' => '1',
 //        'payment_id' => '4W2hONlUrw0Pka',

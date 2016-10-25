@@ -149,15 +149,13 @@ class BilldeskGatewayTest extends TestCase
 
         $this->setMockServer($server);
 
-        try
+        $data = $this->testData['testServerToServerCallback'];
+
+        $this->runRequestResponseFlow($data, function()
         {
             $payment = $this->getDefaultNetbankingPaymentArray();
             $payment = $this->doAuthPayment($payment);
-        }
-        catch (Exception\RuntimeException $e)
-        {
-            ;
-        }
+        });
 
         $payment = $this->getLastEntity('payment', true);
 

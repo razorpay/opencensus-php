@@ -27,6 +27,7 @@ class Entity extends Base\PublicEntity
     const GATEWAY_SETTLED_AT  = 'gateway_settled_at';
     const API_FEE             = 'api_fee';
     const GRATIS              = 'gratis';
+    const FEE_CREDITS         = 'fee_credits';
     const ESCROW_BALANCE      = 'escrow_balance';
     const RECONCILED_AT       = 'reconciled_at';
     const CHANNEL             = 'channel';
@@ -59,6 +60,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_SETTLED_AT,
         self::SERVICE_TAX,
         self::GRATIS,
+        self::FEE_CREDITS,
         self::BALANCE,
         self::ESCROW_BALANCE,
         self::PRICING_RULE_ID,
@@ -118,6 +120,11 @@ class Entity extends Base\PublicEntity
         Payment\Entity::NOTES,
         self::PAYMENT_ID,
     );
+
+    protected $casts = [
+        self::GRATIS      => 'boolean',
+        self::FEE_CREDITS => 'integer',
+    ];
 
     public function merchant()
     {
@@ -284,11 +291,6 @@ class Entity extends Base\PublicEntity
         return (int) $gatewaySettledAt;
     }
 
-    protected function getGratisAttribute()
-    {
-        return (bool) $this->attributes[self::GRATIS];
-    }
-
     protected function getServiceTaxAttribute()
     {
         return (int) $this->attributes[self::SERVICE_TAX];
@@ -313,6 +315,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FEE);
     }
 
+    public function getFeeCredits()
+    {
+        return $this->getAttribute(self::FEE_CREDITS);
+    }
+
     public function getApiFee()
     {
         return $this->getAttribute(self::API_FEE);
@@ -333,6 +340,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PRICING_RULE_ID);
     }
 
+    public function getGatewaySettledAt()
+    {
+        return $this->getAttribute(self::GATEWAY_SETTLED_AT);
+    }
+
     public function setReconciledAt($timestamp)
     {
         $this->setAttribute(self::RECONCILED_AT, $timestamp);
@@ -341,11 +353,6 @@ class Entity extends Base\PublicEntity
     public function setGatewaySettledAt($timestamp)
     {
         $this->setAttribute(self::GATEWAY_SETTLED_AT, $timestamp);
-    }
-
-    public function getGatewaySettledAt()
-    {
-        return $this->getAttribute(self::GATEWAY_SETTLED_AT);
     }
 
     public function setGatewayFee($gatewayFee)
@@ -396,6 +403,11 @@ class Entity extends Base\PublicEntity
     public function setGratis($gratis)
     {
         $this->setAttribute(self::GRATIS, $gratis);
+    }
+
+    public function setFeeCredits(int $credits)
+    {
+        $this->setAttribute(self::FEE_CREDITS, $credits);
     }
 
     public function setDebit($amount)
@@ -456,6 +468,11 @@ class Entity extends Base\PublicEntity
     public function isGratis()
     {
         return $this->getAttribute(self::GRATIS);
+    }
+
+    public function isFeeCredits()
+    {
+        return $this->getAttribute(self::FEE_CREDITS);
     }
 
     public function toArrayReport()

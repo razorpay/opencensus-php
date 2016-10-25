@@ -91,6 +91,8 @@ class RefundBatchFileTest extends TestCase
 
     public function testProcessRefundFileWithInvalidFile()
     {
+        $this->markTestSkipped();
+
         $entries = $this->getDefaultRefundFileEntries();
 
         $batch = $this->fixtures->create('batch:refund', $entries);
@@ -129,6 +131,8 @@ class RefundBatchFileTest extends TestCase
 
     public function testProcessRefundFileWithInvalidPaymentId()
     {
+        $this->markTestSkipped();
+
         $entries = $this->getDefaultRefundFileEntries();
 
         $entries[] = [
@@ -149,6 +153,8 @@ class RefundBatchFileTest extends TestCase
 
     public function testProcessRefundWithOneAttempt()
     {
+        $this->markTestSkipped();
+
         $entries = $this->getDefaultRefundFileEntries();
 
         $batch = $this->fixtures->create('batch:refund_with_one_attempt', $entries);
@@ -160,6 +166,8 @@ class RefundBatchFileTest extends TestCase
 
     public function testProcessRefundWithTwoAttempt()
     {
+        $this->markTestSkipped();
+
         $entries = $this->getDefaultRefundFileEntries();
 
         $batch = $this->fixtures->create('batch:refund_with_two_attempt', $entries);

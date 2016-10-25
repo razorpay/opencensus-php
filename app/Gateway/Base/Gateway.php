@@ -650,6 +650,16 @@ class Gateway
         return $request;
     }
 
+    protected function getOtpSubmitRequest(array $input): array
+    {
+        $request = [
+            'url' => $input['otpSubmitUrl'],
+            'method' => 'post'
+        ];
+
+        return $request;
+    }
+
     protected function jsonToArray($json)
     {
         $decodeJson = json_decode($json, true);

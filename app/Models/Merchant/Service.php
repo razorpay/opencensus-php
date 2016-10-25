@@ -437,38 +437,9 @@ class Service extends Base\Service
 
     public function getPaymentMethods()
     {
-        $data = array(
-            'entity'        => 'methods',
-            'card'          => true,
-            'netbanking'    => [],
-            'wallet'        => [],
-            'emi'           => false,
-            'upi'           => false,
-        );
+        $formattedMethods = (new Methods\Core)->getFormattedMethods($this->merchant);
 
-        $methods = (new Methods\Core)->getMethods($this->merchant);
-
-        if ($methods !== null)
-        {
-            $data['card'] = $methods->isCardEnabled();
-            $netbankingEnabled = $methods->isNetbankingEnabled();
-            if ($netbankingEnabled === true)
-            {
-                $data['netbanking'] = $methods->toArrayWithBankNames();
-            }
-            $data['wallet'] = $methods->getEnabledWallets();
-            $data['upi'] = $methods->isUpiEnabled();
-            $emi = $methods->isEmiEnabled();
-
-            if ($emi === true)
-            {
-                $data['emi'] = $emi;
-
-                $data['emi_plans'] = (new Emi\Service)->all();
-            }
-        }
-
-        return $data;
+        return $formattedMethods;
     }
 
     public function setPaymentMethods($merchantId, $input)
@@ -495,6 +466,13 @@ class Service extends Base\Service
 
     public function editWebhook($webhookId, $input)
     {
+        $this->trace->info(
+            TraceCode::WEBHOOK_EDIT,
+            [
+                'webhook_id'    => $webhookId,
+                'input'         => $input,
+            ]);
+
         $webhook = (new Webhook\Core)->editWebhook($this->merchant, $webhookId, $input);
 
         return $webhook->toArray();
