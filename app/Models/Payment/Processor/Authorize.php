@@ -55,12 +55,6 @@ trait Authorize
 
         $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
 
-        $segmentCustomProps = [
-            'terminals' => $this->selectedTerminals
-        ];
-
-        $this->app['segment']->trackPayment($payment, TraceCode::TERMINALS_SELECTED, $segmentCustomProps);
-
         return $this->authorizeAcrossTerminals($payment, $input, $gatewayInput);
     }
 
@@ -95,7 +89,6 @@ trait Authorize
             $this->runPostGatewaySelectionPreProcessing($payment, $terminalGatewayInput);
 
             $segmentCustomProps = [
-                                  'terminals'                 => $this->selectedTerminals,
                                   'selected_terminal'         => $currentTerminal->toArrayPublic(),
                                   'retry_attempt'             => $retryAttempts
                                 ];
