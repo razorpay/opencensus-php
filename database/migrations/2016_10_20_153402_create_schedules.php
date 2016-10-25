@@ -47,6 +47,8 @@ class CreateSchedules extends Migration
             $table->integer(Schedule::UPDATED_AT);
 
             $table->index(Schedule::TYPE);
+            $table->index(Schedule::CREATED_AT);
+            $table->index(Schedule::NEXT_RUN);
 
             $table->foreign(Schedule::MERCHANT_ID)
                   ->references(Merchant::ID)
