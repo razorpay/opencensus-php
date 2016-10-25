@@ -300,26 +300,20 @@ class TraceCode
     /**
      * Additional trace codes for Segment integration
      */
-    const SEGMENT_ID_UNAVAILABLE                            = 'SEGMENT_ID_UNAVAILABLE';
-    const SEGMENT_TERMINALS_SELECTED                        = 'SEGMENT_TERMINALS_SELECTED';
-    const SEGMENT_GATEWAY_POSTPROCESSING                    = 'SEGMENT_GATEWAY_POSTPROCESSING';
-    const SEGMENT_GATEWAY_EXCEPTION                         = 'SEGMENT_GATEWAY_EXCEPTION';
-    const SEGMENT_PAYMENT_EXCEPTION                         = 'SEGMENT_PAYMENT_EXCEPTION';
-    const SEGMENT_OTP_GENERATE                              = 'SEGMENT_OTP_GENERATE';
-    const SEGMENT_OTP_POSTPROCESSING                        = 'SEGMENT_OTP_POSTPROCESSING';
-    const SEGMENT_OTP_RESEND_EXCEPTION                      = 'SEGMENT_OTP_RESEND_EXCEPTION';
-    const SEGMENT_OTP_RESEND                                = 'segment_OTP_RESEND';
-    const SEGMENT_PAYMENT_AUTH_RETRY                        = 'SEGMENT_PAYMENT_AUTH_RETRY';
-    const SEGMENT_TERMINAL_SUCCESS                          = 'SEGMENT_TERMINAL_SUCCESS';
-    const SEGMENT_GATEWAY_PREPROCESSING                     = 'SEGMENT_GATEWAY_PREPROCESSING';
-    const SEGMENT_CALL_GATEWAY_FUNC                         = 'SEGMENT_CALL_GATEWAY_FUNC';
-    const SEGMENT_ASYNC_PAYMENT_RESPONSE                    = 'SEGMENT_ASYNC_PAYMENT_RESPONSE';
-    const SEGMENT_FIRST_PAYMENT_RESPONSE                    = 'SEGMENT_FIRST_PAYMENT_RESPONSE';
-    const SEGMENT_FORCE_AUTH_FAILED_PAYMENT                 = 'SEGMENT_FORCE_AUTH_FAILED_PAYMENT';
-    const SEGMENT_PAYMENT_BANK_NOT_ENABLED_FOR_MERCHANT     = 'SEGMENT_PAYMENT_BANK_NOT_ENABLED_FOR_MERCHANT';
-    const SEGMENT_PAYMENT_FAILED_EXPECTED_GATEWAY_SUCCESS   = 'SEGMENT_PAYMENT_FAILED_EXPECTED_GATEWAY_SUCCESS';
-    const SEGMENT_PAYMENT_ALREADY_AUTHORIZED                = 'SEGMENT_PAYMENT_ALREADY_AUTHORIZED';
-    const SEGMENT_POST_FAILED                               = 'SEGMENT_POST_FAILED';
+    const SEGMENT_ID_UNAVAILABLE                    = 'SEGMENT_ID_UNAVAILABLE';
+    const GATEWAY_POSTPROCESSING                    = 'GATEWAY_POSTPROCESSING';
+    const OTP_GENERATE                              = 'OTP_GENERATE';
+    const OTP_POSTPROCESSING                        = 'OTP_POSTPROCESSING';
+    const OTP_RESEND_EXCEPTION                      = 'OTP_RESEND_EXCEPTION';
+    const OTP_RESEND                                = 'OTP_RESEND';
+    const TERMINAL_SUCCESS                          = 'TERMINAL_SUCCESS';
+    const PAYMENT_CALL_GATEWAY_FUNC                 = 'PAYMENT_CALL_GATEWAY_FUNC';
+    const ASYNC_PAYMENT_RESPONSE                    = 'ASYNC_PAYMENT_RESPONSE';
+    const FIRST_PAYMENT_RESPONSE                    = 'FIRST_PAYMENT_RESPONSE';
+    const FORCE_AUTH_FAILED_PAYMENT                 = 'FORCE_AUTH_FAILED_PAYMENT';
+    const PAYMENT_FAILED_EXPECTED_GATEWAY_SUCCESS   = 'PAYMENT_FAILED_EXPECTED_GATEWAY_SUCCESS';
+    const PAYMENT_ALREADY_AUTHORIZED                = 'PAYMENT_ALREADY_AUTHORIZED';
+    const SEGMENT_POST_FAILED                       = 'SEGMENT_POST_FAILED';
 
 
 

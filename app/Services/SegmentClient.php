@@ -25,14 +25,14 @@ class SegmentClient
     // even if the api has these variables
 
     const SENSITIVE_KEYS = [
-        'CARD_NUMBER' => 'card.number',
-        'GATEWAY_CARD_NUMBER' => 'terminal_gateway_input.card.number',
-        'CVV' => 'card.cvv',
-        'CARD_ID' => 'card.id',
-        'GATEWAY_CVV' => 'terminal_gateway_input.card.cvv',
-        'CARD_EXP_MONTH' => 'card.expiry_month',
-        'CARD_EXP_YEAR' => 'card.expiry_year',
-        'PAYMENT_CARD_ID' => 'payment.card_id'
+        'CARD_NUMBER'           => 'card.number',
+        'GATEWAY_CARD_NUMBER'   => 'terminal_gateway_input.card.number',
+        'CVV'                   => 'card.cvv',
+        'CARD_ID'               => 'card.id',
+        'GATEWAY_CVV'           => 'terminal_gateway_input.card.cvv',
+        'CARD_EXP_MONTH'        => 'card.expiry_month',
+        'CARD_EXP_YEAR'         => 'card.expiry_year',
+        'PAYMENT_CARD_ID'       => 'payment.card_id'
     ];
 
     public function __construct($app)

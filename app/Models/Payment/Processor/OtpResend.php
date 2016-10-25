@@ -26,12 +26,12 @@ trait OtpResend
             $payment->resetOtpAttempts();
             $payment->saveOrFail();
 
-            $this->app['segment']->trackPayment($payment, TraceCode::SEGMENT_OTP_RESEND);
+            $this->app['segment']->trackPayment($payment, TraceCode::OTP_RESEND);
 
             return $data;
         }
 
-        $this->app['segment']->trackPayment($payment, TraceCode::SEGMENT_OTP_RESEND_EXCEPTION);
+        $this->app['segment']->trackPayment($payment, TraceCode::OTP_RESEND_EXCEPTION);
 
         throw new LogicException(
             'Gateway does not support OTP resend',
