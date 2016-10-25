@@ -283,7 +283,7 @@ class Processor
      * @return  $status Payment\Status
      * @throws Exception\BadRequestException
      */
-    
+
     public function cancel($id, $input)
     {
         $status = null;
@@ -510,7 +510,7 @@ class Processor
 
         $gatewayData['merchant'] = $this->payment->merchant;
 
-        $this->app['segment']->trackPayment($this->payment, TraceCode::SEGMENT_CALL_GATEWAY_FUNC, ['action' => $action]);
+        $this->app['segment']->trackPayment($this->payment, TraceCode::PAYMENT_CALL_GATEWAY_FUNC, ['action' => $action]);
 
         return $this->app['gateway']->call($gateway, $action, $gatewayData, $this->mode, $terminal);
     }
