@@ -93,7 +93,7 @@ class AmountCreditsTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreditsGrantedInCampaign()
+    public function testAmountCreditsGrantedInCampaign()
     {
         $this->fixtures->create(
             'credits',

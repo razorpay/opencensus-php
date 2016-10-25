@@ -30,8 +30,6 @@ class Gateway extends Base\Gateway
 
     protected $topup = true;
 
-    protected $accessToken;
-
     protected $map = array(
         Entity::EMAIL                   => Entity::EMAIL,
         Entity::CONTACT                 => Entity::CONTACT,
@@ -165,8 +163,6 @@ class Gateway extends Base\Gateway
         {
             $data['token'] = $this->getTokenAttributes($content);
 
-            $this->accessToken = $content[ResponseFields::ACCESS_TOKEN];
-
             $content[ResponseFields::ACCESS_TOKEN] = '';
             $content[ResponseFields::REFRESH_TOKEN] = '';
         }
@@ -194,7 +190,7 @@ class Gateway extends Base\Gateway
     {
         $this->action($input, Action::GET_BALANCE);
 
-        $content[RequestFields::USER_ACCESS_TOKEN] = $this->accessToken;
+        $content[RequestFields::USER_ACCESS_TOKEN] = $input['token']['gateway_token'];
 
         $request = $this->getStandardRequestArray();
 
@@ -308,7 +304,7 @@ class Gateway extends Base\Gateway
             RequestFields::AMOUNT               => $amount,
             RequestFields::CURRENCY             => $input['payment']['currency'],
             RequestFields::COUPON_CODE          => 'NA',
-            RequestFields::USER_ACCESS_TOKEN    => $this->accessToken,
+            RequestFields::USER_ACCESS_TOKEN    => $input['token']['gateway_token'],
         );
 
         $content[RequestFields::HASH] = $this->getHashForDebit($content);
@@ -335,17 +331,6 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED, $responseStatus);
         }
-
-        // verify hash - when ola starts sending hash value
-
-        $token = $this->getValidWalletToken($input);
-
-        if ($token === null)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
-        }
-
-        $this->accessToken = $token->getGatewayToken();
     }
 
     protected function getCreateWalletAttributes($input, $content)
@@ -418,15 +403,6 @@ class Gateway extends Base\Gateway
 
     protected function getBillGeneratorAttributes($input)
     {
-        $token = $this->getValidWalletToken($input);
-
-        if ($token === null)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
-        }
-
-        $this->accessToken = $token->getGatewayToken();
-
         $amount = (string) number_format($input['payment']['amount'] / 100, 2, '.', '');
 
         $udf = [RequestFields::MERCHANT_DISPLAY_NAME => $input['merchant']->getBillingLabelElseName()];
@@ -441,7 +417,7 @@ class Gateway extends Base\Gateway
             RequestFields::RETURN_URL               => $input['callbackUrl'],
             RequestFields::NOTIFICATION_URL         => 'NA',
             RequestFields::AMOUNT                   => $amount,
-            RequestFields::USER_ACCESS_TOKEN        => $this->accessToken,
+            RequestFields::USER_ACCESS_TOKEN        => $input['token']['gateway_token'],
             RequestFields::CURRENCY                 => $input['payment']['currency'],
             RequestFields::BALANCE_TYPE             => 'cash',
             RequestFields::BALANCE_NAME             => 'cash',
@@ -449,7 +425,10 @@ class Gateway extends Base\Gateway
 
         $content[RequestFields::HASH] = $this->getHashForBill($content);
 
-        $requestContent[RequestFields::BILL] = base64_encode(json_encode($content));
+        $requestContent = [
+            RequestFields::BILL => base64_encode(json_encode($content)),
+            RequestFields::PHONE => $this->getFormattedContact($input['payment']['contact'])
+        ];
 
         return $requestContent;
     }

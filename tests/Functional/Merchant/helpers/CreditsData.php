@@ -139,7 +139,7 @@ return [
         ],
     ],
 
-    'testCreditsGrantedInCampaign' => [
+    'testAmountCreditsGrantedInCampaign' => [
         'request' => [
             'url' => '/credits/?campaign=silent-ads',
             'method' => 'get',
@@ -152,10 +152,38 @@ return [
                     [
                         'campaign' => "silent-ads",
                         'value' => 90,
+                        'type'  => 'amount',
                     ],
                     [
                         'campaign' => "silent-ads",
                         'value' => 90,
+                        'type' => 'amount',
+                    ],
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testFeeCreditsGrantedInCampaign' => [
+        'request' => [
+            'url' => '/credits/?campaign=silent-ads',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => "collection",
+                'count' => 2,
+                'items' => [
+                    [
+                        'campaign' => "silent-ads",
+                        'value' => 90,
+                        'type'  => 'fee',
+                    ],
+                    [
+                        'campaign' => "silent-ads",
+                        'value' => 90,
+                        'type' => 'fee',
                     ],
                 ],
             ],
@@ -213,6 +241,30 @@ return [
                 'success' => true
             ],
             'status_code' => 200,
+        ],
+    ],
+
+    'testCreditsTypeCollision' => [
+        'request' => [
+            'url' => '/merchants/10000000000000/credits_log/',
+            'method' => 'post',
+            'content' => [
+                'value' => 25,
+                'campaign' => 'silent-ads',
+                'type' => 'amount',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 ];

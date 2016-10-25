@@ -159,9 +159,14 @@ trait Callback
         $input['payment'] = $payment->toArray();
         $input['gateway'] = $gatewayInput;
 
-        if ($payment->globalCustomer !== null)
+        if ($payment->getGlobalCustomerId() !== null)
         {
             $input['customer'] = $payment->globalCustomer;
+        }
+
+        if ($payment->getGlobalTokenId() !== null)
+        {
+            $input['token'] = $payment->globalToken->toArray();
         }
 
         if ($payment->card !== null)
@@ -217,7 +222,7 @@ trait Callback
         }
     }
 
-    protected function postPaymentOtpCallbackProcessing($input, $data)
+    protected function postPaymentOtpCallbackProcessing(array &$input, $data)
     {
         $payment = $this->payment;
 
@@ -254,6 +259,8 @@ trait Callback
 
             $payment->globalToken()->associate($token);
 
+            $input['token'] = $token->toArray();
+            
             $this->app['segment']->trackPayment($payment, TraceCode::SEGMENT_OTP_POSTPROCESSING, ['is_token_set' => true]);
         }
 
