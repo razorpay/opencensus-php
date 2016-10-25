@@ -21,7 +21,7 @@ class Core extends Base\Core
         return $schedule;
     }
 
-    public function edit($schedule, $input)
+    public function editSchedule($schedule, $input)
     {
         $schedule->edit($input);
 
