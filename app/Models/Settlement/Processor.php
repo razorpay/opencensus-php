@@ -140,16 +140,22 @@ class Processor extends Base\Core
     {
         $txns = new Base\PublicCollection;
 
+        $schedule=true;
+
         if ($schedule === false)
         {
             $txns = $this->repo->transaction->fetchUnsettledTransactions($this->setlTime);
         }
         else
         {
-            $txns = $this->repo->transaction->fetchUnsettledTxnsFromSchedules($this->setlTime);
+            list($txns, $schedules) = $this->repo->transaction->fetchUnsettledTxnsAndSchedules($this->setlTime);
+
+            $schedules->updateNextRun();
         }
 
         $txns = $this->filterTransactionsForSettlement($txns, $channel, $schedule);
+
+        $this->trace->info(TraceCode::FORCE_AUTHORIZE_TIMEOUT_PAYMENTS_RESPONSE, [$txns]);
 
         return $this->repo->transaction(function() use ($txns, $channel)
         {

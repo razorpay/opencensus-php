@@ -309,6 +309,8 @@ class SettlementTest extends TestCase
     {
         $this->ba->appAuth();
 
+        $schedule = $this->createAndAssignSchedule();
+
         $payments = $this->createPaymentEntities();
 
         foreach ($payments as $payment)
@@ -375,6 +377,26 @@ class SettlementTest extends TestCase
         $content = $this->makeRequestAndGetContent($request);
 
         $this->assertNotEquals($content, null);
+    }
+
+    protected function createAndAssignSchedule()
+    {
+        $request = array(
+            'url' => '/merchants/'.Account::TEST_ACCOUNT.'/schedules',
+            'method' => 'POST',
+            'content' => array(
+                'name'        => 'Basic T3',
+                'type'        => 'settlement',
+                'period'      => 'daily',
+                'interval'    => 1,
+                'delay'       => 3,
+                'next_run'    => 1451586600,
+            )
+        );
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
     }
 
     protected function startTest($testDataToReplace = array())
