@@ -24,7 +24,7 @@ class Processor extends Base\Core
 
     protected $input;
 
-    public function process(array $input, $channel, $schedule=false)
+    public function process(array $input, $channel, $schedule = true)
     {
         $this->increaseAllowedSystemLimits();
 
@@ -140,8 +140,6 @@ class Processor extends Base\Core
     {
         $txns = new Base\PublicCollection;
 
-        $schedule=true;
-
         if ($schedule === false)
         {
             $txns = $this->repo->transaction->fetchUnsettledTransactions($this->setlTime);
@@ -150,7 +148,7 @@ class Processor extends Base\Core
         {
             list($txns, $schedules) = $this->repo->transaction->fetchUnsettledTxnsAndSchedules($this->setlTime);
 
-            $schedules->updateNextRun();
+            $schedules->callOnEveryItem('updateNextRun');
         }
 
         $txns = $this->filterTransactionsForSettlement($txns, $channel, $schedule);
