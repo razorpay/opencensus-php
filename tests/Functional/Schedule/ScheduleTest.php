@@ -26,6 +26,17 @@ class ScheduleTest extends TestCase
         $this->createSchedule();
     }
 
+    public function testEditSchedule()
+    {
+        $schedule = $this->createSchedule();
+
+        $request = $this->testData[__FUNCTION__];
+
+        $request['url'] = $request['url'] . $schedule['id'];
+
+        $response = $this->makeRequestAndGetContent($request);
+    }
+
     public function testScheduleDefaultAnchor()
     {
         $request = $this->getValidScheduleBody();

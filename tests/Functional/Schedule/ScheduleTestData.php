@@ -31,6 +31,14 @@ return [
         'content' => [],
     ],
 
+    'testEditSchedule' => [
+        'method'  => 'PUT',
+        'url'     => '/schedules/',
+        'content' => [
+            "next_run" => 1451586600,
+        ],
+    ],
+
     'testScheduleBody' => [
         'name'       => 'Every Wednesday',
         'type'       => 'settlement',

@@ -23,7 +23,7 @@ class Validator extends Base\Validator
         Entity::NAME     => 'sometimes|string|max:50',
         Entity::INTERVAL => 'sometimes|integer|max:24',
         Entity::ANCHOR   => 'sometimes|integer|min:-1|max:30',
-        Entity::DELAY    => 'required|integer|min:0|max:30',
+        Entity::DELAY    => 'sometimes|integer|min:0|max:30',
         Entity::NEXT_RUN => 'sometimes|integer',
     );
 
