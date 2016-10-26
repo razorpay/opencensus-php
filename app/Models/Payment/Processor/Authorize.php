@@ -89,9 +89,9 @@ trait Authorize
             $this->runPostGatewaySelectionPreProcessing($payment, $terminalGatewayInput);
 
             $segmentCustomProps = [
-                                  'selected_terminal'         => $currentTerminal->toArrayPublic(),
-                                  'retry_attempt'             => $retryAttempts
-                                ];
+                'selected_terminal' => $currentTerminal->toArrayPublic(),
+                'retry_attempt' => $retryAttempts
+            ];
 
             $this->app['segment']->trackPayment($payment, TraceCode::GATEWAY_POSTPROCESSING, $segmentCustomProps);
 
@@ -422,12 +422,12 @@ trait Authorize
             $gatewayInput['token'] = $payment->localToken;
         }
 
-        $cusomProperties = [
+        $customProperties = [
             'otpSubmitUrl' => $this->getOtpSubmitUrl(),
             'callbackUrl' => $this->getCallbackUrl()
         ];
 
-        $this->app['segment']->trackPayment($payment, TraceCode::GATEWAY_SELECTION_PREPROCESSING, $cusomProperties);
+        $this->app['segment']->trackPayment($payment, TraceCode::GATEWAY_SELECTION_PREPROCESSING, $customProperties);
     }
 
     protected function dummyPrePaymentAuthorizeProcessing($payment, $input)
@@ -991,7 +991,7 @@ trait Authorize
     {
         $id = $payment->getPublicId();
 
-        $returnData = [
+        $response = [
             'type'          => 'async',
             'version'       => 1,
             'payment_id'    => $id,
@@ -1002,9 +1002,9 @@ trait Authorize
             ]
         ];
 
-        $this->app['segment']->trackPayment($payment, TraceCode::ASYNC_PAYMENT_RESPONSE, $returnData);
+        $this->app['segment']->trackPayment($payment, TraceCode::ASYNC_PAYMENT_RESPONSE, $response);
 
-        return $returnData;
+        return $response;
     }
 
     protected function getFirstPaymentCreatedResponse($request, Payment\Entity $payment)
@@ -1357,7 +1357,7 @@ trait Authorize
 
             $payment->save();
 
-            $returnData = [
+            $response = [
                 'type' => 'otp',
                 'request' => $request,
                 'version' => 1,
@@ -1369,9 +1369,9 @@ trait Authorize
                 'wallet'  => $payment->getWallet()
             ];
 
-            $this->app['segment']->trackPayment($payment, TraceCode::OTP_GENERATE, $returnData);
+            $this->app['segment']->trackPayment($payment, TraceCode::OTP_GENERATE, $response);
 
-            return $returnData;
+            return $response;
         }
     }
 

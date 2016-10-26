@@ -1,5 +1,5 @@
 <?php
 
 return [
-    'is_enabled' => env('SEGMENT_MOCK') === true ? false : true
+    'is_mock' => env('SEGMENT_MOCK')
 ];

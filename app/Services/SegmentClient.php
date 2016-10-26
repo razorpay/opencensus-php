@@ -51,14 +51,14 @@ class SegmentClient
 
         $isInternational = null;
 
-        if ($payment->card !== null)
+        if ($payment->getCard() !== null)
         {
             $isInternational = $payment->isInternational();
         }
 
         $terminalId = null;
 
-        if ($payment->terminal !== null)
+        if ($payment->getTerminalId() !== null)
         {
             $terminalId = $payment->terminal->getPublicId();
         }
@@ -84,7 +84,12 @@ class SegmentClient
 
         $properties['fee_bearer'] = $merchant->isFeeBearerCustomer();
 
-        $order = $payment->order;
+        $order = null;
+
+        if ($payment->getApiOrderId() !== null)
+        {
+            $order = $payment->order;
+        }
 
         $id = null;
 
@@ -175,9 +180,9 @@ class SegmentClient
         $signature = hash_hmac('sha1', $data, $secret);
 
         $headers = [
-                    'content-type' => 'application/json',
-                    'x-signature' => $signature
-                   ];
+            'content-type' => 'application/json',
+            'x-signature' => $signature
+        ];
 
         // TODO: make this async using guzzler async events
         $client = new Client(['headers' => $headers, 'http_errors' => false]);
@@ -203,7 +208,7 @@ class SegmentClient
     {
         foreach (self::SENSITIVE_KEYS as $name => $key)
         {
-            if (array_key_exists($key, $properties))
+            if (isset($properties[$key]) === true)
             {
                 unset($properties[$key]);
             }
@@ -212,9 +217,9 @@ class SegmentClient
 
     public function trackPayment(PaymentEntity $payment, $event, array $customProperties = [])
     {
-        $is_enabled = $this->config['segment.is_enabled'];
+        $isMock = $this->config['segment.is_mock'];
 
-        if ($is_enabled === false)
+        if ($isMock === true)
         {
             return;
         }

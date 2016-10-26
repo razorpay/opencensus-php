@@ -283,7 +283,6 @@ class Processor
      * @return  $status Payment\Status
      * @throws Exception\BadRequestException
      */
-
     public function cancel($id, $input)
     {
         $status = null;
@@ -494,7 +493,6 @@ class Processor
      */
     protected function callGatewayFunction($action, array $gatewayData)
     {
-
         $terminal = $this->payment->terminal;
 
         if ($terminal === null)

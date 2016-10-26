@@ -95,11 +95,11 @@ trait Capture
      *
      * If the merchant wants to capture the payment later, he can capture it and the process would
      * be like how it is for not AuthAndCapture supported gateways. [THIS NEEDS TO BE CHECKED].
-     *
+     * TODO: add segment here
      * @param $payment
      * @return array
      */
-    // TODO: add segment here
+
     public function verifyCapture($payment)
     {
         $this->setPayment($payment);

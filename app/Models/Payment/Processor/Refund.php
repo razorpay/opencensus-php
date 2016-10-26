@@ -439,7 +439,8 @@ trait Refund
                 'message' => 'Not enough balance',
                 'merchant_balance' => $balance->getBalance(),
                 'refund_amount' => $refund->getAmount()
-                ];
+            ];
+
             $this->trace->info(TraceCode::PAYMENT_REFUND_FAILURE, $traceMessage);
 
             $this->app['segment']->trackPayment($refund->payment, TraceCode::PAYMENT_REFUND_FAILURE, $traceMessage);
