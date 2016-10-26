@@ -28,16 +28,14 @@ class InvitationsController extends Controller
     }
 
     /**
-     * Resend the invitation for the given merchant.
+     * Resend the invite email
      *
      * @param  string  $inviteId
      * @return \Illuminate\Http\Response
      */
     public function getResendMerchantInvitation($inviteId)
     {
-        $user = Auth::user();
-
-        list($error, $data) = $this->service->resendInvitationForUser($inviteId, $user);
+        list($error, $data) = $this->service->resendInvitationForUser($inviteId);
 
         return AppResponse::jsonResponse($error);
     }
@@ -127,9 +125,7 @@ class InvitationsController extends Controller
      */
     public function getPendingInvitationsForUser()
     {
-        $user = Auth::user();
-
-        list($error, $data) = $this->service->getPendingInvitationsForUser($user);
+        list($error, $data) = $this->service->getPendingInvitationsForUser();
 
         return AppResponse::jsonResponse($error, $data);
     }

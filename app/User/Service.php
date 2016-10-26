@@ -468,15 +468,13 @@ class Service extends Base\Service
      */
     public function getOwnedMerchantForUser(User\Entity $user)
     {
-        $merchant = $user->merchants()->with('users', 'invitations')->where('role','owner')->first();
-
-        if (is_null($merchant))
+        if ($user->currentMerchant->pivot->role !== 'owner')
         {
             $error = ["We couldn't find the merchant you are looking for."];
             return [$error, null];
         }
 
-        return array(null, $merchant);
+        return array(null, $user->currentMerchant);
     }
 
     public function upgradeUserToMerchant($input)

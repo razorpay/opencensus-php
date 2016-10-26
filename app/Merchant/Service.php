@@ -432,6 +432,18 @@ class Service extends Base\Service
         return array($error, $key_data);
     }
 
+    public function getUsersListWithInvites()
+    {
+        return $this->currentUser
+                    ->currentMerchant()
+                    ->with('users', 'invitations')
+                    ->first()
+                    ->toArray();
+    }
+
+
+
+
 
     /**
      * Get the merchant entity from the gibven merchant id
@@ -533,23 +545,16 @@ class Service extends Base\Service
      * @param  string  $userId
      * @return \Illuminate\Http\Response
      */
-    public function removeTeamMemberForOwner($userId, $user, $input)
+    public function removeTeamMemberForOwner($userId)
     {
-        $error = array();
+        $error = [];
 
-        if ($userId === $user->id)
+        if ($userId === $this->currentUser->id)
         {
             return array(static::SELF_REMOVE_FORBIDDEN);
         }
 
-        $merchant = $user->merchants()->with('users', 'invitations')->where('role','owner')->first();
-
-        if (is_null($merchant))
-        {
-            return array(static::NO_OWNED_MERCHANT);
-        }
-
-        $merchant->users()->detach($userId);
+        $this->currentMerchant->users()->detach($userId);
 
         return $error;
     }
@@ -559,16 +564,17 @@ class Service extends Base\Service
      * Update a team member on the given merchant.
      *
      * @param  string  $userId
+     * @param  array   $input
      * @return \Illuminate\Http\Response
      */
-    public function updateTeamMemberForOwner($userId, $user, $input)
+    public function updateTeamMemberForOwner($userId, $input)
     {
         $error = array();
 
-        if ($userId === $user->id)
+        if ($userId === $this->currentUser->id)
         {
             $error[] = "You cannot change your role.";
-            return array($error, null);
+            return [$error, null];
         }
 
         $validator = (new Merchant\Entity)->validateInput('updateTeamMember',$input);
@@ -576,32 +582,27 @@ class Service extends Base\Service
         if ($validator->fails())
         {
             $error = $validator->messages();
-            return array($error, null);
+            return [$error, null];
         }
 
-        $merchant = $user->merchants()->with('users', 'invitations')->where('role','owner')->first();
-
-        if (is_null($merchant))
-        {
-            $error[] = static::NO_OWNED_MERCHANT;
-            return array($error, null);
-        }
-
-        $userToUpdate = $merchant->users->find($userId);
+        $userToUpdate = $this->currentMerchant->users->find($userId);
 
         if (is_null($userToUpdate))
         {
-            $error[] = "The team member you are looking for does'nt exist";
-            return array($error, null);
+            $error[] = "The team member you are looking for doesn't exist";
+            return [$error, null];
         }
 
+        $newRole = $input['role'];
         $userToUpdate->merchants()->updateExistingPivot(
-            $merchant->id, ['role' => $input['role']]
+            $this->currentMerchant->id, [
+                'role' => $newRole
+            ]
         );
 
         list($error, $merchant) = (new User\Service)->getOwnedMerchantForUser($user);
 
-        return array($error, $merchant);
+        return [$error, $merchant];
     }
 
     /**

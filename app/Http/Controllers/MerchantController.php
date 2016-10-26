@@ -30,11 +30,22 @@ class MerchantController extends Controller
     {
         $input = Input::all();
 
-        $user = Auth::user();
-
-        list($error, $data) = (new Merchant\Service)->updateTeamMemberForOwner($userId, $user, $input);
+        list($error, $data) = (new Merchant\Service)->updateTeamMemberForOwner($userId, $input);
 
         return AppResponse::jsonResponse($error, $data);
+    }
+
+    /**
+     * Get the user list for the currently logged in merchant
+     * Only accessible to owners
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function getUsersListWithInvites()
+    {
+        $data = (new Merchant\Service)->getUsersListWithInvites();
+
+        return AppResponse::jsonResponse(null, $data);
     }
 
     /**
@@ -45,11 +56,7 @@ class MerchantController extends Controller
      */
     public function removeTeamMember($userId)
     {
-        $input = Input::all();
-
-        $user = Auth::user();
-
-        $error = (new Merchant\Service)->removeTeamMemberForOwner($userId, $user, $input);
+        $error = (new Merchant\Service)->removeTeamMemberForOwner($userId);
 
         return AppResponse::jsonResponse($error);
     }

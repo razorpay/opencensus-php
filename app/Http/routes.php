@@ -72,10 +72,9 @@ Route::group(['middleware'  =>  'auth:user'], function()
     Route::get('/bank_account', 'MerchantController@getBankAccount');
 
     // Invitation and Team Support
-    Route::get('settings/merchants/owned', 'UserController@getOwnedMerchantForUser');
+    Route::get('settings/merchants/owned', 'MerchantController@getUsersListWithInvites')->name('team_users_list');
+    // Shown in profile page
     Route::get('settings/invitations', 'InvitationsController@getPendingInvitationsForUser');
-    Route::get('settings/invitations/{invite}/resend', 'InvitationsController@getResendMerchantInvitation');
-    Route::get('settings/invitations/pending', 'InvitationsController@switchCurrentMerchant');
 
     Route::get('/{mode}/reports/invoice', 'TransactionController@getInvoiceReport')->name('reports_invoice');
     Route::get('/{mode}/reports/{entity}', 'TransactionController@getResourceReport')->name('reports_entity');
@@ -84,13 +83,15 @@ Route::group(['middleware'  =>  'auth:user'], function()
     Route::get('settings/merchants/switch/{id}', 'UserController@switchCurrentMerchant');
 
     // Team Administration
-    Route::put('settings/merchants/owned/members/{id}', 'MerchantController@updateTeamMember');
-    Route::delete('settings/merchants/owned/members/{id}', 'MerchantController@removeTeamMember');
+    // TODO: Convert this to POST
+    Route::get('settings/invitations/{invite}/resend', 'InvitationsController@getResendMerchantInvitation')->name('invitation_resend');
+    Route::put('settings/merchants/owned/members/{id}', 'MerchantController@updateTeamMember', 'team_users_update');
+    Route::delete('settings/merchants/owned/members/{id}', 'MerchantController@removeTeamMember', 'team_users_delete');
 
     // Invite Administration (Owners)
-    Route::post('settings/invitations', 'InvitationsController@postSendMerchantInvitation');
-    Route::put('settings/invitations/{invite}', 'InvitationsController@updateMerchantInvitation');
-    Route::delete('settings/invitations/{invite}', 'InvitationsController@deleteMerchantInvitationForUser');
+    Route::post('settings/invitations', 'InvitationsController@postSendMerchantInvitation')->name('invitations_send');
+    Route::put('settings/invitations/{invite}', 'InvitationsController@updateMerchantInvitation')->name('invitations_edit');
+    Route::delete('settings/invitations/{invite}', 'InvitationsController@deleteMerchantInvitationForUser')->name('invitations_delete');
 
     // Invitation related (User side)
     Route::post('settings/invitations/{invite}/accept', 'InvitationsController@postAcceptMerchantInvitation');

@@ -314,9 +314,15 @@ class Entity extends Base\Entity
                         ->exists();
     }
 
+    /**
+     * Gets a merchant, if there is any using the
+     * given email address
+     * @param  string $email
+     * @return Entity
+     */
     public static function getMerchantFromEmail($email)
     {
-        $data = Entity::whereEmail($email)->first();
+        $data = static::whereEmail($email)->first();
         return $data;
     }
 

@@ -14,6 +14,10 @@ class Entity extends Base\Entity
      */
     protected $table = 'invitations';
 
+    protected $hidden = [
+        'token'
+    ];
+
     protected $fillable = [
         'user_id',
         'email',

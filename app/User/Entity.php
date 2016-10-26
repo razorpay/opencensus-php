@@ -331,7 +331,7 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
     {
         $user = Auth::guard('user')->user();
 
-        $currentMerchant = $user->getCurrentMerchantAttribute();
+        $currentMerchant = $user->currentMerchant;
         return $currentMerchant->pivot->role;
     }
 

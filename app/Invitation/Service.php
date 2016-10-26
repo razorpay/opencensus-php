@@ -93,17 +93,17 @@ class Service extends Base\Service
      *
      * @return array ($error, $data)
      */
-    public function resendInvitationForUser($inviteId, $user)
+    public function resendInvitationForUser($inviteId)
     {
         $error = array();
 
-        $invitation = $user->currentMerchant->invitations()->find($inviteId);
+        $invitation = $this->loggedInUser->currentMerchant->invitations()->find($inviteId);
 
         if (! $invitation)
         {
             $error[] = static::INVALID_INVITE;
 
-            return array($error, null);
+            return [$error, null];
         }
 
         $this->sendInvitationEmail($invitation);
@@ -234,9 +234,9 @@ class Service extends Base\Service
      * @param \Models\User\Entity $user
      * @return \App\Invitation\Entity[]
      */
-    public function getPendingInvitationsForUser($user)
+    public function getPendingInvitationsForUser()
     {
-        $invitations = $user->invitations()->with('merchant')->get();
+        $invitations = $this->loggedInUser->invitations()->with('merchant')->get();
 
         foreach ($invitations as $invite)
         {
@@ -245,7 +245,7 @@ class Service extends Base\Service
             $invite->merchant->setVisible(['id','name','email']);
         }
 
-        return array(null, $invitations);
+        return [null, $invitations];
     }
 
     protected function sendInvitationEmail($invitation)
