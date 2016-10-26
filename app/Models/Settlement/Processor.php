@@ -86,11 +86,11 @@ class Processor extends Base\Core
         // be uploaded anytime
 
         $sevenAm = Carbon::today('Asia/Kolkata')->hour(7)->timestamp;
-        $fivePm = Carbon::today('Asia/Kolkata')->hour(17)->timestamp;
+        $sixPm = Carbon::today('Asia/Kolkata')->hour(18)->timestamp;
 
         if (($this->mode === Mode::LIVE) and
             ($this->setlTime >= $sevenAm) and
-            ($this->setlTime <= $fivePm))
+            ($this->setlTime <= $sixPm))
         {
             return true;
         }
