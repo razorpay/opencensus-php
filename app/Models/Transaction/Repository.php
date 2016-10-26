@@ -57,29 +57,21 @@ class Repository extends Base\Repository
     {
         $schedules = (new ScheduleRepo)->fetchSchedulesWithDueRun($timestamp);
 
-        $scheduleIds = [];
-
-        foreach($schedules as $schedule)
-        {
-            $scheduleIds[] = $schedule->getId();
-        }
-
-        $merchants = (new MerchantRepo)->fetchBySettlementScheduleId($scheduleIds);
-
-        $merchantIds = [];
-
-        foreach($merchants as $merchant)
-        {
-            $merchantIds[] = $merchant->getId();
-        }
+        $merchants = (new MerchantRepo)->fetchBySettlementScheduleId($schedules->getIds());
 
         $txns = $this->newQuery()
-                     ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+                     ->whereIn(Entity::MERCHANT_ID, $merchants->getIds())
                      ->where(Entity::SETTLED_AT, '<', $timestamp)
                      ->with('merchant')
                      ->orderBy(Entity::MERCHANT_ID)
                      ->orderBy(Entity::ID)
                      ->get();
+
+        $this->trace->info(TraceCode::SCHEDULE_UNSETTLED_TXNS_FETCH, [
+            'transactions' => $txns->getIds(),
+            'schedules'    => $schedules->getIds(),
+            'merchants'    => $merchants->getIds(),
+        ]);
 
         return array($txns, $schedules);
     }

@@ -86,11 +86,12 @@ class Processor extends Base\Core
         // be uploaded anytime
 
         $sevenAm = Carbon::today('Asia/Kolkata')->hour(7)->timestamp;
-        $sevenPm = Carbon::today('Asia/Kolkata')->hour(19)->timestamp;
+
+        $fivePm = Carbon::today('Asia/Kolkata')->hour(17)->timestamp;
 
         if (($this->mode === Mode::LIVE) and
             ($this->setlTime >= $sevenAm) and
-            ($this->setlTime <= $sevenPm))
+            ($this->setlTime <= $fivePm))
         {
             return true;
         }
@@ -150,7 +151,7 @@ class Processor extends Base\Core
 
             $schedules->callOnEveryItem('updateNextRun');
 
-            $this->trace->info(TraceCode::SCHEDULE_NEXT_RUN_UPDATED, $schedules->toArray());
+            $this->trace->info(TraceCode::SCHEDULE_NEXT_RUN_UPDATED, $schedules->getIds());
         }
 
         $this->trace->info(TraceCode::SCHEDULE_UNSETTLED_TXNS, [$txns]);
