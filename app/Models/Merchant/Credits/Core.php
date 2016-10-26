@@ -29,6 +29,11 @@ class Core extends Base\Core
 
         $creditsLog->getValidator()->validateCreditsType($balance, $creditsLog->getType());
 
+        $currentMerchantCredits = $creditsLog->getMerchantCredits();
+
+        $creditsLog->getValidator()->validateBalanceCredits(
+            $creditsLog->getValue(), $currentMerchantCredits, $creditsLog->getType());
+
         return $this->repo->transaction(function() use ($merchant, $creditsLog)
         {
             $this->repo->saveOrFail($creditsLog);
