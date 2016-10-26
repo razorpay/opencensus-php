@@ -72,7 +72,7 @@ class Processor extends Base\Core
             return [false, Holidays::HOLIDAY_MESSAGE];
         }
 
-        if ($this->checkSettlementTime())
+        if ($this->checkInvalidSettlementTime() === true)
         {
             return [false, ['message' => 'settlements cannot be processed now']];
         }
@@ -80,7 +80,7 @@ class Processor extends Base\Core
         return [true, null];
     }
 
-    protected function checkSettlementTime()
+    protected function checkInvalidSettlementTime()
     {
         // NEFT can be processed between 8am and 6 pm only, while batch file can
         // be uploaded anytime
@@ -90,8 +90,8 @@ class Processor extends Base\Core
         $fivePm = Carbon::today('Asia/Kolkata')->hour(17)->timestamp;
 
         if (($this->mode === Mode::LIVE) and
-            ($this->setlTime >= $sevenAm) and
-            ($this->setlTime <= $fivePm))
+            (($this->setlTime <= $sevenAm) or
+             ($this->setlTime >= $fivePm)))
         {
             return true;
         }
