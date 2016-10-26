@@ -8,6 +8,10 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Base;
 use RZP\Models\Transaction;
 use RZP\Models\Settlement;
+use RZP\Models\Merchant\Entity as Merchant;
+use RZP\Models\Schedule\Entity as Schedule;
+use RZP\Models\Schedule\Repository as ScheduleRepo;
+use RZP\Models\Merchant\Repository as MerchantRepo;
 use RZP\Exception;
 use RZP\Gateway\Billdesk;
 
@@ -43,9 +47,41 @@ class Repository extends Base\Repository
                     ->where(Transaction\Entity::SETTLED_AT, '<', $timestamp)
                     ->where(Transaction\Entity::SETTLED, '=', 0)
                     ->where(Transaction\Entity::TYPE, '!=', Type::SETTLEMENT)
+                    ->with('merchant')
                     ->orderBy(Transaction\Entity::MERCHANT_ID)
                     ->orderBy(Transaction\Entity::ID)
                     ->get();
+    }
+
+    public function fetchUnsettledTxnsAndSchedules($timestamp)
+    {
+        $schedules = (new ScheduleRepo)->fetchSchedulesWithDueRun($timestamp);
+
+        $scheduleIds = [];
+
+        foreach($schedules as $schedule)
+        {
+            $scheduleIds[] = $schedule->getId();
+        }
+
+        $merchants = (new MerchantRepo)->fetchBySettlementScheduleId($scheduleIds);
+
+        $merchantIds = [];
+
+        foreach($merchants as $merchant)
+        {
+            $merchantIds[] = $merchant->getId();
+        }
+
+        $txns = $this->newQuery()
+                     ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+                     ->where(Entity::SETTLED_AT, '<', $timestamp)
+                     ->with('merchant')
+                     ->orderBy(Entity::MERCHANT_ID)
+                     ->orderBy(Entity::ID)
+                     ->get();
+
+        return array($txns, $schedules);
     }
 
     public function fetchUnsettledTransactionsForMerchant($timestamp, $merchant)

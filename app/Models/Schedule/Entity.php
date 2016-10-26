@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Schedule;
 
+use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Constants\Table;
 
@@ -42,6 +43,7 @@ class Entity extends Base\PublicEntity
 
     protected static $modifiers = array(
         self::ANCHOR,
+        self::NEXT_RUN,
     );
 
     protected $casts = [
@@ -54,6 +56,17 @@ class Entity extends Base\PublicEntity
     protected $table = Table::SCHEDULE;
 
     protected $entity = 'schedule';
+
+    public function updateNextRun()
+    {
+        $lastRun = Carbon::now('Asia/Kolkata')->timestamp;
+
+        $nextRun = Library::getNextApplicableTime($lastRun, $this);
+
+        $this->setNextRun($nextRun);
+
+        $this->saveOrFail();
+    }
 
     // ----------------------- Associations ----------------------------------------
 
@@ -78,6 +91,18 @@ class Entity extends Base\PublicEntity
             // For monthly-week periods, default anchor is first week
             // For monthly-date periods, default anchor is 1st of the month
             $input[self::ANCHOR] = 1;
+        }
+    }
+
+    public function modifyNextRun(& $input)
+    {
+        if (isset($input[self::NEXT_RUN]) === false)
+        {
+            $format = 'Y-m-d H:i:s';
+
+            $istStart = '2000-01-01 00:00:00';
+
+            $input[self::NEXT_RUN] = Carbon::createFromFormat($format, $istStart, 'Asia/Kolkata')->timestamp;
         }
     }
 

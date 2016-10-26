@@ -20,6 +20,15 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postSettlementInitiateV2($channel)
+    {
+        $input = Request::all();
+
+        $data = (new Settlement\Service)->initiateSettlementsV2($input, $channel);
+
+        return ApiResponse::json($data);
+    }
+
     public function postSettlementFileGenerate()
     {
         $input = Request::all();

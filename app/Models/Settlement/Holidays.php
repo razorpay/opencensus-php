@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 class Holidays
 {
+    const HOLIDAY_MESSAGE = ['message' => 'Today is a holiday! Happy holidays :)'];
 
     // Dont't add sundays or non working saturdays as part of this.
     // These refer to settlement holidays only.

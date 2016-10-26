@@ -104,6 +104,7 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::LAST4,
         self::NETWORK,
+        self::TYPE,
         self::INTERNATIONAL,
     );
 
