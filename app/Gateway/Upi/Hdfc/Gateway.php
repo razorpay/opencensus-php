@@ -55,8 +55,6 @@ class Gateway extends Base\Gateway
 
         $response = $this->parseGatewayResponse($response->body);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $response);
-
         $this->updateGatewayPaymentResponse($payment, $response);
 
         $status = $response[ResponseFields::STATUS];
@@ -93,12 +91,6 @@ class Gateway extends Base\Gateway
      */
     protected function parseGatewayResponse($responseBody, $type = 'collect')
     {
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_RESPONSE,
-            [
-                'body'              => $responseBody,
-            ]);
-
         $response = $this->decrypt($responseBody);
 
         $fields = [];
@@ -154,14 +146,24 @@ class Gateway extends Base\Gateway
 
         $values = explode('|', $response);
 
-        $response = [];
+        $result = [];
 
         foreach ($fields as $index => $key)
         {
-            $response[$key]     =   $values[$index];
+            $result[$key]     =   $values[$index];
         }
 
-        return $response;
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_RESPONSE,
+            [
+                'body'              => $responseBody,
+                'decrypted'         => $response,
+                'parsed'            => $result,
+                'gateway'           => $this->gateway,
+                'type'              => $type
+            ]);
+
+        return $result;
     }
 
     /**
@@ -392,15 +394,6 @@ class Gateway extends Base\Gateway
         $this->response = $response;
 
         $content = $this->parseGatewayResponse($response->body);
-
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
-            [
-                'raw_content' => $response->body,
-                'content' => $content,
-                'gateway' => 'upi_icici',
-                'payment_id' => $input['payment']['id'],
-            ]);
 
         $verify->verifyResponse = $this->response;
 
