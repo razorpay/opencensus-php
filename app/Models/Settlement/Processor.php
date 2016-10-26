@@ -150,7 +150,7 @@ class Processor extends Base\Core
 
             $schedules->callOnEveryItem('updateNextRun');
 
-            $this->trace->info(TraceCode::SCHEDULE_NEXT_RUN_UPDATED, $schedules->toArray());
+            $this->trace->info(TraceCode::SCHEDULE_NEXT_RUN_UPDATED, $schedules->getIds());
         }
 
         $txns = $this->filterTransactionsForSettlement($txns, $channel, $schedule);
