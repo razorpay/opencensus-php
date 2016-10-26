@@ -153,9 +153,9 @@ class Processor extends Base\Core
             $this->trace->info(TraceCode::SCHEDULE_NEXT_RUN_UPDATED, $schedules->toArray());
         }
 
-        $txns = $this->filterTransactionsForSettlement($txns, $channel, $schedule);
+        $this->trace->info(TraceCode::SCHEDULE_UNSETTLED_TXNS, [$txns]);
 
-        $this->trace->info(TraceCode::SCHEDULE_UNSETTLED_TXNS, $schedules->toArray());
+        $txns = $this->filterTransactionsForSettlement($txns, $channel, $schedule);
 
         return $this->repo->transaction(function() use ($txns, $channel)
         {
