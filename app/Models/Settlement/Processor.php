@@ -149,11 +149,11 @@ class Processor extends Base\Core
             list($txns, $schedules) = $this->repo->transaction->fetchUnsettledTxnsAndSchedules($this->setlTime);
 
             $schedules->callOnEveryItem('updateNextRun');
+
+            $this->trace->info(TraceCode::SCHEDULE_NEXT_RUN_UPDATED, $schedules->toArray());
         }
 
         $txns = $this->filterTransactionsForSettlement($txns, $channel, $schedule);
-
-        $this->trace->info(TraceCode::FORCE_AUTHORIZE_TIMEOUT_PAYMENTS_RESPONSE, [$txns]);
 
         return $this->repo->transaction(function() use ($txns, $channel)
         {
