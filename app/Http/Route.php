@@ -163,6 +163,7 @@ final class Route
         'setl_fixer'                              => ['get',      'settlements/fixer',                              'SettlementController@getSettlementFixer'                           ],
         'setl_delete_file'                        => ['delete',   'settlements/file/{setlFileType}',                'SettlementController@deleteSettlementFile'                         ],
         'setl_initiate'                           => ['post',     'settlements/initiate/{channel?}',                'SettlementController@postSettlementInitiate'                       ],
+        'setl_initiate_schedule'                  => ['post',     'settlements/initiate2/{channel?}',               'SettlementController@postSettlementInitiateV2'                     ],
         'setl_file_generate'                      => ['post',     'settlements/file/generate',                      'SettlementController@postSettlementFileGenerate'                   ],
         'setl_reconcile_generate'                 => ['post',     'settlements/reconcile/generate',                 'SettlementController@postSettlementReconcileGenerate'              ],
         'setl_reconcile'                          => ['post',     'settlements/reconcile',                          'SettlementController@postSettlementReconcile'                      ],
@@ -408,6 +409,7 @@ final class Route
         'pricing_delete_plan_rule',
         'pricing_delete_plan_rule_force',
         'setl_initiate',
+        'setl_initiate_schedule',
         'setl_file_generate',
         'setl_reconcile',
         'setl_reconcile_h2h',
@@ -548,6 +550,7 @@ final class Route
 
         'cron' => array(
             'setl_initiate',
+            'setl_initiate_schedule',
             'setl_reconcile_generate',
             'setl_return_generate',
             'payment_auth_notify',

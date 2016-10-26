@@ -45,8 +45,6 @@ class Settler
 
     public function settleForParticularMerchant($input, $merchant, $channel = null)
     {
-        $this->increaseAllowedSystemLimits();
-
         $this->preSettlementProcessing();
 
         $this->input = $input;
@@ -406,9 +404,9 @@ class Settler
         return $shouldSettle;
     }
 
-    protected function createSettlementFile($settlements, $txns)
+    protected function createSettlementFile($settlements)
     {
-        $urls = (new Kotak\NodalAccount)->generateSettlementFile($settlements, $txns);
+        $urls = (new Kotak\NodalAccount)->generateSettlementFile($settlements);
 
         $this->trace->info(TraceCode::SETTLEMENT_FILE_GENERATED_KOTAK);
 
@@ -431,9 +429,7 @@ class Settler
 
     protected function fetchTransactionsToSettle($input)
     {
-        $ts = $this->initSettlementTimestamp($input);
-
-        $ts = time();
+        $ts = $this->initSettlementTimestamp();
 
         if (($this->mode === Mode::TEST) and
             (empty($input['testSettleTimeStamp']) === false))
@@ -448,25 +444,20 @@ class Settler
 
     protected function fetchMerchantTransactionsToSettle($input, $merchant)
     {
-        $ts = time();
-
-        if (($this->mode === Mode::TEST) and
-            (empty($input['testSettleTimeStamp']) === false))
-        {
-            $ts = $input['testSettleTimeStamp'];
-        }
+        $ts = $this->initSettlementTimestamp();
 
         $txns = $this->repo->transaction->fetchUnsettledTransactionsForMerchant($ts, $merchant);
 
         return $txns;
     }
 
-    protected function initSettlementTimestamp($input)
+    protected function initSettlementTimestamp()
     {
         if (self::$settlementTimestamp === null)
         {
             // Get the timestamp today at 12 am
             $timestamp = Carbon::today('Asia/Kolkata')->timestamp;
+
             self::$settlementTimestamp = $timestamp;
         }
 

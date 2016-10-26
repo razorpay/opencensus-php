@@ -10,4 +10,11 @@ class Repository extends Base\Repository
     use Base\RepositoryFetch;
 
     protected $entity = 'schedule';
+
+    public function fetchSchedulesWithDueRun($timestamp)
+    {
+        return $this->newQuery()
+                    ->where(Entity::NEXT_RUN, '<', $timestamp)
+                    ->get();
+    }
 }
