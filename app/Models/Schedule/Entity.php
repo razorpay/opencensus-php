@@ -96,7 +96,11 @@ class Entity extends Base\PublicEntity
     {
         if (isset($input[self::NEXT_RUN]) === false)
         {
-            $input[self::NEXT_RUN] = 0;
+            $format = 'Y-m-d H:i:s';
+
+            $istStart = '2000-01-01 00:00:00';
+
+            $input[self::NEXT_RUN] = Carbon::createFromFormat($format, $istStart, 'Asia/Kolkata')->timestamp
         }
     }
 
