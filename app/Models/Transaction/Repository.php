@@ -263,7 +263,10 @@ class Repository extends Base\Repository
         $transactionEntityId = Entity::getAttributeWithTableName(Entity::ENTITY_ID);
         $transactionReconciledAt = Entity::getAttributeWithTableName(Entity::RECONCILED_AT);
 
+        $transactionData = Entity::getAttributeWithTableName('*');
+
         return $this->newQuery()
+                    ->select($transactionData)
                     ->join(Table::PAYMENT, $paymentId, '=', $transactionEntityId)
                     ->join(Table::BILLDESK, $billdeskPaymentId, '=', $paymentId)
                     ->where($billdeskRefStatus, '=', Billdesk\RefundStatus::CANCELLED)
