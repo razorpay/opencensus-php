@@ -494,6 +494,7 @@ class Processor
      */
     protected function callGatewayFunction($action, array $gatewayData)
     {
+
         $terminal = $this->payment->terminal;
 
         if ($terminal === null)
@@ -510,7 +511,9 @@ class Processor
 
         $gatewayData['merchant'] = $this->payment->merchant;
 
-        $this->app['segment']->trackPayment($this->payment, TraceCode::PAYMENT_CALL_GATEWAY_FUNC, ['action' => $action]);
+        $eventCode = TraceCode::PAYMENT_CALL_GATEWAY_FUNC . ':' . $action;
+
+        $this->app['segment']->trackPayment($this->payment, $eventCode, ['action' => $action]);
 
         return $this->app['gateway']->call($gateway, $action, $gatewayData, $this->mode, $terminal);
     }
