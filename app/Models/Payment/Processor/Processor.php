@@ -511,7 +511,7 @@ class Processor
 
         $gatewayData['merchant'] = $this->payment->merchant;
 
-        $eventCode = TraceCode::PAYMENT_CALL_GATEWAY_FUNC . ':' . $action;
+        $eventCode = TraceCode::PAYMENT_CALL_GATEWAY_FUNC . ':' . strtoupper($action);
 
         $this->app['segment']->trackPayment($this->payment, $eventCode, ['action' => $action]);
 
