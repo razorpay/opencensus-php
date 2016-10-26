@@ -18,9 +18,17 @@ class SegmentClient
 
     protected $version;
 
+    // list of events that needs to be batched
+    protected $events;
+
+    // lumberjack segment url endpoint
     const LUMBERJACK_SEGMENT_URLPATTERN = 'segment_post';
 
+    // current version of this implementation
     const VERSION = "1.0";
+
+    // guzzle timeout for posting to lumberjack
+    const CONNECT_TIMEOUT = 1;
 
     // list of sensitive keys to exclude from sengding to segment
     // even if the api has these variables
@@ -43,6 +51,8 @@ class SegmentClient
         $this->trace = $app['trace'];
 
         $this->config = $app['config'];
+
+        $this->events = [];
     }
 
     protected function fillDefaults($payment, $event)
@@ -167,15 +177,19 @@ class SegmentClient
         return $flattened;
     }
 
-    protected function buildRequestAndSend(array $defaults)
+    public function buildRequestAndSend()
     {
+        if (count($this->events) === 0)
+        {
+            return;
+        }
         $ljConfig = $this->config->get('applications.lumberjack');
 
         $url = $ljConfig['url'].self::LUMBERJACK_SEGMENT_URLPATTERN;
 
         $secret = $ljConfig['secret'];
 
-        $data = json_encode($defaults);
+        $data = json_encode($this->events);
 
         $signature = hash_hmac('sha1', $data, $secret);
 
@@ -189,7 +203,8 @@ class SegmentClient
 
         try
         {
-            $response = $client->request('POST', $url, ['json' => $defaults]);
+            $response = $client->request('POST', $url, ['json' => $this->events,
+                                                        'connect_timeout' => self::CONNECT_TIMEOUT]);
         }
         catch(\Exception $e)
         {
@@ -202,6 +217,8 @@ class SegmentClient
             $this->trace->warning(TraceCode::SEGMENT_POST_FAILED, $traceMessage);
         }
 
+        // empty the events array here
+        $this->events = [];
     }
 
     protected function removeSensitiveInformation(array & $properties)
@@ -239,6 +256,6 @@ class SegmentClient
 
         $defaults['properties'] = $properties;
 
-        $this->buildRequestAndSend($defaults);
+        $this->events[] = $defaults;
     }
 }
