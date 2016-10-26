@@ -86,6 +86,7 @@ class Processor extends Base\Core
         // be uploaded anytime
 
         $sevenAm = Carbon::today('Asia/Kolkata')->hour(7)->timestamp;
+
         $fivePm = Carbon::today('Asia/Kolkata')->hour(17)->timestamp;
 
         if (($this->mode === Mode::LIVE) and
@@ -153,9 +154,9 @@ class Processor extends Base\Core
             $this->trace->info(TraceCode::SCHEDULE_NEXT_RUN_UPDATED, $schedules->getIds());
         }
 
-        $txns = $this->filterTransactionsForSettlement($txns, $channel, $schedule);
-
         $this->trace->info(TraceCode::SCHEDULE_UNSETTLED_TXNS, [$txns]);
+
+        $txns = $this->filterTransactionsForSettlement($txns, $channel, $schedule);
 
         return $this->repo->transaction(function() use ($txns, $channel)
         {
