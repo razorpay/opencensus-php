@@ -100,7 +100,7 @@ class Entity extends Base\PublicEntity
 
             $istStart = '2000-01-01 00:00:00';
 
-            $input[self::NEXT_RUN] = Carbon::createFromFormat($format, $istStart, 'Asia/Kolkata')->timestamp
+            $input[self::NEXT_RUN] = Carbon::createFromFormat($format, $istStart, 'Asia/Kolkata')->timestamp;
         }
     }
 
