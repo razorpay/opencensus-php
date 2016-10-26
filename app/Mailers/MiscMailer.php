@@ -10,7 +10,8 @@ class MiscMailer extends Mailer
 
     public function sendMemberInvitationEmail($invitation, $loggedInUser)
     {
-        $invitation_array = $invitation->toArray();
+        $invitation_array = $invitation->makeVisible('token')->toArray();
+
         $invitation_array['merchant'] = $invitation->merchant->toArray();
 
         $this->view = $invitation_array['user_id'] ? 'emails.invitations.existing' : 'emails.invitations.new';
