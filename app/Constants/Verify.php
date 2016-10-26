@@ -35,11 +35,6 @@ class Verify
     ];
 
     /**
-     * We do not run verify if the payment creation is date is greater than 7 days.
-     */
-    const DEFAULT_MAX_DAYS   = 7;
-
-    /**
      * This is used for naming the redis lock key.
      * It's named as {payment_id}_verify.
      * We do not use the payment_id directly because

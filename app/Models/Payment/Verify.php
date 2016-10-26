@@ -39,6 +39,8 @@ class Verify
 
     /**
      * Verify Payments Based on filter
+     * For detailed Documentation refer to
+     * https://docs.google.com/document/d/128BT3KYBRloYR85zaZODB5htUmG8JrGKKP6eGAGgW68
      *
      * @param  string $filter
      * @return array aggregated result of verify results
