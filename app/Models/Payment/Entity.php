@@ -928,6 +928,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::OTP_ATTEMPTS);
     }
 
+    public function getTerminalId()
+    {
+        return $this->getAttribute(self::TERMINAL_ID);
+    }
+
     public function isSecondRecurring()
     {
         return (($this->isRecurring() === true) and

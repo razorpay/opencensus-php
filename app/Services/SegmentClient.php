@@ -51,7 +51,7 @@ class SegmentClient
 
         $isInternational = null;
 
-        if ($payment->getCard() !== null)
+        if ($payment->getCardId() !== null)
         {
             $isInternational = $payment->isInternational();
         }
