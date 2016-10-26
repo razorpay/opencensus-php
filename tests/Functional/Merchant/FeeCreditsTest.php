@@ -2,10 +2,11 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
-use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Credits;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\TestCase;
 
 class FeeCreditsTest extends TestCase
 {
@@ -94,6 +95,20 @@ class FeeCreditsTest extends TestCase
         $creditslog = $this->fixtures->create(
             'credits', ['id' => '123', 'value' => 90, 'type' => Credits\Type::FEE]);
         $this->startTest();
+    }
+
+    public function testNegativeFeeCredits()
+    {
+        $this->fixtures->merchant->editFeeCredits('1000000', Account::TEST_ACCOUNT);
+        $this->fixtures->merchant->editCreditsforNodalAccount('1000000', 'fee');
+
+        $this->startTest();
+
+        $balance = $this->getEntityById('balance', Account::TEST_ACCOUNT, true);
+
+        $merchantCredits = $balance['fee_credits'];
+
+        $this->assertEquals($merchantCredits, 999850);
     }
 
     public function testFeeCreditsGrantedInCampaign()

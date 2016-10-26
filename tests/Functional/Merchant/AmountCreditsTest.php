@@ -76,12 +76,18 @@ class AmountCreditsTest extends TestCase
         $this->assertEquals($balance['credits'], 100);
     }
 
-    public function testNegativeCredits()
+    public function testNegativeAmountCredits()
     {
         $this->fixtures->merchant->editCredits('1000000', Account::TEST_ACCOUNT);
         $this->fixtures->merchant->editCreditsforNodalAccount('1000000');
 
         $this->startTest();
+
+        $balance = $this->getEntityById('balance', Account::TEST_ACCOUNT, true);
+
+        $merchantCredits = $balance['credits'];
+
+        $this->assertEquals($merchantCredits, 999850);
     }
 
 

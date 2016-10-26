@@ -45,14 +45,14 @@ class Validator extends Base\Validator
         $this->validateBalanceCredits($creditsDifference, $currentCreditsBalance, $type);
     }
 
-    public function validateBalanceCredits($value, $merchantCredits, $type)
+    public function validateBalanceCredits($credits, $merchantCredits, $type)
     {
-        if (($value < 0) and
-            (abs($value) > $merchantCredits))
+        if (($credits < 0) and
+            (abs($credits) > $merchantCredits))
         {
             $msg = 'Cannot update or add %d %s-credits. Merchant has only %d %s-credits.';
 
-            $msg = sprintf($msg, $value/100, $type,
+            $msg = sprintf($msg, $credits/100, $type,
                 $merchantCredits/100, $type);
 
             throw new Exception\BadRequestValidationFailureException($msg);

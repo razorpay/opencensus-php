@@ -95,7 +95,7 @@ return [
         ],
     ],
 
-    'testNegativeCredits' => [
+    'testNegativeAmountCredits' => [
         'request' => [
             'url' => '/merchants/10000000000000/credits_log/',
             'method' => 'post',
@@ -109,6 +109,26 @@ return [
             'content' => [
                 'value' => -150,
                 'campaign' => 'silent-ads',
+                'type'  => 'amount',
+            ],
+        ],
+    ],
+
+    'testNegativeFeeCredits' => [
+        'request' => [
+            'url' => '/merchants/10000000000000/credits_log/',
+            'method' => 'post',
+            'content' => [
+                'value' => -150,
+                'campaign' => 'silent-ads',
+                'type' => 'fee'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'value' => -150,
+                'campaign' => 'silent-ads',
+                'type'  => 'fee',
             ],
         ],
     ],
