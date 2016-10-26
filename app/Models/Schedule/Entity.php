@@ -64,6 +64,8 @@ class Entity extends Base\PublicEntity
         $nextRun = Library::getNextApplicableTime($lastRun, $this);
 
         $this->setNextRun($nextRun);
+
+        $this->saveOrFail();
     }
 
     // ----------------------- Associations ----------------------------------------
