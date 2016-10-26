@@ -475,7 +475,7 @@ class Core extends Base\Core
 
         if ($feeCredits < $fee)
         {
-            throw new Exception/LogicException("FeeCredits should be higher or equal to the fee");
+            throw new Exception\LogicException("FeeCredits should be higher or equal to the fee");
         }
 
         $nodalBalance = $this->getNodalBalanceLockForUpdate($txn->getChannel());
