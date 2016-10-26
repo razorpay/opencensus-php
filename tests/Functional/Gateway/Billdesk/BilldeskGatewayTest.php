@@ -204,4 +204,27 @@ class BilldeskGatewayTest extends TestCase
             $this->refundPayment($payment['id'], 40000);
         });
     }
+
+    public function testReconcileCancelledTransactions()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $paymentTransaction = $this->getLastTransaction(true);
+
+        $this->refundPayment($payment['id'], $payment['amount']);
+
+        $billdeskRefund = $this->getLastEntity('billdesk', true);
+
+        $this->fixtures->edit('billdesk', $billdeskRefund['id'], ['refStatus' => '0699']);
+
+        $this->startTest();
+
+        $paymentTransaction = $this->getEntityById('transaction', $paymentTransaction['id'], true);
+
+        $this->assertNotNull($paymentTransaction['reconciled_at']);
+        $this->assertEquals(0, $paymentTransaction['gateway_service_tax']);
+        $this->assertEquals(0, $paymentTransaction['gateway_fee']);
+    }
 }
