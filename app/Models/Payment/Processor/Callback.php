@@ -165,17 +165,14 @@ trait Callback
         {
             $data = $this->callGatewayCallback($input);
 
-            $twoFactorAuth = null;
-
             if (isset($data[Payment\Entity::TWO_FACTOR_AUTH]) === true)
             {
                 $twoFactorAuth = $data[Payment\Entity::TWO_FACTOR_AUTH];
+
+                $payment->setTwoFactorAuth($twoFactorAuth);
+
+                $this->repo->saveOrFail($payment);
             }
-
-            $payment->setTwoFactorAuth($twoFactorAuth);
-
-
-            $this->repo->saveOrFail($payment);
         }
         catch (Exception\BaseException $e)
         {

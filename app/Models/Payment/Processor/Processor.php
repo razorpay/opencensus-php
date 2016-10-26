@@ -454,13 +454,14 @@ class Processor
 
     protected function setTwoFactorAuthAfterCallbackException($payment, $exception)
     {
-        // For Netbanking payments two_factor_auth was set to NOT_APPLICALBE on authorize itself
+        // For Netbanking payments two_factor_auth was set to NOT_APPLICABLE on authorize itself
         if ($payment->isNetbanking() === true)
         {
             return;
         }
+
         if (($exception instanceof Exception\GatewayErrorException) and
-                 ($exception->hasTwoFaError()))
+            ($exception->hasTwoFaError()))
         {
             $twoFactorAuth = Payment\TwoFactorAuth::FAILED;
         }

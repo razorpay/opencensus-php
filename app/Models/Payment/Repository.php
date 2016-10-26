@@ -50,8 +50,8 @@ class Repository extends Base\Repository
         Card\Entity::LAST4         => 'sometimes|string|digits:4',
         Card\Entity::INTERNATIONAL => 'sometimes|in:0,1',
         Entity::CUSTOMER_ID        => 'sometimes|alpha_num|size:14',
-        ENTITY::TOKEN_ID           => 'sometimes|alpha_num|size:14',
-        ENTITY::GLOBAL_TOKEN_ID    => 'sometimes|alpha_num|size:14',
+        Entity::TOKEN_ID           => 'sometimes|alpha_num|size:14',
+        Entity::GLOBAL_TOKEN_ID    => 'sometimes|alpha_num|size:14',
         Entity::SAVE               => 'sometimes|in:0,1',
     );
 
