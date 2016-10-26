@@ -109,6 +109,10 @@ class FeeCreditsTest extends TestCase
         $merchantCredits = $balance['fee_credits'];
 
         $this->assertEquals($merchantCredits, 999850);
+
+        $credits = $this->getLastEntity('credits', true);
+
+        $this->assertEquals($credits['value'], -150);
     }
 
     public function testFeeCreditsGrantedInCampaign()

@@ -88,6 +88,10 @@ class AmountCreditsTest extends TestCase
         $merchantCredits = $balance['credits'];
 
         $this->assertEquals($merchantCredits, 999850);
+
+        $credits = $this->getLastEntity('credits', true);
+
+        $this->assertEquals($credits['value'], -150);
     }
 
 

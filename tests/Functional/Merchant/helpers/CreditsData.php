@@ -97,7 +97,7 @@ return [
 
     'testNegativeAmountCredits' => [
         'request' => [
-            'url' => '/merchants/10000000000000/credits_log/',
+            'url' => '/merchants/10000000000000/credits_log',
             'method' => 'post',
             'content' => [
                 'value' => -150,
@@ -116,7 +116,7 @@ return [
 
     'testNegativeFeeCredits' => [
         'request' => [
-            'url' => '/merchants/10000000000000/credits_log/',
+            'url' => '/merchants/10000000000000/credits_log',
             'method' => 'post',
             'content' => [
                 'value' => -150,
