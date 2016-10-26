@@ -431,6 +431,12 @@ class Settler
     {
         $ts = $this->initSettlementTimestamp();
 
+        if (($this->mode === Mode::TEST) and
+            (empty($input['testSettleTimeStamp']) === false))
+        {
+            $ts = $input['testSettleTimeStamp'];
+        }
+
         $txns = $this->repo->transaction->fetchUnsettledTransactions($ts);
 
         return $txns;
