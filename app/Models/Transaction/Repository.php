@@ -81,6 +81,12 @@ class Repository extends Base\Repository
                      ->orderBy(Entity::ID)
                      ->get();
 
+        $this->trace->info(TraceCode::SCHEDULE_UNSETTLED_TXNS_FETCH, [
+            'transactions' => $txns->toArray(),
+            'schedules'    => $scheduleIds,
+            'merchants'    => $merchantIds,
+        ]);
+
         return array($txns, $schedules);
     }
 
