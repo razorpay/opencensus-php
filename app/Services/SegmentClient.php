@@ -6,6 +6,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Payment\Analytics\Entity as AnalyticsEntity;
 use GuzzleHttp\Client;
+use RZP\Models\Base\UniqueIdEntity;
 
 class SegmentClient
 {
@@ -76,6 +77,7 @@ class SegmentClient
             'terminal_id'       => $terminalId,
             'metadata'          => $metadata,
             'version'           => self::VERSION,
+            'timestamp'         => UniqueIdEntity::getNanotimeInteger(),
         ];
 
         $merchant = $payment->merchant;
