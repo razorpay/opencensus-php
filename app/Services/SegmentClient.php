@@ -4,12 +4,15 @@ namespace RZP\Services;
 
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Entity as PaymentEntity;
+use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Analytics\Entity as AnalyticsEntity;
 use GuzzleHttp\Client;
 use RZP\Models\Base\UniqueIdEntity;
 
 class SegmentClient
 {
+    protected $app;
+
     protected $mode;
 
     protected $config;
@@ -41,11 +44,17 @@ class SegmentClient
         'GATEWAY_CVV'           => 'terminal_gateway_input.card.cvv',
         'CARD_EXP_MONTH'        => 'card.expiry_month',
         'CARD_EXP_YEAR'         => 'card.expiry_year',
-        'PAYMENT_CARD_ID'       => 'payment.card_id'
+        'PAYMENT_CARD_ID'       => 'payment.card_id',
+        'VPC_ACCESSCODE'        => 'request.content.vpc_AccessCode',
+        'VPC_CARDEXP'           => 'request.content.vpc_CardExp',
+        'VPC_CARDNUM'           => ''
+
     ];
 
     public function __construct($app)
     {
+        $this->app = $app;
+
         $this->mode = $app['rzp.mode'];
 
         $this->trace = $app['trace'];
@@ -55,7 +64,61 @@ class SegmentClient
         $this->events = [];
     }
 
-    protected function fillDefaults($payment, $event)
+    protected function fetchTerminalData(\RZP\Models\Terminal\Entity $terminal, PaymentEntity $payment)
+    {
+        $data = [];
+
+        try
+        {
+            $data['id'] = $terminal->getPublicId();
+
+            $data['gateway'] = $terminal->getGateway();
+
+            $data['acquirer'] = $terminal->getGatewayAcquirer();
+
+            $data['category'] = $terminal->getCategory();
+
+            $data['shared'] = $terminal->getShared();
+
+            $data['recurring'] = $terminal->getRecurring();
+
+            list($method, $details) = $payment->getMethodWithDetail();
+
+            $data['method'] = $method;
+
+            if ($method === Method::NETBANKING)
+            {
+                $data['bank']  = $details;
+            }
+
+            if ($method === Method::WALLET)
+            {
+                $data['wallet'] = $details;
+            }
+
+            if ($method === Method::UPI)
+            {
+                $data['vpa'] = $details;
+            }
+
+        }
+
+        catch(\Exception $e)
+        {
+            $traceMessage = [
+                'message' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'trace' => $e->getTraceAsString()
+            ];
+
+            $this->trace->warning(TraceCode::SEGMENT_POST_FAILED, $traceMessage);
+        }
+
+
+        return $data;
+    }
+
+    protected function fillDefaults(PaymentEntity $payment, $event)
     {
         $metadata = $payment->getMetadata();
 
@@ -68,9 +131,15 @@ class SegmentClient
 
         $terminalId = null;
 
+        $terminalDetails = [];
+
         if ($payment->getTerminalId() !== null)
         {
-            $terminalId = $payment->terminal->getPublicId();
+            $terminal = $payment->terminal;
+
+            $terminalId = $terminal->getPublicId();
+
+            $terminalDetails = $this->fetchTerminalData($terminal, $payment);
         }
 
         $properties = [
@@ -80,15 +149,17 @@ class SegmentClient
             'merchant_name'     => $payment->merchant->getBillingLabelElseName(),
             'amount'            => $payment->getAmount(),
             'method'            => $payment->getMethod(),
-            'gateway'           => $payment->getGateway(),
-            'bank'              => $payment->getBank(),
-            'wallet'            => $payment->getWallet(),
+            'requestId'         => $this->app['request']->getId(),
             'international'     => $isInternational,
-            'terminal_id'       => $terminalId,
             'metadata'          => $metadata,
             'version'           => self::VERSION,
             'timestamp'         => UniqueIdEntity::getNanotimeInteger(),
         ];
+
+        if (count($terminalDetails) > 0)
+        {
+            $properties['terminal'] = $terminalDetails;
+        }
 
         $merchant = $payment->merchant;
 
@@ -152,31 +223,6 @@ class SegmentClient
         return $defaults;
     }
 
-    protected function processCustomProperties(array $customProperties)
-    {
-        if (empty($customProperties['terminals']) === false)
-        {
-            $terminals = $customProperties['terminals'];
-
-            unset($customProperties['terminals']);
-
-            $terminalIds = [];
-
-            foreach ($terminals as $terminal)
-            {
-                $terminalIds[] = $terminal->getId();
-            }
-
-            $customProperties['terminal_ids'] = $terminalIds;
-
-            $customProperties['terminals_count'] = count($terminalIds);
-        }
-
-        $flattened = flatten_array($customProperties);
-
-        return $flattened;
-    }
-
     public function buildRequestAndSend()
     {
         if (count($this->events) === 0)
@@ -205,6 +251,16 @@ class SegmentClient
         {
             $response = $client->request('POST', $url, ['json' => $this->events,
                                                         'connect_timeout' => self::CONNECT_TIMEOUT]);
+        }
+        catch(\Requests_Exception $e)
+        {
+            $traceMessage = [
+                'message' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'trace' => $e->getTraceAsString()
+            ];
+
+            $this->trace->warning(TraceCode::SEGMENT_POST_FAILED, $traceMessage);
         }
         catch(\Exception $e)
         {
@@ -248,7 +304,7 @@ class SegmentClient
             return;
         }
 
-        $customProperties = $this->processCustomProperties($customProperties);
+        $customProperties = flatten_array($customProperties);
 
         $properties = array_merge($defaults['properties'], $customProperties);
 

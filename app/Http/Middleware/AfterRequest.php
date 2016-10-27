@@ -52,7 +52,6 @@ class AfterRequest
         catch(\Exception $e)
         {}
 
-
         return $response;
     }
 }

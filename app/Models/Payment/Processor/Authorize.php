@@ -89,7 +89,7 @@ trait Authorize
             $this->runPostGatewaySelectionPreProcessing($payment, $terminalGatewayInput);
 
             $segmentCustomProps = [
-                'selected_terminal' => $currentTerminal->toArrayPublic(),
+                'selected_terminal' => $currentTerminal->getId(),
                 'retry_attempt' => $retryAttempts
             ];
 
@@ -151,7 +151,7 @@ trait Authorize
             {
                 $terminalData['end'] = microtime(true);
 
-                $this->recordTerminalAudit($terminalData, $payment);
+                $this->recordTerminalAudit($terminalData, $payment, $retryAttempts);
 
                 if (($retry === false) or
                     ($retryAttempts >= $maxRetryAttempts))
@@ -1025,7 +1025,15 @@ trait Authorize
 
         $data['image'] = $payment->merchant->getFullLogoUrlWithSize(Merchant\Logo::MEDIUM_SIZE);
 
-        $this->app['segment']->trackPayment($payment, TraceCode::FIRST_PAYMENT_RESPONSE, $data);
+        $segmentData = $data;
+
+        // this might log sensitive data. Remove it
+        if (isset($segmentData['request']['content']))
+        {
+            unset($segmentData['request']['content']);
+        }
+
+        $this->app['segment']->trackPayment($payment, TraceCode::FIRST_PAYMENT_RESPONSE, $segmentData);
 
         return $data;
     }
@@ -1213,7 +1221,7 @@ trait Authorize
     }
 
 
-    protected function recordTerminalAudit(array $terminalData, Payment\Entity $payment)
+    protected function recordTerminalAudit(array $terminalData, Payment\Entity $payment, $retryAttempts)
     {
         try
         {
@@ -1253,6 +1261,8 @@ trait Authorize
             $tStatus = $log[TerminalAnalytics\Entity::TERMINAL_STATUS];
 
             $terminalStatus = ($tStatus === 1) ? TraceCode::TERMINAL_SUCCESS : TraceCode::TERMINAL_FAILURE;
+
+            $log['retry_attempt'] = $retryAttempts;
 
             $this->app['segment']->trackPayment($payment, $terminalStatus, $log);
         }
