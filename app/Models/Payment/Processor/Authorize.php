@@ -1345,7 +1345,7 @@ trait Authorize
         }
     }
 
-    protected function processOtpFlowResponse($request, $payment): array
+    protected function processOtpFlowResponse($request, $payment)
     {
         if ($request !== null)
         {

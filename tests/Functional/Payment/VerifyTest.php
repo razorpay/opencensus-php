@@ -59,15 +59,15 @@ class VerifyTest extends TestCase
         $filter = $verifiedResultArray['filter'];
 
         $request = [
-            'url' => '/payments/verify/'. $filter,
+            'url'    => '/payments/verify/'. $filter,
             'method' => 'post'
         ];
 
         $content = $this->makeRequestAndGetContent($request);
 
         $resultData =[
-            'verified' => 1,
-            'filter'   => 'payments_failed'
+            'success' => 1,
+            'filter'  => 'payments_failed'
         ];
 
         $this->assertContent($content, $resultData);
@@ -85,8 +85,8 @@ class VerifyTest extends TestCase
         $content = $this->makeRequestAndGetContent($request);
 
         $resultData =[
-            'verified' => 0,
-            'filter'   => 'payments_failed'
+            'success' => 0,
+            'filter'  => 'payments_failed'
         ];
 
         $this->assertContent($content, $resultData);
@@ -184,15 +184,15 @@ class VerifyTest extends TestCase
         $time = Carbon::now('Asia/Kolkata');
 
         $request = [
-            'url' => '/payments/verify/'. $filter,
+            'url'    => '/payments/verify/'. $filter,
             'method' => 'post'
         ];
 
         $content = $this->makeRequestAndGetContent($request);
 
         $resultData = [
-            'verified' => $verifiedResultArray['all'],
-            'filter'   => $filter,
+            'success' => $verifiedResultArray['all'],
+            'filter'  => $filter,
         ];
 
         $this->assertContent($content, $resultData);
@@ -206,8 +206,8 @@ class VerifyTest extends TestCase
             $content = $this->makeRequestAndGetContent($request);
 
             $resultData = [
-                'verified' => $verifiedResultArray['all'],
-                'filter'   => $filter,
+                'success' => $verifiedResultArray['all'],
+                'filter'  => $filter,
             ];
 
             $this->assertContent($content, $resultData);
@@ -232,15 +232,15 @@ class VerifyTest extends TestCase
         $time = Carbon::now('Asia/Kolkata');
 
         $request = [
-            'url' => '/payments/verify/'. $filter,
+            'url'    => '/payments/verify/'. $filter,
             'method' => 'post'
         ];
 
         $content = $this->makeRequestAndGetContent($request);
 
         $resultData = [
-            'verified' => $verifiedResultArray['all'],
-            'filter'   => $filter,
+            'success' => $verifiedResultArray['all'],
+            'filter'  => $filter,
         ];
 
         $this->assertContent($content, $resultData);
@@ -252,8 +252,8 @@ class VerifyTest extends TestCase
         $content = $this->makeRequestAndGetContent($request);
 
         $resultData = [
-            'verified' => $verifiedResultArray['all'],
-            'filter'   => $filter,
+            'success' => $verifiedResultArray['all'],
+            'filter'  => $filter,
         ];
 
         $this->assertContent($content, $resultData);
@@ -261,8 +261,8 @@ class VerifyTest extends TestCase
         $content = $this->makeRequestAndGetContent($request);
 
         $resultData = [
-            'verified' => $verifiedResultArray['none'],
-            'filter'   => $filter,
+            'success' => $verifiedResultArray['none'],
+            'filter'  => $filter,
         ];
 
         $this->assertContent($content, $resultData);
@@ -274,8 +274,8 @@ class VerifyTest extends TestCase
         $content = $this->makeRequestAndGetContent($request);
 
         $resultData = [
-            'verified' => $verifiedResultArray['all'],
-            'filter'   => $filter,
+            'success' => $verifiedResultArray['all'],
+            'filter'  => $filter,
         ];
 
         $this->assertContent($content, $resultData);
@@ -283,8 +283,8 @@ class VerifyTest extends TestCase
         $content = $this->makeRequestAndGetContent($request);
 
         $resultData = [
-            'verified' => $verifiedResultArray['none'],
-            'filter'   => $filter,
+            'success' => $verifiedResultArray['none'],
+            'filter'  => $filter,
         ];
 
         $this->assertContent($content, $resultData);
@@ -298,8 +298,8 @@ class VerifyTest extends TestCase
             $content = $this->makeRequestAndGetContent($request);
 
             $resultData = [
-                'verified' => $verifiedResultArray['all'],
-                'filter'   => $filter,
+                'success' => $verifiedResultArray['all'],
+                'filter'  => $filter,
             ];
 
             $this->assertContent($content, $resultData);
@@ -307,8 +307,8 @@ class VerifyTest extends TestCase
             $content = $this->makeRequestAndGetContent($request);
 
             $resultData = [
-                'verified' => $verifiedResultArray['none'],
-                'filter'   => $filter,
+                'success' => $verifiedResultArray['none'],
+                'filter'  => $filter,
             ];
 
             $this->assertContent($content, $resultData);
@@ -321,8 +321,8 @@ class VerifyTest extends TestCase
         $content = $this->makeRequestAndGetContent($request);
 
         $resultData = [
-            'verified' => $verifiedResultArray['none'],
-            'filter'   => $filter,
+            'success' => $verifiedResultArray['none'],
+            'filter'  => $filter,
         ];
 
         $this->assertContent($content, $resultData);
@@ -335,13 +335,13 @@ class VerifyTest extends TestCase
         // We dont want to check time taken for payments
         unset($content['total_time']);
 
-        unset($content['authorized_time']);
+        unset($content['authorize_time']);
 
         $defaultParams = [
-            'verified'          => 0,
-            'authorized/failed' => 0,
-            'timed_out'         => 0,
-            'error'             => 0,
+            'success'    => 0,
+            'authorized' => 0,
+            'timeout'    => 0,
+            'error'      => 0,
         ];
 
         $defaultParams = array_merge($defaultParams, $param);
@@ -397,7 +397,7 @@ class VerifyTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $resultData = ['filter' => $filter, 'verified' => 1];
+        $resultData = ['filter' => $filter, 'success' => 1];
 
         $this->assertContent($content, $resultData);
 
@@ -444,8 +444,8 @@ class VerifyTest extends TestCase
         $content = $this->makeRequestAndGetContent($request);
 
         $resultData = [
-            'timed_out' => 1,
-            'filter'    => 'payments_failed',
+            'timeout' => 1,
+            'filter'  => 'payments_failed',
         ];
 
         $this->assertContent($content, $resultData);
@@ -468,8 +468,8 @@ class VerifyTest extends TestCase
         $content = $this->makeRequestAndGetContent($request);
 
         $resultData = [
-            'timed_out' => 1,
-            'filter'    => 'verify_error'
+            'timeout' => 1,
+            'filter'  => 'verify_error'
         ];
 
         $this->assertContent($content,  $resultData);
@@ -483,8 +483,8 @@ class VerifyTest extends TestCase
         $content = $this->makeRequestAndGetContent($request);
 
         $resultData = [
-            'authorized/failed' => 1,
-            'filter'            => 'verify_error'
+            'authorized' => 1,
+            'filter'     => 'verify_error'
         ];
 
         $this->assertContent($content, $resultData);
@@ -504,7 +504,7 @@ class VerifyTest extends TestCase
             'payment:netbanking_failed', ['created_at' => $createdAt]);
 
         $request = array(
-            'url' => '/payments/verify/verify_failed',
+            'url'    => '/payments/verify/verify_failed',
             'method' => 'post'
         );
 
@@ -513,8 +513,8 @@ class VerifyTest extends TestCase
         $content = $this->makeRequestAndGetContent($request);
 
         $resultData = [
-            'authorized/failed' => 0,
-            'filter'            => 'verify_failed'
+            'authorized' => 0,
+            'filter'     => 'verify_failed'
         ];
 
         $this->assertContent($content, $resultData);
@@ -530,7 +530,7 @@ class VerifyTest extends TestCase
             'payment:netbanking_failed', ['created_at' => $createdAt]);
 
         $request = array(
-            'url' => '/payments/verify/invalid',
+            'url'    => '/payments/verify/invalid',
             'method' => 'get'
         );
 
@@ -553,7 +553,7 @@ class VerifyTest extends TestCase
             'payment:netbanking_failed', ['created_at' => $createdAt]);
 
         $request = array(
-            'url' => '/payments/verify/all',
+            'url'    => '/payments/verify/all',
             'method' => 'get'
         );
 
@@ -563,13 +563,13 @@ class VerifyTest extends TestCase
 
         $this->assertEquals(
             [
-                'filter'            => 'all',
-                'verified'          => 1,
-                'authorized/failed' => 0,
-                'timed_out'         => 0,
-                'error'             => 0,
-                'authorized_time'   => 0,
-                'total_time'        => '0 secs',
+                'filter'         => 'all',
+                'success'        => 1,
+                'authorized'     => 0,
+                'timeout'        => 0,
+                'error'          => 0,
+                'authorize_time' => 0,
+                'total_time'     => '0 secs',
             ],
             $content);
     }
