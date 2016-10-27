@@ -57,8 +57,6 @@ class VerifyTest extends TestCase
 
         $filter = $verifiedResultArray['filter'];
 
-        $time = Carbon::now('Asia/Kolkata');
-
         $request = [
             'url' => '/payments/verify/'. $filter,
             'method' => 'post'

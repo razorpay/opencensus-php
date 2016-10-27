@@ -32,13 +32,14 @@ class Mutex
     /**
      * Set the lock for the all resource provided
      *
-     * @param array  $resources Array of the resource
-     * @param int    $ttl       Expiry time of lock in seconds
-     * @param string $strict    defines lock should happen or not, even if one resource is not locked
-     *
+     * @param array $resources Array of the resource
+     * @param int $ttl Expiry time of lock in seconds
+     * @param bool $strict defines lock should happen or not, even if one resource is not locked
+     * @param string $suffix
+     * 
      * @return array containing values of locked and not_locked keys
      */
-    public function acquireMultiple($resources, $ttl = 60, $strict = false, $suffix = '')
+    public function acquireMultiple($resources, $ttl = 60, $suffix = '', $strict = false)
     {
         $lockedResources = [];
 

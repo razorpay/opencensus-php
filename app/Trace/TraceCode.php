@@ -137,6 +137,9 @@ class TraceCode
     const ADJUSTMENT_CREATE_REQUEST                 = 'ADJUSTMENT_CREATE_REQUEST';
     const ADJUSTMENT_CREATE_SUCCESS                 = 'ADJUSTMENT_CREATE_SUCCESS';
 
+    const VERIFY_LOCKED_PAYMENTS                    = 'VERIFY_LOCKED_PAYMENTS';
+    const VERIFY_PROCESSED_PAYMENTS                 = 'VERIFY_PROCESSED_PAYMENTS';
+    
     /*
      * Gateway component error messages
      */
