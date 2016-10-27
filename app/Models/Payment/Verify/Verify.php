@@ -175,7 +175,10 @@ class Verify extends Base\Core
                 $totalAuthTimeDiff += (time() - $payment->getCreatedAt());
             }
 
-            $resultSet[$verifyResult] += 1;
+            if ($verifyResult !== null)
+            {
+                $resultSet[$verifyResult] += 1;
+            }
 
             $this->releasePaymentAfterVerify($payment);
         }
@@ -334,8 +337,24 @@ class Verify extends Base\Core
             }
             else
             {
-                // Attempt to authorize payments whose verification failed
-                $this->processor($merchant)->authorizeFailedPayment($payment);
+                try
+                {
+                    // Attempt to authorize payments whose verification failed
+                    $this->processor($merchant)->authorizeFailedPayment($payment);
+                }
+                catch (Exception\BadRequestValidationFailureException $ex)
+                {
+                    $this->trace->warning(
+                        TraceCode::PAYMENT_VERIFY_ALREADY_AUTHORIZED,
+                        [
+                            'payment_id'    => $payment->getId(),
+                            'status'        => $payment->getStatus(),
+                            'verify_bucket' => $payment->getVerifyBucket(),
+                            'error_message' => $ex->getMessage(),
+                        ]);
+
+                    return null;
+                }
             }
 
             // Now Just continue

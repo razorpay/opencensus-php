@@ -7,7 +7,6 @@ use Config;
 
 use RZP\Exception;
 use RZP\Constants;
-use Carbon\Carbon;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Verify\Status as VerifyStatus;
