@@ -320,6 +320,59 @@ class VerifyTest extends TestCase
         $this->assertEquals($defaultParams, $content);
     }
 
+    public function testTimeoutPaymentVerifyfailure()
+    {
+        $this->gateway = 'ebs';
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_ebs_terminal');
+
+        $data = $this->testData['testTimeoutPaymentVerify'];
+
+        $this->getErrorInCallback();
+
+        $payment = $this->getDefaultNetbankingPaymentArray('ANDB');
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $payment = $this->doAuthAndCapturePayment($payment);
+            }
+        );
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->resetMockServer();
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'url'    => '/payments/verify/payments_failed',
+            'method' => 'post'
+        ];
+
+        $time = Carbon::now('Asia/Kolkata');
+
+        Carbon::setTestNow($time->addMinutes(5));
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $filter = 'verify_failed';
+
+        $request = [
+            'url'    => '/payments/verify/'. $filter,
+            'method' => 'post'
+        ];
+
+        Carbon::setTestNow($time->addMinutes(60));
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $resultData = ['filter' => $filter, 'verified' => 1];
+
+        $this->assertContent($content, $resultData);
+    }
+
     public function testTimeoutPaymentVerify()
     {
         $this->gateway = 'ebs';
