@@ -11,19 +11,6 @@ use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Batch\Status;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
-/**
- * Tests for refund payments
- *
- * For refund payments, first we need to create a
- * captured payment. By default, an captured payment entity
- * is provided. However, it doesn't have a corresponding record
- * in hdfc gateway.
- *
- * So refund tests which supposedly hit hdfc gateway for refund,
- * should first call for a normal hdfc authorized + captured payment
- * instead of utilizing the default created payment entity.
- */
-
 class VerifyTest extends TestCase
 {
     use PaymentTrait;
