@@ -291,7 +291,7 @@ class Verify extends Base\Core
 
         $merchant = $payment->merchant;
 
-        $cron = ($this->app['basicauth']->getAppName() === 'cron');
+        $cron = ($this->app['basicauth']->getInternalApp() === 'cron');
 
         // For Payment in created state, verify bucket should not be updated
         // as we want to run cron on specific interval, till payment is marked as failed/authorized

@@ -706,7 +706,7 @@ class BasicAuth
         return $this->type;
     }
 
-    public function getAppName()
+    public function getInternalApp()
     {
         return $this->internalApp;
     }
