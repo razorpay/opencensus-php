@@ -203,6 +203,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::LIVE, false);
     }
 
+    public function hasSchedule()
+    {
+        return ($this->getSettlementScheduleId() !== null);
+    }
+
     public function keys()
     {
         return $this->hasMany(

@@ -82,23 +82,25 @@ class SegmentClient
 
             $data['recurring'] = $terminal->getRecurring();
 
-            list($method, $details) = $payment->getMethodWithDetail();
+            $method = $payment->getMethod();
 
             $data['method'] = $method;
 
+            // note: using individual here instead of getMethodWithDetail
+            // as PaymentCancelTest fails on Payment\Entity::getFormattedCard
             if ($method === Method::NETBANKING)
             {
-                $data['bank']  = $details;
+                $data['bank']  = $payment->getBankName();
             }
 
             if ($method === Method::WALLET)
             {
-                $data['wallet'] = $details;
+                $data['wallet'] = ucfirst($payment->getWallet());
             }
 
             if ($method === Method::UPI)
             {
-                $data['vpa'] = $details;
+                $data['vpa'] = $payment->getVpa();
             }
 
         }
