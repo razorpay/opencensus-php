@@ -295,12 +295,14 @@ class Verify extends Base\Core
 
         $cron = ($this->app['basicauth']->getInternalApp() === 'cron');
 
+        $route = $this->app['api.route']->getCurrentRouteName();
+
         // For Payment in created state, verify bucket should not be updated
         // as we want to run cron on specific interval, till payment is marked as failed/authorized
         // If filter is null, then verify is initiated manually, not via cron
         // Don't update VERIFY_BUCKET, in that case
         if (($payment->getStatus() !== Payment\Status::CREATED) and
-            ($cron === true))
+            ($cron === true) and ($route === 'payment_verify_multiple_post'))
         {
             $nextVerifyBucket = $this->getPaymentNextVerifyBucket($payment, $filter);
 

@@ -650,7 +650,7 @@ class Gateway
         return $request;
     }
 
-    protected function getOtpSubmitRequest(array $input)
+    protected function getOtpSubmitRequest(array $input): array
     {
         $request = [
             'url' => $input['otpSubmitUrl'],

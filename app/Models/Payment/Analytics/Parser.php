@@ -95,7 +95,7 @@ class Parser extends Base\Core
                 TraceCode::PAYMENT_ANALYTICS_INCORRECT_DATA,
                 [
                     Entity::LIBRARY => $paymentAnalytics[Entity::LIBRARY],
-                    Entity::REFERER =>  null,
+                    Entity::REFERER => ($paymentAnalytics[Entity::REFERER] ?? null),
                 ]);
         }
     }
@@ -289,7 +289,7 @@ class Parser extends Base\Core
 
             if (isset($metadata[$metadataKey]) === true)
             {
-                $logValueForKey = $log[$key] ;
+                $logValueForKey = $log[$key] ?? null;
 
                 if ($logValueForKey !== $metadata[$metadataKey])
                 {
