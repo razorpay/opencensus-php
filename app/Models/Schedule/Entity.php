@@ -68,6 +68,13 @@ class Entity extends Base\PublicEntity
         $this->saveOrFail();
     }
 
+    // -------------------------- Checks -------------------------------------------
+
+    public function isHourly()
+    {
+        return ($this->getPeriod() === Period::HOURLY);
+    }
+
     // ----------------------- Associations ----------------------------------------
 
     public function merchant()

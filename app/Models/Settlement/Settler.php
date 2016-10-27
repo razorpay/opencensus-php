@@ -395,6 +395,13 @@ class Settler
 
         assert ($merchant->bankAccount !== null);
 
+        // If merchant has a hourly schedule entity assigned to him, his settlements
+        // will be handled by the new Settler defined in Settlement\Processor
+        if ($merchant->hasHourlySchedule() === true)
+        {
+            return false;
+        }
+
         if (($this->mode !== Mode::TEST) and
             ($merchant->bankAccount->getCreatedAt() > $lastWorkingDay->timestamp))
         {
