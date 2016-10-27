@@ -62,6 +62,8 @@ class Repository extends Base\Repository
         $txns = $this->newQuery()
                      ->whereIn(Entity::MERCHANT_ID, $merchants->getIds())
                      ->where(Entity::SETTLED_AT, '<', $timestamp)
+                     ->where(Entity::SETTLED, '=', 0)
+                     ->where(Entity::TYPE, '!=', Type::SETTLEMENT)
                      ->with('merchant')
                      ->orderBy(Entity::MERCHANT_ID)
                      ->orderBy(Entity::ID)
