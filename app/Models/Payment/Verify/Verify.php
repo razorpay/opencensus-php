@@ -150,7 +150,7 @@ class Verify extends Base\Core
      * @param Base\PublicCollection $payments
      * @param string                $filter
      * @return array with aggregated results
-    */
+     */
     protected function verifyMultiplePayments(Base\PublicCollection $payments, $filter)
     {
         $resultSet = [
@@ -208,7 +208,7 @@ class Verify extends Base\Core
     }
 
     /** Lock All Payments
-
+     *
      * @param Base\PublicCollection $payments
      * @return array with keys locked and not_locked,
      *         having payments which are locked and not_locked respectively
@@ -293,7 +293,7 @@ class Verify extends Base\Core
 
         $merchant = $payment->merchant;
 
-        $cron = ($this->app['basicauth']->getInternalApp() === 'cron');
+        $cron = $this->app['basicauth']->isCron();
 
         $route = $this->app['api.route']->getCurrentRouteName();
 
@@ -302,7 +302,8 @@ class Verify extends Base\Core
         // If filter is null, then verify is initiated manually, not via cron
         // Don't update VERIFY_BUCKET, in that case
         if (($payment->getStatus() !== Payment\Status::CREATED) and
-            ($cron === true) and ($route === 'payment_verify_multiple_post'))
+            ($cron === true) and
+            ($route === 'payment_verify_multiple_post'))
         {
             $nextVerifyBucket = $this->getPaymentNextVerifyBucket($payment, $filter);
 
@@ -317,7 +318,7 @@ class Verify extends Base\Core
         //
         try
         {
-            $res = $this->processor($merchant)->verify($payment);
+            $response = $this->processor($merchant)->verify($payment);
         }
         catch (Exception\PaymentVerificationException $e)
         {
@@ -415,7 +416,9 @@ class Verify extends Base\Core
 
         $currentVerifyBucket = $this->getCurrentVerifyBucket($diff, $boundaries);
 
-        return $nextVerifyBucket = $currentVerifyBucket + 1;
+        $nextVerifyBucket = $currentVerifyBucket + 1;
+
+        return $nextVerifyBucket;
     }
 
     /**

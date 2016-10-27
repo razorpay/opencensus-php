@@ -2,8 +2,6 @@
 
 namespace RZP\Models\Payment\Verify;
 
-use RZP\Exception;
-
 class Result
 {
     const SUCCESS       = 'success';

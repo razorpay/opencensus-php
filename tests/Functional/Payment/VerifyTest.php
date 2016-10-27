@@ -43,7 +43,7 @@ class VerifyTest extends TestCase
 
     public function testNonCronCaller()
     {
-        $createdAt = time() - 3*60;
+        $createdAt = time() - 180;
 
         $this->ba->appAuth();
 
@@ -94,7 +94,7 @@ class VerifyTest extends TestCase
 
     public function testVerifyForPaymentsWithNullBucket()
     {
-        $createdAt = time() - 3*60;
+        $createdAt = time() - 180;
 
         $payment = $this->fixtures->create(
             'payment:netbanking_failed', [
@@ -107,7 +107,7 @@ class VerifyTest extends TestCase
 
     public function testVerifySingleFailedPayments()
     {
-        $createdAt = time() - 3*60;
+        $createdAt = time() - 180;
 
         $payment = $this->fixtures->create(
             'payment:netbanking_failed', ['created_at' => $createdAt]);
@@ -117,12 +117,12 @@ class VerifyTest extends TestCase
 
     public function testVerifyMultipleFailedPayments()
     {
-        $createdAt = time() - 3 * 60;
+        $createdAt = time() - 180;
 
         $payment = $this->fixtures->create(
             'payment:netbanking_failed', ['created_at' => $createdAt]);
 
-        $createdAt = time() - 4 * 60;
+        $createdAt = time() - 240;
 
         $payment2 = $this->fixtures->create(
             'payment:netbanking_failed', ['created_at' => $createdAt]);
@@ -138,12 +138,12 @@ class VerifyTest extends TestCase
 
     public function testVerifyWithLockedPayments()
     {
-        $createdAt = time() - 3 * 60;
+        $createdAt = time() - 180;
 
         $payment = $this->fixtures->create(
             'payment:netbanking_failed', ['created_at' => $createdAt]);
 
-        $createdAt = time() - 4 * 60;
+        $createdAt = time() - 240;
 
         $payment2 = $this->fixtures->create(
             'payment:netbanking_failed', ['created_at' => $createdAt]);
@@ -168,7 +168,7 @@ class VerifyTest extends TestCase
 
     public function testVerifySingleCreatedPayments()
     {
-        $createdAt = time() - 3*60;
+        $createdAt = time() - 180;
 
         $payment = $this->fixtures->create(
             'payment:netbanking_created', ['created_at' => $createdAt]);
@@ -498,7 +498,7 @@ class VerifyTest extends TestCase
 
     public function testVerifyFailedWithZeroValidPaymnets()
     {
-        $createdAt = time() - 60 * 60;
+        $createdAt = time() - 3600;
 
         $payment = $this->fixtures->create(
             'payment:netbanking_failed', ['created_at' => $createdAt]);
@@ -524,7 +524,7 @@ class VerifyTest extends TestCase
     {
         $data = $this->testData['testInvalidFilter'];
 
-        $createdAt = time() - 60 * 60;
+        $createdAt = time() - 3600;
 
         $payment = $this->fixtures->create(
             'payment:netbanking_failed', ['created_at' => $createdAt]);
@@ -547,7 +547,7 @@ class VerifyTest extends TestCase
 
     public function testVerifyAllPayments()
     {
-        $createdAt = time() - 60 * 60;
+        $createdAt = time() - 3600;
 
         $payment = $this->fixtures->create(
             'payment:netbanking_failed', ['created_at' => $createdAt]);
