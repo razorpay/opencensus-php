@@ -28,6 +28,7 @@ use RZP\Models\Merchant\Methods;
 use RZP\Models\Payment\Analytics;
 use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Models\Payment\TerminalAnalytics;
+use RZP\Models\Terminal;
 
 use RZP\Error;
 use RZP\Exception;
@@ -200,18 +201,27 @@ trait Authorize
 
         $this->updateAndNotifyPaymentAuthorized();
 
+        $this->updateTwoFactorAuthForOneStepPayment();
+
         $payment = $this->payment;
 
-        //
-        // Else if $request is null, then payment is a one-step process,
-        // i.e. without 2-factor authentication
-        // This right now sets it to UNAVAILABLE, it could be SKIPPED too when
-        // flows corresponding to that are added
-        $payment->setTwoFactorAuth(TwoFactorAuth::UNAVAILABLE);
+        return $this->postPaymentAuthorizeProcessing($payment);
+    }
+
+    protected function updateTwoFactorAuthForOneStepPayment()
+    {
+        $payment = $this->payment;
+
+        if ($payment->terminal->getRecurring() === Terminal\Recurring::RECURRING_N3DS)
+        {
+            $payment->setTwoFactorAuth(TwoFactorAuth::SKIPPED);
+        }
+        else
+        {
+            $payment->setTwoFactorAuth(TwoFactorAuth::UNAVAILABLE);
+        }
 
         $this->repo->saveOrFail($payment);
-
-        return $this->postPaymentAuthorizeProcessing($payment);
     }
 
     protected function autoCapturePaymentIfApplicable($payment)
