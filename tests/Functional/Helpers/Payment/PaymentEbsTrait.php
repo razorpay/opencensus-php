@@ -37,6 +37,7 @@ trait PaymentEbsTrait
             $content = '<output errorCode="29" error="Insufficient balance"/>';
         });
     }
+
     public function getErrorInVerify()
     {
         $this->mockServerContentFunction(function (& $content)
@@ -60,6 +61,14 @@ trait PaymentEbsTrait
         $this->mockServerContentFunction(function (& $content)
         {
             $content[Response::RESPONSE_CODE] = '1';
+        });
+    }
+
+    public function getHackedResponse()
+    {
+        $this->mockServerContentFunction(function (& $content)
+        {
+            $content['IsFlagged'] = 'YES';
         });
     }
 }

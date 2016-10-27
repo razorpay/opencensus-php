@@ -74,6 +74,11 @@ class Server extends Base\Mock\Server
 
         $content[Response::SECURE_HASH] = $this->generateHash($content);
 
+        if ($content['IsFlagged'] === 'YES')
+        {
+            $content['IsFlagged'] = 'NO';
+        }
+
         $request = array(
             'url' => $input['return_url'],
             'content' => $content,
