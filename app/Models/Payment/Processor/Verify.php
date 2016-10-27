@@ -56,7 +56,8 @@ trait Verify
 
             $slackData = ['id' => $payment->getDashboardEntityLinkForSlack()];
 
-            $this->notifyInSlack($slackData);
+            // @todo: No need now to notify on individual payments verify failure.
+            // $this->notifyInSlack($slackData);
 
             throw $e;
         }
@@ -151,9 +152,7 @@ trait Verify
             unset($data['message']);
         }
 
-        $app = App::getFacadeRoot();
-
-        $app['slack']->queue(
+        $this->app['slack']->queue(
             $message,
             $data,
             [

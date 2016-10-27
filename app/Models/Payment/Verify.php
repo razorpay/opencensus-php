@@ -13,28 +13,21 @@ use RZP\Models\Base;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
 
-class Verify
+class Verify extends Base\Core
 {
     protected $trace;
     protected $mode;
     protected $core;
-    protected $paymentRepo;
     protected $mutex;
     protected $slack;
 
     public function __construct()
     {
-        $app = App::getFacadeRoot();
+        parent::__construct();
 
-        $this->mode = $app['rzp.mode'];
+        $this->mutex = $this->app['api.mutex'];
 
-        $this->trace = $app['trace'];
-
-        $this->paymentRepo = $app['repo']->payment;
-
-        $this->mutex = $app['api.mutex'];
-
-        $this->slack = $app['slack'];
+        $this->slack = $this->app['slack'];
     }
 
     /**
@@ -94,7 +87,7 @@ class Verify
 
         $boundary = Constants\Verify::getBoundaryInSeconds($filter);
 
-        $payments = $this->paymentRepo->getPaymentsToVerify(
+        $payments = $this->repo->payment->getPaymentsToVerify(
                                     $minimumTime, $boundary, $verifyStatus, $paymentStatus);
 
         return $this->verifyMultiplePayments($payments, $filter);
@@ -116,18 +109,10 @@ class Verify
             'time_diff'                     => 0,
         ];
 
-        $verifyKeys = $this->lockPaymentsForVerify($payments);
+        $lockedPayments = $this->lockPaymentsForVerify($payments);
 
-        foreach ($payments as $payment)
+        foreach ($lockedPayments as $payment)
         {
-            $lockKeyId = $payment->getId() . Constants\Verify::KEY_SUFFIX;
-
-            // If a payment cannot be locked for verify, don't run verify for those payments
-            if (in_array($lockKeyId, $verifyKeys['locked']) === false)
-            {
-                continue;
-            }
-
             $verifyStatus = $this->verifyPayment($payment, $filter);
 
             if ($verifyStatus === Constants\Verify::AUTHORIZED)
@@ -138,7 +123,7 @@ class Verify
             $result[$verifyStatus] += 1;
         }
 
-        $this->releasePaymentsAfterVerify($verifyKeys['locked']);
+        $this->releasePaymentsAfterVerify($lockedPayments);
 
         $processedResults = $this->processResult($result, $filter);
 
@@ -158,23 +143,25 @@ class Verify
 
         $strict = false;
 
-        foreach ($payments as $payment)
-        {
-            $verifyLockKeys[] = $payment->getId() . Constants\Verify::KEY_SUFFIX;
-        }
+        $paymentIds = $payments->pluck(Entity::ID);
 
-        $verifyKeys = $this->mutex->acquireMultiple($verifyLockKeys, 3600, $strict);
+        $lockedPayments = $this->mutex->acquireMultiple(
+            $paymentIds, 3600, $strict, Constants\Verify::KEY_SUFFIX);
 
-        return $verifyKeys;
+        $payments->whereIn(Entity::ID, $lockedPayments);
+
+        return $payments;
     }
 
     /* Release lock on all payments id lcoked for verify
      * @param array $lockedKeys array containing all keys which are locked
      * @return void
     */
-    protected function releasePaymentsAfterVerify(array $lockedKeys)
+    protected function releasePaymentsAfterVerify($payments)
     {
-        $this->mutex->releaseMultiple($lockedKeys);
+        $paymentIds = $payments->pluck(Entity::ID);
+
+        $this->mutex->releaseMultiple($paymentIds, Constants\Verify::KEY_SUFFIX);
     }
 
     /* Process the result for displaying in slack and returning to caller

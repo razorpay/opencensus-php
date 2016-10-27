@@ -750,16 +750,12 @@ class Service extends Base\Service
 
     public function verifyMultiplePayments($filter)
     {
-        $verify = new Verify();
-
-        return $verify->verifyPaymentsWithFilter($filter);
+        return (new Verify)->verifyPaymentsWithFilter($filter);
     }
 
     public function verifyPayment($payment)
     {
-        $verify = new Verify();
-
-        return $verify->verifyPayment($payment);
+        return (new Verify)->verifyPayment($payment);
     }
 
     public function sendReminderMerchantMailForAuthorizedPayments()

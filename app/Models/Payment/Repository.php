@@ -182,11 +182,12 @@ class Repository extends Base\Repository
      * @param bool   $random
      * @return Collection of Payment
      */
-    public function getPaymentsToVerify($minimumTime,
-                                        $verifyBoundary,
-                                        $verifyStatus = null,
-                                        $paymentStatus = null,
-                                        $random = true)
+    public function getPaymentsToVerify(
+                        $minimumTime,
+                        $verifyBoundary,
+                        $verifyStatus = null,
+                        $paymentStatus = null,
+                        $random = true)
     {
         $verifyEnabledGateways = Payment\Gateway::$verifyEnabled;
 
@@ -211,9 +212,7 @@ class Repository extends Base\Repository
         // For created, we only look at the payment status.
         if ($paymentStatus !== Payment\Status::CREATED)
         {
-            $condition = $this->getWhereConditionsForVerify($minimumTime, $verifyBoundary);
-
-            $this->addWhereQueryForVerify($query, $condition);
+            $this->addWhereConditionsForVerify($minimumTime, $verifyBoundary, $query);
         }
 
         // Sample Query
@@ -244,28 +243,6 @@ class Repository extends Base\Repository
     }
 
     /**
-     * Adds Where and orWhere Query in the query using condition
-     *
-     * @param       $query
-     * @param array $conditions array with Keys 'where' and 'or'
-     *                          it will add 'where' and 'whereOr' condition
-     *                          using the values given in 'where' and 'or'
-     * @return void
-     */
-    protected function addWhereQueryForVerify($query, $conditions)
-    {
-        $query->where(
-            function ($query) use ($conditions)
-            {
-                foreach($conditions as $condition)
-                {
-                    $query->orWhere($condition);
-                }
-            }
-        );
-    }
-
-    /**
      * Process min_time and verify_boundary array and return where and orWhere Condition
      *
      * @param int   $minimumTime      filter to remove Payments which are created before $ts seconds
@@ -274,7 +251,7 @@ class Repository extends Base\Repository
      *         where condition will be created using $ts
      *         orWhere condition will be created using $verifyBoundary
      */
-    protected function getWhereConditionsForVerify($minimumTime, $verifyBoundaries)
+    protected function addWhereConditionsForVerify($minimumTime, $verifyBoundaries, $query)
     {
         // This Condition will give all newly created payments,
         // which have crossed minimum time threshold.
@@ -287,7 +264,7 @@ class Repository extends Base\Repository
         // in next Verify Bucket and not processed by previous cron
         // This will not give all payments at once, but only payments which
         // crossed the boundary after prev cron ran (SLIDING WINDOW PROTOCOL)
-        foreach($verifyBoundaries as $bucket => $time)
+        foreach ($verifyBoundaries as $bucket => $time)
         {
             // This gets all the payments in the last `boundary (15, 60, etc)` time.
             $paymentCreatedAfter = Carbon::now('Asia/Kolkata')->timestamp - $time;
@@ -300,7 +277,15 @@ class Repository extends Base\Repository
             ];
         }
 
-        return $whereConditions;
+        // Now add the conditions to the payment verify query.
+        $query->where(
+            function ($query) use ($whereConditions)
+            {
+                foreach($whereConditions as $condition)
+                {
+                    $query->orWhere($condition);
+                }
+            });
     }
 
     public function fetchPaymentsForCustomerMethod($customer, $method, $skip)

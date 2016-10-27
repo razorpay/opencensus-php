@@ -38,7 +38,7 @@ class Mutex
      *
      * @return array containing values of locked and not_locked keys
      */
-    public function acquireMultiple(array $resources, $ttl = 60, $strict = false)
+    public function acquireMultiple($resources, $ttl = 60, $strict = false, $suffix = '')
     {
         $lockedResources = [];
 
@@ -46,7 +46,8 @@ class Mutex
 
         foreach ($resources as $resource)
         {
-            $isLockAcquired = $this->acquire($resource, $ttl);
+            $resourceWithSuffix = $resource . $suffix;
+            $isLockAcquired = $this->acquire($resourceWithSuffix, $ttl);
 
             if ($isLockAcquired === true)
             {
@@ -56,11 +57,11 @@ class Mutex
             {
                 if ($strict === true)
                 {
-                    $this->releaseMultiple($lockedResources);
+                    $this->releaseMultiple($lockedResources, $suffix);
 
                     return [
                         'locked' => [],
-                        'not_locked' => $resources
+                        'unlocked' => $resources
                     ];
                 }
 
@@ -70,7 +71,7 @@ class Mutex
 
         return [
             'locked' => $lockedResources,
-            'not_locked' => $alreadyLockedResources
+            'unlocked' => $alreadyLockedResources
         ];
     }
 
@@ -81,11 +82,13 @@ class Mutex
      *
      * @return void
      */
-    public function releaseMultiple($resources)
+    public function releaseMultiple($resources, $suffix = '')
     {
-        foreach($resources as $resource)
+        foreach ($resources as $resource)
         {
-            $this->release($resource);
+            $resourceWithSuffix = $resource . $suffix;
+
+            $this->release($resourceWithSuffix);
         }
     }
 
