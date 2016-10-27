@@ -245,7 +245,6 @@ class Entity extends Base\PublicEntity
         self::SERVICE_TAX       => 'int',
         self::SAVE              => 'bool',
         self::INTERNATIONAL     => 'bool',
-        self::VERIFY_BUCKET     => 'int',
     ];
 
 // --------------------- Generators --------------------------------------------

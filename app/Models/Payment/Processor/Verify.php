@@ -10,7 +10,7 @@ use RZP\Constants;
 use Carbon\Carbon;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
-use RZP\Models\Payment\Status;
+use RZP\Models\Payment\Verify\Status as VerifyStatus;
 
 trait Verify
 {
@@ -45,7 +45,7 @@ trait Verify
         }
         catch (Exception\PaymentVerificationException $e)
         {
-            $this->updatePaymentVerified($payment, Constants\Verify::VERIFIED_FAILED);
+            $this->updatePaymentVerified($payment, VerifyStatus::FAILED);
 
             $this->trace->info(
                 TraceCode::PAYMENT_VERIFY_FAILED,
@@ -62,12 +62,12 @@ trait Verify
         }
         catch (\Exception $e)
         {
-            $this->updatePaymentVerified($payment, Constants\Verify::VERIFIED_ERROR);
+            $this->updatePaymentVerified($payment, VerifyStatus::ERROR);
 
             throw $e;
         }
 
-        $this->updatePaymentVerified($payment, Constants\Verify::VERIFIED_SUCCESS);
+        $this->updatePaymentVerified($payment, VerifyStatus::SUCCESS);
 
         $data['payment'] = $payment->toArrayAdmin();
 

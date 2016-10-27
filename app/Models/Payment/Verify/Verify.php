@@ -1,12 +1,11 @@
 <?php
 
-namespace RZP\Models\Payment;
+namespace RZP\Models\Payment\Verify;
 
 use App;
 use Config;
 
 use Carbon\Carbon;
-use RZP\Constants;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
 use RZP\Models\Base;
@@ -15,6 +14,59 @@ use RZP\Trace\TraceCode;
 
 class Verify extends Base\Core
 {
+     // ================== Configurations ==================
+    /**
+     * Verify will run for all the created payments every 2 minutes.
+     * All the created payments will be converted to failed in 10 minutes via timeout cron.
+     * Hence, at max, verify for the payment (when it is in created state) will be run 5 times.
+     */
+    protected static $createdStartBoundary = [
+        120,           // 2 Minutes
+    ];
+
+    /**
+     * For all the payments which are in failed state,
+     * verify for the payment will be run once for in every boundary bucket.
+     */
+    protected static $failureStartBoundary = [
+        15,            // 15 Minutes
+        60,            // 60 Minutes
+        1440,          // 1 Day
+        2880,          // 2 Day
+        4320,          // 3 Day
+        5760,          // 4 Day
+        7200,          // 5 Day
+        8640,          // 6 Day
+        10080,         // 7 Day
+        // TODO: Decide on the boundaries.
+    ];
+
+    /**
+     * This is used for naming the redis lock key.
+     * It's named as {payment_id}_verify.
+     * We do not use the payment_id directly because
+     * it's already being used in the core flows of refund and capture.
+     */
+    const KEY_SUFFIX = '_verify';
+
+    /**
+     * This is the minimum time for which the payment should be in
+     * created state, before we run a "created" verify on it.
+     */
+    const CREATED_MIN_TIME = 120;  // 2 Minutes
+
+    // TODO: This is present here to ensure backward compatibility and
+    // should be removed after the required changes in the cron are made.
+    const FAILURE_MIN_TIME = 120;  // 2 Minutes
+
+    /**
+     * This is the minimum time for which the payment should be in
+     * failed state, before we run a "failed/error" verify on it.
+     */
+    const ERRORED_MIN_TIME = 0; // 0 Minute
+
+    // ================== End Configurations ==================
+
     protected $trace;
     protected $mode;
     protected $core;
@@ -59,33 +111,35 @@ class Verify extends Base\Core
         switch($filter)
         {
             case 'all':
-            case Constants\Verify::PAYMENTS_FAILED:
+            case Filter::PAYMENTS_FAILED:
                 $paymentStatus = Payment\Status::FAILED;
-                $minimumTime = Carbon::now('Asia/Kolkata')->timestamp - Constants\Verify::FAILURE_MIN_TIME;
+                $minimumTime = Carbon::now('Asia/Kolkata')->timestamp - self::FAILURE_MIN_TIME;
                 break;
 
             case 'created':
-            case Constants\Verify::PAYMENTS_CREATED:
+            case Filter::PAYMENTS_CREATED:
                 $paymentStatus = Payment\Status::CREATED;
-                $minimumTime = Carbon::now('Asia/Kolkata')->timestamp - Constants\Verify::CREATED_MIN_TIME;
+                $minimumTime = Carbon::now('Asia/Kolkata')->timestamp - self::CREATED_MIN_TIME;
                 break;
 
             case 'failed':
-                $verifyStatus = Constants\Verify::VERIFIED_FAILED;
-                $minimumTime = Carbon::now('Asia/Kolkata')->timestamp - Constants\Verify::ERRORED_MIN_TIME;
+            case Filter::VERIFY_FAILED:
+                $verifyStatus = Status::FAILED;
+                $minimumTime = Carbon::now('Asia/Kolkata')->timestamp - self::ERRORED_MIN_TIME;
                 break;
 
             case 'error':
-            case Constants\Verify::VERIFY_ERROR:
-                $verifyStatus = Constants\Verify::VERIFIED_ERROR;
-                $minimumTime = Carbon::now('Asia/Kolkata')->timestamp - Constants\Verify::ERRORED_MIN_TIME;
+            case Filter::VERIFY_ERROR:
+                $verifyStatus = Status::ERROR;
+                $minimumTime = Carbon::now('Asia/Kolkata')->timestamp - self::ERRORED_MIN_TIME;
                 break;
 
             default:
+                sd($filter);
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_PARAMETERS, 'filter', $filter);
         }
 
-        $boundary = Constants\Verify::getBoundaryInSeconds($filter);
+        $boundary = $this->getBoundaryInSeconds($filter);
 
         $payments = $this->repo->payment->getPaymentsToVerify(
                                     $minimumTime, $boundary, $verifyStatus, $paymentStatus);
@@ -101,29 +155,37 @@ class Verify extends Base\Core
     public function verifyMultiplePayments(Base\PublicCollection $payments, $filter)
     {
         $result = [
-            Constants\Verify::AUTHORIZED    => 0,
-            Constants\Verify::SUCCESS       => 0,
-            Constants\Verify::TIMEOUT       => 0,
-            Constants\Verify::ERROR         => 0,
+            Result::AUTHORIZED    => 0,
+            Result::SUCCESS       => 0,
+            Result::TIMEOUT       => 0,
+            Result::ERROR         => 0,
             'verify_start_time'             => time(),
             'time_diff'                     => 0,
         ];
 
         $lockedPayments = $this->lockPaymentsForVerify($payments);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            [
+                'payment_ids' => $lockedPayments,
+                'started_at'  => $result['verify_start_time'],
+                'filter'      => $filter,
+            ]);
+
         foreach ($lockedPayments as $payment)
         {
-            $verifyStatus = $this->verifyPayment($payment, $filter);
+            $verifyResult = $this->verifyPayment($payment, $filter);
 
-            if ($verifyStatus === Constants\Verify::AUTHORIZED)
+            if ($verifyResult === Result::AUTHORIZED)
             {
                 $result['time_diff'] += (time() - $payment->getCreatedAt());
             }
 
-            $result[$verifyStatus] += 1;
-        }
+            $result[$verifyResult] += 1;
 
-        $this->releasePaymentsAfterVerify($lockedPayments);
+            $this->releasePaymentAfterVerify($payment);
+        }
 
         $processedResults = $this->processResult($result, $filter);
 
@@ -143,12 +205,12 @@ class Verify extends Base\Core
 
         $strict = false;
 
-        $paymentIds = $payments->pluck(Entity::ID);
+        $paymentIds = $payments->pluck(Payment\Entity::ID);
 
         $lockedPayments = $this->mutex->acquireMultiple(
-            $paymentIds, 3600, $strict, Constants\Verify::KEY_SUFFIX);
+            $paymentIds, 3600, $strict, self::KEY_SUFFIX);
 
-        $payments->whereIn(Entity::ID, $lockedPayments);
+        $payments->whereIn(Payment\Entity::ID, $lockedPayments);
 
         return $payments;
     }
@@ -157,11 +219,9 @@ class Verify extends Base\Core
      * @param array $lockedKeys array containing all keys which are locked
      * @return void
     */
-    protected function releasePaymentsAfterVerify($payments)
+    protected function releasePaymentAfterVerify($paymentId)
     {
-        $paymentIds = $payments->pluck(Entity::ID);
-
-        $this->mutex->releaseMultiple($paymentIds, Constants\Verify::KEY_SUFFIX);
+        $this->mutex->release($paymentId . self::KEY_SUFFIX);
     }
 
     /* Process the result for displaying in slack and returning to caller
@@ -175,17 +235,17 @@ class Verify extends Base\Core
 
         $totalTime = time() - $result['verify_start_time'];
 
-        if ($result[Constants\Verify::AUTHORIZED] !== 0)
+        if ($result[Result::AUTHORIZED] !== 0)
         {
-            $avgTimeDiff = (int) ($result['time_diff'] / $result[Constants\Verify::AUTHORIZED]);
+            $avgTimeDiff = (int) ($result['time_diff'] / $result[Result::AUTHORIZED]);
         }
 
         $processedResults = [
             'filter'            => $filter,
-            'verified'          => $result[Constants\Verify::SUCCESS],
-            'authorized/failed' => $result[Constants\Verify::AUTHORIZED],
-            'timed_out'         => $result[Constants\Verify::TIMEOUT],
-            'error'             => $result[Constants\Verify::ERROR],
+            'verified'          => $result[Result::SUCCESS],
+            'authorized/failed' => $result[Result::AUTHORIZED],
+            'timed_out'         => $result[Result::TIMEOUT],
+            'error'             => $result[Result::ERROR],
             'authorized_time'   => $avgTimeDiff,
             'total_time'        => $totalTime . ' secs'
         ];
@@ -207,8 +267,8 @@ class Verify extends Base\Core
         $total = array_sum($result);
 
         if (($total !== 0) and
-            (($result[Constants\Verify::SUCCESS] > 4) or
-             ($total !== $result[Constants\Verify::SUCCESS])))
+            (($result[Result::SUCCESS] > 4) or
+             ($total !== $result[Result::SUCCESS])))
         {
             // Drop all false values (NULL, 0, "")
             $slackArray = array_filter($processedResults);
@@ -227,7 +287,7 @@ class Verify extends Base\Core
 
     public function verifyPayment(Payment\Entity $payment, $filter)
     {
-        $status = Constants\Verify::SUCCESS;
+        $result = Result::SUCCESS;
 
         $merchant = $payment->merchant;
 
@@ -237,7 +297,7 @@ class Verify extends Base\Core
         // as we want to run cron on specific interval, till payment is marked as failed/authorized
         // If filter is null, then verify is initiated manually, not via cron
         // Don't update VERIFY_BUCKET, in that case
-        if (($payment->getStatus() !== Status::CREATED) and
+        if (($payment->getStatus() !== Payment\Status::CREATED) and
             ($cron === true))
         {
             $nextVerifyBucket = $this->getPaymentNextVerifyBucket($payment, $filter);
@@ -273,7 +333,7 @@ class Verify extends Base\Core
             }
 
             // Now Just continue
-            $status = Constants\Verify::AUTHORIZED;
+            $result = Result::AUTHORIZED;
         }
         catch (Exception\GatewayTimeoutException $e)
         {
@@ -282,7 +342,7 @@ class Verify extends Base\Core
                 ['payment_id' => $payment->getId()]);
 
             // Just continue
-            $status = Constants\Verify::TIMEOUT;
+            $result = Result::TIMEOUT;
         }
         catch (\Exception $e)
         {
@@ -293,10 +353,10 @@ class Verify extends Base\Core
             $this->trace->traceException($e);
 
             // Just continue
-            $status = Constants\Verify::ERROR;
+            $result = Result::ERROR;
         }
 
-        return $status;
+        return $result;
     }
 
     /**
@@ -338,13 +398,51 @@ class Verify extends Base\Core
         // Don't update VERIFY_BUCKET, in that case
 
         // Get Verify Boundary to update Verify Bucket
-        $boundaries = Constants\Verify::getBoundaryInSeconds($filter);
+        $boundaries = $this->getBoundaryInSeconds($filter);
 
         $diff = Carbon::now('Asia/Kolkata')->timestamp - $payment->getCreatedAt();
 
         $currentVerifyBucket = $this->getCurrentVerifyBucket($diff, $boundaries);
 
         return $nextVerifyBucket = $currentVerifyBucket + 1;
+    }
+
+    /**
+     * @param string $filter filter for which boundary has to be returned
+     * @return array verify boundary array
+     * @throws Exception\LogicException
+     */
+    public function getBoundaryInSeconds($filter)
+    {
+        switch($filter)
+        {
+            // TODO: remove 'created', 'failure', 'error' and 'all' filter
+            case 'created':
+            case Filter::PAYMENTS_CREATED:
+                $boundaries = self::$createdStartBoundary;
+                break;
+
+            case 'failure':
+            case 'error':
+            case Filter::VERIFY_ERROR:
+            case 'all':
+            case Filter::PAYMENTS_FAILED:
+
+                $boundaries = self::$failureStartBoundary;
+
+                // Converts Minutes to Seconds
+                $boundaries = array_map(function($boundary)
+                {
+                    return $boundary * 60;
+                }, $boundaries);
+
+                break;
+
+            default:
+                throw new Exception\LogicException('Unknown filter provided.', null, ['filter' => $filter]);
+        }
+
+        return $boundaries;
     }
 
     protected function processor($merchant = null)
