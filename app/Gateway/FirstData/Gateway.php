@@ -647,7 +647,8 @@ class Gateway extends Base\Gateway
             ConnectRequestFields::CURRENCY                  => $currencyCode,
             ConnectRequestFields::ORDER_ID                  => $input['payment'][Payment\Entity::ID],
             ConnectRequestFields::INVOICE_NUMBER            => $input['payment'][Payment\Entity::ID],
-            ConnectRequestFields::CARD_FUNCTION             => $input['card'][Card\Entity::TYPE],
+            // Card Entity type field is not reliable, and not mandatory
+            // ConnectRequestFields::CARD_FUNCTION             => $input['card'][Card\Entity::TYPE],
             ConnectRequestFields::COMMENTS                  => '',
             ConnectRequestFields::DYNAMIC_MERCHANT_NAME     => 'Razorpay Payments',
             ConnectRequestFields::LANGUAGE                  => Codes::ENGLISH_UK_LANG_CODE_CONNECT,
