@@ -89,7 +89,7 @@ trait Verify
         // If filter is null, then verify is initiated manually, not via cron
         // Don't update VERIFY_BUCKET, in that case
         if (($payment->getStatus() !== Status::CREATED) and
-            ($this->app['basicauth']->isCron() === true))
+            ($this->app['basicauth']->getAppName() === 'cron'))
         {
             // Get Verify Boundary to update Verify Bucket
             $boundaries = Constants\Verify::getBoundaryInSeconds($filter);
@@ -130,6 +130,10 @@ trait Verify
             if ($diff >= $boundary)
             {
                 $currentVerifyBucket = $verifyBucket;
+            }
+            else
+            {
+                break;
             }
         }
 

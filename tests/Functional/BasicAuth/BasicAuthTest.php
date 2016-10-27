@@ -18,11 +18,6 @@ class BasicAuthTest extends TestCase
         $this->ba->privateAuth();
     }
 
-    public function testCron()
-    {
-
-    }
-
     public function testNoAuth()
     {
         $this->ba->noAuth();

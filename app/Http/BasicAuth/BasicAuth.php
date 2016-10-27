@@ -706,6 +706,12 @@ class BasicAuth
         return $this->type;
     }
 
+    public function getAppName()
+    {
+        return $this->internalApp;
+    }
+
+
 // --------------------- Getters Ends ------------------------------------------
 
 // --------------------- Setters -----------------------------------------------
@@ -758,21 +764,6 @@ class BasicAuth
     public function isPrivilegeAuth()
     {
         return ($this->type === Type::PRIVILEGE_AUTH);
-    }
-
-    public function isCron()
-    {
-        $secret = $this->getSecret();
-
-        $cronApp = $this->internalAppConfigs['cron'];
-
-        if ((isset($cronApp['secret']) === true) and
-            ($cronApp['secret'] === $secret))
-        {
-            return true;
-        }
-
-        return false;
     }
 
     protected function setKeyFromQueryParams()

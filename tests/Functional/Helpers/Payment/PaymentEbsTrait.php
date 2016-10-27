@@ -32,50 +32,34 @@ trait PaymentEbsTrait
 
     public function getErrorInRefund()
     {
-        $server = $this->mockServer()
-            ->shouldReceive('content')
-            ->andReturnUsing(function (& $content)
-            {
-                $content = '<output errorCode="29" error="Insufficient balance"/>';
-            })->mock();
-
-        $this->setMockServer($server);
+        $this->mockServerContentFunction(function (& $content)
+        {
+            $content = '<output errorCode="29" error="Insufficient balance"/>';
+        });
     }
     public function getErrorInVerify()
     {
-        $server = $this->mockServer()
-            ->shouldReceive('content')
-            ->andReturnUsing(function (& $content)
-            {
-                $content = '<output errorCode="5"/>';
-            })->mock();
-
-        $this->setMockServer($server);
+        $this->mockServerContentFunction(function (& $content)
+        {
+            $content = '<output errorCode="5"/>';
+        });
     }
 
     public function getTimeoutInVerify()
     {
-        $server = $this->mockServer()
-            ->shouldReceive('content')
-            ->andReturnUsing(function (& $content)
-            {
-                throw new GatewayTimeoutException(
-                    'cURL error 28: Operation timed out after ' .
-                    '10001 milliseconds with 0 bytes received');
-            })->mock();
-
-        $this->setMockServer($server);
+        $this->mockServerContentFunction(function (& $content)
+        {
+            throw new GatewayTimeoutException(
+                'cURL error 28: Operation timed out after ' .
+                '10001 milliseconds with 0 bytes received');
+        });
     }
 
     public function getErrorInCallback()
     {
-        $server = $this->mockServer()
-            ->shouldReceive('content')
-            ->andReturnUsing(function (& $content)
-            {
-                $content[Response::RESPONSE_CODE] = '1';
-            })->mock();
-
-        $this->setMockServer($server);
+        $this->mockServerContentFunction(function (& $content)
+        {
+            $content[Response::RESPONSE_CODE] = '1';
+        });
     }
 }
