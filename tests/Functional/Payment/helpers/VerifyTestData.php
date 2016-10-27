@@ -20,4 +20,19 @@ return [
             'internal_error_code'   => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_ACTION,
         ],
     ],
+    'testInvalidFilter' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_INVALID_PARAMETERS,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_INVALID_PARAMETERS,
+        ],
+    ],
 ];

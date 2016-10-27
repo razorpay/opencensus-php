@@ -491,6 +491,31 @@ class VerifyTest extends TestCase
         $this->assertContent($content, $resultData);
     }
 
+    public function testInvalidFilter()
+    {
+        $data = $this->testData['testInvalidFilter'];
+
+        $createdAt = time() - 60 * 60;
+
+        $payment = $this->fixtures->create(
+            'payment:netbanking_failed', ['created_at' => $createdAt]);
+
+        $request = array(
+            'url' => '/payments/verify/invalid',
+            'method' => 'get'
+        );
+
+        $this->ba->cronAuth();
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($request)
+            {
+                $content = $this->makeRequestAndGetContent($request);
+            }
+        );
+    }
+
     public function testVerifyAllPayments()
     {
         $createdAt = time() - 60 * 60;
