@@ -684,10 +684,8 @@ class Processor
 
     protected function retrieve($id)
     {
-        Payment\Entity::verifyIdAndStripSign($id);
-
-        $this->payment = $this->repo->payment->findByIdAndMerchantId(
-                                                $id, $this->merchant->getId());
+        $this->payment = $this->repo->payment->findByPublicIdAndMerchant(
+                                                $id, $this->merchant);
 
         return $this->payment;
     }

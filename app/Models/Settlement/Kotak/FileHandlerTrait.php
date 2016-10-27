@@ -222,11 +222,11 @@ trait FileHandlerTrait
 
         $alpha_flip = array_flip($alphabet);
 
-        if($data <= 25)
+        if ($data <= 25)
         {
           return $alphabet[$data];
         }
-        else if($data > 25)
+        else if ($data > 25)
         {
           $dividend = ($data + 1);
 
