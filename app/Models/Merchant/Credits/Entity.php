@@ -38,6 +38,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::CAMPAIGN,
         self::VALUE,
+        self::TYPE,
         self::CREATED_AT
     );
 
@@ -90,6 +91,34 @@ class Entity extends Base\PublicEntity
     public function getType()
     {
         return $this->getAttribute(self::TYPE);
+    }
+
+    public function getMerchantId()
+    {
+        return $this->getAttribute(self::MERCHANT_ID);
+    }
+
+    public function getMerchantCredits()
+    {
+        if ($this->getMerchantId() === null)
+        {
+            return null;
+        }
+
+        $balance = $this->merchant->balance;
+
+        switch ($this->getType())
+        {
+            case Type::AMOUNT:
+                return $balance->getAmountCredits();
+
+            case Type::FEE:
+                return $balance->getFeeCredits();
+
+            default:
+                return $balance->getAmountCredits();
+        }
+
     }
 
 // --------------------- End Getters -----------------------------------------

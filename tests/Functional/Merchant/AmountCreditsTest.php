@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Merchant;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Account;
 
 class AmountCreditsTest extends TestCase
 {
@@ -75,6 +76,25 @@ class AmountCreditsTest extends TestCase
         $this->assertEquals($balance['credits'], 100);
     }
 
+    public function testNegativeAmountCredits()
+    {
+        $this->fixtures->merchant->editCredits('1000000', Account::TEST_ACCOUNT);
+        $this->fixtures->merchant->editCreditsforNodalAccount('1000000');
+
+        $this->startTest();
+
+        $balance = $this->getEntityById('balance', Account::TEST_ACCOUNT, true);
+
+        $merchantCredits = $balance['credits'];
+
+        $this->assertEquals($merchantCredits, 999850);
+
+        $credits = $this->getLastEntity('credits', true);
+
+        $this->assertEquals($credits['value'], -150);
+    }
+
+
     public function testFailNegativeUpdateCredits()
     {
         // ID 123 is given in the data so it should match
@@ -93,7 +113,7 @@ class AmountCreditsTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreditsGrantedInCampaign()
+    public function testAmountCreditsGrantedInCampaign()
     {
         $this->fixtures->create(
             'credits',

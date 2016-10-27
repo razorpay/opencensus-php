@@ -1323,7 +1323,7 @@ class Gateway extends Base\Gateway
 
         $reasonCode = $response['reasonCode'];
 
-        $desc = ResponseCode::$reasonCodes[$reasonCode];
+        $desc = ResponseCode::getDescription($reasonCode);
 
         if (ResponseCode::isValidationError($reasonCode))
         {

@@ -53,6 +53,7 @@ class Repository extends Base\Repository
         ENTITY::TOKEN_ID           => 'sometimes|alpha_num|size:14',
         ENTITY::GLOBAL_TOKEN_ID    => 'sometimes|alpha_num|size:14',
         Entity::SAVE               => 'sometimes|in:0,1',
+        Entity::LATE_AUTHORIZED    => 'sometimes|in:0,1',
     );
 
     protected $esWhitelistedParams = [

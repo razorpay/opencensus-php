@@ -718,7 +718,9 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                 return false;
             }
 
-            $this->paymentTransaction = $this->payment->reload()->transaction;
+            // Refresh both payment and transaction to get latest changes.
+            // Reload txn because relation are cached.
+            $this->paymentTransaction = $this->payment->reload()->transaction->reload();
         }
 
         $currentGatewayFee = $this->paymentTransaction->getGatewayFee();
@@ -819,6 +821,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         $txn = (new Transaction\Core)->createFromPaymentAuthorized($this->payment);
 
         $this->repo->saveOrFail($txn);
+        // This is required to save the association of the transaction with the payment.
+        $this->repo->saveOrFail($this->payment);
     }
 
     protected function recordGatewayFee($reconGatewayFee, $currentGatewayFee)

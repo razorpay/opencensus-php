@@ -396,6 +396,8 @@ trait Authorize
 
         $gatewayInput['callbackUrl'] = $this->getCallbackUrl();
 
+        $gatewayInput['otpSubmitUrl'] = $this->getOtpSubmitUrl();
+
         if ($payment->order)
         {
             $gatewayInput['order'] = $payment->order->toArray();
@@ -1124,9 +1126,9 @@ trait Authorize
             'razorpay_payment_id' => $payment->getPublicId()
         ];
 
-        if ($payment->getAutoCaptured() === true)
+        if ($payment->getApiOrderId() !== null)
         {
-            $this->fillReturnDataForAutoCaptureOrders($payment, $returnData);
+            $this->fillReturnDataWithOrder($payment, $returnData);
         }
 
         if ($payment->getCallbackUrl())
@@ -1137,7 +1139,7 @@ trait Authorize
         return $returnData;
     }
 
-    protected function fillReturnDataForAutoCaptureOrders(Payment\Entity $payment, & $data)
+    protected function fillReturnDataWithOrder(Payment\Entity $payment, & $data)
     {
         $data['razorpay_order_id'] = $payment->order->getPublicId();
 
@@ -1252,7 +1254,7 @@ trait Authorize
         }
         catch(\Exception $e)
         {
-            $this->trace->warning(
+            $this->trace->error(
                 TraceCode::TERMINAL_ANALYTICS_SAVE_FAILED,
                 ['terminalData' => $terminalData]
             );
@@ -1331,17 +1333,28 @@ trait Authorize
 
             $data['otp_resend'] = $otpResend;
 
-            $this->callGatewayFunction('otpGenerate', $data);
+            $request = $this->callGatewayFunction('otpGenerate', $data);
 
+            return $this->processOtpFlowResponse($request, $payment);
+        }
+        catch (Exception\BaseException $e)
+        {
+            $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
+
+            throw $e;
+        }
+    }
+
+    protected function processOtpFlowResponse($request, $payment): array
+    {
+        if ($request !== null)
+        {
             $payment->incrementOtpCount();
             $payment->save();
 
-            return array(
+            return [
                 'type' => 'otp',
-                'request' => [
-                    'url' => $this->getOtpSubmitUrl(),
-                    'method' => 'post',
-                ],
+                'request' => $request,
                 'version' => 1,
                 'payment_id' => $payment->getPublicId(),
                 'gateway' => $this->getEncryptedGatewayText($payment->getGateway()),
@@ -1349,13 +1362,7 @@ trait Authorize
                 'contact' => $payment->getContact(),
                 'amount'  => number_format(($payment->getAmount()/100), 2),
                 'wallet'  => $payment->getWallet()
-            );
-        }
-        catch (Exception\BaseException $e)
-        {
-            $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
-
-            throw $e;
+            ];
         }
     }
 

@@ -151,6 +151,10 @@ final class Route
         'pricing_add_plan_rule'                   => ['post',     'pricing/{id}/rule',                              'PricingController@postAddPricingPlanRule'                          ],
         'pricing_delete_plan_rule'                => ['delete',   'pricing/{planId}/rule/{ruleId}',                 'PricingController@deletePricingPlanRule'                           ],
         'pricing_delete_plan_rule_force'          => ['delete',   'pricing/{planId}/rule/{ruleId}/force',           'PricingController@deletePricingPlanRuleForce'                      ],
+        'schedule_create'                         => ['post',     'schedules',                                      'ScheduleController@postSchedule'                                   ],
+        'schedule_get'                            => ['get',      'schedules/{id}',                                 'ScheduleController@getSchedule'                                    ],
+        'schedule_update'                         => ['put',      'schedules/{id}',                                 'ScheduleController@putSchedule'                                    ],
+        'schedule_assign'                         => ['post',     'merchants/{id}/schedules',                       'MerchantController@assignSettlementSchedule'                      ],
         'transaction_fetch_by_id'                 => ['get',      'transactions/{id}',                              'TransactionController@getTransaction'                              ],
         'transaction_fetch_multiple'              => ['get',      'transactions',                                   'TransactionController@getTransactions'                             ],
         'transaction_monthly_report'              => ['get',      'transactions/report',                            'TransactionController@getMonthlyReport'                            ],
@@ -161,6 +165,7 @@ final class Route
         'setl_fixer'                              => ['get',      'settlements/fixer',                              'SettlementController@getSettlementFixer'                           ],
         'setl_delete_file'                        => ['delete',   'settlements/file/{setlFileType}',                'SettlementController@deleteSettlementFile'                         ],
         'setl_initiate'                           => ['post',     'settlements/initiate/{channel?}',                'SettlementController@postSettlementInitiate'                       ],
+        'setl_initiate_schedule'                  => ['post',     'settlements/initiate2/{channel?}',               'SettlementController@postSettlementInitiateV2'                     ],
         'setl_file_generate'                      => ['post',     'settlements/file/generate',                      'SettlementController@postSettlementFileGenerate'                   ],
         'setl_reconcile_generate'                 => ['post',     'settlements/reconcile/generate',                 'SettlementController@postSettlementReconcileGenerate'              ],
         'setl_reconcile'                          => ['post',     'settlements/reconcile',                          'SettlementController@postSettlementReconcile'                      ],
@@ -406,6 +411,7 @@ final class Route
         'pricing_delete_plan_rule',
         'pricing_delete_plan_rule_force',
         'setl_initiate',
+        'setl_initiate_schedule',
         'setl_file_generate',
         'setl_reconcile',
         'setl_reconcile_h2h',
@@ -472,6 +478,10 @@ final class Route
         'order_refund_multiple_authorized',
         'scorecard',
         'billdesk_reconcile_cancelled',
+        'schedule_create',
+        'schedule_get',
+        'schedule_update',
+        'schedule_assign',
     );
 
     public static $proxy = array(
@@ -513,7 +523,7 @@ final class Route
         'batch_fetch_multiple',
         'batch_fetch_by_id',
         'batch_retry',
-        'batch_download_file'
+        'batch_download_file',
     );
 
     public static $direct = array(
@@ -543,6 +553,7 @@ final class Route
 
         'cron' => array(
             'setl_initiate',
+            'setl_initiate_schedule',
             'setl_reconcile_generate',
             'setl_return_generate',
             'payment_auth_notify',
