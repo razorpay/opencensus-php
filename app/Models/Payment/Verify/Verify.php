@@ -160,6 +160,8 @@ class Verify extends Base\Core
             Result::ERROR         => 0,
         ];
 
+        $notApplicable = 0;
+
         $lockedPayments = $this->lockPaymentsForVerify($payments, $filter);
 
         $totalAuthTimeDiff = 0;
@@ -179,6 +181,10 @@ class Verify extends Base\Core
             {
                 $resultSet[$verifyResult] += 1;
             }
+            else
+            {
+                $notApplicable += 1;
+            }
 
             $this->releasePaymentAfterVerify($payment);
         }
@@ -193,6 +199,8 @@ class Verify extends Base\Core
 
         $summary = $this->processResult($resultSet, $times, $filter);
 
+        $this->addDataToVerifySummary($summary, $lockedPayments, $notApplicable);
+
         $this->trace->info(
             TraceCode::VERIFY_PROCESSED_SUMMARY,
             $summary
@@ -201,6 +209,16 @@ class Verify extends Base\Core
         $this->notifyInSlack($resultSet, $summary);
 
         return $summary;
+    }
+
+    protected function addDataToVerifySummary(array & $summary, $payments, $notApplicable)
+    {
+        if ($notApplicable !== 0)
+        {
+            $summary['not_applicable'] = $notApplicable;
+        }
+
+        $summary['total_payments'] = $payments->count();
     }
 
     /** Lock All Payments
