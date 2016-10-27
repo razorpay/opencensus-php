@@ -488,29 +488,13 @@ class Settler
 
     protected function getOrCreateDailySettlementForToday(array $input, $channel)
     {
-        $force = $this->isInputValue($input, 'force', '1');
-
         $overwrite = $this->isInputValue($input, 'overwrite', '1');
 
-        $dailySettlement = $this->repo->daily_settlement->getSettlementForToday('kotak');
-
-        if ($dailySettlement !== null)
+        if ($overwrite === true)
         {
-            if ($force === false)
-            {
-                $data['message'] = 'Settlement already done for today!';
-
-                $dailySettlement = null;
-
-                return $data;
-            }
-            else
-            {
-                $this->dailySettlement = $dailySettlement;
-            }
+            $this->dailySettlement = $this->repo->daily_settlement->getSettlementForToday('kotak');
         }
-
-        if ($overwrite === false)
+        else
         {
             $this->dailySettlement = Settlement\Daily\Entity::newForToday();
         }
