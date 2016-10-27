@@ -465,6 +465,11 @@ class Entity extends Base\PublicEntity
         return ($this->getType() === Type::REFUND);
     }
 
+    public function isTypeSettlement()
+    {
+        return ($this->getType() === Type::SETTLEMENT);
+    }
+
     public function isGratis()
     {
         return $this->getAttribute(self::GRATIS);
@@ -484,6 +489,7 @@ class Entity extends Base\PublicEntity
         $reportTxn['description'] = null;
         $reportTxn['notes'] = null;
         $reportTxn['payment_id'] = null;
+        $reportTxn['settlement_utr'] = null;
 
         // settled_at will by default have date and time (d/m/y h:m:s) in it
         // while we only want to provide date.
@@ -514,6 +520,12 @@ class Entity extends Base\PublicEntity
             }
 
             $reportTxn['payment_id'] = $payment->getPublicId();
+        }
+        else if ($this->isTypeSettlement())
+        {
+            $settlement = $this->settlement;
+
+            $reportTxn['settlement_utr'] = $settlement->getUtr();
         }
 
         return $reportTxn;
