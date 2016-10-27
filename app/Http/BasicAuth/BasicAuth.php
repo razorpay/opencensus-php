@@ -706,6 +706,13 @@ class BasicAuth
         return $this->type;
     }
 
+    public function isCron()
+    {
+        $cron = ($this->internalApp === 'cron');
+
+        return $cron;
+    }
+
 // --------------------- Getters Ends ------------------------------------------
 
 // --------------------- Setters -----------------------------------------------

@@ -58,34 +58,4 @@ class SupportTest extends TestCase
 
         $this->refundPayment($id);
     }
-
-    public function testVerifyAllPayments()
-    {
-        $createdAt = time() - 60 * 60;
-
-        $payment = $this->fixtures->create(
-            'payment:netbanking_failed', ['created_at' => $createdAt]);
-
-        $request = array(
-            'url' => '/payments/verify/all',
-            'method' => 'get'
-        );
-
-        $this->ba->appAuth();
-
-        $content = $this->makeRequestAndGetContent($request);
-
-        $this->assertEquals(
-            [
-                'filter'        => 'all',
-                'verified'      => 1,
-                'failed'        => 0,
-                'authorized'    => 0,
-                'timed out'     => 0,
-                'error'         => 0,
-                'authorizedTime'=> 0,
-                'totalTime'     => '0 secs',
-            ],
-            $content);
-    }
 }

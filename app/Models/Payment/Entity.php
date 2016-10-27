@@ -60,6 +60,8 @@ class Entity extends Base\PublicEntity
     const TERMINAL_ID           = 'terminal_id';
     const SIGNED                = 'signed';
     const VERIFIED              = 'verified';
+    // This is the bucket for the next verify and not the current verify.
+    const VERIFY_BUCKET         = 'verify_bucket';
     const CALLBACK_URL          = 'callback_url';
     const SERVICE_TAX           = 'service_tax';
     const OTP_ATTEMPTS          = 'otp_attempts';
@@ -142,6 +144,7 @@ class Entity extends Base\PublicEntity
         self::INTERNATIONAL,
         self::SIGNED,
         self::VERIFIED,
+        self::VERIFY_BUCKET,
         self::CALLBACK_URL,
         self::RECURRING,
         self::SAVE,
@@ -220,6 +223,7 @@ class Entity extends Base\PublicEntity
         self::LATE_AUTHORIZED   => null,
         self::RECURRING         => false,
         self::INTERNATIONAL     => null,
+        self::VERIFY_BUCKET     => null,
     );
 
     protected $amounts = array(
@@ -424,6 +428,11 @@ class Entity extends Base\PublicEntity
     public function setAutoCaptured($autoCaptured)
     {
         $this->setAttribute(self::AUTO_CAPTURED, $autoCaptured);
+    }
+
+    public function setVerifyBucket($verifyBucket = 0)
+    {
+        $this->setAttribute(self::VERIFY_BUCKET, $verifyBucket);
     }
 
     public function setVerified($verified)
