@@ -431,6 +431,8 @@ class Settler
     {
         $ts = $this->initSettlementTimestamp();
 
+        $ts = time();
+
         if (($this->mode === Mode::TEST) and
             (empty($input['testSettleTimeStamp']) === false))
         {

@@ -62,6 +62,8 @@ class Repository extends Base\Repository
         $txns = $this->newQuery()
                      ->whereIn(Entity::MERCHANT_ID, $merchants->getIds())
                      ->where(Entity::SETTLED_AT, '<', $timestamp)
+                     ->where(Entity::SETTLED, '=', 0)
+                     ->where(Entity::TYPE, '!=', Type::SETTLEMENT)
                      ->with('merchant')
                      ->orderBy(Entity::MERCHANT_ID)
                      ->orderBy(Entity::ID)
@@ -263,7 +265,10 @@ class Repository extends Base\Repository
         $transactionEntityId = Entity::getAttributeWithTableName(Entity::ENTITY_ID);
         $transactionReconciledAt = Entity::getAttributeWithTableName(Entity::RECONCILED_AT);
 
+        $transactionData = Entity::getAttributeWithTableName('*');
+
         return $this->newQuery()
+                    ->select($transactionData)
                     ->join(Table::PAYMENT, $paymentId, '=', $transactionEntityId)
                     ->join(Table::BILLDESK, $billdeskPaymentId, '=', $paymentId)
                     ->where($billdeskRefStatus, '=', Billdesk\RefundStatus::CANCELLED)
