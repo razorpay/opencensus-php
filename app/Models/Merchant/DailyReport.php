@@ -105,11 +105,11 @@ class DailyReport extends Base\Core
                 $zeroArray = array_fill_keys(['sum', 'count'], 0);
 
                 $data = [
-                    'authorized' => isset($authMerchants[$merchantId])    ? $authMerchants[$merchantId]    : $zeroArray,
-                    'authorized' => isset($authMerchants[$merchantId])    ? $authMerchants[$merchantId]    : $zeroArray,
-                    'captured'   => isset($captureMerchants[$merchantId]) ? $captureMerchants[$merchantId] : $zeroArray,
-                    'refunds'    => isset($refundMerchants[$merchantId])  ? $refundMerchants[$merchantId]  : $zeroArray,
-                    'settlements'=> isset($setlMerchants[$merchantId])    ? $setlMerchants[$merchantId]    : $zeroArray,
+                    'authorized' => $authMerchants[$merchantId]    ?? $zeroArray,
+                    'authorized' => $authMerchants[$merchantId]    ?? $zeroArray,
+                    'captured'   => $captureMerchants[$merchantId] ?? $zeroArray,
+                    'refunds'    => $refundMerchants[$merchantId]  ?? $zeroArray,
+                    'settlements'=> $setlMerchants[$merchantId]    ?? $zeroArray,
                 ];
 
                 $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
