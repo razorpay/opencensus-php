@@ -18,13 +18,12 @@ trait Verify
      * Run Verify on a given Payment
      *
      * @param Payment\Entity $payment Payment for which verify should be ran
-     * @param string         $filter  Filter used for running the verify
      *
      * @return array having refund and payment data
      * @throws Exception\PaymentVerificationException
      * @throws \Exception
      */
-    public function verify(Payment\Entity $payment, $filter = null)
+    public function verify(Payment\Entity $payment)
     {
         $this->setPayment($payment);
 
@@ -46,7 +45,7 @@ trait Verify
         }
         catch (Exception\PaymentVerificationException $e)
         {
-            $this->updatePaymentVerified($payment, Constants\Verify::VERIFIED_FAILED, $filter);
+            $this->updatePaymentVerified($payment, Constants\Verify::VERIFIED_FAILED);
 
             $this->trace->info(
                 TraceCode::PAYMENT_VERIFY_FAILED,
@@ -63,12 +62,12 @@ trait Verify
         }
         catch (\Exception $e)
         {
-            $this->updatePaymentVerified($payment, Constants\Verify::VERIFIED_ERROR, $filter);
+            $this->updatePaymentVerified($payment, Constants\Verify::VERIFIED_ERROR);
 
             throw $e;
         }
 
-        $this->updatePaymentVerified($payment, Constants\Verify::VERIFIED_SUCCESS, $filter);
+        $this->updatePaymentVerified($payment, Constants\Verify::VERIFIED_SUCCESS);
 
         $data['payment'] = $payment->toArrayAdmin();
 
@@ -80,65 +79,13 @@ trait Verify
      *
      * @param Payment\Entity $payment       payment for which attributes should be updated
      * @param string         $verifyStatus  status of verify
-     * @param string         $filter        filter used for running the verify
      * @return void
      */
-    protected function updatePaymentVerified(Payment\Entity $payment, $verifyStatus, $filter)
+    protected function updatePaymentVerified(Payment\Entity $payment, $verifyStatus)
     {
-        // For Payment in created state, verify bucket should not be updated
-        // as we want to run cron on specific interval, till payment is marked as failed/authorized
-        // If filter is null, then verify is initiated manually, not via cron
-        // Don't update VERIFY_BUCKET, in that case
-        if (($payment->getStatus() !== Status::CREATED) and
-            ($this->app['basicauth']->getAppName() === 'cron'))
-        {
-            // Get Verify Boundary to update Verify Bucket
-            $boundaries = Constants\Verify::getBoundaryInSeconds($filter);
-
-            $diff = Carbon::now('Asia/Kolkata')->timestamp - $payment->getCreatedAt();
-
-            $currentVerifyBucket = $this->getCurrentVerifyBucket($diff, $boundaries);
-
-            $nextVerifyBucket = $currentVerifyBucket + 1;
-
-            // We need to set the next verify bucket for the cron to pick up.
-            $payment->setVerifyBucket($nextVerifyBucket);
-        }
-
         $payment->setVerified($verifyStatus);
 
         $this->repo->saveOrFail($payment);
-    }
-
-    /**
-     * Gets the verify bucket in which the current
-     * diff (current_time - payment_created_at) falls in.
-     * For example: If greater than 15 minutes, the verify_bucket
-     * will be 1. If greater than 1 hour, the verify_bucket will be 2.
-     *
-     * @param $diff
-     * @param $boundaries
-     * @return int
-     */
-    protected function getCurrentVerifyBucket($diff, $boundaries)
-    {
-        $currentVerifyBucket = $verifyBucket = 0;
-
-        foreach ($boundaries as $boundary)
-        {
-            $verifyBucket += 1;
-
-            if ($diff >= $boundary)
-            {
-                $currentVerifyBucket = $verifyBucket;
-            }
-            else
-            {
-                break;
-            }
-        }
-
-        return $currentVerifyBucket;
     }
 
     protected function notifyInSlack(array $data)

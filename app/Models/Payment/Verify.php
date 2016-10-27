@@ -231,6 +231,20 @@ class Verify extends Base\Core
 
         $merchant = $payment->merchant;
 
+        $cron = ($this->app['basicauth']->getAppName() === 'cron');
+
+        // For Payment in created state, verify bucket should not be updated
+        // as we want to run cron on specific interval, till payment is marked as failed/authorized
+        // If filter is null, then verify is initiated manually, not via cron
+        // Don't update VERIFY_BUCKET, in that case
+        if (($payment->getStatus() !== Status::CREATED) and
+            ($cron === true))
+        {
+            $nextVerifyBucket = $this->getPaymentNextVerifyBucket($payment, $filter);
+
+            $payment->setVerifyBucket($nextVerifyBucket);
+        }
+
         //
         // Exception is thrown when the there's a mismatch
         // between payment status and status returned by gateway.
@@ -239,7 +253,7 @@ class Verify extends Base\Core
         //
         try
         {
-            $res = $this->processor($merchant)->verify($payment, $filter);
+            $res = $this->processor($merchant)->verify($payment);
         }
         catch (Exception\PaymentVerificationException $e)
         {
@@ -283,6 +297,54 @@ class Verify extends Base\Core
         }
 
         return $status;
+    }
+
+    /**
+     * Gets the verify bucket in which the current
+     * diff (current_time - payment_created_at) falls in.
+     * For example: If greater than 15 minutes, the verify_bucket
+     * will be 1. If greater than 1 hour, the verify_bucket will be 2.
+     *
+     * @param $diff
+     * @param $boundaries
+     * @return int
+     */
+    protected function getCurrentVerifyBucket($diff, $boundaries)
+    {
+        $currentVerifyBucket = $verifyBucket = 0;
+
+        foreach ($boundaries as $boundary)
+        {
+            $verifyBucket += 1;
+
+            if ($diff >= $boundary)
+            {
+                $currentVerifyBucket = $verifyBucket;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        return $currentVerifyBucket;
+    }
+
+    protected function getPaymentNextVerifyBucket($payment, $filter)
+    {
+        // For Payment in created state, verify bucket should not be updated
+        // as we want to run cron on specific interval, till payment is marked as failed/authorized
+        // If filter is null, then verify is initiated manually, not via cron
+        // Don't update VERIFY_BUCKET, in that case
+
+        // Get Verify Boundary to update Verify Bucket
+        $boundaries = Constants\Verify::getBoundaryInSeconds($filter);
+
+        $diff = Carbon::now('Asia/Kolkata')->timestamp - $payment->getCreatedAt();
+
+        $currentVerifyBucket = $this->getCurrentVerifyBucket($diff, $boundaries);
+
+        return $nextVerifyBucket = $currentVerifyBucket + 1;
     }
 
     protected function processor($merchant = null)
