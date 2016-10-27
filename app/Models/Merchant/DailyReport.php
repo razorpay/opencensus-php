@@ -88,7 +88,8 @@ class DailyReport extends Base\Core
                     'captured'      => $data['captured']['count'],
                     'authorized'    => $data['authorized']['count'],
                     'refunds'       => $data['refunds']['count'],
-                    'settlement'    => $data['settlement']['amount'],
+                    'settlement'    => $data['settlements']['sum'],
+                    'setl_count'    => $data['settlements']['count'],
                     )
         );
 
@@ -138,7 +139,7 @@ class DailyReport extends Base\Core
         return (($data['captured']['count'] === 0) and
                 ($data['authorized']['count'] === 0) and
                 ($data['refunds']['count'] === 0) and
-                ($data['settlement'] === null));
+                ($data['settlements']['count'] === 0));
     }
 
     protected function increaseAllowedSystemLimits()

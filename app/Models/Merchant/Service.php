@@ -606,15 +606,15 @@ class Service extends Base\Service
         RuntimeManager::setMemoryLimit('1024M');
         RuntimeManager::setTimeLimit(300);
 
-        // Trace to indicate start of mailing
-        $this->trace->info(
-            TraceCode::SETTLEMENT_DAILY_REPORT_MAILING,
-            array()
-        );
-
         $from = Carbon::yesterday("Asia/Kolkata")->timestamp;
 
         $to = Carbon::today("Asia/Kolkata")->timestamp;
+
+        // Trace to indicate start of mailing
+        $this->trace->info(
+            TraceCode::SETTLEMENT_DAILY_REPORT_MAILING,
+            [$from, $to]
+        );
 
         $authMerchants = $this->repo->payment
                                 ->fetchAuthorizedSummary()
@@ -629,7 +629,7 @@ class Service extends Base\Service
                                 ->getStringAttributesByKey('merchant_id');
 
         $setlMerchants = $this->repo->settlement
-                                ->fetchSettlementsBetweenTimestamp($from, $to)
+                                ->fetchSettlementSummaryBetweenTimestamp($from, $to)
                                 ->getStringAttributesByKey('merchant_id');
 
         if (isset($input[Entity::ID]) === true)
@@ -665,7 +665,7 @@ class Service extends Base\Service
                     'authorized' => isset($authMerchants[$merchantId])    ? $authMerchants[$merchantId]    : $zeroArray,
                     'captured'   => isset($captureMerchants[$merchantId]) ? $captureMerchants[$merchantId] : $zeroArray,
                     'refunds'    => isset($refundMerchants[$merchantId])  ? $refundMerchants[$merchantId]  : $zeroArray,
-                    'settlement' => isset($setlMerchants[$merchantId])    ? $setlMerchants[$merchantId]    : null,
+                    'settlements'=> isset($setlMerchants[$merchantId])    ? $setlMerchants[$merchantId]    : $zeroArray,
                 ];
 
                 $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
