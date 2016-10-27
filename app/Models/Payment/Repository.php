@@ -175,6 +175,7 @@ class Repository extends Base\Repository
 
     /**
      * Return Payments object(s) which should be verified
+     * 
      * @param string $minimumTime filter to remove Payments which are created before $ts seconds
      * @param string $verifyBoundary array of [VERIFY_BUCKET and timestamp] values
      * @param string $verifyStatus value for filter of VerifyStatus
@@ -269,10 +270,10 @@ class Repository extends Base\Repository
         foreach ($verifyBoundaries as $bucket => $time)
         {
             // This gets all the payments in the last `boundary (15, 60, etc)` time.
-            $paymentCreatedAfter = $currentTime - $time;
-
-            // $boundary have time in seconds, signifying payment should be X second old
+            // $boundary has time in seconds, signifying payment should be X second old
             // For querying on db, need to change that to absolute value
+            $paymentCreatedAfter = $currentTime - $time;
+            
             $whereConditions[] = [
                 [Payment\Entity::VERIFY_BUCKET, '=', ($bucket + 1)],
                 [Payment\Entity::CREATED_AT, '<', $paymentCreatedAfter]

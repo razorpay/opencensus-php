@@ -153,7 +153,7 @@ class Verify extends Base\Core
     */
     protected function verifyMultiplePayments(Base\PublicCollection $payments, $filter)
     {
-        $result = [
+        $resultSet = [
             Result::AUTHORIZED    => 0,
             Result::SUCCESS       => 0,
             Result::TIMEOUT       => 0,
@@ -169,7 +169,7 @@ class Verify extends Base\Core
                 'filter'      => $filter,
             ]);
 
-        $timeDiff = 0;
+        $totalAuthTimeDiff = 0;
 
         $verifyStart = time();
 
@@ -179,10 +179,10 @@ class Verify extends Base\Core
 
             if ($verifyResult === Result::AUTHORIZED)
             {
-                $timeDiff += (time() - $payment->getCreatedAt());
+                $totalAuthTimeDiff += (time() - $payment->getCreatedAt());
             }
 
-            $result[$verifyResult] += 1;
+            $resultSet[$verifyResult] += 1;
 
             $this->releasePaymentAfterVerify($payment);
         }
@@ -192,19 +192,19 @@ class Verify extends Base\Core
         $times = [
             'start'             => $verifyStart,
             'end'               => $verifyEnd,
-            'authorize_time'    => $timeDiff
+            'authorize_time'    => $totalAuthTimeDiff
         ];
 
-        $processedResults = $this->processResult($result, $times, $filter);
+        $summary = $this->processResult($resultSet, $times, $filter);
 
         $this->trace->info(
-            TraceCode::VERIFY_PROCESSED_PAYMENTS,
-            $processedResults
+            TraceCode::VERIFY_PROCESSED_SUMMARY,
+            $summary
         );
 
-        $this->notifyInSlack($result, $processedResults);
+        $this->notifyInSlack($resultSet, $summary);
 
-        return $processedResults;
+        return $summary;
     }
 
     /** Lock All Payments
@@ -260,20 +260,20 @@ class Verify extends Base\Core
 
     /** Notify Processed Data in slack
      *
-     * @param array $result           raw result array
-     * @param array $processedResults processed result array
+     * @param array $resultSet        raw result array
+     * @param array $summary processed result array
      * @return void
      */
-    protected function notifyInSlack(array $result, array $processedResults)
+    protected function notifyInSlack(array $resultSet, array $summary)
     {
-        $total = array_sum($result);
+        $total = array_sum($resultSet);
 
         if (($total !== 0) and
-            (($result[Result::SUCCESS] > 4) or
-             ($total !== $result[Result::SUCCESS])))
+            (($resultSet[Result::SUCCESS] > 4) or
+             ($total !== $resultSet[Result::SUCCESS])))
         {
             // Drop all false values (NULL, 0, "")
-            $slackArray = array_filter($processedResults);
+            $slackArray = array_filter($summary);
 
             $message = 'Payment verify result';
 
@@ -357,6 +357,13 @@ class Verify extends Base\Core
             // Just continue
             $result = Result::ERROR;
         }
+
+        $this->trace->info(
+            TraceCode::PAYMENT_VERIFY_RESULT,
+            [
+                'payment_id'    => $payment->getId(),
+                'result'        => $result,
+            ]);
 
         return $result;
     }
