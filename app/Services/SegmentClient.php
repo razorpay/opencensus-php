@@ -166,15 +166,12 @@ class SegmentClient
 
         $order = null;
 
+        $id = null;
+
         if ($payment->getApiOrderId() !== null)
         {
             $order = $payment->order;
-        }
 
-        $id = null;
-
-        if (empty($order) === false)
-        {
             $orderId = $order->getPublicId();
 
             $properties['id_type'] = 'order';
@@ -284,6 +281,15 @@ class SegmentClient
         }
     }
 
+    protected function removeCommonProperties($customProperties)
+    {
+        unset($customProperties['payment_id']);
+
+        unset($customProperties['order_id']);
+
+        return flatten_array($customProperties);
+    }
+
     public function trackPayment(PaymentEntity $payment, $event, array $customProperties = [])
     {
         $isMock = $this->config['segment.is_mock'];
@@ -300,7 +306,7 @@ class SegmentClient
             return;
         }
 
-        $customProperties = flatten_array($customProperties);
+        $customProperties = $this->removeCommonProperties($customProperties);
 
         $properties = array_merge($defaults['properties'], $customProperties);
 
