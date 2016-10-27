@@ -29,15 +29,15 @@ class Verify extends Base\Core
      * verify for the payment will be run once for in every boundary bucket.
      */
     protected static $failureStartBoundary = [
-        15,            // 15 Minutes
-        60,            // 60 Minutes
-        1440,          // 1 Day
-        2880,          // 2 Day
-        4320,          // 3 Day
-        5760,          // 4 Day
-        7200,          // 5 Day
-        8640,          // 6 Day
-        10080,         // 7 Day
+        900,           // 15 Minutes
+        2600,          // 60 Minutes
+        86400,         // 1 Day
+        172800,        // 2 Day
+        259200,        // 3 Day
+        345600,        // 4 Day
+        432000,        // 5 Day
+        518400,        // 6 Day
+        604800,        // 7 Day
         // TODO: Decide on the boundaries.
     ];
 
@@ -139,7 +139,7 @@ class Verify extends Base\Core
         $boundary = $this->getBoundaryInSeconds($filter);
 
         $payments = $this->repo->payment->getPaymentsToVerify(
-                                    $minimumTime, $boundary, $verifyStatus, $paymentStatus);
+            $minimumTime, $boundary, $verifyStatus, $paymentStatus);
 
         return $this->verifyMultiplePayments($payments, $filter);
     }
@@ -425,15 +425,7 @@ class Verify extends Base\Core
             case Filter::VERIFY_FAILED:
             case 'all':
             case Filter::PAYMENTS_FAILED:
-
                 $boundaries = self::$failureStartBoundary;
-
-                // Converts Minutes to Seconds
-                $boundaries = array_map(function($boundary)
-                {
-                    return $boundary * 60;
-                }, $boundaries);
-
                 break;
 
             default:
