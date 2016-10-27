@@ -326,6 +326,8 @@ trait Refund
         }
         catch (Exception\BaseException $e)
         {
+            $this->app['segment']->trackPayment($this->payment, TraceCode::PAYMENT_REFUND_FAILURE);
+
             $this->tracePaymentFailed(
                     $e->getError(),
                     TraceCode::PAYMENT_REFUND_FAILURE);
@@ -421,6 +423,8 @@ trait Refund
         }
 
         $this->tracePaymentInfo(TraceCode::PAYMENT_REFUND_SUCCESS);
+
+        $this->app['segment']->trackPayment($this->payment, TraceCode::PAYMENT_REFUND_SUCCESS);
     }
 
     protected function validateMerchantBalance($refund)
@@ -431,13 +435,15 @@ trait Refund
 
         if ($balance->getBalance() < $refund->getAmount())
         {
-            $this->trace->info(
-                TraceCode::PAYMENT_REFUND_FAILURE,
-                [
-                    'message' => 'Not enough balance',
-                    'merchant_balance' => $balance->getBalance(),
-                    'refund_amount' => $refund->getAmount()
-                ]);
+            $traceMessage = [
+                'message' => 'Not enough balance',
+                'merchant_balance' => $balance->getBalance(),
+                'refund_amount' => $refund->getAmount()
+            ];
+
+            $this->trace->info(TraceCode::PAYMENT_REFUND_FAILURE, $traceMessage);
+
+            $this->app['segment']->trackPayment($refund->payment, TraceCode::PAYMENT_REFUND_FAILURE, $traceMessage);
 
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE);
