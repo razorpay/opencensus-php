@@ -99,7 +99,6 @@ trait Capture
      * @param $payment
      * @return array
      */
-
     public function verifyCapture($payment)
     {
         $this->setPayment($payment);

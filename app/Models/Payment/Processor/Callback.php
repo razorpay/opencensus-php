@@ -321,13 +321,12 @@ trait Callback
             $publicErrorCode, $internalErrorCode, $errorDesc);
 
         $errors = [
+            'payment_id' => $payment->getPublicId(),
             'public_error_code'     => $publicErrorCode,
             'internal_error_code'   => $internalErrorCode,
             'error_description'     => $errorDesc,
             'message'               => 'Failed to convert error code to the appropriate exception'
         ];
-
-        $traceLogs = array_merge(['payment_id' => $payment->getPublicId()], $errors);
 
         //
         // If it has reached here, then an edge case occurred, for which
@@ -335,7 +334,7 @@ trait Callback
         // So, we trace an error message, ringing alerts to our devs.
         //
 
-        $this->trace->error(TraceCode::PAYMENT_CALLBACK_FAILURE, $traceLogs);
+        $this->trace->error(TraceCode::PAYMENT_CALLBACK_FAILURE, $errors);
 
         // If no appropriate exception mapping was found then show
         // the usual message that payment already processed.

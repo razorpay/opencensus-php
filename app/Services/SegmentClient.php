@@ -47,8 +47,6 @@ class SegmentClient
         'PAYMENT_CARD_ID'       => 'payment.card_id',
         'VPC_ACCESSCODE'        => 'request.content.vpc_AccessCode',
         'VPC_CARDEXP'           => 'request.content.vpc_CardExp',
-        'VPC_CARDNUM'           => ''
-
     ];
 
     public function __construct($app)
@@ -102,7 +100,6 @@ class SegmentClient
             {
                 $data['vpa'] = $payment->getVpa();
             }
-
         }
 
         catch(\Exception $e)
@@ -283,10 +280,7 @@ class SegmentClient
     {
         foreach (self::SENSITIVE_KEYS as $name => $key)
         {
-            if (isset($properties[$key]) === true)
-            {
-                unset($properties[$key]);
-            }
+            unset($properties[$key]);
         }
     }
 
