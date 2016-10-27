@@ -15,6 +15,7 @@ use RZP\Models\Payment;
 use RZP\Models\Card;
 use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payment\Verify\Verify;
 
 class Service extends Base\Service
 {
