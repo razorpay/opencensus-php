@@ -15,6 +15,7 @@ use RZP\Models\Payment;
 use RZP\Models\Card;
 use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payment\Verify\Verify;
 
 class Service extends Base\Service
 {
@@ -750,16 +751,12 @@ class Service extends Base\Service
 
     public function verifyMultiplePayments($filter)
     {
-        $verify = new Verify($this->mode, $this->trace);
-
-        return $verify->verifyPaymentsWithFilter($filter);
+        return (new Verify)->verifyPaymentsWithFilter($filter);
     }
 
     public function verifyPayment($payment)
     {
-        $verify = new Verify($this->mode, $this->trace);
-
-        return $verify->verifyPayment($payment);
+        return (new Verify)->verifyPayment($payment);
     }
 
     public function sendReminderMerchantMailForAuthorizedPayments()

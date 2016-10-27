@@ -12,7 +12,7 @@ class PaymentValidationTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/helpers/cardNumbers.php';
+        $this->testDataFilePath = __DIR__.'/helpers/CardValidationTestData.php';
 
         parent::setUp();
 

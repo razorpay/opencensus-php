@@ -353,6 +353,8 @@ class Processor
      * made by Checkout
      * @param  string $id payment id
      * @return array
+     * @throws Exception\BadRequestException
+     * @throws Exception\LogicException
      */
     public function getAsyncResponse($id)
     {
@@ -457,6 +459,7 @@ class Processor
         $payment->setError($code, $desc, $internalCode);
 
         $payment->setVerified(null);
+        $payment->setVerifyBucket(0);
 
         $this->repo->saveOrFail($payment);
 
@@ -702,10 +705,8 @@ class Processor
 
     protected function retrieve($id)
     {
-        Payment\Entity::verifyIdAndStripSign($id);
-
-        $this->payment = $this->repo->payment->findByIdAndMerchantId(
-                                                $id, $this->merchant->getId());
+        $this->payment = $this->repo->payment->findByPublicIdAndMerchant(
+                                                $id, $this->merchant);
 
         return $this->payment;
     }
