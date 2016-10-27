@@ -936,6 +936,11 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::OTP_ATTEMPTS);
     }
+    
+    public function getVerifyBucket()
+    {
+        return $this->getAttribute(self::VERIFY_BUCKET);
+    }
 
     public function getTerminalId()
     {

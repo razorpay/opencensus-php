@@ -160,14 +160,9 @@ class Verify extends Base\Core
             Result::ERROR         => 0,
         ];
 
-        $lockedPayments = $this->lockPaymentsForVerify($payments);
+        $notApplicable = 0;
 
-        $this->trace->info(
-            TraceCode::VERIFY_LOCKED_PAYMENTS,
-            [
-                'payment_ids' => $lockedPayments,
-                'filter'      => $filter,
-            ]);
+        $lockedPayments = $this->lockPaymentsForVerify($payments, $filter);
 
         $totalAuthTimeDiff = 0;
 
@@ -182,7 +177,14 @@ class Verify extends Base\Core
                 $totalAuthTimeDiff += (time() - $payment->getCreatedAt());
             }
 
-            $resultSet[$verifyResult] += 1;
+            if ($verifyResult !== null)
+            {
+                $resultSet[$verifyResult] += 1;
+            }
+            else
+            {
+                $notApplicable += 1;
+            }
 
             $this->releasePaymentAfterVerify($payment);
         }
@@ -197,6 +199,8 @@ class Verify extends Base\Core
 
         $summary = $this->processResult($resultSet, $times, $filter);
 
+        $this->addDataToVerifySummary($summary, $lockedPayments, $notApplicable);
+
         $this->trace->info(
             TraceCode::VERIFY_PROCESSED_SUMMARY,
             $summary
@@ -207,17 +211,35 @@ class Verify extends Base\Core
         return $summary;
     }
 
+    protected function addDataToVerifySummary(array & $summary, $payments, $notApplicable)
+    {
+        if ($notApplicable !== 0)
+        {
+            $summary['not_applicable'] = $notApplicable;
+        }
+
+        $summary['total_payments'] = $payments->count();
+    }
+
     /** Lock All Payments
      *
      * @param Base\PublicCollection $payments
      * @return array with keys locked and not_locked,
      *         having payments which are locked and not_locked respectively
      */
-    protected function lockPaymentsForVerify(Base\PublicCollection $payments)
+    protected function lockPaymentsForVerify(Base\PublicCollection $payments, $filter)
     {
         $paymentIds = $payments->pluck(Payment\Entity::ID);
 
         $lockedPaymentIds = $this->mutex->acquireMultiple($paymentIds, 3600, self::KEY_SUFFIX);
+
+        $this->trace->info(
+            TraceCode::VERIFY_LOCKED_PAYMENTS,
+            [
+                'payment_ids_locked'     => $lockedPaymentIds['locked'],
+                'payment_ids_not_locked' => $lockedPaymentIds['unlocked'],
+                'filter'                 => $filter,
+            ]);
 
         $lockedPayments = $payments->whereIn(Payment\Entity::ID, $lockedPaymentIds['locked']);
 
@@ -333,8 +355,24 @@ class Verify extends Base\Core
             }
             else
             {
-                // Attempt to authorize payments whose verification failed
-                $this->processor($merchant)->authorizeFailedPayment($payment);
+                try
+                {
+                    // Attempt to authorize payments whose verification failed
+                    $this->processor($merchant)->authorizeFailedPayment($payment);
+                }
+                catch (Exception\BadRequestValidationFailureException $ex)
+                {
+                    $this->trace->warning(
+                        TraceCode::PAYMENT_VERIFY_ALREADY_AUTHORIZED,
+                        [
+                            'payment_id'    => $payment->getId(),
+                            'status'        => $payment->getStatus(),
+                            'verify_bucket' => $payment->getVerifyBucket(),
+                            'error_message' => $ex->getMessage(),
+                        ]);
+
+                    return null;
+                }
             }
 
             // Now Just continue

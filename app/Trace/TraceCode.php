@@ -140,6 +140,7 @@ class TraceCode
     const VERIFY_LOCKED_PAYMENTS                    = 'VERIFY_LOCKED_PAYMENTS';
     const VERIFY_PROCESSED_SUMMARY                  = 'VERIFY_PROCESSED_SUMMARY';
     const PAYMENT_VERIFY_RESULT                     = 'PAYMENT_VERIFY_RESULT';
+    const PAYMENT_VERIFY_ALREADY_AUTHORIZED         = 'PAYMENT_VERIFY_ALREADY_AUTHORIZED';
     
     /*
      * Gateway component error messages
@@ -349,7 +350,7 @@ class TraceCode
         self::PAYMENT_CAPTURE_SUCCESS                   => 'Payment captured successfully',
         self::PAYMENT_CAPTURE_FAILURE                   => 'Payment capture failed',
         self::PAYMENT_VERIFY_FAILED                     => 'Payment verification with gateway failed',
-        self::PAYMENT_FAILED_TO_AUTHORIZED              => 'Payment failed but which succeded on gateway, converting it to authorized',
+        self::PAYMENT_FAILED_TO_AUTHORIZED              => 'Payment failed but which succeeded on gateway, converting it to authorized',
         self::PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND     => 'Payment request does not have checkout id',
         self::PAYMENT_QUEUE_CAPTURE_REQUEST             => 'Payment capture request via queue',
         self::PAYMENT_QUEUE_CAPTURE_SUCCESS             => 'Payment captured successfully via queue',
@@ -380,6 +381,7 @@ class TraceCode
         self::ADDRESS_PRIMARY_SWITCH                    => 'Switching primary address of an entity and address type',
 
         self::BAD_REQUEST_INVALID_API_KEY               => 'The api key provided is invalid',
+        self::PAYMENT_VERIFY_ALREADY_AUTHORIZED         => 'Payment being authorized is actually already authorized by some other thread',
 
         self::RUNTIME_ERROR                             => 'The request failed at runtime',
 
