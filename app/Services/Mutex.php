@@ -36,7 +36,7 @@ class Mutex
      * @param int $ttl Expiry time of lock in seconds
      * @param bool $strict defines lock should happen or not, even if one resource is not locked
      * @param string $suffix
-     * 
+     *
      * @return array containing values of locked and not_locked keys
      */
     public function acquireMultiple($resources, $ttl = 60, $suffix = '', $strict = false)
@@ -66,7 +66,7 @@ class Mutex
                     ];
                 }
 
-                $alreadyLocked[] = $resource;
+                $alreadyLockedResources[] = $resource;
             }
         }
 
