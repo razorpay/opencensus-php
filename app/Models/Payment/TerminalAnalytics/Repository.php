@@ -22,4 +22,12 @@ class Repository extends Base\Repository
             ->whereIn(Entity::PAYMENT_ID, $paymentIds)
             ->get();
     }
+
+    public function fetchFailedTerminalAnalyticsForPaymentIds($paymentIds = [])
+    {
+        return $this->newQuery()
+            ->whereIn(Entity::PAYMENT_ID, $paymentIds)
+            ->whereIn(Entity::TERMINAL_STATUS, 0)
+            ->get();
+    }
 }
