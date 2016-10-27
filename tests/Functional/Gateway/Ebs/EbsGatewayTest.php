@@ -277,6 +277,26 @@ class EbsGatewayTest extends TestCase
         $this->assertSame($payment['verified'], 1);
     }
 
+    public function testPaymentFailedVerify()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray('ANDB');
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $this->getErrorInVerify();
+        $payment = $this->getLastEntity('payment', true);
+
+        $data = $this->testData['testPaymentFailedVerify'];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['id']);
+            });
+
+        $this->assertSame($payment['verified'], null);
+    }
+
     public function testPaymentFailedVerifyAndRetry()
     {
         $payment = $this->getDefaultNetbankingPaymentArray('ANDB');

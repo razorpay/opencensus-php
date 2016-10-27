@@ -253,6 +253,8 @@ class Repository extends Base\Repository
      */
     protected function addWhereConditionsForVerify($minimumTime, $verifyBoundaries, $query)
     {
+        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+
         // This Condition will give all newly created payments,
         // which have crossed minimum time threshold.
         $whereConditions[] = [
@@ -267,7 +269,7 @@ class Repository extends Base\Repository
         foreach ($verifyBoundaries as $bucket => $time)
         {
             // This gets all the payments in the last `boundary (15, 60, etc)` time.
-            $paymentCreatedAfter = Carbon::now('Asia/Kolkata')->timestamp - $time;
+            $paymentCreatedAfter = $currentTime - $time;
 
             // $boundary have time in seconds, signifying payment should be X second old
             // For querying on db, need to change that to absolute value
