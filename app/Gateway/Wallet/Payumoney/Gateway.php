@@ -308,10 +308,11 @@ class Gateway extends Base\Gateway
                 $content['message']);
         }
 
-        // set two-fa status as passed
-        $data[Payment\Entity::TWO_FACTOR_AUTH] = Payment\TwoFactorAuth::PASSED;
+        $callbackResponse = $this->getCallbackResponseData($input);
 
-        return $data;
+        $callbackResponse = array_merge($callbackResponse, $data);
+
+        return $callbackResponse;
     }
 
     public function callbackTopupFlow($input)

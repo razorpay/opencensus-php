@@ -452,9 +452,11 @@ class Processor
         $this->eventPaymentFailed();
     }
 
-    protected function setTwoFactorAuthAfterCallbackException($payment, $exception)
+    protected function setTwoFactorAuthAfterCallbackException(Exception\BaseException $exception)
     {
-        // For Netbanking payments two_factor_auth was set to NOT_APPLICABLE on authorize itself
+        $payment = $this->payment;
+
+        // For Netbanking payments two_factor_auth was set to NOT_APPLICALBE on authorize itself
         if ($payment->isNetbanking() === true)
         {
             return;

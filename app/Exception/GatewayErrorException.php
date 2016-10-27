@@ -53,10 +53,20 @@ class GatewayErrorException extends RecoverableException
             return true;
         }
 
+        // Check if error code is one of 2FA error codes
         $error = $this->getError();
 
         $errorCode = $error->getInternalErrorCode();
 
-        return in_array($errorCode, $this->twoFaErrorCodes);
+        $isTwoFaErrorCode = in_array($errorCode, $this->twoFaErrorCodes);
+
+        if ($isTwoFaErrorCode === true)
+        {
+            $this->markTwoFaError();
+
+            return true;
+        }
+
+        return false;
     }
 }

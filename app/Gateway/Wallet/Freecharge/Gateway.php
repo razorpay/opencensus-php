@@ -190,7 +190,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->jsonToArray($response->body);
 
-        $data = array();
+        $data = [];
 
         if (isset($content[ResponseFields::ACCESS_TOKEN]) === true)
         {
@@ -205,10 +205,11 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentResponse($content, $input);
 
-        // set two-fa status as passed
-        $data[Payment\Entity::TWO_FACTOR_AUTH] = TwoFactorAuth::PASSED;
+        $callbackResponse = $this->getCallbackResponseData($input);
 
-        return $data;
+        $callbackResponse = array_merge($callbackResponse, $data);
+
+        return $callbackResponse;
     }
 
     public function debit(array $input)

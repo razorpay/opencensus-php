@@ -117,12 +117,10 @@ class Gateway extends Base\Gateway
                 $responseCode,
                 $desc);
         }
-        else
-        {
-            $responseCode = $input['gateway'][Resp::RESPONSE_CODE];
 
-            return [Payment\Entity::TWO_FACTOR_AUTH => Payment\TwoFactorAuth::NOT_APPLICABLE];
-        }
+        $responseCode = $input['gateway'][Resp::RESPONSE_CODE];
+
+        return $this->getCallbackResponseData($input);
     }
 
     public function refund(array $input)

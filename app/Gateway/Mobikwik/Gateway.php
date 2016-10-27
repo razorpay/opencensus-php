@@ -68,7 +68,9 @@ class Gateway extends Base\Gateway
                 'payment_id' => $input['payment']['id'],
             ]);
 
-        return $this->verifyPaymentCallbackResponse($input['gateway']);
+        $this->verifyPaymentCallbackResponse($input['gateway']);
+
+        return $this->getCallbackResponseData($input);
     }
 
     public function sendPaymentVerifyRequest($verify)
@@ -670,10 +672,6 @@ class Gateway extends Base\Gateway
         {
             // Payment fails, throw exception
             $this->throwPaymentFailureException($input);
-        }
-        else
-        {
-            return [Payment\Entity::TWO_FACTOR_AUTH => Payment\TwoFactorAuth::PASSED];
         }
     }
 

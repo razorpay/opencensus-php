@@ -97,7 +97,7 @@ class Gateway extends Base\Gateway
 
         assertTrue($content['CustomerID'] === $input['payment']['id']);
 
-        return [Payment\Entity::TWO_FACTOR_AUTH => Payment\TwoFactorAuth::NOT_APPLICABLE];
+        return $this->getCallbackResponseData($input);
     }
 
     public function refund(array $input)

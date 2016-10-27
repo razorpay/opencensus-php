@@ -104,7 +104,8 @@ class Gateway extends Base\Gateway
         $attrs['received'] = true;
 
         $gatewayPayment->fill($attrs);
-        $gatewayPayment->saveOrFail();
+
+        $this->repo->saveOrFail($gatewayPayment);
 
         if (($bankRefNo === '') or
             ($message !== ''))
@@ -116,7 +117,7 @@ class Gateway extends Base\Gateway
                     $message);
         }
 
-        return $this->getCallbackResponseData();
+        return $this->getCallbackResponseData($input);
     }
 
     public function verify(array $input)

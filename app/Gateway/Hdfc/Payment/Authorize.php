@@ -104,7 +104,7 @@ trait Authorize
             $this->authEnrolledRequest,
             $this->authEnrolledResponse);
 
-        return $this->verifyAuthResponse($this->authEnrolledResponse);
+        $this->verifyAuthResponse($this->authEnrolledResponse);
     }
 
     protected function verifyAuthResponse(array & $authResponse)
@@ -133,8 +133,6 @@ trait Authorize
         {
             $this->throwException($authResponse['error']);
         }
-
-        return [PaymentModel\Entity::TWO_FACTOR_AUTH => PaymentModel\TwoFactorAuth::PASSED];
     }
 
     protected function callbackAlreadyProcessed($authResponse)

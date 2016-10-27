@@ -320,7 +320,9 @@ class Gateway extends Base\Gateway
 
             $this->model = $this->repo->findByGatewayTransactionIdOrFail($trackId);
 
-            return $this->verifyAuthResponse($authResponse);
+            $this->verifyAuthResponse($authResponse);
+
+            return $this->getCallbackResponseData($input);
         }
 
         $this->validateCallbackGatewayFields($input, $network);
@@ -338,7 +340,9 @@ class Gateway extends Base\Gateway
                 'app payment '. $this->id . ' should be equal to payment id . '. $paymentId);
         }
 
-        return $this->postAuthEnrolledRequest($input);
+        $this->postAuthEnrolledRequest($input);
+
+        return $this->getCallbackResponseData($input);
     }
 
     public function verify(array $input)

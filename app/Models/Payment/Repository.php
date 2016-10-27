@@ -37,6 +37,7 @@ class Repository extends Base\Repository
         Entity::STATUS             => 'sometimes|string',
         Entity::VERIFIED           => 'sometimes|in:null,0,1,2',
         Entity::REFUND_STATUS      => 'sometimes|in:null,partial,full',
+        Entity::TWO_FACTOR_AUTH    => 'sometimes|string',
         Entity::BANK               => 'sometimes',
         Entity::METHOD             => 'sometimes',
         Entity::GATEWAY            => 'sometimes',

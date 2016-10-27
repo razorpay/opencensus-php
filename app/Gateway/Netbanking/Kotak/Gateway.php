@@ -115,7 +115,7 @@ class Gateway extends Base\Gateway
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
         }
 
-        return $this->getCallbackResponseData();
+        return $this->getCallbackResponseData($input);
     }
 
     public function verify(array $input)

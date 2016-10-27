@@ -119,7 +119,9 @@ class Gateway extends Base\Gateway
 
         $response = $this->postAuthEnrolledRequest($input);
 
-        return $this->postEnrollAuthorize($input);
+        $this->postEnrollAuthorize($input);
+
+        return $this->getCallbackResponseData($input);
     }
 
     public function capture(array $input)
@@ -409,8 +411,6 @@ class Gateway extends Base\Gateway
             $response = $this->postRequest($request);
 
             $this->persistAfterAuthorize($input, $response, $request);
-
-            return [Payment\Entity::TWO_FACTOR_AUTH => Payment\TwoFactorAuth::PASSED];
         }
         catch (SoapFault $exception)
         {

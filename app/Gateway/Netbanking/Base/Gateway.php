@@ -38,10 +38,4 @@ class Gateway extends \RZP\Gateway\Base\Gateway
 
         return $this->app['repo']->$gateway;
     }
-
-    protected function getCallbackResponseData()
-    {
-        return [];
-        return [Payment\Entity::TWO_FACTOR_AUTH => Payment\TwoFactorAuth::NOT_APPLICABLE];
-    }
 }

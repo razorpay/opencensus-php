@@ -276,7 +276,7 @@ trait Callback
 
         $code = $e->getError()->getInternalErrorCode();
 
-        $this->setTwoFactorAuthAfterCallbackException($this->payment, $e);
+        $this->setTwoFactorAuthAfterCallbackException($e);
 
         if (Error\Error::hasAction($code) === false)
         {

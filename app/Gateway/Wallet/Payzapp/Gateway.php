@@ -112,7 +112,7 @@ class Gateway extends Base\Gateway
 
         $serverData = $this->pickupData($input);
 
-        $data = $this->verifyPaymentCallbackResponse($serverData);
+        $this->verifyPaymentCallbackResponse($serverData);
 
         $attrs['gateway_payment_id_2'] = $serverData['data']['pgTxnId'];
 
@@ -128,7 +128,7 @@ class Gateway extends Base\Gateway
                 'pickedup_data' => $serverData,
             ]);
 
-        return $data;
+        return $this->getCallbackResponseData($input);
     }
 
     protected function getAuthContent($input)
@@ -265,7 +265,10 @@ class Gateway extends Base\Gateway
         {
             $resCode = (int) $input['resCode'];
 
-            return [Payment\Entity::TWO_FACTOR_AUTH => Payment\TwoFactorAuth::PASSED];
+            if ($resCode === 0)
+            {
+                return;
+            }
         }
 
         //trace input

@@ -161,7 +161,6 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::STATUS,
-        self::TWO_FACTOR_AUTH,
         self::ORDER_ID,
         self::INTERNATIONAL,
         self::METHOD,
