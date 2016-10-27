@@ -160,14 +160,7 @@ class Verify extends Base\Core
             Result::ERROR         => 0,
         ];
 
-        $lockedPayments = $this->lockPaymentsForVerify($payments);
-
-        $this->trace->info(
-            TraceCode::VERIFY_LOCKED_PAYMENTS,
-            [
-                'payment_ids' => $lockedPayments,
-                'filter'      => $filter,
-            ]);
+        $lockedPayments = $this->lockPaymentsForVerify($payments, $filter);
 
         $totalAuthTimeDiff = 0;
 
@@ -213,11 +206,19 @@ class Verify extends Base\Core
      * @return array with keys locked and not_locked,
      *         having payments which are locked and not_locked respectively
      */
-    protected function lockPaymentsForVerify(Base\PublicCollection $payments)
+    protected function lockPaymentsForVerify(Base\PublicCollection $payments, $filter)
     {
         $paymentIds = $payments->pluck(Payment\Entity::ID);
 
         $lockedPaymentIds = $this->mutex->acquireMultiple($paymentIds, 3600, self::KEY_SUFFIX);
+
+        $this->trace->info(
+            TraceCode::VERIFY_LOCKED_PAYMENTS,
+            [
+                'payment_ids_locked'     => $lockedPaymentIds['locked'],
+                'payment_ids_not_locked' => $lockedPaymentIds['unlocked'],
+                'filter'                 => $filter,
+            ]);
 
         $lockedPayments = $payments->whereIn(Payment\Entity::ID, $lockedPaymentIds['locked']);
 
