@@ -31,16 +31,12 @@ class DailyReport extends Base\Core
      * Generates a new daily report
      * @param String $id Merchant Id
      */
-    function __construct($merchant, $data)
+    function __construct()
     {
         parent::__construct();
 
-        $this->merchant = $merchant;
-
         // date format = 6th July 2015
         $this->date = Carbon::yesterday("Asia/Kolkata")->format('jS F Y');
-
-        $this->data = array_merge($data, $this->getMerchantData());
 
         // 00:00 Yesterday
         $this->timeLowerLimit = Carbon::yesterday("Asia/Kolkata")->timestamp;
@@ -51,18 +47,116 @@ class DailyReport extends Base\Core
         $this->increaseAllowedSystemLimits();
     }
 
+    public function sendReportForAllMerchants($input)
+    {
+        $from = Carbon::yesterday("Asia/Kolkata")->timestamp;
+
+        $to = Carbon::today("Asia/Kolkata")->timestamp;
+
+        // Trace to indicate start of mailing
+        $this->trace->info(
+            TraceCode::SETTLEMENT_DAILY_REPORT_MAILING,
+            [$from, $to]
+        );
+
+        $authMerchants = $this->repo->payment
+                                ->fetchAuthorizedSummary()
+                                ->getStringAttributesByKey('merchant_id');
+
+        $captureMerchants = $this->repo->payment
+                                ->fetchCapturedSummaryBetweenTimestamp($from, $to)
+                                ->getStringAttributesByKey('merchant_id');
+
+        $refundMerchants = $this->repo->refund
+                                ->fetchRefundSummaryBetweenTimestamp($from, $to)
+                                ->getStringAttributesByKey('merchant_id');
+
+        $setlMerchants = $this->repo->settlement
+                                ->fetchSettlementSummaryBetweenTimestamp($from, $to)
+                                ->getStringAttributesByKey('merchant_id');
+
+        if (isset($input[Entity::ID]) === true)
+        {
+            $merchantIds = $input[Entity::ID];
+        }
+        else
+        {
+            $merchantIds = array_unique(
+                array_merge(
+                    array_keys($captureMerchants),
+                    array_keys($authMerchants),
+                    array_keys($refundMerchants),
+                    array_keys($setlMerchants)
+                )
+            );
+        }
+
+        // Summary of merchants mailed
+        $mailedMerchantsSummary = [
+            'sentIds'    => [],
+            'skippedIds' => 0,
+            'failedIds'  => []
+        ];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+                $zeroArray = array_fill_keys(['sum', 'count'], 0);
+
+                $data = [
+                    'authorized' => isset($authMerchants[$merchantId])    ? $authMerchants[$merchantId]    : $zeroArray,
+                    'authorized' => isset($authMerchants[$merchantId])    ? $authMerchants[$merchantId]    : $zeroArray,
+                    'captured'   => isset($captureMerchants[$merchantId]) ? $captureMerchants[$merchantId] : $zeroArray,
+                    'refunds'    => isset($refundMerchants[$merchantId])  ? $refundMerchants[$merchantId]  : $zeroArray,
+                    'settlements'=> isset($setlMerchants[$merchantId])    ? $setlMerchants[$merchantId]    : $zeroArray,
+                ];
+
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                $data = array_merge($data, $this->getMerchantData($merchant));
+
+                $sentId = $this->send($merchant, $data);
+
+                if (is_null($sentId))
+                {
+                    $mailedMerchantsSummary['skippedIds']++;
+                }
+                else
+                {
+                    $mailedMerchantsSummary['sentIds'][] = $sentId;
+                }
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException(
+                    $ex, Trace::WARNING, TraceCode::SETTLEMENT_DAILY_REPORT_FAILURE);
+
+                $mailedMerchantsSummary['failedIds'][] = $merchantId;
+            }
+        }
+
+        // Log just the result of the settlement reports
+        $this->trace->info(
+            TraceCode::SETTLEMENT_DAILY_REPORT_RESULT,
+            $mailedMerchantsSummary
+        );
+
+        return $mailedMerchantsSummary;
+    }
+
     /**
      * Sends the daily report
      * @return array of summary data
      * array is empty if mail wasn't sent
      */
-    public function send()
+    public function send($merchant, $data)
     {
-        if ($this->isBlank() === false)
+        if ($this->isBlank($data) === false)
         {
-            $this->sendDailyReport();
+            $this->sendDailyReport($merchant, $data);
 
-            return $this->merchant->getId();
+            return $merchant->getId();
         }
 
         return null;
@@ -73,18 +167,16 @@ class DailyReport extends Base\Core
      * @param  String $id merchant id
      * @return null
      */
-    protected function sendDailyReport()
+    protected function sendDailyReport($merchant, $data)
     {
-        $data = $this->data;
-
         $view = ['html' => self::DAILY_REPORT_EMAIL_TEMPLATE];
 
         // Log merchant whose data has been computed
         $this->trace->info(
             TraceCode::SETTLEMENT_DAILY_REPORT_DATA,
             array(
-                    'merchant_id'   => $this->merchant->getId(),
-                    'merchant_name' => $this->merchant->getBillingLabelElseName(),
+                    'merchant_id'   => $merchant->getId(),
+                    'merchant_name' => $merchant->getBillingLabelElseName(),
                     'captured'      => $data['captured']['count'],
                     'authorized'    => $data['authorized']['count'],
                     'refunds'       => $data['refunds']['count'],
@@ -122,20 +214,18 @@ class DailyReport extends Base\Core
         });
     }
 
-    protected function getMerchantData()
+    protected function getMerchantData($merchant)
     {
         return [
-            'billing_label'  => $this->merchant->getBillingLabelElseName(),
-            'account_number' => $this->merchant->getRedactedAccountNumber(),
-            'email'          => $this->merchant->getTransactionReportEmail(),
+            'billing_label'  => $merchant->getBillingLabelElseName(),
+            'account_number' => $merchant->getRedactedAccountNumber(),
+            'email'          => $merchant->getTransactionReportEmail(),
             'date'           => $this->date,
         ];
     }
 
-    protected function isBlank()
+    protected function isBlank($data)
     {
-        $data = $this->data;
-
         return (($data['captured']['count'] === 0) and
                 ($data['authorized']['count'] === 0) and
                 ($data['refunds']['count'] === 0) and
