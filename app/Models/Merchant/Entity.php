@@ -203,10 +203,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::LIVE, false);
     }
 
-    public function hasHourlySchedule()
+    public function hasSchedule()
     {
-        return (($this->getSettlementScheduleId() !== null) and
-                ($this->schedule->isHourly() === true));
+        return ($this->getSettlementScheduleId() !== null);
     }
 
     public function keys()

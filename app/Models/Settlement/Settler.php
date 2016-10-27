@@ -397,7 +397,7 @@ class Settler
 
         // If merchant has a hourly schedule entity assigned to him, his settlements
         // will be handled by the new Settler defined in Settlement\Processor
-        if ($merchant->hasHourlySchedule() === true)
+        if ($merchant->hasSchedule() === true)
         {
             return false;
         }
