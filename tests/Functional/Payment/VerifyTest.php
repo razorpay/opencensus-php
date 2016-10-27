@@ -320,7 +320,7 @@ class VerifyTest extends TestCase
         $this->assertEquals($defaultParams, $content);
     }
 
-    public function testTimeoutPaymentVerifyfailure()
+    public function testTimeoutPaymentVerifyFailure()
     {
         $this->gateway = 'ebs';
 
@@ -371,6 +371,8 @@ class VerifyTest extends TestCase
         $resultData = ['filter' => $filter, 'verified' => 1];
 
         $this->assertContent($content, $resultData);
+
+        Carbon::setTestNow();
     }
 
     public function testTimeoutPaymentVerify()
