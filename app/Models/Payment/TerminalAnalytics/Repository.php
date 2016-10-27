@@ -27,7 +27,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
             ->whereIn(Entity::PAYMENT_ID, $paymentIds)
-            ->whereIn(Entity::TERMINAL_STATUS, 0)
+            ->where(Entity::TERMINAL_STATUS, 0)
             ->get();
     }
 }
