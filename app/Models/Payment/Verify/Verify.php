@@ -67,8 +67,6 @@ class Verify extends Base\Core
 
     // ================== End Configurations ==================
 
-    protected $trace;
-    protected $mode;
     protected $core;
     protected $mutex;
     protected $slack;
@@ -135,7 +133,6 @@ class Verify extends Base\Core
                 break;
 
             default:
-                sd($filter);
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_PARAMETERS, 'filter', $filter);
         }
 
@@ -425,6 +422,7 @@ class Verify extends Base\Core
             case 'failure':
             case 'error':
             case Filter::VERIFY_ERROR:
+            case Filter::VERIFY_FAILED:
             case 'all':
             case Filter::PAYMENTS_FAILED:
 

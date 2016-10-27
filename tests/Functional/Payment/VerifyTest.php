@@ -412,6 +412,30 @@ class VerifyTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function testVerifyFailedWithZeroValidPaymnets()
+    {
+        $createdAt = time() - 60 * 60;
+
+        $payment = $this->fixtures->create(
+            'payment:netbanking_failed', ['created_at' => $createdAt]);
+
+        $request = array(
+            'url' => '/payments/verify/verify_failed',
+            'method' => 'post'
+        );
+
+        $this->ba->cronAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $resultData = [
+            'authorized/failed' => 0,
+            'filter'            => 'verify_failed'
+        ];
+
+        $this->assertContent($content, $resultData);
+    }
+
     public function testVerifyAllPayments()
     {
         $createdAt = time() - 60 * 60;
@@ -424,7 +448,7 @@ class VerifyTest extends TestCase
             'method' => 'get'
         );
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 
