@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Payment;
 
 use DB;
 use Mockery;
+use Redis;
 use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment\Entity as PaymentEntity;
@@ -129,6 +130,36 @@ class VerifyTest extends TestCase
         $result = [
             'filter'  => 'payments_failed',
             'all'     => 2,
+            'none'    => 0,
+        ];
+
+        $this->runVerifyForMaxPeriod($result);
+    }
+
+    public function testVerifyWithLockedPayments()
+    {
+        $createdAt = time() - 3 * 60;
+
+        $payment = $this->fixtures->create(
+            'payment:netbanking_failed', ['created_at' => $createdAt]);
+
+        $createdAt = time() - 4 * 60;
+
+        $payment2 = $this->fixtures->create(
+            'payment:netbanking_failed', ['created_at' => $createdAt]);
+
+        $result = [
+            'filter'  => 'payments_failed',
+            'all'     => 2,
+            'none'    => 0,
+        ];
+
+        // Lock payment for 10 days, No verify should run on this payment
+        Redis::set($payment2['id'].'_verify', '', 'ex', 864000);
+
+        $result = [
+            'filter'  => 'payments_failed',
+            'all'     => 1,
             'none'    => 0,
         ];
 

@@ -217,16 +217,16 @@ class Verify extends Base\Core
     {
         $paymentIds = $payments->pluck(Payment\Entity::ID);
 
-        $lockedPayments = $this->mutex->acquireMultiple($paymentIds, 3600, self::KEY_SUFFIX);
+        $lockedPaymentIds = $this->mutex->acquireMultiple($paymentIds, 3600, self::KEY_SUFFIX);
 
-        $payments = $payments->whereIn(Payment\Entity::ID, $lockedPayments);
+        $lockedPayments = $payments->whereIn(Payment\Entity::ID, $lockedPaymentIds['locked']);
 
-        return $payments;
+        return $lockedPayments;
     }
 
-    protected function releasePaymentAfterVerify($paymentId)
+    protected function releasePaymentAfterVerify(Payment\Entity $payment)
     {
-        $this->mutex->release($paymentId . self::KEY_SUFFIX);
+        $this->mutex->release($payment->getId() . self::KEY_SUFFIX);
     }
 
     /** Process the result for displaying in slack and returning to caller
