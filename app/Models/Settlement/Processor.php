@@ -51,7 +51,7 @@ class Processor extends Base\Core
 
     protected function preSettlementProcessing(array $input, & $channel)
     {
-        $this->setlTime = Carbon::today('Asia/Kolkata')->timestamp;
+        $this->setlTime = Carbon::now('Asia/Kolkata')->timestamp;
 
         $this->input = $input;
 
