@@ -316,6 +316,27 @@ class TraceCode
      */
     const PAYMENT_NOTES_INVALID                     = 'PAYMENT_NOTES_INVALID';
 
+    /**
+     * Additional trace codes for Segment integration
+     */
+    const SEGMENT_ID_UNAVAILABLE                    = 'SEGMENT_ID_UNAVAILABLE';
+    const GATEWAY_SELECTION_PREPROCESSING           = 'SEGMENT_GATEWAY_SELECTION_PREPROCESSING';
+    const GATEWAY_POSTPROCESSING                    = 'GATEWAY_POSTPROCESSING';
+    const OTP_GENERATE                              = 'OTP_GENERATE';
+    const OTP_POSTPROCESSING                        = 'OTP_POSTPROCESSING';
+    const OTP_RESEND_EXCEPTION                      = 'OTP_RESEND_EXCEPTION';
+    const OTP_RESEND                                = 'OTP_RESEND';
+    const TERMINAL_SUCCESS                          = 'TERMINAL_SUCCESS';
+    const PAYMENT_CALL_GATEWAY_FUNC                 = 'PAYMENT_CALL_GATEWAY_FUNC';
+    const ASYNC_PAYMENT_RESPONSE                    = 'ASYNC_PAYMENT_RESPONSE';
+    const FIRST_PAYMENT_RESPONSE                    = 'FIRST_PAYMENT_RESPONSE';
+    const FORCE_AUTH_FAILED_PAYMENT                 = 'FORCE_AUTH_FAILED_PAYMENT';
+    const PAYMENT_FAILED_EXPECTED_GATEWAY_SUCCESS   = 'PAYMENT_FAILED_EXPECTED_GATEWAY_SUCCESS';
+    const PAYMENT_ALREADY_AUTHORIZED                = 'PAYMENT_ALREADY_AUTHORIZED';
+    const SEGMENT_POST_FAILED                       = 'SEGMENT_POST_FAILED';
+
+
+
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',

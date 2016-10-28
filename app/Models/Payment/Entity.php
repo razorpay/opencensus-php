@@ -942,6 +942,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::VERIFY_BUCKET);
     }
 
+    public function getTerminalId()
+    {
+        return $this->getAttribute(self::TERMINAL_ID);
+    }
+
     public function isSecondRecurring()
     {
         return (($this->isRecurring() === true) and

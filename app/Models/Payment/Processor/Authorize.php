@@ -88,6 +88,13 @@ trait Authorize
 
             $this->runPostGatewaySelectionPreProcessing($payment, $terminalGatewayInput);
 
+            $segmentCustomProps = [
+                'selected_terminal' => $currentTerminal->getId(),
+                'retry_attempt' => $retryAttempts
+            ];
+
+            $this->app['segment']->trackPayment($payment, TraceCode::GATEWAY_POSTPROCESSING, $segmentCustomProps);
+
             if ($this->canRunOtpPaymentFlow($payment, $input))
             {
                 $this->createAnalyticsLog($payment);
@@ -144,7 +151,7 @@ trait Authorize
             {
                 $terminalData['end'] = microtime(true);
 
-                $this->recordTerminalAudit($terminalData);
+                $this->recordTerminalAudit($terminalData, $payment, $retryAttempts);
 
                 if (($retry === false) or
                     ($retryAttempts >= $maxRetryAttempts))
@@ -167,6 +174,8 @@ trait Authorize
         );
 
         $this->trace->info(TraceCode::TERMINAL_FAILURE, $traceData);
+
+        $this->app['segment']->trackPayment($payment, TraceCode::TERMINAL_FAILURE, $traceData);
 
         // retry only if it is safe to do so
         return ((property_exists($e, 'safeRetry') === true) and
@@ -228,6 +237,8 @@ trait Authorize
             TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
             ['payment_id' => $payment->getId()]);
 
+        $this->app['segment']->trackPayment($payment, TraceCode::PAYMENT_FAILED_TO_AUTHORIZED);
+
         $this->runAuthorizeFailedTransaction($payment);
 
         $this->traceAuthorizeFailedOperationData($payment);
@@ -261,6 +272,8 @@ trait Authorize
             throw new Exception\BadRequestValidationFailureException(
                 'Can force authorize only on axis migs gateway');
         }
+
+        $this->app['segment']->trackPayment($payment, TraceCode::FORCE_AUTH_FAILED_PAYMENT);
 
         $this->repo->transaction(function() use ($payment, $input)
         {
@@ -408,45 +421,13 @@ trait Authorize
         {
             $gatewayInput['token'] = $payment->localToken;
         }
-    }
 
-    protected function logTerminalPickedAndSelected($terminalSelected, $terminalPicked, $payment)
-    {
-        $terminalSelectionStatus = 'TERMINAL_SELECTION_MISMATCH';
-
-        $terminalPickedId = $terminalPicked->getId();
-
-        if ($terminalSelected)
-        {
-            $terminalSelectedId = $terminalSelected->getId();
-
-            if ($terminalSelectedId === $terminalPickedId)
-            {
-                $terminalSelectionStatus = 'TERMINAL_SELECTION_MATCH';
-            }
-        }
-        else
-        {
-            $terminalSelectedId = '';
-        }
-
-        $traceData = [
-            'picked'     => $terminalPickedId,
-            'selected'   => $terminalSelectedId,
-            'status'     => $terminalSelectionStatus,
-            'payment_id' => $payment->getId(),
+        $customProperties = [
+            'otpSubmitUrl' => $this->getOtpSubmitUrl(),
+            'callbackUrl' => $this->getCallbackUrl()
         ];
 
-        if ($terminalSelectionStatus === 'TERMINAL_SELECTION_MISMATCH')
-        {
-            $traceData['payment_id_link'] = $payment->getDashboardEntityLinkForSlack();
-
-            $this->trace->warn(TraceCode::TERMINAL_SELECTION_MISMATCH, $traceData);
-        }
-        else
-        {
-            $this->trace->info(TraceCode::TERMINAL_SELECTION, $traceData);
-        }
+        $this->app['segment']->trackPayment($payment, TraceCode::GATEWAY_SELECTION_PREPROCESSING, $customProperties);
     }
 
     protected function dummyPrePaymentAuthorizeProcessing($payment, $input)
@@ -524,6 +505,10 @@ trait Authorize
 
             if ($flag === false)
             {
+                $this->app['segment']->trackPayment($payment,
+                                                    TraceCode::PAYMENT_FAILED_EXPECTED_GATEWAY_SUCCESS,
+                                                    $data);
+
                 throw new Exception\BadRequestValidationFailureException(
                     'Payment expected to have succeeded on the gateway has actually not. ' .
                     'Should not have called this function in this scenario');
@@ -533,6 +518,10 @@ trait Authorize
 
             if ($payment->isStatusCreatedOrFailed() === false)
             {
+                $this->app['segment']->trackPayment($payment,
+                                                    TraceCode::PAYMENT_ALREADY_AUTHORIZED,
+                                                    $data);
+
                 throw new Exception\BadRequestValidationFailureException(
                     'Payment being authorized is actually already authorized by some other thread.',
                     null,
@@ -1002,7 +991,7 @@ trait Authorize
     {
         $id = $payment->getPublicId();
 
-        return [
+        $response = [
             'type'          => 'async',
             'version'       => 1,
             'payment_id'    => $id,
@@ -1012,6 +1001,10 @@ trait Authorize
                 'method' => 'GET',
             ]
         ];
+
+        $this->app['segment']->trackPayment($payment, TraceCode::ASYNC_PAYMENT_RESPONSE, $response);
+
+        return $response;
     }
 
     protected function getFirstPaymentCreatedResponse($request, Payment\Entity $payment)
@@ -1031,6 +1024,16 @@ trait Authorize
         $data['amount'] = sprintf($amount == intval($amount) ? '%d' : '%.2f', $amount);
 
         $data['image'] = $payment->merchant->getFullLogoUrlWithSize(Merchant\Logo::MEDIUM_SIZE);
+
+        $segmentData = $data;
+
+        // this might log sensitive data. Remove it
+        if (isset($segmentData['request']['content']))
+        {
+            unset($segmentData['request']['content']);
+        }
+
+        $this->app['segment']->trackPayment($payment, TraceCode::FIRST_PAYMENT_RESPONSE, $segmentData);
 
         return $data;
     }
@@ -1213,9 +1216,12 @@ trait Authorize
         $this->trace->info(
             TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
             $traceData);
+
+        $this->app['segment']->trackPayment($payment, TraceCode::PAYMENT_FAILED_TO_AUTHORIZED, $traceData);
     }
 
-    protected function recordTerminalAudit($terminalData)
+
+    protected function recordTerminalAudit(array $terminalData, Payment\Entity $payment, $retryAttempts)
     {
         try
         {
@@ -1251,6 +1257,14 @@ trait Authorize
             }
 
             (new TerminalAnalytics\Core)->create($log);
+
+            $tStatus = $log[TerminalAnalytics\Entity::TERMINAL_STATUS];
+
+            $terminalStatus = ($tStatus === 1) ? TraceCode::TERMINAL_SUCCESS : TraceCode::TERMINAL_FAILURE;
+
+            $log['retry_attempt'] = $retryAttempts;
+
+            $this->app['segment']->trackPayment($payment, $terminalStatus, $log);
         }
         catch(\Exception $e)
         {
@@ -1350,9 +1364,10 @@ trait Authorize
         if ($request !== null)
         {
             $payment->incrementOtpCount();
+
             $payment->save();
 
-            return [
+            $response = [
                 'type' => 'otp',
                 'request' => $request,
                 'version' => 1,
@@ -1363,6 +1378,10 @@ trait Authorize
                 'amount'  => number_format(($payment->getAmount()/100), 2),
                 'wallet'  => $payment->getWallet()
             ];
+
+            $this->app['segment']->trackPayment($payment, TraceCode::OTP_GENERATE, $response);
+
+            return $response;
         }
     }
 
@@ -1470,6 +1489,11 @@ trait Authorize
 
         if (in_array($paymentBank, $merchantBanks) === false)
         {
+            $customProperties = [
+                'merchant_banks' => $merchantBanks,
+                'payment_bank' => $paymentBank,
+            ];
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_BANK_NOT_ENABLED_FOR_MERCHANT);
         }
@@ -1633,6 +1657,10 @@ trait Authorize
             // If payment has an associated order
             // set the order to be paid
             $this->updateAuthorizedOrderStatus($payment);
+
+            $customProperties = $payment->toArrayTraceRelevant();
+
+            $this->app['segment']->trackPayment($payment, TraceCode::PAYMENT_AUTH_SUCCESS, $customProperties);
 
             $this->tracePaymentInfo(TraceCode::PAYMENT_AUTH_SUCCESS);
         });
