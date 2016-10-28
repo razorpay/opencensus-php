@@ -7,7 +7,7 @@ use RZP\Exception;
 
 class Core extends Base\Core
 {
-	const DUMMY         = 'dummy';
+    const DUMMY         = 'dummy';
     const WEBHOOKS      = 'webhooks';
     const AGGREGATOR    = 'aggregator';
     const TOKENS        = 'tokens';
@@ -18,7 +18,7 @@ class Core extends Base\Core
     const S2S           = 's2s';
 
     public static $allFeatures = [
-    	self::DUMMY,
+        self::DUMMY,
         self::WEBHOOKS,
         self::AGGREGATOR,
         self::TOKENS,

@@ -270,6 +270,7 @@ final class Route
         'entity_add_feature'                      => ['post',     'features/',                    'FeatureController@addFeatures'],
         'entity_delete_feature'                   => ['delete',   'features/{id}',                'FeatureController@deleteFeature'],
         'entity_get_features'                     => ['get',      'features/{toggleable_type}/{toggleable_id}',                                                     'FeatureController@getFeatures'],
+        'migrate_merchant_features'               => ['put',      'features/migrate',              'FeatureController@migrateMerchantFeatures']
     );
 
     public static $public = array(
@@ -482,6 +483,7 @@ final class Route
         'entity_get_features',
         'entity_add_feature',
         'entity_delete_feature',
+        'migrate_merchant_features',
     );
 
     public static $proxy = array(

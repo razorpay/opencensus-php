@@ -30,6 +30,7 @@ class Table
     const BANK_ACCOUNT          = 'bank_accounts';
     const DAILY_SETTLEMENT      = 'daily_settlements';
     const SETTLEMENT_DETAIL     = 'settlement_details';
+    const FEATURE               = 'features';
 
     // Gateway related
     const EBS                   = 'ebs';
@@ -59,5 +60,4 @@ class Table
     const PAYMENT_ANALYTICS     = 'payment_analytics';
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
 
-    const FEATURE               = 'features';
 }

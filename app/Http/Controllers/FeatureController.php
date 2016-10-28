@@ -18,16 +18,23 @@ class FeatureController extends Controller
 		return ApiResponse::json($data);
 	}
 
-	public function deleteFeature($id)
+	public function deleteFeature(int $id)
 	{
 		$data = (new Feature\Service)->deleteFeature($id);
 
 		return ApiResponse::json($data);
 	}
 
-	public function getFeatures($toggleableType, $toggleableId)
+	public function getFeatures(string $toggleableType, string $toggleableId)
 	{
 		$data = (new Feature\Service)->getFeatures($toggleableType, $toggleableId);
+
+		return ApiResponse::json($data);
+	}
+
+	public function migrateMerchantFeatures()
+	{
+		$data = (new Feature\Service)->migrateMerchantFeatures();
 
 		return ApiResponse::json($data);
 	}

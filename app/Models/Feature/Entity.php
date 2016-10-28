@@ -12,8 +12,6 @@ class Entity extends Base\PublicEntity
 
 	protected $table = \RZP\Constants\Table::FEATURE;
 
-	//protected $generateIdOnCreate = true;
-
 	protected $entity = 'feature';
 
 	public $incrementing = true;
@@ -41,6 +39,11 @@ class Entity extends Base\PublicEntity
 		self::TOGGLEABLE_TYPE
 	];
 
+	/**
+	 * Creates a polymorphic relation woth entities
+	 * implementing a morphMany association on the
+	 * 'toggleable' key
+	 */
 	public function toggleable()
 	{
 		return $this->morphTo();

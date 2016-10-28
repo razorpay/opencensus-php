@@ -13,7 +13,7 @@ class Repository extends Base\Repository
 
 	protected $entity = 'feature';
 
-	public function getFeatures($toggleable_type, $toggleable_id)
+	public function getFeaturesByToggleableTypeAndId(string $toggleable_type, string $toggleable_id)
 	{
 		return $this->newQuery()
 				->where(Entity::TOGGLEABLE_TYPE, '=', $toggleable_type)

@@ -36,7 +36,7 @@ class RecurringPaymentTest extends TestCase
     {
         $this->ba->publicAuth();
 
-        $this->fixtures->merchant->editFeatures('recurring');
+        $this->fixtures->merchant->addFeature('recurring');
 
         $payment = $this->getDefaultRecurringPaymentArray();
 
@@ -61,7 +61,7 @@ class RecurringPaymentTest extends TestCase
     {
         $this->ba->publicAuth();
 
-        $this->fixtures->merchant->editFeatures('recurring');
+        $this->fixtures->merchant->addFeature('recurring');
 
         $payment = $this->getDefaultRecurringPaymentArray();
 
@@ -93,7 +93,7 @@ class RecurringPaymentTest extends TestCase
     {
         $this->ba->publicAuth();
 
-        $this->fixtures->merchant->editFeatures('recurring');
+        $this->fixtures->merchant->addFeature('recurring');
 
         $payment = $this->getDefaultRecurringPaymentArray();
 
@@ -126,9 +126,9 @@ class RecurringPaymentTest extends TestCase
     {
          $this->ba->privateAuth();
 
-        $this->fixtures->merchant->editFeatures('recurring');
+        $this->fixtures->merchant->addFeature('recurring');
 
-        $this->fixtures->merchant->editFeatures('s2s');
+        $this->fixtures->merchant->addFeature('s2s');
 
         $payment = $this->getDefaultRecurringPaymentArray();
 
@@ -153,7 +153,7 @@ class RecurringPaymentTest extends TestCase
     {
         $payment = $this->getDefaultRecurringPaymentArray();
 
-        $this->fixtures->merchant->editFeatures('recurring');
+        $this->fixtures->merchant->addFeature('recurring');
 
         $payment[Payment::CARD]['number'] = '4000000000000002';
 
@@ -168,7 +168,7 @@ class RecurringPaymentTest extends TestCase
     {
         $payment = $this->getDefaultRecurringPaymentArray();
 
-        $this->fixtures->merchant->editFeatures('recurring');
+        $this->fixtures->merchant->addFeature('recurring');
 
         $payment[Payment::CARD]['number'] = '341111111111111';
         $payment[Payment::CARD]['cvv'] = '8888';
@@ -184,7 +184,7 @@ class RecurringPaymentTest extends TestCase
     {
         $payment = $this->getDefaultRecurringPaymentArray();
 
-        $this->fixtures->merchant->editFeatures('recurring');
+        $this->fixtures->merchant->addFeature('recurring');
 
         $payment[Payment::TOKEN] = '10000cardtoken';
 
@@ -203,7 +203,7 @@ class RecurringPaymentTest extends TestCase
 
         $payment[Payment::TOKEN] = '10000cardtoken';
 
-        $this->fixtures->merchant->editFeatures('recurring');
+        $this->fixtures->merchant->addFeature('recurring');
 
         unset($payment[Payment::CARD]);
 

@@ -308,6 +308,6 @@ $factory(\RZP\Gateway\Wallet\Base\Entity::class, [
 ]);
 
 $factory(\RZP\Models\Feature\Entity::class, [
-    'id'                => $faker->randomNumber(1),
+    'id'                => $faker->randomNumber(5),
     'toggleable_type'   => \RZP\Models\Merchant\Entity::class
 ]);

@@ -161,4 +161,11 @@ class Repository extends Base\Repository
 
         return $merchant;
     }
+
+    public function fetchAllMerchantFeatures()
+    {
+        return $this->newQuery()
+                    ->whereNotNull(Entity::FEATURES)
+                    ->get();
+    }
 }

@@ -491,7 +491,7 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
-        $this->fixtures->merchant->editFeatures('cardsaving');
+        $this->fixtures->merchant->addFeature('cardsaving');
 
         $this->session(['test_app_token' => '1000001custapp']);
 
@@ -504,7 +504,7 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
-        $this->fixtures->merchant->editFeatures('cardsaving');
+        $this->fixtures->merchant->addFeature('cardsaving');
 
         $response = $this->startTest();
     }
@@ -528,7 +528,7 @@ class MerchantTest extends TestCase
 
         $this->fixtures->merchant->activate('10000000000000');
 
-        $this->fixtures->merchant->editFeatures('cardsaving');
+        $this->fixtures->merchant->addFeature('cardsaving');
 
         $response = $this->startTest();
 
