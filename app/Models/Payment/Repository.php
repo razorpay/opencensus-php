@@ -173,43 +173,126 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function get50PaymentsWithVerifyResult($result, $random = false)
+    /**
+     * Return Payments object(s) which should be verified
+     *
+     * @param string $minimumTime filter to remove Payments which are created before $ts seconds
+     * @param string $verifyBoundary array of [VERIFY_BUCKET and timestamp] values
+     * @param string $verifyStatus value for filter of VerifyStatus
+     * @param string $paymentStatus value for filter of paymentStatus
+     * @param bool   $random
+     * @return Collection of Payment
+     */
+    public function getPaymentsToVerify(
+                        $minimumTime,
+                        $verifyBoundary,
+                        $verifyStatus = null,
+                        $paymentStatus = null,
+                        $random = true)
     {
-        $query = $this->newQuery()
-                    ->where(Payment\Entity::VERIFIED, '=', $result)
-                    ->take(50);
+        $verifyEnabledGateways = Payment\Gateway::$verifyEnabled;
 
-        if ($random)
+        $query = $this->newQuery()
+                      ->whereIn(Payment\Entity::GATEWAY, $verifyEnabledGateways);
+
+        if ($verifyStatus !== null)
+        {
+            $query->where(Payment\Entity::VERIFIED, '=', $verifyStatus);
+        }
+
+        if ($paymentStatus !== null)
+        {
+            $query->status($paymentStatus);
+        }
+
+        if ($random === true)
         {
             $query->inRandomOrder();
         }
 
-        return $query->get();
+        // For created, we only look at the payment status.
+        if ($paymentStatus !== Payment\Status::CREATED)
+        {
+            $this->addWhereConditionsForVerify($minimumTime, $verifyBoundary, $query);
+        }
+        else
+        {
+            $query->where(Payment\Entity::CREATED_AT, '<=', $minimumTime);
+        }
+
+        // Sample Query
+        // SELECT *
+        // FROM   `payments`
+        // WHERE  `gateway` IN ( 'axis_migs', 'billdesk', 'ebs', 'mobikwik',
+        //                      'paytm', 'hdfc', 'amex', 'netbanking_hdfc',
+        //                      'netbanking_kotak', 'wallet_payzapp', 'first_data',
+        //                      'cybersource', 'wallet_payumoney', 'wallet_airtelmoney',
+        //                      'wallet_olamoney', 'wallet_freecharge' )
+        //        AND `status` = 'failed'
+        //        AND ( ( `verify_bucket` = '0' AND `created_at` < '1478023148' )
+        //              OR ( `verify_bucket` = '1'  AND `created_at` < '1478022368' )
+        //              OR ( `verify_bucket` = '2' AND `created_at` < '1478019668' )
+        //              OR ( `verify_bucket` = '3' AND `created_at` < '1477936868' )
+        //              OR ( `verify_bucket` = '4' AND `created_at` < '1477850468' )
+        //              OR ( `verify_bucket` = '5'  AND `created_at` < '1477764068' )
+        //              OR ( `verify_bucket` = '6' AND `created_at` < '1477677668' )
+        //              OR ( `verify_bucket` = '7' AND `created_at` < '1477591268' )
+        //              OR ( `verify_bucket` = '8' AND `created_at` < '1477504868' )
+        //              OR ( `verify_bucket` = '9'  AND `created_at` < '1477418468' )
+        //            )
+        // ORDER  BY Rand()
+        // LIMIT  100
+
+        return $query->take(100)
+                     ->get();
     }
 
-    public function getPaymentsWithCreatedStatusForVerification($ts)
+    /**
+     * Process min_time and verify_boundary array and return where and orWhere Condition
+     *
+     * @param int   $minimumTime      filter to remove Payments which are created before $ts seconds
+     * @param array $verifyBoundaries array with Key as bucket and value as time for that bucket
+     * @return array with where and orWhere Condition
+     *         where condition will be created using $ts
+     *         orWhere condition will be created using $verifyBoundary
+     */
+    protected function addWhereConditionsForVerify($minimumTime, $verifyBoundaries, $query)
     {
-        $verifyEnabledGateways = Payment\Gateway::$verifyEnabled;
+        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
 
-        return $this->newQuery()
-                    ->whereNull(Payment\Entity::VERIFIED)
-                    ->status(Payment\Status::CREATED)
-                    ->whereIn(Payment\Entity::GATEWAY, $verifyEnabledGateways)
-                    ->createdAtLessThan($ts)
-                    ->get();
-    }
+        // This Condition will give all newly created payments,
+        // which have crossed minimum time threshold.
+        $whereConditions[] = [
+            [Payment\Entity::VERIFY_BUCKET, '=', 0],
+            [Payment\Entity::CREATED_AT , '<', $minimumTime]
+        ];
 
-    public function getUnverifiedPayments($ts)
-    {
-        $verifyEnabledGateways = Payment\Gateway::$verifyEnabled;
+        // Each or condition will fetch payments which are
+        // in next Verify Bucket and not processed by previous cron
+        // This will not give all payments at once, but only payments which
+        // crossed the boundary after prev cron ran (SLIDING WINDOW PROTOCOL)
+        foreach ($verifyBoundaries as $bucket => $time)
+        {
+            // This gets all the payments in the last `boundary (15, 60, etc)` time.
+            // $boundary has time in seconds, signifying payment should be X second old
+            // For querying on db, need to change that to absolute value
+            $paymentCreatedAfter = $currentTime - $time;
 
-        return $this->newQuery()
-                    ->whereNull(Payment\Entity::VERIFIED)
-                    ->status(Payment\Status::FAILED)
-                    ->whereIn(Payment\Entity::GATEWAY, $verifyEnabledGateways)
-                    ->createdAtLessThan($ts)
-                    ->take(50)
-                    ->get();
+            $whereConditions[] = [
+                [Payment\Entity::VERIFY_BUCKET, '=', ($bucket + 1)],
+                [Payment\Entity::CREATED_AT, '<', $paymentCreatedAfter]
+            ];
+        }
+
+        // Now add the conditions to the payment verify query.
+        $query->where(
+            function ($query) use ($whereConditions)
+            {
+                foreach($whereConditions as $condition)
+                {
+                    $query->orWhere($condition);
+                }
+            });
     }
 
     public function fetchPaymentsForCustomerMethod($customer, $method, $skip)

@@ -26,6 +26,71 @@ class Mutex
         $this->requestId = $app['request']->getId();
 
         $this->trace = $app['trace'];
+
+    }
+
+    /**
+     * Set the lock for the all resource provided
+     *
+     * @param array $resources Array of the resource
+     * @param int $ttl Expiry time of lock in seconds
+     * @param bool $strict defines lock should happen or not, even if one resource is not locked
+     * @param string $suffix
+     *
+     * @return array containing values of locked and not_locked keys
+     */
+    public function acquireMultiple($resources, $ttl = 60, $suffix = '', $strict = false)
+    {
+        $lockedResources = [];
+
+        $alreadyLockedResources = [];
+
+        foreach ($resources as $resource)
+        {
+            $resourceWithSuffix = $resource . $suffix;
+            $isLockAcquired = $this->acquire($resourceWithSuffix, $ttl);
+
+            if ($isLockAcquired === true)
+            {
+                $lockedResources[] = $resource;
+            }
+            else
+            {
+                if ($strict === true)
+                {
+                    $this->releaseMultiple($lockedResources, $suffix);
+
+                    return [
+                        'locked' => [],
+                        'unlocked' => $resources
+                    ];
+                }
+
+                $alreadyLockedResources[] = $resource;
+            }
+        }
+
+        return [
+            'locked' => $lockedResources,
+            'unlocked' => $alreadyLockedResources
+        ];
+    }
+
+    /**
+     * Release the lock for the resource array provided
+     *
+     * @param array $resources Array of the resource
+     *
+     * @return void
+     */
+    public function releaseMultiple($resources, $suffix = '')
+    {
+        foreach ($resources as $resource)
+        {
+            $resourceWithSuffix = $resource . $suffix;
+
+            $this->release($resourceWithSuffix);
+        }
     }
 
     /**

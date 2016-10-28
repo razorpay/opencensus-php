@@ -148,6 +148,15 @@ class Authorization
         $this->appAuth('rzp_'.$mode, 'put dashboard pass here');
     }
 
+    public function cronAuth($mode = 'test')
+    {
+        $cronConfig = \Config::get('applications.cron');
+
+        $pwd = $cronConfig['secret'];
+
+        $this->appAuth('rzp_'.$mode, $pwd);
+    }
+
     public function noAuth()
     {
         $this->type = 'direct';

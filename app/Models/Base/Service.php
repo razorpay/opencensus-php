@@ -47,9 +47,9 @@ class Service
      */
     protected $slack;
 
-	public function __construct()
-	{
-		$this->app = App::getFacadeRoot();
+    public function __construct()
+    {
+        $this->app = App::getFacadeRoot();
 
         $this->mode = $this->app['rzp.mode'];
 
@@ -60,7 +60,7 @@ class Service
         $this->repo = $this->app['repo'];
 
         $this->slack = $this->app['slack'];
-	}
+    }
 
     public static function getNewInstance()
     {

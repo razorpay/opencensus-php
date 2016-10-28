@@ -1063,3 +1063,9 @@ ALTER TABLE schedules
 ALTER TABLE schedules
     MODIFY COLUMN next_run INTEGER DEFAULT 946665000;
 
+ALTER TABLE `payments`
+    ADD COLUMN `verify_bucket` TINYINT(1) DEFAULT NULL AFTER `verified`;
+
+ALTER TABLE `payments`
+    ADD INDEX `payments_verify_bucket_index` (`verify_bucket`),
+    ADD INDEX `payments_gateway_index` (`gateway`);
