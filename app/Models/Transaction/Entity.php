@@ -523,7 +523,7 @@ class Entity extends Base\PublicEntity
         }
         else if ($this->isTypeSettlement())
         {
-            $settlement = $this->settlement;
+            $settlement = $this->source;
 
             $reportTxn['settlement_utr'] = $settlement->getUtr();
         }
