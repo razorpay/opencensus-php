@@ -612,20 +612,15 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function verifyPaymentCallbackResponse($input)
+    protected function verifyPaymentCallbackResponse(array $input)
     {
         $txnResponseCode = $input['gateway']['vpc_TxnResponseCode'];
 
-        $threeDSstatus = isset($input['gateway']['vpc_3DSstatus']) ? $input['gateway']['vpc_3DSstatus'] : null;
-
-        $message = '';
+        $threeDSstatus = $input['gateway']['vpc_3DSstatus'] ?? null;
 
         $apiErrorCode = null;
 
-        if (isset($input['gateway']['vpc_Message']))
-        {
-            $message = $input['gateway']['vpc_Message'];
-        }
+        $message = $input['gateway']['vpc_Message'] ?? '';
 
         // check for success
         if ($txnResponseCode === '0')

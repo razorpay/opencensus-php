@@ -402,7 +402,7 @@ class Gateway extends Base\Gateway
 
         $this->createGatewayPaymentEntity($content);
 
-        return [Payment\Entity::TWO_FACTOR_AUTH => Payment\TwoFactorAuth::PASSED];
+        return $this->getCallbackResponseData($input);
     }
 
     protected function getAuthorizeRequestContent($input)
@@ -675,20 +675,13 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function throwPaymentFailureException($response)
+    protected function throwPaymentFailureException(array $response)
     {
         $code = $response['statuscode'];
 
         $errorCode = ResponseCodeMap::getApiErrorCode($code);
 
-        if (isset($response['statusmessage']) === true)
-        {
-            $message = $response['statusmessage'];
-        }
-        else
-        {
-            $message = $response['statusdescription'];
-        }
+        $message = $response['statusmessage'] ?? $response['statusdescription'];
 
         throw new Exception\GatewayErrorException(
             $errorCode,

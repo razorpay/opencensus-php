@@ -26,8 +26,10 @@ class ThreeDSecureStatus
         switch ($status) {
             case self::Y:
                 return TwoFactorAuth::PASSED;
+
             case self::N:
                 return TwoFactorAuth::FAILED;
+
             default:
                 return TwoFactorAuth::UNKNOWN;
         }
