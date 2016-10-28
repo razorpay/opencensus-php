@@ -110,25 +110,21 @@ class Verify extends Base\Core
 
         switch($filter)
         {
-            case 'all':
             case Filter::PAYMENTS_FAILED:
                 $paymentStatus = Payment\Status::FAILED;
                 $minimumTime = $currentTime - self::FAILURE_MIN_TIME;
                 break;
 
-            case 'created':
             case Filter::PAYMENTS_CREATED:
                 $paymentStatus = Payment\Status::CREATED;
                 $minimumTime = $currentTime - self::CREATED_MIN_TIME;
                 break;
 
-            case 'failed':
             case Filter::VERIFY_FAILED:
                 $verifyStatus = Status::FAILED;
                 $minimumTime = $currentTime - self::ERRORED_MIN_TIME;
                 break;
 
-            case 'error':
             case Filter::VERIFY_ERROR:
                 $verifyStatus = Status::ERROR;
                 $minimumTime = $currentTime - self::ERRORED_MIN_TIME;
@@ -469,22 +465,23 @@ class Verify extends Base\Core
         switch($filter)
         {
             // TODO: remove 'created', 'failure', 'error' and 'all' filter
-            case 'created':
             case Filter::PAYMENTS_CREATED:
                 $boundaries = self::$createdStartBoundary;
                 break;
 
-            case 'failure':
-            case 'error':
             case Filter::VERIFY_ERROR:
             case Filter::VERIFY_FAILED:
-            case 'all':
             case Filter::PAYMENTS_FAILED:
                 $boundaries = self::$failureStartBoundary;
                 break;
 
             default:
-                throw new Exception\LogicException('Unknown filter provided.', null, ['filter' => $filter]);
+                throw new Exception\LogicException(
+                    'Unknown filter provided.',
+                    null,
+                    [
+                        'filter' => $filter
+                    ]);
         }
 
         return $boundaries;
