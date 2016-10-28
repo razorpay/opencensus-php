@@ -68,19 +68,19 @@ class TerminalProcessor
             }
         }
 
-        $usedTerminals = [];
+        $failedTerminals = [];
 
         if (count($pastPaymentIds) > 0)
         {
-            $terminalAnalytics = $this->repo->terminal_analytics->fetchTerminalAnalyticsForPaymentIds($pastPaymentIds);
+            $failedTerminalAnalytics = $this->repo->terminal_analytics->fetchFailedTerminalAnalyticsForPaymentIds($pastPaymentIds);
 
-            foreach ($terminalAnalytics as $tAnalytics)
+            foreach ($failedTerminalAnalytics as $tAnalytics)
             {
-                $usedTerminals[] = $tAnalytics->getTerminalId();
+                $failedTerminals[] = $tAnalytics->getTerminalId();
             }
         }
 
-        return $usedTerminals;
+        return array_unique($failedTerminals);
     }
 
     /**
