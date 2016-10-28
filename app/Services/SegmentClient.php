@@ -33,6 +33,9 @@ class SegmentClient
     // guzzle timeout for posting to lumberjack
     const CONNECT_TIMEOUT = 1;
 
+    // seperator for array flattening
+    const SEPERATOR = '_';
+
     // list of sensitive keys to exclude from sengding to segment
     // even if the api has these variables
 
@@ -208,7 +211,7 @@ class SegmentClient
             $properties['id_type'] = 'payment';
         }
 
-        $properties = flatten_array($properties);
+        $properties = flatten_array($properties, self::SEPERATOR);
 
         $defaults = [
             'anonymousId'   => $id,
@@ -287,7 +290,7 @@ class SegmentClient
 
         unset($customProperties['order_id']);
 
-        return flatten_array($customProperties);
+        return flatten_array($customProperties, self::SEPERATOR);
     }
 
     public function trackPayment(PaymentEntity $payment, $event, array $customProperties = [])
