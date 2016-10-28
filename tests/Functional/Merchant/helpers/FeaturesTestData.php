@@ -9,30 +9,25 @@ return [
     'testAddFeatureToMerchant' => [
         'request' => [
             'content' => [
-                'features'    => 'dummy',
+                'names'                     => ['dummy', 's2s'],
+                'toggleable_type'           => 'merchant',
+                'toggleable_id'             => '10000000000000'
             ],
-            'url' => '/merchants/10000000000000/features',
+            'url' => '/features',
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
-                'id' => '10000000000000',
-                //'features' => 'dummy'
-            ],
-        ],
-    ],
-
-    'testResetFeatureForMerchant' => [
-        'request' => [
-            'content' => [
-                'features'    => '',
-            ],
-            'url' => '/merchants/10000000000000/features',
-            'method' => 'POST'
-        ],
-        'response' => [
-            'content' => [
-                'id' => '10000000000000',
+                [
+                    'name'                  => 'dummy',
+                    'toggleable_id'         => '10000000000000',
+                    'toggleable_type'       => "RZP\\Models\\Merchant\\Entity"
+                ],
+                [
+                    'name'                  => 's2s',
+                    'toggleable_id'         => '10000000000000',
+                    'toggleable_type'       => "RZP\\Models\\Merchant\\Entity"
+                ]
             ],
         ],
     ],
@@ -40,9 +35,11 @@ return [
     'testAddInvalidFeatureToMerchant' => [
         'request' => [
             'content' => [
-                'features'    => 'invalid',
+                'names'                     => ['invalid'],
+                'toggleable_type'           => 'merchant',
+                'toggleable_id'             => '10000000000000'
             ],
-            'url' => '/merchants/10000000000000/features',
+            'url' => '/features',
             'method' => 'POST'
         ],
         'response' => [
@@ -63,14 +60,36 @@ return [
         'request' => [
             'content' => [
             ],
-            'url' => '/merchants/10000000000000/features',
+            'url' => '/features/merchant/10000000000000',
             'method' => 'GET'
         ],
         'response' => [
-            'content' => [
-                "dummy"
-            ],
-        ],
+            "content" => [
+                "assigned_features" => [
+                    [
+                        "name"                  => "dummy",
+                        "toggleable_id"         => "10000000000000",
+                        "toggleable_type"       => "RZP\\Models\\Merchant\\Entity"
+                    ],
+                    [
+                        "name"                  => "s2s",
+                        "toggleable_id"         => "10000000000000",
+                        "toggleable_type"       => "RZP\\Models\\Merchant\\Entity"
+                    ],
+                ],
+                "all_features" => [
+                    "dummy",
+                    "webhooks",
+                    "aggregator",
+                    "tokens",
+                    "s2swallet",
+                    "setl_report",
+                    "cardsaving",
+                    "recurring",
+                    "s2s"
+                ]
+            ]
+        ]
     ],
 
     'testGetAllFeatures' => [

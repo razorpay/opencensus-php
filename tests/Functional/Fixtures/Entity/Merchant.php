@@ -259,7 +259,12 @@ class Merchant extends Base
 
     public function editFeatures($features, $id = '10000000000000')
     {
-        return $this->edit($id, ['features' => $features]);
+        $attributes = [
+            'name' => $features,
+            'toggleable_id' => $id
+        ];
+
+        return $this->fixtures->create('feature', $attributes);
     }
 
     public function setCategory($category, $id = '10000000000000')

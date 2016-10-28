@@ -1,0 +1,40 @@
+<?php
+
+namespace RZP\Models\Feature;
+
+use RZP\Models\Base;
+use RZP\Exception;
+
+class Core extends Base\Core
+{
+	const DUMMY         = 'dummy';
+    const WEBHOOKS      = 'webhooks';
+    const AGGREGATOR    = 'aggregator';
+    const TOKENS        = 'tokens';
+    const S2SWALLET     = 's2swallet';
+    const SETL_REPORT   = 'setl_report';
+    const CARD_SAVING   = 'cardsaving';
+    const RECURRING     = 'recurring';
+    const S2S           = 's2s';
+
+    public static $allFeatures = [
+    	self::DUMMY,
+        self::WEBHOOKS,
+        self::AGGREGATOR,
+        self::TOKENS,
+        self::S2SWALLET,
+        self::SETL_REPORT,
+        self::CARD_SAVING,
+        self::RECURRING,
+        self::S2S
+    ];
+
+	public function create($input)
+	{
+		$feature = (new Entity)->build($input);
+
+		$this->repo->saveOrFail($feature);
+
+		return $feature;
+	}
+}

@@ -409,7 +409,8 @@ class Entity extends Base\PublicEntity
 
     public function getFeatures()
     {
-        return $this->getAttribute(self::FEATURES);
+        return $this->morphMany(\RZP\Models\Feature\Entity::class, 'toggleable')
+                    ->get()->pluck(\RZP\Models\Feature\Entity::NAME)->toArray();
     }
 
     public function getBrandColor()
@@ -497,34 +498,6 @@ class Entity extends Base\PublicEntity
 
         // Just so there is no whitespace before or after the email
         return array_map('trim', $emails);
-    }
-
-    protected function getFeaturesAttribute()
-    {
-        $features = $this->attributes[self::FEATURES];
-
-        if (empty($features))
-        {
-            return [];
-        }
-        else
-        {
-            $features = explode(Features::DELIMITER, $features);
-            return array_map('trim', $features);
-        }
-    }
-
-    protected function setFeaturesAttribute($features)
-    {
-        if (is_array($features))
-        {
-            $this->attributes[self::FEATURES] =
-                implode(Features::DELIMITER, $features);
-        }
-        else
-        {
-            $this->attributes[self::FEATURES] = $features;
-        }
     }
 
     protected function setEmailAttribute($email)

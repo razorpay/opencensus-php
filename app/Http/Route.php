@@ -120,8 +120,6 @@ final class Route
         'merchant_edit_free_credits'              => ['post',     'merchants/{id}/credits',                         'MerchantController@postFreeCredits',                               ],
         'merchant_beneficiary_file'               => ['get',      'merchants/beneficiary/file',                     'MerchantController@getMerchantBeneficiaryFile'                     ],
         'merchant_post_beneficiary_file'          => ['post',     'merchants/beneficiary/file/bank',                'MerchantController@postMerchantBeneficiaryFile'                    ],
-        'merchant_add_features'                   => ['post',     'merchants/{id}/features',                        'MerchantController@postMerchantFeatures'                           ],
-        'merchant_get_features'                   => ['get',      'merchants/{id}/features',                        'MerchantController@getMerchantFeatures'                            ],
         'merchant_notify_holiday'                 => ['post',     'merchants/notify/holiday',                       'MerchantController@postMerchantsNotifyHoliday'                     ],
         'balance_fetch'                           => ['get',      'balance',                                        'MerchantController@getAccountBalance'                              ],
         'credits_create'                          => ['post',     'merchants/{id}/credits_log',                     'MerchantController@postCreateCreditsLog'                           ],
@@ -224,7 +222,6 @@ final class Route
         'transparent_redirect_post'               => ['post',     'redirect',                                       'AdminController@postTransparentRedirect'                           ],
         'settlement_compute_tax'                  => ['post',     'settlements/compute/tax',                        'SettlementController@postComputeSettlementServiceTax'              ],
         'daily_settlement_compute_tax'            => ['post',     'dailysettlements/compute/tax',                   'SettlementController@postComputeDailySettlementServiceTax'         ],
-        'features_fetch'                          => ['get',      'features',                                       'MerchantController@getAllFeatures'                                 ],
         'feature_dummy'                           => ['get',      'features/dummy',                                 'MerchantController@getDummyFeatures'                               ],
         'emi_plan_add'                            => ['post',     'emi',                                            'EmiController@addEmiPlan'                                          ],
         'emi_plans_fetch_multiple'                => ['get',      'emi',                                            'EmiController@fetchEmiPlans'                                       ],
@@ -270,6 +267,9 @@ final class Route
         'gateway_fetch_absence'                   => ['get',      'gateway/absence',                                'GatewayController@getAbsentGateways'                               ],
         'scorecard'                               => ['get',      'scorecard',                                      'AdminController@getScorecard'                                      ],
         'billdesk_reconcile_cancelled'            => ['post',     'reconciliate/{gateway}/cancelled',               'ReconciliatorController@postReconciliateCancelledTransactions'     ],
+        'entity_add_feature'                      => ['post',     'features/',                    'FeatureController@addFeatures'],
+        'entity_delete_feature'                   => ['delete',   'features/{id}',                'FeatureController@deleteFeature'],
+        'entity_get_features'                     => ['get',      'features/{toggleable_type}/{toggleable_id}',                                                     'FeatureController@getFeatures'],
     );
 
     public static $public = array(
@@ -455,9 +455,6 @@ final class Route
         'iin_generate_post',
         'send_test_newsletter',
         'send_newsletter',
-        'merchant_add_features',
-        'merchant_get_features',
-        'features_fetch',
         'emi_plan_add',
         'emi_plan_delete',
         'emi_plan_fetch_by_id',
@@ -482,6 +479,9 @@ final class Route
         'schedule_get',
         'schedule_update',
         'schedule_assign',
+        'entity_get_features',
+        'entity_add_feature',
+        'entity_delete_feature',
     );
 
     public static $proxy = array(

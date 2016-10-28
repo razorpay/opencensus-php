@@ -47,6 +47,7 @@ class Entity
     const PAYMENT_ANALYTICS     = 'payment_analytics';
     const GATEWAY_ABSENCE       = 'gateway_absence';
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
+    const FEATURE               = 'feature';
 
     //
     // Gateway entities
@@ -119,6 +120,7 @@ class Entity
         self::GATEWAY_ABSENCE       => \RZP\Models\GatewayStatus\Absence::class,
         self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
         self::WALLET_FREECHARGE     => \RZP\Gateway\Wallet\Freecharge::class,
+        self::FEATURE               => \RZP\Models\Feature::class
     );
 
     protected static $repository = array(
@@ -171,7 +173,6 @@ class Entity
     public static function getEntityRepository($entity, $repositoryType = 'Repository')
     {
         $class = self::getEntityNamespace($entity) . '\\' . $repositoryType;
-
         if (class_exists($class) === false)
         {
             if (isset(self::$repository[$entity]))

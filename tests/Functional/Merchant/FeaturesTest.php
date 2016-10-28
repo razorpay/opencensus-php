@@ -25,19 +25,6 @@ class FeaturesTest extends TestCase
         $this->startTest();
     }
 
-    public function testResetFeatureForMerchant()
-    {
-        $this->fixtures->merchant->editFeatures("cardsaving,tokens");
-
-        $this->ba->appAuth();
-
-        $this->startTest();
-
-        $merchant = $this->getEntityById('merchant', '10000000000000', true);
-
-        $this->assertEquals($merchant['features'], []);
-    }
-
     public function testAddInvalidFeatureToMerchant()
     {
         $this->ba->appAuth();
@@ -49,11 +36,6 @@ class FeaturesTest extends TestCase
     {
         $this->testAddFeatureToMerchant();
 
-        $this->startTest();
-    }
-
-    public function testGetAllFeatures()
-    {
         $this->startTest();
     }
 
