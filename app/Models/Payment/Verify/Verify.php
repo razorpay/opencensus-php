@@ -16,15 +16,6 @@ class Verify extends Base\Core
 {
      // ================== Configurations ==================
     /**
-     * Verify will run for all the created payments every 2 minutes.
-     * All the created payments will be converted to failed in 10 minutes via timeout cron.
-     * Hence, at max, verify for the payment (when it is in created state) will be run 5 times.
-     */
-    protected static $createdStartBoundary = [
-        120,           // 2 Minutes
-    ];
-
-    /**
      * For all the payments which are in failed state,
      * verify for the payment will be run once for in every boundary bucket.
      */
@@ -55,13 +46,15 @@ class Verify extends Base\Core
      */
     const CREATED_MIN_TIME = 120;  // 2 Minutes
 
-    // TODO: This is present here to ensure backward compatibility and
-    // should be removed after the required changes in the cron are made.
+    /**
+     * This is the minimum time for which the payment should be in
+     * failed state, before we run verify on it.
+     */
     const FAILURE_MIN_TIME = 120;  // 2 Minutes
 
     /**
-     * This is the minimum time for which the payment should be in
-     * failed state, before we run a "failed/error" verify on it.
+     * This is the minimum time for which the payment verify status
+     * should be in non-success state, before we run a "failed/error" verify on it.
      */
     const ERRORED_MIN_TIME = 0; // 0 Minute
 
@@ -464,9 +457,13 @@ class Verify extends Base\Core
     {
         switch($filter)
         {
-            // TODO: remove 'created', 'failure', 'error' and 'all' filter
+            /**
+             * Verify will run for all the created payments every 2 minutes.
+             * All the created payments will be converted to failed in 10 minutes via timeout cron.
+             * Hence, at max, verify for the payment (when it is in created state) will be run 5 times.
+             */
             case Filter::PAYMENTS_CREATED:
-                $boundaries = self::$createdStartBoundary;
+                $boundaries = [];
                 break;
 
             case Filter::VERIFY_ERROR:
