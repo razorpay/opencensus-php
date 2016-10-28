@@ -309,7 +309,10 @@ class VerifyTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $resultData = ['filter' => 'verify_error'];
+        $resultData = [
+            'timeout' => 1,
+            'filter'  => 'verify_error'
+        ];
 
         $this->assertContent($content, $resultData);
 

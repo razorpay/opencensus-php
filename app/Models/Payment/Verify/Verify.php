@@ -308,12 +308,9 @@ class Verify extends Base\Core
 
         $route = $this->app['api.route']->getCurrentRouteName();
 
-        // For Payment in created state, verify bucket should not be updated
-        // as we want to run cron on specific interval, till payment is marked as failed/authorized
         // If filter is null, then verify is initiated manually, not via cron
         // Don't update VERIFY_BUCKET, in that case
-        if (($payment->getStatus() !== Payment\Status::CREATED) and
-            ($cron === true) and
+        if (($cron === true) and
             ($route === 'payment_verify_multiple_post'))
         {
             $nextVerifyBucket = $this->getPaymentNextVerifyBucket($payment, $filter);
@@ -431,10 +428,13 @@ class Verify extends Base\Core
 
     protected function getPaymentNextVerifyBucket($payment, $filter)
     {
-        // For Payment in created state, verify bucket should not be updated
-        // as we want to run cron on specific interval, till payment is marked as failed/authorized
-        // If filter is null, then verify is initiated manually, not via cron
-        // Don't update VERIFY_BUCKET, in that case
+        // For Payment in created state and payment having verified as error,
+        // verify bucket should be 0
+        if (($filter === Filter::PAYMENTS_CREATED) or
+            ($filter === Filter::VERIFY_ERROR))
+        {
+            return 0;
+        }
 
         // Get Verify Boundary to update Verify Bucket
         $boundaries = $this->getBoundaryInSeconds($filter);
@@ -461,12 +461,13 @@ class Verify extends Base\Core
              * Verify will run for all the created payments every 2 minutes.
              * All the created payments will be converted to failed in 10 minutes via timeout cron.
              * Hence, at max, verify for the payment (when it is in created state) will be run 5 times.
+             * For Verify Error, Cron will pick the paymnets till Verify Status Changes
              */
             case Filter::PAYMENTS_CREATED:
+            case Filter::VERIFY_ERROR:
                 $boundaries = [];
                 break;
 
-            case Filter::VERIFY_ERROR:
             case Filter::VERIFY_FAILED:
             case Filter::PAYMENTS_FAILED:
                 $boundaries = self::$failureStartBoundary;
