@@ -118,7 +118,7 @@ class Validator extends Base\Validator
                 'Cannot assign amount credits as fee credits are already present');
         }
         else if(($type === Type::FEE) and
-                ($balance->getCredits() > 0))
+                ($balance->getAmountCredits() > 0))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Cannot assign fee credits as amount credits are already present');
