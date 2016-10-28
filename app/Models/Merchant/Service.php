@@ -204,15 +204,15 @@ class Service extends Base\Service
         return $balance->toArray();
     }
 
-    public function editFreeCredits($merchantId, $input)
+    public function editAmountCredits($merchantId, $input)
     {
         (new Merchant\Validator)->validateInput('edit_credits', $input);
 
-        $freeCredits = $input['credits'];
+        $amountCredits = $input['credits'];
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $balance = $this->repo->balance->editMerchantFreeCredits($merchant, $freeCredits);
+        $balance = $this->repo->balance->editMerchantAmountCredits($merchant, $amountCredits);
 
         return $balance->toArray();
     }

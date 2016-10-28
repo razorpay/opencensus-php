@@ -101,7 +101,7 @@ class AmountCreditsTest extends TestCase
         $creditsLog = $this->fixtures->create(
             'credits', ['id' => '123', 'value' => 150]);
         $merchant = $creditsLog->merchant;
-        $balance = (new Merchant\Balance\Repository)->editMerchantFreeCredits($merchant, 10);
+        $balance = (new Merchant\Balance\Repository)->editMerchantAmountCredits($merchant, 10);
         $this->startTest();
     }
 

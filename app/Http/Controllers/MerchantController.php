@@ -312,11 +312,11 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postFreeCredits($id)
+    public function postAmountCredits($id)
     {
         $input = Request::all();
 
-        $data = (new Merchant\Service)->editFreeCredits($id, $input);
+        $data = (new Merchant\Service)->editAmountCredits($id, $input);
 
         return ApiResponse::json($data);
     }

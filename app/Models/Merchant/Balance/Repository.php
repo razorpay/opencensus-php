@@ -39,28 +39,28 @@ class Repository extends Base\Repository
         return $balance;
     }
 
-    public function editMerchantFreeCredits($merchant, $freeCredits)
+    public function editMerchantAmountCredits($merchant, $amountCredits)
     {
         $channel = Settlement\Channel::KOTAK;
 
-        return $this->transaction(function () use ($merchant, $freeCredits, $channel)
+        return $this->transaction(function () use ($merchant, $amountCredits, $channel)
         {
-            return $this->editMerchantFreeCreditsInTransaction($merchant, $freeCredits, $channel);
+            return $this->editMerchantAmountCreditsInTransaction($merchant, $amountCredits, $channel);
         });
     }
 
-    private function editMerchantFreeCreditsInTransaction($merchant, $freeCredits, $channel)
+    private function editMerchantAmountCreditsInTransaction($merchant, $amountCredits, $channel)
     {
         assert ($this->isTransactionActive());
 
         $balance = $this->findOrFail($merchant->getId());
         $nodalBalance = $this->getNodalBalanceLockForUpdate($channel);
 
-        $nodalCredits = $nodalBalance->getCredits();
-        $nodalCredits = $nodalCredits - $balance->getCredits() + $freeCredits;
-        $nodalBalance->setCredits($nodalCredits);
+        $nodalCredits = $nodalBalance->getAmountCredits();
+        $nodalCredits = $nodalCredits - $balance->getAmountCredits() + $amountCredits;
+        $nodalBalance->setAmountCredits($nodalCredits);
 
-        $balance->setCredits($freeCredits);
+        $balance->setAmountCredits($amountCredits);
 
         $balance->saveOrFail();
         $nodalBalance->saveOrFail();
