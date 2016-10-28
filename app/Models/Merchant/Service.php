@@ -294,16 +294,33 @@ class Service extends Base\Service
 
         $merchant->schedule()->associate($schedule);
 
-        $this->trace->info(
-            TraceCode::SCHEDULE_ASSIGNED,
-            [
-                'schedule' => $schedule->toArray(),
-                'merchant' => $merchant->getId(),
-            ]);
+        $this->traceAndNotifyScheduleAssignment($schedule, $merchant);
 
         $this->repo->saveOrFail($merchant);
 
         return $merchant->toArrayPublic();
+    }
+
+    protected function traceAndNotifyScheduleAssignment($schedule, $merchant)
+    {
+        $data = [
+            "schedule"    => $schedule->getName(),
+            "schedule_id" => $schedule->getId(),
+            "merchant"    => $merchant->getBillingLabelElseName(),
+            "merchant_id" => $schedule->getId(),
+        ];
+
+        $this->trace->info(TraceCode::SCHEDULE_ASSIGNED, $data);
+
+        $this->slack->queue(
+                "Schedule assigned to Merchant",
+                $data,
+                [
+                    'channel'  => '#operations_log',
+                    'username' => 'Jordan Belfort',
+                    'icon'     => ':boom:',
+                ]
+            );
     }
 
     public function getPricingPlan($id)
