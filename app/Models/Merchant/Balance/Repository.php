@@ -39,17 +39,17 @@ class Repository extends Base\Repository
         return $balance;
     }
 
-    public function editMerchantFreeCredits($merchant, $amountCredits)
+    public function editMerchantAmountCredits($merchant, $amountCredits)
     {
         $channel = Settlement\Channel::KOTAK;
 
         return $this->transaction(function () use ($merchant, $amountCredits, $channel)
         {
-            return $this->editMerchantFreeCreditsInTransaction($merchant, $amountCredits, $channel);
+            return $this->editMerchantAmountCreditsInTransaction($merchant, $amountCredits, $channel);
         });
     }
 
-    private function editMerchantFreeCreditsInTransaction($merchant, $amountCredits, $channel)
+    private function editMerchantAmountCreditsInTransaction($merchant, $amountCredits, $channel)
     {
         assert ($this->isTransactionActive());
 
