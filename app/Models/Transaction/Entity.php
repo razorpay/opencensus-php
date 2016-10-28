@@ -488,10 +488,10 @@ class Entity extends Base\PublicEntity
 
         unset($reportTxn[self::ID]);
 
-        $reportTxn['description'] = null;
-        $reportTxn['notes'] = null;
-        $reportTxn['payment_id'] = null;
-        $reportTxn['settlement_utr'] = null;
+        $reportTxn[self::DESCRIPTION] = null;
+        $reportTxn[self::NOTES] = null;
+        $reportTxn[self::PAYMENT_ID] = null;
+        $reportTxn[self::SETTLEMENT_UTR] = null;
 
         // settled_at will by default have date and time (d/m/y h:m:s) in it
         // while we only want to provide date.
@@ -501,8 +501,8 @@ class Entity extends Base\PublicEntity
         {
             $payment = $this->source;
 
-            $reportTxn['description'] = $payment->getDescription();
-            $reportTxn['notes'] = $payment->getNotesJson();
+            $reportTxn[self::DESCRIPTION] = $payment->getDescription();
+            $reportTxn[self::NOTES] = $payment->getNotesJson();
 
             if ($payment->hasBeenCaptured() === false)
             {
@@ -521,13 +521,14 @@ class Entity extends Base\PublicEntity
                 return null;
             }
 
-            $reportTxn['payment_id'] = $payment->getPublicId();
+            $reportTxn[self::PAYMENT_ID] = $payment->getPublicId();
         }
         else if ($this->isTypeSettlement())
         {
             $settlement = $this->source;
 
-            $reportTxn['settlement_utr'] = $settlement->getUtr();
+            $reportTxn[self::SETTLEMENT_UTR] = $settlement->getUtr();
+            $reportTxn[self::SETTLED] = null;
         }
         else if ($this->isTypeAdjustment())
         {
