@@ -307,7 +307,7 @@ class Service extends Base\Service
             "schedule"    => $schedule->getName(),
             "schedule_id" => $schedule->getId(),
             "merchant"    => $merchant->getBillingLabelElseName(),
-            "merchant_id" => $schedule->getId(),
+            "merchant_id" => $merchant->getId(),
         ];
 
         $this->trace->info(TraceCode::SCHEDULE_ASSIGNED, $data);
