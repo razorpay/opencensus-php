@@ -34,7 +34,7 @@ class SegmentClient
     const CONNECT_TIMEOUT = 1;
 
     // seperator for array flattening
-    const SEPERATOR = '_';
+    const SEPERATOR = ':';
 
     // list of sensitive keys to exclude from sengding to segment
     // even if the api has these variables
