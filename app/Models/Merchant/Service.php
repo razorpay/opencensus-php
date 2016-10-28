@@ -208,11 +208,11 @@ class Service extends Base\Service
     {
         (new Merchant\Validator)->validateInput('edit_credits', $input);
 
-        $freeCredits = $input['credits'];
+        $amountCredits = $input['credits'];
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $balance = $this->repo->balance->editMerchantFreeCredits($merchant, $freeCredits);
+        $balance = $this->repo->balance->editMerchantFreeCredits($merchant, $amountCredits);
 
         return $balance->toArray();
     }
