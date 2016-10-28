@@ -311,7 +311,7 @@ class Verify extends Base\Core
         // If filter is null, then verify is initiated manually, not via cron
         // Don't update VERIFY_BUCKET, in that case
         if (($cron === true) and
-            ($route === 'payment_verify_multiple_post'))
+            ($route === 'payment_verify_multiple'))
         {
             $nextVerifyBucket = $this->getPaymentNextVerifyBucket($payment, $filter);
 

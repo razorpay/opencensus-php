@@ -386,7 +386,7 @@ class VerifyTest extends TestCase
 
         $request = array(
             'url'    => '/payments/verify/invalid',
-            'method' => 'get'
+            'method' => 'post'
         );
 
         $this->ba->cronAuth();
