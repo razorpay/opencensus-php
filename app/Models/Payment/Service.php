@@ -440,7 +440,7 @@ class Service extends Base\Service
 
         $message = 'Multiple authorized payments for orders with a captured payment refunded';
 
-        $this->slack->queue($message, $results, ['channel' => '#tech_logs']);
+        $this->slack->queue($message, $results, ['channel' => Config::get('slack.channels.tech_logs')]);
 
         return $results;
     }
