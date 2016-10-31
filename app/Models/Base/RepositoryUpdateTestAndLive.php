@@ -112,10 +112,10 @@ trait RepositoryUpdateTestAndLive
 
     protected function dualUpdateVerifyEntityClass($entity)
     {
-        if (get_class($entity) !== $this->getEntityClass())
+        if ($entity->getEntityName() !== $this->entity)
         {
             throw new Exception\LogicException(
-                'Can only handle ' . $this->repo . ' entities here. Provided: ' . get_class($entity));
+                'Can only handle ' . $this->entity . ' entities here. Provided: ' . $entity->getEntityName());
         }
     }
 
