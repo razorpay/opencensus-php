@@ -29,7 +29,7 @@ class Table
     const TRANSACTION           = 'transactions';
     const BANK_ACCOUNT          = 'bank_accounts';
     const DAILY_SETTLEMENT      = 'daily_settlements';
-    const SETTLEMENT_DETAIL     = 'settlement_details';
+    const SETTLEMENT_DETAILS    = 'settlement_details';
 
     // Gateway related
     const EBS                   = 'ebs';
@@ -53,7 +53,7 @@ class Table
 
     // Terminal Performance
     const TERMINAL_ACTION       = 'terminal_action_logs';
-    const GATEWAY_STATUS_ABSENCE = 'gateway_status_absence';
+    const GATEWAY_ABSENCE       = 'gateway_status_absence';
 
     // Payment Analytics
     const PAYMENT_ANALYTICS     = 'payment_analytics';

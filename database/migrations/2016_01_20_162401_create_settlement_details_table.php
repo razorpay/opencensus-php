@@ -17,8 +17,8 @@ class CreateSettlementDetailsTable extends Migration
 	 */
 	public function up()
 	{
-		Schema::create(Table::SETTLEMENT_DETAIL, function(Blueprint $table)
-        {
+		  Schema::create(Table::SETTLEMENT_DETAILS, function(Blueprint $table)
+      {
             $table->engine = 'InnoDB';
 
             $table->char(Entity::ID, 14)
