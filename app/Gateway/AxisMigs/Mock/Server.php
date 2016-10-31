@@ -48,6 +48,7 @@ class Server extends Base\Mock\Server
             'vpc_VerToken'          => 'huMdTSBYZwAbYwAAAHhpApYAAAA=',
             'vpc_VerType'           => '3DS',
             'vpc_Version'           => '1',
+            'vpc_SecureHashType'    => 'SHA256',
         );
 
         $this->addVpcCard($content, $input);
