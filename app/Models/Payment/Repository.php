@@ -312,19 +312,20 @@ class Repository extends Base\Repository
 
     public function fetchReconciledPaymentsForGateway($from, $to, $gateway, $status)
     {
-        $paymentAttrs = Entity::getAttributeWithTableName('*');
+        $paymentAttrs = $this->getAttributeWithTableName('*');
 
-        $paymentId = Entity::getAttributeWithTableName(Entity::ID);
+        $paymentId = $this->getAttributeWithTableName(Entity::ID);
 
-        $transactionPaymentId = Transaction\Entity::getAttributeWithTableName(Transaction\Entity::ENTITY_ID);
+        $txnRepo = $this->manager->transaction;
+        $transactionPaymentId = $txnRepo->getAttributeWithTableName(Transaction\Entity::ENTITY_ID);
 
-        $transactionEntityType = Transaction\Entity::getAttributeWithTableName(Transaction\Entity::TYPE);
+        $transactionEntityType = $txnRepo->getAttributeWithTableName(Transaction\Entity::TYPE);
 
-        $transactionReconciledAt = Transaction\Entity::getAttributeWithTableName(Transaction\Entity::RECONCILED_AT);
+        $transactionReconciledAt = $txnRepo->getAttributeWithTableName(Transaction\Entity::RECONCILED_AT);
 
         return $this->newQuery()
                     ->select($paymentAttrs)
-                    ->join(Table::TRANSACTION, $paymentId, '=', $transactionPaymentId)
+                    ->join($txnRepo->getTableName(), $paymentId, '=', $transactionPaymentId)
                     ->where(Entity::GATEWAY, '=', $gateway)
                     ->where($transactionEntityType, '=', 'payment')
                     ->whereBetween($transactionReconciledAt, [$from, $to])
@@ -382,7 +383,7 @@ class Repository extends Base\Repository
 
     protected function addQueryParamInternational($query, $params)
     {
-        $international = Payment\Entity::getAttributeWithTableName(Entity::INTERNATIONAL);
+        $international = $this->getAttributeWithTableName(Entity::INTERNATIONAL);
 
         $query->where($international, '=', $params[Entity::INTERNATIONAL]);
     }
@@ -416,16 +417,16 @@ class Repository extends Base\Repository
 
         foreach ($joins as $join)
         {
-            if ($join->table === Card\Entity::getTableName())
+            if ($join->table === $this->manager->card->getTableName())
             {
                 return;
             }
         }
 
-        $paymentCardId = Payment\Entity::getAttributeWithTableName(Payment\Entity::CARD_ID);
-        $cardId = Card\Entity::getAttributeWithTableName(Card\Entity::ID);
+        $paymentCardId = $this->getAttributeWithTableName(Payment\Entity::CARD_ID);
+        $cardId = $this->manager->card->getAttributeWithTableName(Card\Entity::ID);
 
-        $query->join(Card\Entity::getTableName(), $paymentCardId, '=', $cardId);
+        $query->join($this->manager->card->getTableName(), $paymentCardId, '=', $cardId);
     }
 
     public function getYesterdayVolume()
@@ -460,11 +461,11 @@ class Repository extends Base\Repository
         $from = Carbon::yesterday('Asia/Kolkata')->timestamp;
         $to = Carbon::today('Asia/Kolkata')->timestamp;
 
-        $pid = Payment\Entity::getAttributeWithTableName(Payment\Entity::MERCHANT_ID);
-        $mid = Merchant\Entity::getAttributeWithTableName(Merchant\Entity::ID);
+        $pid = $this->getAttributeWithTableName(Payment\Entity::MERCHANT_ID);
+        $mid = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::ID);
 
         return $this->newQuery()
-                    ->join(Merchant\Entity::getTableName(), $pid, '=', $mid)
+                    ->join($this->manager->merchant->getTableName(), $pid, '=', $mid)
                     ->selectRaw(
                        Payment\Entity::MERCHANT_ID . ','.
                        Merchant\Entity::NAME . ','.
@@ -487,11 +488,11 @@ class Repository extends Base\Repository
         $from = Carbon::today('Asia/Kolkata')->startOfMonth()->timestamp;
         $to = Carbon::today('Asia/Kolkata')->timestamp;
 
-        $pid = Payment\Entity::getAttributeWithTableName(Payment\Entity::MERCHANT_ID);
-        $mid = Merchant\Entity::getAttributeWithTableName(Merchant\Entity::ID);
+        $pid = $this->getAttributeWithTableName(Payment\Entity::MERCHANT_ID);
+        $mid = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::ID);
 
         return $this->newQuery()
-                    ->join(Merchant\Entity::getTableName(), $pid, '=', $mid)
+                    ->join($this->manager->merchant->getTableName(), $pid, '=', $mid)
                     ->selectRaw(
                        Payment\Entity::MERCHANT_ID . ','.
                        Merchant\Entity::NAME . ','.

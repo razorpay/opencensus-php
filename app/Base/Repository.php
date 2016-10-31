@@ -2,10 +2,10 @@
 
 namespace RZP\Base;
 
-use RZP\Constants\Entity as E;
-use RZP\Constants\Table;
 use DB;
 use Illuminate\Support\Facades\App;
+use RZP\Constants\Entity as E;
+use RZP\Constants\Table;
 use RZP\Trace\TraceCode;
 use RZP\Exception\DbQueryException;
 

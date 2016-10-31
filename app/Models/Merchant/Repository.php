@@ -98,7 +98,7 @@ class Repository extends Base\Repository
     public function addQueryParamMethods($query, $params)
     {
         $query->join(
-            self::getTableNameForEntity(Methods\Entity::getEntityName()),
+            $this->manager->methods->getTableName(),
             function ($join) use ($params)
             {
                 $merchantId = Merchant\Entity::getAttributeWithTableName(Merchant\Entity::ID);
