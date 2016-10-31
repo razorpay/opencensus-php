@@ -2,6 +2,7 @@
 
 namespace RZP\Base;
 
+use RZP\Constants\Entity as E;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 
@@ -70,19 +71,19 @@ class EloquentEx extends \Razorpay\Spine\Entity
         return time();
     }
 
-    public static function getTableName()
+    public function getTable()
     {
-        return (new static)->getTable();
+        return E::getTableNameForEntity($this->entity);
     }
 
-    public static function getAttributeWithTableName($col)
+    protected function getAttributeWithTableName($col)
     {
-        return static::getTableName() . '.' . $col;
+        return $this->getTable() . '.' . $col;
     }
 
     public function scopeBetweenTime($query, $from, $to)
     {
-        $createdAtColumn = static::getAttributeWithTableName(Common::CREATED_AT);
+        $createdAtColumn = $this->getAttributeWithTableName(Common::CREATED_AT);
         $query->whereBetween($createdAtColumn, [$from, $to]);
     }
 

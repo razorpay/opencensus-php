@@ -26,8 +26,6 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'iin';
 
-    protected $table = Table::IIN;
-
     protected $primaryKey = self::IIN;
 
     protected $appends = array(self::INTERNATIONAL);

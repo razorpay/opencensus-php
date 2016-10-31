@@ -195,9 +195,7 @@ class Entity
 
     public static function getTableNameForEntity($entity)
     {
-        self::validateEntityOrFail($entity);
-
-        return constant(Table::class.'::'.strtoupper($entity));
+        return Table::getTableNameForEntity($entity);
     }
 
     public static function validateIsEntity($entity)

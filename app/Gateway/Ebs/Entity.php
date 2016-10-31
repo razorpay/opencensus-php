@@ -53,8 +53,5 @@ class Entity extends Base\Entity
         self::IS_FLAGGED    => 'boolean',
     ];
 
-    protected $table = Table::EBS;
-
     protected $entity = Constants\Entity::EBS;
-
 }

@@ -15,10 +15,6 @@ class Detail extends Base\Entity
     const ISSUER    = 'issuer';
     const TRIVIA    = 'trivia';
 
-    protected $table = Table::IIN;
-
-    protected $primaryKey = self::IIN;
-
     public $timestamps = false;
 
     protected $guarded = array('*');

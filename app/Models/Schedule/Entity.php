@@ -53,8 +53,6 @@ class Entity extends Base\PublicEntity
         self::NEXT_RUN => 'int',
     ];
 
-    protected $table = Table::SCHEDULE;
-
     protected $entity = 'schedule';
 
     public function updateNextRun()

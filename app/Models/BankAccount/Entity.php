@@ -38,8 +38,6 @@ class Entity extends Base\PublicEntity
 
     protected $primaryKey = self::ID;
 
-    protected $table = \RZP\Constants\Table::BANK_ACCOUNT;
-
     protected $entity = 'bank_account';
 
     protected $fillable = array(

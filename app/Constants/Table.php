@@ -35,7 +35,7 @@ class Table
     const EBS                   = 'ebs';
     const ATOM                  = 'atom';
     const HDFC                  = 'hdfc';
-    const AXIS                  = 'axis';
+    const MIGS                  = 'axis';
     const CYBERSOURCE           = 'cybersource';
     const FIRST_DATA            = 'first_data';
     const PAYTM                 = 'paytm';
@@ -58,4 +58,22 @@ class Table
     // Payment Analytics
     const PAYMENT_ANALYTICS     = 'payment_analytics';
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
+
+    protected static $entityToTableMap = array(
+        Entity::AXIS_MIGS       => self::MIGS,
+        Entity::AXIS_GENIUS     => self::MIGS,
+        Entity::AMEX            => self::MIGS,
+    );
+
+    public static function getTableNameForEntity($entity)
+    {
+        Entity::validateEntityOrFail($entity);
+
+        if (isset(self::$entityToTableMap[$entity]))
+        {
+            return self::$entityToTableMap[$entity];
+        }
+
+        return constant(Table::class.'::'.strtoupper($entity));
+    }
 }
