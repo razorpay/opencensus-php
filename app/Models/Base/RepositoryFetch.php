@@ -246,7 +246,7 @@ trait RepositoryFetch
         return $newParams;
     }
 
-    protected function validateAdditional($params)
+    protected function validateAdditional(array $params)
     {
         ;
     }
