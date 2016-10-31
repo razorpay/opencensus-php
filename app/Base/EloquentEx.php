@@ -4,8 +4,6 @@ namespace RZP\Base;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
-use RZP\Models\Base\BuilderEx;
-use RZP\Models\Base\Entity;
 
 class EloquentEx extends \Razorpay\Spine\Entity
 {
@@ -84,7 +82,7 @@ class EloquentEx extends \Razorpay\Spine\Entity
 
     public function scopeBetweenTime($query, $from, $to)
     {
-        $createdAtColumn = static::getAttributeWithTableName(Entity::CREATED_AT);
+        $createdAtColumn = static::getAttributeWithTableName(Common::CREATED_AT);
         $query->whereBetween($createdAtColumn, [$from, $to]);
     }
 
@@ -99,7 +97,7 @@ class EloquentEx extends \Razorpay\Spine\Entity
     {
         $desc = ($desc) ? 'desc' : 'asc';
 
-        $query->orderBy(Entity::CREATED_AT, $desc);
+        $query->orderBy(Common::CREATED_AT, $desc);
     }
 
     public static function createOrFail(array $attributes)
