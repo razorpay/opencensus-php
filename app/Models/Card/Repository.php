@@ -39,9 +39,7 @@ class Repository extends Base\Repository
 
     public function getByParams($params)
     {
-        $repo = $this->repo;
-
-        $query = (new $repo)->newQuery();
+        $query = $this->newQuery();
 
         foreach ($params as $key => $value)
         {
