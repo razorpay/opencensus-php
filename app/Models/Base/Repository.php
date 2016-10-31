@@ -19,7 +19,7 @@ class Repository extends BaseRepository
     {
         $repo = $this->repo;
 
-        $attribute = $repo::getAttributeWithTableName('email');
+        $attribute = $this->getAttributeWithTableName('email');
 
         // Email should be case insensitive
         $email = mb_strtolower($params['email']);

@@ -139,7 +139,7 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        return $repo::setConnection(Mode::TEST)
+        return $this->newQueryWithConnection(Mode::TEST)
                     ->has('bankAccount', '<', 1)
                     ->get();
     }

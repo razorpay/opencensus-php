@@ -330,17 +330,13 @@ trait RepositoryFetch
 
     protected function addQueryParamFrom($query, $params)
     {
-        $repo = $this->repo;
-
-        $createdAt = $repo::getAttributeWithTableName(Common::CREATED_AT);
+        $createdAt = $this->getAttributeWithTableName(Common::CREATED_AT);
         $query = $query->where($createdAt, '>=', $params['from']);
     }
 
     protected function addQueryParamTo($query, $params)
     {
-        $repo = $this->repo;
-
-        $createdAt = $repo::getAttributeWithTableName(Common::CREATED_AT);
+        $createdAt = $this->getAttributeWithTableName(Common::CREATED_AT);
         $query = $query->where($createdAt, '<=', $params['to']);
     }
 
