@@ -7,8 +7,6 @@ use RZP\Models\Settlement;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
     protected $entity = 'settlement_details';
 
     protected $appFetchParamRules = array(

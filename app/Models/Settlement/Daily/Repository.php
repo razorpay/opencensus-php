@@ -9,8 +9,6 @@ use RZP\Models\Settlement\Daily;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
     protected $entity = 'Daily';
 
     protected static $fetchExtraParamRules = array(

@@ -10,8 +10,6 @@ use RZP\Exception;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
     protected $entity = 'Terminal';
 
     protected $appFetchParamRules = array(

@@ -9,8 +9,6 @@ use RZP\Models\Terminal\Action;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
     protected $entity = 'terminal_action';
 
     public function findForTerminal($id)

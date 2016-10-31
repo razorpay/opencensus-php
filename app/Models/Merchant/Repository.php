@@ -14,7 +14,6 @@ use RZP\Error\ErrorCode;
 class Repository extends Base\Repository
 {
     use Base\RepositoryUpdateTestAndLive;
-    use Base\RepositoryFetch;
 
     protected $entity = 'Merchant';
 

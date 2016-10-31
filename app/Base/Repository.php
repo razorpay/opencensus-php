@@ -11,6 +11,8 @@ use RZP\Exception\DbQueryException;
 
 class Repository extends \Razorpay\Spine\Repository
 {
+    use RepositoryFetch;
+
     protected $app;
 
     protected $db;

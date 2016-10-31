@@ -10,8 +10,6 @@ use RZP\Constants\Table;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
     protected $entity = 'refund';
 
     protected $entityFetchParamRules = array(

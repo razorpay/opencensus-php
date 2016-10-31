@@ -10,4 +10,20 @@ class Repository extends BaseRepository
     {
         return $this->fetchBetweenTimestampWithRelations($merchantId, $from, $to);
     }
+
+    /**
+     * In case any entity defines email fetch filter, we ensure
+     * that unicode is handled properly via this function
+     */
+    protected function addQueryParamEmail($query, $params)
+    {
+        $repo = $this->repo;
+
+        $attribute = $repo::getAttributeWithTableName('email');
+
+        // Email should be case insensitive
+        $email = mb_strtolower($params['email']);
+
+        $query = $query->where($attribute, '=', $email);
+    }
 }

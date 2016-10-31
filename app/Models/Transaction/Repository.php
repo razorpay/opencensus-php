@@ -17,8 +17,6 @@ use RZP\Gateway\Billdesk;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
     protected $entity = 'Transaction';
 
     protected $appFetchParamRules = array(

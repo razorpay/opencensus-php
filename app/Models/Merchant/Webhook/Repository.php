@@ -7,8 +7,6 @@ use RZP\Models\Merchant;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
     protected $entity = 'Webhook';
 
     protected $appFetchParamRules = array(

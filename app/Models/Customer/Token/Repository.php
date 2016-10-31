@@ -5,12 +5,10 @@ namespace RZP\Models\Customer\Token;
 use RZP\Models\Base;
 use RZP\Models\Customer\Token;
 use RZP\Exception;
-use RZP\Models\Customer; 
+use RZP\Models\Customer;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
     protected $entity = 'Token';
 
     protected $appFetchParamRules = array(

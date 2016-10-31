@@ -8,9 +8,7 @@ use RZP\Models\Payment;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
-    protected $entity = 'Card';
+    protected $entity = 'card';
 
     protected $appFetchParamRules = array(
         Entity::IIN             => 'sometimes|integer|digits:6',

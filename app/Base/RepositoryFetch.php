@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Base;
+namespace RZP\Base;
 
 use RZP\Constants;
 use RZP\Exception;
@@ -342,18 +342,6 @@ trait RepositoryFetch
 
         $createdAt = $repo::getAttributeWithTableName(Common::CREATED_AT);
         $query = $query->where($createdAt, '<=', $params['to']);
-    }
-
-    protected function addQueryParamEmail($query, $params)
-    {
-        $repo = $this->repo;
-
-        $attribute = $repo::getAttributeWithTableName(Common::EMAIL);
-
-        // Email should be case insensitive
-        $email = mb_strtolower($params['email']);
-
-        $query = $query->where($attribute, '=', $email);
     }
 
     protected function addQueryOrder($query)

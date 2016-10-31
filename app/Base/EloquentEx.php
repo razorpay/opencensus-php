@@ -1,9 +1,11 @@
 <?php
 
-namespace RZP\Models\Base;
+namespace RZP\Base;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Base\BuilderEx;
+use RZP\Models\Base\Entity;
 
 class EloquentEx extends \Razorpay\Spine\Entity
 {
