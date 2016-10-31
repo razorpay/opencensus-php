@@ -10,7 +10,7 @@ use RZP\Exception;
 
 class Repository extends Base\Repository
 {
-    protected $entity = 'Terminal';
+    protected $entity = 'terminal';
 
     protected $appFetchParamRules = array(
         Entity::GATEWAY             => 'sometimes',

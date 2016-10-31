@@ -16,7 +16,7 @@ use RZP\Error\PublicErrorDescription;
 
 class Repository extends Base\Repository
 {
-    protected $entity = 'Payment';
+    protected $entity = 'payment';
 
     // These are merchant allowed params to search on. These also act as default params.
     protected $entityFetchParamRules = array(

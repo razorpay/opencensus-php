@@ -409,11 +409,4 @@ trait RepositoryFetch
                     ->take($count)
                     ->get();
     }
-
-    protected function getAttributeWithTableName($col)
-    {
-        $repo = $this->repo;
-
-        return $repo::getTableName() . '.' . $col;
-    }
 }

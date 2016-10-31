@@ -15,7 +15,7 @@ class Repository extends Base\Repository
 {
     use Base\RepositoryUpdateTestAndLive;
 
-    protected $entity = 'Merchant';
+    protected $entity = 'merchant';
 
     protected $sharedMerchant = null;
 
@@ -98,7 +98,7 @@ class Repository extends Base\Repository
     public function addQueryParamMethods($query, $params)
     {
         $query->join(
-            Methods\Entity::getTableName(),
+            self::getTableNameForEntity(Methods\Entity::getEntityName()),
             function ($join) use ($params)
             {
                 $merchantId = Merchant\Entity::getAttributeWithTableName(Merchant\Entity::ID);

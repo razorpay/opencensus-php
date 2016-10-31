@@ -47,6 +47,11 @@ class Repository extends \Razorpay\Spine\Repository
         $this->manager = $this->app['repo'];
     }
 
+    public static function getTableNameForEntity($entity)
+    {
+        return E::getTableNameForEntity($entity);
+    }
+
     public function createOrFail(array $attributes)
     {
         $class = $this->getEntityClass();
@@ -66,6 +71,28 @@ class Repository extends \Razorpay\Spine\Repository
     public function findMany($ids, $columns = array('*'))
     {
         return $this->newQuery()->findMany($ids, $columns);
+    }
+
+    public function saveOrFail($entity, array $options = array())
+    {
+        // Gets the attributes which are being newly inserted or updated.
+        $dirty = $entity->getDirty();
+
+        // Saves the entity in MySql.
+        $entity->saveOrFail($options);
+
+        // [Queue] saves in ES if certain conditions are met.
+        $this->saveInEs($entity, $dirty);
+    }
+
+    public function getEntityClass()
+    {
+        return E::getEntityClass($this->entity);
+    }
+
+    public function getTableName()
+    {
+        return E::getTableNameForEntity($this->entity);
     }
 
     protected function processDbQueryFailure($operation, $attributes = null)
@@ -159,18 +186,6 @@ class Repository extends \Razorpay\Spine\Repository
                     ->merchantId($merchantId);
     }
 
-    public function saveOrFail($entity, array $options = array())
-    {
-        // Gets the attributes which are being newly inserted or updated.
-        $dirty = $entity->getDirty();
-
-        // Saves the entity in MySql.
-        $entity->saveOrFail($options);
-
-        // [Queue] saves in ES if certain conditions are met.
-        $this->saveInEs($entity, $dirty);
-    }
-
     protected function saveInEs($entity, $dirty)
     {
         try
@@ -222,7 +237,12 @@ class Repository extends \Razorpay\Spine\Repository
         return join('\\', explode('\\', get_called_class(), -1));
     }
 
-    // Override this method in entity/repository in case the type name is different for that entity.
+    /**
+     * Override this method in entity/repository in case the type name is
+     * different for that entity.
+     *
+     * @return string
+     */
     protected function getEsType()
     {
         $parentNamespace = $this->getParentNamespace();
@@ -237,5 +257,10 @@ class Repository extends \Razorpay\Spine\Repository
         $typeName = constant("RZP\\Constants\\Table::$className");
 
         return $typeName;
+    }
+
+    protected function getAttributeWithTableName($col)
+    {
+        return $this->getTableName() . '.' . $col;
     }
 }

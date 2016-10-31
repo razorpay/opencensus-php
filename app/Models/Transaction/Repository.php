@@ -17,7 +17,7 @@ use RZP\Gateway\Billdesk;
 
 class Repository extends Base\Repository
 {
-    protected $entity = 'Transaction';
+    protected $entity = 'transaction';
 
     protected $appFetchParamRules = array(
         Entity::SETTLED         => 'sometimes|in:0,1',

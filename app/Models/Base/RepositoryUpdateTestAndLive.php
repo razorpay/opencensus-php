@@ -112,7 +112,7 @@ trait RepositoryUpdateTestAndLive
 
     protected function dualUpdateVerifyEntityClass($entity)
     {
-        if (get_class($entity) !== $this->repo)
+        if (get_class($entity) !== $this->getEntityClass())
         {
             throw new Exception\LogicException(
                 'Can only handle ' . $this->repo . ' entities here. Provided: ' . get_class($entity));
@@ -121,12 +121,10 @@ trait RepositoryUpdateTestAndLive
 
     protected function dualUpdateFetchEntities($entity)
     {
-        $repo = $this->repo;
-
         $id = $entity->getKey();
 
-        $testEntity = $repo::on('test')->lockForUpdate()->findOrFail($id);
-        $liveEntity = $repo::on('live')->lockForUpdate()->findOrFail($id);
+        $testEntity = $this->newQueryWithConnection('test')->lockForUpdate()->findOrFail($id);
+        $liveEntity = $this->newQueryWithConnection('live')->lockForUpdate()->findOrFail($id);
 
         $testAttributes = $testEntity->getAttributes();
         $liveAttributes = $liveEntity->getAttributes();

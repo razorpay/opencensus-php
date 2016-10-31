@@ -8,7 +8,7 @@ use RZP\Gateway\Base;
 
 class Repository extends Base\Repository
 {
-    protected $entity = 'Cybersource';
+    protected $entity = 'cybersource';
 
     protected $appFetchParamRules = array(
         Entity::PAYMENT_ID   => 'sometimes|string|min:14|max:18',

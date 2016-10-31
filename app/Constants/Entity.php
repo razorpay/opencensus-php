@@ -193,6 +193,13 @@ class Entity
         return self::getEntityRepository($entity, 'EsRepository');
     }
 
+    public static function getTableNameForEntity($entity)
+    {
+        self::validateEntityOrFail($entity);
+
+        return constant(Table::class.'::'.strtoupper($entity));
+    }
+
     public static function validateIsEntity($entity)
     {
         if (self::isValidEntity($entity) === false)
@@ -209,6 +216,15 @@ class Entity
     public static function isValidEntity($entity)
     {
         return (defined(__CLASS__ . '::' . strtoupper($entity)));
+    }
+
+    public static function validateEntityOrFail($entity)
+    {
+        if (self::isValidEntity($entity) === false)
+        {
+            throw new Exception\InvalidArgumentException(
+                'Not a valid entity.');
+        }
     }
 
     public static function validateEntityOrFailPublic($entity)

@@ -8,7 +8,6 @@ use RZP\Exception;
 
 class RepositoryManager extends \Illuminate\Support\Manager
 {
-
     public function __construct($app)
     {
         parent::__construct($app);
