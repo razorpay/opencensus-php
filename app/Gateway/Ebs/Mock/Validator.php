@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Ebs\Mock;
 
-use RZP\Models\Base;
+use RZP\Base;
 use RZP\Gateway\Ebs\RequestConstants as Request;
 
 class Validator extends Base\Validator
