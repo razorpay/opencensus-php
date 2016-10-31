@@ -13,17 +13,15 @@ class Repository extends Base\Repository
 
     public function findForTerminal($id)
     {
-        $repo = $this->repo;
-
-        return $repo->where(Entity::TERMINAL_ID, '=', $id)
+        return $this->newQuery()
+                    ->where(Entity::TERMINAL_ID, '=', $id)
                     ->get();
     }
 
     public function findBetweenTimesampsForTerminal($from, $to, $id)
     {
-        $repo = $this->repo;
-
-        return $repo->where(Entity::TERMINAL_ID, '=', $id)
+        return $this->newQuery()
+                    ->where(Entity::TERMINAL_ID, '=', $id)
                     ->where(Entity::CREATED_AT, '>=', $from)
                     ->where(Entity::CREATED_AT, '<=', $to)
                     ->get();

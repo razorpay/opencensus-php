@@ -137,8 +137,6 @@ class Repository extends Base\Repository
 
     public function fetchMerchantWhereTestBankIsNull()
     {
-        $repo = $this->repo;
-
         return $this->newQueryWithConnection(Mode::TEST)
                     ->has('bankAccount', '<', 1)
                     ->get();

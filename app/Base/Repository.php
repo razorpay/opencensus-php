@@ -153,9 +153,7 @@ class Repository extends \Razorpay\Spine\Repository
 
         foreach ($relationships as $type => $ids)
         {
-            $repo = E::getEntityRepository($type);
-
-            $typeEntities = (new $repo)->findMany($ids);
+            $typeEntities = $this->manager->$type->findMany($ids);
 
             foreach ($typeEntities as $entity)
             {

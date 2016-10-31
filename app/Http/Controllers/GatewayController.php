@@ -176,7 +176,7 @@ class GatewayController extends Controller
     {
         $app = $this->app;
 
-        $repo = new \RZP\Gateway\Netbanking\Base\Repository;
+        $repo = $app['repo']->netbanking;
 
         $mode = 'test';
 

@@ -10,8 +10,7 @@ use RZP\Exception;
 use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
 
-
-class Report extends Service
+class Report extends Core
 {
     protected $allowed = array(
         E::ORDER,
@@ -85,8 +84,6 @@ class Report extends Service
 
         list($from, $to) = $this->getTimestamps($input);
 
-        $repo = E::getEntityRepository($entity);
-
         $this->trace->debug(
             TraceCode::MERCHANT_REPORT_GENERATION,
             [
@@ -97,7 +94,8 @@ class Report extends Service
                 'time_started'  => $begin
             ]);
 
-        $entities = (new $repo)->fetchEntitiesForReport($merchantId, $from, $to);
+        $repo = $this->repo->$entity;
+        $entities = $repo->fetchEntitiesForReport($merchantId, $from, $to);
 
         $timeTaken = time() - $begin;
 
