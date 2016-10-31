@@ -44,7 +44,7 @@ class Repository extends Base\Repository
         Entity::MERCHANT_ID        => 'sometimes|alpha_num',
         Entity::CARD_ID            => 'sometimes|alpha_num|size:14',
         Entity::CAPTURED           => 'sometimes|in:0,1',
-        Entity::WALLET             => 'sometimes|',
+        Entity::WALLET             => 'sometimes|custom',
         Entity::NOTES              => 'sometimes|string|max:500',
         Card\Entity::IIN           => 'sometimes|integer|digits:6',
         Card\Entity::LAST4         => 'sometimes|string|digits:4',
@@ -542,5 +542,10 @@ class Repository extends Base\Repository
                     ->sum(Entity::AMOUNT);
 
         return $vol;
+    }
+
+    protected function validateWallet($attribute, $value)
+    {
+        Processor\Wallet::validateExists($value);
     }
 }
