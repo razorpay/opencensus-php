@@ -292,9 +292,9 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function getMerchantFeatures($id)
+    public function getEntityFeatures($entityType, $entityId)
     {
-        list($error, $data) = (new Admin\Service)->fetchMerchantFeatures($id);
+        list($error, $data) = (new Admin\Service)->fetchEntityFeatures($entityType, $entityId);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -654,14 +654,23 @@ class AdminController extends Controller
             ->tagMerchant($merchantId, $input);
 
         return AppResponse::jsonResponse($error, $response);
+
     }
 
-    public function syncMerchantFeatures($merchantId)
+    public function addEntityFeatures($entityType, $entityId)
     {
         $input = Input::all();
 
         list($error, $response) = (new Admin\Service)
-            ->syncMerchantFeatures($merchantId, $input);
+            ->addEntityFeatures($entityType, $entityId, $input);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
+
+    public function deleteEntityFeature($entityType, $entityId, $featureId)
+    {
+        list($error, $response) = (new Admin\Service)
+            ->deleteEntityFeature($entityType, $entityId, $featureId);
 
         return AppResponse::jsonResponse($error, $response);
     }

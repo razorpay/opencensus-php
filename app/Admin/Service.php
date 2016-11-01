@@ -443,11 +443,11 @@ class Service extends Base\Service
         return [[], $data];
     }
 
-    public function fetchMerchantFeatures($id)
+    public function fetchEntityFeatures($entityType, $entityId)
     {
         $this->setApiCredentials();
 
-        $response = $this->api->merchant->fetch($id)->getFeatures()->toArray();
+        $response = $this->api->feature->getFeatures($entityType, $entityId);
 
         return [[], $response];
     }
@@ -1894,13 +1894,9 @@ class Service extends Base\Service
         $merchant->tag($tag);
     }
 
-    public function syncMerchantFeatures($merchantId, $input)
+    public function addEntityFeatures($entityType, $entityId, $input)
     {
-        //Send the input data to api for persistance
         $error = $response = array();
-
-        $error = (new Admin\Validator)->validateInput('add_features', $input)
-            ->messages();
 
         if (!empty($error))
         {
@@ -1911,11 +1907,13 @@ class Service extends Base\Service
 
         try
         {
-            $params = array('features' => $input['features']);
+            $params = array('names' => explode(",", $input['features']),
+                            'toggleable_type' => $entityType,
+                            'toggleable_id' => $entityId);
 
-            $response = $this->api->merchant->fetch($merchantId)->setFeatures($params)->toArray();
+            $response = $this->api->feature->setFeatures($params);
 
-            $features = $this->api->merchant->fetch($merchantId)->getFeatures()->toArray();
+            $features = $this->api->feature->getFeatures($entityType, $entityId);
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
@@ -1924,13 +1922,52 @@ class Service extends Base\Service
 
         if (empty($error))
         {
-            $merchant = Merchant\Entity::findOrFail($merchantId);
-            $merchant->retag(array_merge($features,$merchant->tags));
-            $merchant['features'] = $features;
-            return [null, $merchant->toArray()];
+            $this->retagMerchant($entityId, $features);
+
+            return [null, $features];
         }
 
         return array($error, null);
+    }
+
+    public function deleteEntityFeature($entityType, $entityId, $featureId)
+    {
+        $this->setApiCredentials();
+
+        try
+        {
+            $response = $this->api->feature->deleteFeature($featureId);
+
+            $features = $this->api->feature->getFeatures($entityType, $entityId);
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        if (empty($error))
+        {
+            return [null, $features];
+        }
+
+        return [$error, null];
+    }
+
+    private function retagMerchant($entityId, $features)
+    {
+        $merchant = Merchant\Entity::findOrFail($entityId);
+
+        $featureNames = $this->getFeatureNames($features['assigned_features']);
+
+        $merchant->retag(array_merge($featureNames, $merchant->tags));
+    }
+
+    private function getFeatureNames($features)
+    {
+        return array_map(function ($f)
+        {
+            return $f['name'];
+        }, $features);
     }
 
     public function getMerchantTags($merchantId)
