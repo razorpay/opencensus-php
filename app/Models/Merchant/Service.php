@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant;
 use RZP\Constants\Mode;
 use Carbon\Carbon;
 use Mail;
+use Config;
 
 use RZP\Base\RuntimeManager;
 use RZP\Models\Base;
@@ -180,15 +181,15 @@ class Service extends Base\Service
         return $balance->toArray();
     }
 
-    public function editFreeCredits($merchantId, $input)
+    public function editAmountCredits($merchantId, $input)
     {
         (new Merchant\Validator)->validateInput('edit_credits', $input);
 
-        $freeCredits = $input['credits'];
+        $amountCredits = $input['credits'];
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $balance = $this->repo->balance->editMerchantFreeCredits($merchant, $freeCredits);
+        $balance = $this->repo->balance->editMerchantAmountCredits($merchant, $amountCredits);
 
         return $balance->toArray();
     }
@@ -292,7 +293,7 @@ class Service extends Base\Service
                 "Schedule assigned to Merchant",
                 $data,
                 [
-                    'channel'  => '#operations_log',
+                    'channel'  => Config::get('slack.channels.operations_log'),
                     'username' => 'Jordan Belfort',
                     'icon'     => ':boom:',
                 ]
@@ -578,7 +579,7 @@ class Service extends Base\Service
         $message = "Merchant Beneficiary file generated. Beneficiary added since".
                 " last report is ". $newBeneficiaryCount;
 
-        $this->slack->queue($message,[],['channel' => '#settlements']);
+        $this->slack->queue($message,[],['channel' => Config::get('slack.channels.settlements')]);
 
         //Log response in trace
         $this->trace->info(

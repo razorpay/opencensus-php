@@ -55,7 +55,7 @@ class Core extends Base\Core
 
             $newCredits = $merchantAmountCredits + $credits;
 
-            $this->repo->balance->editMerchantFreeCredits($merchant, $newCredits);
+            $this->repo->balance->editMerchantAmountCredits($merchant, $newCredits);
         }
         else if ($type === Credits\Type::FEE)
         {

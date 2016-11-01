@@ -8,11 +8,11 @@ use RZP\Exception;
 
 class Entity extends Base\PublicEntity
 {
-    const ID          = 'id';
-    const BALANCE     = 'balance';
-    const ON_HOLD     = 'on_hold';
-    const CREDITS     = 'credits';
-    const FEE_CREDITS = 'fee_credits';
+    const ID             = 'id';
+    const BALANCE        = 'balance';
+    const ON_HOLD        = 'on_hold';
+    const AMOUNT_CREDITS = 'credits';
+    const FEE_CREDITS    = 'fee_credits';
 
     protected $table = Table::BALANCE;
 
@@ -22,7 +22,7 @@ class Entity extends Base\PublicEntity
     protected $visible = array(
         self::ID,
         self::BALANCE,
-        self::CREDITS,
+        self::AMOUNT_CREDITS,
         self::FEE_CREDITS);
 
     protected $entity = 'balance';
@@ -30,9 +30,9 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = false;
 
     protected $casts = [
-        self::CREDITS     => 'integer',
-        self::FEE_CREDITS => 'integer',
-        self::BALANCE     => 'integer',
+        self::AMOUNT_CREDITS => 'integer',
+        self::FEE_CREDITS    => 'integer',
+        self::BALANCE        => 'integer',
     ];
 
     protected function addAmount($amount)
@@ -67,14 +67,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BALANCE);
     }
 
-    public function getCredits()
-    {
-        return $this->getAttribute(self::CREDITS);
-    }
-
     public function getAmountCredits()
     {
-        return $this->getAttribute(self::CREDITS);
+        return $this->getAttribute(self::AMOUNT_CREDITS);
     }
 
     public function getFeeCredits()
@@ -127,9 +122,9 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function subtractCredits($amount)
+    public function subtractAmountCredits($amount)
     {
-        $credits = $this->getCredits();
+        $credits = $this->getAmountCredits();
 
         $credits -= $amount;
 
@@ -138,7 +133,7 @@ class Entity extends Base\PublicEntity
             $credits = 0;
         }
 
-        $this->setAttribute(self::CREDITS, $credits);
+        $this->setAttribute(self::AMOUNT_CREDITS, $credits);
     }
 
     public function subtractFeeCredits($amount)
@@ -155,11 +150,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::FEE_CREDITS, $credits);
     }
 
-    public function setCredits($credits)
+    public function setAmountCredits($credits)
     {
         assert ($credits >= 0);
 
-        $this->setAttribute(self::CREDITS, $credits);
+        $this->setAttribute(self::AMOUNT_CREDITS, $credits);
     }
 
     public function setFeeCredits(int $credits)

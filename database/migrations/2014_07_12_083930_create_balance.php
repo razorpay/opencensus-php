@@ -30,7 +30,7 @@ class CreateBalance extends Migration
             $table->bigInteger(Balance::ON_HOLD)
                   ->default(0);
 
-            $table->bigInteger(Balance::CREDITS)
+            $table->bigInteger(Balance::AMOUNT_CREDITS)
                   ->default(0);
 
             $table->bigInteger(Balance::FEE_CREDITS)
