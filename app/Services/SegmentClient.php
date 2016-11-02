@@ -139,8 +139,6 @@ class SegmentClient
         {
             $terminal = $payment->terminal;
 
-            $terminalId = $terminal->getPublicId();
-
             $terminalDetails = $this->fetchTerminalData($terminal, $payment);
         }
 
