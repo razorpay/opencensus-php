@@ -20,8 +20,6 @@ class Gateway extends Base\Gateway
 
     protected $gateway = 'axis_migs';
 
-    protected $authorize = false;
-
     const CHECKSUM_ATTRIBUTE = 'vpc_SecureHash';
 
     public function authorize(array $input)
@@ -70,7 +68,7 @@ class Gateway extends Base\Gateway
     {
         parent::capture($input);
 
-        if ($this->authorize === true)
+        if ($input['payment']['created_at'] > 1477958400)
         {
             return $this->captureAuthorizedPayment($input);
         }
