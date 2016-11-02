@@ -1160,9 +1160,52 @@ DELETE FROM transactions WHERE id = "5vlNg9WR5sOMrL";
 
 UPDATE payments
 SET transaction_id = '6YiwamKY8KrUao'
-WHERE id = '5MYZCAx3Is9RND'
+WHERE id = '5MYZCAx3Is9RND';
 
 UPDATE payments
 SET transaction_id = '6YizQlgBsrXxSb'
-WHERE id = '5b7Szpk8AU9ahw'
+WHERE id = '5b7Szpk8AU9ahw';
+---
+
+---
+# These queries need to be run because these payments were done on an
+# authAndCapture Axis terminal and was not handled. We are not able to refund
+# them now because of that. And since these are in authorized state, they can be refunded
+# on our system without having to refund on the gateway (since it's on authAndCapture).
+
+UPDATE payments
+SET transaction_id = null
+WHERE id = "4SQ02CGsicBfB5";
+
+DELETE FROM transactions WHERE id = "4SQ1dr1zWn17nv";
+
+UPDATE payments
+SET transaction_id = null
+WHERE id = "4bxsGqsHFeV6Rw";
+
+DELETE FROM transactions WHERE id = "4bxuQq1asbow3U";
+
+UPDATE payments
+SET transaction_id = null
+WHERE id = "4bztqiuhehhrGF";
+
+DELETE FROM transactions WHERE id = "4bzvEo2dECqAfN";
+
+UPDATE payments
+SET transaction_id = null
+WHERE id = "4lH7ZQDJow6hUC";
+
+DELETE FROM transactions WHERE id = "4lH9VU8axyicbn";
+
+UPDATE payments
+SET transaction_id = null
+WHERE id = "4lQGbrSKA9Oasi";
+
+DELETE FROM transactions WHERE id = "4lQHmjF5PLqryZ";
+
+UPDATE payments
+SET transaction_id = null
+WHERE id = "4lrNkMC1VI5F6v";
+
+DELETE FROM transactions WHERE id = "4lrOqsJGzOLAxk";
 ---
