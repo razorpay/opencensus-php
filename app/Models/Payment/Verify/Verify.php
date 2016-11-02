@@ -63,6 +63,7 @@ class Verify extends Base\Core
     protected $core;
     protected $mutex;
     protected $slack;
+    protected $route;
 
     public function __construct()
     {
@@ -71,6 +72,8 @@ class Verify extends Base\Core
         $this->mutex = $this->app['api.mutex'];
 
         $this->slack = $this->app['slack'];
+
+        $this->route = $this->app['api.route']->getCurrentRouteName();
     }
 
     /**
@@ -306,12 +309,11 @@ class Verify extends Base\Core
 
         $cron = $this->app['basicauth']->isCron();
 
-        $route = $this->app['api.route']->getCurrentRouteName();
 
         // If filter is null, then verify is initiated manually, not via cron
         // Don't update VERIFY_BUCKET, in that case
         if (($cron === true) and
-            ($route === 'payment_verify_multiple'))
+            ($this->route === 'payment_verify_multiple'))
         {
             $nextVerifyBucket = $this->getPaymentNextVerifyBucket($payment, $filter);
 
@@ -476,10 +478,7 @@ class Verify extends Base\Core
             default:
                 throw new Exception\LogicException(
                     'Unknown filter provided.',
-                    null,
-                    [
-                        'filter' => $filter
-                    ]);
+                    null, ['filter' => $filter]);
         }
 
         return $boundaries;
