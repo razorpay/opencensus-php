@@ -434,16 +434,17 @@ class Service extends Base\Service
 
     public function getUsersListWithInvites()
     {
-        return $this->currentUser
-                    ->currentMerchant()
-                    ->with('users', 'invitations')
+        $merchantId = $this->currentUser
+                           ->currentMerchant()
+                           ->id;
+
+        $users = Merchant\Entity::with('users', 'invitations')
+                    ->where('id', $merchantId)
                     ->first()
                     ->toArray();
+
+        return $users;
     }
-
-
-
-
 
     /**
      * Get the merchant entity from the gibven merchant id
