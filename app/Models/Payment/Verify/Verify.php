@@ -477,8 +477,7 @@ class Verify extends Base\Core
 
             default:
                 throw new Exception\LogicException(
-                    'Unknown filter provided.',
-                    null, ['filter' => $filter]);
+                    'Unknown filter provided.', null, ['filter' => $filter]);
         }
 
         return $boundaries;

@@ -4,7 +4,6 @@ namespace RZP\Tests\Functional\Payment;
 
 use DB;
 use Mockery;
-use Redis;
 use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment\Entity as PaymentEntity;
@@ -142,7 +141,7 @@ class VerifyTest extends TestCase
         ];
 
         // Lock payment for 10 days, No verify should run on this payment
-        Redis::set($payment2['id'].'_verify', '', 'ex', 864000);
+        $this->app['api.mutex']->acquire($payment2['id'].'_verify', 864000);
 
         $result = [
             'filter'  => 'payments_failed',
