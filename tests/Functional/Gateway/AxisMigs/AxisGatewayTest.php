@@ -67,14 +67,12 @@ class AxisGatewayTest extends TestCase
     {
         $before1stNov = Carbon::create(2016, 10, 30);
 
-        Carbon::setTestNow($before1stNov);
-
         $payment = $this->getDefaultPaymentArray();
         $payment = $this->doAuthPayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
-        // Transaction will get created as we have changed the gateway
-        // to auth and capture.
+        // Transaction will not get created as we have changed the
+        // gateway to auth and capture.
         $this->assertNull($payment['transaction_id']);
 
         $paymentId = Payment\Entity::verifyIdAndSilentlyStripSign($payment['id']);

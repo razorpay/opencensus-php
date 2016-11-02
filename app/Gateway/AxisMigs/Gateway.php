@@ -68,6 +68,11 @@ class Gateway extends Base\Gateway
     {
         parent::capture($input);
 
+        // All the payments after 1st Nov, 2016 were shifted
+        // to Auth and Capture model for Migs. Before 1st Nov
+        // payments were on purchase model, which was auto-capturing
+        // the payments. Timestamp check is to make sure that no
+        // payment made before 1st Nov, 2016 gets captured on Migs
         if ($input['payment']['created_at'] > 1477958400)
         {
             return $this->captureAuthorizedPayment($input);
