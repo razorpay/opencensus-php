@@ -19,7 +19,6 @@ class Entity extends Base\PublicEntity
 	protected $primaryKey = 'id';
 
 	protected $fillable = [
-		self::ID,
 		self::NAME,
 		self::ENTITY_ID,
 		self::ENTITY_TYPE

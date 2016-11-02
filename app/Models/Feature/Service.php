@@ -30,7 +30,7 @@ class Service extends Base\Service
 				$entityId);
 
 		// all_features is a list of currently available features in the system
-		$response['all_features'] = Core::$allFeatures;
+		$response['all_features'] = FeatureName::$allFeatures;
 
 		return $response;
 	}

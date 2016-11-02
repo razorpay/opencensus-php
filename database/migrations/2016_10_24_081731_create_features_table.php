@@ -32,8 +32,7 @@ class CreateFeaturesTable extends Migration
             $table->index(Feature::ENTITY_ID);
             $table->index(Feature::ENTITY_TYPE);
             $table->index(Feature::NAME);
-            $table->unique(array(Feature::NAME, Feature::ENTITY_ID,
-                    Feature::ENTITY_TYPE));
+            $table->unique(array(Feature::NAME, Feature::ENTITY_ID));
         });
     }
 
