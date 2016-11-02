@@ -5,7 +5,7 @@ namespace RZP\Http\Middleware;
 use Closure;
 use Illuminate\Foundation\Application;
 
-class AfterRequest
+class Segment
 {
     /**
      * Handle an incoming request.
@@ -42,8 +42,17 @@ class AfterRequest
      */
     public function handle($request, Closure $next)
     {
-        $response = $next($request);
+        return $next($request);
+    }
 
+    /**
+     * Data can be sent to segment once the response has been
+     * already sent.
+     * See doc for terminable middleware -
+     *     https://laravel.com/docs/5.2/middleware#terminable-middleware
+     */
+    public function terminate($request, $response)
+    {
         //
         // send the in-memory segment events to lumberjack
         //
@@ -56,7 +65,5 @@ class AfterRequest
         {
             $this->app['trace']->traceException($e);
         }
-
-        return $response;
     }
 }
