@@ -582,4 +582,38 @@ class VerifyTest extends TestCase
 
         $this->assertEquals($defaultParams, $content);
     }
+
+    public function testTimeoutOldPaymentAndVerify()
+    {
+        $payment = $this->fixtures->create('payment:status_created', ['created_at' => time() - 60*100, 'method'=>'netbanking']);
+
+        $filter = 'payments_failed';
+
+        $request = [
+            'url'    => '/payments/verify/'. $filter,
+            'method' => 'post'
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $resultData = [
+            'success' => 0,
+            'filter'  => $filter,
+        ];
+
+        $this->assertContent($content, $resultData);
+
+        $content = $this->timeoutOldPayment();
+
+        $this->assertEquals($content['count'], 1);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $resultData = [
+            'success' => 1,
+            'filter'  => $filter,
+        ];
+
+        $this->assertContent($content, $resultData);
+    }
 }
