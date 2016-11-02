@@ -149,8 +149,6 @@ class SegmentClient extends Base\Core
         {
             $terminal = $payment->terminal;
 
-            $terminalId = $terminal->getPublicId();
-
             $terminalDetails = $this->fetchTerminalData($terminal, $payment);
         }
 
@@ -306,8 +304,6 @@ class SegmentClient extends Base\Core
 
         $this->anonId = $id;
         $this->ids = $ids;
-
-        $properites = array_merge($properties, $ids);
 
         return $id;
     }
