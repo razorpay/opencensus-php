@@ -1,0 +1,37 @@
+<div class="bg-light lter b-b wrapper-md">
+  <h1 class="m-n font-thin h3">
+    Your Credits
+    <spinner class="inline"></spinner>
+  </h1>
+</div>
+<div class="wrapper-md profile-wrapper" ng-init="getPendingInvitations()" ng-controller="ProfileCtrl">
+  <div class="panel panel-default panel-form col-sm-6 col-sm-offset-3">
+    <div class="panel-heading m-t m-b">
+      Your Credits
+
+      <small class="pull-right">
+        <a href="https://docs.razorpay.com/v1/page/credits" class="highlight" target="_blank">DOCUMENTATION &nbsp;<i class="fa fa-external-link"></i></a>
+      </small>
+    </div>
+    <div class="text-center m-t">
+      <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+    </div>
+    <alert type="danger" class="text-center" ng-show="!user.current">
+      Your user account is not associated at present with any active merchant account.
+    </alert>
+    <div class="row wrapper" ng-show="user.current">
+      <div class="list-group">
+        <a class="list-group-item">
+          <span class="pull-right">{{credits/100|rupee}}</span>
+          Amount Credits
+        </a>
+
+        <a class="list-group-item">
+          <span class="pull-right">{{fee_credits/100|rupee}}</span>
+          Fee Credits
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>

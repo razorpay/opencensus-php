@@ -62,6 +62,13 @@
         </a>
     </li>
 
+    <li ng-show="merchant && user.primaryOwner">
+      <a id="manageCredits" ui-sref="app.credits">
+        <i class="fa fa-credit-card icon text-warning-lter"></i>
+        <span>Credits</span>
+        </a>
+    </li>
+
     <li ng-show="merchant && user.tags.indexOf('Referral') != -1">
       <a id="referredNav" ui-sref="app.referrals">
         <i class="fa fa-gift icon text-danger-lter"></i>
