@@ -2,43 +2,47 @@
 
 namespace RZP\Services;
 
-use RZP\Trace\TraceCode;
-use RZP\Models\Payment\Entity as PaymentEntity;
-use RZP\Models\Payment\Method;
-use RZP\Models\Payment\Analytics\Entity as AnalyticsEntity;
 use GuzzleHttp\Client;
+use RZP\Models\Base;
+use RZP\Models\Payment;
+use RZP\Models\Payment\Method;
+use RZP\Models\Terminal;
+use RZP\Models\Payment\Analytics\Entity as AnalyticsEntity;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 
-class SegmentClient
+class SegmentClient extends Base\Core
 {
-    protected $app;
+    /**
+     * Events array to be sent to segment.
+     * @var array
+     */
+    protected $events = array();
 
-    protected $mode;
-
-    protected $config;
-
-    protected $trace;
-
-    protected $version;
-
-    // list of events that needs to be batched
-    protected $events;
-
-    // lumberjack segment url endpoint
+    /**
+     * lumberjack segment url endpoint
+     */
     const LUMBERJACK_SEGMENT_URLPATTERN = 'segment_post';
 
-    // current version of this implementation
+    /**
+     * Current version of this implementation
+     */
     const VERSION = "1.0";
 
-    // guzzle timeout for posting to lumberjack
+    /**
+     * Guzzle timeout for posting to lumberjack
+     */
     const CONNECT_TIMEOUT = 1;
 
-    // seperator for array flattening
+    /**
+     * seperator for array flattening
+     */
     const SEPERATOR = ':';
 
-    // list of sensitive keys to exclude from sengding to segment
-    // even if the api has these variables
-
+    /**
+     * List of sensitive keys to exclude from sengding to segment
+     */
     const SENSITIVE_KEYS = [
         'CARD_NUMBER'           => 'card.number',
         'GATEWAY_CARD_NUMBER'   => 'terminal_gateway_input.card.number',
@@ -52,75 +56,81 @@ class SegmentClient
         'VPC_CARDEXP'           => 'request.content.vpc_CardExp',
     ];
 
+    /**
+     * Lumberjack config array
+     */
+    protected $lgConfig;
+
+    /**
+     * Whether segmetn is mocked.
+     */
+    protected $mock;
+
+    /**
+     * Unique id of the current request
+     */
+    protected $request;
+
+    protected $anonId;
+
+    protected $ids;
+
     public function __construct($app)
     {
-        $this->app = $app;
+        parent::__construct();
 
-        $this->mode = $app['rzp.mode'];
+        $this->ljConfig = $app['config']->get('applications.lumberjack');
 
-        $this->trace = $app['trace'];
-
-        $this->config = $app['config'];
+        $this->mock = $this->app['config']->get('segment.is_mock');
 
         $this->events = [];
+
+        $this->request = $app['request'];
     }
 
-    protected function fetchTerminalData(\RZP\Models\Terminal\Entity $terminal, PaymentEntity $payment)
+    protected function fetchTerminalData(Terminal\Entity $terminal, Payment\Entity $payment)
     {
         $data = [];
 
-        try
+        $data['id'] = $terminal->getPublicId();
+
+        $data['gateway'] = $terminal->getGateway();
+
+        $data['acquirer'] = $terminal->getGatewayAcquirer();
+
+        $data['category'] = $terminal->getCategory();
+
+        $data['shared'] = $terminal->getShared();
+
+        $data['recurring'] = $terminal->getRecurring();
+
+        $method = $payment->getMethod();
+
+        $data['method'] = $method;
+
+        $methodDetails = $payment->getMethodWithDetail();
+
+        // note: using individual here instead of getMethodWithDetail
+        // as PaymentCancelTest fails on Payment\Entity::getFormattedCard
+        if ($method === Method::NETBANKING)
         {
-            $data['id'] = $terminal->getPublicId();
-
-            $data['gateway'] = $terminal->getGateway();
-
-            $data['acquirer'] = $terminal->getGatewayAcquirer();
-
-            $data['category'] = $terminal->getCategory();
-
-            $data['shared'] = $terminal->getShared();
-
-            $data['recurring'] = $terminal->getRecurring();
-
-            $method = $payment->getMethod();
-
-            $data['method'] = $method;
-
-            // note: using individual here instead of getMethodWithDetail
-            // as PaymentCancelTest fails on Payment\Entity::getFormattedCard
-            if ($method === Method::NETBANKING)
-            {
-                $data['bank']  = $payment->getBankName();
-            }
-
-            if ($method === Method::WALLET)
-            {
-                $data['wallet'] = ucfirst($payment->getWallet());
-            }
-
-            if ($method === Method::UPI)
-            {
-                $data['vpa'] = $payment->getVpa();
-            }
+            $data['bank']  = $payment->getBankName();
         }
 
-        catch(\Exception $e)
+        if ($method === Method::WALLET)
         {
-            $traceMessage = [
-                'message' => $e->getMessage(),
-                'code' => $e->getCode(),
-                'trace' => $e->getTraceAsString()
-            ];
-
-            $this->trace->warning(TraceCode::SEGMENT_POST_FAILED, $traceMessage);
+            $data['wallet'] = ucfirst($payment->getWallet());
         }
 
+        if ($method === Method::UPI)
+        {
+            $data['vpa'] = $payment->getVpa();
+        }
 
         return $data;
     }
 
-    protected function fillDefaults(PaymentEntity $payment, $event)
+    protected function fillDefaults(Payment\Entity $payment, $event)
     {
         $metadata = $payment->getMetadata();
 
@@ -151,7 +161,7 @@ class SegmentClient
             'merchant_name'     => $payment->merchant->getBillingLabelElseName(),
             'amount'            => $payment->getAmount(),
             'method'            => $payment->getMethod(),
-            'requestId'         => $this->app['request']->getId(),
+            'requestId'         => $this->request->getId(),
             'international'     => $isInternational,
             'metadata'          => $metadata,
             'version'           => self::VERSION,
@@ -167,49 +177,7 @@ class SegmentClient
 
         $properties['fee_bearer'] = $merchant->isFeeBearerCustomer();
 
-        $order = null;
-
-        $id = null;
-
-        if ($payment->getApiOrderId() !== null)
-        {
-            $order = $payment->order;
-
-            $orderId = $order->getPublicId();
-
-            $properties['id_type'] = 'order';
-
-            $properties['order_id'] = $orderId;
-
-            $id = $orderId;
-        }
-
-        if (empty($metadata[AnalyticsEntity::CHECKOUT_ID]) === false)
-        {
-            $checkoutId = $metadata[AnalyticsEntity::CHECKOUT_ID];
-
-            $properties['id_type'] = 'checkout';
-
-            $properties['checkout_id'] = $checkoutId;
-
-            if (empty($id) === true)
-            {
-                $id = $checkoutId;
-            }
-
-        }
-
-        // This is a case where we do not have both checkout id and order id.
-        // So instead of tracing anything, we want to get some data. Using
-        // payment_id as the anonymousId
-        if (empty($id) === true)
-        {
-            $this->trace->warning(TraceCode::SEGMENT_ID_UNAVAILABLE, $properties);
-
-            $id = $payment->getPublicId();
-
-            $properties['id_type'] = 'payment';
-        }
+        $id = $this->recordSegmentIdsAndGetAnonId($payment, $metadata, $properties);
 
         $properties = flatten_array($properties, self::SEPERATOR);
 
@@ -228,7 +196,8 @@ class SegmentClient
         {
             return;
         }
-        $ljConfig = $this->config->get('applications.lumberjack');
+
+        $ljConfig = $this->ljConfig;
 
         $url = $ljConfig['url'].self::LUMBERJACK_SEGMENT_URLPATTERN;
 
@@ -243,33 +212,28 @@ class SegmentClient
             'x-signature' => $signature
         ];
 
+        $this->sendLumberjackRequest($headers, $url, $this->events);
+    }
+
+    protected function sendLumberjackRequest($headers, $url, $events)
+    {
+        if ($this->mock)
+        {
+            return;
+        }
+
         // TODO: make this async using guzzler async events
         $client = new Client(['headers' => $headers, 'http_errors' => false]);
 
         try
         {
-            $response = $client->request('POST', $url, ['json' => $this->events,
-                                                        'connect_timeout' => self::CONNECT_TIMEOUT]);
-        }
-        catch(\Requests_Exception $e)
-        {
-            $traceMessage = [
-                'message' => $e->getMessage(),
-                'code' => $e->getCode(),
-                'trace' => $e->getTraceAsString()
-            ];
+            $options = ['json' => $events, 'connect_timeout' => self::CONNECT_TIMEOUT];
 
-            $this->trace->warning(TraceCode::SEGMENT_POST_FAILED, $traceMessage);
+            $response = $client->request('POST', $url, $options);
         }
-        catch(\Exception $e)
+        catch (\Exception $e)
         {
-            $traceMessage = [
-                'message' => $e->getMessage(),
-                'code' => $e->getCode(),
-                'trace' => $e->getTraceAsString()
-            ];
-
-            $this->trace->warning(TraceCode::SEGMENT_POST_FAILED, $traceMessage);
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SEGMENT_POST_FAILED);
         }
 
         // empty the events array here
@@ -293,30 +257,93 @@ class SegmentClient
         return flatten_array($customProperties, self::SEPERATOR);
     }
 
-    public function trackPayment(PaymentEntity $payment, $event, array $customProperties = [])
+    protected function recordSegmentIdsAndGetAnonId($payment, $metadata, array & $properties)
     {
-        $isMock = $this->config['segment.is_mock'];
+        $id = null;
 
-        if ($isMock === true)
+        $ids = [];
+
+        if ($this->anonId !== null)
+        {
+            $id = $this->anonId;
+            $ids = $this->ids;
+        }
+        else
+        {
+            if ($payment->hasOrder())
+            {
+                $ids['id_type'] = 'order';
+
+                $ids['order_id'] = $payment->getPublicOrderId();
+
+                $id = $ids['order_id'];
+            }
+
+            if (empty($metadata[AnalyticsEntity::CHECKOUT_ID]) === false)
+            {
+                $checkoutId = $metadata[AnalyticsEntity::CHECKOUT_ID];
+
+                $ids['id_type'] = 'checkout';
+
+                $ids['checkout_id'] = $checkoutId;
+
+                if (empty($id) === true)
+                {
+                    $id = $checkoutId;
+                }
+            }
+
+            // This is a case where we do not have both checkout id and order id.
+            // So instead of tracing anything, we want to get some data. Using
+            // payment_id as the anonymousId
+            if (empty($id) === true)
+            {
+                $this->trace->warning(TraceCode::SEGMENT_ID_UNAVAILABLE, $properties);
+
+                $id = $payment->getPublicId();
+
+                $ids['id_type'] = 'payment';
+            }
+        }
+
+        $this->anonId = $id;
+        $this->ids = $ids;
+
+        $properites = array_merge($properties, $ids);
+
+        return $id;
+    }
+
+
+    public function trackPayment(Payment\Entity $payment, $event, array $customProperties = [])
+    {
+        if ($this->mock === true)
         {
             return;
         }
 
-        $defaults = $this->fillDefaults($payment, $event);
-
-        if (empty($defaults) === true)
+        try
         {
-            return;
+            $defaults = $this->fillDefaults($payment, $event);
+
+            if (empty($defaults) === true)
+            {
+                return;
+            }
+
+            $customProperties = $this->removeCommonProperties($customProperties);
+
+            $properties = array_merge($defaults['properties'], $customProperties);
+
+            $this->removeSensitiveInformation($properties);
+
+            $defaults['properties'] = $properties;
+
+            $this->events[] = $defaults;
         }
-
-        $customProperties = $this->removeCommonProperties($customProperties);
-
-        $properties = array_merge($defaults['properties'], $customProperties);
-
-        $this->removeSensitiveInformation($properties);
-
-        $defaults['properties'] = $properties;
-
-        $this->events[] = $defaults;
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SEGMENT_POST_FAILED);
+        }
     }
 }

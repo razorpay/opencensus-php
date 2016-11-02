@@ -64,6 +64,13 @@ class Parser extends Base\Core
         Entity::REFERER               => 'referer'
     ];
 
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->request = $this->app['request'];
+    }
+
     public function recordPaymentRequestData(array & $input, $payment)
     {
         $input[Entity::PAYMENT_ID] = $payment->getId();
@@ -147,24 +154,19 @@ class Parser extends Base\Core
 
         $log[Entity::DEVICE] = $this->getDeviceValue($uAgent);
 
-        // get the HTTP request
-        $request = $this->app['request'];
-
-        $log[Entity::IP] = $request->getRealClientIp();
+        $log[Entity::IP] = $this->request->getRealClientIp();
 
         $log[Entity::REFERER] = $this->getRefererUrl();
 
-        if ($request->header(RequestHeader::USER_AGENT) !== null)
+        if ($this->request->header(RequestHeader::USER_AGENT) !== null)
         {
-            $log[Entity::USER_AGENT] = $request->header(RequestHeader::USER_AGENT);
+            $log[Entity::USER_AGENT] = $this->request->header(RequestHeader::USER_AGENT);
         }
     }
 
     protected function getRefererUrl()
     {
-        $request = $this->app['request'];
-
-        $reqReferer = $request->header(RequestHeader::REFERER);
+        $reqReferer = $this->request->header(RequestHeader::REFERER);
 
         if ($reqReferer !== null)
         {

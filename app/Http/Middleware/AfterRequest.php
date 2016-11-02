@@ -44,13 +44,18 @@ class AfterRequest
     {
         $response = $next($request);
 
+        //
         // send the in-memory segment events to lumberjack
+        //
+
         try
         {
             $this->app['segment']->buildRequestAndSend();
         }
-        catch(\Exception $e)
-        {}
+        catch (\Exception $e)
+        {
+            $this->app['trace']->traceException($e);
+        }
 
         return $response;
     }

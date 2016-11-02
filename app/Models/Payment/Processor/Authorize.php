@@ -93,7 +93,7 @@ trait Authorize
                 'retry_attempt' => $retryAttempts
             ];
 
-            $this->app['segment']->trackPayment($payment, TraceCode::GATEWAY_POSTPROCESSING, $segmentCustomProps);
+            $this->segment->trackPayment($payment, TraceCode::GATEWAY_POSTPROCESSING, $segmentCustomProps);
 
             if ($this->canRunOtpPaymentFlow($payment, $input))
             {
@@ -175,7 +175,7 @@ trait Authorize
 
         $this->trace->info(TraceCode::TERMINAL_FAILURE, $traceData);
 
-        $this->app['segment']->trackPayment($payment, TraceCode::TERMINAL_FAILURE, $traceData);
+        $this->segment->trackPayment($payment, TraceCode::TERMINAL_FAILURE, $traceData);
 
         // retry only if it is safe to do so
         return ((property_exists($e, 'safeRetry') === true) and
@@ -237,7 +237,7 @@ trait Authorize
             TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
             ['payment_id' => $payment->getId()]);
 
-        $this->app['segment']->trackPayment($payment, TraceCode::PAYMENT_FAILED_TO_AUTHORIZED);
+        $this->segment->trackPayment($payment, TraceCode::PAYMENT_FAILED_TO_AUTHORIZED);
 
         $this->runAuthorizeFailedTransaction($payment);
 
@@ -273,7 +273,7 @@ trait Authorize
                 'Can force authorize only on axis migs gateway');
         }
 
-        $this->app['segment']->trackPayment($payment, TraceCode::FORCE_AUTH_FAILED_PAYMENT);
+        $this->segment->trackPayment($payment, TraceCode::FORCE_AUTH_FAILED_PAYMENT);
 
         $this->repo->transaction(function() use ($payment, $input)
         {
@@ -401,6 +401,7 @@ trait Authorize
         $this->repo->saveOrFail($payment);
 
         $this->tracePaymentInfo(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
+        $this->segment->trackPayment($payment, TraceCode::PAYMENT_CREATED);
 
         //
         // Call gateway input
@@ -427,7 +428,7 @@ trait Authorize
             'callbackUrl' => $this->getCallbackUrl()
         ];
 
-        $this->app['segment']->trackPayment($payment, TraceCode::GATEWAY_SELECTION_PREPROCESSING, $customProperties);
+        $this->segment->trackPayment($payment, TraceCode::GATEWAY_SELECTION_PREPROCESSING, $customProperties);
     }
 
     protected function dummyPrePaymentAuthorizeProcessing($payment, $input)
@@ -505,7 +506,7 @@ trait Authorize
 
             if ($flag === false)
             {
-                $this->app['segment']->trackPayment($payment,
+                $this->segment->trackPayment($payment,
                                                     TraceCode::PAYMENT_FAILED_EXPECTED_GATEWAY_SUCCESS,
                                                     $data);
 
@@ -518,7 +519,7 @@ trait Authorize
 
             if ($payment->isStatusCreatedOrFailed() === false)
             {
-                $this->app['segment']->trackPayment($payment,
+                $this->segment->trackPayment($payment,
                                                     TraceCode::PAYMENT_ALREADY_AUTHORIZED,
                                                     $data);
 
@@ -1002,7 +1003,7 @@ trait Authorize
             ]
         ];
 
-        $this->app['segment']->trackPayment($payment, TraceCode::ASYNC_PAYMENT_RESPONSE, $response);
+        $this->segment->trackPayment($payment, TraceCode::ASYNC_PAYMENT_RESPONSE, $response);
 
         return $response;
     }
@@ -1033,7 +1034,7 @@ trait Authorize
             unset($segmentData['request']['content']);
         }
 
-        $this->app['segment']->trackPayment($payment, TraceCode::FIRST_PAYMENT_RESPONSE, $segmentData);
+        $this->segment->trackPayment($payment, TraceCode::FIRST_PAYMENT_RESPONSE, $segmentData);
 
         return $data;
     }
@@ -1217,7 +1218,7 @@ trait Authorize
             TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
             $traceData);
 
-        $this->app['segment']->trackPayment($payment, TraceCode::PAYMENT_FAILED_TO_AUTHORIZED, $traceData);
+        $this->segment->trackPayment($payment, TraceCode::PAYMENT_FAILED_TO_AUTHORIZED, $traceData);
     }
 
 
@@ -1264,7 +1265,7 @@ trait Authorize
 
             $log['retry_attempt'] = $retryAttempts;
 
-            $this->app['segment']->trackPayment($payment, $terminalStatus, $log);
+            $this->segment->trackPayment($payment, $terminalStatus, $log);
         }
         catch(\Exception $e)
         {
@@ -1379,7 +1380,7 @@ trait Authorize
                 'wallet'  => $payment->getWallet()
             ];
 
-            $this->app['segment']->trackPayment($payment, TraceCode::OTP_GENERATE, $response);
+            $this->segment->trackPayment($payment, TraceCode::OTP_GENERATE, $response);
 
             return $response;
         }
@@ -1660,7 +1661,7 @@ trait Authorize
 
             $customProperties = $payment->toArrayTraceRelevant();
 
-            $this->app['segment']->trackPayment($payment, TraceCode::PAYMENT_AUTH_SUCCESS, $customProperties);
+            $this->segment->trackPayment($payment, TraceCode::PAYMENT_AUTH_SUCCESS, $customProperties);
 
             $this->tracePaymentInfo(TraceCode::PAYMENT_AUTH_SUCCESS);
         });
