@@ -63,41 +63,6 @@ class AxisGatewayTest extends TestCase
             $this->testData['testPaymentAxisMigsCaptureEntity'], $migs);
     }
 
-    public function testPaymentBefore1stNov()
-    {
-        $before1stNov = Carbon::create(2016, 10, 30);
-
-        $payment = $this->getDefaultPaymentArray();
-        $payment = $this->doAuthPayment($payment);
-
-        $payment = $this->getLastEntity('payment', true);
-        // Transaction will not get created as we have changed the
-        // gateway to auth and capture.
-        $this->assertNull($payment['transaction_id']);
-
-        $paymentId = Payment\Entity::verifyIdAndSilentlyStripSign($payment['id']);
-
-        (new Fixtures\Entity\Base)
-            ->editEntity('payment', $paymentId, ['created_at' => $before1stNov->timestamp]);
-
-        $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
-
-        $txn = $this->getLastEntity('transaction', true);
-
-        $this->assertArraySelectiveEquals(
-            $this->testData['testTransactionAfterCapture'], $txn);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertArraySelectiveEquals(
-            $this->testData['testPayment'], $payment);
-
-        $migs = $this->getLastEntity('axis_migs', true);
-
-        $this->assertArraySelectiveEquals(
-            $this->testData['testPaymentAxisMigsEntity'], $migs);
-    }
-
     public function testMasterCardPayment()
     {
         $payment = $this->getDefaultPaymentArray();

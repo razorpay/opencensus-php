@@ -14,12 +14,7 @@ class Gateway extends AxisMigs\Gateway
 {
     protected $gateway = 'amex';
 
-    public function capture(array $input)
-    {
-        parent::capture($input);
-
-        return $this->captureAuthorizedPayment($input);
-    }
+    protected $authorize = true;
 
     protected function addTestCardDetailsInTestMode(array & $content)
     {
