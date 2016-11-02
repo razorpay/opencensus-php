@@ -22,18 +22,18 @@ class CreateFeaturesTable extends Migration
             $table->increments(Feature::ID);
 
             $table->string(Feature::NAME, 25);
-            $table->char(Feature::TOGGLEABLE_ID, Feature::ID_LENGTH);
-            $table->string(Feature::TOGGLEABLE_TYPE, 255);
+            $table->char(Feature::ENTITY_ID, Feature::ID_LENGTH);
+            $table->string(Feature::ENTITY_TYPE, 255);
 
             $table->integer(Feature::CREATED_AT);
             $table->integer(Feature::UPDATED_AT);
 
             $table->index(Feature::CREATED_AT);
-            $table->index(Feature::TOGGLEABLE_ID);
-            $table->index(Feature::TOGGLEABLE_TYPE);
+            $table->index(Feature::ENTITY_ID);
+            $table->index(Feature::ENTITY_TYPE);
             $table->index(Feature::NAME);
-            $table->unique(array(Feature::NAME, Feature::TOGGLEABLE_ID,
-                    Feature::TOGGLEABLE_TYPE));
+            $table->unique(array(Feature::NAME, Feature::ENTITY_ID,
+                    Feature::ENTITY_TYPE));
         });
     }
 

@@ -36,6 +36,8 @@ class RecurringPaymentTest extends TestCase
     {
         $this->ba->publicAuth();
 
+        $this->fixtures->merchant->editFeatures('recurring');
+
         $this->fixtures->merchant->addFeature('recurring');
 
         $payment = $this->getDefaultRecurringPaymentArray();
@@ -48,6 +50,8 @@ class RecurringPaymentTest extends TestCase
         $this->ba->publicAuth();
 
         $payment = $this->getDefaultRecurringPaymentArray();
+
+        $this->fixtures->merchant->editFeatures('');
 
         $data = $this->testData[__FUNCTION__];
 

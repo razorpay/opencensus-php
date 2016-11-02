@@ -9,9 +9,9 @@ use RZP\Error\ErrorCode;
 class Validator extends Base\Validator
 {
 	protected static $createRules = array(
-		Entity::TOGGLEABLE_ID 			=> 'required|string|max:255',
-		Entity::TOGGLEABLE_TYPE 		=> 'required|string|max:255',
-		Entity::NAME 					=> 'required|string|max:255'
+		Entity::ENTITY_ID		=> 'required|string|max:255',
+		Entity::ENTITY_TYPE		=> 'required|string|max:255',
+		Entity::NAME 			=> 'required|string|max:255'
 	);
 
 	protected static $createValidators = [

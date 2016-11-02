@@ -7,6 +7,7 @@ use RZP\Models\Base;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Terminal\Category;
 use RZP\Models\Pricing\Service as PricingService;
+use RZP\Trace;
 
 class Entity extends Base\PublicEntity
 {
@@ -183,7 +184,8 @@ class Entity extends Base\PublicEntity
 
     public function isFeatureEnabled($feature)
     {
-        return in_array($feature, $this->getFeatures());
+        return in_array($feature, $this->getFeatures()) ||
+            $this->checkFeaturesCsv($feature);
     }
 
     public function activate()
@@ -409,8 +411,27 @@ class Entity extends Base\PublicEntity
 
     public function getFeatures()
     {
-        return $this->morphMany(\RZP\Models\Feature\Entity::class, 'toggleable')
+        return $this->morphMany(\RZP\Models\Feature\Entity::class, 'entity')
                     ->get()->pluck(\RZP\Models\Feature\Entity::NAME)->toArray();
+    }
+
+    protected function getFeaturesCsv()
+    {
+        return $this->getAttribute(self::FEATURES);
+    }
+
+    protected function checkFeaturesCsv($feature)
+    {
+
+        if (in_array($feature, $this->getFeaturesCsv()))
+        {
+            $this->app['trace']->info(TraceCode::FEATURE_CSV_LOOKUP, [
+                'msg' => TraceCode::getMessage(TraceCode::FEATURE_CSV_LOOKUP)
+            ]);
+
+            return true;
+        }
+        return false;
     }
 
     public function getBrandColor()
@@ -474,6 +495,20 @@ class Entity extends Base\PublicEntity
         $awsLogoUrl = $this->getLogoUrlBasedOnSize($baseAwsLogoUrl, $size);
 
         return $awsLogoUrl;
+    }
+
+    protected function getFeaturesAttribute()
+    {
+        $features = $this->attributes[self::FEATURES];
+        if (empty($features))
+        {
+            return [];
+        }
+        else
+        {
+            $features = explode(Features::DELIMITER, $features);
+            return array_map('trim', $features);
+        }
     }
 
     protected function getLogoUrlBasedOnSize($logoUrl, $size)

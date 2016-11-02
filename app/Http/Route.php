@@ -267,10 +267,10 @@ final class Route
         'gateway_fetch_absence'                   => ['get',      'gateway/absence',                                'GatewayController@getAbsentGateways'                               ],
         'scorecard'                               => ['get',      'scorecard',                                      'AdminController@getScorecard'                                      ],
         'billdesk_reconcile_cancelled'            => ['post',     'reconciliate/{gateway}/cancelled',               'ReconciliatorController@postReconciliateCancelledTransactions'     ],
-        'entity_add_feature'                      => ['post',     'features/',                    'FeatureController@addFeatures'],
-        'entity_delete_feature'                   => ['delete',   'features/{id}',                'FeatureController@deleteFeature'],
-        'entity_get_features'                     => ['get',      'features/{toggleable_type}/{toggleable_id}',                                                     'FeatureController@getFeatures'],
-        'migrate_merchant_features'               => ['put',      'features/migrate',              'FeatureController@migrateMerchantFeatures']
+        'entity_add_feature'                      => ['post',     'features/',                                      'FeatureController@addFeatures'],
+        'entity_delete_feature'                   => ['delete',   'features/{id}',                                  'FeatureController@deleteFeature'],
+        'entity_get_features'                     => ['get',      'features/{entityType}/{entityId}',               'FeatureController@getFeatures'],
+        'migrate_merchant_features'               => ['put',      'features/migrate',                               'FeatureController@migrateMerchantFeatures']
     );
 
     public static $public = array(

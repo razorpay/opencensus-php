@@ -4,7 +4,7 @@ namespace RZP\Models\Feature;
 
 class EntityMap
 {
-	const TOGGLEABLE_ENTITIES = [
+	const SUPPORTED_ENTITIES = [
 		"merchant" => \RZP\Models\Merchant\Entity::class
 	];
 }

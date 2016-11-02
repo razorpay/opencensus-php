@@ -115,6 +115,8 @@ class MerchantCreateTest extends TestCase
 
     public function testCreateSubMerchant()
     {
+        $this->fixtures->merchant->editFeatures('aggregator');
+
         $this->fixtures->merchant->addFeature('aggregator');
 
         $this->ba->proxyAuth();
@@ -124,6 +126,8 @@ class MerchantCreateTest extends TestCase
 
     public function testCreateSubMerchantWithEmail()
     {
+        $this->fixtures->merchant->editFeatures('aggregator');
+
         $this->fixtures->merchant->addFeature('aggregator');
 
         $this->ba->proxyAuth();

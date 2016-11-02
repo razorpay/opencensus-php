@@ -6,9 +6,9 @@ use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {
-	const NAME 						= 'name';
-	const TOGGLEABLE_ID				= 'toggleable_id';
-	const TOGGLEABLE_TYPE			= 'toggleable_type';
+	const NAME 				= 'name';
+	const ENTITY_ID 		= 'entity_id';
+	const ENTITY_TYPE 		= 'entity_type';
 
 	protected $table = \RZP\Constants\Table::FEATURE;
 
@@ -21,30 +21,30 @@ class Entity extends Base\PublicEntity
 	protected $fillable = [
 		self::ID,
 		self::NAME,
-		self::TOGGLEABLE_ID,
-		self::TOGGLEABLE_TYPE
+		self::ENTITY_ID,
+		self::ENTITY_TYPE
 	];
 
 	protected $public = [
 		self::ID,
 		self::NAME,
-		self::TOGGLEABLE_ID,
-		self::TOGGLEABLE_TYPE
+		self::ENTITY_ID,
+		self::ENTITY_TYPE
 	];
 
 	protected $visible = [
 		self::ID,
 		self::NAME,
-		self::TOGGLEABLE_ID,
-		self::TOGGLEABLE_TYPE
+		self::ENTITY_ID,
+		self::ENTITY_TYPE
 	];
 
 	/**
 	 * Creates a polymorphic relation woth entities
 	 * implementing a morphMany association on the
-	 * 'toggleable' key
+	 * 'entity' key
 	 */
-	public function toggleable()
+	public function entity()
 	{
 		return $this->morphTo();
 	}

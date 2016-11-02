@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant;
 
+use Closure;
 use RZP\Constants\Mode;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
@@ -162,10 +163,12 @@ class Repository extends Base\Repository
         return $merchant;
     }
 
-    public function fetchAllMerchantFeatures()
+    public function fetchMerchantFeatures(Closure $processData)
     {
-        return $this->newQuery()
-                    ->whereNotNull(Entity::FEATURES)
-                    ->get();
+        $this->newQuery()->whereNotNull(Entity::FEATURES)
+            ->orderBy(ENTITY::ID)->chunk(200, function ($merchants) use ($processData)
+            {
+                return $processData($merchants);
+            });
     }
 }

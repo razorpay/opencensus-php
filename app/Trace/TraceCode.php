@@ -141,7 +141,7 @@ class TraceCode
     const VERIFY_PROCESSED_SUMMARY                  = 'VERIFY_PROCESSED_SUMMARY';
     const PAYMENT_VERIFY_RESULT                     = 'PAYMENT_VERIFY_RESULT';
     const PAYMENT_VERIFY_ALREADY_AUTHORIZED         = 'PAYMENT_VERIFY_ALREADY_AUTHORIZED';
-    
+
     /*
      * Gateway component error messages
      */
@@ -335,6 +335,8 @@ class TraceCode
     const PAYMENT_ALREADY_AUTHORIZED                = 'PAYMENT_ALREADY_AUTHORIZED';
     const SEGMENT_POST_FAILED                       = 'SEGMENT_POST_FAILED';
 
+    // Trace code for feature lokup
+    const FEATURE_CSV_LOOKUP                        = 'FEATURE_CSV_LOOKUP';
 
 
     protected static $messages = array(
@@ -439,6 +441,7 @@ class TraceCode
         self::BATCH_LIST                                => 'Getting the batch files',
         self::BATCH_GET                                 => 'Get Batch by given id',
         self::BATCH_FILE_DELETE                         => 'Batch file delete',
+        self::FEATURE_CSV_LOOKUP                        => 'Feature found in csv'
     );
 
     /**

@@ -9,9 +9,9 @@ return [
     'testAddFeatureToMerchant' => [
         'request' => [
             'content' => [
-                'names'                     => ['dummy', 's2s'],
-                'toggleable_type'           => 'merchant',
-                'toggleable_id'             => '10000000000000'
+                'names'             => ['dummy', 's2s'],
+                'entity_type'       => 'merchant',
+                'entity_id'         => '10000000000000'
             ],
             'url' => '/features',
             'method' => 'POST'
@@ -19,14 +19,14 @@ return [
         'response' => [
             'content' => [
                 [
-                    'name'                  => 'dummy',
-                    'toggleable_id'         => '10000000000000',
-                    'toggleable_type'       => "RZP\\Models\\Merchant\\Entity"
+                    'name'              => 'dummy',
+                    'entity_id'         => '10000000000000',
+                    'entity_type'       => "RZP\\Models\\Merchant\\Entity"
                 ],
                 [
-                    'name'                  => 's2s',
-                    'toggleable_id'         => '10000000000000',
-                    'toggleable_type'       => "RZP\\Models\\Merchant\\Entity"
+                    'name'              => 's2s',
+                    'entity_id'         => '10000000000000',
+                    'entity_type'       => "RZP\\Models\\Merchant\\Entity"
                 ]
             ],
         ],
@@ -35,9 +35,9 @@ return [
     'testAddInvalidFeatureToMerchant' => [
         'request' => [
             'content' => [
-                'names'                     => ['invalid'],
-                'toggleable_type'           => 'merchant',
-                'toggleable_id'             => '10000000000000'
+                'names'             => ['invalid'],
+                'entity_type'       => 'merchant',
+                'entity_id'         => '10000000000000'
             ],
             'url' => '/features',
             'method' => 'POST'
@@ -67,14 +67,14 @@ return [
             "content" => [
                 "assigned_features" => [
                     [
-                        "name"                  => "dummy",
-                        "toggleable_id"         => "10000000000000",
-                        "toggleable_type"       => "RZP\\Models\\Merchant\\Entity"
+                        "name"              => "dummy",
+                        "entity_id"         => "10000000000000",
+                        "entity_type"       => "RZP\\Models\\Merchant\\Entity"
                     ],
                     [
-                        "name"                  => "s2s",
-                        "toggleable_id"         => "10000000000000",
-                        "toggleable_type"       => "RZP\\Models\\Merchant\\Entity"
+                        "name"              => "s2s",
+                        "entity_id"         => "10000000000000",
+                        "entity_type"       => "RZP\\Models\\Merchant\\Entity"
                     ],
                 ],
                 "all_features" => [

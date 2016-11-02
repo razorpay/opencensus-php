@@ -19,15 +19,15 @@ class Service extends Base\Service
 		return $features->toArray();
 	}
 
-	public function getFeatures(string $toggleableType, string $toggleableId)
+	public function getFeatures(string $entityType, string $entityId)
 	{
-		$toggleableType = EntityMap::TOGGLEABLE_ENTITIES[$toggleableType];
+		$entityType = EntityMap::SUPPORTED_ENTITIES[$entityType];
 
-		$response = collect();
+		$response = new Base\Collection;
 
 		$response['assigned_features'] = $this->repo->feature->
-				getFeaturesByToggleableTypeAndId($toggleableType,
-			   	$toggleableId);
+				getFeaturesByEntityTypeAndId($entityType,
+				$entityId);
 
 		// all_features is a list of currently available features in the system
 		$response['all_features'] = Core::$allFeatures;
@@ -46,44 +46,42 @@ class Service extends Base\Service
 
 	public function migrateMerchantFeatures()
 	{
-		$merchantFeatures = $this->repo->merchant->fetchAllMerchantFeatures();
+		$response = new Base\Collection;
 
-		$merchantFeatures->transform(function ($merchant)
+		$this->repo->merchant->fetchMerchantFeatures(function ($merchantFeatures)
+			use ($response)
 		{
-			return
-			[
-				'toggleable_id' 	=> $merchant->id,
-				'names' 			=> explode(',', $merchant->features),
-				'toggleable_type'	=> 'merchant'
-			];
+			foreach ($merchantFeatures as $merchantFeature)
+			{
+				$featureParam = [
+					'entity_id'			=> $merchantFeature->id,
+					'names'				=> $merchantFeature->features,
+					'entity_type'		=> 'merchant'
+				];
+
+				$response->push($this->addFeatures($featureParam));
+			}
 		});
-
-		$response = collect();
-
-		foreach ($merchantFeatures->all() as $feature)
-		{
-			$response->push($this->addFeatures($feature));
-		}
 
 		return $response;
 	}
 
 	private function buildFeatureParams($input)
 	{
-		$featureParams = collect();
+		$featureParams = new Base\Collection;
 
-		$toggleableType = EntityMap::TOGGLEABLE_ENTITIES[$input['toggleable_type']];
+		$entityType = EntityMap::SUPPORTED_ENTITIES[$input['entity_type']];
 
-		$toggleableId = $input['toggleable_id'];
+		$entityId = $input['entity_id'];
 
 		$featureNames = $input['names'];
 
 		foreach ($featureNames as $featureName)
 		{
 			$featureParams->push([
-				"toggleable_type" 	=> $toggleableType,
-				"toggleable_id" 	=> $toggleableId,
-				"name"				=> $featureName
+				"entity_type" 	=> $entityType,
+				"entity_id" 	=> $entityId,
+				"name"			=> $featureName
 			]);
 		}
 

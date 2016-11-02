@@ -25,9 +25,9 @@ class FeatureController extends Controller
 		return ApiResponse::json($data);
 	}
 
-	public function getFeatures(string $toggleableType, string $toggleableId)
+	public function getFeatures(string $entityType, string $entityId)
 	{
-		$data = (new Feature\Service)->getFeatures($toggleableType, $toggleableId);
+		$data = (new Feature\Service)->getFeatures($entityType, $entityId);
 
 		return ApiResponse::json($data);
 	}
