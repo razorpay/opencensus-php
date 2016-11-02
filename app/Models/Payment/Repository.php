@@ -453,7 +453,7 @@ class Repository extends Base\Repository
 
     public function getCurrentMonthVolume()
     {
-        $from = Carbon::today('Asia/Kolkata')->startOfMonth()->timestamp;
+        $from = Carbon::yesterday('Asia/Kolkata')->startOfMonth()->timestamp;
         $to = Carbon::today('Asia/Kolkata')->timestamp;
 
         return $this->getPaymentVolumeBetweenTimestamp($from, $to);

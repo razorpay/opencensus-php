@@ -21,7 +21,8 @@ class Validator extends Base\Validator
         'vpc_CardSecurityCode'      => 'required|numeric|digits_between:2,4',
         'vpc_Merchant'              => 'required|alpha_num|max:16',
         'vpc_AccessCode'            => 'required|alpha_num|size:8',
-        'vpc_SecureHash'            => 'required|alpha_num|size:32',
+        'vpc_SecureHash'            => 'required|alpha_num|size:64',
+        'vpc_SecureHashType'        => 'required|in:SHA256',
         'vpc_OrderInfo'             => 'sometimes|alpha_num|max:34',
     );
 }
