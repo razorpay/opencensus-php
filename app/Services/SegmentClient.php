@@ -298,8 +298,6 @@ class SegmentClient extends Base\Core
             // payment_id as the anonymousId
             if (empty($id) === true)
             {
-                $this->trace->warning(TraceCode::SEGMENT_ID_UNAVAILABLE, $properties);
-
                 $id = $payment->getPublicId();
 
                 $ids['id_type'] = 'payment';
