@@ -8,7 +8,10 @@ app.controller('ProfileCtrl', [
       request.success(function (result) {
         if(result.success) {
           $scope.balance = result.data.balance;
+
+          // Amount and Fee Credits
           $scope.credits = result.data.credits;
+          $scope.fee_credits = result.data.fee_credits;
         }
 
         $('.fake_hide_till_loaded').removeClass('fake_hide_till_loaded');
