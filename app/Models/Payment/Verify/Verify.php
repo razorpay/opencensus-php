@@ -16,15 +16,6 @@ class Verify extends Base\Core
 {
      // ================== Configurations ==================
     /**
-     * Verify will run for all the created payments every 2 minutes.
-     * All the created payments will be converted to failed in 10 minutes via timeout cron.
-     * Hence, at max, verify for the payment (when it is in created state) will be run 5 times.
-     */
-    protected static $createdStartBoundary = [
-        120,           // 2 Minutes
-    ];
-
-    /**
      * For all the payments which are in failed state,
      * verify for the payment will be run once for in every boundary bucket.
      */
@@ -55,13 +46,15 @@ class Verify extends Base\Core
      */
     const CREATED_MIN_TIME = 120;  // 2 Minutes
 
-    // TODO: This is present here to ensure backward compatibility and
-    // should be removed after the required changes in the cron are made.
+    /**
+     * This is the minimum time for which the payment should be in
+     * failed state, before we run verify on it.
+     */
     const FAILURE_MIN_TIME = 120;  // 2 Minutes
 
     /**
-     * This is the minimum time for which the payment should be in
-     * failed state, before we run a "failed/error" verify on it.
+     * This is the minimum time for which the payment verify status
+     * should be in non-success state, before we run a "failed/error" verify on it.
      */
     const ERRORED_MIN_TIME = 0; // 0 Minute
 
@@ -70,6 +63,7 @@ class Verify extends Base\Core
     protected $core;
     protected $mutex;
     protected $slack;
+    protected $route;
 
     public function __construct()
     {
@@ -78,6 +72,8 @@ class Verify extends Base\Core
         $this->mutex = $this->app['api.mutex'];
 
         $this->slack = $this->app['slack'];
+
+        $this->route = $this->app['api.route']->getCurrentRouteName();
     }
 
     /**
@@ -110,25 +106,21 @@ class Verify extends Base\Core
 
         switch($filter)
         {
-            case 'all':
             case Filter::PAYMENTS_FAILED:
                 $paymentStatus = Payment\Status::FAILED;
                 $minimumTime = $currentTime - self::FAILURE_MIN_TIME;
                 break;
 
-            case 'created':
             case Filter::PAYMENTS_CREATED:
                 $paymentStatus = Payment\Status::CREATED;
                 $minimumTime = $currentTime - self::CREATED_MIN_TIME;
                 break;
 
-            case 'failed':
             case Filter::VERIFY_FAILED:
                 $verifyStatus = Status::FAILED;
                 $minimumTime = $currentTime - self::ERRORED_MIN_TIME;
                 break;
 
-            case 'error':
             case Filter::VERIFY_ERROR:
                 $verifyStatus = Status::ERROR;
                 $minimumTime = $currentTime - self::ERRORED_MIN_TIME;
@@ -317,15 +309,11 @@ class Verify extends Base\Core
 
         $cron = $this->app['basicauth']->isCron();
 
-        $route = $this->app['api.route']->getCurrentRouteName();
 
-        // For Payment in created state, verify bucket should not be updated
-        // as we want to run cron on specific interval, till payment is marked as failed/authorized
         // If filter is null, then verify is initiated manually, not via cron
         // Don't update VERIFY_BUCKET, in that case
-        if (($payment->getStatus() !== Payment\Status::CREATED) and
-            ($cron === true) and
-            ($route === 'payment_verify_multiple_post'))
+        if (($cron === true) and
+            ($this->route === 'payment_verify_multiple'))
         {
             $nextVerifyBucket = $this->getPaymentNextVerifyBucket($payment, $filter);
 
@@ -442,10 +430,13 @@ class Verify extends Base\Core
 
     protected function getPaymentNextVerifyBucket($payment, $filter)
     {
-        // For Payment in created state, verify bucket should not be updated
-        // as we want to run cron on specific interval, till payment is marked as failed/authorized
-        // If filter is null, then verify is initiated manually, not via cron
-        // Don't update VERIFY_BUCKET, in that case
+        // For Payment in created state and payment having verified as error,
+        // verify bucket should be 0
+        if (($filter === Filter::PAYMENTS_CREATED) or
+            ($filter === Filter::VERIFY_ERROR))
+        {
+            return 0;
+        }
 
         // Get Verify Boundary to update Verify Bucket
         $boundaries = $this->getBoundaryInSeconds($filter);
@@ -468,23 +459,25 @@ class Verify extends Base\Core
     {
         switch($filter)
         {
-            // TODO: remove 'created', 'failure', 'error' and 'all' filter
-            case 'created':
+            /**
+             * Verify will run for all the created payments every 2 minutes.
+             * All the created payments will be converted to failed in 10 minutes via timeout cron.
+             * Hence, at max, verify for the payment (when it is in created state) will be run 5 times.
+             * For Verify Error, Cron will pick the paymnets till Verify Status Changes
+             */
             case Filter::PAYMENTS_CREATED:
-                $boundaries = self::$createdStartBoundary;
+            case Filter::VERIFY_ERROR:
+                $boundaries = [];
                 break;
 
-            case 'failure':
-            case 'error':
-            case Filter::VERIFY_ERROR:
             case Filter::VERIFY_FAILED:
-            case 'all':
             case Filter::PAYMENTS_FAILED:
                 $boundaries = self::$failureStartBoundary;
                 break;
 
             default:
-                throw new Exception\LogicException('Unknown filter provided.', null, ['filter' => $filter]);
+                throw new Exception\LogicException(
+                    'Unknown filter provided.', null, ['filter' => $filter]);
         }
 
         return $boundaries;

@@ -20,7 +20,7 @@ class Gateway extends Base\Gateway
 
     protected $gateway = 'axis_migs';
 
-    protected $authorize = false;
+    protected $authorize = true;
 
     const CHECKSUM_ATTRIBUTE = 'vpc_SecureHash';
 
