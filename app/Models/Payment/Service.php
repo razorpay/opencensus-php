@@ -566,6 +566,8 @@ class Service extends Base\Service
             {
                 $failed++;
 
+                $this->trace->traceException($e);
+
                 // Now Just continue
             }
             catch (Exception\GatewayTimeoutException $e)
@@ -588,8 +590,7 @@ class Service extends Base\Service
                 // exception but in this context it really shouldn't have
                 // occurred.
 
-                // @todo: Remove this in future.
-                // $this->app['exception.handler']->traceException($e);
+                $this->trace->traceException($e);
 
                 // Just continue
                 $error++;
