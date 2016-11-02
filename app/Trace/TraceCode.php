@@ -87,6 +87,7 @@ class TraceCode
     const ORDER_MULTIPLE_CAPTURED_PAYMENTS          = 'ORDER_MULTIPLE_CAPTURED_PAYMENTS';
 
     const ORDER_CREATE_REQUEST                      = 'ORDER_CREATE_REQUEST';
+    const REFUND_TRANSACTION_CREATED                = 'REFUND_TRANSACTION_CREATED';
 
     const TERMINAL_SELECTION                        = 'TERMINAL_SELECTION';
     const TERMINAL_SELECTION_MISMATCH               = 'TERMINAL_SELECTION_MISMATCH';
@@ -141,7 +142,7 @@ class TraceCode
     const VERIFY_PROCESSED_SUMMARY                  = 'VERIFY_PROCESSED_SUMMARY';
     const PAYMENT_VERIFY_RESULT                     = 'PAYMENT_VERIFY_RESULT';
     const PAYMENT_VERIFY_ALREADY_AUTHORIZED         = 'PAYMENT_VERIFY_ALREADY_AUTHORIZED';
-    
+
     /*
      * Gateway component error messages
      */
