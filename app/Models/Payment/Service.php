@@ -14,6 +14,7 @@ use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Card;
 use RZP\Models\Transaction;
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Verify\Verify;
 
@@ -566,6 +567,8 @@ class Service extends Base\Service
             {
                 $failed++;
 
+                $this->trace->traceException($e, Trace::INFO, TraceCode::REFUND_EXCEPTION);
+
                 // Now Just continue
             }
             catch (Exception\GatewayTimeoutException $e)
@@ -588,8 +591,7 @@ class Service extends Base\Service
                 // exception but in this context it really shouldn't have
                 // occurred.
 
-                // @todo: Remove this in future.
-                // $this->app['exception.handler']->traceException($e);
+                $this->trace->traceException($e, Trace::INFO, TraceCode::REFUND_EXCEPTION);
 
                 // Just continue
                 $error++;
