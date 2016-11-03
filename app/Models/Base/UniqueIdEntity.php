@@ -182,7 +182,8 @@ class UniqueIdEntity extends Entity
 
         if ((($res === 0) or ($res === false)) and ($throw))
         {
-            throw new Exception\LogicException($id . ' is not a valid id');
+            throw new Exception\BadRequestValidationFailureException(
+                        $id . ' is not a valid id');
         }
 
         return $res;
