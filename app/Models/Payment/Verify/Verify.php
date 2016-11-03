@@ -143,9 +143,9 @@ class Verify extends Base\Core
 
         $payments = $paymentsCollectionWithCount['payments'];
 
-        $maxCount = $paymentsCollectionWithCount['max_count'];
+        $verifiableCount = $paymentsCollectionWithCount['verifiable_count'];
 
-        return $this->verifyMultiplePayments($payments, $filter, $maxCount);
+        return $this->verifyMultiplePayments($payments, $filter, $verifiableCount);
     }
 
     /**
@@ -154,7 +154,7 @@ class Verify extends Base\Core
      * @param integer               $count
      * @return array with aggregated results
      */
-    protected function verifyMultiplePayments(Base\PublicCollection $payments, $filter, $maxCount)
+    protected function verifyMultiplePayments(Base\PublicCollection $payments, $filter, $verifiableCount)
     {
         $resultSet = [
             Result::AUTHORIZED    => 0,
@@ -200,7 +200,7 @@ class Verify extends Base\Core
             'authorize_time'    => $totalAuthTimeDiff
         ];
 
-        $summary = $this->processResult($resultSet, $times, $filter, $maxCount);
+        $summary = $this->processResult($resultSet, $times, $filter, $verifiableCount);
 
         $this->addDataToVerifySummary($summary, $lockedPayments, $notApplicable);
 
@@ -221,7 +221,7 @@ class Verify extends Base\Core
             $summary['not_applicable'] = $notApplicable;
         }
 
-        $summary['total_payments'] = $payments->count();
+        $summary['verified_payments'] = $payments->count();
     }
 
     /** Lock All Payments
@@ -261,7 +261,7 @@ class Verify extends Base\Core
      * @param string $filter filter used to fetch payments
      * @return array with processed result
      */
-    protected function processResult(array $result, $times, $filter, $maxCount)
+    protected function processResult(array $result, $times, $filter, $verifiableCount)
     {
         $avgTimeDiff = 0;
 
@@ -274,7 +274,7 @@ class Verify extends Base\Core
 
         $processedResults = [
             'filter'           => $filter,
-            'max_count'        => $maxCount,
+            'verifiable_count' => $verifiableCount,
             'authorize_time'   => $avgTimeDiff,
             'total_time'       => $totalVerifyTime . ' secs'
         ];

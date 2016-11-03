@@ -33,6 +33,7 @@ use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Payment;
 use RZP\Models\Card;
 use RZP\Trace\TraceCode;
+use RZP\Gateway\Base\Action as BaseAction;
 use App;
 
 class Gateway extends Base\Gateway
@@ -75,7 +76,7 @@ class Gateway extends Base\Gateway
 
     const TIMEOUT = 30;
 
-    const VERIFY_TIMEOUT = 30;
+    const VERIFY_TIMEOUT = 60;
 
     /**
      * Parameters required to construct request
@@ -475,7 +476,7 @@ class Gateway extends Base\Gateway
         catch (Exception\GatewayTimeoutException $e)
         {
             // For verify we should throw exception as is.
-            if ($this->action === 'verify')
+            if ($this->action === BaseAction::VERIFY)
             {
                 throw $e;
             }
@@ -609,7 +610,7 @@ class Gateway extends Base\Gateway
     protected function getTimeout()
     {
         // Increasing timeout for verify Request
-        if ($this->action === 'verify')
+        if ($this->action === BaseAction::VERIFY)
         {
             return static::VERIFY_TIMEOUT;
         }

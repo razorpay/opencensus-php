@@ -246,12 +246,12 @@ class Repository extends Base\Repository
         // LIMIT  100
 
         // We want total number of Payments which are awaiting verify, for logging
-        $maxCount = $query->count();
+        $verifiableCount = $query->count();
 
         $payments = $query->take(100)
-            ->get();
+                          ->get();
 
-        return ['payments' => $payments, 'max_count' => $maxCount];
+        return ['payments' => $payments, 'verifiable_count' => $verifiableCount];
     }
 
     /**
