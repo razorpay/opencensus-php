@@ -30,10 +30,8 @@ class Entity extends Base\Entity
     const CAPTURE_REF            = 'capture_ref';
     const XID                    = 'xid';
     const REASON_CODE            = 'reason_code';
-    const CREATED_AT             = 'created_at';
-    const UPDATED_AT             = 'updated_at';
 
-    protected $fields = array(
+    protected $fields = [
         self::ID,
         self::VERES_ENROLLED,
         self::AMOUNT,
@@ -58,9 +56,9 @@ class Entity extends Base\Entity
         self::REASON_CODE,
         self::CREATED_AT,
         self::UPDATED_AT
-    );
+    ];
 
-    protected $fillable = array(
+    protected $fillable = [
         self::VERES_ENROLLED,
         self::ECI,
         self::PARES_STATUS,
@@ -81,7 +79,7 @@ class Entity extends Base\Entity
         self::XID,
         self::STATUS,
         self::RECEIVED
-    );
+    ];
 
     protected $casts = [
         self::REASON_CODE => 'int',

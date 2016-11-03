@@ -181,4 +181,17 @@ class Fields
     const MD                            = 'MD';
 
     const TERM_URL                      = 'TermUrl';
+
+    // Verify Fields
+    const R_FLAG                        = 'RFlag';
+
+    const APPLICATION_REPLIES           = 'ApplicationReplies';
+
+    const APPLICATION_REPLY             = 'ApplicationReply';
+
+    const REQUESTS                      = 'Requests';
+
+    const REQUEST                       = 'Request';
+
+    const NAME                          = 'Name';
 }

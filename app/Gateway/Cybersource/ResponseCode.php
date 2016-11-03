@@ -167,16 +167,6 @@ class ResponseCode
         return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
     }
 
-    public static function getDescription($code)
-    {
-        if (isset(self::$reasonCodes[$code]))
-        {
-            return self::$reasonCodes[$code];
-        }
-
-        return 'Payment failed';
-    }
-
     public static function isFatalError($code)
     {
         if ((isset(self::$errorCodeMap[$code]) === true) and

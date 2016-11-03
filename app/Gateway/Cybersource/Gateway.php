@@ -11,12 +11,13 @@ use SoapClient;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Constants;
-use RZP\Gateway\Utility;
 use RZP\Models\Card;
 use RZP\Gateway\Base;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Gateway\Utility;
+use RZP\Base\JitValidator;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Cybersource\Fields as F;
@@ -26,6 +27,8 @@ class Gateway extends Base\Gateway
 {
     use Base\AuthorizeFailed;
 
+    const CACHE_KEY = 'cybersource_%s_card_details';
+
     // Request timeout limit in seconds
     const TIMEOUT = 60;
 
@@ -34,7 +37,7 @@ class Gateway extends Base\Gateway
     const TEST_USERNAME         = 'test_username';
     const TEST_PASSWORD         = 'test_password';
 
-    protected static $bankAcsResponseRules = [
+    protected $bankAcsResponseRules = [
         'PaRes'     => 'required',
         'MD'        => 'required',
         'PaReq'     => 'sometimes'
@@ -42,13 +45,13 @@ class Gateway extends Base\Gateway
 
     protected $gateway = Constants\Table::CYBERSOURCE;
 
-    protected $secureCache;
+    protected $secureCacheDriver;
 
     public function __construct()
     {
         parent::__construct();
 
-        $this->secureCache = Config::get('cache.secure_default');
+        $this->secureCacheDriver = Config::get('cache.secure_default');
     }
 
     public function authorize(array $input)
@@ -215,19 +218,19 @@ class Gateway extends Base\Gateway
         list($authReply, $requestContent) = $this->fetchAuthorizeReplyFromContent($content);
 
         // Payment is failed when ics_auth is not present
-        if (isset($authReply['RFlag']) === true)
+        if (isset($authReply[F::R_FLAG]) === true)
         {
-            if ($authReply['RFlag'] !== ReplyFlag::SOK)
+            if ($authReply[F::R_FLAG] !== ReplyFlag::SOK)
             {
                 $this->verifyNonExistentCase($verify);
             }
-            else if ($authReply['RFlag'] === ReplyFlag::SOK)
+            else if ($authReply[F::R_FLAG] === ReplyFlag::SOK)
             {
                 $this->verifyPaymentReconcileWithGatewayResponse($verify);
             }
         }
 
-        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
+        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
 
         $verify->verifyResponseContent = $this->getVerifyContentFromResponse($requestContent);
 
@@ -281,7 +284,7 @@ class Gateway extends Base\Gateway
 
     protected function fetchAuthorizeReplyFromContent($content)
     {
-        $requests = $content['Requests']['Request'] ?? null;
+        $requests = $content[F::REQUESTS][F::REQUEST] ?? null;
 
         if ($requests !== null)
         {
@@ -292,7 +295,7 @@ class Gateway extends Base\Gateway
 
             foreach($requests as $request)
             {
-                $applicationReplies = $request['ApplicationReplies']['ApplicationReply'];
+                $applicationReplies = $request[F::APPLICATION_REPLIES][F::APPLICATION_REPLY];
 
                 if ($this->isSequentialArray($applicationReplies) === false)
                 {
@@ -301,7 +304,7 @@ class Gateway extends Base\Gateway
 
                 foreach($applicationReplies as $applicationReply)
                 {
-                    if ($applicationReply['@attributes']['Name'] === 'ics_auth')
+                    if ($applicationReply['@attributes'][F::NAME] === 'ics_auth')
                     {
                         return [$applicationReply, $request];
                     }
@@ -430,7 +433,8 @@ class Gateway extends Base\Gateway
             $gatewayPayment = $this->gatewayPayment;
 
             $gatewayPayment->fill($gatewayAttributes);
-            $gatewayPayment->save();
+
+            $this->repo->saveOrFail($gatewayPayment);
 
             if ($response[F::REASON_CODE] !== Result::SUCCESS)
             {
@@ -606,14 +610,14 @@ class Gateway extends Base\Gateway
             $vaultToken = Card\Tokenex::getVaultToken($input['card']['number']);
         }
 
-        $key = 'cybersource_' . $input['payment']['id'] . '_card_details';
+        $key = $this->getCacheKey($input['payment']['id']);
 
         $data = [
             'cvv'         => Crypt::encrypt($cvv),
             'vault_token' => $vaultToken
         ];
 
-        Cache::store($this->secureCache)->put($key, $data, 10);
+        Cache::store($this->secureCacheDriver)->put($key, $data, 10);
     }
 
     protected function setCardNumberAndCvv(&$input)
@@ -627,9 +631,9 @@ class Gateway extends Base\Gateway
 
     protected function getCardDetailsFromCache($input)
     {
-        $key = 'cybersource_' . $input['payment']['id'] . '_card_details';
+        $key = $this->getCacheKey($input['payment']['id']);
 
-        return Cache::store($this->secureCache)->pull($key);
+        return Cache::store($this->secureCacheDriver)->pull($key);
     }
 
     protected function getAttributeFromAuthEnrollResponse(array $input, array $response)
@@ -972,7 +976,7 @@ class Gateway extends Base\Gateway
 
         $payment->fill($attributes);
 
-        $payment->saveOrFail();
+        $this->repo->saveOrFail($payment);
 
         $this->gatewayPayment = $payment;
 
@@ -1176,6 +1180,13 @@ class Gateway extends Base\Gateway
         return array_keys($array) === range(0, count($array) - 1);
     }
 
+    protected function getCacheKey($paymentId)
+    {
+        $key = sprintf(self::CACHE_KEY, $paymentId);
+
+        return $key;
+    }
+
     // Exception handling
 
     /**
@@ -1216,7 +1227,10 @@ class Gateway extends Base\Gateway
     {
         try
         {
-            validate(self::$bankAcsResponseRules, $input['gateway'], false);
+            (new JitValidator)->rules($this->bankAcsResponseRules)
+                              ->input($input['gateway'])
+                              ->strict(false)
+                              ->validate();
         }
         catch (Exception\RecoverableException $e)
         {
