@@ -15,7 +15,16 @@ class Service extends Base\Service
 
     public function createOrg(array $input)
     {
-        $this->core->create($input);
+        $org = $this->core->create($input);
+
+        return $org->toArrayPublic();
+    }
+
+    public function getOrg(string $id)
+    {
+        $org = $this->repo->org->findOrFail($id);
+
+        return $org->toArrayPublic();
     }
 
     public function deleteOrg(string $id)

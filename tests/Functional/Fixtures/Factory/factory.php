@@ -306,3 +306,14 @@ $factory(\RZP\Gateway\Wallet\Base\Entity::class, [
     'contact'       => '9918899029',
     'email'         => 'a@b.com',
 ]);
+
+// Admin Roles related fixtures
+
+$factory(\RZP\Models\Admin\Org\Entity::class, [
+    'id'            => $faker->uniqueid,
+    'email_domains' => 'hdfc.com,fbapi.com',
+    'email'         => 'test@hdfc.com',
+    'display_name'  => 'HDFC Bank',
+    'business_name' => 'HDFC Bank Public Limited',
+    'auth'          => 'password',
+]);

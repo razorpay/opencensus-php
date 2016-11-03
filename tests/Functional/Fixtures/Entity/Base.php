@@ -49,6 +49,7 @@ class Base
         'address'       => \RZP\Models\Address\Entity::class,
         'batch'         => \RZP\Models\Batch\Entity::class,
         'wallet'        => \RZP\Gateway\Wallet\Base\Entity::class,
+        'org'           => \RZP\Models\Admin\Org\Entity::class,
     );
 
     protected static $liveAndTest = array(

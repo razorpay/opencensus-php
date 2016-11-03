@@ -8,13 +8,13 @@ use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {
-    const AUTH                  = 'auth';
+    const AUTH_TYPE             = 'auth_type';
     const BUSINESS_NAME         = 'business_name';
     const DISPLAY_NAME          = 'display_name';
     const EMAIL                 = 'email';
     const EMAIL_DOMAINS         = 'email_domains';
     const DELETED_AT            = 'deleted_at';
-    const LOGO                  = 'logo';
+    const LOGO_URL              = 'logo_url';
 
     protected static $sign = 'org';
 
@@ -25,37 +25,37 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $fillable = [
-        self::NAME,
+        self::DISPLAY_NAME,
+        self::BUSINESS_NAME,
         self::EMAIL,
-        self::AUTH,
+        self::AUTH_TYPE,
         self::EMAIL_DOMAINS,
-        self::LOGO,
+        self::LOGO_URL,
     ];
 
     protected $visible = [
-        self::NAME,
+        self::DISPLAY_NAME,
+        self::BUSINESS_NAME,
         self::EMAIL,
-        self::AUTH,
+        self::AUTH_TYPE,
         self::EMAIL_DOMAINS,
-        self::LOGO,
+        self::LOGO_URL,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
     ];
 
     protected $public = [
-        self::ID,
-        self::NAME,
+        self::DISPLAY_NAME,
+        self::BUSINESS_NAME,
         self::EMAIL,
         self::EMAIL_DOMAINS,
-        self::LOGO,
-        self::AUTH,
+        self::LOGO_URL,
+        self::AUTH_TYPE,
         self::CREATED_AT,
     ];
 
     protected $defaults = [
-        self::EMAIL_DOMAINS => [],
-        self::AUTH => null,
     ];
 
     protected $guarded = [self::ID];

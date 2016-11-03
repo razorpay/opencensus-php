@@ -270,9 +270,9 @@ final class Route
         'billdesk_reconcile_cancelled'            => ['post',     'reconciliate/{gateway}/cancelled',               'ReconciliatorController@postReconciliateCancelledTransactions'     ],
 
         // Routes for the admin roles project
-        'organization_create'                     => ['post',     'organizations/create',                           'AdminController@createOrganization'                                ],
-        'organization_delete'                     => ['delete',   'organizations/{id}',                             'AdminController@deleteOrganization'                                ],
-        'organization_edit'                       => ['put',      'organizations/{id}',                             'AdminController@putOrganization'                                   ],
+        'org_create'                              => ['post',     'org',                                            'AdminController@createOrg'                                         ],
+        'org_delete'                              => ['delete',   'org/{id}',                                       'AdminController@deleteOrg'                                         ],
+        'org_edit'                                => ['put',      'org/{id}',                                       'AdminController@putOrg'                                            ],
     );
 
     public static $public = array(
@@ -484,6 +484,7 @@ final class Route
         'schedule_get',
         'schedule_update',
         'schedule_assign',
+        'org_create',
     );
 
     public static $proxy = array(
