@@ -5,7 +5,7 @@
   </h1>
 </div>
 <div class="wrapper-md" ng-controller="TeamManagementCtrl" ng-init="getTeamMembers()">
-  <div class="panel panel-default panel-form invites-table col-sm-6 col-sm-offset-3" >
+  <div class="panel panel-default panel-form invites-table col-sm-8 col-sm-offset-2" >
     <div class="panel-heading m-t m-b">
       Invite users to your Organization Team
       <small class="pull-right">
@@ -38,8 +38,8 @@
       </div>
       <div class="row wrapper">
         <div class="row" ng-repeat="user in users" ng-show="user.email !== merchant.email">
-          <div class="m-b col-sm-3">{{ user.email }}</div>
-          <div class="m-b col-sm-3">{{ user.name }}</div>
+          <div class="m-b col-sm-4 b-w">{{ user.email }}</div>
+          <div class="m-b col-sm-2">{{ user.name }}</div>
           <div class="m-b col-sm-3" ng-show="rolesSupport">
             <select ng-model="user.pivot.role" ng-options="role.id as role.name for role in roleOptions" class="form-control" required>
             </select>
