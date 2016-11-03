@@ -60,9 +60,7 @@ final class Route
         'payment_timeout'                         => ['post',     'payments/timeout',                               'PaymentController@postTimeout'                                     ],
         'payment_auto_capture'                    => ['post',     'payments/autocapture',                           'PaymentController@postAutoCapture'                                 ],
         'payment_auto_capture_email'              => ['get',      'payments/autocapture/email',                     'PaymentController@getAutoCaptureEmail'                             ],
-        'payment_verify_multiple_post'            => ['post',     'payments/verify/{filter}',                       'PaymentController@postVerifyPayments'                              ],
-        // Remove Get Path after crons are modified
-        'payment_verify_multiple_get'             => ['get',      'payments/verify/{filter}',                      'PaymentController@postVerifyPayments'                               ],
+        'payment_verify_multiple'                 => ['post',     'payments/verify/{filter}',                       'PaymentController@postVerifyPayments'                              ],
         'payment_capture_reminder'                => ['get',      'payments/all/reminder',                          'PaymentController@sendReminderMailForAuthorizedPayments'           ],
         'payment_refund_authorized'               => ['post',     'payments/refund/authorized',                     'PaymentController@postRefundOldAuthorizedPayments'                 ],
         'payment_capture_verify'                  => ['post',     'payments/{id}/verify/capture',                   'PaymentController@postCaptureVerify'                               ],
@@ -270,6 +268,11 @@ final class Route
         'gateway_fetch_absence'                   => ['get',      'gateway/absence',                                'GatewayController@getAbsentGateways'                               ],
         'scorecard'                               => ['get',      'scorecard',                                      'AdminController@getScorecard'                                      ],
         'billdesk_reconcile_cancelled'            => ['post',     'reconciliate/{gateway}/cancelled',               'ReconciliatorController@postReconciliateCancelledTransactions'     ],
+
+        // Routes for the admin roles project
+        'organization_create'                     => ['post',     'organizations/create',                           'AdminController@createOrganization'                                ],
+        'organization_delete'                     => ['delete',   'organizations/{id}',                             'AdminController@deleteOrganization'                                ],
+        'organization_edit'                       => ['put',      'organizations/{id}',                             'AdminController@putOrganization'                                   ],
     );
 
     public static $public = array(
@@ -435,8 +438,7 @@ final class Route
         'payment_force_authorize',
         'payment_capture_reminder',
         'payment_refund_authorized',
-        'payment_verify_multiple_get',
-        'payment_verify_multiple_post',
+        'payment_verify_multiple',
         'payment_authorize_time_out',
         'refund_create_missing_txn',
         'refund_gateway_manual',
@@ -563,8 +565,7 @@ final class Route
             'merchant_post_beneficiary_file',
             'merchant_notify_holiday',
             'payment_auto_capture',
-            'payment_verify_multiple_get',
-            'payment_verify_multiple_post',
+            'payment_verify_multiple',
             'refund_netbanking_generate_excel',
             'refund_generate_excel',
             'payment_refund_authorized',
