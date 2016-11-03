@@ -245,8 +245,13 @@ class Repository extends Base\Repository
         // ORDER  BY Rand()
         // LIMIT  100
 
-        return $query->take(100)
-                     ->get();
+        // We want total number of Payments which are awaiting verify, for logging
+        $verifiableCount = $query->count();
+
+        $payments = $query->take(100)
+                          ->get();
+
+        return ['payments' => $payments, 'verifiable_count' => $verifiableCount];
     }
 
     /**

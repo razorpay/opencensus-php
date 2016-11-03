@@ -565,6 +565,9 @@ class VerifyTest extends TestCase
 
         unset($content['authorize_time']);
 
+        // TODO : built it from previous values
+        unset($content['verifiable_count']);
+
         $defaultParams = [
             'success'       => 0,
             'authorized'    => 0,
@@ -577,7 +580,7 @@ class VerifyTest extends TestCase
 
         $defaultParams = array_merge($defaultParams, $param);
 
-        $defaultParams['total_payments'] = $defaultParams['success'] +
+        $defaultParams['verified_payments'] = $defaultParams['success'] +
             $defaultParams['authorized'] + $defaultParams['timeout'] + $defaultParams['error'];
 
         $this->assertEquals($defaultParams, $content);
