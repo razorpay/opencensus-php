@@ -70,7 +70,7 @@ class CopyTerminal extends Command
 
         DefaultDbConn::set($mode);
 
-        $terminal = $this->repo->terminal->findOrFail($terminalId)->toArray();
+        $terminal = $this->repo->terminal->findOrFail($terminalId)->toArrayWithSecrets();
 
         if ($terminal['shared'] === true)
         {
@@ -99,8 +99,6 @@ class CopyTerminal extends Command
             return;
         }
 
-        unset($terminal['id']);
-
         $terminalRules = (new TerminalValidator)->getExpectedInputKeys($terminal['gateway']);
         $notRequiredKeys = array_diff(array_keys($terminal), $terminalRules);
 
@@ -109,13 +107,16 @@ class CopyTerminal extends Command
             unset($terminal[$key]);
         }
 
+        $tableData = [];
+
         foreach ($merchantIds as $merchantId)
         {
             $terminal['merchant_id'] = $merchantId;
 
-            if ($mode === 'live')
+            if (($mode === 'live') and
+                ($this->confirm('Do you want to proceed for ' . $merchantId . '?') === false))
             {
-
+                continue;
             }
 
             $newTerminal = (new Terminal)->build($terminal);
