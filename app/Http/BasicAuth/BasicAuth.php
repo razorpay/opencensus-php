@@ -505,12 +505,18 @@ class BasicAuth
 
         if ($secret === '')
         {
+            $this->trace->info(
+                TraceCode::BAD_REQUEST_API_SECRET_NOT_PROVIDED, ['key_id' => $this->getKey()]);
+
             return ApiResponse::unauthorized(
                 ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED);
         }
 
         if (Crypt::decrypt($keyEntity->getSecret()) !== $secret)
         {
+            $this->trace->info(
+                TraceCode::BAD_REQUEST_INVALID_API_SECRET, ['key_id' => $this->getKey()]);
+
             return ApiResponse::unauthorized(
                 ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET);
         }
@@ -691,6 +697,16 @@ class BasicAuth
         return $this->merchant->getKey();
     }
 
+    public function getMerchantIdOfKey()
+    {
+        if ($this->key === null)
+        {
+            return null;
+        }
+
+        return $this->key->getMerchantId();
+    }
+
     public function getPublicKey()
     {
         return $this->creds['public_key'];
@@ -837,9 +853,9 @@ class BasicAuth
     protected function invalidApiKey()
     {
         $this->trace->info(
-            TraceCode::BAD_REQUEST_INVALID_API_KEY);
+            TraceCode::BAD_REQUEST_INVALID_API_KEY, ['key_id' => $this->getKey()]);
 
-       return ApiResponse::unauthorized(
+        return ApiResponse::unauthorized(
             ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY);
     }
 
