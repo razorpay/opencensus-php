@@ -14,10 +14,15 @@ class CreateAdminGroup extends Migration
      */
     public function up()
     {
-        // Schema::create(Table::ADMIN_GROUP, function (Blueprint $table) {
-        //     $table->engine = 'InnoDB';
-        //
-        // });
+        Schema::create(Table::ADMIN_GROUP, function (Blueprint $table) {
+            $table->engine = 'InnoDB';
+
+            $table->char('group_id', 14);
+
+            $table->string('entity_type'); // admin or group
+
+            $table->char('entity_id', 14); // admin_id or group_id
+        });
     }
 
     /**
@@ -27,6 +32,6 @@ class CreateAdminGroup extends Migration
      */
     public function down()
     {
-        // Schema::drop(Table::ADMIN_GROUP);
+        Schema::drop(Table::ADMIN_GROUP);
     }
 }
