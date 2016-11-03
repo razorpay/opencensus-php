@@ -132,7 +132,7 @@ class Entity
         self::WALLET_FREECHARGE  => \RZP\Gateway\Wallet\Base::class,
     );
 
-    public static function getEntityNamespace($entity)
+    public static function getEntityNamespace(string $entity)
     {
         self::validateIsEntity($entity);
 
@@ -146,7 +146,7 @@ class Entity
         return '\RZP\Models\\' . studly_case($entity);
     }
 
-    public static function getEntityClass($entity)
+    public static function getEntityClass(string $entity)
     {
         $ns = self::getEntityNamespace($entity);
 
@@ -168,7 +168,7 @@ class Entity
         return new $class;
     }
 
-    public static function getEntityRepository($entity, $repositoryType = 'Repository')
+    public static function getEntityRepository(string $entity, $repositoryType = 'Repository')
     {
         $class = self::getEntityNamespace($entity) . '\\' . $repositoryType;
 
@@ -188,12 +188,12 @@ class Entity
         return $class;
     }
 
-    public static function getEntityEsRepository($entity)
+    public static function getEntityEsRepository(string $entity)
     {
         return self::getEntityRepository($entity, 'EsRepository');
     }
 
-    public static function getTableNameForEntity($entity)
+    public static function getTableNameForEntity(string $entity)
     {
         return Table::getTableNameForEntity($entity);
     }

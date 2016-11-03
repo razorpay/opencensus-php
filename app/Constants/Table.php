@@ -65,7 +65,7 @@ class Table
         Entity::AMEX            => self::MIGS,
     );
 
-    public static function getTableNameForEntity($entity)
+    public static function getTableNameForEntity(string $entity)
     {
         Entity::validateEntityOrFail($entity);
 

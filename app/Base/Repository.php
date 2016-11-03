@@ -47,7 +47,7 @@ class Repository extends \Razorpay\Spine\Repository
         $this->manager = $this->app['repo'];
     }
 
-    public static function getTableNameForEntity($entity)
+    public static function getTableNameForEntity(string $entity)
     {
         return E::getTableNameForEntity($entity);
     }
