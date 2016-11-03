@@ -304,7 +304,8 @@ class Gateway extends Base\Gateway
     /**
      * Returns the MCC code, based on the merchant category
      * @param  array  $input
-     * @return string 4 digit integer as string
+     * @return string 4 digit integer as string.
+     *                  Default value is 6012, as per HDFC
      */
     protected function getMCCCode(array $input)
     {
@@ -313,7 +314,7 @@ class Gateway extends Base\Gateway
             return $input['merchant']['category'];
         }
 
-        return '0000';
+        return '6012';
     }
 
     /**
