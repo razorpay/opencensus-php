@@ -1,14 +1,14 @@
 <?php
 
-namespace RZP\Gateway\Upi\Icici\Mock;
+namespace RZP\Gateway\Upi\Hdfc\Mock;
 
 use EE\Exception;
 use EE\Error\ErrorCode;
 use RZP\Http\Route;
 use RZP\Gateway\Base;
-use RZP\Gateway\Upi\Icici;
+use RZP\Gateway\Upi\Hdfc;
 
-class Gateway extends Icici\Gateway
+class Gateway extends Hdfc\Gateway
 {
     use Base\Mock\GatewayTrait;
 
@@ -22,7 +22,7 @@ class Gateway extends Icici\Gateway
         $url = parent::getUrl($type);
 
         $url = $this->route->getUrlWithPublicAuth(
-                        'mock_upi_hdfc_payment', ['bank' => 'icici']);
+                        'mock_upi_payment', ['bank' => 'hdfc']);
         return $url;
     }
 }

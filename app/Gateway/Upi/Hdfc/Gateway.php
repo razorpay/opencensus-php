@@ -308,7 +308,7 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * Decrypts responses from the ICICI API
+     * Decrypts responses from the HDFC API
      * @param  string $data
      * @return string
      */

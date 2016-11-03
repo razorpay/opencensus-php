@@ -35,7 +35,7 @@ class Gateway extends Icici\Gateway
     protected function getUrl($type = 'authorize'): string
     {
         $url = $this->route->getUrlWithPublicAuth(
-                        'mock_upi_icici_payment', ['bank' => 'icici']);
+                        'mock_upi_payment', ['bank' => 'icici']);
         return $url;
     }
 }

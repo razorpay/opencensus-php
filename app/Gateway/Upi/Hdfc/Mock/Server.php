@@ -1,11 +1,11 @@
 <?php
 
-namespace RZP\Gateway\Upi\Icici\Mock;
+namespace RZP\Gateway\Upi\Hdfc\Mock;
 
 use App;
 use Carbon\Carbon;
-use Gateway\Upi\Icici;
-use phpseclib\Crypt\RSA;
+use Gateway\Upi\Hdfc;
+use phpseclib\Crypt\AES;
 use RZP\Gateway\Base;
 use RZP\Gateway\Utility;
 use RZP\Gateway\Base\Action;
@@ -23,21 +23,31 @@ class Server extends Base\Mock\Server
         $this->validateAuthorizeInput($input);
 
         $content = array(
-            'response'          => $this->getResponseCode(),
-            'merchantId'        => $input['merchantId'],
-            'subMerchantId'     => isset($input['subMerchantId']) ? $input['subMerchantId'] : null,
-            'terminalId'        => isset($input['terminalId']) ? $input['terminalId'] : null,
-            'success'           => 'true',
-            'message'           => 'Transaction initiated',
-            'merchantTranId'    => $input['merchantTranId'],
-            'BankRRN'           => '1234567',
+            // Razorpay Payment Id
+            $input[1],
+            // Bank Payment Id
+            random_int(100000, 999999),
+            // Amount
+            $input[3],
+            'SUCCESS',
+            'Transaction Collect request initiated successfully',
+            'nemomobile@imobile',
+            'razorpay@hdfcbank',
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'NA',
         );
-
-        $dontEncrypt = ($this->input['payerVa'] === 'dontencrypt@icici');
 
         $this->content($content);
 
-        return $this->makeResponse($content, $dontEncrypt);
+        return $this->makeResponse($content);
     }
 
     public function verify($input)
@@ -81,16 +91,14 @@ class Server extends Base\Mock\Server
             'status'            => $status
         );
 
-        $encrypt = (isset($payment['notes']['encrypt']) and ($payment['notes']['encrypt'] === 'true'));
-
-        return $this->makeResponse($response, $encrypt);
+        return $this->makeResponse($response);
     }
 
     /**
      * We are testing if our gateway works
      * with all possible values of error codes
      * @return int response code
-     * @see ICICI Documentation:
+     * @see HDFC Documentation:
      *
      * >All other values of response codes = Transaction has failed
      */
@@ -99,7 +107,7 @@ class Server extends Base\Mock\Server
         switch($this->input['payerVa'])
         {
             // Just make sure that this doesn't return 92
-            case 'unknownresponse@icici':
+            case 'unknownresponse@hdfcbank':
                 return mt_rand(93, 500);
                 break;
             default:
@@ -107,54 +115,46 @@ class Server extends Base\Mock\Server
         }
     }
 
-    protected function makeResponse($data, $dontEncrypt = false)
+    protected function makeResponse($data)
     {
-        if ((is_string($data) === true) and
-            (Utility::isXml($data) === true))
-        {
-            $response = parent::makeResponse($data);
+        $content = implode('|', $data);
 
-            return $response;
-        }
-
-        $content = json_encode($data);
-
-        // We encrypt content by default
-        if ($dontEncrypt === true)
-        {
-            $encryptedData = $this->encrypt($content);
-            assertTrue($encryptedData !== false);
-
-            $content = base64_encode($encryptedData);
-        }
+        $content = strtoupper(bin2hex($this->encrypt($content)));
 
         $response = parent::makeResponse($content);
 
-        $response->headers->set('Content-Type', 'text/html; charset=UTF-8');
-        $response->headers->set('Content-Language', 'en-US');
-        $response->headers->set('Server', 'API Gateway');
+        $response->headers->set('Content-Type', 'text/plain;charset=ISO-8859-1');
+        $response->headers->set('Expires', 'Thu, 01 Jan 1970 00:00:00 GMT');
+        $response->headers->set('x-frame-options', 'SAMEORIGIN');
 
         return $response;
     }
 
     protected function parseInput($input)
     {
-        $input = base64_decode($input);
-        $input = $this->decrypt($input);
+        $input = json_decode($input, true);
 
-        return json_decode($input, true);
+        $encryptedInput = $input['requestMsg'];
+
+        $res = $this->decrypt($encryptedInput);
+
+        $arr = explode('|', $res);
+
+        return array_slice($arr, 0, 7);
     }
 
-    protected function decrypt($ciphertext)
+    public function decrypt($data)
     {
-        $rsa = $this->getRSAInstance('request');
-        return  $rsa->decrypt($ciphertext);
+        $cipher = $this->getAESInstance();
+
+        return $cipher->decrypt(hex2bin($data));
     }
 
     protected function encrypt($plaintext)
     {
-        $rsa = $this->getRSAInstance('response');
-        return $rsa->encrypt($plaintext);
+        $cipher = $this->getAESInstance();
+
+        return $cipher->encrypt($plaintext);
     }
 
     public function getAsyncCallbackContent(array $upiEntity, array $payment)
@@ -192,5 +192,21 @@ class Server extends Base\Mock\Server
         $this->content($response);
 
         return $response;
+    }
+
+    protected function getAESInstance()
+    {
+        $cipher = new AES(AES::MODE_ECB);
+
+        $cipher->setKey($this->getEncryptionKey());
+
+        return $cipher;
+    }
+
+    protected function getEncryptionKey()
+    {
+        $key = config('gateway.upi_hdfc.test_merchant_key');
+
+        return hex2bin($key);
     }
 }

@@ -1,23 +1,26 @@
 <?php
 
-namespace RZP\Gateway\Upi\Icici\Mock;
+namespace RZP\Gateway\Upi\Hdfc\Mock;
 
 use RZP\Models\Base;
 
 class Validator extends Base\Validator
 {
     protected static $authRules = [
-        'merchantId'        => 'numeric|max:9999999999',
-        'merchantName'      => 'alpha_num|max:50',
-        'subMerchantId'     => 'sometimes|alpha_num|max:10',
-        'subMerchantName'   => 'sometimes|alpha_num|max:50',
-        'terminalId'        => 'sometimes|digits_between:1,10',
-        'merchantTranId'    => 'required|alpha_num|max:20',
-        'billNumber'        => 'sometimes|alpha_num|max:50',
-        'payerVa'           => 'required|max:255',
-        'amount'            => ['required', 'regex:/^\d*(\.\d{2})$/'],
-        'note'              => 'sometimes|string|max:50',
-        'collectByDate'     => 'sometimes|string|max:255'
+        // Bank side Merchant Id
+        'required|alpha_num',
+        // RZP API Payment Id
+        'required|alpha_num|max:50',
+        // VPA
+        'required|max:255',
+        // Amount
+        ['required', 'regex:/^\d*(\.\d{2})$/'],
+        // Remark
+        'required|string|max:50',
+        // Timeout
+        'required|integer|max:45|min:1',
+        // MCC
+        'required|integer|max:9999|min:0'
     ];
 
     protected static $verifyRules = array(
