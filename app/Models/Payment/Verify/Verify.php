@@ -58,6 +58,12 @@ class Verify extends Base\Core
      */
     const ERRORED_MIN_TIME = 0; // 0 Minute
 
+    /**
+     * This is the time for which payments will be locked via acquireMultiple
+     * After this time, the keys will be released
+     */
+    const DEFAULT_LOCK_TIME = 900; // 15 Minutes
+
     // ================== End Configurations ==================
 
     protected $core;
@@ -132,18 +138,23 @@ class Verify extends Base\Core
 
         $boundary = $this->getBoundaryInSeconds($filter);
 
-        $payments = $this->repo->payment->getPaymentsToVerify(
+        $paymentsCollectionWithCount = $this->repo->payment->getPaymentsToVerify(
             $minimumTime, $boundary, $verifyStatus, $paymentStatus);
 
-        return $this->verifyMultiplePayments($payments, $filter);
+        $payments = $paymentsCollectionWithCount['payments'];
+
+        $verifiableCount = $paymentsCollectionWithCount['verifiable_count'];
+
+        return $this->verifyMultiplePayments($payments, $filter, $verifiableCount);
     }
 
     /**
      * @param Base\PublicCollection $payments
      * @param string                $filter
+     * @param integer               $count
      * @return array with aggregated results
      */
-    protected function verifyMultiplePayments(Base\PublicCollection $payments, $filter)
+    protected function verifyMultiplePayments(Base\PublicCollection $payments, $filter, $verifiableCount)
     {
         $resultSet = [
             Result::AUTHORIZED    => 0,
@@ -189,7 +200,7 @@ class Verify extends Base\Core
             'authorize_time'    => $totalAuthTimeDiff
         ];
 
-        $summary = $this->processResult($resultSet, $times, $filter);
+        $summary = $this->processResult($resultSet, $times, $filter, $verifiableCount);
 
         $this->addDataToVerifySummary($summary, $lockedPayments, $notApplicable);
 
@@ -210,7 +221,7 @@ class Verify extends Base\Core
             $summary['not_applicable'] = $notApplicable;
         }
 
-        $summary['total_payments'] = $payments->count();
+        $summary['verified_payments'] = $payments->count();
     }
 
     /** Lock All Payments
@@ -223,7 +234,7 @@ class Verify extends Base\Core
     {
         $paymentIds = $payments->pluck(Payment\Entity::ID);
 
-        $lockedPaymentIds = $this->mutex->acquireMultiple($paymentIds, 3600, self::KEY_SUFFIX);
+        $lockedPaymentIds = $this->mutex->acquireMultiple($paymentIds, self::DEFAULT_LOCK_TIME, self::KEY_SUFFIX);
 
         $this->trace->info(
             TraceCode::VERIFY_LOCKED_PAYMENTS,
@@ -250,7 +261,7 @@ class Verify extends Base\Core
      * @param string $filter filter used to fetch payments
      * @return array with processed result
      */
-    protected function processResult(array $result, $times, $filter)
+    protected function processResult(array $result, $times, $filter, $verifiableCount)
     {
         $avgTimeDiff = 0;
 
@@ -263,6 +274,7 @@ class Verify extends Base\Core
 
         $processedResults = [
             'filter'           => $filter,
+            'verifiable_count' => $verifiableCount,
             'authorize_time'   => $avgTimeDiff,
             'total_time'       => $totalVerifyTime . ' secs'
         ];
@@ -473,7 +485,7 @@ class Verify extends Base\Core
              * Verify will run for all the created payments every 2 minutes.
              * All the created payments will be converted to failed in 10 minutes via timeout cron.
              * Hence, at max, verify for the payment (when it is in created state) will be run 5 times.
-             * For Verify Error, Cron will pick the paymnets till Verify Status Changes
+             * For Verify Error, Cron will pick the payments till Verify Status Changes
              */
             case Filter::PAYMENTS_CREATED:
             case Filter::VERIFY_ERROR:
