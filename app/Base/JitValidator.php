@@ -12,9 +12,9 @@ class JitValidator extends Validator
      */
     protected $caller;
 
-    protected static $rules = array();
+    protected static $rules = [];
 
-    protected $input = array();
+    protected $input = [];
 
     /**
      * If strict is set, then input keys
