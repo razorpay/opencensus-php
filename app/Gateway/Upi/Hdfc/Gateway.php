@@ -86,16 +86,30 @@ class Gateway extends Base\Gateway
     }
 
     /**
+     * Takes in S2S request input array
+     * and returns the parsed response as an array
+     * @param  array $input Request Input arrau
+     * @return array
+     */
+    public function preProcessS2SResponse($input)
+    {
+        $encryptedResponse = $input[ResponseFields::CALLBACK_RESPONSE_KEY];
+
+        return $this->parseGatewayResponse($encryptedResponse, Action::CALLBACK);
+    }
+
+    /**
      * @param  string $response
      * @param  string $type type of request
+     * @see https://drive.google.com/drive/u/1/folders/0B1MTSXtR53PfN2dIWmE0REI3eWs
      */
-    protected function parseGatewayResponse($responseBody, $type = 'collect')
+    protected function parseGatewayResponse($responseBody, $type = Action::COLLECT)
     {
         $response = $this->decrypt($responseBody);
 
         $fields = [];
         switch ($type) {
-            case 'collect':
+            case Action::COLLECT:
 
                 // There are lots of additional dummy fields
                 // after this, which we ignore
@@ -111,7 +125,7 @@ class Gateway extends Base\Gateway
 
                 break;
 
-            case 'verify':
+            case Action::VERIFY:
                 $fields = [
                     ResponseFields::UPI_TXN_ID,
                     ResponseFields::PAYMENT_ID,
@@ -127,7 +141,7 @@ class Gateway extends Base\Gateway
                 ];
                 break;
 
-            case 'refund':
+            case Action::REFUND:
                 $fields = [
                     ResponseFields::UPI_TXN_ID,
                     ResponseFields::PAYMENT_ID,
@@ -141,6 +155,22 @@ class Gateway extends Base\Gateway
                     ResponseFields::APPROVAL_NO,
                     ResponseFields::TXN_ID,
                     ResponseFields::CUSTOMER_REFERENCE_ID,
+                ];
+                break;
+
+            case Action::CALLBACK:
+                $fields = [
+                    ResponseFields::UPI_TXN_ID,
+                    ResponseFields::PAYMENT_ID,
+                    ResponseFields::AMOUNT,
+                    ResponseFields::TXN_AUTH_DATE,
+                    ResponseFields::STATUS,
+                    ResponseFields::STATUS_DESCRIPTION,
+                    ResponseFields::RESPCODE,
+                    ResponseFields::APPROVAL_NO,
+                    ResponseFields::PAYER_VA,
+                    ResponseFields::NPCI_UPI_TXN_ID,
+                    ResponseFields::REFERENCE_ID
                 ];
         }
 
@@ -164,6 +194,39 @@ class Gateway extends Base\Gateway
             ]);
 
         return $result;
+    }
+
+    /**
+     * Handles the S2S callback
+     * @param  array $input
+     * @return boolean
+     */
+    public function callback(array $input)
+    {
+        parent::callback($input);
+
+        $content = $input['gateway'];
+
+        $status = $content[ResponseFields::STATUS];
+
+        $repo = $this->getRepository();
+
+        $gatewayPayment = $repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
+
+        assertTrue($content[ResponseFields::UPI_TXN_ID] === $gatewayPayment->getGatewayPaymentId());
+
+        if ($status !== Status::SUCCESS)
+        {
+            $message = "Payment Failed during callback";
+
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                $status,
+                $message);
+        }
+
+        // Authorization was successful
+        $this->updateGatewayPaymentResponse($gatewayPayment, $content);
     }
 
     /**

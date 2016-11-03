@@ -6,6 +6,7 @@ class ResponseFields
 {
     const AMOUNT                =   'amount';
     const APPROVAL_NO           =   'approval_no';
+    const CALLBACK_RESPONSE_KEY =   'meRes';
     const CUSTOMER_REFERENCE_ID =   'customer_reference_id';
     const NPCI_UPI_TXN_ID       =   'npci_upi_txn_id';
     const PAYEE_VA              =   'payee_va';

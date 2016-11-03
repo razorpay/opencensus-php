@@ -95,29 +95,25 @@ class GatewayController extends Controller
 
         switch ($gateway)
         {
+            // Standard Cases
+            case 'upi_hdfc':
+            case 'wallet_freecharge':
             case 'billdesk':
                 $data = $this->processServerCallback($input, $gateway);
                 break;
 
+            // Only logs the response
             case 'wallet_olamoney':
-            case 'upi_hdfc':
                 break;
 
-            case 'wallet_freecharge':
-                $data = $this->processServerCallback($input, $gateway);
-                break;
-
-            case 'upi':
-                // This falls through to next case
-                $gateway = 'upi_icici';
-
-            case 'upi_hdfc':
+            // Special case because we need the raw request body
             case 'upi_icici':
                 $input = Request::getContent();
 
                 $data = $this->processServerCallback($input, $gateway);
 
                 break;
+
         }
 
         // $input['gateway'] = $gateway;
