@@ -565,6 +565,9 @@ class VerifyTest extends TestCase
 
         unset($content['authorize_time']);
 
+        // TODO : built it from previous values
+        unset($content['max_count']);
+
         $defaultParams = [
             'success'       => 0,
             'authorized'    => 0,

@@ -132,18 +132,23 @@ class Verify extends Base\Core
 
         $boundary = $this->getBoundaryInSeconds($filter);
 
-        $payments = $this->repo->payment->getPaymentsToVerify(
+        $paymentsCollectionWithCount = $this->repo->payment->getPaymentsToVerify(
             $minimumTime, $boundary, $verifyStatus, $paymentStatus);
 
-        return $this->verifyMultiplePayments($payments, $filter);
+        $payments = $paymentsCollectionWithCount['payments'];
+
+        $maxCount = $paymentsCollectionWithCount['max_count'];
+
+        return $this->verifyMultiplePayments($payments, $filter, $maxCount);
     }
 
     /**
      * @param Base\PublicCollection $payments
      * @param string                $filter
+     * @param integer               $count
      * @return array with aggregated results
      */
-    protected function verifyMultiplePayments(Base\PublicCollection $payments, $filter)
+    protected function verifyMultiplePayments(Base\PublicCollection $payments, $filter, $maxCount)
     {
         $resultSet = [
             Result::AUTHORIZED    => 0,
@@ -189,7 +194,7 @@ class Verify extends Base\Core
             'authorize_time'    => $totalAuthTimeDiff
         ];
 
-        $summary = $this->processResult($resultSet, $times, $filter);
+        $summary = $this->processResult($resultSet, $times, $filter, $maxCount);
 
         $this->addDataToVerifySummary($summary, $lockedPayments, $notApplicable);
 
@@ -250,7 +255,7 @@ class Verify extends Base\Core
      * @param string $filter filter used to fetch payments
      * @return array with processed result
      */
-    protected function processResult(array $result, $times, $filter)
+    protected function processResult(array $result, $times, $filter, $maxCount)
     {
         $avgTimeDiff = 0;
 
@@ -263,6 +268,7 @@ class Verify extends Base\Core
 
         $processedResults = [
             'filter'           => $filter,
+            'max_count'        => $maxCount,
             'authorize_time'   => $avgTimeDiff,
             'total_time'       => $totalVerifyTime . ' secs'
         ];
@@ -473,7 +479,7 @@ class Verify extends Base\Core
              * Verify will run for all the created payments every 2 minutes.
              * All the created payments will be converted to failed in 10 minutes via timeout cron.
              * Hence, at max, verify for the payment (when it is in created state) will be run 5 times.
-             * For Verify Error, Cron will pick the paymnets till Verify Status Changes
+             * For Verify Error, Cron will pick the payments till Verify Status Changes
              */
             case Filter::PAYMENTS_CREATED:
             case Filter::VERIFY_ERROR:
