@@ -57,6 +57,6 @@ class CreateGatewayAbsence extends Migration
      */
     public function down()
     {
-        Schema::drop(Table::GATEWAY_STATUS_ABSENCE);
+        Schema::drop(Table::GATEWAY_ABSENCE);
     }
 }
