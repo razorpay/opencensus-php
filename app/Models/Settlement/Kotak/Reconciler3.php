@@ -170,7 +170,7 @@ class Reconciler3
         {
             $status = Settlement\Status::FAILED;
 
-            $failureReason = 'Reconciliation: ' . $failureReason;
+            $failureReason = 'Reconciliation: ' . $row['Reject Reason'];
         }
 
         // if already processed

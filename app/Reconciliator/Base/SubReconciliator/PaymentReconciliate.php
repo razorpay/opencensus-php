@@ -7,7 +7,7 @@ use RZP\Models\Payment;
 use RZP\Models\Card;
 use RZP\Models\Card\IIN;
 use RZP\Models\Transaction;
-use RZP\Models\Payment\Verify;
+use RZP\Models\Payment\Verify\Result as VerifyResult;
 use RZP\Reconciliator\Messenger;
 
 use RZP\Gateway\AxisMigs;
@@ -176,7 +176,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
     protected function tryAuthorizeFailedPayment($row)
     {
-        $paymentService = new Payment\Service();
+        $paymentService = new Payment\Service;
 
         try
         {
@@ -198,7 +198,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             return false;
         }
 
-        if ($verifyResponse === Verify::AUTHORIZED)
+        if ($verifyResponse === VerifyResult::AUTHORIZED)
         {
             $this->app['trace']->info(
                 TraceCode::RECON_INFO,
@@ -212,7 +212,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             return $this->handleVerifyAuthorized();
         }
 
-        if ($verifyResponse === Verify::SUCCESS)
+        if ($verifyResponse === VerifyResult::SUCCESS)
         {
             return $this->handleVerifySuccess($row);
         }
@@ -718,7 +718,9 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                 return false;
             }
 
-            $this->paymentTransaction = $this->payment->reload()->transaction;
+            // Refresh both payment and transaction to get latest changes.
+            // Reload txn because relation are cached.
+            $this->paymentTransaction = $this->payment->reload()->transaction->reload();
         }
 
         $currentGatewayFee = $this->paymentTransaction->getGatewayFee();
@@ -819,6 +821,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         $txn = (new Transaction\Core)->createFromPaymentAuthorized($this->payment);
 
         $this->repo->saveOrFail($txn);
+        // This is required to save the association of the transaction with the payment.
+        $this->repo->saveOrFail($this->payment);
     }
 
     protected function recordGatewayFee($reconGatewayFee, $currentGatewayFee)

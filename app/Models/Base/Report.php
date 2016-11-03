@@ -4,12 +4,12 @@ namespace RZP\Models\Base;
 
 use Carbon\Carbon;
 
+use RZP\Base\JitValidator;
 use RZP\Base\RuntimeManager;
 use RZP\Constants\Entity as E;
 use RZP\Exception;
 use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
-
 
 class Report extends Service
 {
@@ -20,6 +20,12 @@ class Report extends Service
         E::SETTLEMENT,
         E::TRANSACTION,
     );
+
+    protected static $rules = [
+        'year'  =>  'required|digits:4',
+        'month' =>  'required|digits_between:1,2',
+        'day'   =>  'sometimes|digits_between:1,2',
+    ];
 
     // Corresponds to 15th November 2015 00:00
     const SWACH_BHARAT_CUTOFF_TIMESTAMP = 1447525800;
@@ -79,7 +85,7 @@ class Report extends Service
 
         $merchantId = $this->merchant->getId();
 
-        (new Validator)->validateInput('report', $input);
+        (new JitValidator)->rules(self::$rules)->input($input)->validate();
 
         date_default_timezone_set('Asia/Kolkata');
 
@@ -132,7 +138,7 @@ class Report extends Service
     {
         $merchantId = $this->merchant->getId();
 
-        (new Validator)->validateInput('report', $input);
+        (new JitValidator)->rules(self::$rules)->input($input)->validate();
 
         list($from, $to) = $this->getTimestamps($input);
 

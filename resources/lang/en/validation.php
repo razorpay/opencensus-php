@@ -87,6 +87,9 @@ return array(
     "custom" => array(
         "contact" => array(
             "phone" => "The :attribute field is invalid."
+        ),
+        "amount" => array(
+            "min" => "Minimum transaction amount allowed is Re. 1"
         )
     ),
     /*

@@ -25,14 +25,16 @@ class CreateCreditsTable extends Migration
 
             $table->string(Credits::CAMPAIGN, 255);
             $table->char(Credits::MERCHANT_ID, Merchant\Entity::ID_LENGTH);
-            $table->integer(Credits::VALUE)
-                  ->unsigned();
+            $table->integer(Credits::VALUE);
+
+            $table->string(Credits::TYPE, 20);
 
             $table->integer(Credits::CREATED_AT);
             $table->integer(Credits::UPDATED_AT);
 
             $table->index(Credits::CREATED_AT);
             $table->index(Credits::CAMPAIGN);
+            $table->index(Credits::TYPE);
 
             $table->foreign(Credits::MERCHANT_ID)
                 ->references(Merchant\Entity::ID)

@@ -15,6 +15,7 @@ class Repository extends Base\Repository
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
         Entity::TRANSACTION_ID  => 'sometimes|alpha_num',
         Entity::STATUS          => 'sometimes|in:created,processed,failed',
+        Entity::UTR             => 'sometimes|alpha_num',
     );
 
     public function getSettlementWithFeesAsNullOrZero()
@@ -34,11 +35,21 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchSettlementsBetweenTimestamp($from, $to)
+    public function getSettlementsBetweenTimestamp($from, $to)
     {
         return $this->newQuery()
                     ->whereBetween(Entity::CREATED_AT, [$from, $to])
-                    ->select(Entity::MERCHANT_ID, Entity::AMOUNT)
+                    ->get();
+    }
+
+    public function fetchSettlementSummaryBetweenTimestamp($from, $to)
+    {
+        return $this->newQuery()
+                    ->whereBetween(Entity::CREATED_AT, [$from, $to])
+                    ->groupBy(Entity::MERCHANT_ID)
+                    ->selectRaw(Entity::MERCHANT_ID . ','.
+                       'SUM(' . Entity::AMOUNT . ') AS sum' . ','.
+                       'COUNT(*) AS count')
                     ->get();
     }
 

@@ -120,6 +120,15 @@ class PublicCollection extends Collection
         return array_filter($filteredEntities);
     }
 
+    public function callOnEveryItem($function)
+    {
+        return array_map(function($item) use ($function)
+        {
+            return $item->$function();
+
+        }, $this->items);
+    }
+
     protected function itemsToArrayPublic()
     {
         return array_map(function($item)

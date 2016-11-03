@@ -15,7 +15,7 @@ class RefundController extends Controller
     {
         parent::__construct();
 
-        $this->refund = new Payment\Refund\Service();
+        $this->refund = new Payment\Refund\Service;
     }
 
     public function getRefund($id)

@@ -12,10 +12,19 @@ use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Pricing;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
+use RZP\Models\Bank;
+use RZP\Models\Emi;
+
+use Config;
 
 class Core extends Base\Core
 {
-    public function setPaymentMethods($merchant, $input)
+    /**
+     * @param Merchant\Entity $merchant
+     * @param array $input
+     * @return array
+     */
+    public function setPaymentMethods(Merchant\Entity $merchant, array $input)
     {
         $methods = $this->getPaymentMethods($merchant);
 
@@ -31,7 +40,7 @@ class Core extends Base\Core
 
         $this->checkPricing($merchant, $methods);
 
-        $this->repo->saveOrFail($methods);
+        $this->saveAndNotifyOnSlack($merchant, $methods);
 
         return $methods->toArray();
     }
@@ -63,7 +72,7 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_PRICING_RULE_FOR_AMEX_NOT_PRESENT);
         }
 
-        $this->valdiateInternationalPricingForMerchant($merchant, $plan);
+        $this->validateInternationalPricingForMerchant($merchant, $plan);
     }
 
     public function checkPricing($merchant, $methods = null)
@@ -78,7 +87,7 @@ class Core extends Base\Core
         $this->validatePricingPlanForMethods($merchant, $plan, $methods);
     }
 
-    public function getMethods($merchant)
+    public function getMethods(Merchant\Entity $merchant)
     {
         $methods = $this->getPaymentMethods($merchant);
 
@@ -89,6 +98,44 @@ class Core extends Base\Core
         return $methods;
     }
 
+    public function getFormattedMethods(Merchant\Entity $merchant)
+    {
+        $data = array(
+            'entity'        => 'methods',
+            'card'          => true,
+            'amex'          => false,
+            'netbanking'    => [],
+            'wallet'        => [],
+            'emi'           => false,
+            'upi'           => false,
+        );
+
+        $methods = $this->getMethods($merchant);
+
+        if ($methods !== null)
+        {
+            $data['card'] = $methods->isCardEnabled();
+            $data['amex'] = $methods->isAmexEnabled();
+            $netbankingEnabled = $methods->isNetbankingEnabled();
+            if ($netbankingEnabled === true)
+            {
+                $data['netbanking'] = $methods->toArrayWithBankNames();
+            }
+            $data['wallet'] = $methods->getEnabledWallets();
+            $data['upi'] = $methods->isUpiEnabled();
+            $emi = $methods->isEmiEnabled();
+
+            if ($emi === true)
+            {
+                $data['emi'] = $emi;
+
+                $data['emi_plans'] = (new Emi\Service)->all();
+            }
+        }
+
+        return $data;
+    }
+
     public function getEnabledAndDisabledBanks($merchant)
     {
         $banks = $this->repo->methods->getMerchantMethods($merchant->getId());
@@ -96,7 +143,7 @@ class Core extends Base\Core
         return $this->getEnabledDisabledBanks($banks);
     }
 
-    public function valdiateInternationalPricingForMerchant($merchant, $plan)
+    public function validateInternationalPricingForMerchant($merchant, $plan)
     {
         if (($merchant->isInternational()) and
             ($plan->hasInternationalPricing() === false))
@@ -104,18 +151,6 @@ class Core extends Base\Core
                 throw new Exception\BadRequestValidationFailureException(
                     'International payment enabled, but pricing not present.');
         }
-    }
-
-    protected function getPaymentMethods($merchant)
-    {
-        $methods = $this->repo->methods->getMerchantMethods($merchant->getId());
-
-        if ($methods === null)
-        {
-            $methods = $this->setDefaultMethods($merchant);
-        }
-
-        return $methods;
     }
 
     public function setDefaultMethods($merchant)
@@ -159,6 +194,18 @@ class Core extends Base\Core
         return $this->setPaymentBanks($banks, $input);
     }
 
+    protected function getPaymentMethods(Merchant\Entity $merchant)
+    {
+        $methods = $this->repo->methods->getMerchantMethods($merchant->getId());
+
+        if ($methods === null)
+        {
+            $methods = $this->setDefaultMethods($merchant);
+        }
+
+        return $methods;
+    }
+
     protected function setPaymentBanks($methods, $input)
     {
         (new Validator)->validateInput('addBanks', $input);
@@ -187,8 +234,62 @@ class Core extends Base\Core
         return $data;
     }
 
-    public function getBankNames($banks)
+    protected function saveAndNotifyOnSlack(Merchant\Entity $merchant, Entity $methods)
     {
-        return \RZP\Models\Bank\Name::getNames($banks);
+        $data = $this->getEditedMethodsDifference($methods);
+
+        $this->repo->saveOrFail($methods);
+
+        if (empty($data) === false)
+        {
+            $label   = $merchant->getBillingLabel();
+            $message = $merchant->getDashboardEntityLinkForSlack($label);
+
+            $dashboardInfo = $this->app['basicauth']->getDashboardHeaders();
+
+            $user = $dashboardInfo['admin_user'] ?: $dashboardInfo['merchant'];
+
+            $message .= ' ' . $merchant->getEntity() . ' edited by ' . $user;
+
+            $this->app['slack']->queue(
+                $message,
+                $data,
+                [
+                    'channel'  => Config::get('slack.channels.operations_log'),
+                    'username' => 'Jordan Belfort',
+                    'icon'     => ':boom:'
+                ]
+            );
+        }
+    }
+
+    /**
+     * Get difference between the original and updated attributes
+     *
+     * @param Entity $methods
+     * @return array|null
+     */
+    protected function getEditedMethodsDifference(Entity $methods)
+    {
+        $original = $methods->getOriginalAttributesAgainstDirty();
+
+        if ($original !== null)
+        {
+            $dirtyAttributes = $methods->getDirty();
+
+            $data = array();
+
+            foreach ($original as $key => $value)
+            {
+                $data[$key] = '*Old*: ' . $value . PHP_EOL . '*New*: ' . $dirtyAttributes[$key];
+            }
+
+            return $data;
+        }
+    }
+
+    protected function getBankNames($banks)
+    {
+        return Bank\Name::getNames($banks);
     }
 }

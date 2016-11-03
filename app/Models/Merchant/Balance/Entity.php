@@ -8,10 +8,11 @@ use RZP\Exception;
 
 class Entity extends Base\PublicEntity
 {
-    const ID = 'id';
-    const BALANCE = 'balance';
-    const ON_HOLD = 'on_hold';
-    const CREDITS = 'credits';
+    const ID             = 'id';
+    const BALANCE        = 'balance';
+    const ON_HOLD        = 'on_hold';
+    const AMOUNT_CREDITS = 'credits';
+    const FEE_CREDITS    = 'fee_credits';
 
     protected $table = Table::BALANCE;
 
@@ -21,11 +22,18 @@ class Entity extends Base\PublicEntity
     protected $visible = array(
         self::ID,
         self::BALANCE,
-        self::CREDITS);
+        self::AMOUNT_CREDITS,
+        self::FEE_CREDITS);
 
     protected $entity = 'balance';
 
     protected $generateIdOnCreate = false;
+
+    protected $casts = [
+        self::AMOUNT_CREDITS => 'integer',
+        self::FEE_CREDITS    => 'integer',
+        self::BALANCE        => 'integer',
+    ];
 
     protected function addAmount($amount)
     {
@@ -59,9 +67,14 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BALANCE);
     }
 
-    public function getCredits()
+    public function getAmountCredits()
     {
-        return $this->getAttribute(self::CREDITS);
+        return $this->getAttribute(self::AMOUNT_CREDITS);
+    }
+
+    public function getFeeCredits()
+    {
+        return $this->getAttribute(self::FEE_CREDITS);
     }
 
     public function merchant()
@@ -109,9 +122,9 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function subtractCredits($amount)
+    public function subtractAmountCredits($amount)
     {
-        $credits = $this->getCredits();
+        $credits = $this->getAmountCredits();
 
         $credits -= $amount;
 
@@ -120,29 +133,35 @@ class Entity extends Base\PublicEntity
             $credits = 0;
         }
 
-        $this->setAttribute(self::CREDITS, $credits);
+        $this->setAttribute(self::AMOUNT_CREDITS, $credits);
     }
 
-    public function setFreeCredits($freeCredits)
+    public function subtractFeeCredits($amount)
     {
-        return $this->setCredits($freeCredits);
+        $credits = $this->getFeeCredits();
+
+        $credits -= $amount;
+
+        if ($credits < 0)
+        {
+            $credits = 0;
+        }
+
+        $this->setAttribute(self::FEE_CREDITS, $credits);
     }
 
-    public function setCredits($credits)
+    public function setAmountCredits($credits)
     {
         assert ($credits >= 0);
 
-        $this->setAttribute(self::CREDITS, $credits);
+        $this->setAttribute(self::AMOUNT_CREDITS, $credits);
     }
 
-    protected function getBalanceAttribute()
+    public function setFeeCredits(int $credits)
     {
-        return (int) $this->attributes[self::BALANCE];
-    }
+        assert ($credits >= 0);
 
-    protected function getCreditsAttribute()
-    {
-        return (int) $this->attributes[self::CREDITS];
+        $this->setAttribute(self::FEE_CREDITS, $credits);
     }
 
     public function save(array $options = array())

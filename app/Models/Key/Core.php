@@ -27,15 +27,17 @@ class Core extends Base\Core
 
     /**
      * Creates a key and saves to db.
-     * Retruns an array with key data and secret
+     * Returns an array with key data and secret
      * in plain text
      *
-     * @param  int    $merchantId
+     * @param $merchant
+     * @param $mode
      * @return array
+     * @throws Exception\BadRequestException
      */
     public function createAndReturnWithSecret($merchant, $mode)
     {
-        $key = new Key\Entity();
+        $key = new Key\Entity;
 
         if (($mode === Mode::LIVE) and
             ($merchant->isActivated() === false))

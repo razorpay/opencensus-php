@@ -24,6 +24,7 @@
 
 namespace RZP\Gateway\Hdfc;
 
+use RZP\Base\JitValidator;
 use RZP\Constants\Mode;
 use RZP\Error;
 use RZP\Exception;
@@ -32,6 +33,7 @@ use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Payment;
 use RZP\Models\Card;
 use RZP\Trace\TraceCode;
+use RZP\Gateway\Base\Action as BaseAction;
 use App;
 
 class Gateway extends Base\Gateway
@@ -73,6 +75,8 @@ class Gateway extends Base\Gateway
     protected $terminal;
 
     const TIMEOUT = 30;
+
+    const VERIFY_TIMEOUT = 60;
 
     /**
      * Parameters required to construct request
@@ -248,7 +252,7 @@ class Gateway extends Base\Gateway
     {
         parent::__construct();
 
-        $this->repo = new Hdfc\Repository();
+        $this->repo = new Hdfc\Repository;
     }
 
 // ---------------------------Gateway operations -------------------------------
@@ -426,7 +430,10 @@ class Gateway extends Base\Gateway
 
         try
         {
-            validate($this->bankAcsResponseRules, $input['gateway'], false);
+            (new JitValidator)->rules($this->bankAcsResponseRules)
+                              ->input($input['gateway'])
+                              ->strict(false)
+                              ->validate();
         }
         catch (Exception\RecoverableException $e)
         {
@@ -469,7 +476,7 @@ class Gateway extends Base\Gateway
         catch (Exception\GatewayTimeoutException $e)
         {
             // For verify we should throw exception as is.
-            if ($this->action === 'verify')
+            if ($this->action === BaseAction::VERIFY)
             {
                 throw $e;
             }
@@ -602,6 +609,12 @@ class Gateway extends Base\Gateway
 
     protected function getTimeout()
     {
+        // Increasing timeout for verify Request
+        if ($this->action === BaseAction::VERIFY)
+        {
+            return static::VERIFY_TIMEOUT;
+        }
+
         return static::TIMEOUT;
     }
 

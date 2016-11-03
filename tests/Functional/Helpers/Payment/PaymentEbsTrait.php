@@ -6,6 +6,8 @@ use Config;
 use Requests;
 use Symfony\Component\DomCrawler\Crawler;
 use RZP\Tests\Functional\TestCase;
+use RZP\Exception\GatewayTimeoutException;
+use RZP\Gateway\Ebs\ResponseConstants as Response;
 
 trait PaymentEbsTrait
 {
@@ -30,37 +32,51 @@ trait PaymentEbsTrait
 
     public function getErrorInRefund()
     {
-        $server = $this->mockServer()
-            ->shouldReceive('content')
-            ->andReturnUsing(function (& $content)
-            {
-                $content = '<output errorCode="29" error="Insufficient balance"/>';
-            })->mock();
-
-        $this->setMockServer($server);
+        $this->mockServerContentFunction(function (& $content)
+        {
+            $content = '<output errorCode="29" error="Insufficient balance"/>';
+        });
     }
 
     public function getErrorInVerify()
     {
-        $server = $this->mockServer()
-            ->shouldReceive('content')
-            ->andReturnUsing(function (& $content)
-            {
-                $content = '<output errorCode="5"/>';
-            })->mock();
+        $this->mockServerContentFunction(function (& $content)
+        {
+            $content = '<output errorCode="5"/>';
+        });
+    }
 
-        $this->setMockServer($server);
+    public function getFatalErrorInVerify()
+    {
+        $this->mockServerContentFunction(function (& $content)
+        {
+           throw new FatalThrowableError();
+        });
+    }
+
+    public function getTimeoutInVerify()
+    {
+        $this->mockServerContentFunction(function (& $content)
+        {
+            throw new GatewayTimeoutException(
+                'cURL error 28: Operation timed out after ' .
+                '10001 milliseconds with 0 bytes received');
+        });
+    }
+
+    public function getErrorInCallback()
+    {
+        $this->mockServerContentFunction(function (& $content)
+        {
+            $content[Response::RESPONSE_CODE] = '1';
+        });
     }
 
     public function getHackedResponse()
     {
-        $server = $this->mockServer()
-            ->shouldReceive('content')
-            ->andReturnUsing(function (& $content)
-            {
-                $content['IsFlagged'] = 'YES';
-            })->mock();
-
-        $this->setMockServer($server);
+        $this->mockServerContentFunction(function (& $content)
+        {
+            $content['IsFlagged'] = 'YES';
+        });
     }
 }

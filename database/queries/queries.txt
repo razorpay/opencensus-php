@@ -1027,3 +1027,185 @@ WHERE iin IN ('402874',
               '554378',
               '554623',
               '558959');
+
+UPDATE wallet w
+JOIN refunds r ON w.refund_id = r.id
+SET w.amount = r.amount
+WHERE w.wallet = 'olamoney'
+    AND w.action = 'refund'
+    AND w.amount != r.amount;
+
+ALTER TABLE first_data
+    ADD COLUMN auth_code VARCHAR(6) AFTER gateway_terminal_id;
+
+## Queries related to fee credits changes
+## Fired on Oct 23 12:01 pm
+ALTER TABLE credits
+   MODIFY COLUMN value INTEGER NOT NULL,
+   ADD COLUMN type VARCHAR(20) AFTER merchant_id;
+
+ALTER TABLE balance
+   ADD COLUMN fee_credits INTEGER NOT NULL DEFAULT 0 AFTER credits;
+
+ALTER TABLE transactions
+   ADD COLUMN fee_credits INTEGER NOT NULL DEFAULT 0 AFTER gratis;
+
+UPDATE credits
+    SET type = "amount";
+
+ALTER TABLE credits
+    MODIFY COLUMN type VARCHAR(20) NOT NULL;
+
+ALTER TABLE schedules
+    MODIFY COLUMN next_run INTEGER DEFAULT 0;
+
+## IST 2000-01-01 00:00:00
+ALTER TABLE schedules
+    MODIFY COLUMN next_run INTEGER DEFAULT 946665000;
+
+ALTER TABLE `payments`
+    ADD COLUMN `verify_bucket` TINYINT(1) DEFAULT NULL AFTER `verified`;
+
+ALTER TABLE `payments`
+    ADD INDEX `payments_verify_bucket_index` (`verify_bucket`),
+    ADD INDEX `payments_gateway_index` (`gateway`);
+
+---
+Following query is run because even though HDFC said the rupay payment
+was not captured, we marked the payment as authorized on our end.
+Hence, updating the payment status and deleting the corresponding transaction.
+
+UPDATE payments
+SET status = "failed",
+    authorized_at = null,
+    amount_authorized = 0,
+    error_code = "BAD_REQUEST_ERROR",
+    internal_error_code = "BAD_REQUEST_PAYMENT_DECLINED_BY_GATEWAY",
+    error_description = "Payment declined",
+    transaction_id = null
+WHERE id = "5vm1q5UUkMNCYH";
+
+# Currently, the error related fields are all null.
+
+UPDATE hdfc
+SET status = "auth_enroll_failed",
+    result = "null",
+    auth = null,
+    ref = null,
+    avr = null,
+    postdate = null,
+    error_code = "RP00007",
+    error_text = 'Purchase/Capture/Refund not done. Response result code is "NOT CAPTURED"'
+WHERE id = "525568";
+
+# Current values:
+# auth = 999999
+# result = NOT CAPTURED
+# ref = 620015700567
+# avr = N
+# postdata = 0718
+
+# Changing all above to null because recent payments which failed due to the same reason,
+# their values are null in their entities.
+
+DELETE FROM transactions WHERE id = "5vm2jUB8ckfcEW";
+
+# Escrow balance in the transaction and also merchant balance may get messed up
+# because of this. Since these are updated on authorize itself and not on capture, for rupay and maestro.
+---
+
+---
+Following query is run because even though HDFC said the maestro payment
+was not captured (purchased), we marked the payment as authorized on our end.
+Hence, updating the payment status and deleting the corresponding transaction.
+
+UPDATE payments
+SET status = "failed",
+    authorized_at = null,
+    amount_authorized = 0,
+    error_code = "BAD_REQUEST_ERROR",
+    internal_error_code = "BAD_REQUEST_PAYMENT_DECLINED_BY_GATEWAY",
+    error_description = "Payment declined",
+    transaction_id = null
+WHERE id = "5vlIoS1jATCbuy";
+
+# Currently, the error related fields are all null.
+
+UPDATE hdfc
+SET status = "auth_enroll_failed",
+    result = "null",
+    auth = null,
+    ref = null,
+    avr = null,
+    postdate = null,
+    error_code = "RP00007",
+    error_text = 'Purchase/Capture/Refund not done. Response result code is "NOT CAPTURED"'
+WHERE id = "525287";
+
+# Current values:
+# auth = 999999
+# result = NOT CAPTURED
+# ref = 620015700567
+# avr = N
+# postdata = 0718
+
+# Changing all above to null because recent payments which failed due to the same reason,
+# their values are null in their entities.
+
+DELETE FROM transactions WHERE id = "5vlNg9WR5sOMrL";
+---
+
+---
+# The following two queries are run because transaction was created (via recon) and not associated with the payment.
+
+UPDATE payments
+SET transaction_id = '6YiwamKY8KrUao'
+WHERE id = '5MYZCAx3Is9RND';
+
+UPDATE payments
+SET transaction_id = '6YizQlgBsrXxSb'
+WHERE id = '5b7Szpk8AU9ahw';
+---
+
+---
+# These queries need to be run because these payments were done on an
+# authAndCapture Axis terminal and was not handled. We are not able to refund
+# them now because of that. And since these are in authorized state, they can be refunded
+# on our system without having to refund on the gateway (since it's on authAndCapture).
+
+UPDATE payments
+SET transaction_id = null
+WHERE id = "4SQ02CGsicBfB5";
+
+DELETE FROM transactions WHERE id = "4SQ1dr1zWn17nv";
+
+UPDATE payments
+SET transaction_id = null
+WHERE id = "4bxsGqsHFeV6Rw";
+
+DELETE FROM transactions WHERE id = "4bxuQq1asbow3U";
+
+UPDATE payments
+SET transaction_id = null
+WHERE id = "4bztqiuhehhrGF";
+
+DELETE FROM transactions WHERE id = "4bzvEo2dECqAfN";
+
+UPDATE payments
+SET transaction_id = null
+WHERE id = "4lH7ZQDJow6hUC";
+
+DELETE FROM transactions WHERE id = "4lH9VU8axyicbn";
+
+UPDATE payments
+SET transaction_id = null
+WHERE id = "4lQGbrSKA9Oasi";
+
+DELETE FROM transactions WHERE id = "4lQHmjF5PLqryZ";
+
+UPDATE payments
+SET transaction_id = null
+WHERE id = "4lrNkMC1VI5F6v";
+
+DELETE FROM transactions WHERE id = "4lrOqsJGzOLAxk";
+---

@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Card;
 
-use RZP\Models\Base;
+use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 
@@ -14,8 +14,7 @@ class Validator extends Base\Validator
         Entity::EXPIRY_YEAR        => 'required|integer|digits:4|non_past_year',
         Entity::CVV                => 'sometimes|numeric|digits_between:3,4',
         Entity::NAME               => 'required|alpha_space|max:100',
-        Entity::VAULT_TOKEN        => 'sometimes|string',
-        Entity::VAULT              => 'required_with:vault_token|in:tokenex'
+        Entity::VAULT              => 'sometimes|string|in:tokenex',
     );
 
     protected static $editRules = array(

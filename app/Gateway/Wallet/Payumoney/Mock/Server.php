@@ -85,6 +85,8 @@ class Server extends Base\Mock\Server
             'net_amount_debit'      => '1000'
         );
 
+        $this->content($content);
+
         $publicId = $this->getSignedPaymentId($paymentId);
 
         $url = $this->route->getPublicCallbackUrlWithHash($publicId);
@@ -116,6 +118,8 @@ class Server extends Base\Mock\Server
             'errorCode' => null
         );
 
+        $this->content($response, 'verify');
+
         return $this->makeResponse($response);
     }
 
@@ -125,17 +129,21 @@ class Server extends Base\Mock\Server
 
         $this->validateActionInput($input, 'refund');
 
-        $refundResponse = array(
+        $this->content($input, 'validateRefund');
+
+        $response = array(
             'status'    => 0,
             'rows'      => 0,
             'message'   => 'Refund Initiated',
-            'result'    => 13797,
+            'result'    => $this->getPayuRefundId(),
             'guid'      => null,
             'sessionId' => null,
             'errorCode' => null
         );
 
-        return $this->makeResponse($refundResponse);
+        $this->content($response, 'refund');
+
+        return $this->makeResponse($response);
     }
 
     public function otpGenerate($input)
@@ -152,6 +160,8 @@ class Server extends Base\Mock\Server
             'result' => null,
             'userVaultDTO' => null
         );
+
+        $this->content($response, 'otpGenerate');
 
         return $this->makeResponse($response);
     }
@@ -174,7 +184,7 @@ class Server extends Base\Mock\Server
             'mode' => 'test'
         );
 
-        $this->content($response);
+        $this->content($response, 'getBalance');
 
         return $this->makeResponse($response);
     }
@@ -288,6 +298,8 @@ class Server extends Base\Mock\Server
                 'result'        => 1110562955,
                 'userVaultDTO'  => null
             );
+
+            $this->content($response, 'debit');
 
             return $this->makeResponse($response);
         }

@@ -3,6 +3,7 @@
 namespace RZP\Models\Settlement;
 
 use Queue;
+use Config;
 
 class SlackNotification
 {
@@ -49,7 +50,7 @@ class SlackNotification
             $message,
             $data,
             [
-                'channel'   => '#settlements',
+                'channel'   => Config::get('slack.channels.settlements'),
                 'username'  => 'settlements',
                 'color'     => $color
             ]);

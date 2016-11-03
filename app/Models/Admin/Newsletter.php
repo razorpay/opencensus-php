@@ -64,7 +64,7 @@ class Newsletter
      */
     protected function getEmailList($list)
     {
-        $repo = new Merchant\Repository();
+        $repo = new Merchant\Repository;
         $merchants = [];
 
         switch($list)
@@ -207,7 +207,11 @@ class Newsletter
 
         $this->addListMembersToMailgun($lists, $listAddress);
 
-        $this->waitForEmailsToReflect($listAddress);
+        // Don't wait in testing
+        if ($this->app->runningUnitTests() === false)
+        {
+            $this->waitForEmailsToReflect($listAddress);
+        }
 
         return $listAddress;
     }

@@ -66,13 +66,13 @@ class Trace extends TraceWriter
     /**
      * Returns context array to be logged with trace record
      *
-     * @param array $record
+     * @param string $code
+     * @param array  $record
+     * @return array
      */
     protected function getContext($code, $record)
     {
         $values = array();
-
-        $fields = TraceFields::getFields($code);
 
         foreach($record as $key => $value)
         {
@@ -84,6 +84,11 @@ class Trace extends TraceWriter
         TraceFields::checkFields($code, array_keys($context));
 
         return $context;
+    }
+
+    public function traceError(\Error $error, $level = null, $code = null)
+    {
+        $this->app['exception.handler']->traceException($error, $level, $code);
     }
 
     public function traceException(\Exception $exception, $level = null, $code = null)

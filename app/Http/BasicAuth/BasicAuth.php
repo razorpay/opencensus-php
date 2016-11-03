@@ -706,6 +706,13 @@ class BasicAuth
         return $this->type;
     }
 
+    public function isCron()
+    {
+        $cron = ($this->internalApp === 'cron');
+
+        return $cron;
+    }
+
 // --------------------- Getters Ends ------------------------------------------
 
 // --------------------- Setters -----------------------------------------------
@@ -758,6 +765,11 @@ class BasicAuth
     public function isPrivilegeAuth()
     {
         return ($this->type === Type::PRIVILEGE_AUTH);
+    }
+
+    public function isProxyOrPrivilegeAuth()
+    {
+        return (($this->isProxyAuth()) or ($this->isPrivilegeAuth()));
     }
 
     protected function setKeyFromQueryParams()

@@ -18,6 +18,12 @@ class Repository extends Base\Repository
         Entity::TYPE           => 'sometimes|in:refund',
     );
 
+    protected $appFetchParamRules = array(
+        Entity::MERCHANT_ID        => 'sometimes|alpha_num',
+        Entity::TYPE               => 'sometimes|in:refund',
+        Entity::STATUS             => 'sometimes|in:created,processing,processed',
+    );
+
     public function findUnprocessedEntries($limit = 10)
     {
         $status = array(Status::CREATED, Status::PROCESSING);

@@ -30,6 +30,19 @@ class Entity extends Base\PublicEntity
 
     protected static $delimiter = '';
 
+    protected $fillable = array(
+        self::CHANNEL,
+        self::AMOUNT,
+        self::FEES,
+        self::SETTLEMENT_COUNT,
+        self::TRANSACTION_COUNT,
+        self::SERVICE_TAX,
+        self::INITIATED_AT,
+        self::API_FEE,
+        self::GATEWAY_FEE,
+        self::URLS,
+    );
+
     protected $public = array(
         self::ID,
         self::ENTITY,
@@ -80,7 +93,6 @@ class Entity extends Base\PublicEntity
     {
         $this->setAttribute(self::FEES, $fees);
     }
-
 
     public static function getTodayTimestamp()
     {

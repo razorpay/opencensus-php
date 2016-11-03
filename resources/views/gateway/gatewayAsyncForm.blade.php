@@ -315,7 +315,6 @@
             <div class="center"><span class="link" id='cancel_btn'>Cancel Payment<span></div>
         </div>
         <form id='form' method="POST">
-            <input type="hidden" name="key_id" value="{{$data['key_id']}}">
         </form>
         <form id="form2" name="form2">
             <input type="hidden" name="type" value="{{$data['type']}}">
@@ -324,10 +323,14 @@
     </div>
 
     <script type="text/javascript">
-        var key_id = '{{$data["key_id"]}}';
+        // Async Payment data //
+        var data = {!!utf8_json_encode($data)!!};
+        // Async Payment data //
+        var request_url = '{{$data['request']['url']}}';
+
+        var key_id = '{{ BasicAuth::getPublicKey() }}';
         var cancel_url = '/v1/payments/{{$data["payment_id"]}}/cancel?key_id='+key_id;
-        var request_url = '{{$data['request']['url']}}?key_id='+key_id;
-        var callback_url = '/v1/payments/{{$data["payment_id"]}}/redirect_callback';
+        var callback_url = '/v1/payments/{{$data["payment_id"]}}/redirect_callback?key_id='+key_id;
         var gel =  document.getElementById.bind(document);
 
         var start_delay = 5000;
