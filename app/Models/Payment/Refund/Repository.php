@@ -131,15 +131,15 @@ class Repository extends Base\Repository
                 $rCreatedAt = $this->getAttributeWithTableName(Refund\Entity::CREATED_AT);
 
                 $pRepo = $this->manager->payment;
-                $pid = $pRepo->getAttributeWithTableName(Payment\Entity::ID);
-                $ptype = $pRepo->getAttributeWithTableName($type);
-                $pgateway = $pRepo->getAttributeWithTableName(Payment\Entity::GATEWAY);
+                $pId = $pRepo->getAttributeWithTableName(Payment\Entity::ID);
+                $pType = $pRepo->getAttributeWithTableName($type);
+                $pGateway = $pRepo->getAttributeWithTableName(Payment\Entity::GATEWAY);
 
-                $join->on($rPaymentId, '=', $pid)
+                $join->on($rPaymentId, '=', $pId)
                      ->where($rCreatedAt, '>=', $from)
                      ->where($rCreatedAt, '<=', $to)
-                     ->where($ptype, '=', $gatewayCode)
-                     ->where($pgateway, '=', $gateway);
+                     ->where($pType, '=', $gatewayCode)
+                     ->where($pGateway, '=', $gateway);
             })
             ->with('payment')
             ->get();
