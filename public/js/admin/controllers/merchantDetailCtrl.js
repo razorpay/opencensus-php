@@ -592,6 +592,8 @@ app.controller('MerchantDetailCtrl', [
         return f.name;
       });
       var allowedFeatures = $scope.merchant.details.allowedFeatures;
+      // availableFeatures is a list of features which are not yet assigned to
+      // the merchant. Used to populate the features dropdown
       var availableFeatures = allowedFeatures.filter(function (f) {
         return features.indexOf(f) === -1;
       });
@@ -863,7 +865,9 @@ app.controller('MerchantDetailCtrl', [
       request.success(function (data) {
         $scope.alerts.resetAlerts(true);
         if (data.success) {
+          // Full list of features which can be assigned to merchant
           $scope.merchant.details.allowedFeatures = data.data.all_features;
+          // List of features currently assigned to merchant
           $scope.merchant.details.features = getFeatureNames(data.data.assigned_features);
         } else {
           $scope.alerts.resetAlerts(true);
@@ -876,6 +880,11 @@ app.controller('MerchantDetailCtrl', [
       });
     }
 
+    /**
+     * Plucks the id and name from array of feature objects
+     * @param  {array} features [Array of feature objects]
+     * @return {array}
+     */
     function getFeatureNames(features) {
       return features.map(function (feature) {
         return {
