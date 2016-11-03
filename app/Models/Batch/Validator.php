@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Batch;
 
-use RZP\Models\Base;
+use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Batch\Header;

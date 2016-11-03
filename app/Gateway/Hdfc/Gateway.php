@@ -24,6 +24,7 @@
 
 namespace RZP\Gateway\Hdfc;
 
+use RZP\Base\JitValidator;
 use RZP\Constants\Mode;
 use RZP\Error;
 use RZP\Exception;
@@ -428,7 +429,10 @@ class Gateway extends Base\Gateway
 
         try
         {
-            validate($this->bankAcsResponseRules, $input['gateway'], false);
+            (new JitValidator)->rules($this->bankAcsResponseRules)
+                              ->input($input['gateway'])
+                              ->strict(false)
+                              ->validate();
         }
         catch (Exception\RecoverableException $e)
         {

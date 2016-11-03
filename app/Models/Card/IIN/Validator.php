@@ -2,8 +2,8 @@
 
 namespace RZP\Models\Card\IIN;
 
+use RZP\Base;
 use RZP\Models\Bank;
-use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Card\Network;
 use RZP\Error\ErrorCode;
