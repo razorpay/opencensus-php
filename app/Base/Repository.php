@@ -4,8 +4,10 @@ namespace RZP\Base;
 
 use DB;
 use Illuminate\Support\Facades\App;
-use RZP\Constants\Entity as E;
+
+use RZP\Models;
 use RZP\Constants\Table;
+use RZP\Constants\Entity as E;
 use RZP\Trace\TraceCode;
 use RZP\Exception\DbQueryException;
 
@@ -260,5 +262,14 @@ class Repository extends \Razorpay\Spine\Repository
     protected function getAttributeWithTableName($col)
     {
         return $this->getTableName() . '.' . $col;
+    }
+
+    protected function validateInstanceIsOfCurrentEntity(Models\Base\Entity $entity)
+    {
+        if ($entity->getEntityName() !== $this->entity)
+        {
+            throw new Exception\LogicException(
+                'Can only handle ' . $this->entity . ' entities here. Provided: ' . $entity->getEntityName());
+        }
     }
 }

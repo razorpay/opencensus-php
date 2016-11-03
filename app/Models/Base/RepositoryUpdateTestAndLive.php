@@ -13,7 +13,7 @@ trait RepositoryUpdateTestAndLive
      */
     public function saveOrFail($entity, array $options = array())
     {
-        $this->dualUpdateVerifyEntityClass($entity);
+        $this->validateInstanceIsOfCurrentEntity($entity);
 
         $exists = $entity->exists;
 
@@ -108,15 +108,6 @@ trait RepositoryUpdateTestAndLive
 
             return $res1;
         });
-    }
-
-    protected function dualUpdateVerifyEntityClass($entity)
-    {
-        if ($entity->getEntityName() !== $this->entity)
-        {
-            throw new Exception\LogicException(
-                'Can only handle ' . $this->entity . ' entities here. Provided: ' . $entity->getEntityName());
-        }
     }
 
     protected function dualUpdateFetchEntities($entity)
