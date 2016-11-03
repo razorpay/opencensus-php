@@ -58,6 +58,12 @@ class Verify extends Base\Core
      */
     const ERRORED_MIN_TIME = 0; // 0 Minute
 
+    /**
+     * This is the time for which payments will be locked via acquireMultiple
+     * After this time, the keys will be released
+     */
+    const DEFAULT_LOCK_TIME = 900; // 15 Minutes
+
     // ================== End Configurations ==================
 
     protected $core;
@@ -228,7 +234,7 @@ class Verify extends Base\Core
     {
         $paymentIds = $payments->pluck(Payment\Entity::ID);
 
-        $lockedPaymentIds = $this->mutex->acquireMultiple($paymentIds, 3600, self::KEY_SUFFIX);
+        $lockedPaymentIds = $this->mutex->acquireMultiple($paymentIds, self::DEFAULT_LOCK_TIME, self::KEY_SUFFIX);
 
         $this->trace->info(
             TraceCode::VERIFY_LOCKED_PAYMENTS,
