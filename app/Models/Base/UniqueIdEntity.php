@@ -135,16 +135,16 @@ class UniqueIdEntity extends Entity
 
         $value = $this->getAttribute($key);
 
-        if ($value === null)
+        if ($this->getGenerateIdOnCreate() === true)
         {
-            if ($this->generateIdOnCreate)
+            if ($value === null)
             {
                 $this->generateAndSetUniqueId();
             }
-        }
-        else
-        {
-            static::verifyUniqueId($value);
+            else
+            {
+                static::verifyUniqueId($value);
+            }
         }
     }
 
@@ -176,13 +176,13 @@ class UniqueIdEntity extends Entity
 
     public static function verifyUniqueId($id, $throw = true)
     {
-        $uniqueIdCheckRegex = '/^[0-9a-f]{'.self::ID_LENGTH.'}$/i';
+        $uniqueIdCheckRegex = '/^[0-9a-z]{'. static::ID_LENGTH .'}$/i';
 
         $res = preg_match($uniqueIdCheckRegex, $id);
 
-        if (($res === false) and ($throw))
+        if ((($res === 0) or ($res === false)) and ($throw))
         {
-            throw new Exception\BadRequestException($id . ' is not a valid id');
+            throw new Exception\LogicException($id . ' is not a valid id');
         }
 
         return $res;
@@ -334,4 +334,10 @@ class UniqueIdEntity extends Entity
     {
         return Luhn::isValid($num, 62);
     }
+
+    public function getGenerateIdOnCreate()
+    {
+        return $this->generateIdOnCreate;
+    }
+
 }
