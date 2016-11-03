@@ -50,17 +50,11 @@
               </div>
             </div>
 
-            <div class="col-xs-6 fake_hide_till_loaded" ng-hide="credits">
+            <div class="col-xs-6 fake_hide_till_loaded">
               <div class="panel padder-v item">
                 <div class="font-thin h1" ng-show="aggregations.data.updated_at != 0">{{aggregations.data.updated_at*1000 | fromNow}}</div>
                  <div class="font-thin h1" ng-show="aggregations.data.updated_at == 0">Never</div>
                 <span class="text-muted text-xs">Last Transaction</span>
-              </div>
-            </div>
-            <div class="col-xs-6 fake_hide_till_loaded" ng-show="credits">
-              <div class="panel padder-v item">
-                <div class="font-thin h1">{{credits/100 | rupee}}</div>
-                <span class="text-muted text-xs">Total <span ng-show="credits_type==='fee'">Fee</span> Credits</span>
               </div>
             </div>
 

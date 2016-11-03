@@ -12,39 +12,60 @@
     </div>
     <div class="panel-body">
       <div class="row wrapper">
-        <div class="text-center m-t" ng-show="alerts.getAlerts().length > 0">
+        <div class="col-md-12 text-center" ng-show="alerts.getAlerts().length > 0">
           <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
         </div>
-        <div class="col-sm-2 m-b-xs">
-          Filter:
-          <select class="form-control input-sm w-sm inline " name="status" ng-model="query.status" ng-change="regenerate()">
-            <option value="all">All Payments</option>
-            <option value="authorized">Authorized</option>
-            <option value="captured">Captured</option>
-            <option value="refunded">Refunded</option>
-            <option value="failed">Failed</option>
-          </select>
-        </div>
-        <div class="col-sm-2">
-          Email:
-          <input type="email" class="form-control input-sm w-sm inline" ng-model="query.email" placeholder="Customer Email"
-            name="email" ng-enter="regenerate();"
-          >
-        </div>
 
-        <div class="col-sm-2">
-          Notes:
-          <input type="notes" class="form-control input-sm w-sm inline" ng-model="query.notes" placeholder="Notes"
-            name="notes" ng-enter="regenerate();"
-          >
-        </div>
+        <div class="col-md-9">
+          <div class="filter-container">
+            <div class="form-group filter-item-container">
+              <div class="filter-item">
+                <label for="status">Filter:</label>
+                <select id="status" class="form-control input-sm" name="status" ng-model="query.status" ng-change="regenerate()">
+                  <option value="all">All Payments</option>
+                  <option value="authorized">Authorized</option>
+                  <option value="captured">Captured</option>
+                  <option value="refunded">Refunded</option>
+                  <option value="failed">Failed</option>
+                </select>
+              </div>
+            </div>
 
-        <div class="col-xs-1">
-          Count:
-          <input type="number" class="form-control inline w-xxs"
-            ng-model="query.count" placeholder="20" name="count" ng-enter="regenerate()"
-          >
+            <div class="form-group filter-item-container">
+              <div class="filter-item">
+                <label for="email">Email:</label>
+                <input id="email" type="email" class="form-control input-sm" ng-model="query.email" placeholder="Customer Email" name="email" ng-enter="regenerate();" />
+              </div>
+            </div>
+
+            <div class="form-group filter-item-container">
+              <div class="filter-item">
+                <label for="notes">Notes:</label>
+                <input id="notes" type="notes" class="form-control input-sm" ng-model="query.notes" placeholder="Notes" name="notes" ng-enter="regenerate();" />
+              </div>
+            </div>
+
+            <div class="form-group filter-item-container filter-item-xs">
+              <div class="filter-item">
+                <label for="count">Count:</label>
+                <input id="count" type="number" class="form-control input-sm" ng-model="query.count" placeholder="20" name="count" ng-enter="regenerate()" />
+              </div>
+            </div>
+          </div>
         </div>
+        <div class="col-md-3">
+          <div class="search-filter form-group pull-right">
+            <div class="input-group">
+              <input type="text" class="input-sm form-control" placeholder="Search Payment Id" ng-model="entity.id">
+              <span class="input-group-btn">
+                <button class="btn btn-sm btn-default" type="button" ng-click="search()" >Go!</button>
+                <button class="btn btn-sm btn-default" type="button" ng-click="regenerate()" busy="...">Clear</button>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
         <!--
         Hiding this for now
         <div class="col-sm-2">
@@ -60,15 +81,6 @@
           >
         </div> -->
 
-        <div class="col-sm-2 col-sm-push-3">
-          <div class="input-group pull-right">
-            <input type="text" class="input-sm form-control" placeholder="Search Payment Id" ng-model="entity.id">
-            <span class="input-group-btn">
-              <button class="btn btn-sm btn-default" type="button" ng-click="search()" >Go!</button>
-              <button class="btn btn-sm btn-default" type="button" ng-click="regenerate()" busy="...">Clear</button>
-            </span>
-          </div>
-        </div>
         <!-- <div class="col-sm-6 pull-right">
           <div class="input-group pull-right">
             <input type="text" class="form-control input-sm inline" placeholder="Search Payment Id" ng-model="entity.id">
@@ -79,8 +91,8 @@
           </div>
         </div>
          -->
-      </div>
     </div>
+
     <div class="table-responsive">
       <table class="payments-table table table-striped b-t b-light" ui-jq="footable">
         <thead>

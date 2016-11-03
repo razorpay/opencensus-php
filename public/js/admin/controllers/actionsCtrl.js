@@ -675,17 +675,26 @@ app.controller('ActionsCtrl', [
     $scope.mode = 'live';
     $scope.date = moment().format('YYYY-MM-DD');
     $scope.ok = function (date, from, to, bank, mode) {
+      var tzGMTToIST = 19800;
       var data = {
         bank: bank,
         mode: mode
       };
       if (from && to) {
-        to = new Date(to).getTime()/1000;
-        from = new Date(from).getTime()/1000;
-        data.from = from;
-        data.to = to;
+        // Date from the date api is in GMT
+        fromInGMT = new Date(from).getTime()/1000;
+        toInGMT = new Date(to).getTime()/1000;
+
+        // Add 19800 to each to convert timestamps to IST
+        fromInIST = fromInGMT + tzGMTToIST;
+        toInIST = toInGMT + tzGMTToIST;
+
+        // Final variable to be sent
+        data.from = fromInIST;
+        data.to = toInIST;
       } else {
-        data.date = date;
+        // Final variable api expects is on
+        data.on = date;
       }
       $modalInstance.close(data);
     };

@@ -185,7 +185,6 @@ table th {
 
 .form-control {
   font-size: 12px;
-  height: auto;
 }
 
 a.highlight {
@@ -210,4 +209,52 @@ a.highlight:hover, a.highlight:focus {
     margin-left: 0;
     margin-right: 0;
   }
+}
+
+
+
+// List Filter Container
+
+.filter-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  margin-left: -25px;
+}
+
+.filter-item-container {
+  flex: 1;
+  flex-basis: 235px;
+  flex-grow: 0;
+  margin-left: 25px;
+}
+
+.filter-item {
+  display: flex;
+  @media(max-width: 1400px) {
+    display: block;
+  }
+
+  align-items: baseline;
+
+  label + .form-control {
+    margin-left: 5px;
+    @media(max-width: 1400px) {
+      margin-left: 0;
+    }
+  }
+}
+
+.filter-item-xs {
+  flex-basis: 100px;
+}
+
+.search-filter {
+  @media(max-width: 1400px) {
+    margin-top: 25px;
+  }
+}
+
+.b-w {
+  word-wrap: break-word;
 }
