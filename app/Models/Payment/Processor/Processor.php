@@ -87,6 +87,7 @@ class Processor
     protected $methods;
     protected $refund;
     protected $order;
+    protected $segment;
 
     protected $verifyRefundStatus;
 
@@ -119,6 +120,8 @@ class Processor
         $this->mutex = $this->app['api.mutex'];
 
         $this->route = $this->app['api.route'];
+
+        $this->segment = $this->app['segment'];
 
         // Only used in hdfc verify refund flow
         $this->verifyRefundStatus = null;
@@ -293,7 +296,7 @@ class Processor
 
         if ($diff > self::PAYMENT_CANCEL_TIME_DURATION)
         {
-            $this->app['segment']->trackPayment($payment, ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED);
+            $this->segment->trackPayment($payment, ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED);
 
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED);
@@ -441,7 +444,7 @@ class Processor
             'status'                => $status
         ];
 
-        $this->app['segment']->trackPayment($payment, $traceCode, $segmentCustomProperties);
+        $this->segment->trackPayment($payment, $traceCode, $segmentCustomProperties);
 
         if (($status !== Status::CREATED) and ($status !== Status::AUTHORIZED))
         {
@@ -514,20 +517,22 @@ class Processor
 
         $eventCode = TraceCode::PAYMENT_CALL_GATEWAY_FUNC . '::' . strtoupper($action);
 
-        $this->app['segment']->trackPayment($this->payment, $eventCode, ['action' => $action]);
+        $this->segment->trackPayment($this->payment, $eventCode, ['action' => $action]);
 
         return $this->app['gateway']->call($gateway, $action, $gatewayData, $this->mode, $terminal);
     }
 
     protected function createPaymentEntity($input)
     {
-        $this->tracePaymentNewRequest($input);
-
         $payment = new Payment\Entity;
 
         $payment->generateId();
 
+        $this->tracePaymentNewRequest($input);
+
         $payment->merchant()->associate($this->merchant);
+
+        // $this->segment->trackPayment($payment, TraceCode::PAYMENT_NEW_REQUEST);
 
         $payment->build($input);
 
@@ -554,8 +559,6 @@ class Processor
         }
 
         $this->payment = $payment;
-
-        $this->app['segment']->trackPayment($payment, TraceCode::PAYMENT_CREATED);
 
         return $payment;
     }
@@ -690,7 +693,7 @@ class Processor
             $traceCode,
             $traceData);
 
-        $this->app['segment']->trackPayment($this->payment, TraceCode::PAYMENT_FAILED, $traceData);
+        $this->segment->trackPayment($this->payment, TraceCode::PAYMENT_FAILED, $traceData);
     }
 
     protected function retrieveToken($input)
