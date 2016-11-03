@@ -31,8 +31,8 @@ class Table
     const DAILY_SETTLEMENT      = 'daily_settlements';
     const SETTLEMENT_DETAIL     = 'settlement_details';
 
-    // Organisation roles permissions
-    const ORGANISATION          = 'organisations';
+    // organization roles permissions
+    const ORGANIZATION          = 'organizations';
     const USER                  = 'users';
     const ROLES                 = 'roles';
     const PERMISSION            = 'permissions';

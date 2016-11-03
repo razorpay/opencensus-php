@@ -10,6 +10,6 @@ class Entity extends Base\PublicEntity
 {
     const NAME            = 'name';
     const ROLE_ID         = 'role_id';
-    const ORGANISATION_ID = 'organisation_id';
+    const ORGANIZATION_ID = 'organization_id';
 
 }
