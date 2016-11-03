@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Netbanking\Kotak\Mock;
 
-use RZP\Models\Base;
+use RZP\Base;
 
 class Validator extends Base\Validator
 {

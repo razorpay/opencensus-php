@@ -2,6 +2,7 @@
 
 namespace RZP\Base;
 
+use RZP\Base\JitValidator;
 use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Merchant;
@@ -189,7 +190,12 @@ trait RepositoryFetch
                 $this->fetchParamRules, $this->entityFetchParamRules);
         }
 
-        if (($this->auth->isProxyAuth()) and
+        //
+        // In case of privilege auth, we will merge proxyFetchParamRules
+        // also here otherwise we won't be able to access those filters
+        // in admin fetch
+        //
+        if (($this->auth->isProxyOrPrivilegeAuth()) and
             (isset($this->proxyFetchParamRules)))
         {
             $this->fetchParamRules = array_merge(
@@ -203,7 +209,10 @@ trait RepositoryFetch
                     $this->fetchParamRules, $this->appFetchParamRules);
         }
 
-        validate($this->fetchParamRules, $params);
+        (new JitValidator)->rules($this->fetchParamRules)
+                          ->caller($this)
+                          ->input($params)
+                          ->validate();
 
         $this->validateAdditional($params);
     }
@@ -287,6 +296,15 @@ trait RepositoryFetch
         return $this->newQuery()
                     ->merchantId($merchantId)
                     ->findOrFailPublic($id);
+    }
+
+    public function validateCustom($func, $attribute, $value, $parameters)
+    {
+        // Function name should start from 'validator'
+
+        assert (strpos($func, 'validator') === 0);
+
+        $this->$func($attribute, $value, $parameters);
     }
 
     protected function addQueryParamDefault($query, $params, $key)
