@@ -18,6 +18,24 @@ class FeatureController extends Controller
 		return ApiResponse::json($data);
 	}
 
+    public function multiAssignFeature()
+    {
+        $input = Request::all();
+
+        $data = (new Feature\Service)->multiAssignFeature($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function multiRemoveFeature()
+    {
+        $input = Request::all();
+
+        $data = (new Feature\Service)->multiRemoveFeature($input);
+
+        return ApiResponse::json($data);
+    }
+
 	public function deleteFeature(int $id)
 	{
 		$data = (new Feature\Service)->deleteFeature($id);

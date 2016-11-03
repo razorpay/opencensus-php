@@ -4,6 +4,8 @@ namespace RZP\Models\Feature;
 
 use RZP\Models\Base;
 use RZP\Exception;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
@@ -11,7 +13,6 @@ class Service extends Base\Service
 	public function addFeatures($input)
 	{
 		$featureParams = $this->buildFeatureParams($input);
-
 		$features = $featureParams->map(function ($item) {
 			return (new Core)->create($item);
 		});
@@ -39,6 +40,10 @@ class Service extends Base\Service
 	{
 		$feature = $this->repo->feature->findOrFailPublic($id);
 
+        $this->trace->info(TraceCode::FEATURE_DELETE_REQUEST, [
+            'msg' => TraceCode::getMessage(TraceCode::FEATURE_DELETE_REQUEST)
+        ]);
+
 		$this->repo->deleteOrFail($feature);
 
 		return $feature->toArrayPublic();
@@ -54,34 +59,88 @@ class Service extends Base\Service
 			foreach ($merchantFeatures as $merchantFeature)
 			{
 				$featureParam = [
-					'entity_id'			=> $merchantFeature->id,
-					'names'				=> $merchantFeature->features,
-					'entity_type'		=> 'merchant'
+					Entity::ENTITY_ID      => $merchantFeature->id,
+					'names'                => $merchantFeature->features,
+					Entity::ENTITY_TYPE	   => 'merchant'
 				];
-
-				$response->push($this->addFeatures($featureParam));
+                try
+                {
+                    $response->push($this->addFeatures($featureParam));
+                }
+                catch (Exception $e)
+                {
+                    $this->trace->warn(TraceCode::FEATURE_MIGRATION_EXCEPTION, [
+                        Entity::ENTITY_ID   => $merchantFeature->id,
+                        'msg'               => $e->getMessage()
+                    ]);
+                }
 			}
 		});
-
-		return $response;
+        return $response->collapse();
 	}
+
+    public function multiAssignFeature($input)
+    {
+        $merchantIds = $input['merchant_ids'];
+
+        $response = new Base\Collection;
+
+        foreach ($merchantIds as $merchantId) {
+            $featureParam = [
+                Entity::ENTITY_TYPE     => EntityMap::SUPPORTED_ENTITIES['merchant'],
+                Entity::ENTITY_ID       => $merchantId,
+                Entity::NAME            => $input[Entity::NAME]
+            ];
+            try {
+                $response->push((new Core)->create($featureParam));
+            } catch (Exception $e) {
+                $this->trace->warn(TraceCode::FEATURE_ASSIGNMENT_EXCEPTION, [
+                    'msg' => $e->getMessage()
+                ]);
+            }
+        }
+
+        return $response->toArray();
+    }
+
+    public function multiRemoveFeature($input)
+    {
+        $merchantIds = $input['merchant_ids'];
+
+        $featureName = $input['name'];
+
+        $response = new Base\Collection;
+
+        foreach ($merchantIds as $merchantId)
+        {
+            $feature = $this->repo->feature->findByNameAndEntityId($featureName, $merchantId);
+
+            if(!is_null($feature))
+            {
+                $response->push($feature);
+
+                $this->repo->deleteOrFail($feature);
+            }
+        }
+        return $response->toArray();
+    }
 
 	private function buildFeatureParams($input)
 	{
 		$featureParams = new Base\Collection;
 
-		$entityType = EntityMap::SUPPORTED_ENTITIES[$input['entity_type']];
+		$entityType = EntityMap::SUPPORTED_ENTITIES[$input[Entity::ENTITY_TYPE]];
 
-		$entityId = $input['entity_id'];
+		$entityId = $input[Entity::ENTITY_ID];
 
 		$featureNames = $input['names'];
 
 		foreach ($featureNames as $featureName)
 		{
 			$featureParams->push([
-				"entity_type" 	=> $entityType,
-				"entity_id" 	=> $entityId,
-				"name"			=> $featureName
+				Entity::ENTITY_TYPE     => $entityType,
+				Entity::ENTITY_ID       => $entityId,
+				Entity::NAME            => $featureName
 			]);
 		}
 

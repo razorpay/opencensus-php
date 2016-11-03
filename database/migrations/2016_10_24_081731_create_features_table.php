@@ -28,7 +28,6 @@ class CreateFeaturesTable extends Migration
             $table->integer(Feature::CREATED_AT);
             $table->integer(Feature::UPDATED_AT);
 
-            $table->index(Feature::CREATED_AT);
             $table->index(Feature::ENTITY_ID);
             $table->index(Feature::ENTITY_TYPE);
             $table->index(Feature::NAME);
@@ -43,6 +42,6 @@ class CreateFeaturesTable extends Migration
      */
     public function down()
     {
-        Schema::drop('features');
+        Schema::drop(Table::FEATURE);
     }
 }

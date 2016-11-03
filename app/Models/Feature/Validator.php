@@ -18,7 +18,7 @@ class Validator extends Base\Validator
 		'features'
 	];
 
-	public static function validateFeatures($input)
+	public static function validateFeatures(array $input)
     {
         $name = $input[Entity::NAME];
 

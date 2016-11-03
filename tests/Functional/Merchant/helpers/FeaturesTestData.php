@@ -56,6 +56,118 @@ return [
         ],
     ],
 
+    'testAddDuplicateFeatureToMerchant' => [
+        'request' => [
+            'content' => [
+                'names'             => ['dummy'],
+                'entity_type'       => 'merchant',
+                'entity_id'         => '10000000000000'
+            ],
+            'url' => '/features',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\DbQueryException',
+            'internal_error_code'   => ErrorCode::SERVER_ERROR_DB_QUERY_FAILED,
+        ]
+    ],
+
+    'testMigrateMerchantFeature' => [
+        'request' => [
+            'content' => [
+            ],
+            'url' => '/features/migrate',
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'name'          => 'dummy',
+                    'entity_id'     => '10000000000001',
+                    'entity_type'   => "RZP\\Models\\Merchant\\Entity"
+                ],
+                [
+                    'name'          => 'dummy',
+                    'entity_id'     => '10000000000002',
+                    'entity_type'   => "RZP\\Models\\Merchant\\Entity"
+                ],
+                [
+                    'name'          => 'dummy',
+                    'entity_id'     => '10000000000003',
+                    'entity_type'   => "RZP\\Models\\Merchant\\Entity"
+                ],
+            ]
+        ]
+    ],
+
+    'testMultiAssignFeature' => [
+        'request' => [
+            'content' => [
+                'name'          => 'dummy',
+                'merchant_ids'  => ["10000000000001", "10000000000002", "10000000000003"]
+            ],
+            'url' => '/features/multi_assign',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'name'          => 'dummy',
+                    'entity_id'     => '10000000000001',
+                    'entity_type'   => "RZP\\Models\\Merchant\\Entity"
+                ],
+                [
+                    'name'          => 'dummy',
+                    'entity_id'     => '10000000000002',
+                    'entity_type'   => "RZP\\Models\\Merchant\\Entity"
+                ],
+                [
+                    'name'          => 'dummy',
+                    'entity_id'     => '10000000000003',
+                    'entity_type'   => "RZP\\Models\\Merchant\\Entity"
+                ],
+            ]
+        ]
+    ],
+
+    'testMultiRemoveFeature' => [
+        'request' => [
+            'content' => [
+                'name'          => 'dummy',
+                'merchant_ids'  => ["10000000000001", "10000000000002", "10000000000003"]
+            ],
+            'url' => '/features/multi_remove',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'name'          => 'dummy',
+                    'entity_id'     => '10000000000001',
+                    'entity_type'   => "RZP\\Models\\Merchant\\Entity"
+                ],
+                [
+                    'name'          => 'dummy',
+                    'entity_id'     => '10000000000002',
+                    'entity_type'   => "RZP\\Models\\Merchant\\Entity"
+                ],
+                [
+                    'name'          => 'dummy',
+                    'entity_id'     => '10000000000003',
+                    'entity_type'   => "RZP\\Models\\Merchant\\Entity"
+                ],
+            ]
+        ]
+    ],
+
     'testGetFeatureListForMerchant' => [
         'request' => [
             'content' => [
@@ -92,18 +204,20 @@ return [
         ]
     ],
 
-    'testGetAllFeatures' => [
+    'testDeleteFeatureFromMerchant' => [
         'request' => [
             'content' => [
             ],
-            'url' => '/features',
-            'method' => 'GET'
+            'url' => '/features/1',
+            'method' => 'DELETE'
         ],
         'response' => [
             'content' => [
-                "dummy","webhooks"
-            ],
-        ],
+                'name' => 'dummy',
+                'entity_id' => '10000000000000',
+                'entity_type' => 'RZP\\Models\\Merchant\\Entity'
+            ]
+        ]
     ],
 
     'testDummyFeatureRouteWithoutAccess' => [

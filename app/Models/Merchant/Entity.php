@@ -184,8 +184,8 @@ class Entity extends Base\PublicEntity
 
     public function isFeatureEnabled($feature)
     {
-        return in_array($feature, $this->getFeatures()) ||
-            $this->checkFeaturesCsv($feature);
+        return in_array($feature, $this->getFeatures()) or
+            $this->checkOldFeatures($feature);
     }
 
     public function activate()
@@ -415,18 +415,17 @@ class Entity extends Base\PublicEntity
                     ->get()->pluck(\RZP\Models\Feature\Entity::NAME)->toArray();
     }
 
-    protected function getFeaturesCsv()
+    protected function getOldFeatures()
     {
         return $this->getAttribute(self::FEATURES);
     }
 
-    protected function checkFeaturesCsv($feature)
+    protected function checkOldFeatures($feature)
     {
-
-        if (in_array($feature, $this->getFeaturesCsv()))
+        if (in_array($feature, $this->getOldFeatures()) === true)
         {
-            $this->app['trace']->info(TraceCode::FEATURE_CSV_LOOKUP, [
-                'msg' => TraceCode::getMessage(TraceCode::FEATURE_CSV_LOOKUP)
+            $this->app['trace']->warn(TraceCode::OLD_FEATURE_LOOKUP, [
+                'msg' => TraceCode::getMessage(TraceCode::OLD_FEATURE_LOOKUP)
             ]);
 
             return true;
