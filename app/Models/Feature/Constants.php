@@ -8,6 +8,9 @@ class Constants
         "merchant" => \RZP\Models\Merchant\Entity::class
     ];
 
+    const ENTITY_IDS    = 'entity_ids';
+    const NAMES         = 'names';
+
     const DUMMY         = 'dummy';
     const WEBHOOKS      = 'webhooks';
     const AGGREGATOR    = 'aggregator';

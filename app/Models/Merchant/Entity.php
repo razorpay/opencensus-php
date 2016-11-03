@@ -184,7 +184,7 @@ class Entity extends Base\PublicEntity
 
     public function isFeatureEnabled($feature)
     {
-        return in_array($feature, $this->getFeatures()) or
+        return (in_array($feature, $this->getFeatures())) or
             $this->checkOldFeatures($feature);
     }
 
@@ -499,13 +499,14 @@ class Entity extends Base\PublicEntity
     protected function getFeaturesAttribute()
     {
         $features = $this->attributes[self::FEATURES];
-        if (empty($features))
+        if (empty($features) === true)
         {
             return [];
         }
         else
         {
             $features = explode(Features::DELIMITER, $features);
+
             return array_map('trim', $features);
         }
     }

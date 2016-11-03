@@ -33,6 +33,7 @@ class Entity
     const WEBHOOK               = 'webhook';
     const EMI_PLAN              = 'emi_plan';
     const MERCHANT              = 'merchant';
+    const FEATURE               = 'feature';
     const TERMINAL              = 'terminal';
     const CUSTOMER              = 'customer';
     const APP_TOKEN             = 'app_token';
@@ -47,7 +48,6 @@ class Entity
     const PAYMENT_ANALYTICS     = 'payment_analytics';
     const GATEWAY_ABSENCE       = 'gateway_absence';
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
-    const FEATURE               = 'feature';
 
     //
     // Gateway entities

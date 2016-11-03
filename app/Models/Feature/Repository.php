@@ -23,7 +23,8 @@ class Repository extends Base\Repository
 
     public function findByNameAndEntityId(string $featureName, string $entityId)
     {
-        return $this->newQuery()->where(Entity::NAME, '=', $featureName)
+        return $this->newQuery()
+                ->where(Entity::NAME, '=', $featureName)
                 ->where(Entity::ENTITY_ID, '=', $entityId)
                 ->first();
     }

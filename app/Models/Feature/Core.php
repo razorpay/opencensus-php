@@ -17,7 +17,8 @@ class Core extends Base\Core
             $this->repo->saveOrFail($feature);
 
             return $feature;
-        } catch (QueryException $e)
+        }
+        catch (QueryException $e)
         {
             throw new Exception\DbQueryException([
                 'name'          => $feature->name,

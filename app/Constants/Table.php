@@ -20,6 +20,7 @@ class Table
     const WEBHOOK               = 'webhooks';
     const ADDRESS               = 'addresses';
     const MERCHANT              = 'merchants';
+    const FEATURE               = 'features';
     const TERMINAL              = 'terminals';
     const CUSTOMER              = 'customers';
     const EMI_PLAN              = 'emi_plans';
@@ -30,7 +31,6 @@ class Table
     const BANK_ACCOUNT          = 'bank_accounts';
     const DAILY_SETTLEMENT      = 'daily_settlements';
     const SETTLEMENT_DETAIL     = 'settlement_details';
-    const FEATURE               = 'features';
 
     // Gateway related
     const EBS                   = 'ebs';

@@ -13,6 +13,7 @@ class Service extends Base\Service
 	public function addFeatures($input)
 	{
 		$featureParams = $this->buildFeatureParams($input);
+
 		$features = $featureParams->map(function ($item) {
 			return (new Core)->create($item);
 		});
@@ -74,26 +75,29 @@ class Service extends Base\Service
                         'msg'               => $e->getMessage()
                     ]);
                 }
-			}
-		});
+            }
+        });
         return $response->collapse();
 	}
 
     public function multiAssignFeature($input)
     {
-        $merchantIds = $input['merchant_ids'];
+        $entityIds = $input[Constants::ENTITY_IDS];
 
         $response = new Base\Collection;
 
-        foreach ($merchantIds as $merchantId) {
+        foreach ($entityIds as $entityId) {
             $featureParam = [
-                Entity::ENTITY_TYPE     => Constants::ENTITY_MAP['merchant'],
-                Entity::ENTITY_ID       => $merchantId,
+                Entity::ENTITY_TYPE     => Constants::ENTITY_MAP[$input[Entity::ENTITY_TYPE]],
+                Entity::ENTITY_ID       => $entityId,
                 Entity::NAME            => $input[Entity::NAME]
             ];
-            try {
+            try
+            {
                 $response->push((new Core)->create($featureParam));
-            } catch (Exception $e) {
+            }
+            catch (Exception $e)
+            {
                 $this->trace->warn(TraceCode::FEATURE_ASSIGNMENT_EXCEPTION, [
                     'msg' => $e->getMessage()
                 ]);
@@ -105,23 +109,24 @@ class Service extends Base\Service
 
     public function multiRemoveFeature($input)
     {
-        $merchantIds = $input['merchant_ids'];
+        $entityIds = $input[Constants::ENTITY_IDS];
 
-        $featureName = $input['name'];
+        $featureName = $input[ENTITY::NAME];
 
         $response = new Base\Collection;
 
-        foreach ($merchantIds as $merchantId)
+        foreach ($entityIds as $entityId)
         {
-            $feature = $this->repo->feature->findByNameAndEntityId($featureName, $merchantId);
+            $feature = $this->repo->feature->findByNameAndEntityId($featureName, $entityId);
 
-            if(!is_null($feature))
+            if(is_null($feature) === false)
             {
                 $response->push($feature);
 
                 $this->repo->deleteOrFail($feature);
             }
         }
+
         return $response->toArray();
     }
 
@@ -133,7 +138,7 @@ class Service extends Base\Service
 
 		$entityId = $input[Entity::ENTITY_ID];
 
-		$featureNames = $input['names'];
+		$featureNames = $input[Constants::NAMES];
 
 		foreach ($featureNames as $featureName)
 		{

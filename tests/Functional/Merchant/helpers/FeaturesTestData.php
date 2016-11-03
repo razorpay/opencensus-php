@@ -112,7 +112,8 @@ return [
         'request' => [
             'content' => [
                 'name'          => 'dummy',
-                'merchant_ids'  => ["10000000000001", "10000000000002", "10000000000003"]
+                'entity_ids'    => ["10000000000001", "10000000000002", "10000000000003"],
+                'entity_type'   => 'merchant'
             ],
             'url' => '/features/multi_assign',
             'method' => 'POST'
@@ -142,7 +143,7 @@ return [
         'request' => [
             'content' => [
                 'name'          => 'dummy',
-                'merchant_ids'  => ["10000000000001", "10000000000002", "10000000000003"]
+                'entity_ids'    => ["10000000000001", "10000000000002", "10000000000003"]
             ],
             'url' => '/features/multi_remove',
             'method' => 'POST'
