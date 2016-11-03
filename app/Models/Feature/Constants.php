@@ -2,8 +2,12 @@
 
 namespace RZP\Models\Feature;
 
-class FeatureName
+class Constants
 {
+    const ENTITY_MAP = [
+        "merchant" => \RZP\Models\Merchant\Entity::class
+    ];
+
     const DUMMY         = 'dummy';
     const WEBHOOKS      = 'webhooks';
     const AGGREGATOR    = 'aggregator';

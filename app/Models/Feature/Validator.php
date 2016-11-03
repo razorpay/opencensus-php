@@ -22,7 +22,7 @@ class Validator extends Base\Validator
     {
         $name = $input[Entity::NAME];
 
-        if (in_array($name, FeatureName::$allFeatures) === false)
+        if (in_array($name, Constants::$allFeatures) === false)
         {
         	throw new Exception\BadRequestValidationFailureException(
         		"Invalid beta feature: $name",

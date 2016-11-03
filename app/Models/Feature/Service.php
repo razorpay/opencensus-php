@@ -22,7 +22,7 @@ class Service extends Base\Service
 
 	public function getFeatures(string $entityType, string $entityId)
 	{
-		$entityType = EntityMap::SUPPORTED_ENTITIES[$entityType];
+		$entityType = Constants::ENTITY_MAP[$entityType];
 
 		$response = new Base\Collection;
 
@@ -31,7 +31,7 @@ class Service extends Base\Service
 				$entityId);
 
 		// all_features is a list of currently available features in the system
-		$response['all_features'] = FeatureName::$allFeatures;
+		$response['all_features'] = Constants::$allFeatures;
 
 		return $response;
 	}
@@ -87,7 +87,7 @@ class Service extends Base\Service
 
         foreach ($merchantIds as $merchantId) {
             $featureParam = [
-                Entity::ENTITY_TYPE     => EntityMap::SUPPORTED_ENTITIES['merchant'],
+                Entity::ENTITY_TYPE     => Constants::ENTITY_MAP['merchant'],
                 Entity::ENTITY_ID       => $merchantId,
                 Entity::NAME            => $input[Entity::NAME]
             ];
@@ -129,7 +129,7 @@ class Service extends Base\Service
 	{
 		$featureParams = new Base\Collection;
 
-		$entityType = EntityMap::SUPPORTED_ENTITIES[$input[Entity::ENTITY_TYPE]];
+		$entityType = Constants::ENTITY_MAP[$input[Entity::ENTITY_TYPE]];
 
 		$entityId = $input[Entity::ENTITY_ID];
 
