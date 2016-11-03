@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Payment;
+namespace RZP\Models\Admin\Org;
 
 use Lib\PhoneBook;
 use RZP\Exception;

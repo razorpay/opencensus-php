@@ -32,11 +32,15 @@ class Table
     const SETTLEMENT_DETAIL     = 'settlement_details';
 
     // organization roles permissions
-    const ORGANIZATION          = 'organizations';
-    const USER                  = 'users';
-    const ROLES                 = 'roles';
+    const ORG                   = 'orgs';
+    const ROLE                  = 'roles';
     const PERMISSION            = 'permissions';
-    const PERMISSION_ROLE       = 'permission_role';
+    const PERMISSION_MAP        = 'permission_map';
+    const GROUP                 = 'groups';
+    const ADMIN                 = 'admins';
+    const ADMIN_ROLE            = 'admin_role';
+    const ADMIN_GROUP           = 'admin_group';
+    const MERCHANT_MAP          = 'merchant_map';
 
     // Gateway related
     const EBS                   = 'ebs';

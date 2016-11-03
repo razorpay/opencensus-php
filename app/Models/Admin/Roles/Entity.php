@@ -8,7 +8,7 @@ use RZP\Constants;
 
 class Entity extends Base\PublicEntity
 {
-    const NAME = 'name';
-    const ORGANIZATION_ID = 'organization_id';
-
+    const NAME              = 'name';
+    const DESCRIPTION       = 'description';
+    const ORGANIZATION_ID   = 'organization_id';
 }

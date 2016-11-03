@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Admin\Organization;
+namespace RZP\Models\Admin\Org;
 
 use App;
 use RZP\Constants\Table;
@@ -8,18 +8,19 @@ use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {
-    const NAME                  = 'name';
+    const BUSINESS_NAME         = 'business_name';
+    const DISPLAY_NAME          = 'display_name';
     const EMAIL                 = 'email';
-    const AUTH                  = 'auth';
+    const AUTH_TYPE             = 'auth_type';
     const EMAIL_DOMAINS         = 'email_domains';
     const DELETED_AT            = 'deleted_at';
     const LOGO_URL              = 'logo_url';
 
     protected static $sign = 'org';
 
-    protected $entity = 'organization';
+    protected $entity = 'orgs';
 
-    protected $table = Table::ORGANIZATION;
+    protected $table = Table::ORGS;
 
     protected $generateIdOnCreate = true;
 

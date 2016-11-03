@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Admin\Organization;
+namespace RZP\Models\Admin\Org;
 
 use RZP\Models\Base;
 
@@ -13,16 +13,16 @@ class Service extends Base\Service
         $this->core = new Core;
     }
 
-    public function createOrganization(array $input)
+    public function createOrg(array $input)
     {
         $this->core->create($input);
     }
 
-    public function deleteOrganization(string $id)
+    public function deleteOrg(string $id)
     {
     }
 
-    public function editOrganization(string $id, array $input)
+    public function editOrg(string $id, array $input)
     {
     }
 }

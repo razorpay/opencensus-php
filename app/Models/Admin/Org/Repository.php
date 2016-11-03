@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Admin\Organization;
+namespace RZP\Models\Admin\Org;
 
 use Carbon\Carbon;
 
@@ -20,7 +20,7 @@ class Repository extends Base\Repository
 {
     use Base\RepositoryFetch;
 
-    protected $entity = 'organization';
+    protected $entity = 'org';
 
     // These are proxy allowed params to search on.
     protected $proxyFetchParamRules = array(
