@@ -47,7 +47,7 @@ class Entity
     const PAYMENT_ANALYTICS     = 'payment_analytics';
     const GATEWAY_ABSENCE       = 'gateway_absence';
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
-    const ORGANIZATION          = 'organization';
+    const ORG                   = 'org';
 
     //
     // Gateway entities
@@ -120,7 +120,7 @@ class Entity
         self::GATEWAY_ABSENCE       => \RZP\Models\GatewayStatus\Absence::class,
         self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
         self::WALLET_FREECHARGE     => \RZP\Gateway\Wallet\Freecharge::class,
-        self::ORGANIZATION          => \RZP\Gateway\Admin\Organization::class,
+        self::ORG                   => \RZP\Models\Admin\Org::class,
     );
 
     protected static $repository = array(

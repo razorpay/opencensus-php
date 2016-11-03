@@ -32,7 +32,7 @@ class Table
     const SETTLEMENT_DETAIL     = 'settlement_details';
 
     // organization roles permissions
-    const ORG                   = 'orgs';
+    const ORG                   = 'org';
     const ROLE                  = 'roles';
     const PERMISSION            = 'permissions';
     const PERMISSION_MAP        = 'permission_map';

@@ -8,19 +8,19 @@ use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {
+    const AUTH                  = 'auth';
     const BUSINESS_NAME         = 'business_name';
     const DISPLAY_NAME          = 'display_name';
     const EMAIL                 = 'email';
-    const AUTH_TYPE             = 'auth_type';
     const EMAIL_DOMAINS         = 'email_domains';
     const DELETED_AT            = 'deleted_at';
-    const LOGO_URL              = 'logo_url';
+    const LOGO                  = 'logo';
 
     protected static $sign = 'org';
 
-    protected $entity = 'orgs';
+    protected $entity = 'org';
 
-    protected $table = Table::ORGS;
+    protected $table = Table::ORG;
 
     protected $generateIdOnCreate = true;
 
@@ -29,7 +29,7 @@ class Entity extends Base\PublicEntity
         self::EMAIL,
         self::AUTH,
         self::EMAIL_DOMAINS,
-        self::LOGO_URL,
+        self::LOGO,
     ];
 
     protected $visible = [
@@ -37,7 +37,7 @@ class Entity extends Base\PublicEntity
         self::EMAIL,
         self::AUTH,
         self::EMAIL_DOMAINS,
-        self::LOGO_URL,
+        self::LOGO,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
@@ -48,7 +48,7 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::EMAIL,
         self::EMAIL_DOMAINS,
-        self::LOGO_URL,
+        self::LOGO,
         self::AUTH,
         self::CREATED_AT,
     ];

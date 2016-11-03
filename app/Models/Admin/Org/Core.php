@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Payment;
+namespace RZP\Models\Admin\Org;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;

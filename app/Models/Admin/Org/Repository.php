@@ -3,18 +3,7 @@
 namespace RZP\Models\Admin\Org;
 
 use Carbon\Carbon;
-
-use RZP\Constants\Table;
-use RZP\Exception;
-use RZP\Error\ErrorCode;
-use RZP\Error\PublicErrorDescription;
 use RZP\Models\Base;
-use RZP\Models\Card;
-use RZP\Models\Merchant;
-use RZP\Models\Order;
-use RZP\Models\Payment;
-use RZP\Models\Payment\Verify;
-use RZP\Models\Transaction;
 
 class Repository extends Base\Repository
 {
@@ -27,7 +16,7 @@ class Repository extends Base\Repository
         Entity::EMAIL                 => 'sometimes',
         Entity::STATUS                => 'sometimes|string',
         Entity::AUTH                  => 'sometimes|string|max:500',
-        Entity::ALLOWED_EMAIL_DOMAINS => 'sometimes|string|max:500',
+        Entity::EMAIL_DOMAINS         => 'sometimes|string|max:500',
     );
 
     // These are admin allowed params to search on.
@@ -35,6 +24,6 @@ class Repository extends Base\Repository
         Entity::EMAIL                 => 'sometimes',
         Entity::STATUS                => 'sometimes|string',
         Entity::AUTH                  => 'sometimes|string|max:500',
-        Entity::ALLOWED_EMAIL_DOMAINS => 'sometimes|string|max:500',
+        Entity::EMAIL_DOMAINS         => 'sometimes|string|max:500',
     );
 }
