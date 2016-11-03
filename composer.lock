@@ -2840,12 +2840,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/spine.git",
-                "reference": "92d2a103ade3da8abe239c59e469fe49d70af95b"
+                "reference": "dbbd57ebd127f5cb2f5a4f7579a6a76695e474eb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/spine/zipball/92d2a103ade3da8abe239c59e469fe49d70af95b",
-                "reference": "92d2a103ade3da8abe239c59e469fe49d70af95b",
+                "url": "https://api.github.com/repos/razorpay/spine/zipball/dbbd57ebd127f5cb2f5a4f7579a6a76695e474eb",
+                "reference": "dbbd57ebd127f5cb2f5a4f7579a6a76695e474eb",
                 "shasum": ""
             },
             "require": {
@@ -2879,7 +2879,7 @@
                 "source": "https://github.com/razorpay/spine/tree/master",
                 "issues": "https://github.com/razorpay/spine/issues"
             },
-            "time": "2016-09-02 20:14:33"
+            "time": "2016-10-31 10:19:29"
         },
         {
             "name": "react/promise",

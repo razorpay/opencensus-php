@@ -767,6 +767,11 @@ class BasicAuth
         return ($this->type === Type::PRIVILEGE_AUTH);
     }
 
+    public function isProxyOrPrivilegeAuth()
+    {
+        return (($this->isProxyAuth()) or ($this->isPrivilegeAuth()));
+    }
+
     protected function setKeyFromQueryParams()
     {
         // Get key from input params

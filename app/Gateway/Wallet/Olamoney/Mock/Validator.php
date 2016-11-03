@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Wallet\Olamoney\Mock;
 
-use RZP\Models\Base;
+use RZP\Base;
 use RZP\Gateway\Wallet\Olamoney;
 use RZP\Gateway\Wallet\Olamoney\RequestFields;
 use RZP\Gateway\Wallet\Olamoney\ResponseFields;
