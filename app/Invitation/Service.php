@@ -44,7 +44,7 @@ class Service extends Base\Service
 
         // We need to change this to currentLoggedInMerchant later
         $merchant = $this->loggedInUser->getOwnerMerchant();
-
+        
         if ($merchant === false)
         {
             $errors[] = static::NO_MERCHANTS_OWNED_BY_USER;
