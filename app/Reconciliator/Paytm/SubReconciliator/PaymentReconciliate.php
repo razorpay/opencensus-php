@@ -10,9 +10,9 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_PAYMENT_ID          = 'ORDER ID';
-    const COLUMN_TRANSACTION_AMOUNT  = 'TXN_AMOUNT';
-    const COLUMN_SETTLED_AMOUNT      = 'SETTLED AMOUNT';
+    const COLUMN_PAYMENT_ID             = 'order_id';
+    const COLUMN_SERVICE_TAX            = 's_tax';
+    const COLUMN_FEE                    = 'rev_commm';
 
     protected function getPaymentId($row)
     {
@@ -23,16 +23,21 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getGatewayServiceTax($row)
     {
-        // Paytm recon files do not contain service tax
-        return 0;
+        // Convert service tax into basic unit of currency. (ex: paise)
+        $serviceTax = floatval($row[self::COLUMN_SERVICE_TAX]) * 100;
+
+        return round($serviceTax);
     }
 
     protected function getGatewayFee($row)
     {
-        $fee = $row[self::COLUMN_TRANSACTION_AMOUNT] - $row[self::COLUMN_SETTLED_AMOUNT];
-
         // Convert fee into basic unit of currency (ex: paise)
-        $fee = floatval($fee) * 100;
+        $fee = floatval($row[self::COLUMN_FEE]) * 100;
+
+        // Already in basic unit of currency. Hence, no conversion needed
+        $serviceTax = $this->getGatewayServiceTax($row);
+
+        $fee += $serviceTax;
 
         return round($fee);
     }
