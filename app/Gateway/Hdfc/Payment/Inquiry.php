@@ -154,6 +154,15 @@ trait Inquiry
             $this->fillPaymentStatusAndContent($verify);
         }
 
+        if (($gatewayPayment->getResult() !== null) and
+            ($gatewayPayment->getAction() === Action::PURCHASE))
+        {
+            if ($content['result'] === Result::CAPTURED)
+            {
+                $gatewayPayment->setStatus(Status::CAPTURED);
+            }
+        }
+
         $gatewayPayment->saveOrFail();
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
@@ -250,21 +259,20 @@ trait Inquiry
         $this->checkAndSetResponseResult($payment);
 
         $inquiryResponse = $this->inquiryResponse;
-        $responseContent = $this->inquiryResponse['data'];
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             [
                 'payment_id' => $payment->getPaymentId(),
                 'xml' => $inquiryResponse['xml'],
-                'response_content' => $responseContent
+                'response_content' => $inquiryResponse['data']
             ]);
 
         $verify->verifyResponse = $inquiryResponse;
         $verify->verifyResponseBody = $inquiryResponse['xml'];
-        $verify->verifyResponseContent = $responseContent;
+        $verify->verifyResponseContent = $inquiryResponse['data'];
 
-        return $responseContent;
+        return $inquiryResponse['data'];
     }
 
     protected function getPaymentVerifyRequestContentArray($verify)

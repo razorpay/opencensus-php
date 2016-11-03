@@ -500,6 +500,16 @@ trait Refund
             $txn = (new Transaction\Core)->createFromRefund($refund);
 
             $this->repo->saveOrFail($txn);
+            
+            $this->trace->info(
+                TraceCode::REFUND_TRANSACTION_CREATED,
+                [
+                    'payment_id'        => $payment->getId(),
+                    'refund_id'         => $refund->getId(),
+                    'transaction_id'    => $txn->getId(),
+                    'auth_capture'      => $supportsAuthAndCapture,
+                    'force_refund_txn'  => $forceRefundTransaction,
+                ]);
 
             return $txn;
         }

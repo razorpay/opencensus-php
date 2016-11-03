@@ -26,7 +26,7 @@ class Kernel extends HttpKernel
             \RZP\Http\Middleware\EncryptCookies::class,
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
             \Illuminate\Session\Middleware\StartSession::class,
-            \RZP\Http\Middleware\AfterRequest::class,
+            \RZP\Http\Middleware\Segment::class,
             // \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             // \RZP\Http\Middleware\VerifyCsrfToken::class,
         ],

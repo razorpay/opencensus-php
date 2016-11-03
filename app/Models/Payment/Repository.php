@@ -8,6 +8,7 @@ use RZP\Models\Card;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Models\Payment;
+use RZP\Models\Payment\Verify;
 use RZP\Models\Transaction;
 use RZP\Constants\Table;
 use RZP\Exception;
@@ -209,13 +210,14 @@ class Repository extends Base\Repository
         }
 
         // For created, we only look at the payment status.
-        if ($paymentStatus !== Payment\Status::CREATED)
+        if (($paymentStatus !== Payment\Status::CREATED) and
+            ($verifyStatus !== Verify\Status::ERROR))
         {
-            $this->addWhereConditionsForVerify($minimumTime, $verifyBoundary, $query);
+            $this->addWhereConditionsUsingVerifyBoundary($minimumTime, $verifyBoundary, $query);
         }
         else
         {
-            $query->where(Payment\Entity::CREATED_AT, '<=', $minimumTime);
+            $this->addWhereConditionsUsingMinimumTime($minimumTime, $query);
         }
 
         // Sample Query
@@ -246,15 +248,26 @@ class Repository extends Base\Repository
     }
 
     /**
+     * Add Where Condition for Created Payments, And Verify Failed Payments
+     *
+     * @param int       $minimumTime  filter to remove Payments which are created before $ts seconds
+     * @param BuilderEx $query        original query
+     * @return void
+     */
+    protected function addWhereConditionsUsingMinimumTime($minimumTime, $query)
+    {
+            $query->where(Payment\Entity::CREATED_AT, '<=', $minimumTime);
+    }
+
+    /**
      * Process min_time and verify_boundary array and return where and orWhere Condition
      *
-     * @param int   $minimumTime      filter to remove Payments which are created before $ts seconds
-     * @param array $verifyBoundaries array with Key as bucket and value as time for that bucket
-     * @return array with where and orWhere Condition
-     *         where condition will be created using $ts
-     *         orWhere condition will be created using $verifyBoundary
+     * @param int       $minimumTime      filter to remove Payments which are created before $ts seconds
+     * @param array     $verifyBoundaries array with Key as bucket and value as time for that bucket
+     * @param BuilderEx $query            original query
+     * @return void
      */
-    protected function addWhereConditionsForVerify($minimumTime, $verifyBoundaries, $query)
+    protected function addWhereConditionsUsingVerifyBoundary($minimumTime, $verifyBoundaries, $query)
     {
         $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
 
@@ -439,7 +452,7 @@ class Repository extends Base\Repository
 
     public function getCurrentMonthVolume()
     {
-        $from = Carbon::today('Asia/Kolkata')->startOfMonth()->timestamp;
+        $from = Carbon::yesterday('Asia/Kolkata')->startOfMonth()->timestamp;
         $to = Carbon::today('Asia/Kolkata')->timestamp;
 
         return $this->getPaymentVolumeBetweenTimestamp($from, $to);

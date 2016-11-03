@@ -643,7 +643,12 @@ class Entity extends Base\PublicEntity
 
     public function hasTransaction()
     {
-        return ($this->isAttributeNull(self::TRANSACTION_ID));
+        return ($this->isAttributeNotNull(self::TRANSACTION_ID) === false);
+    }
+
+    public function hasOrder()
+    {
+        return ($this->isAttributeNotNull(self::ORDER_ID));
     }
 
     public function isCaptured()
@@ -936,7 +941,7 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::OTP_ATTEMPTS);
     }
-    
+
     public function getVerifyBucket()
     {
         return $this->getAttribute(self::VERIFY_BUCKET);
@@ -1053,16 +1058,23 @@ class Entity extends Base\PublicEntity
         return $token;
     }
 
-    public function setPublicOrderIdAttribute(Array & $array)
+    public function setPublicOrderIdAttribute(array & $array)
     {
         if (isset($array[self::ORDER_ID]))
         {
-            $array[self::ORDER_ID] =
-                Order\Entity::getIdPrefix() . $this->getAttribute(self::ORDER_ID);
+            $array[self::ORDER_ID] = Order\Entity::getSignedId($array[self::ORDER_ID]);
         }
     }
 
-    public function setPublicCardIdAttribute(Array & $array)
+    public function getPublicOrderId()
+    {
+        if ($this->hasOrder())
+        {
+            return Order\Entity::getSignedId($this->getApiOrderId());
+        }
+    }
+
+    public function setPublicCardIdAttribute(array & $array)
     {
         if (isset($array[self::CARD_ID]))
         {
@@ -1071,7 +1083,7 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function setPublicCustomerIdAttribute(Array & $array)
+    public function setPublicCustomerIdAttribute(array & $array)
     {
         if (isset($array[self::CUSTOMER_ID]))
         {
@@ -1085,7 +1097,7 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function setPublicTokenIdAttribute(Array & $array)
+    public function setPublicTokenIdAttribute(array & $array)
     {
         if (isset($array[self::TOKEN_ID]))
         {

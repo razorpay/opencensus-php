@@ -105,4 +105,9 @@ class EloquentEx extends \Razorpay\Spine\Entity
     {
         throw new Exception\RuntimeException('Use createOrFail via Repository');
     }
+
+    protected function isAttributeNotNull($attr)
+    {
+        return (is_null($this->getAttribute($attr)) === false);
+    }
 }
