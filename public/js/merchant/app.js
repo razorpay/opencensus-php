@@ -18,7 +18,8 @@ var app = angular.module('app', [
   'ngBusy',
   'noCAPTCHA',
   'angulartics',
-  'angulartics.segment.io'
+  'angulartics.segment.io',
+  'react'
 ]).run([
   '$rootScope',
   '$state',
@@ -165,7 +166,17 @@ var app = angular.module('app', [
     }).state('app.profile', {
       url: '/profile',
       templateUrl: 'tpl/app_profile.html'
-    })  //Guest Routes
+    })
+
+    // React
+
+    .state('app.invoices', {
+      url: '/invoices',
+      template: '<invoices-list />'
+    })
+
+
+      //Guest Routes
 .state('access', {
       url: '/access',
       template: '<div ui-view class="fade-in-right-big smooth"></div>',

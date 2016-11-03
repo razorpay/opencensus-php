@@ -1,20 +1,20 @@
 'use strict'
 
 const gulp = require('gulp')
+const webpack = require('webpack')
 const through = require('through')
 const plumber = require('gulp-plumber')
 const run = require('run-sequence')
 const lazypipe = require('lazypipe')
-
 const stylus = require('gulp-stylus')
 const cssnano = require('gulp-cssnano')
 const bootstrap = require('bootstrap-styl')
 const autoprefixer = require('gulp-autoprefixer')
-
 const concatMulti = require('gulp-concat-multi')
 const uglify = require('gulp-uglify')
-
 const rev = require('gulp-rev')
+const webpackConfig = require('./webpack.config.js')
+
 const revMap = {}
 
 // functions and variables to be passed to blade.php.tmpl file
@@ -87,7 +87,8 @@ const concatJs = lazypipe()
       'public/js/libs/angulartics.min.js',
       'public/js/libs/angulartics-segmentio.min.js',
       'public/js/libs/filesaver.min.js',
-      'public/js/libs/jquery-tourbus.js'
+      'public/js/libs/jquery-tourbus.js',
+      'node_modules/ngreact/ngReact.js'
     ],
 
     'js/generated/merchant.js': [
@@ -129,12 +130,48 @@ gulp.task('tmpl', ()=> {
     .pipe(gulp.dest('resources/views'))
 })
 
+const runWebpack = (webpackConfig, cb) => {
+  webpack(webpackConfig, (err, stats) => {
+    if (err) throw new Error(err)
+    console.log(stats.toString({
+      colors: true
+    }))
+    cb()
+  })
+}
+
+gulp.task('webpack', (cb) => {
+  runWebpack(Object.create(webpackConfig), cb)
+})
+
+gulp.task('webpack:prod', (cb) => {
+  let config = Object.create(webpackConfig)
+  config.plugins = config.plugins.concat(
+    new webpack.DefinePlugin({
+      'process.env': {
+        NODE_ENV: JSON.stringify('production')
+      }
+    }),
+    new webpack.optimize.DedupePlugin(),
+    new webpack.optimize.UglifyJsPlugin({
+      compress: {
+        warnings: false
+      },
+      output: {
+        comments: false
+      }
+    })
+  )
+
+  runWebpack(config, cb)
+})
+
 gulp.task('default', ()=> {
-  run(['css:prod', 'js:prod'], 'tmpl')
+  run(['css:prod', 'js:prod'], 'webpack:prod', 'tmpl')
 })
 
 gulp.task('dev', ()=> {
-  run(['css', 'js'], 'tmpl')
+  run(['css', 'js'], 'webpack', 'tmpl')
 })
 
 gulp.task('watch', ['dev'], ()=> {
