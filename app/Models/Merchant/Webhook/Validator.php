@@ -2,9 +2,9 @@
 
 namespace RZP\Models\Merchant\Webhook;
 
-use RZP\Models\Base;
-use RZP\Models\Merchant;
+use RZP\Base;
 use RZP\Exception;
+use RZP\Models\Merchant;
 
 class Validator extends Base\Validator
 {

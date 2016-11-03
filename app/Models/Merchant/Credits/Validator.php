@@ -2,11 +2,11 @@
 
 namespace RZP\Models\Merchant\Credits;
 
-use RZP\Models\Base;
-use RZP\Models\Merchant;
-use RZP\Models\Merchant\Credits;
+use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
+use RZP\Models\Merchant\Credits;
 
 class Validator extends Base\Validator
 {
