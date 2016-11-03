@@ -157,7 +157,8 @@ trait Inquiry
         if (($gatewayPayment->getResult() !== null) and
             ($gatewayPayment->getAction() === Action::PURCHASE))
         {
-            if ($content['result'] === Result::CAPTURED)
+            if ((isset($content['result']) === true) and
+                ($content['result'] === Result::CAPTURED))
             {
                 $gatewayPayment->setStatus(Status::CAPTURED);
             }

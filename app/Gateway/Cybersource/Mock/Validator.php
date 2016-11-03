@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Cybersource\Mock;
 
-use RZP\Models\Base;
+use RZP\Base;
 use RZP\Models\Card;
 use RZP\Exception;
 use RZP\Error\ErrorCode;

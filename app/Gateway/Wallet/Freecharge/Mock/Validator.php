@@ -2,8 +2,8 @@
 
 namespace RZP\Gateway\Wallet\Freecharge\Mock;
 
+use RZP\Base;
 use RZP\Gateway\Wallet\Freecharge\ResponseCodeMap;
-use RZP\Models\Base;
 
 class Validator extends Base\Validator
 {

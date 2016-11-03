@@ -46,6 +46,14 @@ trait PaymentEbsTrait
         });
     }
 
+    public function getFatalErrorInVerify()
+    {
+        $this->mockServerContentFunction(function (& $content)
+        {
+           throw new FatalThrowableError();
+        });
+    }
+
     public function getTimeoutInVerify()
     {
         $this->mockServerContentFunction(function (& $content)

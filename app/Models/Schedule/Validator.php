@@ -2,9 +2,9 @@
 
 namespace RZP\Models\Schedule;
 
+use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
-use RZP\Models\Base;
 use Carbon\Carbon;
 
 class Validator extends Base\Validator
