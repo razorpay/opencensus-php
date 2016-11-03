@@ -282,6 +282,26 @@ class Validator extends Base\Validator
         }
     }
 
+    public function getExpectedInputKeys(string $gateway)
+    {
+        $default = ['card', 'shared', 'netbanking', 'merchant_id', 'category', Entity::NETWORK_CATEGORY];
+
+        if (Payment\Gateway::isValidGateway($gateway) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Not a valid gateway: ' . $gateway,
+                Entity::GATEWAY);
+        }
+
+        $op = $gateway . '_terminal';
+
+        $ruleOp = $this->getRulesVariableName($op);
+
+        $inputKeys = array_keys(static::$$ruleOp);
+
+        return array_merge($default, $inputKeys);
+    }
+
     public function usedTerminalValidator($terminal, $input)
     {
         if (in_array($terminal->getGateway(), self::$editTerminalGateways))

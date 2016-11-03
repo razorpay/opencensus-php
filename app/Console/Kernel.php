@@ -20,6 +20,7 @@ class Kernel extends ConsoleKernel
         Commands\RzpDbRefresh::class,
         Commands\IinImport::class,
         Commands\UidCheckDigitVerify::class,
+        Commands\CopyTerminal::class
     ];
 
     /**
