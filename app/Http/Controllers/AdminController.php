@@ -74,4 +74,29 @@ class AdminController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function createOrganization()
+    {
+        $input = Request::all();
+
+        $data = (new Admin\Organization\Service)->createOrganization($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function deleteOrganization(string $id)
+    {
+        $data = (new Admin\Organization\Service)->deleteOrganization($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function putOrganization(string $id)
+    {
+        $input = Request::all();
+
+        $data = (new Admin\Organization\Service)->editOrganization($id, $input);
+
+        return ApiResponse::json($data);
+    }
 }

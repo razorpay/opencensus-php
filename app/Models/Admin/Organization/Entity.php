@@ -3,21 +3,15 @@
 namespace RZP\Models\Admin\Organization;
 
 use App;
-use RZP\Models\Base;
 use RZP\Constants\Table;
-use RZP\Models\Address;
-use RZP\Models\Merchant\Account;
-use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {
     const NAME                  = 'name';
-    const OWNER_ID              = 'owner_id';
     const EMAIL                 = 'email';
-    const AUTH_TYPE             = 'auth_type';
-    const ALLOWED_EMAIL_DOMAINS = 'allowed_email_domains';
-    const CREATED_AT            = 'created_at';
-    const UPDATED_AT            = 'updated_at';
+    const AUTH                  = 'auth';
+    const EMAIL_DOMAINS         = 'email_domains';
     const DELETED_AT            = 'deleted_at';
     const LOGO_URL              = 'logo_url';
 
@@ -29,42 +23,44 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
-    protected $fillable = array(
+    protected $fillable = [
         self::NAME,
-        self::OWNER_ID,
         self::EMAIL,
-        self::AUTH_TYPE,
-        self::ALLOWED_TYPE_DOMAINS,
+        self::AUTH,
+        self::EMAIL_DOMAINS,
         self::LOGO_URL,
-    );
+    ];
 
-    protected $visible = array(
+    protected $visible = [
         self::NAME,
-        self::OWNER_ID,
         self::EMAIL,
-        self::AUTH_TYPE,
-        self::ALLOWED_TYPE_DOMAINS,
+        self::AUTH,
+        self::EMAIL_DOMAINS,
         self::LOGO_URL,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
-    );
+    ];
 
-    protected $public = array(
+    protected $public = [
         self::ID,
         self::NAME,
         self::EMAIL,
-        self::OWNER_ID,
-        self::ALLOWED_EMAIL_DOMAINS,
+        self::EMAIL_DOMAINS,
         self::LOGO_URL,
-        self::AUTH_TYPE,
+        self::AUTH,
         self::CREATED_AT,
-    );
+    ];
 
-    protected $defaults = array(
-        self::ALLOWED_EMAIL_DOMAINS => [],
-        self::AUTH_TYPE => [],
-    );
+    protected $defaults = [
+        self::EMAIL_DOMAINS => [],
+        self::AUTH => null,
+    ];
 
-    protected $guarded = array(self::ID);
+    protected $guarded = [self::ID];
+
+    public function owners()
+    {
+        // Returns the list of org's owners
+    }
 }

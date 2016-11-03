@@ -22,26 +22,19 @@ class Repository extends Base\Repository
 
     protected $entity = 'organization';
 
-    // These are merchant allowed params to search on. These also act as default params.
-    protected $entityFetchParamRules = array(
-        Entity::OWNER_ID        => 'sometimes|string|size:20',
-    );
-
     // These are proxy allowed params to search on.
     protected $proxyFetchParamRules = array(
         Entity::EMAIL                 => 'sometimes',
         Entity::STATUS                => 'sometimes|string',
-        Entity::AUTH_TYPE             => 'sometimes|string|max:500',
+        Entity::AUTH                  => 'sometimes|string|max:500',
         Entity::ALLOWED_EMAIL_DOMAINS => 'sometimes|string|max:500',
-        Entity::OWNER_ID              => 'sometimes|string|size:14',
     );
 
     // These are admin allowed params to search on.
     protected $appFetchParamRules = array(
         Entity::EMAIL                 => 'sometimes',
         Entity::STATUS                => 'sometimes|string',
-        Entity::AUTH_TYPE             => 'sometimes|string|max:500',
+        Entity::AUTH                  => 'sometimes|string|max:500',
         Entity::ALLOWED_EMAIL_DOMAINS => 'sometimes|string|max:500',
-        Entity::OWNER_ID              => 'sometimes|string|size:14',
     );
 }

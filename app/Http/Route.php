@@ -268,6 +268,11 @@ final class Route
         'gateway_fetch_absence'                   => ['get',      'gateway/absence',                                'GatewayController@getAbsentGateways'                               ],
         'scorecard'                               => ['get',      'scorecard',                                      'AdminController@getScorecard'                                      ],
         'billdesk_reconcile_cancelled'            => ['post',     'reconciliate/{gateway}/cancelled',               'ReconciliatorController@postReconciliateCancelledTransactions'     ],
+
+        // Routes for the admin roles project
+        'organization_create'                     => ['post',     'organizations/create',                           'AdminController@createOrganization'                                ],
+        'organization_delete'                     => ['delete',   'organizations/{id}',                             'AdminController@deleteOrganization'                                ],
+        'organization_edit'                       => ['put',      'organizations/{id}',                             'AdminController@putOrganization'                                   ],
     );
 
     public static $public = array(
