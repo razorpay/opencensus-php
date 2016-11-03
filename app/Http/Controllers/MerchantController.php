@@ -169,6 +169,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postCopyTerminal($mid, $tid)
+    {
+        $input = Request::all();
+
+        $data = (new Terminal\Service)->copyTerminal($mid, $tid, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getTerminals($mid)
     {
         $data = (new Terminal\Service)->getTerminals($mid);

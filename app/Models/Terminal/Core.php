@@ -24,6 +24,51 @@ class Core extends Base\Core
         return $terminal;
     }
 
+    public function copy($input, $terminal)
+    {
+        if ($terminal->isDeleted() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_DELETED_TERMINAL_CANNOT_BE_COPIED);
+        }
+
+        if ($terminal->isShared() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SHARED_TERMINAL_CANNOT_BE_COPIED);
+        }
+
+        $merchantIds = $input['merchant_ids'];
+
+        $terminalInput = $terminal->toArrayWithSecrets();
+
+        $terminalRules = (new Validator)->getExpectedInputKeys($terminalInput['gateway']);
+        $notRequiredKeys = array_diff(array_keys($terminal), $terminalRules);
+
+        foreach ($notRequiredKeys as $key)
+        {
+            unset($terminalInput[$key]);
+        }
+
+        $response = [];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            $terminalInput['merchant_id'] = $merchantId;
+
+            $newTerminal = (new Terminal\Entity)->build($terminalInput);
+
+            $this->repo->saveOrFail($newTerminal);
+
+            $response[] = [
+                'terminal' => $newTerminal->getId(),
+                'merchant' => $merchantId
+            ];
+        }
+
+        return $response;
+    }
+
     public function edit($terminal, $input)
     {
         $this->validateExistingTerminal($terminal);
