@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import { Provider } from 'react-redux'
 import NgRouterProvider from 'rzp/NgRouterProvider'
+import store from './store'
 
 import InvoicesList from './containers/Invoices/List'
 

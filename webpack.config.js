@@ -27,7 +27,7 @@ webpackConfig.entry = {
 // ------------------------------------
 webpackConfig.output = {
   path: './public/react/dist',
-  filename: '[name].js'
+  filename: '[name]_react.js'
 }
 
 // ------------------------------------

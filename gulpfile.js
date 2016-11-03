@@ -88,14 +88,15 @@ const concatJs = lazypipe()
       'public/js/libs/angulartics-segmentio.min.js',
       'public/js/libs/filesaver.min.js',
       'public/js/libs/jquery-tourbus.js',
-      'node_modules/ngreact/ngReact.js'
     ],
 
     'js/generated/merchant.js': [
       'public/js/libs/angular-recaptcha.js',
       'public/js/merchant/**/*.js',
       'public/js/*.js',
-      'public/js/libs/moment.min.js'
+      'public/js/libs/moment.min.js',
+      'public/react/dist/merchant_react.js',
+      'node_modules/ngreact/ngReact.js'
     ],
 
     'js/generated/admin.js': [
@@ -106,9 +107,9 @@ const concatJs = lazypipe()
   })
 
 
-gulp.task('js', ()=> concatJs().pipe(gulp.dest('public')))
+gulp.task('js', ['webpack'], () => concatJs().pipe(gulp.dest('public')))
 
-gulp.task('js:prod', ()=> {
+gulp.task('js:prod', ['webpack:prod'], () => {
   return concatJs()
     .pipe(uglify())
     .on('error', function(e){
@@ -167,11 +168,11 @@ gulp.task('webpack:prod', (cb) => {
 })
 
 gulp.task('default', ()=> {
-  run(['css:prod', 'js:prod'], 'webpack:prod', 'tmpl')
+  run(['css:prod', 'js:prod'], 'tmpl')
 })
 
 gulp.task('dev', ()=> {
-  run(['css', 'js'], 'webpack', 'tmpl')
+  run(['css', 'js'], 'tmpl')
 })
 
 gulp.task('watch', ['dev'], ()=> {
@@ -179,6 +180,7 @@ gulp.task('watch', ['dev'], ()=> {
   gulp.watch([
     'public/js/*.js',
     'public/js/admin/**/*.js',
-    'public/js/merchant/**/*.js'
+    'public/js/merchant/**/*.js',
+    'public/react/**/*'
   ], ['js'])
 })
