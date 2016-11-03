@@ -3,6 +3,9 @@
 namespace RZP\Tests\Functional\Gateway\AxisMigs;
 
 use Mockery;
+use Carbon\Carbon;
+use RZP\Models\Payment;
+use RZP\Tests\Functional\Fixtures;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error;
@@ -33,10 +36,15 @@ class AxisGatewayTest extends TestCase
         $payment = $this->doAuthPayment($payment);
 
         $txn = $this->getLastEntity('transaction', true);
-        $this->assertNotNull($txn);
+        $this->assertNull($txn);
 
         $payment = $this->getLastEntity('payment', true);
-        $this->assertNotNull($payment['transaction_id']);
+        $this->assertNull($payment['transaction_id']);
+
+        $migs = $this->getLastEntity('axis_migs', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testPaymentAxisMigsEntity'], $migs);
 
         $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
 
@@ -49,10 +57,10 @@ class AxisGatewayTest extends TestCase
 
         $this->assertTestResponse($payment);
 
-        $payment = $this->getLastEntity('axis_migs', true);
+        $migs = $this->getLastEntity('axis_migs', true);
 
         $this->assertArraySelectiveEquals(
-            $this->testData['testPaymentAxisMigsEntity'], $payment);
+            $this->testData['testPaymentAxisMigsCaptureEntity'], $migs);
     }
 
     public function testMasterCardPayment()
@@ -120,7 +128,8 @@ class AxisGatewayTest extends TestCase
 
         $this->verifyPayment($payment['id']);
         $payment = $this->getLastEntity('axis_migs', true);
-        $this->assertEquals('pay', $payment['vpc_Command']);
+
+        $this->assertEquals('capture', $payment['vpc_Command']);
     }
 
     public function testPaymentVerifyFailed()
