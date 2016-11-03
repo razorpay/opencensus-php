@@ -374,6 +374,10 @@ class VerifyTest extends TestCase
             'filter'  => 'verify_error'
         ];
 
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['verify_bucket'], 0);
+
         $this->assertContent($content,  $resultData);
 
         $time->addDay();
