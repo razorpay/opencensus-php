@@ -74,6 +74,8 @@ class Gateway extends Base\Gateway
 
     const TIMEOUT = 30;
 
+    const VERIFY_TIMEOUT = 30;
+
     /**
      * Parameters required to construct request
      * for enrolling a card
@@ -602,6 +604,12 @@ class Gateway extends Base\Gateway
 
     protected function getTimeout()
     {
+        // Increasing timeout for verify Request
+        if ($this->action === 'verify')
+        {
+            return static::VERIFY_TIMEOUT;
+        }
+
         return static::TIMEOUT;
     }
 
