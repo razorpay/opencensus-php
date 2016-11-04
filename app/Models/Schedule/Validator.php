@@ -65,7 +65,7 @@ class Validator extends Base\Validator
         $weekend = [Carbon::SATURDAY, Carbon::SUNDAY];
 
         if ((isset($input[Entity::ANCHOR]) === true) and
-            (in_array($input[Entity::ANCHOR], $weekend, true) === true))
+            (in_array(intval($input[Entity::ANCHOR]), $weekend, true) === true))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_SCHEDULE_WEEKEND_ANCHOR_NOT_PERMITTED);
