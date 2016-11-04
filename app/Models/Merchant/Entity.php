@@ -184,7 +184,7 @@ class Entity extends Base\PublicEntity
 
     public function isFeatureEnabled($feature)
     {
-        return (in_array($feature, $this->getFeatures())) or
+        return (in_array($feature, $this->features())) or
             $this->checkOldFeatures($feature);
     }
 
@@ -409,7 +409,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TRANSACTION_REPORT_EMAIL);
     }
 
-    public function getFeatures()
+    public function features()
     {
         return $this->morphMany(\RZP\Models\Feature\Entity::class, 'entity')
                     ->get()->pluck(\RZP\Models\Feature\Entity::NAME)->toArray();

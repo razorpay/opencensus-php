@@ -354,7 +354,7 @@ class AuthorizeTest extends TestCase
     {
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_payumoney_terminal');
 
-        $this->fixtures->merchant->addFeature('s2swallet');
+        $this->fixtures->merchant->addFeatures(['s2swallet']);
 
         $this->fixtures->merchant->enableWallet('10000000000000', 'payumoney');
 
@@ -369,7 +369,7 @@ class AuthorizeTest extends TestCase
     {
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_mobikwik_terminal');
 
-        $this->fixtures->merchant->addFeature('s2swallet');
+        $this->fixtures->merchant->addFeatures(['s2swallet']);
 
         $this->fixtures->merchant->enableMobikwik('10000000000000');
 

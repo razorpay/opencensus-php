@@ -41,9 +41,7 @@ class Service extends Base\Service
 	{
 		$feature = $this->repo->feature->findOrFailPublic($id);
 
-        $this->trace->info(TraceCode::FEATURE_DELETE_REQUEST, [
-            'msg' => TraceCode::getMessage(TraceCode::FEATURE_DELETE_REQUEST)
-        ]);
+        $this->trace->info(TraceCode::FEATURE_DELETE_REQUEST, $feature->toArrayPublic());
 
 		$this->repo->deleteOrFail($feature);
 
@@ -60,13 +58,15 @@ class Service extends Base\Service
 			foreach ($merchantFeatures as $merchantFeature)
 			{
 				$featureParam = [
-					Entity::ENTITY_ID      => $merchantFeature->id,
-					'names'                => $merchantFeature->features,
-					Entity::ENTITY_TYPE	   => 'merchant'
+					Entity::ENTITY_ID      => $merchantFeature->getId(),
+					Constants::NAMES       => $merchantFeature->features,
+					Entity::ENTITY_TYPE	   => \RZP\Constants\Entity::MERCHANT
 				];
                 try
                 {
                     $response->push($this->addFeatures($featureParam));
+                    $merchantFeature->features = '';
+                    $this->repo->saveOrFail($merchantFeature);
                 }
                 catch (Exception $e)
                 {

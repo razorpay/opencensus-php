@@ -603,7 +603,7 @@ class SavedCardsPaymentCreateTest extends TestCase
             ],
         ];
 
-        $this->fixtures->merchant->addFeature('cardsaving');
+        $this->fixtures->merchant->addFeatures(['cardsaving']);
 
         $this->runRequestResponseFlow($data);
 

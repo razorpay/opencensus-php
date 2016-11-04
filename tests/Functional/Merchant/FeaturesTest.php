@@ -37,17 +37,17 @@ class FeaturesTest extends TestCase
 
     public function testDeleteFeatureFromMerchant()
     {
-        $feature = $this->fixtures->merchant->addFeature('dummy');
+        $features = $this->fixtures->merchant->addFeatures(['dummy']);
 
         $request = [
-            'url'       => '/features/'.$feature->getid(),
+            'url'       => '/features/'.$features->first()->getId(),
             'method'    => 'delete'
         ];
 
         $content = $this->makeRequestAndGetContent($request);
 
         $resultData = [
-            "id"            => (string)$feature->getId(),
+            "id"            => (string)$features->first()->getId(),
             "name"          => 'dummy',
             "entity_id"     => '10000000000000',
             "entity_type"   => 'RZP\\Models\\Merchant\\Entity'
@@ -107,7 +107,7 @@ class FeaturesTest extends TestCase
     {
 
         $this->fixtures->merchant->editFeatures('dummy');
-        $this->fixtures->merchant->addFeature('dummy');
+        $this->fixtures->merchant->addFeatures(['dummy']);
 
         $this->ba->privateAuth();
 

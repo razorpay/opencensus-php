@@ -265,12 +265,12 @@ final class Route
         'gateway_fetch_absence'                   => ['get',      'gateway/absence',                                'GatewayController@getAbsentGateways'                               ],
         'scorecard'                               => ['get',      'scorecard',                                      'AdminController@getScorecard'                                      ],
         'billdesk_reconcile_cancelled'            => ['post',     'reconciliate/{gateway}/cancelled',               'ReconciliatorController@postReconciliateCancelledTransactions'     ],
-        'entity_add_feature'                      => ['post',     'features/',                                      'FeatureController@addFeatures'],
-        'entity_delete_feature'                   => ['delete',   'features/{id}',                                  'FeatureController@deleteFeature'],
-        'entity_get_features'                     => ['get',      'features/{entityType}/{entityId}',               'FeatureController@getFeatures'],
+        'feature_add_entity'                      => ['post',     'features/',                                      'FeatureController@addFeatures'],
+        'feature_delete_entity'                   => ['delete',   'features/{id}',                                  'FeatureController@deleteFeature'],
+        'feature_get_entitities'                  => ['get',      'features/{entityType}/{entityId}',               'FeatureController@getFeatures'],
         'migrate_merchant_features'               => ['put',      'features/migrate',                               'FeatureController@migrateMerchantFeatures'],
-        'multi_assign_feature'                    => ['post',     'features/multi_assign',                          'FeatureController@multiAssignFeature'],
-        'multi_remove_feature'                    => ['post',     'features/multi_remove',                          'FeatureController@multiRemoveFeature'],
+        'feature_multi_assign'                    => ['post',     'features/multi_assign',                          'FeatureController@multiAssignFeature'],
+        'feature_multi_remove'                    => ['post',     'features/multi_remove',                          'FeatureController@multiRemoveFeature'],
     );
 
     public static $public = array(
@@ -479,12 +479,12 @@ final class Route
         'schedule_get',
         'schedule_update',
         'schedule_assign',
-        'entity_get_features',
-        'entity_add_feature',
-        'entity_delete_feature',
+        'feature_get_entitities',
+        'feature_add_entity',
+        'feature_delete_entity',
         'migrate_merchant_features',
-        'multi_assign_feature',
-        'multi_remove_feature'
+        'feature_multi_assign',
+        'feature_multi_remove'
     );
 
     public static $proxy = array(

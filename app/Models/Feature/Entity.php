@@ -6,9 +6,9 @@ use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {
-	const NAME 				= 'name';
-	const ENTITY_ID 		= 'entity_id';
-	const ENTITY_TYPE 		= 'entity_type';
+	const NAME             = 'name';
+	const ENTITY_ID        = 'entity_id';
+	const ENTITY_TYPE      = 'entity_type';
 
 	protected $table = \RZP\Constants\Table::FEATURE;
 
