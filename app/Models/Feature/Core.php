@@ -20,7 +20,7 @@ class Core extends Base\Core
             ->pluck(Entity::NAME)
             ->toArray();
 
-        if (in_array($feature->getName(), $assignedFeatureNames) === false)
+        if (in_array($feature->getName(), $assignedFeatureNames, true) === false)
         {
             $this->repo->saveOrFail($feature);
 

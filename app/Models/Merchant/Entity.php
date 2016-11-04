@@ -178,7 +178,7 @@ class Entity extends Base\PublicEntity
 
     public function isFeatureEnabled($feature)
     {
-        return (in_array($feature, $this->features())) or
+        return (in_array($feature, $this->features(), true)) or
             $this->checkOldFeatures($feature);
     }
 
@@ -421,7 +421,7 @@ class Entity extends Base\PublicEntity
 
     protected function checkOldFeatures($feature)
     {
-        if (in_array($feature, $this->getOldFeatures()) === true)
+        if (in_array($feature, $this->getOldFeatures(), true) === true)
         {
             return true;
         }
