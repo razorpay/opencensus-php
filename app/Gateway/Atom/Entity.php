@@ -31,8 +31,6 @@ class Entity extends Base\PublicEntity
         'gateway_result_description',
         'method');
 
-    protected $guarded = array();
-
     protected static $sign = 'pay';
 
     protected $entity = 'atom';

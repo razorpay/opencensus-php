@@ -14,8 +14,6 @@ class Entity extends Base\PublicEntity
 
     protected $entity               = 'credits';
 
-    protected $table                = \RZP\Constants\Table::CREDITS;
-
     protected $generateIdOnCreate = true;
 
     protected $fillable = array(
