@@ -50,7 +50,7 @@ class FeaturesTest extends TestCase
             "id"            => (string)$features->first()->getId(),
             "name"          => 'dummy',
             "entity_id"     => '10000000000000',
-            "entity_type"   => 'RZP\\Models\\Merchant\\Entity'
+            "entity_type"   => 'merchant'
         ];
 
         $this->assertArraySelectiveEquals($resultData, $content);

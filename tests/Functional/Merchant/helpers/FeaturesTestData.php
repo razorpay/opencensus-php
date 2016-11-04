@@ -21,12 +21,12 @@ return [
                 [
                     'name'              => 'dummy',
                     'entity_id'         => '10000000000000',
-                    'entity_type'       => "RZP\\Models\\Merchant\\Entity"
+                    'entity_type'       => "merchant"
                 ],
                 [
                     'name'              => 's2s',
                     'entity_id'         => '10000000000000',
-                    'entity_type'       => "RZP\\Models\\Merchant\\Entity"
+                    'entity_type'       => "merchant"
                 ]
             ],
         ],
@@ -68,15 +68,9 @@ return [
         ],
         'response' => [
             'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::SERVER_ERROR,
-                ],
+                null
             ],
-            'status_code' => 500,
-        ],
-        'exception' => [
-            'class'                 => 'RZP\Exception\DbQueryException',
-            'internal_error_code'   => ErrorCode::SERVER_ERROR_DB_QUERY_FAILED,
+            'status_code' => 200,
         ]
     ],
 
@@ -92,17 +86,17 @@ return [
                 [
                     'name'          => 'dummy',
                     'entity_id'     => '10000000000001',
-                    'entity_type'   => "RZP\\Models\\Merchant\\Entity"
+                    'entity_type'   => "merchant"
                 ],
                 [
                     'name'          => 'dummy',
                     'entity_id'     => '10000000000002',
-                    'entity_type'   => "RZP\\Models\\Merchant\\Entity"
+                    'entity_type'   => "merchant"
                 ],
                 [
                     'name'          => 'dummy',
                     'entity_id'     => '10000000000003',
-                    'entity_type'   => "RZP\\Models\\Merchant\\Entity"
+                    'entity_type'   => "merchant"
                 ],
             ]
         ]
@@ -123,17 +117,17 @@ return [
                 [
                     'name'          => 'dummy',
                     'entity_id'     => '10000000000001',
-                    'entity_type'   => "RZP\\Models\\Merchant\\Entity"
+                    'entity_type'   => "merchant"
                 ],
                 [
                     'name'          => 'dummy',
                     'entity_id'     => '10000000000002',
-                    'entity_type'   => "RZP\\Models\\Merchant\\Entity"
+                    'entity_type'   => "merchant"
                 ],
                 [
                     'name'          => 'dummy',
                     'entity_id'     => '10000000000003',
-                    'entity_type'   => "RZP\\Models\\Merchant\\Entity"
+                    'entity_type'   => "merchant"
                 ],
             ]
         ]
@@ -153,17 +147,17 @@ return [
                 [
                     'name'          => 'dummy',
                     'entity_id'     => '10000000000001',
-                    'entity_type'   => "RZP\\Models\\Merchant\\Entity"
+                    'entity_type'   => "merchant"
                 ],
                 [
                     'name'          => 'dummy',
                     'entity_id'     => '10000000000002',
-                    'entity_type'   => "RZP\\Models\\Merchant\\Entity"
+                    'entity_type'   => "merchant"
                 ],
                 [
                     'name'          => 'dummy',
                     'entity_id'     => '10000000000003',
-                    'entity_type'   => "RZP\\Models\\Merchant\\Entity"
+                    'entity_type'   => "merchant"
                 ],
             ]
         ]
@@ -182,12 +176,12 @@ return [
                     [
                         "name"              => "dummy",
                         "entity_id"         => "10000000000000",
-                        "entity_type"       => "RZP\\Models\\Merchant\\Entity"
+                        "entity_type"       => "merchant"
                     ],
                     [
                         "name"              => "s2s",
                         "entity_id"         => "10000000000000",
-                        "entity_type"       => "RZP\\Models\\Merchant\\Entity"
+                        "entity_type"       => "merchant"
                     ],
                 ],
                 "all_features" => [
@@ -216,7 +210,7 @@ return [
             'content' => [
                 'name' => 'dummy',
                 'entity_id' => '10000000000000',
-                'entity_type' => 'RZP\\Models\\Merchant\\Entity'
+                'entity_type' => 'merchant'
             ]
         ]
     ],

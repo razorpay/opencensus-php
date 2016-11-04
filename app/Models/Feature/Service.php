@@ -9,7 +9,6 @@ use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
-
 	public function addFeatures($input)
 	{
 		$featureParams = $this->buildFeatureParams($input);
@@ -21,15 +20,12 @@ class Service extends Base\Service
 		return $features->toArray();
 	}
 
-	public function getFeatures(string $entityType, string $entityId)
+	public function getFeatures(string $entityId, string $entityType)
 	{
-		$entityType = Constants::ENTITY_MAP[$entityType];
-
 		$response = new Base\Collection;
 
 		$response['assigned_features'] = $this->repo->feature->
-				getFeaturesByEntityTypeAndId($entityType,
-				$entityId);
+				findByEntityIdAndType($entityId, $entityType);
 
 		// all_features is a list of currently available features in the system
 		$response['all_features'] = Constants::$allFeatures;
@@ -65,7 +61,7 @@ class Service extends Base\Service
                 try
                 {
                     $response->push($this->addFeatures($featureParam));
-                    $merchantFeature->features = '';
+                    $merchantFeature->features = null;
                     $this->repo->saveOrFail($merchantFeature);
                 }
                 catch (Exception $e)
@@ -88,7 +84,7 @@ class Service extends Base\Service
 
         foreach ($entityIds as $entityId) {
             $featureParam = [
-                Entity::ENTITY_TYPE     => Constants::ENTITY_MAP[$input[Entity::ENTITY_TYPE]],
+                Entity::ENTITY_TYPE     => $input[Entity::ENTITY_TYPE],
                 Entity::ENTITY_ID       => $entityId,
                 Entity::NAME            => $input[Entity::NAME]
             ];
@@ -117,9 +113,11 @@ class Service extends Base\Service
 
         foreach ($entityIds as $entityId)
         {
-            $feature = $this->repo->feature->findByNameAndEntityId($featureName, $entityId);
+            $feature = $this->repo->feature->findByEntityIdAndName(
+                        $entityId,
+                        $featureName);
 
-            if(is_null($feature) === false)
+            if ($feature !== null)
             {
                 $response->push($feature);
 
@@ -134,7 +132,7 @@ class Service extends Base\Service
 	{
 		$featureParams = new Base\Collection;
 
-		$entityType = Constants::ENTITY_MAP[$input[Entity::ENTITY_TYPE]];
+		$entityType = $input[Entity::ENTITY_TYPE];
 
 		$entityId = $input[Entity::ENTITY_ID];
 

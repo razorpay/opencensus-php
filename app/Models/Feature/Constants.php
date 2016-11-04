@@ -4,10 +4,6 @@ namespace RZP\Models\Feature;
 
 class Constants
 {
-    const ENTITY_MAP = [
-        "merchant" => \RZP\Models\Merchant\Entity::class
-    ];
-
     const ENTITY_IDS    = 'entity_ids';
     const NAMES         = 'names';
 

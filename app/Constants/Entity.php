@@ -93,6 +93,7 @@ class Entity
         self::BALANCE               => \RZP\Models\Merchant\Balance::class,
         self::CREDITS               => \RZP\Models\Merchant\Credits::class,
         self::METHODS               => \RZP\Models\Merchant\Methods::class,
+        self::MERCHANT              => \RZP\Models\Merchant::class,
         self::PRICING               => \RZP\Models\Pricing::class,
         self::WEBHOOK               => \RZP\Models\Merchant\Webhook::class,
         self::BILLDESK              => \RZP\Gateway\Billdesk::class,

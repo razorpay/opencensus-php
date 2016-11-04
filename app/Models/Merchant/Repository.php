@@ -163,6 +163,11 @@ class Repository extends Base\Repository
         return $merchant;
     }
 
+    /**
+     * Fetches merchant records which have features assigned in chunks of 200
+     * records and passes that to the closure argument for processing
+     * @param  Closure $processData Function to process the merchant records
+     */
     public function fetchMerchantFeatures(Closure $processData)
     {
         $this->newQuery()->whereNotNull(Entity::FEATURES)

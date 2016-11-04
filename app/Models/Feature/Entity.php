@@ -38,6 +38,21 @@ class Entity extends Base\PublicEntity
 		self::ENTITY_TYPE
 	];
 
+    public function getName()
+    {
+        return $this->getAttribute(self::NAME);
+    }
+
+    public function getEntityId()
+    {
+        return $this->getAttribute(self::ENTITY_ID);
+    }
+
+    public function getEntityType()
+    {
+        return $this->getAttribute(self::ENTITY_TYPE);
+    }
+
 	/**
 	 * Creates a polymorphic relation woth entities
 	 * implementing a morphMany association on the

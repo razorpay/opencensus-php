@@ -45,7 +45,7 @@ class FeatureController extends Controller
 
 	public function getFeatures(string $entityType, string $entityId)
 	{
-		$data = (new Feature\Service)->getFeatures($entityType, $entityId);
+		$data = (new Feature\Service)->getFeatures($entityId, $entityType);
 
 		return ApiResponse::json($data);
 	}

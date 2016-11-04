@@ -10,21 +10,22 @@ class Core extends Base\Core
 {
 	public function create($input)
 	{
-		try
-        {
-            $feature = (new Entity)->build($input);
+		$feature = (new Entity)->build($input);
 
+        $assignedFeatureNames = $this->repo
+            ->feature
+            ->findByEntityIdAndType($feature->getEntityId(),
+                $feature->getEntityType())
+            ->pluck(Entity::NAME)
+            ->toArray();
+
+        if (in_array($feature->getName(), $assignedFeatureNames) === false)
+        {
             $this->repo->saveOrFail($feature);
 
             return $feature;
         }
-        catch (QueryException $e)
-        {
-            throw new Exception\DbQueryException([
-                'name'          => $feature->name,
-                'entity_id'     => $feature->entity_id,
-                'entity_type'   => $feature->entity_type
-            ]);
-        }
+
+        return null;
 	}
 }

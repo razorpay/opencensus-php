@@ -13,19 +13,19 @@ class Repository extends Base\Repository
 
 	protected $entity = 'feature';
 
-	public function getFeaturesByEntityTypeAndId(string $entityType, string $entityId)
+	public function findByEntityIdAndType(string $entityId, string $entityType)
 	{
 		return $this->newQuery()
-				->where(Entity::ENTITY_TYPE, '=', $entityType)
 				->where(Entity::ENTITY_ID, '=', $entityId)
+                ->where(Entity::ENTITY_TYPE, '=', $entityType)
 				->get();
 	}
 
-    public function findByNameAndEntityId(string $featureName, string $entityId)
+    public function findByEntityIdAndName(string $entityId, string $featureName)
     {
         return $this->newQuery()
-                ->where(Entity::NAME, '=', $featureName)
                 ->where(Entity::ENTITY_ID, '=', $entityId)
+                ->where(Entity::NAME, '=', $featureName)
                 ->first();
     }
 }
