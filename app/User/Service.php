@@ -15,6 +15,7 @@ use App\Invitation;
 use App\Merchant;
 use App\MerchantDetails;
 use App\User;
+use App\Lead;
 
 use Queue;
 
@@ -100,6 +101,17 @@ class Service extends Base\Service
         if (! $user)
         {
             $user = $this->buildUserEntity($input);
+
+            // Update Leads as well
+            $lead = Lead\Entity::where('email', $user->email)->first();
+
+            if (! empty($lead))
+            {
+                $lead->registered = true;
+                $lead->registered_at = $user->created_at->timestamp;
+
+                $lead->save();
+            }
         }
 
         // These two branches are exclusive

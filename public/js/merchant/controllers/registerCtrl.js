@@ -14,6 +14,27 @@ app.controller('RegisterCtrl', [
   function ($scope, $http, $state, alertsFactory, user, transformRequestAsFormPost, $analytics, $location, $window, $cookies) {
     $scope.data = {};
 
+    if ($location.search().email) {
+      $scope.data.email = $location.search().email;
+
+      // XHR to save this email in a generic table
+      // so that even if the user doesn't signup we can
+      // re-target him.
+      var request = $http({
+        method: 'post',
+        url: '/user/track_lead',
+        data: { email: $scope.data.email }
+      });
+
+      request.success(function (data) {
+        if (data.success) {
+          // do nothing
+        }
+      }).error(function () {
+        // nothing to do
+      });
+    }
+
     if($location.search().invitation) {
       $scope.data.invitation = $location.search().invitation;
     }

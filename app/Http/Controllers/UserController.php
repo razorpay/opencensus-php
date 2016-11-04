@@ -6,6 +6,7 @@ use App\Http\AppResponse;
 use App\User;
 use App\MerchantDetails;
 use App\Merchant;
+use App\Lead;
 
 use Input;
 
@@ -40,7 +41,6 @@ class UserController extends Controller
         $error = [];
         try
         {
-
             list($error, $data) = (new User\Service)->register($input);
         }
         catch (User\RecoverableException $e)
@@ -160,6 +160,26 @@ class UserController extends Controller
         $input = Input::all();
 
         list($error, $data) = (new User\Service)->upgradeUserToMerchant($input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function trackLead()
+    {
+        $error = $data = null;
+
+        $input = Input::all();
+
+        $lead = new Lead\Entity;
+
+        $error = $lead->build($input);
+
+        if (! empty($error))
+        {
+            $error = [ current(array_values($error)) ];
+        }
+
+        $lead->save();
 
         return AppResponse::jsonResponse($error, $data);
     }
