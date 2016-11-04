@@ -33,11 +33,6 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
     ];
 
-    protected $publicSetters = [
-        self::NAME,
-        self::DESCRIPTION,
-    ];
-
     /**
      * Returns all admins in org for role.
      *
