@@ -64,7 +64,13 @@ class Fee extends Base\Core
 
         // servTax = ( ST_PERC * totFee ) / ( 100 + ST_PERC ) ;
 
-        return (new FeeCalculator($entity))->calculateServiceTaxesFromFees($fee);
+        $calculator = new FeeCalculator($entity, $this->repo);
+
+        $totalTax = $calculator->calculateServiceTaxesFromFees($fee);
+
+        $feesSplit = $calculator->getFeesSplit();
+
+        return [$totalTax, $feesSplit];
     }
 
     protected function getPricingPlanId($merchant)

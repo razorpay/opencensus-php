@@ -180,9 +180,11 @@ class Core extends Base\Core
         // use the fees and service tax from both
         else if (isset($this->merchant) and ($this->merchant->isFeeBearerCustomer()))
         {
-            $fee                              = $payment->getFee();
-            list($serviceTax, $feesSplit)     = (new Pricing\Fee)->calculateServiceTaxFromFees($payment, $fee);
-            $credit                           = $amount - $fee;
+            $fee = $payment->getFee();
+
+            list($serviceTax, $feesSplit) = (new Pricing\Fee)->calculateServiceTaxFromFees($payment, $fee);
+
+            $credit = $amount - $fee;
         }
         else
         {

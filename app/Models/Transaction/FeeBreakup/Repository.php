@@ -8,8 +8,6 @@ use RZP\Models\Transaction;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
     protected $entity = 'fee_breakup';
 
     public function fetchFeesBreakupInvoice($merchantId, $from, $to)

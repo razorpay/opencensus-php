@@ -79,14 +79,11 @@ class DataMigration extends Base\Service
                 $amount = $payment->getAmount() - $payment->getFee();
             }
 
-            $fees = $this->feeCalculator->getUnroundedFees(
-                                            $amount,
-                                            $pricing->getPercentRate(),
-                                            $pricing->getFixedRate(),
-                                            $feesSplit,
-                                            $pricingRuleId);
+            $fees = $this->feeCalculator->calculateRzpFee($pricing, $amount);
 
-            $this->calculateServiceTaxes($fees, $feesSplit, $payment->getCaptureTimestamp());
+            $this->calculateServiceTaxes($fees, $payment->getCaptureTimestamp());
+
+            $feesSplit = $this->feeCalculator->getFeesSplit();
 
             $shouldSaveFeeDetails = $this->matchTaxesAndFeesWithOriginal($txn, $feesSplit);
 
@@ -101,40 +98,33 @@ class DataMigration extends Base\Service
         return $response;
     }
 
-    protected function calculateServiceTaxes($fee, $feesSplit, $capturedTime)
+    protected function calculateServiceTaxes($fee, $capturedTime)
     {
-        $serviceTaxPercentage = 0;
-        $krishiKalyanCessPercentage = 0;
-        $swachhBharatCessPercentage = 0;
+        $taxComponents = [];
 
         // Checking the capture time with the ST cutoff time
         if ($capturedTime < self::SERVICE_TAX_CUTOFF_TIMESTAMP)
         {
-            $serviceTaxPercentage = self::SERVICE_TAX_PERCENTAGE_BEFORE_CUTOFF;
+            $taxComponents[FeeBreakupName::SERVICE_TAX] = self::SERVICE_TAX_PERCENTAGE_BEFORE_CUTOFF;
         }
         else
         {
-            $serviceTaxPercentage = self::SERVICE_TAX_PERCENTAGE_AFTER_CUTOFF;
+            $taxComponents[FeeBreakupName::SERVICE_TAX] = self::SERVICE_TAX_PERCENTAGE_AFTER_CUTOFF;
         }
 
         // Checking the capture time with the SB cutoff time
         if ($capturedTime >= self::SWACH_BHARAT_CUTOFF_TIMESTAMP)
         {
-            $swachhBharatCessPercentage = self::SWACHH_BHARAT_CESS_PERCENTAGE;
+            $taxComponents[FeeBreakupName::SWACHH_BHARAT_CESS] = self::SWACHH_BHARAT_CESS_PERCENTAGE;
         }
 
         // Checking the capture time with the KK cutoff time
         if ($capturedTime >= self::KRISHI_KALYAN_CUTOFF_TIMESTAMP)
         {
-            $krishiKalyanCessPercentage = self::KRISHI_KALYAN_CESS_PERCENTAGE;
+            $taxComponents[FeeBreakupName::KRISHI_KALYAN_CESS] = self::KRISHI_KALYAN_CESS_PERCENTAGE;
         }
 
-        $this->feeCalculator->calculateServiceTaxes(
-                                $fee,
-                                $feesSplit,
-                                $serviceTaxPercentage,
-                                $swachhBharatCessPercentage,
-                                $krishiKalyanCessPercentage);
+        $this->feeCalculator->calculateServiceTaxes($fee, $taxComponents);
     }
 
     protected function matchTaxesAndFeesWithOriginal($txn, $feesSplit)
@@ -167,7 +157,6 @@ class DataMigration extends Base\Service
                     'originalRzpFee'     => $originalRzpFee,
                     'calculatedRzpFee'   => $rzpFee,
                 ]);
-
 
             return false;
         }
