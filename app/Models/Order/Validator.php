@@ -72,7 +72,7 @@ class Validator extends Base\Validator
 
         $tpvBanks = Netbanking::getSupportedBanksForTPV();
 
-        if (in_array($order->getBank(), $tpvBanks) === false)
+        if (in_array($order->getBank(), $tpvBanks, true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Order bank does not support TPV');

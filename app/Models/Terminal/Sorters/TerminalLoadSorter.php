@@ -116,7 +116,7 @@ class TerminalLoadSorter extends Terminal\Sorter
         {
             $terminalId = $terminal->getId();
 
-            if (in_array($terminalId, $ruledTerminals) === true)
+            if (in_array($terminalId, $ruledTerminals, true) === true)
             {
                 $applicableRules[$terminalId] = $allRules[$terminalId];
             }

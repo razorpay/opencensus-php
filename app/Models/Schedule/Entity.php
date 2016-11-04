@@ -89,7 +89,7 @@ class Entity extends Base\PublicEntity
 
         $anchoredPeriods = array_keys(Steps::ANCHORED_STEPS);
 
-        if ((in_array($period, $anchoredPeriods) === true) and
+        if ((in_array($period, $anchoredPeriods, true) === true) and
             isset($input[self::ANCHOR]) === false)
         {
             // For weekly periods, default anchor is Monday (Sunday is zero)

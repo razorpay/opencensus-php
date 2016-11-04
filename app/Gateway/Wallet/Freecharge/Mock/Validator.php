@@ -76,7 +76,7 @@ class Validator extends Base\Validator
     {
         $channels = ['WEB', 'ANDROID', 'WINDOWS', 'IOS', 'WAP'];
 
-        if(in_array($value, $channels) === false)
+        if(in_array($value, $channels, true) === false)
         {
             throw new Exception\BadRequestException(
                 ResponseCodeMap::getApiErrorCode('E023'));
