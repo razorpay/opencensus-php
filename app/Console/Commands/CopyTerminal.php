@@ -44,11 +44,6 @@ class CopyTerminal extends Command
      */
     public function fire()
     {
-        // if ($this->confirmToProceed() === false)
-        // {
-        //     return;
-        // }
-
         $terminalId = $this->argument('terminalId');
 
         Terminal::verifyUniqueId($terminalId);

@@ -169,6 +169,15 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
     );
 
+    protected static $defaultUnsets = array(
+        Entity::CARD,
+        Entity::SHARED,
+        Entity::NETBANKING,
+        Entity::MERCHANT_ID,
+        Entity::CATEGORY,
+        Entity::NETWORK_CATEGORY
+    );
+
     protected function validateGateway($input)
     {
         if (Payment\Gateway::isValidGateway($input['gateway']) === false)
@@ -178,13 +187,10 @@ class Validator extends Base\Validator
                 Entity::GATEWAY);
         }
 
-        unset(
-            $input['card'],
-            $input['shared'],
-            $input['netbanking'],
-            $input['merchant_id'],
-            $input['category'],
-            $input[Entity::NETWORK_CATEGORY]);
+        foreach(static::$defaultUnsets as $unset)
+        {
+            unset($input[$unset]);
+        }
 
         $op = $input['gateway'] . '_terminal';
 
@@ -284,8 +290,6 @@ class Validator extends Base\Validator
 
     public function getExpectedInputKeys(string $gateway)
     {
-        $default = ['card', 'shared', 'netbanking', 'merchant_id', 'category', Entity::NETWORK_CATEGORY];
-
         if (Payment\Gateway::isValidGateway($gateway) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
@@ -299,7 +303,7 @@ class Validator extends Base\Validator
 
         $inputKeys = array_keys(static::$$ruleOp);
 
-        return array_merge($default, $inputKeys);
+        return array_merge(static::$defaultUnsets, $inputKeys);
     }
 
     public function usedTerminalValidator($terminal, $input)
