@@ -53,7 +53,6 @@ class Entity extends Base\PublicEntity
         self::ACTIVE,
         self::CONTACT,
         self::SHIPPING_ADDRESS,
-        self::NOTES,
         self::MERCHANT_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -63,7 +62,6 @@ class Entity extends Base\PublicEntity
     protected $public = array(
         self::ID,
         self::NAME,
-        self::NOTES,
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
@@ -74,7 +72,6 @@ class Entity extends Base\PublicEntity
     protected $defaults = array(
         self::ACTIVE    => true,
         self::NOTES     => [],
-        self::ADDRESS   => null,
     );
 
     protected $appends = array(

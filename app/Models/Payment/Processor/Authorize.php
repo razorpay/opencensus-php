@@ -4,8 +4,8 @@ namespace RZP\Models\Payment\Processor;
 
 use App;
 use Crypt;
-use Config;
 use Mail;
+use Config;
 
 use Carbon\Carbon;
 use Lib\PhoneBook;

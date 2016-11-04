@@ -4,17 +4,15 @@ namespace RZP\Models\Payment;
 
 use Mail;
 use Config;
-
 use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Error;
-
 use RZP\Models\Base;
-use RZP\Models\Card;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Models\Payment;
+use RZP\Models\Card;
 use RZP\Models\Transaction;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
