@@ -12,7 +12,8 @@ class CreateAdminRoles extends Migration
      */
     public function up()
     {
-        Schema::create('admin_roles', function (Blueprint $table) {
+        Schema::create('admin_roles', function (Blueprint $table)
+        {
             $table->engine = 'InnoDB';
 
             $table->char('admin_id', 14);

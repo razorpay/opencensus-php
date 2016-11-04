@@ -15,7 +15,8 @@ class CreatePermissions extends Migration
      */
     public function up()
     {
-        Schema::create(Table::PERMISSION, function (Blueprint $table) {
+        Schema::create(Table::PERMISSION, function (Blueprint $table)
+        {
             $table->engine = 'InnoDB';
 
             $table->char(Permission::ID, 14)

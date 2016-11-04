@@ -14,9 +14,10 @@ class CreateMerchantMap extends Migration
      */
     public function up()
     {
-        Schema::create(Table::MERCHANT_MAP, function (Blueprint $table) {
+        Schema::create(Table::MERCHANT_MAP, function (Blueprint $table)
+        {
             $table->engine = 'InnoDB';
-            
+
             $table->char('merchant_id');
 
             $table->char('entity_id');

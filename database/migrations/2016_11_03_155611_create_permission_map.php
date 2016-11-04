@@ -14,9 +14,10 @@ class CreatePermissionMap extends Migration
      */
     public function up()
     {
-        Schema::create(Table::PERMISSION_MAP, function (Blueprint $table) {
+        Schema::create(Table::PERMISSION_MAP, function (Blueprint $table)
+        {
             $table->engine = 'InnoDB';
-            
+
             $table->string('entity_type', 250);
             $table->char('entity_id', 14);
             $table->char('permission_id');

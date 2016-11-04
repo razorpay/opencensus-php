@@ -3,7 +3,6 @@
 namespace RZP\Models\Admin\Role;
 
 use RZP\Models\Base;
-use RZP\Constants\Table;
 use RZP\Constants;
 
 class Entity extends Base\PublicEntity

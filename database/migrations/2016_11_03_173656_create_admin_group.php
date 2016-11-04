@@ -14,7 +14,8 @@ class CreateAdminGroup extends Migration
      */
     public function up()
     {
-        Schema::create(Table::ADMIN_GROUP, function (Blueprint $table) {
+        Schema::create(Table::ADMIN_GROUP, function (Blueprint $table)
+        {
             $table->engine = 'InnoDB';
 
             $table->char('group_id', 14);

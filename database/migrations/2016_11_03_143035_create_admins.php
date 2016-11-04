@@ -15,7 +15,8 @@ class CreateAdmins extends Migration
      */
     public function up()
     {
-        Schema::create(Table::ADMIN, function (Blueprint $table) {
+        Schema::create(Table::ADMIN, function (Blueprint $table)
+        {
             $table->engine = 'InnoDB';
 
             $table->char(Admin::ID, 14)

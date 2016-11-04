@@ -15,7 +15,8 @@ class CreateGroups extends Migration
      */
     public function up()
     {
-        Schema::create(Table::GROUP, function (Blueprint $table) {
+        Schema::create(Table::GROUP, function (Blueprint $table)
+        {
             $table->engine = 'InnoDB';
 
             $table->char(Group::ID, 14)
