@@ -14,7 +14,7 @@ use RZP\Models\Merchant\Repository as MerchantRepo;
 use RZP\Gateway\Billdesk;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
-use RZP\Models\Pricing\FeeBreakup as FeeBreakup;
+use RZP\Models\Transaction\FeeBreakup as FeeBreakup;
 
 class Repository extends Base\Repository
 {

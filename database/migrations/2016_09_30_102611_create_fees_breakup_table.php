@@ -4,7 +4,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
-use RZP\Models\Pricing\FeeBreakup\Entity as FeeBreakup;
+use RZP\Models\Transaction\FeeBreakup\Entity as FeeBreakup;
 use RZP\Models\Transaction;
 
 class CreateFeesBreakupTable extends Migration

@@ -295,7 +295,7 @@ $factory(\RZP\Models\Merchant\Credits\Entity::class, [
 ]);
 
 
-$factory(\RZP\Models\Pricing\FeeBreakup\Entity::class, [
+$factory(\RZP\Models\Transaction\FeeBreakup\Entity::class, [
     'id'            => $faker->uniqueid,
 ]);
 

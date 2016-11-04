@@ -7,7 +7,8 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
-use RZP\Models\Pricing\FeeBreakup\Name as FeeBreakupName;
+use RZP\Models\Transaction;
+use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
 use RZP\Models\Merchant;
 use RZP\Models\Base;
 use RZP\Exception;
@@ -522,13 +523,13 @@ class FeeCalculator
     protected function createFeeBreakup($name, $percent, $amount, $pricingRuleId = null)
     {
         $params = [
-            FeeBreakup\Entity::NAME                 => $name,
-            FeeBreakup\Entity::PERCENTAGE           => $percent,
-            FeeBreakup\Entity::AMOUNT               => $amount,
-            FeeBreakup\Entity::PRICING_RULE_ID      => $pricingRuleId,
+            Transaction\FeeBreakup\Entity::NAME                 => $name,
+            Transaction\FeeBreakup\Entity::PERCENTAGE           => $percent,
+            Transaction\FeeBreakup\Entity::AMOUNT               => $amount,
+            Transaction\FeeBreakup\Entity::PRICING_RULE_ID      => $pricingRuleId,
         ];
 
-        $feeBreakup = (new Pricing\FeeBreakup\Entity)->build($params);
+        $feeBreakup = (new Transaction\FeeBreakup\Entity)->build($params);
 
         return $feeBreakup;
     }

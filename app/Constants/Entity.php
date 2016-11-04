@@ -121,7 +121,7 @@ class Entity
         self::GATEWAY_ABSENCE       => \RZP\Models\GatewayStatus\Absence::class,
         self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
         self::WALLET_FREECHARGE     => \RZP\Gateway\Wallet\Freecharge::class,
-        self::FEE_BREAKUP           => \RZP\Models\Pricing\FeeBreakup::class,
+        self::FEE_BREAKUP           => \RZP\Models\Transaction\FeeBreakup::class,
     );
 
     protected static $repository = array(

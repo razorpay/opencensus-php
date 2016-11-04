@@ -11,8 +11,8 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
 use RZP\Models\Pricing\FeeCalculator;
-use RZP\Models\Pricing\FeeBreakup as FeeBreakup;
-use RZP\Models\Pricing\FeeBreakup\Name as FeeBreakupName;
+use RZP\Models\Transaction\FeeBreakup as FeeBreakup;
+use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
 
 
 class DataMigration extends Base\Service

@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Pricing\FeeBreakup;
+namespace RZP\Models\Transaction\FeeBreakup;
 
 use RZP\Base;
 use RZP\Exception;
