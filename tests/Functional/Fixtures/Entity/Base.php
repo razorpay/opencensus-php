@@ -39,6 +39,7 @@ class Base
         'terminal'      => \RZP\Models\Terminal\Entity::class,
         'emi_plan'      => \RZP\Models\Emi\Entity::class,
         'axis_migs'     => \RZP\Gateway\AxisMigs\Entity::class,
+        'billdesk'      => \RZP\Gateway\Billdesk\Entity::class,
         'app_token'     => \RZP\Models\Customer\AppToken\Entity::class,
         'adjustment'    => \RZP\Models\Adjustment\Entity::class,
         'settlement'    => \RZP\Models\Settlement\Entity::class,
@@ -56,7 +57,8 @@ class Base
         'pricing',
         'methods',
         'emi_plan',
-        'iin'
+        'iin',
+        'schedule',
     );
 
     public function create(array $attributes = array())

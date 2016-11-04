@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Gateway\Ebs;
 
 use RZP\Exception;
+use Carbon\Carbon;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 
@@ -118,7 +119,7 @@ class EbsGatewayTest extends TestCase
 
         $this->runRequestResponseFlow($data, function() use ($payment)
         {
-            $payment = $this->doAuthPayment($payment);
+          $payment = $this->doAuthPayment($payment);
         });
     }
 
@@ -300,9 +301,12 @@ class EbsGatewayTest extends TestCase
 
         $data = $this->testData['testPaymentFailedVerify'];
 
-        $this->runRequestResponseFlow($data, function() use ($payment) {
-            $this->verifyPayment($payment['id']);
-        });
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['id']);
+            });
 
         $this->assertSame($payment['verified'], null);
     }

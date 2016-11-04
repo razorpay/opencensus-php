@@ -305,6 +305,57 @@ class SettlementTest extends TestCase
         $this->assertSame($totalAmount, $setl['amount']);
     }
 
+    public function testMerchantSettlementV2()
+    {
+        $this->ba->appAuth();
+
+        $schedule = $this->createAndAssignSchedule();
+
+        $payments = $this->createPaymentEntities();
+
+        foreach ($payments as $payment)
+        {
+            $attrs = ['payment' => $payments[0],
+                      'amount'  => '100'];
+            $refund = $this->fixtures->create('refund:from_payment', $attrs);
+            $refunds[] = $refund;
+        }
+
+        $input = array('count' => 10);
+        $txns = $this->getEntities('transaction', $input, true);
+
+        $request = array(
+            'url' => '/settlements/initiate2/kotak',
+            'method' => 'POST'
+        );
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $setl = $this->getLastEntity('settlement', true);
+
+        $content = $this->getEntities('settlement_details', ['settlement_id' => $setl['id']], true);
+
+        $this->assertArrayHasKey('entity', $content);
+        $this->assertSame('collection', $content['entity']);
+        $this->assertSame($content['count'], 4);
+
+        $totalAmount = 0;
+
+        foreach ($content['items'] as $details)
+        {
+            if ($details['type'] == 'debit')
+            {
+                $totalAmount -= $details['amount'];
+            }
+            else
+            {
+                $totalAmount += $details['amount'];
+            }
+        }
+
+        $this->assertSame($totalAmount, $setl['amount']);
+    }
+
     public function testSettlementFileGeneration()
     {
         $this->testMerchantSettlement();
@@ -326,6 +377,26 @@ class SettlementTest extends TestCase
         $content = $this->makeRequestAndGetContent($request);
 
         $this->assertNotEquals($content, null);
+    }
+
+    protected function createAndAssignSchedule()
+    {
+        $request = array(
+            'url' => '/merchants/'.Account::TEST_ACCOUNT.'/schedules',
+            'method' => 'POST',
+            'content' => array(
+                'name'        => 'Basic T3',
+                'type'        => 'settlement',
+                'period'      => 'daily',
+                'interval'    => 1,
+                'delay'       => 3,
+                'next_run'    => 1451586600,
+            )
+        );
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
     }
 
     protected function startTest($testDataToReplace = array())

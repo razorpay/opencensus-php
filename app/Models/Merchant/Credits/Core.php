@@ -29,6 +29,11 @@ class Core extends Base\Core
 
         $creditsLog->getValidator()->validateCreditsType($balance, $creditsLog->getType());
 
+        $currentMerchantCredits = $creditsLog->getMerchantCredits();
+
+        $creditsLog->getValidator()->validateBalanceCredits(
+            $creditsLog->getValue(), $currentMerchantCredits, $creditsLog->getType());
+
         return $this->repo->transaction(function() use ($merchant, $creditsLog)
         {
             $this->repo->saveOrFail($creditsLog);
@@ -50,7 +55,7 @@ class Core extends Base\Core
 
             $newCredits = $merchantAmountCredits + $credits;
 
-            $this->repo->balance->editMerchantFreeCredits($merchant, $newCredits);
+            $this->repo->balance->editMerchantAmountCredits($merchant, $newCredits);
         }
         else if ($type === Credits\Type::FEE)
         {

@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant;
 use RZP\Constants\Mode;
 use Carbon\Carbon;
 use Mail;
+use Config;
 
 use RZP\Base\RuntimeManager;
 use RZP\Models\Base;
@@ -15,6 +16,7 @@ use RZP\Models\Key;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Models\Terminal;
+use RZP\Models\Schedule;
 use RZP\Models\Merchant\Webhook;
 use RZP\Models\Admin\Newsletter;
 use RZP\Models\Settlement\Holidays;
@@ -203,15 +205,15 @@ class Service extends Base\Service
         return $balance->toArray();
     }
 
-    public function editFreeCredits($merchantId, $input)
+    public function editAmountCredits($merchantId, $input)
     {
         (new Merchant\Validator)->validateInput('edit_credits', $input);
 
-        $freeCredits = $input['credits'];
+        $amountCredits = $input['credits'];
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $balance = $this->repo->balance->editMerchantFreeCredits($merchant, $freeCredits);
+        $balance = $this->repo->balance->editMerchantAmountCredits($merchant, $amountCredits);
 
         return $balance->toArray();
     }
@@ -265,6 +267,61 @@ class Service extends Base\Service
         $this->repo->saveOrFail($merchant);
 
         return $plan->toArrayPublic();
+    }
+
+    public function assignSettlementSchedule($id, $input)
+    {
+        $this->trace->info(
+            TraceCode::SCHEDULE_ASSIGN_REQUEST,
+            [
+                'merchant_id' => $id,
+                'input'       => $input,
+            ]);
+
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        if (isset($input[Entity::SETTLEMENT_SCHEDULE_ID]) === true)
+        {
+            $scheduleId = $input[Entity::SETTLEMENT_SCHEDULE_ID];
+
+            $schedule = $this->repo->schedule->findByIdAndMerchantId($scheduleId, Account::SHARED_ACCOUNT);
+        }
+        else
+        {
+            $schedule = (new Schedule\Core)->createSchedule($input);
+
+            $this->trace->info(TraceCode::SCHEDULE_CREATED, $schedule->toArray());
+        }
+
+        $merchant->schedule()->associate($schedule);
+
+        $this->traceAndNotifyScheduleAssignment($schedule, $merchant);
+
+        $this->repo->saveOrFail($merchant);
+
+        return $merchant->toArrayPublic();
+    }
+
+    protected function traceAndNotifyScheduleAssignment($schedule, $merchant)
+    {
+        $data = [
+            "schedule"    => $schedule->getName(),
+            "schedule_id" => $schedule->getId(),
+            "merchant"    => $merchant->getBillingLabelElseName(),
+            "merchant_id" => $merchant->getId(),
+        ];
+
+        $this->trace->info(TraceCode::SCHEDULE_ASSIGNED, $data);
+
+        $this->slack->queue(
+                "Schedule assigned to Merchant",
+                $data,
+                [
+                    'channel'  => Config::get('slack.channels.operations_log'),
+                    'username' => 'Jordan Belfort',
+                    'icon'     => ':boom:',
+                ]
+            );
     }
 
     public function getPricingPlan($id)
@@ -546,7 +603,7 @@ class Service extends Base\Service
         $message = "Merchant Beneficiary file generated. Beneficiary added since".
                 " last report is ". $newBeneficiaryCount;
 
-        $this->slack->queue($message,[],['channel' => '#settlements']);
+        $this->slack->queue($message,[],['channel' => Config::get('slack.channels.settlements')]);
 
         //Log response in trace
         $this->trace->info(
@@ -564,102 +621,7 @@ class Service extends Base\Service
      */
     public function sendDailyReportForAllMerchants($input)
     {
-        RuntimeManager::setMemoryLimit('1024M');
-        RuntimeManager::setTimeLimit(300);
-
-        // Trace to indicate start of mailing
-        $this->trace->info(
-            TraceCode::SETTLEMENT_DAILY_REPORT_MAILING,
-            array()
-        );
-
-        $from = Carbon::yesterday("Asia/Kolkata")->timestamp;
-
-        $to = Carbon::today("Asia/Kolkata")->timestamp;
-
-        $authMerchants = $this->repo->payment
-                                ->fetchAuthorizedSummary()
-                                ->getStringAttributesByKey('merchant_id');
-
-        $captureMerchants = $this->repo->payment
-                                ->fetchCapturedSummaryBetweenTimestamp($from, $to)
-                                ->getStringAttributesByKey('merchant_id');
-
-        $refundMerchants = $this->repo->refund
-                                ->fetchRefundSummaryBetweenTimestamp($from, $to)
-                                ->getStringAttributesByKey('merchant_id');
-
-        $setlMerchants = $this->repo->settlement
-                                ->fetchSettlementsBetweenTimestamp($from, $to)
-                                ->getStringAttributesByKey('merchant_id');
-
-        if (isset($input[Entity::ID]) === true)
-        {
-            $merchantIds = $input[Entity::ID];
-        }
-        else
-        {
-            $merchantIds = array_unique(
-                array_merge(
-                    array_keys($captureMerchants),
-                    array_keys($authMerchants),
-                    array_keys($refundMerchants),
-                    array_keys($setlMerchants)
-                )
-            );
-        }
-
-        // Summary of merchants mailed
-        $mailedMerchantsSummary = [
-            'sentIds'    => [],
-            'skippedIds' => 0,
-            'failedIds'  => []
-        ];
-
-        foreach ($merchantIds as $merchantId)
-        {
-            try
-            {
-                $zeroArray = array_fill_keys(['sum', 'count'], 0);
-
-                $data = [
-                    'authorized' => isset($authMerchants[$merchantId])    ? $authMerchants[$merchantId]    : $zeroArray,
-                    'captured'   => isset($captureMerchants[$merchantId]) ? $captureMerchants[$merchantId] : $zeroArray,
-                    'refunds'    => isset($refundMerchants[$merchantId])  ? $refundMerchants[$merchantId]  : $zeroArray,
-                    'settlement' => isset($setlMerchants[$merchantId])    ? $setlMerchants[$merchantId]    : null,
-                ];
-
-                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
-
-                $dailyReport = new DailyReport($merchant, $data);
-
-                $sentId = $dailyReport->send();
-
-                if (is_null($sentId))
-                {
-                    $mailedMerchantsSummary['skippedIds']++;
-                }
-                else
-                {
-                    $mailedMerchantsSummary['sentIds'][] = $sentId;
-                }
-            }
-            catch (\Exception $ex)
-            {
-                $this->trace->traceException(
-                    $ex, Trace::WARNING, TraceCode::SETTLEMENT_DAILY_REPORT_FAILURE);
-
-                $mailedMerchantsSummary['failedIds'][] = $merchantId;
-            }
-        }
-
-        // Log just the result of the settlement reports
-        $this->trace->info(
-            TraceCode::SETTLEMENT_DAILY_REPORT_RESULT,
-            $mailedMerchantsSummary
-        );
-
-        return $mailedMerchantsSummary;
+        return (new DailyReport)->sendReportForAllMerchants($input);
     }
 
     /**

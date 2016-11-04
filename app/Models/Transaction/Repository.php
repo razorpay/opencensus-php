@@ -7,6 +7,10 @@ use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Constants\Table;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Entity as Merchant;
+use RZP\Models\Schedule\Entity as Schedule;
+use RZP\Models\Schedule\Repository as ScheduleRepo;
+use RZP\Models\Merchant\Repository as MerchantRepo;
 use RZP\Gateway\Billdesk;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
@@ -44,9 +48,35 @@ class Repository extends Base\Repository
                     ->where(Transaction\Entity::SETTLED_AT, '<', $timestamp)
                     ->where(Transaction\Entity::SETTLED, '=', 0)
                     ->where(Transaction\Entity::TYPE, '!=', Type::SETTLEMENT)
+                    ->with('merchant')
                     ->orderBy(Transaction\Entity::MERCHANT_ID)
                     ->orderBy(Transaction\Entity::ID)
                     ->get();
+    }
+
+    public function fetchUnsettledTxnsAndSchedules($timestamp)
+    {
+        $schedules = (new ScheduleRepo)->fetchSchedulesWithDueRun($timestamp);
+
+        $merchants = (new MerchantRepo)->fetchBySettlementScheduleId($schedules->getIds());
+
+        $txns = $this->newQuery()
+                     ->whereIn(Entity::MERCHANT_ID, $merchants->getIds())
+                     ->where(Entity::SETTLED_AT, '<', $timestamp)
+                     ->where(Entity::SETTLED, '=', 0)
+                     ->where(Entity::TYPE, '!=', Type::SETTLEMENT)
+                     ->with('merchant')
+                     ->orderBy(Entity::MERCHANT_ID)
+                     ->orderBy(Entity::ID)
+                     ->get();
+
+        $this->trace->info(TraceCode::SCHEDULE_UNSETTLED_TXNS_FETCH, [
+            'transactions' => $txns->getIds(),
+            'schedules'    => $schedules->getIds(),
+            'merchants'    => $merchants->getIds(),
+        ]);
+
+        return array($txns, $schedules);
     }
 
     public function fetchUnsettledTransactionsForMerchant($timestamp, $merchant)
@@ -236,7 +266,10 @@ class Repository extends Base\Repository
         $transactionEntityId = Entity::getAttributeWithTableName(Entity::ENTITY_ID);
         $transactionReconciledAt = Entity::getAttributeWithTableName(Entity::RECONCILED_AT);
 
+        $transactionData = Entity::getAttributeWithTableName('*');
+
         return $this->newQuery()
+                    ->select($transactionData)
                     ->join(Table::PAYMENT, $paymentId, '=', $transactionEntityId)
                     ->join(Table::BILLDESK, $billdeskPaymentId, '=', $paymentId)
                     ->where($billdeskRefStatus, '=', Billdesk\RefundStatus::CANCELLED)

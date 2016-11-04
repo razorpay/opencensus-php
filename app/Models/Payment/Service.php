@@ -14,7 +14,9 @@ use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Card;
 use RZP\Models\Transaction;
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payment\Verify\Verify;
 
 class Service extends Base\Service
 {
@@ -439,7 +441,7 @@ class Service extends Base\Service
 
         $message = 'Multiple authorized payments for orders with a captured payment refunded';
 
-        $this->slack->queue($message, $results, ['channel' => '#tech_logs']);
+        $this->slack->queue($message, $results, ['channel' => Config::get('slack.channels.tech_logs')]);
 
         return $results;
     }
@@ -565,6 +567,8 @@ class Service extends Base\Service
             {
                 $failed++;
 
+                $this->trace->traceException($e, Trace::INFO, TraceCode::REFUND_EXCEPTION);
+
                 // Now Just continue
             }
             catch (Exception\GatewayTimeoutException $e)
@@ -587,8 +591,7 @@ class Service extends Base\Service
                 // exception but in this context it really shouldn't have
                 // occurred.
 
-                // @todo: Remove this in future.
-                // $this->app['exception.handler']->traceException($e);
+                $this->trace->traceException($e, Trace::INFO, TraceCode::REFUND_EXCEPTION);
 
                 // Just continue
                 $error++;
@@ -639,37 +642,18 @@ class Service extends Base\Service
     {
         $count = 0;
 
+        // All Payments in created state will be marked as failed after 9 minutes
         $timestamp = time() - 9 * 60;
 
         $payments = $this->repo->payment->fetchOldCreatedPaymentsForTimeout($timestamp);
 
         foreach ($payments as $payment)
         {
-            $internalErrorCode = $payment->getInternalErrorCode();
+            $this->setErrorCodeAndDescription($payment);
 
-            if ($internalErrorCode !== null)
-            {
-                $error = new Error\Error($internalErrorCode);
+            $payment->setStatus(Payment\Status::FAILED);
 
-                $code = $error->getPublicErrorCode();
-
-                $desc = $error->getDescription();
-
-                $internalCode = $error->getInternalErrorCode();
-
-                $payment->setStatus(Payment\Status::FAILED);
-
-                $payment->setError($code, $desc, $internalCode);
-            }
-            else
-            {
-                $payment->setStatus(Payment\Status::FAILED);
-
-                $payment->setError(
-                    Error\ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT,
-                    Error\PublicErrorDescription::BAD_REQUEST_PAYMENT_TIMED_OUT,
-                    null);
-            }
+            $payment->setVerifyBucket(0);
 
             $saved = $this->repo->save($payment);
 
@@ -687,6 +671,30 @@ class Service extends Base\Service
              'timestamp' => time()]);
 
         return ['count' => $count];
+    }
+
+    protected function setErrorCodeAndDescription($payment)
+    {
+        $internalErrorCode = $payment->getInternalErrorCode();
+
+        $code = Error\ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT;
+
+        $desc = Error\PublicErrorDescription::BAD_REQUEST_PAYMENT_TIMED_OUT;
+
+        $internalCode = null;
+
+        if ($internalErrorCode !== null)
+        {
+            $error = new Error\Error($internalErrorCode);
+
+            $code = $error->getPublicErrorCode();
+
+            $desc = $error->getDescription();
+
+            $internalCode = $error->getInternalErrorCode();
+        }
+
+        $payment->setError($code, $desc, $internalCode);
     }
 
     public function autoCaptureOldAuthorizedPayments()
@@ -750,16 +758,12 @@ class Service extends Base\Service
 
     public function verifyMultiplePayments($filter)
     {
-        $verify = new Verify($this->mode, $this->trace);
-
-        return $verify->verifyPaymentsWithFilter($filter);
+        return (new Verify)->verifyPaymentsWithFilter($filter);
     }
 
     public function verifyPayment($payment)
     {
-        $verify = new Verify($this->mode, $this->trace);
-
-        return $verify->verifyPayment($payment);
+        return (new Verify)->verifyPayment($payment);
     }
 
     public function sendReminderMerchantMailForAuthorizedPayments()

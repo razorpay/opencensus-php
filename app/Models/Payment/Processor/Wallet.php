@@ -27,6 +27,16 @@ class Wallet
         return defined(get_class().'::'.strtoupper($wallet));
     }
 
+    public static function validateExists($wallet)
+    {
+        if (self::exists($wallet) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_SUPPORTED,
+                Entity::WALLET);
+        }
+    }
+
     public static function getWalletNetworkNamesMap()
     {
         return self::$fullName;

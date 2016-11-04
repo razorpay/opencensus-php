@@ -88,6 +88,7 @@ class GatewayController extends Controller
                 break;
 
             case 'wallet_olamoney':
+            case 'upi_hdfc':
                 $trace = $this->app['trace'];
 
                 $trace->info(

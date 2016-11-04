@@ -82,6 +82,12 @@ class ApiServiceProvider extends BaseServiceProvider
             return new \RZP\Base\RepositoryManager($app);
         });
 
+        $this->app->singleton('segment', function($app)
+        {
+            return new SegmentClient($app);
+        });
+
+
         $this->registerApiMutex();
 
         $this->registerMaxMind();
@@ -109,7 +115,8 @@ class ApiServiceProvider extends BaseServiceProvider
             'raven',
             'repo',
             'es',
-            'maxmind'
+            'maxmind',
+            'segment'
         );
     }
 

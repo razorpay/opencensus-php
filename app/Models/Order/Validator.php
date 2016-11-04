@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Order;
 
-use RZP\Models\Base;
+use RZP\Base;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Exception;

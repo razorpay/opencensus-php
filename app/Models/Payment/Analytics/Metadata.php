@@ -114,9 +114,9 @@ class Metadata
         return array_key_exists($value, $values) ? $values[$value] : self::OTHERS;
     }
 
-    public static function isInvalidValue($value)
+    public static function isInvalid($value)
     {
-        return $value === self::OTHERS_VALUE;
+        return ($value === self::OTHERS);
     }
 
     public static function isValidIntegration($integration)

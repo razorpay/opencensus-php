@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\FirstData\Mock;
 
-use RZP\Models\Base;
+use RZP\Base;
 use RZP\Gateway\FirstData\Constants;
 use RZP\Gateway\FirstData\Mapping;
 use RZP\Gateway\FirstData\ConnectRequestFields;

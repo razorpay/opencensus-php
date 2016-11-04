@@ -243,6 +243,19 @@ return [
         ],
     ],
 
+    'testReconcileCancelledTransactions' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/reconciliate/billdesk/cancelled',
+        ],
+        'response' => [
+            'content' => [
+                'success_count' => 1,
+                'failure_count' => 0,
+            ],
+        ],
+    ],
+
     'testServerToServerCallback' => [
         'response'  => [
             'content'     => [

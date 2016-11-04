@@ -15,11 +15,12 @@ class Repository extends Base\Repository
         Entity::PAYMENT_ID      => 'sometimes|alpha_num',
         Entity::TERMINAL_ID     => 'sometimes|alpha_num',
     );
-
-    public function fetchTerminalAnalyticsForPaymentIds($paymentIds = [])
+    
+    public function fetchFailedTerminalAnalyticsForPaymentIds($paymentIds = [])
     {
         return $this->newQuery()
             ->whereIn(Entity::PAYMENT_ID, $paymentIds)
+            ->where(Entity::TERMINAL_STATUS, 0)
             ->get();
     }
 }
