@@ -138,35 +138,37 @@ class Report extends Service
     {
         $merchantId = $this->merchant->getId();
 
-        (new Validator)->validateInput('report', $input);
+        (new JitValidator)->rules(self::$rules)->input($input)->validate();
 
         list($from, $to) = $this->getTimestamps($input);
 
         $feesBreakup = $this->repo->fee_breakup->fetchFeesBreakupInvoice($merchantId, $from, $to);
 
-        $totalFee = $feesBreakup['rzp_fee'] + $feesBreakup['service_tax'];
-        $totalTax = $feesBreakup['service_tax'];
+        $fees = $feesBreakup->getStringAttributesByKey('name');
 
-        if (empty($feesBreakup['swachh_bharat_cess']) === false)
+        $totalFee = $fees['razorpay']['sum'] + $fees['service_tax']['sum'];
+        $totalTax = $fees['service_tax']['sum'];
+
+        if (empty($fees['swachh_bharat_cess']) === false)
         {
-            $totalFee += $feesBreakup['swachh_bharat_cess'];
-            $totalTax += $feesBreakup['swachh_bharat_cess'];
+            $totalFee += $fees['swachh_bharat_cess']['sum'];
+            $totalTax += $fees['swachh_bharat_cess']['sum'];
         }
 
-        if (empty($feesBreakup['krishi_kalyan_cess']) === false)
+        if (empty($fees['krishi_kalyan_cess']) === false)
         {
-            $totalFee += $feesBreakup['krishi_kalyan_cess'];
-            $totalTax += $feesBreakup['krishi_kalyan_cess'];
+            $totalFee += $fees['krishi_kalyan_cess']['sum'];
+            $totalTax += $fees['krishi_kalyan_cess']['sum'];
         }
 
         return [
             self::TOTAL_FEE         => $totalFee,
-            self::RAZORPAY_FEE      => $feesBreakup['rzp_fee'],
+            self::RAZORPAY_FEE      => $fees['razorpay']['sum'],
             self::TAX               => $totalTax,
             self::TAXES             => [
-                                            self::SERVICE_TAX           =>  $feesBreakup['service_tax'],
-                                            self::SWACH_BHARAT_CESS     =>  $feesBreakup['swachh_bharat_cess'],
-                                            self::KRISHI_KALYAN_CESS    =>  $feesBreakup['krishi_kalyan_cess'],
+                                            self::SERVICE_TAX           =>  $fees['service_tax']['sum'],
+                                            self::SWACH_BHARAT_CESS     =>  $fees['swachh_bharat_cess']['sum'],
+                                            self::KRISHI_KALYAN_CESS    =>  $fees['krishi_kalyan_cess']['sum'],
                                     ],
         ];
     }
