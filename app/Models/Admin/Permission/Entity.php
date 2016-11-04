@@ -14,7 +14,7 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'permission';
 
-    protected $sign = 'perm';
+    protected static $sign = 'perm';
 
     protected $fillable = [
         self::ID,
