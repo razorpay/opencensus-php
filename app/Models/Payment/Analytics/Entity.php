@@ -4,7 +4,6 @@ namespace RZP\Models\Payment\Analytics;
 
 use RZP\Models\Base;
 use RZP\Models\Payment;
-use RZP\Constants\Table;
 
 class Entity extends Base\PublicEntity
 {
@@ -32,10 +31,6 @@ class Entity extends Base\PublicEntity
     const PAYMENT_WINDOW                = 1800;
 
     protected $entity = 'payment_analytics';
-
-    protected static $sign = '';
-
-    protected static $delimiter = '';
 
     protected $fillable = array(
         self::PAYMENT_ID,

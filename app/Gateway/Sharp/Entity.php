@@ -6,10 +6,6 @@ use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {
-    protected $guarded = array();
-
-    protected static $sign = 'pay';
-
     protected $entity = 'sharp';
 
     //Dummy functions to make tests pass
