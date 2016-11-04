@@ -106,6 +106,8 @@ class TraceCode
     const TRANSACTION_REFUND_TRACE                  = 'TRANSACTION_REFUND_TRACE';
 
     const BAD_REQUEST_INVALID_API_KEY               = 'BAD_REQUEST_INVALID_API_KEY';
+    const BAD_REQUEST_INVALID_API_SECRET            = 'BAD_REQUEST_INVALID_API_SECRET';
+    const BAD_REQUEST_API_SECRET_NOT_PROVIDED       = 'BAD_REQUEST_API_SECRET_NOT_PROVIDED';
 
     const RUNTIME_ERROR                             = 'RUNTIME_ERROR';
 
@@ -386,6 +388,9 @@ class TraceCode
         self::ADDRESS_PRIMARY_SWITCH                    => 'Switching primary address of an entity and address type',
 
         self::BAD_REQUEST_INVALID_API_KEY               => 'The api key provided is invalid',
+        self::BAD_REQUEST_INVALID_API_SECRET            => 'The api secret provided is invalid',
+        self::BAD_REQUEST_API_SECRET_NOT_PROVIDED       => 'API secret is not provided',
+
         self::PAYMENT_VERIFY_ALREADY_AUTHORIZED         => 'Payment being authorized is actually already authorized by some other thread',
 
         self::RUNTIME_ERROR                             => 'The request failed at runtime',
