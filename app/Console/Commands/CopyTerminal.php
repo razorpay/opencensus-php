@@ -3,8 +3,8 @@
 namespace RZP\Console\Commands;
 
 use App;
+use RZP\Models\Terminal;
 use Illuminate\Console\Command;
-use RZP\Models\Terminal\Entity as Terminal;
 use RZP\Models\Merchant\Entity as Merchant;
 use Database\DefaultConnection as DefaultDbConn;
 use Symfony\Component\Console\Input\InputOption;
@@ -45,7 +45,7 @@ class CopyTerminal extends Command
     {
         $terminalId = $this->argument('terminalId');
 
-        Terminal::verifyUniqueId($terminalId);
+        Terminal\Entity::verifyUniqueId($terminalId);
 
         $merchantIds = $this->argument('merchantIds');
 
@@ -59,11 +59,6 @@ class CopyTerminal extends Command
         DefaultDbConn::set($mode);
 
         $terminal = $this->repo->terminal->findOrFail($terminalId);
-
-        if ($terminal->isShared() === true)
-        {
-            return $this->error('Shared terminal cannot be copied.');
-        }
 
         $terminalHeaders = ['key', 'value'];
         $terminalRow = [];
@@ -80,25 +75,7 @@ class CopyTerminal extends Command
             return;
         }
 
-        $tableData = [];
-
-        unset($terminal['used_count']);
-
-        foreach ($merchantIds as $merchantId)
-        {
-            if (($mode === 'live') and
-                ($this->confirm('Do you want to proceed for ' . $merchantId . '?') === false))
-            {
-                continue;
-            }
-
-            $newTerminal = $terminal->replicate();
-            $newTerminal['merchant_id'] = $merchantId;
-
-            $this->repo->saveOrFail($newTerminal);
-
-            $tableData[] = [$newTerminal->getId(), $merchantId];
-        }
+        $tableData = (new Terminal\Core)->copy(['merchant_ids' => $merchantIds], $terminal);
 
         $headers = ['terminal_id', 'merchant_id'];
 
