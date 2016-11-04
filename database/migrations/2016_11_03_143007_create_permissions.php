@@ -4,7 +4,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
-use RZP\Models\Admin\Permissions\Entity as Permissions;
+use RZP\Models\Admin\Permission\Entity as Permission;
 
 class CreatePermissions extends Migration
 {
@@ -18,14 +18,14 @@ class CreatePermissions extends Migration
         Schema::create(Table::PERMISSION, function (Blueprint $table) {
             $table->engine = 'InnoDB';
 
-            $table->char(Permissions::ID, 14)
+            $table->char(Permission::ID, 14)
                   ->primary();
 
-            $table->string(Permissions::NAME, 250);
-            $table->string(Permissions::DESCRIPTION, 250);
+            $table->string(Permission::NAME, 250);
+            $table->string(Permission::DESCRIPTION, 250);
 
-            $table->integer(Permissions::CREATED_AT);
-            $table->integer(Permissions::UPDATED_AT);
+            $table->integer(Permission::CREATED_AT);
+            $table->integer(Permission::UPDATED_AT);
         });
     }
 

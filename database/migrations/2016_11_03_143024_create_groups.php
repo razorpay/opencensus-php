@@ -4,7 +4,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
-use RZP\Models\Admin\Groups\Entity as Groups;
+use RZP\Models\Admin\Group\Entity as Group;
 
 class CreateGroups extends Migration
 {
@@ -18,16 +18,16 @@ class CreateGroups extends Migration
         Schema::create(Table::GROUP, function (Blueprint $table) {
             $table->engine = 'InnoDB';
 
-            $table->char(Groups::ID, 14)
+            $table->char(Group::ID, 14)
                   ->primary();
 
-            $table->string(Groups::NAME, 250);
-            $table->string(Groups::DESCRIPTION, 250);
+            $table->string(Group::NAME, 250);
+            $table->string(Group::DESCRIPTION, 250);
 
-            $table->char(Groups::ORG_ID, 14);
+            $table->char(Group::ORG_ID, 14);
 
-            $table->integer(Groups::CREATED_AT);
-            $table->integer(Groups::UPDATED_AT);
+            $table->integer(Group::CREATED_AT);
+            $table->integer(Group::UPDATED_AT);
         });
     }
 

@@ -4,7 +4,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
-use RZP\Models\Admin\Roles\Entity as Roles;
+use RZP\Models\Admin\Role\Entity as Role;
 
 class CreateRoles extends Migration
 {
@@ -18,16 +18,16 @@ class CreateRoles extends Migration
         Schema::create(Table::ROLE, function (Blueprint $table) {
             $table->engine = 'InnoDB';
 
-            $table->char(Roles::ID, 14)
+            $table->char(Role::ID, 14)
                   ->primary();
 
-            $table->string(Roles::NAME, 250);
-            $table->string(Roles::DESCRIPTION, 250);
+            $table->string(Role::NAME, 250);
+            $table->string(Role::DESCRIPTION, 250);
 
-            $table->char(Roles::ORG_ID, 14);
+            $table->char(Role::ORG_ID, 14);
 
-            $table->integer(Roles::CREATED_AT);
-            $table->integer(Roles::UPDATED_AT);
+            $table->integer(Role::CREATED_AT);
+            $table->integer(Role::UPDATED_AT);
         });
     }
 
