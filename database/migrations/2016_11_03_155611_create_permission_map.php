@@ -20,7 +20,7 @@ class CreatePermissionMap extends Migration
 
             $table->string('entity_type', 250);
             $table->char('entity_id', 14);
-            $table->char('permission_id');
+            $table->char('permission_id', 14);
         });
     }
 
@@ -31,6 +31,6 @@ class CreatePermissionMap extends Migration
      */
     public function down()
     {
-        Schema::create(Table::PERMISSION_MAP);
+        Schema::drop(Table::PERMISSION_MAP);
     }
 }

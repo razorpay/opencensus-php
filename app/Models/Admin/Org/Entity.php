@@ -52,8 +52,7 @@ class Entity extends Base\PublicEntity
         self::EMAIL,
         self::EMAIL_DOMAINS,
         self::LOGO_URL,
-        self::AUTH_TYPE,
-        self::CREATED_AT,
+        self::AUTH_TYPE
     ];
 
     protected $defaults = [

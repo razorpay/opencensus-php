@@ -75,6 +75,17 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
+    /**
+     * Organization related functions
+     */
+
+    public function getOrg($id)
+    {
+        $data = (new Admin\Org\Service)->getOrg($id);
+
+        return ApiResponse::json($data);
+    }
+
     public function createOrg()
     {
         $input = Request::all();
@@ -99,4 +110,8 @@ class AdminController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    /**
+     * Admin related functons
+     */
 }
