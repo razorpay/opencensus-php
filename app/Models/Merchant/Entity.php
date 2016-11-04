@@ -48,8 +48,6 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'merchant';
 
-    protected static $sign = '';
-
     protected static $delimiter = '';
 
     protected static $generators = array(

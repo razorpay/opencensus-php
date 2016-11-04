@@ -21,8 +21,6 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'settlement_details';
 
-    protected static $sign = '';
-
     protected static $delimiter = '';
 
     protected $generateIdOnCreate = true;

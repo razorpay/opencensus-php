@@ -33,8 +33,6 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'payment_analytics';
 
-    protected static $sign = '';
-
     protected static $delimiter = '';
 
     protected $fillable = array(

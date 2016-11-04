@@ -22,8 +22,6 @@ class Entity extends Base\PublicEntity
     const UPDATED_AT            = 'updated_at';
     const DELETED_AT            = 'deleted_at';
 
-    protected static $sign      = '';
-
     protected $entity           = 'emi_plan';
 
     protected $table            = Table::EMI_PLAN;

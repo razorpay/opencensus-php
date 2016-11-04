@@ -30,8 +30,6 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'methods';
 
-    protected static $sign = '';
-
     protected $fillable = array(
         self::MERCHANT_ID,
         self::CARD,
